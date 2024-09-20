@@ -302,22 +302,6 @@ This is a simulated response to the custom prompt. In a real application, this w
 
   return (
     <div className="flex flex-col h-screen max-h-screen bg-gray-100">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 className="text-2xl font-semibold py-4 text-gray-800">GP Consultation App</h1>
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm">
-              <Info className="mr-2 h-4 w-4" />
-              About
-            </Button>
-            <Button variant="ghost" size="sm">
-              <UserCircle className="mr-2 h-4 w-4" />
-              Login
-            </Button>
-          </div>
-        </div>
-      </header>
-      
       <main className="flex-grow overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 h-full">
           <div className="flex h-full relative">

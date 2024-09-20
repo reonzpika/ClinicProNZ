@@ -15,9 +15,9 @@ const BaseTemplate = (props: {
         <header className="border-b border-gray-300">
           <div className="pb-8 pt-16">
             <h1 className="text-3xl font-bold text-gray-900">
-              {AppConfig.name}
+              GP Workstation
             </h1>
-            <h2 className="text-xl">{t('description')}</h2>
+            {/* Removed the description/subtext */}
           </div>
 
           <div className="flex justify-between">

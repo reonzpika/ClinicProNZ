@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { NextIntlClientProvider, useMessages } from 'next-intl';
 import { unstable_setRequestLocale } from 'next-intl/server';
 
-import { DemoBadge } from '@/components/DemoBadge';
+// Remove the DemoBadge import
 import { AppConfig } from '@/utils/AppConfig';
 
 export const metadata: Metadata = {
@@ -54,7 +54,7 @@ export default function RootLayout(props: {
         >
           {props.children}
 
-          <DemoBadge />
+          {/* Remove the DemoBadge component */}
         </NextIntlClientProvider>
       </body>
     </html>
