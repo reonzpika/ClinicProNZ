@@ -192,17 +192,20 @@ Management Plan:`,
     setPatientSummary(templates[value]);
   };
 
-  const { consultAssistResults, handleConsultAssist } = useConsultAssist();
+  const { 
+    consultAssistResults, 
+    differentialDiagnosisResults, 
+    handleConsultAssist, 
+    handleDifferentialDiagnosis: handleDifferentialDiagnosisFromHook,
+    isLoading,
+    error
+  } = useConsultAssist();
 
   // Function to handle differential diagnosis
-  const handleDifferentialDiagnosis = () => {
-    setDifferentialDiagnosis([
-      'Hypertension',
-      'Type 2 Diabetes',
-      'Anxiety Disorder',
-      'Gastroesophageal Reflux Disease (GERD)',
-      'Osteoarthritis',
-    ]);
+  const handleDifferentialDiagnosisClick = () => {
+    console.log('handleDifferentialDiagnosisClick called');
+    console.log('Current patient summary:', patientSummary);
+    handleDifferentialDiagnosisFromHook(patientSummary);
     setSelectedAITask('differential');
     setRightColumnTab('ai');
   };
@@ -422,11 +425,17 @@ This is a simulated response to the custom prompt. In a real application, this w
                     onChange={e => setPatientSummary(e.target.value)}
                   />
                   <div className="mt-2 grid grid-cols-2 gap-2">
-                    <Button onClick={() => handleConsultAssist(patientSummary)} size="sm">
+                    <Button onClick={() => {
+                      console.log('Consult Assist button clicked');
+                      handleConsultAssist(patientSummary);
+                    }} size="sm">
                       <Stethoscope className="mr-1 size-3" />
                       Consult Assist
                     </Button>
-                    <Button onClick={handleDifferentialDiagnosis} size="sm">
+                    <Button onClick={() => {
+                      console.log('Differential Diagnosis button clicked');
+                      handleDifferentialDiagnosisClick();
+                    }} size="sm">
                       <List className="mr-1 size-3" />
                       Differential Diagnosis
                     </Button>
@@ -519,43 +528,37 @@ This is a simulated response to the custom prompt. In a real application, this w
                         </SelectContent>
                       </Select>
                       <div className="mt-4">
-                        {selectedAITask === 'consult' && (
+                        {isLoading && <p>Loading...</p>}
+                        {error && <p className="text-red-500">Error: {error}</p>}
+                        {!isLoading && !error && (
                           <>
-                            <h4 className="mb-2 font-medium">Key History Points:</h4>
-                            <ul className="mb-4 list-disc space-y-1 pl-5">
-                              {consultAssistResults.history.map((item, index) => (
-                                <li key={index}>{item}</li>
-                              ))}
-                            </ul>
-                            <h4 className="mb-2 font-medium">Recommended Examination Steps:</h4>
-                            <ul className="list-disc space-y-1 pl-5">
-                              {consultAssistResults.examination.map((item, index) => (
-                                <li key={index}>{item}</li>
-                              ))}
-                            </ul>
+                            {selectedAITask === 'consult' && (
+                              <>
+                                <h4 className="mb-2 font-medium">Consultation Summary:</h4>
+                                <div className="mb-4" dangerouslySetInnerHTML={{ __html: consultAssistResults.response }} />
+                                {console.log('Rendering Consult Assist results:', consultAssistResults.response)}
+                              </>
+                            )}
+                            {selectedAITask === 'differential' && (
+                              <>
+                                <h4 className="mb-2 font-medium">Possible Diagnoses:</h4>
+                                <div className="mb-4" dangerouslySetInnerHTML={{ __html: differentialDiagnosisResults.response }} />
+                                {console.log('Rendering Differential Diagnosis results:', differentialDiagnosisResults.response)}
+                              </>
+                            )}
+                            {customPrompts.map(prompt => (
+                              selectedAITask === prompt.id && (
+                                <div key={prompt.id}>
+                                  <h4 className="mb-2 font-medium">{prompt.name}</h4>
+                                  <p className="mb-4 text-sm text-gray-500">{prompt.prompt}</p>
+                                  {customPromptResults[prompt.id] && (
+                                    <div className="whitespace-pre-wrap">{customPromptResults[prompt.id]}</div>
+                                  )}
+                                </div>
+                              )
+                            ))}
                           </>
                         )}
-                        {selectedAITask === 'differential' && (
-                          <>
-                            <h4 className="mb-2 font-medium">Possible Diagnoses:</h4>
-                            <ul className="list-disc space-y-1 pl-5">
-                              {differentialDiagnosis.map((diagnosis, index) => (
-                                <li key={index}>{diagnosis}</li>
-                              ))}
-                            </ul>
-                          </>
-                        )}
-                        {customPrompts.map(prompt => (
-                          selectedAITask === prompt.id && (
-                            <div key={prompt.id}>
-                              <h4 className="mb-2 font-medium">{prompt.name}</h4>
-                              <p className="mb-4 text-sm text-gray-500">{prompt.prompt}</p>
-                              {customPromptResults[prompt.id] && (
-                                <div className="whitespace-pre-wrap">{customPromptResults[prompt.id]}</div>
-                              )}
-                            </div>
-                          )
-                        ))}
                       </div>
                     </CardContent>
                   </Card>

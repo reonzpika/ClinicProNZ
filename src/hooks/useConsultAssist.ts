@@ -1,72 +1,97 @@
 import { useCallback, useState } from 'react';
 
 type ConsultAssistResults = {
-  history: string[];
-  examination: string[];
+  response: string;
+};
+
+type DifferentialDiagnosisResults = {
+  response: string;
 };
 
 export function useConsultAssist() {
-  console.log('API Key:', process.env.NEXT_PUBLIC_GPT_API_KEY);
-  
   const [consultAssistResults, setConsultAssistResults] = useState<ConsultAssistResults>({
-    history: [],
-    examination: [],
+    response: '',
   });
+  const [differentialDiagnosisResults, setDifferentialDiagnosisResults] = useState<DifferentialDiagnosisResults>({
+    response: '',
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleConsultAssist = useCallback(async (patientSummary: string) => {
-    console.log('handleConsultAssist called with:', patientSummary);
-    console.log('API Endpoint:', process.env.NEXT_PUBLIC_GPT_API_ENDPOINT);
-    
+  const makeAPIRequest = useCallback(async (prompt: string, patientSummary: string) => {
+    console.log('makeAPIRequest called with prompt:', prompt);
+    console.log('Patient summary:', patientSummary);
+    setIsLoading(true);
+    setError(null);
     try {
-      console.log('Attempting to fetch from API...');
-      const API_KEY = process.env.NEXT_PUBLIC_GPT_API_KEY || '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';
-      const response = await fetch(process.env.NEXT_PUBLIC_GPT_API_ENDPOINT!, {
+      const API_KEY = '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';
+      const API_ENDPOINT = process.env.NEXT_PUBLIC_GPT_API_ENDPOINT;
+      if (!API_ENDPOINT) {
+        throw new Error('GPT API endpoint is not set');
+      }
+      const response = await fetch(API_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${API_KEY}`,
         },
         body: JSON.stringify({
-          model: "gpt-4o-mini",  // Specify the model here
+          model: 'gpt-4o-mini',
           messages: [
             {
-              role: "system",
-              content: "You are a helpful assistant that provides medical consultation suggestions."
+              role: 'system',
+              content: 'You are a helpful assistant that provides medical consultation suggestions.',
             },
             {
-              role: "user",
-              content: patientSummary
-            }
-          ]
+              role: 'user',
+              content: `${prompt}: ${patientSummary}`,
+            },
+          ],
         }),
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response OK:', response.ok);
-
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error response:', errorText);
         throw new Error(`Failed to get AI assistance: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
-      console.log('Received data:', data);
-
-      // Assuming the API returns the required format, adjust as necessary
-      setConsultAssistResults({
-        history: [data.choices[0].message.content],
-        examination: [],  // You might need to parse the content to extract examination details
-      });
+      console.log('API response:', data);
+      return data.choices[0].message.content;
     } catch (error) {
-      console.error('Error in handleConsultAssist:', error);
+      console.error('Error in makeAPIRequest:', error);
       if (error instanceof Error) {
-        console.error('Error message:', error.message);
-        console.error('Error stack:', error.stack);
+        setError(error.message);
+      } else {
+        setError('An unknown error occurred');
       }
-      // Handle error (e.g., show an error message to the user)
+      return '';
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
-  return { consultAssistResults, handleConsultAssist };
+  const handleConsultAssist = useCallback(async (patientSummary: string) => {
+    console.log('handleConsultAssist called with:', patientSummary);
+    const prompt = 'Please provide a concise summary of the following patient case in HTML format, suitable for a busy GP to quickly reference';
+    const response = await makeAPIRequest(prompt, patientSummary);
+    console.log('Consult Assist response:', response);
+    setConsultAssistResults({ response });
+  }, [makeAPIRequest]);
+
+  const handleDifferentialDiagnosis = useCallback(async (patientSummary: string) => {
+    console.log('handleDifferentialDiagnosis called with:', patientSummary);
+    const prompt = 'Please provide a concise list of possible differential diagnoses for the following patient case in HTML format, suitable for a busy GP to quickly reference';
+    const response = await makeAPIRequest(prompt, patientSummary);
+    console.log('Differential Diagnosis response:', response);
+    setDifferentialDiagnosisResults({ response });
+  }, [makeAPIRequest]);
+
+  return {
+    consultAssistResults,
+    differentialDiagnosisResults,
+    handleConsultAssist,
+    handleDifferentialDiagnosis,
+    isLoading,
+    error,
+  };
 }
