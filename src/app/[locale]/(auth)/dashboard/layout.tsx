@@ -28,6 +28,14 @@ export default function DashboardLayout(props: { children: React.ReactNode }) {
               {t('user_profile_link')}
             </Link>
           </li>
+          <li>
+            <Link
+              href="/prompt-management/"
+              className="border-none text-gray-700 hover:text-gray-900"
+            >
+              {t('prompt_management_link')}
+            </Link>
+          </li>
         </>
       )}
       rightNav={(
