@@ -1,19 +1,21 @@
-'use client'
+'use client';
 
-import React, { useState, useRef, useEffect } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { FileText, Search, Zap, Stethoscope, List, Calculator, Mic, Heart, Brain, Thermometer, Plus, Settings, ChevronLeft, ChevronRight, ChevronDown, UserCircle, Info, RefreshCw } from 'lucide-react'
+import { Brain, Calculator, ChevronDown, ChevronLeft, FileText, Heart, List, Mic, Plus, RefreshCw, Search, Stethoscope, Thermometer, Zap } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+
+import { useConsultAssist } from '@/hooks/useConsultAssist';
 
 // Summary:
 // This file contains the ConsultationApp component, which is a complex medical consultation application.
@@ -40,63 +42,62 @@ import { FileText, Search, Zap, Stethoscope, List, Calculator, Mic, Heart, Brain
 
 export function ConsultationApp() {
   // State variables
-  const [patientSummary, setPatientSummary] = useState('')
-  const [consultAssistResults, setConsultAssistResults] = useState({ history: [], examination: [] })
-  const [differentialDiagnosis, setDifferentialDiagnosis] = useState([])
-  const [columnRatio, setColumnRatio] = useState(50)
-  const [rightColumnTab, setRightColumnTab] = useState('ai')
+  const [patientSummary, setPatientSummary] = useState('');
+  const [differentialDiagnosis, setDifferentialDiagnosis] = useState([]);
+  const [columnRatio, setColumnRatio] = useState(50);
+  const [rightColumnTab, setRightColumnTab] = useState('ai');
   const [searchCategories, setSearchCategories] = useState({
     drugs: false,
     guidelines: false,
     pathways: false,
     tests: false,
-  })
-  const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState({ drugs: [], guidelines: [], pathways: [], tests: [] })
-  const [activeToolsCategory, setActiveToolsCategory] = useState('')
-  const [toolsSearchQuery, setToolsSearchQuery] = useState('')
-  const [isRecording, setIsRecording] = useState(false)
-  const [selectedTemplate, setSelectedTemplate] = useState('general')
+  });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState({ drugs: [], guidelines: [], pathways: [], tests: [] });
+  const [activeToolsCategory, setActiveToolsCategory] = useState('');
+  const [toolsSearchQuery, setToolsSearchQuery] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState('general');
   const [customPrompts, setCustomPrompts] = useState([
     { id: 'prompt1', name: 'Summarize Patient History', prompt: 'Summarize the patient history in bullet points.' },
     { id: 'prompt2', name: 'Generate Treatment Plan', prompt: 'Generate a treatment plan based on the patient summary.' },
-  ])
-  const [customPromptResults, setCustomPromptResults] = useState({})
-  const [newPromptName, setNewPromptName] = useState('')
-  const [newPromptContent, setNewPromptContent] = useState('')
-  const [newTemplateName, setNewTemplateName] = useState('')
-  const [newTemplateContent, setNewTemplateContent] = useState('')
+  ]);
+  const [customPromptResults, setCustomPromptResults] = useState({});
+  const [newPromptName, setNewPromptName] = useState('');
+  const [newPromptContent, setNewPromptContent] = useState('');
+  const [newTemplateName, setNewTemplateName] = useState('');
+  const [newTemplateContent, setNewTemplateContent] = useState('');
 
   // Ref for tabs scrolling
-  const tabsRef = useRef(null)
+  const tabsRef = useRef(null);
 
   // State for tab scroll buttons visibility
-  const [showLeftScroll, setShowLeftScroll] = useState(false)
-  const [showRightScroll, setShowRightScroll] = useState(false)
+  const [showLeftScroll, setShowLeftScroll] = useState(false);
+  const [showRightScroll, setShowRightScroll] = useState(false);
 
   // Effect for checking tab scroll
   useEffect(() => {
     const checkScroll = () => {
       if (tabsRef.current) {
-        setShowLeftScroll(tabsRef.current.scrollLeft > 0)
+        setShowLeftScroll(tabsRef.current.scrollLeft > 0);
         setShowRightScroll(
-          tabsRef.current.scrollLeft < tabsRef.current.scrollWidth - tabsRef.current.clientWidth
-        )
+          tabsRef.current.scrollLeft < tabsRef.current.scrollWidth - tabsRef.current.clientWidth,
+        );
       }
-    }
+    };
 
-    checkScroll()
-    window.addEventListener('resize', checkScroll)
-    return () => window.removeEventListener('resize', checkScroll)
-  }, [])
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, []);
 
   // Function to scroll tabs
   const scrollTabs = (direction) => {
     if (tabsRef.current) {
-      const scrollAmount = direction === 'left' ? -100 : 100
-      tabsRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' })
+      const scrollAmount = direction === 'left' ? -100 : 100;
+      tabsRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
-  }
+  };
 
   // Templates for patient summary
   const [templates, setTemplates] = useState({
@@ -154,8 +155,8 @@ Complications Screening:
 
 Assessment:
 
-Management Plan:`
-  })
+Management Plan:`,
+  });
 
   // GP tools organized by category
   const gpTools = {
@@ -183,56 +184,40 @@ Management Plan:`
       { name: 'Drug Interactions Checker', icon: List },
       { name: 'Symptom Checker', icon: Stethoscope },
     ],
-  }
+  };
 
   // Function to handle template change
   const handleTemplateChange = (value) => {
-    setSelectedTemplate(value)
-    setPatientSummary(templates[value])
-  }
+    setSelectedTemplate(value);
+    setPatientSummary(templates[value]);
+  };
 
-  // Function to handle consult assist
-  const handleConsultAssist = () => {
-    setConsultAssistResults({
-      history: [
-        "Clarify onset and progression of symptoms",
-        "Ask about any recent lifestyle changes",
-        "Inquire about family history of similar conditions"
-      ],
-      examination: [
-        "Check vital signs",
-        "Perform focused physical exam based on chief complaint",
-        "Consider ordering relevant diagnostic tests"
-      ]
-    })
-    setSelectedAITask('consult')
-    setRightColumnTab('ai')
-  }
+  const { consultAssistResults, handleConsultAssist } = useConsultAssist();
 
   // Function to handle differential diagnosis
   const handleDifferentialDiagnosis = () => {
     setDifferentialDiagnosis([
-      "Hypertension",
-      "Type 2 Diabetes",
-      "Anxiety Disorder",
-      "Gastroesophageal Reflux Disease (GERD)",
-      "Osteoarthritis"
-    ])
-    setSelectedAITask('differential')
-    setRightColumnTab('ai')
-  }
+      'Hypertension',
+      'Type 2 Diabetes',
+      'Anxiety Disorder',
+      'Gastroesophageal Reflux Disease (GERD)',
+      'Osteoarthritis',
+    ]);
+    setSelectedAITask('differential');
+    setRightColumnTab('ai');
+  };
 
   // Function to handle column resizing
   const handleColumnResize = (e) => {
-    const containerWidth = e.target.parentElement.offsetWidth
-    const newRatio = (e.clientX / containerWidth) * 100
-    setColumnRatio(newRatio)
-  }
+    const containerWidth = e.target.parentElement.offsetWidth;
+    const newRatio = (e.clientX / containerWidth) * 100;
+    setColumnRatio(newRatio);
+  };
 
   // Function to handle search category changes
   const handleSearchCategoryChange = (category) => {
-    setSearchCategories(prev => ({ ...prev, [category]: !prev[category] }))
-  }
+    setSearchCategories(prev => ({ ...prev, [category]: !prev[category] }));
+  };
 
   // Function to handle search
   const handleSearch = () => {
@@ -241,61 +226,61 @@ Management Plan:`
       guidelines: searchCategories.guidelines ? ['Guideline 1', 'Guideline 2', 'Guideline 3'] : [],
       pathways: searchCategories.pathways ? ['Pathway X', 'Pathway Y', 'Pathway Z'] : [],
       tests: searchCategories.tests ? ['Test Alpha', 'Test Beta', 'Test Gamma'] : [],
-    }
-    setSearchResults(results)
-    
+    };
+    setSearchResults(results);
+
     // Set the first non-empty category as the selected one
-    const firstNonEmptyCategory = Object.entries(results).find(([_, values]) => values.length > 0)?.[0]
-    setSelectedSearchCategory(firstNonEmptyCategory || '')
-  }
+    const firstNonEmptyCategory = Object.entries(results).find(([_, values]) => values.length > 0)?.[0];
+    setSelectedSearchCategory(firstNonEmptyCategory || '');
+  };
 
   // Function to start voice recording
   const startRecording = () => {
-    setIsRecording(true)
+    setIsRecording(true);
     // Simulated AI transcription
     setTimeout(() => {
-      setIsRecording(false)
-      const transcription = "Patient reports experiencing frequent headaches and fatigue for the past two weeks. No recent changes in medication or lifestyle. Family history of migraines."
-      
+      setIsRecording(false);
+      const transcription = 'Patient reports experiencing frequent headaches and fatigue for the past two weeks. No recent changes in medication or lifestyle. Family history of migraines.';
+
       // Format transcription according to the selected template
-      const formattedTranscription = formatTranscription(transcription, selectedTemplate)
-      setPatientSummary(formattedTranscription)
-    }, 3000)
-  }
+      const formattedTranscription = formatTranscription(transcription, selectedTemplate);
+      setPatientSummary(formattedTranscription);
+    }, 3000);
+  };
 
   // Function to stop voice recording
   const stopRecording = () => {
-    setIsRecording(false)
-  }
+    setIsRecording(false);
+  };
 
   // Function to format transcription
   const formatTranscription = (transcription, template) => {
-    const lines = templates[template].split('\n')
-    let formattedText = ''
+    const lines = templates[template].split('\n');
+    let formattedText = '';
 
-    lines.forEach(line => {
+    lines.forEach((line) => {
       if (line.trim() !== '') {
-        formattedText += line + '\n'
+        formattedText += `${line}\n`;
         if (line.endsWith(':')) {
-          formattedText += transcription + '\n\n'
+          formattedText += `${transcription}\n\n`;
         }
       }
-    })
+    });
 
-    return formattedText.trim()
-  }
+    return formattedText.trim();
+  };
 
   // Function to handle custom prompts
   const handleCustomPrompt = (promptId) => {
-    const selectedPrompt = customPrompts.find(p => p.id === promptId)
+    const selectedPrompt = customPrompts.find(p => p.id === promptId);
     // Simulated AI response
     const aiResponse = `AI response to: ${selectedPrompt.prompt}
 
-This is a simulated response to the custom prompt. In a real application, this would be generated by an AI model based on the patient summary and the specific prompt.`
-    setCustomPromptResults(prev => ({ ...prev, [promptId]: aiResponse }))
-    setSelectedAITask(promptId)
-    setRightColumnTab('ai')
-  }
+This is a simulated response to the custom prompt. In a real application, this would be generated by an AI model based on the patient summary and the specific prompt.`;
+    setCustomPromptResults(prev => ({ ...prev, [promptId]: aiResponse }));
+    setSelectedAITask(promptId);
+    setRightColumnTab('ai');
+  };
 
   // Function to add a new prompt
   const addNewPrompt = () => {
@@ -303,74 +288,75 @@ This is a simulated response to the custom prompt. In a real application, this w
       const newPrompt = {
         id: `prompt${customPrompts.length + 1}`,
         name: newPromptName,
-        prompt: newPromptContent
-      }
-      setCustomPrompts(prev => [...prev, newPrompt])
-      setNewPromptName('')
-      setNewPromptContent('')
+        prompt: newPromptContent,
+      };
+      setCustomPrompts(prev => [...prev, newPrompt]);
+      setNewPromptName('');
+      setNewPromptContent('');
     }
-  }
+  };
 
   // Function to add a new template
   const addNewTemplate = () => {
     if (newTemplateName && newTemplateContent) {
       setTemplates(prev => ({
         ...prev,
-        [newTemplateName.toLowerCase().replace(/\s+/g, '_')]: newTemplateContent
-      }))
-      setNewTemplateName('')
-      setNewTemplateContent('')
+        [newTemplateName.toLowerCase().replace(/\s+/g, '_')]: newTemplateContent,
+      }));
+      setNewTemplateName('');
+      setNewTemplateContent('');
     }
-  }
+  };
 
   // Function to reset all state
   const resetAll = () => {
-    setPatientSummary('')
-    setConsultAssistResults({ history: [], examination: [] })
-    setDifferentialDiagnosis([])
-    setSelectedAITask('consult')
-    setCustomPromptResults({})
-    setSearchQuery('')
-    setSearchResults({ drugs: [], guidelines: [], pathways: [], tests: [] })
-    setToolsSearchQuery('')
-  }
+    setPatientSummary('');
+    setDifferentialDiagnosis([]);
+    setSelectedAITask('consult');
+    setCustomPromptResults({});
+    setSearchQuery('');
+    setSearchResults({ drugs: [], guidelines: [], pathways: [], tests: [] });
+    setToolsSearchQuery('');
+  };
 
   // Filter GP tools based on search query
   const filteredTools = Object.entries(gpTools).reduce((acc, [category, tools]) => {
-    const filteredTools = tools.filter(tool => 
-      tool.name.toLowerCase().includes(toolsSearchQuery.toLowerCase())
-    )
+    const filteredTools = tools.filter(tool =>
+      tool.name.toLowerCase().includes(toolsSearchQuery.toLowerCase()),
+    );
     if (filteredTools.length > 0) {
-      acc[category] = filteredTools
+      acc[category] = filteredTools;
     }
-    return acc
-  }, {})
+    return acc;
+  }, {});
 
   // State for selected AI task
-  const [selectedAITask, setSelectedAITask] = useState('consult')
+  const [selectedAITask, setSelectedAITask] = useState('consult');
 
   // State for selected search result category
-  const [selectedSearchCategory, setSelectedSearchCategory] = useState('')
+  const [selectedSearchCategory, setSelectedSearchCategory] = useState('');
 
   return (
-    <div className="flex flex-col h-screen max-h-screen bg-background">
-      <main className="flex-grow overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 h-full">
+    <div className="flex h-screen max-h-screen flex-col bg-background">
+      <main className="grow overflow-hidden">
+        <div className="mx-auto h-full max-w-7xl p-4 sm:px-6 lg:px-8">
           <div className="flex h-full gap-4">
-            <div className="w-1/2 flex flex-col">
-              <Card className="flex-grow flex flex-col">
+            <div className="flex w-1/2 flex-col">
+              <Card className="flex grow flex-col">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-lg">Consultation</CardTitle>
                   <div className="flex items-center space-x-2">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="sm">
-                          {selectedTemplate.charAt(0).toUpperCase() + selectedTemplate.slice(1)} Template
-                          <ChevronDown className="ml-1 h-3 w-3" />
+                          {selectedTemplate.charAt(0).toUpperCase() + selectedTemplate.slice(1)}
+                          {' '}
+                          Template
+                          <ChevronDown className="ml-1 size-3" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        {Object.keys(templates).map((template) => (
+                        {Object.keys(templates).map(template => (
                           <DropdownMenuItem key={template} onSelect={() => handleTemplateChange(template)}>
                             {template.charAt(0).toUpperCase() + template.slice(1)}
                           </DropdownMenuItem>
@@ -378,8 +364,8 @@ This is a simulated response to the custom prompt. In a real application, this w
                         <Separator />
                         <Dialog>
                           <DialogTrigger asChild>
-                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                              <Plus className="mr-2 h-4 w-4" />
+                            <DropdownMenuItem onSelect={e => e.preventDefault()}>
+                              <Plus className="mr-2 size-4" />
                               Add New Template
                             </DropdownMenuItem>
                           </DialogTrigger>
@@ -395,7 +381,7 @@ This is a simulated response to the custom prompt. In a real application, this w
                                 <Input
                                   id="templateName"
                                   value={newTemplateName}
-                                  onChange={(e) => setNewTemplateName(e.target.value)}
+                                  onChange={e => setNewTemplateName(e.target.value)}
                                   className="col-span-3"
                                 />
                               </div>
@@ -406,7 +392,7 @@ This is a simulated response to the custom prompt. In a real application, this w
                                 <Textarea
                                   id="templateContent"
                                   value={newTemplateContent}
-                                  onChange={(e) => setNewTemplateContent(e.target.value)}
+                                  onChange={e => setNewTemplateContent(e.target.value)}
                                   className="col-span-3"
                                   rows={10}
                                 />
@@ -419,37 +405,37 @@ This is a simulated response to the custom prompt. In a real application, this w
                         </Dialog>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                    <Button 
-                      variant={isRecording ? "destructive" : "secondary"}
+                    <Button
+                      variant={isRecording ? 'destructive' : 'secondary'}
                       size="icon"
                       onClick={isRecording ? stopRecording : startRecording}
                     >
-                      <Mic className={`h-4 w-4 ${isRecording ? 'animate-pulse' : ''}`} />
+                      <Mic className={`size-4 ${isRecording ? 'animate-pulse' : ''}`} />
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="flex-grow flex flex-col pt-2">
-                  <Textarea 
-                    placeholder="Enter patient notes here..." 
-                    className="flex-grow min-h-0 resize-none"
+                <CardContent className="flex grow flex-col pt-2">
+                  <Textarea
+                    placeholder="Enter patient notes here..."
+                    className="min-h-0 grow resize-none"
                     value={patientSummary}
-                    onChange={(e) => setPatientSummary(e.target.value)}
+                    onChange={e => setPatientSummary(e.target.value)}
                   />
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    <Button onClick={handleConsultAssist} size="sm">
-                      <Stethoscope className="mr-1 h-3 w-3" />
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    <Button onClick={() => handleConsultAssist(patientSummary)} size="sm">
+                      <Stethoscope className="mr-1 size-3" />
                       Consult Assist
                     </Button>
                     <Button onClick={handleDifferentialDiagnosis} size="sm">
-                      <List className="mr-1 h-3 w-3" />
+                      <List className="mr-1 size-3" />
                       Differential Diagnosis
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="sm">
-                          <Zap className="mr-1 h-3 w-3" />
+                          <Zap className="mr-1 size-3" />
                           AI Insights
-                          <ChevronDown className="ml-1 h-3 w-3" />
+                          <ChevronDown className="ml-1 size-3" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
@@ -461,8 +447,8 @@ This is a simulated response to the custom prompt. In a real application, this w
                         <Separator />
                         <Dialog>
                           <DialogTrigger asChild>
-                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                              <Plus className="mr-2 h-4 w-4" />
+                            <DropdownMenuItem onSelect={e => e.preventDefault()}>
+                              <Plus className="mr-2 size-4" />
                               Add New AI Task
                             </DropdownMenuItem>
                           </DialogTrigger>
@@ -478,7 +464,7 @@ This is a simulated response to the custom prompt. In a real application, this w
                                 <Input
                                   id="name"
                                   value={newPromptName}
-                                  onChange={(e) => setNewPromptName(e.target.value)}
+                                  onChange={e => setNewPromptName(e.target.value)}
                                   className="col-span-3"
                                 />
                               </div>
@@ -489,7 +475,7 @@ This is a simulated response to the custom prompt. In a real application, this w
                                 <Textarea
                                   id="prompt"
                                   value={newPromptContent}
-                                  onChange={(e) => setNewPromptContent(e.target.value)}
+                                  onChange={e => setNewPromptContent(e.target.value)}
                                   className="col-span-3"
                                 />
                               </div>
@@ -502,14 +488,14 @@ This is a simulated response to the custom prompt. In a real application, this w
                       </DropdownMenuContent>
                     </DropdownMenu>
                     <Button onClick={resetAll} variant="outline" size="sm">
-                      <RefreshCw className="mr-1 h-3 w-3" />
+                      <RefreshCw className="mr-1 size-3" />
                       Reset All
                     </Button>
                   </div>
                 </CardContent>
               </Card>
             </div>
-            
+
             <div className="w-1/2 overflow-y-auto">
               <Tabs value={rightColumnTab} onValueChange={setRightColumnTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-3">
@@ -535,14 +521,14 @@ This is a simulated response to the custom prompt. In a real application, this w
                       <div className="mt-4">
                         {selectedAITask === 'consult' && (
                           <>
-                            <h4 className="font-medium mb-2">Key History Points:</h4>
-                            <ul className="list-disc pl-5 space-y-1 mb-4">
+                            <h4 className="mb-2 font-medium">Key History Points:</h4>
+                            <ul className="mb-4 list-disc space-y-1 pl-5">
                               {consultAssistResults.history.map((item, index) => (
                                 <li key={index}>{item}</li>
                               ))}
                             </ul>
-                            <h4 className="font-medium mb-2">Recommended Examination Steps:</h4>
-                            <ul className="list-disc pl-5 space-y-1">
+                            <h4 className="mb-2 font-medium">Recommended Examination Steps:</h4>
+                            <ul className="list-disc space-y-1 pl-5">
                               {consultAssistResults.examination.map((item, index) => (
                                 <li key={index}>{item}</li>
                               ))}
@@ -551,8 +537,8 @@ This is a simulated response to the custom prompt. In a real application, this w
                         )}
                         {selectedAITask === 'differential' && (
                           <>
-                            <h4 className="font-medium mb-2">Possible Diagnoses:</h4>
-                            <ul className="list-disc pl-5 space-y-1">
+                            <h4 className="mb-2 font-medium">Possible Diagnoses:</h4>
+                            <ul className="list-disc space-y-1 pl-5">
                               {differentialDiagnosis.map((diagnosis, index) => (
                                 <li key={index}>{diagnosis}</li>
                               ))}
@@ -562,8 +548,8 @@ This is a simulated response to the custom prompt. In a real application, this w
                         {customPrompts.map(prompt => (
                           selectedAITask === prompt.id && (
                             <div key={prompt.id}>
-                              <h4 className="font-medium mb-2">{prompt.name}</h4>
-                              <p className="text-sm text-gray-500 mb-4">{prompt.prompt}</p>
+                              <h4 className="mb-2 font-medium">{prompt.name}</h4>
+                              <p className="mb-4 text-sm text-gray-500">{prompt.prompt}</p>
                               {customPromptResults[prompt.id] && (
                                 <div className="whitespace-pre-wrap">{customPromptResults[prompt.id]}</div>
                               )}
@@ -578,11 +564,11 @@ This is a simulated response to the custom prompt. In a real application, this w
                   <Card>
                     <CardContent className="pt-4">
                       <div className="space-y-2">
-                        <Input 
-                          type="search" 
-                          placeholder="Search..." 
+                        <Input
+                          type="search"
+                          placeholder="Search..."
                           value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
+                          onChange={e => setSearchQuery(e.target.value)}
                         />
                         <div className="grid grid-cols-2 gap-2">
                           {Object.entries(searchCategories).map(([category, checked]) => (
@@ -599,7 +585,7 @@ This is a simulated response to the custom prompt. In a real application, this w
                           ))}
                         </div>
                         <Button className="w-full" onClick={handleSearch} size="sm">
-                          <Search className="mr-1 h-3 w-3" />
+                          <Search className="mr-1 size-3" />
                           Search
                         </Button>
                       </div>
@@ -621,7 +607,7 @@ This is a simulated response to the custom prompt. In a real application, this w
                           </Select>
                           <div className="mt-2">
                             {selectedSearchCategory && (
-                              <ul className="list-disc pl-5 space-y-1">
+                              <ul className="list-disc space-y-1 pl-5">
                                 {searchResults[selectedSearchCategory].map((result, index) => (
                                   <li key={index}>{result}</li>
                                 ))}
@@ -636,44 +622,50 @@ This is a simulated response to the custom prompt. In a real application, this w
                 <TabsContent value="tools" className="mt-2">
                   <Card>
                     <CardContent className="pt-4">
-                      <Input 
-                        type="search" 
-                        placeholder="Search tools..." 
+                      <Input
+                        type="search"
+                        placeholder="Search tools..."
                         value={toolsSearchQuery}
-                        onChange={(e) => setToolsSearchQuery(e.target.value)}
+                        onChange={e => setToolsSearchQuery(e.target.value)}
                         className="mb-2"
                       />
-                      {activeToolsCategory ? (
-                        <>
-                          <Button variant="outline" onClick={() => setActiveToolsCategory('')} size="sm" className="mb-2">
-                            <ChevronLeft className="mr-1 h-3 w-3" />
-                            Back to Categories
-                          </Button>
-                          <div className="grid grid-cols-2 gap-2">
-                            {filteredTools[activeToolsCategory]?.map((tool, index) => (
-                              <Button key={index} variant="outline" className="h-16 flex flex-col items-center justify-center text-xs" size="sm">
-                                <tool.icon className="h-4 w-4 mb-1" />
-                                {tool.name}
+                      {activeToolsCategory
+                        ? (
+                            <>
+                              <Button variant="outline" onClick={() => setActiveToolsCategory('')} size="sm" className="mb-2">
+                                <ChevronLeft className="mr-1 size-3" />
+                                Back to Categories
                               </Button>
-                            ))}
-                          </div>
-                        </>
-                      ) : (
-                        <div className="grid grid-cols-2 gap-2">
-                          {Object.entries(filteredTools).map(([category, tools]) => (
-                            <Button
-                              key={category}
-                              variant="outline"
-                              className="h-16 flex flex-col items-center justify-center text-xs"
-                              onClick={() => setActiveToolsCategory(category)}
-                              size="sm"
-                            >
-                              {category.charAt(0).toUpperCase() + category.slice(1)}
-                              <span className="text-xs text-muted-foreground mt-1">{tools.length} tools</span>
-                            </Button>
-                          ))}
-                        </div>
-                      )}
+                              <div className="grid grid-cols-2 gap-2">
+                                {filteredTools[activeToolsCategory]?.map((tool, index) => (
+                                  <Button key={index} variant="outline" className="flex h-16 flex-col items-center justify-center text-xs" size="sm">
+                                    <tool.icon className="mb-1 size-4" />
+                                    {tool.name}
+                                  </Button>
+                                ))}
+                              </div>
+                            </>
+                          )
+                        : (
+                            <div className="grid grid-cols-2 gap-2">
+                              {Object.entries(filteredTools).map(([category, tools]) => (
+                                <Button
+                                  key={category}
+                                  variant="outline"
+                                  className="flex h-16 flex-col items-center justify-center text-xs"
+                                  onClick={() => setActiveToolsCategory(category)}
+                                  size="sm"
+                                >
+                                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                                  <span className="mt-1 text-xs text-muted-foreground">
+                                    {tools.length}
+                                    {' '}
+                                    tools
+                                  </span>
+                                </Button>
+                              ))}
+                            </div>
+                          )}
                     </CardContent>
                   </Card>
                 </TabsContent>
@@ -683,5 +675,5 @@ This is a simulated response to the custom prompt. In a real application, this w
         </div>
       </main>
     </div>
-  )
+  );
 }

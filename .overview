@@ -1,8 +1,5 @@
 # Project Overview
 
-## Project Description
-This project is a boilerplate and starter for Next.js 14+, Tailwind CSS 3.4, and TypeScript. It prioritizes developer experience and includes features such as authentication, database integration, error monitoring, logging, and more.
-
 ## Technologies Used
 - **Next.js**: A React framework for building server-side rendered and statically generated web applications.
 - **Tailwind CSS**: A utility-first CSS framework for rapid UI development.
