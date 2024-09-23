@@ -15,7 +15,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-
 import { useConsultAssist } from '@/hooks/useConsultAssist';
 import { usePromptManagement } from '@/hooks/usePromptManagement';
 
@@ -190,13 +189,13 @@ Management Plan:`,
     setPatientSummary(templates[value]);
   };
 
-  const { 
-    consultAssistResults, 
-    differentialDiagnosisResults, 
-    handleConsultAssist, 
+  const {
+    consultAssistResults,
+    differentialDiagnosisResults,
+    handleConsultAssist,
     handleDifferentialDiagnosis: handleDifferentialDiagnosisFromHook,
     isLoading,
-    error
+    error,
   } = useConsultAssist();
 
   // Function to handle differential diagnosis
@@ -361,7 +360,7 @@ This is a simulated response to the custom prompt. In a real application, this w
         <Separator />
         <DropdownMenuItem asChild>
           <Link href="/prompt-management" className="flex items-center">
-            <Settings className="mr-2 h-4 w-4" />
+            <Settings className="mr-2 size-4" />
             Manage AI Tasks
           </Link>
         </DropdownMenuItem>
@@ -495,17 +494,23 @@ This is a simulated response to the custom prompt. In a real application, this w
                     onChange={e => setPatientSummary(e.target.value)}
                   />
                   <div className="mt-2 grid grid-cols-2 gap-2">
-                    <Button onClick={() => {
-                      console.log('Consult Assist button clicked');
-                      handleConsultAssist(patientSummary);
-                    }} size="sm">
+                    <Button
+                      onClick={() => {
+                        console.log('Consult Assist button clicked');
+                        handleConsultAssist(patientSummary);
+                      }}
+                      size="sm"
+                    >
                       <Stethoscope className="mr-1 size-3" />
                       Consult Assist
                     </Button>
-                    <Button onClick={() => {
-                      console.log('Differential Diagnosis button clicked');
-                      handleDifferentialDiagnosisClick();
-                    }} size="sm">
+                    <Button
+                      onClick={() => {
+                        console.log('Differential Diagnosis button clicked');
+                        handleDifferentialDiagnosisClick();
+                      }}
+                      size="sm"
+                    >
                       <List className="mr-1 size-3" />
                       Differential Diagnosis
                     </Button>
@@ -543,7 +548,12 @@ This is a simulated response to the custom prompt. In a real application, this w
                       </Select>
                       <div className="mt-4">
                         {isLoading && <p>Loading...</p>}
-                        {error && <p className="text-red-500">Error: {error}</p>}
+                        {error && (
+                          <p className="text-red-500">
+                            Error:
+                            {error}
+                          </p>
+                        )}
                         {!isLoading && !error && (
                           <>
                             {selectedAITask === 'consult' && (
