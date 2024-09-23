@@ -38,71 +38,34 @@ import { FileText, Search, Zap, Stethoscope, List, Calculator, Mic, Heart, Brain
 // It uses various UI components from Shadcn UI and implements a tabbed interface for the right column.
 // The app maintains multiple state variables to manage different aspects of the consultation process.
 
-console.log('ConsultationApp component is being rendered');
-
 export function ConsultationApp() {
   // State variables
   const [patientSummary, setPatientSummary] = useState('')
-  console.log('Current patient summary:', patientSummary);
-
   const [consultAssistResults, setConsultAssistResults] = useState({ history: [], examination: [] })
-  console.log('Consult assist results:', consultAssistResults);
-
   const [differentialDiagnosis, setDifferentialDiagnosis] = useState([])
-  console.log('Differential diagnosis:', differentialDiagnosis);
-
   const [columnRatio, setColumnRatio] = useState(50)
-  console.log('Column ratio:', columnRatio);
-
   const [rightColumnTab, setRightColumnTab] = useState('ai')
-  console.log('Active right column tab:', rightColumnTab);
-
   const [searchCategories, setSearchCategories] = useState({
     drugs: false,
     guidelines: false,
     pathways: false,
     tests: false,
   })
-  console.log('Search categories:', searchCategories);
-
   const [searchQuery, setSearchQuery] = useState('')
-  console.log('Current search query:', searchQuery);
-
   const [searchResults, setSearchResults] = useState({ drugs: [], guidelines: [], pathways: [], tests: [] })
-  console.log('Search results:', searchResults);
-
   const [activeToolsCategory, setActiveToolsCategory] = useState('')
-  console.log('Active tools category:', activeToolsCategory);
-
   const [toolsSearchQuery, setToolsSearchQuery] = useState('')
-  console.log('Tools search query:', toolsSearchQuery);
-
   const [isRecording, setIsRecording] = useState(false)
-  console.log('Recording status:', isRecording);
-
   const [selectedTemplate, setSelectedTemplate] = useState('general')
-  console.log('Selected template:', selectedTemplate);
-
   const [customPrompts, setCustomPrompts] = useState([
     { id: 'prompt1', name: 'Summarize Patient History', prompt: 'Summarize the patient history in bullet points.' },
     { id: 'prompt2', name: 'Generate Treatment Plan', prompt: 'Generate a treatment plan based on the patient summary.' },
   ])
-  console.log('Custom prompts:', customPrompts);
-
   const [customPromptResults, setCustomPromptResults] = useState({})
-  console.log('Custom prompt results:', customPromptResults);
-
   const [newPromptName, setNewPromptName] = useState('')
-  console.log('New prompt name:', newPromptName);
-
   const [newPromptContent, setNewPromptContent] = useState('')
-  console.log('New prompt content:', newPromptContent);
-
   const [newTemplateName, setNewTemplateName] = useState('')
-  console.log('New template name:', newTemplateName);
-
   const [newTemplateContent, setNewTemplateContent] = useState('')
-  console.log('New template content:', newTemplateContent);
 
   // Ref for tabs scrolling
   const tabsRef = useRef(null)
@@ -193,7 +156,6 @@ Assessment:
 
 Management Plan:`
   })
-  console.log('Available templates:', Object.keys(templates));
 
   // GP tools organized by category
   const gpTools = {
@@ -222,18 +184,15 @@ Management Plan:`
       { name: 'Symptom Checker', icon: Stethoscope },
     ],
   }
-  console.log('Available GP tools categories:', Object.keys(gpTools));
 
   // Function to handle template change
   const handleTemplateChange = (value) => {
-    console.log('Changing template to:', value);
     setSelectedTemplate(value)
     setPatientSummary(templates[value])
   }
 
   // Function to handle consult assist
   const handleConsultAssist = () => {
-    console.log('Generating consult assist results');
     setConsultAssistResults({
       history: [
         "Clarify onset and progression of symptoms",
@@ -252,7 +211,6 @@ Management Plan:`
 
   // Function to handle differential diagnosis
   const handleDifferentialDiagnosis = () => {
-    console.log('Generating differential diagnosis');
     setDifferentialDiagnosis([
       "Hypertension",
       "Type 2 Diabetes",
@@ -268,19 +226,16 @@ Management Plan:`
   const handleColumnResize = (e) => {
     const containerWidth = e.target.parentElement.offsetWidth
     const newRatio = (e.clientX / containerWidth) * 100
-    console.log('Resizing columns. New ratio:', newRatio);
     setColumnRatio(newRatio)
   }
 
   // Function to handle search category changes
   const handleSearchCategoryChange = (category) => {
-    console.log('Toggling search category:', category);
     setSearchCategories(prev => ({ ...prev, [category]: !prev[category] }))
   }
 
   // Function to handle search
   const handleSearch = () => {
-    console.log('Performing search with query:', searchQuery);
     const results = {
       drugs: searchCategories.drugs ? ['Drug A', 'Drug B', 'Drug C'] : [],
       guidelines: searchCategories.guidelines ? ['Guideline 1', 'Guideline 2', 'Guideline 3'] : [],
@@ -296,7 +251,6 @@ Management Plan:`
 
   // Function to start voice recording
   const startRecording = () => {
-    console.log('Starting voice recording');
     setIsRecording(true)
     // Simulated AI transcription
     setTimeout(() => {
@@ -311,13 +265,11 @@ Management Plan:`
 
   // Function to stop voice recording
   const stopRecording = () => {
-    console.log('Stopping voice recording');
     setIsRecording(false)
   }
 
   // Function to format transcription
   const formatTranscription = (transcription, template) => {
-    console.log('Formatting transcription for template:', template);
     const lines = templates[template].split('\n')
     let formattedText = ''
 
@@ -335,7 +287,6 @@ Management Plan:`
 
   // Function to handle custom prompts
   const handleCustomPrompt = (promptId) => {
-    console.log('Handling custom prompt:', promptId);
     const selectedPrompt = customPrompts.find(p => p.id === promptId)
     // Simulated AI response
     const aiResponse = `AI response to: ${selectedPrompt.prompt}
@@ -348,7 +299,6 @@ This is a simulated response to the custom prompt. In a real application, this w
 
   // Function to add a new prompt
   const addNewPrompt = () => {
-    console.log('Adding new prompt:', newPromptName);
     if (newPromptName && newPromptContent) {
       const newPrompt = {
         id: `prompt${customPrompts.length + 1}`,
@@ -363,7 +313,6 @@ This is a simulated response to the custom prompt. In a real application, this w
 
   // Function to add a new template
   const addNewTemplate = () => {
-    console.log('Adding new template:', newTemplateName);
     if (newTemplateName && newTemplateContent) {
       setTemplates(prev => ({
         ...prev,
@@ -376,7 +325,6 @@ This is a simulated response to the custom prompt. In a real application, this w
 
   // Function to reset all state
   const resetAll = () => {
-    console.log('Resetting all state');
     setPatientSummary('')
     setConsultAssistResults({ history: [], examination: [] })
     setDifferentialDiagnosis([])
@@ -400,7 +348,6 @@ This is a simulated response to the custom prompt. In a real application, this w
 
   // State for selected AI task
   const [selectedAITask, setSelectedAITask] = useState('consult')
-  console.log('Selected AI task:', selectedAITask);
 
   // State for selected search result category
   const [selectedSearchCategory, setSelectedSearchCategory] = useState('')
