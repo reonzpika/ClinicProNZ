@@ -8,6 +8,7 @@ import { Search } from '@/components/Search';
 import { Tools } from '@/components/Tools';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useConsultationApp } from '@/hooks/useConsultationApp';
+import { TemplateManagementInterface } from '@/components/TemplateManagementInterface';
 
 export function ConsultationApp() {
   const {
@@ -39,7 +40,9 @@ export function ConsultationApp() {
     error,
     resetAll,
     templates,
-    addNewTemplate,
+    addTemplate,
+    editTemplate,
+    deleteTemplate,
     handleCustomPrompt,
   } = useConsultationApp();
 
@@ -58,7 +61,9 @@ export function ConsultationApp() {
                 startRecording={startRecording}
                 stopRecording={stopRecording}
                 templates={templates}
-                addNewTemplate={addNewTemplate}
+                addTemplate={addTemplate}
+                editTemplate={editTemplate}
+                deleteTemplate={deleteTemplate}
                 handleConsultAssist={handleConsultAssist}
                 handleDifferentialDiagnosis={handleDifferentialDiagnosis}
                 resetAll={resetAll}
@@ -72,10 +77,11 @@ export function ConsultationApp() {
 
             <div className="w-1/2 overflow-y-auto">
               <Tabs value={rightColumnTab} onValueChange={setRightColumnTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="ai">AI Assistance</TabsTrigger>
                   <TabsTrigger value="search">Search</TabsTrigger>
                   <TabsTrigger value="tools">Tools</TabsTrigger>
+                  <TabsTrigger value="templates">Templates</TabsTrigger>
                 </TabsList>
                 <TabsContent value="ai" className="mt-2">
                   <AIAssistance
@@ -101,6 +107,14 @@ export function ConsultationApp() {
                     setToolsSearchQuery={setToolsSearchQuery}
                     activeToolsCategory={activeToolsCategory}
                     setActiveToolsCategory={setActiveToolsCategory}
+                  />
+                </TabsContent>
+                <TabsContent value="templates" className="mt-2">
+                  <TemplateManagementInterface
+                    templates={templates}
+                    addTemplate={addTemplate}
+                    editTemplate={editTemplate}
+                    deleteTemplate={deleteTemplate}
                   />
                 </TabsContent>
               </Tabs>

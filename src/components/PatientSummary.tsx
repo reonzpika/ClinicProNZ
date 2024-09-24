@@ -11,6 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Template } from '@/hooks/useTemplateManagement';
 
 type PatientSummaryProps = {
   patientSummary: string;
@@ -20,8 +21,10 @@ type PatientSummaryProps = {
   isRecording: boolean;
   startRecording: () => void;
   stopRecording: () => void;
-  templates: Record<string, string>;
-  addNewTemplate: (name: string, content: string) => void;
+  templates: Template[];
+  addTemplate: (template: Omit<Template, 'id'>) => void;
+  editTemplate: (id: string, template: Omit<Template, 'id'>) => void;
+  deleteTemplate: (id: string) => void;
   handleConsultAssist: (summary: string) => void;
   handleDifferentialDiagnosis: (summary: string) => void;
   resetAll: () => void;
@@ -41,7 +44,9 @@ export function PatientSummary({
   startRecording,
   stopRecording,
   templates,
-  addNewTemplate,
+  addTemplate,
+  editTemplate,
+  deleteTemplate,
   handleConsultAssist,
   handleDifferentialDiagnosis,
   resetAll,
@@ -64,19 +69,50 @@ export function PatientSummary({
     }
   };
 
+  const handleTemplateSelect = (templateId: string) => {
+    const selectedTemplate = templates.find(t => t.id === templateId);
+    if (selectedTemplate) {
+      setPatientSummary(selectedTemplate.content);
+      handleTemplateChange(templateId);
+    }
+  };
+
   return (
     <Card className="flex grow flex-col">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-lg">Consultation</CardTitle>
         <div className="flex items-center space-x-2">
-          {/* Template dropdown (unchanged) */}
           <Button
             variant={isRecording ? 'destructive' : 'secondary'}
             size="icon"
             onClick={isRecording ? stopRecording : startRecording}
           >
-            <Mic className={`size-4 ${isRecording ? 'animate-pulse' : ''}`} />
+            <Mic className={`h-4 w-4 ${isRecording ? 'animate-pulse' : ''}`} />
           </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                Templates <ChevronDown className="ml-1 h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {templates.map(template => (
+                <DropdownMenuItem
+                  key={template.id}
+                  onSelect={() => handleTemplateSelect(template.id)}
+                >
+                  {template.name}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/template-management" className="flex items-center">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Manage Templates
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardHeader>
       <CardContent className="flex grow flex-col pt-2">

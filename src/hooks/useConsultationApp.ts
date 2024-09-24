@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { useConsultAssist } from '@/hooks/useConsultAssist';
 import { usePromptManagement } from '@/hooks/usePromptManagement';
+import { useTemplateManagement } from '@/hooks/useTemplateManagement';
 
 export function useConsultationApp() {
   const [patientSummary, setPatientSummary] = useState('');
@@ -26,67 +27,14 @@ export function useConsultationApp() {
   const [selectedAITask, setSelectedAITask] = useState('consult');
   const [customPromptResults, setCustomPromptResults] = useState<Record<string, string>>({});
 
-  const [templates, setTemplates] = useState({
-    general: `Chief Complaint:
-
-History of Present Illness:
-
-Past Medical History:
-
-Medications:
-
-Allergies:
-
-Social History:
-
-Family History:
-
-Review of Systems:
-
-Physical Examination:
-
-Assessment:
-
-Plan:`,
-    followup: `Reason for Follow-up:
-
-Progress Since Last Visit:
-
-Current Symptoms:
-
-Medication Review:
-
-New Concerns:
-
-Physical Examination:
-
-Assessment:
-
-Plan:`,
-    chronic: `Chronic Condition:
-
-Current Status:
-
-Symptom Review:
-
-Medication Adherence:
-
-Lifestyle Modifications:
-
-Physical Examination:
-
-Disease-Specific Metrics:
-
-Complications Screening:
-
-Assessment:
-
-Management Plan:`,
-  });
+  const { templates, addTemplate, editTemplate, deleteTemplate } = useTemplateManagement();
 
   const handleTemplateChange = (value: string) => {
     setSelectedTemplate(value);
-    setPatientSummary(templates[value]);
+    const selectedTemplateContent = templates.find(t => t.id === value)?.content;
+    if (selectedTemplateContent) {
+      setPatientSummary(selectedTemplateContent);
+    }
   };
 
   const startRecording = () => {
@@ -120,13 +68,6 @@ Management Plan:`,
     }
   };
 
-  const addNewTemplate = (name: string, content: string) => {
-    setTemplates(prev => ({
-      ...prev,
-      [name]: content,
-    }));
-  };
-
   return {
     patientSummary,
     setPatientSummary,
@@ -156,7 +97,9 @@ Management Plan:`,
     error,
     resetAll,
     templates,
-    addNewTemplate,
+    addTemplate,
+    editTemplate,
+    deleteTemplate,
     handleCustomPrompt,
   };
 }
