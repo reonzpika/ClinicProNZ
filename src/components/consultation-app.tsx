@@ -61,12 +61,7 @@ export function ConsultationApp() {
                 addTemplate={addTemplate}
                 editTemplate={editTemplate}
                 deleteTemplate={deleteTemplate}
-                handleConsultAssist={handleConsultAssist}
-                handleDifferentialDiagnosis={handleDifferentialDiagnosis}
                 resetAll={resetAll}
-                prompts={prompts}
-                handleCustomPrompt={handleCustomPrompt}
-                addPrompt={addPrompt}
                 isLoading={isLoading}
                 error={error}
               />
@@ -89,6 +84,11 @@ export function ConsultationApp() {
                     customPromptResults={customPromptResults}
                     isLoading={isLoading}
                     error={error}
+                    handleConsultAssist={handleConsultAssist}
+                    handleDifferentialDiagnosis={handleDifferentialDiagnosis}
+                    handleCustomPrompt={handleCustomPrompt}
+                    patientSummary={patientSummary}
+                    addPrompt={addPrompt}
                   />
                 </TabsContent>
                 <TabsContent value="search" className="mt-2">
