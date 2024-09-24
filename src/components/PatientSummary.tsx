@@ -25,7 +25,9 @@ type PatientSummaryProps = {
   handleDifferentialDiagnosis: (summary: string) => void;
   resetAll: () => void;
   prompts: Array<{ id: string; name: string; content: string }>;
-  handleCustomPrompt: (promptId: string) => void;
+  handleCustomPrompt: (promptId: string) => Promise<void>;
+  isLoading: boolean;
+  error: string | null;
   addPrompt: (prompt: { name: string; content: string }) => void;
 };
 
@@ -44,6 +46,8 @@ export function PatientSummary({
   resetAll,
   prompts,
   handleCustomPrompt,
+  isLoading,
+  error,
   addPrompt,
 }: PatientSummaryProps) {
   const [newPromptName, setNewPromptName] = useState('');
@@ -93,7 +97,7 @@ export function PatientSummary({
           <Dialog open={isAddPromptDialogOpen} onOpenChange={setIsAddPromptDialogOpen}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" disabled={isLoading}>
                   <Zap className="mr-1 size-3" />
                   AI Insights
                   <ChevronDown className="ml-1 size-3" />
@@ -101,7 +105,11 @@ export function PatientSummary({
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 {prompts.map(prompt => (
-                  <DropdownMenuItem key={prompt.id} onSelect={() => handleCustomPrompt(prompt.id)}>
+                  <DropdownMenuItem 
+                    key={prompt.id} 
+                    onSelect={() => handleCustomPrompt(prompt.id)}
+                    disabled={isLoading}
+                  >
                     {prompt.name}
                   </DropdownMenuItem>
                 ))}
@@ -158,6 +166,8 @@ export function PatientSummary({
             Reset All
           </Button>
         </div>
+        {isLoading && <p>Loading...</p>}
+        {error && <p className="text-red-500">{error}</p>}
       </CardContent>
     </Card>
   );

@@ -15,9 +15,9 @@ export function useConsultationApp() {
     differentialDiagnosisResults,
     handleConsultAssist,
     handleDifferentialDiagnosis,
-    makeAPIRequest,
     isLoading,
     error,
+    makeAPIRequest, // This should be provided by useConsultAssist
   } = useConsultAssist();
 
   const { prompts, addPrompt, editPrompt, deletePrompt } = usePromptManagement();
@@ -106,19 +106,16 @@ Management Plan:`,
   };
 
   const handleCustomPrompt = async (promptId: string) => {
-    setIsLoading(true);
-    setError(null);
     try {
       const selectedPrompt = prompts.find(p => p.id === promptId);
-      if (selectedPrompt) {
+      if (selectedPrompt && makeAPIRequest) {
         const response = await makeAPIRequest(selectedPrompt.content, patientSummary);
         setCustomPromptResults(prev => ({ ...prev, [promptId]: response }));
         setSelectedAITask(promptId);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
-    } finally {
-      setIsLoading(false);
+      console.error('Error in custom prompt:', err);
+      // Error handling is managed by makeAPIRequest
     }
   };
 

@@ -64,6 +64,8 @@ export function ConsultationApp() {
                 prompts={prompts}
                 handleCustomPrompt={handleCustomPrompt}
                 addPrompt={addPrompt}
+                isLoading={isLoading}
+                error={error}
               />
             </div>
 

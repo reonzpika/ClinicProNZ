@@ -19,8 +19,6 @@ export function useConsultAssist() {
   const [error, setError] = useState<string | null>(null);
 
   const makeAPIRequest = useCallback(async (prompt: string, patientSummary: string) => {
-    console.log('makeAPIRequest called with prompt:', prompt);
-    console.log('Patient summary:', patientSummary);
     setIsLoading(true);
     setError(null);
     try {
@@ -55,7 +53,6 @@ export function useConsultAssist() {
       }
 
       const data = await response.json();
-      console.log('API response:', data);
       return data.choices[0].message.content;
     } catch (error) {
       console.error('Error in makeAPIRequest:', error);
@@ -93,5 +90,6 @@ export function useConsultAssist() {
     handleDifferentialDiagnosis,
     isLoading,
     error,
+    makeAPIRequest, // Make sure this is returned
   };
 }
