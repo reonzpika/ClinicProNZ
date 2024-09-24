@@ -11,7 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Template } from '@/hooks/useTemplateManagement';
+import type { Template } from '@/hooks/useTemplateManagement';
 
 type PatientSummaryProps = {
   patientSummary: string;
@@ -87,12 +87,14 @@ export function PatientSummary({
             size="icon"
             onClick={isRecording ? stopRecording : startRecording}
           >
-            <Mic className={`h-4 w-4 ${isRecording ? 'animate-pulse' : ''}`} />
+            <Mic className={`size-4 ${isRecording ? 'animate-pulse' : ''}`} />
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
-                Templates <ChevronDown className="ml-1 h-3 w-3" />
+                Templates
+                {' '}
+                <ChevronDown className="ml-1 size-3" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -107,7 +109,7 @@ export function PatientSummary({
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link href="/template-management" className="flex items-center">
-                  <Settings className="mr-2 h-4 w-4" />
+                  <Settings className="mr-2 size-4" />
                   Manage Templates
                 </Link>
               </DropdownMenuItem>
