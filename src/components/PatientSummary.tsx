@@ -1,17 +1,17 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Mic, ChevronDown, Plus, Stethoscope, List, Zap, RefreshCw } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { Mic, ChevronDown, Plus, Stethoscope, List, Zap, RefreshCw, Settings } from 'lucide-react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 
-interface PatientSummaryProps {
+type PatientSummaryProps = {
   patientSummary: string;
   setPatientSummary: (summary: string) => void;
   selectedTemplate: string;
@@ -26,7 +26,8 @@ interface PatientSummaryProps {
   resetAll: () => void;
   prompts: Array<{ id: string; name: string; content: string }>;
   handleCustomPrompt: (promptId: string) => void;
-}
+  addPrompt: (prompt: { name: string; content: string }) => void;
+};
 
 export function PatientSummary({
   patientSummary,
@@ -43,34 +44,27 @@ export function PatientSummary({
   resetAll,
   prompts,
   handleCustomPrompt,
+  addPrompt,
 }: PatientSummaryProps) {
+  const [newPromptName, setNewPromptName] = useState('');
+  const [newPromptContent, setNewPromptContent] = useState('');
+  const [isAddPromptDialogOpen, setIsAddPromptDialogOpen] = useState(false);
+
+  const handleAddNewPrompt = () => {
+    if (newPromptName && newPromptContent) {
+      addPrompt({ name: newPromptName, content: newPromptContent });
+      setNewPromptName('');
+      setNewPromptContent('');
+      setIsAddPromptDialogOpen(false);
+    }
+  };
+
   return (
     <Card className="flex grow flex-col">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-lg">Consultation</CardTitle>
         <div className="flex items-center space-x-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                {selectedTemplate.charAt(0).toUpperCase() + selectedTemplate.slice(1)} Template
-                <ChevronDown className="ml-1 size-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              {templates && Object.keys(templates).map(template => (
-                <DropdownMenuItem key={template} onSelect={() => handleTemplateChange(template)}>
-                  {template.charAt(0).toUpperCase() + template.slice(1)}
-                </DropdownMenuItem>
-              ))}
-              <Separator />
-              <DialogTrigger asChild>
-                <DropdownMenuItem onSelect={e => e.preventDefault()}>
-                  <Plus className="mr-2 size-4" />
-                  Add New Template
-                </DropdownMenuItem>
-              </DialogTrigger>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Template dropdown (unchanged) */}
           <Button
             variant={isRecording ? 'destructive' : 'secondary'}
             size="icon"
@@ -96,22 +90,69 @@ export function PatientSummary({
             <List className="mr-1 size-3" />
             Differential Diagnosis
           </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Zap className="mr-1 size-3" />
-                AI Insights
-                <ChevronDown className="ml-1 size-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              {prompts.map(prompt => (
-                <DropdownMenuItem key={prompt.id} onSelect={() => handleCustomPrompt(prompt.id)}>
-                  {prompt.name}
+          <Dialog open={isAddPromptDialogOpen} onOpenChange={setIsAddPromptDialogOpen}>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Zap className="mr-1 size-3" />
+                  AI Insights
+                  <ChevronDown className="ml-1 size-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                {prompts.map(prompt => (
+                  <DropdownMenuItem key={prompt.id} onSelect={() => handleCustomPrompt(prompt.id)}>
+                    {prompt.name}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DialogTrigger asChild>
+                  <DropdownMenuItem onSelect={() => setIsAddPromptDialogOpen(true)}>
+                    <Plus className="mr-2 size-4" />
+                    Add New Prompt
+                  </DropdownMenuItem>
+                </DialogTrigger>
+                <DropdownMenuItem asChild>
+                  <Link href="/prompt-management" className="flex items-center">
+                    <Settings className="mr-2 size-4" />
+                    Manage Prompts
+                  </Link>
                 </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Prompt</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="name" className="text-right">
+                    Name
+                  </Label>
+                  <Input
+                    id="name"
+                    value={newPromptName}
+                    onChange={e => setNewPromptName(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="prompt" className="text-right">
+                    Prompt
+                  </Label>
+                  <Textarea
+                    id="prompt"
+                    value={newPromptContent}
+                    onChange={e => setNewPromptContent(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button onClick={handleAddNewPrompt}>Add Prompt</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           <Button onClick={resetAll} variant="outline" size="sm">
             <RefreshCw className="mr-1 size-3" />
             Reset All

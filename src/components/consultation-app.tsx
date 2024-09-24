@@ -63,6 +63,7 @@ export function ConsultationApp() {
                 resetAll={resetAll}
                 prompts={prompts}
                 handleCustomPrompt={handleCustomPrompt}
+                addPrompt={addPrompt}
               />
             </div>
 
