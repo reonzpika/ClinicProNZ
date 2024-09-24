@@ -1,15 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import { ChevronDown, List, Mic, Plus, RefreshCw, Settings, Stethoscope, Zap } from 'lucide-react';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState } from 'react';
+
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { Mic, ChevronDown, Plus, Stethoscope, List, Zap, RefreshCw, Settings } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 type PatientSummaryProps = {
   patientSummary: string;
@@ -105,8 +106,8 @@ export function PatientSummary({
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 {prompts.map(prompt => (
-                  <DropdownMenuItem 
-                    key={prompt.id} 
+                  <DropdownMenuItem
+                    key={prompt.id}
                     onSelect={() => handleCustomPrompt(prompt.id)}
                     disabled={isLoading}
                   >

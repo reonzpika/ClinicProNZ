@@ -1,8 +1,9 @@
 import React from 'react';
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-interface AIAssistanceProps {
+type AIAssistanceProps = {
   selectedAITask: string;
   setSelectedAITask: (task: string) => void;
   consultAssistResults: { response: string };
@@ -11,7 +12,7 @@ interface AIAssistanceProps {
   customPromptResults: Record<string, string>;
   isLoading: boolean;
   error: string | null;
-}
+};
 
 export function AIAssistance({
   selectedAITask,
@@ -40,7 +41,12 @@ export function AIAssistance({
         </Select>
         <div className="mt-4">
           {isLoading && <p>Loading...</p>}
-          {error && <p className="text-red-500">Error: {error}</p>}
+          {error && (
+            <p className="text-red-500">
+              Error:
+              {error}
+            </p>
+          )}
           {!isLoading && !error && (
             <>
               {selectedAITask === 'consult' && (

@@ -1,19 +1,18 @@
 import React from 'react';
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 
-interface ToolsProps {
+type ToolsProps = {
   toolsSearchQuery: string;
   setToolsSearchQuery: (query: string) => void;
   activeToolsCategory: string;
   setActiveToolsCategory: (category: string) => void;
-}
+};
 
 export function Tools({
   toolsSearchQuery,
   setToolsSearchQuery,
-  activeToolsCategory,
-  setActiveToolsCategory,
 }: ToolsProps) {
   return (
     <Card>
@@ -22,7 +21,7 @@ export function Tools({
           type="search"
           placeholder="Search tools..."
           value={toolsSearchQuery}
-          onChange={(e) => setToolsSearchQuery(e.target.value)}
+          onChange={e => setToolsSearchQuery(e.target.value)}
           className="mb-2"
         />
         {/* Add more tool-related content here */}

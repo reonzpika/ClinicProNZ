@@ -1,12 +1,13 @@
 'use client';
 
 import React from 'react';
-import { useConsultationApp } from '@/hooks/useConsultationApp';
-import { PatientSummary } from '@/components/PatientSummary';
+
 import { AIAssistance } from '@/components/AIAssistance';
+import { PatientSummary } from '@/components/PatientSummary';
 import { Search } from '@/components/Search';
 import { Tools } from '@/components/Tools';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useConsultationApp } from '@/hooks/useConsultationApp';
 
 export function ConsultationApp() {
   const {

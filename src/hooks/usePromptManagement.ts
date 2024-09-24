@@ -1,39 +1,46 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 
-import type { Prompt } from '@/types/prompts';
+export interface Prompt {
+  id: string;
+  name: string;
+  content: string;
+}
 
-const STORAGE_KEY = 'userPrompts';
+const STORAGE_KEY = 'savedPrompts';
 
 export function usePromptManagement() {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
 
   useEffect(() => {
-    const storedPrompts = localStorage.getItem(STORAGE_KEY);
-    if (storedPrompts) {
-      setPrompts(JSON.parse(storedPrompts));
+    // Load prompts from localStorage when the component mounts
+    const savedPrompts = localStorage.getItem(STORAGE_KEY);
+    if (savedPrompts) {
+      setPrompts(JSON.parse(savedPrompts));
     }
   }, []);
 
-  const savePrompts = (updatedPrompts: Prompt[]) => {
+  const savePromptsToStorage = (updatedPrompts: Prompt[]) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedPrompts));
+  };
+
+  const addPrompt = (newPrompt: Omit<Prompt, 'id'>) => {
+    const updatedPrompts = [...prompts, { ...newPrompt, id: Date.now().toString() }];
     setPrompts(updatedPrompts);
+    savePromptsToStorage(updatedPrompts);
   };
 
-  const addPrompt = (newPrompt: Prompt) => {
-    const updatedPrompts = [...prompts, newPrompt];
-    savePrompts(updatedPrompts);
-  };
-
-  const editPrompt = (id: string, updatedPrompt: Prompt) => {
-    const updatedPrompts = prompts.map(prompt =>
-      prompt.id === id ? updatedPrompt : prompt,
+  const editPrompt = (id: string, updatedPrompt: Omit<Prompt, 'id'>) => {
+    const updatedPrompts = prompts.map(prompt => 
+      prompt.id === id ? { ...prompt, ...updatedPrompt } : prompt
     );
-    savePrompts(updatedPrompts);
+    setPrompts(updatedPrompts);
+    savePromptsToStorage(updatedPrompts);
   };
 
   const deletePrompt = (id: string) => {
     const updatedPrompts = prompts.filter(prompt => prompt.id !== id);
-    savePrompts(updatedPrompts);
+    setPrompts(updatedPrompts);
+    savePromptsToStorage(updatedPrompts);
   };
 
   return { prompts, addPrompt, editPrompt, deletePrompt };
