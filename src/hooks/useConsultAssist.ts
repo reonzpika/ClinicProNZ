@@ -22,30 +22,12 @@ export function useConsultAssist() {
     setIsLoading(true);
     setError(null);
     try {
-      const API_KEY = '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';
-      const API_ENDPOINT = process.env.NEXT_PUBLIC_GPT_API_ENDPOINT;
-      if (!API_ENDPOINT) {
-        throw new Error('GPT API endpoint is not set');
-      }
-      const response = await fetch(API_ENDPOINT, {
+      const response = await fetch('/api/gpt', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${API_KEY}`,
         },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a helpful assistant that provides medical consultation suggestions.',
-            },
-            {
-              role: 'user',
-              content: `${prompt}: ${patientSummary}`,
-            },
-          ],
-        }),
+        body: JSON.stringify({ prompt, patientSummary }),
       });
 
       if (!response.ok) {
@@ -53,7 +35,7 @@ export function useConsultAssist() {
       }
 
       const data = await response.json();
-      return data.choices[0].message.content;
+      return data.content;
     } catch (error) {
       console.error('Error in makeAPIRequest:', error);
       if (error instanceof Error) {
