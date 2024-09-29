@@ -57,3 +57,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .markdown-content {
+    @apply text-base leading-7;
+  }
+  .markdown-content a {
+    @apply text-blue-600 hover:underline;
+  }
+  .markdown-content blockquote {
+    @apply border-l-4 border-gray-300 pl-4 italic my-4;
+  }
+  .markdown-content pre {
+    @apply bg-gray-100 dark:bg-gray-800 rounded p-4 mb-4 overflow-x-auto;
+  }
+}

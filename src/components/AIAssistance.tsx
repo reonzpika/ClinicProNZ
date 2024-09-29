@@ -1,15 +1,20 @@
-import React, { useState } from 'react';
+import { ChevronDown, List, Plus, Settings, Stethoscope, Zap } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import React, { useState } from 'react';
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Stethoscope, List, Zap, ChevronDown, Plus, Settings } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+
+const MarkdownRenderer = dynamic(() => import('@/components/MarkdownRenderer'), {
+  ssr: false,
+});
 
 type AIAssistanceProps = {
   selectedAITask: string;
@@ -52,6 +57,27 @@ export function AIAssistance({
       setNewPromptName('');
       setNewPromptContent('');
       setIsAddPromptDialogOpen(false);
+    }
+  };
+
+  const renderContent = () => {
+    if (isLoading) {
+      return <div>Loading...</div>;
+    }
+
+    if (error) {
+      return <div className="text-red-500">{error}</div>;
+    }
+
+    switch (selectedAITask) {
+      case 'consult':
+        return <MarkdownRenderer content={consultAssistResults.response} />;
+      case 'differential':
+        return <MarkdownRenderer content={differentialDiagnosisResults.response} />;
+      default:
+        return customPromptResults[selectedAITask]
+          ? <MarkdownRenderer content={customPromptResults[selectedAITask]} />
+          : null;
     }
   };
 
@@ -148,31 +174,7 @@ export function AIAssistance({
           </SelectContent>
         </Select>
         <div className="mt-4">
-          {isLoading && <p>Loading...</p>}
-          {error && (
-            <p className="text-red-500">
-              Error:
-              {error}
-            </p>
-          )}
-          {!isLoading && !error && (
-            <>
-              {selectedAITask === 'consult' && (
-                <div dangerouslySetInnerHTML={{ __html: consultAssistResults.response }} />
-              )}
-              {selectedAITask === 'differential' && (
-                <div dangerouslySetInnerHTML={{ __html: differentialDiagnosisResults.response }} />
-              )}
-              {prompts.map(prompt => (
-                selectedAITask === prompt.id && (
-                  <div key={prompt.id}>
-                    <h4 className="mb-2 font-medium">{prompt.name}</h4>
-                    <p>{customPromptResults[prompt.id]}</p>
-                  </div>
-                )
-              ))}
-            </>
-          )}
+          {renderContent()}
         </div>
       </CardContent>
     </Card>
