@@ -50,18 +50,14 @@ export function useConsultAssist() {
   }, []);
 
   const handleConsultAssist = useCallback(async (patientSummary: string) => {
-    console.log('handleConsultAssist called with:', patientSummary);
-    const prompt = 'Please provide a concise summary of the following patient case in HTML format, suitable for a busy GP to quickly reference';
+    const prompt = `Identify and list concise, key considerations for this patient case that are crucial for narrowing down the differential diagnosis. Highlight any missing clinical details or characteristics that could differentiate between potential diagnoses. Include reminders about common pitfalls and misconceptions related to the symptoms. Consider how the patient's medical history or lifestyle might impact the differential diagnosis, if such information is available. Highlight any urgent considerations or red flags that should prompt immediate action or referral. Present each consideration clearly on a new line.`;
     const response = await makeAPIRequest(prompt, patientSummary);
-    console.log('Consult Assist response:', response);
     setConsultAssistResults({ response });
   }, [makeAPIRequest]);
 
   const handleDifferentialDiagnosis = useCallback(async (patientSummary: string) => {
-    console.log('handleDifferentialDiagnosis called with:', patientSummary);
     const prompt = 'Please provide a concise list of possible differential diagnoses for the following patient case in HTML format, suitable for a busy GP to quickly reference';
     const response = await makeAPIRequest(prompt, patientSummary);
-    console.log('Differential Diagnosis response:', response);
     setDifferentialDiagnosisResults({ response });
   }, [makeAPIRequest]);
 
