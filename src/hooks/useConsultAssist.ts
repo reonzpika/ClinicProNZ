@@ -56,7 +56,7 @@ export function useConsultAssist() {
   }, [makeAPIRequest]);
 
   const handleDifferentialDiagnosis = useCallback(async (patientSummary: string) => {
-    const prompt = 'Please provide a concise list of possible differential diagnoses for the following patient case in HTML format, suitable for a busy GP to quickly reference';
+    const prompt = 'List potential differential diagnoses for the patient summary described below. Please be concise. If the patient summary is not sufficient to identify narrow differential diagnoses , please respond with "Please use "Consult Assist" to gather more information." at the end of your response.';
     const response = await makeAPIRequest(prompt, patientSummary);
     setDifferentialDiagnosisResults({ response });
   }, [makeAPIRequest]);
