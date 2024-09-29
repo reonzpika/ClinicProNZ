@@ -1,13 +1,14 @@
 'use client';
 
-import { ChevronDown, Mic, RefreshCw, Settings } from 'lucide-react';
+import { ChevronDown, Mic, RefreshCw, Settings, Check } from 'lucide-react';
 import Link from 'next/link';
-import React, { useState } from 'react';
+import React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Textarea } from '@/components/ui/textarea';
+import { useNoteCorrection } from '@/hooks/useNoteCorrection';
 import type { Template } from '@/hooks/useTemplateManagement';
 
 type PatientSummaryProps = {
@@ -43,11 +44,20 @@ export function PatientSummary({
   isLoading,
   error,
 }: PatientSummaryProps) {
+  const { correctNote, isCorrecting, error: correctionError } = useNoteCorrection();
+
   const handleTemplateSelect = (templateId: string) => {
     const selectedTemplate = templates.find(t => t.id === templateId);
     if (selectedTemplate) {
       setPatientSummary(selectedTemplate.content);
       handleTemplateChange(templateId);
+    }
+  };
+
+  const handleCorrect = async () => {
+    const correctedNote = await correctNote(patientSummary);
+    if (correctedNote) {
+      setPatientSummary(correctedNote);
     }
   };
 
@@ -99,6 +109,19 @@ export function PatientSummary({
           onChange={e => setPatientSummary(e.target.value)}
         />
         <div className="mt-2 grid grid-cols-2 gap-2">
+          <Button 
+            onClick={handleCorrect} 
+            variant="outline" 
+            size="sm"
+            disabled={isCorrecting}
+          >
+            {isCorrecting ? (
+              <RefreshCw className="mr-1 size-3 animate-spin" />
+            ) : (
+              <Check className="mr-1 size-3" />
+            )}
+            Correct
+          </Button>
           <Button onClick={resetAll} variant="outline" size="sm">
             <RefreshCw className="mr-1 size-3" />
             Reset All
@@ -106,6 +129,7 @@ export function PatientSummary({
         </div>
         {isLoading && <p>Loading...</p>}
         {error && <p className="text-red-500">{error}</p>}
+        {correctionError && <p className="text-red-500">{correctionError}</p>}
       </CardContent>
     </Card>
   );

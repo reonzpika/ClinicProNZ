@@ -50,7 +50,7 @@ export function useConsultAssist() {
   }, []);
 
   const handleConsultAssist = useCallback(async (patientSummary: string) => {
-    const prompt = `Identify and list concise, key considerations for this patient case that are crucial for narrowing down the differential diagnosis. Highlight any missing clinical details or characteristics that could differentiate between potential diagnoses. Include reminders about common pitfalls and misconceptions related to the symptoms. Consider how the patient's medical history or lifestyle might impact the differential diagnosis, if such information is available. Highlight any urgent considerations or red flags that should prompt immediate action or referral. Present each consideration clearly on a new line.`;
+    const prompt = `Identify the top five additional questions to ask in this patient case that are crucial for narrowing down the differential diagnosis. Focus on uncovering less obvious aspects and associated symptoms from other systems that might not have been considered. Avoid asking about details typically known to the GP, such as age, gender, ethnicity, or vitals. Format each question as a one very concise sentence prompt wihtout how/what/when/where/why and remove any unnecessary words.`;
     const response = await makeAPIRequest(prompt, patientSummary);
     setConsultAssistResults({ response });
   }, [makeAPIRequest]);

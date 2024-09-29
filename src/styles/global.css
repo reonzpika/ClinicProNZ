@@ -60,7 +60,28 @@
 
 @layer components {
   .markdown-content {
-    @apply text-base leading-7;
+    @apply text-sm leading-6;
+  }
+  .markdown-content p {
+    @apply mb-2;
+  }
+  .markdown-content ul, .markdown-content ol {
+    @apply mb-2 pl-5;
+  }
+  .markdown-content li {
+    @apply mb-1;
+  }
+  .markdown-content h1, .markdown-content h2, .markdown-content h3, .markdown-content h4, .markdown-content h5, .markdown-content h6 {
+    @apply font-bold mb-2;
+  }
+  .markdown-content h1 {
+    @apply text-xl;
+  }
+  .markdown-content h2 {
+    @apply text-lg;
+  }
+  .markdown-content h3, .markdown-content h4, .markdown-content h5, .markdown-content h6 {
+    @apply text-base;
   }
   .markdown-content a {
     @apply text-blue-600 hover:underline;

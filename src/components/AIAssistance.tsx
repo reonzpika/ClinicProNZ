@@ -82,9 +82,9 @@ export function AIAssistance({
   };
 
   return (
-    <Card>
-      <CardContent className="pt-4">
-        <div className="mt-2 grid grid-cols-2 gap-2">
+    <Card className="h-full">
+      <CardContent className="p-2 h-full flex flex-col">
+        <div className="grid grid-cols-2 gap-2 mb-2">
           <Button onClick={() => handleConsultAssist(patientSummary)} size="sm">
             <Stethoscope className="mr-1 size-3" />
             Consult Assist
@@ -93,10 +93,12 @@ export function AIAssistance({
             <List className="mr-1 size-3" />
             Differential Diagnosis
           </Button>
+        </div>
+        <div className="flex space-x-2 mb-2">
           <Dialog open={isAddPromptDialogOpen} onOpenChange={setIsAddPromptDialogOpen}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" disabled={isLoading}>
+                <Button variant="outline" size="sm" disabled={isLoading} className="flex-grow">
                   <Zap className="mr-1 size-3" />
                   AI Insights
                   <ChevronDown className="ml-1 size-3" />
@@ -160,21 +162,27 @@ export function AIAssistance({
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          <Select value={selectedAITask} onValueChange={setSelectedAITask}>
+            <SelectTrigger className="flex-grow">
+              <SelectValue placeholder="Select AI task" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="consult">Consult Assist</SelectItem>
+              <SelectItem value="differential">Differential Diagnosis</SelectItem>
+              {prompts.map(prompt => (
+                <SelectItem key={prompt.id} value={prompt.id}>{prompt.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        <Select value={selectedAITask} onValueChange={setSelectedAITask}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select AI task" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="consult">Consult Assist</SelectItem>
-            <SelectItem value="differential">Differential Diagnosis</SelectItem>
-            {prompts.map(prompt => (
-              <SelectItem key={prompt.id} value={prompt.id}>{prompt.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <div className="mt-4">
-          {renderContent()}
+        <div className="flex-grow overflow-y-auto text-sm">
+          {isLoading && <div>Loading...</div>}
+          {error && <div className="text-red-500">{error}</div>}
+          {!isLoading && !error && (
+            <div className="markdown-content">
+              {renderContent()}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
