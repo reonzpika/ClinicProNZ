@@ -1,22 +1,16 @@
-import { useTranslations } from 'next-intl';
-import { getTranslations, unstable_setRequestLocale } from 'next-intl/server';
+import { unstable_setRequestLocale } from 'next-intl/server';
+
 import { ConsultationApp } from '@/components/consultation-app';
 
-export async function generateMetadata(props: { params: { locale: string } }) {
-  const t = await getTranslations({
-    locale: props.params.locale,
-    namespace: 'Index',
-  });
-
+export async function generateMetadata() {
   return {
-    title: t('meta_title'),
-    description: t('meta_description'),
+    title: 'meta_title',
+    description: ('meta_description'),
   };
 }
 
-export default function Index(props: { params: { locale: string } }) {
-  unstable_setRequestLocale(props.params.locale);
-  const t = useTranslations('Index');
+export default function Index({ params: { locale } }: { params: { locale: string } }) {
+  unstable_setRequestLocale(locale);
 
   return (
     <ConsultationApp />

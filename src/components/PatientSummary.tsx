@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, Mic, RefreshCw, Settings, Check } from 'lucide-react';
+import { Check, ChevronDown, Mic, RefreshCw, Settings } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 
@@ -20,9 +20,6 @@ type PatientSummaryProps = {
   startRecording: () => void;
   stopRecording: () => void;
   templates: Template[];
-  addTemplate: (template: Omit<Template, 'id'>) => void;
-  editTemplate: (id: string, template: Omit<Template, 'id'>) => void;
-  deleteTemplate: (id: string) => void;
   resetAll: () => void;
   isLoading: boolean;
   error: string | null;
@@ -37,9 +34,6 @@ export function PatientSummary({
   startRecording,
   stopRecording,
   templates,
-  addTemplate,
-  editTemplate,
-  deleteTemplate,
   resetAll,
   isLoading,
   error,
@@ -76,8 +70,7 @@ export function PatientSummary({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
-                Templates
-                {' '}
+                {selectedTemplate ? templates.find(t => t.id === selectedTemplate)?.name : 'Templates'}
                 <ChevronDown className="ml-1 size-3" />
               </Button>
             </DropdownMenuTrigger>
@@ -88,6 +81,7 @@ export function PatientSummary({
                   onSelect={() => handleTemplateSelect(template.id)}
                 >
                   {template.name}
+                  {template.id === selectedTemplate && <Check className="ml-2 size-4" />}
                 </DropdownMenuItem>
               ))}
               <DropdownMenuSeparator />
@@ -109,17 +103,19 @@ export function PatientSummary({
           onChange={e => setPatientSummary(e.target.value)}
         />
         <div className="mt-2 grid grid-cols-2 gap-2">
-          <Button 
-            onClick={handleCorrect} 
-            variant="outline" 
+          <Button
+            onClick={handleCorrect}
+            variant="outline"
             size="sm"
             disabled={isCorrecting}
           >
-            {isCorrecting ? (
-              <RefreshCw className="mr-1 size-3 animate-spin" />
-            ) : (
-              <Check className="mr-1 size-3" />
-            )}
+            {isCorrecting
+              ? (
+                  <RefreshCw className="mr-1 size-3 animate-spin" />
+                )
+              : (
+                  <Check className="mr-1 size-3" />
+                )}
             Correct
           </Button>
           <Button onClick={resetAll} variant="outline" size="sm">
