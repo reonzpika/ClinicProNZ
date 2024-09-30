@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: '${{ github.event.deployment_status.deployment.ref }}'
+          ref: ${{ github.ref }}
           fetch-depth: 0
 
       - name: Set branch name # workaround to detect branch name in "deployment_status" actions
