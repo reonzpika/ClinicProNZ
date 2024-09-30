@@ -20,6 +20,9 @@ type PatientSummaryProps = {
   startRecording: () => void;
   stopRecording: () => void;
   templates: Template[];
+  _addTemplate: (template: Omit<Template, 'id'>) => void;
+  _editTemplate: (id: string, template: Omit<Template, 'id'>) => void;
+  _deleteTemplate: (id: string) => void;
   resetAll: () => void;
   isLoading: boolean;
   error: string | null;

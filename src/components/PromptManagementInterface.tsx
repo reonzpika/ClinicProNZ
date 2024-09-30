@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { usePromptManagement } from '@/hooks/usePromptManagement';
 import type { Prompt } from '@/types/prompts';
 
@@ -45,7 +45,6 @@ export function PromptManagementInterface() {
   const handleAddNewPrompt = () => {
     if (newPromptName && newPromptContent) {
       addPrompt({
-        id: `prompt_${Date.now()}`,
         name: newPromptName,
         content: newPromptContent,
       });

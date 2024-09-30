@@ -58,9 +58,9 @@ export function ConsultationApp() {
                 startRecording={startRecording}
                 stopRecording={stopRecording}
                 templates={templates}
-                addTemplate={addTemplate}
-                editTemplate={editTemplate}
-                deleteTemplate={deleteTemplate}
+                _addTemplate={addTemplate}
+                _editTemplate={editTemplate}
+                _deleteTemplate={deleteTemplate}
                 resetAll={resetAll}
                 isLoading={isLoading}
                 error={error}
