@@ -1,46 +1,89 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
-export interface Template {
-  id: string;
+export type Template = {
+  id: number;
   name: string;
   content: string;
-}
-
-const STORAGE_KEY = 'savedTemplates';
-
+};
 export function useTemplateManagement() {
   const [templates, setTemplates] = useState<Template[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const savedTemplates = localStorage.getItem(STORAGE_KEY);
-    if (savedTemplates) {
-      setTemplates(JSON.parse(savedTemplates));
+  const fetchTemplates = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/templates');
+      if (!response.ok) {
+        throw new Error('Failed to fetch templates');
+      }
+      const data = await response.json();
+      setTemplates(data);
+    } catch (err) {
+      setError('Error fetching templates');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
-  const saveTemplatesToStorage = (updatedTemplates: Template[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedTemplates));
+  useEffect(() => {
+    fetchTemplates();
+  }, [fetchTemplates]);
+
+  const addTemplate = async (newTemplate: Omit<Template, 'id'>) => {
+    try {
+      const response = await fetch('/api/templates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTemplate),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to add template');
+      }
+      const addedTemplate = await response.json();
+      setTemplates([...templates, addedTemplate]);
+    } catch (err) {
+      setError('Error adding template');
+      console.error(err);
+    }
+  };
+  const editTemplate = async (id: number, updatedTemplate: Omit<Template, 'id'>) => {
+    try {
+      const response = await fetch('/api/templates', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, ...updatedTemplate }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to update template');
+      }
+      const editedTemplate = await response.json();
+      setTemplates(templates.map(template =>
+        template.id === id ? editedTemplate : template,
+      ));
+    } catch (err) {
+      setError('Error updating template');
+      console.error(err);
+    }
   };
 
-  const addTemplate = (newTemplate: Omit<Template, 'id'>) => {
-    const updatedTemplates = [...templates, { ...newTemplate, id: Date.now().toString() }];
-    setTemplates(updatedTemplates);
-    saveTemplatesToStorage(updatedTemplates);
+  const deleteTemplate = async (id: number) => {
+    try {
+      const response = await fetch('/api/templates', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete template');
+      }
+      setTemplates(templates.filter(template => template.id !== id));
+    } catch (err) {
+      setError('Error deleting template');
+      console.error(err);
+    }
   };
 
-  const editTemplate = (id: string, updatedTemplate: Omit<Template, 'id'>) => {
-    const updatedTemplates = templates.map(template => 
-      template.id === id ? { ...template, ...updatedTemplate } : template
-    );
-    setTemplates(updatedTemplates);
-    saveTemplatesToStorage(updatedTemplates);
-  };
-
-  const deleteTemplate = (id: string) => {
-    const updatedTemplates = templates.filter(template => template.id !== id);
-    setTemplates(updatedTemplates);
-    saveTemplatesToStorage(updatedTemplates);
-  };
-
-  return { templates, addTemplate, editTemplate, deleteTemplate };
+  return { templates, isLoading, error, addTemplate, editTemplate, deleteTemplate };
 }

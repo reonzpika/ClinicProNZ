@@ -1,50 +1,20 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-import type { NextFetchEvent, NextRequest } from 'next/server';
-import createMiddleware from 'next-intl/middleware';
+import { clerkMiddleware } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
 
-import { AppConfig } from './utils/AppConfig';
+const publicRoutes = [
+  '/',
+  '/about',
+  '/sign-in',
+  '/sign-up',
+  '/consultation-app',
+];
 
-const intlMiddleware = createMiddleware({
-  locales: AppConfig.locales,
-  localePrefix: AppConfig.localePrefix,
-  defaultLocale: AppConfig.defaultLocale,
-});
+export default clerkMiddleware((auth, request) => {
+  const isPublicRoute = publicRoutes.some(route => request.nextUrl.pathname === route);
+  const isManagementRoute = request.nextUrl.pathname.includes('/prompt-management') || request.nextUrl.pathname.includes('/template-management');
 
-const isProtectedRoute = createRouteMatcher([
-  '/dashboard(.*)',
-  '/:locale/dashboard(.*)',
-]);
-
-export default function middleware(
-  request: NextRequest,
-  event: NextFetchEvent,
-) {
-  // Run Clerk middleware only when it's necessary
-  if (
-    request.nextUrl.pathname.includes('/sign-in')
-    || request.nextUrl.pathname.includes('/sign-up')
-    || isProtectedRoute(request)
-  ) {
-    return clerkMiddleware((auth, req) => {
-      if (isProtectedRoute(req)) {
-        const locale
-          = req.nextUrl.pathname.match(/(\/.*)\/dashboard/)?.at(1) ?? '';
-
-        const signInUrl = new URL(`${locale}/sign-in`, req.url);
-
-        auth().protect({
-          // `unauthenticatedUrl` is needed to avoid error: "Unable to find `next-intl` locale because the middleware didn't run on this request"
-          unauthenticatedUrl: signInUrl.toString(),
-        });
-      }
-
-      return intlMiddleware(req);
-    })(request, event);
+  if (!isPublicRoute && isManagementRoute) {
+    auth().protect();
   }
-
-  return intlMiddleware(request);
-}
-
-export const config = {
-  matcher: ['/((?!.+\\.[\\w]+$|_next|monitoring).*)', '/', '/(api|trpc)(.*)'], // Also exclude tunnelRoute used in Sentry from the matcher
-};
+  return NextResponse.next();
+});

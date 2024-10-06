@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuth } from '@clerk/nextjs';
 import { Check, ChevronDown, Mic, RefreshCw, Settings } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
@@ -20,9 +21,6 @@ type PatientSummaryProps = {
   startRecording: () => void;
   stopRecording: () => void;
   templates: Template[];
-  _addTemplate: (template: Omit<Template, 'id'>) => void;
-  _editTemplate: (id: string, template: Omit<Template, 'id'>) => void;
-  _deleteTemplate: (id: string) => void;
   resetAll: () => void;
   isLoading: boolean;
   error: string | null;
@@ -43,11 +41,21 @@ export function PatientSummary({
 }: PatientSummaryProps) {
   const { correctNote, isCorrecting, error: correctionError } = useNoteCorrection();
 
-  const handleTemplateSelect = (templateId: string) => {
+  const { isSignedIn } = useAuth();
+
+  const handleTemplateSelect = (templateId: number) => {
+    if (templateId === -1) {
+      if (isSignedIn) {
+        window.location.href = '/template-management';
+      } else {
+        window.location.href = '/sign-in';
+      }
+      return;
+    }
     const selectedTemplate = templates.find(t => t.id === templateId);
     if (selectedTemplate) {
       setPatientSummary(selectedTemplate.content);
-      handleTemplateChange(templateId);
+      handleTemplateChange(templateId.toString());
     }
   };
 
@@ -73,7 +81,7 @@ export function PatientSummary({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
-                {selectedTemplate ? templates.find(t => t.id === selectedTemplate)?.name : 'Templates'}
+                {selectedTemplate ? templates.find(t => t.id.toString() === selectedTemplate)?.name : 'Templates'}
                 <ChevronDown className="ml-1 size-3" />
               </Button>
             </DropdownMenuTrigger>
@@ -84,7 +92,7 @@ export function PatientSummary({
                   onSelect={() => handleTemplateSelect(template.id)}
                 >
                   {template.name}
-                  {template.id === selectedTemplate && <Check className="ml-2 size-4" />}
+                  {template.id.toString() === selectedTemplate && <Check className="ml-2 size-4" />}
                 </DropdownMenuItem>
               ))}
               <DropdownMenuSeparator />

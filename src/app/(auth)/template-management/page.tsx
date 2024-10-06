@@ -1,10 +1,11 @@
 'use client';
 
-import { useTemplateManagement } from '@/hooks/useTemplateManagement';
+import { ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
 import { TemplateManagementInterface } from '@/components/TemplateManagementInterface';
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { useTemplateManagement } from '@/hooks/useTemplateManagement';
 
 export default function TemplateManagementPage() {
   const { templates, addTemplate, editTemplate, deleteTemplate } = useTemplateManagement();
@@ -12,10 +13,12 @@ export default function TemplateManagementPage() {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Template Management</h1>
         <Button onClick={() => router.back()} variant="outline">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Go Back
+          <ArrowLeft className="mr-2 size-4" />
+          {' '}
+          Go Back
         </Button>
       </div>
       <TemplateManagementInterface

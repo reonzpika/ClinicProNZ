@@ -1,47 +1,87 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
-export interface Prompt {
-  id: string;
-  name: string;
-  content: string;
-}
-
-const STORAGE_KEY = 'savedPrompts';
+import type { Prompt } from '@/types/prompts';
 
 export function usePromptManagement() {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Load prompts from localStorage when the component mounts
-    const savedPrompts = localStorage.getItem(STORAGE_KEY);
-    if (savedPrompts) {
-      setPrompts(JSON.parse(savedPrompts));
+  const fetchPrompts = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/prompts');
+      if (!response.ok) {
+        throw new Error('Failed to fetch prompts');
+      }
+      const data = await response.json();
+      setPrompts(data);
+    } catch (err) {
+      setError('Error fetching prompts');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
-  const savePromptsToStorage = (updatedPrompts: Prompt[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedPrompts));
+  useEffect(() => {
+    fetchPrompts();
+  }, [fetchPrompts]);
+
+  const addPrompt = async (newPrompt: Omit<Prompt, 'id'>) => {
+    try {
+      const response = await fetch('/api/prompts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newPrompt),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to add prompt');
+      }
+      const addedPrompt = await response.json();
+      setPrompts([...prompts, addedPrompt]);
+    } catch (err) {
+      setError('Error adding prompt');
+      console.error(err);
+    }
   };
 
-  const addPrompt = (newPrompt: Omit<Prompt, 'id'>) => {
-    const updatedPrompts = [...prompts, { ...newPrompt, id: Date.now().toString() }];
-    setPrompts(updatedPrompts);
-    savePromptsToStorage(updatedPrompts);
+  const editPrompt = async (id: number, updatedPrompt: Omit<Prompt, 'id'>) => {
+    try {
+      const response = await fetch('/api/prompts', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, ...updatedPrompt }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to update prompt');
+      }
+      const editedPrompt = await response.json();
+      setPrompts(prompts.map(prompt =>
+        prompt.id === id ? editedPrompt : prompt,
+      ));
+    } catch (err) {
+      setError('Error updating prompt');
+      console.error(err);
+    }
   };
 
-  const editPrompt = (id: string, updatedPrompt: Omit<Prompt, 'id'>) => {
-    const updatedPrompts = prompts.map(prompt => 
-      prompt.id === id ? { ...prompt, ...updatedPrompt } : prompt
-    );
-    setPrompts(updatedPrompts);
-    savePromptsToStorage(updatedPrompts);
+  const deletePrompt = async (id: number) => {
+    try {
+      const response = await fetch('/api/prompts', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete prompt');
+      }
+      setPrompts(prompts.filter(prompt => prompt.id !== id));
+    } catch (err) {
+      setError('Error deleting prompt');
+      console.error(err);
+    }
   };
 
-  const deletePrompt = (id: string) => {
-    const updatedPrompts = prompts.filter(prompt => prompt.id !== id);
-    setPrompts(updatedPrompts);
-    savePromptsToStorage(updatedPrompts);
-  };
-
-  return { prompts, addPrompt, editPrompt, deletePrompt };
+  return { prompts, isLoading, error, addPrompt, editPrompt, deletePrompt };
 }

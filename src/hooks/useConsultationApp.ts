@@ -31,7 +31,7 @@ export function useConsultationApp() {
 
   const handleTemplateChange = (value: string) => {
     setSelectedTemplate(value);
-    const selectedTemplateContent = templates.find(t => t.id === value)?.content;
+    const selectedTemplateContent = templates.find(t => t.id.toString() === value)?.content;
     if (selectedTemplateContent) {
       setPatientSummary(selectedTemplateContent);
     }
@@ -54,13 +54,13 @@ export function useConsultationApp() {
     // Reset other state variables as needed
   };
 
-  const handleCustomPrompt = async (promptId: string) => {
+  const handleCustomPrompt = async (promptId: number) => {
     try {
       const selectedPrompt = prompts.find(p => p.id === promptId);
       if (selectedPrompt && makeAPIRequest) {
         const response = await makeAPIRequest(selectedPrompt.content, patientSummary);
         setCustomPromptResults(prev => ({ ...prev, [promptId]: response }));
-        setSelectedAITask(promptId);
+        setSelectedAITask(promptId.toString());
       }
     } catch (err) {
       console.error('Error in custom prompt:', err);

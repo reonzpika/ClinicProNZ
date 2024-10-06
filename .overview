@@ -44,11 +44,9 @@
 
 ## Key Components
 - **ConsultationApp**: A complex medical consultation application with features like patient summary input, AI-assisted consultation, differential diagnosis generation, medical resource search, and GP tools.
-- **BaseTemplate**: The default theme for the project.
 - **AppConfig**: Configuration file for the project.
 
 ## Additional Information
 - **Authentication Setup**: Create a Clerk account and add the necessary keys to the `.env.local` file.
 - **Database Setup**: Configure DrizzleORM for your preferred database.
-- **Translation Setup**: Use `next-intl` and Crowdin for localization.
 - **Testing**: Use Vitest for unit tests and Playwright for end-to-end tests.

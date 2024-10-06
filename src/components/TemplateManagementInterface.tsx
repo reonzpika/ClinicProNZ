@@ -1,18 +1,19 @@
 'use client';
 
 import React, { useState } from 'react';
+
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { Template } from '@/hooks/useTemplateManagement';
 
-interface TemplateManagementInterfaceProps {
+type TemplateManagementInterfaceProps = {
   templates: Template[];
   addTemplate: (template: Omit<Template, 'id'>) => void;
-  editTemplate: (id: string, template: Omit<Template, 'id'>) => void;
-  deleteTemplate: (id: string) => void;
-}
+  editTemplate: (id: number, template: Omit<Template, 'id'>) => void;
+  deleteTemplate: (id: number) => void;
+};
 
 export function TemplateManagementInterface({
   templates,
@@ -44,8 +45,9 @@ export function TemplateManagementInterface({
       setNewTemplateContent('');
     }
   };
-
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: number) => {
+    // TODO: Replace window.confirm with a custom confirmation dialog
+    // eslint-disable-next-line no-alert
     if (window.confirm('Are you sure you want to delete this template?')) {
       deleteTemplate(id);
     }
@@ -69,35 +71,40 @@ export function TemplateManagementInterface({
         <Input
           placeholder="Template Name"
           value={newTemplateName}
-          onChange={(e) => setNewTemplateName(e.target.value)}
+          onChange={e => setNewTemplateName(e.target.value)}
           className="mb-2"
         />
         <Textarea
           placeholder="Template Content"
           value={newTemplateContent}
-          onChange={(e) => setNewTemplateContent(e.target.value)}
+          onChange={e => setNewTemplateContent(e.target.value)}
           className="mb-2"
         />
         <Button onClick={handleAddNewTemplate}>Add Template</Button>
       </div>
 
       <h2 className="text-2xl font-bold">Existing Templates</h2>
-      {templates && templates.length > 0 ? (
-        templates.map(template => (
-          <div key={template.id} className="flex items-center justify-between rounded border p-4">
-            <div>
-              <h3 className="font-semibold">{template.name}</h3>
-              <p className="text-sm text-gray-500">{template.content.substring(0, 100)}...</p>
-            </div>
-            <div>
-              <Button onClick={() => handleEdit(template)} className="mr-2">Edit</Button>
-              <Button onClick={() => handleDelete(template.id)} variant="destructive">Delete</Button>
-            </div>
-          </div>
-        ))
-      ) : (
-        <p>No templates available. Create your first template above.</p>
-      )}
+      {templates && templates.length > 0
+        ? (
+            templates.map(template => (
+              <div key={template.id} className="flex items-center justify-between rounded border p-4">
+                <div>
+                  <h3 className="font-semibold">{template.name}</h3>
+                  <p className="text-sm text-gray-500">
+                    {template.content.substring(0, 100)}
+                    ...
+                  </p>
+                </div>
+                <div>
+                  <Button onClick={() => handleEdit(template)} className="mr-2">Edit</Button>
+                  <Button onClick={() => handleDelete(template.id)} variant="destructive">Delete</Button>
+                </div>
+              </div>
+            ))
+          )
+        : (
+            <p>No templates available. Create your first template above.</p>
+          )}
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>

@@ -1,15 +1,22 @@
 'use client';
 
 import React, { useState } from 'react';
+
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { usePromptManagement } from '@/hooks/usePromptManagement';
 import type { Prompt } from '@/types/prompts';
 
-export function PromptManagementInterface() {
-  const { prompts, addPrompt, editPrompt, deletePrompt } = usePromptManagement();
+type PromptManagementInterfaceProps = {
+  prompts: Prompt[];
+  addPrompt: (prompt: Omit<Prompt, 'id'>) => void;
+  editPrompt: (id: number, prompt: Omit<Prompt, 'id'>) => void;
+  deletePrompt: (id: number) => void;
+};
+
+export function PromptManagementInterface({ prompts, addPrompt, editPrompt, deletePrompt }: PromptManagementInterfaceProps) {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
   const [newPromptName, setNewPromptName] = useState('');
@@ -25,9 +32,11 @@ export function PromptManagementInterface() {
   const handleSaveEdit = () => {
     if (editingPrompt && newPromptName && newPromptContent) {
       editPrompt(editingPrompt.id, {
-        ...editingPrompt,
         name: newPromptName,
         content: newPromptContent,
+        userId: editingPrompt.userId,
+        updatedAt: new Date(),
+        createdAt: editingPrompt.createdAt,
       });
       setIsEditDialogOpen(false);
       setEditingPrompt(null);
@@ -36,7 +45,7 @@ export function PromptManagementInterface() {
     }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: number) => {
     if (window.confirm('Are you sure you want to delete this prompt?')) {
       deletePrompt(id);
     }
@@ -47,6 +56,9 @@ export function PromptManagementInterface() {
       addPrompt({
         name: newPromptName,
         content: newPromptContent,
+        userId: '', // TODO: Add the actual userId here
+        updatedAt: new Date(),
+        createdAt: new Date(),
       });
       setNewPromptName('');
       setNewPromptContent('');
@@ -55,41 +67,51 @@ export function PromptManagementInterface() {
 
   return (
     <div className="space-y-4">
-      <div className="mb-4">
-        <h2 className="mb-2 text-xl font-semibold">Add New Prompt</h2>
-        <Input
-          placeholder="Prompt Name"
-          value={newPromptName}
-          onChange={(e) => setNewPromptName(e.target.value)}
-          className="mb-2"
-        />
-        <Textarea
-          placeholder="Prompt Content"
-          value={newPromptContent}
-          onChange={(e) => setNewPromptContent(e.target.value)}
-          className="mb-2"
-        />
-        <Button onClick={handleAddNewPrompt}>Add Prompt</Button>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Add New Prompt</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Input
+            placeholder="Prompt Name"
+            value={newPromptName}
+            onChange={e => setNewPromptName(e.target.value)}
+            className="mb-2"
+          />
+          <Textarea
+            placeholder="Prompt Content"
+            value={newPromptContent}
+            onChange={e => setNewPromptContent(e.target.value)}
+            className="mb-2"
+          />
+          <Button onClick={handleAddNewPrompt}>Add Prompt</Button>
+        </CardContent>
+      </Card>
 
       <h2 className="text-2xl font-bold">Existing Prompts</h2>
-      {prompts.map(prompt => (
-        <div key={prompt.id} className="flex items-center justify-between rounded border p-4">
-          <div>
-            <h3 className="font-semibold">{prompt.name}</h3>
-            <p className="text-sm text-gray-500">{prompt.content}</p>
-          </div>
-          <div>
-            <Button onClick={() => handleEdit(prompt)} className="mr-2">Edit</Button>
-            <Button onClick={() => handleDelete(prompt.id)} variant="destructive">Delete</Button>
-          </div>
-        </div>
-      ))}
+      {prompts.length > 0
+        ? (
+            prompts.map(prompt => (
+              <Card key={prompt.id}>
+                <CardHeader>
+                  <CardTitle>{prompt.name}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="mb-2">{prompt.content}</p>
+                  <Button onClick={() => handleEdit(prompt)} className="mr-2">Edit</Button>
+                  <Button onClick={() => handleDelete(prompt.id)} variant="destructive">Delete</Button>
+                </CardContent>
+              </Card>
+            ))
+          )
+        : (
+            <p>No prompts available. Create your first prompt above.</p>
+          )}
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit AI Task</DialogTitle>
+            <DialogTitle>Edit Prompt</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
@@ -102,7 +124,7 @@ export function PromptManagementInterface() {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="prompt" className="text-right">Task Description</label>
+              <label htmlFor="prompt" className="text-right">Content</label>
               <Textarea
                 id="prompt"
                 value={newPromptContent}
