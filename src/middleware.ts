@@ -1,20 +1,12 @@
 import { clerkMiddleware } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
 
-const publicRoutes = [
-  '/',
-  '/about',
-  '/sign-in',
-  '/sign-up',
-  '/consultation-app',
-];
+export default clerkMiddleware();
 
-export default clerkMiddleware((auth, request) => {
-  const isPublicRoute = publicRoutes.some(route => request.nextUrl.pathname === route);
-  const isManagementRoute = request.nextUrl.pathname.includes('/prompt-management') || request.nextUrl.pathname.includes('/template-management');
-
-  if (!isPublicRoute && isManagementRoute) {
-    auth().protect();
-  }
-  return NextResponse.next();
-});
+export const config = {
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always run for API routes
+    '/(api|trpc)(.*)',
+  ],
+};

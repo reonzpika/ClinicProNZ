@@ -1,5 +1,4 @@
 import { ConsultationApp } from '@/components/consultation-app';
-import { Header } from '@/components/Header';
 
 export const metadata = {
   title: 'Consultation App',
@@ -9,7 +8,6 @@ export const metadata = {
 export default function Index() {
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
       <main className="container mx-auto grow p-4">
         <ConsultationApp />
       </main>

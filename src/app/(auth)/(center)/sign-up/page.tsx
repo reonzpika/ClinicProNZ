@@ -6,8 +6,6 @@ export const metadata: Metadata = {
   description: 'Create a new account',
 };
 
-const SignUpPage = () => (
-  <SignUp path="/sign-up" />
-);
-
-export default SignUpPage;
+export default function SignUpPage() {
+  return <SignUp signInUrl="/sign-in" />;
+}
