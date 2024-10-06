@@ -8,7 +8,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <ClerkProvider>
       <html lang="en">
-        <body>
+        <body className="min-h-screen bg-background font-sans text-foreground antialiased">
           <Header />
           <main>{children}</main>
         </body>

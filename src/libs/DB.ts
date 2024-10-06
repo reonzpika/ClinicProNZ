@@ -10,14 +10,12 @@ import { Client } from 'pg';
 
 import * as schema from '@/models/Schema';
 
-import { Env } from './Env';
-
 let client;
 let drizzle;
 
-if (process.env.NEXT_PHASE !== PHASE_PRODUCTION_BUILD && Env.DATABASE_URL) {
+if (process.env.NEXT_PHASE !== PHASE_PRODUCTION_BUILD && process.env.POSTGRES_URL) {
   client = new Client({
-    connectionString: Env.DATABASE_URL,
+    connectionString: process.env.POSTGRES_URL,
   });
   await client.connect();
 

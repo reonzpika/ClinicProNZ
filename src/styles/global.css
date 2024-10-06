@@ -65,13 +65,19 @@
   .markdown-content p {
     @apply mb-2;
   }
-  .markdown-content ul, .markdown-content ol {
+  .markdown-content ul,
+  .markdown-content ol {
     @apply mb-2 pl-5;
   }
   .markdown-content li {
     @apply mb-1;
   }
-  .markdown-content h1, .markdown-content h2, .markdown-content h3, .markdown-content h4, .markdown-content h5, .markdown-content h6 {
+  .markdown-content h1,
+  .markdown-content h2,
+  .markdown-content h3,
+  .markdown-content h4,
+  .markdown-content h5,
+  .markdown-content h6 {
     @apply font-bold mb-2;
   }
   .markdown-content h1 {
@@ -80,7 +86,10 @@
   .markdown-content h2 {
     @apply text-lg;
   }
-  .markdown-content h3, .markdown-content h4, .markdown-content h5, .markdown-content h6 {
+  .markdown-content h3,
+  .markdown-content h4,
+  .markdown-content h5,
+  .markdown-content h6 {
     @apply text-base;
   }
   .markdown-content a {

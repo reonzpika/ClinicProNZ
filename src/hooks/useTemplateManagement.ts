@@ -5,6 +5,7 @@ export type Template = {
   name: string;
   content: string;
 };
+
 export function useTemplateManagement() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,12 +43,13 @@ export function useTemplateManagement() {
         throw new Error('Failed to add template');
       }
       const addedTemplate = await response.json();
-      setTemplates([...templates, addedTemplate]);
+      setTemplates(prevTemplates => [...prevTemplates, addedTemplate]);
     } catch (err) {
       setError('Error adding template');
       console.error(err);
     }
   };
+
   const editTemplate = async (id: number, updatedTemplate: Omit<Template, 'id'>) => {
     try {
       const response = await fetch('/api/templates', {

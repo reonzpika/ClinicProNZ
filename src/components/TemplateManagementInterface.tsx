@@ -10,9 +10,9 @@ import type { Template } from '@/hooks/useTemplateManagement';
 
 type TemplateManagementInterfaceProps = {
   templates: Template[];
-  addTemplate: (template: Omit<Template, 'id'>) => void;
-  editTemplate: (id: number, template: Omit<Template, 'id'>) => void;
-  deleteTemplate: (id: number) => void;
+  addTemplate: (template: Omit<Template, 'id'>) => Promise<void>;
+  editTemplate: (id: number, template: Omit<Template, 'id'>) => Promise<void>;
+  deleteTemplate: (id: number) => Promise<void>;
 };
 
 export function TemplateManagementInterface({
@@ -53,9 +53,9 @@ export function TemplateManagementInterface({
     }
   };
 
-  const handleAddNewTemplate = () => {
+  const handleAddNewTemplate = async () => {
     if (newTemplateName && newTemplateContent) {
-      addTemplate({
+      await addTemplate({
         name: newTemplateName,
         content: newTemplateContent,
       });
