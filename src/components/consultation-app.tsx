@@ -37,10 +37,11 @@ export function ConsultationApp() {
     resetAll,
     templates,
     handleCustomPrompt,
+    recordingError,
   } = useConsultationApp();
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col gap-0.5 lg:flex-row bg-background">
+    <div className="flex h-[calc(100vh-4rem)] flex-col gap-0.5 bg-background lg:flex-row">
       <div className="flex-1 overflow-hidden lg:w-1/2">
         <PatientSummary
           patientSummary={patientSummary}
@@ -54,17 +55,18 @@ export function ConsultationApp() {
           resetAll={resetAll}
           isLoading={isLoading}
           error={error}
+          recordingError={recordingError}
         />
       </div>
 
       <div className="flex-1 overflow-hidden lg:w-1/2">
-        <Tabs value={rightColumnTab} onValueChange={setRightColumnTab} className="h-full flex flex-col">
-          <TabsList className="grid w-full grid-cols-3 p-0.5 bg-muted">
+        <Tabs value={rightColumnTab} onValueChange={setRightColumnTab} className="flex h-full flex-col">
+          <TabsList className="grid w-full grid-cols-3 bg-muted p-0.5">
             <TabsTrigger value="ai">AI Assistance</TabsTrigger>
             <TabsTrigger value="search">Search</TabsTrigger>
             <TabsTrigger value="tools">Tools</TabsTrigger>
           </TabsList>
-          <TabsContent value="ai" className="flex-grow overflow-auto p-0.5 m-0">
+          <TabsContent value="ai" className="m-0 grow overflow-auto p-0.5">
             <AIAssistance
               selectedAITask={selectedAITask}
               setSelectedAITask={setSelectedAITask}
@@ -80,13 +82,13 @@ export function ConsultationApp() {
               patientSummary={patientSummary}
             />
           </TabsContent>
-          <TabsContent value="search" className="flex-grow overflow-auto p-0.5">
+          <TabsContent value="search" className="grow overflow-auto p-0.5">
             <Search
               searchQuery={toolsSearchQuery}
               setSearchQuery={setToolsSearchQuery}
             />
           </TabsContent>
-          <TabsContent value="tools" className="flex-grow overflow-auto p-0.5">
+          <TabsContent value="tools" className="grow overflow-auto p-0.5">
             <Tools
               toolsSearchQuery={toolsSearchQuery}
               setToolsSearchQuery={setToolsSearchQuery}

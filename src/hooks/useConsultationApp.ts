@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
+import { useAudioRecording } from '@/hooks/useAudioRecording';
 import { useConsultAssist } from '@/hooks/useConsultAssist';
 import { usePromptManagement } from '@/hooks/usePromptManagement';
 import { useTemplateManagement } from '@/hooks/useTemplateManagement';
@@ -8,7 +9,6 @@ export function useConsultationApp() {
   const [patientSummary, setPatientSummary] = useState('');
   const [rightColumnTab, setRightColumnTab] = useState('ai');
   const [selectedTemplate, setSelectedTemplate] = useState('general');
-  const [isRecording, setIsRecording] = useState(false);
   const [toolsSearchQuery, setToolsSearchQuery] = useState('');
   const [activeToolsCategory, setActiveToolsCategory] = useState('');
 
@@ -19,7 +19,7 @@ export function useConsultationApp() {
     handleDifferentialDiagnosis,
     isLoading,
     error,
-    makeAPIRequest, // This should be provided by useConsultAssist
+    makeAPIRequest,
   } = useConsultAssist();
 
   const { prompts, addPrompt, editPrompt, deletePrompt } = usePromptManagement();
@@ -29,22 +29,26 @@ export function useConsultationApp() {
 
   const { templates, addTemplate, editTemplate, deleteTemplate } = useTemplateManagement();
 
+  const {
+    isRecording,
+    transcript,
+    error: recordingError,
+    startRecording,
+    stopRecording,
+  } = useAudioRecording();
+
+  useEffect(() => {
+    if (transcript) {
+      setPatientSummary(prevSummary => `${prevSummary} ${transcript}`);
+    }
+  }, [transcript]);
+
   const handleTemplateChange = (value: string) => {
     setSelectedTemplate(value);
     const selectedTemplateContent = templates.find(t => t.id.toString() === value)?.content;
     if (selectedTemplateContent) {
       setPatientSummary(selectedTemplateContent);
     }
-  };
-
-  const startRecording = () => {
-    setIsRecording(true);
-    // Implement recording logic
-  };
-
-  const stopRecording = () => {
-    setIsRecording(false);
-    // Implement stop recording logic
   };
 
   const resetAll = () => {
@@ -101,5 +105,6 @@ export function useConsultationApp() {
     editTemplate,
     deleteTemplate,
     handleCustomPrompt,
+    recordingError,
   };
 }

@@ -24,6 +24,7 @@ type PatientSummaryProps = {
   resetAll: () => void;
   isLoading: boolean;
   error: string | null;
+  recordingError: string | null;
 };
 
 export function PatientSummary({
@@ -38,6 +39,7 @@ export function PatientSummary({
   resetAll,
   isLoading,
   error,
+  recordingError,
 }: PatientSummaryProps) {
   const { correctNote, isCorrecting, error: correctionError } = useNoteCorrection();
 
@@ -68,7 +70,7 @@ export function PatientSummary({
 
   return (
     <Card className="flex h-full flex-col rounded-none border-0 bg-card">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 px-2 py-1 bg-muted">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 bg-muted px-2 py-1">
         <CardTitle className="text-lg font-semibold">Consultation</CardTitle>
         <div className="flex items-center space-x-2">
           <Button
@@ -106,10 +108,10 @@ export function PatientSummary({
           </DropdownMenu>
         </div>
       </CardHeader>
-      <CardContent className="flex flex-grow flex-col space-y-2 p-2">
+      <CardContent className="flex grow flex-col space-y-2 p-2">
         <Textarea
           placeholder="Enter patient notes here..."
-          className="flex-grow min-h-[200px] resize-none bg-background"
+          className="min-h-[200px] grow resize-none bg-background"
           value={patientSummary}
           onChange={e => setPatientSummary(e.target.value)}
         />
@@ -137,6 +139,7 @@ export function PatientSummary({
         </div>
         {isLoading && <p>Loading...</p>}
         {error && <p className="text-red-500">{error}</p>}
+        {recordingError && <p className="text-red-500">{recordingError}</p>}
         {correctionError && <p className="text-red-500">{correctionError}</p>}
       </CardContent>
     </Card>
