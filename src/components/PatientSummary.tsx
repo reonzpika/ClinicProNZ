@@ -1,5 +1,3 @@
-'use client';
-
 import { useAuth } from '@clerk/nextjs';
 import { Check, ChevronDown, Mic, RefreshCw, Settings } from 'lucide-react';
 import Link from 'next/link';

@@ -2,14 +2,30 @@
 
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import { TemplateManagementInterface } from '@/components/TemplateManagementInterface';
 import { Button } from '@/components/ui/button';
-import { useTemplateManagement } from '@/hooks/useTemplateManagement';
+import type { Template } from '@/types/templates';
 
 export default function TemplateManagementPage() {
-  const { templates, addTemplate, editTemplate, deleteTemplate } = useTemplateManagement();
+  const [initialTemplates, setInitialTemplates] = useState<Template[]>([]);
   const router = useRouter();
+
+  useEffect(() => {
+    async function fetchTemplates() {
+      try {
+        const response = await fetch('/api/templates');
+        if (!response.ok) throw new Error('Failed to fetch templates');
+        const templates = await response.json();
+        setInitialTemplates(templates);
+      } catch (error) {
+        console.error('Error fetching templates:', error);
+        // Handle error (e.g., show error message to user)
+      }
+    }
+    fetchTemplates();
+  }, []);
 
   return (
     <div className="container mx-auto p-4">
@@ -21,12 +37,7 @@ export default function TemplateManagementPage() {
           Go Back
         </Button>
       </div>
-      <TemplateManagementInterface
-        templates={templates}
-        addTemplate={addTemplate}
-        editTemplate={editTemplate}
-        deleteTemplate={deleteTemplate}
-      />
+      <TemplateManagementInterface initialTemplates={initialTemplates} />
     </div>
   );
 }

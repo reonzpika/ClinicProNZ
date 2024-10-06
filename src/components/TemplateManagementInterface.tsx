@@ -2,29 +2,25 @@
 
 import React, { useState } from 'react';
 
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import type { Template } from '@/hooks/useTemplateManagement';
+import type { Template } from '@/types/templates';
 
 type TemplateManagementInterfaceProps = {
-  templates: Template[];
-  addTemplate: (template: Omit<Template, 'id'>) => Promise<void>;
-  editTemplate: (id: number, template: Omit<Template, 'id'>) => Promise<void>;
-  deleteTemplate: (id: number) => Promise<void>;
+  initialTemplates: Template[];
 };
 
-export function TemplateManagementInterface({
-  templates,
-  addTemplate,
-  editTemplate,
-  deleteTemplate,
-}: TemplateManagementInterfaceProps) {
+export function TemplateManagementInterface({ initialTemplates }: TemplateManagementInterfaceProps) {
+  const [templates, setTemplates] = useState<Template[]>(initialTemplates);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
   const [newTemplateName, setNewTemplateName] = useState('');
   const [newTemplateContent, setNewTemplateContent] = useState('');
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingTemplateId, setDeletingTemplateId] = useState<number | null>(null);
 
   const handleEdit = (template: Template) => {
     setEditingTemplate(template);
@@ -33,34 +29,83 @@ export function TemplateManagementInterface({
     setIsEditDialogOpen(true);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (editingTemplate && newTemplateName && newTemplateContent) {
-      editTemplate(editingTemplate.id, {
-        name: newTemplateName,
-        content: newTemplateContent,
-      });
-      setIsEditDialogOpen(false);
-      setEditingTemplate(null);
-      setNewTemplateName('');
-      setNewTemplateContent('');
+      try {
+        const response = await fetch('/api/templates', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: editingTemplate.id,
+            name: newTemplateName,
+            content: newTemplateContent,
+          }),
+        });
+        if (!response.ok) {
+          throw new Error('Failed to update template');
+        }
+        const updatedTemplate = await response.json();
+        setTemplates(templates.map(t => t.id === updatedTemplate.id ? updatedTemplate : t));
+        setIsEditDialogOpen(false);
+        setEditingTemplate(null);
+        setNewTemplateName('');
+        setNewTemplateContent('');
+      } catch (error) {
+        console.error('Error updating template:', error);
+        // Handle error (e.g., show error message to user)
+      }
     }
   };
-  const handleDelete = (id: number) => {
-    // TODO: Replace window.confirm with a custom confirmation dialog
-    // eslint-disable-next-line no-alert
-    if (window.confirm('Are you sure you want to delete this template?')) {
-      deleteTemplate(id);
+
+  const handleDeleteConfirm = async () => {
+    if (deletingTemplateId !== null) {
+      try {
+        const response = await fetch('/api/templates', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: deletingTemplateId }),
+        });
+        if (!response.ok) {
+          throw new Error('Failed to delete template');
+        }
+        setTemplates(templates.filter(t => t.id !== deletingTemplateId));
+      } catch (error) {
+        console.error('Error deleting template:', error);
+        // Handle error (e.g., show error message to user)
+      } finally {
+        setIsDeleteDialogOpen(false);
+        setDeletingTemplateId(null);
+      }
     }
+  };
+
+  const handleDelete = (id: number) => {
+    setDeletingTemplateId(id);
+    setIsDeleteDialogOpen(true);
   };
 
   const handleAddNewTemplate = async () => {
     if (newTemplateName && newTemplateContent) {
-      await addTemplate({
-        name: newTemplateName,
-        content: newTemplateContent,
-      });
-      setNewTemplateName('');
-      setNewTemplateContent('');
+      try {
+        const response = await fetch('/api/templates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: newTemplateName,
+            content: newTemplateContent,
+          }),
+        });
+        if (!response.ok) {
+          throw new Error('Failed to add template');
+        }
+        const newTemplate = await response.json();
+        setTemplates([...templates, newTemplate]);
+        setNewTemplateName('');
+        setNewTemplateContent('');
+      } catch (error) {
+        console.error('Error adding template:', error);
+        // Handle error (e.g., show error message to user)
+      }
     }
   };
 
@@ -136,6 +181,21 @@ export function TemplateManagementInterface({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the template.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

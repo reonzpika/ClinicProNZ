@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -10,17 +11,17 @@ import { Textarea } from '@/components/ui/textarea';
 import type { Prompt } from '@/types/prompts';
 
 type PromptManagementInterfaceProps = {
-  prompts: Prompt[];
-  addPrompt: (prompt: Omit<Prompt, 'id'>) => void;
-  editPrompt: (id: number, prompt: Omit<Prompt, 'id'>) => void;
-  deletePrompt: (id: number) => void;
+  initialPrompts: Prompt[];
 };
 
-export function PromptManagementInterface({ prompts, addPrompt, editPrompt, deletePrompt }: PromptManagementInterfaceProps) {
+export function PromptManagementInterface({ initialPrompts }: PromptManagementInterfaceProps) {
+  const [prompts, setPrompts] = useState<Prompt[]>(initialPrompts);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
   const [newPromptName, setNewPromptName] = useState('');
   const [newPromptContent, setNewPromptContent] = useState('');
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingPromptId, setDeletingPromptId] = useState<number | null>(null);
 
   const handleEdit = (prompt: Prompt) => {
     setEditingPrompt(prompt);
@@ -29,39 +30,82 @@ export function PromptManagementInterface({ prompts, addPrompt, editPrompt, dele
     setIsEditDialogOpen(true);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (editingPrompt && newPromptName && newPromptContent) {
-      editPrompt(editingPrompt.id, {
-        name: newPromptName,
-        content: newPromptContent,
-        userId: editingPrompt.userId,
-        updatedAt: new Date(),
-        createdAt: editingPrompt.createdAt,
-      });
-      setIsEditDialogOpen(false);
-      setEditingPrompt(null);
-      setNewPromptName('');
-      setNewPromptContent('');
+      try {
+        const response = await fetch('/api/prompts', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: editingPrompt.id,
+            name: newPromptName,
+            content: newPromptContent,
+          }),
+        });
+        if (!response.ok) {
+          throw new Error('Failed to update prompt');
+        }
+        const updatedPrompt = await response.json();
+        setPrompts(prompts.map(p => p.id === updatedPrompt.id ? updatedPrompt : p));
+        setIsEditDialogOpen(false);
+        setEditingPrompt(null);
+        setNewPromptName('');
+        setNewPromptContent('');
+      } catch (error) {
+        console.error('Error updating prompt:', error);
+        // Handle error (e.g., show error message to user)
+      }
     }
   };
 
-  const handleDelete = (id: number) => {
-    if (window.confirm('Are you sure you want to delete this prompt?')) {
-      deletePrompt(id);
+  const handleDeleteConfirmation = (id: number) => {
+    setDeletingPromptId(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (deletingPromptId) {
+      try {
+        const response = await fetch('/api/prompts', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: deletingPromptId }),
+        });
+        if (!response.ok) {
+          throw new Error('Failed to delete prompt');
+        }
+        setPrompts(prompts.filter(p => p.id !== deletingPromptId));
+        setIsDeleteDialogOpen(false);
+        setDeletingPromptId(null);
+      } catch (error) {
+        console.error('Error deleting prompt:', error);
+        // Handle error (e.g., show error message to user)
+      }
     }
   };
 
-  const handleAddNewPrompt = () => {
+  const handleAddNewPrompt = async () => {
     if (newPromptName && newPromptContent) {
-      addPrompt({
-        name: newPromptName,
-        content: newPromptContent,
-        userId: '', // TODO: Add the actual userId here
-        updatedAt: new Date(),
-        createdAt: new Date(),
-      });
-      setNewPromptName('');
-      setNewPromptContent('');
+      try {
+        const response = await fetch('/api/prompts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: newPromptName,
+            content: newPromptContent,
+          }),
+        });
+        if (!response.ok) {
+          throw new Error('Failed to add prompt');
+        }
+        const newPrompt = await response.json();
+        setPrompts([...prompts, newPrompt]);
+        setNewPromptName('');
+        setNewPromptContent('');
+      } catch (error) {
+        console.error('Error adding prompt:', error);
+        // Handle error (e.g., show error message to user)
+      }
     }
   };
 
@@ -99,7 +143,7 @@ export function PromptManagementInterface({ prompts, addPrompt, editPrompt, dele
                 <CardContent>
                   <p className="mb-2">{prompt.content}</p>
                   <Button onClick={() => handleEdit(prompt)} className="mr-2">Edit</Button>
-                  <Button onClick={() => handleDelete(prompt.id)} variant="destructive">Delete</Button>
+                  <Button onClick={() => handleDeleteConfirmation(prompt.id)} variant="destructive">Delete</Button>
                 </CardContent>
               </Card>
             ))
@@ -138,6 +182,21 @@ export function PromptManagementInterface({ prompts, addPrompt, editPrompt, dele
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the prompt.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

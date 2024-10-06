@@ -2,14 +2,32 @@
 
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import { PromptManagementInterface } from '@/components/PromptManagementInterface';
 import { Button } from '@/components/ui/button';
-import { usePromptManagement } from '@/hooks/usePromptManagement';
+import type { Prompt } from '@/types/prompts';
 
 export default function PromptManagementPage() {
-  const { prompts, addPrompt, editPrompt, deletePrompt } = usePromptManagement();
+  const [initialPrompts, setInitialPrompts] = useState<Prompt[]>([]);
   const router = useRouter();
+
+  useEffect(() => {
+    async function fetchPrompts() {
+      try {
+        const response = await fetch('/api/prompts');
+        if (!response.ok) {
+          throw new Error('Failed to fetch prompts');
+        }
+        const prompts = await response.json();
+        setInitialPrompts(prompts);
+      } catch (error) {
+        console.error('Error fetching prompts:', error);
+        // Handle error (e.g., show error message to user)
+      }
+    }
+    fetchPrompts();
+  }, []);
 
   return (
     <div className="container mx-auto p-4">
@@ -21,12 +39,7 @@ export default function PromptManagementPage() {
           Go Back
         </Button>
       </div>
-      <PromptManagementInterface
-        prompts={prompts}
-        addPrompt={addPrompt}
-        editPrompt={editPrompt}
-        deletePrompt={deletePrompt}
-      />
+      <PromptManagementInterface initialPrompts={initialPrompts} />
     </div>
   );
 }

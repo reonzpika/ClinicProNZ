@@ -3,11 +3,12 @@
 import React from 'react';
 
 import { AIAssistance } from '@/components/AIAssistance';
-import { PatientSummary } from '@/components/PatientSummary';
+import { PatientSummaryWrapper } from '@/components/PatientSummaryWrapper';
 import { Search } from '@/components/Search';
 import { Tools } from '@/components/Tools';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useConsultationApp } from '@/hooks/useConsultationApp';
+import type { Template } from '@/types/templates';
 
 export function ConsultationApp() {
   const {
@@ -29,8 +30,6 @@ export function ConsultationApp() {
     handleConsultAssist,
     handleDifferentialDiagnosis,
     prompts,
-    selectedAITask,
-    setSelectedAITask,
     customPromptResults,
     isLoading,
     error,
@@ -43,7 +42,7 @@ export function ConsultationApp() {
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col gap-0.5 bg-background lg:flex-row">
       <div className="flex-1 overflow-hidden lg:w-1/2">
-        <PatientSummary
+        <PatientSummaryWrapper
           patientSummary={patientSummary}
           setPatientSummary={setPatientSummary}
           selectedTemplate={selectedTemplate}
@@ -51,7 +50,7 @@ export function ConsultationApp() {
           isRecording={isRecording}
           startRecording={startRecording}
           stopRecording={stopRecording}
-          templates={templates}
+          templates={templates as Template[]}
           resetAll={resetAll}
           isLoading={isLoading}
           error={error}
@@ -68,8 +67,6 @@ export function ConsultationApp() {
           </TabsList>
           <TabsContent value="ai" className="m-0 grow overflow-auto p-0.5">
             <AIAssistance
-              selectedAITask={selectedAITask}
-              setSelectedAITask={setSelectedAITask}
               consultAssistResults={consultAssistResults}
               differentialDiagnosisResults={differentialDiagnosisResults}
               prompts={prompts}
