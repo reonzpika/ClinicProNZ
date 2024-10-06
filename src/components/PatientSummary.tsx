@@ -67,9 +67,9 @@ export function PatientSummary({
   };
 
   return (
-    <Card className="flex grow flex-col">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-lg">Consultation</CardTitle>
+    <Card className="flex h-full flex-col rounded-none border-0 bg-card">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 px-2 py-1 bg-muted">
+        <CardTitle className="text-lg font-semibold">Consultation</CardTitle>
         <div className="flex items-center space-x-2">
           <Button
             variant={isRecording ? 'destructive' : 'secondary'}
@@ -106,19 +106,20 @@ export function PatientSummary({
           </DropdownMenu>
         </div>
       </CardHeader>
-      <CardContent className="flex grow flex-col pt-2">
+      <CardContent className="flex flex-grow flex-col space-y-2 p-2">
         <Textarea
           placeholder="Enter patient notes here..."
-          className="min-h-0 grow resize-none"
+          className="flex-grow min-h-[200px] resize-none bg-background"
           value={patientSummary}
           onChange={e => setPatientSummary(e.target.value)}
         />
-        <div className="mt-2 grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <Button
             onClick={handleCorrect}
             variant="outline"
             size="sm"
             disabled={isCorrecting}
+            className="w-full"
           >
             {isCorrecting
               ? (
@@ -129,7 +130,7 @@ export function PatientSummary({
                 )}
             Correct
           </Button>
-          <Button onClick={resetAll} variant="outline" size="sm">
+          <Button onClick={resetAll} variant="outline" size="sm" className="w-full">
             <RefreshCw className="mr-1 size-3" />
             Reset All
           </Button>

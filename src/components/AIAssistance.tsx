@@ -63,22 +63,20 @@ export function AIAssistance({
   };
 
   return (
-    <Card className="h-full">
-      <CardContent className="flex h-full flex-col p-2">
-        <div className="mb-2 grid grid-cols-2 gap-2">
-          <Button onClick={() => handleConsultAssist(patientSummary)} size="sm" disabled={isLoading}>
+    <Card className="h-full flex flex-col rounded-none border-0 bg-card">
+      <CardContent className="flex flex-col space-y-2 p-2 flex-grow">
+        <div className="grid grid-cols-3 gap-2">
+          <Button onClick={() => handleConsultAssist(patientSummary)} size="sm" disabled={isLoading} className="w-full">
             <Stethoscope className="mr-1 size-3" />
             Consult Assist
           </Button>
-          <Button onClick={() => handleDifferentialDiagnosis(patientSummary)} size="sm" disabled={isLoading}>
+          <Button onClick={() => handleDifferentialDiagnosis(patientSummary)} size="sm" disabled={isLoading} className="w-full">
             <List className="mr-1 size-3" />
             Differential Diagnosis
           </Button>
-        </div>
-        <div className="mb-2 flex space-x-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" disabled={isLoading} className="grow">
+              <Button variant="outline" size="sm" disabled={isLoading} className="w-full">
                 <Zap className="mr-1 size-3" />
                 AI Insights
                 <ChevronDown className="ml-1 size-3" />
@@ -103,20 +101,20 @@ export function AIAssistance({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Select value={selectedAITask} onValueChange={setSelectedAITask}>
-            <SelectTrigger className="grow">
-              <SelectValue placeholder="Select AI task" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="consult">Consult Assist</SelectItem>
-              <SelectItem value="differential">Differential Diagnosis</SelectItem>
-              {prompts.map(prompt => (
-                <SelectItem key={prompt.id} value={prompt.id.toString()}>{prompt.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
-        <div className="grow overflow-y-auto text-sm">
+        <Select value={selectedAITask} onValueChange={setSelectedAITask}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select AI task" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="consult">Consult Assist</SelectItem>
+            <SelectItem value="differential">Differential Diagnosis</SelectItem>
+            {prompts.map(prompt => (
+              <SelectItem key={prompt.id} value={prompt.id.toString()}>{prompt.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <div className="flex-grow overflow-y-auto text-sm bg-background p-2 rounded">
           {renderContent()}
         </div>
       </CardContent>

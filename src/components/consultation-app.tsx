@@ -40,8 +40,8 @@ export function ConsultationApp() {
   } = useConsultationApp();
 
   return (
-    <div className="flex flex-col gap-4 lg:flex-row">
-      <div className="lg:w-1/2">
+    <div className="flex h-[calc(100vh-4rem)] flex-col gap-0.5 lg:flex-row bg-background">
+      <div className="flex-1 overflow-hidden lg:w-1/2">
         <PatientSummary
           patientSummary={patientSummary}
           setPatientSummary={setPatientSummary}
@@ -57,14 +57,14 @@ export function ConsultationApp() {
         />
       </div>
 
-      <div className="lg:w-1/2">
-        <Tabs value={rightColumnTab} onValueChange={setRightColumnTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+      <div className="flex-1 overflow-hidden lg:w-1/2">
+        <Tabs value={rightColumnTab} onValueChange={setRightColumnTab} className="h-full flex flex-col">
+          <TabsList className="grid w-full grid-cols-3 p-0.5 bg-muted">
             <TabsTrigger value="ai">AI Assistance</TabsTrigger>
             <TabsTrigger value="search">Search</TabsTrigger>
             <TabsTrigger value="tools">Tools</TabsTrigger>
           </TabsList>
-          <TabsContent value="ai" className="mt-2">
+          <TabsContent value="ai" className="flex-grow overflow-auto p-0.5 m-0">
             <AIAssistance
               selectedAITask={selectedAITask}
               setSelectedAITask={setSelectedAITask}
@@ -80,13 +80,13 @@ export function ConsultationApp() {
               patientSummary={patientSummary}
             />
           </TabsContent>
-          <TabsContent value="search" className="mt-2">
+          <TabsContent value="search" className="flex-grow overflow-auto p-0.5">
             <Search
               searchQuery={toolsSearchQuery}
               setSearchQuery={setToolsSearchQuery}
             />
           </TabsContent>
-          <TabsContent value="tools" className="mt-2">
+          <TabsContent value="tools" className="flex-grow overflow-auto p-0.5">
             <Tools
               toolsSearchQuery={toolsSearchQuery}
               setToolsSearchQuery={setToolsSearchQuery}
