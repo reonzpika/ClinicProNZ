@@ -1,3 +1,4 @@
+import { SignInButton, useAuth } from '@clerk/nextjs';
 import { ChevronDown, Settings } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -36,6 +37,7 @@ export function AIAssistance({
   handleCustomPrompt,
   patientSummary,
 }: AIAssistanceProps) {
+  const { isSignedIn } = useAuth();
   const [selectedTask, setSelectedTask] = React.useState<string | null>(null);
 
   const handleTaskSelection = (task: string) => {
@@ -79,6 +81,26 @@ export function AIAssistance({
     }
   };
 
+  const renderManagePromptsLink = () => {
+    if (isSignedIn) {
+      return (
+        <Link href="/prompt-management" className="flex items-center">
+          <Settings className="mr-2 size-4" />
+          Manage Prompts
+        </Link>
+      );
+    } else {
+      return (
+        <SignInButton mode="modal">
+          <button type="button" className="flex items-center">
+            <Settings className="mr-2 size-4" />
+            Manage Prompts
+          </button>
+        </SignInButton>
+      );
+    }
+  };
+
   return (
     <Card className="flex h-full flex-col rounded-none border-0 bg-card">
       <CardContent className="flex grow flex-col space-y-2 p-2">
@@ -115,10 +137,7 @@ export function AIAssistance({
             ))}
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/prompt-management" className="flex items-center">
-                <Settings className="mr-2 size-4" />
-                Manage Prompts
-              </Link>
+              {renderManagePromptsLink()}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

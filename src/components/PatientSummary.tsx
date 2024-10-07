@@ -1,4 +1,4 @@
-import { useAuth } from '@clerk/nextjs';
+import { SignInButton, useAuth } from '@clerk/nextjs';
 import { Check, ChevronDown, Mic, RefreshCw, Settings } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
@@ -45,11 +45,7 @@ export function PatientSummary({
 
   const handleTemplateSelect = (templateId: number) => {
     if (templateId === -1) {
-      if (isSignedIn) {
-        window.location.href = '/template-management';
-      } else {
-        window.location.href = '/sign-in';
-      }
+      // This will be handled by the renderManageTemplatesLink function
       return;
     }
     const selectedTemplate = templates.find(t => t.id === templateId);
@@ -63,6 +59,26 @@ export function PatientSummary({
     const correctedNote = await correctNote(patientSummary);
     if (correctedNote) {
       setPatientSummary(correctedNote);
+    }
+  };
+
+  const renderManageTemplatesLink = () => {
+    if (isSignedIn) {
+      return (
+        <Link href="/template-management" className="flex items-center">
+          <Settings className="mr-2 size-4" />
+          Manage Templates
+        </Link>
+      );
+    } else {
+      return (
+        <SignInButton mode="modal">
+          <button type="button" className="flex items-center">
+            <Settings className="mr-2 size-4" />
+            Manage Templates
+          </button>
+        </SignInButton>
+      );
     }
   };
 
@@ -97,10 +113,7 @@ export function PatientSummary({
               ))}
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/template-management" className="flex items-center">
-                  <Settings className="mr-2 size-4" />
-                  Manage Templates
-                </Link>
+                {renderManageTemplatesLink()}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
