@@ -6,13 +6,10 @@ import React, { useState } from 'react';
 import { AudioRecorder } from '@/components/AudioRecorder';
 import { CollapsibleSection } from '@/components/CollapsibleSection';
 import { ConsultTimer } from '@/components/ConsultTimer';
-import { StructuredNote } from '@/components/StructuredNote';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { NOTE_TEMPLATES } from '@/config/noteTemplates';
 import { useNoteCorrection } from '@/hooks/useNoteCorrection';
 import type { Template } from '@/hooks/useTemplateManagement';
-import type { GeneratedNote } from '@/types';
 
 type PatientSummaryProps = {
   patientSummary: string;
@@ -37,8 +34,7 @@ export function PatientSummary({
 
   const { isSignedIn } = useAuth();
 
-  const [selectedNoteTemplate, setSelectedNoteTemplate] = useState<string>('soap');
-  const [generatedNote, setGeneratedNote] = useState<GeneratedNote | null>(null);
+  const [selectedNoteTemplate, setSelectedNoteTemplate] = useState<string>('history-taking');
 
   const _handleTemplateSelect = (templateId: number) => {
     if (templateId === -1) {
@@ -59,20 +55,7 @@ export function PatientSummary({
     }
   };
 
-  const handleNoteGenerated = (note: GeneratedNote) => {
-    setGeneratedNote(note);
-    // Also update the text area with formatted note
-    const formattedNote = note.sections
-      .map(section => `${section.key.toUpperCase()}:\n${section.content}\n`)
-      .join('\n');
-    setPatientSummary(formattedNote);
-  };
-
-  const handleNoteSave = (updatedNote: GeneratedNote) => {
-    setGeneratedNote(updatedNote);
-    const formattedNote = updatedNote.sections
-      .map(section => `${section.key.toUpperCase()}:\n${section.content}\n`)
-      .join('\n');
+  const handleNoteGenerated = (formattedNote: string) => {
     setPatientSummary(formattedNote);
   };
 
@@ -114,18 +97,6 @@ export function PatientSummary({
               onNoteGenerated={handleNoteGenerated}
             />
           </div>
-
-          {/* Note Section */}
-          {generatedNote && (
-            <div className="rounded-md border bg-card p-3">
-              <h2 className="mb-3 text-base font-medium">Consultation Note</h2>
-              <StructuredNote
-                note={generatedNote}
-                template={NOTE_TEMPLATES.find(t => t.id === selectedNoteTemplate) ?? null}
-                onSave={handleNoteSave}
-              />
-            </div>
-          )}
 
           {/* Raw Note Section */}
           <div className="rounded-md border bg-muted/30 p-2">
