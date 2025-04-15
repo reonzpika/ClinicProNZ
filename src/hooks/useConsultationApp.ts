@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { useAudioRecording } from '@/hooks/useAudioRecording';
 import { useConsultAssist } from '@/hooks/useConsultAssist';
+import { useConsultTimer } from '@/hooks/useConsultTimer';
 import { usePromptManagement } from '@/hooks/usePromptManagement';
 import { useTemplateManagement } from '@/hooks/useTemplateManagement';
 
@@ -31,17 +32,25 @@ export function useConsultationApp() {
 
   const {
     isRecording,
-    transcript,
+    finalTranscript,
     error: recordingError,
     startRecording,
     stopRecording,
   } = useAudioRecording();
 
+  const {
+    isRunning: isTimerRunning,
+    time: consultTime,
+    startTimer,
+    stopTimer,
+    resetTimer,
+  } = useConsultTimer();
+
   useEffect(() => {
-    if (transcript) {
-      setPatientSummary(prevSummary => `${prevSummary} ${transcript}`);
+    if (finalTranscript) {
+      setPatientSummary(prevSummary => `${prevSummary} ${finalTranscript}`);
     }
-  }, [transcript]);
+  }, [finalTranscript]);
 
   const handleTemplateChange = (value: string) => {
     setSelectedTemplate(value);
@@ -55,7 +64,10 @@ export function useConsultationApp() {
     setPatientSummary('');
     setSelectedAITask('consult');
     setCustomPromptResults({});
-    // Reset other state variables as needed
+    if (isRecording) {
+      stopRecording();
+    }
+    resetTimer();
   };
 
   const handleCustomPrompt = async (promptId: number) => {
@@ -106,5 +118,10 @@ export function useConsultationApp() {
     deleteTemplate,
     handleCustomPrompt,
     recordingError,
+    isTimerRunning,
+    consultTime,
+    startTimer,
+    stopTimer,
+    resetTimer,
   };
 }

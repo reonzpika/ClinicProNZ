@@ -1,26 +1,25 @@
 import { SignInButton, useAuth } from '@clerk/nextjs';
-import { Check, ChevronDown, Mic, RefreshCw, Settings } from 'lucide-react';
+import { Check, RefreshCw, Settings } from 'lucide-react';
 import Link from 'next/link';
-import React from 'react';
+import React, { useState } from 'react';
 
+import { AudioRecorder } from '@/components/AudioRecorder';
+import { CollapsibleSection } from '@/components/CollapsibleSection';
+import { ConsultTimer } from '@/components/ConsultTimer';
+import { StructuredNote } from '@/components/StructuredNote';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Textarea } from '@/components/ui/textarea';
+import { NOTE_TEMPLATES } from '@/config/noteTemplates';
 import { useNoteCorrection } from '@/hooks/useNoteCorrection';
 import type { Template } from '@/hooks/useTemplateManagement';
+import type { GeneratedNote } from '@/types';
 
 type PatientSummaryProps = {
   patientSummary: string;
   setPatientSummary: (summary: string) => void;
-  selectedTemplate: string;
   handleTemplateChange: (template: string) => void;
-  isRecording: boolean;
-  startRecording: () => void;
-  stopRecording: () => void;
   templates: Template[];
   resetAll: () => void;
-  isLoading: boolean;
   error: string | null;
   recordingError: string | null;
 };
@@ -28,14 +27,9 @@ type PatientSummaryProps = {
 export function PatientSummary({
   patientSummary,
   setPatientSummary,
-  selectedTemplate,
   handleTemplateChange,
-  isRecording,
-  startRecording,
-  stopRecording,
   templates,
   resetAll,
-  isLoading,
   error,
   recordingError,
 }: PatientSummaryProps) {
@@ -43,7 +37,10 @@ export function PatientSummary({
 
   const { isSignedIn } = useAuth();
 
-  const handleTemplateSelect = (templateId: number) => {
+  const [selectedNoteTemplate, setSelectedNoteTemplate] = useState<string>('soap');
+  const [generatedNote, setGeneratedNote] = useState<GeneratedNote | null>(null);
+
+  const _handleTemplateSelect = (templateId: number) => {
     if (templateId === -1) {
       // This will be handled by the renderManageTemplatesLink function
       return;
@@ -62,7 +59,24 @@ export function PatientSummary({
     }
   };
 
-  const renderManageTemplatesLink = () => {
+  const handleNoteGenerated = (note: GeneratedNote) => {
+    setGeneratedNote(note);
+    // Also update the text area with formatted note
+    const formattedNote = note.sections
+      .map(section => `${section.key.toUpperCase()}:\n${section.content}\n`)
+      .join('\n');
+    setPatientSummary(formattedNote);
+  };
+
+  const handleNoteSave = (updatedNote: GeneratedNote) => {
+    setGeneratedNote(updatedNote);
+    const formattedNote = updatedNote.sections
+      .map(section => `${section.key.toUpperCase()}:\n${section.content}\n`)
+      .join('\n');
+    setPatientSummary(formattedNote);
+  };
+
+  const _renderManageTemplatesLink = () => {
     if (isSignedIn) {
       return (
         <Link href="/template-management" className="flex items-center">
@@ -86,72 +100,85 @@ export function PatientSummary({
     <Card className="flex h-full flex-col rounded-none border-0 bg-card">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 bg-muted px-2 py-1">
         <CardTitle className="text-lg font-semibold">Consultation</CardTitle>
-        <div className="flex items-center space-x-2">
-          <Button
-            variant={isRecording ? 'destructive' : 'secondary'}
-            size="icon"
-            onClick={isRecording ? stopRecording : startRecording}
-          >
-            <Mic className={`size-4 ${isRecording ? 'animate-pulse' : ''}`} />
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                {selectedTemplate ? templates.find(t => t.id.toString() === selectedTemplate)?.name : 'Templates'}
-                <ChevronDown className="ml-1 size-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              {templates.map(template => (
-                <DropdownMenuItem
-                  key={template.id}
-                  onSelect={() => handleTemplateSelect(template.id)}
-                >
-                  {template.name}
-                  {template.id.toString() === selectedTemplate && <Check className="ml-2 size-4" />}
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                {renderManageTemplatesLink()}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="flex items-center gap-2">
+          <ConsultTimer />
         </div>
       </CardHeader>
-      <CardContent className="flex grow flex-col space-y-2 p-2">
-        <Textarea
-          placeholder="Enter patient notes here..."
-          className="min-h-[200px] grow resize-none bg-background"
-          value={patientSummary}
-          onChange={e => setPatientSummary(e.target.value)}
-        />
-        <div className="grid grid-cols-2 gap-2">
-          <Button
-            onClick={handleCorrect}
-            variant="outline"
-            size="sm"
-            disabled={isCorrecting}
-            className="w-full"
-          >
-            {isCorrecting
-              ? (
-                  <RefreshCw className="mr-1 size-3 animate-spin" />
-                )
-              : (
-                  <Check className="mr-1 size-3" />
-                )}
-            Correct
-          </Button>
-          <Button onClick={resetAll} variant="outline" size="sm" className="w-full">
-            <RefreshCw className="mr-1 size-3" />
-            Reset All
-          </Button>
+      <CardContent className="flex grow flex-col gap-3 p-2">
+        <div className="space-y-3">
+          {/* Recording Section */}
+          <div className="rounded-md border bg-muted/30 p-2">
+            <AudioRecorder
+              selectedTemplate={selectedNoteTemplate}
+              onTemplateChange={setSelectedNoteTemplate}
+              onNoteGenerated={handleNoteGenerated}
+            />
+          </div>
+
+          {/* Note Section */}
+          {generatedNote && (
+            <div className="rounded-md border bg-card p-3">
+              <h2 className="mb-3 text-base font-medium">Consultation Note</h2>
+              <StructuredNote
+                note={generatedNote}
+                template={NOTE_TEMPLATES.find(t => t.id === selectedNoteTemplate) ?? null}
+                onSave={handleNoteSave}
+              />
+            </div>
+          )}
+
+          {/* Raw Note Section */}
+          <div className="rounded-md border bg-muted/30 p-2">
+            <CollapsibleSection
+              title="Raw Note Content"
+              content={patientSummary}
+              selectedTemplate={selectedNoteTemplate}
+              onChange={setPatientSummary}
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-2">
+            <Button
+              onClick={handleCorrect}
+              variant="outline"
+              size="sm"
+              disabled={isCorrecting}
+              className="flex-1"
+            >
+              {isCorrecting ? <RefreshCw className="size-3 animate-spin" /> : <Check className="size-3" />}
+              <span className="ml-1">Correct</span>
+            </Button>
+            <Button onClick={resetAll} variant="outline" size="sm" className="flex-1">
+              <RefreshCw className="size-3" />
+              <span className="ml-1">Reset All</span>
+            </Button>
+          </div>
         </div>
-        {isLoading && <p>Loading...</p>}
-        {error && <p className="text-red-500">{error}</p>}
-        {recordingError && <p className="text-red-500">{recordingError}</p>}
-        {correctionError && <p className="text-red-500">{correctionError}</p>}
+
+        {/* Error Messages */}
+        {(error || recordingError || correctionError) && (
+          <div className="rounded-md bg-destructive/10 p-2 text-sm text-destructive">
+            {error && (
+              <p>
+                Error:
+                {error}
+              </p>
+            )}
+            {recordingError && (
+              <p>
+                Recording Error:
+                {recordingError}
+              </p>
+            )}
+            {correctionError && (
+              <p>
+                Correction Error:
+                {correctionError}
+              </p>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

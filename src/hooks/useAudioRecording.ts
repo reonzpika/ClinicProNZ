@@ -6,7 +6,8 @@ const DEEPGRAM_API_KEY = process.env.NEXT_PUBLIC_DEEPGRAM_API_KEY;
 
 export function useAudioRecording() {
   const [isRecording, setIsRecording] = useState(false);
-  const [transcript, setTranscript] = useState('');
+  const [finalTranscript, setFinalTranscript] = useState('');
+  const [interimTranscript, setInterimTranscript] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -17,67 +18,13 @@ export function useAudioRecording() {
       if (connectionRef.current) {
         connectionRef.current.finish();
       }
+      if (mediaRecorderRef.current?.stream) {
+        mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+      }
     };
   }, []);
 
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
-
-      const deepgram = createClient(DEEPGRAM_API_KEY);
-      if (!deepgram || !deepgram.listen || !deepgram.listen.live) {
-        throw new Error('Deepgram client is not properly initialized');
-      }
-
-      const connection = deepgram.listen.live({
-        language: 'en-GB',
-        model: 'nova-2',
-        punctuate: true,
-        interim_results: true,
-      });
-
-      connection.addListener(LiveTranscriptionEvents.Open, () => {
-        setIsRecording(true);
-        mediaRecorderRef.current?.start(250);
-      });
-
-      connection.addListener(LiveTranscriptionEvents.Transcript, (data) => {
-        const transcript = data.channel.alternatives[0].transcript;
-        if (transcript && data.is_final) {
-          setTranscript(prev => `${prev} ${transcript}`);
-        }
-      });
-
-      connection.addListener(LiveTranscriptionEvents.Error, (error) => {
-        console.error('Deepgram error:', error);
-        setError('Deepgram connection error occurred');
-      });
-
-      connection.addListener(LiveTranscriptionEvents.Close, () => {
-        setIsRecording(false);
-      });
-
-      connectionRef.current = connection;
-
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        if (event.data.size > 0 && connectionRef.current) {
-          connectionRef.current.send(event.data);
-        }
-      };
-
-      mediaRecorderRef.current.onstop = () => {
-        if (connection) {
-          connection.finish();
-        }
-      };
-    } catch (err) {
-      console.error('Error starting recording:', err);
-      setError('Failed to start recording');
-    }
-  };
-
-  const stopRecording = () => {
+  const stopRecording = async () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
     }
@@ -85,7 +32,87 @@ export function useAudioRecording() {
       connectionRef.current.finish();
     }
     setIsRecording(false);
+    setInterimTranscript('');
   };
 
-  return { isRecording, transcript, error, startRecording, stopRecording };
+  const startRecording = async () => {
+    try {
+      // 1. Get microphone access and initialize MediaRecorder
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+
+      // 2. Initialize Deepgram
+      const deepgram = createClient(DEEPGRAM_API_KEY!);
+
+      // 3. Create live transcription
+      const connection = deepgram.listen.live({
+        model: 'nova-2',
+        language: 'en-US',
+        smart_format: true,
+        interim_results: true,
+      });
+
+      connectionRef.current = connection;
+
+      // 4. Handle transcription results
+      connection.addListener(LiveTranscriptionEvents.Transcript, (data) => {
+        const { is_final, channel } = data;
+        const transcript = channel.alternatives[0].transcript;
+
+        if (is_final) {
+          setFinalTranscript(prev => `${prev} ${transcript}`.trim());
+          setInterimTranscript('');
+        } else {
+          setInterimTranscript(transcript);
+        }
+      });
+
+      connection.addListener(LiveTranscriptionEvents.Open, () => {
+        setIsRecording(true);
+        mediaRecorderRef.current?.start(250);
+      });
+
+      connection.addListener(LiveTranscriptionEvents.Error, (error) => {
+        console.error('Deepgram error:', error);
+        setError('Deepgram connection error occurred');
+        stopRecording();
+      });
+
+      connection.addListener(LiveTranscriptionEvents.Close, () => {
+        setIsRecording(false);
+        setInterimTranscript('');
+      });
+
+      if (mediaRecorderRef.current) {
+        mediaRecorderRef.current.ondataavailable = (event) => {
+          if (event.data.size > 0 && connectionRef.current) {
+            connectionRef.current.send(event.data);
+          }
+        };
+
+        mediaRecorderRef.current.onstop = () => {
+          if (connection) {
+            connection.finish();
+          }
+        };
+      }
+    } catch (err) {
+      console.error('Error starting recording:', err);
+      setError(
+        err instanceof Error && err.name === 'NotAllowedError'
+          ? 'Microphone permission denied'
+          : 'Failed to start recording',
+      );
+      setIsRecording(false);
+    }
+  };
+
+  return {
+    isRecording,
+    finalTranscript,
+    interimTranscript,
+    error,
+    startRecording,
+    stopRecording,
+  };
 }
