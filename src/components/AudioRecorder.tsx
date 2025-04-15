@@ -14,7 +14,7 @@ import { NOTE_TEMPLATES } from '@/config/noteTemplates';
 import { useAudioRecording } from '@/hooks/useAudioRecording';
 import { useNoteGeneration } from '@/hooks/useNoteGeneration';
 import { useTranscriptAnalysis } from '@/hooks/useTranscriptAnalysis';
-import type { ConciseLevel, GeneratedNote } from '@/types';
+import type { ConciseLevel } from '@/types';
 
 // Add specific error types
 type NoteGenerationError =
@@ -39,17 +39,19 @@ const getNoteGenerationErrorMessage = (type: NoteGenerationError): string => {
   }
 };
 
+type AudioRecorderProps = {
+  disabled?: boolean;
+  selectedTemplate: string;
+  onTemplateChange: (templateId: string) => void;
+  onNoteGenerated: (formattedNote: string) => void;
+};
+
 export function AudioRecorder({
   disabled,
   selectedTemplate,
   onTemplateChange,
   onNoteGenerated,
-}: {
-  disabled?: boolean;
-  selectedTemplate: string;
-  onTemplateChange: (templateId: string) => void;
-  onNoteGenerated: (note: GeneratedNote) => void;
-}) {
+}: AudioRecorderProps) {
   const {
     isRecording,
     finalTranscript,
@@ -77,7 +79,7 @@ export function AudioRecorder({
   // Add a ref to track if we've already generated a note for this recording
   const hasGeneratedNote = useRef(false);
 
-  const [conciseLevel, setConciseLevel] = useState<ConciseLevel>('detailed');
+  const [conciseLevel, setConciseLevel] = useState<ConciseLevel>('concise');
 
   const handleCardExpand = (cardType: 'transcript' | 'findings', expanded: boolean) => {
     if (expanded) {
@@ -126,7 +128,12 @@ export function AudioRecorder({
             throw new Error('GENERATION_FAILED');
           }
 
-          onNoteGenerated(note);
+          // Format note before sending to parent
+          const formattedNote = note.sections
+            .map(section => `${section.key.toUpperCase()}:\n${section.content}\n`)
+            .join('\n');
+
+          onNoteGenerated(formattedNote);
           toast({
             title: 'Success',
             description: 'Your consultation note has been generated successfully.',

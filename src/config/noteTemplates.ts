@@ -68,7 +68,7 @@ export const NOTE_TEMPLATES: NoteTemplate[] = [
     },
   },
   {
-    id: 'history-focused',
+    id: 'history-taking',
     name: 'History Taking',
     description: 'Detailed history with multiple presenting complaints',
     structure: {
