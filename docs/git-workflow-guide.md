@@ -86,6 +86,45 @@ git branch -d feature/your-feature-name        # Delete local branch
 git push origin --delete feature/your-feature-name  # Delete remote branch
 ```
 
+## Handling Multiple Features
+
+### Switching Between Features
+
+When you need to work on multiple features simultaneously:
+
+1. Never switch between features in the same branch
+2. Create separate feature branches for each feature
+3. Use Git stash to save work in progress
+
+Example workflow:
+
+1. Start working on first feature:
+```powershell
+git checkout -b feature/live-transcription
+# Make changes...
+git add .
+git stash save "WIP: Live transcription component"
+```
+
+2. Switch to second feature:
+```powershell
+git checkout -b feature/template-management
+# Work on template management...
+```
+
+3. Return to first feature:
+```powershell
+git checkout feature/live-transcription
+git stash pop  # Restore your work
+```
+
+Key points for multiple features:
+- Each feature should have its own branch
+- Use `git stash` to save work in progress
+- Commit changes regularly with meaningful messages
+- Keep branches up to date with main
+- When a feature is complete, merge it back to main
+
 ## Common Scenarios and Commands
 
 ### Stashing Changes
