@@ -56,11 +56,17 @@ src/
 │   │   │
 │   │   └── TemplatePanel/
 │   │       ├── index.tsx    # Template selection
+│   │       ├── TemplateSelector.tsx  # Template selection UI
+│   │       ├── TemplatePreview.tsx   # Template structure preview
 │   │       └── QuickInsert.tsx
 │   │
 │   ├── dashboard/          # Dashboard components
 │   │   ├── RecentConsultations.tsx
-│   │   ├── TemplateManager.tsx
+│   │   ├── TemplateManager/
+│   │   │   ├── index.tsx    # Template management interface
+│   │   │   ├── TemplateEditor.tsx  # Template structure editor
+│   │   │   ├── TemplateList.tsx    # List of available templates
+│   │   │   └── TemplatePreview.tsx # Template preview
 │   │   └── Stats.tsx
 │   │
 │   └── ui/                # Shared UI components
@@ -73,7 +79,11 @@ src/
 │   │   ├── transcription.ts
 │   │   ├── quick-notes.ts # Quick notes logic
 │   │   ├── notes.ts
-│   │   └── templates.ts
+│   │   └── templates/
+│   │       ├── index.ts   # Template service
+│   │       ├── types.ts   # Template types
+│   │       ├── prompt.ts  # Prompt generation
+│   │       └── validation.ts  # Template validation
 │   │
 │   ├── medical/          # Medical-specific utilities
 │   │   ├── terminology.ts
@@ -88,7 +98,11 @@ src/
 │   │   ├── useTranscription.ts
 │   │   ├── useQuickNotes.ts  # Simple quick notes state
 │   │   ├── useNotes.ts
-│   │   └── useTemplates.ts
+│   │   └── useTemplates/
+│   │       ├── index.ts      # Template hooks
+│   │       ├── useTemplateSelection.ts
+│   │       ├── useTemplateEditor.ts
+│   │       └── usePromptGeneration.ts
 │   │
 │   └── common/        # Shared hooks
 │       ├── useDebounce.ts
@@ -97,6 +111,7 @@ src/
 ├── types/             # TypeScript types
 │   ├── consultation.ts
 │   ├── medical.ts
+│   ├── templates.ts   # Template-related types
 │   └── common.ts
 │
 └── styles/           # Styling
@@ -115,10 +130,19 @@ src/
 - Intuitive data flow
 - Real-time updates
 
-### 3. Template Management
-- Easy template access
-- Quick template insertion
-- Context-aware suggestions
+### 3. Template System
+- Template Structure:
+  - JSON-based template definitions
+  - Section types (text/array)
+  - Required/optional sections
+- Template Management:
+  - Default templates
+  - Custom templates
+  - Template validation
+- Prompt Generation:
+  - Template to prompt conversion
+  - Section formatting
+  - AI instruction generation
 
 ## Performance Considerations
 

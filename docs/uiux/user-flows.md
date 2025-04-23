@@ -2,6 +2,39 @@
 
 This document outlines the key user journeys and interactions in ConsultAI NZ from a GP's perspective. It focuses on the real-world clinical workflow and how the platform supports it.
 
+## Template Management
+
+### 1. Template Selection
+**User Actions**:
+1. Open consultation page
+2. View available templates:
+   - Default templates (always visible)
+   - Custom templates (if logged in)
+3. Select appropriate template
+4. Start consultation
+
+**System Response**:
+- Loads template structure
+- Updates consultation state
+- Prepares prompt generation
+
+### 2. Template Customization (Logged-in Users)
+**User Actions**:
+1. Access template management
+2. Create new template:
+   - Define template name
+   - Add/remove sections
+   - Set section types (text/array)
+   - Mark required sections
+3. Save template
+4. Use in consultation
+
+**System Response**:
+- Validates template structure
+- Saves to user's templates
+- Updates template list
+- Confirms successful creation
+
 ## Consultation Journey
 
 ### 1. Starting a Consultation
@@ -31,7 +64,6 @@ This document outlines the key user journeys and interactions in ConsultAI NZ fr
 **System Response**:
 - Updates transcription in real-time
 - Displays quick notes in dedicated section
-```
 
 ### 3. Note Generation
 

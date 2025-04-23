@@ -11,10 +11,13 @@ sequenceDiagram
     participant Deepgram
     participant ChatGPT
     participant State
+    participant TemplateService
 
     GP->>UI: Start Consultation
     activate UI
     UI->>State: Initialize Session
+    UI->>TemplateService: Load Default Template
+    TemplateService->>State: Set Template Structure
     UI->>Deepgram: Start Recording
 
     loop Real-time Processing
@@ -26,8 +29,9 @@ sequenceDiagram
 
     GP->>UI: Stop Recording
     UI->>Deepgram: End Stream
-    UI->>ChatGPT: Send Transcription & Notes
-    ChatGPT->>ChatGPT: Generate Clinical Notes
+    UI->>TemplateService: Get Template Prompt
+    TemplateService->>ChatGPT: Send Transcription + Template Prompt
+    ChatGPT->>ChatGPT: Generate Structured Notes
     ChatGPT->>UI: Display Generated Notes
     GP->>UI: Review/Edit
     UI->>State: Save Final Notes
@@ -49,9 +53,19 @@ type ConsultationState = {
   template: {
     id: string;
     name: string;
-    content: string;
-    isDefault: boolean;
+    type: 'default' | 'custom';
+    structure: TemplateStructure;
+    ownerId?: string; // for custom templates
   };
+};
+
+type TemplateStructure = {
+  sections: {
+    name: string;
+    required: boolean;
+    type: 'text' | 'array';
+    subsections?: TemplateStructure[];
+  }[];
 };
 ```
 
@@ -81,7 +95,40 @@ type RealTimeProcessor = {
   - UI updates
   - Template management
 
-### 3. AI Services
+### 3. Template System
+
+#### Template Service
+```typescript
+type TemplateService = {
+  getDefaultTemplates: () => Promise<Template[]>;
+  getUserTemplates: (userId: string) => Promise<Template[]>;
+  createTemplate: (template: Omit<Template, 'id'>) => Promise<Template>;
+  updateTemplate: (template: Template) => Promise<Template>;
+  deleteTemplate: (templateId: string) => Promise<void>;
+  generatePrompt: (template: Template, transcription: string) => string;
+};
+
+type Template = {
+  id: string;
+  name: string;
+  type: 'default' | 'custom';
+  structure: TemplateStructure;
+  ownerId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+```
+
+#### Prompt Generation
+```typescript
+type PromptGenerator = {
+  generatePrompt: (template: Template, transcription: string) => string;
+  formatSection: (section: TemplateStructure) => string;
+  formatArraySection: (section: TemplateStructure) => string;
+};
+```
+
+### 4. AI Services
 
 #### Deepgram Integration
 ```typescript
@@ -98,12 +145,13 @@ type ChatGPTService = {
   generateNotes: (input: {
     transcription: string;
     quickNotes: string[];
-    template: Template;
+    templatePrompt: string;
   }) => Promise<string>;
 };
 ```
 
 - **Features**:
   - Clinical note generation
-  - Template application
-  - Note structuring
+  - Template-based structuring
+  - Note formatting
+w

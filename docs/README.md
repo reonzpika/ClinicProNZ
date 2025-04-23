@@ -18,7 +18,8 @@ This is my personal project to create an AI-powered medical consultation platfor
 │   ├── project-structure.md  # Project organization and architecture
 │   ├── tech-stack.md        # Technology choices and configurations
 │   ├── git-rules.md         # Version control guidelines
-│   └── logic-flows.md       # Core system interactions and data flow
+│   ├── logic-flows.md       # Core system interactions and data flow
+│   └── template-prompt-system.md  # Template and prompt generation system
 │
 ├── project/        # Project vision and principles
 │   ├── overview.md          # Project goals and features
@@ -62,6 +63,7 @@ This is my personal project to create an AI-powered medical consultation platfor
 - [Development Principles](project/dev-principles.md)
 - [Project Structure](engineering/project-structure.md)
 - [Logic Flows](engineering/logic-flows.md)
+- [Template System](engineering/template-prompt-system.md) - Currently in progress
 - [User Flows](uiux/user-flows.md)
 - [Development Progress](project/todo.md)
 

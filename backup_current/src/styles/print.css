@@ -1,0 +1,106 @@
+@media print {
+  /* Hide non-printable elements */
+  .print\\:hidden {
+    display: none !important;
+  }
+
+  /* Reset page margins */
+  @page {
+    margin: 2cm;
+  }
+
+  /* Basic styling */
+  body {
+    font-size: 12pt;
+    line-height: 1.5;
+    color: black;
+    background: white;
+  }
+
+  /* Container styles */
+  .formatted-note {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    background: none;
+  }
+
+  /* Typography */
+  h1 {
+    font-size: 18pt;
+    margin-bottom: 1cm;
+  }
+
+  h2 {
+    font-size: 14pt;
+    margin-top: 1cm;
+    margin-bottom: 0.5cm;
+    page-break-after: avoid;
+  }
+
+  /* Metadata grid */
+  .metadata-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5cm;
+    margin-bottom: 1cm;
+    border-bottom: 1pt solid #ccc;
+    padding-bottom: 0.5cm;
+  }
+
+  /* Section breaks */
+  section {
+    page-break-inside: avoid;
+    margin-bottom: 1cm;
+  }
+
+  /* Links */
+  a {
+    text-decoration: none;
+    color: black;
+  }
+
+  /* Remove background colors and borders */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Force background colors for specific elements */
+  .print\\:bg-white {
+    background-color: white !important;
+  }
+
+  .print\\:border-black {
+    border-color: black !important;
+  }
+
+  /* Ensure content is visible */
+  .print\\:visible {
+    visibility: visible !important;
+    display: block !important;
+  }
+
+  /* Add page numbers */
+  .page-number::after {
+    content: counter(page);
+    counter-increment: page;
+  }
+
+  /* Ensure proper page breaks */
+  .page-break-before {
+    page-break-before: always;
+  }
+
+  .page-break-after {
+    page-break-after: always;
+  }
+
+  /* QR code visibility */
+  .qr-code {
+    display: block !important;
+    margin: 1cm 0;
+  }
+}

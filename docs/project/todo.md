@@ -1,15 +1,16 @@
 # Development Progress and Todo List
 
 ## Current Focus
-- **Feature**: Project Foundations
+- **Feature**: Project Foundations Template Based Prompt System
 - **Status**: In progress
 - **Branch**: feature/project-foundations
-- **Last Updated**: [Date]
+- **Last Updated**: 23/04/2025
 
 ### Current Tasks
-- [ ] create new doc about template management
-- [ ] think about state management
-- [ ] create a new doc about state management
+- [x] Decide on the template structure
+- [ ] Implement the template based prompt system
+- [x] Create initial documentation for the template based prompt system
+- [ ] Complete template-prompt-system.md documentation
 - [ ] Restructure the current project to the new structure based on the new docs
 
 ### Blockers
@@ -27,16 +28,32 @@
    - Priority: Medium
    - Estimated effort: 5 days
 
+3. [ ] Multi-language Support
+   - Description: Add support for multiple languages
+   - Priority: Low
+   - Estimated effort: 7 days
+
+4. [ ] Analytics & Reporting
+   - Description: Add analytics and reporting capabilities
+   - Priority: Low
+   - Estimated effort: 5 days
+
+5. [ ] Mobile App Development
+   - Description: Create mobile app version
+   - Priority: Medium
+   - Estimated effort: 15 days
+
 ## Completed Features
-- [x] Feature 1
-  - Completed: [Date]
-  - Notes: [Any relevant notes]
+- [x] Template Structure Documentation
+  - Completed: [Current Date]
+  - Notes: Initial documentation created with basic and enhanced template formats
 
 ## Technical Debt
-- [ ] Item 1
-- [ ] Item 2
+- [ ] Complete template-prompt-system.md documentation
+- [ ] Add implementation details for template management system
+- [ ] Add security considerations for template system
 
 ## Notes
-- Add any relevant notes here
-- Keep track of important decisions
-- Document any issues found
+- Template structure documentation is in progress
+- Need to finalize the enhanced template format
+- Consider MVP approach for initial implementation

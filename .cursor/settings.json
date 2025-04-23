@@ -1,0 +1,7 @@
+{
+  "chat": {
+    "autoAttachFiles": [
+      "docs/README.md"
+    ]
+  }
+} 
