@@ -1,0 +1,38 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: Core features, implementation details, and UI guidelines for ConsultAI NZ
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# ConsultAI NZ Core Features
+
+## 1. Live Transcription
+- Real-time transcription using Deepgram
+- New Zealand English and medical terminology support
+- Automatic speaker diarization (doctor vs patient)
+- Optimized for medical consultation context
+
+## 2. Intelligent Note Generation
+- AI-powered consultation note generation
+- Template-based structure
+- Context-aware medical terminology
+- Integration with transcription system
+
+## 3. User Interface
+- Clean, intuitive design
+- Medical workflow optimization
+- Responsive layout
+- Accessibility compliance
+- Healthcare environment considerations
+
+## Implementation Guidelines
+- Focus on medical accuracy
+- Prioritize GP workflow efficiency
+- Ensure data privacy and security
+- Maintain healthcare compliance
+- Optimize for real-time performance

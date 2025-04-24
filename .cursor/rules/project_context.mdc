@@ -1,0 +1,118 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: Core project context, development guidelines, and documentation structure for ConsultAI NZ
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# ConsultAI NZ Development Context
+
+## Project Overview
+- AI-powered medical consultation platform for New Zealand healthcare professionals
+- Developed by a General Practitioner (GP) with no prior coding experience
+- Built through pair programming with Cursor's AI agent
+- Following Minimum Viable Consultation (MVC) approach
+
+## Development Context
+- Developer is a medical professional learning to code
+- Clear, step-by-step guidance required
+- Technical concepts need to be explained in accessible terms
+- Documentation serves as shared context for pair programming sessions
+- Focus on New Zealand healthcare context and GP workflow
+
+## MVC Development Principles
+
+### 1. Core Features First
+- Essential functionality focused on medical consultation
+
+### 2. Simplicity & Usability
+- Keep code simple and readable
+- Avoid over-engineering
+- Use straightforward solutions
+- Minimize dependencies
+- Maintain clean architecture
+- Minimize cognitive load during consultations
+- Ensure intuitive navigation
+- Focus on practical outcomes
+
+### 3. Scalability & Performance
+- Design for future expansion
+- Use modular architecture
+- Minimize latency in note generation
+
+## Documentation Structure
+> **Note**: Documentation structure is currently in transition. We are moving from traditional markdown documentation to Cursor rules format for better AI context. The structure below will be updated as new rules are added.
+
+```
+/docs
+├── engineering/     # Technical implementation details
+│   ├── project-structure.md  # Project organization and architecture
+│   ├── tech-stack.md        # Technology choices and configurations
+│   ├── git-rules.md         # Version control guidelines
+│   ├── logic-flows.md       # Core system interactions and data flow
+│   └── template-prompt-system.md  # Template and prompt generation system
+│
+├── project/        # Project vision and principles
+│   ├── overview.md          # Project goals and features
+│   ├── dev-principles.md    # Development standards and practices
+│   ├── ai-agent-instruction.md  # AI agent interaction guidelines
+│   └── todo.md              # Development progress and tasks
+│
+└── uiux/          # Design documentation
+    ├── ui-notes.md         # UI components and styling guidelines
+    ├── wireframes.md       # Layout and interface designs
+    └── user-flows.md       # GP consultation journey and interactions
+```
+
+## Documentation Transition
+- Moving from markdown to Cursor rules format
+- New rules will be added to `.cursor/rules/` directory
+- Original documentation will be maintained as reference
+- Rules will be optimized for AI context
+- Documentation structure will be updated as new rules are added
+
+## Documentation Guidelines
+- AI agent must not edit documentation files directly
+- All documentation changes must be requested from the developer
+- Clear reasoning required for suggested documentation updates
+- Track documentation changes in todo list
+
+## Development Approach
+1. Start with project fundamentals (overview, principles, AI guidelines)
+2. Follow technical implementation guidelines
+3. Adhere to design and interface specifications
+4. Maintain consistent development practices
+5. Focus on MVC core features first
+6. Consider medical accuracy and workflow impact
+7. Evaluate against MVP scope and resource constraints
+
+## Quick Reference Links
+- Project Overview: @project/overview.md
+- Development Principles: @project/dev-principles.md
+- Project Structure: @engineering/project-structure.md
+- Logic Flows: @engineering/logic-flows.md
+- Template System: @engineering/template-prompt-system.md
+- User Flows: @uiux/user-flows.md
+- Development Progress: @project/todo.md
+
+## Documentation Change Process
+1. Explain why change is needed
+2. Provide specific examples
+3. Request developer approval
+4. Update todo list if approved
+5. Follow existing structure and format
+
+## Code Documentation Requirements
+
+### 1. Code Comments
+- Add clear, concise comments explaining complex logic
+- Explain non-obvious code sections
+- Include TODO comments for future improvements
+
+### 2. Comment Style
+- Use JSDoc format for TypeScript/JavaScript
+- Use clear, non-technical language where possible

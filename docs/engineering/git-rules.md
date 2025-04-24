@@ -24,11 +24,17 @@ When assisting with git operations, follow these guidelines:
 
 ### AI Commit Process
 1. Always check git status first
-2. Stage all relevant changes
-3. Use descriptive commit messages
-4. Include `--no-verify` flag to bypass pre-commit hooks
-5. Push changes to remote
-6. Confirm success of operations
+2. Stage changes with separate git add command
+3. Commit changes with separate git commit command
+4. Use descriptive commit messages
+5. Include `--no-verify` flag to bypass pre-commit hooks
+6. Push changes to remote
+7. Confirm success of operations
+
+### Important Note
+- Always execute git commands separately (e.g., `git add` and `git commit` as separate commands)
+- Never combine multiple git operations in a single command
+- Verify each step's success before proceeding to the next
 
 ### Common AI Commands
 ```bash
