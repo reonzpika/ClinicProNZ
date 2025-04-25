@@ -14,30 +14,35 @@ Templates are NOT forms to be filled out by GPs. Instead, they:
 ## Basic Template Structure
 
 ```typescript
-// This is what a template looks like in our system
+// Core template type definition
 type Template = {
-  id: string; // Unique identifier (like a patient's NHI number)
-  name: string; // Template name (e.g., "SOAP Note", "Driver's License Medical")
-  type: 'default' | 'custom'; // System template or one you created
-  ownerId?: string; // Who created the template (for custom templates)
+  id: string; // Unique identifier for the template
+  name: string; // Human-readable name (e.g., "SOAP Note")
+  type: 'default' | 'custom'; // System template or user-created
+  ownerId?: string; // For custom templates
 
-  // The different parts of your medical note
+  // Each section defines a part of the medical note
   sections: {
-    name: string; // Section name (e.g., "History", "Examination")
-    type: 'text' | 'array'; // Single text or multiple items
+    name: string; // Section identifier (e.g., "subjective")
+    type: 'text' | 'array'; // Output format: paragraph or bullet points
     required: boolean; // Whether this section must be filled
-    description: string; // What goes in this section
-    subsections?: Section[]; // Nested sections if needed
+    description: string; // What this section is for
+    prompt: string; // Specific instructions for this section
+    subsections?: Section[]; // For nested sections if needed
   }[];
 
-  // Instructions for the AI
+  // Global prompts for the entire template
   prompts: {
-    system: string; // Basic medical context
-    structure: string; // How to organize the note
+    system: string; // Sets the AI's role and context
+    structure: string; // Overall structure guidance
   };
 };
+```
 
-// Example of a simple SOAP template
+## Template Examples
+
+### 1. Basic SOAP Note Template
+```typescript
 const soapTemplate: Template = {
   id: 'default-soap',
   name: 'SOAP Note',
@@ -48,25 +53,29 @@ const soapTemplate: Template = {
       name: 'subjective',
       type: 'text',
       required: true,
-      description: 'Patient\'s description of symptoms and history'
+      description: 'Patient\'s description of symptoms and history',
+      prompt: 'Summarize the patient\'s main concerns and history in 1-2 concise paragraphs.'
     },
     {
       name: 'objective',
-      type: 'text',
+      type: 'array',
       required: true,
-      description: 'Clinical findings and examination results'
+      description: 'Clinical findings and examination results',
+      prompt: 'List all clinical findings, vital signs, and examination results as bullet points.'
     },
     {
       name: 'assessment',
       type: 'text',
       required: true,
-      description: 'Clinical diagnosis or impression'
+      description: 'Clinical diagnosis or impression',
+      prompt: 'Provide a clear clinical assessment or diagnosis.'
     },
     {
       name: 'plan',
-      type: 'text',
+      type: 'array',
       required: true,
-      description: 'Treatment plan and follow-up'
+      description: 'Treatment plan and follow-up',
+      prompt: 'List all treatment actions, medications, and follow-up plans as bullet points.'
     }
   ],
 
@@ -77,223 +86,238 @@ const soapTemplate: Template = {
 };
 ```
 
-## How Templates Become Prompts
-
-When you use a template, the system converts it into instructions for the AI. Here's how it works:
-
+### 2. Hierarchical Multi-Problem SOAP Note Template
 ```typescript
-// Example of how a template becomes a medical note
-function generateMedicalNote(template: Template, consultation: string): string {
-  // 1. Start with the basic instructions
-  const instructions = `
-${template.prompts.system}
+const hierarchicalMultiProblemSoapTemplate: Template = {
+  id: 'default-hierarchical-multi-problem-soap',
+  name: 'Hierarchical Multi-Problem SOAP Note',
+  type: 'default',
 
-${template.prompts.structure}
-`;
+  sections: [
+    {
+      name: 'overview',
+      type: 'array',
+      required: true,
+      description: 'List of all problems discussed',
+      prompt: 'List each problem the patient presented with as a bullet point.'
+    },
+    {
+      name: 'problems',
+      type: 'array',
+      required: true,
+      description: 'SOAP notes for each problem',
+      prompt: 'For each problem listed in the overview, provide a complete SOAP note.',
+      subsections: [
+        {
+          name: 'problem_name',
+          type: 'text',
+          required: true,
+          description: 'Name of the problem',
+          prompt: 'State the problem name clearly.'
+        },
+        {
+          name: 'subjective',
+          type: 'text',
+          required: true,
+          description: 'Patient\'s description for this problem',
+          prompt: 'Summarize the patient\'s concerns and history specific to this problem.'
+        },
+        {
+          name: 'objective',
+          type: 'array',
+          required: true,
+          description: 'Clinical findings for this problem',
+          prompt: 'List all relevant clinical findings, vital signs, and examination results as bullet points.'
+        },
+        {
+          name: 'assessment',
+          type: 'text',
+          required: true,
+          description: 'Assessment for this problem',
+          prompt: 'Provide a clear assessment specific to this problem.'
+        },
+        {
+          name: 'plan',
+          type: 'array',
+          required: true,
+          description: 'Treatment plan for this problem',
+          prompt: 'List all treatment actions, medications, and follow-up plans as bullet points.'
+        }
+      ]
+    }
+  ],
 
-  // 2. Add the consultation details
-  return `
-${instructions}
+  prompts: {
+    system: 'You are a medical documentation assistant for New Zealand GPs. Follow NZ medical documentation standards.',
+    structure: 'Generate a hierarchical medical note where each problem has its own complete SOAP note. Start with an overview of all problems, then provide detailed SOAP notes for each problem separately.'
+  }
+};
+```
 
-Based on this consultation:
+## How Templates Process Transcripts
 
-${consultation}
+### Example Transcript
+```plaintext
+Patient presented with three main concerns:
+1. Ongoing knee pain for 2 months, worse with walking
+2. Recent onset of heartburn after meals
+3. Follow-up for blood pressure management
 
-Please create a medical note following the SOAP format.
-`;
+For the knee: No recent injury, pain is 6/10, no swelling
+For heartburn: Started 2 weeks ago, worse at night, no vomiting
+BP today is 145/90, on amlodipine 5mg daily
+
+Exam findings:
+- Knee: Mild crepitus, full ROM, no effusion
+- Heartburn: Epigastric tenderness
+- BP: 145/90, HR 72 regular
+
+Plan to:
+- Knee: Start physio, consider x-ray if no improvement
+- Heartburn: Trial PPI, lifestyle advice
+- BP: Increase amlodipine to 10mg, review in 1 month
+```
+
+### Example Output (Hierarchical Multi-Problem SOAP)
+```typescript
+{
+  overview: [
+    "Knee pain",
+    "Heartburn",
+    "Hypertension follow-up"
+  ],
+  problems: [
+    {
+      problem_name: "Knee pain",
+      subjective: "2-month history of pain, worse with walking, no recent injury, pain 6/10",
+      objective: [
+        "Mild crepitus",
+        "Full ROM",
+        "No effusion"
+      ],
+      assessment: "Likely osteoarthritis",
+      plan: [
+        "Start physio",
+        "Consider x-ray if no improvement"
+      ]
+    },
+    {
+      problem_name: "Heartburn",
+      subjective: "2-week history, worse at night, no vomiting",
+      objective: [
+        "Epigastric tenderness"
+      ],
+      assessment: "Probable GERD",
+      plan: [
+        "Trial PPI",
+        "Lifestyle advice"
+      ]
+    },
+    {
+      problem_name: "Hypertension follow-up",
+      subjective: "On amlodipine 5mg daily",
+      objective: [
+        "BP: 145/90",
+        "HR: 72 regular"
+      ],
+      assessment: "Suboptimal control",
+      plan: [
+        "Increase amlodipine to 10mg",
+        "Review in 1 month"
+      ]
+    }
+  ]
 }
-
-// Example usage:
-const consultation = `
-Patient presented with 3-day history of sore throat and fever.
-No cough or runny nose. Temperature 38.2°C, throat red with exudate.
-No previous history of similar episodes.
-`;
-
-const medicalNote = generateMedicalNote(soapTemplate, consultation);
 ```
 
 ## Template Management
 
-### 1. Using Templates
-- System templates are always available
-- You can create your own templates
-- Templates can be copied and modified
+### 1. User Access Levels
+- **Logged-in Users**:
+  - Can create, read, update, and delete (CRUD) their own templates
+  - Can copy and modify system templates
 
-### 2. Copying Templates
+- **Non-logged-in Users**:
+  - Can only access and use system templates
+  - Cannot create or modify templates
+
+### 2. Template Operations
 ```typescript
-// Function to copy a template
-function copyTemplate(template: Template, newName: string): Template {
-  return {
-    ...template,
-    id: generateNewId(), // Creates a new unique ID
-    name: newName,
-    type: 'custom',
-    ownerId: currentUserId // Your user ID
+type TemplateOperations = {
+  // Create a new template
+  createTemplate: (template: Omit<Template, 'id'>) => Promise<Template>;
+
+  // Read a template by ID
+  getTemplate: (id: string) => Promise<Template>;
+
+  // Update an existing template
+  updateTemplate: (id: string, template: Partial<Template>) => Promise<Template>;
+
+  // Delete a template
+  deleteTemplate: (id: string) => Promise<void>;
+
+  // Copy a template
+  copyTemplate: (sourceId: string, newName: string) => Promise<Template>;
+
+  // List templates
+  listTemplates: (options: {
+    userId?: string;
+    type?: 'default' | 'custom';
+  }) => Promise<Template[]>;
+};
+```
+
+### 3. Template Storage
+- Templates are stored in a database
+- Basic access control based on user authentication
+- Simple error handling for common scenarios
+
+### 4. Template Validation
+```typescript
+type TemplateValidation = {
+  // Required fields
+  requiredFields: ['id', 'name', 'type', 'sections', 'prompts'];
+
+  // Section validation
+  sectionRules: {
+    minSections: 1;
+    maxSections: 20;
+    validTypes: ['text', 'array'];
+    requiredFields: ['name', 'type', 'required', 'description', 'prompt'];
   };
-}
 
-// Example: Copy the SOAP template
-const myCustomSOAP = copyTemplate(soapTemplate, 'My Custom SOAP Note');
-```
-
-### 3. Template Examples
-
-#### Driver's License Medical Template
-```typescript
-const driversLicenseTemplate: Template = {
-  id: 'default-drivers-license',
-  name: 'Driver\'s License Medical',
-  type: 'default',
-
-  sections: [
-    {
-      name: 'patientDetails',
-      type: 'text',
-      required: true,
-      description: 'Patient identification and license details'
-    },
-    {
-      name: 'medicalHistory',
-      type: 'text',
-      required: true,
-      description: 'Relevant medical conditions and medications'
-    },
-    {
-      name: 'examination',
-      type: 'text',
-      required: true,
-      description: 'Physical examination findings'
-    },
-    {
-      name: 'assessment',
-      type: 'text',
-      required: true,
-      description: 'Fitness to drive assessment'
-    }
-  ],
-
-  prompts: {
-    system: 'You are completing a driver\'s license medical assessment. Follow NZTA guidelines.',
-    structure: 'Document the medical assessment for driver\'s license renewal.'
-  }
+  // Prompt validation
+  promptRules: {
+    requiredFields: ['system', 'structure'];
+    maxLength: {
+      system: 500;
+      structure: 1000;
+    };
+  };
 };
 ```
 
-#### Well Child Check Template
-```typescript
-const wellChildTemplate: Template = {
-  id: 'default-well-child',
-  name: 'Well Child Check',
-  type: 'default',
+## TODO: Future Enhancements
 
-  sections: [
-    {
-      name: 'growth',
-      type: 'text',
-      required: true,
-      description: 'Growth measurements and percentiles'
-    },
-    {
-      name: 'development',
-      type: 'text',
-      required: true,
-      description: 'Developmental milestones'
-    },
-    {
-      name: 'immunisations',
-      type: 'text',
-      required: true,
-      description: 'Immunisation status and plan'
-    },
-    {
-      name: 'healthPromotion',
-      type: 'text',
-      required: true,
-      description: 'Health promotion and advice given'
-    }
-  ],
+### Template Management Improvements
+- Template sharing between users
+- Template visibility settings (private/public)
+- Template usage statistics and tracking
+- Audit trails for template changes
+- Backup and recovery procedures
+- Template categorization system
+- Enhanced security features
+- Template version control
 
-  prompts: {
-    system: 'You are completing a Well Child check. Follow the B4 School Check guidelines.',
-    structure: 'Document the Well Child assessment and any concerns identified.'
-  }
-};
-```
+### Template Features
+- Add support for more section types (e.g., tables, tags)
+- Implement template versioning
+- Add template validation system
+- Create template sharing system
+- Add template usage analytics
 
-## Key Features
-
-1. **Template Management**:
-   - CRUD operations for templates
-   - Separation of default and custom templates
-   - User-specific template access (not logged in users can only access default templates)
-
-2. **Usage Tracking**:
-   - Records template usage per consultation
-   - Helps identify popular templates
-
-## TODO: Structure Prompt Improvements
-
-### Current Issues
-- Structure prompts are too generic
-- No standardized format for different consultation types
-- Inconsistent information extraction from live transcriptions
-- Variable quality in generated notes
-
-### Required Improvements
-1. **Standardized Prompt Format**
-   - Create a consistent structure for all templates
-   - Include specific instructions for each section
-   - Add examples of expected content
-
-2. **Information Extraction Guidelines**
-   - Define clear rules for identifying key information
-   - Specify how to handle ambiguous or incomplete information
-   - Add context-specific extraction rules
-
-3. **Section-Specific Instructions**
-   - Detailed guidelines for each section type
-   - Required vs optional information
-   - Formatting requirements
-
-4. **Template Categories**
-   - Group similar consultation types
-   - Create category-specific guidelines
-   - Standardize prompts within categories
-
-### Example of Improved Structure
-```typescript
-// TODO: Implement standardized structure prompts
-const improvedStructurePrompt = {
-  extraction: {
-    rules: [
-      'Identify and extract all medical conditions mentioned',
-      'Note all medications and dosages',
-      'Record vital signs and measurements',
-      'Capture follow-up plans and referrals'
-    ],
-    handling: {
-      ambiguous: 'Flag for review if information is unclear',
-      incomplete: 'Note missing information for follow-up'
-    }
-  },
-  sections: {
-    subjective: {
-      required: ['chief complaint', 'history of present illness'],
-      optional: ['review of systems', 'past medical history'],
-      format: 'Use bullet points for symptoms and timeline'
-    },
-    objective: {
-      required: ['vital signs', 'physical exam findings'],
-      optional: ['lab results', 'imaging findings'],
-      format: 'Organize by system, use measurements where available'
-    }
-  }
-};
-```
-
-### Next Steps
-1. Review existing templates and identify common patterns
-2. Create a standardized prompt format
-3. Test with different consultation types
-4. Implement feedback mechanism for continuous improvement
+### User Experience
+- Template preview functionality
+- Advanced template search and filtering
+- Template comparison tools
+- Template usage statistics dashboard
