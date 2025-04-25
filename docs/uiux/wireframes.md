@@ -6,7 +6,7 @@
 ```
 +------------------------------------------+
 |              Header Bar                   |
-| [Logo]                    [Login/Profile] |
+| [Logo] [Search] [Notifications] [Profile] |
 +------------------------------------------+
 |                                          |
 |              Main Content                 |
@@ -18,6 +18,7 @@
 ```
 +------------------------------------------+
 |              Header Bar                   |
+| [Logo] [Search] [Notifications] [Profile] |
 +------------------------------------------+
 | Template Selection                       |
 | [Default Templates ▼]  [Custom Templates]|
@@ -30,12 +31,12 @@
 | Status: Recording... Duration: 00:05:30  |
 +------------------------------------------+
 | Quick Notes                              |
-| [Free text area for rapid note-taking    |
-|  during consultation]                    |
+| [Bullet point text area]                 |
+| [Auto-saving...]                         |
 |                                          |
-| - Pt mentioned...                        |
-| - Need to check...                       |
-| - Remember to...                         |
+| • Pt mentioned...                        |
+| • Need to check...                       |
+| • Remember to...                         |
 +------------------------------------------+
 | Generated Notes                          |
 |                                          |
@@ -109,11 +110,11 @@ Selected template is automatically loaded when:
 ```
 +------------------------------------------+
 | Quick Notes                              |
-| [Simple text area for rapid notes]       |
+| [Bullet point text area]                 |
 |                                          |
-| • Quick bullet points                    |
-| • Temporary observations                 |
-| • Things to remember                     |
+| • Pt mentioned knee pain                 |
+| • BP 145/90                              |
+| • Need to check bloods                   |
 |                                          |
 | [Auto-saves as you type]                 |
 +------------------------------------------+
@@ -193,7 +194,7 @@ Selected template is automatically loaded when:
 +------------------------------------------+
 ```
 
-### 4. Template Management
+### 2. Template Management
 ```
 +------------------------------------------+
 | Templates | Search | New Template        |
@@ -201,9 +202,9 @@ Selected template is automatically loaded when:
 |                                          |
 | Template List                            |
 | +--------------------------------------+ |
-| | Template 1 | Edit | Delete | Share   | |
+| | Template 1 | Edit | Delete | Copy    | |
 | +--------------------------------------+ |
-| | Template 2 | Edit | Delete | Share   | |
+| | Template 2 | Edit | Delete | Copy    | |
 | +--------------------------------------+ |
 |                                          |
 | Template Preview                         |
@@ -285,5 +286,72 @@ Selected template is automatically loaded when:
 |         |                                |
 +------------------------------------------+
 |                 Footer                    |
++------------------------------------------+
+```
+
+### 4. Error States
+```
++------------------------------------------+
+| Error: Transcription Failed              |
+|                                          |
+| Unable to start transcription.           |
+| Please check your microphone permissions |
+| and try again.                           |
+|                                          |
+| [Retry] [Check Settings]                 |
++------------------------------------------+
+
++------------------------------------------+
+| Error: Note Generation Failed            |
+|                                          |
+| Unable to generate notes.                |
+| Please try again or contact support.     |
+|                                          |
+| [Retry] [Contact Support]                |
++------------------------------------------+
+
++------------------------------------------+
+| Error: Template Loading Failed           |
+|                                          |
+| Unable to load template.                 |
+| Switching to default template.           |
+|                                          |
+| [Use Default] [Try Again]                |
++------------------------------------------+
+```
+
+## Error States Integration
+
+### Main Layout with Error State
+```
++------------------------------------------+
+|              Header Bar                   |
+| [Logo] [Search] [Notifications] [Profile] |
++------------------------------------------+
+|                                          |
+| Error: Transcription Failed              |
+| [Error message and recovery options]     |
+|                                          |
+|              Main Content                 |
+| [Disabled during error state]            |
+|                                          |
++------------------------------------------+
+```
+
+### Mobile Error State
+```
++------------------------------------------+
+|              Header Bar                   |
++------------------------------------------+
+|                                          |
+| Error: Transcription Failed              |
+| [Error message and recovery options]     |
+|                                          |
+|              Main Content                 |
+| [Disabled during error state]            |
+|                                          |
++------------------------------------------+
+| Floating Action Buttons                  |
+| [Retry] [Contact Support]                |
 +------------------------------------------+
 ```

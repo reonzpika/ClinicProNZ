@@ -115,3 +115,45 @@ This document outlines the key user journeys and interactions in ConsultAI NZ fr
 - Remove generated notes
 - Return to default template state
 - Option to recover last session if accidentally cleared
+
+## Error Handling
+
+### 1. Network Errors
+**User Actions**:
+1. See error message: "Connection lost. Retrying..."
+2. Wait for automatic retry (max 3 attempts)
+3. If retries fail, see option to:
+   - Retry manually
+   - Save progress and continue later
+   - Start new session
+
+**System Response**:
+- Shows retry count
+- Maintains session state
+- Preserves unsaved data
+- Provides clear recovery options
+
+### 2. API Errors
+**User Actions**:
+1. See specific error message
+2. Follow suggested corrective action
+3. Retry the failed operation
+4. Contact support if issue persists
+
+**System Response**:
+- Shows clear error message
+- Suggests specific actions
+- Maintains session state
+- Logs error for support
+
+### 3. Session Errors
+**User Actions**:
+1. See "Session Recovery" message
+2. Confirm session restore
+3. Continue from last saved state
+
+**System Response**:
+- Attempts to recover session
+- Shows recovery progress
+- Restores last known state
+- Confirms successful recovery

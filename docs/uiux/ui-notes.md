@@ -68,6 +68,75 @@
 - Progress indicators
 - Toast notifications
 
+### 5. Error Handling
+```
+Error States:
+- Clear error messages
+- Specific error types
+- Helpful recovery actions
+- Consistent styling
+- Proper placement
+- Accessible format
+
+Error Types:
+1. Transcription Errors
+   - Microphone permissions
+   - Connection issues
+   - Processing errors
+   UI Pattern: Full-width error banner with retry action
+
+2. Note Generation Errors
+   - API failures
+   - Processing errors
+   - Template issues
+   UI Pattern: Inline error message with regenerate option
+
+3. Template Errors
+   - Loading failures
+   - Validation errors
+   - Save errors
+   UI Pattern: Toast notification with fallback option
+
+Error UI Components:
+- Error banners (full-width, red background)
+- Toast notifications (bottom-right, auto-dismiss)
+- Modal dialogs (centered, action buttons)
+- Inline messages (contextual, with icons)
+- Status indicators (loading, error, success)
+- Recovery actions (retry, regenerate, fallback)
+```
+
+### 6. Quick Notes
+```
+Quick Notes UI:
+- Bullet point structure
+- Local state only (no persistence)
+- Clear formatting
+- Easy editing
+- Compact display
+- Medical terminology
+
+Features:
+- Real-time updates (local state only)
+- Bullet point conversion (auto-convert new lines to bullets)
+- Medical term highlighting (blue underline for medical terms)
+- Quick formatting (bold, italic, underline)
+- Easy deletion (backspace removes bullet)
+- Compact view (max 5 lines visible, scrollable)
+
+Typography:
+- Font size: 14px
+- Line height: 1.5
+- Bullet point: • (U+2022)
+- Indentation: 16px
+
+State Management:
+- Local state only
+- Cleared on new consultation
+- Not persisted between sessions
+- Used only for current note generation
+```
+
 ## Styling Guidelines
 
 ### 1. Colors
@@ -77,6 +146,21 @@ Primary Colors:
 - Secondary Blue: #5B9BD5 (Links, highlights)
 - Alert Red: #D9534F (Warnings, errors)
 - Success Green: #5CB85C (Success messages)
+- Warning Yellow: #F0AD4E (Warnings)
+
+Interactive Colors:
+- Hover Blue: #1E4B8F (Primary button hover)
+- Active Blue: #153B6F (Primary button active)
+- Hover Gray: #E8E8E8 (Secondary button hover)
+- Active Gray: #D0D0D0 (Secondary button active)
+
+Error States:
+- Error Background: #FDF3F3
+- Error Border: #D9534F
+- Error Text: #D9534F
+- Warning Background: #FFF9F0
+- Warning Border: #F0AD4E
+- Warning Text: #F0AD4E
 
 Neutral Colors:
 - Background: #FFFFFF
@@ -97,11 +181,15 @@ Font Sizes:
 - Body Text: 16px
 - Small Text: 14px
 - Tiny Text: 12px
+- Error Messages: 14px
+- Quick Notes: 14px
+- Alert Text: 14px
 
 Font Weights:
 - Regular: 400 (Body text)
 - Medium: 500 (Subheadings)
 - Semibold: 600 (Headers)
+- Bold: 700 (Error messages, alerts)
 ```
 
 ### 3. Layout
