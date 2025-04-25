@@ -2,6 +2,8 @@
 
 This document outlines the key user journeys and interactions in ConsultAI NZ from a GP's perspective. It focuses on the real-world clinical workflow and how the platform supports it.
 
+> Note: For detailed template structure, see [template-prompt-system.md](../engineering/template-prompt-system.md). For state management details, see [state-management.md](../engineering/state-management.md).
+
 ## Template Management
 
 ### 1. Template Selection
@@ -15,7 +17,7 @@ This document outlines the key user journeys and interactions in ConsultAI NZ fr
 
 **System Response**:
 - Loads template structure
-- Updates consultation state
+- Updates consultation state (idle)
 - Prepares prompt generation
 
 ### 2. Template Customization (Logged-in Users)
@@ -51,6 +53,7 @@ This document outlines the key user journeys and interactions in ConsultAI NZ fr
 - Updates template if different one selected
 - Initializes transcription
 - Shows real-time transcription
+- Updates state to 'recording'
 
 ### 2. During Consultation
 
@@ -58,11 +61,13 @@ This document outlines the key user journeys and interactions in ConsultAI NZ fr
 1. Conduct patient interview
 2. Ask relevant questions
 3. Make clinical observations
-4. Add quick notes as needed
+4. Add quick notes in local component
 5. Monitor transcription accuracy
+6. (Optional) Change template if needed
 
 **System Response**:
 - Updates transcription in real-time
+- Maintains template changes without interrupting recording
 - Displays quick notes in dedicated section
 
 ### 3. Note Generation
@@ -74,10 +79,13 @@ This document outlines the key user journeys and interactions in ConsultAI NZ fr
 4. Edit if needed
 
 **System Response**:
+- Updates state to 'processing'
 - Processes transcription and quick notes
-- Applies selected template structure
+- Applies current template structure
 - Generates comprehensive clinical notes via ChatGPT
 - Displays generated note for review and editing
+- Updates state to 'completed' on success
+- Shows error message if generation fails
 
 **Generation Options**:
 - Generate while recording continues
@@ -98,6 +106,7 @@ This document outlines the key user journeys and interactions in ConsultAI NZ fr
 - Maintains session until explicitly cleared
 - Confirms before clearing session data
 - Resets all components for new consultation when cleared
+- Returns state to 'idle'
 
 **Session Management**:
 - Clear all transcription data

@@ -6,9 +6,7 @@
    - [Documentation](#documentation)
    - [Planning](#planning)
 3. [Current Sprint Tasks](#current-sprint-tasks)
-   - [Core Documentation](#1-core-documentation-priority-must-have)
-   - [State Management Planning](#2-state-management-planning-priority-must-have)
-   - [Data Flow Design](#3-data-flow-design-priority-must-have)
+   - [Data Flow Design](#1-data-flow-design-priority-must-have)
 4. [Upcoming Sprints](#upcoming-sprints)
    - [Sprint 1: Core Implementation](#sprint-1-core-implementation-priority-must-have)
    - [Sprint 2: Core AI Integration](#sprint-2-core-ai-integration-priority-must-have)
@@ -22,8 +20,8 @@
 
 ## Project Status Summary
 - **Current Phase**: Planning & Documentation
-- **Next Immediate Tasks**: Complete template-prompt-system.md documentation
-- **Current Focus**: Establishing core template system and documentation
+- **Next Immediate Tasks**: Complete data flow design documentation
+- **Current Focus**: Establishing core data flows and component communication
 - **Development Approach**: Following MVC (Minimum Viable Consultation) principles
 - **AI Collaboration**: Pair programming with AI agent for implementation
 
@@ -35,40 +33,38 @@
 - [x] User flow documentation
 - [x] Logic flow documentation
 - [x] Project context documentation
+- [x] Template prompt system documentation
+- [x] State management documentation
 
 ### Planning
 - [x] Define core features for MVP
 - [x] Establish development principles
 - [x] Create initial project roadmap
 - [x] Define template system requirements
+- [x] Define state architecture
+  - [x] Document all possible states
+  - [x] Define state transitions
+  - [x] Plan error states
 
 ## Current Sprint Tasks
 
-### 1. Core Documentation (Priority: Must Have)
-- [x] Initial template structure design
-  - Completed: [Date]
-  - Next Steps: Refine based on feedback
-- [ ] Complete template-prompt-system.md
-  - [x] Add consultation type examples (SOAP, Multi-Problem SOAP)
-  - [x] Define section-specific prompts
-  - [x] Document basic template management
-  - [x] Add TODO for future enhancements
-  - **Dependencies**: None
-  - **Estimate**: 1 day
-
-### 2. State Management Planning (Priority: Must Have)
-- [ ] Define state architecture
-  - [ ] Document all possible states
-  - [ ] Define state transitions
-  - [ ] Plan error states
-  - **Dependencies**: Template system documentation
-  - **Estimate**: 2 days
-
-### 3. Data Flow Design (Priority: Must Have)
+### 1. Data Flow Design (Priority: Must Have)
 - [ ] Document component communication
+  - [ ] Define component interfaces
+  - [ ] Map data dependencies
+  - [ ] Plan event handling
 - [ ] Plan real-time transcription handling
+  - [ ] Define audio processing flow
+  - [ ] Document transcription updates
+  - [ ] Plan error recovery
 - [ ] Define template application flow
+  - [ ] Document template loading
+  - [ ] Plan template changes
+  - [ ] Define prompt generation
 - [ ] Design note generation process
+  - [ ] Document generation triggers
+  - [ ] Plan error handling
+  - [ ] Define success/failure paths
 - **Dependencies**: State management planning
 - **Estimate**: 2 days
 
@@ -161,10 +157,15 @@
    - Probability: Medium
 
 ## Progress Metrics
-- Documentation Completion: 60%
-- Core Features Defined: 80%
-- Technical Design: 40%
-- Implementation: 0%
+
+| Area                     | Progress |                                                  |
+|-------------------------|----------|--------------------------------------------------|
+| Documentation           | 80%      | ████████░░ |
+| Core Features Defined   | 90%      | █████████░ |
+| Technical Design        | 60%      | ██████░░░░ |
+| Implementation         | 0%       | ░░░░░░░░░░ |
+
+Legend: █ = Complete, ░ = Incomplete
 
 ## AI Collaboration Guidelines
 

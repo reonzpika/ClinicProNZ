@@ -23,7 +23,14 @@ alwaysApply: true
 - Context-aware medical terminology
 - Integration with transcription system
 
-## 3. User Interface
+## 3. Template Prompt System
+- Structured template management
+- Section-specific prompts for each template
+- Support for basic SOAP and multi-problem SOAP formats
+- User-defined custom templates
+- Template validation and error handling
+
+## 4. User Interface
 - Clean, intuitive design
 - Medical workflow optimization
 - Responsive layout
