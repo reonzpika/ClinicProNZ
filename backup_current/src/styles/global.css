@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 30% 10%;
+    --foreground: 220 20% 90%;
+    --card: 220 30% 12%;
+    --card-foreground: 220 20% 90%;
+    --popover: 220 30% 12%;
+    --popover-foreground: 220 20% 90%;
+    --primary: 220 60% 50%;
+    --primary-foreground: 220 20% 98%;
+    --secondary: 220 30% 15%;
+    --secondary-foreground: 220 20% 90%;
+    --muted: 220 30% 15%;
+    --muted-foreground: 220 20% 70%;
+    --accent: 220 30% 15%;
+    --accent-foreground: 220 20% 90%;
+    --destructive: 0 60% 40%;
+    --destructive-foreground: 220 20% 98%;
+    --border: 220 30% 20%;
+    --input: 220 30% 20%;
+    --ring: 220 60% 50%;
+    --radius: 0.5rem;
+  }
+
+  .light {
+    --background: 220 20% 90%;
+    --foreground: 220 20% 20%;
+    --card: 220 20% 92%;
+    --card-foreground: 220 20% 20%;
+    --popover: 220 20% 92%;
+    --popover-foreground: 220 20% 20%;
+    --primary: 220 60% 50%;
+    --primary-foreground: 220 60% 98%;
+    --secondary: 220 20% 85%;
+    --secondary-foreground: 220 20% 20%;
+    --muted: 220 20% 85%;
+    --muted-foreground: 220 20% 40%;
+    --accent: 220 20% 85%;
+    --accent-foreground: 220 20% 20%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 220 20% 98%;
+    --border: 220 20% 80%;
+    --input: 220 20% 80%;
+    --ring: 220 60% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .markdown-content {
+    @apply text-sm leading-6;
+  }
+  .markdown-content p {
+    @apply mb-2;
+  }
+  .markdown-content ul,
+  .markdown-content ol {
+    @apply mb-2 pl-5;
+  }
+  .markdown-content li {
+    @apply mb-1;
+  }
+  .markdown-content h1,
+  .markdown-content h2,
+  .markdown-content h3,
+  .markdown-content h4,
+  .markdown-content h5,
+  .markdown-content h6 {
+    @apply font-bold mb-2;
+  }
+  .markdown-content h1 {
+    @apply text-xl;
+  }
+  .markdown-content h2 {
+    @apply text-lg;
+  }
+  .markdown-content h3,
+  .markdown-content h4,
+  .markdown-content h5,
+  .markdown-content h6 {
+    @apply text-base;
+  }
+  .markdown-content a {
+    @apply text-blue-600 hover:underline;
+  }
+  .markdown-content blockquote {
+    @apply border-l-4 border-gray-300 pl-4 italic my-4;
+  }
+  .markdown-content pre {
+    @apply bg-gray-100 dark:bg-gray-800 rounded p-4 mb-4 overflow-x-auto;
+  }
+}

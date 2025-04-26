@@ -1,0 +1,12 @@
+# Include README.md in every chat
+!docs/README.md
+
+# Ignore node_modules and other common directories
+node_modules/
+.next/
+dist/
+build/
+coverage/
+.vscode/
+.idea/
+*.log 
