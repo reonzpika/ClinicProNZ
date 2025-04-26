@@ -1,6 +1,27 @@
 # Template-Based Prompt System
 
+## Overview
+
 This document outlines how templates are used to generate structured prompts for ChatGPT, which then creates organized medical notes from consultation transcriptions.
+
+## Design Decisions
+
+### 1. Template Structure
+- Templates define structure for AI-generated notes
+- Not forms to be filled by GPs
+- Include system, template, and section-level prompts
+- See [State Management](./state-management.md#core-state-structure) for state handling
+
+### 2. Template Processing
+- Templates guide how ChatGPT organizes content
+- Each section has specific prompt and format
+- Supports hierarchical structures
+- See [API Specification](./api-specification.md#note-generation) for implementation
+
+### 3. Validation Approach
+- Essential validations only for MVP
+- Focus on data integrity
+- See [Data Flow](./data-flow.md#validation-points) for validation points
 
 ## Core Concept
 
@@ -20,6 +41,7 @@ type Template = {
   name: string; // Human-readable name (e.g., "SOAP Note")
   type: 'default' | 'custom'; // System template or user-created
   ownerId?: string; // For custom templates
+  sessionId: string; // Associated consultation session
 
   // Each section defines a part of the medical note
   sections: {
@@ -39,6 +61,51 @@ type Template = {
 };
 ```
 
+## Validation Rules
+
+### 1. Template Structure Validation
+```typescript
+type TemplateValidation = {
+  // Required fields
+  requiredFields: ['id', 'name', 'type', 'sections', 'prompts', 'sessionId'];
+
+  // Section validation
+  sectionRules: {
+    minSections: 1;
+    maxSections: 20;
+    validTypes: ['text', 'array'];
+    requiredFields: ['name', 'type', 'required', 'description', 'prompt'];
+  };
+
+  // Prompt validation
+  promptRules: {
+    requiredFields: ['system', 'structure'];
+    maxLength: {
+      system: 500;
+      structure: 1000;
+    };
+  };
+};
+```
+
+### 2. Content Validation
+```typescript
+type ContentValidation = {
+  // Transcription validation
+  transcriptionRules: {
+    minLength: 10; // Minimum characters
+    maxLength: 10000; // Maximum characters
+    required: true;
+  };
+
+  // Quick notes validation
+  quickNotesRules: {
+    maxNotes: 20; // Maximum number of quick notes
+    maxLength: 200; // Maximum characters per note
+  };
+};
+```
+
 ## Template Examples
 
 ### 1. Basic SOAP Note Template
@@ -47,6 +114,7 @@ const soapTemplate: Template = {
   id: 'default-soap',
   name: 'SOAP Note',
   type: 'default',
+  sessionId: 'session1',
 
   sections: [
     {
@@ -92,6 +160,7 @@ const hierarchicalMultiProblemSoapTemplate: Template = {
   id: 'default-hierarchical-multi-problem-soap',
   name: 'Hierarchical Multi-Problem SOAP Note',
   type: 'default',
+  sessionId: 'session2',
 
   sections: [
     {
@@ -321,3 +390,10 @@ type TemplateValidation = {
 - Advanced template search and filtering
 - Template comparison tools
 - Template usage statistics dashboard
+
+## Related Documents
+- [State Management](./state-management.md)
+- [API Specification](./api-specification.md)
+- [Data Flow](./data-flow.md)
+- [User Flows](../uiux/user-flows.md)
+- [Logic Flows](./logic-flows.md)

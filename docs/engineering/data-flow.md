@@ -2,10 +2,53 @@
 
 ## Overview
 
-This document outlines the data flow architecture for ConsultAI NZ, focusing on the MVP implementation with a simple direct flow approach.
+This document outlines the data flow and validation points in the system. For detailed specifications, refer to the source documents:
 
-// The design follows a simple direct flow where data moves directly between components without intermediate processing layers.
-// This approach is chosen for MVP to minimize complexity and latency.
+- Session Management: [API Specification](./api-specification.md#session-management)
+- State Structure: [State Management](./state-management.md#core-state-structure)
+- Template Structure: [Template System](./template-prompt-system.md#core-concept)
+- Validation Rules: [API Specification](./api-specification.md#validation-rules)
+- Error Handling: [API Specification](./api-specification.md#error-responses)
+
+## Data Flow
+
+1. Session Creation
+   - User starts consultation
+   - System creates session (see [API Specification](./api-specification.md#session-management))
+   - Session ID generated and stored in state
+
+2. Transcription Flow
+   - Audio captured and sent to Deepgram
+   - Transcription received and stored in state
+   - See [State Management](./state-management.md#core-state-structure) for state structure
+
+3. Note Generation
+   - Template selected based on consultation type
+   - Transcription processed using template
+   - See [Template System](./template-prompt-system.md#core-concept) for template structure
+
+4. Quick Notes
+   - User adds quick notes during consultation
+   - Notes stored in state
+   - See [State Management](./state-management.md#core-state-structure) for quick notes handling
+
+## Validation Points
+
+1. Session Validation
+   - Session ID format and expiration
+   - See [API Specification](./api-specification.md#validation-rules) for validation rules
+
+2. Template Validation
+   - Template structure and required fields
+   - See [Template System](./template-prompt-system.md#validation-rules) for template requirements
+
+3. State Validation
+   - State structure and data types
+   - See [State Management](./state-management.md#core-state-structure) for state requirements
+
+## Error Handling
+
+All error handling follows the patterns defined in the [API Specification](./api-specification.md#error-responses). See that document for detailed error codes and handling procedures.
 
 ## High-Level Data Flow
 
@@ -233,5 +276,6 @@ type ProcessingLayer = {
 For detailed information about:
 - State Management: See [state-management.md](./state-management.md)
 - Template System: See [template-prompt-system.md](./template-prompt-system.md)
-- User Flows: See [user-flows.md](./user-flows.md)
+- User Flows: See [user-flows.md](../uiux/user-flows.md)
 - Logic Flows: See [logic-flows.md](./logic-flows.md)
+- API Specification: See [api-specification.md](./api-specification.md)

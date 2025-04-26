@@ -4,12 +4,36 @@
 
 This document outlines the state management approach for ConsultAI NZ, focusing on the MVP requirements and core consultation flow.
 
+## Design Decisions
+
+### 1. State Simplicity
+- Keep state minimal and fetch additional data when needed
+- Store only essential data required for UI rendering
+- Complex data structures handled at API level
+- See [API Specification](./api-specification.md#note-generation) for data processing details
+
+### 2. State Structure
+- Core consultation state tracks session and status
+- Template details fetched when needed
+- Quick notes stored locally during consultation
+- See [Data Flow](./data-flow.md#data-flow) for state transitions
+
+### 3. State Initialization
+- Initialized when GP opens consultation homepage
+- Previous state cleared when starting new consultation
+- Session ID generated during initialization
+- See [User Flows](../uiux/user-flows.md#starting-a-consultation) for initialization triggers
+
 ## Core State Structure
 
 ### 1. Global Consultation State
 
 ```typescript
 type ConsultationState = {
+  // Session tracking
+  sessionId: string; // Generated on initialization, persisted in localStorage
+  sessionStartTime: number; // Unix timestamp for usage tracking
+
   // Core consultation status
   status: 'idle' | 'recording' | 'processing' | 'completed';
 
@@ -21,6 +45,14 @@ type ConsultationState = {
     content: string;
     isLive: boolean;
   };
+
+  // Quick notes for consultation
+  quickNotes: string[]; // Cleared on new consultation
+  // Quick notes lifecycle:
+  // 1. Added during consultation
+  // 2. Included in note generation
+  // 3. Cleared on new consultation
+  // 4. Not persisted between sessions
 
   // Final generated notes
   generatedNotes: string | null;
@@ -61,6 +93,7 @@ stateDiagram-v2
    - Template ID must be set
    - Audio permissions granted
    - No active errors
+   - Session ID must be valid
 
 2. **recording → recording (Template Change)**
    - Template ID can be changed
@@ -87,13 +120,25 @@ const ConsultationContext = createContext<{
 } | null>(null);
 
 function ConsultationProvider({ children }: { children: React.ReactNode }) {
+  // Initialize session ID from localStorage or generate new one
+  const [sessionId, setSessionId] = useState(() => {
+    const stored = localStorage.getItem('sessionId');
+    if (stored) return stored;
+    const newId = generateSessionId();
+    localStorage.setItem('sessionId', newId);
+    return newId;
+  });
+
   const [state, setState] = useState<ConsultationState>({
+    sessionId,
+    sessionStartTime: Date.now(),
     status: 'idle',
     templateId: 'default-soap', // Default template
     transcription: {
       content: '',
       isLive: false
     },
+    quickNotes: [],
     generatedNotes: null,
     error: null
   });
@@ -121,7 +166,9 @@ const useConsultation = () => {
     setState(prev => ({
       ...prev,
       status: 'recording',
-      error: null
+      error: null,
+      quickNotes: [], // Clear quick notes on new consultation
+      generatedNotes: null // Clear previous notes
     }));
   };
 
@@ -150,6 +197,13 @@ const useConsultation = () => {
     }));
   };
 
+  const addQuickNote = (note: string) => {
+    setState(prev => ({
+      ...prev,
+      quickNotes: [...prev.quickNotes, note]
+    }));
+  };
+
   const setError = (error: string) => {
     setState(prev => ({
       ...prev,
@@ -163,6 +217,7 @@ const useConsultation = () => {
     changeTemplate,
     stopConsultation,
     completeConsultation,
+    addQuickNote,
     setError
   };
 };
@@ -225,3 +280,10 @@ const useConsultation = () => {
 - Plan for additional states
 - Consider state modularization
 - Evaluate state management alternatives
+
+## Related Documents
+- [API Specification](./api-specification.md#note-generation)
+- [Data Flow](./data-flow.md#data-flow)
+- [Template System](../engineering/template-prompt-system.md)
+- [User Flows](../uiux/user-flows.md#starting-a-consultation)
+- [Logic Flows](../engineering/logic-flows.md)
