@@ -397,3 +397,4 @@ type TemplateValidation = {
 - [Data Flow](./data-flow.md)
 - [User Flows](../uiux/user-flows.md)
 - [Logic Flows](./logic-flows.md)
+- [Project Structure](./project-structure.md)

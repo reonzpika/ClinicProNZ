@@ -287,3 +287,4 @@ const useConsultation = () => {
 - [Template System](../engineering/template-prompt-system.md)
 - [User Flows](../uiux/user-flows.md#starting-a-consultation)
 - [Logic Flows](../engineering/logic-flows.md)
+- [Project Structure](./project-structure.md)

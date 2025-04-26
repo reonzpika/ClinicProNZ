@@ -1,51 +1,78 @@
-# Current Technical Implementation Tasks
+# Current Development Environment Setup Tasks
 
 ## Overview
-This document tracks the current technical implementation planning tasks for ConsultAI NZ. Each task will have its own dedicated documentation.
+This document tracks the current development environment setup tasks for ConsultAI NZ MVP.
 
-## Current Focus: Technical Implementation Planning
+## Current Focus: Development Environment Setup
 
-### 1. API Specifications
-- [ ] Define API endpoints
-- [ ] Document request/response formats
-- [ ] Plan error handling
-- [ ] Create API documentation
+### 1. Project Structure Setup
+- [ ] Create feature-based directory structure
+  - [ ] features/consultation
+  - [ ] features/templates
+  - [ ] features/transcription
+  - [ ] features/notes
+  - [ ] shared/components
+  - [ ] shared/hooks
+  - [ ] shared/utils
+- [ ] Move existing code to new structure
+- [ ] Update import paths
+- [ ] Verify structure integrity
 
-### 2. Database Schema
-- [ ] Design database tables
-- [ ] Define relationships
-- [ ] Plan indexes
-- [ ] Document schema
+### 2. Testing Infrastructure
+- [ ] Configure Vitest
+  - [ ] Set up test environment
+  - [ ] Configure test paths
+  - [ ] Set up test utilities
+- [ ] Configure Husky
+  - [ ] Set up pre-commit hooks
+  - [ ] Configure lint-staged
+  - [ ] Set up basic checks
 
-### 3. Component Architecture
-- [ ] Break down React components
-- [ ] Plan state management
-- [ ] Define interfaces
-- [ ] Document architecture
+### 3. External Services Configuration
+- [ ] Set up environment variables
+  - [ ] Clerk authentication
+  - [ ] Deepgram API
+  - [ ] ChatGPT API
+  - [ ] Neon PostgreSQL
+- [ ] Configure API clients
+  - [ ] Deepgram client
+  - [ ] ChatGPT client
+  - [ ] Database client
 
-### 4. External Service Integration
-- [ ] Deepgram API setup
-- [ ] ChatGPT API integration
-- [ ] Clerk authentication
-- [ ] Neon PostgreSQL setup
-- [ ] Drizzle ORM configuration
+### 4. UI Framework Setup
+- [ ] Configure Tailwind CSS
+  - [ ] Set up color scheme
+  - [ ] Configure typography
+  - [ ] Set up spacing
+- [ ] Set up Shadcn UI
+  - [ ] Configure components
+  - [ ] Set up theme
+  - [ ] Configure accessibility
 
-### 5. Development Environment
-- [ ] Next.js configuration
-- [ ] TypeScript setup
-- [ ] ESLint/Prettier
-- [ ] Tailwind CSS
-- [ ] Testing framework
+### 5. Development Tools
+- [ ] Configure Next.js
+  - [ ] Set up app router
+  - [ ] Configure middleware
+  - [ ] Set up API routes
+- [ ] Configure TypeScript
+  - [ ] Set up strict mode
+  - [ ] Configure paths
+  - [ ] Set up type checking
+- [ ] Configure ESLint/Prettier
+  - [ ] Set up rules
+  - [ ] Configure formatting
+  - [ ] Set up auto-fix
 
 ## Next Steps
-1. Create detailed documentation for each task
-2. Review and refine specifications
-3. Begin implementation planning
-4. Set up development environment
+1. Start with project structure setup
+2. Configure testing infrastructure
+3. Set up external services
+4. Configure UI framework
+5. Set up development tools
 
 ## Reference Documents
-- [Data Flow Design](../engineering/data-flow.md)
+- [Tech Stack](../engineering/tech-stack.md)
+- [UI/UX Guidelines](../uiux/ui-notes.md)
+- [API Specification](../engineering/api-specification.md)
+- [Data Flow](../engineering/data-flow.md)
 - [State Management](../engineering/state-management.md)
-- [Template System](../engineering/template-prompt-system.md)
-- [User Flows](../uiux/user-flows.md)
-- [Wireframes](../uiux/wireframes.md)

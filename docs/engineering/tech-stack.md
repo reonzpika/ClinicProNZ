@@ -133,11 +133,14 @@
   - Best Practices
 
 ### Testing
-- **Jest**
-  - Unit Testing
-  - Integration Testing
-  - Mocking
-  - Coverage
+- **Vitest**
+  - Fast and Modern Testing Framework
+  - Unit and Integration Testing
+  - TypeScript Support
+  - Watch Mode with Fast Updates
+  - Coverage Reports
+  - Mocking and Testing Utilities
+  - ESM Support
   - Documentation
   - Best Practices
 
@@ -146,6 +149,15 @@
   - User Interaction
   - Accessibility
   - Performance
+  - Documentation
+  - Best Practices
+
+### Git Hooks
+- **Husky**
+  - Pre-commit Hooks
+  - Code Quality Checks
+  - Type Checking
+  - Linting
   - Documentation
   - Best Practices
 

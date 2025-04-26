@@ -279,3 +279,4 @@ For detailed information about:
 - User Flows: See [user-flows.md](../uiux/user-flows.md)
 - Logic Flows: See [logic-flows.md](./logic-flows.md)
 - API Specification: See [api-specification.md](./api-specification.md)
+- Project Structure: See [project-structure.md](./project-structure.md)

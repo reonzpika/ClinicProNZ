@@ -553,3 +553,4 @@ X-API-Reset: <reset_timestamp>
 - [Template System](./template-prompt-system.md)
 - [User Flows](../uiux/user-flows.md)
 - [Logic Flows](./logic-flows.md)
+- [Project Structure](./project-structure.md)

@@ -40,6 +40,7 @@
 - [x] API specification documentation
 - [x] Database schema documentation
 - [x] Component architecture documentation
+- [x] Project structure documentation
 
 ### Planning
 - [x] Define core features for MVP
