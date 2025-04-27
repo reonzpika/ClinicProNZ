@@ -1,29 +1,12 @@
 # ConsultAI NZ Development Progress
 
-## Table of Contents
-1. [Project Status Summary](#project-status-summary)
-2. [Completed Tasks](#completed-tasks)
-   - [Documentation](#documentation)
-   - [Planning](#planning)
-3. [Current Sprint Tasks](#current-sprint-tasks)
-   - [Development Environment Setup](#1-development-environment-setup-priority-must-have)
-4. [Upcoming Sprints](#upcoming-sprints)
-   - [Sprint 1: Core Implementation](#sprint-1-core-implementation-priority-must-have)
-   - [Sprint 2: Core AI Integration](#sprint-2-core-ai-integration-priority-must-have)
-5. [Risk Management](#risk-management)
-   - [Technical Risks](#technical-risks)
-   - [Project Risks](#project-risks)
-6. [Progress Metrics](#progress-metrics)
-7. [AI Collaboration Guidelines](#ai-collaboration-guidelines)
-8. [Notes](#notes)
-9. [Review Points](#review-points)
-
 ## Project Status Summary
-- **Current Phase**: Development Environment Setup
-- **Next Immediate Tasks**: Set up development environment and external services
-- **Current Focus**: Initial project setup and configuration
+- **Current Phase**: Development Environment Setup and Template Management
+- **Next Immediate Tasks**: Set up development environment, external services, and template management system
+- **Current Focus**: Initial project setup, configuration, and template system implementation
 - **Development Approach**: Following MVC (Minimum Viable Consultation) principles
 - **AI Collaboration**: Pair programming with AI agent for implementation
+- **Testing Approach**: Test-After Development (see [Testing Guidelines](../engineering/testing-guidelines.md))
 
 ## Completed Tasks
 
@@ -41,6 +24,7 @@
 - [x] Database schema documentation
 - [x] Component architecture documentation
 - [x] Project structure documentation
+- [x] Testing guidelines documentation
 
 ### Planning
 - [x] Define core features for MVP
@@ -59,42 +43,57 @@
   - [x] Create detailed API specifications
   - [x] Design database schema
   - [x] Create component architecture
+- [x] Testing strategy planning
+  - [x] Define test-after development approach
+  - [x] Establish testing priorities
+  - [x] Set up testing infrastructure
 
-### Data Flow Design
-- [x] Document component communication
-  - [x] Define component interfaces
-  - [x] Map data dependencies
-  - [x] Plan event handling
-- [x] Plan real-time transcription handling
-  - [x] Define audio processing flow
-  - [x] Document transcription updates
-  - [x] Plan error recovery
-- [x] Define template application flow
-  - [x] Document template loading
-  - [x] Plan template changes
-  - [x] Define prompt generation
-- [x] Design note generation process
-  - [x] Document generation triggers
-  - [x] Plan error handling
-  - [x] Define success/failure paths
+### Development Environment
+- [x] Project Structure Setup
+  - [x] Create feature-based directory structure
+  - [x] Move existing code to new structure
+  - [x] Update import paths
+  - [x] Verify structure integrity
+- [x] Testing Infrastructure
+  - [x] Configure Vitest
+  - [x] Configure Husky
+  - [x] Set up pre-commit hooks
+- [x] Development Tools
+  - [x] Configure Next.js
+  - [x] Configure TypeScript
+  - [x] Configure ESLint/Prettier
+- [x] UI Framework Setup (Partial)
+  - [x] Configure Tailwind CSS
+  - [ ] Set up Shadcn UI
+- [x] External Services (Partial)
+  - [x] Configure Clerk authentication
+  - [x] Configure Deepgram API
+  - [x] Configure ChatGPT API
+  - [x] Configure Neon PostgreSQL
+
+### Template Management System (Priority: Must Have)
+- [x] Database Setup
+  - [x] Create templates table
+  - [x] Set up template sections table
+  - [x] Configure template-user relationships
+- [x] Core Template Operations
+  - [x] Implement CRUD operations
+  - [x] Add template validation
+  - [x] Set up access control
+- [x] Template UI Components
+  - [x] Create template editor
+  - [x] Build template selector
+  - [x] Implement template preview
+- [x] Template Storage
+  - [x] Set up database storage
+  - [x] Configure access control
+  - [x] Implement error handling
+- [x] Template Validation
+  - [x] Implement structure validation
+  - [x] Add content validation
+  - [x] Set up error reporting
 
 ## Current Sprint Tasks
-
-### 1. Development Environment Setup (Priority: Must Have)
-- [ ] Set up Next.js project
-  - [ ] Configure TypeScript
-  - [ ] Set up ESLint and Prettier
-  - [ ] Configure Tailwind CSS
-- [ ] Set up database
-  - [ ] Configure Neon PostgreSQL
-  - [ ] Set up Drizzle ORM
-  - [ ] Create initial migrations
-- [ ] Configure external services
-  - [ ] Set up Deepgram API
-  - [ ] Configure ChatGPT API
-  - [ ] Set up Clerk authentication
-- **Dependencies**: Technical implementation planning (completed)
-- **Estimate**: 2 days
 
 ## Upcoming Sprints
 
@@ -105,7 +104,7 @@
    - Recording controls
    - Quick notes input
    - **Estimate**: 3 days
-   - **Dependencies**: Development environment setup
+   - **Dependencies**: Development environment setup, Template management system
 
 2. **Speech to Text Integration**
    - Deepgram API integration
@@ -114,14 +113,7 @@
    - **Estimate**: 3 days
    - **Dependencies**: Basic UI implementation
 
-3. **Template Management System**
-   - Basic template CRUD operations
-   - Default template handling
-   - User template management
-   - **Estimate**: 5 days
-   - **Dependencies**: Template system documentation
-
-4. **State Management Implementation**
+3. **State Management Implementation**
    - Core state management
    - Real-time updates
    - Error handling
@@ -157,7 +149,10 @@
 | Documentation           | 100%     | ██████████ |
 | Core Features Defined   | 100%     | ██████████ |
 | Technical Design        | 100%     | ██████████ |
-| Implementation         | 0%       | ░░░░░░░░░░ |
+| Implementation         | 45%      | ████░░░░░░ |
+| Testing Infrastructure | 80%      | ████████░░ |
+| Template System        | 100%     | ██████████ |
+| Database Setup         | 100%     | ██████████ |
 
 Legend: █ = Complete, ░ = Incomplete
 
@@ -175,6 +170,7 @@ Legend: █ = Complete, ░ = Incomplete
 - Prioritize GP workflow and usability
 - Maintain clean, readable code
 - Add clear comments explaining complex logic
+- Follow test-after development approach
 
 ### 3. Documentation Standards
 - Keep documentation up-to-date
@@ -187,6 +183,7 @@ Legend: █ = Complete, ░ = Incomplete
 - Explain technical decisions
 - Consider GP perspective in design
 - Test core functionality thoroughly
+- Ensure tests are written for critical features
 
 ### 5. Task Management
 - Break down tasks into manageable chunks
@@ -207,9 +204,14 @@ Legend: █ = Complete, ░ = Incomplete
 - Maintain documentation as single source of truth
 - Regular testing of core features
 - Collect feedback early and often
+- Write tests for critical functionality after implementation
+- Prioritize testing based on component importance
+- Template management is critical for MVP success
 
 ## Review Points
 - Weekly progress review
 - Bi-weekly technical design review
 - Monthly risk assessment
 - Quarterly feature prioritization
+- Regular test coverage review
+- Template system implementation review

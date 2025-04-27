@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Primary Colors */
+    --primary-blue: #2E75B6;
+    --secondary-blue: #5B9BD5;
+    --alert-red: #D9534F;
+    --success-green: #5CB85C;
+    --warning-yellow: #F0AD4E;
+
+    /* Interactive Colors */
+    --hover-blue: #1E4B8F;
+    --active-blue: #153B6F;
+    --hover-gray: #E8E8E8;
+    --active-gray: #D0D0D0;
+
+    /* Error States */
+    --error-bg: #FDF3F3;
+    --error-border: #D9534F;
+    --error-text: #D9534F;
+    --warning-bg: #FFF9F0;
+    --warning-border: #F0AD4E;
+    --warning-text: #F0AD4E;
+
+    /* Neutral Colors */
+    --background: #FFFFFF;
+    --text: #333333;
+    --light-gray: #F5F5F5;
+    --border: #E0E0E0;
+  }
+
+  body {
+    @apply bg-background text-text font-sans;
+  }
+
+  h1 {
+    @apply text-2xl font-semibold;
+  }
+
+  h2 {
+    @apply text-xl font-semibold;
+  }
+
+  h3 {
+    @apply text-lg font-medium;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-blue text-white px-4 py-2 rounded-md hover:bg-hover-blue active:bg-active-blue transition-colors;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-primary-blue border border-primary-blue px-4 py-2 rounded-md hover:bg-hover-gray active:bg-active-gray transition-colors;
+  }
+
+  .btn-danger {
+    @apply bg-alert-red text-white px-4 py-2 rounded-md hover:bg-opacity-90 active:bg-opacity-80 transition-colors;
+  }
+
+  .card {
+    @apply bg-white border border-border rounded-md shadow-sm p-4;
+  }
+
+  .input {
+    @apply w-full p-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-blue;
+  }
+
+  .error-message {
+    @apply text-error-text bg-error-bg border border-error-border rounded-md p-3 text-sm;
+  }
+
+  .warning-message {
+    @apply text-warning-text bg-warning-bg border border-warning-border rounded-md p-3 text-sm;
+  }
+
+  .success-message {
+    @apply text-success-green bg-opacity-10 bg-success-green rounded-md p-3 text-sm;
+  }
+
+  .quick-notes {
+    @apply w-full h-32 p-2 border border-border rounded-md text-sm leading-relaxed;
+  }
+
+  .template-select {
+    @apply w-full p-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-blue;
+  }
+}
+
+@layer utilities {
+  .container-custom {
+    @apply max-w-[1200px] mx-auto px-4;
+  }
+
+  .spacing-xs {
+    @apply space-y-1;
+  }
+
+  .spacing-sm {
+    @apply space-y-2;
+  }
+
+  .spacing-md {
+    @apply space-y-4;
+  }
+
+  .spacing-lg {
+    @apply space-y-6;
+  }
+
+  .spacing-xl {
+    @apply space-y-8;
+  }
+} 

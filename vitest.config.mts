@@ -1,19 +1,21 @@
 import react from '@vitejs/plugin-react';
-import { loadEnv } from 'vite';
-import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
   test: {
-    globals: true, // This is needed by @testing-library to be cleaned up after each test
-    include: ['src/**/*.test.{js,jsx,ts,tsx}'],
-    coverage: {
-      include: ['src/**/*'],
-      exclude: ['src/**/*.stories.{js,jsx,ts,tsx}', '**/*.d.ts'],
-    },
-    environmentMatchGlobs: [['**/*.test.tsx', 'jsdom']],
+    globals: true,
+    environment: 'jsdom',
     setupFiles: ['./vitest-setup.ts'],
-    env: loadEnv('', process.cwd(), ''),
+    include: ['src/**/*.{test,spec}.{js,jsx,ts,tsx}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/',
+        'src/setupTests.ts',
+      ],
+    },
   },
 });

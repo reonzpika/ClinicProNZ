@@ -3,7 +3,7 @@
 ## Frontend
 
 ### Core Framework
-- **Next.js 14**
+- **Next.js 15**
   - App Router
   - Server Components
   - API Routes
