@@ -1,48 +1,87 @@
+import { useState } from 'react';
+import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
-import type { Template } from '@/shared/types/templates';
+import { Section } from '@/shared/components/layout/Section';
+import { Stack } from '@/shared/components/layout/Stack';
+import { Alert } from '@/shared/components/ui/alert';
+
+import type { Template } from '../types';
 
 type TemplateFormProps = {
-  template: Template;
-  onChange: (updates: Partial<Template>) => void;
+  template?: Template;
+  onSubmit: (template: Omit<Template, 'id'>) => void;
+  onCancel: () => void;
 };
 
-export function TemplateForm({ template, onChange }: TemplateFormProps) {
+export function TemplateForm({ template, onSubmit, onCancel }: TemplateFormProps) {
+  const [name, setName] = useState(template?.name || '');
+  const [description, setDescription] = useState(template?.description || '');
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!name.trim()) {
+      setError('Template name is required');
+      return;
+    }
+
+    onSubmit({
+      name: name.trim(),
+      description: description.trim(),
+      sections: template?.sections || [],
+    });
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="name">Template Name</Label>
-        <Input
-          id="name"
-          value={template.name}
-          onChange={e => onChange({ name: e.target.value })}
-          placeholder="Enter template name"
-        />
-      </div>
+    <form onSubmit={handleSubmit}>
+      <Stack spacing="md">
+        <Section title="Template Details">
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium">
+                Name
+              </label>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter template name"
+                className="mt-1"
+              />
+            </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="type">Template Type</Label>
-        <select
-          id="type"
-          value={template.type}
-          onChange={e => onChange({ type: e.target.value as 'default' | 'custom' })}
-          className="border-input w-full rounded-md border bg-background px-3 py-2"
-        >
-          <option value="default">Default</option>
-          <option value="custom">Custom</option>
-        </select>
-      </div>
+            <div>
+              <label htmlFor="description" className="block text-sm font-medium">
+                Description
+              </label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Enter template description"
+                className="mt-1"
+              />
+            </div>
+          </div>
+        </Section>
 
-      <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          value={template.description}
-          onChange={e => onChange({ description: e.target.value })}
-          placeholder="Enter template description"
-        />
-      </div>
-    </div>
+        {error && (
+          <Alert variant="destructive">
+            {error}
+          </Alert>
+        )}
+
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button type="submit">
+            {template ? 'Update' : 'Create'} Template
+          </Button>
+        </div>
+      </Stack>
+    </form>
   );
 }
