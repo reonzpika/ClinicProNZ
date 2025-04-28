@@ -26,4 +26,4 @@ export type Section = {
   required: boolean;
   description: string;
   prompt: string;
-}; 
+};

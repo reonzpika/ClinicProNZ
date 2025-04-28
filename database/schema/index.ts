@@ -1,4 +1,4 @@
-import { users } from './users';
 import { templates } from './templates';
+import { users } from './users';
 
-export { users, templates }; 
+export { templates, users };

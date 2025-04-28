@@ -1,105 +1,74 @@
 'use client';
 
 import React from 'react';
-import { Header } from '@/shared/components/Header';
+
+import { GeneratedNotes } from '@/features/consultation/components/GeneratedNotes';
+import { QuickNotes } from '@/features/consultation/components/QuickNotes';
+import { TranscriptionControls } from '@/features/consultation/components/TranscriptionControls';
+import { TemplateSelector } from '@/features/templates/components/TemplateSelector';
 import { Footer } from '@/shared/components/Footer';
+import { Header } from '@/shared/components/Header';
+import { Container } from '@/shared/components/layout/Container';
+import { Grid } from '@/shared/components/layout/Grid';
+import { Stack } from '@/shared/components/layout/Stack';
+import { Section } from '@/shared/components/layout/Section';
+import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 
 export default function ConsultationPage() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex min-h-screen flex-col">
       <Header />
-      
-      <main className="flex-1 container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Main Consultation Area */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Template Selection */}
-            <section className="card">
-              <h2 className="text-lg font-semibold mb-4">Select Template</h2>
-              <div className="space-y-2">
-                <select className="template-select">
-                  <option>Multi-problem SOAP (Default)</option>
-                  <option>Driver's License Medical</option>
-                  <option>6-week Baby Check</option>
-                  <option>Initial Medical</option>
-                </select>
-              </div>
-            </section>
 
-            {/* Transcription Controls */}
-            <section className="card">
-              <div className="flex space-x-4 mb-4">
-                <button className="btn-primary">
-                  Start Recording
-                </button>
-                <button className="btn-secondary">
-                  Pause
-                </button>
-                <button className="btn-danger">
-                  Stop
-                </button>
-              </div>
-              <div className="border rounded-md p-4">
-                <p className="text-sm text-gray-600">Latest Transcription:</p>
-                <p className="mt-2">Dr: And how long have you...</p>
-              </div>
-            </section>
+      <main className="flex-1">
+        <Container size="lg">
+          <Grid cols={3} gap="lg">
+            {/* Left Column - Main Consultation Area */}
+            <div className="lg:col-span-2">
+              <Stack spacing="lg">
+                {/* Template Selection */}
+                <Card>
+                  <CardHeader>
+                    <h2 className="text-lg font-semibold">Select Template</h2>
+                  </CardHeader>
+                  <CardContent>
+                    <TemplateSelector
+                      selectedTemplate={{ id: '1', name: 'Multi-problem SOAP (Default)', type: 'default' }}
+                      onTemplateSelect={() => {}}
+                    />
+                  </CardContent>
+                </Card>
 
-            {/* Quick Notes */}
-            <section className="card">
-              <h2 className="text-lg font-semibold mb-4">Quick Notes</h2>
-              <textarea
-                className="quick-notes"
-                placeholder="Type your quick notes here..."
-              />
-              <p className="text-sm text-gray-500 mt-2">Auto-saves as you type</p>
-            </section>
+                {/* Transcription Controls */}
+                <TranscriptionControls />
 
-            {/* Generated Notes */}
-            <section className="card">
-              <h2 className="text-lg font-semibold mb-4">Generated Notes</h2>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-medium">Subjective:</h3>
-                  <textarea className="input" />
-                </div>
-                <div>
-                  <h3 className="font-medium">Objective:</h3>
-                  <textarea className="input" />
-                </div>
-                <div>
-                  <h3 className="font-medium">Assessment:</h3>
-                  <textarea className="input" />
-                </div>
-                <div>
-                  <h3 className="font-medium">Plan:</h3>
-                  <textarea className="input" />
-                </div>
-              </div>
-              <div className="flex space-x-4 mt-4">
-                <button className="btn-primary">
-                  Generate Notes
-                </button>
-                <button className="btn-secondary">
-                  Copy to Clipboard
-                </button>
-              </div>
-            </section>
-          </div>
+                {/* Quick Notes */}
+                <QuickNotes />
 
-          {/* Right Column - Future Features */}
-          <div className="lg:col-span-1">
-            <section className="card">
-              <h2 className="text-lg font-semibold mb-4">Future Features</h2>
-              <p className="text-gray-600">
-                This space is reserved for future features like NZ Resources, Tools, etc.
-              </p>
-            </section>
-          </div>
-        </div>
+                {/* Generated Notes */}
+                <GeneratedNotes />
+              </Stack>
+            </div>
+
+            {/* Right Column - Future Features */}
+            <div className="lg:col-span-1">
+              <Card>
+                <CardHeader>
+                  <h2 className="text-lg font-semibold">Future Features</h2>
+                </CardHeader>
+                <CardContent>
+                  <Section>
+                    <p className="text-muted-foreground">
+                      This space is reserved for future features like NZ Resources, Tools, etc.
+                    </p>
+                  </Section>
+                </CardContent>
+              </Card>
+            </div>
+          </Grid>
+        </Container>
       </main>
 
       <Footer />
     </div>
   );
-} 
+}

@@ -1,7 +1,7 @@
-import { drizzle } from 'drizzle-orm/neon-http';
-import { migrate } from 'drizzle-orm/neon-http/migrator';
 import { neon } from '@neondatabase/serverless';
 import * as dotenv from 'dotenv';
+import { drizzle } from 'drizzle-orm/neon-http';
+import { migrate } from 'drizzle-orm/neon-http/migrator';
 
 // Load environment variables from .env.local
 dotenv.config({ path: '.env.local' });
@@ -27,4 +27,4 @@ async function main() {
   }
 }
 
-main(); 
+main();

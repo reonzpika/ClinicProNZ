@@ -51,38 +51,38 @@ export class TemplateService {
             type: 'text',
             required: true,
             description: 'Patient\'s description of symptoms and history',
-            prompt: 'Summarize the patient\'s main concerns and history in 1-2 concise paragraphs.'
+            prompt: 'Summarize the patient\'s main concerns and history in 1-2 concise paragraphs.',
           },
           {
             name: 'objective',
             type: 'array',
             required: true,
             description: 'Clinical findings and examination results',
-            prompt: 'List all clinical findings, vital signs, and examination results as bullet points.'
+            prompt: 'List all clinical findings, vital signs, and examination results as bullet points.',
           },
           {
             name: 'assessment',
             type: 'text',
             required: true,
             description: 'Clinical diagnosis or impression',
-            prompt: 'Provide a clear clinical assessment or diagnosis.'
+            prompt: 'Provide a clear clinical assessment or diagnosis.',
           },
           {
             name: 'plan',
             type: 'array',
             required: true,
             description: 'Treatment plan and follow-up',
-            prompt: 'List all treatment actions, medications, and follow-up plans as bullet points.'
-          }
+            prompt: 'List all treatment actions, medications, and follow-up plans as bullet points.',
+          },
         ],
         prompts: {
           system: 'You are a medical documentation assistant for New Zealand GPs. Follow NZ medical documentation standards.',
-          structure: 'Generate a medical note following the SOAP format. Include all relevant clinical information.'
-        }
-      }
+          structure: 'Generate a medical note following the SOAP format. Include all relevant clinical information.',
+        },
+      },
     ];
 
-    defaultTemplates.forEach(template => {
+    defaultTemplates.forEach((template) => {
       this.templates.set(template.id, template);
     });
   }
@@ -122,4 +122,4 @@ export class TemplateService {
 }
 
 // Export singleton instance
-export const templateService = TemplateService.getInstance(); 
+export const templateService = TemplateService.getInstance();

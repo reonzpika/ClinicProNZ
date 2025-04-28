@@ -14,4 +14,4 @@ export type NoteGenerationMetrics = PerformanceMetrics & {
   sectionCount: number;
   wordCount: number;
   quickNotesCount: number;
-}; 
+};

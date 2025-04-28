@@ -1,8 +1,8 @@
+import { Pool } from '@neondatabase/serverless';
+import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import { drizzle } from 'drizzle-orm/neon-http';
-import { neon, Pool } from '@neondatabase/serverless';
 import { pino } from 'pino';
 import { retry } from 'ts-retry-promise';
-import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 
 // Initialize logger
 const logger = pino({
@@ -20,7 +20,7 @@ const logger = pino({
 // Connection pool configuration
 const POOL_CONFIG = {
   max: 20, // Maximum number of connections in the pool
-  min: 2,  // Minimum number of connections in the pool
+  min: 2, // Minimum number of connections in the pool
   idleTimeoutMillis: 30000, // How long a connection can be idle before being closed
   connectionTimeoutMillis: 2000, // How long to wait for a connection from the pool
 };
@@ -57,7 +57,7 @@ const createPool = async () => {
 
       return pool;
     },
-    RETRY_CONFIG
+    RETRY_CONFIG,
   ).catch((error: Error) => {
     logger.error('Failed to establish database connection pool after retries', error);
     throw error;
@@ -79,7 +79,7 @@ export class DatabaseError extends Error {
   constructor(
     message: string,
     public readonly code: string,
-    public readonly originalError?: Error
+    public readonly originalError?: Error,
   ) {
     super(message);
     this.name = 'DatabaseError';
@@ -94,7 +94,7 @@ export const executeQuery = async <T>(query: string, params?: any[]): Promise<T[
         const data = await pool.query(query, params);
         return data.rows as unknown as T[];
       },
-      RETRY_CONFIG
+      RETRY_CONFIG,
     );
     return result;
   } catch (error) {
@@ -102,7 +102,7 @@ export const executeQuery = async <T>(query: string, params?: any[]): Promise<T[
     throw new DatabaseError(
       'Failed to execute database query',
       'QUERY_ERROR',
-      error instanceof Error ? error : undefined
+      error instanceof Error ? error : undefined,
     );
   }
 };
@@ -119,7 +119,7 @@ export const withTransaction = async <T>(callback: (tx: NeonHttpDatabase) => Pro
         throw new DatabaseError(
           'Transaction failed',
           'TRANSACTION_ERROR',
-          error instanceof Error ? error : undefined
+          error instanceof Error ? error : undefined,
         );
       }
     });
@@ -153,4 +153,4 @@ export const closePool = async (): Promise<void> => {
     logger.error({ error }, 'Error closing database connection pool');
     throw error;
   }
-}; 
+};

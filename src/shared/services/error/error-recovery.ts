@@ -3,10 +3,10 @@ import { templateService } from '../templates/template-service';
 
 export type ErrorType = 'network' | 'api' | 'session' | 'template' | 'unknown';
 
-export interface ErrorRecoveryOptions {
+export type ErrorRecoveryOptions = {
   maxRetries?: number;
   retryDelay?: number;
-}
+};
 
 export class ErrorRecoveryService {
   private static instance: ErrorRecoveryService;
@@ -24,7 +24,7 @@ export class ErrorRecoveryService {
   public async handleError(
     error: Error,
     type: ErrorType,
-    options: ErrorRecoveryOptions = {}
+    options: ErrorRecoveryOptions = {},
   ): Promise<boolean> {
     const { maxRetries = 3, retryDelay = 1000 } = options;
     const errorKey = `${type}-${error.message}`;
@@ -53,16 +53,16 @@ export class ErrorRecoveryService {
     error: Error,
     errorKey: string,
     maxRetries: number,
-    retryDelay: number
+    retryDelay: number,
   ): Promise<boolean> {
     const currentRetries = this.retryCount.get(errorKey) || 0;
-    
+
     if (currentRetries < maxRetries) {
       this.retryCount.set(errorKey, currentRetries + 1);
       await new Promise(resolve => setTimeout(resolve, retryDelay));
       return true; // Retry the operation
     }
-    
+
     this.retryCount.delete(errorKey);
     return false; // Max retries reached
   }
@@ -70,7 +70,7 @@ export class ErrorRecoveryService {
   private async handleApiError(error: Error): Promise<boolean> {
     // Log the error for monitoring
     console.error('API Error:', error);
-    
+
     // In a real implementation, this would notify the user
     // and potentially queue the failed operation
     return false;
@@ -104,4 +104,4 @@ export class ErrorRecoveryService {
 }
 
 // Export singleton instance
-export const errorRecoveryService = ErrorRecoveryService.getInstance(); 
+export const errorRecoveryService = ErrorRecoveryService.getInstance();

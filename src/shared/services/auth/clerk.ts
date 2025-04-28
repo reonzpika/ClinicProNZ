@@ -62,7 +62,7 @@ export const cleanupSession = async () => {
   try {
     // Clear any saved state
     localStorage.removeItem('consultationState');
-    
+
     // Additional cleanup if needed
     const { userId } = await getAuth();
     if (userId) {
@@ -72,4 +72,4 @@ export const cleanupSession = async () => {
   } catch (error) {
     console.error('Session cleanup failed:', error);
   }
-}; 
+};

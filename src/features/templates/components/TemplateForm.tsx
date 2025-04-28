@@ -1,12 +1,12 @@
-import { Template } from '@/shared/types/templates';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
+import type { Template } from '@/shared/types/templates';
 
-interface TemplateFormProps {
+type TemplateFormProps = {
   template: Template;
   onChange: (updates: Partial<Template>) => void;
-}
+};
 
 export function TemplateForm({ template, onChange }: TemplateFormProps) {
   return (
@@ -16,7 +16,7 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
         <Input
           id="name"
           value={template.name}
-          onChange={(e) => onChange({ name: e.target.value })}
+          onChange={e => onChange({ name: e.target.value })}
           placeholder="Enter template name"
         />
       </div>
@@ -26,8 +26,8 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
         <select
           id="type"
           value={template.type}
-          onChange={(e) => onChange({ type: e.target.value as 'default' | 'custom' })}
-          className="w-full rounded-md border border-input bg-background px-3 py-2"
+          onChange={e => onChange({ type: e.target.value as 'default' | 'custom' })}
+          className="border-input w-full rounded-md border bg-background px-3 py-2"
         >
           <option value="default">Default</option>
           <option value="custom">Custom</option>
@@ -39,10 +39,10 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
         <Textarea
           id="description"
           value={template.description}
-          onChange={(e) => onChange({ description: e.target.value })}
+          onChange={e => onChange({ description: e.target.value })}
           placeholder="Enter template description"
         />
       </div>
     </div>
   );
-} 
+}

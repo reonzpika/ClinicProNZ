@@ -139,4 +139,4 @@ Legend: █ = Complete, ░ = Incomplete
 - [Tech Stack](../engineering/tech-stack.md)
 - [API Specification](../engineering/api-specification.md)
 - [Data Flow](../engineering/data-flow.md)
-- [Testing Guidelines](../engineering/testing-guidelines.md) 
+- [Testing Guidelines](../engineering/testing-guidelines.md)

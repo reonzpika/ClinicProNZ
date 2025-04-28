@@ -16,13 +16,13 @@ In Next.js 15.3, all components are Server Components by default. This architect
 To mark a component as a Client Component, add the `'use client'` directive at the top of the file:
 
 ```tsx
-'use client'
+'use client';
 
-import { useState } from 'react'
+import { useState } from 'react';
 
 export default function Counter() {
-  const [count, setCount] = useState(0)
-  return <button onClick={() => setCount(count + 1)}>{count}</button>
+  const [count, setCount] = useState(0);
+  return <button onClick={() => setCount(count + 1)}>{count}</button>;
 }
 ```
 
@@ -52,9 +52,6 @@ Use when the component needs:
 4. Use composition to minimize client-side JavaScript
 5. Leverage the new Client Instrumentation Hook for analytics
 6. Utilize improved Navigation Hooks for routing control
-
-
-```
 
 ### Performance Optimizations
 
@@ -117,21 +114,26 @@ Next.js 15.3 introduces several performance improvements:
 │   │
 │   ├── shared/          # Shared code (reusable across features)
 │   │   ├── components/  # Reusable UI components (e.g., buttons, inputs)
-│   │   │
-│   │   ├── hooks/       # Reusable React hooks
-│   │   │   ├── useAuth.ts        # Authentication hook
-│   │   │   ├── useTemplates.ts   # Template management hook
-│   │   │   └── useTranscription.ts # Transcription hook
-│   │   │
-│   │   ├── services/    # Service implementations (external integrations)
-│   │   │   ├── api/     # API client (fetch wrapper, error handling)
-│   │   │   ├── auth/    # Auth service (Clerk integration)
-│   │   │   ├── database/# Database service (Drizzle ORM)
-│   │   │   ├── error/   # Error handling service
-│   │   │   ├── notes/   # Note generation service (OpenAI)
-│   │   │   ├── templates/# Template service
-│   │   │   ├── transcription/ # Transcription service (Deepgram)
-│   │   │   └── validation/   # Validation utilities
+│   │   │   ├── ui/      # Shadcn UI components
+│   │   │   │   ├── button.tsx
+│   │   │   │   ├── dialog.tsx
+│   │   │   │   └── input.tsx
+│   │   │   ├── footer.tsx
+│   │   │   ├── header.tsx
+│   │   │   ├── hooks/       # Reusable React hooks
+│   │   │   │   ├── useAuth.ts        # Authentication hook
+│   │   │   │   ├── useTemplates.ts   # Template management hook
+│   │   │   │   └── useTranscription.ts # Transcription hook
+│   │   │   │
+│   │   │   └── services/    # Service implementations (external integrations)
+│   │   │       ├── api/     # API client (fetch wrapper, error handling)
+│   │   │       ├── auth/    # Auth service (Clerk integration)
+│   │   │       ├── database/# Database service (Drizzle ORM)
+│   │   │       ├── error/   # Error handling service
+│   │   │       ├── notes/   # Note generation service (OpenAI)
+│   │   │       ├── templates/# Template service
+│   │   │       ├── transcription/ # Transcription service (Deepgram)
+│   │   │       └── validation/   # Validation utilities
 │   │   │
 │   │   └── types/       # Application-specific type definitions
 │   │       ├── api.ts   # API request/response types
@@ -163,6 +165,13 @@ Next.js 15.3 introduces several performance improvements:
 │
 ├── public/            # Static assets (images, fonts)
 ├── styles/           # Global styles (Tailwind config)
+│   ├── base/
+│   │   └── variables.css    # CSS variables (:root)
+│   └── components/
+│   │   └── buttons.css      # Component styles (.btn-primary, etc)
+│   └── utilities/
+│   │   └── spacing.css      # Utility classes (.spacing-xs, etc)
+│   └── tailwind.css         # Main Tailwind imports
 │
 ├── types/            # Global type definitions (framework/library types)
 │   ├── drizzle.d.ts  # Drizzle ORM type extensions
@@ -287,3 +296,17 @@ node_modules/           # Node modules
 - [Template System](./template-prompt-system.md)
 - [Data Flow](./data-flow.md)
 - [Testing Guidelines](./testing-guidelines.md)
+
+### Styling Structure
+```
+app/
+├── globals.css        # Global styles and Tailwind imports
+└── ...
+
+tailwind.config.js     # Tailwind configuration
+```
+
+- All styling is handled through Tailwind CSS
+- No separate styles directory or custom CSS files
+- Global styles and Tailwind imports in `app/globals.css`
+- Component-specific styles using Tailwind classes directly in components

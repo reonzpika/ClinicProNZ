@@ -1,4 +1,3 @@
-
 Current Focus Areas
 UI Framework Completion
 Tailwind CSS is configured

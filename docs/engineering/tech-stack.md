@@ -38,13 +38,12 @@
   - Best Practices
 
 ### Styling
-- **Tailwind CSS**
-  - Utility-First
-  - Responsive Design
-  - Dark Mode
-  - Custom Configuration
-  - Performance
-  - PurgeCSS
+- **Tailwind CSS**: Primary styling solution
+  - Utility-first approach for rapid development
+  - Custom configuration in `tailwind.config.js`
+  - Global styles in `app/globals.css`
+  - No custom CSS files or complex styling system
+  - Direct component styling using Tailwind classes
 
 ### State Management
 - **React Context**

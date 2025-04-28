@@ -2,36 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --primary-blue: #0ea5e9;
+  --secondary-blue: #38bdf8;
+  --hover-blue: #0284c7;
+  --active-blue: #0369a1;
+  --hover-gray: #f1f5f9;
+  --active-gray: #e2e8f0;
+  --light-gray: #f8fafc;
+  --alert-red: #ef4444;
+  --success-green: #22c55e;
+  --warning-yellow: #f59e0b;
+  --error-bg: #fef2f2;
+  --error-border: #fee2e2;
+  --error-text: #dc2626;
+  --warning-bg: #fffbeb;
+  --warning-border: #fef3c7;
+  --warning-text: #d97706;
+  --background: #ffffff;
+  --text: #0f172a;
+  --border: #e2e8f0;
+}
+
 @layer base {
-  :root {
-    /* Primary Colors */
-    --primary-blue: #2E75B6;
-    --secondary-blue: #5B9BD5;
-    --alert-red: #D9534F;
-    --success-green: #5CB85C;
-    --warning-yellow: #F0AD4E;
-
-    /* Interactive Colors */
-    --hover-blue: #1E4B8F;
-    --active-blue: #153B6F;
-    --hover-gray: #E8E8E8;
-    --active-gray: #D0D0D0;
-
-    /* Error States */
-    --error-bg: #FDF3F3;
-    --error-border: #D9534F;
-    --error-text: #D9534F;
-    --warning-bg: #FFF9F0;
-    --warning-border: #F0AD4E;
-    --warning-text: #F0AD4E;
-
-    /* Neutral Colors */
-    --background: #FFFFFF;
-    --text: #333333;
-    --light-gray: #F5F5F5;
-    --border: #E0E0E0;
-  }
-
   body {
     @apply bg-background text-text font-sans;
   }
@@ -115,4 +108,4 @@
   .spacing-xl {
     @apply space-y-8;
   }
-} 
+}

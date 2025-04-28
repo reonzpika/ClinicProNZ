@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
-import { Template } from '../../types/templates';
-import { NoteGenerationMetrics } from '../../types/performance';
+
+import type { NoteGenerationMetrics } from '../../types/performance';
+import type { Template } from '../../types/templates';
 
 if (!process.env.OPENAI_API_KEY) {
   throw new Error('Missing OPENAI_API_KEY');
@@ -29,7 +30,7 @@ export type NoteGenerationResponse = {
 // Helper function to format template sections for prompt
 const formatTemplateSections = (template: Template): string => {
   return template.sections
-    .map(section => {
+    .map((section) => {
       const sectionContent = `
 Section: ${section.name}
 Description: ${section.description}
@@ -48,10 +49,10 @@ const calculateCostEstimate = (tokenUsage: { promptTokens: number; completionTok
   // GPT-4o-mini pricing (placeholder - update with actual pricing when available)
   const PROMPT_COST_PER_1K = 0.005; // $0.005 per 1K tokens (estimated)
   const COMPLETION_COST_PER_1K = 0.015; // $0.015 per 1K tokens (estimated)
-  
+
   const promptCost = (tokenUsage.promptTokens / 1000) * PROMPT_COST_PER_1K;
   const completionCost = (tokenUsage.completionTokens / 1000) * COMPLETION_COST_PER_1K;
-  
+
   return promptCost + completionCost;
 };
 
@@ -70,7 +71,7 @@ export const generateNote = async ({
   quickNotes,
 }: NoteGenerationRequest): Promise<NoteGenerationResponse> => {
   const startTime = Date.now();
-  
+
   try {
     // Format the system prompt with template details
     const systemPrompt = `You are a medical documentation assistant for New Zealand GPs. Follow NZ medical documentation standards.
@@ -114,7 +115,7 @@ Important: Ensure all required sections are clearly labeled and included in the 
 
     const endTime = Date.now();
     const responseTime = endTime - startTime;
-    
+
     const tokenUsage = {
       promptTokens: response.usage?.prompt_tokens || 0,
       completionTokens: response.usage?.completion_tokens || 0,
@@ -145,4 +146,4 @@ Important: Ensure all required sections are clearly labeled and included in the 
       error: error instanceof Error ? error.message : 'Failed to generate note',
     };
   }
-}; 
+};

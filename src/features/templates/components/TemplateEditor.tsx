@@ -1,13 +1,14 @@
-import { Template } from '@/shared/types/templates';
-import { TemplateForm } from './TemplateForm';
-import { SectionBuilder } from './SectionBuilder';
 import { Button } from '@/shared/components/ui/button';
+import type { Template } from '@/shared/types/templates';
 
-interface TemplateEditorProps {
+import { SectionBuilder } from './SectionBuilder';
+import { TemplateForm } from './TemplateForm';
+
+type TemplateEditorProps = {
   template: Template;
   onSave: (template: Template) => void;
   onCancel: () => void;
-}
+};
 
 export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorProps) {
   const handleChange = (updates: Partial<Template>) => {
@@ -18,7 +19,7 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
     <div className="space-y-8">
       <TemplateForm template={template} onChange={handleChange} />
       <SectionBuilder template={template} onChange={handleChange} />
-      
+
       <div className="flex justify-end space-x-4">
         <Button variant="outline" onClick={onCancel}>
           Cancel
@@ -29,4 +30,4 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
       </div>
     </div>
   );
-} 
+}

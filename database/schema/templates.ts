@@ -1,4 +1,5 @@
-import { pgTable, text, timestamp, uuid, jsonb } from 'drizzle-orm/pg-core';
+import { jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+
 import { users } from './users';
 
 export const templates = pgTable('templates', {
@@ -10,4 +11,4 @@ export const templates = pgTable('templates', {
   prompts: jsonb('prompts').notNull(), // System and structure prompts
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-}); 
+});
