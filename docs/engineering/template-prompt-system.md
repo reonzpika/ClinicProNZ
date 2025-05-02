@@ -9,12 +9,12 @@ This document outlines how templates are used to generate structured prompts for
 ### 1. Template Structure
 - Templates define structure for AI-generated notes
 - Not forms to be filled by GPs
-- Include system, template, and section-level prompts
+- Include template-level and section-level prompts (no system prompt)
 - See [State Management](./state-management.md#core-state-structure) for state handling
 
 ### 2. Template Processing
 - Templates guide how ChatGPT organizes content
-- Each section has specific prompt and format
+- Each section has a specific prompt and format
 - Supports hierarchical structures
 - See [API Specification](./api-specification.md#note-generation) for implementation
 
@@ -36,28 +36,29 @@ Templates are NOT forms to be filled out by GPs. Instead, they:
 
 ```typescript
 // Core template type definition
-type Template = {
+export type Template = {
   id: string; // Unique identifier for the template
   name: string; // Human-readable name (e.g., "SOAP Note")
   type: 'default' | 'custom'; // System template or user-created
   ownerId?: string; // For custom templates
-  sessionId: string; // Associated consultation session
+  sections: TemplateSection[];
+  prompts: TemplatePrompts;
+  createdAt?: string;
+  updatedAt?: string;
+};
 
-  // Each section defines a part of the medical note
-  sections: {
-    name: string; // Section identifier (e.g., "subjective")
-    type: 'text' | 'array'; // Output format: paragraph or bullet points
-    required: boolean; // Whether this section must be filled
-    description: string; // What this section is for
-    prompt: string; // Specific instructions for this section
-    subsections?: Section[]; // For nested sections if needed
-  }[];
+export type TemplateSection = {
+  name: string;
+  type: 'text' | 'array';
+  required: boolean;
+  description: string;
+  prompt: string;
+  subsections?: TemplateSection[];
+};
 
-  // Global prompts for the entire template
-  prompts: {
-    system: string; // Sets the AI's role and context
-    structure: string; // Overall structure guidance
-  };
+export type TemplatePrompts = {
+  structure: string; // Overall structure guidance for the template
+  example?: string; // (Optional) Example output for this template
 };
 ```
 
@@ -67,7 +68,7 @@ type Template = {
 ```typescript
 type TemplateValidation = {
   // Required fields
-  requiredFields: ['id', 'name', 'type', 'sections', 'prompts', 'sessionId'];
+  requiredFields: ['id', 'name', 'type', 'sections', 'prompts'];
 
   // Section validation
   sectionRules: {
@@ -79,9 +80,8 @@ type TemplateValidation = {
 
   // Prompt validation
   promptRules: {
-    requiredFields: ['system', 'structure'];
+    requiredFields: ['structure'];
     maxLength: {
-      system: 500;
       structure: 1000;
     };
   };
@@ -114,8 +114,6 @@ const soapTemplate: Template = {
   id: 'default-soap',
   name: 'SOAP Note',
   type: 'default',
-  sessionId: 'session1',
-
   sections: [
     {
       name: 'subjective',
@@ -146,9 +144,7 @@ const soapTemplate: Template = {
       prompt: 'List all treatment actions, medications, and follow-up plans as bullet points.'
     }
   ],
-
   prompts: {
-    system: 'You are a medical documentation assistant for New Zealand GPs. Follow NZ medical documentation standards.',
     structure: 'Generate a medical note following the SOAP format. Include all relevant clinical information.'
   }
 };
@@ -160,8 +156,6 @@ const hierarchicalMultiProblemSoapTemplate: Template = {
   id: 'default-hierarchical-multi-problem-soap',
   name: 'Hierarchical Multi-Problem SOAP Note',
   type: 'default',
-  sessionId: 'session2',
-
   sections: [
     {
       name: 'overview',
@@ -215,89 +209,111 @@ const hierarchicalMultiProblemSoapTemplate: Template = {
       ]
     }
   ],
-
   prompts: {
-    system: 'You are a medical documentation assistant for New Zealand GPs. Follow NZ medical documentation standards.',
     structure: 'Generate a hierarchical medical note where each problem has its own complete SOAP note. Start with an overview of all problems, then provide detailed SOAP notes for each problem separately.'
   }
 };
 ```
 
-## How Templates Process Transcripts
+## How Templates Are Converted to Prompts (MVP)
 
-### Example Transcript
-```plaintext
-Patient presented with three main concerns:
-1. Ongoing knee pain for 2 months, worse with walking
-2. Recent onset of heartburn after meals
-3. Follow-up for blood pressure management
+### Simplified Prompt Construction (MVP)
 
-For the knee: No recent injury, pain is 6/10, no swelling
-For heartburn: Started 2 weeks ago, worse at night, no vomiting
-BP today is 145/90, on amlodipine 5mg daily
+For the MVP, the prompt sent to ChatGPT is constructed in a minimal, focused way:
+- **Only the section name and prompt are included** for each section.
+- **If a section has subsections**, only the subsection name and prompt are included (as a simple bullet list).
+- **No extra metadata** (such as description, required, or format) is included in the prompt.
 
-Exam findings:
-- Knee: Mild crepitus, full ROM, no effusion
-- Heartburn: Epigastric tenderness
-- BP: 145/90, HR 72 regular
+This approach keeps the prompt short, clear, and easy for the AI to follow, improving consistency and reducing token usage.
 
-Plan to:
-- Knee: Start physio, consider x-ray if no improvement
-- Heartburn: Trial PPI, lifestyle advice
-- BP: Increase amlodipine to 10mg, review in 1 month
-```
+### Example: Hierarchical Multi-Problem SOAP Note Template
 
-### Example Output (Hierarchical Multi-Problem SOAP)
+**Template Definition:**
 ```typescript
-{
-  overview: [
-    "Knee pain",
-    "Heartburn",
-    "Hypertension follow-up"
-  ],
-  problems: [
+const hierarchicalMultiProblemSoapTemplate: Template = {
+  id: 'default-hierarchical-multi-problem-soap',
+  name: 'Hierarchical Multi-Problem SOAP Note',
+  type: 'default',
+  sections: [
     {
-      problem_name: "Knee pain",
-      subjective: "2-month history of pain, worse with walking, no recent injury, pain 6/10",
-      objective: [
-        "Mild crepitus",
-        "Full ROM",
-        "No effusion"
-      ],
-      assessment: "Likely osteoarthritis",
-      plan: [
-        "Start physio",
-        "Consider x-ray if no improvement"
-      ]
+      name: 'overview',
+      type: 'array',
+      required: true,
+      description: 'List of all problems discussed',
+      prompt: 'List each problem the patient presented with as a bullet point.'
     },
     {
-      problem_name: "Heartburn",
-      subjective: "2-week history, worse at night, no vomiting",
-      objective: [
-        "Epigastric tenderness"
-      ],
-      assessment: "Probable GERD",
-      plan: [
-        "Trial PPI",
-        "Lifestyle advice"
-      ]
-    },
-    {
-      problem_name: "Hypertension follow-up",
-      subjective: "On amlodipine 5mg daily",
-      objective: [
-        "BP: 145/90",
-        "HR: 72 regular"
-      ],
-      assessment: "Suboptimal control",
-      plan: [
-        "Increase amlodipine to 10mg",
-        "Review in 1 month"
+      name: 'problems',
+      type: 'array',
+      required: true,
+      description: 'SOAP notes for each problem',
+      prompt: 'For each problem listed in the overview, provide a complete SOAP note.',
+      subsections: [
+        {
+          name: 'problem_name',
+          type: 'text',
+          required: true,
+          description: 'Name of the problem',
+          prompt: 'State the problem name clearly.'
+        },
+        {
+          name: 'subjective',
+          type: 'text',
+          required: true,
+          description: 'Patient\'s description for this problem',
+          prompt: 'Summarize the patient\'s concerns and history specific to this problem.'
+        },
+        {
+          name: 'objective',
+          type: 'array',
+          required: true,
+          description: 'Clinical findings for this problem',
+          prompt: 'List all relevant clinical findings, vital signs, and examination results as bullet points.'
+        },
+        {
+          name: 'assessment',
+          type: 'text',
+          required: true,
+          description: 'Assessment for this problem',
+          prompt: 'Provide a clear assessment specific to this problem.'
+        },
+        {
+          name: 'plan',
+          type: 'array',
+          required: true,
+          description: 'Treatment plan for this problem',
+          prompt: 'List all treatment actions, medications, and follow-up plans as bullet points.'
+        }
       ]
     }
-  ]
-}
+  ],
+  prompts: {
+    structure: 'Generate a hierarchical medical note where each problem has its own complete SOAP note. Start with an overview of all problems, then provide detailed SOAP notes for each problem separately.'
+  }
+};
 ```
+
+**Converted Prompt (MVP):**
+```
+overview:
+List each problem the patient presented with as a bullet point.
+
+problems:
+For each problem listed in the overview, provide a complete SOAP note.
+Subsections:
+- problem_name: State the problem name clearly.
+- subjective: Summarize the patient's concerns and history specific to this problem.
+- objective: List all relevant clinical findings, vital signs, and examination results as bullet points.
+- assessment: Provide a clear assessment specific to this problem.
+- plan: List all treatment actions, medications, and follow-up plans as bullet points.
+
+Generate a hierarchical medical note where each problem has its own complete SOAP note. Start with an overview of all problems, then provide detailed SOAP notes for each problem separately.
+```
+
+**Key Points:**
+- The prompt is minimal and focused.
+- Only the section and subsection names and prompts are included.
+- This structure is used for all templates in the MVP.
 
 ## Template Management
 
@@ -357,9 +373,8 @@ type TemplateValidation = {
 
   // Prompt validation
   promptRules: {
-    requiredFields: ['system', 'structure'];
+    requiredFields: ['structure'];
     maxLength: {
-      system: 500;
       structure: 1000;
     };
   };
@@ -398,3 +413,23 @@ type TemplateValidation = {
 - [User Flows](../uiux/user-flows.md)
 - [Logic Flows](./logic-flows.md)
 - [Project Structure](./project-structure.md)
+
+## UI/UX Best Practices for Template Prompt Editing
+
+To ensure a good user experience and maintain the quality of template prompts, follow these guidelines when building the template management system:
+
+- **Use multi-line editors** (e.g., `<textarea>`, rich text editor) for all prompt fields:
+  - `structure` (TemplatePrompts)
+  - `example` (TemplatePrompts, optional)
+  - `prompt` (each TemplateSection and subsection)
+- **Preserve and display line breaks** in both the editor and any preview components. This ensures prompts are readable and easy to edit.
+- **Optionally, provide a preview** of the final prompt as it will be sent to the AI, so users can verify formatting and structure.
+- **Validate and sanitize input** to avoid accidental removal of line breaks or formatting.
+- **Apply these practices to both system and user-created templates.**
+
+**Why this matters:**
+- Multi-line editing improves readability and usability for complex prompts.
+- Accurate formatting leads to more consistent and reliable AI output.
+- Good UI/UX reduces user errors and support burden.
+
+_Reference this section when building or updating the template management UI._

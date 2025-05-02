@@ -1,0 +1,34 @@
+import { NextResponse } from 'next/server';
+import { TemplateService } from '@/features/templates/template-service';
+import { auth } from '@clerk/nextjs';
+import type { Template, ApiError } from '@/features/templates/types';
+
+// POST /api/templates - Create a new template
+export async function POST(request: Request) {
+  try {
+    const { userId } = auth();
+    if (!userId) {
+      return NextResponse.json<ApiError>(
+        { code: 'UNAUTHORIZED', message: 'You must be logged in to create a template' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+    const template = await TemplateService.create({
+      ...body,
+      metadata: {
+        ...body.metadata,
+        lastUpdated: new Date().toISOString(),
+      },
+    });
+
+    return NextResponse.json(template);
+  } catch (error) {
+    console.error('Error creating template:', error);
+    return NextResponse.json<ApiError>(
+      { code: 'INTERNAL_ERROR', message: 'Failed to create template' },
+      { status: 500 }
+    );
+  }
+} 

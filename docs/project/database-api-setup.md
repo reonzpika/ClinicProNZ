@@ -35,12 +35,13 @@ This document tracks the setup and configuration of the database and API clients
     - [x] User indexes
     - [x] Template indexes
 
-- [ ] Database Client Setup
-  - [ ] Create database client
-  - [ ] Set up connection pooling
-  - [ ] Configure error handling
-  - [ ] Set up logging
-  - [ ] Add retry mechanism
+- [x] Database Client Setup
+  - [x] Create database client
+  - [x] Set up connection pooling
+  - [x] Configure error handling
+  - [x] Set up logging
+  - [x] Add retry mechanism
+  - [x] Document import paths (see [Database Import Guidelines](../engineering/database-imports.md))
 
 ### 2. API Clients Setup (Priority: Must Have)
 - [x] Deepgram Client

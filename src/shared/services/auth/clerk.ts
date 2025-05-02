@@ -1,4 +1,4 @@
-import { auth, currentUser } from '@clerk/nextjs';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 
 if (!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {

@@ -1,5 +1,5 @@
 import { recoverSession } from '../auth/clerk';
-import { templateService } from '../templates/template-service';
+import { templateService } from '../../../features/templates/template-service';
 
 export type ErrorType = 'network' | 'api' | 'session' | 'template' | 'unknown';
 

@@ -17,6 +17,8 @@ type TemplateFormProps = {
 export function TemplateForm({ template, onSubmit, onCancel }: TemplateFormProps) {
   const [name, setName] = useState(template?.name || '');
   const [description, setDescription] = useState(template?.description || '');
+  const [structure, setStructure] = useState(template?.prompts?.structure || '');
+  const [example, setExample] = useState(template?.prompts?.example || '');
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -31,6 +33,11 @@ export function TemplateForm({ template, onSubmit, onCancel }: TemplateFormProps
       name: name.trim(),
       description: description.trim(),
       sections: template?.sections || [],
+      prompts: {
+        ...template?.prompts,
+        structure: structure,
+        example: example || undefined,
+      },
     });
   };
 
@@ -62,6 +69,34 @@ export function TemplateForm({ template, onSubmit, onCancel }: TemplateFormProps
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Enter template description"
                 className="mt-1"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="structure" className="block text-sm font-medium">
+                Structure Prompt
+              </label>
+              <Textarea
+                id="structure"
+                value={structure}
+                onChange={(e) => setStructure(e.target.value)}
+                placeholder="Enter structure prompt (multi-line allowed)"
+                className="mt-1"
+                rows={4}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="example" className="block text-sm font-medium">
+                Example Output (optional)
+              </label>
+              <Textarea
+                id="example"
+                value={example}
+                onChange={(e) => setExample(e.target.value)}
+                placeholder="Enter example output (multi-line allowed)"
+                className="mt-1"
+                rows={4}
               />
             </div>
           </div>

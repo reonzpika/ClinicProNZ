@@ -1,7 +1,7 @@
 'use client';
 
-import { ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { useAuth } from '@clerk/nextjs';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/shared/components/ui/button';
 
@@ -14,30 +14,77 @@ type TemplateSelectorProps = {
 };
 
 export function TemplateSelector({ selectedTemplate, onTemplateSelect }: TemplateSelectorProps) {
+  const { isSignedIn, userId } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchTemplates() {
+      try {
+        setIsLoading(true);
+        // Fetch default templates
+        const defaultRes = await fetch('/api/templates?type=default');
+        if (!defaultRes.ok) {
+          throw new Error('Failed to fetch default templates');
+        }
+        const defaultData = await defaultRes.json();
+        let allTemplates = defaultData.templates || defaultData || [];
+
+        // If signed in, fetch custom templates
+        if (isSignedIn && userId) {
+          const customRes = await fetch(`/api/templates?type=custom&userId=${userId}`);
+          if (!customRes.ok) {
+            throw new Error('Failed to fetch custom templates');
+          }
+          const customData = await customRes.json();
+          const customTemplates = customData.templates || customData || [];
+          // Optionally, add a label to distinguish
+          allTemplates = [
+            ...allTemplates.map(t => ({ ...t, _templateType: 'Default' })),
+            ...customTemplates.map(t => ({ ...t, _templateType: 'Custom' })),
+          ];
+        } else {
+          // Only default templates
+          allTemplates = allTemplates.map(t => ({ ...t, _templateType: 'Default' }));
+        }
+        setTemplates(allTemplates);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch templates');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchTemplates();
+  }, [isSignedIn, userId]);
 
   return (
-    <div className="w-full">
+    <div>
       <Button
         variant="outline"
-        role="combobox"
-        aria-expanded={isModalOpen}
         className="w-full justify-between"
         onClick={() => setIsModalOpen(true)}
       >
-        <span className="truncate">{selectedTemplate?.name || 'Select Template'}</span>
-        <ChevronDown className="ml-2 size-4 shrink-0 opacity-50" />
+        <span>{selectedTemplate.name}</span>
+        <span>▼</span>
       </Button>
 
       <TemplateSelectorModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         selectedTemplate={selectedTemplate}
-        onTemplateSelect={(template) => {
-          onTemplateSelect(template);
-          setIsModalOpen(false);
-        }}
+        onTemplateSelect={onTemplateSelect}
+        templates={templates}
       />
+
+      {error && (
+        <p className="mt-2 text-sm text-red-600">
+          Error:
+          {' '}
+          {error}
+        </p>
+      )}
     </div>
   );
 }

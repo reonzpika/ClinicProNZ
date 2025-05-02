@@ -1,33 +1,35 @@
-import { authMiddleware } from '@clerk/nextjs/server';
-import type { NextRequest } from 'next/server';
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
-// This example protects all routes including api/trpc routes
-// Please edit this to allow other routes to be public as needed.
-// See https://clerk.com/docs/references/nextjs/auth-middleware for more information about configuring your middleware
-export default authMiddleware({
-  // Routes that can be accessed while signed out
-  publicRoutes: ['/'],
-  // Routes that can always be accessed, and have
-  // no authentication information
-  ignoredRoutes: ['/api/webhook'],
-  async afterAuth(auth: any, req: NextRequest) {
-    const response = NextResponse.next();
-    const headers = await response.headers;
-    
-    // Add security headers
-    headers.set('X-Frame-Options', 'DENY');
-    headers.set('X-Content-Type-Options', 'nosniff');
-    headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-    headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-    headers.set('Content-Security-Policy', 'default-src \'self\'; script-src \'self\' \'unsafe-inline\' \'unsafe-eval\'; style-src \'self\' \'unsafe-inline\'; img-src \'self\' data:; font-src \'self\'; connect-src \'self\' https://*.clerk.com;');
-    
-    return response;
-  },
+// Public routes (including default template API)
+const isPublicRoute = createRouteMatcher([
+  '/',
+  '/login(.*)',
+  '/register(.*)',
+  '/consultation(.*)',
+  '/api/templates', // allow GET for default templates
+  '/api/templates/(.*)', // allow GET for default templates and specific template fetch
+]);
+
+// Protected routes (template management, custom templates, etc.)
+const isProtectedRoute = createRouteMatcher([
+  '/templates(.*)', // Template management UI
+]);
+
+export default clerkMiddleware((auth, req) => {
+  if (isPublicRoute(req)) {
+    return NextResponse.next();
+  }
+  if (isProtectedRoute(req)) {
+    auth().protect();
+  }
+  // By default, protect everything else
+  auth().protect();
+  return NextResponse.next();
 });
 
 // See https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
 export const config = {
-  matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
+  matcher: ['/((?!.*\..*|_next).*)', '/', '/(api|trpc)(.*)'],
   runtime: 'edge',
 };

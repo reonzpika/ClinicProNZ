@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 
-import type { NoteGenerationMetrics } from '../../types/performance';
-import type { Template } from '../../types/templates';
+import type { NoteGenerationMetrics } from '../../shared/types/performance';
+import type { Template } from '../../shared/types/templates';
 
 if (!process.env.OPENAI_API_KEY) {
   throw new Error('Missing OPENAI_API_KEY');
@@ -30,18 +30,18 @@ export type NoteGenerationResponse = {
 // Helper function to format template sections for prompt
 const formatTemplateSections = (template: Template): string => {
   return template.sections
-    .map((section) => {
-      const sectionContent = `
-Section: ${section.name}
-Description: ${section.description}
-Format: ${section.type === 'array' ? 'bullet points' : 'paragraph'}
-Required: ${section.required ? 'Yes' : 'No'}
-Prompt: ${section.prompt}
-${section.subsections ? `\nSubsections:\n${section.subsections.map(sub => `- ${sub.name}: ${sub.prompt}`).join('\n')}` : ''}
-`;
+    .map((section: Template['sections'][number]) => {
+      const sectionContent = `${section.name}:
+${section.prompt}${
+  section.subsections
+    ? `\nSubsections:\n${
+      section.subsections
+        .map((sub: NonNullable<typeof section.subsections>[number]) => `- ${sub.name}: ${sub.prompt}`)
+        .join('\n')}`
+    : ''}`;
       return sectionContent;
     })
-    .join('\n');
+    .join('\n\n');
 };
 
 // Helper function to calculate cost estimate
@@ -74,15 +74,7 @@ export const generateNote = async ({
 
   try {
     // Format the system prompt with template details
-    const systemPrompt = `You are a medical documentation assistant for New Zealand GPs. Follow NZ medical documentation standards.
-${template.prompts.system}
-
-Template Structure:
-${formatTemplateSections(template)}
-
-${template.prompts.structure}
-
-Important: Ensure all required sections are clearly labeled and included in the output. Be concise and focused.`;
+    const systemPrompt = `You are a medical documentation assistant for New Zealand GPs. Follow NZ medical documentation standards.\n\nTemplate Structure:\n\n${formatTemplateSections(template)}\n\n${template.prompts.structure}\n\n${template.prompts.example ? `Example output:\n${template.prompts.example}\n\n` : ''}Important: Ensure all required sections are clearly labeled and included in the output. Be concise and focused.`;
 
     // Format user input with transcription and quick notes
     const userInput = `Transcription:\n${transcription}\n\nQuick Notes:\n${quickNotes.join('\n')}`;

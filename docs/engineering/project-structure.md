@@ -93,8 +93,24 @@ Next.js 15.3 introduces several performance improvements:
 │   │
 │   ├── api/              # API routes (Next.js API endpoints)
 │   │   ├── auth/        # Authentication endpoints
+│   │   │   ├── login.ts    # Login endpoint
+│   │   │   └── register.ts # Register endpoint
+│   │   │
 │   │   ├── templates/   # Template management endpoints
+│   │   │   ├── list.ts     # List all templates
+│   │   │   ├── create.ts   # Create new template
+│   │   │   ├── [id]/      # Individual template operations
+│   │   │   │   ├── get.ts     # Get specific template
+│   │   │   │   ├── update.ts  # Update template
+│   │   │   │   ├── delete.ts  # Delete template
+│   │   │   │   └── prompts/   # Template prompts operations
+│   │   │   │       └── update.ts  # Update template prompts
+│   │   │   │
 │   │   └── notes/       # Note generation endpoints
+│   │       ├── generate.ts  # Generate notes
+│   │       └── [id]/       # Individual note operations
+│   │           ├── get.ts     # Get specific note
+│   │           └── update.ts  # Update note
 │   │
 │   ├── layout.tsx       # Root layout (shared across all pages)
 │   ├── middleware.ts    # Auth middleware (Clerk integration)
@@ -120,19 +136,11 @@ Next.js 15.3 introduces several performance improvements:
 │   │   │   │   └── input.tsx
 │   │   │   ├── footer.tsx
 │   │   │   ├── header.tsx
-│   │   │   ├── hooks/       # Reusable React hooks
-│   │   │   │   ├── useAuth.ts        # Authentication hook
-│   │   │   │   ├── useTemplates.ts   # Template management hook
-│   │   │   │   └── useTranscription.ts # Transcription hook
-│   │   │   │
 │   │   │   └── services/    # Service implementations (external integrations)
 │   │   │       ├── api/     # API client (fetch wrapper, error handling)
 │   │   │       ├── auth/    # Auth service (Clerk integration)
 │   │   │       ├── database/# Database service (Drizzle ORM)
 │   │   │       ├── error/   # Error handling service
-│   │   │       ├── notes/   # Note generation service (OpenAI)
-│   │   │       ├── templates/# Template service
-│   │   │       ├── transcription/ # Transcription service (Deepgram)
 │   │   │       └── validation/   # Validation utilities
 │   │   │
 │   │   └── types/       # Application-specific type definitions

@@ -18,17 +18,29 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
               <p className="text-muted-foreground text-sm">{template.description}</p>
             </div>
 
+            {template.prompts?.structure && (
+              <div>
+                <h4 className="text-sm font-medium">Structure Prompt</h4>
+                <pre className="whitespace-pre-wrap text-sm bg-muted p-2 rounded">{template.prompts.structure}</pre>
+              </div>
+            )}
+
+            {template.prompts?.example && (
+              <div>
+                <h4 className="text-sm font-medium">Example Output</h4>
+                <pre className="whitespace-pre-wrap text-xs bg-muted p-2 rounded">{template.prompts.example}</pre>
+              </div>
+            )}
+
             <div className="space-y-2">
               <h4 className="text-sm font-medium">Sections</h4>
               <div className="space-y-2">
                 {template.sections.map(section => (
-                  <div key={section.id} className="rounded-md border p-2">
+                  <div key={section.name} className="rounded-md border p-2">
                     <h5 className="font-medium">{section.name}</h5>
-                    {section.prompts.map(prompt => (
-                      <div key={prompt.id} className="mt-1 text-sm text-muted-foreground">
-                        • {prompt.text}
-                      </div>
-                    ))}
+                    <div className="mt-1 text-sm text-muted-foreground whitespace-pre-wrap">
+                      {section.prompt}
+                    </div>
                   </div>
                 ))}
               </div>
