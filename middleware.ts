@@ -16,20 +16,29 @@ const isProtectedRoute = createRouteMatcher([
   '/templates(.*)', // Template management UI
 ]);
 
-export default clerkMiddleware((auth, req) => {
+export default clerkMiddleware(async (auth, req) => {
+  console.log('MIDDLEWARE HIT', req.nextUrl.pathname);
+  
   if (isPublicRoute(req)) {
     return NextResponse.next();
   }
+
+  // Protect all non-public routes
   if (isProtectedRoute(req)) {
-    auth().protect();
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return resolvedAuth.redirectToSignIn();
+    }
   }
-  // By default, protect everything else
-  auth().protect();
+
   return NextResponse.next();
 });
 
 // See https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
 export const config = {
-  matcher: ['/((?!.*\..*|_next).*)', '/', '/(api|trpc)(.*)'],
-  runtime: 'edge',
+  matcher: [
+    '/((?!.*\\..*|_next).*)',
+    '/',
+    '/(api|trpc)(.*)'
+  ],
 };

@@ -10,26 +10,26 @@ if (!process.env.CLERK_SECRET_KEY) {
 }
 
 // Helper functions for authentication
-export const getAuth = () => auth();
-export const getUser = () => currentUser();
+export const getAuth = async () => auth();
+export const getUser = async () => currentUser();
 
 // Type definitions for Clerk user
 export type ClerkUser = Awaited<ReturnType<typeof currentUser>>;
 
 // Helper function to check if user is authenticated
-export const isAuthenticated = async () => {
+export const isAuthenticated = async (req: Request) => {
   const { userId } = await getAuth();
   return !!userId;
 };
 
 // Helper function to get user ID
-export const getUserId = async () => {
+export const getUserId = async (req: Request) => {
   const { userId } = await getAuth();
   return userId;
 };
 
 // Session management
-export const handleSessionExpiry = async () => {
+export const handleSessionExpiry = async (req: Request) => {
   const { userId } = await getAuth();
   if (!userId) {
     redirect('/sign-in');
@@ -37,7 +37,7 @@ export const handleSessionExpiry = async () => {
 };
 
 // Session recovery
-export const recoverSession = async () => {
+export const recoverSession = async (req: Request) => {
   try {
     const { userId } = await getAuth();
     if (!userId) {
@@ -45,7 +45,7 @@ export const recoverSession = async () => {
     }
 
     // Attempt to recover any saved state
-    const savedState = localStorage.getItem('consultationState');
+    const savedState = typeof localStorage !== 'undefined' ? localStorage.getItem('consultationState') : null;
     if (savedState) {
       return JSON.parse(savedState);
     }
@@ -58,14 +58,16 @@ export const recoverSession = async () => {
 };
 
 // Session cleanup
-export const cleanupSession = async () => {
+export const cleanupSession = async (req: Request) => {
   try {
     // Clear any saved state
+    if (typeof localStorage !== 'undefined') {
     localStorage.removeItem('consultationState');
+    }
 
     // Additional cleanup if needed
     const { userId } = await getAuth();
-    if (userId) {
+    if (userId && typeof localStorage !== 'undefined') {
       // Clear any user-specific data
       localStorage.removeItem(`user_${userId}_preferences`);
     }

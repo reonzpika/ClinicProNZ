@@ -1,6 +1,7 @@
-import { getAuth } from '@/shared/services/auth/clerk';
 import { desc, eq, or } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
+
+import { getAuth } from '@/shared/services/auth/clerk';
 
 import { db } from '../../../database/client';
 import { templates } from '../../../database/schema';
@@ -20,7 +21,7 @@ export async function GET(req: Request) {
       // Default: fetch both default and custom for signed-in user, or just default for guests
       whereClause = or(
         eq(templates.type, 'default'),
-        userId ? eq(templates.ownerId, userId) : undefined
+        userId ? eq(templates.ownerId, userId) : undefined,
       );
     }
 
@@ -35,7 +36,7 @@ export async function GET(req: Request) {
     console.error('Error fetching templates:', error);
     return NextResponse.json(
       { error: 'Failed to fetch templates' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
