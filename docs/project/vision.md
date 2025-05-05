@@ -1,13 +1,4 @@
----
-description: 
-globs: 
-alwaysApply: false
----
----
-description: Project vision, target users, and development focus for ConsultAI NZ
-globs: ["**/*"]
-alwaysApply: true
----
+
 # ConsultAI NZ Vision
 
 ## Project Vision
@@ -27,8 +18,3 @@ Primary Users:
 - New Zealand healthcare context
 - GP workflow optimization
 - Medical documentation needs
-- Healthcare compliance requirements
-
-
-
-

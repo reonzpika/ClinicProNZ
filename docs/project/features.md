@@ -1,13 +1,3 @@
----
-description: 
-globs: 
-alwaysApply: true
----
----
-description: Core features, implementation details, and UI guidelines for ConsultAI NZ
-globs: ["**/*"]
-alwaysApply: true
----
 
 # ConsultAI NZ Core Features
 
@@ -36,10 +26,3 @@ alwaysApply: true
 - Responsive layout
 - Accessibility compliance
 - Healthcare environment considerations
-
-## Implementation Guidelines
-- Focus on medical accuracy
-- Prioritize GP workflow efficiency
-- Ensure data privacy and security
-- Maintain healthcare compliance
-- Optimize for real-time performance
