@@ -1,27 +1,39 @@
 import { NextResponse } from 'next/server';
 import { TemplateService } from '@/features/templates/template-service';
-import { checkApiAuth } from '@/shared/services/auth/api-auth';
+import { auth } from '@clerk/nextjs';
 import type { ApiError } from '@/features/templates/types';
 
 // PATCH /api/templates/[id] - Update a template
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   try {
-    const userId = checkApiAuth();
-    if (userId instanceof NextResponse) return userId;
+    const { userId } = auth();
+    if (!userId) {
+      return NextResponse.json<ApiError>(
+        { code: 'UNAUTHORIZED', message: 'You must be logged in to update a template' },
+        { status: 401 }
+      );
+    }
 
     const body = await request.json();
-    const template = await TemplateService.update(params.id, {
-      ...body,
-      metadata: {
-        ...body.metadata,
-        lastUpdated: new Date().toISOString(),
-      },
-    });
-
-    return NextResponse.json(template);
+    // Only allow update if user owns the template or it's a system template
+    const template = await TemplateService.getById(params.id);
+    if (!template) {
+      return NextResponse.json<ApiError>(
+        { code: 'NOT_FOUND', message: 'Template not found' },
+        { status: 404 }
+      );
+    }
+    if (template.type === 'custom' && template.ownerId !== userId) {
+      return NextResponse.json<ApiError>(
+        { code: 'FORBIDDEN', message: 'You do not have permission to update this template' },
+        { status: 403 }
+      );
+    }
+    const updated = await TemplateService.update(params.id, body);
+    return NextResponse.json(updated);
   } catch (error) {
     console.error('Error updating template:', error);
     return NextResponse.json<ApiError>(

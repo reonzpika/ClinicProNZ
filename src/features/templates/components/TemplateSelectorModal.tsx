@@ -2,6 +2,7 @@
 
 import { useAuth } from '@clerk/nextjs';
 import { useState } from 'react';
+import { Check } from 'lucide-react';
 
 import { Button } from '@/shared/components/ui/button';
 import {
@@ -29,17 +30,23 @@ type TemplateSelectorModalProps = {
 export function TemplateSelectorModal({
   isOpen,
   onClose,
-  selectedTemplate,
+  selectedTemplate: initialTemplate,
   onTemplateSelect,
   templates = [], // Default empty array
 }: TemplateSelectorModalProps) {
   const { isSignedIn } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
-  const [previewTemplate, setPreviewTemplate] = useState<Template | null>(selectedTemplate);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>(initialTemplate.id);
 
   const filteredTemplates = templates.filter(template =>
     template.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleTemplateClick = (template: Template) => {
+    setSelectedTemplateId(template.id);
+  };
+
+  const currentTemplate = templates.find(t => t.id === selectedTemplateId);
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
@@ -72,17 +79,23 @@ export function TemplateSelectorModal({
                       <div
                         key={template.id}
                         className={`cursor-pointer rounded-md p-3 transition-colors ${
-                          previewTemplate?.id === template.id
+                          selectedTemplateId === template.id
                             ? 'bg-primary/10'
                             : 'hover:bg-muted'
                         }`}
-                        onClick={() => setPreviewTemplate(template)}
-                        onMouseEnter={() => setPreviewTemplate(template)}
+                        onClick={() => handleTemplateClick(template)}
                       >
-                        <h3 className="font-medium">{template.name}</h3>
-                        <p className="text-muted-foreground text-sm">
-                          {template.description}
-                        </p>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="font-medium">{template.name}</h3>
+                            <p className="text-muted-foreground text-sm">
+                              {template.description}
+                            </p>
+                          </div>
+                          {selectedTemplateId === template.id && (
+                            <Check className="h-5 w-5 text-primary" />
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -92,8 +105,8 @@ export function TemplateSelectorModal({
               {/* Template Preview - 2 columns */}
               <div className="col-span-2 border-l pl-4">
                 <h4 className="mb-2 font-medium">Template Preview</h4>
-                {previewTemplate && (
-                  <TemplatePreview template={previewTemplate} />
+                {currentTemplate && (
+                  <TemplatePreview template={currentTemplate} />
                 )}
               </div>
             </div>
@@ -106,10 +119,12 @@ export function TemplateSelectorModal({
           </Button>
           <Button
             onClick={() => {
-              onTemplateSelect(previewTemplate || selectedTemplate);
-              onClose();
+              if (currentTemplate) {
+                onTemplateSelect(currentTemplate);
+                onClose();
+              }
             }}
-            disabled={!previewTemplate || templates.length === 0}
+            disabled={!currentTemplate || templates.length === 0}
           >
             Select Template
           </Button>

@@ -1,8 +1,8 @@
-import { db } from '@/database/client';
-import { templates } from '@/database/schema/templates';
+import { db } from '../../../database/client';
+import { templates } from '../../../database/schema/templates';
 import { eq } from 'drizzle-orm';
 import { validateTemplate } from './utils/validation';
-import type { Section, Template } from './types';
+import type { Template } from './types';
 
 export class TemplateService {
   static async create(template: Omit<Template, 'id'>): Promise<Template> {
@@ -21,16 +21,22 @@ export class TemplateService {
   }
 
   static async update(id: string, template: Partial<Template>): Promise<Template> {
+    // If updating fields that affect validation, validate the merged template
+    const [existing] = await db.select().from(templates).where(eq(templates.id, id));
+    if (!existing) throw new Error('Template not found');
+    const merged = { ...existing, ...template };
+    const validation = validateTemplate(merged as Template);
+    if (!validation.isValid) {
+      throw new Error(`Invalid template: ${validation.errors.map(e => e.message).join(', ')}`);
+    }
     const [updatedTemplate] = await db
       .update(templates)
       .set(template)
       .where(eq(templates.id, id))
       .returning();
-    
     if (!updatedTemplate) {
       throw new Error('Template not found');
     }
-    
     return updatedTemplate;
   }
 
@@ -38,8 +44,20 @@ export class TemplateService {
     await db.delete(templates).where(eq(templates.id, id));
   }
 
-  static async list(userId: string): Promise<Template[]> {
-    return db.select().from(templates).where(eq(templates.ownerId, userId));
+  static async list(userId?: string, type?: 'default' | 'custom'): Promise<Template[]> {
+    // If type is specified, filter by type; otherwise, return all for user
+    if (type) {
+      if (type === 'default') {
+        return db.select().from(templates).where(eq(templates.type, 'default'));
+      } else if (type === 'custom' && userId) {
+        return db.select().from(templates).where(eq(templates.ownerId, userId));
+      }
+    }
+    // Default: fetch both default and custom for signed-in user, or just default for guests
+    if (userId) {
+      return db.select().from(templates).where(eq(templates.ownerId, userId));
+    }
+    return db.select().from(templates).where(eq(templates.type, 'default'));
   }
 
   // Get templates by category

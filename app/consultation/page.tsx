@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 
 import { GeneratedNotes } from '@/features/consultation/components/GeneratedNotes';
 import { QuickNotes } from '@/features/consultation/components/QuickNotes';
@@ -14,7 +14,24 @@ import { Stack } from '@/shared/components/layout/Stack';
 import { Section } from '@/shared/components/layout/Section';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 
+import type { Template } from '@/features/templates/types';
+
 export default function ConsultationPage() {
+  const [selectedTemplate, setSelectedTemplate] = useState<Template>({
+    id: '1',
+    name: 'Multi-problem SOAP (Default)',
+    type: 'default',
+    description: 'Default template for multi-problem SOAP notes',
+    sections: [],
+    prompts: {
+      structure: '',
+    },
+  });
+
+  const handleTemplateSelect = (template: Template) => {
+    setSelectedTemplate(template);
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
@@ -32,8 +49,8 @@ export default function ConsultationPage() {
                   </CardHeader>
                   <CardContent>
                     <TemplateSelector
-                      selectedTemplate={{ id: '1', name: 'Multi-problem SOAP (Default)', type: 'default' }}
-                      onTemplateSelect={() => {}}
+                      selectedTemplate={selectedTemplate}
+                      onTemplateSelect={handleTemplateSelect}
                     />
                   </CardContent>
                 </Card>

@@ -7,7 +7,7 @@ export type Section = {
   id: string;
   name: string;
   type: SectionType;
-  description: string;
+  description?: string;
   prompt: string;
   required?: boolean;
 };
@@ -26,12 +26,12 @@ export type TemplateSection = {
   name: string;
   type: 'text' | 'array';
   required: boolean;
-  description: string;
+  description?: string;
+  prompt: string;
   subsections?: TemplateSection[];
 };
 
 export type TemplatePrompts = {
-  system: string;
   structure: string;
   example?: string;
 };
@@ -39,9 +39,10 @@ export type TemplatePrompts = {
 export type Template = {
   id: string;
   name: string;
+  description?: string;
   type: 'default' | 'custom';
   ownerId?: string;
-  sections: TemplateSection[];
+  sections?: TemplateSection[];
   prompts: TemplatePrompts;
   createdAt?: string;
   updatedAt?: string;

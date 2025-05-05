@@ -15,13 +15,12 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const template = await TemplateService.create({
+    // Ensure ownerId is set for custom templates
+    const templateData = {
       ...body,
-      metadata: {
-        ...body.metadata,
-        lastUpdated: new Date().toISOString(),
-      },
-    });
+      ownerId: body.type === 'custom' ? userId : undefined,
+    };
+    const template = await TemplateService.create(templateData);
 
     return NextResponse.json(template);
   } catch (error) {

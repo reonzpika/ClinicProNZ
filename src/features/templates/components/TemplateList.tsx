@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Plus } from 'lucide-react';
+import { Check, Plus, Copy, Edit, Trash2 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/shared/components/ui/button';
@@ -8,41 +8,33 @@ import { Button } from '@/shared/components/ui/button';
 import type { Template } from '../types';
 
 type TemplateListProps = {
+  templates: Template[];
   searchQuery: string;
   selectedTemplate: Template;
   onTemplateSelect: (template: Template) => void;
   onTemplateHover: (template: Template) => void;
   isSignedIn: boolean;
+  onEdit: (template: Template) => void;
+  onDelete: (template: Template) => void;
+  onCopy: (template: Template) => void;
 };
 
 export function TemplateList({
+  templates,
   searchQuery,
   selectedTemplate,
   onTemplateSelect,
   onTemplateHover,
   isSignedIn,
+  onEdit,
+  onDelete,
+  onCopy,
 }: TemplateListProps) {
-  // TODO: Replace with actual data from API
-  const defaultTemplates: Template[] = [
-    { id: '1', name: 'Multi-problem SOAP (Default)', type: 'default' },
-    { id: '2', name: 'Driver\'s License Medical', type: 'default' },
-    { id: '3', name: 'Mental Health Review', type: 'default' },
-    { id: '4', name: 'Initial Medical', type: 'default' },
-  ];
-
-  const customTemplates: Template[] = isSignedIn
-    ? [
-        { id: '5', name: 'Custom SOAP Template', type: 'custom' },
-        { id: '6', name: 'Follow-up Template', type: 'custom' },
-      ]
-    : [];
-
-  const filteredDefaultTemplates = defaultTemplates.filter(template =>
-    template.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  const filteredDefaultTemplates = templates.filter(
+    t => t.type === 'default' && t.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const filteredCustomTemplates = customTemplates.filter(template =>
-    template.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  const filteredCustomTemplates = templates.filter(
+    t => t.type === 'custom' && t.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -52,36 +44,11 @@ export function TemplateList({
         <h3 className="mb-2 font-medium">Default Templates</h3>
         <div className="space-y-1">
           {filteredDefaultTemplates.map(template => (
-            <Button
-              key={template.id}
-              variant="ghost"
-              className={cn(
-                'w-full justify-start gap-2',
-                selectedTemplate?.id === template.id && 'bg-accent',
-              )}
-              onClick={() => onTemplateSelect(template)}
-              onMouseEnter={() => onTemplateHover(template)}
-            >
-              {selectedTemplate?.id === template.id && (
-                <Check className="size-4" />
-              )}
-              {template.name}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      {/* Custom Templates Section */}
-      <div>
-        <h3 className="mb-2 font-medium">My Templates</h3>
-        {isSignedIn ? (
-          <div className="space-y-1">
-            {filteredCustomTemplates.map(template => (
+            <div key={template.id} className="flex items-center gap-2">
               <Button
-                key={template.id}
                 variant="ghost"
                 className={cn(
-                  'w-full justify-start gap-2',
+                  'flex-1 justify-start gap-2',
                   selectedTemplate?.id === template.id && 'bg-accent',
                 )}
                 onClick={() => onTemplateSelect(template)}
@@ -92,11 +59,50 @@ export function TemplateList({
                 )}
                 {template.name}
               </Button>
+              <Button variant="ghost" size="icon" onClick={() => onCopy(template)} title="Copy">
+                <Copy className="size-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Custom Templates Section */}
+      <div>
+        <h3 className="mb-2 font-medium">My Templates</h3>
+        {isSignedIn ? (
+          <div className="space-y-1">
+            {filteredCustomTemplates.map(template => (
+              <div key={template.id} className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  className={cn(
+                    'flex-1 justify-start gap-2',
+                    selectedTemplate?.id === template.id && 'bg-accent',
+                  )}
+                  onClick={() => onTemplateSelect(template)}
+                  onMouseEnter={() => onTemplateHover(template)}
+                >
+                  {selectedTemplate?.id === template.id && (
+                    <Check className="size-4" />
+                  )}
+                  {template.name}
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => onEdit(template)} title="Edit">
+                  <Edit className="size-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => onDelete(template)} title="Delete">
+                  <Trash2 className="size-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => onCopy(template)} title="Copy">
+                  <Copy className="size-4" />
+                </Button>
+              </div>
             ))}
             <Button
               variant="ghost"
               className="text-primary w-full justify-start gap-2"
-              onClick={() => { /* TODO: Handle create template */ }}
+              onClick={() => onEdit(undefined)}
             >
               <Plus className="size-4" />
               Create New Template

@@ -15,7 +15,7 @@ This document outlines how templates are used to generate structured prompts for
 ### 2. Template Processing
 - Templates guide how ChatGPT organizes content
 - Each section has a specific prompt and format
-- Supports hierarchical structures
+- Supports hierarchical structures (including recursive subsections in the UI)
 - See [API Specification](./api-specification.md#note-generation) for implementation
 
 ### 3. Validation Approach
@@ -32,6 +32,12 @@ Templates are NOT forms to be filled out by GPs. Instead, they:
 4. Provide preview and examples for GPs to understand the output
 5. Include comprehensive metadata for template selection
 
+## UI Implementation Notes
+
+- The UI supports recursive editing of sections and subsections using the SectionBuilder component.
+- The template preview uses the prompt construction utility to show the exact prompt that will be sent to the AI.
+- All UI components are aligned with the canonical Template and TemplateSection types.
+
 ## Basic Template Structure
 
 ```typescript
@@ -39,6 +45,7 @@ Templates are NOT forms to be filled out by GPs. Instead, they:
 export type Template = {
   id: string; // Unique identifier for the template
   name: string; // Human-readable name (e.g., "SOAP Note")
+  description: string; // Short summary for UI
   type: 'default' | 'custom'; // System template or user-created
   ownerId?: string; // For custom templates
   sections: TemplateSection[];
@@ -68,7 +75,7 @@ export type TemplatePrompts = {
 ```typescript
 type TemplateValidation = {
   // Required fields
-  requiredFields: ['id', 'name', 'type', 'sections', 'prompts'];
+  requiredFields: ['id', 'name', 'description', 'type', 'sections', 'prompts'];
 
   // Section validation
   sectionRules: {
@@ -113,6 +120,7 @@ type ContentValidation = {
 const soapTemplate: Template = {
   id: 'default-soap',
   name: 'SOAP Note',
+  description: 'Standard SOAP format for general consultations',
   type: 'default',
   sections: [
     {
@@ -155,6 +163,7 @@ const soapTemplate: Template = {
 const hierarchicalMultiProblemSoapTemplate: Template = {
   id: 'default-hierarchical-multi-problem-soap',
   name: 'Hierarchical Multi-Problem SOAP Note',
+  description: 'SOAP note with separate sections for each problem',
   type: 'default',
   sections: [
     {
@@ -220,8 +229,10 @@ const hierarchicalMultiProblemSoapTemplate: Template = {
 ### Simplified Prompt Construction (MVP)
 
 For the MVP, the prompt sent to ChatGPT is constructed in a minimal, focused way:
-- **Only the section name and prompt are included** for each section.
-- **If a section has subsections**, only the subsection name and prompt are included (as a simple bullet list).
+- **The structure prompt is placed at the top.**
+- **Then, for each section, only the section name and prompt are included.**
+- **If a section has subsections, only the subsection name and prompt are included (as a simple bullet list).**
+- **If present, the example output is appended at the end.**
 - **No extra metadata** (such as description, required, or format) is included in the prompt.
 
 This approach keeps the prompt short, clear, and easy for the AI to follow, improving consistency and reducing token usage.
@@ -233,6 +244,7 @@ This approach keeps the prompt short, clear, and easy for the AI to follow, impr
 const hierarchicalMultiProblemSoapTemplate: Template = {
   id: 'default-hierarchical-multi-problem-soap',
   name: 'Hierarchical Multi-Problem SOAP Note',
+  description: 'SOAP note with separate sections for each problem',
   type: 'default',
   sections: [
     {
@@ -295,6 +307,8 @@ const hierarchicalMultiProblemSoapTemplate: Template = {
 
 **Converted Prompt (MVP):**
 ```
+Generate a hierarchical medical note where each problem has its own complete SOAP note. Start with an overview of all problems, then provide detailed SOAP notes for each problem separately.
+
 overview:
 List each problem the patient presented with as a bullet point.
 
@@ -306,13 +320,12 @@ Subsections:
 - objective: List all relevant clinical findings, vital signs, and examination results as bullet points.
 - assessment: Provide a clear assessment specific to this problem.
 - plan: List all treatment actions, medications, and follow-up plans as bullet points.
-
-Generate a hierarchical medical note where each problem has its own complete SOAP note. Start with an overview of all problems, then provide detailed SOAP notes for each problem separately.
 ```
 
 **Key Points:**
-- The prompt is minimal and focused.
+- The structure prompt is at the top.
 - Only the section and subsection names and prompts are included.
+- The example output (if present) is appended at the end.
 - This structure is used for all templates in the MVP.
 
 ## Template Management
@@ -361,7 +374,7 @@ type TemplateOperations = {
 ```typescript
 type TemplateValidation = {
   // Required fields
-  requiredFields: ['id', 'name', 'type', 'sections', 'prompts'];
+  requiredFields: ['id', 'name', 'description', 'type', 'sections', 'prompts'];
 
   // Section validation
   sectionRules: {

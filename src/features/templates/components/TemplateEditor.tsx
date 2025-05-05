@@ -1,5 +1,7 @@
+import { useState } from 'react';
+
+import type { Template } from '@/features/templates/types';
 import { Button } from '@/shared/components/ui/button';
-import type { Template } from '@/shared/types/templates';
 
 import { SectionBuilder } from './SectionBuilder';
 import { TemplateForm } from './TemplateForm';
@@ -11,20 +13,37 @@ type TemplateEditorProps = {
 };
 
 export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorProps) {
+  const [currentTemplate, setCurrentTemplate] = useState<Template>(template);
+  const [error, setError] = useState<string | null>(null);
+
   const handleChange = (updates: Partial<Template>) => {
-    onSave({ ...template, ...updates });
+    setCurrentTemplate(prev => ({ ...prev, ...updates }));
+    setError(null);
+  };
+
+  const isValid = !!currentTemplate.name?.trim() && !!currentTemplate.prompts?.structure?.trim();
+
+  const handleSave = () => {
+    if (!isValid) {
+      setError('Name and Structure Prompt are required.');
+      return;
+    }
+    // Remove date fields before saving
+    const { createdAt, updatedAt, ...templateToSave } = currentTemplate;
+    onSave(templateToSave);
   };
 
   return (
     <div className="space-y-8">
-      <TemplateForm template={template} onChange={handleChange} />
-      <SectionBuilder template={template} onChange={handleChange} />
+      <TemplateForm template={currentTemplate} onChange={handleChange} />
+      <SectionBuilder sections={currentTemplate.sections} onChange={sections => handleChange({ sections })} />
 
+      {error && <div className="text-red-500">{error}</div>}
       <div className="flex justify-end space-x-4">
         <Button variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button onClick={() => onSave(template)}>
+        <Button onClick={handleSave} disabled={!isValid}>
           Save Template
         </Button>
       </div>

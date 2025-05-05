@@ -25,9 +25,9 @@ export async function GET(
 
     return NextResponse.json(template);
   } catch (error) {
-    console.error('Error getting template:', error);
+    console.error('Error fetching template:', error);
     return NextResponse.json<ApiError>(
-      { code: 'INTERNAL_ERROR', message: 'Failed to get template' },
+      { code: 'INTERNAL_ERROR', message: 'Failed to fetch template' },
       { status: 500 },
     );
   }

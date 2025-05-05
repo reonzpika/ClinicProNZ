@@ -15,12 +15,15 @@
     "check-types": "tsc --noEmit --pretty",
     "test": "vitest run",
     "commit": "cz",
-    "db:generate": "drizzle-kit generate:pg",
-    "db:migrate": "tsx database/migrate.ts",
-    "db:drop": "tsx database/drop-tables.ts",
-    "db:reset": "npm run db:drop && npm run db:migrate",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:drop": "drizzle-kit drop",
+    "db:reset": "drizzle-kit drop && drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "prepare": "husky"
+    "db:check": "drizzle-kit check",
+    "prepare": "husky",
+    "db:seed-templates": "tsx database/seed-templates.ts"
   },
   "dependencies": {
     "@clerk/localizations": "^3.14.4",
