@@ -11,10 +11,10 @@ export type AudioRecordingError = {
 
 export class AudioRecordingService {
   private static instance: AudioRecordingService;
-  private mediaRecorder: MediaRecorder | null = null;
   private audioStream: MediaStream | null = null;
   private isRecording: boolean = false;
   private isPaused: boolean = false;
+  private audioContext: AudioContext | null = null;
 
   private constructor() {}
 
@@ -40,30 +40,41 @@ export class AudioRecordingService {
         },
       });
 
-      // Create MediaRecorder with required settings
-      let mimeType = '';
-      if (MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')) {
-        mimeType = 'audio/ogg;codecs=opus';
-      } else if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
-        mimeType = 'audio/webm;codecs=opus';
-      } else {
-        throw new Error('No supported audio format for MediaRecorder');
-      }
-      this.mediaRecorder = new MediaRecorder(this.audioStream, {
-        mimeType,
+      // Create AudioContext for processing
+      this.audioContext = new AudioContext({
+        sampleRate: 16000,
       });
 
-      // Handle audio data
-      this.mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          onAudioData(event.data);
-        }
-      };
+      try {
+        const source = this.audioContext.createMediaStreamSource(this.audioStream);
 
-      // Start recording
-      this.mediaRecorder.start(250); // Collect data every 250ms
-      this.isRecording = true;
-      this.isPaused = false;
+        // Create script processor for raw PCM data
+        const processor = this.audioContext.createScriptProcessor(4096, 1, 1);
+        processor.onaudioprocess = (e) => {
+          const inputData = e.inputBuffer.getChannelData(0);
+          // Convert Float32Array to Int16Array (PCM)
+          const pcmBuffer = new ArrayBuffer(inputData.length * 2);
+          const view = new DataView(pcmBuffer);
+          for (let i = 0; i < inputData.length; i++) {
+            const sample = Math.max(-1, Math.min(1, inputData[i] ?? 0));
+            view.setInt16(i * 2, sample * 0x7FFF, true); // true = little-endian
+          }
+          const blob = new Blob([pcmBuffer], { type: 'audio/raw' });
+          console.error('Captured audio chunk, size:', blob.size);
+          onAudioData(blob);
+        };
+
+        // Connect nodes
+        source.connect(processor);
+        processor.connect(this.audioContext.destination);
+
+        this.isRecording = true;
+        this.isPaused = false;
+      } catch (error) {
+        // Clean up AudioContext if there's an error
+        await this.audioContext.close();
+        throw error;
+      }
     } catch (error) {
       console.error('Failed to start recording:', error);
       this.createEnhancedError(error, onError);
@@ -71,29 +82,30 @@ export class AudioRecordingService {
   }
 
   public pauseRecording(): void {
-    if (this.mediaRecorder && this.isRecording && !this.isPaused) {
-      this.mediaRecorder.pause();
+    if (this.audioStream && this.isRecording && !this.isPaused) {
+      this.audioStream.getTracks().forEach(track => track.enabled = false);
       this.isPaused = true;
     }
   }
 
   public resumeRecording(): void {
-    if (this.mediaRecorder && this.isRecording && this.isPaused) {
-      this.mediaRecorder.resume();
+    if (this.audioStream && this.isRecording && this.isPaused) {
+      this.audioStream.getTracks().forEach(track => track.enabled = true);
       this.isPaused = false;
     }
   }
 
   public async stopRecording(): Promise<void> {
-    if (this.mediaRecorder && this.isRecording) {
-      this.mediaRecorder.stop();
+    if (this.audioStream && this.isRecording) {
+      this.audioStream.getTracks().forEach(track => track.stop());
+      this.audioStream = null;
       this.isRecording = false;
       this.isPaused = false;
 
-      // Stop all tracks
-      if (this.audioStream) {
-        this.audioStream.getTracks().forEach(track => track.stop());
-        this.audioStream = null;
+      // Close any active AudioContext
+      if (this.audioContext) {
+        await this.audioContext.close();
+        this.audioContext = null;
       }
     }
   }

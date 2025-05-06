@@ -34,14 +34,21 @@ export async function POST(req: NextRequest) {
     });
 
     let transcript = '';
+    let confidence = 0;
 
     connection.on('transcriptReceived', (data: any) => {
       const t = data.channel.alternatives[0]?.transcript;
-      if (t) transcript += t + ' ';
+      if (t) {
+        transcript += t + ' ';
+        confidence = data.channel.alternatives[0]?.confidence || confidence;
+      }
     });
 
     connection.on('close', () => {
-      resolve(new Response(JSON.stringify({ transcript }), {
+      resolve(new Response(JSON.stringify({ 
+        transcript,
+        confidence 
+      }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       }));

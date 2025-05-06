@@ -15,7 +15,7 @@ export function TranscriptionControls() {
     isRecording,
     isPaused,
     latestTranscription,
-    error,
+  error,
     startRecording,
     pauseRecording,
     resumeRecording,

@@ -3,6 +3,15 @@ import { useCallback, useRef, useState } from 'react';
 import { audioRecordingService } from '../services/AudioRecordingService';
 import type { AudioRecordingError } from '../services/AudioRecordingService';
 
+type WebSocketMessage = {
+  type: 'connected' | 'transcript' | 'warning' | 'error';
+  transcript?: string;
+  isFinal?: boolean;
+  confidence?: number;
+  message?: string;
+  error?: string;
+};
+
 export function useTranscription() {
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -31,8 +40,8 @@ export function useTranscription() {
     try {
       setError(null);
       setLatestTranscription('');
-      // Open WebSocket connection
-      const ws = new WebSocket('ws://localhost:8080');
+      // Open WebSocket connection to port 3001
+      const ws = new WebSocket('ws://localhost:3001');
       wsRef.current = ws;
 
       ws.onopen = async () => {
@@ -43,19 +52,31 @@ export function useTranscription() {
 
       ws.onmessage = (event) => {
         try {
-          const data = JSON.parse(event.data);
-          if (data.transcript) {
-            setLatestTranscription((prev) => data.isFinal ? data.transcript : prev + ' ' + data.transcript);
-          } else if (data.error) {
-            setError(data.error);
+          const data = JSON.parse(event.data) as WebSocketMessage;
+          switch (data.type) {
+            case 'transcript':
+              if (data.transcript) {
+                setLatestTranscription((prev) => 
+                  data.isFinal ? data.transcript : prev + ' ' + data.transcript
+                );
+              }
+              break;
+            case 'error':
+              setError(data.error || 'Unknown error occurred');
+              break;
+            case 'warning':
+              console.warn('Transcription warning:', data.message);
+              break;
           }
         } catch (e) {
+          console.error('Failed to parse WebSocket message:', e);
           setError('Failed to parse transcription data');
         }
       };
 
       ws.onerror = (event) => {
-        setError('WebSocket error');
+        console.error('WebSocket error:', event);
+        setError('WebSocket connection error');
       };
 
       ws.onclose = () => {
