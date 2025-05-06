@@ -14,8 +14,8 @@ export function TranscriptionControls() {
   const {
     isRecording,
     isPaused,
-    latestTranscription,
-  error,
+    transcript,
+    error,
     startRecording,
     pauseRecording,
     resumeRecording,
@@ -64,7 +64,7 @@ export function TranscriptionControls() {
           <Section title="Latest Transcription">
             <div className="bg-muted rounded-md p-4">
               <p className="text-sm text-muted-foreground">
-                {latestTranscription || 'No transcription available'}
+                {transcript || 'No transcription available'}
               </p>
             </div>
           </Section>

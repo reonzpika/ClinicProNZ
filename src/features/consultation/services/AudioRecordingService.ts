@@ -1,147 +1,146 @@
-// Remove the import since we don't need it in this file
-// import { deepgramService } from './deepgram';
-
-// Types for audio recording
-export type AudioRecordingError = {
-  message: string;
-  code: 'PERMISSION_ERROR' | 'RECORDING_ERROR' | 'PROCESSING_ERROR';
-  retryable: boolean;
-  details?: any;
-};
+import { AudioProcessingService } from '@/features/consultation/services/AudioProcessingService';
 
 export class AudioRecordingService {
-  private static instance: AudioRecordingService;
-  private audioStream: MediaStream | null = null;
-  private isRecording: boolean = false;
-  private isPaused: boolean = false;
   private audioContext: AudioContext | null = null;
+  private workletNode: AudioWorkletNode | null = null;
+  private stream: MediaStream | null = null;
+  private source: MediaStreamAudioSourceNode | null = null;
+  private onChunkCallback: ((chunk: ArrayBuffer) => void) | null = null;
+  private readonly TARGET_SAMPLE_RATE = 16000; // Deepgram's preferred sample rate
+  private readonly BUFFER_SIZE = 4096;
 
-  private constructor() {}
+  async verifySetup(): Promise<void> {
+    try {
+      // Check if audio context is supported
+      if (!window.AudioContext && !(window as any).webkitAudioContext) {
+        throw new Error('AudioContext not supported in this browser');
+      }
 
-  public static getInstance(): AudioRecordingService {
-    if (!AudioRecordingService.instance) {
-      AudioRecordingService.instance = new AudioRecordingService();
+      // Check if audio worklet is supported
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      if (!audioContext.audioWorklet) {
+        throw new Error('AudioWorklet not supported in this browser');
+      }
+      await audioContext.close();
+
+      // Check if getUserMedia is supported
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error('getUserMedia not supported in this browser');
+      }
+
+      // Test microphone access
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(track => track.stop());
+    } catch (error) {
+      console.error('Audio setup verification failed:', error);
+      throw error;
     }
-    return AudioRecordingService.instance;
   }
 
-  public async startRecording(
-    onAudioData: (data: Blob) => void,
-    onError: (error: AudioRecordingError) => void,
-  ): Promise<void> {
+  async startRecording(onChunk: (chunk: ArrayBuffer) => void): Promise<void> {
     try {
-      // Request microphone access
-      this.audioStream = await navigator.mediaDevices.getUserMedia({
+      // Request audio with higher sample rate for better quality
+      this.stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
-          sampleRate: 16000, // Match Deepgram requirements
-          channelCount: 1, // Mono audio
+          sampleRate: 48000,
+          channelCount: 1,
           echoCancellation: true,
           noiseSuppression: true,
-        },
+          autoGainControl: true
+        } 
       });
 
-      // Create AudioContext for processing
-      this.audioContext = new AudioContext({
-        sampleRate: 16000,
+      // Create AudioContext with higher sample rate
+      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({
+        sampleRate: 48000
       });
 
-      try {
-        const source = this.audioContext.createMediaStreamSource(this.audioStream);
+      // Load and register the audio worklet
+      await this.audioContext.audioWorklet.addModule('/audio/transcription-processor.js');
 
-        // Create script processor for raw PCM data
-        const processor = this.audioContext.createScriptProcessor(4096, 1, 1);
-        processor.onaudioprocess = (e) => {
-          const inputData = e.inputBuffer.getChannelData(0);
-          // Convert Float32Array to Int16Array (PCM)
-          const pcmBuffer = new ArrayBuffer(inputData.length * 2);
-          const view = new DataView(pcmBuffer);
-          for (let i = 0; i < inputData.length; i++) {
-            const sample = Math.max(-1, Math.min(1, inputData[i] ?? 0));
-            view.setInt16(i * 2, sample * 0x7FFF, true); // true = little-endian
-          }
-          const blob = new Blob([pcmBuffer], { type: 'audio/raw' });
-          console.error('Captured audio chunk, size:', blob.size);
-          onAudioData(blob);
-        };
+      // Log audio context configuration
+      console.error('AudioContext configuration:', {
+        sampleRate: this.audioContext.sampleRate,
+        state: this.audioContext.state,
+        baseLatency: this.audioContext.baseLatency
+      });
 
-        // Connect nodes
-        source.connect(processor);
-        processor.connect(this.audioContext.destination);
+      this.source = this.audioContext.createMediaStreamSource(this.stream);
+      
+      // Create worklet node with resampling
+      this.workletNode = new AudioWorkletNode(this.audioContext, 'transcription-processor', {
+        processorOptions: {
+          targetSampleRate: this.TARGET_SAMPLE_RATE,
+          bufferSize: this.BUFFER_SIZE
+        }
+      });
 
-        this.isRecording = true;
-        this.isPaused = false;
-      } catch (error) {
-        // Clean up AudioContext if there's an error
-        await this.audioContext.close();
+      this.onChunkCallback = onChunk;
+
+      // Handle messages from the worklet
+      this.workletNode.port.onmessage = (event) => {
+        if (event.data.type === 'audio' && this.onChunkCallback) {
+          this.onChunkCallback(event.data.buffer);
+        } else if (event.data.type === 'stats') {
+          console.error('Audio worklet stats:', event.data.stats);
+        } else if (event.data.type === 'error') {
+          console.error('Audio worklet error:', event.data.error);
+        }
+      };
+
+      // Handle worklet errors
+      this.workletNode.onprocessorerror = (error) => {
+        console.error('Audio worklet processor error:', error);
         throw error;
-      }
+      };
+
+      this.source.connect(this.workletNode);
+      this.workletNode.connect(this.audioContext.destination);
+
+      // Log successful initialization
+      console.error('Audio recording initialized successfully', {
+        sampleRate: this.audioContext.sampleRate,
+        targetSampleRate: this.TARGET_SAMPLE_RATE,
+        bufferSize: this.BUFFER_SIZE,
+        state: this.audioContext.state,
+        baseLatency: this.audioContext.baseLatency
+      });
     } catch (error) {
-      console.error('Failed to start recording:', error);
-      this.createEnhancedError(error, onError);
+      console.error('Error starting PCM recording:', error);
+      throw error;
     }
   }
 
-  public pauseRecording(): void {
-    if (this.audioStream && this.isRecording && !this.isPaused) {
-      this.audioStream.getTracks().forEach(track => track.enabled = false);
-      this.isPaused = true;
-    }
-  }
-
-  public resumeRecording(): void {
-    if (this.audioStream && this.isRecording && this.isPaused) {
-      this.audioStream.getTracks().forEach(track => track.enabled = true);
-      this.isPaused = false;
-    }
-  }
-
-  public async stopRecording(): Promise<void> {
-    if (this.audioStream && this.isRecording) {
-      this.audioStream.getTracks().forEach(track => track.stop());
-      this.audioStream = null;
-      this.isRecording = false;
-      this.isPaused = false;
-
-      // Close any active AudioContext
+  stopRecording(): void {
+    try {
+      if (this.workletNode) {
+        this.workletNode.disconnect();
+        this.workletNode = null;
+      }
+      if (this.source) {
+        this.source.disconnect();
+        this.source = null;
+      }
       if (this.audioContext) {
-        await this.audioContext.close();
+        this.audioContext.close();
         this.audioContext = null;
       }
+      if (this.stream) {
+        this.stream.getTracks().forEach(track => {
+          track.stop();
+          console.error('Audio track stopped:', track.label);
+        });
+        this.stream = null;
+      }
+      this.onChunkCallback = null;
+      console.error('Audio recording stopped successfully');
+    } catch (error) {
+      console.error('Error stopping recording:', error);
+      throw error;
     }
   }
 
-  public isRecordingActive(): boolean {
-    return this.isRecording;
-  }
-
-  public isRecordingPaused(): boolean {
-    return this.isPaused;
-  }
-
-  private createEnhancedError(error: any, onError: (error: AudioRecordingError) => void): void {
-    const enhancedError: AudioRecordingError = {
-      message: error.message || 'Unknown error occurred',
-      code: this.determineErrorCode(error),
-      retryable: this.isErrorRetryable(error),
-      details: error.details || {},
-    };
-    onError(enhancedError);
-  }
-
-  private determineErrorCode(error: any): AudioRecordingError['code'] {
-    if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-      return 'PERMISSION_ERROR';
-    }
-    if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
-      return 'RECORDING_ERROR';
-    }
-    return 'PROCESSING_ERROR';
-  }
-
-  private isErrorRetryable(error: any): boolean {
-    return this.determineErrorCode(error) !== 'PERMISSION_ERROR';
+  isRecording(): boolean {
+    return !!this.audioContext && !!this.workletNode;
   }
 }
-
-// Export singleton instance
-export const audioRecordingService = AudioRecordingService.getInstance();
