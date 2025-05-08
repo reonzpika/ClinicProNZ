@@ -14,16 +14,40 @@ type DeepgramTranscript = {
   channel?: {
     alternatives?: Array<{
       transcript?: string;
+      confidence?: number;
+      words?: Array<{
+        word: string;
+        start: number;
+        end: number;
+        confidence: number;
+      }>;
     }>;
   };
   is_final?: boolean;
+  speech_final?: boolean;
   error?: string;
+};
+
+type TranscriptionWord = {
+  word: string;
+  confidence: number;
+  start: number;
+  end: number;
+};
+
+type TranscriptionSegment = {
+  text: string;
+  words: TranscriptionWord[];
+  isFinal: boolean;
+  confidence: number;
 };
 
 export const useTranscription = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [transcript, setTranscript] = useState('');
+  const [interimTranscript, setInterimTranscript] = useState('');
+  const [segments, setSegments] = useState<TranscriptionSegment[]>([]);
   const [status, setStatus] = useState<TranscriptionStatus>({
     isConnected: false,
     isProcessing: false,
@@ -33,6 +57,7 @@ export const useTranscription = () => {
   const audioServiceRef = useRef<AudioRecordingService | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const maxReconnectAttempts = 3;
+  const keepAliveIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const resetStatus = useCallback(() => {
     setStatus({
@@ -69,6 +94,8 @@ export const useTranscription = () => {
     try {
       resetStatus();
       setTranscript('');
+      setInterimTranscript('');
+      setSegments([]);
       setIsRecording(true);
       setIsPaused(false);
 
@@ -100,8 +127,10 @@ export const useTranscription = () => {
         model: 'nova-3',
         language: 'en-US',
         smart_format: true,
-        punctuate: true,
         interim_results: true,
+        endpointing: 500, // 500ms of silence to detect endpoint
+        vad_events: true, // Enable voice activity detection
+        filler_words: true, // Enable filler words in transcript
         headers: {
           Authorization: `Token ${token}`,
         },
@@ -145,15 +174,30 @@ export const useTranscription = () => {
           console.error('Received WebSocket message:', data);
 
           if (data.type === 'Results') {
-            const transcript = data.channel?.alternatives?.[0]?.transcript;
-            if (transcript) {
-              setTranscript((prev) => {
-                const updated = data.is_final
-                  ? `${prev} ${transcript}`.trim()
-                  : `${prev} ${transcript}`.trim();
-                console.error('Updated transcript:', updated);
-                return updated;
-              });
+            const alternative = data.channel?.alternatives?.[0];
+            if (alternative?.transcript) {
+              const words = alternative.words || [];
+              const confidence = alternative.confidence || 0;
+
+              if (data.is_final || data.speech_final) {
+                // Handle final transcript
+                setSegments(prev => [...prev, {
+                  text: alternative.transcript || '',
+                  words: words.map(w => ({
+                    word: w.word,
+                    confidence: w.confidence,
+                    start: w.start,
+                    end: w.end,
+                  })),
+                  isFinal: true,
+                  confidence,
+                }]);
+                setTranscript(prev => `${prev} ${alternative.transcript}`.trim());
+                setInterimTranscript(''); // Clear interim transcript when final
+              } else {
+                // Handle interim transcript
+                setInterimTranscript(alternative.transcript || '');
+              }
             }
           } else if (data.type === 'Error') {
             handleWebSocketError(data.error || 'Unknown error occurred');
@@ -219,23 +263,44 @@ export const useTranscription = () => {
       wsRef.current = null;
     }
 
+    // Clear KeepAlive interval
+    if (keepAliveIntervalRef.current) {
+      clearInterval(keepAliveIntervalRef.current);
+      keepAliveIntervalRef.current = null;
+    }
+
     resetStatus();
   }, [resetStatus]);
 
   const pauseRecording = useCallback(() => {
     setIsPaused(true);
-    // TODO: Implement pause logic if needed
+    audioServiceRef.current?.pauseRecording();
+    // Start KeepAlive interval
+    if (wsRef.current && !keepAliveIntervalRef.current) {
+      keepAliveIntervalRef.current = setInterval(() => {
+        if (wsRef.current && wsRef.current.getReadyState() === 1) {
+          wsRef.current.send(JSON.stringify({ type: 'KeepAlive' }));
+        }
+      }, 5000);
+    }
   }, []);
 
   const resumeRecording = useCallback(() => {
     setIsPaused(false);
-    // TODO: Implement pause logic if needed
+    audioServiceRef.current?.resumeRecording();
+    // Clear KeepAlive interval
+    if (keepAliveIntervalRef.current) {
+      clearInterval(keepAliveIntervalRef.current);
+      keepAliveIntervalRef.current = null;
+    }
   }, []);
 
   return {
     isRecording,
     isPaused,
     transcript,
+    interimTranscript,
+    segments,
     status,
     startRecording,
     pauseRecording,

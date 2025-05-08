@@ -15,12 +15,19 @@ export function TranscriptionControls() {
     isRecording,
     isPaused,
     transcript,
+    interimTranscript,
+    segments,
     error,
     startRecording,
     pauseRecording,
     resumeRecording,
     stopRecording,
   } = useTranscription();
+
+  // Combine all final segments into one transcript string
+  const finalTranscript = segments.map(s => s.text).join(' ').trim();
+  // Get the latest confidence from the last segment
+  const latestConfidence = segments.length > 0 ? segments[segments.length - 1].confidence * 100 : null;
 
   return (
     <Card>
@@ -61,11 +68,40 @@ export function TranscriptionControls() {
             </div>
           </Section>
 
-          <Section title="Latest Transcription">
-            <div className="bg-muted rounded-md p-4">
-              <p className="text-sm text-muted-foreground">
-                {transcript || 'No transcription available'}
-              </p>
+          <Section title="Transcription">
+            <div className="space-y-4">
+              {/* Final Transcript Block */}
+              {(finalTranscript || transcript) && (
+                <div className="bg-muted rounded-md p-4">
+                  <p className="text-sm">
+                    {finalTranscript || transcript}
+                  </p>
+                  {/* Show latest confidence only while recording */}
+                  {isRecording && latestConfidence !== null && (
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      Confidence: {latestConfidence.toFixed(1)}%
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Interim Transcript */}
+              {interimTranscript && (
+                <div className="bg-muted/50 rounded-md p-4">
+                  <p className="text-sm text-muted-foreground italic">
+                    {interimTranscript}
+                  </p>
+                </div>
+              )}
+
+              {/* No Transcription Message */}
+              {!finalTranscript && !transcript && !interimTranscript && (
+                <div className="bg-muted rounded-md p-4">
+                  <p className="text-sm text-muted-foreground">
+                    No transcription available
+                  </p>
+                </div>
+              )}
             </div>
           </Section>
         </Stack>

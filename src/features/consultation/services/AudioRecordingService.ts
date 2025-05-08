@@ -8,6 +8,7 @@ export class AudioRecordingService {
   private onChunkCallback: ((chunk: ArrayBuffer) => void) | null = null;
   private readonly TARGET_SAMPLE_RATE = 16000; // Deepgram's preferred sample rate
   private readonly BUFFER_SIZE = 4096;
+  private paused: boolean = false;
 
   async verifySetup(): Promise<void> {
     try {
@@ -75,7 +76,12 @@ export class AudioRecordingService {
         }
       });
 
-      this.onChunkCallback = onChunk;
+      this.paused = false;
+      this.onChunkCallback = (chunk: ArrayBuffer) => {
+        if (!this.paused && onChunk) {
+          onChunk(chunk);
+        }
+      };
 
       // Handle messages from the worklet
       this.workletNode.port.onmessage = (event) => {
@@ -111,6 +117,16 @@ export class AudioRecordingService {
     }
   }
 
+  pauseRecording(): void {
+    this.paused = true;
+    console.error('Audio recording paused');
+  }
+
+  resumeRecording(): void {
+    this.paused = false;
+    console.error('Audio recording resumed');
+  }
+
   stopRecording(): void {
     try {
       if (this.workletNode) {
@@ -133,6 +149,7 @@ export class AudioRecordingService {
         this.stream = null;
       }
       this.onChunkCallback = null;
+      this.paused = false;
       console.error('Audio recording stopped successfully');
     } catch (error) {
       console.error('Error stopping recording:', error);
