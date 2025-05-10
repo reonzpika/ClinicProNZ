@@ -96,10 +96,10 @@ export function TranscriptionControls() {
 
               {/* No Transcription Message */}
               {!finalTranscript && !transcript && !interimTranscript && (
-                <div className="bg-muted rounded-md p-4">
-                  <p className="text-sm text-muted-foreground">
+            <div className="bg-muted rounded-md p-4">
+              <p className="text-sm text-muted-foreground">
                     No transcription available
-                  </p>
+              </p>
                 </div>
               )}
             </div>
