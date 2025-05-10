@@ -19,12 +19,16 @@ import { Alert } from '@/shared/components/ui/alert';
 import type { Template } from '../types';
 import { TemplatePreview } from './TemplatePreview';
 
+// Templates are expected to be passed in the user's preferred order from the parent.
+// This component does not sort or reorder templates except for search filtering.
 type TemplateSelectorModalProps = {
   isOpen: boolean;
   onClose: () => void;
   selectedTemplate: Template;
   onTemplateSelect: (template: Template) => void;
   templates?: Template[];
+  onSetDefault: (id: string) => void;
+  userDefaultTemplateId: string | null;
 };
 
 export function TemplateSelectorModal({
@@ -33,6 +37,8 @@ export function TemplateSelectorModal({
   selectedTemplate: initialTemplate,
   onTemplateSelect,
   templates = [], // Default empty array
+  onSetDefault,
+  userDefaultTemplateId,
 }: TemplateSelectorModalProps) {
   const { isSignedIn } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
@@ -48,8 +54,20 @@ export function TemplateSelectorModal({
 
   const currentTemplate = templates.find(t => t.id === selectedTemplateId);
 
+  const isCurrentDefault = currentTemplate && userDefaultTemplateId === currentTemplate.id;
+
   return (
-    <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={open => {
+        if (!open) {
+          if (currentTemplate) {
+            onTemplateSelect(currentTemplate);
+          }
+          onClose();
+        }
+      }}
+    >
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Select Consultation Template</DialogTitle>
@@ -70,9 +88,9 @@ export function TemplateSelectorModal({
               No templates available. Please create a template first.
             </Alert>
           ) : (
-            <div className="grid grid-cols-5 gap-4">
-              {/* Template List - 3 columns */}
-              <div className="col-span-3">
+            <div className="grid grid-cols-1 gap-4">
+              {/* Template List - full width */}
+              <div>
                 <ScrollArea className="h-[400px]">
                   <div className="space-y-2">
                     {filteredTemplates.map(template => (
@@ -87,7 +105,12 @@ export function TemplateSelectorModal({
                       >
                         <div className="flex items-center justify-between">
                           <div>
-                            <h3 className="font-medium">{template.name}</h3>
+                            <h3 className="font-medium flex items-center gap-2">
+                              {template.name}
+                              {userDefaultTemplateId === template.id && (
+                                <span title="Default Template" aria-label="Default Template" className="text-yellow-500 text-xs font-semibold ml-1">★ Default</span>
+                              )}
+                            </h3>
                             <p className="text-muted-foreground text-sm">
                               {template.description}
                             </p>
@@ -100,14 +123,6 @@ export function TemplateSelectorModal({
                     ))}
                   </div>
                 </ScrollArea>
-              </div>
-
-              {/* Template Preview - 2 columns */}
-              <div className="col-span-2 border-l pl-4">
-                <h4 className="mb-2 font-medium">Template Preview</h4>
-                {currentTemplate && (
-                  <TemplatePreview template={currentTemplate} />
-                )}
               </div>
             </div>
           )}

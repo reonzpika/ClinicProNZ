@@ -15,6 +15,13 @@
       "when": 1746356657397,
       "tag": "0001_outstanding_ogun",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1746870725703,
+      "tag": "0002_mighty_wraith",
+      "breakpoints": true
     }
   ]
 }

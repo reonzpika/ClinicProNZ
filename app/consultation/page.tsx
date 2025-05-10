@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 
 import { GeneratedNotes } from '@/features/consultation/components/GeneratedNotes';
 import { QuickNotes } from '@/features/consultation/components/QuickNotes';
@@ -13,8 +13,48 @@ import { Grid } from '@/shared/components/layout/Grid';
 import { Stack } from '@/shared/components/layout/Stack';
 import { Section } from '@/shared/components/layout/Section';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
+import { useConsultation } from '@/shared/ConsultationContext';
 
 export default function ConsultationPage() {
+  const {
+    transcription,
+    templateId,
+    quickNotes,
+    setGeneratedNotes,
+    setError,
+    setLastGeneratedInput,
+    getCurrentTranscript,
+  } = useConsultation();
+  const [loading, setLoading] = useState(false);
+
+  const handleGenerateNotes = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const transcript = getCurrentTranscript();
+      const res = await fetch('/api/consultation/notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          transcription: transcript,
+          templateId,
+          quickNotes,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.notes) {
+        setGeneratedNotes(data.notes);
+        setLastGeneratedInput(transcript, quickNotes);
+      } else {
+        setError(data.error || 'Failed to generate notes');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate notes');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
@@ -42,7 +82,8 @@ export default function ConsultationPage() {
                 <QuickNotes />
 
                 {/* Generated Notes */}
-                <GeneratedNotes />
+                <GeneratedNotes onGenerate={handleGenerateNotes} />
+                {loading && <div className="text-muted-foreground">Generating notes...</div>}
               </Stack>
             </div>
 

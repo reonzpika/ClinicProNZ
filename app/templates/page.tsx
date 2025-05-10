@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuth } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
 
 import { TemplateEditor } from '@/features/templates/components/TemplateEditor';
@@ -14,14 +15,16 @@ import { Section } from '@/shared/components/layout/Section';
 import { Stack } from '@/shared/components/layout/Stack';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
+import { useConsultation } from '@/shared/ConsultationContext';
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { setUserDefaultTemplateId, userDefaultTemplateId } = useConsultation();
+  const { isSignedIn } = useAuth();
 
   useEffect(() => {
     setLoading(true);
@@ -39,6 +42,49 @@ export default function TemplatesPage() {
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!isSignedIn) {
+      return;
+    }
+    fetch('/api/user/settings')
+      .then((res) => {
+        if (!res.ok) {
+          return null;
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (!data) {
+          return;
+        }
+        if (data.settings && Array.isArray(data.settings.templateOrder) && templates.length > 0) {
+          const order = data.settings.templateOrder;
+          const idToTemplate = Object.fromEntries(templates.map(t => [t.id, t]));
+          setTemplates(order.map((id: string | number) => idToTemplate[id]).filter(Boolean));
+        }
+      });
+    // Only run when templates are loaded
+  }, [isSignedIn, loading, templates]);
+
+  const handleReorder = (from: number, to: number) => {
+    setTemplates((prev) => {
+      const arr = [...prev];
+      const [moved] = arr.splice(from, 1);
+      if (moved === undefined) {
+        return prev;
+      } // Guard: do nothing if invalid
+      arr.splice(to, 0, moved);
+      if (isSignedIn) {
+        fetch('/api/user/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ settings: { templateOrder: arr.map(t => t.id) } }),
+        });
+      }
+      return arr;
+    });
+  };
 
   const handleTemplateSelect = (template: Template) => {
     if (template) {
@@ -140,66 +186,67 @@ export default function TemplatesPage() {
               Create and manage your consultation templates
             </p>
           </Section>
-
           {error && <div className="text-red-500">{error}</div>}
-          {loading ? (
-            <div>Loading templates...</div>
-          ) : (
-            <Grid cols={2} gap="lg">
-              {/* Left Column - Template List */}
-              <div>
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-lg font-semibold">Templates</h2>
-                      <Button onClick={() => handleEdit()} size="sm">
-                        Create New
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <TemplateList
-                      templates={templates}
-                      searchQuery={searchQuery}
-                      selectedTemplate={selectedOrDefault}
-                      onTemplateSelect={handleTemplateSelect}
-                      onTemplateHover={() => {}}
-                      isSignedIn
-                      onEdit={handleEdit}
-                      onDelete={handleDelete}
-                      onCopy={handleCopy}
-                    />
-                  </CardContent>
-                </Card>
-              </div>
+          {loading
+            ? <div>Loading templates...</div>
+            : (
+                <Grid cols={2} gap="lg">
+                  {/* Left Column - Template List */}
+                  <div>
+                    <Card>
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <h2 className="text-lg font-semibold">Templates</h2>
+                          <Button onClick={() => handleEdit()} size="sm">
+                            Create New
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <TemplateList
+                          templates={templates}
+                          selectedTemplate={selectedOrDefault}
+                          onTemplateSelect={handleTemplateSelect}
+                          onTemplateHover={() => {}}
+                          isSignedIn
+                          onEdit={handleEdit}
+                          onDelete={handleDelete}
+                          onCopy={handleCopy}
+                          onSetDefault={setUserDefaultTemplateId}
+                          userDefaultTemplateId={userDefaultTemplateId}
+                          onReorder={handleReorder}
+                        />
+                      </CardContent>
+                    </Card>
+                  </div>
 
-              {/* Right Column - Template Editor/Preview */}
-              <div>
-                {selectedTemplate && (
-                  <Card>
-                    <CardHeader>
-                      <h2 className="text-lg font-semibold">
-                        {isEditing ? 'Edit Template' : 'Template Preview'}
-                      </h2>
-                    </CardHeader>
-                    <CardContent>
-                      {isEditing
-                        ? (
-                            <TemplateEditor
-                              template={selectedTemplate}
-                              onSave={handleTemplateSave}
-                              onCancel={() => setIsEditing(false)}
-                            />
-                          )
-                        : (
-                            <TemplatePreview template={selectedTemplate} />
-                          )}
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            </Grid>
-          )}
+                  {/* Right Column - Template Editor/Preview */}
+                  <div>
+                    {selectedTemplate && (
+                      <Card>
+                        <CardHeader>
+                          <h2 className="text-lg font-semibold">
+                            {isEditing ? 'Edit Template' : 'Template Preview'}
+                          </h2>
+                        </CardHeader>
+                        <CardContent>
+                          {isEditing
+                            ? (
+                                <TemplateEditor
+                                  template={selectedTemplate}
+                                  onSave={handleTemplateSave}
+                                  onCancel={() => setIsEditing(false)}
+                                />
+                              )
+                            : (
+                                <TemplatePreview template={selectedTemplate} />
+                              )}
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                </Grid>
+              )}
         </Stack>
       </Container>
     </>

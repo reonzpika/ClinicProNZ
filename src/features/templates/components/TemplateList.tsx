@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Plus, Copy, Edit, Trash2 } from 'lucide-react';
+import { Check, Copy, Edit, Plus, Trash2 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/shared/components/ui/button';
@@ -9,7 +9,6 @@ import type { Template } from '../types';
 
 type TemplateListProps = {
   templates: Template[];
-  searchQuery: string;
   selectedTemplate: Template;
   onTemplateSelect: (template: Template) => void;
   onTemplateHover: (template: Template) => void;
@@ -17,103 +16,102 @@ type TemplateListProps = {
   onEdit: (template: Template) => void;
   onDelete: (template: Template) => void;
   onCopy: (template: Template) => void;
+  userDefaultTemplateId: string | null;
+  onSetDefault: (id: string) => void;
+  onReorder: (from: number, to: number) => void;
 };
 
 export function TemplateList({
   templates,
-  searchQuery,
   selectedTemplate,
   onTemplateSelect,
   onTemplateHover,
-  isSignedIn,
   onEdit,
   onDelete,
   onCopy,
+  userDefaultTemplateId,
+  onSetDefault,
+  onReorder,
 }: TemplateListProps) {
-  const filteredDefaultTemplates = templates.filter(
-    t => t.type === 'default' && t.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  const filteredCustomTemplates = templates.filter(
-    t => t.type === 'custom' && t.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredTemplates = templates;
 
   return (
-    <div className="space-y-4">
-      {/* Default Templates Section */}
-      <div>
-        <h3 className="mb-2 font-medium">Default Templates</h3>
-        <div className="space-y-1">
-          {filteredDefaultTemplates.map(template => (
-            <div key={template.id} className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                className={cn(
-                  'flex-1 justify-start gap-2',
-                  selectedTemplate?.id === template.id && 'bg-accent',
-                )}
-                onClick={() => onTemplateSelect(template)}
-                onMouseEnter={() => onTemplateHover(template)}
-              >
-                {selectedTemplate?.id === template.id && (
-                  <Check className="size-4" />
-                )}
-                {template.name}
-              </Button>
-              <Button variant="ghost" size="icon" onClick={() => onCopy(template)} title="Copy">
-                <Copy className="size-4" />
-              </Button>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Custom Templates Section */}
-      <div>
-        <h3 className="mb-2 font-medium">My Templates</h3>
-        {isSignedIn ? (
-          <div className="space-y-1">
-            {filteredCustomTemplates.map(template => (
-              <div key={template.id} className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  className={cn(
-                    'flex-1 justify-start gap-2',
-                    selectedTemplate?.id === template.id && 'bg-accent',
-                  )}
-                  onClick={() => onTemplateSelect(template)}
-                  onMouseEnter={() => onTemplateHover(template)}
-                >
-                  {selectedTemplate?.id === template.id && (
-                    <Check className="size-4" />
-                  )}
-                  {template.name}
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => onEdit(template)} title="Edit">
-                  <Edit className="size-4" />
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => onDelete(template)} title="Delete">
-                  <Trash2 className="size-4" />
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => onCopy(template)} title="Copy">
-                  <Copy className="size-4" />
-                </Button>
-              </div>
-            ))}
+    <div className="space-y-1">
+      {filteredTemplates.map((template) => {
+        const isDefault = template.type === 'default';
+        const originalIdx = templates.findIndex(t => t.id === template.id);
+        return (
+          <div
+            key={template.id}
+            className={cn(
+              'flex items-center gap-2 rounded px-2 py-1',
+              isDefault ? 'bg-blue-50 border border-blue-200' : 'bg-green-50 border border-green-200',
+              selectedTemplate?.id === template.id && 'bg-accent',
+            )}
+          >
             <Button
               variant="ghost"
-              className="text-primary w-full justify-start gap-2"
-              onClick={() => onEdit(undefined)}
+              className={cn('flex-1 justify-start gap-2', selectedTemplate?.id === template.id && 'bg-accent')}
+              onClick={() => onTemplateSelect(template)}
+              onMouseEnter={() => onTemplateHover(template)}
             >
-              <Plus className="size-4" />
-              Create New Template
+              {selectedTemplate?.id === template.id && <Check className="size-4" />}
+              {template.name}
+              {userDefaultTemplateId === template.id && (
+                <span title="Default Template" aria-label="Default Template" className="ml-1 text-xs font-semibold text-yellow-500">★</span>
+              )}
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => onEdit(template)} title="Edit">
+              <Edit className="size-4" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => onDelete(template)} title="Delete">
+              <Trash2 className="size-4" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => onCopy(template)} title="Copy">
+              <Copy className="size-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onSetDefault(template.id)}
+              title={userDefaultTemplateId === template.id ? 'This is your default template' : 'Set as default template'}
+              aria-label={userDefaultTemplateId === template.id ? 'This is your default template' : 'Set as default template'}
+              disabled={userDefaultTemplateId === template.id}
+            >
+              <span role="img" aria-label="Set as default" className={userDefaultTemplateId === template.id ? 'text-yellow-500' : ''}>★</span>
+            </Button>
+            {/* Reorder buttons */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => originalIdx > 0 && onReorder(originalIdx, originalIdx - 1)}
+              title="Move up"
+              aria-label="Move up"
+              disabled={originalIdx === 0}
+            >
+              ↑
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => originalIdx < templates.length - 1 && onReorder(originalIdx, originalIdx + 1)}
+              title="Move down"
+              aria-label="Move down"
+              disabled={originalIdx === templates.length - 1}
+            >
+              ↓
             </Button>
           </div>
-        ) : (
-          <p className="text-muted-foreground text-sm">
-            Log in to create and use custom templates
-          </p>
-        )}
-      </div>
+        );
+      })}
+      <Button
+        variant="ghost"
+        className="text-primary mt-2 w-full justify-start gap-2"
+        onClick={() => onEdit({} as Template)}
+      >
+        <Plus className="size-4" />
+        Create New Template
+      </Button>
     </div>
   );
 }

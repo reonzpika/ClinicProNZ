@@ -4,8 +4,8 @@ import { sql } from './client';
 
 const defaultTemplates = [
   {
-    id: uuidv4(),
-    name: 'Multi-problem SOAP (Default)',
+    id: 'cef98cee-0062-447f-83c3-537a2ac5bacb',
+    name: 'Multi-problem SOAP',
     description: 'A comprehensive SOAP note template for documenting multiple problems during a consultation',
     type: 'default',
     sections: [

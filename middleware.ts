@@ -4,10 +4,10 @@ import { NextResponse } from 'next/server';
 export default clerkMiddleware(async (auth, req) => {
   // Allow GET requests to /api/templates and /api/templates/[id] for everyone
   if (
-    req.method === 'GET' &&
-    (
-      req.nextUrl.pathname === '/api/templates' ||
-      /^\/api\/templates\/[^/]+$/.test(req.nextUrl.pathname)
+    req.method === 'GET'
+    && (
+      req.nextUrl.pathname === '/api/templates'
+      || /^\/api\/templates\/[^/]+$/.test(req.nextUrl.pathname)
     )
   ) {
     return NextResponse.next();
@@ -27,6 +27,7 @@ export default clerkMiddleware(async (auth, req) => {
 export const config = {
   matcher: [
     '/api/templates/:path*',
+    '/api/user/:path*',
     '/templates(.*)',
   ],
 };

@@ -2,35 +2,65 @@
 
 import React from 'react';
 
-import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent } from '@/shared/components/ui/card';
 import { Section } from '@/shared/components/layout/Section';
 import { Stack } from '@/shared/components/layout/Stack';
 import { Alert } from '@/shared/components/ui/alert';
-
+import { Button } from '@/shared/components/ui/button';
+import { Card, CardContent } from '@/shared/components/ui/card';
 import { useConsultation } from '@/shared/ConsultationContext';
+
 import { useTranscription } from '../hooks/useTranscription';
 
 export function TranscriptionControls() {
   const {
     transcription,
     error,
-    status,
+    setTranscription,
+    getCurrentTranscript,
+    quickNotes,
+    templateId,
+    setGeneratedNotes,
+    setLastGeneratedInput,
+    setError,
   } = useConsultation();
   const {
     isRecording,
     isPaused,
-    segments,
     startRecording,
     pauseRecording,
     resumeRecording,
     stopRecording,
   } = useTranscription();
 
-  // Combine all final segments into one transcript string
-  const finalTranscript = segments.map(s => s.text).join(' ').trim();
-  // Get the latest confidence from the last segment
-  const latestConfidence = segments.length > 0 ? segments[segments.length - 1].confidence * 100 : null;
+  // Custom stop handler: finalize transcript and trigger note generation
+  const handleStopRecording = async () => {
+    stopRecording();
+    setTranscription('', '', false); // Finalize transcript in context
+    // Wait a tick to ensure context is updated
+    setTimeout(async () => {
+      const transcript = getCurrentTranscript();
+      try {
+        const res = await fetch('/api/consultation/notes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            transcription: transcript,
+            templateId,
+            quickNotes,
+          }),
+        });
+        const data = await res.json();
+        if (res.ok && data.notes) {
+          setGeneratedNotes(data.notes);
+          setLastGeneratedInput(transcript, quickNotes);
+        } else {
+          setError(data.error || 'Failed to generate notes');
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to generate notes');
+      }
+    }, 0);
+  };
 
   return (
     <Card>
@@ -41,7 +71,7 @@ export function TranscriptionControls() {
               {error}
             </Alert>
           )}
-          
+
           <Section>
             <div className="flex space-x-4">
               <Button
@@ -63,7 +93,7 @@ export function TranscriptionControls() {
               <Button
                 type="button"
                 variant="destructive"
-                onClick={stopRecording}
+                onClick={handleStopRecording}
                 disabled={!isRecording}
               >
                 Stop
@@ -74,35 +104,29 @@ export function TranscriptionControls() {
           <Section title="Transcription">
             <div className="space-y-4">
               {/* Final Transcript Block */}
-              {(finalTranscript || transcription.final) && (
+              {transcription.final && (
                 <div className="bg-muted rounded-md p-4">
                   <p className="text-sm">
-                    {finalTranscript || transcription.final}
+                    {transcription.final}
                   </p>
-                  {/* Show latest confidence only while recording */}
-                  {isRecording && latestConfidence !== null && (
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      Confidence: {latestConfidence.toFixed(1)}%
-                    </div>
-                  )}
                 </div>
               )}
 
               {/* Interim Transcript */}
               {transcription.interim && (
                 <div className="bg-muted/50 rounded-md p-4">
-                  <p className="text-sm text-muted-foreground italic">
+                  <p className="text-muted-foreground text-sm italic">
                     {transcription.interim}
                   </p>
                 </div>
               )}
 
               {/* No Transcription Message */}
-              {!finalTranscript && !transcription.final && !transcription.interim && (
-            <div className="bg-muted rounded-md p-4">
-              <p className="text-sm text-muted-foreground">
+              {!transcription.final && !transcription.interim && (
+                <div className="bg-muted rounded-md p-4">
+                  <p className="text-muted-foreground text-sm">
                     No transcription available
-              </p>
+                  </p>
                 </div>
               )}
             </div>
