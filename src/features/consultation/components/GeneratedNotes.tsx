@@ -8,9 +8,8 @@ import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { useConsultation } from '@/shared/ConsultationContext';
-import { useTranscription } from '../hooks/useTranscription';
 
-export function GeneratedNotes({ onGenerate }: { onGenerate?: () => void }) {
+export function GeneratedNotes({ onGenerate, onClearAll }: { onGenerate?: () => void, onClearAll?: () => void }) {
   const {
     generatedNotes,
     error,
@@ -22,7 +21,6 @@ export function GeneratedNotes({ onGenerate }: { onGenerate?: () => void }) {
     setLastGeneratedInput,
     resetLastGeneratedInput,
   } = useConsultation();
-  const { resetTranscription } = useTranscription();
 
   // Local UI state
   const [expanded, setExpanded] = useState(false);
@@ -39,6 +37,7 @@ export function GeneratedNotes({ onGenerate }: { onGenerate?: () => void }) {
     (quickNotes && quickNotes.length > 0);
   const isInputChanged =
     transcription.final !== (lastGeneratedTranscription || '') ||
+    transcription.interim !== '' ||
     !areQuickNotesEqual(quickNotes, lastGeneratedQuickNotes || []);
   const canGenerate = hasInput && isInputChanged;
 
@@ -61,10 +60,11 @@ export function GeneratedNotes({ onGenerate }: { onGenerate?: () => void }) {
     }
   };
 
-  // Clear all handler: reset both global and local transcription state
+  // Clear all handler: also reset last generated input
   const handleClearAll = () => {
     resetConsultation();
-    resetTranscription();
+    resetLastGeneratedInput();
+    if (onClearAll) onClearAll();
   };
 
   // Expanded modal style

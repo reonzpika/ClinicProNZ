@@ -1,5 +1,5 @@
 import { createClient, LiveTranscriptionEvents } from '@deepgram/sdk';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, useEffect } from 'react';
 
 import { useConsultation } from '@/shared/ConsultationContext';
 
@@ -38,7 +38,7 @@ type TranscriptionSegment = {
   confidence: number;
 };
 
-export const useTranscription = () => {
+export const useTranscription = (resetSignal?: any) => {
   const {
     status,
     setStatus,
@@ -50,11 +50,27 @@ export const useTranscription = () => {
 
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [segments, setSegments] = useState<TranscriptionSegment[]>([]);
   const wsRef = useRef<any>(null); // Using any for now as Deepgram types are not complete
   const audioServiceRef = useRef<AudioRecordingService | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const maxReconnectAttempts = 3;
   const keepAliveIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Reset local transcription state when resetSignal changes
+  useEffect(() => {
+    if (resetSignal !== undefined) {
+      setSegments([]);
+      setIsRecording(false);
+      setIsPaused(false);
+    }
+  }, [resetSignal]);
+
+  const resetTranscription = useCallback(() => {
+    setSegments([]);
+    setIsRecording(false);
+    setIsPaused(false);
+  }, []);
 
   const resetStatus = useCallback(() => {
     setStatus('idle');
@@ -85,6 +101,10 @@ export const useTranscription = () => {
     try {
       resetStatus();
       setTranscription('', '', true);
+      setSegments([]);
+      setIsRecording(true);
+      setIsPaused(false);
+      setStatus('recording');
 
       // Get Deepgram token
       const token = await getDeepgramToken();
@@ -163,6 +183,17 @@ export const useTranscription = () => {
 
               if (data.is_final || data.speech_final) {
                 // Handle final transcript
+                setSegments(prev => [...prev, {
+                  text: alternative.transcript || '',
+                  words: words.map(w => ({
+                    word: w.word,
+                    confidence: w.confidence,
+                    start: w.start,
+                    end: w.end,
+                  })),
+                  isFinal: true,
+                  confidence,
+                }]);
                 setTranscription(
                   `${transcription.final} ${alternative.transcript}`.trim(),
                   '',
@@ -265,35 +296,12 @@ export const useTranscription = () => {
     }
   }, []);
 
-  // Reset local state (audio, websocket, etc.)
-  const resetTranscription = useCallback(() => {
-    setIsRecording(false);
-    setIsPaused(false);
-    reconnectAttemptsRef.current = 0;
-    if (audioServiceRef.current) {
-      audioServiceRef.current.stopRecording();
-      audioServiceRef.current = null;
-    }
-    if (wsRef.current) {
-      try {
-        wsRef.current.finish();
-      } catch (e) {
-        console.error('Error closing WebSocket', e);
-      }
-      wsRef.current = null;
-    }
-    if (keepAliveIntervalRef.current) {
-      clearInterval(keepAliveIntervalRef.current);
-      keepAliveIntervalRef.current = null;
-    }
-    resetStatus();
-  }, [resetStatus]);
-
   return {
     isRecording,
     isPaused,
     transcript: transcription.final,
     interimTranscript: transcription.interim,
+    segments,
     error,
     status,
     startRecording,

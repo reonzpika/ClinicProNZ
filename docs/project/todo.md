@@ -55,11 +55,11 @@
 - [x] State Management Implementation
 
 ## Current Sprint Tasks
-### Sprint 2: Core AI Integration (Priority: Must Have)
+### Core AI Integration (Priority: Must Have) [x]
 1. **ChatGPT Integration**
-   - Note generation service
-   - Template prompt processing
-   - Error handling and retries
+   - [x] Note generation service
+   - [x] Template prompt processing
+   - [x] Error handling and retries
    - **Estimate**: 4 days
    - **Dependencies**: Template management system
 
@@ -73,7 +73,6 @@
 3. **Session Management**
    - Session state persistence
    - Clear/restart functionality
-   - Last session recovery
    - **Estimate**: 2 days
    - **Dependencies**: State management implementation
 
