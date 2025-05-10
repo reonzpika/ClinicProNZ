@@ -1,13 +1,9 @@
 import { createClient, LiveTranscriptionEvents } from '@deepgram/sdk';
 import { useCallback, useRef, useState } from 'react';
 
-import { AudioRecordingService } from '../services/AudioRecordingService';
+import { useConsultation } from '@/shared/ConsultationContext';
 
-type TranscriptionStatus = {
-  isConnected: boolean;
-  isProcessing: boolean;
-  error: string | null;
-};
+import { AudioRecordingService } from '../services/AudioRecordingService';
 
 type DeepgramTranscript = {
   type: string;
@@ -43,16 +39,18 @@ type TranscriptionSegment = {
 };
 
 export const useTranscription = () => {
+  const {
+    status,
+    setStatus,
+    transcription,
+    setTranscription,
+    error,
+    setError,
+  } = useConsultation();
+
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [transcript, setTranscript] = useState('');
-  const [interimTranscript, setInterimTranscript] = useState('');
   const [segments, setSegments] = useState<TranscriptionSegment[]>([]);
-  const [status, setStatus] = useState<TranscriptionStatus>({
-    isConnected: false,
-    isProcessing: false,
-    error: null,
-  });
   const wsRef = useRef<any>(null); // Using any for now as Deepgram types are not complete
   const audioServiceRef = useRef<AudioRecordingService | null>(null);
   const reconnectAttemptsRef = useRef(0);
@@ -60,21 +58,15 @@ export const useTranscription = () => {
   const keepAliveIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const resetStatus = useCallback(() => {
-    setStatus({
-      isConnected: false,
-      isProcessing: false,
-      error: null,
-    });
-  }, []);
+    setStatus('idle');
+    setError(null);
+  }, [setStatus, setError]);
 
-  const handleWebSocketError = useCallback((error: string) => {
-    console.error('WebSocket error:', error);
-    setStatus(prev => ({
-      ...prev,
-      error,
-      isConnected: false,
-    }));
-  }, []);
+  const handleWebSocketError = useCallback((errorMsg: string) => {
+    console.error('WebSocket error:', errorMsg);
+    setError(errorMsg);
+    setStatus('idle');
+  }, [setError, setStatus]);
 
   const getDeepgramToken = useCallback(async () => {
     try {
@@ -93,11 +85,11 @@ export const useTranscription = () => {
   const startRecording = useCallback(async () => {
     try {
       resetStatus();
-      setTranscript('');
-      setInterimTranscript('');
+      setTranscription('', '', true);
       setSegments([]);
       setIsRecording(true);
       setIsPaused(false);
+      setStatus('recording');
 
       // Get Deepgram token
       const token = await getDeepgramToken();
@@ -151,12 +143,7 @@ export const useTranscription = () => {
       ws.on(LiveTranscriptionEvents.Open, () => {
         clearTimeout(connectionTimeout);
         console.error('WebSocket connection opened');
-        setStatus(prev => ({
-          ...prev,
-          isConnected: true,
-          isProcessing: true,
-          error: null,
-        }));
+        setStatus('recording');
 
         // Start recording and stream audio chunks
         audioService.startRecording((chunk) => {
@@ -192,11 +179,14 @@ export const useTranscription = () => {
                   isFinal: true,
                   confidence,
                 }]);
-                setTranscript(prev => `${prev} ${alternative.transcript}`.trim());
-                setInterimTranscript(''); // Clear interim transcript when final
+                setTranscription(
+                  `${transcription.final} ${alternative.transcript}`.trim(),
+                  '',
+                  true,
+                );
               } else {
                 // Handle interim transcript
-                setInterimTranscript(alternative.transcript || '');
+                setTranscription(transcription.final, alternative.transcript || '', true);
               }
             }
           } else if (data.type === 'Error') {
@@ -217,11 +207,7 @@ export const useTranscription = () => {
       ws.on(LiveTranscriptionEvents.Close, (event: { code: number }) => {
         clearTimeout(connectionTimeout);
         console.error('WebSocket closed', event);
-        setStatus(prev => ({
-          ...prev,
-          isConnected: false,
-          isProcessing: false,
-        }));
+        setStatus('idle');
 
         // Attempt to reconnect if not intentionally closed
         if (event.code !== 1000 && reconnectAttemptsRef.current < maxReconnectAttempts) {
@@ -242,7 +228,7 @@ export const useTranscription = () => {
       handleWebSocketError(err instanceof Error ? err.message : 'Failed to start recording');
       setIsRecording(false);
     }
-  }, [resetStatus, handleWebSocketError, getDeepgramToken]);
+  }, [resetStatus, handleWebSocketError, setTranscription, setStatus, transcription.final]);
 
   const stopRecording = useCallback(() => {
     setIsRecording(false);
@@ -298,9 +284,10 @@ export const useTranscription = () => {
   return {
     isRecording,
     isPaused,
-    transcript,
-    interimTranscript,
+    transcript: transcription.final,
+    interimTranscript: transcription.interim,
     segments,
+    error,
     status,
     startRecording,
     pauseRecording,

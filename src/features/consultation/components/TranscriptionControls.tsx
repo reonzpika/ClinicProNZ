@@ -8,16 +8,19 @@ import { Section } from '@/shared/components/layout/Section';
 import { Stack } from '@/shared/components/layout/Stack';
 import { Alert } from '@/shared/components/ui/alert';
 
+import { useConsultation } from '@/shared/ConsultationContext';
 import { useTranscription } from '../hooks/useTranscription';
 
 export function TranscriptionControls() {
   const {
+    transcription,
+    error,
+    status,
+  } = useConsultation();
+  const {
     isRecording,
     isPaused,
-    transcript,
-    interimTranscript,
     segments,
-    error,
     startRecording,
     pauseRecording,
     resumeRecording,
@@ -71,10 +74,10 @@ export function TranscriptionControls() {
           <Section title="Transcription">
             <div className="space-y-4">
               {/* Final Transcript Block */}
-              {(finalTranscript || transcript) && (
+              {(finalTranscript || transcription.final) && (
                 <div className="bg-muted rounded-md p-4">
                   <p className="text-sm">
-                    {finalTranscript || transcript}
+                    {finalTranscript || transcription.final}
                   </p>
                   {/* Show latest confidence only while recording */}
                   {isRecording && latestConfidence !== null && (
@@ -86,16 +89,16 @@ export function TranscriptionControls() {
               )}
 
               {/* Interim Transcript */}
-              {interimTranscript && (
+              {transcription.interim && (
                 <div className="bg-muted/50 rounded-md p-4">
                   <p className="text-sm text-muted-foreground italic">
-                    {interimTranscript}
+                    {transcription.interim}
                   </p>
                 </div>
               )}
 
               {/* No Transcription Message */}
-              {!finalTranscript && !transcript && !interimTranscript && (
+              {!finalTranscript && !transcription.final && !transcription.interim && (
             <div className="bg-muted rounded-md p-4">
               <p className="text-sm text-muted-foreground">
                     No transcription available

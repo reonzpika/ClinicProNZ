@@ -36,7 +36,7 @@ export function TemplateSelectorModal({
 }: TemplateSelectorModalProps) {
   const { isSignedIn } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>(initialTemplate.id);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>(initialTemplate?.id || '');
 
   const filteredTemplates = templates.filter(template =>
     template.name.toLowerCase().includes(searchQuery.toLowerCase())

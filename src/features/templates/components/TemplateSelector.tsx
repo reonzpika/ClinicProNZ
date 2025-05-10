@@ -1,20 +1,16 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
 import { Button } from '@/shared/components/ui/button';
-
+import { useConsultation } from '@/shared/ConsultationContext';
 import type { Template } from '../types';
 import { TemplateSelectorModal } from './TemplateSelectorModal';
 
-type TemplateSelectorProps = {
-  selectedTemplate: Template;
-  onTemplateSelect: (template: Template) => void;
-};
-
-export function TemplateSelector({ selectedTemplate, onTemplateSelect }: TemplateSelectorProps) {
+export function TemplateSelector() {
   const { isSignedIn, userId } = useAuth();
+  const { templateId, setTemplateId } = useConsultation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -59,6 +55,15 @@ export function TemplateSelector({ selectedTemplate, onTemplateSelect }: Templat
     fetchTemplates();
   }, [isSignedIn, userId]);
 
+  // Find the selected template from the templates list
+  const selectedTemplate = useMemo(() => templates.find(t => t.id === templateId) || templates[0], [templates, templateId]);
+  const fallbackTemplate = { id: '', name: '', type: 'default', description: '', sections: [], prompts: { structure: '' } };
+
+  const handleTemplateSelect = (template: Template) => {
+    setTemplateId(template.id);
+    setIsModalOpen(false);
+  };
+
   return (
     <div>
       <Button
@@ -66,15 +71,15 @@ export function TemplateSelector({ selectedTemplate, onTemplateSelect }: Templat
         className="w-full justify-between"
         onClick={() => setIsModalOpen(true)}
       >
-        <span>{selectedTemplate.name}</span>
+        <span>{selectedTemplate ? selectedTemplate.name : 'Select a template'}</span>
         <span>▼</span>
       </Button>
 
       <TemplateSelectorModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        selectedTemplate={selectedTemplate}
-        onTemplateSelect={onTemplateSelect}
+        selectedTemplate={selectedTemplate || fallbackTemplate}
+        onTemplateSelect={handleTemplateSelect}
         templates={templates}
       />
 

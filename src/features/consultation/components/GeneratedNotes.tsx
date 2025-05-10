@@ -2,25 +2,16 @@
 
 import React from 'react';
 
+import { Section } from '@/shared/components/layout/Section';
+import { Stack } from '@/shared/components/layout/Stack';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { Textarea } from '@/shared/components/ui/textarea';
-import { Section } from '@/shared/components/layout/Section';
-import { Stack } from '@/shared/components/layout/Stack';
+import { useConsultation } from '@/shared/ConsultationContext';
 
-type GeneratedNotesProps = {
-  content?: {
-    subjective?: string;
-    objective?: string;
-    assessment?: string;
-    plan?: string;
-  };
-  onGenerate?: () => void;
-  onCopy?: () => void;
-};
-
-export function GeneratedNotes({ content, onGenerate, onCopy }: GeneratedNotesProps) {
-  const hasContent = content && Object.values(content).some(value => value && value.trim() !== '');
+export function GeneratedNotes({ onGenerate, onCopy }: { onGenerate?: () => void; onCopy?: () => void }) {
+  const { generatedNotes } = useConsultation();
+  const hasContent = !!(generatedNotes && generatedNotes.trim() !== '');
 
   return (
     <Card>
@@ -31,40 +22,12 @@ export function GeneratedNotes({ content, onGenerate, onCopy }: GeneratedNotesPr
         <Stack spacing="md">
           <Section>
             <Textarea
-              placeholder="Subjective notes will appear here..."
-              value={content?.subjective || ''}
+              placeholder="Generated notes will appear here..."
+              value={generatedNotes || ''}
               readOnly
               className="min-h-[150px]"
             />
           </Section>
-
-          <Section>
-            <Textarea
-              placeholder="Objective notes will appear here..."
-              value={content?.objective || ''}
-              readOnly
-              className="min-h-[150px]"
-            />
-          </Section>
-
-          <Section>
-            <Textarea
-              placeholder="Assessment notes will appear here..."
-              value={content?.assessment || ''}
-              readOnly
-              className="min-h-[150px]"
-            />
-          </Section>
-
-          <Section>
-            <Textarea
-              placeholder="Plan notes will appear here..."
-              value={content?.plan || ''}
-              readOnly
-              className="min-h-[150px]"
-            />
-          </Section>
-
           <Section>
             <div className="flex space-x-4">
               <Button
