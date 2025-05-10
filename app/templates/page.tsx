@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 import { TemplateEditor } from '@/features/templates/components/TemplateEditor';
 import { TemplateList } from '@/features/templates/components/TemplateList';
@@ -25,6 +25,7 @@ export default function TemplatesPage() {
   const [error, setError] = useState<string | null>(null);
   const { setUserDefaultTemplateId, userDefaultTemplateId } = useConsultation();
   const { isSignedIn } = useAuth();
+  const hasReorderedRef = useRef(false);
 
   useEffect(() => {
     setLoading(true);
@@ -44,7 +45,7 @@ export default function TemplatesPage() {
   }, []);
 
   useEffect(() => {
-    if (!isSignedIn) {
+    if (!isSignedIn || loading || templates.length === 0 || hasReorderedRef.current) {
       return;
     }
     fetch('/api/user/settings')
@@ -58,14 +59,20 @@ export default function TemplatesPage() {
         if (!data) {
           return;
         }
-        if (data.settings && Array.isArray(data.settings.templateOrder) && templates.length > 0) {
+        if (data.settings && Array.isArray(data.settings.templateOrder)) {
           const order = data.settings.templateOrder;
           const idToTemplate = Object.fromEntries(templates.map(t => [t.id, t]));
-          setTemplates(order.map((id: string | number) => idToTemplate[id]).filter(Boolean));
+          const reordered = order.map((id: string | number) => idToTemplate[id]).filter(Boolean);
+          // Only setTemplates if the order is actually different
+          const isDifferent = reordered.length === templates.length && reordered.some((t, i) => t.id !== templates[i].id);
+          if (isDifferent) {
+            setTemplates(reordered);
+          }
         }
+        hasReorderedRef.current = true;
       });
-    // Only run when templates are loaded
-  }, [isSignedIn, loading, templates]);
+    // Only run when templates are loaded and not yet reordered
+  }, [isSignedIn, loading, templates.length]);
 
   const handleReorder = (from: number, to: number) => {
     setTemplates((prev) => {
