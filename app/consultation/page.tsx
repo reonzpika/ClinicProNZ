@@ -10,11 +10,11 @@ import { Footer } from '@/shared/components/Footer';
 import { Header } from '@/shared/components/Header';
 import { Container } from '@/shared/components/layout/Container';
 import { Grid } from '@/shared/components/layout/Grid';
-import { Stack } from '@/shared/components/layout/Stack';
 import { Section } from '@/shared/components/layout/Section';
+import { Stack } from '@/shared/components/layout/Stack';
+import { Alert } from '@/shared/components/ui/alert';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { useConsultation } from '@/shared/ConsultationContext';
-import { Alert } from '@/shared/components/ui/alert';
 
 export default function ConsultationPage() {
   const {
@@ -24,7 +24,6 @@ export default function ConsultationPage() {
     setGeneratedNotes,
     setError,
     setLastGeneratedInput,
-    getCurrentTranscript,
   } = useConsultation();
   const [loading, setLoading] = useState(false);
   const [showLiveAlert, setShowLiveAlert] = useState(false);
@@ -62,13 +61,23 @@ export default function ConsultationPage() {
           quickNotes,
         }),
       });
-      const data = await res.json();
-      if (res.ok && data.notes) {
-        setGeneratedNotes(data.notes);
-        setLastGeneratedInput(transcript, quickNotes);
-      } else {
-        setError(data.error || 'Failed to generate notes');
+      if (!res.body) {
+        setError('No response body');
+        setLoading(false);
+        return;
       }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let notes = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+        notes += decoder.decode(value, { stream: true });
+        setGeneratedNotes(notes);
+      }
+      setLastGeneratedInput(transcript, quickNotes);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate notes');
     } finally {
@@ -104,7 +113,7 @@ export default function ConsultationPage() {
 
                 {/* Generated Notes */}
                 {showLiveAlert && (
-                  <Alert variant="info">
+                  <Alert variant="default">
                     Note generation will use the current live transcript.
                   </Alert>
                 )}

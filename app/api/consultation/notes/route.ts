@@ -30,8 +30,8 @@ export async function POST(req: Request) {
     // User input: transcription + quick notes
     const userInput = `Transcription:\n${transcription}\n\nQuick Notes:\n${(quickNotes || []).join('\n')}`;
 
-    // Call OpenAI o4-mini
-    const response = await openai.chat.completions.create({
+    // Call OpenAI o4-mini with streaming
+    const stream = await openai.chat.completions.create({
       model: 'o4-mini',
       messages: [
         { role: 'system', content: systemPrompt },
@@ -39,10 +39,29 @@ export async function POST(req: Request) {
       ],
       // TODO: Add settings e.g. temperature, max_completion_tokens, top_p, frequency_penalty, presence_penalty
       // TODO: Add response_format if structured output is needed
+      stream: true,
     });
 
-    const notes = response.choices[0]?.message?.content || '';
-    return NextResponse.json({ notes, status: 'success' });
+    // Stream the response to the client
+    const encoder = new TextEncoder();
+    const readable = new ReadableStream({
+      async start(controller) {
+        for await (const chunk of stream) {
+          const content = chunk.choices?.[0]?.delta?.content;
+          if (content) {
+            controller.enqueue(encoder.encode(content));
+          }
+        }
+        controller.close();
+      },
+    });
+    return new Response(readable, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-cache',
+        'Transfer-Encoding': 'chunked',
+      },
+    });
   } catch (error) {
     console.error('Note generation error:', error);
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to generate note', status: 'error' }, { status: 500 });
