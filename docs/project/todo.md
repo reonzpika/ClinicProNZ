@@ -11,7 +11,6 @@
 ## Completed Tasks
 
 ### Documentation [x]
-
 ### Planning [x]
 - [x] Define core features for MVP
 - [x] Establish development principles
@@ -21,13 +20,11 @@
 - [x] Define data flow architecture
 - [x] Technical implementation planning
 - [x] Testing strategy planning
-
 ### Development Environment [x]
 - [x] Project Structure Setup
 - [x] Development Tools
 - [x] UI Framework Setup
 - [x] External Services (Partial)
-
 ### Template Management System (Priority: Must Have) [x]
 - [x] Database Setup
 - [x] Core Template Operations
@@ -36,7 +33,6 @@
 - [x] Template Validation
 - [x] Template Validation
 - [x] Template Selection UI
-
 ### Basic UI Implementation (Priority: Must Have) [x]
 - [x] Core Components
 - [x] Layout Components
@@ -49,34 +45,76 @@
   - [x] Header
   - [x] Footer
   - [x] Consultation page layout
-
 ### Core Implementation [x]
 - [x] Speech to Text Integration
 - [x] State Management Implementation
-
-## Current Sprint Tasks
 ### Core AI Integration (Priority: Must Have) [x]
-1. **ChatGPT Integration**
+- [x] ChatGPT Integration
    - [x] Note generation service
    - [x] Template prompt processing
    - [x] Error handling and retries
-   - **Estimate**: 4 days
-   - **Dependencies**: Template management system
+- [x] Note Generation System
+   - [x] Template-to-prompt translation
+   - [x] Note formatting and structure
+   - [x] Review and edit interface
 
-2. **Note Generation System**
-   - Template-to-prompt translation
-   - Note formatting and structure
-   - Review and edit interface
-   - **Estimate**: 3 days
-   - **Dependencies**: ChatGPT integration
-
-3. **Session Management**
-   - Session state persistence
-   - Clear/restart functionality
-   - **Estimate**: 2 days
-   - **Dependencies**: State management implementation
+## Current Sprint Tasks
 
 ## Upcoming Sprints
+
+## Future Features
+1. ACC integration (database of ACC codes, suggest based on generated note)
+2. NZ guidelines/online resources (database, suggest based on generated note)
+3. Useful checklist (database of checklists for common GP consultations)
+4. Patient education handouts (database, suggest and provide for patient)
+5. Follow-up/recall suggestions (suggest intervals, add to recall list)
+7. Red flag detection (highlight red flags in generated note)
+8. Consultation summary for patient (generate plain-language summary for patient)
+9. Differential diagnosis (suggest differential diagnosis based on generated note)
+10. Clinical tools (suggest clinical tools based on generated note)
+11. Screening tools (suggest screening tools based on generated note e.g. PHQ-9, GAD-7, AUDIT-C, etc)
+
+### MVP Design Decisions - ACC & NZ Guidelines Integration
+#### Current Setup
+- Database: Neon (PostgreSQL)
+- Note format: Plain text (generated via ChatGPT)
+- Goal: Build MVP quickly but allow future scalability for advanced features
+
+#### Phase 1: MVP Implementation
+##### ACC Code Matching
+- Build a JSON or SQL database of ACC codes with fields:
+  - code, description, body_part, injury_type, keywords
+- Use basic matching logic:
+  - Extract key terms from generated note (e.g. "ankle sprain")
+  - Match against body part and injury type fields using SQL (ILIKE, full-text search, or pg_trgm)
+
+##### NZ Guidelines Integration
+- Build a guideline DB with:
+  - title, URL, summary, tags, synonyms
+- Match by keyword extraction and fuzzy string matching
+- Return top relevant guideline URLs
+
+#### Phase 2: Future Upgrade - Vector Search (RAG)
+- Use OpenAI embeddings (text-embedding-3-small) to embed:
+  - Notes
+  - ACC codes and guideline entries
+- Store embeddings using pgvector in Neon
+- Retrieve matches based on cosine similarity
+
+#### Phase 3: Advanced - OpenAI Agents
+- Integrate OpenAI Agents when multiple tools are live (e.g., ACC codes, checklists, follow-up suggestions)
+- Agents will:
+  - Interpret the input
+  - Decide which function/tool to call
+  - Handle orchestration logic for multiple outputs
+
+#### Decision Summary
+| Stage | Method | Tools/Tech |
+|-------|---------|------------|
+| MVP | Keyword + metadata match | Neon + SQL (ILIKE, pg_trgm) |
+| Post-MVP | RAG (Vector DB + embeddings) | OpenAI Embeddings + pgvector |
+| Advanced | Agent-based orchestration | OpenAI Agents + tools |
+
 
 ## Progress Metrics
 
@@ -85,8 +123,7 @@
 | Documentation           | 100%     | ██████████ |
 | Core Features Defined   | 100%     | ██████████ |
 | Technical Design        | 100%     | ██████████ |
-| Implementation         | 80%      | ████████░░ |
-| Testing Infrastructure | 80%      | ████████░░ |
+| Implementation         | 100%     | ██████████ |
 | Template System        | 100%     | ██████████ |
 | Database Setup         | 100%     | ██████████ |
 | Basic UI              | 100%     | ██████████ |

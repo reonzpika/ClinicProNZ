@@ -1,8 +1,4 @@
----
-description: 
-globs: 
-alwaysApply: true
----
+
 # ConsultAI NZ Development Context
 
 ## Project Overview

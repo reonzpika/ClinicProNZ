@@ -12,6 +12,8 @@ if (!OPENAI_API_KEY) {
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
+// TODO: Implement structured output for generated notes (e.g., JSON or sections) instead of plain text.
+
 export async function POST(req: Request) {
   try {
     const { transcription, templateId, quickNotes } = await req.json();

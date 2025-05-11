@@ -4,13 +4,13 @@ import React, { useState } from 'react';
 
 import { GeneratedNotes } from '@/features/consultation/components/GeneratedNotes';
 import { QuickNotes } from '@/features/consultation/components/QuickNotes';
+import RightSidebarFeatures from '@/features/consultation/components/RightSidebarFeatures';
 import { TranscriptionControls } from '@/features/consultation/components/TranscriptionControls';
 import { TemplateSelector } from '@/features/templates/components/TemplateSelector';
 import { Footer } from '@/shared/components/Footer';
 import { Header } from '@/shared/components/Header';
 import { Container } from '@/shared/components/layout/Container';
 import { Grid } from '@/shared/components/layout/Grid';
-import { Section } from '@/shared/components/layout/Section';
 import { Stack } from '@/shared/components/layout/Stack';
 import { Alert } from '@/shared/components/ui/alert';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
@@ -124,18 +124,7 @@ export default function ConsultationPage() {
 
             {/* Right Column - Future Features */}
             <div className="lg:col-span-1">
-              <Card>
-                <CardHeader>
-                  <h2 className="text-lg font-semibold">Future Features</h2>
-                </CardHeader>
-                <CardContent>
-                  <Section>
-                    <p className="text-muted-foreground">
-                      This space is reserved for future features like NZ Resources, Tools, etc.
-                    </p>
-                  </Section>
-                </CardContent>
-              </Card>
+              <RightSidebarFeatures />
             </div>
           </Grid>
         </Container>

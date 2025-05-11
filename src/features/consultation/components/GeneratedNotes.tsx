@@ -22,6 +22,7 @@ export function GeneratedNotes({ onGenerate, onClearAll }: { onGenerate?: () => 
     lastGeneratedQuickNotes,
     setLastGeneratedInput,
     resetLastGeneratedInput,
+    setGeneratedNotes,
   } = useConsultation();
 
   // Local UI state
@@ -99,7 +100,7 @@ export function GeneratedNotes({ onGenerate, onClearAll }: { onGenerate?: () => 
               <Textarea
                 placeholder="Generated notes will appear here..."
                 value={generatedNotes || ''}
-                readOnly
+                onChange={e => setGeneratedNotes(e.target.value)}
                 className="min-h-[220px] text-base leading-relaxed resize-vertical"
                 style={{ maxHeight: 300 }}
               />
@@ -156,7 +157,7 @@ export function GeneratedNotes({ onGenerate, onClearAll }: { onGenerate?: () => 
             </div>
             <Textarea
               value={generatedNotes || ''}
-              readOnly
+              onChange={e => setGeneratedNotes(e.target.value)}
               className="min-h-[400px] text-lg leading-relaxed resize-vertical"
               style={{ height: 400, maxHeight: 600 }}
             />
