@@ -5,13 +5,13 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const ASSISTANT_ID = 'asst_t9kwZqGL1NVSWXTnwwxU8TCq';
 
 export async function POST(req: NextRequest) {
-  const { note } = await req.json();
-  if (!note) {
-    console.error('No note provided');
-    return NextResponse.json({ error: 'Missing consultation note' }, { status: 400 });
-  }
-
   try {
+    const { query } = await req.json();
+    if (!query || typeof query !== 'string' || query.trim().length === 0) {
+      console.error('Query is required.');
+      return NextResponse.json({ error: 'Query is required.' }, { status: 400 });
+    }
+
     // 1. Create a thread
     let threadId = null;
     try {
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Error creating thread' }, { status: 500 });
     }
 
-    // 2. Add the consultation note as a message
+    // 2. Add the query as a message
     try {
       const msgRes = await fetch(`https://api.openai.com/v1/threads/${threadId}/messages`, {
         method: 'POST',
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
         },
         body: JSON.stringify({
           role: 'user',
-          content: note,
+          content: query,
         }),
       });
       const msgData = await msgRes.json();
@@ -71,6 +71,7 @@ export async function POST(req: NextRequest) {
         },
         body: JSON.stringify({
           assistant_id: ASSISTANT_ID,
+          instructions: `Given the following consultation note, return the top 5 best-matching ACC codes from acc_read_codes. For each, return: "text" (preferred term), "read_code" (code), and "read_term" (read term or synonym if available). Output a JSON array of up to 5 objects, sorted by relevance. Only use codes from acc_read_codes.`,
         }),
       });
       const run = await runRes.json();
@@ -141,20 +142,20 @@ export async function POST(req: NextRequest) {
       console.error('No assistant message found:', messagesData);
       return NextResponse.json({ error: 'No assistant message found', details: messagesData }, { status: 500 });
     }
-    let suggestion = null;
+    let results = null;
     try {
-      suggestion = typeof lastMessage.content[0].text.value === 'string'
+      results = typeof lastMessage.content[0].text.value === 'string'
         ? JSON.parse(lastMessage.content[0].text.value)
         : lastMessage.content[0].text.value;
     } catch {
       console.error('Failed to parse assistant response:', lastMessage.content[0].text.value);
       return NextResponse.json({ error: 'Failed to parse assistant response' }, { status: 500 });
     }
-    if (!suggestion || !suggestion.text || !suggestion.read_code) {
-      console.error('Incomplete suggestion:', suggestion);
-      return NextResponse.json({ error: 'Incomplete suggestion', suggestion }, { status: 500 });
+    if (!Array.isArray(results)) {
+      console.error('Assistant response is not an array:', results);
+      return NextResponse.json({ error: 'Assistant response is not an array', results }, { status: 500 });
     }
-    return NextResponse.json(suggestion);
+    return NextResponse.json({ results });
   } catch (err: any) {
     const errorMessage = err instanceof Error ? err.message : 'OpenAI API error';
     console.error('Catch error:', errorMessage);
