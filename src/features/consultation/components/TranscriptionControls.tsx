@@ -3,7 +3,7 @@
 import React from 'react';
 
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent } from '@/shared/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { Section } from '@/shared/components/layout/Section';
 import { Stack } from '@/shared/components/layout/Stack';
 import { Alert } from '@/shared/components/ui/alert';
@@ -11,7 +11,7 @@ import { Alert } from '@/shared/components/ui/alert';
 import { useConsultation } from '@/shared/ConsultationContext';
 import { useTranscription } from '../hooks/useTranscription';
 
-export function TranscriptionControls({ resetSignal }: { resetSignal?: any }) {
+export function TranscriptionControls({ resetSignal, collapsed, onExpand }: { resetSignal?: any, collapsed?: boolean, onExpand?: () => void }) {
   const {
     transcription,
     error,
@@ -32,6 +32,24 @@ export function TranscriptionControls({ resetSignal }: { resetSignal?: any }) {
   // Get the latest confidence from the last segment
   const latestConfidence = segments.length > 0 ? segments[segments.length - 1].confidence * 100 : null;
 
+  // Pulsing dot for recording feedback
+  const RecordingDot = () => (
+    <span className="inline-block w-3 h-3 rounded-full bg-red-500 animate-pulse mr-2 align-middle" title="Recording" />
+  );
+
+  if (collapsed) {
+    return (
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between p-1 pb-0">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold">Transcription</span>
+          </div>
+          <Button type="button" size="sm" className="text-xs" onClick={onExpand}>Expand</Button>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardContent className="p-1 pt-0">
@@ -42,36 +60,43 @@ export function TranscriptionControls({ resetSignal }: { resetSignal?: any }) {
             </Alert>
           )}
           
-          <Section title={<span className="text-xs font-semibold">Transcription</span>}>
-            <div className="flex space-x-1 mb-1">
-              <Button
-                type="button"
-                variant="default"
-                onClick={startRecording}
-                disabled={isRecording}
-                className="text-xs px-2 py-1 h-8"
-              >
-                Start Recording
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={isPaused ? resumeRecording : pauseRecording}
-                disabled={!isRecording}
-                className="text-xs px-2 py-1 h-8"
-              >
-                {isPaused ? 'Resume' : 'Pause'}
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={stopRecording}
-                disabled={!isRecording}
-                className="text-xs px-2 py-1 h-8"
-              >
-                Stop
-              </Button>
+          <Section title={
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-1">
+                {isRecording && <RecordingDot />}
+                <span className="text-xs font-semibold">Transcription</span>
+              </div>
+              <div className="flex gap-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={startRecording}
+                  disabled={isRecording}
+                  className="text-xs px-1 py-0.5 h-7 min-w-0 border rounded bg-white hover:bg-gray-100"
+                >
+                  Start
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={isPaused ? resumeRecording : pauseRecording}
+                  disabled={!isRecording}
+                  className="text-xs px-1 py-0.5 h-7 min-w-0 border rounded bg-white hover:bg-gray-100"
+                >
+                  {isPaused ? 'Resume' : 'Pause'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={stopRecording}
+                  disabled={!isRecording}
+                  className="text-xs px-1 py-0.5 h-7 min-w-0 border rounded bg-white hover:bg-gray-100"
+                >
+                  Stop
+                </Button>
+              </div>
             </div>
+          }>
             <div className="space-y-1">
               {/* Final Transcript Block */}
               {(finalTranscript || transcription.final) && (

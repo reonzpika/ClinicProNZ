@@ -28,15 +28,18 @@ export default function ConsultationPage() {
   const [loading, setLoading] = useState(false);
   const [showLiveAlert, setShowLiveAlert] = useState(false);
   const [resetTranscriptionSignal, setResetTranscriptionSignal] = useState(0);
+  const [isNoteFocused, setIsNoteFocused] = useState(false);
 
   const handleClearAll = () => {
     setResetTranscriptionSignal(s => s + 1);
+    setIsNoteFocused(false);
     // The following should be called in GeneratedNotes, but for clarity, you can also call context resets here if needed
     // resetConsultation();
     // resetLastGeneratedInput();
   };
 
   const handleGenerateNotes = async () => {
+    setIsNoteFocused(true);
     setLoading(true);
     setError(null);
     let transcript = '';
@@ -94,7 +97,7 @@ export default function ConsultationPage() {
           <Grid cols={3} gap="lg">
             {/* Left Column - Main Consultation Area */}
             <div className="lg:col-span-2">
-              <Stack spacing="lg">
+              <Stack spacing="sm">
                 {/* Template Selection */}
                 <Card>
                   <CardHeader>
@@ -106,19 +109,13 @@ export default function ConsultationPage() {
                 </Card>
 
                 {/* Transcription Controls */}
-                <TranscriptionControls resetSignal={resetTranscriptionSignal} />
+                <TranscriptionControls resetSignal={resetTranscriptionSignal} collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
 
                 {/* Quick Notes */}
-                <QuickNotes />
+                <QuickNotes collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
 
                 {/* Generated Notes */}
-                {showLiveAlert && (
-                  <Alert variant="default">
-                    Note generation will use the current live transcript.
-                  </Alert>
-                )}
-                <GeneratedNotes onGenerate={handleGenerateNotes} onClearAll={handleClearAll} />
-                {loading && <div className="text-muted-foreground">Generating notes...</div>}
+                <GeneratedNotes onGenerate={handleGenerateNotes} onClearAll={handleClearAll} loading={loading} isNoteFocused={isNoteFocused} />
               </Stack>
             </div>
 

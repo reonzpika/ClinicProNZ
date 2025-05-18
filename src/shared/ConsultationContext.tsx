@@ -62,6 +62,7 @@ const ConsultationContext = createContext<
     setLastGeneratedInput: (transcription: string, quickNotes: string[]) => void;
     resetLastGeneratedInput: () => void;
     getCurrentTranscript: () => string;
+    setQuickNotes: (notes: string[]) => void;
   })
   | null
 >(null);
@@ -190,6 +191,9 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       : state.transcription.final.trim();
   };
 
+  const setQuickNotes = (notes: string[]) =>
+    setState(prev => ({ ...prev, quickNotes: notes }));
+
   const value = useMemo(() => ({
     ...state,
     setStatus,
@@ -204,6 +208,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setUserDefaultTemplateId,
     setLastGeneratedInput,
     resetLastGeneratedInput,
+    setQuickNotes,
     lastGeneratedTranscription: state.lastGeneratedTranscription || '',
     lastGeneratedQuickNotes: state.lastGeneratedQuickNotes || [],
     userDefaultTemplateId: state.userDefaultTemplateId,

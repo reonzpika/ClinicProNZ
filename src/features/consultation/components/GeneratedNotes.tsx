@@ -6,12 +6,11 @@ import { Section } from '@/shared/components/layout/Section';
 import { Stack } from '@/shared/components/layout/Stack';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
-import { Textarea } from '@/shared/components/ui/textarea';
 import { useConsultation } from '@/shared/ConsultationContext';
 
 // TODO: Fix button enable logic so Generate Notes is clickable when there is only a transcription (without requiring a quick note). Currently, it only enables after a quick note is added.
 
-export function GeneratedNotes({ onGenerate, onClearAll }: { onGenerate?: () => void, onClearAll?: () => void }) {
+export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused }: { onGenerate?: () => void; onClearAll?: () => void; loading?: boolean; isNoteFocused?: boolean }) {
   const {
     generatedNotes,
     error,
@@ -20,9 +19,8 @@ export function GeneratedNotes({ onGenerate, onClearAll }: { onGenerate?: () => 
     resetConsultation,
     lastGeneratedTranscription,
     lastGeneratedQuickNotes,
-    setLastGeneratedInput,
-    resetLastGeneratedInput,
     setGeneratedNotes,
+    setQuickNotes,
   } = useConsultation();
 
   // Local UI state
@@ -34,26 +32,28 @@ export function GeneratedNotes({ onGenerate, onClearAll }: { onGenerate?: () => 
     a.length === b.length && a.every((v, i) => v === b[i]);
 
   // Button enable logic
-  const hasInput =
-    (transcription.final && transcription.final.trim() !== '') ||
-    (transcription.interim && transcription.interim.trim() !== '') ||
-    (quickNotes && quickNotes.length > 0);
-  const isInputChanged =
-    transcription.final !== (lastGeneratedTranscription || '') ||
-    transcription.interim !== '' ||
-    !areQuickNotesEqual(quickNotes, lastGeneratedQuickNotes || []);
+  const hasInput
+    = (transcription.final && transcription.final.trim() !== '')
+      || (transcription.interim && transcription.interim.trim() !== '')
+      || (quickNotes && quickNotes.length > 0);
+  const isInputChanged
+    = transcription.final !== (lastGeneratedTranscription || '')
+      || transcription.interim !== ''
+      || !areQuickNotesEqual(quickNotes, lastGeneratedQuickNotes || []);
   const canGenerate = hasInput && isInputChanged;
 
   const hasContent = !!(generatedNotes && generatedNotes.trim() !== '');
-  const hasAnyState =
-    hasContent ||
-    (transcription.final && transcription.final.trim() !== '') ||
-    (transcription.interim && transcription.interim.trim() !== '') ||
-    (quickNotes && quickNotes.length > 0);
+  const hasAnyState
+    = hasContent
+      || (transcription.final && transcription.final.trim() !== '')
+      || (transcription.interim && transcription.interim.trim() !== '')
+      || (quickNotes && quickNotes.length > 0);
 
   // Copy to clipboard logic
   const handleCopy = async () => {
-    if (!generatedNotes) return;
+    if (!generatedNotes) {
+      return;
+    }
     try {
       await navigator.clipboard.writeText(generatedNotes);
       setCopySuccess(true);
@@ -66,21 +66,34 @@ export function GeneratedNotes({ onGenerate, onClearAll }: { onGenerate?: () => 
   // Clear all handler: also reset last generated input
   const handleClearAll = () => {
     resetConsultation();
-    resetLastGeneratedInput();
-    if (onClearAll) onClearAll();
+    setQuickNotes([]);
+    if (onClearAll) {
+      onClearAll();
+    }
   };
 
   // Expanded modal style
-  const modalStyle =
-    'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50';
-  const expandedCardStyle =
-    'w-full max-w-3xl bg-white rounded-lg shadow-lg p-6 relative';
+  const modalStyle
+    = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50';
+  const expandedCardStyle
+    = 'w-full max-w-3xl bg-white rounded-lg shadow-lg p-6 relative';
 
   return (
     <>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between p-1">
-          <h2 className="text-xs font-semibold">Generated Notes</h2>
+        <CardHeader className="flex flex-row items-center justify-between p-1 pb-0">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xs font-semibold">Generated Notes</h2>
+            {loading && (
+              <span className="ml-2 flex items-center" aria-busy="true">
+                <svg className="mr-1 size-4 animate-spin text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                </svg>
+                <span className="text-xs text-blue-600">Generating...</span>
+              </span>
+            )}
+          </div>
           <Button
             type="button"
             variant="ghost"
@@ -89,21 +102,23 @@ export function GeneratedNotes({ onGenerate, onClearAll }: { onGenerate?: () => 
             disabled={!hasContent}
             title="Expand notes view"
             aria-label="Expand notes view"
-            className="text-xs px-2 py-1 h-8"
+            className="h-8 px-2 py-1 text-xs"
           >
             Expand
           </Button>
         </CardHeader>
-        <CardContent className="p-1">
-          <Stack spacing="xs">
-            {error && <div className="text-red-500 text-xs">{error}</div>}
+        <CardContent className="p-1 pt-0">
+          <Stack spacing="sm">
+            {error && <div className="text-xs text-red-500">{error}</div>}
             <Section>
-              <Textarea
-                placeholder="Generated notes will appear here..."
+              <textarea
                 value={generatedNotes || ''}
                 onChange={e => setGeneratedNotes(e.target.value)}
-                className="min-h-[80px] text-xs leading-tight resize-vertical"
-                style={{ maxHeight: 120 }}
+                className="w-full resize-y overflow-y-auto rounded border bg-muted p-1 text-xs leading-tight text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary"
+                placeholder="Generated notes will appear here..."
+                style={isNoteFocused ? { minHeight: '60vh' } : { minHeight: 80, maxHeight: 120 }}
+                disabled={loading}
+                spellCheck={false}
               />
             </Section>
             <Section>
@@ -112,8 +127,8 @@ export function GeneratedNotes({ onGenerate, onClearAll }: { onGenerate?: () => 
                   type="button"
                   variant="default"
                   onClick={onGenerate}
-                  disabled={!canGenerate}
-                  className="text-xs px-2 py-1 h-8"
+                  disabled={!canGenerate || loading}
+                  className="h-8 px-2 py-1 text-xs"
                 >
                   Generate Notes
                 </Button>
@@ -121,8 +136,8 @@ export function GeneratedNotes({ onGenerate, onClearAll }: { onGenerate?: () => 
                   type="button"
                   variant="secondary"
                   onClick={handleCopy}
-                  disabled={!hasContent}
-                  className="text-xs px-2 py-1 h-8"
+                  disabled={!hasContent || loading}
+                  className="h-8 px-2 py-1 text-xs"
                 >
                   {copySuccess ? 'Copied!' : 'Copy to Clipboard'}
                 </Button>
@@ -130,10 +145,10 @@ export function GeneratedNotes({ onGenerate, onClearAll }: { onGenerate?: () => 
                   type="button"
                   variant="destructive"
                   onClick={handleClearAll}
-                  disabled={!hasAnyState}
+                  disabled={!hasAnyState || loading}
                   title="Clear all consultation data"
                   aria-label="Clear all consultation data"
-                  className="text-xs px-2 py-1 h-8"
+                  className="h-8 px-2 py-1 text-xs"
                 >
                   Clear All
                 </Button>
@@ -145,9 +160,29 @@ export function GeneratedNotes({ onGenerate, onClearAll }: { onGenerate?: () => 
 
       {/* Expanded Modal */}
       {expanded && (
-        <div className={modalStyle}>
-          <div className={expandedCardStyle}>
-            <div className="flex justify-between items-center mb-4">
+        <div
+          className={modalStyle}
+          role="presentation"
+          tabIndex={-1}
+          onClick={() => setExpanded(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setExpanded(false);
+            }
+          }}
+        >
+          <div
+            className={expandedCardStyle}
+            role="presentation"
+            tabIndex={-1}
+            onClick={e => e.stopPropagation()}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                setExpanded(false);
+              }
+            }}
+          >
+            <div className="mb-4 flex items-center justify-between">
               <h2 className="text-xl font-bold">Generated Notes (Expanded)</h2>
               <Button
                 type="button"
@@ -159,13 +194,14 @@ export function GeneratedNotes({ onGenerate, onClearAll }: { onGenerate?: () => 
                 Close
               </Button>
             </div>
-            <Textarea
+            <textarea
               value={generatedNotes || ''}
               onChange={e => setGeneratedNotes(e.target.value)}
-              className="min-h-[400px] text-lg leading-relaxed resize-vertical"
+              className="min-h-[400px] w-full resize-y overflow-y-auto rounded border bg-muted p-1 text-xs leading-tight text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary"
               style={{ height: 400, maxHeight: 600 }}
+              spellCheck={false}
             />
-            <div className="flex space-x-4 mt-6">
+            <div className="mt-6 flex space-x-4">
               <Button
                 type="button"
                 variant="secondary"
