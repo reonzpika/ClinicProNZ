@@ -1,11 +1,13 @@
 'use client';
 
-import { Check, Copy, Edit, Plus, Trash2 } from 'lucide-react';
+import { Check, Copy, Edit, Plus, Trash2, MoreVertical } from 'lucide-react';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/shared/components/ui/dropdown-menu';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/shared/components/ui/button';
 
 import type { Template } from '../types';
+import { useState } from 'react';
 
 type TemplateListProps = {
   templates: Template[];
@@ -34,79 +36,95 @@ export function TemplateList({
   onReorder,
 }: TemplateListProps) {
   const filteredTemplates = templates;
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="space-y-1">
-      {filteredTemplates.map((template) => {
-        const isDefault = template.type === 'default';
+    <div className="space-y-0 divide-y divide-gray-200">
+      {filteredTemplates.map((template, idx) => {
+        const isSelected = selectedTemplate?.id === template.id;
         const originalIdx = templates.findIndex(t => t.id === template.id);
         return (
           <div
             key={template.id}
             className={cn(
-              'flex items-center gap-2 rounded px-2 py-1',
-              isDefault ? 'bg-blue-50 border border-blue-200' : 'bg-green-50 border border-green-200',
-              selectedTemplate?.id === template.id && 'bg-accent',
+              'flex items-center justify-between px-2 py-1 min-h-[36px] cursor-pointer',
+              isSelected ? 'bg-blue-100' : '',
+              !isSelected && 'hover:bg-muted',
+              'transition-colors',
             )}
+            style={{ fontSize: '0.85rem' }}
           >
             <Button
               variant="ghost"
-              className={cn('flex-1 justify-start gap-2', selectedTemplate?.id === template.id && 'bg-accent')}
+              className={cn('flex-1 justify-start gap-2 px-0 py-0 h-auto min-w-0')}
               onClick={() => onTemplateSelect(template)}
               onMouseEnter={() => onTemplateHover(template)}
+              style={{ fontSize: '0.85rem', minWidth: 0 }}
             >
-              {selectedTemplate?.id === template.id && <Check className="size-4" />}
-              {template.name}
+              <span className={cn('truncate max-w-[160px] text-xs', isSelected ? 'font-semibold' : 'font-medium')}>
+                {template.name}
+              </span>
               {userDefaultTemplateId === template.id && (
                 <span title="Default Template" aria-label="Default Template" className="ml-1 text-xs font-semibold text-yellow-500">★</span>
               )}
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => onEdit(template)} title="Edit">
-              <Edit className="size-4" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => onDelete(template)} title="Delete">
-              <Trash2 className="size-4" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => onCopy(template)} title="Copy">
-              <Copy className="size-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onSetDefault(template.id)}
-              title={userDefaultTemplateId === template.id ? 'This is your default template' : 'Set as default template'}
-              aria-label={userDefaultTemplateId === template.id ? 'This is your default template' : 'Set as default template'}
-              disabled={userDefaultTemplateId === template.id}
-            >
-              <span role="img" aria-label="Set as default" className={userDefaultTemplateId === template.id ? 'text-yellow-500' : ''}>★</span>
-            </Button>
-            {/* Reorder buttons */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => originalIdx > 0 && onReorder(originalIdx, originalIdx - 1)}
-              title="Move up"
-              aria-label="Move up"
-              disabled={originalIdx === 0}
-            >
-              ↑
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => originalIdx < templates.length - 1 && onReorder(originalIdx, originalIdx + 1)}
-              title="Move down"
-              aria-label="Move down"
-              disabled={originalIdx === templates.length - 1}
-            >
-              ↓
-            </Button>
+            <div className="flex items-center gap-0 ml-1">
+              {template.type !== 'default' && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => onEdit(template)}
+                    title="Edit"
+                    className="p-0.5"
+                  >
+                    <Edit className="size-4" />
+                  </Button>
+                </>
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <MoreVertical className="size-4" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => onCopy(template)}>
+                    Copy
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => onSetDefault(template.id)}
+                    disabled={userDefaultTemplateId === template.id}
+                  >
+                    {userDefaultTemplateId === template.id ? 'Default Template' : 'Set as Default'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => originalIdx > 0 && onReorder(originalIdx, originalIdx - 1)}
+                    disabled={originalIdx === 0}
+                  >
+                    Move Up
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => originalIdx < templates.length - 1 && onReorder(originalIdx, originalIdx + 1)}
+                    disabled={originalIdx === templates.length - 1}
+                  >
+                    Move Down
+                  </DropdownMenuItem>
+                  {template.type !== 'default' && (
+                    <DropdownMenuItem
+                      onClick={() => onDelete(template)}
+                      className="text-red-600 hover:bg-red-50"
+                    >
+                      Delete
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         );
       })}
       <Button
         variant="ghost"
-        className="text-primary mt-2 w-full justify-start gap-2"
+        className="text-primary mt-2 w-full justify-start gap-2 text-xs"
         onClick={() => onEdit({} as Template)}
       >
         <Plus className="size-4" />

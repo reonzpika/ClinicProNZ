@@ -30,11 +30,8 @@ Core principles:
 - Use only information present in the transcript
 - Use clinical, concise language
 - Use New Zealand English spelling and medical conventions
-- Format output in Markdown
 - Exclude all identifying details (names, addresses, etc.)
 - Include age/gender in Subjective section if mentioned
-- Place small talk/unrelated remarks in "Other Notes" section
-- For patient uncertainties, clearly indicate in Subjective (e.g. "Patient suspects...")
 - Follow template prompt structure precisely
 
 The transcription is a single-line, non-diarised recording of a general practice consultation (i.e., no speaker labels). A quicknote may be provided by the GP to summarise or clarify the consultation.`;

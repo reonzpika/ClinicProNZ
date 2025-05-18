@@ -20,7 +20,7 @@ export type ConsultationState = {
   lastGeneratedQuickNotes?: string[];
 };
 
-const MULTIPROBLEM_SOAP_UUID = 'cef98cee-0062-447f-83c3-537a2ac5bacb';
+const MULTIPROBLEM_SOAP_UUID = 'a9028cb5-0c2a-4af9-9cc1-4087a6204715';
 
 function getUserDefaultTemplateId() {
   if (typeof window !== 'undefined') {

@@ -16,51 +16,53 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
   const sampleQuickNotes = ['Sample quick note 1', 'Sample quick note 2'];
 
   return (
-    <ScrollArea className="h-[400px]">
-      <Card>
-        <CardContent className="p-4">
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-medium">Consultation Note Template</h3>
-              <p className="text-sm text-muted-foreground">{template.description}</p>
-            </div>
-            <div>
-              <h4 className="text-sm font-medium">Instructions for the AI</h4>
-              <pre className="whitespace-pre-wrap rounded bg-muted p-2 text-sm">
-                {template.prompts.prompt}
-              </pre>
-            </div>
-            {template.prompts.example && (
+    <div className="flex h-full min-h-0 flex-col">
+      <Card className="flex h-full min-h-0 flex-col">
+        <CardContent className="flex h-full min-h-0 flex-col p-4">
+          <ScrollArea className="h-full min-h-0 flex-1">
+            <div className="space-y-2">
+              <h3 className="mb-2 text-lg font-semibold">{template.name}</h3>
               <div>
-                <h4 className="text-sm font-medium">Example Output</h4>
-                <pre className="whitespace-pre-wrap rounded bg-muted p-2 text-sm">
-                  {template.prompts.example}
+                <p className="text-sm text-muted-foreground">{template.description}</p>
+              </div>
+              <div>
+                <h4 className="mb-1 text-xs font-medium">Instructions for the AI</h4>
+                <pre className="whitespace-pre-wrap rounded bg-muted p-1 text-xs">
+                  {template.prompts.prompt}
                 </pre>
               </div>
-            )}
-            <div>
-              <button
-                className="mt-2 text-xs text-blue-600 underline"
-                onClick={() => setShowFullPrompt(v => !v)}
-              >
-                {showFullPrompt ? 'Hide Full Final Prompt' : 'Show Full Final Prompt (Advanced)'}
-              </button>
-            </div>
-            {showFullPrompt && (
+              {template.prompts.example && (
+                <div>
+                  <h4 className="mb-1 text-xs font-medium">Example Output</h4>
+                  <pre className="whitespace-pre-wrap rounded bg-muted p-1 text-xs">
+                    {template.prompts.example}
+                  </pre>
+                </div>
+              )}
               <div>
-                <h4 className="mt-2 text-sm font-medium">System Prompt (as sent to AI)</h4>
-                <pre className="mb-2 whitespace-pre-wrap rounded bg-muted p-2 text-xs">
-                  {SYSTEM_PROMPT}
-                </pre>
-                <h4 className="mt-2 text-sm font-medium">Full Final Prompt (as sent to AI)</h4>
-                <pre className="whitespace-pre-wrap rounded bg-muted p-2 text-xs">
-                  {buildTemplatePrompt(template.prompts, sampleTranscription, sampleQuickNotes)}
-                </pre>
+                <button
+                  className="mt-2 text-xs text-blue-600 underline"
+                  onClick={() => setShowFullPrompt(v => !v)}
+                >
+                  {showFullPrompt ? 'Hide Full Final Prompt' : 'Show Full Final Prompt (Advanced)'}
+                </button>
               </div>
-            )}
-          </div>
+              {showFullPrompt && (
+                <div>
+                  <h4 className="mt-2 text-xs font-medium">System Prompt (as sent to AI)</h4>
+                  <pre className="mb-1 whitespace-pre-wrap rounded bg-muted p-1 text-xs">
+                    {SYSTEM_PROMPT}
+                  </pre>
+                  <h4 className="mt-2 text-xs font-medium">Full Final Prompt (as sent to AI)</h4>
+                  <pre className="whitespace-pre-wrap rounded bg-muted p-1 text-xs">
+                    {buildTemplatePrompt(template.prompts, sampleTranscription, sampleQuickNotes)}
+                  </pre>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
         </CardContent>
       </Card>
-    </ScrollArea>
+    </div>
   );
 }

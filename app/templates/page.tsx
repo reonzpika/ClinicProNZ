@@ -11,7 +11,6 @@ import { createTemplate, deleteTemplate, fetchTemplates, updateTemplate } from '
 import { Header } from '@/shared/components/Header';
 import { Container } from '@/shared/components/layout/Container';
 import { Grid } from '@/shared/components/layout/Grid';
-import { Section } from '@/shared/components/layout/Section';
 import { Stack } from '@/shared/components/layout/Stack';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
@@ -121,6 +120,10 @@ export default function TemplatesPage() {
   };
 
   const handleEdit = (template?: Template) => {
+    // Prevent editing default templates
+    if (template && template.type === 'default') {
+      return;
+    }
     if (template) {
       setSelectedTemplate(template);
       setIsEditing(true);
@@ -139,7 +142,8 @@ export default function TemplatesPage() {
   };
 
   const handleDelete = async (template: Template) => {
-    if (!template.id) {
+    // Prevent deleting default templates
+    if (!template.id || template.type === 'default') {
       return;
     }
     try {
@@ -183,75 +187,69 @@ export default function TemplatesPage() {
     <>
       <Header />
       <Container size="lg">
-        <Stack spacing="lg">
-          <Section>
-            <h1 className="text-2xl font-bold">Template Management</h1>
-            <p className="text-muted-foreground">
-              Create and manage your consultation templates
-            </p>
-          </Section>
-          {error && <div className="text-red-500">{error}</div>}
-          {loading
-            ? <div>Loading templates...</div>
-            : (
-                <Grid cols={2} gap="lg">
-                  {/* Left Column - Template List */}
-                  <div>
-                    <Card>
-                      <CardHeader>
-                        <div className="flex items-center justify-between">
-                          <h2 className="text-lg font-semibold">Templates</h2>
-                          <Button onClick={() => handleEdit()} size="sm">
-                            Create New
-                          </Button>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <TemplateList
-                          templates={templates}
-                          selectedTemplate={selectedOrDefault}
-                          onTemplateSelect={handleTemplateSelect}
-                          onTemplateHover={() => {}}
-                          isSignedIn
-                          onEdit={handleEdit}
-                          onDelete={handleDelete}
-                          onCopy={handleCopy}
-                          onSetDefault={setUserDefaultTemplateId}
-                          userDefaultTemplateId={userDefaultTemplateId}
-                          onReorder={handleReorder}
-                        />
-                      </CardContent>
-                    </Card>
-                  </div>
+        <Grid cols={3} gap="lg">
+          {/* Left Column - Template List */}
+          <div className="lg:col-span-1">
+            <Stack spacing="sm">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between p-2 pb-0">
+                  <h2 className="text-xs font-semibold">Templates</h2>
+                  <Button onClick={() => handleEdit()} size="sm" className="text-xs px-2 py-1 h-8">
+                    Create New
+                  </Button>
+                </CardHeader>
+                <CardContent className="p-2 pt-0">
+                  {error && <div className="text-red-500 text-xs mb-2">{error}</div>}
+                  {loading ? (
+                    <div className="text-xs">Loading templates...</div>
+                  ) : (
+                    <TemplateList
+                      templates={templates}
+                      selectedTemplate={selectedOrDefault}
+                      onTemplateSelect={handleTemplateSelect}
+                      onTemplateHover={() => {}}
+                      isSignedIn
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                      onCopy={handleCopy}
+                      onSetDefault={setUserDefaultTemplateId}
+                      userDefaultTemplateId={userDefaultTemplateId}
+                      onReorder={handleReorder}
+                    />
+                  )}
+                </CardContent>
+              </Card>
+            </Stack>
+          </div>
 
-                  {/* Right Column - Template Editor/Preview */}
-                  <div>
-                    {selectedTemplate && (
-                      <Card>
-                        <CardHeader>
-                          <h2 className="text-lg font-semibold">
-                            {isEditing ? 'Edit Template' : 'Template Preview'}
-                          </h2>
-                        </CardHeader>
-                        <CardContent>
-                          {isEditing
-                            ? (
-                                <TemplateEditor
-                                  template={selectedTemplate}
-                                  onSave={handleTemplateSave}
-                                  onCancel={() => setIsEditing(false)}
-                                />
-                              )
-                            : (
-                                <TemplatePreview template={selectedTemplate} />
-                              )}
-                        </CardContent>
-                      </Card>
-                    )}
-                  </div>
-                </Grid>
+          {/* Right Column - Template Editor/Preview */}
+          <div className="lg:col-span-2">
+            <Stack spacing="sm">
+              {selectedTemplate && (
+                <Card>
+                  <CardHeader className="p-2 pb-0">
+                    <h2 className="text-xs font-semibold">
+                      {isEditing ? 'Edit Template' : 'Template Preview'}
+                    </h2>
+                  </CardHeader>
+                  <CardContent className="p-2 pt-0">
+                    {isEditing
+                      ? (
+                          <TemplateEditor
+                            template={selectedTemplate}
+                            onSave={handleTemplateSave}
+                            onCancel={() => setIsEditing(false)}
+                          />
+                        )
+                      : (
+                          <TemplatePreview template={selectedTemplate} />
+                        )}
+                  </CardContent>
+                </Card>
               )}
-        </Stack>
+            </Stack>
+          </div>
+        </Grid>
       </Container>
     </>
   );

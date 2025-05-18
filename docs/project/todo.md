@@ -68,15 +68,19 @@
 - [x] Logic/state management improvements
   - [x] GenerateNotes is only enabled when there's a quick notes entry. After the recording is done, even if there's no quick notes entry, GenerateNotes should be enabled, which is currently not the case. I suspect this is due to how we are handling the global state of the consultation.
   - [x] After the recording and generating the note, when i refresh the page, the note and quick notes are saved but the transcription is not. The transcription should also be saved. 
-- [ ] Improve Multi-problem SOAP template
-  - [ ] When there's only one problem, the AI tries to create multiple problems when in fact there's only one.
-  - [ ] When AI is not able to find the required information in the transcription, it is generating new information that is not part of the template. This is not good. The AI should only generate information that is part of the transcription.
+- [x] Improve Multi-problem SOAP template
+  - [x] When there's only one problem, the AI tries to create multiple problems when in fact there's only one.
+  - [x] When AI is not able to find the required information in the transcription, it is generating new information that is not part of the template. This is not good. The AI should only generate information that is part of the transcription.
 
 ### Bug Fixes & Improvements of Template Management System
-- [ ] Default templates should not be editable or deletable
+- [x] Default templates should not be editable or deletable
 
 
 ## Upcoming Sprints
+### Add more AI analysis features
+- [x] generate working and differential diagnosis
+- [x] generate treatment plan
+
 
 ## Future Features
 1. ACC integration (database of ACC codes, suggest based on generated note)
