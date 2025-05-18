@@ -131,8 +131,7 @@ export default function TemplatesPage() {
         name: 'New Template',
         type: 'custom',
         description: 'A new custom template.',
-        sections: [],
-        prompts: { structure: '' },
+        prompts: { prompt: '', example: '' },
       };
       setSelectedTemplate(newTemplate);
       setIsEditing(true);
@@ -159,7 +158,6 @@ export default function TemplatesPage() {
       name: `Copy of ${template.name}`,
       type: 'custom' as const,
       description: template.description,
-      sections: JSON.parse(JSON.stringify(template.sections)),
       prompts: { ...template.prompts },
     };
     try {
@@ -178,8 +176,7 @@ export default function TemplatesPage() {
     name: 'Fallback Template',
     type: 'default',
     description: 'Fallback template.',
-    sections: [],
-    prompts: { structure: '' },
+    prompts: { prompt: '', example: '' },
   };
 
   return (

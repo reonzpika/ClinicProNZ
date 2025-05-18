@@ -26,7 +26,16 @@ export async function GET(req: Request) {
     }
 
     const allTemplates = await db
-      .select()
+      .select({
+        id: templates.id,
+        name: templates.name,
+        type: templates.type,
+        description: templates.description,
+        prompts: templates.prompts,
+        ownerId: templates.ownerId,
+        createdAt: templates.createdAt,
+        updatedAt: templates.updatedAt,
+      })
       .from(templates)
       .where(whereClause)
       .orderBy(desc(templates.type), desc(templates.createdAt));
@@ -53,7 +62,8 @@ export async function POST(req: Request) {
     const body = await req.json();
     const templateData = {
       ...body,
-      ownerId: body.type === 'custom' ? userId : undefined,
+      type: 'custom',
+      ownerId: userId,
     };
     const template = await db.insert(templates).values(templateData).returning();
     return NextResponse.json(template[0]);

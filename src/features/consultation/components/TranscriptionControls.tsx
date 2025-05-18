@@ -27,8 +27,6 @@ export function TranscriptionControls({ resetSignal, collapsed, onExpand }: { re
     stopRecording,
   } = useTranscription(resetSignal);
 
-  // Combine all final segments into one transcript string
-  const finalTranscript = segments.map(s => s.text).join(' ').trim();
   // Get the latest confidence from the last segment
   const latestConfidence = segments.length > 0 ? segments[segments.length - 1].confidence * 100 : null;
 
@@ -99,10 +97,10 @@ export function TranscriptionControls({ resetSignal, collapsed, onExpand }: { re
           }>
             <div className="space-y-1">
               {/* Final Transcript Block */}
-              {(finalTranscript || transcription.final) && (
+              {transcription.interimBuffer && (
                 <div className="bg-muted rounded-md p-1">
                   <p className="text-xs">
-                    {finalTranscript || transcription.final}
+                    {transcription.interimBuffer}
                   </p>
                   {/* Show latest confidence only while recording */}
                   {isRecording && latestConfidence !== null && (
@@ -123,7 +121,7 @@ export function TranscriptionControls({ resetSignal, collapsed, onExpand }: { re
               )}
 
               {/* No Transcription Message */}
-              {!finalTranscript && !transcription.final && !transcription.interim && (
+              {!transcription.interimBuffer && !transcription.interim && (
                 <div className="bg-muted rounded-md p-1">
                   <p className="text-xs text-muted-foreground">
                     No transcription available

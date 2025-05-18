@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
 import { TemplateService } from '@/features/templates/template-service';
-import { buildTemplatePrompt } from '@/features/templates/utils/promptBuilder';
+import { buildTemplatePrompt, SYSTEM_PROMPT } from '@/features/templates/utils/promptBuilder';
 
 // TODO: Move to config/env util if needed
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -27,17 +27,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Template not found' }, { status: 404 });
     }
 
-    // Build system prompt from template
-    const systemPrompt = buildTemplatePrompt(template);
-    // User input: transcription + quick notes
-    const userInput = `Transcription:\n${transcription}\n\nQuick Notes:\n${(quickNotes || []).join('\n')}`;
+    // Build user prompt from template, transcription, and quick notes
+    const userPrompt = buildTemplatePrompt(template.prompts, transcription, quickNotes);
 
     // Call OpenAI o4-mini with streaming
     const stream = await openai.chat.completions.create({
       model: 'o4-mini',
       messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userInput },
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user', content: userPrompt },
       ],
       // TODO: Add settings e.g. temperature, max_completion_tokens, top_p, frequency_penalty, presence_penalty
       // TODO: Add response_format if structured output is needed

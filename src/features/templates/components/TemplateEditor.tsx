@@ -3,7 +3,6 @@ import { useState } from 'react';
 import type { Template } from '@/features/templates/types';
 import { Button } from '@/shared/components/ui/button';
 
-import { SectionBuilder } from './SectionBuilder';
 import { TemplateForm } from './TemplateForm';
 
 type TemplateEditorProps = {
@@ -21,11 +20,11 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
     setError(null);
   };
 
-  const isValid = !!currentTemplate.name?.trim() && !!currentTemplate.prompts?.structure?.trim();
+  const isValid = !!currentTemplate.name?.trim() && !!currentTemplate.prompts?.prompt?.trim();
 
   const handleSave = () => {
     if (!isValid) {
-      setError('Name and Structure Prompt are required.');
+      setError('Name and Prompt are required.');
       return;
     }
     // Remove date fields before saving
@@ -36,7 +35,6 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
   return (
     <div className="space-y-8">
       <TemplateForm template={currentTemplate} onChange={handleChange} />
-      <SectionBuilder sections={currentTemplate.sections} onChange={sections => handleChange({ sections })} />
 
       {error && <div className="text-red-500">{error}</div>}
       <div className="flex justify-end space-x-4">

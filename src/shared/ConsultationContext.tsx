@@ -8,7 +8,6 @@ export type ConsultationState = {
   templateId: string;
   status: 'idle' | 'recording' | 'processing' | 'completed';
   transcription: {
-    final: string;
     interim: string;
     isLive: boolean;
     interimBuffer: string;
@@ -34,7 +33,7 @@ const defaultState: ConsultationState = {
   sessionId: '',
   templateId: MULTIPROBLEM_SOAP_UUID,
   status: 'idle',
-  transcription: { final: '', interim: '', isLive: false, interimBuffer: '' },
+  transcription: { interim: '', isLive: false, interimBuffer: '' },
   quickNotes: [],
   generatedNotes: null,
   error: null,
@@ -51,7 +50,7 @@ const ConsultationContext = createContext<
   | (ConsultationState & {
     setStatus: (status: ConsultationState['status']) => void;
     setTemplateId: (id: string) => void;
-    setTranscription: (final: string, interim: string, isLive: boolean) => void;
+    setTranscription: (interim: string, isLive: boolean) => void;
     addQuickNote: (note: string) => void;
     deleteQuickNote: (index: number) => void;
     clearQuickNotes: () => void;
@@ -102,7 +101,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
   const setTemplateId = (templateId: string) =>
     setState(prev => ({ ...prev, templateId }));
 
-  const setTranscription = (final: string, interim: string, isLive: boolean) => {
+  const setTranscription = (interim: string, isLive: boolean) => {
     setState((prev) => {
       if (isLive) {
         return {
@@ -110,20 +109,19 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
           transcription: {
             ...prev.transcription,
             interim,
-            isLive,
-            interimBuffer: prev.transcription.interimBuffer
-              ? `${prev.transcription.interimBuffer} ${interim}`
-              : interim,
+            isLive: true,
           },
         };
       } else {
         return {
           ...prev,
           transcription: {
-            final: prev.transcription.interimBuffer.trim(),
             interim: '',
             isLive: false,
-            interimBuffer: '',
+            interimBuffer: (prev.transcription.interimBuffer
+              ? `${prev.transcription.interimBuffer} ${interim}`.trim()
+              : interim
+            ),
           },
         };
       }
@@ -181,14 +179,12 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       userDefaultTemplateId: prev.userDefaultTemplateId,
       lastGeneratedTranscription: '',
       lastGeneratedQuickNotes: [],
-      transcription: { final: '', interim: '', isLive: false, interimBuffer: '' },
+      transcription: { interim: '', isLive: false, interimBuffer: '' },
     }));
   };
 
   const getCurrentTranscript = () => {
-    return state.transcription.isLive
-      ? state.transcription.interimBuffer.trim()
-      : state.transcription.final.trim();
+    return state.transcription.interimBuffer.trim();
   };
 
   const setQuickNotes = (notes: string[]) =>

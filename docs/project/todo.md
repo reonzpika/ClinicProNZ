@@ -65,9 +65,9 @@
   - [x] The entire page should be compact with minimal white space.
   - [x] Visual feedback when recording is in progress.
   - [x] Visual feedback when note is being generated.
-- [ ] Logic/state management improvements
-  - [ ] GenerateNotes is only enabled when there's a quick notes entry. After the recording is done, even if there's no quick notes entry, GenerateNotes should be enabled, which is currently not the case. I suspect this is due to how we are handling the global state of the consultation.
-  - [ ] After the recording and generating the note, when i refresh the page, the note and quick notes are saved but the transcription is not. The transcription should also be saved. 
+- [x] Logic/state management improvements
+  - [x] GenerateNotes is only enabled when there's a quick notes entry. After the recording is done, even if there's no quick notes entry, GenerateNotes should be enabled, which is currently not the case. I suspect this is due to how we are handling the global state of the consultation.
+  - [x] After the recording and generating the note, when i refresh the page, the note and quick notes are saved but the transcription is not. The transcription should also be saved. 
 - [ ] Improve Multi-problem SOAP template
   - [ ] When there's only one problem, the AI tries to create multiple problems when in fact there's only one.
   - [ ] When AI is not able to find the required information in the transcription, it is generating new information that is not part of the template. This is not good. The AI should only generate information that is part of the transcription.

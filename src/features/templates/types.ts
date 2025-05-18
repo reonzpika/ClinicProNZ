@@ -42,8 +42,10 @@ export type Template = {
   description?: string;
   type: 'default' | 'custom';
   ownerId?: string;
-  sections?: TemplateSection[];
-  prompts: TemplatePrompts;
+  prompts: {
+    prompt: string;
+    example?: string;
+  };
   createdAt?: string;
   updatedAt?: string;
 };

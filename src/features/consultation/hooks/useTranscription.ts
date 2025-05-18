@@ -100,7 +100,7 @@ export const useTranscription = (resetSignal?: any) => {
   const startRecording = useCallback(async () => {
     try {
       resetStatus();
-      setTranscription('', '', true);
+      setTranscription('', true);
       setSegments([]);
       setIsRecording(true);
       setIsPaused(false);
@@ -194,14 +194,10 @@ export const useTranscription = (resetSignal?: any) => {
                   isFinal: true,
                   confidence,
                 }]);
-                setTranscription(
-                  `${transcription.final} ${alternative.transcript}`.trim(),
-                  '',
-                  true,
-                );
+                setTranscription(alternative.transcript || '', false);
               } else {
                 // Handle interim transcript
-                setTranscription(transcription.final, alternative.transcript || '', true);
+                setTranscription(alternative.transcript || '', true);
               }
             }
           } else if (data.type === 'Error') {
@@ -243,7 +239,7 @@ export const useTranscription = (resetSignal?: any) => {
       handleWebSocketError(err instanceof Error ? err.message : 'Failed to start recording');
       setIsRecording(false);
     }
-  }, [resetStatus, handleWebSocketError, setTranscription, setStatus, transcription.final]);
+  }, [resetStatus, handleWebSocketError, setTranscription, setStatus, transcription.interimBuffer]);
 
   const stopRecording = useCallback(() => {
     setIsRecording(false);
@@ -299,7 +295,7 @@ export const useTranscription = (resetSignal?: any) => {
   return {
     isRecording,
     isPaused,
-    transcript: transcription.final,
+    transcript: transcription.interimBuffer,
     interimTranscript: transcription.interim,
     segments,
     error,

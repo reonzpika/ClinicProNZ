@@ -45,14 +45,10 @@ export default function ConsultationPage() {
     let transcript = '';
     if (transcription.isLive) {
       setShowLiveAlert(true);
-      if (transcription.final && transcription.interimBuffer) {
-        transcript = `${transcription.final} ${transcription.interimBuffer}`.trim();
-      } else {
-        transcript = transcription.interimBuffer;
-      }
+      transcript = transcription.interimBuffer;
     } else {
       setShowLiveAlert(false);
-      transcript = transcription.final;
+      transcript = transcription.interimBuffer;
     }
     try {
       const res = await fetch('/api/consultation/notes', {

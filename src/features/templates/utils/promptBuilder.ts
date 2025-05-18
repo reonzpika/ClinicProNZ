@@ -1,33 +1,40 @@
-import type { Template, TemplateSection } from '../types';
+/**
+ * Builds the user prompt for the LLM using the new template model.
+ * Combines the template prompt, example, transcription, and quick notes.
+ */
+export function buildTemplatePrompt(
+  prompts: { prompt: string; example?: string },
+  transcription: string,
+  quickNotes: string[],
+): string {
+  let prompt = prompts.prompt;
 
-function formatSection(section: TemplateSection): string {
-  let result = `${section.name}:
-${section.prompt}`;
-  if (section.subsections && section.subsections.length > 0) {
-    result += '\nSubsections:';
-    result += '\n' + section.subsections
-      .map(sub => `- ${sub.name}: ${sub.prompt}`)
-      .join('\n');
+  if (prompts.example) {
+    prompt += `\n\nFormat each problem using the structure below:\n${prompts.example}`;
   }
-  return result;
+
+  prompt += `\n\n=== TRANSCRIPTION START ===\n${transcription}\n=== TRANSCRIPTION END ===`;
+
+  if (quickNotes?.length) {
+    prompt += `\n\n=== QUICKNOTE START ===\n${quickNotes.join('\n')}\n=== QUICKNOTE END ===`;
+  }
+
+  return prompt;
 }
 
-/**
- * Converts a Template to the minimal prompt string for the AI (MVP spec).
- * Structure prompt is placed at the top, followed by section prompts, then example output.
- * Now includes a defensive check for missing prompts/structure.
- */
-export function buildTemplatePrompt(template: Template): string {
-  if (!template.prompts || !template.prompts.structure) {
-    return 'This template is missing its structure prompt.';
-  }
-  let result = '';
-  result += template.prompts.structure + '\n\n';
-  result += (template.sections || [])
-    .map(formatSection)
-    .join('\n\n');
-  if (template.prompts.example) {
-    result += `\n\nExample output:\n${template.prompts.example}`;
-  }
-  return result;
-} 
+// Shared system prompt for all templates (import in API and TemplatePreview)
+export const SYSTEM_PROMPT = `You are a clinical documentation assistant for GPs in New Zealand. Your task is to generate accurate, structured notes from general practice consultations.
+
+Core principles:
+- Do not fabricate or infer any information not explicitly stated
+- Use only information present in the transcript
+- Use clinical, concise language
+- Use New Zealand English spelling and medical conventions
+- Format output in Markdown
+- Exclude all identifying details (names, addresses, etc.)
+- Include age/gender in Subjective section if mentioned
+- Place small talk/unrelated remarks in "Other Notes" section
+- For patient uncertainties, clearly indicate in Subjective (e.g. "Patient suspects...")
+- Follow template prompt structure precisely
+
+The transcription is a single-line, non-diarised recording of a general practice consultation (i.e., no speaker labels). A quicknote may be provided by the GP to summarise or clarify the consultation.`;

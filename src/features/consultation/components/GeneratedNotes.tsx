@@ -33,11 +33,11 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
 
   // Button enable logic
   const hasInput
-    = (transcription.final && transcription.final.trim() !== '')
+    = (transcription.interimBuffer && transcription.interimBuffer.trim() !== '')
       || (transcription.interim && transcription.interim.trim() !== '')
       || (quickNotes && quickNotes.length > 0);
   const isInputChanged
-    = transcription.final !== (lastGeneratedTranscription || '')
+    = transcription.interimBuffer !== (lastGeneratedTranscription || '')
       || transcription.interim !== ''
       || !areQuickNotesEqual(quickNotes, lastGeneratedQuickNotes || []);
   const canGenerate = hasInput && isInputChanged;
@@ -45,7 +45,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
   const hasContent = !!(generatedNotes && generatedNotes.trim() !== '');
   const hasAnyState
     = hasContent
-      || (transcription.final && transcription.final.trim() !== '')
+      || (transcription.interimBuffer && transcription.interimBuffer.trim() !== '')
       || (transcription.interim && transcription.interim.trim() !== '')
       || (quickNotes && quickNotes.length > 0);
 

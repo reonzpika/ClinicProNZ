@@ -22,7 +22,7 @@ async function createTemplate(template: Omit<Template, 'id'>): Promise<Template>
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(template),
+    body: JSON.stringify({ ...template, type: 'custom' }),
   });
   if (!response.ok) {
     throw new Error('Failed to create template');

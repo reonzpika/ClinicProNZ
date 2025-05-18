@@ -41,14 +41,14 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
               />
             </div>
             <div>
-              <label htmlFor="structure" className="block text-sm font-medium">
-                Structure Prompt
+              <label htmlFor="prompt" className="block text-sm font-medium">
+                Template Prompt
               </label>
               <Textarea
-                id="structure"
-                value={template.prompts?.structure || ''}
-                onChange={e => onChange({ prompts: { ...template.prompts, structure: e.target.value } })}
-                placeholder="Enter structure prompt"
+                id="prompt"
+                value={template.prompts?.prompt || ''}
+                onChange={e => onChange({ prompts: { ...template.prompts, prompt: e.target.value } })}
+                placeholder="Enter template prompt (instructions for the AI)"
                 className="mt-1"
               />
             </div>

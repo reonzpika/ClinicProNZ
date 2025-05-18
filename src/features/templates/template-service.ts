@@ -6,9 +6,8 @@ import type { Template } from './types';
 
 export class TemplateService {
   static async create(template: Omit<Template, 'id'>): Promise<Template> {
-    const validation = validateTemplate(template as Template);
-    if (!validation.isValid) {
-      throw new Error(`Invalid template: ${validation.errors.map(e => e.message).join(', ')}`);
+    if (!template.prompts || !template.prompts.prompt) {
+      throw new Error('Template prompt is required');
     }
 
     const [newTemplate] = await db.insert(templates).values(template).returning();
@@ -25,9 +24,8 @@ export class TemplateService {
     const [existing] = await db.select().from(templates).where(eq(templates.id, id));
     if (!existing) throw new Error('Template not found');
     const merged = { ...existing, ...template };
-    const validation = validateTemplate(merged as Template);
-    if (!validation.isValid) {
-      throw new Error(`Invalid template: ${validation.errors.map(e => e.message).join(', ')}`);
+    if (!merged.prompts || !merged.prompts.prompt) {
+      throw new Error('Template prompt is required');
     }
     const [updatedTemplate] = await db
       .update(templates)
@@ -60,48 +58,5 @@ export class TemplateService {
     return db.select().from(templates).where(eq(templates.type, 'default'));
   }
 
-  // Get templates by category
-  async getTemplatesByCategory(category: string): Promise<Template[]> {
-    return db
-      .select()
-      .from(templates)
-      .where(eq(templates.metadata.category, category));
-  }
-
-  // Get templates by tag
-  async getTemplatesByTag(tag: string): Promise<Template[]> {
-    return db
-      .select()
-      .from(templates)
-      .where(eq(templates.metadata.tags, tag));
-  }
-
-  // Validate template structure
-  validateTemplate(template: Template): boolean {
-    // Check required sections
-    const sectionNames = template.structure.sections.map(section => section.name);
-    const missingRequiredSections = template.structure.requiredSections.filter(
-      required => !sectionNames.includes(required),
-    );
-
-    if (missingRequiredSections.length > 0) {
-      console.error(`Missing required sections: ${missingRequiredSections.join(', ')}`);
-      return false;
-    }
-
-    // Validate section structure
-    const validateSection = (section: Section): boolean => {
-      if (!section.name || !section.type || !section.description || !section.prompt) {
-        return false;
-      }
-
-      if (section.subsections) {
-        return section.subsections.every(validateSection);
-      }
-
-      return true;
-    };
-
-    return template.structure.sections.every(validateSection);
-  }
+  // No more section/structure validation needed
 }
