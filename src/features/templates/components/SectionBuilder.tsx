@@ -134,7 +134,7 @@ export function SectionBuilder({ sections = [], onChange, parentLabel }: Section
               <select
                 value={section.type}
                 onChange={e => updateSection(index, { type: e.target.value as 'text' | 'array' })}
-                className="border-input w-full rounded-md border bg-background px-3 py-2"
+                className="border-[color:var(--input)] w-full rounded-md border bg-[color:var(--background)] px-3 py-2"
               >
                 <option value="text">Text</option>
                 <option value="array">Array</option>

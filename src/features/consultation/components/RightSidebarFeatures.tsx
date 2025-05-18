@@ -3,13 +3,13 @@ import { AccCodeSuggestions } from './AccCodeSuggestions';
 import { Card, CardHeader, CardContent } from '@/shared/components/ui/card';
 
 const PlaceholderFeature: React.FC<{ title: string; description: string }> = ({ title, description }) => (
-  <Card className="mt-4">
+  <Card className="mt-1">
     <CardHeader>
-      <h3 className="text-md font-semibold">{title}</h3>
+      <h3 className="text-xs font-semibold">{title}</h3>
     </CardHeader>
-    <CardContent>
-      <div className="text-muted-foreground mb-2">{description}</div>
-      <div className="inline-block px-2 py-1 bg-gray-100 text-xs rounded">Coming soon</div>
+    <CardContent className="p-1">
+      <div className="text-muted-foreground mb-1 text-xs">{description}</div>
+      <div className="inline-block px-1 py-0.5 bg-gray-100 text-xs rounded">Coming soon</div>
     </CardContent>
   </Card>
 );

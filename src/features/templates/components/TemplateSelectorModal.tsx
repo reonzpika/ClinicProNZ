@@ -68,7 +68,7 @@ export function TemplateSelectorModal({
         }
       }}
     >
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] bg-white">
         <DialogHeader>
           <DialogTitle>Select Consultation Template</DialogTitle>
         </DialogHeader>

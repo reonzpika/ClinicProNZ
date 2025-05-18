@@ -91,11 +91,11 @@ export function TemplateSelector() {
     <div>
       <Button
         variant="outline"
-        className="w-full justify-between"
+        className="w-full justify-between text-xs px-2 py-1 h-8"
         onClick={() => setIsModalOpen(true)}
       >
-        <span>{selectedTemplate ? selectedTemplate.name : 'Select a template'}</span>
-        <span>▼</span>
+        <span className="text-xs">{selectedTemplate ? selectedTemplate.name : 'Select a template'}</span>
+        <span className="text-xs">▼</span>
       </Button>
 
       <TemplateSelectorModal
@@ -109,7 +109,7 @@ export function TemplateSelector() {
       />
 
       {error && (
-        <p className="mt-2 text-sm text-red-600">
+        <p className="mt-1 text-xs text-red-600">
           Error:
           {' '}
           {error}

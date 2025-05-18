@@ -79,8 +79,8 @@ export function GeneratedNotes({ onGenerate, onClearAll }: { onGenerate?: () => 
   return (
     <>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <h2 className="text-lg font-semibold">Generated Notes</h2>
+        <CardHeader className="flex flex-row items-center justify-between p-1">
+          <h2 className="text-xs font-semibold">Generated Notes</h2>
           <Button
             type="button"
             variant="ghost"
@@ -89,29 +89,31 @@ export function GeneratedNotes({ onGenerate, onClearAll }: { onGenerate?: () => 
             disabled={!hasContent}
             title="Expand notes view"
             aria-label="Expand notes view"
+            className="text-xs px-2 py-1 h-8"
           >
             Expand
           </Button>
         </CardHeader>
-        <CardContent>
-          <Stack spacing="md">
-            {error && <div className="text-red-500">{error}</div>}
+        <CardContent className="p-1">
+          <Stack spacing="xs">
+            {error && <div className="text-red-500 text-xs">{error}</div>}
             <Section>
               <Textarea
                 placeholder="Generated notes will appear here..."
                 value={generatedNotes || ''}
                 onChange={e => setGeneratedNotes(e.target.value)}
-                className="min-h-[220px] text-base leading-relaxed resize-vertical"
-                style={{ maxHeight: 300 }}
+                className="min-h-[80px] text-xs leading-tight resize-vertical"
+                style={{ maxHeight: 120 }}
               />
             </Section>
             <Section>
-              <div className="flex space-x-4">
+              <div className="flex space-x-1">
                 <Button
                   type="button"
                   variant="default"
                   onClick={onGenerate}
                   disabled={!canGenerate}
+                  className="text-xs px-2 py-1 h-8"
                 >
                   Generate Notes
                 </Button>
@@ -120,6 +122,7 @@ export function GeneratedNotes({ onGenerate, onClearAll }: { onGenerate?: () => 
                   variant="secondary"
                   onClick={handleCopy}
                   disabled={!hasContent}
+                  className="text-xs px-2 py-1 h-8"
                 >
                   {copySuccess ? 'Copied!' : 'Copy to Clipboard'}
                 </Button>
@@ -130,6 +133,7 @@ export function GeneratedNotes({ onGenerate, onClearAll }: { onGenerate?: () => 
                   disabled={!hasAnyState}
                   title="Clear all consultation data"
                   aria-label="Clear all consultation data"
+                  className="text-xs px-2 py-1 h-8"
                 >
                   Clear All
                 </Button>

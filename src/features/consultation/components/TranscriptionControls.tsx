@@ -34,21 +34,22 @@ export function TranscriptionControls({ resetSignal }: { resetSignal?: any }) {
 
   return (
     <Card>
-      <CardContent className="pt-6">
-        <Stack spacing="md">
+      <CardContent className="p-1 pt-0">
+        <Stack spacing="xs">
           {error && (
-            <Alert variant="destructive">
+            <Alert variant="destructive" className="text-xs p-1">
               {error}
             </Alert>
           )}
           
-          <Section>
-            <div className="flex space-x-4">
+          <Section title={<span className="text-xs font-semibold">Transcription</span>}>
+            <div className="flex space-x-1 mb-1">
               <Button
                 type="button"
                 variant="default"
                 onClick={startRecording}
                 disabled={isRecording}
+                className="text-xs px-2 py-1 h-8"
               >
                 Start Recording
               </Button>
@@ -57,6 +58,7 @@ export function TranscriptionControls({ resetSignal }: { resetSignal?: any }) {
                 variant="secondary"
                 onClick={isPaused ? resumeRecording : pauseRecording}
                 disabled={!isRecording}
+                className="text-xs px-2 py-1 h-8"
               >
                 {isPaused ? 'Resume' : 'Pause'}
               </Button>
@@ -65,23 +67,21 @@ export function TranscriptionControls({ resetSignal }: { resetSignal?: any }) {
                 variant="destructive"
                 onClick={stopRecording}
                 disabled={!isRecording}
+                className="text-xs px-2 py-1 h-8"
               >
                 Stop
               </Button>
             </div>
-          </Section>
-
-          <Section title="Transcription">
-            <div className="space-y-4">
+            <div className="space-y-1">
               {/* Final Transcript Block */}
               {(finalTranscript || transcription.final) && (
-                <div className="bg-muted rounded-md p-4">
-                  <p className="text-sm">
+                <div className="bg-muted rounded-md p-1">
+                  <p className="text-xs">
                     {finalTranscript || transcription.final}
                   </p>
                   {/* Show latest confidence only while recording */}
                   {isRecording && latestConfidence !== null && (
-                    <div className="mt-2 text-xs text-muted-foreground">
+                    <div className="mt-1 text-xs text-muted-foreground">
                       Confidence: {latestConfidence.toFixed(1)}%
                     </div>
                   )}
@@ -90,8 +90,8 @@ export function TranscriptionControls({ resetSignal }: { resetSignal?: any }) {
 
               {/* Interim Transcript */}
               {transcription.interim && (
-                <div className="bg-muted/50 rounded-md p-4">
-                  <p className="text-sm text-muted-foreground italic">
+                <div className="bg-muted/50 rounded-md p-1">
+                  <p className="text-xs text-muted-foreground italic">
                     {transcription.interim}
                   </p>
                 </div>
@@ -99,10 +99,10 @@ export function TranscriptionControls({ resetSignal }: { resetSignal?: any }) {
 
               {/* No Transcription Message */}
               {!finalTranscript && !transcription.final && !transcription.interim && (
-            <div className="bg-muted rounded-md p-4">
-              <p className="text-sm text-muted-foreground">
+                <div className="bg-muted rounded-md p-1">
+                  <p className="text-xs text-muted-foreground">
                     No transcription available
-              </p>
+                  </p>
                 </div>
               )}
             </div>

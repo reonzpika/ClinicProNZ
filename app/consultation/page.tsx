@@ -98,7 +98,7 @@ export default function ConsultationPage() {
                 {/* Template Selection */}
                 <Card>
                   <CardHeader>
-                    <h2 className="text-lg font-semibold">Select Template</h2>
+                    <h2 className="text-xs font-semibold">Select Template</h2>
                   </CardHeader>
                   <CardContent>
                     <TemplateSelector />
