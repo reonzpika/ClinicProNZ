@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 import { Section } from '@/shared/components/layout/Section';
 import { Stack } from '@/shared/components/layout/Stack';
@@ -24,8 +24,10 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
   } = useConsultation();
 
   // Local UI state
-  const [expanded, setExpanded] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+
+  // Refs for auto-expanding textareas
+  const mainTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Helper: deep equality for quickNotes
   const areQuickNotesEqual = (a: string[], b: string[]) =>
@@ -72,11 +74,18 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
     }
   };
 
-  // Expanded modal style
-  const modalStyle
-    = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50';
-  const expandedCardStyle
-    = 'w-full max-w-3xl bg-white rounded-lg shadow-lg p-6 relative';
+  // Auto-expand logic for main textarea
+  useEffect(() => {
+    const textarea = mainTextareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      const minHeight = 100;
+      const maxHeight = 1000;
+      const newHeight = Math.max(minHeight, Math.min(textarea.scrollHeight, maxHeight));
+      textarea.style.height = newHeight + 'px';
+      textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden';
+    }
+  }, [generatedNotes, isNoteFocused]);
 
   return (
     <>
@@ -94,29 +103,18 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
               </span>
             )}
           </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setExpanded(true)}
-            disabled={!hasContent}
-            title="Expand notes view"
-            aria-label="Expand notes view"
-            className="h-8 px-2 py-1 text-xs"
-          >
-            Expand
-          </Button>
         </CardHeader>
         <CardContent className="p-1 pt-0">
           <Stack spacing="sm">
             {error && <div className="text-xs text-red-500">{error}</div>}
             <Section>
               <textarea
+                ref={mainTextareaRef}
                 value={generatedNotes || ''}
                 onChange={e => setGeneratedNotes(e.target.value)}
-                className="w-full resize-y overflow-y-auto rounded border bg-muted p-1 text-xs leading-tight text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary"
+                className="w-full rounded border bg-muted p-1 text-xs leading-tight text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary"
                 placeholder="Generated notes will appear here..."
-                style={isNoteFocused ? { minHeight: '60vh' } : { minHeight: 80, maxHeight: 120 }}
+                style={{ minHeight: 100, maxHeight: 1000, resize: 'none', overflowY: 'auto' }}
                 disabled={loading}
                 spellCheck={false}
               />
@@ -157,78 +155,6 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
           </Stack>
         </CardContent>
       </Card>
-
-      {/* Expanded Modal */}
-      {expanded && (
-        <div
-          className={modalStyle}
-          role="presentation"
-          tabIndex={-1}
-          onClick={() => setExpanded(false)}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') {
-              setExpanded(false);
-            }
-          }}
-        >
-          <div
-            className={expandedCardStyle}
-            role="presentation"
-            tabIndex={-1}
-            onClick={e => e.stopPropagation()}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') {
-                setExpanded(false);
-              }
-            }}
-          >
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold">Generated Notes (Expanded)</h2>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setExpanded(false)}
-                aria-label="Close expanded notes"
-              >
-                Close
-              </Button>
-            </div>
-            <textarea
-              value={generatedNotes || ''}
-              onChange={e => setGeneratedNotes(e.target.value)}
-              className="min-h-[400px] w-full resize-y overflow-y-auto rounded border bg-muted p-1 text-xs leading-tight text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary"
-              style={{ height: 400, maxHeight: 600 }}
-              spellCheck={false}
-            />
-            <div className="mt-6 flex space-x-4">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={handleCopy}
-                disabled={!hasContent}
-              >
-                {copySuccess ? 'Copied!' : 'Copy to Clipboard'}
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={handleClearAll}
-                disabled={!hasAnyState}
-              >
-                Clear All
-              </Button>
-              <Button
-                type="button"
-                variant="default"
-                onClick={() => setExpanded(false)}
-              >
-                Collapse
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
