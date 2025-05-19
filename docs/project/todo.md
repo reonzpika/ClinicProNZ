@@ -57,8 +57,6 @@
    - [x] Template-to-prompt translation
    - [x] Note formatting and structure
    - [x] Review and edit interface
-
-## Current Sprint Tasks
 ### Bug Fixes & Improvements of Main Consultation Page
 - [ ] UI Improvements
   - [x] Template menu in the header only showing when logged in. It should show even when not logged in. When not-logged in user clicks on it, it should redirect to login page.
@@ -71,15 +69,17 @@
 - [x] Improve Multi-problem SOAP template
   - [x] When there's only one problem, the AI tries to create multiple problems when in fact there's only one.
   - [x] When AI is not able to find the required information in the transcription, it is generating new information that is not part of the template. This is not good. The AI should only generate information that is part of the transcription.
-
 ### Bug Fixes & Improvements of Template Management System
 - [x] Default templates should not be editable or deletable
-
-
-## Upcoming Sprints
 ### Add more AI analysis features
 - [x] generate working and differential diagnosis
 - [x] generate treatment plan
+
+## Current Sprint Tasks
+### Deploy to production 
+
+## Upcoming Sprints
+
 
 
 ## Future Features
