@@ -58,7 +58,7 @@ export function TranscriptionControls({ resetSignal, collapsed, onExpand }: { re
             </Alert>
           )}
 
-          <Section title={(
+          <Section title="Transcription">
             <div className="flex w-full items-center justify-between">
               <div className="flex items-center gap-1">
                 {isRecording && <RecordingDot />}
@@ -94,8 +94,6 @@ export function TranscriptionControls({ resetSignal, collapsed, onExpand }: { re
                 </Button>
               </div>
             </div>
-          )}
-          >
             <div className="space-y-1">
               {/* Final Transcript Block */}
               {transcription.interimBuffer && (

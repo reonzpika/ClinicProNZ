@@ -77,6 +77,7 @@
 
 ## Current Sprint Tasks
 ### Deploy to production 
+- [ ] Fix all the linting errors
 
 ## Upcoming Sprints
 

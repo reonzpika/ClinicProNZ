@@ -11,7 +11,7 @@ import { TemplateSelectorModal } from './TemplateSelectorModal';
 
 export function TemplateSelector() {
   const { isSignedIn, userId } = useAuth();
-  const { templateId, setTemplateId, setUserDefaultTemplateId } = useConsultation();
+  const { templateId, setTemplateId } = useConsultation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [_, setIsLoading] = useState(true);
@@ -80,7 +80,7 @@ export function TemplateSelector() {
 
   // Find the selected template from the templates list
   const selectedTemplate = useMemo(() => templates.find(t => t.id === templateId) || templates[0], [templates, templateId]);
-  const fallbackTemplate: Template = { id: '', name: '', type: 'default', description: '', sections: [], prompts: { structure: '' } };
+  const fallbackTemplate: Template = { id: '', name: '', type: 'default', description: '', prompts: { prompt: '', example: '' } };
 
   const handleTemplateSelect = (template: Template) => {
     setTemplateId(template.id);
@@ -91,7 +91,7 @@ export function TemplateSelector() {
     <div>
       <Button
         variant="outline"
-        className="w-full justify-between text-xs px-2 py-1 h-8"
+        className="h-8 w-full justify-between px-2 py-1 text-xs"
         onClick={() => setIsModalOpen(true)}
       >
         <span className="text-xs">{selectedTemplate ? selectedTemplate.name : 'Select a template'}</span>
@@ -104,7 +104,6 @@ export function TemplateSelector() {
         selectedTemplate={selectedTemplate || fallbackTemplate}
         onTemplateSelect={handleTemplateSelect}
         templates={templates}
-        onSetDefault={setUserDefaultTemplateId}
         userDefaultTemplateId={userDefaultTemplateId}
       />
 
