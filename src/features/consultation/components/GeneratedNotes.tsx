@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { Section } from '@/shared/components/layout/Section';
 import { Stack } from '@/shared/components/layout/Stack';
@@ -82,79 +82,77 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
       const minHeight = 100;
       const maxHeight = 1000;
       const newHeight = Math.max(minHeight, Math.min(textarea.scrollHeight, maxHeight));
-      textarea.style.height = newHeight + 'px';
+      textarea.style.height = `${newHeight}px`;
       textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden';
     }
   }, [generatedNotes, isNoteFocused]);
 
   return (
-    <>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between p-1 pb-0">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xs font-semibold">Generated Notes</h2>
-            {loading && (
-              <span className="ml-2 flex items-center" aria-busy="true">
-                <svg className="mr-1 size-4 animate-spin text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                </svg>
-                <span className="text-xs text-blue-600">Generating...</span>
-              </span>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="p-1 pt-0">
-          <Stack spacing="sm">
-            {error && <div className="text-xs text-red-500">{error}</div>}
-            <Section>
-              <textarea
-                ref={mainTextareaRef}
-                value={generatedNotes || ''}
-                onChange={e => setGeneratedNotes(e.target.value)}
-                className="w-full rounded border bg-muted p-1 text-xs leading-tight text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary"
-                placeholder="Generated notes will appear here..."
-                style={{ minHeight: 100, maxHeight: 1000, resize: 'none', overflowY: 'auto' }}
-                disabled={loading}
-                spellCheck={false}
-              />
-            </Section>
-            <Section>
-              <div className="flex space-x-1">
-                <Button
-                  type="button"
-                  variant="default"
-                  onClick={onGenerate}
-                  disabled={!canGenerate || loading}
-                  className="h-8 px-2 py-1 text-xs"
-                >
-                  Generate Notes
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={handleCopy}
-                  disabled={!hasContent || loading}
-                  className="h-8 px-2 py-1 text-xs"
-                >
-                  {copySuccess ? 'Copied!' : 'Copy to Clipboard'}
-                </Button>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={handleClearAll}
-                  disabled={!hasAnyState || loading}
-                  title="Clear all consultation data"
-                  aria-label="Clear all consultation data"
-                  className="h-8 px-2 py-1 text-xs"
-                >
-                  Clear All
-                </Button>
-              </div>
-            </Section>
-          </Stack>
-        </CardContent>
-      </Card>
-    </>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between p-1 pb-0">
+        <div className="flex items-center gap-2">
+          <h2 className="text-xs font-semibold">Generated Notes</h2>
+          {loading && (
+            <span className="ml-2 flex items-center" aria-busy="true">
+              <svg className="mr-1 size-4 animate-spin text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+              </svg>
+              <span className="text-xs text-blue-600">Generating...</span>
+            </span>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="p-1 pt-0">
+        <Stack spacing="sm">
+          {error && <div className="text-xs text-red-500">{error}</div>}
+          <Section>
+            <textarea
+              ref={mainTextareaRef}
+              value={generatedNotes || ''}
+              onChange={e => setGeneratedNotes(e.target.value)}
+              className="w-full rounded border bg-muted p-1 text-xs leading-tight text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary"
+              placeholder="Generated notes will appear here..."
+              style={{ minHeight: 100, maxHeight: 1000, resize: 'none', overflowY: 'auto' }}
+              disabled={loading}
+              spellCheck={false}
+            />
+          </Section>
+          <Section>
+            <div className="flex space-x-1">
+              <Button
+                type="button"
+                variant="default"
+                onClick={onGenerate}
+                disabled={!canGenerate || loading}
+                className="h-8 px-2 py-1 text-xs"
+              >
+                Generate Notes
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleCopy}
+                disabled={!hasContent || loading}
+                className="h-8 px-2 py-1 text-xs"
+              >
+                {copySuccess ? 'Copied!' : 'Copy to Clipboard'}
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleClearAll}
+                disabled={!hasAnyState || loading}
+                title="Clear all consultation data"
+                aria-label="Clear all consultation data"
+                className="h-8 px-2 py-1 text-xs"
+              >
+                Clear All
+              </Button>
+            </div>
+          </Section>
+        </Stack>
+      </CardContent>
+    </Card>
   );
 }

@@ -18,13 +18,13 @@ export async function POST(req: Request) {
   try {
     const { transcription, templateId, quickNotes } = await req.json();
     if (!transcription || !templateId) {
-      return NextResponse.json({ error: 'Missing transcription or templateId' }, { status: 400 });
+      return NextResponse.json({ code: 'BAD_REQUEST', message: 'Missing transcription or templateId' }, { status: 400 });
     }
 
     // Fetch template from DB
     const template = await TemplateService.getById(templateId);
     if (!template) {
-      return NextResponse.json({ error: 'Template not found' }, { status: 404 });
+      return NextResponse.json({ code: 'NOT_FOUND', message: 'Template not found' }, { status: 404 });
     }
 
     // Build user prompt from template, transcription, and quick notes
@@ -64,6 +64,6 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error('Note generation error:', error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to generate note', status: 'error' }, { status: 500 });
+    return NextResponse.json({ code: 'INTERNAL_ERROR', message: error instanceof Error ? error.message : 'Failed to generate note' }, { status: 500 });
   }
 }

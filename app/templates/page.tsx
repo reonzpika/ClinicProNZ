@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { TemplateEditor } from '@/features/templates/components/TemplateEditor';
 import { TemplateList } from '@/features/templates/components/TemplateList';
@@ -63,7 +63,9 @@ export default function TemplatesPage() {
           const idToTemplate = Object.fromEntries(templates.map(t => [t.id, t]));
           const reordered = order.map((id: string | number) => idToTemplate[id]).filter(Boolean);
           // Only setTemplates if the order is actually different
-          const isDifferent = reordered.length === templates.length && reordered.some((t, i) => t.id !== templates[i].id);
+          const isDifferent
+            = reordered.length === templates.length
+              && reordered.some((t: Template, i: number) => t && templates[i] && t.id !== templates[i].id);
           if (isDifferent) {
             setTemplates(reordered);
           }
@@ -194,29 +196,31 @@ export default function TemplatesPage() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between p-2 pb-0">
                   <h2 className="text-xs font-semibold">Templates</h2>
-                  <Button onClick={() => handleEdit()} size="sm" className="text-xs px-2 py-1 h-8">
+                  <Button onClick={() => handleEdit()} size="sm" className="h-8 px-2 py-1 text-xs">
                     Create New
                   </Button>
                 </CardHeader>
                 <CardContent className="p-2 pt-0">
-                  {error && <div className="text-red-500 text-xs mb-2">{error}</div>}
-                  {loading ? (
-                    <div className="text-xs">Loading templates...</div>
-                  ) : (
-                    <TemplateList
-                      templates={templates}
-                      selectedTemplate={selectedOrDefault}
-                      onTemplateSelect={handleTemplateSelect}
-                      onTemplateHover={() => {}}
-                      isSignedIn
-                      onEdit={handleEdit}
-                      onDelete={handleDelete}
-                      onCopy={handleCopy}
-                      onSetDefault={setUserDefaultTemplateId}
-                      userDefaultTemplateId={userDefaultTemplateId}
-                      onReorder={handleReorder}
-                    />
-                  )}
+                  {error && <div className="mb-2 text-xs text-red-500">{error}</div>}
+                  {loading
+                    ? (
+                        <div className="text-xs">Loading templates...</div>
+                      )
+                    : (
+                        <TemplateList
+                          templates={templates}
+                          selectedTemplate={selectedOrDefault}
+                          onTemplateSelect={handleTemplateSelect}
+                          onTemplateHover={() => {}}
+                          isSignedIn
+                          onEdit={handleEdit}
+                          onDelete={handleDelete}
+                          onCopy={handleCopy}
+                          onSetDefault={setUserDefaultTemplateId}
+                          userDefaultTemplateId={userDefaultTemplateId}
+                          onReorder={handleReorder}
+                        />
+                      )}
                 </CardContent>
               </Card>
             </Stack>

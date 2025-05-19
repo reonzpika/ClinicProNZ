@@ -1,8 +1,9 @@
 import { SignInButton, SignUpButton, useAuth, UserButton } from '@clerk/nextjs';
 import Link from 'next/link';
-import React from 'react';
 import { useRouter } from 'next/navigation';
-import { Dialog, DialogContent, DialogHeader, DialogFooter } from '@/shared/components/ui/dialog';
+import React from 'react';
+
+import { Dialog, DialogContent, DialogFooter, DialogHeader } from '@/shared/components/ui/dialog';
 
 export const Header = () => {
   const { isSignedIn } = useAuth();
@@ -17,12 +18,12 @@ export const Header = () => {
             ConsultAI NZ
           </Link>
           <div className="hidden items-center space-x-2 md:flex">
-            <Link href="/consultation" className="hover:text-blue-600 text-xs">
+            <Link href="/consultation" className="text-xs hover:text-blue-600">
               Consultation
             </Link>
             <button
-              className="hover:text-blue-600 bg-transparent border-none p-0 m-0 cursor-pointer text-xs"
-              onClick={e => {
+              className="m-0 cursor-pointer border-none bg-transparent p-0 text-xs hover:text-blue-600"
+              onClick={(e) => {
                 if (!isSignedIn) {
                   e.preventDefault();
                   setShowAuthModal(true);
@@ -53,12 +54,12 @@ export const Header = () => {
             : (
                 <div className="space-x-1">
                   <SignInButton mode="modal">
-                    <button className="rounded-lg px-2 py-1 text-blue-600 hover:bg-blue-50 text-xs border border-blue-600">
+                    <button className="rounded-lg border border-blue-600 px-2 py-1 text-xs text-blue-600 hover:bg-blue-50">
                       Sign In
                     </button>
                   </SignInButton>
                   <SignUpButton mode="modal">
-                    <button className="rounded-lg bg-blue-600 px-2 py-1 text-white hover:bg-blue-700 text-xs">
+                    <button className="rounded-lg bg-blue-600 px-2 py-1 text-xs text-white hover:bg-blue-700">
                       Sign Up
                     </button>
                   </SignUpButton>
@@ -69,16 +70,16 @@ export const Header = () => {
       <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
         <DialogContent>
           <DialogHeader>
-            <h2 className="text-xs font-semibold text-center">You need to sign in or sign up to access templates.</h2>
+            <h2 className="text-center text-xs font-semibold">You need to sign in or sign up to access templates.</h2>
           </DialogHeader>
-          <DialogFooter className="flex flex-row justify-center gap-2 mt-2">
+          <DialogFooter className="mt-2 flex flex-row justify-center gap-2">
             <SignInButton mode="modal">
-              <button className="rounded-lg px-2 py-1 text-blue-600 hover:bg-blue-50 border border-blue-600 text-xs">Sign In</button>
+              <button className="rounded-lg border border-blue-600 px-2 py-1 text-xs text-blue-600 hover:bg-blue-50">Sign In</button>
             </SignInButton>
             <SignUpButton mode="modal">
-              <button className="rounded-lg bg-blue-600 px-2 py-1 text-white hover:bg-blue-700 text-xs">Sign Up</button>
+              <button className="rounded-lg bg-blue-600 px-2 py-1 text-xs text-white hover:bg-blue-700">Sign Up</button>
             </SignUpButton>
-            <button className="ml-2 px-2 py-1 rounded-lg border text-xs" onClick={() => setShowAuthModal(false)}>Close</button>
+            <button className="ml-2 rounded-lg border px-2 py-1 text-xs" onClick={() => setShowAuthModal(false)}>Close</button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

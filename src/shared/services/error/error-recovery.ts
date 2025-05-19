@@ -1,5 +1,4 @@
 import { recoverSession } from '../auth/clerk';
-import { templateService } from '../../../features/templates/template-service';
 
 export type ErrorType = 'network' | 'api' | 'session' | 'template' | 'unknown';
 
@@ -55,6 +54,7 @@ export class ErrorRecoveryService {
     maxRetries: number,
     retryDelay: number,
   ): Promise<boolean> {
+    console.error('Network Error:', error);
     const currentRetries = this.retryCount.get(errorKey) || 0;
 
     if (currentRetries < maxRetries) {
@@ -77,7 +77,7 @@ export class ErrorRecoveryService {
   }
 
   private async handleSessionError(): Promise<boolean> {
-    const recoveredState = await recoverSession();
+    const recoveredState = await recoverSession(new Request(''));
     if (recoveredState) {
       // Restore the recovered state
       localStorage.setItem('consultationState', JSON.stringify(recoveredState));
@@ -88,13 +88,12 @@ export class ErrorRecoveryService {
 
   private async handleTemplateError(): Promise<boolean> {
     try {
-      // Try to get the last used template
-      const lastTemplateId = await templateService.getLastUsedTemplate();
-      if (lastTemplateId) {
-        // Restore the last used template
-        await templateService.persistTemplateSelection(lastTemplateId);
-        return true;
-      }
+      // TODO: Implement template error recovery logic if needed
+      // const lastTemplateId = await TemplateService.getLastUsedTemplate();
+      // if (lastTemplateId) {
+      //   await TemplateService.persistTemplateSelection(lastTemplateId);
+      //   return true;
+      // }
       return false;
     } catch (error) {
       console.error('Template error recovery failed:', error);

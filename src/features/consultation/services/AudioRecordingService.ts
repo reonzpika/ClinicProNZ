@@ -1,5 +1,3 @@
-import { AudioProcessingService } from '@/features/consultation/services/AudioProcessingService';
-
 export class AudioRecordingService {
   private audioContext: AudioContext | null = null;
   private workletNode: AudioWorkletNode | null = null;
@@ -41,19 +39,19 @@ export class AudioRecordingService {
   async startRecording(onChunk: (chunk: ArrayBuffer) => void): Promise<void> {
     try {
       // Request audio with higher sample rate for better quality
-      this.stream = await navigator.mediaDevices.getUserMedia({ 
+      this.stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           sampleRate: 48000,
           channelCount: 1,
           echoCancellation: true,
           noiseSuppression: true,
-          autoGainControl: true
-        } 
+          autoGainControl: true,
+        },
       });
 
       // Create AudioContext with higher sample rate
       this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({
-        sampleRate: 48000
+        sampleRate: 48000,
       });
 
       // Load and register the audio worklet
@@ -63,17 +61,17 @@ export class AudioRecordingService {
       console.error('AudioContext configuration:', {
         sampleRate: this.audioContext.sampleRate,
         state: this.audioContext.state,
-        baseLatency: this.audioContext.baseLatency
+        baseLatency: this.audioContext.baseLatency,
       });
 
       this.source = this.audioContext.createMediaStreamSource(this.stream);
-      
+
       // Create worklet node with resampling
       this.workletNode = new AudioWorkletNode(this.audioContext, 'transcription-processor', {
         processorOptions: {
           targetSampleRate: this.TARGET_SAMPLE_RATE,
-          bufferSize: this.BUFFER_SIZE
-        }
+          bufferSize: this.BUFFER_SIZE,
+        },
       });
 
       this.paused = false;
@@ -109,7 +107,7 @@ export class AudioRecordingService {
         targetSampleRate: this.TARGET_SAMPLE_RATE,
         bufferSize: this.BUFFER_SIZE,
         state: this.audioContext.state,
-        baseLatency: this.audioContext.baseLatency
+        baseLatency: this.audioContext.baseLatency,
       });
     } catch (error) {
       console.error('Error starting PCM recording:', error);
@@ -142,7 +140,7 @@ export class AudioRecordingService {
         this.audioContext = null;
       }
       if (this.stream) {
-        this.stream.getTracks().forEach(track => {
+        this.stream.getTracks().forEach((track) => {
           track.stop();
           console.error('Audio track stopped:', track.label);
         });

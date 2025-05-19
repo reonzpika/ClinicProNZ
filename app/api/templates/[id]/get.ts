@@ -6,7 +6,7 @@ import { checkApiAuth } from '@/shared/services/auth/api-auth';
 
 // GET /api/templates/[id] - Get a specific template
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: { id: string } },
 ) {
   try {

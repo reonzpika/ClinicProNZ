@@ -2,7 +2,9 @@ import type { Template } from '../types';
 
 export async function fetchTemplates(): Promise<Template[]> {
   const res = await fetch('/api/templates');
-  if (!res.ok) throw new Error('Failed to fetch templates');
+  if (!res.ok) {
+    throw new Error('Failed to fetch templates');
+  }
   const data = await res.json();
   return data.templates;
 }
@@ -13,7 +15,9 @@ export async function createTemplate(template: Omit<Template, 'id'>): Promise<Te
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(template),
   });
-  if (!res.ok) throw new Error('Failed to create template');
+  if (!res.ok) {
+    throw new Error('Failed to create template');
+  }
   return res.json();
 }
 
@@ -23,7 +27,9 @@ export async function updateTemplate(id: string, template: Partial<Template>): P
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(template),
   });
-  if (!res.ok) throw new Error('Failed to update template');
+  if (!res.ok) {
+    throw new Error('Failed to update template');
+  }
   return res.json();
 }
 
@@ -32,5 +38,7 @@ export async function deleteTemplate(id: string): Promise<void> {
     method: 'DELETE',
     credentials: 'include',
   });
-  if (!res.ok) throw new Error('Failed to delete template');
-} 
+  if (!res.ok) {
+    throw new Error('Failed to delete template');
+  }
+}

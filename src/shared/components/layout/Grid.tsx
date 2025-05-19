@@ -1,10 +1,11 @@
 import * as React from 'react';
+
 import { cn } from '@/lib/utils';
 
-export interface GridProps extends React.HTMLAttributes<HTMLDivElement> {
+export type GridProps = {
   cols?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
   gap?: 'none' | 'sm' | 'md' | 'lg';
-}
+} & React.HTMLAttributes<HTMLDivElement>;
 
 const Grid = React.forwardRef<HTMLDivElement, GridProps>(
   ({ className, cols = 1, gap = 'md', children, ...props }, ref) => {
@@ -31,15 +32,15 @@ const Grid = React.forwardRef<HTMLDivElement, GridProps>(
             'gap-4': gap === 'md',
             'gap-6': gap === 'lg',
           },
-          className
+          className,
         )}
         {...props}
       >
         {children}
       </div>
     );
-  }
+  },
 );
 Grid.displayName = 'Grid';
 
-export { Grid }; 
+export { Grid };

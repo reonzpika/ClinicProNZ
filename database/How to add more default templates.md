@@ -26,19 +26,12 @@ This document provides guidelines for managing templates in the system, particul
   required: boolean   // Whether the section is required
   description: string // Section description
   prompt: string      // Prompt for this section
-  subsections?: [     // Only for type: 'array'
-    {
-      name: string
-      type: string
-      required: boolean
       description: string
-      prompt: string
     }
   ]
 }
-```
 
-## Adding New Default Templates
+## Adding New Default Templates</edit>
 
 ### Method 1: Using the Seed Script (Recommended)
 

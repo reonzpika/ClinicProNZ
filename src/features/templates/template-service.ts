@@ -1,41 +1,70 @@
+import { eq } from 'drizzle-orm';
+
 import { db } from '../../../database/client';
 import { templates } from '../../../database/schema/templates';
-import { eq } from 'drizzle-orm';
-import { validateTemplate } from './utils/validation';
 import type { Template } from './types';
+
+function mapDbTemplateToTemplate(dbTemplate: any): Template {
+  return {
+    id: dbTemplate.id,
+    name: dbTemplate.name,
+    description: dbTemplate.description ?? undefined,
+    type: dbTemplate.type,
+    ownerId: dbTemplate.ownerId ?? undefined,
+    prompts: dbTemplate.prompts,
+    createdAt: dbTemplate.createdAt instanceof Date ? dbTemplate.createdAt.toISOString() : dbTemplate.createdAt,
+    updatedAt: dbTemplate.updatedAt instanceof Date ? dbTemplate.updatedAt.toISOString() : dbTemplate.updatedAt,
+  };
+}
 
 export class TemplateService {
   static async create(template: Omit<Template, 'id'>): Promise<Template> {
     if (!template.prompts || !template.prompts.prompt) {
       throw new Error('Template prompt is required');
     }
-
-    const [newTemplate] = await db.insert(templates).values(template).returning();
-    return newTemplate;
+    const { createdAt, updatedAt, ...rest } = template;
+    const insertData: any = {
+      ...rest,
+      ...(createdAt && typeof createdAt !== 'string' ? { createdAt } : {}),
+      ...(updatedAt && typeof updatedAt !== 'string' ? { updatedAt } : {}),
+    };
+    const [newTemplate] = await db.insert(templates).values(insertData).returning();
+    if (!newTemplate) {
+      throw new Error('Failed to create template');
+    }
+    return mapDbTemplateToTemplate(newTemplate);
   }
 
   static async getById(id: string): Promise<Template | null> {
     const [template] = await db.select().from(templates).where(eq(templates.id, id));
-    return template || null;
+    return template ? mapDbTemplateToTemplate(template) : null;
   }
 
   static async update(id: string, template: Partial<Template>): Promise<Template> {
     // If updating fields that affect validation, validate the merged template
     const [existing] = await db.select().from(templates).where(eq(templates.id, id));
-    if (!existing) throw new Error('Template not found');
+    if (!existing) {
+      throw new Error('Template not found');
+    }
     const merged = { ...existing, ...template };
-    if (!merged.prompts || !merged.prompts.prompt) {
+    if (!merged.prompts || !(merged.prompts as { prompt?: string }).prompt) {
       throw new Error('Template prompt is required');
     }
+    const { createdAt, updatedAt, ...rest } = template;
+    const updateData: any = {
+      ...rest,
+      ...(createdAt && typeof createdAt !== 'string' ? { createdAt } : {}),
+      ...(updatedAt && typeof updatedAt !== 'string' ? { updatedAt } : {}),
+    };
     const [updatedTemplate] = await db
       .update(templates)
-      .set(template)
+      .set(updateData)
       .where(eq(templates.id, id))
       .returning();
     if (!updatedTemplate) {
       throw new Error('Template not found');
     }
-    return updatedTemplate;
+    return mapDbTemplateToTemplate(updatedTemplate);
   }
 
   static async delete(id: string): Promise<void> {
@@ -43,19 +72,23 @@ export class TemplateService {
   }
 
   static async list(userId?: string, type?: 'default' | 'custom'): Promise<Template[]> {
-    // If type is specified, filter by type; otherwise, return all for user
+    let dbTemplates;
     if (type) {
       if (type === 'default') {
-        return db.select().from(templates).where(eq(templates.type, 'default'));
+        dbTemplates = await db.select().from(templates).where(eq(templates.type, 'default'));
       } else if (type === 'custom' && userId) {
-        return db.select().from(templates).where(eq(templates.ownerId, userId));
+        dbTemplates = await db.select().from(templates).where(eq(templates.ownerId, userId));
       }
     }
     // Default: fetch both default and custom for signed-in user, or just default for guests
-    if (userId) {
-      return db.select().from(templates).where(eq(templates.ownerId, userId));
+    if (!dbTemplates) {
+      if (userId) {
+        dbTemplates = await db.select().from(templates).where(eq(templates.ownerId, userId));
+      } else {
+        dbTemplates = await db.select().from(templates).where(eq(templates.type, 'default'));
+      }
     }
-    return db.select().from(templates).where(eq(templates.type, 'default'));
+    return dbTemplates.map(mapDbTemplateToTemplate);
   }
 
   // No more section/structure validation needed

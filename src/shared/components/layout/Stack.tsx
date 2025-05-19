@@ -1,9 +1,10 @@
 import * as React from 'react';
+
 import { cn } from '@/lib/utils';
 
-export interface StackProps extends React.HTMLAttributes<HTMLDivElement> {
+export type StackProps = {
   spacing?: 'none' | 'sm' | 'md' | 'lg';
-}
+} & React.HTMLAttributes<HTMLDivElement>;
 
 const Stack = React.forwardRef<HTMLDivElement, StackProps>(
   ({ className, spacing = 'md', children, ...props }, ref) => {
@@ -18,15 +19,15 @@ const Stack = React.forwardRef<HTMLDivElement, StackProps>(
             'space-y-4': spacing === 'md',
             'space-y-6': spacing === 'lg',
           },
-          className
+          className,
         )}
         {...props}
       >
         {children}
       </div>
     );
-  }
+  },
 );
 Stack.displayName = 'Stack';
 
-export { Stack }; 
+export { Stack };

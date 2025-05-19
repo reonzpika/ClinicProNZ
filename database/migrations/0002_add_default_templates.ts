@@ -18,31 +18,31 @@ const defaultTemplates = [
             type: 'text',
             required: true,
             description: 'Patient history and symptoms',
-            prompt: 'Summarize the patient\'s main concerns and history for this problem.'
+            prompt: 'Summarize the patient\'s main concerns and history for this problem.',
           },
           {
             name: 'Objective',
             type: 'text',
             required: true,
             description: 'Physical examination findings and measurements',
-            prompt: 'List all relevant clinical findings, vital signs, and examination results for this problem.'
+            prompt: 'List all relevant clinical findings, vital signs, and examination results for this problem.',
           },
           {
             name: 'Assessment',
             type: 'text',
             required: true,
             description: 'Clinical assessment and diagnosis',
-            prompt: 'Provide a clear clinical assessment or diagnosis for this problem.'
+            prompt: 'Provide a clear clinical assessment or diagnosis for this problem.',
           },
           {
             name: 'Plan',
             type: 'text',
             required: true,
             description: 'Treatment plan and follow-up',
-            prompt: 'List all treatment actions, medications, and follow-up plans for this problem.'
+            prompt: 'List all treatment actions, medications, and follow-up plans for this problem.',
           },
         ],
-        prompt: 'For each problem, provide a complete SOAP note.'
+        prompt: 'For each problem, provide a complete SOAP note.',
       },
     ],
     prompts: {
@@ -51,7 +51,7 @@ const defaultTemplates = [
   },
   {
     id: uuidv4(),
-    name: "Driver's License Medical",
+    name: 'Driver\'s License Medical',
     type: 'default',
     sections: [
       {
@@ -59,41 +59,41 @@ const defaultTemplates = [
         type: 'text',
         required: true,
         description: 'Relevant medical history for driving',
-        prompt: 'Summarize the patient\'s relevant medical history for driving.'
+        prompt: 'Summarize the patient\'s relevant medical history for driving.',
       },
       {
         name: 'Examination',
         type: 'text',
         required: true,
         description: 'Physical examination findings',
-        prompt: 'Document the findings of the physical examination relevant to driving.'
+        prompt: 'Document the findings of the physical examination relevant to driving.',
       },
       {
         name: 'Vision',
         type: 'text',
         required: true,
         description: 'Vision assessment',
-        prompt: 'Describe the results of the vision assessment.'
+        prompt: 'Describe the results of the vision assessment.',
       },
       {
         name: 'Assessment',
         type: 'text',
         required: true,
         description: 'Overall clinical assessment',
-        prompt: 'Provide your overall clinical assessment regarding fitness to drive.'
+        prompt: 'Provide your overall clinical assessment regarding fitness to drive.',
       },
       {
         name: 'Plan/Recommendation',
         type: 'text',
         required: true,
         description: 'Plan and recommendations',
-        prompt: 'State your recommendations and any follow-up required for the driver\'s license application.'
+        prompt: 'State your recommendations and any follow-up required for the driver\'s license application.',
       },
     ],
     prompts: {
-      structure: "Document the medical assessment for a driver's license application. Include medical history, examination, vision, assessment, and plan/recommendation.",
+      structure: 'Document the medical assessment for a driver\'s license application. Include medical history, examination, vision, assessment, and plan/recommendation.',
     },
-  }
+  },
 ];
 
 export async function up(db: any) {

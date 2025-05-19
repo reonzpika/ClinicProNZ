@@ -1,10 +1,11 @@
 import * as React from 'react';
+
 import { cn } from '@/lib/utils';
 
-export interface SectionProps extends React.HTMLAttributes<HTMLDivElement> {
-  title?: string;
+export type SectionProps = {
+  title?: React.ReactNode;
   description?: string;
-}
+} & React.HTMLAttributes<HTMLDivElement>;
 
 const Section = React.forwardRef<HTMLDivElement, SectionProps>(
   ({ className, title, description, children, ...props }, ref) => {
@@ -23,8 +24,8 @@ const Section = React.forwardRef<HTMLDivElement, SectionProps>(
         {children}
       </div>
     );
-  }
+  },
 );
 Section.displayName = 'Section';
 
-export { Section }; 
+export { Section };

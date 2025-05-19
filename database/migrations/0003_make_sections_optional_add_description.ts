@@ -1,5 +1,4 @@
 import { sql } from 'drizzle-orm';
-import { pgTable, text } from 'drizzle-orm/pg-core';
 
 export async function up(db: any) {
   // Add description column
@@ -27,4 +26,4 @@ export async function down(db: any) {
     ALTER TABLE templates
     ALTER COLUMN sections SET NOT NULL;
   `);
-} 
+}

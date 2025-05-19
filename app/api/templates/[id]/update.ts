@@ -1,6 +1,7 @@
+import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
+
 import { TemplateService } from '@/features/templates/template-service';
-import { auth } from '@clerk/nextjs';
 import type { ApiError } from '@/features/templates/types';
 
 // PATCH /api/templates/[id] - Update a template
@@ -9,11 +10,11 @@ export async function PATCH(
   { params }: { params: { id: string } },
 ) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     if (!userId) {
       return NextResponse.json<ApiError>(
         { code: 'UNAUTHORIZED', message: 'You must be logged in to update a template' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -23,13 +24,13 @@ export async function PATCH(
     if (!template) {
       return NextResponse.json<ApiError>(
         { code: 'NOT_FOUND', message: 'Template not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
     if (template.type === 'custom' && template.ownerId !== userId) {
       return NextResponse.json<ApiError>(
         { code: 'FORBIDDEN', message: 'You do not have permission to update this template' },
-        { status: 403 }
+        { status: 403 },
       );
     }
     const updated = await TemplateService.update(params.id, body);
@@ -38,7 +39,7 @@ export async function PATCH(
     console.error('Error updating template:', error);
     return NextResponse.json<ApiError>(
       { code: 'INTERNAL_ERROR', message: 'Failed to update template' },
-      { status: 500 }
+      { status: 500 },
     );
   }
-} 
+}

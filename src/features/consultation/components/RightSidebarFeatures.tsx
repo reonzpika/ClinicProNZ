@@ -1,6 +1,8 @@
 import React from 'react';
+
+import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
+
 import { AccCodeSuggestions } from './AccCodeSuggestions';
-import { Card, CardHeader, CardContent } from '@/shared/components/ui/card';
 
 const PlaceholderFeature: React.FC<{ title: string; description: string }> = ({ title, description }) => (
   <Card className="mt-1">
@@ -8,8 +10,8 @@ const PlaceholderFeature: React.FC<{ title: string; description: string }> = ({ 
       <h3 className="text-xs font-semibold">{title}</h3>
     </CardHeader>
     <CardContent className="p-1">
-      <div className="text-muted-foreground mb-1 text-xs">{description}</div>
-      <div className="inline-block px-1 py-0.5 bg-gray-100 text-xs rounded">Coming soon</div>
+      <div className="mb-1 text-xs text-muted-foreground">{description}</div>
+      <div className="inline-block rounded bg-gray-100 px-1 py-0.5 text-xs">Coming soon</div>
     </CardContent>
   </Card>
 );
@@ -26,4 +28,4 @@ const RightSidebarFeatures: React.FC = () => {
   );
 };
 
-export default RightSidebarFeatures; 
+export default RightSidebarFeatures;

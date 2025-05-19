@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     const { id, email_addresses } = body.data;
     const email = email_addresses?.[0]?.email_address;
     if (!id || !email) {
-      return NextResponse.json({ error: 'Missing user id or email' }, { status: 400 });
+      return NextResponse.json({ code: 'BAD_REQUEST', message: 'Missing user id or email' }, { status: 400 });
     }
     // Insert user if not exists
     await db.insert(users)
@@ -19,6 +19,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error handling Clerk user webhook:', error);
-    return NextResponse.json({ error: 'Failed to sync user' }, { status: 500 });
+    return NextResponse.json({ code: 'INTERNAL_ERROR', message: 'Failed to sync user' }, { status: 500 });
   }
 }

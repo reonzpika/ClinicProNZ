@@ -2,20 +2,19 @@
 
 import React from 'react';
 
-import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { Section } from '@/shared/components/layout/Section';
 import { Stack } from '@/shared/components/layout/Stack';
 import { Alert } from '@/shared/components/ui/alert';
-
+import { Button } from '@/shared/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { useConsultation } from '@/shared/ConsultationContext';
+
 import { useTranscription } from '../hooks/useTranscription';
 
-export function TranscriptionControls({ resetSignal, collapsed, onExpand }: { resetSignal?: any, collapsed?: boolean, onExpand?: () => void }) {
+export function TranscriptionControls({ resetSignal, collapsed, onExpand }: { resetSignal?: any; collapsed?: boolean; onExpand?: () => void }) {
   const {
     transcription,
     error,
-    status,
   } = useConsultation();
   const {
     isRecording,
@@ -28,11 +27,12 @@ export function TranscriptionControls({ resetSignal, collapsed, onExpand }: { re
   } = useTranscription(resetSignal);
 
   // Get the latest confidence from the last segment
-  const latestConfidence = segments.length > 0 ? segments[segments.length - 1].confidence * 100 : null;
+  const lastSegment = segments.length > 0 ? segments[segments.length - 1] : undefined;
+  const latestConfidence = lastSegment && lastSegment.confidence !== undefined ? lastSegment.confidence * 100 : null;
 
   // Pulsing dot for recording feedback
   const RecordingDot = () => (
-    <span className="inline-block w-3 h-3 rounded-full bg-red-500 animate-pulse mr-2 align-middle" title="Recording" />
+    <span className="mr-2 inline-block size-3 animate-pulse rounded-full bg-red-500 align-middle" title="Recording" />
   );
 
   if (collapsed) {
@@ -51,15 +51,15 @@ export function TranscriptionControls({ resetSignal, collapsed, onExpand }: { re
   return (
     <Card>
       <CardContent className="p-1 pt-0">
-        <Stack spacing="xs">
+        <Stack spacing="sm">
           {error && (
-            <Alert variant="destructive" className="text-xs p-1">
+            <Alert variant="destructive" className="p-1 text-xs">
               {error}
             </Alert>
           )}
-          
-          <Section title={
-            <div className="flex items-center justify-between w-full">
+
+          <Section title={(
+            <div className="flex w-full items-center justify-between">
               <div className="flex items-center gap-1">
                 {isRecording && <RecordingDot />}
                 <span className="text-xs font-semibold">Transcription</span>
@@ -70,7 +70,7 @@ export function TranscriptionControls({ resetSignal, collapsed, onExpand }: { re
                   variant="outline"
                   onClick={startRecording}
                   disabled={isRecording}
-                  className="text-xs px-1 py-0.5 h-7 min-w-0 border rounded bg-white hover:bg-gray-100"
+                  className="h-7 min-w-0 rounded border bg-white px-1 py-0.5 text-xs hover:bg-gray-100"
                 >
                   Start
                 </Button>
@@ -79,7 +79,7 @@ export function TranscriptionControls({ resetSignal, collapsed, onExpand }: { re
                   variant="outline"
                   onClick={isPaused ? resumeRecording : pauseRecording}
                   disabled={!isRecording}
-                  className="text-xs px-1 py-0.5 h-7 min-w-0 border rounded bg-white hover:bg-gray-100"
+                  className="h-7 min-w-0 rounded border bg-white px-1 py-0.5 text-xs hover:bg-gray-100"
                 >
                   {isPaused ? 'Resume' : 'Pause'}
                 </Button>
@@ -88,24 +88,28 @@ export function TranscriptionControls({ resetSignal, collapsed, onExpand }: { re
                   variant="outline"
                   onClick={stopRecording}
                   disabled={!isRecording}
-                  className="text-xs px-1 py-0.5 h-7 min-w-0 border rounded bg-white hover:bg-gray-100"
+                  className="h-7 min-w-0 rounded border bg-white px-1 py-0.5 text-xs hover:bg-gray-100"
                 >
                   Stop
                 </Button>
               </div>
             </div>
-          }>
+          )}
+          >
             <div className="space-y-1">
               {/* Final Transcript Block */}
               {transcription.interimBuffer && (
-                <div className="bg-muted rounded-md p-1">
+                <div className="rounded-md bg-muted p-1">
                   <p className="text-xs">
                     {transcription.interimBuffer}
                   </p>
                   {/* Show latest confidence only while recording */}
                   {isRecording && latestConfidence !== null && (
                     <div className="mt-1 text-xs text-muted-foreground">
-                      Confidence: {latestConfidence.toFixed(1)}%
+                      Confidence:
+                      {' '}
+                      {latestConfidence.toFixed(1)}
+                      %
                     </div>
                   )}
                 </div>
@@ -113,8 +117,8 @@ export function TranscriptionControls({ resetSignal, collapsed, onExpand }: { re
 
               {/* Interim Transcript */}
               {transcription.interim && (
-                <div className="bg-muted/50 rounded-md p-1">
-                  <p className="text-xs text-muted-foreground italic">
+                <div className="rounded-md bg-muted/50 p-1">
+                  <p className="text-xs italic text-muted-foreground">
                     {transcription.interim}
                   </p>
                 </div>
@@ -122,7 +126,7 @@ export function TranscriptionControls({ resetSignal, collapsed, onExpand }: { re
 
               {/* No Transcription Message */}
               {!transcription.interimBuffer && !transcription.interim && (
-                <div className="bg-muted rounded-md p-1">
+                <div className="rounded-md bg-muted p-1">
                   <p className="text-xs text-muted-foreground">
                     No transcription available
                   </p>

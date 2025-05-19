@@ -12,7 +12,6 @@ import { Header } from '@/shared/components/Header';
 import { Container } from '@/shared/components/layout/Container';
 import { Grid } from '@/shared/components/layout/Grid';
 import { Stack } from '@/shared/components/layout/Stack';
-import { Alert } from '@/shared/components/ui/alert';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { useConsultation } from '@/shared/ConsultationContext';
 
@@ -26,7 +25,6 @@ export default function ConsultationPage() {
     setLastGeneratedInput,
   } = useConsultation();
   const [loading, setLoading] = useState(false);
-  const [showLiveAlert, setShowLiveAlert] = useState(false);
   const [resetTranscriptionSignal, setResetTranscriptionSignal] = useState(0);
   const [isNoteFocused, setIsNoteFocused] = useState(false);
 
@@ -42,14 +40,7 @@ export default function ConsultationPage() {
     setIsNoteFocused(true);
     setLoading(true);
     setError(null);
-    let transcript = '';
-    if (transcription.isLive) {
-      setShowLiveAlert(true);
-      transcript = transcription.interimBuffer;
-    } else {
-      setShowLiveAlert(false);
-      transcript = transcription.interimBuffer;
-    }
+    const transcript = transcription.interimBuffer;
     try {
       const res = await fetch('/api/consultation/notes', {
         method: 'POST',

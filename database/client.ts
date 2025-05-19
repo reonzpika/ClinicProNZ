@@ -1,8 +1,10 @@
+import { resolve } from 'node:path';
+
 import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
-import * as schema from './schema';
 import * as dotenv from 'dotenv';
-import { resolve } from 'path';
+import { drizzle } from 'drizzle-orm/neon-http';
+
+import * as schema from './schema';
 
 // Load environment variables from .env.local first, then .env
 dotenv.config({ path: resolve(process.cwd(), '.env.local') });

@@ -11,7 +11,7 @@ export async function GET() {
   } catch (error) {
     console.error('Error getting Deepgram API key:', error);
     return NextResponse.json(
-      { error: 'Failed to get API key' },
+      { code: 'INTERNAL_ERROR', message: 'Failed to get API key' },
       { status: 500 },
     );
   }

@@ -44,7 +44,7 @@ export async function GET(req: Request) {
   } catch (error) {
     console.error('Error fetching templates:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch templates' },
+      { code: 'INTERNAL_ERROR', message: 'Failed to fetch templates' },
       { status: 500 },
     );
   }
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     if (!userId) {
       return NextResponse.json(
         { code: 'UNAUTHORIZED', message: 'You must be logged in to create a template' },
-        { status: 401 }
+        { status: 401 },
       );
     }
     const body = await req.json();
@@ -71,7 +71,7 @@ export async function POST(req: Request) {
     console.error('Error creating template:', error);
     return NextResponse.json(
       { code: 'INTERNAL_ERROR', message: 'Failed to create template' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

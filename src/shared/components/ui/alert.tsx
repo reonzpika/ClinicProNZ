@@ -1,9 +1,10 @@
 import * as React from 'react';
+
 import { cn } from '@/lib/utils';
 
-export interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
+export type AlertProps = {
   variant?: 'default' | 'destructive';
-}
+} & React.HTMLAttributes<HTMLDivElement>;
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
   ({ className, variant = 'default', children, ...props }, ref) => {
@@ -17,15 +18,15 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
             'border-blue-500 bg-blue-50 text-blue-900': variant === 'default',
             'border-red-500 bg-red-50 text-red-900': variant === 'destructive',
           },
-          className
+          className,
         )}
         {...props}
       >
         {children}
       </div>
     );
-  }
+  },
 );
 Alert.displayName = 'Alert';
 
-export { Alert }; 
+export { Alert };

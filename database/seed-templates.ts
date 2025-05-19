@@ -26,7 +26,7 @@ const defaultTemplates = [
 
 async function main() {
   try {
-    console.log('Inserting default templates...');
+    console.error('Inserting default templates...');
 
     // First, clear any existing default templates
     await sql.query('DELETE FROM templates WHERE type = $1', ['default']);
@@ -44,7 +44,7 @@ async function main() {
       );
     }
 
-    console.log('Default templates inserted successfully');
+    console.error('Default templates inserted successfully');
   } catch (error) {
     console.error('Failed to insert templates:', error);
     process.exit(1);

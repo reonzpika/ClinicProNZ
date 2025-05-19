@@ -1,32 +1,33 @@
-import { NextResponse } from 'next/server';
-import { TemplateService } from '@/features/templates/template-service';
 import { auth } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
+
+import { TemplateService } from '@/features/templates/template-service';
 import type { ApiError } from '@/features/templates/types';
 
 // PATCH /api/templates/[id] - Update a template
-export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
+export async function PATCH(_request: Request, context: { params: Promise<{ id: string }> }) {
   const params = await context.params;
   try {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json<ApiError>(
         { code: 'UNAUTHORIZED', message: 'You must be logged in to update a template' },
-        { status: 401 }
+        { status: 401 },
       );
     }
-    const body = await request.json();
+    const body = await _request.json();
     // Only allow update if user owns the template or it's a system template
     const template = await TemplateService.getById(params.id);
     if (!template) {
       return NextResponse.json<ApiError>(
         { code: 'NOT_FOUND', message: 'Template not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
     if (template.type === 'custom' && template.ownerId !== userId) {
       return NextResponse.json<ApiError>(
         { code: 'FORBIDDEN', message: 'You do not have permission to update this template' },
-        { status: 403 }
+        { status: 403 },
       );
     }
     const updated = await TemplateService.update(params.id, body);
@@ -35,33 +36,33 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     console.error('Error updating template:', error);
     return NextResponse.json<ApiError>(
       { code: 'INTERNAL_ERROR', message: 'Failed to update template' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 // DELETE /api/templates/[id] - Delete a template
-export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
+export async function DELETE(_request: Request, context: { params: Promise<{ id: string }> }) {
   const params = await context.params;
   try {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json<ApiError>(
         { code: 'UNAUTHORIZED', message: 'You must be logged in to delete a template' },
-        { status: 401 }
+        { status: 401 },
       );
     }
     const template = await TemplateService.getById(params.id);
     if (!template) {
       return NextResponse.json<ApiError>(
         { code: 'NOT_FOUND', message: 'Template not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
     if (template.type === 'custom' && template.ownerId !== userId) {
       return NextResponse.json<ApiError>(
         { code: 'FORBIDDEN', message: 'You do not have permission to delete this template' },
-        { status: 403 }
+        { status: 403 },
       );
     }
     await TemplateService.delete(params.id);
@@ -70,7 +71,7 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
     console.error('Error deleting template:', error);
     return NextResponse.json<ApiError>(
       { code: 'INTERNAL_ERROR', message: 'Failed to delete template' },
-      { status: 500 }
+      { status: 500 },
     );
   }
-} 
+}

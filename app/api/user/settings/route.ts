@@ -11,7 +11,7 @@ const DEFAULT_SETTINGS = { templateOrder: [] };
 export async function GET() {
   const { userId } = await getAuth();
   if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ code: 'UNAUTHORIZED', message: 'You must be logged in to access user settings' }, { status: 401 });
   }
 
   // Try to fetch settings
@@ -27,12 +27,12 @@ export async function GET() {
 export async function POST(req: Request) {
   const { userId } = await getAuth();
   if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ code: 'UNAUTHORIZED', message: 'You must be logged in to update user settings' }, { status: 401 });
   }
   const body = await req.json();
   const newSettings = body.settings;
   if (!newSettings || typeof newSettings !== 'object') {
-    return NextResponse.json({ error: 'Invalid settings' }, { status: 400 });
+    return NextResponse.json({ code: 'BAD_REQUEST', message: 'Invalid settings' }, { status: 400 });
   }
   // Upsert settings
   await db

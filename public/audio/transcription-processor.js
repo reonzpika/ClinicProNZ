@@ -11,7 +11,9 @@ class AudioProcessor extends AudioWorkletProcessor {
 
   process(inputs, _outputs) {
     const input = inputs[0][0];
-    if (!input) return true;
+    if (!input) {
+      return true;
+    }
 
     // Log input stats periodically
     if (this.currentFrame % 48000 === 0) {
@@ -20,9 +22,9 @@ class AudioProcessor extends AudioWorkletProcessor {
         max: Math.max(...input),
         mean: input.reduce((a, b) => a + b, 0) / input.length,
         length: input.length,
-        sampleRate: sampleRate,
+        sampleRate,
         targetSampleRate: this.targetSampleRate,
-        resampleRatio: this.resampleRatio
+        resampleRatio: this.resampleRatio,
       };
       this.port.postMessage({ type: 'stats', stats });
     }
@@ -36,7 +38,7 @@ class AudioProcessor extends AudioWorkletProcessor {
       if (this.bufferIndex >= this.bufferSize) {
         // Resample to target sample rate
         const resampled = this.resample(this.buffer, this.resampleRatio);
-        
+
         // Convert to Int16Array
         const pcm = new Int16Array(resampled.length);
         for (let j = 0; j < resampled.length; j++) {
@@ -47,7 +49,7 @@ class AudioProcessor extends AudioWorkletProcessor {
         // Send the processed audio
         this.port.postMessage({
           type: 'audio',
-          buffer: pcm.buffer
+          buffer: pcm.buffer,
         }, [pcm.buffer]);
 
         // Reset buffer
@@ -61,18 +63,18 @@ class AudioProcessor extends AudioWorkletProcessor {
   resample(input, ratio) {
     const outputLength = Math.round(input.length * ratio);
     const output = new Float32Array(outputLength);
-    
+
     for (let i = 0; i < outputLength; i++) {
       const inputIndex = i / ratio;
       const inputIndexFloor = Math.floor(inputIndex);
       const inputIndexCeil = Math.min(inputIndexFloor + 1, input.length - 1);
       const fraction = inputIndex - inputIndexFloor;
-      
+
       output[i] = input[inputIndexFloor] * (1 - fraction) + input[inputIndexCeil] * fraction;
     }
-    
+
     return output;
   }
 }
 
-registerProcessor('transcription-processor', AudioProcessor); 
+registerProcessor('transcription-processor', AudioProcessor);

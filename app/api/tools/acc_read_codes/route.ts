@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   const { note } = await req.json();
   if (!note) {
     console.error('No note provided');
-    return NextResponse.json({ error: 'Missing consultation note' }, { status: 400 });
+    return NextResponse.json({ code: 'BAD_REQUEST', message: 'Missing consultation note' }, { status: 400 });
   }
 
   try {
@@ -28,11 +28,11 @@ export async function POST(req: NextRequest) {
       threadId = thread.id;
       if (!threadId) {
         console.error('Failed to create thread:', thread);
-        return NextResponse.json({ error: 'Failed to create thread', details: thread }, { status: 500 });
+        return NextResponse.json({ code: 'THREAD_CREATE_FAILED', message: 'Failed to create thread', details: thread }, { status: 500 });
       }
     } catch {
       console.error('Error creating thread');
-      return NextResponse.json({ error: 'Error creating thread' }, { status: 500 });
+      return NextResponse.json({ code: 'THREAD_CREATE_ERROR', message: 'Error creating thread' }, { status: 500 });
     }
 
     // 2. Add the consultation note as a message
@@ -52,11 +52,11 @@ export async function POST(req: NextRequest) {
       const msgData = await msgRes.json();
       if (!msgRes.ok) {
         console.error('Failed to add message:', msgData);
-        return NextResponse.json({ error: 'Failed to add message', details: msgData }, { status: 500 });
+        return NextResponse.json({ code: 'MESSAGE_ADD_FAILED', message: 'Failed to add message', details: msgData }, { status: 500 });
       }
     } catch {
       console.error('Error adding message');
-      return NextResponse.json({ error: 'Error adding message' }, { status: 500 });
+      return NextResponse.json({ code: 'MESSAGE_ADD_ERROR', message: 'Error adding message' }, { status: 500 });
     }
 
     // 3. Run the assistant
@@ -77,11 +77,11 @@ export async function POST(req: NextRequest) {
       runId = run.id;
       if (!runId) {
         console.error('Failed to start run:', run);
-        return NextResponse.json({ error: 'Failed to start run', details: run }, { status: 500 });
+        return NextResponse.json({ code: 'RUN_START_FAILED', message: 'Failed to start run', details: run }, { status: 500 });
       }
     } catch {
       console.error('Error starting run');
-      return NextResponse.json({ error: 'Error starting run' }, { status: 500 });
+      return NextResponse.json({ code: 'RUN_START_ERROR', message: 'Error starting run' }, { status: 500 });
     }
 
     // 4. Poll for completion
@@ -102,17 +102,17 @@ export async function POST(req: NextRequest) {
         runStatus = statusData.status;
         if (runStatus === 'failed' || runStatus === 'cancelled' || runStatus === 'expired') {
           console.error('Assistant run failed:', runStatus, statusData);
-          return NextResponse.json({ error: `Assistant run failed: ${runStatus}`, details: statusData }, { status: 500 });
+          return NextResponse.json({ code: 'ASSISTANT_RUN_FAILED', message: `Assistant run failed: ${runStatus}`, details: statusData }, { status: 500 });
         }
       } catch {
         console.error('Error polling run status');
-        return NextResponse.json({ error: 'Error polling run status' }, { status: 500 });
+        return NextResponse.json({ code: 'RUN_STATUS_ERROR', message: 'Error polling run status' }, { status: 500 });
       }
       attempts++;
     }
     if (runStatus !== 'completed') {
       console.error('Run did not complete in time:', lastStatusData);
-      return NextResponse.json({ error: 'Assistant run did not complete in time', details: lastStatusData }, { status: 500 });
+      return NextResponse.json({ code: 'RUN_TIMEOUT', message: 'Assistant run did not complete in time', details: lastStatusData }, { status: 500 });
     }
 
     // 5. Get the assistant's response
@@ -127,11 +127,11 @@ export async function POST(req: NextRequest) {
       messagesData = await messagesRes.json();
       if (!messagesRes.ok) {
         console.error('Failed to fetch messages:', messagesData);
-        return NextResponse.json({ error: 'Failed to fetch messages', details: messagesData }, { status: 500 });
+        return NextResponse.json({ code: 'FETCH_MESSAGES_FAILED', message: 'Failed to fetch messages', details: messagesData }, { status: 500 });
       }
     } catch {
       console.error('Error fetching messages');
-      return NextResponse.json({ error: 'Error fetching messages' }, { status: 500 });
+      return NextResponse.json({ code: 'FETCH_MESSAGES_ERROR', message: 'Error fetching messages' }, { status: 500 });
     }
     const assistantMessages = messagesData.data
       .filter((msg: any) => msg.role === 'assistant')
@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
     const lastMessage = assistantMessages[0];
     if (!lastMessage) {
       console.error('No assistant message found:', messagesData);
-      return NextResponse.json({ error: 'No assistant message found', details: messagesData }, { status: 500 });
+      return NextResponse.json({ code: 'NO_ASSISTANT_MESSAGE', message: 'No assistant message found', details: messagesData }, { status: 500 });
     }
     let suggestion = null;
     try {
@@ -148,16 +148,16 @@ export async function POST(req: NextRequest) {
         : lastMessage.content[0].text.value;
     } catch {
       console.error('Failed to parse assistant response:', lastMessage.content[0].text.value);
-      return NextResponse.json({ error: 'Failed to parse assistant response' }, { status: 500 });
+      return NextResponse.json({ code: 'PARSE_FAILED', message: 'Failed to parse assistant response' }, { status: 500 });
     }
     if (!suggestion || !suggestion.text || !suggestion.read_code) {
       console.error('Incomplete suggestion:', suggestion);
-      return NextResponse.json({ error: 'Incomplete suggestion', suggestion }, { status: 500 });
+      return NextResponse.json({ code: 'INCOMPLETE_SUGGESTION', message: 'Incomplete suggestion', suggestion }, { status: 500 });
     }
     return NextResponse.json(suggestion);
   } catch (err: any) {
     const errorMessage = err instanceof Error ? err.message : 'OpenAI API error';
     console.error('Catch error:', errorMessage);
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json({ code: 'INTERNAL_ERROR', message: errorMessage }, { status: 500 });
   }
 }

@@ -1,13 +1,12 @@
 'use client';
 
-import { Check, Copy, Edit, Plus, Trash2, MoreVertical } from 'lucide-react';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/shared/components/ui/dropdown-menu';
+import { Edit, MoreVertical, Plus } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/shared/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/shared/components/ui/dropdown-menu';
 
 import type { Template } from '../types';
-import { useState } from 'react';
 
 type TemplateListProps = {
   templates: Template[];
@@ -36,11 +35,10 @@ export function TemplateList({
   onReorder,
 }: TemplateListProps) {
   const filteredTemplates = templates;
-  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <div className="space-y-0 divide-y divide-gray-200">
-      {filteredTemplates.map((template, idx) => {
+      {filteredTemplates.map((template) => {
         const isSelected = selectedTemplate?.id === template.id;
         const originalIdx = templates.findIndex(t => t.id === template.id);
         return (
@@ -68,19 +66,17 @@ export function TemplateList({
                 <span title="Default Template" aria-label="Default Template" className="ml-1 text-xs font-semibold text-yellow-500">★</span>
               )}
             </Button>
-            <div className="flex items-center gap-0 ml-1">
+            <div className="ml-1 flex items-center gap-0">
               {template.type !== 'default' && (
-                <>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onEdit(template)}
-                    title="Edit"
-                    className="p-0.5"
-                  >
-                    <Edit className="size-4" />
-                  </Button>
-                </>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onEdit(template)}
+                  title="Edit"
+                  className="p-0.5"
+                >
+                  <Edit className="size-4" />
+                </Button>
               )}
               <DropdownMenu>
                 <DropdownMenuTrigger>
@@ -109,11 +105,8 @@ export function TemplateList({
                     Move Down
                   </DropdownMenuItem>
                   {template.type !== 'default' && (
-                    <DropdownMenuItem
-                      onClick={() => onDelete(template)}
-                      className="text-red-600 hover:bg-red-50"
-                    >
-                      Delete
+                    <DropdownMenuItem onClick={() => onDelete(template)}>
+                      <span className="text-red-600 hover:bg-red-50">Delete</span>
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
@@ -124,7 +117,7 @@ export function TemplateList({
       })}
       <Button
         variant="ghost"
-        className="text-primary mt-2 w-full justify-start gap-2 text-xs"
+        className="mt-2 w-full justify-start gap-2 text-xs text-primary"
         onClick={() => onEdit({} as Template)}
       >
         <Plus className="size-4" />

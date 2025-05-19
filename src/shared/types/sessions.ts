@@ -1,4 +1,4 @@
-import type { Template } from './templates';
+import type { Template } from '@/features/templates/types';
 
 export type SessionStatus = 'draft' | 'in_progress' | 'completed' | 'archived';
 
@@ -26,4 +26,4 @@ export type Session = {
   };
 };
 
-export type SessionSummary = Pick<Session, 'id' | 'name' | 'status' | 'createdAt' | 'updatedAt' | 'metadata'>; 
+export type SessionSummary = Pick<Session, 'id' | 'name' | 'status' | 'createdAt' | 'updatedAt' | 'metadata'>;

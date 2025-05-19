@@ -7,7 +7,7 @@ import { checkApiAuth } from '@/shared/services/auth/api-auth';
 // GET /api/templates - List all templates
 export async function GET() {
   try {
-    const userId = checkApiAuth();
+    const userId = await checkApiAuth();
     if (userId instanceof NextResponse) {
       return userId;
     }

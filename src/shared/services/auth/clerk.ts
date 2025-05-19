@@ -17,19 +17,19 @@ export const getUser = async () => currentUser();
 export type ClerkUser = Awaited<ReturnType<typeof currentUser>>;
 
 // Helper function to check if user is authenticated
-export const isAuthenticated = async (req: Request) => {
+export const isAuthenticated = async (_req: Request) => {
   const { userId } = await getAuth();
   return !!userId;
 };
 
 // Helper function to get user ID
-export const getUserId = async (req: Request) => {
+export const getUserId = async (_req: Request) => {
   const { userId } = await getAuth();
   return userId;
 };
 
 // Session management
-export const handleSessionExpiry = async (req: Request) => {
+export const handleSessionExpiry = async (_req: Request) => {
   const { userId } = await getAuth();
   if (!userId) {
     redirect('/sign-in');
@@ -37,7 +37,7 @@ export const handleSessionExpiry = async (req: Request) => {
 };
 
 // Session recovery
-export const recoverSession = async (req: Request) => {
+export const recoverSession = async (_req: Request) => {
   try {
     const { userId } = await getAuth();
     if (!userId) {
@@ -58,11 +58,11 @@ export const recoverSession = async (req: Request) => {
 };
 
 // Session cleanup
-export const cleanupSession = async (req: Request) => {
+export const cleanupSession = async (_req: Request) => {
   try {
     // Clear any saved state
     if (typeof localStorage !== 'undefined') {
-    localStorage.removeItem('consultationState');
+      localStorage.removeItem('consultationState');
     }
 
     // Additional cleanup if needed

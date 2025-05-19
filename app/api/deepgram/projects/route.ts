@@ -20,8 +20,8 @@ export async function GET() {
   } catch (error) {
     console.error('Error listing Deepgram projects:', error);
     return NextResponse.json(
-      { error: 'Failed to list projects' },
+      { code: 'INTERNAL_ERROR', message: 'Failed to list projects' },
       { status: 500 },
     );
   }
-} 
+}
