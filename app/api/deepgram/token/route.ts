@@ -6,12 +6,22 @@ if (!process.env.DEEPGRAM_API_KEY) {
 
 export async function GET() {
   try {
-    // For live streaming, we use the API key directly
-    return NextResponse.json({ token: process.env.DEEPGRAM_API_KEY });
+    // Request a temporary Deepgram token (JWT) for browser use
+    const response = await fetch('https://api.deepgram.com/v1/auth/grant', {
+      method: 'POST',
+      headers: {
+        Authorization: `Token ${process.env.DEEPGRAM_API_KEY}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error('Failed to get Deepgram temporary token');
+    }
+    const data = await response.json();
+    return NextResponse.json({ token: data.access_token });
   } catch (error) {
-    console.error('Error getting Deepgram API key:', error);
+    console.error('Error getting Deepgram temporary token:', error);
     return NextResponse.json(
-      { code: 'INTERNAL_ERROR', message: 'Failed to get API key' },
+      { code: 'INTERNAL_ERROR', message: 'Failed to get Deepgram token' },
       { status: 500 },
     );
   }

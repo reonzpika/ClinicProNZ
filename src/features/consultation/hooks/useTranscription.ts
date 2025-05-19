@@ -124,7 +124,7 @@ export const useTranscription = (resetSignal?: any) => {
       }
 
       // Initialize Deepgram client with the latest format
-      const deepgram = createClient(token);
+      const deepgram = createClient();
 
       // Create WebSocket connection using Deepgram SDK
       const ws = await deepgram.listen.live({
@@ -138,9 +138,7 @@ export const useTranscription = (resetSignal?: any) => {
         endpointing: 500, // 500ms of silence to detect endpoint
         vad_events: true, // Enable voice activity detection
         filler_words: true, // Enable filler words in transcript
-        headers: {
-          Authorization: `Token ${token}`,
-        },
+        url: `wss://api.deepgram.com/v1/listen?access_token=${token}&encoding=linear16&sample_rate=16000&channels=1&model=nova-3&language=en-US&smart_format=true&interim_results=true&endpointing=500&vad_events=true&filler_words=true`,
       });
 
       wsRef.current = ws;
