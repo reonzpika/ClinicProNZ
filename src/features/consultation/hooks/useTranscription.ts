@@ -1,4 +1,3 @@
-import { createClient, LiveTranscriptionEvents } from '@deepgram/sdk';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useConsultation } from '@/shared/ConsultationContext';
@@ -106,7 +105,7 @@ export const useTranscription = (resetSignal?: any) => {
       setIsPaused(false);
       setStatus('recording');
 
-      // Get Deepgram token
+      // Get Deepgram JWT token
       const token = await getDeepgramToken();
       console.error('Got Deepgram token:', `${token.substring(0, 10)}...`);
 
@@ -123,57 +122,55 @@ export const useTranscription = (resetSignal?: any) => {
         return;
       }
 
-      // Initialize Deepgram client with the latest format
-      const deepgram = createClient(token);
-
-      // Create WebSocket connection using Deepgram SDK
-      const ws = await deepgram.listen.live({
-        encoding: 'linear16',
-        sample_rate: 16000,
-        channels: 1,
-        model: 'nova-3',
-        language: 'en-US',
-        smart_format: true,
-        interim_results: true,
-        endpointing: 500, // 500ms of silence to detect endpoint
-        vad_events: true, // Enable voice activity detection
-        filler_words: true, // Enable filler words in transcript
-        headers: {
-          Authorization: `Token ${token}`,
-        },
-      });
-
+      // Create native WebSocket connection to Deepgram
+      const ws = new window.WebSocket(`wss://api.deepgram.com/v1/listen?access_token=${token}`);
+      ws.binaryType = 'arraybuffer';
       wsRef.current = ws;
 
-      // Set up connection timeout
-      const connectionTimeout = setTimeout(() => {
-        if (ws.getReadyState() !== 1) { // 1 = OPEN
+      let connectionTimeout: NodeJS.Timeout | null = setTimeout(() => {
+        if (ws.readyState !== 1) { // 1 = OPEN
           console.error('WebSocket connection timeout');
-          ws.finish();
+          ws.close();
           handleWebSocketError('Connection timeout');
         }
       }, 5000);
 
-      // Set up event listeners using the SDK's event system
-      ws.on(LiveTranscriptionEvents.Open, () => {
-        clearTimeout(connectionTimeout);
+      ws.onopen = () => {
+        if (connectionTimeout) clearTimeout(connectionTimeout);
         console.error('WebSocket connection opened');
         setStatus('recording');
 
+        // Send Deepgram config as first message
+        ws.send(
+          JSON.stringify({
+            encoding: 'linear16',
+            sample_rate: 16000,
+            channels: 1,
+            model: 'nova-3',
+            language: 'en-US',
+            smart_format: true,
+            interim_results: true,
+            endpointing: 500, // 500ms of silence to detect endpoint
+            vad_events: true, // Enable voice activity detection
+            filler_words: true, // Enable filler words in transcript
+          })
+        );
+
         // Start recording and stream audio chunks
         audioService.startRecording((chunk) => {
-          if (ws.getReadyState() === 1) { // 1 = OPEN
+          if (ws.readyState === 1) { // 1 = OPEN
             ws.send(chunk);
           } else {
             console.error('WebSocket not open when trying to send chunk');
             handleWebSocketError('Connection lost while sending audio');
           }
         });
-      });
+      };
 
-      ws.on(LiveTranscriptionEvents.Transcript, (data: DeepgramTranscript) => {
+      ws.onmessage = (event) => {
         try {
-          console.error('Received WebSocket message:', data);
+          const data: DeepgramTranscript = JSON.parse(event.data);
+          // console.error('Received WebSocket message:', data);
 
           if (data.type === 'Results') {
             const alternative = data.channel?.alternatives?.[0];
@@ -204,19 +201,19 @@ export const useTranscription = (resetSignal?: any) => {
             handleWebSocketError(data.error || 'Unknown error occurred');
           }
         } catch (e) {
-          console.error('Error parsing WebSocket message:', e, data);
+          console.error('Error parsing WebSocket message:', e, event.data);
           handleWebSocketError('Failed to parse server response');
         }
-      });
+      };
 
-      ws.on(LiveTranscriptionEvents.Error, (error: Error) => {
-        clearTimeout(connectionTimeout);
-        console.error('WebSocket connection error', error);
+      ws.onerror = (event) => {
+        if (connectionTimeout) clearTimeout(connectionTimeout);
+        console.error('WebSocket connection error', event);
         handleWebSocketError('Connection error occurred');
-      });
+      };
 
-      ws.on(LiveTranscriptionEvents.Close, (event: { code: number }) => {
-        clearTimeout(connectionTimeout);
+      ws.onclose = (event) => {
+        if (connectionTimeout) clearTimeout(connectionTimeout);
         console.error('WebSocket closed', event);
         setStatus('idle');
 
@@ -233,7 +230,7 @@ export const useTranscription = (resetSignal?: any) => {
           setIsRecording(false);
           setIsPaused(false);
         }
-      });
+      };
     } catch (err) {
       console.error('Failed to start recording', err);
       handleWebSocketError(err instanceof Error ? err.message : 'Failed to start recording');
@@ -253,7 +250,7 @@ export const useTranscription = (resetSignal?: any) => {
 
     if (wsRef.current) {
       try {
-        wsRef.current.finish();
+        wsRef.current.close();
       } catch (e) {
         console.error('Error closing WebSocket', e);
       }
@@ -275,7 +272,7 @@ export const useTranscription = (resetSignal?: any) => {
     // Start KeepAlive interval
     if (wsRef.current && !keepAliveIntervalRef.current) {
       keepAliveIntervalRef.current = setInterval(() => {
-        if (wsRef.current && wsRef.current.getReadyState() === 1) {
+        if (wsRef.current && wsRef.current.readyState === 1) {
           wsRef.current.send(JSON.stringify({ type: 'KeepAlive' }));
         }
       }, 5000);
