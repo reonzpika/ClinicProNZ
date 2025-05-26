@@ -117,25 +117,29 @@ export const useTranscription = (resetSignal?: any) => {
 
       // Get Deepgram JWT token
       const token = await getDeepgramToken();
-      console.error('Got Deepgram token:', `${token.substring(0, 10)}...`);
+      console.error('[Deepgram] Got Deepgram token:', `${token.substring(0, 10)}...`);
 
       // First verify audio recording setup
+      console.error('[Deepgram] Starting audio setup...');
       const audioService = new AudioRecordingService();
       audioServiceRef.current = audioService;
 
       try {
         await audioService.verifySetup();
+        console.error('[Deepgram] Audio setup verified.');
       } catch (error) {
-        console.error('Audio setup failed:', error);
+        console.error('[Deepgram] Audio setup failed:', error);
         handleWebSocketError('Failed to initialize audio recording');
         setIsRecording(false);
         return;
       }
 
       // Initialize Deepgram client with the latest format
+      console.error('[Deepgram] Creating Deepgram client...');
       const deepgram = createClient(token);
 
       // Create WebSocket connection using Deepgram SDK
+      console.error('[Deepgram] Creating Deepgram WebSocket connection...');
       const ws = await deepgram.listen.live({
         encoding: 'linear16',
         sample_rate: 16000,
@@ -154,7 +158,7 @@ export const useTranscription = (resetSignal?: any) => {
       // Set up connection timeout
       const connectionTimeout = setTimeout(() => {
         if (ws.getReadyState() !== 1) { // 1 = OPEN
-          console.error('WebSocket connection timeout');
+          console.error('[Deepgram] WebSocket connection timeout');
           ws.finish();
           handleWebSocketError('Connection timeout');
         }
@@ -163,15 +167,21 @@ export const useTranscription = (resetSignal?: any) => {
       // Set up event listeners using the SDK's event system
       ws.on(LiveTranscriptionEvents.Open, () => {
         clearTimeout(connectionTimeout);
-        console.error('WebSocket connection opened');
+        console.error('[Deepgram] WebSocket connection opened');
         setStatus('recording');
 
         // Start recording and stream audio chunks
+        let firstChunkSent = false;
         audioService.startRecording((chunk) => {
           if (ws.getReadyState() === 1) { // 1 = OPEN
+            if (!firstChunkSent) {
+              console.error('[Deepgram] First audio chunk sent to Deepgram');
+              firstChunkSent = true;
+            }
+            console.error('[Deepgram] Audio chunk sent');
             ws.send(chunk);
           } else {
-            console.error('WebSocket not open when trying to send chunk');
+            console.error('[Deepgram] WebSocket not open when trying to send chunk');
             handleWebSocketError('Connection lost while sending audio');
           }
         });
@@ -179,7 +189,7 @@ export const useTranscription = (resetSignal?: any) => {
 
       ws.on(LiveTranscriptionEvents.Transcript, (data: DeepgramTranscript) => {
         try {
-          // console.error('Received WebSocket message:', data);
+          console.error('[Deepgram] Transcript event received:', data);
 
           if (data.type === 'Results') {
             const alternative = data.channel?.alternatives?.[0];
@@ -210,26 +220,26 @@ export const useTranscription = (resetSignal?: any) => {
             handleWebSocketError(data.error || 'Unknown error occurred');
           }
         } catch (e) {
-          console.error('Error parsing WebSocket message:', e, data);
+          console.error('[Deepgram] Error parsing WebSocket message:', e, data);
           handleWebSocketError('Failed to parse server response');
         }
       });
 
       ws.on(LiveTranscriptionEvents.Error, (error: Error) => {
         clearTimeout(connectionTimeout);
-        console.error('WebSocket connection error', error);
+        console.error('[Deepgram] WebSocket connection error', error);
         handleWebSocketError('Connection error occurred');
       });
 
       ws.on(LiveTranscriptionEvents.Close, (event: { code: number }) => {
         clearTimeout(connectionTimeout);
-        console.error('WebSocket closed', event);
+        console.error('[Deepgram] WebSocket closed', event);
         setStatus('idle');
 
         // Attempt to reconnect if not intentionally closed
         if (event.code !== 1000 && reconnectAttemptsRef.current < maxReconnectAttempts) {
           reconnectAttemptsRef.current++;
-          console.error(`Attempting to reconnect (${reconnectAttemptsRef.current}/${maxReconnectAttempts})...`);
+          console.error(`[Deepgram] Attempting to reconnect (${reconnectAttemptsRef.current}/${maxReconnectAttempts})...`);
           setTimeout(() => {
             if (isRecording) {
               startRecording();
