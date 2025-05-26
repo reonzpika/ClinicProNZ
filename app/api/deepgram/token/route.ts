@@ -25,6 +25,8 @@ export async function POST() { // <-- POST method
   try {
     const url = `https://api.deepgram.com/v1/auth/grant`;
 
+    console.error('Using projectId:', projectId);
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -33,7 +35,7 @@ export async function POST() { // <-- POST method
       },
       body: JSON.stringify({
         scopes: ['usage:write'],
-        subject: projectId,
+        sub: projectId,
       }),
     });
 

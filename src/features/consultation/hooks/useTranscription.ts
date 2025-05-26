@@ -119,6 +119,7 @@ export const useTranscription = (resetSignal?: any) => {
       const token = await getDeepgramToken();
       const tokenPreview = `${token.slice(0, 6)}...${token.slice(-6)}`;
       console.error('[Deepgram] Got Deepgram token:', tokenPreview);
+      console.error('[Deepgram] Full JWT token:', token); // DEBUG: Remove after debugging
 
       // First verify audio recording setup
       console.error('[Deepgram] Starting audio setup...');
