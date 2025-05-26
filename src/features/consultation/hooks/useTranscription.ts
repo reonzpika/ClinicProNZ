@@ -84,11 +84,20 @@ export const useTranscription = (resetSignal?: any) => {
 
   const getDeepgramToken = useCallback(async () => {
     try {
-      const response = await fetch('/api/deepgram/token');
+      const response = await fetch('/api/deepgram/token', { method: 'POST' });
       if (!response.ok) {
-        throw new Error('Failed to get Deepgram token');
+        const errorData = await response.json().catch(() => null);
+        console.error('Failed to get Deepgram token:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData,
+        });
+        throw new Error(errorData?.message || 'Failed to get Deepgram token');
       }
       const data = await response.json();
+      if (!data.token) {
+        throw new Error('Invalid token response from server');
+      }
       return data.token;
     } catch (error) {
       console.error('Error getting Deepgram token:', error);
@@ -127,7 +136,7 @@ export const useTranscription = (resetSignal?: any) => {
       ws.binaryType = 'arraybuffer';
       wsRef.current = ws;
 
-      let connectionTimeout: NodeJS.Timeout | null = setTimeout(() => {
+      const connectionTimeout: NodeJS.Timeout | null = setTimeout(() => {
         if (ws.readyState !== 1) { // 1 = OPEN
           console.error('WebSocket connection timeout');
           ws.close();
@@ -136,7 +145,9 @@ export const useTranscription = (resetSignal?: any) => {
       }, 5000);
 
       ws.onopen = () => {
-        if (connectionTimeout) clearTimeout(connectionTimeout);
+        if (connectionTimeout) {
+          clearTimeout(connectionTimeout);
+        }
         console.error('WebSocket connection opened');
         setStatus('recording');
 
@@ -153,7 +164,7 @@ export const useTranscription = (resetSignal?: any) => {
             endpointing: 500, // 500ms of silence to detect endpoint
             vad_events: true, // Enable voice activity detection
             filler_words: true, // Enable filler words in transcript
-          })
+          }),
         );
 
         // Start recording and stream audio chunks
@@ -207,13 +218,17 @@ export const useTranscription = (resetSignal?: any) => {
       };
 
       ws.onerror = (event) => {
-        if (connectionTimeout) clearTimeout(connectionTimeout);
+        if (connectionTimeout) {
+          clearTimeout(connectionTimeout);
+        }
         console.error('WebSocket connection error', event);
         handleWebSocketError('Connection error occurred');
       };
 
       ws.onclose = (event) => {
-        if (connectionTimeout) clearTimeout(connectionTimeout);
+        if (connectionTimeout) {
+          clearTimeout(connectionTimeout);
+        }
         console.error('WebSocket closed', event);
         setStatus('idle');
 
