@@ -31,6 +31,10 @@ export async function POST() { // <-- POST method
         'Authorization': `Token ${apiKey}`,
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({
+        scopes: ['usage:write'],
+        subject: projectId,
+      }),
     });
 
     console.error('Response status:', response.status);
