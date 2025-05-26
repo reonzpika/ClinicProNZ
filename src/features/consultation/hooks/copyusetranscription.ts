@@ -85,20 +85,11 @@ export const useTranscription = (resetSignal?: any) => {
 
   const getDeepgramToken = useCallback(async () => {
     try {
-      const response = await fetch('/api/deepgram/token', { method: 'POST' });
+      const response = await fetch('/api/deepgram/token');
       if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        console.error('Failed to get Deepgram token:', {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorData,
-        });
-        throw new Error(errorData?.message || 'Failed to get Deepgram token');
+        throw new Error('Failed to get Deepgram token');
       }
       const data = await response.json();
-      if (!data.token) {
-        throw new Error('Invalid token response from server');
-      }
       return data.token;
     } catch (error) {
       console.error('Error getting Deepgram token:', error);
@@ -115,7 +106,7 @@ export const useTranscription = (resetSignal?: any) => {
       setIsPaused(false);
       setStatus('recording');
 
-      // Get Deepgram JWT token
+      // Get Deepgram token
       const token = await getDeepgramToken();
       console.error('Got Deepgram token:', `${token.substring(0, 10)}...`);
 
@@ -133,7 +124,7 @@ export const useTranscription = (resetSignal?: any) => {
       }
 
       // Initialize Deepgram client with the latest format
-      const deepgram = createClient(token);
+      const deepgram = createClient();
 
       // Create WebSocket connection using Deepgram SDK
       const ws = await deepgram.listen.live({
@@ -147,6 +138,7 @@ export const useTranscription = (resetSignal?: any) => {
         endpointing: 500, // 500ms of silence to detect endpoint
         vad_events: true, // Enable voice activity detection
         filler_words: true, // Enable filler words in transcript
+        url: `wss://api.deepgram.com/v1/listen?access_token=${token}&encoding=linear16&sample_rate=16000&channels=1&model=nova-3&language=en-US&smart_format=true&interim_results=true&endpointing=500&vad_events=true&filler_words=true`,
       });
 
       wsRef.current = ws;
@@ -179,7 +171,7 @@ export const useTranscription = (resetSignal?: any) => {
 
       ws.on(LiveTranscriptionEvents.Transcript, (data: DeepgramTranscript) => {
         try {
-          // console.error('Received WebSocket message:', data);
+          console.error('Received WebSocket message:', data);
 
           if (data.type === 'Results') {
             const alternative = data.channel?.alternatives?.[0];
