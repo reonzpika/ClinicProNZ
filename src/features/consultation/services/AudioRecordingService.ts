@@ -75,8 +75,19 @@ export class AudioRecordingService {
       });
 
       this.paused = false;
+      let chunkCount = 0;
       this.onChunkCallback = (chunk: ArrayBuffer) => {
         if (!this.paused && onChunk) {
+          chunkCount++;
+          if (chunkCount <= 5) {
+            const sample = new Uint8Array(chunk).slice(0, 16);
+            console.error('[AudioRecordingService] Sending audio chunk', {
+              chunkNumber: chunkCount,
+              byteLength: chunk.byteLength,
+              sample: Array.from(sample),
+              type: typeof chunk,
+            });
+          }
           onChunk(chunk);
         }
       };

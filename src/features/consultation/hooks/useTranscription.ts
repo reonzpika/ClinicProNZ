@@ -117,7 +117,8 @@ export const useTranscription = (resetSignal?: any) => {
 
       // Get Deepgram JWT token
       const token = await getDeepgramToken();
-      console.error('[Deepgram] Got Deepgram token:', `${token.substring(0, 10)}...`);
+      const tokenPreview = `${token.slice(0, 6)}...${token.slice(-6)}`;
+      console.error('[Deepgram] Got Deepgram token:', tokenPreview);
 
       // First verify audio recording setup
       console.error('[Deepgram] Starting audio setup...');
@@ -139,8 +140,7 @@ export const useTranscription = (resetSignal?: any) => {
       const deepgram = createClient(token);
 
       // Create WebSocket connection using Deepgram SDK
-      console.error('[Deepgram] Creating Deepgram WebSocket connection...');
-      const ws = await deepgram.listen.live({
+      const connectionParams = {
         encoding: 'linear16',
         sample_rate: 16000,
         channels: 1,
@@ -151,7 +151,14 @@ export const useTranscription = (resetSignal?: any) => {
         endpointing: 500, // 500ms of silence to detect endpoint
         vad_events: true, // Enable voice activity detection
         filler_words: true, // Enable filler words in transcript
+      };
+      console.error('[Deepgram] Creating Deepgram WebSocket connection...', {
+        tokenPreview,
+        connectionParams,
+        time: new Date().toISOString(),
       });
+      const wsConnectStart = Date.now();
+      const ws = await deepgram.listen.live(connectionParams);
 
       wsRef.current = ws;
 
@@ -167,7 +174,11 @@ export const useTranscription = (resetSignal?: any) => {
       // Set up event listeners using the SDK's event system
       ws.on(LiveTranscriptionEvents.Open, () => {
         clearTimeout(connectionTimeout);
-        console.error('[Deepgram] WebSocket connection opened');
+        const elapsed = Date.now() - wsConnectStart;
+        console.error('[Deepgram] WebSocket connection opened', {
+          elapsedMs: elapsed,
+          time: new Date().toISOString(),
+        });
         setStatus('recording');
 
         // Start recording and stream audio chunks
@@ -225,15 +236,27 @@ export const useTranscription = (resetSignal?: any) => {
         }
       });
 
-      ws.on(LiveTranscriptionEvents.Error, (error: Error) => {
+      ws.on(LiveTranscriptionEvents.Error, (error: any) => {
         clearTimeout(connectionTimeout);
-        console.error('[Deepgram] WebSocket connection error', error);
+        const elapsed = Date.now() - wsConnectStart;
+        console.error('[Deepgram] WebSocket connection error', {
+          error,
+          elapsedMs: elapsed,
+          time: new Date().toISOString(),
+        });
         handleWebSocketError('Connection error occurred');
       });
 
-      ws.on(LiveTranscriptionEvents.Close, (event: { code: number }) => {
+      ws.on(LiveTranscriptionEvents.Close, (event: any) => {
         clearTimeout(connectionTimeout);
-        console.error('[Deepgram] WebSocket closed', event);
+        const elapsed = Date.now() - wsConnectStart;
+        console.error('[Deepgram] WebSocket closed', {
+          event,
+          code: event?.code,
+          reason: event?.reason,
+          elapsedMs: elapsed,
+          time: new Date().toISOString(),
+        });
         setStatus('idle');
 
         // Attempt to reconnect if not intentionally closed
