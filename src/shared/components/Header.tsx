@@ -1,14 +1,38 @@
+'use client';
+/* eslint-disable react-dom/no-missing-button-type */
 import { SignInButton, SignUpButton, useAuth, UserButton } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import React, { useState } from 'react';
 
+import { FeedbackModal } from '@/features/roadmap/components/FeedbackModal';
+import { submitFeatureRequest } from '@/features/roadmap/roadmap-service';
 import { Dialog, DialogContent, DialogFooter, DialogHeader } from '@/shared/components/ui/dialog';
 
 export const Header = () => {
   const { isSignedIn } = useAuth();
   const router = useRouter();
-  const [showAuthModal, setShowAuthModal] = React.useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // Feedback modal state
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbackError, setFeedbackError] = useState<string | undefined>();
+  const [feedbackSuccess, setFeedbackSuccess] = useState(false);
+
+  const handleFeedback = async (data: { idea: string; details?: string; email?: string }) => {
+    setFeedbackLoading(true);
+    setFeedbackError(undefined);
+    setFeedbackSuccess(false);
+    const res = await submitFeatureRequest(data);
+    if (res.success) {
+      setFeedbackSuccess(true);
+      setTimeout(() => setFeedbackModalOpen(false), 1200);
+    } else {
+      setFeedbackError(res.message || 'Something went wrong');
+    }
+    setFeedbackLoading(false);
+  };
 
   return (
     <header className="w-full border-b">
@@ -34,20 +58,26 @@ export const Header = () => {
             >
               Templates
             </button>
+            <Link href="/roadmap" className="text-xs hover:text-blue-600">
+              Roadmap
+            </Link>
           </div>
         </div>
 
         <div className="flex items-center space-x-2">
+          <button
+            className="rounded-lg border border-yellow-500 bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-700 hover:bg-yellow-100"
+            onClick={() => {
+              setFeedbackModalOpen(true);
+              setFeedbackSuccess(false);
+              setFeedbackError(undefined);
+            }}
+          >
+            💡 Feedback
+          </button>
           {isSignedIn
             ? (
                 <>
-                  <div className="hidden md:block">
-                    <input
-                      type="search"
-                      placeholder="Search..."
-                      className="rounded-md border px-2 py-1 text-xs"
-                    />
-                  </div>
                   <UserButton afterSignOutUrl="/" />
                 </>
               )
@@ -83,6 +113,14 @@ export const Header = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <FeedbackModal
+        open={feedbackModalOpen}
+        onClose={() => setFeedbackModalOpen(false)}
+        onSubmit={handleFeedback}
+        loading={feedbackLoading}
+        error={feedbackError}
+        success={feedbackSuccess}
+      />
     </header>
   );
 };

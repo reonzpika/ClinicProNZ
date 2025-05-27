@@ -1,87 +1,32 @@
 # ConsultAI NZ Development Progress
 
 ## Project Status Summary
-- **Current Phase**: Core AI Integration Preparation
-- **Next Immediate Tasks**: ChatGPT Integration and Note Generation System
-- **Current Focus**: Core consultation functionality, real-time transcription, and global state management (complete)
-- **Development Approach**: Following MVC (Minimum Viable Consultation) principles
-- **AI Collaboration**: Pair programming with AI agent for implementation
-- **Testing Approach**: Test-After Development (see [Testing Guidelines](../engineering/testing-guidelines.md))
+- **Current Phase:** Roadmap, Feedback, and Core UI Complete
+- **Next Immediate Tasks:** About Page, Privacy Page
+- **Current Focus:** Polish, documentation, and user feedback
+- **Development Approach:** MVC (Minimum Viable Consultation) principles
+- **AI Collaboration:** Pair programming with AI agent for implementation
 
 ## Completed Tasks
 
 ### Documentation [x]
 ### Planning [x]
-- [x] Define core features for MVP
-- [x] Establish development principles
-- [x] Create initial project roadmap
-- [x] Define template system requirements
-- [x] Define state architecture
-- [x] Define data flow architecture
-- [x] Technical implementation planning
-- [x] Testing strategy planning
 ### Development Environment [x]
-- [x] Project Structure Setup
-- [x] Development Tools
-- [x] UI Framework Setup
-- [x] External Services (Partial)
 ### Template Management System (Priority: Must Have) [x]
-- [x] Database Setup
-- [x] Core Template Operations
-- [x] Template UI Components
-- [x] Template Storage
-- [x] Template Validation
-- [x] Template Validation
-- [x] Template Selection UI
 ### Basic UI Implementation (Priority: Must Have) [x]
-- [x] Core Components
-- [x] Layout Components
-- [x] Template Components
-- [x] Consultation Components
-  - [x] TranscriptionControls
-  - [x] QuickNotes
-  - [x] GeneratedNotes
-- [x] Main Layout
-  - [x] Header
-  - [x] Footer
-  - [x] Consultation page layout
 ### Core Implementation [x]
-- [x] Speech to Text Integration
-- [x] State Management Implementation
 ### Core AI Integration (Priority: Must Have) [x]
-- [x] ChatGPT Integration
-   - [x] Note generation service
-   - [x] Template prompt processing
-   - [x] Error handling and retries
-- [x] Note Generation System
-   - [x] Template-to-prompt translation
-   - [x] Note formatting and structure
-   - [x] Review and edit interface
+### Roadmap & Feedback [x]
 ### Bug Fixes & Improvements of Main Consultation Page
-- [ ] UI Improvements
-  - [x] Template menu in the header only showing when logged in. It should show even when not logged in. When not-logged in user clicks on it, it should redirect to login page.
-  - [x] The entire page should be compact with minimal white space.
-  - [x] Visual feedback when recording is in progress.
-  - [x] Visual feedback when note is being generated.
-- [x] Logic/state management improvements
-  - [x] GenerateNotes is only enabled when there's a quick notes entry. After the recording is done, even if there's no quick notes entry, GenerateNotes should be enabled, which is currently not the case. I suspect this is due to how we are handling the global state of the consultation.
-  - [x] After the recording and generating the note, when i refresh the page, the note and quick notes are saved but the transcription is not. The transcription should also be saved. 
-- [x] Improve Multi-problem SOAP template
-  - [x] When there's only one problem, the AI tries to create multiple problems when in fact there's only one.
-  - [x] When AI is not able to find the required information in the transcription, it is generating new information that is not part of the template. This is not good. The AI should only generate information that is part of the transcription.
 ### Bug Fixes & Improvements of Template Management System
-- [x] Default templates should not be editable or deletable
 ### Add more AI analysis features
-- [x] generate working and differential diagnosis
-- [x] generate treatment plan
 
 ## Current Sprint Tasks
-### Deploy to production 
-- [ ] Fix all the linting errors
-
-## Upcoming Sprints
-
-
+### UI & Info Pages
+- [ ] About page
+- [ ] Privacy page
+- [ ] Polish roadmap page (update features, statuses)
+- [ ] Polish feedback modal (copy, style, etc.)
 
 ## Future Features
 1. ACC integration (database of ACC codes, suggest based on generated note)
@@ -94,6 +39,9 @@
 9. Differential diagnosis (suggest differential diagnosis based on generated note)
 10. Clinical tools (suggest clinical tools based on generated note)
 11. Screening tools (suggest screening tools based on generated note e.g. PHQ-9, GAD-7, AUDIT-C, etc)
+12. Chat with AI agent (use consultation note as input, allow user to ask specific questions, agent can perform tasks with triggers)
+    - See: https://openai.com/index/new-tools-for-building-agents/
+    - See: https://platform.openai.com/docs/guides/agents
 
 ### MVP Design Decisions - ACC & NZ Guidelines Integration
 #### Current Setup
@@ -136,7 +84,6 @@
 | Post-MVP | RAG (Vector DB + embeddings) | OpenAI Embeddings + pgvector |
 | Advanced | Agent-based orchestration | OpenAI Agents + tools |
 
-
 ## Progress Metrics
 
 | Area                     | Progress |                                                  |
@@ -150,6 +97,8 @@
 | Basic UI              | 100%     | ██████████ |
 | Speech to Text        | 100%     | ██████████ |
 | State Management      | 100%     | ██████████ |
+| Roadmap & Feedback    | 100%     | ██████████ |
+| About/Privacy Pages   |   0%     | ░░░░░░░░░░ |
 
 Legend: █ = Complete, ░ = Incomplete
 
