@@ -35,7 +35,7 @@ export async function POST() { // <-- POST method
       },
       body: JSON.stringify({
         scopes: ['usage:write'],
-        sub: projectId,
+        subject: projectId,
       }),
     });
 
