@@ -1,8 +1,8 @@
 # ConsultAI NZ Development Progress
 
 ## Project Status Summary
-- **Current Phase:** Roadmap, Feedback, and Core UI Complete
-- **Next Immediate Tasks:** About Page, Privacy Policy Content Updates
+- **Current Phase:** Roadmap, Feedback, Core UI, and Info Pages Complete
+- **Next Immediate Tasks:** Polish roadmap page, Polish feedback modal
 - **Current Focus:** Polish, documentation, and user feedback
 - **Development Approach:** MVC (Minimum Viable Consultation) principles
 - **AI Collaboration:** Pair programming with AI agent for implementation
@@ -22,10 +22,11 @@
 ### Add more AI analysis features
 ### Privacy Page Structure [x]
 ### Privacy Info Page [x]
+### About Page [x]
 
 ## Current Sprint Tasks
 ### UI & Info Pages
-- [ ] About page
+- [x] About page
 - [x] Privacy page (structure complete)
 - [x] Privacy info page (user-friendly summary)
 - [ ] Polish roadmap page (update features, statuses)
@@ -108,7 +109,7 @@
 | Speech to Text        | 100%     | ██████████ |
 | State Management      | 100%     | ██████████ |
 | Roadmap & Feedback    | 100%     | ██████████ |
-| About/Privacy Pages   |  75%     | ███████░░░ |
+| About/Privacy Pages   | 100%     | ██████████ |
 
 Legend: █ = Complete, ░ = Incomplete
 

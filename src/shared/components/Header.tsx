@@ -58,6 +58,9 @@ export const Header = () => {
             >
               Templates
             </button>
+            <Link href="/about" className="text-xs hover:text-blue-600">
+              About
+            </Link>
             <Link href="/privacy-info" className="text-xs hover:text-blue-600">
               Privacy
             </Link>
