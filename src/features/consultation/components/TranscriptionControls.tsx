@@ -1,3 +1,4 @@
+/* eslint-disable react/no-nested-components */
 'use client';
 
 import React from 'react';
@@ -10,6 +11,12 @@ import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { useConsultation } from '@/shared/ConsultationContext';
 
 import { useTranscription } from '../hooks/useTranscription';
+
+function formatTime(sec: number) {
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
 
 export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boolean; onExpand?: () => void }) {
   const { error: contextError } = useConsultation();
@@ -26,6 +33,8 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
     resetTranscription,
     volumeLevel,
     noInputWarning,
+    partialTranscripts,
+    progress,
   } = useTranscription();
 
   // Pulsing dot for recording feedback
@@ -39,6 +48,16 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
       <div
         className="h-2 rounded bg-green-500"
         style={{ width: `${Math.min(volumeLevel * 5, 100)}%`, transition: 'width 0.1s' }}
+      />
+    </div>
+  );
+
+  // Progress bar for chunked transcription
+  const ProgressBar = () => (
+    <div className="mb-1 mt-2 h-2 w-full rounded bg-gray-200">
+      <div
+        className="h-2 rounded bg-blue-500"
+        style={{ width: `${progress.total ? (progress.completed / progress.total) * 100 : 0}%`, transition: 'width 0.2s' }}
       />
     </div>
   );
@@ -134,14 +153,42 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
                 )}
               </>
             )}
-            <div className="mt-2 space-y-1">
-              {isTranscribing && (
-                <div className="flex items-center gap-2">
-                  <span className="inline-block size-3 animate-pulse rounded-full bg-blue-500" />
-                  <span className="text-xs">Transcribing audio...</span>
+            {/* Chunked transcription progress */}
+            {isTranscribing && progress.total > 0 && (
+              <>
+                <ProgressBar />
+                <div className="mb-1 text-xs text-muted-foreground">
+                  Transcribing chunk
+                  {' '}
+                  <br />
+                  {progress.completed}
+                  {' '}
+                  of
+                  {progress.total}
+                  …
                 </div>
-              )}
-              {/* Transcript display */}
+              </>
+            )}
+            {/* Show partial transcripts as they arrive */}
+            {isTranscribing && progress.total > 0 && (
+              <div className="mt-2 max-h-64 overflow-y-auto rounded-md bg-muted p-1">
+                {partialTranscripts.map((pt, idx) => pt && pt.text && (
+                  // eslint-disable-next-line react/no-array-index-key
+                  <div key={idx} className="mb-2">
+                    <div className="mb-1 font-mono text-xs text-muted-foreground">
+                      [
+                      {formatTime(pt.start)}
+                      –
+                      {formatTime(pt.end)}
+                      ]
+                    </div>
+                    <div className="whitespace-pre-wrap text-xs">{pt.text}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="mt-2 space-y-1">
+              {/* Final transcript display (after all chunks) */}
               {transcript && !isTranscribing && (
                 <div className="rounded-md bg-muted p-1">
                   <p className="whitespace-pre-wrap text-xs">{transcript}</p>

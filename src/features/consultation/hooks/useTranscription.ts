@@ -2,6 +2,17 @@ import { useCallback, useRef, useState } from 'react';
 
 import { useConsultation } from '@/shared/ConsultationContext';
 
+interface PartialTranscript {
+  start: number;
+  end: number;
+  text: string;
+}
+
+interface Progress {
+  completed: number;
+  total: number;
+}
+
 interface TranscriptionState {
   isRecording: boolean;
   isPaused: boolean;
@@ -13,7 +24,14 @@ interface TranscriptionState {
   metadata: any;
   volumeLevel: number;
   noInputWarning: boolean;
+  partialTranscripts: PartialTranscript[];
+  progress: Progress;
+  recordingStart: number | null;
+  recordingEnd: number | null;
 }
+
+const CHUNK_DURATION = 60; // seconds
+const CHUNK_OVERLAP = 1; // seconds
 
 export const useTranscription = () => {
   const {
@@ -33,6 +51,10 @@ export const useTranscription = () => {
     metadata: {},
     volumeLevel: 0,
     noInputWarning: false,
+    partialTranscripts: [],
+    progress: { completed: 0, total: 0 },
+    recordingStart: null,
+    recordingEnd: null,
   });
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -88,76 +110,90 @@ export const useTranscription = () => {
     setState(prev => ({ ...prev, volumeLevel: 0, noInputWarning: false }));
   }, []);
 
-  // Transcribe audio after recording
+  // Helper: Split Blob into 60s chunks with 1s overlap (byte estimation)
+  const splitBlobIntoChunks = async (blob: Blob, duration: number): Promise<{ blob: Blob; start: number; end: number; idx: number }[]> => {
+    const chunkCount = Math.ceil(duration / (CHUNK_DURATION - CHUNK_OVERLAP));
+    const chunks: { blob: Blob; start: number; end: number; idx: number }[] = [];
+    for (let i = 0; i < chunkCount; i++) {
+      const startSec = i * (CHUNK_DURATION - CHUNK_OVERLAP);
+      const endSec = Math.min(startSec + CHUNK_DURATION, duration);
+      const startByte = Math.floor((startSec / duration) * blob.size);
+      const endByte = Math.floor((endSec / duration) * blob.size);
+      const chunk = blob.slice(startByte, endByte, blob.type);
+      chunks.push({ blob: chunk, start: startSec, end: endSec, idx: i });
+    }
+    return chunks;
+  };
+
+  // Helper: Merge and de-duplicate chunk transcripts
+  const mergeTranscripts = (partials: PartialTranscript[]): string => {
+    if (partials.length === 0) return '';
+    // Simple join for MVP; TODO: smarter de-duplication
+    return partials
+      .sort((a, b) => a.start - b.start)
+      .map(pt => pt.text.trim())
+      .join(' ')
+      .replace(/\s+/g, ' ');
+  };
+
+  // Chunked, parallel transcription
   const transcribeAudio = useCallback(async (audioBlob: Blob) => {
     try {
-      // Check audio duration before uploading
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
-      try {
-        await new Promise((resolve, reject) => {
-          audio.onloadedmetadata = () => {
-            if (isFinite(audio.duration) && audio.duration > 0) {
-              resolve(true);
-            } else {
-              // Poll for duration if not immediately available
-              const check = setInterval(() => {
-                if (isFinite(audio.duration) && audio.duration > 0) {
-                  clearInterval(check);
-                  resolve(true);
-                }
-              }, 50);
-              setTimeout(() => {
-                clearInterval(check);
-                reject(new Error('Could not determine audio duration'));
-              }, 2000);
-            }
-          };
-          audio.onerror = () => reject(new Error('Failed to load audio for duration check'));
-        });
-      } catch (err) {
-        URL.revokeObjectURL(audioUrl);
-        setState(prev => ({ ...prev, error: 'Could not determine audio duration.', isTranscribing: false }));
-        setStatus('idle');
-        setError('Could not determine audio duration.');
-        return;
+      // Use manual timer for duration
+      const { recordingStart, recordingEnd } = state;
+      let durationSec = 0;
+      if (recordingStart && recordingEnd) {
+        durationSec = (recordingEnd - recordingStart) / 1000;
       }
-      const durationSec = audio.duration;
-      URL.revokeObjectURL(audioUrl);
-      if (durationSec < 30) {
-        setState(prev => ({ ...prev, error: 'Recording too short—please record at least 30 seconds of audio.', isTranscribing: false }));
-        setStatus('idle');
-        setError('Recording too short—please record at least 30 seconds of audio.');
-        return;
-      }
-
-      setState((prev) => ({ ...prev, isTranscribing: true, error: null }));
-      setStatus('processing');
-      setError(null);
-
-      const formData = new FormData();
-      formData.append('audio', audioBlob, 'consultation.webm');
-
-      const response = await fetch('/api/deepgram/transcribe', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Transcription failed: ${response.statusText}`);
-      }
-
-      const { transcript, paragraphs, metadata } = await response.json();
 
       setState((prev) => ({
         ...prev,
-        transcript,
-        paragraphs,
-        metadata,
+        isTranscribing: true,
+        error: null,
+        partialTranscripts: [],
+        progress: { completed: 0, total: 0 },
+      }));
+      setStatus('processing');
+      setError(null);
+
+      // Split into chunks
+      const chunks = await splitBlobIntoChunks(audioBlob, durationSec || 1); // fallback to 1s if unknown
+      setState(prev => ({ ...prev, progress: { completed: 0, total: chunks.length } }));
+
+      // Fire off all chunk requests in parallel
+      const partials: PartialTranscript[] = Array(chunks.length).fill(null);
+      await Promise.all(
+        chunks.map(async ({ blob, start, end, idx }) => {
+          const formData = new FormData();
+          formData.append('audio', blob, `chunk${idx}.webm`);
+          try {
+            const response = await fetch('/api/deepgram/transcribe', {
+              method: 'POST',
+              body: formData,
+            });
+            if (!response.ok) throw new Error('Chunk transcription failed');
+            const { transcript } = await response.json();
+            partials[idx] = { start, end, text: transcript || '' };
+          } catch (e) {
+            partials[idx] = { start, end, text: '[Chunk failed]' };
+          }
+          setState(prev => ({
+            ...prev,
+            partialTranscripts: partials.slice(),
+            progress: { completed: prev.progress.completed + 1, total: chunks.length },
+          }));
+        })
+      );
+
+      // Merge and update final transcript
+      const merged = mergeTranscripts(partials.filter(Boolean));
+      setState(prev => ({
+        ...prev,
+        transcript: merged,
         isTranscribing: false,
       }));
       setStatus('completed');
-      setTranscription(transcript, false);
+      setTranscription(merged, false);
       setError(null);
     } catch (error: any) {
       setState((prev) => ({
@@ -168,7 +204,7 @@ export const useTranscription = () => {
       setStatus('idle');
       setError('Transcription failed: ' + error.message);
     }
-  }, [setStatus, setTranscription, setError]);
+  }, [setStatus, setTranscription, setError, state]);
 
   // Reset local transcription state
   const resetTranscription = useCallback(() => {
@@ -183,6 +219,10 @@ export const useTranscription = () => {
       metadata: {},
       volumeLevel: 0,
       noInputWarning: false,
+      partialTranscripts: [],
+      progress: { completed: 0, total: 0 },
+      recordingStart: null,
+      recordingEnd: null,
     });
     setStatus('idle');
     setTranscription('', false);
@@ -217,13 +257,14 @@ export const useTranscription = () => {
         const audioBlob = new Blob(audioChunksRef.current, {
           type: 'audio/webm;codecs=opus',
         });
-
+        const now = Date.now();
         setState((prev) => ({
           ...prev,
           isRecording: false,
           isPaused: false,
           isTranscribing: true,
           audioBlob,
+          recordingEnd: now,
         }));
         setStatus('processing');
         setTranscription('', false);
@@ -239,6 +280,7 @@ export const useTranscription = () => {
       mediaRecorderRef.current = mediaRecorder;
       mediaRecorder.start(1000); // Collect data every second
 
+      const now = Date.now();
       setState((prev) => ({
         ...prev,
         isRecording: true,
@@ -249,6 +291,10 @@ export const useTranscription = () => {
         metadata: {},
         volumeLevel: 0,
         noInputWarning: false,
+        partialTranscripts: [],
+        progress: { completed: 0, total: 0 },
+        recordingStart: now,
+        recordingEnd: null,
       }));
       setStatus('recording');
       setTranscription('', true);
