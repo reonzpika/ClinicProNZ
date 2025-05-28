@@ -21,11 +21,13 @@
 ### Bug Fixes & Improvements of Template Management System
 ### Add more AI analysis features
 ### Privacy Page Structure [x]
+### Privacy Info Page [x]
 
 ## Current Sprint Tasks
 ### UI & Info Pages
 - [ ] About page
 - [x] Privacy page (structure complete)
+- [x] Privacy info page (user-friendly summary)
 - [ ] Polish roadmap page (update features, statuses)
 - [ ] Polish feedback modal (copy, style, etc.)
 
@@ -106,7 +108,7 @@
 | Speech to Text        | 100%     | ██████████ |
 | State Management      | 100%     | ██████████ |
 | Roadmap & Feedback    | 100%     | ██████████ |
-| About/Privacy Pages   |  50%     | █████░░░░░ |
+| About/Privacy Pages   |  75%     | ███████░░░ |
 
 Legend: █ = Complete, ░ = Incomplete
 
