@@ -28,8 +28,8 @@ type TranscriptionState = {
 };
 
 const SILENCE_THRESHOLD = 2; // seconds of silence to trigger chunk end
-const VOLUME_THRESHOLD = 0.1; // RMS threshold for speech detection (increased from 0.005)
-const MIN_CHUNK_DURATION = 3; // minimum seconds before allowing chunk split
+const VOLUME_THRESHOLD = 0.02; // RMS threshold for speech detection (increased from 0.005)
+const MIN_SPEECH_DURATION = 1.5; // minimum seconds of actual speech required to send chunk
 const SPEECH_CONFIRMATION_FRAMES = 3; // Number of consecutive frames above threshold to confirm speech
 
 export const useTranscription = () => {
@@ -75,6 +75,9 @@ export const useTranscription = () => {
   const isRecordingRef = useRef<boolean>(false);
   const isPausedRef = useRef<boolean>(false);
   const speechFrameCountRef = useRef<number>(0);
+  const speechDurationRef = useRef<number>(0); // Accumulated speech time in seconds
+  const firstChunkStartedRef = useRef<boolean>(false); // Track if first chunk has started
+  const isWaitingForSpeechRef = useRef<boolean>(false); // Track if we're waiting for speech to start first chunk
 
   // Volume measurement for VAD
   const measureVolume = useCallback((): number => {
@@ -185,6 +188,7 @@ export const useTranscription = () => {
     chunkCountRef.current += 1;
     chunkStartTimeRef.current = Date.now();
     isChunkRecordingRef.current = true;
+    speechDurationRef.current = 0; // Reset speech duration for new chunk
 
     const currentChunkIdx = chunkCountRef.current;
     console.log(`🎬 Starting chunk ${currentChunkIdx}`);
@@ -211,6 +215,12 @@ export const useTranscription = () => {
     };
 
     mediaRecorder.onstop = async () => {
+      // Only process if this MediaRecorder is still the active one (not dropped)
+      if (mediaRecorderRef.current !== mediaRecorder) {
+        console.log(`🚫 Chunk ${currentChunkIdx} MediaRecorder was dropped, skipping processing`);
+        return;
+      }
+
       isChunkRecordingRef.current = false;
       const audioBlob = new Blob(audioChunksRef.current, {
         type: 'audio/webm;codecs=opus',
@@ -219,7 +229,7 @@ export const useTranscription = () => {
       console.log(`🛑 Chunk ${currentChunkIdx} stopped, blob size: ${audioBlob.size} bytes`);
 
       // Only transcribe if we have meaningful audio data
-      if (audioBlob.size > 1000) { // Minimum size check
+      if (audioBlob.size > 1000) {
         await transcribeChunk(audioBlob, currentChunkIdx);
       } else {
         console.log(`⚠️ Chunk ${currentChunkIdx} too small (${audioBlob.size} bytes), skipping transcription`);
@@ -237,26 +247,65 @@ export const useTranscription = () => {
       return;
     }
 
-    // Check minimum duration before allowing split
-    const chunkDuration = (Date.now() - chunkStartTimeRef.current) / 1000;
-    if (chunkDuration < MIN_CHUNK_DURATION) {
-      console.log(`⏱️ Chunk ${chunkCountRef.current} too short (${chunkDuration.toFixed(2)}s < ${MIN_CHUNK_DURATION}s), skipping split`);
-      return;
-    }
+    const speechDuration = speechDurationRef.current;
+    const currentChunkIdx = chunkCountRef.current;
 
-    console.log(`🔚 Ending chunk ${chunkCountRef.current}, starting new chunk...`);
-    mediaRecorderRef.current.stop();
+    // Always stop the current recording first
+    console.log(`🔚 Ending chunk ${currentChunkIdx} with ${speechDuration.toFixed(2)}s speech`);
 
-    // Immediately start next chunk to avoid gaps
-    setTimeout(() => {
-      console.log(`📊 Refs check: isRecording=${isRecordingRef.current}, isPaused=${isPausedRef.current}`);
+    // Check if we have enough speech content to send to Deepgram
+    if (speechDuration >= MIN_SPEECH_DURATION) {
+      console.log(`✅ Chunk ${currentChunkIdx} has sufficient speech (${speechDuration.toFixed(2)}s ≥ ${MIN_SPEECH_DURATION}s), sending to Deepgram`);
+
+      // Stop MediaRecorder and let onstop handle transcription
+      mediaRecorderRef.current.stop();
+
+      // Start next chunk after a brief delay to ensure proper cleanup
+      setTimeout(() => {
+        console.log(`📊 Refs check: isRecording=${isRecordingRef.current}, isPaused=${isPausedRef.current}`);
+        if (isRecordingRef.current && !isPausedRef.current) {
+          console.log(`🔄 Starting new chunk after ${currentChunkIdx}`);
+          startChunk();
+        } else {
+          console.log(`❌ Not starting new chunk: isRecording=${isRecordingRef.current}, isPaused=${isPausedRef.current}`);
+        }
+      }, 100); // Increased delay for better stability
+    } else {
+      console.log(`🗑️ Chunk ${currentChunkIdx} insufficient speech (${speechDuration.toFixed(2)}s < ${MIN_SPEECH_DURATION}s), dropping silently`);
+
+      // Immediately stop the MediaRecorder for dropped chunks
+      const currentMediaRecorder = mediaRecorderRef.current;
+      mediaRecorderRef.current = null; // Clear reference to prevent onstop from processing
+      isChunkRecordingRef.current = false;
+
+      // Stop the recorder (its onstop won't process since we cleared the ref)
+      currentMediaRecorder.stop();
+
+      // Remove the pending chunk from UI state since we're not sending it
+      setState(prev => ({
+        ...prev,
+        chunkTranscripts: prev.chunkTranscripts.filter(ct => ct.chunk !== currentChunkIdx),
+        totalChunks: prev.totalChunks - 1,
+      }));
+
+      // Decrement chunk count since we're dropping this one
+      chunkCountRef.current -= 1;
+
+      // Start next chunk immediately since we're dropping this one with a longer delay
       if (isRecordingRef.current && !isPausedRef.current) {
-        console.log(`🔄 Starting new chunk after ${chunkCountRef.current}`);
-        startChunk();
-      } else {
-        console.log(`❌ Not starting new chunk: isRecording=${isRecordingRef.current}, isPaused=${isPausedRef.current}`);
+        console.log(`🔄 Starting replacement chunk for dropped ${currentChunkIdx}`);
+
+        // Reset timing reference to current time to avoid immediate silence detection
+        if (audioContextRef.current) {
+          lastSpokeAtRef.current = audioContextRef.current.currentTime;
+          console.log(`🔄 Reset lastSpokeAt to ${lastSpokeAtRef.current.toFixed(2)}s`);
+        }
+
+        setTimeout(() => {
+          startChunk();
+        }, 150); // Longer delay for dropped chunks
       }
-    }, 50); // Small delay to ensure clean chunk boundary
+    }
   }, [startChunk]);
 
   // VAD monitoring loop
@@ -275,37 +324,60 @@ export const useTranscription = () => {
     // Voice activity detection with noise filtering
     if (volume > VOLUME_THRESHOLD) {
       speechFrameCountRef.current += 1;
-      // Only confirm speech after consecutive frames above threshold
+
+      // Accumulate speech time for active chunks (regardless of confirmation frames)
+      if (isChunkRecordingRef.current) {
+        speechDurationRef.current += 1 / 60;
+      }
+
+      // Only confirm speech after consecutive frames above threshold (for chunk starting)
       if (speechFrameCountRef.current >= SPEECH_CONFIRMATION_FRAMES) {
         lastSpokeAtRef.current = currentTime;
+
+        // Start first chunk when speech is detected (delayed start)
+        if (isWaitingForSpeechRef.current && !isChunkRecordingRef.current) {
+          console.log(`🎤 First speech detected, starting initial chunk at ${currentTime.toFixed(2)}s`);
+          isWaitingForSpeechRef.current = false;
+          firstChunkStartedRef.current = true;
+          startChunk();
+        }
+
         // Clear no input warning when speech detected
         setState(prev => ({ ...prev, noInputWarning: false }));
-        console.log(`🎤 Speech confirmed: volume=${volume.toFixed(4)}, frames=${speechFrameCountRef.current}`);
+
+        if (speechFrameCountRef.current === SPEECH_CONFIRMATION_FRAMES) {
+          console.log(`🎤 Speech confirmed: volume=${volume.toFixed(4)}, currentTime=${currentTime.toFixed(2)}s, speechTime=${speechDurationRef.current.toFixed(2)}s, chunkRecording=${isChunkRecordingRef.current}`);
+        }
       }
     } else {
-      // Reset speech frame counter when volume drops
+      // Reset speech frame counter when volume drops (for detection only)
       speechFrameCountRef.current = 0;
     }
 
-    // Check for silence to trigger chunk end
+    // Check for silence to trigger chunk end (only if we have an active chunk)
     const silenceDuration = currentTime - lastSpokeAtRef.current;
     if (isChunkRecordingRef.current && silenceDuration > SILENCE_THRESHOLD) {
-      console.log(`🔇 Silence detected for ${silenceDuration.toFixed(2)}s, ending chunk ${chunkCountRef.current}`);
+      console.log(`🔇 Silence detected for ${silenceDuration.toFixed(2)}s at time ${currentTime.toFixed(2)}s, ending chunk ${chunkCountRef.current}`);
       endChunk();
     }
 
-    // Debug: Log long silences
-    if (silenceDuration > 1 && silenceDuration < 1.1) {
-      console.log(`⏱️ Silence duration: ${silenceDuration.toFixed(2)}s (threshold: ${SILENCE_THRESHOLD}s)`);
+    // Debug: Log silence duration periodically (but not too frequently)
+    if (silenceDuration > 1 && silenceDuration < 1.1 && isChunkRecordingRef.current) {
+      console.log(`⏱️ Silence duration: ${silenceDuration.toFixed(2)}s (threshold: ${SILENCE_THRESHOLD}s), currentTime: ${currentTime.toFixed(2)}s, lastSpoke: ${lastSpokeAtRef.current.toFixed(2)}s`);
     }
 
-    // No input warning after 5 seconds of silence
-    if (silenceDuration > 5) {
+    // Debug: Log when we're waiting for speech
+    if (isWaitingForSpeechRef.current && volume > VOLUME_THRESHOLD / 2) {
+      console.log(`👂 Waiting for speech, detected volume: ${volume.toFixed(4)} (threshold: ${VOLUME_THRESHOLD.toFixed(4)}), frames: ${speechFrameCountRef.current}/${SPEECH_CONFIRMATION_FRAMES}`);
+    }
+
+    // No input warning after 5 seconds of silence (only after first chunk has started)
+    if (silenceDuration > 5 && firstChunkStartedRef.current) {
       setState(prev => ({ ...prev, noInputWarning: true }));
     }
 
     vadLoopRef.current = requestAnimationFrame(vadLoop);
-  }, [measureVolume, endChunk]);
+  }, [measureVolume, endChunk, startChunk]);
 
   // Initialize audio context and VAD
   const initializeAudio = useCallback(async () => {
@@ -379,6 +451,9 @@ export const useTranscription = () => {
     lastSpokeAtRef.current = 0;
     isChunkRecordingRef.current = false;
     speechFrameCountRef.current = 0;
+    speechDurationRef.current = 0;
+    firstChunkStartedRef.current = false;
+    isWaitingForSpeechRef.current = false;
 
     setState(prev => ({
       ...prev,
@@ -417,8 +492,18 @@ export const useTranscription = () => {
       setTranscription('', true);
       setError(null);
 
-      // Start first chunk and VAD monitoring
-      startChunk();
+      // Reset all chunk-related refs
+      firstChunkStartedRef.current = false;
+      isWaitingForSpeechRef.current = true;
+      chunkCountRef.current = 0;
+
+      // Initialize timing reference
+      if (audioContextRef.current) {
+        lastSpokeAtRef.current = audioContextRef.current.currentTime;
+        console.log(`🚀 Recording started, waiting for speech. Initial time: ${lastSpokeAtRef.current.toFixed(2)}s`);
+      }
+
+      // Start VAD monitoring (but don't start first chunk until speech detected)
       vadLoop();
     } catch (error: any) {
       setState(prev => ({
@@ -430,7 +515,7 @@ export const useTranscription = () => {
       setError(`Failed to start recording: ${error.message}`);
       cleanupAudio();
     }
-  }, [initializeAudio, setStatus, setTranscription, setError, startChunk, vadLoop, cleanupAudio]);
+  }, [initializeAudio, setStatus, setTranscription, setError, vadLoop, cleanupAudio]);
 
   // Stop recording and finalize transcription
   const stopRecording = useCallback(() => {

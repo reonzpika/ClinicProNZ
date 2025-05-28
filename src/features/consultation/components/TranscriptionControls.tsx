@@ -39,6 +39,9 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
     totalChunks,
   } = useTranscription();
 
+  // Determine if we're waiting for speech to start
+  const isWaitingForSpeech = isRecording && totalChunks === 0;
+
   // Pulsing dot for recording feedback
   const RecordingDot = () => (
     <span className="mr-2 inline-block size-3 animate-pulse rounded-full bg-red-500 align-middle" title="Recording" />
@@ -184,7 +187,12 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
             {isRecording && (
               <>
                 <VolumeMeter />
-                {noInputWarning && (
+                {isWaitingForSpeech && (
+                  <div className="mt-1 text-xs text-blue-600 font-medium">
+                    🎤 Ready to record - speak to start the first chunk
+                  </div>
+                )}
+                {noInputWarning && !isWaitingForSpeech && (
                   <div className="mt-1 text-xs text-red-500">We're not hearing anything—check your mic.</div>
                 )}
               </>
@@ -284,11 +292,20 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
                 </div>
               )}
 
+              {/* Waiting for speech message */}
+              {isWaitingForSpeech && (
+                <div className="rounded-md bg-blue-50 p-2 text-xs text-blue-800">
+                  <p className="font-medium">🎤 Listening for your voice...</p>
+                  <p className="mt-1">The first chunk will start automatically when you begin speaking.</p>
+                </div>
+              )}
+
               {/* Instructions for first-time users */}
               {!transcript && !isRecording && totalChunks === 0 && (
                 <div className="rounded-md bg-blue-50 p-2 text-xs text-blue-800">
                   <p className="font-medium">How it works:</p>
                   <ul className="ml-3 mt-1 list-disc space-y-0.5">
+                    <li>Start recording - system waits for your voice</li>
                     <li>Recording auto-splits on 2+ seconds of silence</li>
                     <li>Each chunk transcribes in real-time as you speak</li>
                     <li>Full transcript builds progressively</li>
