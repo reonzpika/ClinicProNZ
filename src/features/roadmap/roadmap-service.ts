@@ -1,4 +1,4 @@
-import { Feature, FeatureRequest } from './types';
+import type { Feature, FeatureRequest } from './types';
 
 export async function getFeatures(): Promise<{
   planned: Feature[];
@@ -6,7 +6,9 @@ export async function getFeatures(): Promise<{
   completed: Feature[];
 }> {
   const res = await fetch('/api/roadmap/features');
-  if (!res.ok) throw new Error('Failed to fetch features');
+  if (!res.ok) {
+    throw new Error('Failed to fetch features');
+  }
   return res.json();
 }
 
@@ -26,4 +28,4 @@ export async function submitFeatureRequest(data: Omit<FeatureRequest, 'id' | 'cr
     body: JSON.stringify(data),
   });
   return res.json();
-} 
+}

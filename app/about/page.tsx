@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import React from 'react';
 
 import { Footer } from '@/shared/components/Footer';
@@ -67,6 +68,23 @@ export default function AboutPage() {
                     </p>
                   </div>
                 </section>
+
+                <section>
+                  <h3 className="mb-4 text-xl font-semibold text-gray-900">
+                    Learn More About AI Scribing
+                  </h3>
+                  <div className="rounded-lg border border-blue-200 bg-blue-50 p-6">
+                    <p className="mb-4 text-gray-700">
+                      Interested in understanding AI scribing tools for New Zealand primary care? We've compiled comprehensive guidance covering benefits, risks, consent processes, and practical considerations specifically for Kiwi GPs.
+                    </p>
+                    <Link
+                      href="/ai-scribing"
+                      className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                    >
+                      Read AI Scribing Guide →
+                    </Link>
+                  </div>
+                </section>
               </div>
 
               <hr className="my-8 border-gray-200" />
@@ -87,4 +105,4 @@ export default function AboutPage() {
       <Footer />
     </div>
   );
-} 
+}

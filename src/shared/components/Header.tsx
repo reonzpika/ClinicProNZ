@@ -58,19 +58,21 @@ export const Header = () => {
             >
               Templates
             </button>
-            <Link href="/about" className="text-xs hover:text-blue-600">
-              About
-            </Link>
-            <Link href="/privacy-info" className="text-xs hover:text-blue-600">
-              Privacy
-            </Link>
-            <Link href="/roadmap" className="text-xs hover:text-blue-600">
-              Roadmap
-            </Link>
           </div>
         </div>
 
         <div className="flex items-center space-x-2">
+          <div className="hidden items-center space-x-2 md:flex">
+            <Link href="/about" className="text-xs hover:text-blue-600">
+              About
+            </Link>
+            <Link href="/roadmap" className="text-xs hover:text-blue-600">
+              Roadmap
+            </Link>
+            <Link href="/privacy-info" className="text-xs hover:text-blue-600">
+              Privacy
+            </Link>
+          </div>
           <button
             className="rounded-lg border border-yellow-500 bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-700 hover:bg-yellow-100"
             onClick={() => {

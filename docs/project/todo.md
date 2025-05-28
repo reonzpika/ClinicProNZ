@@ -23,12 +23,16 @@
 ### Privacy Page Structure [x]
 ### Privacy Info Page [x]
 ### About Page [x]
+### AI Scribing Guide Page [x]
+### Terms of Service Page [x]
 
 ## Current Sprint Tasks
 ### UI & Info Pages
 - [x] About page
 - [x] Privacy page (structure complete)
 - [x] Privacy info page (user-friendly summary)
+- [x] AI Scribing guide page (comprehensive NZ-specific guidance)
+- [x] Terms of Service page (comprehensive legal terms)
 - [ ] Polish roadmap page (update features, statuses)
 - [ ] Polish feedback modal (copy, style, etc.)
 

@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, integer, timestamp, pgEnum } from 'drizzle-orm/pg-core';
+import { integer, pgEnum, pgTable, serial, timestamp, varchar } from 'drizzle-orm/pg-core';
 
 export const featureStatusEnum = pgEnum('feature_status', ['planned', 'in_progress', 'completed']);
 
@@ -9,4 +9,4 @@ export const features = pgTable('features', {
   status: featureStatusEnum('status').notNull(),
   vote_count: integer('vote_count').notNull().default(0),
   created_at: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-}); 
+});

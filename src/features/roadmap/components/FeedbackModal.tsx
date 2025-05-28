@@ -1,3 +1,4 @@
+/* eslint-disable react-dom/no-missing-button-type */
 import React, { useState } from 'react';
 
 type FeedbackModalProps = {
@@ -41,11 +42,12 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ open, onClose, onS
         <h2 className="mb-2 text-lg font-semibold">💡 Got an idea to make your life easier?</h2>
         <p className="mb-4 text-sm text-gray-600">We'd love to hear from you.</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <label className="text-sm font-medium">
+          <label htmlFor="idea-input" className="text-sm font-medium">
             📌 What's your idea?
             <span className="text-red-500">*</span>
           </label>
           <input
+            id="idea-input"
             className="rounded border px-2 py-1"
             value={idea}
             onChange={e => setIdea(e.target.value)}
@@ -53,16 +55,18 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ open, onClose, onS
             maxLength={256}
             placeholder="Describe your idea in one sentence"
           />
-          <label className="text-sm font-medium">✍️ Tell us more (optional)</label>
+          <label htmlFor="details-textarea" className="text-sm font-medium">✍️ Tell us more (optional)</label>
           <textarea
+            id="details-textarea"
             className="rounded border px-2 py-1"
             value={details}
             onChange={e => setDetails(e.target.value)}
             maxLength={1024}
             placeholder="Add more details if you like"
           />
-          <label className="text-sm font-medium">📧 Your email (optional)</label>
+          <label htmlFor="email-input" className="text-sm font-medium">📧 Your email (optional)</label>
           <input
+            id="email-input"
             className="rounded border px-2 py-1"
             type="email"
             value={email}
