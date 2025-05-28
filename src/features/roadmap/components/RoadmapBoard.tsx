@@ -79,30 +79,32 @@ export const RoadmapBoard: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto max-w-5xl px-2 py-8">
-      <h1 className="mb-2 text-2xl font-bold">📌 Roadmap: What's coming next</h1>
-      <div className="mb-4 flex gap-4 border-b pb-2 text-center">
-        <div className="flex-1 font-semibold text-yellow-600">🟡 Planned</div>
-        <div className="flex-1 font-semibold text-blue-600">🔵 In Progress</div>
-        <div className="flex-1 font-semibold text-green-600">✅ Completed</div>
+    <div className="mx-auto max-w-5xl px-2 py-6">
+      <div className="mb-3 flex gap-4 border-b pb-2 text-center">
+        <div className="flex-1 font-medium text-yellow-600">🟡 Planned</div>
+        <div className="flex-1 font-semibold text-blue-700 bg-blue-100 rounded px-2 py-1">🔵 In Progress</div>
+        <div className="flex-1 font-medium text-green-600">✅ Completed</div>
       </div>
       {loading
         ? (
-            <div className="py-8 text-center">Loading roadmap...</div>
+            <div className="py-6 text-center">Loading roadmap...</div>
           )
         : (
-            <div className="flex flex-col gap-4 md:flex-row">
+            <div className="flex flex-col gap-3 md:flex-row">
               <div className="flex-1">
                 {features.planned.length === 0 && <div className="text-sm text-gray-400">No planned features yet.</div>}
                 {features.planned.map(f => (
                   <FeatureCard key={f.id} feature={f} onVote={handleVote} voted={voted.includes(f.id)} />
                 ))}
               </div>
-              <div className="flex-1">
-                {features.in_progress.length === 0 && <div className="text-sm text-gray-400">No features in progress.</div>}
-                {features.in_progress.map(f => (
-                  <FeatureCard key={f.id} feature={f} onVote={handleVote} voted={voted.includes(f.id)} />
-                ))}
+              <div className="flex-1 relative">
+                <div className="absolute inset-0 bg-blue-50 rounded-lg -mx-2"></div>
+                <div className="relative">
+                  {features.in_progress.length === 0 && <div className="text-sm text-gray-400">No features in progress.</div>}
+                  {features.in_progress.map(f => (
+                    <FeatureCard key={f.id} feature={f} onVote={handleVote} voted={voted.includes(f.id)} />
+                  ))}
+                </div>
               </div>
               <div className="flex-1">
                 {features.completed.length === 0 && <div className="text-sm text-gray-400">No completed features yet.</div>}
@@ -112,10 +114,10 @@ export const RoadmapBoard: React.FC = () => {
               </div>
             </div>
           )}
-      <div className="mt-8 flex flex-col items-center border-t pt-6">
-        <div className="mb-2 text-lg font-medium">💡 Got an idea to make your life easier?</div>
+      <div className="mt-6 flex flex-col items-center border-t pt-4">
+        <div className="mb-2 text-base font-medium">💡 Got an idea to make your life easier?</div>
         <button
-          className="rounded bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700"
+          className="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
           onClick={() => {
             setModalOpen(true);
             setFeedbackSuccess(false);
