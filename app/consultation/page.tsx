@@ -25,11 +25,9 @@ export default function ConsultationPage() {
     setLastGeneratedInput,
   } = useConsultation();
   const [loading, setLoading] = useState(false);
-  const [resetTranscriptionSignal, setResetTranscriptionSignal] = useState(0);
   const [isNoteFocused, setIsNoteFocused] = useState(false);
 
   const handleClearAll = () => {
-    setResetTranscriptionSignal(s => s + 1);
     setIsNoteFocused(false);
     // The following should be called in GeneratedNotes, but for clarity, you can also call context resets here if needed
     // resetConsultation();
@@ -96,7 +94,7 @@ export default function ConsultationPage() {
                 </Card>
 
                 {/* Transcription Controls */}
-                <TranscriptionControls resetSignal={resetTranscriptionSignal} collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
+                <TranscriptionControls collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
 
                 {/* Quick Notes */}
                 <QuickNotes collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
