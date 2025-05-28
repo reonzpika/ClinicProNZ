@@ -8,9 +8,8 @@ export type ConsultationState = {
   templateId: string;
   status: 'idle' | 'recording' | 'processing' | 'completed';
   transcription: {
-    interim: string;
+    transcript: string;
     isLive: boolean;
-    interimBuffer: string;
   };
   quickNotes: string[];
   generatedNotes: string | null;
@@ -33,7 +32,7 @@ const defaultState: ConsultationState = {
   sessionId: '',
   templateId: MULTIPROBLEM_SOAP_UUID,
   status: 'idle',
-  transcription: { interim: '', isLive: false, interimBuffer: '' },
+  transcription: { transcript: '', isLive: false },
   quickNotes: [],
   generatedNotes: null,
   error: null,
@@ -50,7 +49,7 @@ const ConsultationContext = createContext<
   | (ConsultationState & {
     setStatus: (status: ConsultationState['status']) => void;
     setTemplateId: (id: string) => void;
-    setTranscription: (interim: string, isLive: boolean) => void;
+    setTranscription: (transcript: string, isLive: boolean) => void;
     addQuickNote: (note: string) => void;
     deleteQuickNote: (index: number) => void;
     clearQuickNotes: () => void;
@@ -101,31 +100,14 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
   const setTemplateId = useCallback((templateId: string) =>
     setState(prev => ({ ...prev, templateId })), []);
 
-  const setTranscription = useCallback((interim: string, isLive: boolean) => {
-    setState((prev) => {
-      if (isLive) {
-        return {
-          ...prev,
-          transcription: {
-            ...prev.transcription,
-            interim,
-            isLive: true,
-          },
-        };
-      } else {
-        return {
-          ...prev,
-          transcription: {
-            interim: '',
-            isLive: false,
-            interimBuffer: (prev.transcription.interimBuffer
-              ? `${prev.transcription.interimBuffer} ${interim}`.trim()
-              : interim
-            ),
-          },
-        };
-      }
-    });
+  const setTranscription = useCallback((transcript: string, isLive: boolean) => {
+    setState(prev => ({
+      ...prev,
+      transcription: {
+        transcript,
+        isLive,
+      },
+    }));
   }, []);
 
   const addQuickNote = useCallback((note: string) =>
@@ -179,13 +161,13 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       userDefaultTemplateId: prev.userDefaultTemplateId,
       lastGeneratedTranscription: '',
       lastGeneratedQuickNotes: [],
-      transcription: { interim: '', isLive: false, interimBuffer: '' },
+      transcription: { transcript: '', isLive: false },
     }));
   }, []);
 
   const getCurrentTranscript = useCallback(() => {
-    return state.transcription.interimBuffer.trim();
-  }, [state.transcription.interimBuffer]);
+    return state.transcription.transcript.trim();
+  }, [state.transcription.transcript]);
 
   const setQuickNotes = useCallback((notes: string[]) =>
     setState(prev => ({ ...prev, quickNotes: notes })), []);

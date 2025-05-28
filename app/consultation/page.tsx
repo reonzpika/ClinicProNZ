@@ -38,7 +38,7 @@ export default function ConsultationPage() {
     setIsNoteFocused(true);
     setLoading(true);
     setError(null);
-    const transcript = transcription.interimBuffer;
+    const transcript = transcription.transcript;
     try {
       const res = await fetch('/api/consultation/notes', {
         method: 'POST',

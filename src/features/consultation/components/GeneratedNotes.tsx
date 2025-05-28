@@ -35,20 +35,17 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
 
   // Button enable logic
   const hasInput
-    = (transcription.interimBuffer && transcription.interimBuffer.trim() !== '')
-      || (transcription.interim && transcription.interim.trim() !== '')
+    = (transcription.transcript && transcription.transcript.trim() !== '')
       || (quickNotes && quickNotes.length > 0);
   const isInputChanged
-    = transcription.interimBuffer !== (lastGeneratedTranscription || '')
-      || transcription.interim !== ''
+    = transcription.transcript !== (lastGeneratedTranscription || '')
       || !areQuickNotesEqual(quickNotes, lastGeneratedQuickNotes || []);
   const canGenerate = hasInput && isInputChanged;
 
   const hasContent = !!(generatedNotes && generatedNotes.trim() !== '');
   const hasAnyState
     = hasContent
-      || (transcription.interimBuffer && transcription.interimBuffer.trim() !== '')
-      || (transcription.interim && transcription.interim.trim() !== '')
+      || (transcription.transcript && transcription.transcript.trim() !== '')
       || (quickNotes && quickNotes.length > 0);
 
   // Copy to clipboard logic
