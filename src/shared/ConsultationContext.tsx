@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 export type ConsultationState = {
   sessionId: string;
@@ -95,13 +95,13 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
   }, [state]);
 
   // Helper functions
-  const setStatus = (status: ConsultationState['status']) =>
-    setState(prev => ({ ...prev, status }));
+  const setStatus = useCallback((status: ConsultationState['status']) =>
+    setState(prev => ({ ...prev, status })), []);
 
-  const setTemplateId = (templateId: string) =>
-    setState(prev => ({ ...prev, templateId }));
+  const setTemplateId = useCallback((templateId: string) =>
+    setState(prev => ({ ...prev, templateId })), []);
 
-  const setTranscription = (interim: string, isLive: boolean) => {
+  const setTranscription = useCallback((interim: string, isLive: boolean) => {
     setState((prev) => {
       if (isLive) {
         return {
@@ -126,27 +126,27 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
         };
       }
     });
-  };
+  }, []);
 
-  const addQuickNote = (note: string) =>
-    setState(prev => ({ ...prev, quickNotes: [...prev.quickNotes, note] }));
+  const addQuickNote = useCallback((note: string) =>
+    setState(prev => ({ ...prev, quickNotes: [...prev.quickNotes, note] })), []);
 
-  const deleteQuickNote = (index: number) =>
+  const deleteQuickNote = useCallback((index: number) =>
     setState(prev => ({
       ...prev,
       quickNotes: prev.quickNotes.filter((_, i) => i !== index),
-    }));
+    })), []);
 
-  const clearQuickNotes = () =>
-    setState(prev => ({ ...prev, quickNotes: [] }));
+  const clearQuickNotes = useCallback(() =>
+    setState(prev => ({ ...prev, quickNotes: [] })), []);
 
-  const setGeneratedNotes = (notes: string | null) =>
-    setState(prev => ({ ...prev, generatedNotes: notes }));
+  const setGeneratedNotes = useCallback((notes: string | null) =>
+    setState(prev => ({ ...prev, generatedNotes: notes })), []);
 
-  const setError = (error: string | null) =>
-    setState(prev => ({ ...prev, error }));
+  const setError = useCallback((error: string | null) =>
+    setState(prev => ({ ...prev, error })), []);
 
-  const setUserDefaultTemplateId = (id: string) => {
+  const setUserDefaultTemplateId = useCallback((id: string) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('userDefaultTemplateId', id);
     }
@@ -155,23 +155,23 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       userDefaultTemplateId: id,
       templateId: id,
     }));
-  };
+  }, []);
 
-  const setLastGeneratedInput = (transcription: string, quickNotes: string[]) =>
+  const setLastGeneratedInput = useCallback((transcription: string, quickNotes: string[]) =>
     setState(prev => ({
       ...prev,
       lastGeneratedTranscription: transcription,
       lastGeneratedQuickNotes: [...quickNotes],
-    }));
+    })), []);
 
-  const resetLastGeneratedInput = () =>
+  const resetLastGeneratedInput = useCallback(() =>
     setState(prev => ({
       ...prev,
       lastGeneratedTranscription: '',
       lastGeneratedQuickNotes: [],
-    }));
+    })), []);
 
-  const resetConsultation = () => {
+  const resetConsultation = useCallback(() => {
     setState(prev => ({
       ...defaultState,
       sessionId: generateSessionId(),
@@ -181,14 +181,14 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       lastGeneratedQuickNotes: [],
       transcription: { interim: '', isLive: false, interimBuffer: '' },
     }));
-  };
+  }, []);
 
-  const getCurrentTranscript = () => {
+  const getCurrentTranscript = useCallback(() => {
     return state.transcription.interimBuffer.trim();
-  };
+  }, [state.transcription.interimBuffer]);
 
-  const setQuickNotes = (notes: string[]) =>
-    setState(prev => ({ ...prev, quickNotes: notes }));
+  const setQuickNotes = useCallback((notes: string[]) =>
+    setState(prev => ({ ...prev, quickNotes: notes })), []);
 
   const value = useMemo(() => ({
     ...state,
@@ -209,7 +209,23 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     lastGeneratedQuickNotes: state.lastGeneratedQuickNotes || [],
     userDefaultTemplateId: state.userDefaultTemplateId,
     getCurrentTranscript,
-  }), [state, setStatus, setTemplateId, addQuickNote, deleteQuickNote, clearQuickNotes, setTranscription, setGeneratedNotes, setError, resetConsultation, setUserDefaultTemplateId, setLastGeneratedInput, resetLastGeneratedInput]);
+  }), [
+    state,
+    setStatus,
+    setTemplateId,
+    addQuickNote,
+    deleteQuickNote,
+    clearQuickNotes,
+    setTranscription,
+    setGeneratedNotes,
+    setError,
+    resetConsultation,
+    setUserDefaultTemplateId,
+    setLastGeneratedInput,
+    resetLastGeneratedInput,
+    setQuickNotes,
+    getCurrentTranscript,
+  ]);
 
   return (
     <ConsultationContext.Provider value={value}>
