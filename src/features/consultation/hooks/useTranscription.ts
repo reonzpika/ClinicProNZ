@@ -260,16 +260,8 @@ export const useTranscription = () => {
       // Stop MediaRecorder and let onstop handle transcription
       mediaRecorderRef.current.stop();
 
-      // Start next chunk after a brief delay to ensure proper cleanup
-      setTimeout(() => {
-        console.log(`📊 Refs check: isRecording=${isRecordingRef.current}, isPaused=${isPausedRef.current}`);
-        if (isRecordingRef.current && !isPausedRef.current) {
-          console.log(`🔄 Starting new chunk after ${currentChunkIdx}`);
-          startChunk();
-        } else {
-          console.log(`❌ Not starting new chunk: isRecording=${isRecordingRef.current}, isPaused=${isPausedRef.current}`);
-        }
-      }, 100); // Increased delay for better stability
+      // Don't automatically start next chunk - wait for new speech to trigger chunk creation
+      // The VAD loop will handle starting new chunks when speech is detected
     } else {
       console.log(`🗑️ Chunk ${currentChunkIdx} insufficient speech (${speechDuration.toFixed(2)}s < ${MIN_SPEECH_DURATION}s), dropping silently`);
 
@@ -291,20 +283,8 @@ export const useTranscription = () => {
       // Decrement chunk count since we're dropping this one
       chunkCountRef.current -= 1;
 
-      // Start next chunk immediately since we're dropping this one with a longer delay
-      if (isRecordingRef.current && !isPausedRef.current) {
-        console.log(`🔄 Starting replacement chunk for dropped ${currentChunkIdx}`);
-
-        // Reset timing reference to current time to avoid immediate silence detection
-        if (audioContextRef.current) {
-          lastSpokeAtRef.current = audioContextRef.current.currentTime;
-          console.log(`🔄 Reset lastSpokeAt to ${lastSpokeAtRef.current.toFixed(2)}s`);
-        }
-
-        setTimeout(() => {
-          startChunk();
-        }, 150); // Longer delay for dropped chunks
-      }
+      // Don't create replacement chunks - wait for new speech to trigger chunk creation
+      // The VAD loop will handle starting new chunks when speech is detected
     }
   }, [startChunk]);
 
@@ -339,6 +319,12 @@ export const useTranscription = () => {
           console.log(`🎤 First speech detected, starting initial chunk at ${currentTime.toFixed(2)}s`);
           isWaitingForSpeechRef.current = false;
           firstChunkStartedRef.current = true;
+          startChunk();
+        }
+
+        // Start new chunk if we're in extended silence and detect speech again
+        if (!isWaitingForSpeechRef.current && !isChunkRecordingRef.current && firstChunkStartedRef.current) {
+          console.log(`🎤 Speech detected during extended silence, starting chunk ${chunkCountRef.current + 1} at ${currentTime.toFixed(2)}s`);
           startChunk();
         }
 
