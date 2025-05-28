@@ -15,18 +15,32 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
   const { error: contextError } = useConsultation();
   const {
     isRecording,
+    isPaused,
     isTranscribing,
     transcript,
     error,
     startRecording,
     stopRecording,
+    pauseRecording,
+    resumeRecording,
     resetTranscription,
+    volumeLevel,
+    noInputWarning,
   } = useTranscription();
 
   // Pulsing dot for recording feedback
-  // eslint-disable-next-line react/no-nested-components
   const RecordingDot = () => (
     <span className="mr-2 inline-block size-3 animate-pulse rounded-full bg-red-500 align-middle" title="Recording" />
+  );
+
+  // Simple volume meter bar
+  const VolumeMeter = () => (
+    <div className="mb-1 mt-2 h-2 w-full rounded bg-gray-200">
+      <div
+        className="h-2 rounded bg-green-500"
+        style={{ width: `${Math.min(volumeLevel * 5, 100)}%`, transition: 'width 0.1s' }}
+      />
+    </div>
   );
 
   if (collapsed) {
@@ -69,6 +83,26 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
                     Start Recording
                   </Button>
                 )}
+                {isRecording && !isPaused && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={pauseRecording}
+                    className="h-7 min-w-0 rounded border bg-white px-1 py-0.5 text-xs hover:bg-gray-100"
+                  >
+                    Pause
+                  </Button>
+                )}
+                {isRecording && isPaused && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={resumeRecording}
+                    className="h-7 min-w-0 rounded border bg-white px-1 py-0.5 text-xs hover:bg-gray-100"
+                  >
+                    Resume
+                  </Button>
+                )}
                 {isRecording && (
                   <Button
                     type="button"
@@ -91,6 +125,15 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
                 )}
               </div>
             </div>
+            {/* Volume meter and warning */}
+            {isRecording && (
+              <>
+                <VolumeMeter />
+                {noInputWarning && (
+                  <div className="mt-1 text-xs text-red-500">We're not hearing anything—check your mic.</div>
+                )}
+              </>
+            )}
             <div className="mt-2 space-y-1">
               {isTranscribing && (
                 <div className="flex items-center gap-2">

@@ -1,7 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import formidable from 'formidable';
-import fs from 'fs';
+import { Buffer } from 'node:buffer';
+
 import { createClient } from '@deepgram/sdk';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+
+export const runtime = 'nodejs'; // Ensure Node.js runtime for Buffer support
 
 export const config = {
   api: {
@@ -10,44 +13,35 @@ export const config = {
   },
 };
 
-// Helper to parse multipart form data
-async function parseForm(req: NextRequest): Promise<{ audio: Buffer; filename: string }> {
-  return new Promise((resolve, reject) => {
-    const form = formidable({ multiples: false });
-    form.parse(req as any, (err, fields, files) => {
-      if (err) return reject(err);
-      const file = files.audio;
-      if (!file) return reject(new Error('No audio file uploaded'));
-      const f = Array.isArray(file) ? file[0] : file;
-      fs.readFile(f.filepath, (err, data) => {
-        if (err) return reject(err);
-        resolve({ audio: data, filename: f.originalFilename || 'audio.webm' });
-      });
-    });
-  });
-}
-
 export async function POST(req: NextRequest) {
   try {
-    // Parse the uploaded audio file
-    const { audio, filename } = await parseForm(req);
+    // Parse multipart form data using Web API
+    const formData = await req.formData();
+    const file = formData.get('audio');
+    if (!file || typeof file === 'string') {
+      return NextResponse.json({ error: 'No audio file uploaded' }, { status: 400 });
+    }
+
+    // Convert file (Blob) to Buffer
+    const arrayBuffer = await file.arrayBuffer();
+    const audioBuffer = Buffer.from(arrayBuffer);
 
     // Initialize Deepgram client
     const deepgram = createClient(process.env.DEEPGRAM_API_KEY!);
 
     // Transcribe the audio file
     const { result, error } = await deepgram.listen.prerecorded.transcribeFile(
-      audio,
+      audioBuffer,
       {
         model: 'nova-3',
         punctuate: true,
         language: 'en-NZ',
         smart_format: true,
         redaction: { type: 'pii' },
-        diarize: true,
+        diarize: false,
         paragraphs: true,
-        utterances: true,
-      }
+        utterances: false,
+      },
     );
 
     if (error) {
@@ -56,7 +50,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Log the full Deepgram response for debugging
-    console.log('[Deepgram Full Response]', JSON.stringify(result, null, 2));
+    console.error('[Deepgram Full Response]', JSON.stringify(result, null, 2));
 
     // Extract transcript, paragraphs, metadata
     const alt = result?.results?.channels?.[0]?.alternatives?.[0];
@@ -69,4 +63,4 @@ export async function POST(req: NextRequest) {
     console.error('API error:', err);
     return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
   }
-} 
+}
