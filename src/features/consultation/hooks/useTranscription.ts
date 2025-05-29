@@ -13,7 +13,6 @@ type TranscriptionState = {
   isRecording: boolean;
   isPaused: boolean;
   isTranscribing: boolean;
-  transcript: string;
   error: string | null;
   audioBlob: Blob | null;
   paragraphs: any[];
@@ -37,13 +36,13 @@ export const useTranscription = () => {
     setStatus,
     setTranscription,
     setError,
+    transcription,
   } = useConsultation();
 
   const [state, setState] = useState<TranscriptionState>({
     isRecording: false,
     isPaused: false,
     isTranscribing: false,
-    transcript: '',
     error: null,
     audioBlob: null,
     paragraphs: [],
@@ -153,11 +152,13 @@ export const useTranscription = () => {
           .replace(/\s+/g, ' ')
           .trim();
 
+        // Send transcript directly to global consultation context
+        setTranscription(fullTranscript, prev.isRecording);
+
         return {
           ...prev,
           chunkTranscripts: updatedChunks,
           chunksCompleted: completedCount,
-          transcript: fullTranscript,
         };
       });
     } catch (error: any) {
@@ -423,7 +424,6 @@ export const useTranscription = () => {
         ...prev,
         isRecording: false, // Will be set to true after successful init
         error: null,
-        transcript: '',
         chunkTranscripts: [],
         chunksCompleted: 0,
         totalChunks: 0,
@@ -516,7 +516,6 @@ export const useTranscription = () => {
       isRecording: false,
       isPaused: false,
       isTranscribing: false,
-      transcript: '',
       error: null,
       audioBlob: null,
       paragraphs: [],
@@ -534,17 +533,6 @@ export const useTranscription = () => {
     setError(null);
   }, [cleanupAudio, setStatus, setTranscription, setError]);
 
-  // Update global transcript when chunks complete
-  useEffect(() => {
-    // Only update if transcript has actually changed and we have meaningful content
-    if (state.transcript
-      && state.transcript !== lastTranscriptSentRef.current
-      && (state.chunksCompleted > 0 || !state.isRecording)) {
-      lastTranscriptSentRef.current = state.transcript;
-      setTranscription(state.transcript, state.isRecording);
-    }
-  }, [state.transcript, state.chunksCompleted, state.isRecording, setTranscription]);
-
   // Legacy transcribeAudio method for compatibility (not used in VAD mode)
   const transcribeAudio = useCallback(async () => {
     // This method is not used in the new VAD-driven system
@@ -560,7 +548,21 @@ export const useTranscription = () => {
   }, [state.isPaused]);
 
   return {
-    ...state,
+    isRecording: state.isRecording,
+    isPaused: state.isPaused,
+    isTranscribing: state.isTranscribing,
+    transcript: transcription.transcript,
+    error: state.error,
+    audioBlob: state.audioBlob,
+    paragraphs: state.paragraphs,
+    metadata: state.metadata,
+    volumeLevel: state.volumeLevel,
+    noInputWarning: state.noInputWarning,
+    chunkTranscripts: state.chunkTranscripts,
+    chunksCompleted: state.chunksCompleted,
+    totalChunks: state.totalChunks,
+    recordingStart: state.recordingStart,
+    recordingEnd: state.recordingEnd,
     startRecording,
     stopRecording,
     pauseRecording,

@@ -33,8 +33,7 @@
 - [x] Privacy info page (user-friendly summary)
 - [x] AI Scribing guide page (comprehensive NZ-specific guidance)
 - [x] Terms of Service page (comprehensive legal terms)
-- [ ] Polish roadmap page (update features, statuses)
-- [ ] Polish feedback modal (copy, style, etc.)
+- [x] Polish roadmap page (update features, statuses)
 
 ### Privacy Policy Content Updates (High Priority)
 - [ ] Update effective date in privacy policy
@@ -42,6 +41,11 @@
 - [ ] Add email address for ConsultAI NZ
 - [ ] Add phone number for ConsultAI NZ
 - [ ] Review and finalize all privacy policy content with legal advisor
+
+### Improve the accuracy of Transcription
+- [ ] remove personal information from the transcription
+- [ ] theres a glitch where first word is sometimes not captured, need to fix
+- [ ] need to adjust the chunking algorithm. sometimes short answer like "yes" or "no" is not captured. if the recorded audio is too short, it should accumulate the audio until it has enough to make a decision.
 
 ## Future Features
 1. ACC integration (database of ACC codes, suggest based on generated note)

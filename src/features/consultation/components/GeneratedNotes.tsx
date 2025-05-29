@@ -62,9 +62,9 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
     }
   };
 
-  // Clear all handler: also reset last generated input
+  // Clear all handler: reset consultation context (transcript is now managed globally)
   const handleClearAll = () => {
-    resetConsultation();
+    resetConsultation(); // Clears all consultation data including transcript
     setQuickNotes([]);
     if (onClearAll) {
       onClearAll();
