@@ -223,6 +223,21 @@ export default function TemplatesPage() {
                       )}
                 </CardContent>
               </Card>
+
+              {/* How it works section */}
+              <Card>
+                <CardContent className="p-3">
+                  <div className="rounded-md bg-blue-50 p-3 text-xs text-blue-800">
+                    <p className="font-medium">How it works:</p>
+                    <ul className="ml-3 mt-1 list-disc space-y-0.5">
+                      <li>Create templates from scratch using "Create New" or copy existing ones</li>
+                      <li>Templates structure your consultation notes with consistent formatting</li>
+                      <li>Set a default template (★) to automatically use it for new consultations</li>
+                      <li>You can copy the default template and edit the example to customise it to your preferences</li>
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
             </Stack>
           </div>
 

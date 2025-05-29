@@ -23,22 +23,30 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
             <div className="space-y-2">
               <h3 className="mb-2 text-lg font-semibold">{template.name}</h3>
               <div>
-                <p className="text-sm text-muted-foreground">{template.description}</p>
+                <h4 className="mb-1 text-xs font-medium">Description</h4>
+                <div className="text-sm text-muted-foreground">
+                  {template.description?.replace(/\\n/g, '\n').split('\n').map((line, index) => (
+                    <div key={index} className={index > 0 ? 'mt-1' : ''}>
+                      {line.trim() || '\u00A0'}
+                    </div>
+                  ))}
+                </div>
               </div>
+              
+              {/* Example Output Section */}
               <div>
-                <h4 className="mb-1 text-xs font-medium">Instructions for the AI</h4>
-                <pre className="whitespace-pre-wrap rounded bg-muted p-1 text-xs">
-                  {template.prompts.prompt}
-                </pre>
-              </div>
-              {template.prompts.example && (
-                <div>
-                  <h4 className="mb-1 text-xs font-medium">Example Output</h4>
-                  <pre className="whitespace-pre-wrap rounded bg-muted p-1 text-xs">
+                <h4 className="mb-1 text-xs font-medium">Example Output</h4>
+                {template.prompts.example ? (
+                  <pre className="whitespace-pre-wrap rounded bg-muted p-2 text-xs">
                     {template.prompts.example}
                   </pre>
-                </div>
-              )}
+                ) : (
+                  <div className="rounded bg-muted p-2 text-xs text-muted-foreground italic">
+                    No example output available for this template
+                  </div>
+                )}
+              </div>
+
               <div>
                 <button
                   className="mt-2 text-xs text-blue-600 underline"

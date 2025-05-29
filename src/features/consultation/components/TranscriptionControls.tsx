@@ -1,7 +1,7 @@
 /* eslint-disable react/no-nested-components */
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 
 import { Section } from '@/shared/components/layout/Section';
 import { Stack } from '@/shared/components/layout/Stack';
@@ -10,10 +10,13 @@ import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { useConsultation } from '@/shared/ConsultationContext';
 
+import { ConsentModal } from './ConsentModal';
 import { useTranscription } from '../hooks/useTranscription';
 
 export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boolean; onExpand?: () => void }) {
-  const { error: contextError } = useConsultation();
+  const { error: contextError, consentObtained, setConsentObtained } = useConsultation();
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  
   const {
     isRecording,
     isPaused,
@@ -30,6 +33,27 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
     chunksCompleted,
     totalChunks,
   } = useTranscription();
+
+  // Handle start recording - show consent modal first if consent not obtained
+  const handleStartRecording = () => {
+    if (!consentObtained) {
+      setShowConsentModal(true);
+    } else {
+      startRecording();
+    }
+  };
+
+  // Handle consent confirmation
+  const handleConsentConfirm = () => {
+    setConsentObtained(true);
+    setShowConsentModal(false);
+    startRecording();
+  };
+
+  // Handle consent cancellation
+  const handleConsentCancel = () => {
+    setShowConsentModal(false);
+  };
 
   // Determine if we're waiting for speech to start
   const isWaitingForSpeech = isRecording && totalChunks === 0;
@@ -92,7 +116,7 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={startRecording}
+                    onClick={handleStartRecording}
                     className="h-7 min-w-0 rounded border bg-white px-1 py-0.5 text-xs hover:bg-gray-100"
                   >
                     Start Recording
@@ -195,6 +219,13 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
           </Section>
         </Stack>
       </CardContent>
+      
+      {/* Consent Modal */}
+      <ConsentModal
+        isOpen={showConsentModal}
+        onConfirm={handleConsentConfirm}
+        onCancel={handleConsentCancel}
+      />
     </Card>
   );
 }

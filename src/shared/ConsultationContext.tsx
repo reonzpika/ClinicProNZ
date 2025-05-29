@@ -17,6 +17,7 @@ export type ConsultationState = {
   userDefaultTemplateId: string | null;
   lastGeneratedTranscription?: string;
   lastGeneratedQuickNotes?: string[];
+  consentObtained: boolean;
 };
 
 const MULTIPROBLEM_SOAP_UUID = 'a9028cb5-0c2a-4af9-9cc1-4087a6204715';
@@ -39,6 +40,7 @@ const defaultState: ConsultationState = {
   userDefaultTemplateId: null,
   lastGeneratedTranscription: '',
   lastGeneratedQuickNotes: [],
+  consentObtained: false,
 };
 
 function generateSessionId() {
@@ -61,6 +63,7 @@ const ConsultationContext = createContext<
     resetLastGeneratedInput: () => void;
     getCurrentTranscript: () => string;
     setQuickNotes: (notes: string[]) => void;
+    setConsentObtained: (consent: boolean) => void;
   })
   | null
 >(null);
@@ -77,6 +80,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
           userDefaultTemplateId: userDefault,
           lastGeneratedTranscription: '',
           lastGeneratedQuickNotes: [],
+          consentObtained: false,
         };
       }
       return {
@@ -162,6 +166,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       lastGeneratedTranscription: '',
       lastGeneratedQuickNotes: [],
       transcription: { transcript: '', isLive: false },
+      consentObtained: false,
     }));
   }, []);
 
@@ -171,6 +176,9 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
 
   const setQuickNotes = useCallback((notes: string[]) =>
     setState(prev => ({ ...prev, quickNotes: notes })), []);
+
+  const setConsentObtained = useCallback((consent: boolean) =>
+    setState(prev => ({ ...prev, consentObtained: consent })), []);
 
   const value = useMemo(() => ({
     ...state,
@@ -187,6 +195,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setLastGeneratedInput,
     resetLastGeneratedInput,
     setQuickNotes,
+    setConsentObtained,
     lastGeneratedTranscription: state.lastGeneratedTranscription || '',
     lastGeneratedQuickNotes: state.lastGeneratedQuickNotes || [],
     userDefaultTemplateId: state.userDefaultTemplateId,
@@ -206,6 +215,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setLastGeneratedInput,
     resetLastGeneratedInput,
     setQuickNotes,
+    setConsentObtained,
     getCurrentTranscript,
   ]);
 

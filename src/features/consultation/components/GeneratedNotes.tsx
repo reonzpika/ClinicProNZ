@@ -8,6 +8,8 @@ import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { useConsultation } from '@/shared/ConsultationContext';
 
+import { useTranscription } from '../hooks/useTranscription';
+
 // TODO: Fix button enable logic so Generate Notes is clickable when there is only a transcription (without requiring a quick note). Currently, it only enables after a quick note is added.
 
 export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused }: { onGenerate?: () => void; onClearAll?: () => void; loading?: boolean; isNoteFocused?: boolean }) {
@@ -21,13 +23,36 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
     lastGeneratedQuickNotes,
     setGeneratedNotes,
     setQuickNotes,
+    consentObtained,
   } = useConsultation();
+
+  const { resetTranscription } = useTranscription();
 
   // Local UI state
   const [copySuccess, setCopySuccess] = useState(false);
 
   // Refs for auto-expanding textareas
   const mainTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Consent statement to append when consent was obtained
+  const CONSENT_STATEMENT = '\n\nPatient informed and consented verbally to the use of a digital assistant for recording and transcription during this consultation, in line with NZ Health Information Privacy Principles. The patient retains the right to pause or stop the recording at any time.';
+
+  // Computed value: generated notes with consent statement appended if consent was obtained
+  const displayNotes = React.useMemo(() => {
+    if (!generatedNotes) {
+      return '';
+    }
+    if (!consentObtained) {
+      return generatedNotes;
+    }
+
+    // Check if consent statement is already included to avoid duplication
+    if (generatedNotes.includes('Patient informed and consented verbally to the use of a digital assistant')) {
+      return generatedNotes;
+    }
+
+    return generatedNotes + CONSENT_STATEMENT;
+  }, [generatedNotes, consentObtained]);
 
   // Helper: deep equality for quickNotes
   const areQuickNotesEqual = (a: string[], b: string[]) =>
@@ -42,19 +67,19 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
       || !areQuickNotesEqual(quickNotes, lastGeneratedQuickNotes || []);
   const canGenerate = hasInput && isInputChanged;
 
-  const hasContent = !!(generatedNotes && generatedNotes.trim() !== '');
+  const hasContent = !!(displayNotes && displayNotes.trim() !== '');
   const hasAnyState
     = hasContent
       || (transcription.transcript && transcription.transcript.trim() !== '')
       || (quickNotes && quickNotes.length > 0);
 
-  // Copy to clipboard logic
+  // Copy to clipboard logic - use displayNotes which includes consent statement
   const handleCopy = async () => {
-    if (!generatedNotes) {
+    if (!displayNotes) {
       return;
     }
     try {
-      await navigator.clipboard.writeText(generatedNotes);
+      await navigator.clipboard.writeText(displayNotes);
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 1500);
     } catch {
@@ -62,9 +87,18 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
     }
   };
 
+  // Handle textarea changes - update the raw generated notes (without consent statement)
+  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    // Remove consent statement if user manually edits it out
+    const cleanedValue = value.replace(CONSENT_STATEMENT, '');
+    setGeneratedNotes(cleanedValue);
+  };
+
   // Clear all handler: reset consultation context (transcript is now managed globally)
   const handleClearAll = () => {
     resetConsultation(); // Clears all consultation data including transcript
+    resetTranscription(); // Also reset the transcription hook state
     setQuickNotes([]);
     if (onClearAll) {
       onClearAll();
@@ -82,7 +116,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
       textarea.style.height = `${newHeight}px`;
       textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden';
     }
-  }, [generatedNotes, isNoteFocused]);
+  }, [displayNotes, isNoteFocused]);
 
   return (
     <Card>
@@ -106,8 +140,8 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
           <Section>
             <textarea
               ref={mainTextareaRef}
-              value={generatedNotes || ''}
-              onChange={e => setGeneratedNotes(e.target.value)}
+              value={displayNotes || ''}
+              onChange={handleNotesChange}
               className="w-full rounded border bg-muted p-1 text-xs leading-tight text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary"
               placeholder="Generated notes will appear here..."
               style={{ minHeight: 100, maxHeight: 1000, resize: 'none', overflowY: 'auto' }}
