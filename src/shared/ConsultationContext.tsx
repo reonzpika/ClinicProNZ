@@ -3,6 +3,13 @@
 import type { ReactNode } from 'react';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
+export type ChatMessage = {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: number;
+};
+
 export type ConsultationState = {
   sessionId: string;
   templateId: string;
@@ -18,6 +25,10 @@ export type ConsultationState = {
   lastGeneratedTranscription?: string;
   lastGeneratedQuickNotes?: string[];
   consentObtained: boolean;
+  // Chatbot state
+  chatHistory: ChatMessage[];
+  isChatContextEnabled: boolean;
+  isChatLoading: boolean;
 };
 
 const MULTIPROBLEM_SOAP_UUID = 'a9028cb5-0c2a-4af9-9cc1-4087a6204715';
@@ -41,6 +52,10 @@ const defaultState: ConsultationState = {
   lastGeneratedTranscription: '',
   lastGeneratedQuickNotes: [],
   consentObtained: false,
+  // Chatbot defaults
+  chatHistory: [],
+  isChatContextEnabled: true,
+  isChatLoading: false,
 };
 
 function generateSessionId() {
@@ -64,6 +79,11 @@ const ConsultationContext = createContext<
     getCurrentTranscript: () => string;
     setQuickNotes: (notes: string[]) => void;
     setConsentObtained: (consent: boolean) => void;
+    // Chatbot functions
+    addChatMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => void;
+    clearChatHistory: () => void;
+    setChatContextEnabled: (enabled: boolean) => void;
+    setChatLoading: (loading: boolean) => void;
   })
   | null
 >(null);
@@ -180,6 +200,28 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
   const setConsentObtained = useCallback((consent: boolean) =>
     setState(prev => ({ ...prev, consentObtained: consent })), []);
 
+  // Chatbot helper functions
+  const addChatMessage = useCallback((message: Omit<ChatMessage, 'id' | 'timestamp'>) => {
+    const newMessage: ChatMessage = {
+      ...message,
+      id: Math.random().toString(36).substr(2, 9),
+      timestamp: Date.now(),
+    };
+    setState(prev => ({
+      ...prev,
+      chatHistory: [...prev.chatHistory, newMessage],
+    }));
+  }, []);
+
+  const clearChatHistory = useCallback(() =>
+    setState(prev => ({ ...prev, chatHistory: [] })), []);
+
+  const setChatContextEnabled = useCallback((enabled: boolean) =>
+    setState(prev => ({ ...prev, isChatContextEnabled: enabled })), []);
+
+  const setChatLoading = useCallback((loading: boolean) =>
+    setState(prev => ({ ...prev, isChatLoading: loading })), []);
+
   const value = useMemo(() => ({
     ...state,
     setStatus,
@@ -200,6 +242,11 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     lastGeneratedQuickNotes: state.lastGeneratedQuickNotes || [],
     userDefaultTemplateId: state.userDefaultTemplateId,
     getCurrentTranscript,
+    // Chatbot functions
+    addChatMessage,
+    clearChatHistory,
+    setChatContextEnabled,
+    setChatLoading,
   }), [
     state,
     setStatus,
@@ -217,6 +264,10 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setQuickNotes,
     setConsentObtained,
     getCurrentTranscript,
+    addChatMessage,
+    clearChatHistory,
+    setChatContextEnabled,
+    setChatLoading,
   ]);
 
   return (

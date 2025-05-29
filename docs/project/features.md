@@ -1,4 +1,3 @@
-
 # ConsultAI NZ Core Features
 
 ## 1. Live Transcription

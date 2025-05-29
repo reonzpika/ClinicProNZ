@@ -16,7 +16,7 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({ feature, onVote, voted
         🩺
         {feature.title}
       </div>
-      <div className="text-xs text-gray-700 leading-snug">{feature.description}</div>
+      <div className="text-xs leading-snug text-gray-700">{feature.description}</div>
       <div className="mt-1 flex items-center gap-4">
         <span className="text-xs text-gray-500">
           👥

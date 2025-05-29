@@ -1,4 +1,3 @@
-
 # ConsultAI NZ Vision
 
 ## Project Vision

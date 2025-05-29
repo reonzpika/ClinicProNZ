@@ -109,11 +109,11 @@ export const AccCodeSuggestions: React.FC = () => {
             {searchResults.map((s, i) => (
               <div key={i} className="flex flex-col rounded border bg-gray-50 p-2">
                 <span className="font-medium">{s.text}</span>
-                <span className="text-muted-foreground text-xs">
+                <span className="text-xs text-muted-foreground">
                   Read code:
                   {s.read_code}
                 </span>
-                <span className="text-muted-foreground text-xs">
+                <span className="text-xs text-muted-foreground">
                   Read term:
                   {s.read_term}
                 </span>
@@ -122,7 +122,7 @@ export const AccCodeSuggestions: React.FC = () => {
           </div>
         )}
         {searchResults.length === 0 && searchQuery && !searchLoading && !searchError && (
-          <div className="text-muted-foreground mb-4 text-xs">No matches found.</div>
+          <div className="mb-4 text-xs text-muted-foreground">No matches found.</div>
         )}
         {/* Divider */}
         <div className="my-4 border-b" />
@@ -137,7 +137,7 @@ export const AccCodeSuggestions: React.FC = () => {
         {suggestion && (
           <div className="flex flex-col space-y-2 rounded border bg-gray-50 p-3">
             <span className="font-medium">{suggestion.text}</span>
-            <span className="text-muted-foreground text-xs">
+            <span className="text-xs text-muted-foreground">
               Read code:
               {suggestion.read_code}
             </span>
@@ -149,7 +149,7 @@ export const AccCodeSuggestions: React.FC = () => {
                   <div className="mt-2">
                     <span className="text-warning-foreground text-sm">Injury description missing.</span>
                     {suggestion.missing_info && suggestion.missing_info.length > 0 && (
-                      <ul className="text-muted-foreground mt-1 list-inside list-disc text-xs">
+                      <ul className="mt-1 list-inside list-disc text-xs text-muted-foreground">
                         {suggestion.missing_info.map((q, i) => (
                           <li key={i}>{q}</li>
                         ))}

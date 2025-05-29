@@ -1,4 +1,3 @@
-
 # ConsultAI NZ Development Context
 
 ## Project Overview

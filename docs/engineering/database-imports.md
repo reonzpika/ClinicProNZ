@@ -57,4 +57,4 @@ export async function GET() {
 ## Related Documentation
 - [Project Structure](./project-structure.md)
 - [Database and API Setup](../project/database-api-setup.md)
-- [API Specification](./api-specification.md) 
+- [API Specification](./api-specification.md)

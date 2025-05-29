@@ -82,7 +82,7 @@ export const RoadmapBoard: React.FC = () => {
     <div className="mx-auto max-w-5xl px-2 py-6">
       <div className="mb-3 flex gap-4 border-b pb-2 text-center">
         <div className="flex-1 font-medium text-yellow-600">🟡 Planned</div>
-        <div className="flex-1 font-semibold text-blue-700 bg-blue-100 rounded px-2 py-1">🔵 In Progress</div>
+        <div className="flex-1 rounded bg-blue-100 px-2 py-1 font-semibold text-blue-700">🔵 In Progress</div>
         <div className="flex-1 font-medium text-green-600">✅ Completed</div>
       </div>
       {loading
@@ -97,8 +97,8 @@ export const RoadmapBoard: React.FC = () => {
                   <FeatureCard key={f.id} feature={f} onVote={handleVote} voted={voted.includes(f.id)} />
                 ))}
               </div>
-              <div className="flex-1 relative">
-                <div className="absolute inset-0 bg-blue-50 rounded-lg -mx-2"></div>
+              <div className="relative flex-1">
+                <div className="absolute inset-0 -mx-2 rounded-lg bg-blue-50"></div>
                 <div className="relative">
                   {features.in_progress.length === 0 && <div className="text-sm text-gray-400">No features in progress.</div>}
                   {features.in_progress.map(f => (

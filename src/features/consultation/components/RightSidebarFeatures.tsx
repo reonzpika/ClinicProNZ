@@ -3,10 +3,10 @@ import React from 'react';
 
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 
-import { AccCodeSuggestions } from './AccCodeSuggestions';
+import { ChatbotWidget } from './ChatbotWidget';
 
 const PlaceholderFeature: React.FC<{ title: string; description: string }> = ({ title, description }) => (
-  <Card className="mt-1">
+  <Card className="mb-4">
     <CardHeader>
       <h3 className="text-xs font-semibold">{title}</h3>
     </CardHeader>
@@ -21,7 +21,7 @@ const RightSidebarFeatures: React.FC = () => {
   return (
     <div>
       {/* AI Scribing Guide */}
-      <Card className="mb-2 border-blue-200 bg-blue-50">
+      <Card className="mb-4 border-blue-200 bg-blue-50">
         <CardHeader>
           <h3 className="text-xs font-semibold text-blue-900">📚 AI Scribing Guide</h3>
         </CardHeader>
@@ -38,7 +38,12 @@ const RightSidebarFeatures: React.FC = () => {
         </CardContent>
       </Card>
 
-      <AccCodeSuggestions />
+      {/* AI Chatbot */}
+      <div className="mb-4">
+        <ChatbotWidget />
+      </div>
+
+      <PlaceholderFeature title="ACC Code Suggestions" description="Automatic ACC code suggestions based on your consultation note." />
       <PlaceholderFeature title="NZ Guidelines" description="Relevant New Zealand clinical guidelines based on your note." />
       <PlaceholderFeature title="Red Flags" description="Highlight important red flags detected in the consultation note." />
       <PlaceholderFeature title="Patient Handouts" description="Suggest and provide patient education handouts." />

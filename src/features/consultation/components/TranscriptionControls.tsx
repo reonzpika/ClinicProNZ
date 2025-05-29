@@ -10,13 +10,13 @@ import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { useConsultation } from '@/shared/ConsultationContext';
 
-import { ConsentModal } from './ConsentModal';
 import { useTranscription } from '../hooks/useTranscription';
+import { ConsentModal } from './ConsentModal';
 
 export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boolean; onExpand?: () => void }) {
   const { error: contextError, consentObtained, setConsentObtained } = useConsultation();
   const [showConsentModal, setShowConsentModal] = useState(false);
-  
+
   const {
     isRecording,
     isPaused,
@@ -219,7 +219,7 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
           </Section>
         </Stack>
       </CardContent>
-      
+
       {/* Consent Modal */}
       <ConsentModal
         isOpen={showConsentModal}

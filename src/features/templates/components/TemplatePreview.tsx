@@ -32,19 +32,21 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
                   ))}
                 </div>
               </div>
-              
+
               {/* Example Output Section */}
               <div>
                 <h4 className="mb-1 text-xs font-medium">Example Output</h4>
-                {template.prompts.example ? (
-                  <pre className="whitespace-pre-wrap rounded bg-muted p-2 text-xs">
-                    {template.prompts.example}
-                  </pre>
-                ) : (
-                  <div className="rounded bg-muted p-2 text-xs text-muted-foreground italic">
-                    No example output available for this template
-                  </div>
-                )}
+                {template.prompts.example
+                  ? (
+                      <pre className="whitespace-pre-wrap rounded bg-muted p-2 text-xs">
+                        {template.prompts.example}
+                      </pre>
+                    )
+                  : (
+                      <div className="rounded bg-muted p-2 text-xs italic text-muted-foreground">
+                        No example output available for this template
+                      </div>
+                    )}
               </div>
 
               <div>
