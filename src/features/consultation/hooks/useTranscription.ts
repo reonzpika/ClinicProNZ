@@ -143,18 +143,6 @@ export const useTranscription = () => {
 
         const completedCount = updatedChunks.filter(ct => ct.status === 'completed').length;
 
-        // Build full transcript from completed chunks in order
-        const fullTranscript = updatedChunks
-          .filter(ct => ct.status === 'completed')
-          .sort((a, b) => a.chunk - b.chunk)
-          .map(ct => ct.text.trim())
-          .join(' ')
-          .replace(/\s+/g, ' ')
-          .trim();
-
-        // Send transcript directly to global consultation context
-        setTranscription(fullTranscript, prev.isRecording);
-
         return {
           ...prev,
           chunkTranscripts: updatedChunks,
@@ -546,6 +534,22 @@ export const useTranscription = () => {
   useEffect(() => {
     isPausedRef.current = state.isPaused;
   }, [state.isPaused]);
+
+  // Update global transcript when chunks are completed
+  useEffect(() => {
+    const fullTranscript = state.chunkTranscripts
+      .filter(ct => ct.status === 'completed')
+      .sort((a, b) => a.chunk - b.chunk)
+      .map(ct => ct.text.trim())
+      .join(' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // Only update if transcript has changed to avoid unnecessary updates
+    if (fullTranscript !== transcription.transcript) {
+      setTranscription(fullTranscript, state.isRecording);
+    }
+  }, [state.chunkTranscripts, state.isRecording, transcription.transcript, setTranscription]);
 
   return {
     isRecording: state.isRecording,

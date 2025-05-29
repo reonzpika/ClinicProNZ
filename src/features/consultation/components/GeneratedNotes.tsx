@@ -8,8 +8,6 @@ import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { useConsultation } from '@/shared/ConsultationContext';
 
-import { useTranscription } from '../hooks/useTranscription';
-
 // TODO: Fix button enable logic so Generate Notes is clickable when there is only a transcription (without requiring a quick note). Currently, it only enables after a quick note is added.
 
 export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused }: { onGenerate?: () => void; onClearAll?: () => void; loading?: boolean; isNoteFocused?: boolean }) {
@@ -25,8 +23,6 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
     setQuickNotes,
     consentObtained,
   } = useConsultation();
-
-  const { resetTranscription } = useTranscription();
 
   // Local UI state
   const [copySuccess, setCopySuccess] = useState(false);
@@ -98,7 +94,6 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
   // Clear all handler: reset consultation context (transcript is now managed globally)
   const handleClearAll = () => {
     resetConsultation(); // Clears all consultation data including transcript
-    resetTranscription(); // Also reset the transcription hook state
     setQuickNotes([]);
     if (onClearAll) {
       onClearAll();
