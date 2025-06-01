@@ -1,11 +1,15 @@
 /**
  * Builds the user prompt for the LLM using the new template model.
- * Combines the template prompt, example, transcription, and quick notes.
+ * Combines the template prompt, example, and input data based on mode.
+ * For audio mode: uses transcription + quickNotes
+ * For typed mode: uses typedInput as the complete input source
  */
 export function buildTemplatePrompt(
   prompts: { prompt: string; example?: string },
   transcription: string,
   quickNotes: string[],
+  typedInput?: string,
+  inputMode?: 'audio' | 'typed',
 ): string {
   let prompt = prompts.prompt;
 
@@ -13,10 +17,16 @@ export function buildTemplatePrompt(
     prompt += `\n\nFormat each problem using the structure below:\n${prompts.example}`;
   }
 
-  prompt += `\n\n=== TRANSCRIPTION START ===\n${transcription}\n=== TRANSCRIPTION END ===`;
+  if (inputMode === 'typed' && typedInput) {
+    // For typed mode, use the typed input as the complete consultation notes
+    prompt += `\n\n=== CONSULTATION NOTES START ===\n${typedInput}\n=== CONSULTATION NOTES END ===`;
+  } else {
+    // For audio mode (default), use transcription and quickNotes
+    prompt += `\n\n=== TRANSCRIPTION START ===\n${transcription}\n=== TRANSCRIPTION END ===`;
 
-  if (quickNotes?.length) {
-    prompt += `\n\n=== QUICKNOTE START ===\n${quickNotes.join('\n')}\n=== QUICKNOTE END ===`;
+    if (quickNotes?.length) {
+      prompt += `\n\n=== QUICKNOTE START ===\n${quickNotes.join('\n')}\n=== QUICKNOTE END ===`;
+    }
   }
 
   return prompt;

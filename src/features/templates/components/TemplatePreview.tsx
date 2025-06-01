@@ -65,7 +65,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
                   </pre>
                   <h4 className="mt-2 text-xs font-medium">Full Final Prompt (as sent to AI)</h4>
                   <pre className="whitespace-pre-wrap rounded bg-muted p-1 text-xs">
-                    {buildTemplatePrompt(template.prompts, sampleTranscription, sampleQuickNotes)}
+                    {buildTemplatePrompt(template.prompts, sampleTranscription, sampleQuickNotes, undefined, 'audio')}
                   </pre>
                 </div>
               )}

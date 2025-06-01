@@ -6,6 +6,7 @@ import { GeneratedNotes } from '@/features/consultation/components/GeneratedNote
 import { QuickNotes } from '@/features/consultation/components/QuickNotes';
 import RightSidebarFeatures from '@/features/consultation/components/RightSidebarFeatures';
 import { TranscriptionControls } from '@/features/consultation/components/TranscriptionControls';
+import { TypedInput } from '@/features/consultation/components/TypedInput';
 import { TemplateSelector } from '@/features/templates/components/TemplateSelector';
 import { Footer } from '@/shared/components/Footer';
 import { Header } from '@/shared/components/Header';
@@ -20,6 +21,8 @@ export default function ConsultationPage() {
     transcription,
     templateId,
     quickNotes,
+    typedInput,
+    inputMode,
     setGeneratedNotes,
     setError,
     setLastGeneratedInput,
@@ -38,15 +41,22 @@ export default function ConsultationPage() {
     setIsNoteFocused(true);
     setLoading(true);
     setError(null);
-    const transcript = transcription.transcript;
+
+    // Get input based on current mode
+    const transcript = inputMode === 'typed' ? '' : transcription.transcript;
+    const currentTypedInput = inputMode === 'typed' ? typedInput : '';
+    const currentQuickNotes = inputMode === 'typed' ? [] : quickNotes;
+
     try {
       const res = await fetch('/api/consultation/notes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           transcription: transcript,
+          typedInput: currentTypedInput,
           templateId,
-          quickNotes,
+          quickNotes: currentQuickNotes,
+          inputMode,
         }),
       });
       if (!res.body) {
@@ -65,7 +75,7 @@ export default function ConsultationPage() {
         notes += decoder.decode(value, { stream: true });
         setGeneratedNotes(notes);
       }
-      setLastGeneratedInput(transcript, quickNotes);
+      setLastGeneratedInput(transcript, currentQuickNotes, currentTypedInput);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate notes');
     } finally {
@@ -93,13 +103,25 @@ export default function ConsultationPage() {
                   </CardContent>
                 </Card>
 
-                {/* Transcription Controls */}
-                <TranscriptionControls collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
+                {/* Conditional Input Components Based on Mode */}
+                {inputMode === 'audio'
+                  ? (
+                      <>
+                        {/* Transcription Controls */}
+                        <TranscriptionControls collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
 
-                {/* Quick Notes */}
-                <QuickNotes collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
+                        {/* Quick Notes */}
+                        <QuickNotes collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
+                      </>
+                    )
+                  : (
+                      <>
+                        {/* Typed Input */}
+                        <TypedInput collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
+                      </>
+                    )}
 
-                {/* Generated Notes */}
+                {/* Generated Notes - Shared by both modes */}
                 <GeneratedNotes onGenerate={handleGenerateNotes} onClearAll={handleClearAll} loading={loading} isNoteFocused={isNoteFocused} />
               </Stack>
             </div>

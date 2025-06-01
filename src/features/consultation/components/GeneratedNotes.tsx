@@ -19,9 +19,12 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
     resetConsultation,
     lastGeneratedTranscription,
     lastGeneratedQuickNotes,
+    lastGeneratedTypedInput,
     setGeneratedNotes,
     setQuickNotes,
     consentObtained,
+    inputMode,
+    typedInput,
   } = useConsultation();
 
   // Local UI state
@@ -54,20 +57,21 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
   const areQuickNotesEqual = (a: string[], b: string[]) =>
     a.length === b.length && a.every((v, i) => v === b[i]);
 
-  // Button enable logic
-  const hasInput
-    = (transcription.transcript && transcription.transcript.trim() !== '')
-      || (quickNotes && quickNotes.length > 0);
-  const isInputChanged
-    = transcription.transcript !== (lastGeneratedTranscription || '')
-      || !areQuickNotesEqual(quickNotes, lastGeneratedQuickNotes || []);
+  // Button enable logic - updated for both input modes
+  const hasInput = inputMode === 'typed'
+    ? (typedInput && typedInput.trim() !== '')
+    : (transcription.transcript && transcription.transcript.trim() !== '') || (quickNotes && quickNotes.length > 0);
+
+  const isInputChanged = inputMode === 'typed'
+    ? typedInput !== (lastGeneratedTypedInput || '')
+    : transcription.transcript !== (lastGeneratedTranscription || '') || !areQuickNotesEqual(quickNotes, lastGeneratedQuickNotes || []);
+
   const canGenerate = hasInput && isInputChanged;
 
   const hasContent = !!(displayNotes && displayNotes.trim() !== '');
-  const hasAnyState
-    = hasContent
-      || (transcription.transcript && transcription.transcript.trim() !== '')
-      || (quickNotes && quickNotes.length > 0);
+  const hasAnyState = hasContent
+    || (inputMode === 'typed' && typedInput && typedInput.trim() !== '')
+    || (inputMode === 'audio' && ((transcription.transcript && transcription.transcript.trim() !== '') || (quickNotes && quickNotes.length > 0)));
 
   // Copy to clipboard logic - use displayNotes which includes consent statement
   const handleCopy = async () => {

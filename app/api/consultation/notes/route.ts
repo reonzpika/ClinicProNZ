@@ -16,9 +16,22 @@ const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
 export async function POST(req: Request) {
   try {
-    const { transcription, templateId, quickNotes } = await req.json();
-    if (!transcription || !templateId) {
-      return NextResponse.json({ code: 'BAD_REQUEST', message: 'Missing transcription or templateId' }, { status: 400 });
+    const { transcription, templateId, quickNotes, typedInput, inputMode } = await req.json();
+    
+    // Validate required fields based on input mode
+    if (!templateId) {
+      return NextResponse.json({ code: 'BAD_REQUEST', message: 'Missing templateId' }, { status: 400 });
+    }
+    
+    if (inputMode === 'typed') {
+      if (!typedInput || typedInput.trim() === '') {
+        return NextResponse.json({ code: 'BAD_REQUEST', message: 'Missing typedInput for typed mode' }, { status: 400 });
+      }
+    } else {
+      // Default to audio mode
+      if (!transcription) {
+        return NextResponse.json({ code: 'BAD_REQUEST', message: 'Missing transcription for audio mode' }, { status: 400 });
+      }
     }
 
     // Fetch template from DB
@@ -27,8 +40,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ code: 'NOT_FOUND', message: 'Template not found' }, { status: 404 });
     }
 
-    // Build user prompt from template, transcription, and quick notes
-    const userPrompt = buildTemplatePrompt(template.prompts, transcription, quickNotes);
+    // Build user prompt from template and input data based on mode
+    const userPrompt = buildTemplatePrompt(
+      template.prompts, 
+      transcription || '', 
+      quickNotes || [], 
+      typedInput, 
+      inputMode,
+    );
 
     // Call OpenAI o4-mini with streaming
     const stream = await openai.chat.completions.create({
