@@ -1,9 +1,11 @@
-import { Section } from '@/shared/components/layout/Section';
-import { Stack } from '@/shared/components/layout/Stack';
+import { useState } from 'react';
+
+import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
+import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
 
-import type { Template } from '../types';
+import type { SectionDSL, Template, TemplateDSL } from '../types';
 
 type TemplateFormProps = {
   template: Template;
@@ -11,63 +13,246 @@ type TemplateFormProps = {
 };
 
 export function TemplateForm({ template, onChange }: TemplateFormProps) {
+  const [dsl, setDsl] = useState<TemplateDSL>(template.dsl || { sections: [] });
+
+  const updateDsl = (newDsl: TemplateDSL) => {
+    setDsl(newDsl);
+    onChange({ dsl: newDsl });
+  };
+
+  const addSection = () => {
+    const newSection: SectionDSL = {
+      heading: '',
+      prompt: '',
+    };
+    updateDsl({
+      ...dsl,
+      sections: [...dsl.sections, newSection],
+    });
+  };
+
+  const updateSection = (index: number, updates: Partial<SectionDSL>) => {
+    const newSections = [...dsl.sections];
+    const currentSection = newSections[index];
+    if (currentSection) {
+      newSections[index] = { ...currentSection, ...updates };
+      updateDsl({
+        ...dsl,
+        sections: newSections,
+      });
+    }
+  };
+
+  const removeSection = (index: number) => {
+    const newSections = dsl.sections.filter((_, i) => i !== index);
+    updateDsl({
+      ...dsl,
+      sections: newSections,
+    });
+  };
+
+  const addSubsection = (sectionIndex: number) => {
+    const newSubsection: SectionDSL = {
+      heading: '',
+      prompt: '',
+    };
+    const newSections = [...dsl.sections];
+    const currentSection = newSections[sectionIndex];
+    if (currentSection) {
+      if (!currentSection.subsections) {
+        currentSection.subsections = [];
+      }
+      currentSection.subsections.push(newSubsection);
+      updateDsl({
+        ...dsl,
+        sections: newSections,
+      });
+    }
+  };
+
+  const updateSubsection = (sectionIndex: number, subsectionIndex: number, updates: Partial<SectionDSL>) => {
+    const newSections = [...dsl.sections];
+    const currentSection = newSections[sectionIndex];
+    if (currentSection?.subsections?.[subsectionIndex]) {
+      const currentSubsection = currentSection.subsections[subsectionIndex];
+      currentSection.subsections[subsectionIndex] = { ...currentSubsection, ...updates };
+      updateDsl({
+        ...dsl,
+        sections: newSections,
+      });
+    }
+  };
+
+  const removeSubsection = (sectionIndex: number, subsectionIndex: number) => {
+    const newSections = [...dsl.sections];
+    const currentSection = newSections[sectionIndex];
+    if (currentSection?.subsections) {
+      currentSection.subsections = currentSection.subsections.filter(
+        (_, i) => i !== subsectionIndex,
+      );
+      updateDsl({
+        ...dsl,
+        sections: newSections,
+      });
+    }
+  };
+
   return (
-    <div>
-      <Stack spacing="md">
-        <Section title="Template Details">
-          <div className="space-y-4">
+    <div className="space-y-6">
+      {/* Basic Template Info */}
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="name">Template Name</Label>
+          <Input
+            id="name"
+            value={template.name || ''}
+            onChange={e => onChange({ name: e.target.value })}
+            placeholder="Enter template name"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="description">Description</Label>
+          <Textarea
+            id="description"
+            value={template.description || ''}
+            onChange={e => onChange({ description: e.target.value })}
+            placeholder="Enter template description"
+            rows={3}
+          />
+        </div>
+      </div>
+
+      {/* Overall Instructions */}
+      <div>
+        <Label htmlFor="overallInstructions">Overall Instructions (Optional)</Label>
+        <Textarea
+          id="overallInstructions"
+          value={dsl.overallInstructions || ''}
+          onChange={e => updateDsl({ ...dsl, overallInstructions: e.target.value })}
+          placeholder="Enter overall instructions for the template"
+          rows={3}
+        />
+      </div>
+
+      {/* Sections */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Label>Template Sections</Label>
+          <Button type="button" onClick={addSection} size="sm">
+            Add Section
+          </Button>
+        </div>
+
+        {dsl.sections.map((section, sectionIndex) => (
+          <div key={sectionIndex} className="space-y-4 rounded-lg border p-4">
+            <div className="flex items-center justify-between">
+              <h4 className="font-medium">
+                Section
+                {' '}
+                {sectionIndex + 1}
+              </h4>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={() => removeSection(sectionIndex)}
+              >
+                Remove
+              </Button>
+            </div>
+
             <div>
-              <label htmlFor="name" className="block text-sm font-medium">
-                Name
-              </label>
+              <Label htmlFor={`section-heading-${sectionIndex}`}>Section Heading</Label>
               <Input
-                id="name"
-                value={template.name}
-                onChange={e => onChange({ name: e.target.value })}
-                placeholder="Enter template name"
-                className="mt-1"
+                id={`section-heading-${sectionIndex}`}
+                value={section.heading}
+                onChange={e => updateSection(sectionIndex, { heading: e.target.value })}
+                placeholder="Enter section heading"
               />
             </div>
+
             <div>
-              <label htmlFor="description" className="block text-sm font-medium">
-                Description
-              </label>
+              <Label htmlFor={`section-prompt-${sectionIndex}`}>Section Prompt</Label>
               <Textarea
-                id="description"
-                value={template.description || ''}
-                onChange={e => onChange({ description: e.target.value })}
-                placeholder="Enter template description"
-                className="mt-1"
+                id={`section-prompt-${sectionIndex}`}
+                value={section.prompt}
+                onChange={e => updateSection(sectionIndex, { prompt: e.target.value })}
+                placeholder="Enter prompt for this section"
+                rows={3}
               />
             </div>
-            <div>
-              <label htmlFor="prompt" className="block text-sm font-medium">
-                Template Prompt
-              </label>
-              <Textarea
-                id="prompt"
-                value={template.prompts?.prompt || ''}
-                onChange={e => onChange({ prompts: { ...template.prompts, prompt: e.target.value } })}
-                placeholder="Enter template prompt (instructions for the AI)"
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <label htmlFor="example" className="block text-sm font-medium">
-                Example Output (optional)
-              </label>
-              <Textarea
-                id="example"
-                value={template.prompts?.example || ''}
-                onChange={e => onChange({ prompts: { ...template.prompts, example: e.target.value } })}
-                placeholder="Enter example output (multi-line allowed)"
-                className="mt-1"
-                rows={4}
-              />
+
+            {/* Subsections */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm">Subsections</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => addSubsection(sectionIndex)}
+                >
+                  Add Subsection
+                </Button>
+              </div>
+
+              {section.subsections?.map((subsection, subsectionIndex) => (
+                <div key={subsectionIndex} className="space-y-2 border-l-2 border-gray-200 pl-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">
+                      Subsection
+                      {' '}
+                      {subsectionIndex + 1}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => removeSubsection(sectionIndex, subsectionIndex)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+
+                  <div>
+                    <Label htmlFor={`subsection-heading-${sectionIndex}-${subsectionIndex}`}>
+                      Subsection Heading
+                    </Label>
+                    <Input
+                      id={`subsection-heading-${sectionIndex}-${subsectionIndex}`}
+                      value={subsection.heading}
+                      onChange={e =>
+                        updateSubsection(sectionIndex, subsectionIndex, { heading: e.target.value })}
+                      placeholder="Enter subsection heading"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor={`subsection-prompt-${sectionIndex}-${subsectionIndex}`}>
+                      Subsection Prompt
+                    </Label>
+                    <Textarea
+                      id={`subsection-prompt-${sectionIndex}-${subsectionIndex}`}
+                      value={subsection.prompt}
+                      onChange={e =>
+                        updateSubsection(sectionIndex, subsectionIndex, { prompt: e.target.value })}
+                      placeholder="Enter prompt for this subsection"
+                      rows={2}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        </Section>
-      </Stack>
+        ))}
+
+        {dsl.sections.length === 0 && (
+          <div className="py-8 text-center text-muted-foreground">
+            No sections added yet. Click "Add Section" to get started.
+          </div>
+        )}
+      </div>
     </div>
   );
 }

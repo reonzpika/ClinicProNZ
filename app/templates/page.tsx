@@ -136,7 +136,7 @@ export default function TemplatesPage() {
         name: 'New Template',
         type: 'custom',
         description: 'A new custom template.',
-        prompts: { prompt: '', example: '' },
+        dsl: { sections: [{ heading: 'New Section', prompt: 'Enter your prompt here' }] },
       };
       setSelectedTemplate(newTemplate);
       setIsEditing(true);
@@ -164,7 +164,7 @@ export default function TemplatesPage() {
       name: `Copy of ${template.name}`,
       type: 'custom' as const,
       description: template.description,
-      prompts: { ...template.prompts },
+      dsl: { ...template.dsl },
     };
     try {
       const newTemplate = await createTemplate(copy);
@@ -182,7 +182,7 @@ export default function TemplatesPage() {
     name: 'Fallback Template',
     type: 'default',
     description: 'Fallback template.',
-    prompts: { prompt: '', example: '' },
+    dsl: { sections: [{ heading: 'Default Section', prompt: 'Default prompt' }] },
   };
 
   return (

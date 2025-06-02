@@ -17,7 +17,7 @@ export function InputModeToggle() {
           className={`px-2 py-1 text-xs transition-colors ${
             inputMode === 'audio'
               ? 'bg-blue-600 text-white'
-              : 'text-muted-foreground hover:text-foreground hover:bg-gray-50'
+              : 'text-muted-foreground hover:bg-gray-50 hover:text-foreground'
           } rounded-l`}
         >
           Audio
@@ -28,7 +28,7 @@ export function InputModeToggle() {
           className={`px-2 py-1 text-xs transition-colors ${
             inputMode === 'typed'
               ? 'bg-blue-600 text-white'
-              : 'text-muted-foreground hover:text-foreground hover:bg-gray-50'
+              : 'text-muted-foreground hover:bg-gray-50 hover:text-foreground'
           } rounded-r`}
         >
           Typed
@@ -36,4 +36,4 @@ export function InputModeToggle() {
       </div>
     </div>
   );
-} 
+}

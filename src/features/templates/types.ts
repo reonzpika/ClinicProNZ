@@ -13,16 +13,25 @@ export type TemplatePrompts = {
   example?: string;
 };
 
+// New TemplateDSL Schema
+export type SectionDSL = {
+  heading: string;
+  prompt: string;
+  subsections?: SectionDSL[];
+};
+
+export type TemplateDSL = {
+  overallInstructions?: string;
+  sections: SectionDSL[]; // non-empty array
+};
+
 export type Template = {
   id: string;
   name: string;
   description?: string;
   type: 'default' | 'custom';
   ownerId?: string;
-  prompts: {
-    prompt: string;
-    example?: string;
-  };
+  dsl: TemplateDSL; // Changed from prompts to dsl
   createdAt?: string;
   updatedAt?: string;
 };

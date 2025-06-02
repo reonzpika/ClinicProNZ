@@ -80,7 +80,13 @@ export function TemplateSelector() {
 
   // Find the selected template from the templates list
   const selectedTemplate = useMemo(() => templates.find(t => t.id === templateId) || templates[0], [templates, templateId]);
-  const fallbackTemplate: Template = { id: '', name: '', type: 'default', description: '', prompts: { prompt: '', example: '' } };
+  const fallbackTemplate: Template = {
+    id: '',
+    name: '',
+    type: 'default',
+    description: '',
+    dsl: { sections: [{ heading: 'Default Section', prompt: 'Default prompt' }] },
+  };
 
   const handleTemplateSelect = (template: Template) => {
     setTemplateId(template.id);

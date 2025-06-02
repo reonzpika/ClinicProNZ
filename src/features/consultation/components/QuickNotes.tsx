@@ -12,9 +12,6 @@ export function QuickNotes({ collapsed, onExpand }: { collapsed?: boolean; onExp
   const [notesText, setNotesText] = useState(quickNotes.join('\n'));
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Check if user has typed anything (not just empty lines)
-  const hasContent = notesText.trim().length > 0;
-
   // Sync local state with context when quickNotes changes externally
   useEffect(() => {
     setNotesText(quickNotes.join('\n'));

@@ -108,4 +108,4 @@ Include patient history, examination findings, assessment, and management plan. 
       </CardContent>
     </Card>
   );
-} 
+}

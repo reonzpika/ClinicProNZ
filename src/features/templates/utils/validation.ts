@@ -26,16 +26,37 @@ export function validateTemplate(template: Template): ValidationResult {
     errors.push({ field: 'type', message: 'Template type must be "default" or "custom"' });
   }
 
-  // Prompts validation
-  if (!template.prompts || typeof template.prompts !== 'object') {
-    errors.push({ field: 'prompts', message: 'Template prompts are required' });
+  // DSL validation
+  if (!template.dsl || typeof template.dsl !== 'object') {
+    errors.push({ field: 'dsl', message: 'Template DSL is required' });
   } else {
-    if (!template.prompts.prompt) {
-      errors.push({ field: 'prompts.prompt', message: 'Prompt is required' });
-    } else if (template.prompts.prompt.length > 1000) {
-      errors.push({ field: 'prompts.prompt', message: 'Prompt must be at most 1000 characters' });
+    if (!template.dsl.sections || !Array.isArray(template.dsl.sections)) {
+      errors.push({ field: 'dsl.sections', message: 'Template sections are required' });
+    } else if (template.dsl.sections.length === 0) {
+      errors.push({ field: 'dsl.sections', message: 'At least one section is required' });
+    } else {
+      // Validate each section
+      template.dsl.sections.forEach((section, index) => {
+        if (!section.heading) {
+          errors.push({ field: `dsl.sections[${index}].heading`, message: 'Section heading is required' });
+        }
+        if (!section.prompt) {
+          errors.push({ field: `dsl.sections[${index}].prompt`, message: 'Section prompt is required' });
+        }
+
+        // Validate subsections if they exist
+        if (section.subsections && Array.isArray(section.subsections)) {
+          section.subsections.forEach((subsection, subIndex) => {
+            if (!subsection.heading) {
+              errors.push({ field: `dsl.sections[${index}].subsections[${subIndex}].heading`, message: 'Subsection heading is required' });
+            }
+            if (!subsection.prompt) {
+              errors.push({ field: `dsl.sections[${index}].subsections[${subIndex}].prompt`, message: 'Subsection prompt is required' });
+            }
+          });
+        }
+      });
     }
-    // example is optional
   }
 
   return {

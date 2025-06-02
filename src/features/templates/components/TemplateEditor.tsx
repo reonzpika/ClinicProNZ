@@ -20,11 +20,15 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
     setError(null);
   };
 
-  const isValid = !!currentTemplate.name?.trim() && !!currentTemplate.prompts?.prompt?.trim();
+  const isValid = !!currentTemplate.name?.trim()
+    && !!currentTemplate.dsl?.sections?.length
+    && currentTemplate.dsl.sections.every(section =>
+      !!section.heading?.trim() && !!section.prompt?.trim(),
+    );
 
   const handleSave = () => {
     if (!isValid) {
-      setError('Name and Prompt are required.');
+      setError('Name and at least one section with heading and prompt are required.');
       return;
     }
     // Remove date fields before saving

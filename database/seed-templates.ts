@@ -8,18 +8,115 @@ const defaultTemplates = [
     name: 'Multi-problem SOAP',
     description: 'A comprehensive SOAP note template for documenting multiple problems during a consultation',
     type: 'default',
-    prompts: {
-      prompt: `You will be given a transcription of a general practice consultation. Based on the transcript, generate a structured clinical note using the SOAP format (Subjective, Objective, Assessment, Plan).\n\nMultiple problems may be discussed in one consultation. Each distinct clinical issue should be presented as a separate problem.\n\nProblem splitting guidelines:\n- Group symptoms under one problem only if they clearly relate to a single known clinical condition or body system (e.g., cough + runny nose = upper respiratory tract infection).\n- If you are not confident about grouping, treat them as separate problems.\n- Use clinically meaningful and concise titles for each problem (e.g., "Sore Throat", "Abdominal Pain", "Prescription Request").\n- Include non-symptom-based clinical matters such as repeat prescriptions or medical certificate requests as valid problems.\n\nIn the Subjective (S), include:\n- Patient-reported symptoms, concerns, and relevant context.\n- Any mention of timing or duration of symptoms.\n- Any expressed uncertainty by the patient, marked appropriately.\n\nIn the Objective (O), include:\n- Observations, physical exam findings, or doctor commentary mentioned in the transcript.\n\nIn Assessment (A) and Plan (P):\n- Include only if clearly stated in the transcript. Otherwise, leave them blank.\n\nIf no clear clinical issue is identifiable in the transcript, output:\nNo clear clinical problems discussed.`,
-      example: `## Problem 1: Sore Throat\n\n**S:** [Subjective in paragraph form — include symptoms, context, duration.]\n\n**O:** [Objective findings or doctor commentary.]\n\n**A:** [Include only if clearly stated.]\n\n**P:** [Include only if clearly stated.]\n\n## Problem 2: ...\n\n## Other Notes:\n[Any small talk, non-clinical statements, or unrelated comments.]`,
+    dsl: {
+      overallInstructions: 'You will be given a transcription of a general practice consultation. Generate a structured clinical note using the SOAP format. Multiple problems may be discussed in one consultation. Each distinct clinical issue should be presented as a separate problem.',
+      sections: [
+        {
+          heading: 'Problem 1: [Problem Name]',
+          prompt: 'Identify the first clinical problem discussed. Use a clinically meaningful and concise title. Group symptoms under one problem only if they clearly relate to a single known clinical condition or body system.',
+          subsections: [
+            {
+              heading: 'S (Subjective)',
+              prompt: 'Include patient-reported symptoms, concerns, relevant context, timing or duration of symptoms, and any expressed uncertainty by the patient.',
+            },
+            {
+              heading: 'O (Objective)',
+              prompt: 'Include observations, physical exam findings, or doctor commentary mentioned in the transcript.',
+            },
+            {
+              heading: 'A (Assessment)',
+              prompt: 'Include only if clearly stated in the transcript. Otherwise, leave blank.',
+            },
+            {
+              heading: 'P (Plan)',
+              prompt: 'Include only if clearly stated in the transcript. Otherwise, leave blank.',
+            },
+          ],
+        },
+        {
+          heading: 'Problem 2: [Problem Name]',
+          prompt: 'Identify additional clinical problems if discussed. Repeat the SOAP structure for each distinct problem.',
+          subsections: [
+            {
+              heading: 'S (Subjective)',
+              prompt: 'Patient-reported information for this specific problem.',
+            },
+            {
+              heading: 'O (Objective)',
+              prompt: 'Objective findings for this specific problem.',
+            },
+            {
+              heading: 'A (Assessment)',
+              prompt: 'Assessment for this specific problem if clearly stated.',
+            },
+            {
+              heading: 'P (Plan)',
+              prompt: 'Plan for this specific problem if clearly stated.',
+            },
+          ],
+        },
+        {
+          heading: 'Other Notes',
+          prompt: 'Include any small talk, non-clinical statements, or unrelated comments that don\'t fit into the clinical problems above.',
+        },
+      ],
     },
   },
   {
     id: uuidv4(),
     name: 'Driver\'s License Medical',
+    description: 'Medical assessment template for driver\'s license applications',
     type: 'default',
-    prompts: {
-      prompt: `Document the medical assessment for a driver's license application. Include medical history, examination, vision, assessment, and plan/recommendation.`,
-      example: `Medical History: ...\nExamination: ...\nVision: ...\nAssessment: ...\nPlan/Recommendation: ...`,
+    dsl: {
+      overallInstructions: 'Document the medical assessment for a driver\'s license application based on the consultation transcript.',
+      sections: [
+        {
+          heading: 'Medical History',
+          prompt: 'Extract and document relevant medical history mentioned during the consultation that pertains to fitness to drive.',
+        },
+        {
+          heading: 'Examination',
+          prompt: 'Document any physical examination findings mentioned in the transcript.',
+        },
+        {
+          heading: 'Vision Assessment',
+          prompt: 'Include any vision testing or visual acuity assessments mentioned.',
+        },
+        {
+          heading: 'Assessment',
+          prompt: 'Document the doctor\'s assessment of the patient\'s fitness to drive if clearly stated.',
+        },
+        {
+          heading: 'Plan/Recommendation',
+          prompt: 'Include the plan or recommendation regarding the driver\'s license application if mentioned.',
+        },
+      ],
+    },
+  },
+  {
+    id: uuidv4(),
+    name: 'General Consultation',
+    description: 'A simple template for general consultations',
+    type: 'default',
+    dsl: {
+      sections: [
+        {
+          heading: 'Chief Complaint',
+          prompt: 'Extract the main reason for the patient\'s visit or primary concern.',
+        },
+        {
+          heading: 'History of Present Illness',
+          prompt: 'Document the patient\'s description of their current symptoms, including onset, duration, severity, and associated factors.',
+        },
+        {
+          heading: 'Examination',
+          prompt: 'Include any physical examination findings or observations mentioned by the doctor.',
+        },
+        {
+          heading: 'Assessment and Plan',
+          prompt: 'Document the doctor\'s assessment and treatment plan if clearly stated in the transcript.',
+        },
+      ],
     },
   },
 ];
@@ -34,12 +131,13 @@ async function main() {
     // Insert new templates
     for (const template of defaultTemplates) {
       await sql.query(
-        'INSERT INTO templates (id, name, type, prompts) VALUES ($1, $2, $3, $4)',
+        'INSERT INTO templates (id, name, description, type, dsl) VALUES ($1, $2, $3, $4, $5)',
         [
           template.id,
           template.name,
+          template.description,
           template.type,
-          JSON.stringify(template.prompts),
+          JSON.stringify(template.dsl),
         ],
       );
     }

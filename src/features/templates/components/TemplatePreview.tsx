@@ -4,7 +4,8 @@ import { Card, CardContent } from '@/shared/components/ui/card';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
 
 import type { Template } from '../types';
-import { buildTemplatePrompt, SYSTEM_PROMPT } from '../utils/promptBuilder';
+import { compileTemplate } from '../utils/compileTemplate';
+import { SYSTEM_PROMPT } from '../utils/systemPrompt';
 
 type TemplatePreviewProps = {
   template: Template;
@@ -14,6 +15,21 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
   const [showFullPrompt, setShowFullPrompt] = useState(false);
   const sampleTranscription = 'This is a sample transcription of a general practice consultation.';
   const sampleQuickNotes = ['Sample quick note 1', 'Sample quick note 2'];
+
+  // Render DSL sections for preview
+  const renderSections = (sections: any[], level = 0) => {
+    return sections.map((section, index) => (
+      <div key={index} className={`${level > 0 ? 'ml-4' : ''} mb-2`}>
+        <div className="font-medium text-sm">{section.heading}</div>
+        <div className="text-xs text-muted-foreground mb-1">{section.prompt}</div>
+        {section.subsections && section.subsections.length > 0 && (
+          <div className="ml-2">
+            {renderSections(section.subsections, level + 1)}
+          </div>
+        )}
+      </div>
+    ));
+  };
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -33,20 +49,22 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
                 </div>
               </div>
 
-              {/* Example Output Section */}
+              {/* Overall Instructions */}
+              {template.dsl.overallInstructions && (
+                <div>
+                  <h4 className="mb-1 text-xs font-medium">Overall Instructions</h4>
+                  <div className="text-sm text-muted-foreground bg-muted p-2 rounded">
+                    {template.dsl.overallInstructions}
+                  </div>
+                </div>
+              )}
+
+              {/* Template Structure */}
               <div>
-                <h4 className="mb-1 text-xs font-medium">Example Output</h4>
-                {template.prompts.example
-                  ? (
-                      <pre className="whitespace-pre-wrap rounded bg-muted p-2 text-xs">
-                        {template.prompts.example}
-                      </pre>
-                    )
-                  : (
-                      <div className="rounded bg-muted p-2 text-xs italic text-muted-foreground">
-                        No example output available for this template
-                      </div>
-                    )}
+                <h4 className="mb-1 text-xs font-medium">Template Structure</h4>
+                <div className="bg-muted p-2 rounded">
+                  {renderSections(template.dsl.sections)}
+                </div>
               </div>
 
               <div>
@@ -65,7 +83,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
                   </pre>
                   <h4 className="mt-2 text-xs font-medium">Full Final Prompt (as sent to AI)</h4>
                   <pre className="whitespace-pre-wrap rounded bg-muted p-1 text-xs">
-                    {buildTemplatePrompt(template.prompts, sampleTranscription, sampleQuickNotes, undefined, 'audio')}
+                    {compileTemplate(template.dsl, sampleTranscription, sampleQuickNotes, undefined, 'audio').user}
                   </pre>
                 </div>
               )}

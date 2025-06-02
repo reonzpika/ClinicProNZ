@@ -11,7 +11,7 @@ function mapDbTemplateToTemplate(dbTemplate: any): Template {
     description: dbTemplate.description ?? undefined,
     type: dbTemplate.type,
     ownerId: dbTemplate.ownerId ?? undefined,
-    prompts: dbTemplate.prompts,
+    dsl: dbTemplate.dsl,
     createdAt: dbTemplate.createdAt instanceof Date ? dbTemplate.createdAt.toISOString() : dbTemplate.createdAt,
     updatedAt: dbTemplate.updatedAt instanceof Date ? dbTemplate.updatedAt.toISOString() : dbTemplate.updatedAt,
   };
@@ -19,8 +19,8 @@ function mapDbTemplateToTemplate(dbTemplate: any): Template {
 
 export class TemplateService {
   static async create(template: Omit<Template, 'id'>): Promise<Template> {
-    if (!template.prompts || !template.prompts.prompt) {
-      throw new Error('Template prompt is required');
+    if (!template.dsl || !template.dsl.sections || template.dsl.sections.length === 0) {
+      throw new Error('Template DSL with at least one section is required');
     }
     const { createdAt, updatedAt, ...rest } = template;
     const insertData: any = {
@@ -47,8 +47,8 @@ export class TemplateService {
       throw new Error('Template not found');
     }
     const merged = { ...existing, ...template };
-    if (!merged.prompts || !(merged.prompts as { prompt?: string }).prompt) {
-      throw new Error('Template prompt is required');
+    if (!merged.dsl || !merged.dsl.sections || merged.dsl.sections.length === 0) {
+      throw new Error('Template DSL with at least one section is required');
     }
     const { createdAt, updatedAt, ...rest } = template;
     const updateData: any = {

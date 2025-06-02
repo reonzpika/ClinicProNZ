@@ -31,7 +31,7 @@ export async function GET(req: Request) {
         name: templates.name,
         type: templates.type,
         description: templates.description,
-        prompts: templates.prompts,
+        dsl: templates.dsl,
         ownerId: templates.ownerId,
         createdAt: templates.createdAt,
         updatedAt: templates.updatedAt,

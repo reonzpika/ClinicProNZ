@@ -13,8 +13,16 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
   }
 
-  // Protect all other /api/templates routes
+  // Protect all other /api/templates routes (POST, PUT, DELETE)
   if (req.nextUrl.pathname.startsWith('/api/templates')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return resolvedAuth.redirectToSignIn();
+    }
+  }
+
+  // Protect /templates page - redirect to sign in if not authenticated
+  if (req.nextUrl.pathname.startsWith('/templates')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
       return resolvedAuth.redirectToSignIn();
@@ -28,6 +36,6 @@ export const config = {
   matcher: [
     '/api/templates/:path*',
     '/api/user/:path*',
-    '/templates(.*)',
+    '/templates/:path*',
   ],
 };

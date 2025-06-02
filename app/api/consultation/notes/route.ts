@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
 import { TemplateService } from '@/features/templates/template-service';
-import { buildTemplatePrompt, SYSTEM_PROMPT } from '@/features/templates/utils/promptBuilder';
+import { compileTemplate } from '@/features/templates/utils/compileTemplate';
 
 // TODO: Move to config/env util if needed
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -17,12 +17,12 @@ const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 export async function POST(req: Request) {
   try {
     const { transcription, templateId, quickNotes, typedInput, inputMode } = await req.json();
-    
+
     // Validate required fields based on input mode
     if (!templateId) {
       return NextResponse.json({ code: 'BAD_REQUEST', message: 'Missing templateId' }, { status: 400 });
     }
-    
+
     if (inputMode === 'typed') {
       if (!typedInput || typedInput.trim() === '') {
         return NextResponse.json({ code: 'BAD_REQUEST', message: 'Missing typedInput for typed mode' }, { status: 400 });
@@ -40,12 +40,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ code: 'NOT_FOUND', message: 'Template not found' }, { status: 404 });
     }
 
-    // Build user prompt from template and input data based on mode
-    const userPrompt = buildTemplatePrompt(
-      template.prompts, 
-      transcription || '', 
-      quickNotes || [], 
-      typedInput, 
+    // Compile template with input data based on mode
+    const { system, user } = compileTemplate(
+      template.dsl,
+      transcription || '',
+      quickNotes || [],
+      typedInput,
       inputMode,
     );
 
@@ -53,8 +53,8 @@ export async function POST(req: Request) {
     const stream = await openai.chat.completions.create({
       model: 'o4-mini',
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: userPrompt },
+        { role: 'system', content: system },
+        { role: 'user', content: user },
       ],
       // TODO: Add settings e.g. temperature, max_completion_tokens, top_p, frequency_penalty, presence_penalty
       // TODO: Add response_format if structured output is needed

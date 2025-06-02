@@ -43,7 +43,6 @@ export function TemplateSelectorModal({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(initialTemplate?.id || '');
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
-  const [expandedExamples, setExpandedExamples] = useState<Set<string>>(new Set());
   const [orderedTemplates, setOrderedTemplates] = useState<Template[]>(templates);
   const { isSignedIn, userId } = useAuth();
   const router = useRouter();
@@ -106,22 +105,14 @@ export function TemplateSelectorModal({
     });
   };
 
-  const toggleExample = (templateId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setExpandedExamples((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(templateId)) {
-        newSet.delete(templateId);
-      } else {
-        newSet.add(templateId);
-      }
-      return newSet;
-    });
-  };
-
   const currentTemplate = orderedTemplates.find(t => t.id === selectedTemplateId);
 
   const handleCreateEditClick = () => {
+    if (!isSignedIn) {
+      // If not signed in, close modal and let the parent handle auth
+      onClose();
+      return;
+    }
     router.push('/templates');
     onClose();
   };
@@ -211,26 +202,6 @@ export function TemplateSelectorModal({
                                           </div>
                                         ))}
                                       </div>
-                                    )}
-                                  </div>
-                                )}
-
-                                {/* Collapsible Example Output */}
-                                {template.prompts?.example && (
-                                  <div className="mt-1">
-                                    <button
-                                      onClick={e => toggleExample(template.id, e)}
-                                      className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800"
-                                    >
-                                      {expandedExamples.has(template.id)
-                                        ? <ChevronDown className="size-3" />
-                                        : <ChevronRight className="size-3" />}
-                                      Example Output
-                                    </button>
-                                    {expandedExamples.has(template.id) && (
-                                      <pre className="mt-1 whitespace-pre-wrap rounded bg-muted p-2 text-xs text-muted-foreground">
-                                        {template.prompts.example.replace(/\\n/g, '\n')}
-                                      </pre>
                                     )}
                                   </div>
                                 )}
