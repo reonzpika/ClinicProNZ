@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-import { getAuth } from '@/shared/services/auth/clerk';
+import type { TemplateGenerationResponse } from '@/features/templates/types';
 import { GENERATE_FROM_PROMPT_PROMPT } from '@/features/templates/utils/aiPrompts';
 import { validateTemplateDSL } from '@/features/templates/utils/validation';
-import type { TemplateDSL } from '@/features/templates/types';
+import { getAuth } from '@/shared/services/auth/clerk';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 if (!OPENAI_API_KEY) {
@@ -31,6 +31,12 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
+
+    // TODO: Enhanced User Prompt Construction
+    // Future improvement: Expand template type context with typical sections,
+    // special considerations, and NZ-specific requirements. Add dynamic context
+    // based on keywords in description, specialty-specific guidance, and
+    // complexity indicators for better AI generation results.
 
     // Prepare the user prompt with description and optional template type
     let userPrompt = `TEMPLATE DESCRIPTION:
@@ -62,9 +68,9 @@ TEMPLATE TYPE: ${templateType}`;
     }
 
     // Parse the JSON response
-    let dsl: TemplateDSL;
+    let templateResponse: TemplateGenerationResponse;
     try {
-      dsl = JSON.parse(responseContent);
+      templateResponse = JSON.parse(responseContent);
     } catch (parseError) {
       console.error('Failed to parse AI response as JSON:', parseError);
       return NextResponse.json(
@@ -73,8 +79,16 @@ TEMPLATE TYPE: ${templateType}`;
       );
     }
 
+    // Validate the response structure
+    if (!templateResponse.title || !templateResponse.description || !templateResponse.dsl) {
+      return NextResponse.json(
+        { code: 'AI_ERROR', message: 'AI response missing required fields (title, description, or dsl)' },
+        { status: 500 },
+      );
+    }
+
     // Validate the generated DSL
-    const validation = validateTemplateDSL(dsl);
+    const validation = validateTemplateDSL(templateResponse.dsl);
     if (!validation.isValid) {
       console.error('Invalid DSL generated:', validation.errors);
       return NextResponse.json(
@@ -83,7 +97,7 @@ TEMPLATE TYPE: ${templateType}`;
       );
     }
 
-    return NextResponse.json({ dsl });
+    return NextResponse.json(templateResponse);
   } catch (error) {
     console.error('Template generation error:', error);
     return NextResponse.json(
@@ -91,4 +105,4 @@ TEMPLATE TYPE: ${templateType}`;
       { status: 500 },
     );
   }
-} 
+}

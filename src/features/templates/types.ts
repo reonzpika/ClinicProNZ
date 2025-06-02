@@ -25,6 +25,13 @@ export type TemplateDSL = {
   sections: SectionDSL[]; // non-empty array
 };
 
+// AI Template Generation Response
+export type TemplateGenerationResponse = {
+  title: string;
+  description: string;
+  dsl: TemplateDSL;
+};
+
 export type Template = {
   id: string;
   name: string;

@@ -19,13 +19,13 @@ export function TemplateCreationWizard({ onSave, onCancel }: TemplateCreationWiz
   const [creationMode, setCreationMode] = useState<CreationMode | null>(null);
   const [generatedTemplate, setGeneratedTemplate] = useState<Template | null>(null);
 
-  const handleTemplateGenerated = (generatedDsl: TemplateDSL) => {
+  const handleTemplateGenerated = (generatedDsl: TemplateDSL, title?: string, description?: string) => {
     // Create a new template with the generated DSL and switch to editor
     const newTemplate: Template = {
       id: `new-${Date.now()}`,
-      name: '',
+      name: title || '',
       type: 'custom',
-      description: '',
+      description: description || '',
       dsl: generatedDsl,
     };
     setGeneratedTemplate(newTemplate);

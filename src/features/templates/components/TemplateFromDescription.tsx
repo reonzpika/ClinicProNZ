@@ -7,11 +7,11 @@ import { Label } from '@/shared/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { Textarea } from '@/shared/components/ui/textarea';
 
-import type { TemplateDSL } from '../types';
+import type { TemplateDSL, TemplateGenerationResponse } from '../types';
 import { TemplatePreview } from './TemplatePreview';
 
 type TemplateFromDescriptionProps = {
-  onTemplateGenerated: (dsl: TemplateDSL) => void;
+  onTemplateGenerated: (dsl: TemplateDSL, title?: string, description?: string) => void;
   onCancel: () => void;
 };
 
@@ -33,7 +33,7 @@ export function TemplateFromDescription({ onTemplateGenerated, onCancel }: Templ
   const [templateType, setTemplateType] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [generatedDsl, setGeneratedDsl] = useState<TemplateDSL | null>(null);
+  const [generatedTemplate, setGeneratedTemplate] = useState<TemplateGenerationResponse | null>(null);
 
   const handleGenerateTemplate = async () => {
     if (!description.trim()) {
@@ -62,7 +62,7 @@ export function TemplateFromDescription({ onTemplateGenerated, onCancel }: Templ
         throw new Error(data.message || 'Failed to generate template from description');
       }
 
-      setGeneratedDsl(data.dsl);
+      setGeneratedTemplate(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
     } finally {
@@ -71,22 +71,34 @@ export function TemplateFromDescription({ onTemplateGenerated, onCancel }: Templ
   };
 
   const handleAcceptTemplate = () => {
-    if (generatedDsl) {
-      onTemplateGenerated(generatedDsl);
+    if (generatedTemplate) {
+      onTemplateGenerated(generatedTemplate.dsl, generatedTemplate.title, generatedTemplate.description);
     }
   };
 
   const handleTryAgain = () => {
-    setGeneratedDsl(null);
+    setGeneratedTemplate(null);
     setError(null);
   };
 
-  if (generatedDsl) {
+  if (generatedTemplate) {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-2">
           <Sparkles className="size-5 text-green-600" />
           <h3 className="text-lg font-semibold">Template Generated Successfully</h3>
+        </div>
+
+        <div className="space-y-3">
+          <div>
+            <h4 className="text-sm font-medium text-muted-foreground">Generated Title:</h4>
+            <p className="font-semibold">{generatedTemplate.title}</p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-medium text-muted-foreground">Generated Description:</h4>
+            <p className="text-sm text-muted-foreground">{generatedTemplate.description}</p>
+          </div>
         </div>
 
         <p className="text-sm text-muted-foreground">
@@ -95,10 +107,10 @@ export function TemplateFromDescription({ onTemplateGenerated, onCancel }: Templ
 
         <TemplatePreview template={{
           id: 'preview',
-          name: 'Generated Template Preview',
-          description: 'Preview of generated template structure',
+          name: generatedTemplate.title,
+          description: generatedTemplate.description,
           type: 'custom',
-          dsl: generatedDsl,
+          dsl: generatedTemplate.dsl,
         }}
         />
 
@@ -125,7 +137,7 @@ export function TemplateFromDescription({ onTemplateGenerated, onCancel }: Templ
       </div>
 
       <p className="text-sm text-muted-foreground">
-        Describe what kind of template you need, and our AI will create a structured template for you.
+        Describe what kind of template you need, and our AI will create a structured template for you with an appropriate title and description.
       </p>
 
       <div className="space-y-4">

@@ -10,7 +10,7 @@ import type { TemplateDSL } from '../types';
 import { TemplatePreview } from './TemplatePreview';
 
 type TemplateFromExampleProps = {
-  onTemplateGenerated: (dsl: TemplateDSL) => void;
+  onTemplateGenerated: (dsl: TemplateDSL, title?: string, description?: string) => void;
   onCancel: () => void;
 };
 
