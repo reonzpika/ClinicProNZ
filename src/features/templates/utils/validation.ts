@@ -1,6 +1,6 @@
 // TODO: Remove this file if not used. All section, sections, and subsection validation logic has been removed.
 
-import type { Template } from '../types';
+import type { Template, TemplateDSL } from '../types';
 
 export type ValidationError = {
   field: string;
@@ -12,31 +12,20 @@ export type ValidationResult = {
   errors: ValidationError[];
 };
 
-export function validateTemplate(template: Template): ValidationResult {
+export function validateTemplateDSL(dsl: TemplateDSL): ValidationResult {
   const errors: ValidationError[] = [];
 
-  // Top-level required fields
-  if (!template.name) {
-    errors.push({ field: 'name', message: 'Template name is required' });
-  }
-  // description is optional
-  if (!template.type) {
-    errors.push({ field: 'type', message: 'Template type is required' });
-  } else if (template.type !== 'default' && template.type !== 'custom') {
-    errors.push({ field: 'type', message: 'Template type must be "default" or "custom"' });
-  }
-
   // DSL validation
-  if (!template.dsl || typeof template.dsl !== 'object') {
+  if (!dsl || typeof dsl !== 'object') {
     errors.push({ field: 'dsl', message: 'Template DSL is required' });
   } else {
-    if (!template.dsl.sections || !Array.isArray(template.dsl.sections)) {
+    if (!dsl.sections || !Array.isArray(dsl.sections)) {
       errors.push({ field: 'dsl.sections', message: 'Template sections are required' });
-    } else if (template.dsl.sections.length === 0) {
+    } else if (dsl.sections.length === 0) {
       errors.push({ field: 'dsl.sections', message: 'At least one section is required' });
     } else {
       // Validate each section
-      template.dsl.sections.forEach((section, index) => {
+      dsl.sections.forEach((section, index) => {
         if (!section.heading) {
           errors.push({ field: `dsl.sections[${index}].heading`, message: 'Section heading is required' });
         }
@@ -58,6 +47,30 @@ export function validateTemplate(template: Template): ValidationResult {
       });
     }
   }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+}
+
+export function validateTemplate(template: Template): ValidationResult {
+  const errors: ValidationError[] = [];
+
+  // Top-level required fields
+  if (!template.name) {
+    errors.push({ field: 'name', message: 'Template name is required' });
+  }
+  // description is optional
+  if (!template.type) {
+    errors.push({ field: 'type', message: 'Template type is required' });
+  } else if (template.type !== 'default' && template.type !== 'custom') {
+    errors.push({ field: 'type', message: 'Template type must be "default" or "custom"' });
+  }
+
+  // Validate DSL using the separate function
+  const dslValidation = validateTemplateDSL(template.dsl);
+  errors.push(...dslValidation.errors);
 
   return {
     isValid: errors.length === 0,

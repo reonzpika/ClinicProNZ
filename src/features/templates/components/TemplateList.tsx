@@ -10,7 +10,7 @@ import type { Template } from '../types';
 
 type TemplateListProps = {
   templates: Template[];
-  selectedTemplate: Template;
+  selectedTemplate: Template | null;
   onTemplateSelect: (template: Template) => void;
   onTemplateHover: (template: Template) => void;
   isSignedIn: boolean;

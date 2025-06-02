@@ -46,7 +46,7 @@ export class TemplateService {
     if (!existing) {
       throw new Error('Template not found');
     }
-    const merged = { ...existing, ...template };
+    const merged = { ...mapDbTemplateToTemplate(existing), ...template };
     if (!merged.dsl || !merged.dsl.sections || merged.dsl.sections.length === 0) {
       throw new Error('Template DSL with at least one section is required');
     }

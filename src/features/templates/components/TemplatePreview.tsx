@@ -50,7 +50,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
               </div>
 
               {/* Overall Instructions */}
-              {template.dsl.overallInstructions && (
+              {template.dsl?.overallInstructions && (
                 <div>
                   <h4 className="mb-1 text-xs font-medium">Overall Instructions</h4>
                   <div className="text-sm text-muted-foreground bg-muted p-2 rounded">
@@ -63,7 +63,9 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
               <div>
                 <h4 className="mb-1 text-xs font-medium">Template Structure</h4>
                 <div className="bg-muted p-2 rounded">
-                  {renderSections(template.dsl.sections)}
+                  {template.dsl?.sections ? renderSections(template.dsl.sections) : (
+                    <div className="text-sm text-muted-foreground">No sections defined</div>
+                  )}
                 </div>
               </div>
 
@@ -75,7 +77,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
                   {showFullPrompt ? 'Hide Full Final Prompt' : 'Show Full Final Prompt (Advanced)'}
                 </button>
               </div>
-              {showFullPrompt && (
+              {showFullPrompt && template.dsl && (
                 <div>
                   <h4 className="mt-2 text-xs font-medium">System Prompt (as sent to AI)</h4>
                   <pre className="mb-1 whitespace-pre-wrap rounded bg-muted p-1 text-xs">

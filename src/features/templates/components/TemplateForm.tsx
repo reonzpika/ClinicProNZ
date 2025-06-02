@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
@@ -14,6 +14,11 @@ type TemplateFormProps = {
 
 export function TemplateForm({ template, onChange }: TemplateFormProps) {
   const [dsl, setDsl] = useState<TemplateDSL>(template.dsl || { sections: [] });
+
+  // Reset state when template changes (e.g., when creating a new template)
+  useEffect(() => {
+    setDsl(template.dsl || { sections: [] });
+  }, [template.id]);
 
   const updateDsl = (newDsl: TemplateDSL) => {
     setDsl(newDsl);
@@ -198,13 +203,13 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
               </div>
 
               {section.subsections?.map((subsection, subsectionIndex) => (
-                <div key={subsectionIndex} className="space-y-2 border-l-2 border-gray-200 pl-4">
+                <div key={subsectionIndex} className="ml-4 space-y-2 rounded border p-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">
+                    <h5 className="text-sm font-medium">
                       Subsection
                       {' '}
                       {subsectionIndex + 1}
-                    </span>
+                    </h5>
                     <Button
                       type="button"
                       variant="destructive"
@@ -216,27 +221,25 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
                   </div>
 
                   <div>
-                    <Label htmlFor={`subsection-heading-${sectionIndex}-${subsectionIndex}`}>
+                    <Label htmlFor={`subsection-heading-${sectionIndex}-${subsectionIndex}`} className="text-sm">
                       Subsection Heading
                     </Label>
                     <Input
                       id={`subsection-heading-${sectionIndex}-${subsectionIndex}`}
                       value={subsection.heading}
-                      onChange={e =>
-                        updateSubsection(sectionIndex, subsectionIndex, { heading: e.target.value })}
+                      onChange={e => updateSubsection(sectionIndex, subsectionIndex, { heading: e.target.value })}
                       placeholder="Enter subsection heading"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor={`subsection-prompt-${sectionIndex}-${subsectionIndex}`}>
+                    <Label htmlFor={`subsection-prompt-${sectionIndex}-${subsectionIndex}`} className="text-sm">
                       Subsection Prompt
                     </Label>
                     <Textarea
                       id={`subsection-prompt-${sectionIndex}-${subsectionIndex}`}
                       value={subsection.prompt}
-                      onChange={e =>
-                        updateSubsection(sectionIndex, subsectionIndex, { prompt: e.target.value })}
+                      onChange={e => updateSubsection(sectionIndex, subsectionIndex, { prompt: e.target.value })}
                       placeholder="Enter prompt for this subsection"
                       rows={2}
                     />
@@ -248,8 +251,10 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
         ))}
 
         {dsl.sections.length === 0 && (
-          <div className="py-8 text-center text-muted-foreground">
-            No sections added yet. Click "Add Section" to get started.
+          <div className="rounded-lg border border-dashed p-8 text-center">
+            <p className="text-muted-foreground">
+              No sections yet. Click "Add Section" to start building your template.
+            </p>
           </div>
         )}
       </div>

@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { TemplateEditor } from '@/features/templates/components/TemplateEditor';
 import { TemplateList } from '@/features/templates/components/TemplateList';
 import { TemplatePreview } from '@/features/templates/components/TemplatePreview';
+import { TemplateCreationWizard } from '@/features/templates/components/TemplateCreationWizard';
 import type { Template } from '@/features/templates/types';
 import { createTemplate, deleteTemplate, fetchTemplates, updateTemplate } from '@/features/templates/utils/api';
 import { Header } from '@/shared/components/Header';
@@ -32,9 +33,7 @@ export default function TemplatesPage() {
       .then((data) => {
         setTemplates(data);
         setLoading(false);
-        if (data.length > 0 && !selectedTemplate) {
-          setSelectedTemplate(data[0] || null);
-        }
+        // Don't automatically select the first template - let user choose
       })
       .catch((err) => {
         setError(err.message);
@@ -130,13 +129,13 @@ export default function TemplatesPage() {
       setSelectedTemplate(template);
       setIsEditing(true);
     } else {
-      // Create new template
+      // Create new template - start with empty DSL to show creation mode selector
       const newTemplate: Template = {
         id: `new-${Date.now()}`,
-        name: 'New Template',
+        name: '',
         type: 'custom',
-        description: 'A new custom template.',
-        dsl: { sections: [{ heading: 'New Section', prompt: 'Enter your prompt here' }] },
+        description: '',
+        dsl: { sections: [] }, // Empty sections to trigger creation mode selector
       };
       setSelectedTemplate(newTemplate);
       setIsEditing(true);
@@ -176,13 +175,15 @@ export default function TemplatesPage() {
     }
   };
 
-  // Always pass a valid Template to TemplateList
-  const selectedOrDefault: Template = selectedTemplate || templates[0] || {
-    id: 'fallback',
-    name: 'Fallback Template',
-    type: 'default',
-    description: 'Fallback template.',
-    dsl: { sections: [{ heading: 'Default Section', prompt: 'Default prompt' }] },
+  const handleCancel = () => {
+    // If it's a new template (ID starts with 'new-' or is empty), go back to creation selector
+    if (!selectedTemplate?.id || selectedTemplate.id.startsWith('new-')) {
+      setSelectedTemplate(null);
+      setIsEditing(false);
+    } else {
+      // For existing templates, just exit editing mode
+      setIsEditing(false);
+    }
   };
 
   return (
@@ -209,7 +210,7 @@ export default function TemplatesPage() {
                     : (
                         <TemplateList
                           templates={templates}
-                          selectedTemplate={selectedOrDefault}
+                          selectedTemplate={selectedTemplate}
                           onTemplateSelect={handleTemplateSelect}
                           onTemplateHover={() => {}}
                           isSignedIn
@@ -244,28 +245,33 @@ export default function TemplatesPage() {
           {/* Right Column - Template Editor/Preview */}
           <div className="lg:col-span-2">
             <Stack spacing="sm">
-              {selectedTemplate && (
-                <Card>
-                  <CardHeader className="p-2 pb-0">
-                    <h2 className="text-xs font-semibold">
-                      {isEditing ? 'Edit Template' : 'Template Preview'}
-                    </h2>
-                  </CardHeader>
-                  <CardContent className="p-2 pt-0">
-                    {isEditing
+              <Card>
+                <CardHeader className="p-2 pb-0">
+                  <h2 className="text-xs font-semibold">
+                    {selectedTemplate && isEditing ? 'Edit Template' : selectedTemplate ? 'Template Preview' : 'Create New Template'}
+                  </h2>
+                </CardHeader>
+                <CardContent className="p-2 pt-0">
+                  {selectedTemplate && isEditing
+                    ? (
+                        <TemplateEditor
+                          template={selectedTemplate}
+                          onSave={handleTemplateSave}
+                          onCancel={handleCancel}
+                        />
+                      )
+                    : selectedTemplate
                       ? (
-                          <TemplateEditor
-                            template={selectedTemplate}
-                            onSave={handleTemplateSave}
-                            onCancel={() => setIsEditing(false)}
-                          />
+                          <TemplatePreview template={selectedTemplate} />
                         )
                       : (
-                          <TemplatePreview template={selectedTemplate} />
+                          <TemplateCreationWizard
+                            onSave={handleTemplateSave}
+                            onCancel={() => {}}
+                          />
                         )}
-                  </CardContent>
-                </Card>
-              )}
+                </CardContent>
+              </Card>
             </Stack>
           </div>
         </Grid>
