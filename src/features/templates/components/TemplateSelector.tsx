@@ -3,7 +3,6 @@
 import { useAuth } from '@clerk/nextjs';
 import { useEffect, useMemo, useState } from 'react';
 
-import { InputModeToggle } from '@/features/consultation/components/InputModeToggle';
 import { Button } from '@/shared/components/ui/button';
 import { useConsultation } from '@/shared/ConsultationContext';
 
@@ -89,19 +88,15 @@ export function TemplateSelector() {
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex-1">
-        <Button
-          variant="outline"
-          className="h-8 w-full justify-between px-2 py-1 text-xs"
-          onClick={() => setIsModalOpen(true)}
-        >
-          <span className="text-xs">{selectedTemplate ? selectedTemplate.name : 'Select a template'}</span>
-          <span className="text-xs">▼</span>
-        </Button>
-      </div>
-
-      <InputModeToggle />
+    <div>
+      <Button
+        variant="outline"
+        className="h-8 w-full justify-between px-2 py-1 text-xs"
+        onClick={() => setIsModalOpen(true)}
+      >
+        <span className="text-xs">{selectedTemplate ? selectedTemplate.name : 'Select a template'}</span>
+        <span className="text-xs">▼</span>
+      </Button>
 
       <TemplateSelectorModal
         isOpen={isModalOpen}

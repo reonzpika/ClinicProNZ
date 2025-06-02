@@ -206,12 +206,12 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
               {/* Instructions for first-time users */}
               {!transcript && !isRecording && totalChunks === 0 && (
                 <div className="rounded-md bg-blue-50 p-2 text-xs text-blue-800">
-                  <p className="font-medium">How it works:</p>
+                  <p className="font-medium">Audio Input Mode:</p>
                   <ul className="ml-3 mt-1 list-disc space-y-0.5">
-                    <li>Start recording - system waits for your voice</li>
-                    <li>Speak naturally during your consultation</li>
-                    <li>Transcript builds in real-time as you speak</li>
-                    <li>Hit "Stop" when consultation is complete</li>
+                    <li>Click "Start Recording" - system waits for your voice</li>
+                    <li>Speak naturally during consultation - transcript builds in real-time</li>
+                    <li>Use "Additional Info" below to type vitals, observations, or assessment details</li>
+                    <li>Click "Stop" when complete, then "Generate Notes" for your final consultation note</li>
                   </ul>
                 </div>
               )}

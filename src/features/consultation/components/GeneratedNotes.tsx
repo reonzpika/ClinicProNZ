@@ -29,6 +29,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
 
   // Local UI state
   const [copySuccess, setCopySuccess] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Refs for auto-expanding textareas
   const mainTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -73,6 +74,23 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
     || (inputMode === 'typed' && typedInput && typedInput.trim() !== '')
     || (inputMode === 'audio' && ((transcription.transcript && transcription.transcript.trim() !== '') || (quickNotes && quickNotes.length > 0)));
 
+  // Determine if we should show minimal or expanded view
+  const shouldShowMinimal = !isExpanded && !hasContent && !loading;
+
+  // Expand when generation starts or when there are notes
+  useEffect(() => {
+    if (loading || hasContent) {
+      setIsExpanded(true);
+    }
+  }, [loading, hasContent]);
+
+  // Reset to minimal when content is cleared
+  useEffect(() => {
+    if (!hasAnyState && !loading) {
+      setIsExpanded(false);
+    }
+  }, [hasAnyState, loading]);
+
   // Copy to clipboard logic - use displayNotes which includes consent statement
   const handleCopy = async () => {
     if (!displayNotes) {
@@ -95,10 +113,19 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
     setGeneratedNotes(cleanedValue);
   };
 
-  // Clear all handler: reset consultation context (transcript is now managed globally)
+  // Enhanced generate handler that expands the interface
+  const handleGenerate = () => {
+    setIsExpanded(true);
+    if (onGenerate) {
+      onGenerate();
+    }
+  };
+
+  // Clear all handler: reset consultation context and return to minimal state
   const handleClearAll = () => {
     resetConsultation(); // Clears all consultation data including transcript
     setQuickNotes([]);
+    setIsExpanded(false);
     if (onClearAll) {
       onClearAll();
     }
@@ -117,6 +144,40 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
     }
   }, [displayNotes, isNoteFocused]);
 
+  // Minimal state - just the generate button
+  if (shouldShowMinimal) {
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant="default"
+            onClick={handleGenerate}
+            disabled={!canGenerate}
+            className="h-10 flex-1 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            Generate Notes
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleClearAll}
+            disabled={!hasAnyState}
+            className="h-10 px-4 py-2 text-sm"
+            title="Clear all consultation data"
+            aria-label="Clear all consultation data"
+          >
+            Clear All
+          </Button>
+        </div>
+        {error && (
+          <div className="text-xs text-red-500">{error}</div>
+        )}
+      </div>
+    );
+  }
+
+  // Expanded state - full interface
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between p-1 pb-0">
@@ -153,9 +214,9 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
               <Button
                 type="button"
                 variant="default"
-                onClick={onGenerate}
+                onClick={handleGenerate}
                 disabled={!canGenerate || loading}
-                className="h-8 px-2 py-1 text-xs"
+                className="h-8 px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white"
               >
                 Generate Notes
               </Button>

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 
 import { GeneratedNotes } from '@/features/consultation/components/GeneratedNotes';
+import { InputModeToggle } from '@/features/consultation/components/InputModeToggle';
 import { QuickNotes } from '@/features/consultation/components/QuickNotes';
 import RightSidebarFeatures from '@/features/consultation/components/RightSidebarFeatures';
 import { TranscriptionControls } from '@/features/consultation/components/TranscriptionControls';
@@ -93,13 +94,29 @@ export default function ConsultationPage() {
             {/* Left Column - Main Consultation Area */}
             <div className="lg:col-span-2">
               <Stack spacing="sm">
-                {/* Template Selection */}
+                {/* Template Selection and Input Mode */}
                 <Card>
                   <CardHeader>
-                    <h2 className="text-xs font-semibold">Select Template</h2>
+                    <h2 className="text-xs font-semibold">Configuration</h2>
                   </CardHeader>
                   <CardContent>
-                    <TemplateSelector />
+                    <div className="flex items-start gap-4">
+                      {/* Template Selection */}
+                      <div className="flex-1">
+                        <div className="mb-1 text-xs font-medium text-muted-foreground">
+                          Template
+                        </div>
+                        <TemplateSelector />
+                      </div>
+
+                      {/* Input Mode Selection */}
+                      <div className="shrink-0">
+                        <div className="mb-1 text-xs font-medium text-muted-foreground">
+                          Input Mode
+                        </div>
+                        <InputModeToggle />
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
 

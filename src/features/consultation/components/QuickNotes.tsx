@@ -66,25 +66,6 @@ export function QuickNotes({ collapsed, onExpand }: { collapsed?: boolean; onExp
             placeholder="Type each quick note on a new line..."
             spellCheck={false}
           />
-
-          {/* Instructions for first-time users */}
-          {!hasContent && (
-            <div className="mt-2 rounded-md bg-blue-50 p-2 text-xs text-blue-800">
-              <p className="font-medium">How it works:</p>
-              <ul className="ml-3 mt-1 list-disc space-y-0.5">
-                <li>Start typing extra details at any time during the consult</li>
-                <li>Use it to capture anything you don't say out loud, for example:</li>
-                <ul className="ml-4 mt-0.5 list-disc space-y-0.5">
-                  <li>Vitals (e.g. BP 120/80 mmHg, temp 37.2)</li>
-                  <li>Observations (appearance, affect, gait)</li>
-                  <li>Your assessment & plan (e.g. "Suspected viral URTI – advise rest, fluids, review in 1 week")</li>
-                  <li>Referrals (e.g. refer to physio) or investigations (e.g. order FBC, CXR)</li>
-                </ul>
-                <li>Your entries auto-save as you type</li>
-                <li>When you stop recording, both your live transcript and Additional Info will be used to generate the consult note</li>
-              </ul>
-            </div>
-          )}
         </Section>
       </CardContent>
     </Card>

@@ -16,8 +16,8 @@ export function InputModeToggle() {
           onClick={() => setInputMode('audio')}
           className={`px-2 py-1 text-xs transition-colors ${
             inputMode === 'audio'
-              ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:text-foreground'
+              ? 'bg-blue-600 text-white'
+              : 'text-muted-foreground hover:text-foreground hover:bg-gray-50'
           } rounded-l`}
         >
           Audio
@@ -27,8 +27,8 @@ export function InputModeToggle() {
           onClick={() => setInputMode('typed')}
           className={`px-2 py-1 text-xs transition-colors ${
             inputMode === 'typed'
-              ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:text-foreground'
+              ? 'bg-blue-600 text-white'
+              : 'text-muted-foreground hover:text-foreground hover:bg-gray-50'
           } rounded-r`}
         >
           Typed
