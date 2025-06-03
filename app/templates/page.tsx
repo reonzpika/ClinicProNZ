@@ -3,17 +3,16 @@
 import { useAuth } from '@clerk/nextjs';
 import { useEffect, useRef, useState } from 'react';
 
+import { TemplateCreationWizard } from '@/features/templates/components/TemplateCreationWizard';
 import { TemplateEditor } from '@/features/templates/components/TemplateEditor';
 import { TemplateList } from '@/features/templates/components/TemplateList';
 import { TemplatePreview } from '@/features/templates/components/TemplatePreview';
-import { TemplateCreationWizard } from '@/features/templates/components/TemplateCreationWizard';
 import type { Template } from '@/features/templates/types';
 import { createTemplate, deleteTemplate, fetchTemplates, updateTemplate } from '@/features/templates/utils/api';
 import { Header } from '@/shared/components/Header';
 import { Container } from '@/shared/components/layout/Container';
 import { Grid } from '@/shared/components/layout/Grid';
 import { Stack } from '@/shared/components/layout/Stack';
-import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { useConsultation } from '@/shared/ConsultationContext';
 
@@ -39,7 +38,6 @@ export default function TemplatesPage() {
         setError(err.message);
         setLoading(false);
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

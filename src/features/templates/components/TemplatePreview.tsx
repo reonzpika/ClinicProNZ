@@ -20,8 +20,8 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
   const renderSections = (sections: any[], level = 0) => {
     return sections.map((section, index) => (
       <div key={index} className={`${level > 0 ? 'ml-4' : ''} mb-2`}>
-        <div className="font-medium text-sm">{section.heading}</div>
-        <div className="text-xs text-muted-foreground mb-1">{section.prompt}</div>
+        <div className="text-sm font-medium">{section.heading}</div>
+        <div className="mb-1 text-xs text-muted-foreground">{section.prompt}</div>
         {section.subsections && section.subsections.length > 0 && (
           <div className="ml-2">
             {renderSections(section.subsections, level + 1)}
@@ -53,7 +53,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
               {template.dsl?.overallInstructions && (
                 <div>
                   <h4 className="mb-1 text-xs font-medium">Overall Instructions</h4>
-                  <div className="text-sm text-muted-foreground bg-muted p-2 rounded">
+                  <div className="rounded bg-muted p-2 text-sm text-muted-foreground">
                     {template.dsl.overallInstructions}
                   </div>
                 </div>
@@ -62,10 +62,12 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
               {/* Template Structure */}
               <div>
                 <h4 className="mb-1 text-xs font-medium">Template Structure</h4>
-                <div className="bg-muted p-2 rounded">
-                  {template.dsl?.sections ? renderSections(template.dsl.sections) : (
-                    <div className="text-sm text-muted-foreground">No sections defined</div>
-                  )}
+                <div className="rounded bg-muted p-2">
+                  {template.dsl?.sections
+                    ? renderSections(template.dsl.sections)
+                    : (
+                        <div className="text-sm text-muted-foreground">No sections defined</div>
+                      )}
                 </div>
               </div>
 

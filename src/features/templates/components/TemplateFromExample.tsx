@@ -1,10 +1,10 @@
+import { FileText, Loader2, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
+import { Alert } from '@/shared/components/ui/alert';
 import { Button } from '@/shared/components/ui/button';
 import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
-import { Alert } from '@/shared/components/ui/alert';
-import { Loader2, FileText, Sparkles, Plus, Trash2 } from 'lucide-react';
 
 import type { TemplateDSL, TemplateGenerationResponse } from '../types';
 
@@ -20,7 +20,7 @@ type ExampleNote = {
 
 export function TemplateFromExample({ onTemplateGenerated, onCancel }: TemplateFromExampleProps) {
   const [examples, setExamples] = useState<ExampleNote[]>([
-    { id: '1', content: '' }
+    { id: '1', content: '' },
   ]);
   const [additionalInstructions, setAdditionalInstructions] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -40,14 +40,14 @@ export function TemplateFromExample({ onTemplateGenerated, onCancel }: TemplateF
   };
 
   const updateExample = (id: string, content: string) => {
-    setExamples(examples.map(example => 
-      example.id === id ? { ...example, content } : example
+    setExamples(examples.map(example =>
+      example.id === id ? { ...example, content } : example,
     ));
   };
 
   const handleExtractTemplate = async () => {
     const validExamples = examples.filter(example => example.content.trim());
-    
+
     if (validExamples.length === 0) {
       setError('Please provide at least one consultation note example.');
       return;
@@ -89,22 +89,42 @@ export function TemplateFromExample({ onTemplateGenerated, onCancel }: TemplateF
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
-        <FileText className="h-5 w-5 text-blue-600" />
+        <FileText className="size-5 text-blue-600" />
         <h3 className="text-lg font-semibold">Create Template from Examples</h3>
       </div>
-      
+
       <div className="space-y-4">
         <p className="text-sm text-muted-foreground">
           Paste example consultation notes below, and our AI will analyze their structure to create a reusable template that matches your documentation style.
         </p>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h4 className="font-medium text-blue-900 mb-2">What makes good examples:</h4>
-          <ul className="text-sm text-blue-800 space-y-1">
-            <li>• <strong>Similar consultation types</strong> (e.g., all general consultations or all follow-ups)</li>
-            <li>• <strong>Your typical documentation style</strong> - use your normal headings, abbreviations, and formatting</li>
-            <li>• <strong>Complete notes</strong> with all sections you usually include</li>
-            <li>• <strong>Consistent structure</strong> across examples to help identify your patterns</li>
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+          <h4 className="mb-2 font-medium text-blue-900">What makes good examples:</h4>
+          <ul className="space-y-1 text-sm text-blue-800">
+            <li>
+              •
+              <strong>Similar consultation types</strong>
+              {' '}
+              (e.g., all general consultations or all follow-ups)
+            </li>
+            <li>
+              •
+              <strong>Your typical documentation style</strong>
+              {' '}
+              - use your normal headings, abbreviations, and formatting
+            </li>
+            <li>
+              •
+              <strong>Complete notes</strong>
+              {' '}
+              with all sections you usually include
+            </li>
+            <li>
+              •
+              <strong>Consistent structure</strong>
+              {' '}
+              across examples to help identify your patterns
+            </li>
           </ul>
         </div>
       </div>
@@ -114,7 +134,11 @@ export function TemplateFromExample({ onTemplateGenerated, onCancel }: TemplateF
           <div key={example.id} className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor={`example-${example.id}`}>
-                Example {index + 1} {index === 0 && '*'}
+                Example
+                {' '}
+                {index + 1}
+                {' '}
+                {index === 0 && '*'}
               </Label>
               {examples.length > 1 && (
                 <Button
@@ -123,7 +147,7 @@ export function TemplateFromExample({ onTemplateGenerated, onCancel }: TemplateF
                   onClick={() => removeExample(example.id)}
                   className="text-red-600 hover:text-red-700"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="size-4" />
                 </Button>
               )}
             </div>
@@ -150,8 +174,10 @@ P// paracetamol 500mg QID, f/u 1/52`}
             onClick={addExample}
             className="w-full"
           >
-            <Plus className="mr-2 h-4 w-4" />
-            Add Another Example ({examples.length}/5)
+            <Plus className="mr-2 size-4" />
+            Add Another Example (
+            {examples.length}
+            /5)
           </Button>
         )}
 
@@ -178,22 +204,24 @@ Example:
         )}
 
         <div className="flex gap-3">
-          <Button 
-            onClick={handleExtractTemplate} 
+          <Button
+            onClick={handleExtractTemplate}
             disabled={isLoading || !hasValidExamples}
             className="flex-1"
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Analyzing Examples...
-              </>
-            ) : (
-              <>
-                <Sparkles className="mr-2 h-4 w-4" />
-                Extract Template
-              </>
-            )}
+            {isLoading
+              ? (
+                  <>
+                    <Loader2 className="mr-2 size-4 animate-spin" />
+                    Analyzing Examples...
+                  </>
+                )
+              : (
+                  <>
+                    <Sparkles className="mr-2 size-4" />
+                    Extract Template
+                  </>
+                )}
           </Button>
           <Button variant="outline" onClick={onCancel} disabled={isLoading}>
             Cancel
@@ -202,4 +230,4 @@ Example:
       </div>
     </div>
   );
-} 
+}

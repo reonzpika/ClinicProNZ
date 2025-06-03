@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-import { getAuth } from '@/shared/services/auth/clerk';
+import type { TemplateDSL } from '@/features/templates/types';
 import { EXTRACT_FROM_EXAMPLE_PROMPT } from '@/features/templates/utils/aiPrompts';
 import { validateTemplateDSL } from '@/features/templates/utils/validation';
-import type { TemplateDSL } from '@/features/templates/types';
+import { getAuth } from '@/shared/services/auth/clerk';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 if (!OPENAI_API_KEY) {
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
 
     // Filter out empty examples
     const validExamples = examples.filter((example: string) => example && example.trim() !== '');
-    
+
     if (validExamples.length === 0) {
       return NextResponse.json(
         { code: 'BAD_REQUEST', message: 'At least one non-empty example consultation note is required' },
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     // Prepare the user prompt with multiple examples
     let userPrompt = `CONSULTATION NOTES TO ANALYZE:
 
-${validExamples.map((example: string, index: number) => 
+${validExamples.map((example: string, index: number) =>
   `EXAMPLE ${index + 1}:
 ${example}
 
@@ -119,10 +119,10 @@ ${additionalInstructions}`;
       );
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       dsl,
       title,
-      description
+      description,
     });
   } catch (error) {
     console.error('Template extraction error:', error);
@@ -131,4 +131,4 @@ ${additionalInstructions}`;
       { status: 500 },
     );
   }
-} 
+}

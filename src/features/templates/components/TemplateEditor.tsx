@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import type { Template } from '@/features/templates/types';
 import { Button } from '@/shared/components/ui/button';
@@ -46,8 +46,8 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
 
   return (
     <div className="space-y-8">
-      <TemplateForm 
-        template={currentTemplate} 
+      <TemplateForm
+        template={currentTemplate}
         onChange={handleChange}
       />
 

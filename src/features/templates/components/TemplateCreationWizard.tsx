@@ -15,7 +15,7 @@ type TemplateCreationWizardProps = {
   onCancel: () => void;
 };
 
-export function TemplateCreationWizard({ onSave, onCancel }: TemplateCreationWizardProps) {
+export function TemplateCreationWizard({ onSave }: TemplateCreationWizardProps) {
   const [creationMode, setCreationMode] = useState<CreationMode | null>(null);
   const [generatedTemplate, setGeneratedTemplate] = useState<Template | null>(null);
 
@@ -154,4 +154,4 @@ export function TemplateCreationWizard({ onSave, onCancel }: TemplateCreationWiz
   }
 
   return null;
-} 
+}
