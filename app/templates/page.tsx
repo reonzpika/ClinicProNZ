@@ -142,6 +142,12 @@ export default function TemplatesPage() {
     }
   };
 
+  const handleCreateNew = () => {
+    // Clear selected template to show TemplateCreationWizard
+    setSelectedTemplate(null);
+    setIsEditing(false);
+  };
+
   const handleDelete = async (template: Template) => {
     // Prevent deleting default templates
     if (!template.id || template.type === 'default') {
@@ -197,9 +203,6 @@ export default function TemplatesPage() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between p-2 pb-0">
                   <h2 className="text-xs font-semibold">Templates</h2>
-                  <Button onClick={() => handleEdit()} size="sm" className="h-8 px-2 py-1 text-xs">
-                    Create New
-                  </Button>
                 </CardHeader>
                 <CardContent className="p-2 pt-0">
                   {error && <div className="mb-2 text-xs text-red-500">{error}</div>}
@@ -220,6 +223,7 @@ export default function TemplatesPage() {
                           onSetDefault={setUserDefaultTemplateId}
                           userDefaultTemplateId={userDefaultTemplateId}
                           onReorder={handleReorder}
+                          onCreateNew={handleCreateNew}
                         />
                       )}
                 </CardContent>

@@ -23,23 +23,36 @@ export async function POST(req: Request) {
       );
     }
 
-    const { exampleNotes, additionalInstructions } = await req.json();
+    const { examples, additionalInstructions } = await req.json();
 
-    if (!exampleNotes || exampleNotes.trim() === '') {
+    if (!examples || !Array.isArray(examples) || examples.length === 0) {
       return NextResponse.json(
-        { code: 'BAD_REQUEST', message: 'Example consultation notes are required' },
+        { code: 'BAD_REQUEST', message: 'At least one example consultation note is required' },
         { status: 400 },
       );
     }
 
-    // Prepare the user prompt with example notes and optional instructions
+    // Filter out empty examples
+    const validExamples = examples.filter((example: string) => example && example.trim() !== '');
+    
+    if (validExamples.length === 0) {
+      return NextResponse.json(
+        { code: 'BAD_REQUEST', message: 'At least one non-empty example consultation note is required' },
+        { status: 400 },
+      );
+    }
+
+    // Prepare the user prompt with multiple examples
     let userPrompt = `CONSULTATION NOTES TO ANALYZE:
-${exampleNotes}`;
+
+${validExamples.map((example: string, index: number) => 
+  `EXAMPLE ${index + 1}:
+${example}
+
+`).join('')}`;
 
     if (additionalInstructions && additionalInstructions.trim() !== '') {
-      userPrompt += `
-
-ADDITIONAL INSTRUCTIONS:
+      userPrompt += `ADDITIONAL INSTRUCTIONS:
 ${additionalInstructions}`;
     }
 
@@ -63,13 +76,35 @@ ${additionalInstructions}`;
     }
 
     // Parse the JSON response
-    let dsl: TemplateDSL;
+    let parsedResponse: any;
     try {
-      dsl = JSON.parse(responseContent);
+      parsedResponse = JSON.parse(responseContent);
     } catch (parseError) {
       console.error('Failed to parse AI response as JSON:', parseError);
       return NextResponse.json(
         { code: 'AI_ERROR', message: 'AI returned invalid JSON format' },
+        { status: 500 },
+      );
+    }
+
+    // Extract DSL and metadata from the response
+    let dsl: TemplateDSL;
+    let title: string;
+    let description: string;
+
+    if (parsedResponse.dsl && parsedResponse.title && parsedResponse.description) {
+      // New format with metadata
+      dsl = parsedResponse.dsl;
+      title = parsedResponse.title;
+      description = parsedResponse.description;
+    } else if (parsedResponse.sections) {
+      // Legacy format - just DSL
+      dsl = parsedResponse;
+      title = `Template from ${validExamples.length} Example${validExamples.length > 1 ? 's' : ''}`;
+      description = `Template extracted from ${validExamples.length} consultation note example${validExamples.length > 1 ? 's' : ''}, preserving the GP's documentation style and structure.`;
+    } else {
+      return NextResponse.json(
+        { code: 'AI_ERROR', message: 'AI response missing required fields' },
         { status: 500 },
       );
     }
@@ -84,11 +119,15 @@ ${additionalInstructions}`;
       );
     }
 
-    return NextResponse.json({ dsl });
+    return NextResponse.json({ 
+      dsl,
+      title,
+      description
+    });
   } catch (error) {
     console.error('Template extraction error:', error);
     return NextResponse.json(
-      { code: 'INTERNAL_ERROR', message: error instanceof Error ? error.message : 'Failed to extract template from example' },
+      { code: 'INTERNAL_ERROR', message: error instanceof Error ? error.message : 'Failed to extract template from examples' },
       { status: 500 },
     );
   }

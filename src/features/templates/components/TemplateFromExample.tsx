@@ -4,26 +4,52 @@ import { Button } from '@/shared/components/ui/button';
 import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Alert } from '@/shared/components/ui/alert';
-import { Loader2, FileText, Sparkles } from 'lucide-react';
+import { Loader2, FileText, Sparkles, Plus, Trash2 } from 'lucide-react';
 
-import type { TemplateDSL } from '../types';
-import { TemplatePreview } from './TemplatePreview';
+import type { TemplateDSL, TemplateGenerationResponse } from '../types';
 
 type TemplateFromExampleProps = {
   onTemplateGenerated: (dsl: TemplateDSL, title?: string, description?: string) => void;
   onCancel: () => void;
 };
 
+type ExampleNote = {
+  id: string;
+  content: string;
+};
+
 export function TemplateFromExample({ onTemplateGenerated, onCancel }: TemplateFromExampleProps) {
-  const [exampleNotes, setExampleNotes] = useState('');
+  const [examples, setExamples] = useState<ExampleNote[]>([
+    { id: '1', content: '' }
+  ]);
   const [additionalInstructions, setAdditionalInstructions] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [generatedDsl, setGeneratedDsl] = useState<TemplateDSL | null>(null);
+
+  const addExample = () => {
+    if (examples.length < 5) {
+      const newId = (examples.length + 1).toString();
+      setExamples([...examples, { id: newId, content: '' }]);
+    }
+  };
+
+  const removeExample = (id: string) => {
+    if (examples.length > 1) {
+      setExamples(examples.filter(example => example.id !== id));
+    }
+  };
+
+  const updateExample = (id: string, content: string) => {
+    setExamples(examples.map(example => 
+      example.id === id ? { ...example, content } : example
+    ));
+  };
 
   const handleExtractTemplate = async () => {
-    if (!exampleNotes.trim()) {
-      setError('Please paste some consultation notes to analyze.');
+    const validExamples = examples.filter(example => example.content.trim());
+    
+    if (validExamples.length === 0) {
+      setError('Please provide at least one consultation note example.');
       return;
     }
 
@@ -37,7 +63,7 @@ export function TemplateFromExample({ onTemplateGenerated, onCancel }: TemplateF
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          exampleNotes: exampleNotes.trim(),
+          examples: validExamples.map(example => example.content.trim()),
           additionalInstructions: additionalInstructions.trim() || undefined,
         }),
       });
@@ -45,10 +71,12 @@ export function TemplateFromExample({ onTemplateGenerated, onCancel }: TemplateF
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to extract template from example');
+        throw new Error(data.message || 'Failed to extract template from examples');
       }
 
-      setGeneratedDsl(data.dsl);
+      // Directly call onTemplateGenerated to navigate to TemplateEditor
+      const generatedTemplate: TemplateGenerationResponse = data;
+      onTemplateGenerated(generatedTemplate.dsl, generatedTemplate.title, generatedTemplate.description);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
     } finally {
@@ -56,82 +84,76 @@ export function TemplateFromExample({ onTemplateGenerated, onCancel }: TemplateF
     }
   };
 
-  const handleAcceptTemplate = () => {
-    if (generatedDsl) {
-      onTemplateGenerated(generatedDsl);
-    }
-  };
-
-  const handleTryAgain = () => {
-    setGeneratedDsl(null);
-    setError(null);
-  };
-
-  if (generatedDsl) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-green-600" />
-          <h3 className="text-lg font-semibold">Template Extracted Successfully</h3>
-        </div>
-        
-        <p className="text-sm text-muted-foreground">
-          Review the extracted template structure below. You can accept it as-is or go back to try with different notes.
-        </p>
-
-        <TemplatePreview template={{
-          id: 'preview',
-          name: 'Generated Template Preview',
-          description: 'Preview of extracted template structure',
-          type: 'custom',
-          dsl: generatedDsl
-        }} />
-
-        <div className="flex gap-3">
-          <Button onClick={handleAcceptTemplate} className="flex-1">
-            Accept Template
-          </Button>
-          <Button variant="outline" onClick={handleTryAgain}>
-            Try Again
-          </Button>
-          <Button variant="ghost" onClick={onCancel}>
-            Cancel
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const hasValidExamples = examples.some(example => example.content.trim());
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <FileText className="h-5 w-5 text-blue-600" />
-        <h3 className="text-lg font-semibold">Create Template from Example</h3>
+        <h3 className="text-lg font-semibold">Create Template from Examples</h3>
       </div>
       
-      <p className="text-sm text-muted-foreground">
-        Paste an example consultation note below, and our AI will analyze its structure to create a reusable template.
-      </p>
+      <div className="space-y-4">
+        <p className="text-sm text-muted-foreground">
+          Paste example consultation notes below, and our AI will analyze their structure to create a reusable template that matches your documentation style.
+        </p>
+
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h4 className="font-medium text-blue-900 mb-2">What makes good examples:</h4>
+          <ul className="text-sm text-blue-800 space-y-1">
+            <li>• <strong>Similar consultation types</strong> (e.g., all general consultations or all follow-ups)</li>
+            <li>• <strong>Your typical documentation style</strong> - use your normal headings, abbreviations, and formatting</li>
+            <li>• <strong>Complete notes</strong> with all sections you usually include</li>
+            <li>• <strong>Consistent structure</strong> across examples to help identify your patterns</li>
+          </ul>
+        </div>
+      </div>
 
       <div className="space-y-4">
-        <div>
-          <Label htmlFor="example-notes">Example Consultation Notes *</Label>
-          <Textarea
-            id="example-notes"
-            value={exampleNotes}
-            onChange={e => setExampleNotes(e.target.value)}
-            placeholder="Paste your consultation notes here...
+        {examples.map((example, index) => (
+          <div key={example.id} className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor={`example-${example.id}`}>
+                Example {index + 1} {index === 0 && '*'}
+              </Label>
+              {examples.length > 1 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeExample(example.id)}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            <Textarea
+              id={`example-${example.id}`}
+              value={example.content}
+              onChange={e => updateExample(example.id, e.target.value)}
+              placeholder={`Paste consultation notes here...
 
 Example:
-Chief Complaint: Patient presents with chest pain
-History: 45-year-old male with 2-day history of central chest pain...
-Examination: Vital signs stable, chest clear...
-Assessment: Likely musculoskeletal chest pain
-Plan: Paracetamol, follow up in 1 week"
-            rows={12}
-            className="font-mono text-sm"
-          />
-        </div>
+S// c/o chest pain x 2/7
+O// \\bp 120/80 \\p 72 \\wt 70kg, chest clear
+A// ?musculoskeletal chest pain
+P// paracetamol 500mg QID, f/u 1/52`}
+              rows={8}
+              className="font-mono text-sm"
+            />
+          </div>
+        ))}
+
+        {examples.length < 5 && (
+          <Button
+            variant="outline"
+            onClick={addExample}
+            className="w-full"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Another Example ({examples.length}/5)
+          </Button>
+        )}
 
         <div>
           <Label htmlFor="additional-instructions">Additional Instructions (Optional)</Label>
@@ -158,13 +180,13 @@ Example:
         <div className="flex gap-3">
           <Button 
             onClick={handleExtractTemplate} 
-            disabled={isLoading || !exampleNotes.trim()}
+            disabled={isLoading || !hasValidExamples}
             className="flex-1"
           >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Analyzing Notes...
+                Analyzing Examples...
               </>
             ) : (
               <>

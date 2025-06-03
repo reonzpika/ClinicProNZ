@@ -20,6 +20,7 @@ type TemplateListProps = {
   userDefaultTemplateId: string | null;
   onSetDefault: (id: string) => void;
   onReorder: (from: number, to: number) => void;
+  onCreateNew: () => void;
 };
 
 export function TemplateList({
@@ -33,6 +34,7 @@ export function TemplateList({
   userDefaultTemplateId,
   onSetDefault,
   onReorder,
+  onCreateNew,
 }: TemplateListProps) {
   const filteredTemplates = templates;
 
@@ -118,7 +120,7 @@ export function TemplateList({
       <Button
         variant="ghost"
         className="mt-2 w-full justify-start gap-2 text-xs text-primary"
-        onClick={() => onEdit({} as Template)}
+        onClick={onCreateNew}
       >
         <Plus className="size-4" />
         Create New Template
