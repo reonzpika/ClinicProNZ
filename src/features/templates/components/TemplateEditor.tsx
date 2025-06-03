@@ -41,9 +41,6 @@ export function TemplateEditor({ template, onSave, onCancel }: TemplateEditorPro
     onSave(templateToSave);
   };
 
-  // Determine if this is a new template (no ID means it's new)
-  const isNewTemplate = !template.id || template.id === '';
-
   return (
     <div className="space-y-8">
       <TemplateForm
