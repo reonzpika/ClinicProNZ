@@ -54,6 +54,7 @@ The main consultation page (`/consultation`) provides a comprehensive interface 
 - **Input Mode Toggle**: Switch between audio transcription and typed input
 - **Transcription Controls**: Real-time audio recording and transcription
 - **Quick Notes**: Add structured notes during consultation
+- **Typed Input**: Direct text input for consultation notes
 - **AI Note Generation**: Generate formatted clinical notes using AI
 - **Chatbot Widget**: Context-aware clinical assistant
 
