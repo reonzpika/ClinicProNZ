@@ -60,6 +60,15 @@ const defaultTemplates = [
           prompt: 'Include any small talk, non-clinical statements, or unrelated comments that don\'t fit into the clinical problems above.',
         },
       ],
+      settings: {
+        detailLevel: 'medium',
+        bulletPoints: false,
+        aiAnalysis: {
+          enabled: false,
+          level: 'standard',
+        },
+        abbreviations: false,
+      },
     },
   },
   {
@@ -91,6 +100,15 @@ const defaultTemplates = [
           prompt: 'Include the plan or recommendation regarding the driver\'s license application if mentioned.',
         },
       ],
+      settings: {
+        detailLevel: 'medium',
+        bulletPoints: false,
+        aiAnalysis: {
+          enabled: false,
+          level: 'standard',
+        },
+        abbreviations: false,
+      },
     },
   },
   {
@@ -117,6 +135,15 @@ const defaultTemplates = [
           prompt: 'Document the doctor\'s assessment and treatment plan if clearly stated in the transcript.',
         },
       ],
+      settings: {
+        detailLevel: 'medium',
+        bulletPoints: false,
+        aiAnalysis: {
+          enabled: false,
+          level: 'standard',
+        },
+        abbreviations: false,
+      },
     },
   },
 ];

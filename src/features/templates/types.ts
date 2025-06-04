@@ -13,6 +13,17 @@ export type TemplatePrompts = {
   example?: string;
 };
 
+// Template Settings for session-level control
+export type TemplateSettings = {
+  detailLevel: 'low' | 'medium' | 'high';
+  bulletPoints: boolean;
+  aiAnalysis: {
+    enabled: boolean;
+    level: 'basic' | 'standard' | 'comprehensive';
+  };
+  abbreviations: boolean;
+};
+
 // New TemplateDSL Schema
 export type SectionDSL = {
   heading: string;
@@ -23,6 +34,7 @@ export type SectionDSL = {
 export type TemplateDSL = {
   overallInstructions?: string;
   sections: SectionDSL[]; // non-empty array
+  settings?: TemplateSettings;
 };
 
 // AI Template Generation Response

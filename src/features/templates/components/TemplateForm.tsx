@@ -3,9 +3,11 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
+import { Switch } from '@/shared/components/ui/switch';
 import { Textarea } from '@/shared/components/ui/textarea';
 
-import type { SectionDSL, Template, TemplateDSL } from '../types';
+import type { SectionDSL, Template, TemplateDSL, TemplateSettings } from '../types';
 
 type TemplateFormProps = {
   template: Template;
@@ -23,6 +25,24 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
   const updateDsl = (newDsl: TemplateDSL) => {
     setDsl(newDsl);
     onChange({ dsl: newDsl });
+  };
+
+  // Helper function to get default settings
+  const getDefaultSettings = (): TemplateSettings => ({
+    detailLevel: 'medium',
+    bulletPoints: false,
+    aiAnalysis: {
+      enabled: false,
+      level: 'standard',
+    },
+    abbreviations: false,
+  });
+
+  // Helper function to update settings
+  const updateSettings = (updates: Partial<TemplateSettings>) => {
+    const currentSettings = dsl.settings || getDefaultSettings();
+    const newSettings = { ...currentSettings, ...updates };
+    updateDsl({ ...dsl, settings: newSettings });
   };
 
   const addSection = () => {
@@ -102,6 +122,9 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
     }
   };
 
+  // Get current settings with defaults
+  const currentSettings = dsl.settings || getDefaultSettings();
+
   return (
     <div className="space-y-6">
       {/* Basic Template Info */}
@@ -138,6 +161,118 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
           placeholder="Enter overall instructions for the template"
           rows={3}
         />
+      </div>
+
+      {/* Template Settings */}
+      <div className="space-y-4 rounded-lg border p-4">
+        <div>
+          <Label className="text-lg font-medium">Template Settings</Label>
+          <p className="text-sm text-muted-foreground">
+            Configure default settings for note generation with this template
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {/* Detail Level */}
+          <div className="space-y-2">
+            <Label htmlFor="detailLevel">Detail Level</Label>
+            <Select
+              value={currentSettings.detailLevel}
+              onValueChange={(value: 'low' | 'medium' | 'high') => 
+                updateSettings({ detailLevel: value })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select detail level" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low - Key clinical facts only</SelectItem>
+                <SelectItem value="medium">Medium - Standard detail</SelectItem>
+                <SelectItem value="high">High - Thorough descriptions</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Bullet Points */}
+          <div className="flex items-center justify-between space-y-2">
+            <div className="space-y-0.5">
+              <Label htmlFor="bulletPoints">Bullet Points</Label>
+              <p className="text-sm text-muted-foreground">
+                Use bullet points instead of paragraphs
+              </p>
+            </div>
+            <Switch
+              id="bulletPoints"
+              checked={currentSettings.bulletPoints}
+              onCheckedChange={(checked) => updateSettings({ bulletPoints: checked })}
+            />
+          </div>
+
+          {/* AI Analysis */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="aiAnalysis">AI Analysis</Label>
+                <p className="text-sm text-muted-foreground">
+                  Include AI-generated analysis and recommendations
+                </p>
+              </div>
+              <Switch
+                id="aiAnalysis"
+                checked={currentSettings.aiAnalysis.enabled}
+                onCheckedChange={(checked) => 
+                  updateSettings({ 
+                    aiAnalysis: { 
+                      ...currentSettings.aiAnalysis, 
+                      enabled: checked 
+                    } 
+                  })
+                }
+              />
+            </div>
+            
+            {currentSettings.aiAnalysis.enabled && (
+              <div className="mt-2">
+                <Label htmlFor="aiAnalysisLevel">Analysis Level</Label>
+                <Select
+                  value={currentSettings.aiAnalysis.level}
+                  onValueChange={(value: 'basic' | 'standard' | 'comprehensive') => 
+                    updateSettings({ 
+                      aiAnalysis: { 
+                        ...currentSettings.aiAnalysis, 
+                        level: value 
+                      } 
+                    })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select analysis level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="basic">Basic - Simple differential list</SelectItem>
+                    <SelectItem value="standard">Standard - With rationale and next steps</SelectItem>
+                    <SelectItem value="comprehensive">Comprehensive - Detailed analysis</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+
+          {/* Abbreviations */}
+          <div className="flex items-center justify-between space-y-2">
+            <div className="space-y-0.5">
+              <Label htmlFor="abbreviations">Medical Abbreviations</Label>
+              <p className="text-sm text-muted-foreground">
+                Use common medical abbreviations
+              </p>
+            </div>
+            <Switch
+              id="abbreviations"
+              checked={currentSettings.abbreviations}
+              onCheckedChange={(checked) => updateSettings({ abbreviations: checked })}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Sections */}

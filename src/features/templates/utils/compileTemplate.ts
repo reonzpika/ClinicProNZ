@@ -1,6 +1,42 @@
 import type { TemplateDSL } from '@/features/templates/types';
 
+import { generateInstructions } from './instructionMappings';
 import { SYSTEM_PROMPT } from './systemPrompt';
+
+// Helper function to build consultation data section dynamically
+function buildConsultationData(
+  transcription: string,
+  quickNotes: string[],
+  typedInput?: string,
+  inputMode: 'audio' | 'typed' = 'audio',
+): string {
+  const sections: string[] = [];
+
+  if (inputMode === 'audio') {
+    // Add transcription if available
+    if (transcription && transcription.trim()) {
+      sections.push('[TRANSCRIPTION]');
+      sections.push(transcription.trim());
+    }
+
+    // Add quick notes if available
+    if (quickNotes.length > 0) {
+      const quickNotesText = quickNotes.join('\n').trim();
+      if (quickNotesText) {
+        sections.push('[QUICKNOTES]');
+        sections.push(quickNotesText);
+      }
+    }
+  } else if (inputMode === 'typed') {
+    // Add typed input if available
+    if (typedInput && typedInput.trim()) {
+      sections.push('[TYPED_INPUT]');
+      sections.push(typedInput.trim());
+    }
+  }
+
+  return sections.length > 0 ? sections.join('\n\n') : '';
+}
 
 export function compileTemplate(
   dsl: TemplateDSL,
@@ -9,38 +45,35 @@ export function compileTemplate(
   typedInput?: string,
   inputMode: 'audio' | 'typed' = 'audio',
 ): { system: string; user: string } {
-  // 1. Build USER_PROMPT sections with explicit delimiters
-  const lines: string[] = [];
+  // Generate instructions from template settings
+  const instructions = generateInstructions(dsl.settings);
 
-  // a) TEMPLATE DEFINITION
-  lines.push('--- TEMPLATE DEFINITION ---');
-  lines.push(JSON.stringify(dsl, null, 2));
+  // Prepare template structure (JSON format as specified)
+  const templateStructure = JSON.stringify(dsl, null, 2);
 
-  // b) CONSULTATION DATA
-  lines.push('\n--- CONSULTATION DATA ---');
-  if (inputMode === 'typed') {
-    lines.push('=== CONSULTATION NOTES ===');
-    lines.push(typedInput ?? '');
-  } else {
-    lines.push('=== TRANSCRIPTION ===');
-    lines.push(transcription);
-    if (quickNotes.length) {
-      lines.push('=== QUICKNOTES ===');
-      lines.push(quickNotes.join('\n'));
-    }
-  }
+  // Build consultation data dynamically
+  const consultationData = buildConsultationData(transcription, quickNotes, typedInput, inputMode);
 
-  // c) INSTRUCTION
-  lines.push('\n--- INSTRUCTION ---');
-  lines.push(
-    `Using only the above, generate a structured clinical note by iterating through each section. `
-    + `For each section or subsection output heading then relevant content. `
-    + `Use NZ English spelling and conventions. `
-    + `Do not infer or fabricate details not present above.`,
-  );
+  // Build the complete user message
+  const userMessageParts = [
+    '--- TEMPLATE DEFINITION ---',
+    templateStructure,
+    '',
+    '--- CONSULTATION DATA ---',
+    consultationData,
+    '',
+    '--- INSTRUCTION ---',
+    instructions.detailInstruction,
+    instructions.bulletInstruction,
+    instructions.analysisInstruction,
+    instructions.abbreviationInstruction,
+    'Do not include any commentary, reasoning steps, or metadata—output only the final clinical note as structured above.',
+  ];
+
+  const userMessage = userMessageParts.join('\n');
 
   return {
     system: SYSTEM_PROMPT,
-    user: lines.join('\n'),
+    user: userMessage,
   };
 }
