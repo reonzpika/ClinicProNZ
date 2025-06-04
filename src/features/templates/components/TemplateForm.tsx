@@ -178,9 +178,8 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
             <Label htmlFor="detailLevel">Detail Level</Label>
             <Select
               value={currentSettings.detailLevel}
-              onValueChange={(value: 'low' | 'medium' | 'high') => 
-                updateSettings({ detailLevel: value })
-              }
+              onValueChange={(value: 'low' | 'medium' | 'high') =>
+                updateSettings({ detailLevel: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select detail level" />
@@ -204,7 +203,7 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
             <Switch
               id="bulletPoints"
               checked={currentSettings.bulletPoints}
-              onCheckedChange={(checked) => updateSettings({ bulletPoints: checked })}
+              onCheckedChange={checked => updateSettings({ bulletPoints: checked })}
             />
           </div>
 
@@ -220,30 +219,28 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
               <Switch
                 id="aiAnalysis"
                 checked={currentSettings.aiAnalysis.enabled}
-                onCheckedChange={(checked) => 
-                  updateSettings({ 
-                    aiAnalysis: { 
-                      ...currentSettings.aiAnalysis, 
-                      enabled: checked 
-                    } 
-                  })
-                }
+                onCheckedChange={checked =>
+                  updateSettings({
+                    aiAnalysis: {
+                      ...currentSettings.aiAnalysis,
+                      enabled: checked,
+                    },
+                  })}
               />
             </div>
-            
+
             {currentSettings.aiAnalysis.enabled && (
               <div className="mt-2">
                 <Label htmlFor="aiAnalysisLevel">Analysis Level</Label>
                 <Select
                   value={currentSettings.aiAnalysis.level}
-                  onValueChange={(value: 'basic' | 'standard' | 'comprehensive') => 
-                    updateSettings({ 
-                      aiAnalysis: { 
-                        ...currentSettings.aiAnalysis, 
-                        level: value 
-                      } 
-                    })
-                  }
+                  onValueChange={(value: 'basic' | 'standard' | 'comprehensive') =>
+                    updateSettings({
+                      aiAnalysis: {
+                        ...currentSettings.aiAnalysis,
+                        level: value,
+                      },
+                    })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select analysis level" />
@@ -269,7 +266,7 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
             <Switch
               id="abbreviations"
               checked={currentSettings.abbreviations}
-              onCheckedChange={(checked) => updateSettings({ abbreviations: checked })}
+              onCheckedChange={checked => updateSettings({ abbreviations: checked })}
             />
           </div>
         </div>
