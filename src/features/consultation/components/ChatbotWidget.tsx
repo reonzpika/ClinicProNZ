@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars */
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -158,9 +157,8 @@ export const ChatbotWidget: React.FC = () => {
     setInputMessage(e.target.value);
   };
 
-  const hasMessages = (chatHistory?.length || 0) > 0 || streamingMessage;
   const chatHeight = isExpanded
-    ? 'h-[400px]'
+    ? 'h-[400px]' // Reduced from 700px to 400px for better UX
     : 'h-auto'; // Collapsed state shows only header
 
   const chatContent = useMemo(() => (
