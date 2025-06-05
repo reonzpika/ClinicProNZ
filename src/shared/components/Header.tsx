@@ -42,6 +42,9 @@ export const Header = () => {
             ConsultAI NZ
           </Link>
           <div className="hidden items-center space-x-2 md:flex">
+            <Link href="/landing-page" className="text-xs hover:text-blue-600">
+              AI Scribe
+            </Link>
             <Link href="/consultation" className="text-xs hover:text-blue-600">
               Consultation
             </Link>
