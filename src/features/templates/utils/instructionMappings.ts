@@ -1,64 +1,74 @@
 import type { TemplateSettings } from '../types';
 
-// Instruction mappings as specified in the NEW System and User Message Specifications
+// Instruction mappings optimized for AI comprehension
 export const DETAIL_INSTRUCTIONS = {
-  low: 'Write the note with a low level of detail, focusing only on key clinical facts.',
-  medium: 'Write the note with a standard level of detail, balancing brevity and necessary context.',
-  high: 'Write the note with a high level of detail, including thorough descriptions of symptoms, findings, and rationale.',
+  low: 'Low detail: key clinical facts only.',
+  medium: 'Standard detail: balanced brevity and context.',
+  high: 'High detail: thorough descriptions and rationale.',
 } as const;
 
 export const BULLET_INSTRUCTIONS = {
-  on: 'Present content and subsection headings as concise bullet points for clarity. Keep main section headings as regular headings, not bullet points.',
-  off: 'Write all sections in narrative paragraph form.',
+  on: 'Use bullet points for content and subsection headings. Keep main section headings as headings.',
+  off: 'Use narrative paragraph form.',
 } as const;
 
 export const ANALYSIS_INSTRUCTIONS = {
-  off: 'Do not provide AI analysis; restrict content to factual history and examination details.',
+  off: 'No AI analysis. Factual history and examination only.',
 } as const;
 
-// Component-specific analysis instructions
+// Red flags definition optimized for AI
+export const RED_FLAGS_DEFINITION = `
+RED FLAGS: Symptoms suggesting serious pathology requiring urgent attention.
+Examples (not exhaustive):
+- Severe headache + fever/neck stiffness/altered mental state
+- Chest pain + cardiac risk factors
+- Sudden severe symptoms/rapid deterioration
+- New/worsening neurological deficits
+- Signs of infection/sepsis/systemic illness
+- Severe disproportionate pain
+- Breathing difficulties/respiratory distress
+- Loss of consciousness/altered mental state
+- Severe bleeding/hemorrhage
+- Suicidal ideation/self-harm risk
+- Any life/limb threatening pattern
+
+Use clinical reasoning for other concerning presentations.
+` as const;
+
+// Component-specific analysis instructions optimized
 export const ANALYSIS_COMPONENTS = {
   differentialDiagnosis: {
-    low: 'List most likely differential diagnoses.',
-    medium: 'Provide differential diagnoses with brief rationale for each.',
-    high: 'Provide comprehensive differential diagnoses with detailed reasoning, likelihood assessment, and supporting/contradicting evidence.',
+    low: 'Add likely differential diagnoses to Assessment section or create "Differential Diagnosis" section. Heading: "Differential Diagnosis:"',
+    medium: 'Add differential diagnoses with brief rationale to Assessment section or create "Differential Diagnosis" section. Heading: "Differential Diagnosis:"',
+    high: 'Add comprehensive differential diagnoses with detailed reasoning and evidence to Assessment section or create "Differential Diagnosis" section. Heading: "Differential Diagnosis:"',
   },
   assessmentSummary: {
-    low: 'Provide a brief clinical assessment summary.',
-    medium: 'Summarize the clinical assessment with key findings and clinical significance.',
-    high: 'Provide detailed clinical assessment including symptom analysis, examination correlation, and clinical reasoning.',
+    low: 'Add brief clinical summary to Assessment section or create "Clinical Assessment" section.',
+    medium: 'Add clinical summary with key findings to Assessment section or create "Clinical Assessment" section.',
+    high: 'Add detailed clinical summary with symptom analysis and reasoning to Assessment section or create "Clinical Assessment" section.',
   },
   managementPlan: {
-    low: 'Outline basic management steps.',
-    medium: 'Provide structured management plan with immediate and follow-up actions.',
-    high: 'Develop comprehensive management plan including immediate care, ongoing treatment, patient education, and monitoring.',
+    low: 'Add management steps, investigations, and follow-up to Plan section or create "Plan" section.',
+    medium: 'Add structured management plan, investigations with rationale, and follow-up timing to Plan section or create "Plan" section.',
+    high: 'Add comprehensive management plan, detailed investigations with rationale and timing, and complete follow-up plan to Plan section or create "Plan" section.',
   },
   redFlags: {
-    low: 'Create a new section and note any obvious red flag symptoms.',
-    medium: 'Create a new section and identify and explain relevant red flag symptoms or warning signs.',
-    high: 'Create a new section and comprehensive red flag assessment with clinical significance, urgency indicators, and action thresholds.',
-  },
-  investigations: {
-    low: 'Suggest essential investigations only.',
-    medium: 'Recommend appropriate investigations with basic rationale.',
-    high: 'Detailed investigation plan with rationale, timing, interpretation guidance, and follow-up requirements.',
-  },
-  followUp: {
-    low: 'Indicate basic follow-up needs.',
-    medium: 'Specify follow-up timing and key monitoring points.',
-    high: 'Comprehensive follow-up plan including timing, specific monitoring parameters, patient instructions, and escalation criteria.',
+    low: 'Identify red flag symptoms. Add to Assessment section or create "RED FLAGS" section. Heading: "RED FLAGS:"',
+    medium: 'Identify red flag symptoms with clinical significance. Add to Assessment section or create "RED FLAGS" section. Heading: "RED FLAGS:"',
+    high: 'Identify comprehensive red flags with clinical significance and urgency indicators. Add to Assessment section or create "RED FLAGS" section. Heading: "RED FLAGS:"',
   },
 } as const;
 
 export const OPTIONAL_SECTIONS_INSTRUCTIONS = `
-SECTION GENERATION RULES:
-- REQUIRED sections/subsections (optional: false or undefined): Must always generate, even with minimal content. If no information exists, include the heading with blank content.
-- OPTIONAL sections/subsections (optional: true): Only generate if meaningful, relevant content is available. If no relevant content exists, completely omit the section including its heading. Apply a quality threshold - only include if the content adds clinical value.
+SECTION RULES:
+- REQUIRED sections: Always generate with all subsections. Leave content blank if no content.
+- OPTIONAL sections: Generate only if meaningful content exists. Skip entirely (including heading) if no content.
+- Subsections inherit parent section status.
 ` as const;
 
 export const ABBREVIATION_INSTRUCTIONS = {
-  on: 'Use common medical abbreviations where appropriate.',
-  off: 'Spell out all medical terms in full; avoid abbreviations.',
+  on: 'Use medical abbreviations.',
+  off: 'Spell out all terms.',
 } as const;
 
 // Helper function to generate instructions from template settings
@@ -96,15 +106,18 @@ export function generateInstructions(settings?: TemplateSettings): {
     if (components.redFlags) {
       selectedComponents.push(ANALYSIS_COMPONENTS.redFlags[analysisLevel]);
     }
-    if (components.investigations) {
-      selectedComponents.push(ANALYSIS_COMPONENTS.investigations[analysisLevel]);
-    }
-    if (components.followUp) {
-      selectedComponents.push(ANALYSIS_COMPONENTS.followUp[analysisLevel]);
-    }
 
     if (selectedComponents.length > 0) {
-      analysisInstruction = `Include AI analysis with the following components: ${selectedComponents.join(' ')}`;
+      let instruction = `Integrate AI analysis into existing sections or create new sections.\n\n`;
+
+      // Add red flags definition if red flags component is enabled
+      if (components.redFlags) {
+        instruction += `${RED_FLAGS_DEFINITION}\n\n`;
+      }
+
+      instruction += `Components:\n${selectedComponents.map(component => `- ${component}`).join('\n')}`;
+
+      analysisInstruction = instruction;
     }
   }
 

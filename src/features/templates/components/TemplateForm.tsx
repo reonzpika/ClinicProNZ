@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/shared/components/ui/switch';
 import { Textarea } from '@/shared/components/ui/textarea';
 
-import type { SectionDSL, Template, TemplateDSL, TemplateSettings } from '../types';
+import type { SectionDSL, SubsectionDSL, Template, TemplateDSL, TemplateSettings } from '../types';
 
 type TemplateFormProps = {
   template: Template;
@@ -38,8 +38,6 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
         assessmentSummary: false,
         managementPlan: false,
         redFlags: false,
-        investigations: false,
-        followUp: false,
       },
       level: 'medium',
     },
@@ -69,15 +67,7 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
     const currentSection = newSections[index];
     if (currentSection) {
       newSections[index] = { ...currentSection, ...updates };
-
-      // If section is being marked as optional, mark all subsections as optional
-      if (updates.optional === true && currentSection.subsections) {
-        newSections[index].subsections = currentSection.subsections.map(subsection => ({
-          ...subsection,
-          optional: true,
-        }));
-      }
-
+      
       updateDsl({
         ...dsl,
         sections: newSections,
@@ -94,7 +84,7 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
   };
 
   const addSubsection = (sectionIndex: number) => {
-    const newSubsection: SectionDSL = {
+    const newSubsection: SubsectionDSL = {
       heading: '',
       prompt: '',
     };
@@ -112,18 +102,13 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
     }
   };
 
-  const updateSubsection = (sectionIndex: number, subsectionIndex: number, updates: Partial<SectionDSL>) => {
+  const updateSubsection = (sectionIndex: number, subsectionIndex: number, updates: Partial<SubsectionDSL>) => {
     const newSections = [...dsl.sections];
     const currentSection = newSections[sectionIndex];
     if (currentSection?.subsections?.[subsectionIndex]) {
       const currentSubsection = currentSection.subsections[subsectionIndex];
       currentSection.subsections[subsectionIndex] = { ...currentSubsection, ...updates };
-
-      // If any subsection is being marked as required, mark parent section as required
-      if (updates.optional === false) {
-        currentSection.optional = false;
-      }
-
+      
       updateDsl({
         ...dsl,
         sections: newSections,
@@ -154,8 +139,6 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
     assessmentSummary: false,
     managementPlan: false,
     redFlags: false,
-    investigations: false,
-    followUp: false,
   };
 
   // Validation function
@@ -346,7 +329,7 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
                         })}
                     />
                     <Label htmlFor="management" className="text-sm">
-                      Management Plan
+                      Management Plan (includes investigations & follow-up)
                     </Label>
                   </div>
 
@@ -367,46 +350,6 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
                     />
                     <Label htmlFor="redFlags" className="text-sm">
                       Red Flags
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="investigations"
-                      checked={safeComponents.investigations}
-                      onCheckedChange={checked =>
-                        updateSettings({
-                          aiAnalysis: {
-                            ...currentSettings.aiAnalysis,
-                            components: {
-                              ...safeComponents,
-                              investigations: checked,
-                            },
-                          },
-                        })}
-                    />
-                    <Label htmlFor="investigations" className="text-sm">
-                      Investigations
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="followUp"
-                      checked={safeComponents.followUp}
-                      onCheckedChange={checked =>
-                        updateSettings({
-                          aiAnalysis: {
-                            ...currentSettings.aiAnalysis,
-                            components: {
-                              ...safeComponents,
-                              followUp: checked,
-                            },
-                          },
-                        })}
-                    />
-                    <Label htmlFor="followUp" className="text-sm">
-                      Follow-up Plan
                     </Label>
                   </div>
                 </div>
@@ -555,17 +498,6 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
                       onChange={e => updateSubsection(sectionIndex, subsectionIndex, { heading: e.target.value })}
                       placeholder="Enter subsection heading"
                     />
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id={`subsection-optional-${sectionIndex}-${subsectionIndex}`}
-                      checked={subsection.optional || false}
-                      onCheckedChange={checked => updateSubsection(sectionIndex, subsectionIndex, { optional: checked })}
-                    />
-                    <Label htmlFor={`subsection-optional-${sectionIndex}-${subsectionIndex}`} className="text-sm">
-                      Optional subsection
-                    </Label>
                   </div>
 
                   <div>

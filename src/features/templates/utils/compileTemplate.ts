@@ -1,7 +1,7 @@
 import type { TemplateDSL } from '@/features/templates/types';
 
 import { generateInstructions } from './instructionMappings';
-import { SYSTEM_PROMPT } from './systemPrompt';
+import { generateSystemPrompt } from './systemPrompt';
 
 // Helper function to build consultation data section dynamically
 function buildConsultationData(
@@ -48,6 +48,9 @@ export function compileTemplate(
   // Generate instructions from template settings
   const instructions = generateInstructions(dsl.settings);
 
+  // Determine if AI analysis is enabled
+  const aiAnalysisEnabled = dsl.settings?.aiAnalysis?.enabled ?? false;
+
   // Prepare template structure (JSON format as specified)
   const templateStructure = JSON.stringify(dsl, null, 2);
 
@@ -59,25 +62,29 @@ export function compileTemplate(
     '--- TEMPLATE DEFINITION ---',
     templateStructure,
     '',
-    '--- INSTRUCTIONS ---',
-    instructions.analysisInstruction,
-    instructions.optionalSectionsInstruction,
-    instructions.detailInstruction,
-    instructions.bulletInstruction,
-    instructions.abbreviationInstruction,
-    'Always add a blank line between each section in the generated note for proper spacing and readability.',
-    'Use only plain text format - no markdown, HTML, or other formatting markup.',
-    'Do not include any commentary, reasoning steps, or metadata—output only the final clinical note as structured above.',
+    'Add blank line between sections. Use plain text only.',
     '',
     '--- CONSULTATION DATA ---',
     consultationData,
     '',
+    '--- INSTRUCTIONS ---',
+    '',
+    'SECTIONS:',
+    instructions.optionalSectionsInstruction,
+    '',
+    'STYLE:',
+    instructions.detailInstruction,
+    instructions.bulletInstruction,
+    instructions.abbreviationInstruction,
+    '',
+    'AI ANALYSIS:',
+    instructions.analysisInstruction,
   ];
 
   const userMessage = userMessageParts.join('\n');
 
   return {
-    system: SYSTEM_PROMPT,
+    system: generateSystemPrompt(aiAnalysisEnabled),
     user: userMessage,
   };
 }

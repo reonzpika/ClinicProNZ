@@ -14,9 +14,7 @@ SET dsl = jsonb_set(
         "differentialDiagnosis": false,
         "assessmentSummary": false,
         "managementPlan": false,
-        "redFlags": false,
-        "investigations": false,
-        "followUp": false
+        "redFlags": false
       },
       "level": "medium"
     },

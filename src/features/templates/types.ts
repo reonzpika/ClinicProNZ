@@ -24,20 +24,24 @@ export type TemplateSettings = {
       assessmentSummary: boolean;
       managementPlan: boolean;
       redFlags: boolean;
-      investigations: boolean;
-      followUp: boolean;
     };
     level: 'low' | 'medium' | 'high'; // Detail level for selected components
   };
   abbreviations: boolean;
 };
 
-// New TemplateDSL Schema
+// Subsection type - no optional flag allowed
+export type SubsectionDSL = {
+  heading: string;
+  prompt: string;
+};
+
+// Section type - can have optional flag and subsections
 export type SectionDSL = {
   heading: string;
   prompt: string;
-  optional?: boolean;
-  subsections?: SectionDSL[];
+  optional?: boolean; // Only sections can be optional
+  subsections?: SubsectionDSL[]; // Subsections inherit parent section's optional status
 };
 
 export type TemplateDSL = {
