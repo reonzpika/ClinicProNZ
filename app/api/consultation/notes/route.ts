@@ -10,7 +10,7 @@ if (!OPENAI_API_KEY) {
   throw new Error('Missing OPENAI_API_KEY');
 }
 
-const openai = new OpenAI({ 
+const openai = new OpenAI({
   apiKey: OPENAI_API_KEY,
   timeout: 45000, // 45 second timeout to stay under Vercel limits
 });
@@ -52,17 +52,20 @@ export async function POST(req: Request) {
       inputMode,
     );
 
-    // Call OpenAI o4-mini with streaming and timeout
+    // Call OpenAI
     const stream = await openai.chat.completions.create({
-      model: 'o4-mini',
+      model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: system },
         { role: 'user', content: user },
       ],
       // TODO: Add settings e.g. temperature, max_completion_tokens, top_p, frequency_penalty, presence_penalty
+
       // TODO: Add response_format if structured output is needed
       stream: true,
       max_completion_tokens: 2000, // Limit response length to reduce processing time
+      temperature: 0.4,
+      top_p: 0.4,
     });
 
     // Stream the response to the client with timeout handling
@@ -80,7 +83,7 @@ export async function POST(req: Request) {
               controller.enqueue(encoder.encode(content));
             }
           }
-          
+
           clearTimeout(timeoutId);
           controller.close();
         } catch (error) {
@@ -99,18 +102,18 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error('Note generation error:', error);
-    
+
     // Handle timeout errors specifically
     if (error instanceof Error && (error.message.includes('timeout') || error.message.includes('TIMEOUT'))) {
-      return NextResponse.json({ 
-        code: 'TIMEOUT_ERROR', 
-        message: 'The request took too long to process. Please try with shorter input or try again.' 
+      return NextResponse.json({
+        code: 'TIMEOUT_ERROR',
+        message: 'The request took too long to process. Please try with shorter input or try again.',
       }, { status: 408 });
     }
-    
-    return NextResponse.json({ 
-      code: 'INTERNAL_ERROR', 
-      message: error instanceof Error ? error.message : 'Failed to generate note' 
+
+    return NextResponse.json({
+      code: 'INTERNAL_ERROR',
+      message: error instanceof Error ? error.message : 'Failed to generate note',
     }, { status: 500 });
   }
 }
