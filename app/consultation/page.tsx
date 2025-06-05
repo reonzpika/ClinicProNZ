@@ -8,7 +8,9 @@ import { QuickNotes } from '@/features/consultation/components/QuickNotes';
 import RightSidebarFeatures from '@/features/consultation/components/RightSidebarFeatures';
 import { TranscriptionControls } from '@/features/consultation/components/TranscriptionControls';
 import { TypedInput } from '@/features/consultation/components/TypedInput';
+import { QuickTemplateSettings } from '@/features/templates/components/QuickTemplateSettings';
 import { TemplateSelector } from '@/features/templates/components/TemplateSelector';
+import { useSelectedTemplate } from '@/features/templates/hooks/useSelectedTemplate';
 import { Footer } from '@/shared/components/Footer';
 import { Header } from '@/shared/components/Header';
 import { Container } from '@/shared/components/layout/Container';
@@ -24,12 +26,14 @@ export default function ConsultationPage() {
     quickNotes,
     typedInput,
     inputMode,
+    settingsOverride,
     setGeneratedNotes,
     setError,
     setLastGeneratedInput,
   } = useConsultation();
   const [loading, setLoading] = useState(false);
   const [isNoteFocused, setIsNoteFocused] = useState(false);
+  const { selectedTemplate } = useSelectedTemplate();
 
   const handleClearAll = () => {
     setIsNoteFocused(false);
@@ -58,6 +62,7 @@ export default function ConsultationPage() {
           templateId,
           quickNotes: currentQuickNotes,
           inputMode,
+          settingsOverride,
         }),
       });
       if (!res.body) {
@@ -100,22 +105,27 @@ export default function ConsultationPage() {
                     <h2 className="text-xs font-semibold">Configuration</h2>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-start gap-4">
-                      {/* Template Selection */}
-                      <div className="flex-1">
-                        <div className="mb-1 text-xs font-medium text-muted-foreground">
-                          Template
+                    <div className="space-y-4">
+                      {/* Template and Input Mode Row */}
+                      <div className="flex items-start gap-4">
+                        {/* Template Selection */}
+                        <div className="flex-1">
+                          <div className="mb-1 text-xs font-medium text-muted-foreground">
+                            Template
+                          </div>
+                          <TemplateSelector />
                         </div>
-                        <TemplateSelector />
-                      </div>
 
-                      {/* Input Mode Selection */}
-                      <div className="shrink-0">
-                        <div className="mb-1 text-xs font-medium text-muted-foreground">
-                          Input Mode
+                        {/* Input Mode Selection */}
+                        <div className="shrink-0">
+                          <div className="mb-1 text-xs font-medium text-muted-foreground">
+                            Input Mode
+                          </div>
+                          <InputModeToggle />
                         </div>
-                        <InputModeToggle />
                       </div>
+                      {/* Quick Template Settings */}
+                      <QuickTemplateSettings selectedTemplate={selectedTemplate || null} />
                     </div>
                   </CardContent>
                 </Card>

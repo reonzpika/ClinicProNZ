@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { Check, ChevronDown, ChevronRight } from 'lucide-react';
+import { Check, ChevronDown, ChevronRight, FileText, Settings, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -17,7 +17,7 @@ import {
 import { Input } from '@/shared/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area';
 
-import type { Template } from '../types';
+import type { Template, TemplateSettings } from '../types';
 
 // Templates are expected to be passed in the user's preferred order from the parent.
 // This component does not sort or reorder templates except for search filtering.
@@ -42,10 +42,72 @@ export function TemplateSelectorModal({
 }: TemplateSelectorModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(initialTemplate?.id || '');
-  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
+  const [expandedTemplates, setExpandedTemplates] = useState<Set<string>>(new Set());
   const [orderedTemplates, setOrderedTemplates] = useState<Template[]>(templates);
   const { isSignedIn, userId } = useAuth();
   const router = useRouter();
+
+  // Helper function to get default settings
+  const getDefaultSettings = (): TemplateSettings => ({
+    detailLevel: 'medium',
+    bulletPoints: false,
+    aiAnalysis: {
+      enabled: false,
+      components: {
+        differentialDiagnosis: false,
+        assessmentSummary: false,
+        managementPlan: false,
+        redFlags: false,
+      },
+      level: 'medium',
+    },
+    abbreviations: false,
+  });
+
+  // Helper function to get template settings summary
+  const getSettingsSummary = (template: Template) => {
+    const settings = template.dsl?.settings || getDefaultSettings();
+    const summary = [];
+
+    // Detail level
+    if (settings.detailLevel !== 'medium') {
+      summary.push({
+        icon: <FileText className="size-3" />,
+        label: `${settings.detailLevel.charAt(0).toUpperCase() + settings.detailLevel.slice(1)} Detail`,
+        color: settings.detailLevel === 'high' ? 'text-purple-600' : 'text-blue-600',
+      });
+    }
+
+    // Bullet points
+    if (settings.bulletPoints) {
+      summary.push({
+        icon: <span className="text-xs font-bold">•</span>,
+        label: 'Bullet Points',
+        color: 'text-orange-600',
+      });
+    }
+
+    // Abbreviations
+    if (settings.abbreviations) {
+      summary.push({
+        icon: <span className="text-xs font-bold">Ab</span>,
+        label: 'Abbreviations',
+        color: 'text-cyan-600',
+      });
+    }
+
+    // AI Analysis
+    if (settings.aiAnalysis.enabled) {
+      const enabledCount = Object.values(settings.aiAnalysis.components || {}).filter(Boolean).length;
+      summary.push({
+        icon: <Zap className="size-3" />,
+        label: `AI Analysis (${enabledCount})`,
+        color: 'text-violet-600',
+      });
+    }
+
+    return summary;
+  };
 
   // Reorder templates based on user settings when modal opens
   useEffect(() => {
@@ -92,16 +154,20 @@ export function TemplateSelectorModal({
     setSelectedTemplateId(template.id);
   };
 
-  const toggleDescription = (templateId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setExpandedDescriptions((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(templateId)) {
+  const toggleExpanded = (templateId: string, e?: React.MouseEvent | React.KeyboardEvent) => {
+    e?.stopPropagation();
+    setExpandedTemplates((prev) => {
+      const isCurrentlyExpanded = prev.has(templateId);
+
+      if (isCurrentlyExpanded) {
+        // If currently expanded, collapse it
+        const newSet = new Set(prev);
         newSet.delete(templateId);
+        return newSet;
       } else {
-        newSet.add(templateId);
+        // If not expanded, collapse all others and expand this one
+        return new Set([templateId]);
       }
-      return newSet;
     });
   };
 
@@ -156,62 +222,120 @@ export function TemplateSelectorModal({
                   <div>
                     <ScrollArea className="h-[250px]">
                       <div className="space-y-2 pr-4">
-                        {filteredTemplates.map(template => (
-                          <div
-                            key={template.id}
-                            className={`cursor-pointer rounded-md p-3 transition-colors ${
-                              selectedTemplateId === template.id
-                                ? 'bg-primary/10'
-                                : 'hover:bg-muted'
-                            }`}
-                            onClick={() => handleTemplateClick(template)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                handleTemplateClick(template);
-                              }
-                            }}
-                            role="button"
-                            tabIndex={0}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1">
-                                <h3 className="flex items-center gap-2 font-medium">
-                                  {template.name}
-                                  {userDefaultTemplateId === template.id && (
-                                    <span title="Default Template" aria-label="Default Template" className="ml-1 text-xs font-semibold text-yellow-500">★ Default</span>
-                                  )}
-                                </h3>
+                        {filteredTemplates.map((template) => {
+                          const isExpanded = expandedTemplates.has(template.id);
+                          const settingsSummary = getSettingsSummary(template);
 
-                                {/* Collapsible Description */}
-                                {template.description && (
-                                  <div className="mt-1">
-                                    <button
-                                      onClick={e => toggleDescription(template.id, e)}
-                                      className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800"
-                                    >
-                                      {expandedDescriptions.has(template.id)
-                                        ? <ChevronDown className="size-3" />
-                                        : <ChevronRight className="size-3" />}
-                                      Description
-                                    </button>
-                                    {expandedDescriptions.has(template.id) && (
-                                      <div className="mt-1 text-xs text-muted-foreground">
+                          return (
+                            <div
+                              key={template.id}
+                              className={`rounded-md border transition-colors ${
+                                selectedTemplateId === template.id
+                                  ? 'border-primary bg-primary/5'
+                                  : 'border-border hover:bg-muted/50'
+                              }`}
+                            >
+                              {/* Template Header - Always Visible */}
+                              <div
+                                className="flex cursor-pointer items-center justify-between p-3"
+                                onClick={(e) => {
+                                  // Always expand/collapse when clicking on the template
+                                  toggleExpanded(template.id, e);
+                                  // Also select the template
+                                  handleTemplateClick(template);
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    toggleExpanded(template.id);
+                                    handleTemplateClick(template);
+                                  }
+                                }}
+                                role="button"
+                                tabIndex={0}
+                              >
+                                <div className="flex flex-1 items-center gap-2">
+                                  <h3 className="font-medium">{template.name}</h3>
+                                  {userDefaultTemplateId === template.id && (
+                                    <span title="Default Template" aria-label="Default Template" className="text-xs font-semibold text-yellow-500">★</span>
+                                  )}
+
+                                  {/* Settings Summary Icons */}
+                                  {settingsSummary.length > 0 && (
+                                    <div className="flex items-center gap-1">
+                                      {settingsSummary.slice(0, 3).map((setting, index) => (
+                                        <span
+                                          key={index}
+                                          className={`flex items-center ${setting.color}`}
+                                          title={setting.label}
+                                        >
+                                          {setting.icon}
+                                        </span>
+                                      ))}
+                                      {settingsSummary.length > 3 && (
+                                        <span className="text-xs text-muted-foreground">
+                                          +
+                                          {settingsSummary.length - 3}
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  {/* Expand/Collapse Indicator */}
+                                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                    {isExpanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+                                  </div>
+
+                                  {/* Selection Indicator */}
+                                  {selectedTemplateId === template.id && (
+                                    <Check className="size-5 shrink-0 text-primary" />
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Expanded Content */}
+                              {isExpanded && (
+                                <div className="border-t bg-muted/20 p-3 pt-2">
+                                  {/* Description */}
+                                  {template.description && (
+                                    <div className="mb-3">
+                                      <h4 className="mb-1 text-xs font-medium text-muted-foreground">Description</h4>
+                                      <div className="text-sm text-muted-foreground">
                                         {template.description.replace(/\\n/g, '\n').split('\n').map((line, index) => (
                                           <div key={index} className={index > 0 ? 'mt-1' : ''}>
                                             {line.trim() || '\u00A0'}
                                           </div>
                                         ))}
                                       </div>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                              {selectedTemplateId === template.id && (
-                                <Check className="ml-2 size-5 shrink-0 text-primary" />
+                                    </div>
+                                  )}
+
+                                  {/* Template Settings */}
+                                  {settingsSummary.length > 0 && (
+                                    <div>
+                                      <h4 className="mb-2 flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                                        <Settings className="size-3" />
+                                        Template Settings
+                                      </h4>
+                                      <div className="flex flex-wrap gap-2">
+                                        {settingsSummary.map((setting, index) => (
+                                          <div
+                                            key={index}
+                                            className={`flex items-center gap-1 rounded-full border px-2 py-1 text-xs ${setting.color} border-current/20 bg-current/5`}
+                                          >
+                                            {setting.icon}
+                                            <span>{setting.label}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
                               )}
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                       <ScrollBar className="w-3 bg-gray-100 [&>*]:bg-gray-400 hover:[&>*]:bg-gray-500" />
                     </ScrollArea>

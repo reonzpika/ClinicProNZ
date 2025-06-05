@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
 import { TemplateService } from '@/features/templates/template-service';
+import type { TemplateSettings } from '@/features/templates/types';
 import { compileTemplate } from '@/features/templates/utils/compileTemplate';
 
 // TODO: Move to config/env util if needed
@@ -19,7 +20,7 @@ const openai = new OpenAI({
 
 export async function POST(req: Request) {
   try {
-    const { transcription, templateId, quickNotes, typedInput, inputMode } = await req.json();
+    const { transcription, templateId, quickNotes, typedInput, inputMode, settingsOverride } = await req.json();
 
     // Validate required fields based on input mode
     if (!templateId) {
@@ -43,9 +44,46 @@ export async function POST(req: Request) {
       return NextResponse.json({ code: 'NOT_FOUND', message: 'Template not found' }, { status: 404 });
     }
 
+    // Merge template settings with session overrides
+    const templateDSL = { ...template.dsl };
+    if (settingsOverride) {
+      const defaultSettings: TemplateSettings = {
+        detailLevel: 'medium',
+        bulletPoints: false,
+        aiAnalysis: {
+          enabled: false,
+          components: {
+            differentialDiagnosis: false,
+            assessmentSummary: false,
+            managementPlan: false,
+            redFlags: false,
+          },
+          level: 'medium',
+        },
+        abbreviations: false,
+      };
+
+      const templateSettings = template.dsl.settings || defaultSettings;
+      const mergedSettings: TemplateSettings = {
+        ...templateSettings,
+        ...settingsOverride,
+        // Handle nested aiAnalysis merge
+        aiAnalysis: {
+          ...templateSettings.aiAnalysis,
+          ...(settingsOverride.aiAnalysis || {}),
+          components: {
+            ...templateSettings.aiAnalysis.components,
+            ...(settingsOverride.aiAnalysis?.components || {}),
+          },
+        },
+      };
+
+      templateDSL.settings = mergedSettings;
+    }
+
     // Compile template with input data based on mode
     const { system, user } = compileTemplate(
-      template.dsl,
+      templateDSL,
       transcription || '',
       quickNotes || [],
       typedInput,

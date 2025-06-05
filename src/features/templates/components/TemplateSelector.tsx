@@ -1,12 +1,13 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
+import { FileText, Zap } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/shared/components/ui/button';
 import { useConsultation } from '@/shared/ConsultationContext';
 
-import type { Template } from '../types';
+import type { Template, TemplateSettings } from '../types';
 import { TemplateSelectorModal } from './TemplateSelectorModal';
 
 export function TemplateSelector() {
@@ -22,6 +23,68 @@ export function TemplateSelector() {
   if (typeof window !== 'undefined') {
     userDefaultTemplateId = localStorage.getItem('userDefaultTemplateId');
   }
+
+  // Helper function to get default settings
+  const getDefaultSettings = (): TemplateSettings => ({
+    detailLevel: 'medium',
+    bulletPoints: false,
+    aiAnalysis: {
+      enabled: false,
+      components: {
+        differentialDiagnosis: false,
+        assessmentSummary: false,
+        managementPlan: false,
+        redFlags: false,
+      },
+      level: 'medium',
+    },
+    abbreviations: false,
+  });
+
+  // Helper function to get template settings summary
+  const getSettingsSummary = (template: Template) => {
+    const settings = template.dsl?.settings || getDefaultSettings();
+    const summary = [];
+
+    // Detail level
+    if (settings.detailLevel !== 'medium') {
+      summary.push({
+        icon: <FileText className="size-3" />,
+        label: `${settings.detailLevel.charAt(0).toUpperCase() + settings.detailLevel.slice(1)} Detail`,
+        color: settings.detailLevel === 'high' ? 'text-purple-600' : 'text-blue-600',
+      });
+    }
+
+    // Bullet points
+    if (settings.bulletPoints) {
+      summary.push({
+        icon: <span className="text-xs font-bold">•</span>,
+        label: 'Bullet Points',
+        color: 'text-orange-600',
+      });
+    }
+
+    // Abbreviations
+    if (settings.abbreviations) {
+      summary.push({
+        icon: <span className="text-xs font-bold">Ab</span>,
+        label: 'Abbreviations',
+        color: 'text-cyan-600',
+      });
+    }
+
+    // AI Analysis
+    if (settings.aiAnalysis.enabled) {
+      const enabledCount = Object.values(settings.aiAnalysis.components || {}).filter(Boolean).length;
+      summary.push({
+        icon: <Zap className="size-3" />,
+        label: `AI Analysis (${enabledCount})`,
+        color: 'text-violet-600',
+      });
+    }
+
+    return summary;
+  };
 
   useEffect(() => {
     async function fetchTemplates() {
@@ -93,6 +156,9 @@ export function TemplateSelector() {
     setIsModalOpen(false);
   };
 
+  // Get settings summary for selected template
+  const settingsSummary = selectedTemplate ? getSettingsSummary(selectedTemplate) : [];
+
   return (
     <div>
       <Button
@@ -100,7 +166,24 @@ export function TemplateSelector() {
         className="h-8 w-full justify-between px-2 py-1 text-xs"
         onClick={() => setIsModalOpen(true)}
       >
-        <span className="text-xs">{selectedTemplate ? selectedTemplate.name : 'Select a template'}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs">{selectedTemplate ? selectedTemplate.name : 'Select a template'}</span>
+
+          {/* Settings Summary Icons */}
+          {settingsSummary.length > 0 && (
+            <div className="flex items-center gap-1">
+              {settingsSummary.map((setting, index) => (
+                <span
+                  key={index}
+                  className={`flex items-center ${setting.color}`}
+                  title={setting.label}
+                >
+                  {setting.icon}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
         <span className="text-xs">▼</span>
       </Button>
 

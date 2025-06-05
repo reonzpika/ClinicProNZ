@@ -159,10 +159,8 @@ export const ChatbotWidget: React.FC = () => {
 
   const hasMessages = (chatHistory?.length || 0) > 0 || streamingMessage;
   const chatHeight = isExpanded
-    ? 'h-[700px]'
-    : hasMessages
-      ? 'h-[400px]'
-      : 'h-[200px]';
+    ? 'h-[400px]'
+    : 'h-auto'; // Collapsed state shows only header
 
   const chatContent = useMemo(() => (
     <>
@@ -352,7 +350,7 @@ export const ChatbotWidget: React.FC = () => {
               onClick={() => setIsExpanded(!isExpanded)}
               className="h-5 px-1 text-xs"
             >
-              {isExpanded ? '↓' : '↑'}
+              {isExpanded ? '▼' : '▲'}
             </Button>
             <Button
               variant="ghost"
@@ -382,9 +380,12 @@ export const ChatbotWidget: React.FC = () => {
         </div>
       </CardHeader>
 
-      <CardContent className="flex flex-1 flex-col overflow-hidden p-2 pt-0">
-        {chatContent}
-      </CardContent>
+      {/* Only show chat content when expanded */}
+      {isExpanded && (
+        <CardContent className="flex flex-1 flex-col overflow-hidden p-2 pt-0">
+          {chatContent}
+        </CardContent>
+      )}
     </Card>
   );
 };

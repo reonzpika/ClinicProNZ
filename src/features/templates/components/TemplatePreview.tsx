@@ -1,9 +1,11 @@
+import { AlertTriangle, ChevronDown, ChevronRight, FileText, Settings, Stethoscope, Zap } from 'lucide-react';
 import { useState } from 'react';
 
+import { Badge } from '@/shared/components/ui/badge';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
 
-import type { Template } from '../types';
+import type { Template, TemplateSettings } from '../types';
 import { compileTemplate } from '../utils/compileTemplate';
 import { SYSTEM_PROMPT } from '../utils/systemPrompt';
 
@@ -13,8 +15,60 @@ type TemplatePreviewProps = {
 
 export function TemplatePreview({ template }: TemplatePreviewProps) {
   const [showFullPrompt, setShowFullPrompt] = useState(false);
+  const [showSettingsDetails, setShowSettingsDetails] = useState(false);
   const sampleTranscription = 'This is a sample transcription of a general practice consultation.';
   const sampleQuickNotes = ['Sample quick note 1', 'Sample quick note 2'];
+
+  // Get default settings for comparison
+  const getDefaultSettings = (): TemplateSettings => ({
+    detailLevel: 'medium',
+    bulletPoints: false,
+    aiAnalysis: {
+      enabled: false,
+      components: {
+        differentialDiagnosis: false,
+        assessmentSummary: false,
+        managementPlan: false,
+        redFlags: false,
+      },
+      level: 'medium',
+    },
+    abbreviations: false,
+  });
+
+  const settings = template.dsl?.settings || getDefaultSettings();
+
+  // Helper function to get detail level display
+  const getDetailLevelDisplay = (level: string) => {
+    const levels = {
+      low: { label: 'Low', color: 'bg-blue-100 text-blue-800' },
+      medium: { label: 'Medium', color: 'bg-green-100 text-green-800' },
+      high: { label: 'High', color: 'bg-purple-100 text-purple-800' },
+    };
+    return levels[level as keyof typeof levels] || levels.medium;
+  };
+
+  // Helper function to get enabled AI components
+  const getEnabledAIComponents = () => {
+    if (!settings.aiAnalysis.enabled || !settings.aiAnalysis.components) {
+      return [];
+    }
+
+    const components = [];
+    if (settings.aiAnalysis.components.differentialDiagnosis) {
+      components.push('Differential Diagnosis');
+    }
+    if (settings.aiAnalysis.components.assessmentSummary) {
+      components.push('Assessment Summary');
+    }
+    if (settings.aiAnalysis.components.managementPlan) {
+      components.push('Management Plan');
+    }
+    if (settings.aiAnalysis.components.redFlags) {
+      components.push('Red Flags');
+    }
+    return components;
+  };
 
   // Render DSL sections for preview
   const renderSections = (sections: any[], level = 0) => {
@@ -31,13 +85,17 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
     ));
   };
 
+  const enabledAIComponents = getEnabledAIComponents();
+  const detailLevel = getDetailLevelDisplay(settings.detailLevel);
+
   return (
     <div className="flex h-full min-h-0 flex-col">
       <Card className="flex h-full min-h-0 flex-col">
         <CardContent className="flex h-full min-h-0 flex-col p-4">
           <ScrollArea className="h-full min-h-0 flex-1">
-            <div className="space-y-2">
+            <div className="space-y-4">
               <h3 className="mb-2 text-lg font-semibold">{template.name}</h3>
+
               <div>
                 <h4 className="mb-1 text-xs font-medium">Description</h4>
                 <div className="text-sm text-muted-foreground">
@@ -47,6 +105,108 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Template Settings Preview */}
+              <div>
+                <button
+                  type="button"
+                  className="-m-1 flex cursor-pointer items-center gap-2 rounded p-1 hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  onClick={() => setShowSettingsDetails(!showSettingsDetails)}
+                >
+                  {showSettingsDetails ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+                  <Settings className="size-4" />
+                  <h4 className="text-xs font-medium">Template Settings</h4>
+                </button>
+
+                {/* Settings Summary - Always Visible */}
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Badge variant="outline" className={detailLevel.color}>
+                    <FileText className="mr-1 size-3" />
+                    {detailLevel.label}
+                    {' '}
+                    Detail
+                  </Badge>
+
+                  {settings.bulletPoints && (
+                    <Badge variant="outline" className="bg-orange-100 text-orange-800">
+                      • Bullet Points
+                    </Badge>
+                  )}
+
+                  {settings.abbreviations && (
+                    <Badge variant="outline" className="bg-cyan-100 text-cyan-800">
+                      Abbreviations
+                    </Badge>
+                  )}
+
+                  {settings.aiAnalysis.enabled && (
+                    <Badge variant="outline" className="bg-violet-100 text-violet-800">
+                      <Zap className="mr-1 size-3" />
+                      AI Analysis (
+                      {enabledAIComponents.length}
+                      )
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Settings Details - Collapsible */}
+                {showSettingsDetails && (
+                  <div className="mt-3 space-y-3 rounded bg-muted/30 p-3">
+                    <div className="grid grid-cols-1 gap-3 text-xs">
+                      <div>
+                        <span className="font-medium">Detail Level:</span>
+                        {' '}
+                        {settings.detailLevel}
+                        <div className="mt-1 text-muted-foreground">
+                          {settings.detailLevel === 'low' && 'Key clinical facts only'}
+                          {settings.detailLevel === 'medium' && 'Standard detail level'}
+                          {settings.detailLevel === 'high' && 'Thorough descriptions'}
+                        </div>
+                      </div>
+
+                      <div>
+                        <span className="font-medium">Formatting:</span>
+                        <div className="mt-1 flex gap-2">
+                          <span className={settings.bulletPoints ? 'text-green-600' : 'text-muted-foreground'}>
+                            {settings.bulletPoints ? '✓' : '✗'}
+                            {' '}
+                            Bullet Points
+                          </span>
+                          <span className={settings.abbreviations ? 'text-green-600' : 'text-muted-foreground'}>
+                            {settings.abbreviations ? '✓' : '✗'}
+                            {' '}
+                            Medical Abbreviations
+                          </span>
+                        </div>
+                      </div>
+
+                      {settings.aiAnalysis.enabled && (
+                        <div>
+                          <span className="font-medium">
+                            AI Analysis (
+                            {settings.aiAnalysis.level}
+                            {' '}
+                            detail):
+                          </span>
+                          <div className="mt-1 space-y-1">
+                            {enabledAIComponents.map((component, index) => (
+                              <div key={index} className="flex items-center gap-1 text-green-600">
+                                {component === 'Differential Diagnosis' && <Stethoscope className="size-3" />}
+                                {component === 'Red Flags' && <AlertTriangle className="size-3" />}
+                                {!['Differential Diagnosis', 'Red Flags'].includes(component) && <span>✓</span>}
+                                <span>{component}</span>
+                              </div>
+                            ))}
+                            {enabledAIComponents.length === 0 && (
+                              <span className="text-muted-foreground">No components selected</span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Overall Instructions */}

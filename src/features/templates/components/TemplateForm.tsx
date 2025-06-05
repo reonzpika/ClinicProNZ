@@ -67,7 +67,7 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
     const currentSection = newSections[index];
     if (currentSection) {
       newSections[index] = { ...currentSection, ...updates };
-      
+
       updateDsl({
         ...dsl,
         sections: newSections,
@@ -108,7 +108,7 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
     if (currentSection?.subsections?.[subsectionIndex]) {
       const currentSubsection = currentSection.subsections[subsectionIndex];
       currentSection.subsections[subsectionIndex] = { ...currentSubsection, ...updates };
-      
+
       updateDsl({
         ...dsl,
         sections: newSections,
@@ -206,193 +206,212 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {/* Detail Level */}
-          <div className="space-y-2">
-            <Label htmlFor="detailLevel">Detail Level</Label>
-            <Select
-              value={currentSettings.detailLevel}
-              onValueChange={(value: 'low' | 'medium' | 'high') =>
-                updateSettings({ detailLevel: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select detail level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="low">Low - Key clinical facts only</SelectItem>
-                <SelectItem value="medium">Medium - Standard detail</SelectItem>
-                <SelectItem value="high">High - Thorough descriptions</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Bullet Points */}
-          <div className="flex items-center justify-between space-y-2">
-            <div className="space-y-0.5">
-              <Label htmlFor="bulletPoints">Bullet Points</Label>
-              <p className="text-sm text-muted-foreground">
-                Use bullet points instead of paragraphs
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {/* Left Column - Basic Settings */}
+          <div className="space-y-4">
+            <div>
+              <Label className="text-base font-medium">Basic Settings</Label>
+              <p className="mb-4 text-sm text-muted-foreground">
+                Configure general note formatting options
               </p>
             </div>
-            <Switch
-              id="bulletPoints"
-              checked={currentSettings.bulletPoints}
-              onCheckedChange={checked => updateSettings({ bulletPoints: checked })}
-            />
-          </div>
 
-          {/* AI Analysis */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            {/* Detail Level */}
+            <div className="space-y-2">
+              <Label htmlFor="detailLevel">Detail Level</Label>
+              <Select
+                value={currentSettings.detailLevel}
+                onValueChange={(value: 'low' | 'medium' | 'high') =>
+                  updateSettings({ detailLevel: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select detail level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low - Key clinical facts only</SelectItem>
+                  <SelectItem value="medium">Medium - Standard detail</SelectItem>
+                  <SelectItem value="high">High - Thorough descriptions</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Bullet Points */}
+            <div className="flex items-center justify-between space-y-2">
               <div className="space-y-0.5">
-                <Label htmlFor="aiAnalysis">AI Analysis</Label>
+                <Label htmlFor="bulletPoints">Bullet Points</Label>
                 <p className="text-sm text-muted-foreground">
-                  Include AI-generated analysis and recommendations
+                  Use bullet points instead of paragraphs
                 </p>
               </div>
               <Switch
-                id="aiAnalysis"
-                checked={currentSettings.aiAnalysis.enabled}
-                onCheckedChange={checked =>
-                  updateSettings({
-                    aiAnalysis: {
-                      ...currentSettings.aiAnalysis,
-                      enabled: checked,
-                    },
-                  })}
+                id="bulletPoints"
+                checked={currentSettings.bulletPoints}
+                onCheckedChange={checked => updateSettings({ bulletPoints: checked })}
               />
             </div>
 
-            {currentSettings.aiAnalysis.enabled && (
-              <div className="space-y-4 rounded-lg border p-4">
-                <div>
-                  <Label className="text-sm font-medium">Analysis Components</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Select which aspects of the consultation to analyze
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="ddx"
-                      checked={safeComponents.differentialDiagnosis}
-                      onCheckedChange={checked =>
-                        updateSettings({
-                          aiAnalysis: {
-                            ...currentSettings.aiAnalysis,
-                            components: {
-                              ...safeComponents,
-                              differentialDiagnosis: checked,
-                            },
-                          },
-                        })}
-                    />
-                    <Label htmlFor="ddx" className="text-sm">
-                      Differential Diagnosis
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="assessment"
-                      checked={safeComponents.assessmentSummary}
-                      onCheckedChange={checked =>
-                        updateSettings({
-                          aiAnalysis: {
-                            ...currentSettings.aiAnalysis,
-                            components: {
-                              ...safeComponents,
-                              assessmentSummary: checked,
-                            },
-                          },
-                        })}
-                    />
-                    <Label htmlFor="assessment" className="text-sm">
-                      Assessment Summary
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="management"
-                      checked={safeComponents.managementPlan}
-                      onCheckedChange={checked =>
-                        updateSettings({
-                          aiAnalysis: {
-                            ...currentSettings.aiAnalysis,
-                            components: {
-                              ...safeComponents,
-                              managementPlan: checked,
-                            },
-                          },
-                        })}
-                    />
-                    <Label htmlFor="management" className="text-sm">
-                      Management Plan (includes investigations & follow-up)
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="redFlags"
-                      checked={safeComponents.redFlags}
-                      onCheckedChange={checked =>
-                        updateSettings({
-                          aiAnalysis: {
-                            ...currentSettings.aiAnalysis,
-                            components: {
-                              ...safeComponents,
-                              redFlags: checked,
-                            },
-                          },
-                        })}
-                    />
-                    <Label htmlFor="redFlags" className="text-sm">
-                      Red Flags
-                    </Label>
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <Label htmlFor="aiAnalysisLevel">Analysis Detail Level</Label>
-                  <Select
-                    value={currentSettings.aiAnalysis.level}
-                    onValueChange={(value: 'low' | 'medium' | 'high') =>
-                      updateSettings({
-                        aiAnalysis: {
-                          ...currentSettings.aiAnalysis,
-                          level: value,
-                        },
-                      })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select analysis detail level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Low - Brief and concise</SelectItem>
-                      <SelectItem value="medium">Medium - Balanced detail</SelectItem>
-                      <SelectItem value="high">High - Comprehensive and detailed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+            {/* Abbreviations */}
+            <div className="flex items-center justify-between space-y-2">
+              <div className="space-y-0.5">
+                <Label htmlFor="abbreviations">Medical Abbreviations</Label>
+                <p className="text-sm text-muted-foreground">
+                  Use common medical abbreviations
+                </p>
               </div>
-            )}
+              <Switch
+                id="abbreviations"
+                checked={currentSettings.abbreviations}
+                onCheckedChange={checked => updateSettings({ abbreviations: checked })}
+              />
+            </div>
           </div>
 
-          {/* Abbreviations */}
-          <div className="flex items-center justify-between space-y-2">
-            <div className="space-y-0.5">
-              <Label htmlFor="abbreviations">Medical Abbreviations</Label>
-              <p className="text-sm text-muted-foreground">
-                Use common medical abbreviations
+          {/* Right Column - AI Analysis */}
+          <div className="space-y-4">
+            <div>
+              <Label className="text-base font-medium">AI Analysis</Label>
+              <p className="mb-4 text-sm text-muted-foreground">
+                Configure AI-powered analysis and recommendations
               </p>
             </div>
-            <Switch
-              id="abbreviations"
-              checked={currentSettings.abbreviations}
-              onCheckedChange={checked => updateSettings({ abbreviations: checked })}
-            />
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="aiAnalysis">Enable AI Analysis</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Include AI-generated analysis and recommendations
+                  </p>
+                </div>
+                <Switch
+                  id="aiAnalysis"
+                  checked={currentSettings.aiAnalysis.enabled}
+                  onCheckedChange={checked =>
+                    updateSettings({
+                      aiAnalysis: {
+                        ...currentSettings.aiAnalysis,
+                        enabled: checked,
+                      },
+                    })}
+                />
+              </div>
+
+              {currentSettings.aiAnalysis.enabled && (
+                <div className="space-y-4 rounded-lg border bg-muted/30 p-4">
+                  <div>
+                    <Label className="text-sm font-medium">Analysis Components</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Select which aspects of the consultation to analyze
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3">
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="ddx"
+                        checked={safeComponents.differentialDiagnosis}
+                        onCheckedChange={checked =>
+                          updateSettings({
+                            aiAnalysis: {
+                              ...currentSettings.aiAnalysis,
+                              components: {
+                                ...safeComponents,
+                                differentialDiagnosis: checked,
+                              },
+                            },
+                          })}
+                      />
+                      <Label htmlFor="ddx" className="text-sm">
+                        Differential Diagnosis
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="assessment"
+                        checked={safeComponents.assessmentSummary}
+                        onCheckedChange={checked =>
+                          updateSettings({
+                            aiAnalysis: {
+                              ...currentSettings.aiAnalysis,
+                              components: {
+                                ...safeComponents,
+                                assessmentSummary: checked,
+                              },
+                            },
+                          })}
+                      />
+                      <Label htmlFor="assessment" className="text-sm">
+                        Assessment Summary
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="management"
+                        checked={safeComponents.managementPlan}
+                        onCheckedChange={checked =>
+                          updateSettings({
+                            aiAnalysis: {
+                              ...currentSettings.aiAnalysis,
+                              components: {
+                                ...safeComponents,
+                                managementPlan: checked,
+                              },
+                            },
+                          })}
+                      />
+                      <Label htmlFor="management" className="text-sm">
+                        Management Plan (includes investigations & follow-up)
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="redFlags"
+                        checked={safeComponents.redFlags}
+                        onCheckedChange={checked =>
+                          updateSettings({
+                            aiAnalysis: {
+                              ...currentSettings.aiAnalysis,
+                              components: {
+                                ...safeComponents,
+                                redFlags: checked,
+                              },
+                            },
+                          })}
+                      />
+                      <Label htmlFor="redFlags" className="text-sm">
+                        Red Flags
+                      </Label>
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <Label htmlFor="aiAnalysisLevel">Analysis Detail Level</Label>
+                    <Select
+                      value={currentSettings.aiAnalysis.level}
+                      onValueChange={(value: 'low' | 'medium' | 'high') =>
+                        updateSettings({
+                          aiAnalysis: {
+                            ...currentSettings.aiAnalysis,
+                            level: value,
+                          },
+                        })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select analysis detail level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Low - Brief and concise</SelectItem>
+                        <SelectItem value="medium">Medium - Balanced detail</SelectItem>
+                        <SelectItem value="high">High - Comprehensive and detailed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
