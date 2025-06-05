@@ -33,7 +33,15 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
     bulletPoints: false,
     aiAnalysis: {
       enabled: false,
-      level: 'standard',
+      components: {
+        differentialDiagnosis: false,
+        assessmentSummary: false,
+        managementPlan: false,
+        redFlags: false,
+        investigations: false,
+        followUp: false,
+      },
+      level: 'medium',
     },
     abbreviations: false,
   });
@@ -61,6 +69,15 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
     const currentSection = newSections[index];
     if (currentSection) {
       newSections[index] = { ...currentSection, ...updates };
+
+      // If section is being marked as optional, mark all subsections as optional
+      if (updates.optional === true && currentSection.subsections) {
+        newSections[index].subsections = currentSection.subsections.map(subsection => ({
+          ...subsection,
+          optional: true,
+        }));
+      }
+
       updateDsl({
         ...dsl,
         sections: newSections,
@@ -101,6 +118,12 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
     if (currentSection?.subsections?.[subsectionIndex]) {
       const currentSubsection = currentSection.subsections[subsectionIndex];
       currentSection.subsections[subsectionIndex] = { ...currentSubsection, ...updates };
+
+      // If any subsection is being marked as required, mark parent section as required
+      if (updates.optional === false) {
+        currentSection.optional = false;
+      }
+
       updateDsl({
         ...dsl,
         sections: newSections,
@@ -125,8 +148,36 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
   // Get current settings with defaults
   const currentSettings = dsl.settings || getDefaultSettings();
 
+  // Ensure components exist for backward compatibility
+  const safeComponents = currentSettings.aiAnalysis.components || {
+    differentialDiagnosis: false,
+    assessmentSummary: false,
+    managementPlan: false,
+    redFlags: false,
+    investigations: false,
+    followUp: false,
+  };
+
+  // Validation function
+  const validateTemplate = () => {
+    const hasOverallInstructions = dsl.overallInstructions && dsl.overallInstructions.trim().length > 0;
+    const hasSections = dsl.sections.length > 0;
+    return hasOverallInstructions || hasSections;
+  };
+
+  const isTemplateValid = validateTemplate();
+
   return (
     <div className="space-y-6">
+      {/* Validation Message */}
+      {!isTemplateValid && (
+        <div className="rounded-lg border border-destructive bg-destructive/10 p-4">
+          <p className="text-sm text-destructive">
+            Template must have either overall instructions or at least one section.
+          </p>
+        </div>
+      )}
+
       {/* Basic Template Info */}
       <div className="space-y-4">
         <div>
@@ -208,7 +259,7 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
           </div>
 
           {/* AI Analysis */}
-          <div className="space-y-2">
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="aiAnalysis">AI Analysis</Label>
@@ -230,27 +281,158 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
             </div>
 
             {currentSettings.aiAnalysis.enabled && (
-              <div className="mt-2">
-                <Label htmlFor="aiAnalysisLevel">Analysis Level</Label>
-                <Select
-                  value={currentSettings.aiAnalysis.level}
-                  onValueChange={(value: 'basic' | 'standard' | 'comprehensive') =>
-                    updateSettings({
-                      aiAnalysis: {
-                        ...currentSettings.aiAnalysis,
-                        level: value,
-                      },
-                    })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select analysis level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="basic">Basic - Simple differential list</SelectItem>
-                    <SelectItem value="standard">Standard - With rationale and next steps</SelectItem>
-                    <SelectItem value="comprehensive">Comprehensive - Detailed analysis</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="space-y-4 rounded-lg border p-4">
+                <div>
+                  <Label className="text-sm font-medium">Analysis Components</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Select which aspects of the consultation to analyze
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="ddx"
+                      checked={safeComponents.differentialDiagnosis}
+                      onCheckedChange={checked =>
+                        updateSettings({
+                          aiAnalysis: {
+                            ...currentSettings.aiAnalysis,
+                            components: {
+                              ...safeComponents,
+                              differentialDiagnosis: checked,
+                            },
+                          },
+                        })}
+                    />
+                    <Label htmlFor="ddx" className="text-sm">
+                      Differential Diagnosis
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="assessment"
+                      checked={safeComponents.assessmentSummary}
+                      onCheckedChange={checked =>
+                        updateSettings({
+                          aiAnalysis: {
+                            ...currentSettings.aiAnalysis,
+                            components: {
+                              ...safeComponents,
+                              assessmentSummary: checked,
+                            },
+                          },
+                        })}
+                    />
+                    <Label htmlFor="assessment" className="text-sm">
+                      Assessment Summary
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="management"
+                      checked={safeComponents.managementPlan}
+                      onCheckedChange={checked =>
+                        updateSettings({
+                          aiAnalysis: {
+                            ...currentSettings.aiAnalysis,
+                            components: {
+                              ...safeComponents,
+                              managementPlan: checked,
+                            },
+                          },
+                        })}
+                    />
+                    <Label htmlFor="management" className="text-sm">
+                      Management Plan
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="redFlags"
+                      checked={safeComponents.redFlags}
+                      onCheckedChange={checked =>
+                        updateSettings({
+                          aiAnalysis: {
+                            ...currentSettings.aiAnalysis,
+                            components: {
+                              ...safeComponents,
+                              redFlags: checked,
+                            },
+                          },
+                        })}
+                    />
+                    <Label htmlFor="redFlags" className="text-sm">
+                      Red Flags
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="investigations"
+                      checked={safeComponents.investigations}
+                      onCheckedChange={checked =>
+                        updateSettings({
+                          aiAnalysis: {
+                            ...currentSettings.aiAnalysis,
+                            components: {
+                              ...safeComponents,
+                              investigations: checked,
+                            },
+                          },
+                        })}
+                    />
+                    <Label htmlFor="investigations" className="text-sm">
+                      Investigations
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="followUp"
+                      checked={safeComponents.followUp}
+                      onCheckedChange={checked =>
+                        updateSettings({
+                          aiAnalysis: {
+                            ...currentSettings.aiAnalysis,
+                            components: {
+                              ...safeComponents,
+                              followUp: checked,
+                            },
+                          },
+                        })}
+                    />
+                    <Label htmlFor="followUp" className="text-sm">
+                      Follow-up Plan
+                    </Label>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <Label htmlFor="aiAnalysisLevel">Analysis Detail Level</Label>
+                  <Select
+                    value={currentSettings.aiAnalysis.level}
+                    onValueChange={(value: 'low' | 'medium' | 'high') =>
+                      updateSettings({
+                        aiAnalysis: {
+                          ...currentSettings.aiAnalysis,
+                          level: value,
+                        },
+                      })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select analysis detail level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low - Brief and concise</SelectItem>
+                      <SelectItem value="medium">Medium - Balanced detail</SelectItem>
+                      <SelectItem value="high">High - Comprehensive and detailed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             )}
           </div>
@@ -309,6 +491,17 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
               />
             </div>
 
+            <div className="flex items-center space-x-2">
+              <Switch
+                id={`section-optional-${sectionIndex}`}
+                checked={section.optional || false}
+                onCheckedChange={checked => updateSection(sectionIndex, { optional: checked })}
+              />
+              <Label htmlFor={`section-optional-${sectionIndex}`} className="text-sm">
+                Optional section (can be skipped if no relevant content)
+              </Label>
+            </div>
+
             <div>
               <Label htmlFor={`section-prompt-${sectionIndex}`}>Section Prompt</Label>
               <Textarea
@@ -362,6 +555,17 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
                       onChange={e => updateSubsection(sectionIndex, subsectionIndex, { heading: e.target.value })}
                       placeholder="Enter subsection heading"
                     />
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id={`subsection-optional-${sectionIndex}-${subsectionIndex}`}
+                      checked={subsection.optional || false}
+                      onCheckedChange={checked => updateSubsection(sectionIndex, subsectionIndex, { optional: checked })}
+                    />
+                    <Label htmlFor={`subsection-optional-${sectionIndex}-${subsectionIndex}`} className="text-sm">
+                      Optional subsection
+                    </Label>
                   </div>
 
                   <div>

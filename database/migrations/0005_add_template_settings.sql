@@ -10,7 +10,15 @@ SET dsl = jsonb_set(
     "bulletPoints": false,
     "aiAnalysis": {
       "enabled": false,
-      "level": "standard"
+      "components": {
+        "differentialDiagnosis": false,
+        "assessmentSummary": false,
+        "managementPlan": false,
+        "redFlags": false,
+        "investigations": false,
+        "followUp": false
+      },
+      "level": "medium"
     },
     "abbreviations": false
   }'::jsonb

@@ -19,7 +19,15 @@ export type TemplateSettings = {
   bulletPoints: boolean;
   aiAnalysis: {
     enabled: boolean;
-    level: 'basic' | 'standard' | 'comprehensive';
+    components: {
+      differentialDiagnosis: boolean;
+      assessmentSummary: boolean;
+      managementPlan: boolean;
+      redFlags: boolean;
+      investigations: boolean;
+      followUp: boolean;
+    };
+    level: 'low' | 'medium' | 'high'; // Detail level for selected components
   };
   abbreviations: boolean;
 };
@@ -28,6 +36,7 @@ export type TemplateSettings = {
 export type SectionDSL = {
   heading: string;
   prompt: string;
+  optional?: boolean;
   subsections?: SectionDSL[];
 };
 
