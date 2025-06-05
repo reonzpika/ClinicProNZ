@@ -10,7 +10,10 @@ if (!OPENAI_API_KEY) {
   throw new Error('Missing OPENAI_API_KEY');
 }
 
-const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+const openai = new OpenAI({ 
+  apiKey: OPENAI_API_KEY,
+  timeout: 45000, // 45 second timeout to stay under Vercel limits
+});
 
 // TODO: Implement structured output for generated notes (e.g., JSON or sections) instead of plain text.
 
@@ -49,7 +52,7 @@ export async function POST(req: Request) {
       inputMode,
     );
 
-    // Call OpenAI o4-mini with streaming
+    // Call OpenAI o4-mini with streaming and timeout
     const stream = await openai.chat.completions.create({
       model: 'o4-mini',
       messages: [
@@ -59,21 +62,34 @@ export async function POST(req: Request) {
       // TODO: Add settings e.g. temperature, max_completion_tokens, top_p, frequency_penalty, presence_penalty
       // TODO: Add response_format if structured output is needed
       stream: true,
+      max_completion_tokens: 2000, // Limit response length to reduce processing time
     });
 
-    // Stream the response to the client
+    // Stream the response to the client with timeout handling
     const encoder = new TextEncoder();
     const readable = new ReadableStream({
       async start(controller) {
-        for await (const chunk of stream) {
-          const content = chunk.choices?.[0]?.delta?.content;
-          if (content) {
-            controller.enqueue(encoder.encode(content));
+        try {
+          const timeoutId = setTimeout(() => {
+            controller.error(new Error('Stream timeout'));
+          }, 40000); // 40 second timeout for streaming
+
+          for await (const chunk of stream) {
+            const content = chunk.choices?.[0]?.delta?.content;
+            if (content) {
+              controller.enqueue(encoder.encode(content));
+            }
           }
+          
+          clearTimeout(timeoutId);
+          controller.close();
+        } catch (error) {
+          console.error('Streaming error:', error);
+          controller.error(error);
         }
-        controller.close();
       },
     });
+
     return new Response(readable, {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
@@ -83,6 +99,18 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error('Note generation error:', error);
-    return NextResponse.json({ code: 'INTERNAL_ERROR', message: error instanceof Error ? error.message : 'Failed to generate note' }, { status: 500 });
+    
+    // Handle timeout errors specifically
+    if (error instanceof Error && (error.message.includes('timeout') || error.message.includes('TIMEOUT'))) {
+      return NextResponse.json({ 
+        code: 'TIMEOUT_ERROR', 
+        message: 'The request took too long to process. Please try with shorter input or try again.' 
+      }, { status: 408 });
+    }
+    
+    return NextResponse.json({ 
+      code: 'INTERNAL_ERROR', 
+      message: error instanceof Error ? error.message : 'Failed to generate note' 
+    }, { status: 500 });
   }
 }
