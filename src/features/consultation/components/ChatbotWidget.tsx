@@ -22,6 +22,11 @@ export const ChatbotWidget: React.FC = () => {
     clearChatHistory,
     setChatContextEnabled,
     setChatLoading,
+    // Raw consultation data for Phase 1 context
+    transcription,
+    typedInput,
+    quickNotes,
+    inputMode,
   } = useConsultation();
 
   const [inputMessage, setInputMessage] = useState('');
@@ -80,6 +85,13 @@ export const ChatbotWidget: React.FC = () => {
         { role: 'user' as const, content: userMessage },
       ];
 
+      // Prepare raw consultation data for Phase 1 context
+      const rawConsultationData = {
+        transcription: inputMode === 'audio' ? transcription.transcript : '',
+        typedInput: inputMode === 'typed' ? typedInput : '',
+        quickNotes: quickNotes || [],
+      };
+
       const response = await fetch('/api/consultation/chat', {
         method: 'POST',
         headers: {
@@ -89,6 +101,7 @@ export const ChatbotWidget: React.FC = () => {
           messages,
           consultationNote: generatedNotes,
           useContext: isChatContextEnabled,
+          rawConsultationData,
         }),
       });
 
@@ -142,6 +155,10 @@ export const ChatbotWidget: React.FC = () => {
     isChatContextEnabled,
     addChatMessage,
     setChatLoading,
+    inputMode,
+    transcription,
+    typedInput,
+    quickNotes,
   ]);
 
   // Handle Enter key press
@@ -267,12 +284,14 @@ export const ChatbotWidget: React.FC = () => {
                       id="context-toggle-modal"
                       checked={isChatContextEnabled}
                       onCheckedChange={setChatContextEnabled}
-                      disabled={!generatedNotes}
+                      disabled={!generatedNotes && !transcription.transcript && !typedInput && (!quickNotes || quickNotes.length === 0)}
                     />
                     <label htmlFor="context-toggle-modal" className="text-xs text-gray-600">
-                      Use consultation note context
-                      {!generatedNotes && (
-                        <span className="ml-1 text-gray-400">(Generate notes first)</span>
+                      {generatedNotes
+                        ? 'Use generated notes as context'
+                        : 'Use consultation data as context'}
+                      {!generatedNotes && !transcription.transcript && !typedInput && (!quickNotes || quickNotes.length === 0) && (
+                        <span className="ml-1 text-gray-400">(No consultation data available)</span>
                       )}
                     </label>
                   </div>
@@ -368,12 +387,14 @@ export const ChatbotWidget: React.FC = () => {
             id="context-toggle"
             checked={isChatContextEnabled}
             onCheckedChange={setChatContextEnabled}
-            disabled={!generatedNotes}
+            disabled={!generatedNotes && !transcription.transcript && !typedInput && (!quickNotes || quickNotes.length === 0)}
           />
           <label htmlFor="context-toggle" className="text-xs text-gray-600">
-            Use consultation note context
-            {!generatedNotes && (
-              <span className="ml-1 text-gray-400">(Generate notes first)</span>
+            {generatedNotes
+              ? 'Use generated notes as context'
+              : 'Use consultation data as context'}
+            {!generatedNotes && !transcription.transcript && !typedInput && (!quickNotes || quickNotes.length === 0) && (
+              <span className="ml-1 text-gray-400">(No consultation data available)</span>
             )}
           </label>
         </div>

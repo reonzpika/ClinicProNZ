@@ -43,7 +43,7 @@ Please use this consultation context to provide relevant, specific guidance for 
 
 export async function POST(req: Request) {
   try {
-    const { messages, consultationNote, useContext } = await req.json();
+    const { messages, consultationNote, useContext, rawConsultationData } = await req.json();
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json(
@@ -52,10 +52,42 @@ export async function POST(req: Request) {
       );
     }
 
-    // Build system prompt with optional consultation context
+    // Build system prompt with context based on two-phase logic
     let systemPrompt = CHATBOT_SYSTEM_PROMPT;
-    if (useContext && consultationNote) {
-      systemPrompt += CONSULTATION_CONTEXT_PREFIX + consultationNote + CONSULTATION_CONTEXT_SUFFIX;
+    
+    if (useContext) {
+      if (consultationNote && consultationNote.trim()) {
+        // Phase 2: Generated notes exist - use only the structured notes
+        systemPrompt += CONSULTATION_CONTEXT_PREFIX + consultationNote + CONSULTATION_CONTEXT_SUFFIX;
+      } else if (rawConsultationData) {
+        // Phase 1: No generated notes - use raw consultation data
+        let rawContext = '';
+        
+        if (rawConsultationData.transcription && rawConsultationData.transcription.trim()) {
+          rawContext += `TRANSCRIPTION:\n${rawConsultationData.transcription}\n\n`;
+        }
+        
+        if (rawConsultationData.typedInput && rawConsultationData.typedInput.trim()) {
+          rawContext += `TYPED INPUT:\n${rawConsultationData.typedInput}\n\n`;
+        }
+        
+        if (rawConsultationData.quickNotes && rawConsultationData.quickNotes.length > 0) {
+          rawContext += `QUICK NOTES:\n${rawConsultationData.quickNotes.map((note: string, index: number) => `${index + 1}. ${note}`).join('\n')}\n\n`;
+        }
+        
+        if (rawContext.trim()) {
+          systemPrompt += `
+
+RAW CONSULTATION DATA:
+The following raw consultation data provides clinical context for this conversation:
+
+---
+${rawContext.trim()}
+---
+
+Please use this raw consultation data to provide relevant guidance. This is unstructured consultation information that may need clarification or organization.`;
+        }
+      }
     }
 
     // Prepare messages for OpenAI API
