@@ -176,7 +176,7 @@ export const ChatbotWidget: React.FC = () => {
 
   const chatHeight = isExpanded
     ? 'h-[400px]' // Reduced from 700px to 400px for better UX
-    : 'h-auto'; // Collapsed state shows only header
+    : 'h-auto';
 
   const chatContent = useMemo(() => (
     <>
@@ -191,10 +191,10 @@ export const ChatbotWidget: React.FC = () => {
             {/* Streaming message */}
             {streamingMessage && (
               <div className="mb-2 flex justify-start">
-                <div className="max-w-[85%] rounded-lg border bg-gray-100 px-2 py-1 text-gray-900">
-                  <div className="whitespace-pre-wrap break-words text-xs">{streamingMessage}</div>
-                  <div className="mt-1 text-xs text-gray-500 opacity-70">
-                    typing...
+                <div className="max-w-[85%] rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800">
+                  <div className="whitespace-pre-wrap break-words text-sm">{streamingMessage}</div>
+                  <div className="mt-1 text-xs text-slate-500 opacity-70">
+                    processing...
                   </div>
                 </div>
               </div>
@@ -203,11 +203,11 @@ export const ChatbotWidget: React.FC = () => {
             {/* Loading indicator */}
             {isChatLoading && !streamingMessage && (
               <div className="flex justify-start">
-                <div className="max-w-[85%] rounded-lg border bg-gray-100 px-2 py-1">
+                <div className="max-w-[85%] rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
                   <div className="flex items-center space-x-1">
-                    <div className="size-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.3s]"></div>
-                    <div className="size-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.15s]"></div>
-                    <div className="size-1.5 animate-bounce rounded-full bg-gray-400"></div>
+                    <div className="size-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]"></div>
+                    <div className="size-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]"></div>
+                    <div className="size-1.5 animate-bounce rounded-full bg-slate-400"></div>
                   </div>
                 </div>
               </div>
@@ -218,14 +218,14 @@ export const ChatbotWidget: React.FC = () => {
 
       {/* Modern Message Input */}
       <div className="mt-2 shrink-0">
-        <div className="relative flex items-center space-x-2 rounded-lg border border-gray-200 bg-white p-1 shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
+        <div className="relative flex items-center space-x-2 rounded-lg border border-slate-200 bg-white p-2 shadow-sm focus-within:border-slate-400 focus-within:ring-1 focus-within:ring-slate-400">
           <Textarea
             ref={textareaRef}
             value={inputMessage}
             onChange={handleInputChange}
             onKeyPress={handleKeyPress}
-            placeholder=""
-            className="max-h-[40px] min-h-[20px] flex-1 resize-none border-0 bg-transparent py-1 text-xs placeholder:text-gray-400 focus:outline-none focus:ring-0"
+            placeholder="Ask a clinical question..."
+            className="max-h-[40px] min-h-[24px] flex-1 resize-none border-0 bg-transparent py-1 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-0"
             disabled={isChatLoading}
             rows={1}
           />
@@ -233,11 +233,11 @@ export const ChatbotWidget: React.FC = () => {
             onClick={handleSendMessage}
             disabled={!inputMessage.trim() || isChatLoading}
             size="sm"
-            className="h-6 shrink-0 rounded-md bg-blue-600 px-2 py-1 text-xs text-white hover:bg-blue-700 disabled:bg-gray-300"
+            className="h-7 shrink-0 rounded-md bg-slate-600 px-3 py-1 text-sm text-white hover:bg-slate-700 disabled:bg-slate-300"
           >
             {isChatLoading
               ? (
-                  <div className="size-2 animate-spin rounded-full border border-white border-t-transparent"></div>
+                  <div className="size-3 animate-spin rounded-full border border-white border-t-transparent"></div>
                 )
               : (
                   'Send'
@@ -258,47 +258,47 @@ export const ChatbotWidget: React.FC = () => {
   ]);
 
   return (
-    <Card className={`flex flex-col ${chatHeight} transition-all duration-300`}>
-      <CardHeader className="shrink-0 pb-2">
+    <Card className={`flex flex-col ${chatHeight} border-slate-200 bg-white shadow-sm transition-all duration-300`}>
+      <CardHeader className="shrink-0 border-b border-slate-100 bg-slate-50 pb-2">
         <div className="flex items-center justify-between">
-          <h3 className="text-xs font-semibold">🤖 Clinical AI Assistant</h3>
+          <h3 className="text-sm font-medium text-slate-700">📋 Clinical Reference</h3>
           <div className="flex items-center space-x-1">
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
               <DialogTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-5 px-1 text-xs"
+                  className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
                 >
                   ⧉
                 </Button>
               </DialogTrigger>
-              <DialogContent className="!flex h-[80vh] max-w-4xl flex-col gap-0 bg-white">
-                <DialogHeader className="shrink-0">
-                  <DialogTitle className="text-sm">🤖 Clinical AI Assistant</DialogTitle>
+              <DialogContent className="!flex h-[80vh] max-w-4xl flex-col gap-0 border-slate-200 bg-white">
+                <DialogHeader className="shrink-0 border-b border-slate-100 pb-3">
+                  <DialogTitle className="text-base text-slate-700">📋 Clinical Reference</DialogTitle>
                 </DialogHeader>
-                <div className="flex flex-1 flex-col overflow-hidden p-2">
+                <div className="flex flex-1 flex-col overflow-hidden">
                   {/* Context Toggle in Modal */}
-                  <div className="mb-4 flex shrink-0 items-center space-x-2">
+                  <div className="mb-4 flex shrink-0 items-center space-x-3 p-4">
                     <Switch
                       id="context-toggle-modal"
                       checked={isChatContextEnabled}
                       onCheckedChange={setChatContextEnabled}
                       disabled={!generatedNotes && !transcription.transcript && !typedInput && (!quickNotes || quickNotes.length === 0)}
                     />
-                    <label htmlFor="context-toggle-modal" className="text-xs text-gray-600">
+                    <label htmlFor="context-toggle-modal" className="text-sm text-slate-600">
                       {generatedNotes
-                        ? 'Use generated notes as context'
+                        ? 'Use clinical notes as context'
                         : 'Use consultation data as context'}
                       {!generatedNotes && !transcription.transcript && !typedInput && (!quickNotes || quickNotes.length === 0) && (
-                        <span className="ml-1 text-gray-400">(No consultation data available)</span>
+                        <span className="ml-1 text-slate-400">(No consultation data available)</span>
                       )}
                     </label>
                   </div>
                   {/* Chat Messages - Modal Version */}
-                  <div className="flex-1 overflow-hidden">
+                  <div className="flex-1 overflow-hidden px-4">
                     <ScrollArea className="h-full pr-2">
-                      <div className="space-y-1">
+                      <div className="space-y-2">
                         {(chatHistory || []).map(message => (
                           <ChatMessage key={message.id} message={message} />
                         ))}
@@ -306,10 +306,10 @@ export const ChatbotWidget: React.FC = () => {
                         {/* Streaming message */}
                         {streamingMessage && (
                           <div className="mb-2 flex justify-start">
-                            <div className="max-w-[85%] rounded-lg border bg-gray-100 px-2 py-1 text-gray-900">
-                              <div className="whitespace-pre-wrap break-words text-xs">{streamingMessage}</div>
-                              <div className="mt-1 text-xs text-gray-500 opacity-70">
-                                typing...
+                            <div className="max-w-[85%] rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-800">
+                              <div className="whitespace-pre-wrap break-words text-sm">{streamingMessage}</div>
+                              <div className="mt-1 text-xs text-slate-500 opacity-70">
+                                processing...
                               </div>
                             </div>
                           </div>
@@ -318,11 +318,11 @@ export const ChatbotWidget: React.FC = () => {
                         {/* Loading indicator */}
                         {isChatLoading && !streamingMessage && (
                           <div className="flex justify-start">
-                            <div className="max-w-[85%] rounded-lg border bg-gray-100 px-2 py-1">
+                            <div className="max-w-[85%] rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
                               <div className="flex items-center space-x-1">
-                                <div className="size-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.3s]"></div>
-                                <div className="size-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.15s]"></div>
-                                <div className="size-1.5 animate-bounce rounded-full bg-gray-400"></div>
+                                <div className="size-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]"></div>
+                                <div className="size-1.5 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]"></div>
+                                <div className="size-1.5 animate-bounce rounded-full bg-slate-400"></div>
                               </div>
                             </div>
                           </div>
@@ -332,14 +332,14 @@ export const ChatbotWidget: React.FC = () => {
                   </div>
 
                   {/* Modal Message Input */}
-                  <div className="mt-2 shrink-0">
-                    <div className="relative flex items-center space-x-2 rounded-lg border border-gray-200 bg-white p-1 shadow-sm focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
+                  <div className="mt-2 shrink-0 border-t border-slate-100 p-4">
+                    <div className="relative flex items-center space-x-2 rounded-lg border border-slate-200 bg-white p-2 shadow-sm focus-within:border-slate-400 focus-within:ring-1 focus-within:ring-slate-400">
                       <Textarea
                         value={inputMessage}
                         onChange={handleInputChange}
                         onKeyPress={handleKeyPress}
-                        placeholder=""
-                        className="max-h-[40px] min-h-[20px] flex-1 resize-none border-0 bg-transparent py-1 text-xs placeholder:text-gray-400 focus:outline-none focus:ring-0"
+                        placeholder="Ask a clinical question..."
+                        className="max-h-[40px] min-h-[24px] flex-1 resize-none border-0 bg-transparent py-1 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-0"
                         disabled={isChatLoading}
                         rows={1}
                       />
@@ -347,11 +347,11 @@ export const ChatbotWidget: React.FC = () => {
                         onClick={handleSendMessage}
                         disabled={!inputMessage.trim() || isChatLoading}
                         size="sm"
-                        className="h-6 shrink-0 rounded-md bg-blue-600 px-2 py-1 text-xs text-white hover:bg-blue-700 disabled:bg-gray-300"
+                        className="h-7 shrink-0 rounded-md bg-slate-600 px-3 py-1 text-sm text-white hover:bg-slate-700 disabled:bg-slate-300"
                       >
                         {isChatLoading
                           ? (
-                              <div className="size-2 animate-spin rounded-full border border-white border-t-transparent"></div>
+                              <div className="size-3 animate-spin rounded-full border border-white border-t-transparent"></div>
                             )
                           : (
                               'Send'
@@ -366,7 +366,7 @@ export const ChatbotWidget: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="h-5 px-1 text-xs"
+              className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
             >
               {isExpanded ? '▼' : '▲'}
             </Button>
@@ -374,7 +374,7 @@ export const ChatbotWidget: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={clearChatHistory}
-              className="h-5 px-1 text-xs"
+              className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
             >
               Clear
             </Button>
@@ -382,19 +382,19 @@ export const ChatbotWidget: React.FC = () => {
         </div>
 
         {/* Context Toggle - Always show */}
-        <div className="mt-2 flex items-center space-x-2">
+        <div className="mt-3 flex items-center space-x-3">
           <Switch
             id="context-toggle"
             checked={isChatContextEnabled}
             onCheckedChange={setChatContextEnabled}
             disabled={!generatedNotes && !transcription.transcript && !typedInput && (!quickNotes || quickNotes.length === 0)}
           />
-          <label htmlFor="context-toggle" className="text-xs text-gray-600">
+          <label htmlFor="context-toggle" className="text-sm text-slate-600">
             {generatedNotes
-              ? 'Use generated notes as context'
+              ? 'Use clinical notes as context'
               : 'Use consultation data as context'}
             {!generatedNotes && !transcription.transcript && !typedInput && (!quickNotes || quickNotes.length === 0) && (
-              <span className="ml-1 text-gray-400">(No consultation data available)</span>
+              <span className="ml-1 text-slate-400">(No consultation data available)</span>
             )}
           </label>
         </div>
@@ -402,7 +402,7 @@ export const ChatbotWidget: React.FC = () => {
 
       {/* Only show chat content when expanded */}
       {isExpanded && (
-        <CardContent className="flex flex-1 flex-col overflow-hidden p-2 pt-0">
+        <CardContent className="flex flex-1 flex-col overflow-hidden p-3 pt-0">
           {chatContent}
         </CardContent>
       )}

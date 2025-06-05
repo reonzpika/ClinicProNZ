@@ -35,7 +35,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
   const mainTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Consent statement to append when consent was obtained
-  const CONSENT_STATEMENT = '\n\nPatient informed and consented verbally to the use of a digital assistant for recording and transcription during this consultation, in line with NZ Health Information Privacy Principles. The patient retains the right to pause or stop the recording at any time.';
+  const CONSENT_STATEMENT = '\n\nPatient informed and consented verbally to the use of digital documentation assistance during this consultation, in line with NZ Health Information Privacy Principles. The patient retains the right to pause or stop the recording at any time.';
 
   // Computed value: generated notes with consent statement appended if consent was obtained
   const displayNotes = React.useMemo(() => {
@@ -154,16 +154,16 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
             variant="default"
             onClick={handleGenerate}
             disabled={!canGenerate}
-            className="h-10 flex-1 px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white"
+            className="h-10 flex-1 px-4 py-2 text-sm bg-slate-600 hover:bg-slate-700 text-white"
           >
-            Generate Notes
+            Process Notes
           </Button>
           <Button
             type="button"
             variant="outline"
             onClick={handleClearAll}
             disabled={!hasAnyState}
-            className="h-10 px-4 py-2 text-sm"
+            className="h-10 px-4 py-2 text-sm border-slate-300 text-slate-600 hover:bg-slate-50"
             title="Clear all consultation data"
             aria-label="Clear all consultation data"
           >
@@ -171,7 +171,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
           </Button>
         </div>
         {error && (
-          <div className="text-xs text-red-500">{error}</div>
+          <div className="text-sm text-red-600">{error}</div>
         )}
       </div>
     );
@@ -179,53 +179,53 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
 
   // Expanded state - full interface
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between p-1 pb-0">
+    <Card className="border-slate-200 bg-white shadow-sm">
+      <CardHeader className="flex flex-row items-center justify-between p-4 pb-2 border-b border-slate-100 bg-slate-50">
         <div className="flex items-center gap-2">
-          <h2 className="text-xs font-semibold">Generated Notes</h2>
+          <h2 className="text-sm font-medium text-slate-700">Clinical Documentation</h2>
           {loading && (
             <span className="ml-2 flex items-center" aria-busy="true">
-              <svg className="mr-1 size-4 animate-spin text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg className="mr-1 size-4 animate-spin text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
               </svg>
-              <span className="text-xs text-blue-600">Generating...</span>
+              <span className="text-sm text-slate-600">Processing...</span>
             </span>
           )}
         </div>
       </CardHeader>
-      <CardContent className="p-1 pt-0">
+      <CardContent className="p-4">
         <Stack spacing="sm">
-          {error && <div className="text-xs text-red-500">{error}</div>}
+          {error && <div className="text-sm text-red-600">{error}</div>}
           <Section>
             <textarea
               ref={mainTextareaRef}
               value={displayNotes || ''}
               onChange={handleNotesChange}
-              className="w-full rounded border bg-muted p-1 text-xs leading-tight text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary"
-              placeholder="Generated notes will appear here..."
-              style={{ minHeight: 100, maxHeight: 1000, resize: 'none', overflowY: 'auto' }}
+              className="w-full rounded border border-slate-200 bg-white p-3 text-sm leading-relaxed text-slate-700 focus:border-slate-400 focus:ring-2 focus:ring-slate-400"
+              placeholder="Clinical documentation will appear here..."
+              style={{ minHeight: 120, maxHeight: 1000, resize: 'none', overflowY: 'auto' }}
               disabled={loading}
               spellCheck={false}
             />
           </Section>
           <Section>
-            <div className="flex space-x-1">
+            <div className="flex space-x-2">
               <Button
                 type="button"
                 variant="default"
                 onClick={handleGenerate}
                 disabled={!canGenerate || loading}
-                className="h-8 px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                className="h-9 px-4 py-2 text-sm bg-slate-600 hover:bg-slate-700 text-white"
               >
-                Generate Notes
+                Process Notes
               </Button>
               <Button
                 type="button"
                 variant="secondary"
                 onClick={handleCopy}
                 disabled={!hasContent || loading}
-                className="h-8 px-2 py-1 text-xs"
+                className="h-9 px-4 py-2 text-sm border-slate-300 text-slate-600 hover:bg-slate-50"
               >
                 {copySuccess ? 'Copied!' : 'Copy to Clipboard'}
               </Button>
@@ -236,7 +236,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
                 disabled={!hasAnyState || loading}
                 title="Clear all consultation data"
                 aria-label="Clear all consultation data"
-                className="h-8 px-2 py-1 text-xs"
+                className="h-9 px-4 py-2 text-sm"
               >
                 Clear All
               </Button>

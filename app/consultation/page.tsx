@@ -90,41 +90,41 @@ export default function ConsultationPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-slate-50">
       <Header />
 
       <main className="flex-1">
         <Container size="lg">
           <Grid cols={3} gap="lg">
-            {/* Left Column - Main Consultation Area */}
+            {/* Left Column - Main Clinical Documentation Area */}
             <div className="lg:col-span-2">
               <Stack spacing="sm">
-                {/* Template Selection and Input Mode */}
-                <Card>
-                  <CardHeader>
-                    <h2 className="text-xs font-semibold">Configuration</h2>
+                {/* Documentation Settings */}
+                <Card className="border-slate-200 bg-white shadow-sm">
+                  <CardHeader className="border-b border-slate-100 bg-slate-50">
+                    <h2 className="text-sm font-medium text-slate-700">Documentation Settings</h2>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-4">
                     <div className="space-y-4">
                       {/* Template and Input Mode Row */}
-                      <div className="flex items-start gap-4">
-                        {/* Template Selection */}
+                      <div className="flex items-start gap-6">
+                        {/* Note Template Selection */}
                         <div className="flex-1">
-                          <div className="mb-1 text-xs font-medium text-muted-foreground">
-                            Template
+                          <div className="mb-2 text-sm font-medium text-slate-600">
+                            Note Template
                           </div>
                           <TemplateSelector />
                         </div>
 
-                        {/* Input Mode Selection */}
+                        {/* Input Method Selection */}
                         <div className="shrink-0">
-                          <div className="mb-1 text-xs font-medium text-muted-foreground">
-                            Input Mode
+                          <div className="mb-2 text-sm font-medium text-slate-600">
+                            Input Method
                           </div>
                           <InputModeToggle />
                         </div>
                       </div>
-                      {/* Quick Template Settings */}
+                      {/* Template Configuration */}
                       <QuickTemplateSettings selectedTemplate={selectedTemplate || null} />
                     </div>
                   </CardContent>
@@ -134,26 +134,26 @@ export default function ConsultationPage() {
                 {inputMode === 'audio'
                   ? (
                       <>
-                        {/* Transcription Controls */}
+                        {/* Digital Recording */}
                         <TranscriptionControls collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
 
-                        {/* Quick Notes */}
+                        {/* Clinical Notes */}
                         <QuickNotes collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
                       </>
                     )
                   : (
                       <>
-                        {/* Typed Input */}
+                        {/* Manual Entry */}
                         <TypedInput collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
                       </>
                     )}
 
-                {/* Generated Notes - Shared by both modes */}
+                {/* Clinical Documentation - Shared by both modes */}
                 <GeneratedNotes onGenerate={handleGenerateNotes} onClearAll={handleClearAll} loading={loading} isNoteFocused={isNoteFocused} />
               </Stack>
             </div>
 
-            {/* Right Column - Future Features */}
+            {/* Right Column - Clinical Tools */}
             <div className="lg:col-span-1">
               <RightSidebarFeatures />
             </div>
