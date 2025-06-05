@@ -1,19 +1,16 @@
-import { ClinicalDecisionSection } from '@/pages/landing-page/components/ClinicalDecisionSection';
-import { CustomTemplatesSection } from '@/pages/landing-page/components/CustomTemplatesSection';
-import { FinalCTASection } from '@/pages/landing-page/components/FinalCTASection';
-import { FounderSection } from '@/pages/landing-page/components/FounderSection';
-import { HeroSection } from '@/pages/landing-page/components/HeroSection';
-import { PainPointsSection } from '@/pages/landing-page/components/PainPointsSection';
-import { PricingSection } from '@/pages/landing-page/components/PricingSection';
-import { ProductSection } from '@/pages/landing-page/components/ProductSection';
-import { SolutionSection } from '@/pages/landing-page/components/SolutionSection';
-import { Footer } from '@/shared/components/Footer';
-import { Header } from '@/shared/components/Header';
+import { ClinicalDecisionSection } from '@/shared/components/landing-page/ClinicalDecisionSection';
+import { CustomTemplatesSection } from '@/shared/components/landing-page/CustomTemplatesSection';
+import { FinalCTASection } from '@/shared/components/landing-page/FinalCTASection';
+import { FounderSection } from '@/shared/components/landing-page/FounderSection';
+import { HeroSection } from '@/shared/components/landing-page/HeroSection';
+import { PainPointsSection } from '@/shared/components/landing-page/PainPointsSection';
+import { PricingSection } from '@/shared/components/landing-page/PricingSection';
+import { ProductSection } from '@/shared/components/landing-page/ProductSection';
+import { SolutionSection } from '@/shared/components/landing-page/SolutionSection';
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen">
-      <Header />
+    <main>
       <HeroSection />
       <PainPointsSection />
       <SolutionSection />
@@ -23,7 +20,6 @@ export default function LandingPage() {
       <FounderSection />
       <PricingSection />
       <FinalCTASection />
-      <Footer />
-    </div>
+    </main>
   );
 }

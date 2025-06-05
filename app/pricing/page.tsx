@@ -1,20 +1,15 @@
-import { Footer } from '@/shared/components/Footer';
-import { Header } from '@/shared/components/Header';
-
-import { PricingCTA } from '../../src/pages/pricing/components/PricingCTA';
-import { PricingFAQ } from '../../src/pages/pricing/components/PricingFAQ';
-import { PricingHero } from '../../src/pages/pricing/components/PricingHero';
-import { PricingPlans } from '../../src/pages/pricing/components/PricingPlans';
+import { PricingCTA } from '@/shared/components/pricing/PricingCTA';
+import { PricingFAQ } from '@/shared/components/pricing/PricingFAQ';
+import { PricingHero } from '@/shared/components/pricing/PricingHero';
+import { PricingPlans } from '@/shared/components/pricing/PricingPlans';
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen">
-      <Header />
+    <main>
       <PricingHero />
       <PricingPlans />
       <PricingFAQ />
       <PricingCTA />
-      <Footer />
-    </div>
+    </main>
   );
 }
