@@ -102,7 +102,7 @@ export async function POST(req: Request) {
       // TODO: Add response_format if structured output is needed
       stream: true,
       max_completion_tokens: 2000, // Limit response length to reduce processing time
-      temperature: 0.4,
+      temperature: 0.1,
       top_p: 0.4,
     });
 

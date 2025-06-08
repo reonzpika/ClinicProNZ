@@ -61,9 +61,12 @@ export const ANALYSIS_COMPONENTS = {
 
 export const OPTIONAL_SECTIONS_INSTRUCTIONS = `
 SECTION RULES:
-- REQUIRED sections: Always generate with all subsections. Leave content blank if no content.
-- OPTIONAL sections: Generate only if meaningful content exists. Skip entirely (including heading) if no content.
-- Subsections inherit parent section status.
+- Template descriptions indicate CONTENT TYPE only, not instructions to generate content.
+- Check each section/subsection in the template for "optional": true flag
+- REQUIRED sections (no "optional": true flag): Always generate heading and all subsections. If no relevant content exists for a subsection, output the heading followed by a blank line with no content whatsoever.
+- OPTIONAL sections (has "optional": true flag): Only generate if meaningful content exists in consultation data. If no relevant content, skip entirely (no heading, no content).
+- All subsections follow their parent section's rules - if parent section is required, generate all subsections; if parent is optional and generated, generate all its subsections.
+- NEVER generate content that was not explicitly discussed in the consultation, regardless of what the template description mentions.
 ` as const;
 
 export const ABBREVIATION_INSTRUCTIONS = {

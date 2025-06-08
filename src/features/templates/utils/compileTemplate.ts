@@ -51,8 +51,21 @@ export function compileTemplate(
   // Determine if AI analysis is enabled
   const aiAnalysisEnabled = dsl.settings?.aiAnalysis?.enabled ?? false;
 
-  // Prepare template structure (JSON format as specified)
-  const templateStructure = JSON.stringify(dsl, null, 2);
+  // Prepare template structure (JSON format as specified) - clinical content structure only
+  const templateStructure = JSON.stringify({
+    ...(dsl.overallInstructions && { description: dsl.overallInstructions }),
+    sections: dsl.sections.map(section => ({
+      heading: section.heading,
+      description: section.prompt,
+      ...(section.optional && { optional: section.optional }),
+      ...(section.subsections && {
+        subsections: section.subsections.map(subsection => ({
+          heading: subsection.heading,
+          description: subsection.prompt,
+        })),
+      }),
+    })),
+  }, null, 2);
 
   // Build consultation data dynamically
   const consultationData = buildConsultationData(transcription, quickNotes, typedInput, inputMode);
@@ -60,8 +73,13 @@ export function compileTemplate(
   // Build the complete user message
   const userMessageParts = [
     '--- TEMPLATE DEFINITION ---',
+    'NOTE: The "description" fields below describe WHAT TYPE of content belongs in each section, NOT instructions to generate content.',
+    'Only include content that was actually discussed in the consultation data.',
+    '',
     templateStructure,
     '',
+    'CRITICAL: Only generate content for sections/subsections when relevant information is explicitly discussed in the consultation data.',
+    'Do NOT generate differential diagnoses, plans, or assessments unless they were actually discussed.',
     'Add blank line between sections. Use plain text only.',
     '',
     '--- CONSULTATION DATA ---',
@@ -76,10 +94,12 @@ export function compileTemplate(
     instructions.detailInstruction,
     instructions.bulletInstruction,
     instructions.abbreviationInstruction,
-    '',
-    'AI ANALYSIS:',
-    instructions.analysisInstruction,
   ];
+
+  // Add AI ANALYSIS section only if enabled
+  if (aiAnalysisEnabled) {
+    userMessageParts.push('', 'AI ANALYSIS:', instructions.analysisInstruction);
+  }
 
   const userMessage = userMessageParts.join('\n');
 

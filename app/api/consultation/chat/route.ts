@@ -54,7 +54,7 @@ export async function POST(req: Request) {
 
     // Build system prompt with context based on two-phase logic
     let systemPrompt = CHATBOT_SYSTEM_PROMPT;
-    
+
     if (useContext) {
       if (consultationNote && consultationNote.trim()) {
         // Phase 2: Generated notes exist - use only the structured notes
@@ -62,19 +62,19 @@ export async function POST(req: Request) {
       } else if (rawConsultationData) {
         // Phase 1: No generated notes - use raw consultation data
         let rawContext = '';
-        
+
         if (rawConsultationData.transcription && rawConsultationData.transcription.trim()) {
           rawContext += `TRANSCRIPTION:\n${rawConsultationData.transcription}\n\n`;
         }
-        
+
         if (rawConsultationData.typedInput && rawConsultationData.typedInput.trim()) {
           rawContext += `TYPED INPUT:\n${rawConsultationData.typedInput}\n\n`;
         }
-        
+
         if (rawConsultationData.quickNotes && rawConsultationData.quickNotes.length > 0) {
           rawContext += `QUICK NOTES:\n${rawConsultationData.quickNotes.map((note: string, index: number) => `${index + 1}. ${note}`).join('\n')}\n\n`;
         }
-        
+
         if (rawContext.trim()) {
           systemPrompt += `
 

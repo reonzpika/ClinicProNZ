@@ -14,16 +14,25 @@ STRUCTURE:
 - Follow TEMPLATE DEFINITION structure exactly.
 - Use CONSULTATION DATA as source material only.
 - Apply all INSTRUCTIONS directives.
-- Do not create additional sections.`;
+- Leave any section or subsection blank if no related content is found in the consultation data.
+- Do not generate speculative, assumed, or inferred clinical content not explicitly discussed.
+- Do not give clinical advice or suggestions - only document what was actually discussed.`;
 
 // System prompt when AI analysis is enabled
 const ANALYSIS_ENABLED_PROMPT = `
 
-STRUCTURE:
-- Use TEMPLATE DEFINITION as foundation.
-- Integrate AI ANALYSIS components into existing sections or create new sections as instructed.
+STRUCTURE - TWO STEP PROCESS:
+
+STEP 1 - Template Documentation:
+- Follow TEMPLATE DEFINITION structure exactly.
 - Use CONSULTATION DATA as source material only.
-- Apply all INSTRUCTIONS directives.`;
+- Do not generate speculative, assumed, or inferred clinical content not explicitly discussed.
+- Leave any section or subsection blank if no related content is found in the consultation data.
+- Do not give clinical advice or suggestions - only document what was actually discussed.
+
+STEP 2 - AI Analysis Enhancement:
+- Apply all INSTRUCTIONS directives for AI analysis components.
+- Leave any section or subsection blank if no related content is found in the consultation data.`;
 
 // Function to generate dynamic system prompt
 export function generateSystemPrompt(aiAnalysisEnabled: boolean): string {
