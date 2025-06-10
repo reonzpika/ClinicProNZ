@@ -46,8 +46,7 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
   };
 
   // Helper function to get default settings
-  const getDefaultSettings = (): TemplateSettings => ({
-    detailLevel: 'medium',
+  const defaultSettings: TemplateSettings = {
     bulletPoints: false,
     aiAnalysis: {
       enabled: false,
@@ -55,17 +54,15 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
         differentialDiagnosis: false,
         assessmentSummary: false,
         managementPlan: false,
-        redFlags: false,
       },
       level: 'medium',
     },
-    abbreviations: false,
-  });
+  };
 
   // Helper function to update settings
   const updateSettings = (updates: Partial<TemplateSettings>) => {
-    const currentSettings = dsl.settings || getDefaultSettings();
-    const newSettings = { ...currentSettings, ...updates };
+    const settings = dsl.settings || defaultSettings;
+    const newSettings = { ...settings, ...updates };
     updateDsl({ ...dsl, settings: newSettings });
   };
 
@@ -484,14 +481,13 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
   };
 
   // Get current settings with defaults
-  const currentSettings = dsl.settings || getDefaultSettings();
+  const currentSettings = dsl.settings || defaultSettings;
 
   // Ensure components exist for backward compatibility
   const safeComponents = currentSettings.aiAnalysis.components || {
     differentialDiagnosis: false,
     assessmentSummary: false,
     managementPlan: false,
-    redFlags: false,
   };
 
   // Validation function
@@ -569,25 +565,6 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
               </p>
             </div>
 
-            {/* Detail Level */}
-            <div className="space-y-2">
-              <Label htmlFor="detailLevel">Detail Level</Label>
-              <Select
-                value={currentSettings.detailLevel}
-                onValueChange={(value: 'low' | 'medium' | 'high') =>
-                  updateSettings({ detailLevel: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select detail level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Low - Key clinical facts only</SelectItem>
-                  <SelectItem value="medium">Medium - Standard detail</SelectItem>
-                  <SelectItem value="high">High - Thorough descriptions</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
             {/* Bullet Points */}
             <div className="flex items-center justify-between space-y-2">
               <div className="space-y-0.5">
@@ -603,20 +580,6 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
               />
             </div>
 
-            {/* Abbreviations */}
-            <div className="flex items-center justify-between space-y-2">
-              <div className="space-y-0.5">
-                <Label htmlFor="abbreviations">Medical Abbreviations</Label>
-                <p className="text-sm text-muted-foreground">
-                  Use common medical abbreviations
-                </p>
-              </div>
-              <Switch
-                id="abbreviations"
-                checked={currentSettings.abbreviations}
-                onCheckedChange={checked => updateSettings({ abbreviations: checked })}
-              />
-            </div>
           </div>
 
           {/* Right Column - AI Analysis */}
@@ -719,25 +682,6 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
                       </Label>
                     </div>
 
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="redFlags"
-                        checked={safeComponents.redFlags}
-                        onCheckedChange={checked =>
-                          updateSettings({
-                            aiAnalysis: {
-                              ...currentSettings.aiAnalysis,
-                              components: {
-                                ...safeComponents,
-                                redFlags: checked,
-                              },
-                            },
-                          })}
-                      />
-                      <Label htmlFor="redFlags" className="text-sm">
-                        Red Flags
-                      </Label>
-                    </div>
                   </div>
 
                   <div className="mt-4">
@@ -900,17 +844,6 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
                         onChange={e => updateSection(sectionIndex, { heading: e.target.value })}
                         placeholder="Enter section heading"
                       />
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id={`section-optional-${sectionIndex}`}
-                        checked={section.optional || false}
-                        onCheckedChange={checked => updateSection(sectionIndex, { optional: checked })}
-                      />
-                      <Label htmlFor={`section-optional-${sectionIndex}`} className="text-sm">
-                        Optional section (can be skipped if no relevant content)
-                      </Label>
                     </div>
 
                     <div>

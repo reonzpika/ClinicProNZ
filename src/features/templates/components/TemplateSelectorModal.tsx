@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { Check, ChevronDown, ChevronRight, FileText, Settings, Zap } from 'lucide-react';
+import { Check, ChevronDown, ChevronRight, Settings, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -32,6 +32,19 @@ type TemplateSelectorModalProps = {
 
 const EMPTY_TEMPLATES: Template[] = [];
 
+const defaultSettings: TemplateSettings = {
+  bulletPoints: false,
+  aiAnalysis: {
+    enabled: false,
+    components: {
+      differentialDiagnosis: false,
+      assessmentSummary: false,
+      managementPlan: false,
+    },
+    level: 'medium',
+  },
+};
+
 export function TemplateSelectorModal({
   isOpen,
   onClose,
@@ -47,36 +60,10 @@ export function TemplateSelectorModal({
   const { isSignedIn, userId } = useAuth();
   const router = useRouter();
 
-  // Helper function to get default settings
-  const getDefaultSettings = (): TemplateSettings => ({
-    detailLevel: 'medium',
-    bulletPoints: false,
-    aiAnalysis: {
-      enabled: false,
-      components: {
-        differentialDiagnosis: false,
-        assessmentSummary: false,
-        managementPlan: false,
-        redFlags: false,
-      },
-      level: 'medium',
-    },
-    abbreviations: false,
-  });
-
   // Helper function to get template settings summary
   const getSettingsSummary = (template: Template) => {
-    const settings = template.dsl?.settings || getDefaultSettings();
+    const settings = template.dsl?.settings || defaultSettings;
     const summary = [];
-
-    // Detail level
-    if (settings.detailLevel !== 'medium') {
-      summary.push({
-        icon: <FileText className="size-3" />,
-        label: `${settings.detailLevel.charAt(0).toUpperCase() + settings.detailLevel.slice(1)} Detail`,
-        color: settings.detailLevel === 'high' ? 'text-purple-600' : 'text-blue-600',
-      });
-    }
 
     // Bullet points
     if (settings.bulletPoints) {
@@ -84,15 +71,6 @@ export function TemplateSelectorModal({
         icon: <span className="text-xs font-bold">•</span>,
         label: 'Bullet Points',
         color: 'text-orange-600',
-      });
-    }
-
-    // Abbreviations
-    if (settings.abbreviations) {
-      summary.push({
-        icon: <span className="text-xs font-bold">Ab</span>,
-        label: 'Abbreviations',
-        color: 'text-cyan-600',
       });
     }
 

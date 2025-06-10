@@ -6,19 +6,16 @@ SET dsl = jsonb_set(
   dsl,
   '{settings}',
   '{
-    "detailLevel": "medium",
     "bulletPoints": false,
     "aiAnalysis": {
       "enabled": false,
       "components": {
         "differentialDiagnosis": false,
         "assessmentSummary": false,
-        "managementPlan": false,
-        "redFlags": false
+        "managementPlan": false
       },
       "level": "medium"
-    },
-    "abbreviations": false
+    }
   }'::jsonb
 )
 WHERE dsl IS NOT NULL 

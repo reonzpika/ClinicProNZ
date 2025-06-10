@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { FileText, Zap } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/shared/components/ui/button';
@@ -24,9 +24,7 @@ export function TemplateSelector() {
     userDefaultTemplateId = localStorage.getItem('userDefaultTemplateId');
   }
 
-  // Helper function to get default settings
-  const getDefaultSettings = (): TemplateSettings => ({
-    detailLevel: 'medium',
+  const defaultSettings: TemplateSettings = {
     bulletPoints: false,
     aiAnalysis: {
       enabled: false,
@@ -34,26 +32,15 @@ export function TemplateSelector() {
         differentialDiagnosis: false,
         assessmentSummary: false,
         managementPlan: false,
-        redFlags: false,
       },
       level: 'medium',
     },
-    abbreviations: false,
-  });
+  };
 
   // Helper function to get template settings summary
   const getSettingsSummary = (template: Template) => {
-    const settings = template.dsl?.settings || getDefaultSettings();
+    const settings = template.dsl?.settings || defaultSettings;
     const summary = [];
-
-    // Detail level
-    if (settings.detailLevel !== 'medium') {
-      summary.push({
-        icon: <FileText className="size-3" />,
-        label: `${settings.detailLevel.charAt(0).toUpperCase() + settings.detailLevel.slice(1)} Detail`,
-        color: settings.detailLevel === 'high' ? 'text-purple-600' : 'text-blue-600',
-      });
-    }
 
     // Bullet points
     if (settings.bulletPoints) {
@@ -61,15 +48,6 @@ export function TemplateSelector() {
         icon: <span className="text-xs font-bold">•</span>,
         label: 'Bullet Points',
         color: 'text-orange-600',
-      });
-    }
-
-    // Abbreviations
-    if (settings.abbreviations) {
-      summary.push({
-        icon: <span className="text-xs font-bold">Ab</span>,
-        label: 'Abbreviations',
-        color: 'text-cyan-600',
       });
     }
 

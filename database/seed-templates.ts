@@ -61,7 +61,6 @@ const defaultTemplates = [
         },
       ],
       settings: {
-        detailLevel: 'medium',
         bulletPoints: false,
         aiAnalysis: {
           enabled: false,
@@ -69,7 +68,6 @@ const defaultTemplates = [
             differentialDiagnosis: false,
             assessmentSummary: false,
             managementPlan: false,
-            redFlags: false,
           },
           level: 'medium',
         },
@@ -107,7 +105,6 @@ const defaultTemplates = [
         },
       ],
       settings: {
-        detailLevel: 'medium',
         bulletPoints: false,
         aiAnalysis: {
           enabled: false,
@@ -115,7 +112,6 @@ const defaultTemplates = [
             differentialDiagnosis: false,
             assessmentSummary: false,
             managementPlan: false,
-            redFlags: false,
           },
           level: 'medium',
         },
@@ -148,7 +144,6 @@ const defaultTemplates = [
         },
       ],
       settings: {
-        detailLevel: 'medium',
         bulletPoints: false,
         aiAnalysis: {
           enabled: false,
@@ -156,7 +151,6 @@ const defaultTemplates = [
             differentialDiagnosis: false,
             assessmentSummary: false,
             managementPlan: false,
-            redFlags: false,
           },
           level: 'medium',
         },

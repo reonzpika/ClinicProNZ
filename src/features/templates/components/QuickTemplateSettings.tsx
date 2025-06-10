@@ -17,8 +17,7 @@ export function QuickTemplateSettings({ selectedTemplate }: QuickTemplateSetting
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Get default settings
-  const getDefaultSettings = (): TemplateSettings => ({
-    detailLevel: 'medium',
+  const defaultSettings: TemplateSettings = {
     bulletPoints: false,
     aiAnalysis: {
       enabled: false,
@@ -26,15 +25,13 @@ export function QuickTemplateSettings({ selectedTemplate }: QuickTemplateSetting
         differentialDiagnosis: false,
         assessmentSummary: false,
         managementPlan: false,
-        redFlags: false,
       },
       level: 'medium',
     },
-    abbreviations: false,
-  });
+  };
 
   // Get current effective settings (template + override)
-  const templateSettings = selectedTemplate?.dsl?.settings || getDefaultSettings();
+  const templateSettings = selectedTemplate?.dsl?.settings || defaultSettings;
   const effectiveSettings: TemplateSettings = {
     ...templateSettings,
     ...settingsOverride,
@@ -89,7 +86,6 @@ export function QuickTemplateSettings({ selectedTemplate }: QuickTemplateSetting
           case 'differentialDiagnosis': return 'Differential';
           case 'assessmentSummary': return 'Assessment';
           case 'managementPlan': return 'Management';
-          case 'redFlags': return 'Red Flags';
           default: return key;
         }
       });
@@ -97,7 +93,7 @@ export function QuickTemplateSettings({ selectedTemplate }: QuickTemplateSetting
     if (enabledComponents.length === 0) {
       return 'None selected';
     }
-    if (enabledComponents.length === 4) {
+    if (enabledComponents.length === 3) {
       return 'All components';
     }
     return enabledComponents.join(', ');
@@ -146,26 +142,6 @@ export function QuickTemplateSettings({ selectedTemplate }: QuickTemplateSetting
         <div className="space-y-2 pl-4">
           {/* Main Settings - Inline Layout */}
           <div className="flex flex-wrap items-center gap-3">
-            {/* Detail Level */}
-            <div className="flex items-center gap-1.5">
-              <Label htmlFor="quick-detail-level" className="whitespace-nowrap text-xs text-muted-foreground">
-                Detail:
-              </Label>
-              <Select
-                value={effectiveSettings.detailLevel}
-                onValueChange={(value: 'low' | 'medium' | 'high') =>
-                  updateSetting('detailLevel', value)}
-              >
-                <SelectTrigger className="h-6 w-16 border-muted-foreground/20 text-xs transition-colors hover:border-muted-foreground/40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low" className="text-xs">Low</SelectItem>
-                  <SelectItem value="medium" className="text-xs">Medium</SelectItem>
-                  <SelectItem value="high" className="text-xs">High</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
 
             {/* Bullet Points */}
             <div className="flex items-center gap-1.5">
@@ -176,19 +152,6 @@ export function QuickTemplateSettings({ selectedTemplate }: QuickTemplateSetting
                 id="quick-bullets"
                 checked={effectiveSettings.bulletPoints}
                 onCheckedChange={checked => updateSetting('bulletPoints', checked)}
-                className="scale-75 data-[state=checked]:bg-blue-600"
-              />
-            </div>
-
-            {/* Abbreviations */}
-            <div className="flex items-center gap-1.5">
-              <Label htmlFor="quick-abbreviations" className="whitespace-nowrap text-xs text-muted-foreground">
-                Abbreviations:
-              </Label>
-              <Switch
-                id="quick-abbreviations"
-                checked={effectiveSettings.abbreviations}
-                onCheckedChange={checked => updateSetting('abbreviations', checked)}
                 className="scale-75 data-[state=checked]:bg-blue-600"
               />
             </div>
@@ -274,23 +237,6 @@ export function QuickTemplateSettings({ selectedTemplate }: QuickTemplateSetting
                           </Label>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            id="dropdown-red-flags"
-                            checked={effectiveSettings.aiAnalysis.components.redFlags}
-                            onCheckedChange={checked =>
-                              updateAIAnalysis({
-                                components: {
-                                  ...effectiveSettings.aiAnalysis.components,
-                                  redFlags: checked,
-                                },
-                              })}
-                            className="scale-75 data-[state=checked]:bg-blue-600"
-                          />
-                          <Label htmlFor="dropdown-red-flags" className="cursor-pointer text-xs">
-                            Red Flags
-                          </Label>
-                        </div>
                       </div>
                     </SelectContent>
                   </Select>

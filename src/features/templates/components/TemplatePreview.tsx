@@ -1,4 +1,4 @@
-import { AlertTriangle, ChevronDown, ChevronRight, FileText, Settings, Stethoscope, Zap } from 'lucide-react';
+import { Brain, ChevronDown, ChevronRight, List, Settings } from 'lucide-react';
 import { useState } from 'react';
 
 import { Badge } from '@/shared/components/ui/badge';
@@ -20,8 +20,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
   const sampleQuickNotes = ['Sample quick note 1', 'Sample quick note 2'];
 
   // Get default settings for comparison
-  const getDefaultSettings = (): TemplateSettings => ({
-    detailLevel: 'medium',
+  const defaultSettings: TemplateSettings = {
     bulletPoints: false,
     aiAnalysis: {
       enabled: false,
@@ -29,45 +28,39 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
         differentialDiagnosis: false,
         assessmentSummary: false,
         managementPlan: false,
-        redFlags: false,
       },
       level: 'medium',
     },
-    abbreviations: false,
-  });
-
-  const settings = template.dsl?.settings || getDefaultSettings();
-
-  // Helper function to get detail level display
-  const getDetailLevelDisplay = (level: string) => {
-    const levels = {
-      low: { label: 'Low', color: 'bg-blue-100 text-blue-800' },
-      medium: { label: 'Medium', color: 'bg-green-100 text-green-800' },
-      high: { label: 'High', color: 'bg-purple-100 text-purple-800' },
-    };
-    return levels[level as keyof typeof levels] || levels.medium;
   };
 
-  // Helper function to get enabled AI components
-  const getEnabledAIComponents = () => {
-    if (!settings.aiAnalysis.enabled || !settings.aiAnalysis.components) {
-      return [];
+  const settings = template.dsl?.settings || defaultSettings;
+
+  // Helper function to get AI analysis display
+  const getAiAnalysisDisplay = (settings: TemplateSettings) => {
+    if (!settings.aiAnalysis.enabled) {
+      return null;
     }
 
-    const components = [];
-    if (settings.aiAnalysis.components.differentialDiagnosis) {
-      components.push('Differential Diagnosis');
+    const enabledComponents = Object.entries(settings.aiAnalysis.components)
+      .filter(([_, enabled]) => enabled)
+      .map(([key, _]) => {
+        switch (key) {
+          case 'differentialDiagnosis': return 'Differential Diagnosis';
+          case 'assessmentSummary': return 'Assessment Summary';
+          case 'managementPlan': return 'Management Plan';
+          default: return key;
+        }
+      });
+
+    if (enabledComponents.length === 0) {
+      return null;
     }
-    if (settings.aiAnalysis.components.assessmentSummary) {
-      components.push('Assessment Summary');
-    }
-    if (settings.aiAnalysis.components.managementPlan) {
-      components.push('Management Plan');
-    }
-    if (settings.aiAnalysis.components.redFlags) {
-      components.push('Red Flags');
-    }
-    return components;
+
+    return {
+      label: `AI Analysis (${settings.aiAnalysis.level})`,
+      components: enabledComponents,
+      color: 'text-purple-600',
+    };
   };
 
   // Render DSL sections for preview
@@ -85,8 +78,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
     ));
   };
 
-  const enabledAIComponents = getEnabledAIComponents();
-  const detailLevel = getDetailLevelDisplay(settings.detailLevel);
+  const aiAnalysis = getAiAnalysisDisplay(settings);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -119,94 +111,56 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
                   <h4 className="text-xs font-medium">Template Settings</h4>
                 </button>
 
-                {/* Settings Summary - Always Visible */}
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <Badge variant="outline" className={detailLevel.color}>
-                    <FileText className="mr-1 size-3" />
-                    {detailLevel.label}
-                    {' '}
-                    Detail
-                  </Badge>
-
+                {/* Settings Display */}
+                <div className="mb-4 flex flex-wrap gap-2">
+                  {/* Bullet Points */}
                   {settings.bulletPoints && (
-                    <Badge variant="outline" className="bg-orange-100 text-orange-800">
-                      • Bullet Points
+                    <Badge variant="outline" className="border-blue-200 text-blue-600">
+                      <List className="mr-1 size-3" />
+                      Bullet Points
                     </Badge>
                   )}
 
-                  {settings.abbreviations && (
-                    <Badge variant="outline" className="bg-cyan-100 text-cyan-800">
-                      Abbreviations
-                    </Badge>
-                  )}
+                  {/* AI Analysis */}
+                  {(() => {
+                    if (!aiAnalysis) {
+                      return null;
+                    }
 
-                  {settings.aiAnalysis.enabled && (
-                    <Badge variant="outline" className="bg-violet-100 text-violet-800">
-                      <Zap className="mr-1 size-3" />
-                      AI Analysis (
-                      {enabledAIComponents.length}
-                      )
-                    </Badge>
-                  )}
+                    return (
+                      <Badge variant="outline" className={aiAnalysis.color}>
+                        <Brain className="mr-1 size-3" />
+                        {aiAnalysis.label}
+                      </Badge>
+                    );
+                  })()}
                 </div>
 
-                {/* Settings Details - Collapsible */}
-                {showSettingsDetails && (
-                  <div className="mt-3 space-y-3 rounded bg-muted/30 p-3">
-                    <div className="grid grid-cols-1 gap-3 text-xs">
-                      <div>
-                        <span className="font-medium">Detail Level:</span>
-                        {' '}
-                        {settings.detailLevel}
-                        <div className="mt-1 text-muted-foreground">
-                          {settings.detailLevel === 'low' && 'Key clinical facts only'}
-                          {settings.detailLevel === 'medium' && 'Standard detail level'}
-                          {settings.detailLevel === 'high' && 'Thorough descriptions'}
-                        </div>
-                      </div>
-
-                      <div>
-                        <span className="font-medium">Formatting:</span>
-                        <div className="mt-1 flex gap-2">
-                          <span className={settings.bulletPoints ? 'text-green-600' : 'text-muted-foreground'}>
-                            {settings.bulletPoints ? '✓' : '✗'}
-                            {' '}
-                            Bullet Points
-                          </span>
-                          <span className={settings.abbreviations ? 'text-green-600' : 'text-muted-foreground'}>
-                            {settings.abbreviations ? '✓' : '✗'}
-                            {' '}
-                            Medical Abbreviations
-                          </span>
-                        </div>
-                      </div>
-
-                      {settings.aiAnalysis.enabled && (
-                        <div>
-                          <span className="font-medium">
-                            AI Analysis (
-                            {settings.aiAnalysis.level}
-                            {' '}
-                            detail):
-                          </span>
-                          <div className="mt-1 space-y-1">
-                            {enabledAIComponents.map((component, index) => (
-                              <div key={index} className="flex items-center gap-1 text-green-600">
-                                {component === 'Differential Diagnosis' && <Stethoscope className="size-3" />}
-                                {component === 'Red Flags' && <AlertTriangle className="size-3" />}
-                                {!['Differential Diagnosis', 'Red Flags'].includes(component) && <span>✓</span>}
-                                <span>{component}</span>
-                              </div>
-                            ))}
-                            {enabledAIComponents.length === 0 && (
-                              <span className="text-muted-foreground">No components selected</span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                {/* Settings Details */}
+                <div className="space-y-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">Format:</span>
+                    {settings.bulletPoints ? 'Bullet points' : 'Narrative'}
                   </div>
-                )}
+
+                  {settings.aiAnalysis.enabled && (() => {
+                    if (!aiAnalysis) {
+                      return null;
+                    }
+
+                    return (
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">AI Analysis:</span>
+                        <span>{aiAnalysis.components.join(', ')}</span>
+                        <span className="text-gray-400">
+                          (
+                          {settings.aiAnalysis.level}
+                          )
+                        </span>
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
 
               {/* Overall Instructions */}

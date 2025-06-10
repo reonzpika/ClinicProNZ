@@ -15,7 +15,6 @@ export type TemplatePrompts = {
 
 // Template Settings for session-level control
 export type TemplateSettings = {
-  detailLevel: 'low' | 'medium' | 'high';
   bulletPoints: boolean;
   aiAnalysis: {
     enabled: boolean;
@@ -23,11 +22,9 @@ export type TemplateSettings = {
       differentialDiagnosis: boolean;
       assessmentSummary: boolean;
       managementPlan: boolean;
-      redFlags: boolean;
     };
     level: 'low' | 'medium' | 'high'; // Detail level for selected components
   };
-  abbreviations: boolean;
 };
 
 // Subsection type - no optional flag allowed
@@ -36,12 +33,11 @@ export type SubsectionDSL = {
   prompt: string;
 };
 
-// Section type - can have optional flag and subsections
+// Section type - can have subsections
 export type SectionDSL = {
   heading: string;
   prompt: string;
-  optional?: boolean; // Only sections can be optional
-  subsections?: SubsectionDSL[]; // Subsections inherit parent section's optional status
+  subsections?: SubsectionDSL[];
 };
 
 export type TemplateDSL = {
