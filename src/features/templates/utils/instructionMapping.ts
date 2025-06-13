@@ -33,15 +33,81 @@ export const AI_ANALYSIS_PROHIBITIONS = {
   managementPlan: 'DO NOT generate management plans or treatment recommendations',
 } as const;
 
+// AI Analysis example outputs by component
+export const AI_ANALYSIS_EXAMPLES = {
+  differentialDiagnosis: {
+    low: '- Migraine\n- Tension headache',
+    medium: '- Migraine (family history, typical pattern)\n- Tension headache (consider)',
+    high: '- Primary: Migraine (strong family history, 2-day duration typical)\n- Secondary: Tension headache (less likely given family history)\n- Rule out: Secondary headache (no red flags present)',
+  },
+  assessmentSummary: {
+    low: '- 2-day headache\n- Likely migraine given family history',
+    medium: '- Acute headache episode, consistent with migraine pattern\n- Family history supports diagnosis\n- No concerning features',
+    high: '- Acute headache presentation with 2-day duration\n- Clinical picture consistent with migraine: positive family history, typical duration\n- No red flag symptoms identified\n- Low risk for secondary pathology',
+  },
+  managementPlan: {
+    low: '- Simple analgesia\n- Rest\n- Follow-up if worsens',
+    medium: '- Acute: Paracetamol 1g QID, ibuprofen 400mg TDS\n- Lifestyle: adequate hydration, rest\n- Safety net: return if severe/persistent\n- Follow-up: 1 week if not improving',
+    high: '- Immediate: Paracetamol 1000mg QDS + Ibuprofen 400mg TDS PRN\n- Consider sumatriptan if severe\n- Lifestyle advice: regular meals, hydration, sleep hygiene\n- Patient education: migraine triggers, when to seek help\n- Safety netting: return if thunderclap headache, neurological symptoms, or no improvement in 48hrs\n- Follow-up: routine appointment in 1-2 weeks if symptoms persist',
+  },
+} as const;
+
 // Helper functions to build instructions
 export function buildStyleInstructions(): string {
   return ''; // No style instructions needed
+}
+
+// Function to build AI analysis examples
+export function buildAiAnalysisExamples(
+  components: TemplateSettings['aiAnalysis']['components'],
+  level: string,
+): { assessmentExample: string; planExample: string } {
+  const examples = {
+    assessmentExample: '',
+    planExample: '',
+  };
+
+  // Early return if components is undefined
+  if (!components) {
+    return examples;
+  }
+
+  // Build assessment example (combines differential diagnosis and assessment summary)
+  const assessmentParts: string[] = [];
+
+  if (components.assessmentSummary) {
+    const assessmentExample = AI_ANALYSIS_EXAMPLES.assessmentSummary[level as keyof typeof AI_ANALYSIS_EXAMPLES.assessmentSummary];
+    if (assessmentExample) {
+      assessmentParts.push(`\nClinical Assessment:\n${assessmentExample}`);
+    }
+  }
+  if (components.differentialDiagnosis) {
+    const diffExample = AI_ANALYSIS_EXAMPLES.differentialDiagnosis[level as keyof typeof AI_ANALYSIS_EXAMPLES.differentialDiagnosis];
+    if (diffExample) {
+      assessmentParts.push(`\nDifferential:\n${diffExample}`);
+    }
+  }
+
+  examples.assessmentExample = assessmentParts.length > 0 ? assessmentParts.join('\n') : '';
+
+  // Build plan example
+  if (components.managementPlan) {
+    const planExample = AI_ANALYSIS_EXAMPLES.managementPlan[level as keyof typeof AI_ANALYSIS_EXAMPLES.managementPlan];
+    examples.planExample = planExample ? `\n${planExample}` : '';
+  }
+
+  return examples;
 }
 
 export function buildAiAnalysisInstructions(
   components: TemplateSettings['aiAnalysis']['components'],
   level: string,
 ): string {
+  // Early return if components is undefined
+  if (!components) {
+    return '';
+  }
+
   // Get enabled components with specific instructions
   const activeComponents = Object.keys(components)
     .filter(key => components[key as keyof typeof components])
@@ -76,47 +142,4 @@ export function buildAiAnalysisInstructions(
   }
 
   return instruction;
-}
-
-export function getProcessInstructions(hasAiComponents: boolean, bulletPoints: boolean, aiAnalysisInstructions?: string): string {
-  const bulletPointsInstruction = bulletPoints ? ' using concise grouped bullet points.' : '';
-
-  if (hasAiComponents && aiAnalysisInstructions) {
-    return `TASK OVERVIEW:
-1. The consultation transcript appears under --- CONSULTATION DATA ---.
-2. The template structure appears under --- TEMPLATE DEFINITION ---.
-3. Read all consultation data first. Then use the template definition to guide your structured consultation note that is ready to be copied and pasted into the PMS.
-
-STEP 1 - CONTENT EXTRACTION INSTRUCTIONS:
-1. For each section in the user's template, extract all content that is explicitly stated or verbatim quoted in the consultation data matching that section's heading or user-specified keywords${bulletPointsInstruction} Avoid duplicate or overlapping content. 
-2. DO NOT generate, infer, or elaborate beyond what appears in the consultation data, even if the heading implies clinical concepts such as assessment, differential diagnosis, management plan, etc.
-3. DO NOT give any clinical reasoning or interpretation of the content.
-4. If no matching content is found for a section, do not write anything and insert the blank line. 
-5. Any consultation data that does not fit into any of the defined sections must be placed under an additional section labelled:
-OTHERS
-
-OUTPUT FORMAT:
-1. Follow the exact order and labels of the template definition.
-2. Apply the extraction rules above for every section equally.
-
-STEP 2 - Add AI Analysis:
-${aiAnalysisInstructions}`;
-  } else {
-    return `TASK OVERVIEW:
-1. The consultation transcript appears under --- CONSULTATION DATA ---.
-2. The template structure appears under --- TEMPLATE DEFINITION ---.
-3. Read all consultation data first. Then use the template definition to guide your output.
-
-CONTENT EXTRACTION INSTRUCTIONS:
-1. For each section in the user's template, extract all content that is explicitly stated or verbatim quoted in the consultation data matching that section's heading or user-specified keywords${bulletPointsInstruction}. 
-2. DO NOT generate, infer, or elaborate beyond what appears in the consultation data, even if the heading implies clinical concepts such as assessment, differential diagnosis, management plan, etc.
-3. DO NOT give any clinical reasoning or interpretation of the content.
-4. If no matching content is found for a section, do not write anything and insert the blank line. 
-5. Any consultation data that does not fit into any of the defined sections must be placed under an additional section labelled:
-OTHERS
-
-OUTPUT FORMAT:
-1. Follow the exact order and labels of the template definition.
-2. Apply the extraction rules above for every section equally.`;
-  }
 }
