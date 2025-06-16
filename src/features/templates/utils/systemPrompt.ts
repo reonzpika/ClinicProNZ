@@ -13,6 +13,7 @@ Your job is to output plain texts that follows the given structure exactly. Do t
 - Produce output strictly in plain text format, matching the provided section names and hierarchy.
 - Fill each section with the extracted content. If a section has no relevant information, set its value to an empty string or "None".
 - If any input details do not fit any section prompt, include them under the special section "Other Notes".
+- Pay attention to instructions in parentheses within template prompts (like this) and follow them exactly for formatting and style.
 ${aiAnalysisInstructions || '- Do not generate clinical opinion or suggestions such as assessment, differential diagnosis, management plan, etc.'}
 
 Example:

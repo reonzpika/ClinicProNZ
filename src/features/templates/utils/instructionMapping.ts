@@ -3,19 +3,19 @@ import type { TemplateSettings } from '@/features/templates/types';
 // AI Analysis component instructions by level
 export const AI_ANALYSIS_INSTRUCTIONS = {
   differentialDiagnosis: {
-    low: 'Add most likely differential diagnoses with brief reasoning (1 line each)',
-    medium: 'Add differential diagnoses with clinical reasoning and likelihood ranking',
-    high: 'Add differential diagnoses with detailed clinical reasoning, likelihood assessment, and supporting/contradicting evidence',
+    low: 'Add most likely differential diagnoses (1 line each)',
+    medium: 'Add differential diagnoses with brief clinical reasoning and likelihood ranking',
+    high: 'Add differential diagnoses with detailed clinical reasoning and likelihood assessment and confidence level',
   },
   assessmentSummary: {
-    low: 'Add concise clinical assessment focusing on key findings and primary diagnosis',
-    medium: 'Add clinical assessment with interpretation of findings, diagnostic confidence, and clinical significance',
-    high: 'Add comprehensive clinical assessment with detailed interpretation, diagnostic reasoning, risk stratification, and clinical implications',
+    low: 'Add concise clinical summary of the consultation (1 line)',
+    medium: 'Add detailed clinical summary of the consultation (1-2 lines)',
+    high: 'Add comprehensive clinical summary of the consultation with clinical reasoning and clinical significance (2-3 lines)',
   },
   managementPlan: {
-    low: 'Add essential management steps: immediate actions, key medications, and follow-up timing',
-    medium: 'Add structured management plan: investigations, treatments, patient education, safety netting, and follow-up schedule',
-    high: 'Add comprehensive management plan: detailed investigations with rationale, treatment options with alternatives, patient education materials, safety netting advice, follow-up protocols, and referral criteria',
+    low: 'Add high-level essential GP management plan',
+    medium: 'Add high-level essential GP management plan',
+    high: 'Add high-level essential GP management plan',
   },
 } as const;
 
@@ -47,8 +47,8 @@ export const AI_ANALYSIS_EXAMPLES = {
   },
   managementPlan: {
     low: '- Simple analgesia\n- Rest\n- Follow-up if worsens',
-    medium: '- Acute: Paracetamol 1g QID, ibuprofen 400mg TDS\n- Lifestyle: adequate hydration, rest\n- Safety net: return if severe/persistent\n- Follow-up: 1 week if not improving',
-    high: '- Immediate: Paracetamol 1000mg QDS + Ibuprofen 400mg TDS PRN\n- Consider sumatriptan if severe\n- Lifestyle advice: regular meals, hydration, sleep hygiene\n- Patient education: migraine triggers, when to seek help\n- Safety netting: return if thunderclap headache, neurological symptoms, or no improvement in 48hrs\n- Follow-up: routine appointment in 1-2 weeks if symptoms persist',
+    medium: '- Simple analgesia\n- Rest\n- Follow-up if worsens',
+    high: '- Simple analgesia\n- Rest\n- Follow-up if worsens',
   },
 } as const;
 
