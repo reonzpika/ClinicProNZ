@@ -47,12 +47,10 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
 
   // Helper function to get default settings
   const defaultSettings: TemplateSettings = {
-    bulletPoints: false,
     aiAnalysis: {
       enabled: false,
       components: {
         differentialDiagnosis: false,
-        assessmentSummary: false,
         managementPlan: false,
       },
       level: 'medium',
@@ -486,7 +484,6 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
   // Ensure components exist for backward compatibility
   const safeComponents = currentSettings.aiAnalysis.components || {
     differentialDiagnosis: false,
-    assessmentSummary: false,
     managementPlan: false,
   };
 
@@ -565,21 +562,6 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
               </p>
             </div>
 
-            {/* Bullet Points */}
-            <div className="flex items-center justify-between space-y-2">
-              <div className="space-y-0.5">
-                <Label htmlFor="bulletPoints">Bullet Points</Label>
-                <p className="text-sm text-muted-foreground">
-                  Use bullet points instead of paragraphs
-                </p>
-              </div>
-              <Switch
-                id="bulletPoints"
-                checked={currentSettings.bulletPoints}
-                onCheckedChange={checked => updateSettings({ bulletPoints: checked })}
-              />
-            </div>
-
           </div>
 
           {/* Right Column - AI Analysis */}
@@ -639,26 +621,6 @@ export function TemplateForm({ template, onChange }: TemplateFormProps) {
                       />
                       <Label htmlFor="ddx" className="text-sm">
                         Differential Diagnosis
-                      </Label>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="assessment"
-                        checked={safeComponents.assessmentSummary}
-                        onCheckedChange={checked =>
-                          updateSettings({
-                            aiAnalysis: {
-                              ...currentSettings.aiAnalysis,
-                              components: {
-                                ...safeComponents,
-                                assessmentSummary: checked,
-                              },
-                            },
-                          })}
-                      />
-                      <Label htmlFor="assessment" className="text-sm">
-                        Assessment Summary
                       </Label>
                     </div>
 

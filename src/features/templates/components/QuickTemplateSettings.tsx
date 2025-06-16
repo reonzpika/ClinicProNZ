@@ -18,12 +18,10 @@ export function QuickTemplateSettings({ selectedTemplate }: QuickTemplateSetting
 
   // Get default settings
   const defaultSettings: TemplateSettings = {
-    bulletPoints: false,
     aiAnalysis: {
       enabled: false,
       components: {
         differentialDiagnosis: false,
-        assessmentSummary: false,
         managementPlan: false,
       },
       level: 'medium',
@@ -52,11 +50,6 @@ export function QuickTemplateSettings({ selectedTemplate }: QuickTemplateSetting
     setHasOverrides(settingsOverride !== null && settingsOverride !== undefined && Object.keys(settingsOverride).length > 0);
   }, [settingsOverride]);
 
-  // Helper to update a specific setting
-  const updateSetting = (key: keyof TemplateSettings, value: any) => {
-    updateSettingsOverride({ [key]: value });
-  };
-
   // Helper to update AI analysis settings
   const updateAIAnalysis = (updates: Partial<TemplateSettings['aiAnalysis']>) => {
     updateSettingsOverride({
@@ -84,7 +77,6 @@ export function QuickTemplateSettings({ selectedTemplate }: QuickTemplateSetting
       .map(([key, _]) => {
         switch (key) {
           case 'differentialDiagnosis': return 'Differential';
-          case 'assessmentSummary': return 'Assessment';
           case 'managementPlan': return 'Management';
           default: return key;
         }
@@ -93,7 +85,7 @@ export function QuickTemplateSettings({ selectedTemplate }: QuickTemplateSetting
     if (enabledComponents.length === 0) {
       return 'None selected';
     }
-    if (enabledComponents.length === 3) {
+    if (enabledComponents.length === 2) {
       return 'All components';
     }
     return enabledComponents.join(', ');
@@ -143,19 +135,6 @@ export function QuickTemplateSettings({ selectedTemplate }: QuickTemplateSetting
           {/* Main Settings - Inline Layout */}
           <div className="flex flex-wrap items-center gap-3">
 
-            {/* Bullet Points */}
-            <div className="flex items-center gap-1.5">
-              <Label htmlFor="quick-bullets" className="whitespace-nowrap text-xs text-muted-foreground">
-                Bullets:
-              </Label>
-              <Switch
-                id="quick-bullets"
-                checked={effectiveSettings.bulletPoints}
-                onCheckedChange={checked => updateSetting('bulletPoints', checked)}
-                className="scale-75 data-[state=checked]:bg-blue-600"
-              />
-            </div>
-
             {/* AI Analysis - All in One Line */}
             <div className="flex items-center gap-1.5">
               <Label htmlFor="quick-ai-analysis" className="whitespace-nowrap text-xs text-muted-foreground">
@@ -198,24 +177,6 @@ export function QuickTemplateSettings({ selectedTemplate }: QuickTemplateSetting
                           />
                           <Label htmlFor="dropdown-ddx" className="cursor-pointer text-xs">
                             Differential Diagnosis
-                          </Label>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            id="dropdown-assessment"
-                            checked={effectiveSettings.aiAnalysis.components.assessmentSummary}
-                            onCheckedChange={checked =>
-                              updateAIAnalysis({
-                                components: {
-                                  ...effectiveSettings.aiAnalysis.components,
-                                  assessmentSummary: checked,
-                                },
-                              })}
-                            className="scale-75 data-[state=checked]:bg-blue-600"
-                          />
-                          <Label htmlFor="dropdown-assessment" className="cursor-pointer text-xs">
-                            Assessment Summary
                           </Label>
                         </div>
 

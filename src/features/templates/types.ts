@@ -15,12 +15,10 @@ export type TemplatePrompts = {
 
 // Template Settings for session-level control
 export type TemplateSettings = {
-  bulletPoints: boolean;
   aiAnalysis: {
     enabled: boolean;
     components: {
       differentialDiagnosis: boolean;
-      assessmentSummary: boolean;
       managementPlan: boolean;
     };
     level: 'low' | 'medium' | 'high'; // Detail level for selected components

@@ -7,11 +7,6 @@ export const AI_ANALYSIS_INSTRUCTIONS = {
     medium: 'Add differential diagnoses with brief clinical reasoning and likelihood ranking',
     high: 'Add differential diagnoses with detailed clinical reasoning and likelihood assessment and confidence level',
   },
-  assessmentSummary: {
-    low: 'Add concise clinical summary of the consultation (1 line)',
-    medium: 'Add detailed clinical summary of the consultation (1-2 lines)',
-    high: 'Add comprehensive clinical summary of the consultation with clinical reasoning and clinical significance (2-3 lines)',
-  },
   managementPlan: {
     low: 'Add high-level essential GP management plan',
     medium: 'Add high-level essential GP management plan',
@@ -22,14 +17,12 @@ export const AI_ANALYSIS_INSTRUCTIONS = {
 // AI Analysis component endings
 export const AI_ANALYSIS_ENDINGS = {
   differentialDiagnosis: 'based on documented symptoms and findings',
-  assessmentSummary: 'based on documented findings',
   managementPlan: 'based on the consultation',
 } as const;
 
 // AI Analysis prohibition instructions
 export const AI_ANALYSIS_PROHIBITIONS = {
   differentialDiagnosis: 'DO NOT generate differential diagnoses or diagnostic speculation',
-  assessmentSummary: 'DO NOT generate clinical assessments or summaries',
   managementPlan: 'DO NOT generate management plans or treatment recommendations',
 } as const;
 
@@ -40,15 +33,38 @@ export const AI_ANALYSIS_EXAMPLES = {
     medium: '- Migraine (family history, typical pattern)\n- Tension headache (consider)',
     high: '- Primary: Migraine (strong family history, 2-day duration typical)\n- Secondary: Tension headache (less likely given family history)\n- Rule out: Secondary headache (no red flags present)',
   },
-  assessmentSummary: {
-    low: '- 2-day headache\n- Likely migraine given family history',
-    medium: '- Acute headache episode, consistent with migraine pattern\n- Family history supports diagnosis\n- No concerning features',
-    high: '- Acute headache presentation with 2-day duration\n- Clinical picture consistent with migraine: positive family history, typical duration\n- No red flag symptoms identified\n- Low risk for secondary pathology',
-  },
   managementPlan: {
     low: '- Simple analgesia\n- Rest\n- Follow-up if worsens',
     medium: '- Simple analgesia\n- Rest\n- Follow-up if worsens',
     high: '- Simple analgesia\n- Rest\n- Follow-up if worsens',
+  },
+} as const;
+
+// AI Analysis examples for headache problems
+export const AI_ANALYSIS_EXAMPLES_HEADACHE = {
+  differentialDiagnosis: {
+    low: '- Migraine without aura\n- Tension-type headache',
+    medium: '- Migraine without aura (photophobia, nausea, episodic)\n- Tension-type headache (evening worsening pattern)\n- Consider secondary headache (new onset)',
+    high: '- Primary: Migraine without aura (photophobia, nausea, partial response to analgesia)\n- Secondary: Tension-type headache (evening worsening, first-time presentation)\n- Rule out: Secondary headache (new-onset 2-month history warrants investigation)',
+  },
+  managementPlan: {
+    low: '- Continue paracetamol as needed\n- Headache diary\n- Safety net advice\n- Review in 2 weeks',
+    medium: '- Continue paracetamol, consider regular use if frequent\n- Headache diary to identify triggers\n- Lifestyle advice: sleep hygiene, hydration, stress management\n- Safety net: return if worsening or new symptoms\n- Consider investigation if no improvement in 4 weeks',
+    high: '- Analgesia: Continue paracetamol, consider adding ibuprofen for severe episodes\n- Headache diary and trigger identification\n- Lifestyle modifications: regular sleep, hydration, stress reduction\n- Consider investigation (blood tests, consider imaging if red flags develop)\n- Safety net: return immediately if sudden severe headache, neurological symptoms, or fever\n- Review in 2-4 weeks for response assessment',
+  },
+} as const;
+
+// AI Analysis examples for abdominal pain problems
+export const AI_ANALYSIS_EXAMPLES_ABDO = {
+  differentialDiagnosis: {
+    low: '- Gastroenteritis\n- IBS',
+    medium: '- Gastroenteritis (food history, acute onset)\n- IBS (possible, chronic symptoms)',
+    high: '- Primary: Gastroenteritis (recent takeaway, acute 5-day onset)\n- Secondary: IBS (consider if symptoms persist)\n- Rule out: IBD (no blood, short duration)',
+  },
+  managementPlan: {
+    low: '- Oral rehydration\n- BRAT diet\n- Return if symptoms persist >7 days',
+    medium: '- Oral rehydration\n- BRAT diet\n- Return if symptoms persist >7 days',
+    high: '- Oral rehydration\n- BRAT diet\n- Return if symptoms persist >7 days',
   },
 } as const;
 
@@ -72,29 +88,17 @@ export function buildAiAnalysisExamples(
     return examples;
   }
 
-  // Build assessment example (combines differential diagnosis and assessment summary)
-  const assessmentParts: string[] = [];
-
-  if (components.assessmentSummary) {
-    const assessmentExample = AI_ANALYSIS_EXAMPLES.assessmentSummary[level as keyof typeof AI_ANALYSIS_EXAMPLES.assessmentSummary];
-    if (assessmentExample) {
-      assessmentParts.push(`\nClinical Assessment:\n${assessmentExample}`);
-    }
-  }
-  if (components.differentialDiagnosis) {
-    const diffExample = AI_ANALYSIS_EXAMPLES.differentialDiagnosis[level as keyof typeof AI_ANALYSIS_EXAMPLES.differentialDiagnosis];
-    if (diffExample) {
-      assessmentParts.push(`\nDifferential:\n${diffExample}`);
-    }
-  }
-
-  examples.assessmentExample = assessmentParts.length > 0 ? assessmentParts.join('\n') : '';
+  // Build differential diagnosis example
+  const diffExample = components.differentialDiagnosis
+    ? AI_ANALYSIS_EXAMPLES.differentialDiagnosis[level as keyof typeof AI_ANALYSIS_EXAMPLES.differentialDiagnosis]
+    : null;
+  examples.assessmentExample = diffExample ? `\nDifferential:\n${diffExample}` : '';
 
   // Build plan example
-  if (components.managementPlan) {
-    const planExample = AI_ANALYSIS_EXAMPLES.managementPlan[level as keyof typeof AI_ANALYSIS_EXAMPLES.managementPlan];
-    examples.planExample = planExample ? `\n${planExample}` : '';
-  }
+  const planExample = components.managementPlan
+    ? AI_ANALYSIS_EXAMPLES.managementPlan[level as keyof typeof AI_ANALYSIS_EXAMPLES.managementPlan]
+    : null;
+  examples.planExample = planExample ? `\n${planExample}` : '';
 
   return examples;
 }
@@ -142,4 +146,36 @@ export function buildAiAnalysisInstructions(
   }
 
   return instruction;
+}
+
+// Helper function to build problem-specific examples
+export function buildProblemSpecificExamples(
+  components: TemplateSettings['aiAnalysis']['components'],
+  level: string,
+  problemType: 'headache' | 'abdo',
+): { assessmentExample: string; planExample: string } {
+  const examples = {
+    assessmentExample: '',
+    planExample: '',
+  };
+
+  if (!components) {
+    return examples;
+  }
+
+  const exampleSource = problemType === 'headache' ? AI_ANALYSIS_EXAMPLES_HEADACHE : AI_ANALYSIS_EXAMPLES_ABDO;
+
+  // Build differential diagnosis example
+  const diffExample = components.differentialDiagnosis
+    ? exampleSource.differentialDiagnosis[level as keyof typeof exampleSource.differentialDiagnosis]
+    : null;
+  examples.assessmentExample = diffExample ? `\nDifferential:\n${diffExample}` : '';
+
+  // Build plan example
+  const planExample = components.managementPlan
+    ? exampleSource.managementPlan[level as keyof typeof exampleSource.managementPlan]
+    : null;
+  examples.planExample = planExample ? `\n${planExample}` : '';
+
+  return examples;
 }
