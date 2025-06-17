@@ -66,15 +66,25 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
     <span className="mr-2 inline-block size-3 animate-pulse rounded-full bg-red-500 align-middle" title="Recording" />
   );
 
-  // Simple volume meter bar
-  const VolumeMeter = () => (
-    <div className="mb-0.5 mt-1 h-1 w-full rounded bg-gray-200">
-      <div
-        className="h-1 rounded bg-green-500"
-        style={{ width: `${Math.min(volumeLevel * 100, 100)}%`, transition: 'width 0.1s' }}
-      />
-    </div>
-  );
+  // Audio input indicator - pulsing circle
+  const AudioIndicator = () => {
+    const intensity = Math.min(volumeLevel, 1);
+    const scale = 1 + intensity * 0.5; // Scale from 1 to 1.5
+    const opacity = 0.4 + intensity * 0.6; // Opacity from 0.4 to 1
+    
+    return (
+      <div className="flex justify-center py-1">
+        <div
+          className="h-3 w-3 rounded-full bg-green-500 transition-all duration-100"
+          style={{
+            transform: `scale(${scale})`,
+            opacity,
+            boxShadow: intensity > 0.3 ? `0 0 ${4 + intensity * 8}px rgba(34, 197, 94, 0.6)` : 'none'
+          }}
+        />
+      </div>
+    );
+  };
 
   if (collapsed) {
     return (
@@ -177,10 +187,10 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
               </div>
             </div>
 
-            {/* Volume meter and warning */}
+            {/* Audio input indicator */}
             {isRecording && (
               <>
-                <VolumeMeter />
+                <AudioIndicator />
               </>
             )}
 

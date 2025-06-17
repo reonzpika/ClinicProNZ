@@ -41,7 +41,7 @@ export type ConsultationState = {
   isChatLoading: boolean;
 };
 
-const MULTIPROBLEM_SOAP_UUID = 'a9028cb5-0c2a-4af9-9cc1-4087a6204715';
+const MULTIPROBLEM_SOAP_UUID = 'ef6b3139-69a0-4b4b-bf80-dcdabe0559ba';
 
 function getUserDefaultTemplateId() {
   if (typeof window !== 'undefined') {
