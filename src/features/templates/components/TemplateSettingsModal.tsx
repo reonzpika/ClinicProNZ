@@ -12,12 +12,12 @@ import { useConsultation } from '@/shared/ConsultationContext';
 
 import type { Template, TemplateSettings } from '../types';
 
-interface TemplateSettingsDropdownProps {
+type TemplateSettingsDropdownProps = {
   selectedTemplate: Template;
-}
+};
 
-export const TemplateSettingsDropdown: React.FC<TemplateSettingsDropdownProps> = ({ 
-  selectedTemplate 
+export const TemplateSettingsDropdown: React.FC<TemplateSettingsDropdownProps> = ({
+  selectedTemplate,
 }) => {
   const { settingsOverride, updateSettingsOverride, clearSettingsOverride } = useConsultation();
 
@@ -87,7 +87,7 @@ export const TemplateSettingsDropdown: React.FC<TemplateSettingsDropdownProps> =
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <div className="w-80 p-4 space-y-4">
+        <div className="w-80 space-y-4 p-4">
           {/* Header */}
           <div className="flex items-center justify-between">
             <h4 className="font-semibold text-gray-900">Template Settings</h4>
@@ -116,10 +116,10 @@ export const TemplateSettingsDropdown: React.FC<TemplateSettingsDropdownProps> =
             </div>
 
             {effectiveSettings.aiAnalysis.enabled && (
-              <div className="space-y-3 pl-3 border-l-2 border-blue-100">
+              <div className="space-y-3 border-l-2 border-blue-100 pl-3">
                 {/* AI Components */}
                 <div>
-                  <Label className="text-xs font-medium text-gray-700 mb-2 block">
+                  <Label className="mb-2 block text-xs font-medium text-gray-700">
                     Components
                   </Label>
                   <div className="space-y-2">
@@ -134,7 +134,7 @@ export const TemplateSettingsDropdown: React.FC<TemplateSettingsDropdownProps> =
                               differentialDiagnosis: checked,
                             },
                           })}
-                        className="data-[state=checked]:bg-blue-600 scale-75"
+                        className="scale-75 data-[state=checked]:bg-blue-600"
                       />
                       <Label htmlFor="differential-diagnosis" className="text-xs text-gray-600">
                         Differential Diagnosis
@@ -152,7 +152,7 @@ export const TemplateSettingsDropdown: React.FC<TemplateSettingsDropdownProps> =
                               managementPlan: checked,
                             },
                           })}
-                        className="data-[state=checked]:bg-blue-600 scale-75"
+                        className="scale-75 data-[state=checked]:bg-blue-600"
                       />
                       <Label htmlFor="management-plan" className="text-xs text-gray-600">
                         Management Plan
@@ -163,7 +163,7 @@ export const TemplateSettingsDropdown: React.FC<TemplateSettingsDropdownProps> =
 
                 {/* Analysis Detail Level */}
                 <div>
-                  <Label className="text-xs font-medium text-gray-700 mb-2 block">
+                  <Label className="mb-2 block text-xs font-medium text-gray-700">
                     Detail Level
                   </Label>
                   <Select
@@ -171,7 +171,7 @@ export const TemplateSettingsDropdown: React.FC<TemplateSettingsDropdownProps> =
                     onValueChange={(value: 'low' | 'medium' | 'high') =>
                       updateAIAnalysis({ level: value })}
                   >
-                    <SelectTrigger className="w-full h-8 text-xs">
+                    <SelectTrigger className="h-8 w-full text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -188,4 +188,4 @@ export const TemplateSettingsDropdown: React.FC<TemplateSettingsDropdownProps> =
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}; 
+};

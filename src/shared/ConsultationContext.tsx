@@ -63,10 +63,12 @@ const defaultState: ConsultationState = {
   userDefaultTemplateId: null,
   consentObtained: false,
   settingsOverride: null,
-  microphoneGain: typeof window !== 'undefined' ? 
-    parseFloat(localStorage.getItem('microphoneGain') || '7.0') : 7.0,
-  volumeThreshold: typeof window !== 'undefined' ? 
-    parseFloat(localStorage.getItem('volumeThreshold') || '0.1') : 0.1,
+  microphoneGain: typeof window !== 'undefined'
+    ? Number.parseFloat(localStorage.getItem('microphoneGain') || '7.0')
+    : 7.0,
+  volumeThreshold: typeof window !== 'undefined'
+    ? Number.parseFloat(localStorage.getItem('volumeThreshold') || '0.1')
+    : 0.1,
   // Chatbot defaults
   chatHistory: [],
   isChatContextEnabled: false,
@@ -169,7 +171,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setState(prev => ({
       ...prev,
       transcription: {
-        transcript: prev.transcription.transcript 
+        transcript: prev.transcription.transcript
           ? `${prev.transcription.transcript} ${newTranscript}`.trim()
           : newTranscript.trim(),
         isLive,

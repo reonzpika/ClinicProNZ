@@ -1,22 +1,23 @@
+/* eslint-disable jsx-a11y/label-has-associated-control */
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Settings, Mic, MicOff } from 'lucide-react';
+import { Mic, MicOff, Settings } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
 import { useConsultation } from '@/shared/ConsultationContext';
 
-interface AudioSettingsModalProps {
+type AudioSettingsModalProps = {
   isOpen: boolean;
   onClose: () => void;
-}
+};
 
 export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, onClose }) => {
   const { microphoneGain, setMicrophoneGain, volumeThreshold, setVolumeThreshold } = useConsultation();
   const [isTestingMic, setIsTestingMic] = useState(false);
   const [testVolumeLevel, setTestVolumeLevel] = useState(0);
-  
+
   // Audio testing refs
   const testAudioContextRef = useRef<AudioContext | null>(null);
   const testAnalyserRef = useRef<AnalyserNode | null>(null);
@@ -25,8 +26,12 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
 
   const formatGainValue = (gain: number) => {
     const safeGain = gain ?? 7;
-    if (safeGain <= 3) return `${safeGain} (Quiet)`;
-    if (safeGain <= 6) return `${safeGain} (Good)`;
+    if (safeGain <= 3) {
+      return `${safeGain} (Quiet)`;
+    }
+    if (safeGain <= 6) {
+      return `${safeGain} (Good)`;
+    }
     return `${safeGain} (Loud)`;
   };
 
@@ -61,7 +66,7 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
     const volume = measureTestVolume();
     const adjustedVolume = volume * (microphoneGain ?? 7);
     const uiVolume = Math.min(adjustedVolume * 2, 1.0);
-    
+
     setTestVolumeLevel(uiVolume);
     testAnimationRef.current = requestAnimationFrame(testLoop);
   }, [isTestingMic, microphoneGain]);
@@ -89,7 +94,7 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
 
       testAudioContextRef.current = audioContext;
       testAnalyserRef.current = analyser;
-      
+
       setIsTestingMic(true);
     } catch (error) {
       console.error('Failed to start microphone test:', error);
@@ -106,7 +111,7 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
   // Stop microphone test
   const stopMicTest = () => {
     setIsTestingMic(false);
-    
+
     if (testAnimationRef.current) {
       cancelAnimationFrame(testAnimationRef.current);
       testAnimationRef.current = null;
@@ -143,18 +148,18 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md bg-white border border-gray-200 shadow-xl rounded-lg">
+      <DialogContent className="max-w-md rounded-lg border border-gray-200 bg-white shadow-xl">
         <DialogHeader className="pb-4">
           <DialogTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-            <Settings className="h-5 w-5 text-gray-700" />
+            <Settings className="size-5 text-gray-700" />
             Audio Settings
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-6">
           {/* Microphone Sensitivity */}
           <div>
-            <div className="flex items-center justify-between mb-2">
+            <div className="mb-2 flex items-center justify-between">
               <label className="text-sm font-medium text-gray-700">
                 Microphone Volume Boost
               </label>
@@ -170,22 +175,22 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
                 max="10"
                 step="1"
                 value={microphoneGain ?? 7}
-                onChange={(e) => setMicrophoneGain(Number.parseFloat(e.target.value))}
-                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                onChange={e => setMicrophoneGain(Number.parseFloat(e.target.value))}
+                className="slider h-2 flex-1 cursor-pointer appearance-none rounded-lg bg-gray-200"
                 style={{
                   background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${(((microphoneGain ?? 7) - 1) / 9) * 100}%, #e5e7eb ${(((microphoneGain ?? 7) - 1) / 9) * 100}%, #e5e7eb 100%)`,
                 }}
               />
               <span className="text-xs text-gray-400">Loud</span>
             </div>
-            <p className="text-xs text-blue-600 mt-1 font-medium">
+            <p className="mt-1 text-xs font-medium text-blue-600">
               💡 Higher settings improve transcription accuracy for quiet voices
             </p>
           </div>
 
           {/* Voice Detection Threshold */}
           <div>
-            <div className="flex items-center justify-between mb-2">
+            <div className="mb-2 flex items-center justify-between">
               <label className="text-sm font-medium text-gray-700">
                 Background Noise Filter
               </label>
@@ -201,67 +206,74 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
                 max="0.2"
                 step="0.005"
                 value={volumeThreshold}
-                onChange={(e) => setVolumeThreshold(Number.parseFloat(e.target.value))}
-                className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                onChange={e => setVolumeThreshold(Number.parseFloat(e.target.value))}
+                className="slider h-2 flex-1 cursor-pointer appearance-none rounded-lg bg-gray-200"
                 style={{
                   background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((volumeThreshold - 0.005) / 0.195) * 100}%, #e5e7eb ${((volumeThreshold - 0.005) / 0.195) * 100}%, #e5e7eb 100%)`,
                 }}
               />
               <span className="text-xs text-gray-400">Ignores noise</span>
             </div>
-            <p className="text-xs text-blue-600 mt-1 font-medium">
+            <p className="mt-1 text-xs font-medium text-blue-600">
               💡 Set above background noise level to improve transcription accuracy
             </p>
           </div>
 
           {/* Test Microphone */}
           <div>
-            <div className="flex items-center justify-between mb-2">
+            <div className="mb-2 flex items-center justify-between">
               <label className="text-sm font-medium text-gray-700">
                 Test Your Setup
               </label>
               <Button
                 onClick={isTestingMic ? stopMicTest : startMicTest}
-                variant={isTestingMic ? "destructive" : "outline"}
+                variant={isTestingMic ? 'destructive' : 'outline'}
                 size="sm"
                 className="flex items-center gap-2"
               >
-                {isTestingMic ? (
-                  <>
-                    <MicOff className="h-4 w-4" />
-                    Stop Test
-                  </>
-                ) : (
-                  <>
-                    <Mic className="h-4 w-4" />
-                    Start Test
-                  </>
-                )}
+                {isTestingMic
+                  ? (
+                      <>
+                        <MicOff className="size-4" />
+                        Stop Test
+                      </>
+                    )
+                  : (
+                      <>
+                        <Mic className="size-4" />
+                        Start Test
+                      </>
+                    )}
               </Button>
             </div>
-            
-            <div className="bg-blue-50 p-3 rounded-lg mb-3">
-              <p className="text-xs font-medium text-blue-800 mb-1">📋 Setup Instructions:</p>
-              <ol className="text-xs text-blue-700 space-y-1 ml-3 list-decimal">
+
+            <div className="mb-3 rounded-lg bg-blue-50 p-3">
+              <p className="mb-1 text-xs font-medium text-blue-800">📋 Setup Instructions:</p>
+              <ol className="ml-3 list-decimal space-y-1 text-xs text-blue-700">
                 <li>Click "Start Test" and speak at normal consultation volume</li>
                 <li>Adjust "Volume Boost" until your voice shows 40-70%</li>
                 <li>Adjust "Noise Filter" to just above the background level</li>
                 <li>Verify "Voice Detected" only appears when you speak</li>
               </ol>
             </div>
-            
+
             {/* Live Volume Meter */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-gray-600">Audio Level</span>
-                <span className="text-xs text-gray-500">{Math.round(testVolumeLevel * 100)}%</span>
+                <span className="text-xs text-gray-500">
+                  {Math.round(testVolumeLevel * 100)}
+                  %
+                </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-3">
+              <div className="h-3 w-full rounded-full bg-gray-200">
                 <div
                   className={`h-3 rounded-full transition-all duration-100 ${
-                    testVolumeLevel > 0.7 ? 'bg-red-500' :
-                    testVolumeLevel > 0.3 ? 'bg-yellow-500' :
-                    testVolumeLevel > 0.05 ? 'bg-green-500' : 'bg-gray-300'
+                    testVolumeLevel > 0.7
+                      ? 'bg-red-500'
+                      : testVolumeLevel > 0.3
+                        ? 'bg-yellow-500'
+                        : testVolumeLevel > 0.05 ? 'bg-green-500' : 'bg-gray-300'
                   }`}
                   style={{ width: `${Math.min(testVolumeLevel * 100, 100)}%` }}
                 />
@@ -281,21 +293,28 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
 
           {/* Threshold Indicator */}
           {isTestingMic && (
-            <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
-              <div className="flex items-center justify-between mb-1">
+            <div className="rounded-lg border border-green-200 bg-green-50 p-3">
+              <div className="mb-1 flex items-center justify-between">
                 <span className="text-xs font-medium text-green-800">Recording Status</span>
                 <span className={`text-xs font-medium ${
                   testVolumeLevel > volumeThreshold ? 'text-green-600' : 'text-orange-600'
-                }`}>
+                }`}
+                >
                   {testVolumeLevel > volumeThreshold ? '✓ Will Record' : '○ Too Quiet'}
                 </span>
               </div>
               <p className="text-xs text-green-700">
-                Current: {(testVolumeLevel * 100).toFixed(1)}% | 
-                Noise Filter: {(volumeThreshold * 100).toFixed(1)}%
+                Current:
+                {' '}
+                {(testVolumeLevel * 100).toFixed(1)}
+                % |
+                Noise Filter:
+                {' '}
+                {(volumeThreshold * 100).toFixed(1)}
+                %
               </p>
               {testVolumeLevel <= volumeThreshold && (
-                <p className="text-xs text-orange-600 mt-1 font-medium">
+                <p className="mt-1 text-xs font-medium text-orange-600">
                   💡 Increase Volume Boost or lower Noise Filter to capture your voice
                 </p>
               )}
@@ -311,4 +330,4 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
       </DialogContent>
     </Dialog>
   );
-}; 
+};

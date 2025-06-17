@@ -8,8 +8,8 @@ import { Button } from '@/shared/components/ui/button';
 import { useConsultation } from '@/shared/ConsultationContext';
 
 import type { Template, TemplateSettings } from '../types';
-import { TemplateSettingsDropdown } from './TemplateSettingsModal';
 import { TemplateSelectorModal } from './TemplateSelectorModal';
+import { TemplateSettingsDropdown } from './TemplateSettingsModal';
 
 export function TemplateSelector() {
   const { isSignedIn, userId } = useAuth();
@@ -45,13 +45,17 @@ export function TemplateSelector() {
     // AI Analysis
     if (settings.aiAnalysis.enabled) {
       const components = settings.aiAnalysis.components;
-      
+
       // Build AI analysis summary
       const aiComponents = [];
-      if (components.differentialDiagnosis) aiComponents.push('Differential');
-      if (components.managementPlan) aiComponents.push('Management');
-      
-      const aiSummary = settings.aiAnalysis.enabled 
+      if (components.differentialDiagnosis) {
+        aiComponents.push('Differential');
+      }
+      if (components.managementPlan) {
+        aiComponents.push('Management');
+      }
+
+      const aiSummary = settings.aiAnalysis.enabled
         ? `AI: ${aiComponents.length > 0 ? aiComponents.join(', ') : 'None'} (${settings.aiAnalysis.level})`
         : null;
 

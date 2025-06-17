@@ -67,10 +67,14 @@ export function TemplateSelectorModal({
     if (settings.aiAnalysis.enabled) {
       const components = settings.aiAnalysis.components;
       const aiComponents = [];
-      if (components.differentialDiagnosis) aiComponents.push('Differential');
-      if (components.managementPlan) aiComponents.push('Management');
-      
-      const aiSummary = settings.aiAnalysis.enabled 
+      if (components.differentialDiagnosis) {
+        aiComponents.push('Differential');
+      }
+      if (components.managementPlan) {
+        aiComponents.push('Management');
+      }
+
+      const aiSummary = settings.aiAnalysis.enabled
         ? `AI: ${aiComponents.length > 0 ? aiComponents.join(', ') : 'None'} (${settings.aiAnalysis.level})`
         : null;
 
