@@ -33,6 +33,8 @@ export type ConsultationState = {
   lastGeneratedTypedInput?: string;
   consentObtained: boolean;
   settingsOverride: Partial<TemplateSettings> | null;
+  microphoneGain: number; // 1 to 10, default 7
+  volumeThreshold: number; // 0.005 to 0.2, default 0.1
   // Chatbot state
   chatHistory: ChatMessage[];
   isChatContextEnabled: boolean;
@@ -59,14 +61,15 @@ const defaultState: ConsultationState = {
   generatedNotes: null,
   error: null,
   userDefaultTemplateId: null,
-  lastGeneratedTranscription: '',
-  lastGeneratedQuickNotes: [],
-  lastGeneratedTypedInput: '',
   consentObtained: false,
   settingsOverride: null,
+  microphoneGain: typeof window !== 'undefined' ? 
+    parseFloat(localStorage.getItem('microphoneGain') || '7.0') : 7.0,
+  volumeThreshold: typeof window !== 'undefined' ? 
+    parseFloat(localStorage.getItem('volumeThreshold') || '0.1') : 0.1,
   // Chatbot defaults
   chatHistory: [],
-  isChatContextEnabled: true,
+  isChatContextEnabled: false,
   isChatLoading: false,
 };
 
@@ -80,6 +83,7 @@ const ConsultationContext = createContext<
     setTemplateId: (id: string) => void;
     setInputMode: (mode: InputMode) => void;
     setTranscription: (transcript: string, isLive: boolean) => void;
+    appendTranscription: (newTranscript: string, isLive: boolean) => void;
     setTypedInput: (input: string) => void;
     addQuickNote: (note: string) => void;
     deleteQuickNote: (index: number) => void;
@@ -102,6 +106,8 @@ const ConsultationContext = createContext<
     clearChatHistory: () => void;
     setChatContextEnabled: (enabled: boolean) => void;
     setChatLoading: (loading: boolean) => void;
+    setMicrophoneGain: (gain: number) => void;
+    setVolumeThreshold: (threshold: number) => void;
   })
   | null
 >(null);
@@ -154,6 +160,18 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       ...prev,
       transcription: {
         transcript,
+        isLive,
+      },
+    }));
+  }, []);
+
+  const appendTranscription = useCallback((newTranscript: string, isLive: boolean) => {
+    setState(prev => ({
+      ...prev,
+      transcription: {
+        transcript: prev.transcription.transcript 
+          ? `${prev.transcription.transcript} ${newTranscript}`.trim()
+          : newTranscript.trim(),
         isLive,
       },
     }));
@@ -274,6 +292,20 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
   const setChatLoading = useCallback((loading: boolean) =>
     setState(prev => ({ ...prev, isChatLoading: loading })), []);
 
+  const setMicrophoneGain = useCallback((gain: number) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('microphoneGain', gain.toString());
+    }
+    setState(prev => ({ ...prev, microphoneGain: gain }));
+  }, []);
+
+  const setVolumeThreshold = useCallback((threshold: number) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('volumeThreshold', threshold.toString());
+    }
+    setState(prev => ({ ...prev, volumeThreshold: threshold }));
+  }, []);
+
   const value = useMemo(() => ({
     ...state,
     setStatus,
@@ -283,6 +315,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     deleteQuickNote,
     clearQuickNotes,
     setTranscription,
+    appendTranscription,
     setTypedInput,
     setGeneratedNotes,
     setError,
@@ -306,6 +339,8 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     clearChatHistory,
     setChatContextEnabled,
     setChatLoading,
+    setMicrophoneGain,
+    setVolumeThreshold,
   }), [
     state,
     setStatus,
@@ -315,6 +350,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     deleteQuickNote,
     clearQuickNotes,
     setTranscription,
+    appendTranscription,
     setTypedInput,
     setGeneratedNotes,
     setError,
@@ -333,6 +369,8 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     clearChatHistory,
     setChatContextEnabled,
     setChatLoading,
+    setMicrophoneGain,
+    setVolumeThreshold,
   ]);
 
   return (

@@ -50,7 +50,7 @@ export function DropdownMenuContent({ children }: { children: React.ReactNode })
     return null;
   }
   return (
-    <div ref={ref} className="absolute right-0 z-50 mt-2 w-40 rounded-md border border-gray-200 bg-white p-1 shadow-lg">
+    <div ref={ref} className="absolute right-0 z-50 mt-2 min-w-40 rounded-md border border-gray-200 bg-white shadow-lg">
       {children}
     </div>
   );

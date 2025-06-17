@@ -8,6 +8,7 @@ import { Button } from '@/shared/components/ui/button';
 import { useConsultation } from '@/shared/ConsultationContext';
 
 import type { Template, TemplateSettings } from '../types';
+import { TemplateSettingsDropdown } from './TemplateSettingsModal';
 import { TemplateSelectorModal } from './TemplateSelectorModal';
 
 export function TemplateSelector() {
@@ -138,7 +139,7 @@ export function TemplateSelector() {
   const settingsSummary = selectedTemplate ? getSettingsSummary(selectedTemplate) : [];
 
   return (
-    <div>
+    <div className="flex items-center gap-2">
       <Button
         variant="outline"
         className="h-8 w-full justify-between px-2 py-1 text-xs"
@@ -154,7 +155,7 @@ export function TemplateSelector() {
                 <span
                   key={index}
                   className={`flex items-center ${setting.color}`}
-                  title={setting.label}
+                  title={setting.label || undefined}
                 >
                   {setting.icon}
                 </span>
@@ -164,6 +165,8 @@ export function TemplateSelector() {
         </div>
         <span className="text-xs">▼</span>
       </Button>
+
+      <TemplateSettingsDropdown selectedTemplate={selectedTemplate || fallbackTemplate} />
 
       <TemplateSelectorModal
         isOpen={isModalOpen}

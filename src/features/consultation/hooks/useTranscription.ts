@@ -2,13 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useConsultation } from '@/shared/ConsultationContext';
 
-type ChunkTranscript = {
-  chunk: number;
-  text: string;
-  timestamp: number;
-  status: 'uploading' | 'transcribing' | 'completed' | 'failed';
-};
-
 type TranscriptionState = {
   isRecording: boolean;
   isPaused: boolean;
@@ -19,24 +12,28 @@ type TranscriptionState = {
   metadata: any;
   volumeLevel: number;
   noInputWarning: boolean;
-  chunkTranscripts: ChunkTranscript[];
   chunksCompleted: number;
   totalChunks: number;
   recordingStart: number | null;
   recordingEnd: number | null;
 };
 
-const SILENCE_THRESHOLD = 2; // seconds of silence to trigger chunk end
-const VOLUME_THRESHOLD = 0.02; // RMS threshold for speech detection (increased from 0.005)
-const MIN_SPEECH_DURATION = 1.5; // minimum seconds of actual speech required to send chunk
+// Smart timing constants
+const SILENCE_THRESHOLD = 3; // seconds of silence to trigger sending recording
+const SMART_BOUNDARY_THRESHOLD = 25; // seconds - when to start looking for word boundaries
+const WORD_BOUNDARY_PAUSE = 1; // seconds - micro-pause indicating word boundary
+const FORCE_STOP_DURATION = 35; // seconds - absolute maximum before force-stopping
 const SPEECH_CONFIRMATION_FRAMES = 3; // Number of consecutive frames above threshold to confirm speech
 
 export const useTranscription = () => {
   const {
     setStatus,
     setTranscription,
+    appendTranscription,
     setError,
     transcription,
+    microphoneGain,
+    volumeThreshold,
   } = useConsultation();
 
   const [state, setState] = useState<TranscriptionState>({
@@ -49,34 +46,29 @@ export const useTranscription = () => {
     metadata: {},
     volumeLevel: 0,
     noInputWarning: false,
-    chunkTranscripts: [],
     chunksCompleted: 0,
     totalChunks: 0,
     recordingStart: null,
     recordingEnd: null,
   });
 
-  // Audio recording and VAD refs
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  // Core audio refs
   const audioStreamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const vadLoopRef = useRef<number | null>(null);
 
-  // VAD state refs
+  // Recording session management
+  const currentRecorderRef = useRef<MediaRecorder | null>(null);
+  const currentAudioChunksRef = useRef<Blob[]>([]);
+  const recordingSessionStartRef = useRef<number>(0);
   const lastSpokeAtRef = useRef<number>(0);
-  const isChunkRecordingRef = useRef<boolean>(false);
-  const chunkCountRef = useRef<number>(0);
-  const chunkStartTimeRef = useRef<number>(0);
-  const audioChunksRef = useRef<Blob[]>([]);
-  const lastTranscriptSentRef = useRef<string>('');
+  const speechFrameCountRef = useRef<number>(0);
   const isRecordingRef = useRef<boolean>(false);
   const isPausedRef = useRef<boolean>(false);
-  const speechFrameCountRef = useRef<number>(0);
-  const speechDurationRef = useRef<number>(0); // Accumulated speech time in seconds
-  const firstChunkStartedRef = useRef<boolean>(false); // Track if first chunk has started
-  const isWaitingForSpeechRef = useRef<boolean>(false); // Track if we're waiting for speech to start first chunk
+  const sessionCountRef = useRef<number>(0);
+  const isSessionActiveRef = useRef<boolean>(false);
 
   // Volume measurement for VAD
   const measureVolume = useCallback((): number => {
@@ -96,31 +88,20 @@ export const useTranscription = () => {
     return Math.sqrt(sum / dataArray.length);
   }, []);
 
-  // Transcribe a single chunk
-  const transcribeChunk = useCallback(async (blob: Blob, chunkIdx: number) => {
+  // Send completed recording to Deepgram
+  const sendRecordingSession = useCallback(async (audioBlob: Blob) => {
+    if (!audioBlob || audioBlob.size <= 1000) {
+      return;
+    }
+
     try {
-      // Update chunk status to uploading
-      setState(prev => ({
-        ...prev,
-        chunkTranscripts: prev.chunkTranscripts.map(ct =>
-          ct.chunk === chunkIdx
-            ? { ...ct, status: 'uploading' as const }
-            : ct,
-        ),
-      }));
+      setState(prev => ({ ...prev, isTranscribing: true }));
+
+      sessionCountRef.current += 1;
+      const currentSession = sessionCountRef.current;
 
       const formData = new FormData();
-      formData.append('audio', blob, `chunk-${chunkIdx}.webm`);
-
-      // Update to transcribing
-      setState(prev => ({
-        ...prev,
-        chunkTranscripts: prev.chunkTranscripts.map(ct =>
-          ct.chunk === chunkIdx
-            ? { ...ct, status: 'transcribing' as const }
-            : ct,
-        ),
-      }));
+      formData.append('audio', audioBlob, `session-${currentSession}.webm`);
 
       const response = await fetch('/api/deepgram/transcribe', {
         method: 'POST',
@@ -133,138 +114,89 @@ export const useTranscription = () => {
 
       const { transcript } = await response.json();
 
-      // Update chunk with completed transcript
-      setState((prev) => {
-        const updatedChunks = prev.chunkTranscripts.map(ct =>
-          ct.chunk === chunkIdx
-            ? { ...ct, text: transcript || '[No speech detected]', status: 'completed' as const }
-            : ct,
-        );
+      if (transcript && transcript.trim()) {
+        // Append new transcript using the safe append function
+        appendTranscription(transcript.trim(), state.isRecording);
 
-        const completedCount = updatedChunks.filter(ct => ct.status === 'completed').length;
-
-        return {
+        // Update completion counter
+        setState(prev => ({
           ...prev,
-          chunkTranscripts: updatedChunks,
-          chunksCompleted: completedCount,
-        };
-      });
+          noInputWarning: false,
+          chunksCompleted: prev.chunksCompleted + 1,
+        }));
+      }
     } catch (error: any) {
+      console.error('Transcription session error:', error);
       setState(prev => ({
         ...prev,
-        chunkTranscripts: prev.chunkTranscripts.map(ct =>
-          ct.chunk === chunkIdx
-            ? { ...ct, text: '[Transcription failed]', status: 'failed' as const }
-            : ct,
-        ),
+        error: `Transcription failed: ${error.message}`,
       }));
-      console.error(`Chunk ${chunkIdx} transcription failed:`, error);
+    } finally {
+      setState(prev => ({ ...prev, isTranscribing: false }));
+    }
+  }, [appendTranscription, state.isRecording]);
+
+  // Start a new recording session
+  const startRecordingSession = useCallback(() => {
+    if (!audioStreamRef.current || isSessionActiveRef.current || isPausedRef.current) {
+      return;
+    }
+
+    try {
+      const mediaRecorder = new MediaRecorder(audioStreamRef.current, {
+        mimeType: 'audio/webm;codecs=opus',
+      });
+
+      currentAudioChunksRef.current = [];
+      recordingSessionStartRef.current = Date.now();
+      isSessionActiveRef.current = true;
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          currentAudioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        isSessionActiveRef.current = false;
+
+        // Create complete audio blob from all chunks
+        const audioBlob = new Blob(currentAudioChunksRef.current, {
+          type: 'audio/webm;codecs=opus',
+        });
+
+        // Send to Deepgram
+        await sendRecordingSession(audioBlob);
+      };
+
+      mediaRecorder.onerror = (event) => {
+        console.error('MediaRecorder error:', event);
+        isSessionActiveRef.current = false;
+        setState(prev => ({
+          ...prev,
+          error: 'Recording session error occurred',
+        }));
+      };
+
+      currentRecorderRef.current = mediaRecorder;
+      mediaRecorder.start(); // Record everything in one session
+    } catch (error: any) {
+      console.error('Failed to start recording session:', error);
+      isSessionActiveRef.current = false;
+    }
+  }, [sendRecordingSession]);
+
+  // Stop current recording session
+  const stopRecordingSession = useCallback(() => {
+    if (currentRecorderRef.current && isSessionActiveRef.current) {
+      currentRecorderRef.current.stop();
+      currentRecorderRef.current = null;
     }
   }, []);
 
-  // Start recording a new chunk
-  const startChunk = useCallback(() => {
-    if (!audioStreamRef.current || isChunkRecordingRef.current) {
-      return;
-    }
-
-    const mediaRecorder = new MediaRecorder(audioStreamRef.current, {
-      mimeType: 'audio/webm;codecs=opus',
-    });
-
-    audioChunksRef.current = [];
-    chunkCountRef.current += 1;
-    chunkStartTimeRef.current = Date.now();
-    isChunkRecordingRef.current = true;
-    speechDurationRef.current = 0; // Reset speech duration for new chunk
-
-    const currentChunkIdx = chunkCountRef.current;
-
-    // Add new chunk to state
-    setState(prev => ({
-      ...prev,
-      chunkTranscripts: [
-        ...prev.chunkTranscripts,
-        {
-          chunk: currentChunkIdx,
-          text: '',
-          timestamp: Date.now(),
-          status: 'uploading' as const, // Will be updated when recording starts
-        },
-      ],
-      totalChunks: currentChunkIdx,
-    }));
-
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        audioChunksRef.current.push(event.data);
-      }
-    };
-
-    mediaRecorder.onstop = async () => {
-      // Only process if this MediaRecorder is still the active one (not dropped)
-      if (mediaRecorderRef.current !== mediaRecorder) {
-        return;
-      }
-
-      isChunkRecordingRef.current = false;
-      const audioBlob = new Blob(audioChunksRef.current, {
-        type: 'audio/webm;codecs=opus',
-      });
-
-      // Only transcribe if we have meaningful audio data
-      if (audioBlob.size > 1000) {
-        await transcribeChunk(audioBlob, currentChunkIdx);
-      }
-    };
-
-    mediaRecorderRef.current = mediaRecorder;
-    mediaRecorder.start(100); // Collect data every 100ms for responsiveness
-  }, [transcribeChunk]);
-
-  // End current chunk recording
-  const endChunk = useCallback(() => {
-    if (!isChunkRecordingRef.current || !mediaRecorderRef.current) {
-      return;
-    }
-
-    const speechDuration = speechDurationRef.current;
-    const currentChunkIdx = chunkCountRef.current;
-
-    // Check if we have enough speech content to send to Deepgram
-    if (speechDuration >= MIN_SPEECH_DURATION) {
-      // Stop MediaRecorder and let onstop handle transcription
-      mediaRecorderRef.current.stop();
-
-      // Don't automatically start next chunk - wait for new speech to trigger chunk creation
-      // The VAD loop will handle starting new chunks when speech is detected
-    } else {
-      // Immediately stop the MediaRecorder for dropped chunks
-      const currentMediaRecorder = mediaRecorderRef.current;
-      mediaRecorderRef.current = null; // Clear reference to prevent onstop from processing
-      isChunkRecordingRef.current = false;
-
-      // Stop the recorder (its onstop won't process since we cleared the ref)
-      currentMediaRecorder.stop();
-
-      // Remove the pending chunk from UI state since we're not sending it
-      setState(prev => ({
-        ...prev,
-        chunkTranscripts: prev.chunkTranscripts.filter(ct => ct.chunk !== currentChunkIdx),
-        totalChunks: prev.totalChunks - 1,
-      }));
-
-      // Decrement chunk count since we're dropping this one
-      chunkCountRef.current -= 1;
-
-      // Don't create replacement chunks - wait for new speech to trigger chunk creation
-      // The VAD loop will handle starting new chunks when speech is detected
-    }
-  }, [startChunk]);
-
-  // VAD monitoring loop
+  // Smart VAD monitoring loop
   const vadLoop = useCallback(() => {
-    if (!audioContextRef.current || isPausedRef.current) {
+    if (!audioContextRef.current || isPausedRef.current || !isRecordingRef.current) {
       vadLoopRef.current = requestAnimationFrame(vadLoop);
       return;
     }
@@ -272,57 +204,67 @@ export const useTranscription = () => {
     const volume = measureVolume();
     const currentTime = audioContextRef.current.currentTime;
 
-    // Update volume level for UI
-    setState(prev => ({ ...prev, volumeLevel: volume }));
+    // Apply user-configured microphone gain
+    const adjustedVolume = volume * microphoneGain;
 
-    // Voice activity detection with noise filtering
-    if (volume > VOLUME_THRESHOLD) {
+    // Scale volume for better UI feedback (2x multiplier, capped at 100%)
+    const uiVolume = Math.min(adjustedVolume * 2, 1.0);
+
+    // Update volume level for UI with scaled value
+    setState(prev => ({ ...prev, volumeLevel: uiVolume }));
+
+    // Voice activity detection (uses gain-adjusted volume)
+    if (adjustedVolume > volumeThreshold) {
       speechFrameCountRef.current += 1;
 
-      // Accumulate speech time for active chunks (regardless of confirmation frames)
-      if (isChunkRecordingRef.current) {
-        speechDurationRef.current += 1 / 60;
-      }
-
-      // Only confirm speech after consecutive frames above threshold (for chunk starting)
+      // Only confirm speech after consecutive frames above threshold
       if (speechFrameCountRef.current >= SPEECH_CONFIRMATION_FRAMES) {
         lastSpokeAtRef.current = currentTime;
 
-        // Start first chunk when speech is detected (delayed start)
-        if (isWaitingForSpeechRef.current && !isChunkRecordingRef.current) {
-          isWaitingForSpeechRef.current = false;
-          firstChunkStartedRef.current = true;
-          startChunk();
-        }
-
-        // Start new chunk if we're in extended silence and detect speech again
-        if (!isWaitingForSpeechRef.current && !isChunkRecordingRef.current && firstChunkStartedRef.current) {
-          startChunk();
+        // Start recording session if not already active
+        if (!isSessionActiveRef.current) {
+          startRecordingSession();
         }
 
         // Clear no input warning when speech detected
         setState(prev => ({ ...prev, noInputWarning: false }));
       }
     } else {
-      // Reset speech frame counter when volume drops (for detection only)
+      // Reset speech frame counter when volume drops
       speechFrameCountRef.current = 0;
     }
 
-    // Check for silence to trigger chunk end (only if we have an active chunk)
+    // Check triggers for stopping current session
     const silenceDuration = currentTime - lastSpokeAtRef.current;
-    if (isChunkRecordingRef.current && silenceDuration > SILENCE_THRESHOLD) {
-      endChunk();
+    const sessionDuration = (Date.now() - recordingSessionStartRef.current) / 1000;
+
+    // Trigger 1: Normal silence threshold reached
+    if (isSessionActiveRef.current && silenceDuration > SILENCE_THRESHOLD) {
+      stopRecordingSession();
     }
 
-    // No input warning after 5 seconds of silence (only after first chunk has started)
-    if (silenceDuration > 5 && firstChunkStartedRef.current) {
+    // Trigger 2: Smart boundary detection near time limit
+    if (isSessionActiveRef.current && sessionDuration > SMART_BOUNDARY_THRESHOLD) {
+      // Look for word boundaries (short pauses) when approaching time limit
+      if (silenceDuration > WORD_BOUNDARY_PAUSE) {
+        stopRecordingSession();
+      }
+    }
+
+    // Trigger 3: Force stop at absolute maximum duration
+    if (isSessionActiveRef.current && sessionDuration > FORCE_STOP_DURATION) {
+      stopRecordingSession();
+    }
+
+    // No input warning after 5 seconds of silence
+    if (silenceDuration > 5) {
       setState(prev => ({ ...prev, noInputWarning: true }));
     }
 
     vadLoopRef.current = requestAnimationFrame(vadLoop);
-  }, [measureVolume, endChunk, startChunk]);
+  }, [measureVolume, startRecordingSession, stopRecordingSession, microphoneGain, volumeThreshold]);
 
-  // Initialize audio context and VAD
+  // Initialize audio context for VAD
   const initializeAudio = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -341,7 +283,7 @@ export const useTranscription = () => {
       const analyser = audioContext.createAnalyser();
 
       analyser.fftSize = 512;
-      analyser.smoothingTimeConstant = 0.8;
+      analyser.smoothingTimeConstant = 0.3;
       sourceNode.connect(analyser);
 
       audioContextRef.current = audioContext;
@@ -368,10 +310,10 @@ export const useTranscription = () => {
       vadLoopRef.current = null;
     }
 
-    // Stop any active recording
-    if (mediaRecorderRef.current && isChunkRecordingRef.current) {
-      mediaRecorderRef.current.stop();
-      isChunkRecordingRef.current = false;
+    // Stop any active recording session
+    if (currentRecorderRef.current && isSessionActiveRef.current) {
+      currentRecorderRef.current.stop();
+      currentRecorderRef.current = null;
     }
 
     // Close audio context
@@ -389,14 +331,13 @@ export const useTranscription = () => {
     // Reset refs
     analyserRef.current = null;
     sourceNodeRef.current = null;
-    mediaRecorderRef.current = null;
-    chunkCountRef.current = 0;
+    currentRecorderRef.current = null;
+    currentAudioChunksRef.current = [];
+    recordingSessionStartRef.current = 0;
     lastSpokeAtRef.current = 0;
-    isChunkRecordingRef.current = false;
     speechFrameCountRef.current = 0;
-    speechDurationRef.current = 0;
-    firstChunkStartedRef.current = false;
-    isWaitingForSpeechRef.current = false;
+    sessionCountRef.current = 0;
+    isSessionActiveRef.current = false;
 
     setState(prev => ({
       ...prev,
@@ -405,14 +346,13 @@ export const useTranscription = () => {
     }));
   }, []);
 
-  // Start recording with VAD-driven chunking
+  // Start recording with smart session management
   const startRecording = useCallback(async () => {
     try {
       setState(prev => ({
         ...prev,
         isRecording: false, // Will be set to true after successful init
         error: null,
-        chunkTranscripts: [],
         chunksCompleted: 0,
         totalChunks: 0,
         recordingStart: Date.now(),
@@ -434,17 +374,11 @@ export const useTranscription = () => {
       setTranscription('', true);
       setError(null);
 
-      // Reset all chunk-related refs
-      firstChunkStartedRef.current = false;
-      isWaitingForSpeechRef.current = true;
-      chunkCountRef.current = 0;
+      // Reset session management
+      sessionCountRef.current = 0;
+      isSessionActiveRef.current = false;
 
-      // Initialize timing reference
-      if (audioContextRef.current) {
-        lastSpokeAtRef.current = audioContextRef.current.currentTime;
-      }
-
-      // Start VAD monitoring (but don't start first chunk until speech detected)
+      // Start VAD monitoring
       vadLoop();
     } catch (error: any) {
       setState(prev => ({
@@ -458,8 +392,8 @@ export const useTranscription = () => {
     }
   }, [initializeAudio, setStatus, setTranscription, setError, vadLoop, cleanupAudio]);
 
-  // Stop recording and finalize transcription
-  const stopRecording = useCallback(() => {
+  // Stop recording and finalize any active session
+  const stopRecording = useCallback(async () => {
     if (!state.isRecording) {
       return;
     }
@@ -470,36 +404,39 @@ export const useTranscription = () => {
       recordingEnd: Date.now(),
     }));
 
-    // End current chunk
-    if (isChunkRecordingRef.current) {
-      endChunk();
+    // Stop any active recording session
+    if (isSessionActiveRef.current) {
+      stopRecordingSession();
     }
 
     cleanupAudio();
     setStatus('processing');
-  }, [state.isRecording, endChunk, cleanupAudio, setStatus]);
+  }, [state.isRecording, stopRecordingSession, cleanupAudio, setStatus]);
 
   // Pause recording
   const pauseRecording = useCallback(() => {
     if (state.isRecording && !state.isPaused) {
       setState(prev => ({ ...prev, isPaused: true }));
-      // VAD loop will handle paused state
+      isPausedRef.current = true;
+
+      // Stop current session when pausing
+      if (isSessionActiveRef.current) {
+        stopRecordingSession();
+      }
     }
-  }, [state.isRecording, state.isPaused]);
+  }, [state.isRecording, state.isPaused, stopRecordingSession]);
 
   // Resume recording
   const resumeRecording = useCallback(() => {
     if (state.isRecording && state.isPaused) {
       setState(prev => ({ ...prev, isPaused: false }));
-      // If we paused mid-chunk, continue with current chunk
-      // VAD loop will resume monitoring
+      isPausedRef.current = false;
     }
   }, [state.isRecording, state.isPaused]);
 
   // Reset transcription state
   const resetTranscription = useCallback(() => {
     cleanupAudio();
-    lastTranscriptSentRef.current = '';
     setState({
       isRecording: false,
       isPaused: false,
@@ -510,7 +447,6 @@ export const useTranscription = () => {
       metadata: {},
       volumeLevel: 0,
       noInputWarning: false,
-      chunkTranscripts: [],
       chunksCompleted: 0,
       totalChunks: 0,
       recordingStart: null,
@@ -521,12 +457,12 @@ export const useTranscription = () => {
     setError(null);
   }, [cleanupAudio, setStatus, setTranscription, setError]);
 
-  // Legacy transcribeAudio method for compatibility (not used in VAD mode)
+  // Legacy method for compatibility
   const transcribeAudio = useCallback(async () => {
-    // This method is not used in the new VAD-driven system
+    // Not used in new session-based strategy
   }, []);
 
-  // Keep refs in sync with state for reliable VAD operations
+  // Keep refs in sync with state
   useEffect(() => {
     isRecordingRef.current = state.isRecording;
   }, [state.isRecording]);
@@ -534,22 +470,6 @@ export const useTranscription = () => {
   useEffect(() => {
     isPausedRef.current = state.isPaused;
   }, [state.isPaused]);
-
-  // Update global transcript when chunks are completed
-  useEffect(() => {
-    const fullTranscript = state.chunkTranscripts
-      .filter(ct => ct.status === 'completed')
-      .sort((a, b) => a.chunk - b.chunk)
-      .map(ct => ct.text.trim())
-      .join(' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    // Only update if transcript has changed to avoid unnecessary updates
-    if (fullTranscript !== transcription.transcript) {
-      setTranscription(fullTranscript, state.isRecording);
-    }
-  }, [state.chunkTranscripts, state.isRecording, transcription.transcript, setTranscription]);
 
   return {
     isRecording: state.isRecording,
@@ -562,7 +482,6 @@ export const useTranscription = () => {
     metadata: state.metadata,
     volumeLevel: state.volumeLevel,
     noInputWarning: state.noInputWarning,
-    chunkTranscripts: state.chunkTranscripts,
     chunksCompleted: state.chunksCompleted,
     totalChunks: state.totalChunks,
     recordingStart: state.recordingStart,
@@ -573,5 +492,7 @@ export const useTranscription = () => {
     resumeRecording,
     transcribeAudio,
     resetTranscription,
+    // Legacy properties for compatibility with TranscriptionControls
+    chunkTranscripts: [], // No longer used but kept for compatibility
   };
 };

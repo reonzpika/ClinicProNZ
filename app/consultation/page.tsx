@@ -8,9 +8,8 @@ import { QuickNotes } from '@/features/consultation/components/QuickNotes';
 import RightSidebarFeatures from '@/features/consultation/components/RightSidebarFeatures';
 import { TranscriptionControls } from '@/features/consultation/components/TranscriptionControls';
 import { TypedInput } from '@/features/consultation/components/TypedInput';
-import { QuickTemplateSettings } from '@/features/templates/components/QuickTemplateSettings';
+
 import { TemplateSelector } from '@/features/templates/components/TemplateSelector';
-import { useSelectedTemplate } from '@/features/templates/hooks/useSelectedTemplate';
 import { Footer } from '@/shared/components/Footer';
 import { Header } from '@/shared/components/Header';
 import { Container } from '@/shared/components/layout/Container';
@@ -33,7 +32,6 @@ export default function ConsultationPage() {
   } = useConsultation();
   const [loading, setLoading] = useState(false);
   const [isNoteFocused, setIsNoteFocused] = useState(false);
-  const { selectedTemplate } = useSelectedTemplate();
 
   const handleClearAll = () => {
     setIsNoteFocused(false);
@@ -124,8 +122,6 @@ export default function ConsultationPage() {
                           <InputModeToggle />
                         </div>
                       </div>
-                      {/* Template Configuration */}
-                      <QuickTemplateSettings selectedTemplate={selectedTemplate || null} />
                     </div>
                   </CardContent>
                 </Card>

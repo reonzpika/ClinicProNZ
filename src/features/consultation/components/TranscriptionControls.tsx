@@ -1,6 +1,7 @@
 /* eslint-disable react/no-nested-components */
 'use client';
 
+import { Settings } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Section } from '@/shared/components/layout/Section';
@@ -11,11 +12,13 @@ import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { useConsultation } from '@/shared/ConsultationContext';
 
 import { useTranscription } from '../hooks/useTranscription';
+import { AudioSettingsModal } from './AudioSettingsModal';
 import { ConsentModal } from './ConsentModal';
 
 export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boolean; onExpand?: () => void }) {
   const { error: contextError, consentObtained, setConsentObtained } = useConsultation();
   const [showConsentModal, setShowConsentModal] = useState(false);
+  const [showAudioSettings, setShowAudioSettings] = useState(false);
 
   const {
     isRecording,
@@ -65,10 +68,10 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
 
   // Simple volume meter bar
   const VolumeMeter = () => (
-    <div className="mb-1 mt-2 h-2 w-full rounded bg-gray-200">
+    <div className="mb-0.5 mt-1 h-1 w-full rounded bg-gray-200">
       <div
-        className="h-2 rounded bg-green-500"
-        style={{ width: `${Math.min(volumeLevel * 20, 100)}%`, transition: 'width 0.1s' }}
+        className="h-1 rounded bg-green-500"
+        style={{ width: `${Math.min(volumeLevel * 100, 100)}%`, transition: 'width 0.1s' }}
       />
     </div>
   );
@@ -162,6 +165,15 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
                     Re-record
                   </Button>
                 )}
+                <Button
+                  onClick={() => setShowAudioSettings(true)}
+                  variant="outline"
+                  size="sm"
+                  className="h-7 min-w-0 rounded border bg-white px-1 py-0.5 text-xs hover:bg-gray-100"
+                  title="Audio Settings"
+                >
+                  <Settings className="size-3" />
+                </Button>
               </div>
             </div>
 
@@ -169,11 +181,6 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
             {isRecording && (
               <>
                 <VolumeMeter />
-                {isWaitingForSpeech && (
-                  <div className="mt-1 text-xs font-medium text-blue-600">
-                    🎤 Ready to record - speak to start recording
-                  </div>
-                )}
               </>
             )}
 
@@ -195,14 +202,6 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
             )}
 
             <div className="mt-2 space-y-1">
-              {/* Waiting for speech message */}
-              {isWaitingForSpeech && (
-                <div className="rounded-md bg-blue-50 p-2 text-xs text-blue-800">
-                  <p className="font-medium">🎤 Listening for your voice...</p>
-                  <p className="mt-1">Recording will start automatically when you begin speaking.</p>
-                </div>
-              )}
-
               {/* Instructions for first-time users */}
               {!transcript && !isRecording && totalChunks === 0 && (
                 <div className="rounded-md bg-blue-50 p-2 text-xs text-blue-800">
@@ -225,6 +224,12 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
         isOpen={showConsentModal}
         onConfirm={handleConsentConfirm}
         onCancel={handleConsentCancel}
+      />
+
+      {/* Audio Settings Modal */}
+      <AudioSettingsModal
+        isOpen={showAudioSettings}
+        onClose={() => setShowAudioSettings(false)}
       />
     </Card>
   );

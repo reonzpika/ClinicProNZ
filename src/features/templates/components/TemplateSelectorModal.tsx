@@ -70,7 +70,15 @@ export function TemplateSelectorModal({
       if (components.differentialDiagnosis) aiComponents.push('Differential');
       if (components.managementPlan) aiComponents.push('Management');
       
-      features.push(`AI Analysis: ${aiComponents.join(', ')} (${settings.aiAnalysis.level})`);
+      const aiSummary = settings.aiAnalysis.enabled 
+        ? `AI: ${aiComponents.length > 0 ? aiComponents.join(', ') : 'None'} (${settings.aiAnalysis.level})`
+        : null;
+
+      features.push({
+        icon: <Zap className="size-3" />,
+        label: aiSummary,
+        color: 'text-violet-600',
+      });
     }
 
     return features;
@@ -233,7 +241,7 @@ export function TemplateSelectorModal({
                                         <span
                                           key={index}
                                           className={`flex items-center ${setting.color}`}
-                                          title={setting.label}
+                                          title={setting.label || undefined}
                                         >
                                           {setting.icon}
                                         </span>
