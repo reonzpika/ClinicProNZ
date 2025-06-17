@@ -2,81 +2,76 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { sql } from './client';
 
-const defaultTemplates = [
+const defaultTemplates: Omit<Template, 'id'>[] = [
   {
-    id: 'cef98cee-0062-447f-83c3-537a2ac5bacb',
-    name: 'Multi-problem SOAP',
-    description: 'A comprehensive SOAP note template for documenting multiple problems during a consultation',
+    name: 'SOAP Note',
+    description: 'Standard SOAP (Subjective, Objective, Assessment, Plan) format for general consultations',
     type: 'default',
     dsl: {
-      overallInstructions: 'You will be given a transcription of a general practice consultation. Generate a structured clinical note using the SOAP format. Multiple problems may be discussed in one consultation. Each distinct clinical issue should be presented as a separate problem.',
+      overallInstructions: 'Extract and organise consultation information into Subjective, Objective, Assessment, and Plan sections.',
       sections: [
         {
-          heading: 'Problem 1: [Problem Name]',
-          prompt: 'Identify the first clinical problem discussed. Use a clinically meaningful and concise title. Group symptoms under one problem only if they clearly relate to a single known clinical condition or body system.',
+          heading: 'S (Subjective)',
+          prompt: 'Patient\'s history of presenting complaint and symptoms as described by the patient.',
           subsections: [
             {
-              heading: 'S (Subjective)',
-              prompt: 'Include patient-reported symptoms, concerns, relevant context, timing or duration of symptoms, and any expressed uncertainty by the patient.',
+              heading: 'History of Presenting Complaint',
+              prompt: 'Main complaint and detailed history as described by the patient.',
             },
             {
-              heading: 'O (Objective)',
-              prompt: 'Include observations, physical exam findings, or doctor commentary mentioned in the transcript.',
+              heading: 'Past Medical History',
+              prompt: 'Relevant past medical history if mentioned.',
             },
             {
-              heading: 'A (Assessment)',
-              prompt: 'Include only if clearly stated in the transcript. Otherwise, leave blank.',
+              heading: 'Medications',
+              prompt: 'Current medications if discussed.',
             },
             {
-              heading: 'P (Plan)',
-              prompt: 'Include only if clearly stated in the transcript. Otherwise, leave blank.',
+              heading: 'Social History',
+              prompt: 'Relevant social history if mentioned.',
             },
           ],
         },
         {
-          heading: 'Problem 2: [Problem Name]',
-          prompt: 'Identify additional clinical problems if discussed. Repeat the SOAP structure for each distinct problem.',
-          subsections: [
-            {
-              heading: 'S (Subjective)',
-              prompt: 'Patient-reported information for this specific problem.',
-            },
-            {
-              heading: 'O (Objective)',
-              prompt: 'Objective findings for this specific problem.',
-            },
-            {
-              heading: 'A (Assessment)',
-              prompt: 'Assessment for this specific problem if clearly stated.',
-            },
-            {
-              heading: 'P (Plan)',
-              prompt: 'Plan for this specific problem if clearly stated.',
-            },
-          ],
+          heading: 'O (Objective)',
+          prompt: 'Clinical examination findings and objective observations.',
         },
         {
-          heading: 'Other Notes',
-          prompt: 'Include any small talk, non-clinical statements, or unrelated comments that don\'t fit into the clinical problems above.',
+          heading: 'A (Assessment)',
+          prompt: 'Clinical assessment and diagnosis if clearly stated.',
+        },
+        {
+          heading: 'P (Plan)',
+          prompt: 'Treatment plan and management if discussed.',
+          subsections: [
+            {
+              heading: 'Investigations',
+              prompt: 'Any investigations ordered or planned.',
+            },
+            {
+              heading: 'Treatment',
+              prompt: 'Treatment prescribed or recommended.',
+            },
+            {
+              heading: 'Follow-up',
+              prompt: 'Follow-up arrangements if mentioned.',
+            },
+          ],
         },
       ],
       settings: {
-        bulletPoints: false,
         aiAnalysis: {
           enabled: false,
           components: {
             differentialDiagnosis: false,
-            assessmentSummary: false,
             managementPlan: false,
           },
           level: 'medium',
         },
-        abbreviations: false,
       },
     },
   },
   {
-    id: uuidv4(),
     name: 'Driver\'s License Medical',
     description: 'Medical assessment template for driver\'s license applications',
     type: 'default',
@@ -85,58 +80,63 @@ const defaultTemplates = [
       sections: [
         {
           heading: 'Medical History',
-          prompt: 'Extract and document relevant medical history mentioned during the consultation that pertains to fitness to drive.',
+          prompt: 'Extract relevant medical history that may affect driving ability.',
         },
         {
-          heading: 'Examination',
-          prompt: 'Document any physical examination findings mentioned in the transcript.',
+          heading: 'Current Medications',
+          prompt: 'List current medications and assess any impact on driving ability.',
+        },
+        {
+          heading: 'Physical Examination',
+          prompt: 'Document relevant physical examination findings.',
         },
         {
           heading: 'Vision Assessment',
           prompt: 'Include any vision testing or visual acuity assessments mentioned.',
         },
         {
+          heading: 'Other Assessments',
+          prompt: 'Include any other relevant assessments (hearing, cognitive, etc.) if mentioned.',
+        },
+        {
           heading: 'Assessment',
           prompt: 'Document the doctor\'s assessment of the patient\'s fitness to drive if clearly stated.',
         },
         {
-          heading: 'Plan/Recommendation',
-          prompt: 'Include the plan or recommendation regarding the driver\'s license application if mentioned.',
+          heading: 'Recommendations',
+          prompt: 'Include any recommendations or restrictions if mentioned.',
         },
       ],
       settings: {
-        bulletPoints: false,
         aiAnalysis: {
           enabled: false,
           components: {
             differentialDiagnosis: false,
-            assessmentSummary: false,
             managementPlan: false,
           },
           level: 'medium',
         },
-        abbreviations: false,
       },
     },
   },
   {
-    id: uuidv4(),
     name: 'General Consultation',
-    description: 'A simple template for general consultations',
+    description: 'Simple template for routine consultations',
     type: 'default',
     dsl: {
+      overallInstructions: 'Extract key information from the consultation in a clear, organised format.',
       sections: [
         {
-          heading: 'Chief Complaint',
-          prompt: 'Extract the main reason for the patient\'s visit or primary concern.',
+          heading: 'Presenting Complaint',
+          prompt: 'Main reason for the consultation and symptoms described.',
         },
         {
-          heading: 'History of Present Illness',
-          prompt: 'Document the patient\'s description of their current symptoms, including onset, duration, severity, and associated factors.',
+          heading: 'History',
+          prompt: 'Relevant history of the presenting complaint and background information.',
         },
         {
           heading: 'Examination',
-          prompt: 'Include any physical examination findings or observations mentioned by the doctor.',
+          prompt: 'Physical examination findings if mentioned.',
         },
         {
           heading: 'Assessment and Plan',
@@ -144,17 +144,14 @@ const defaultTemplates = [
         },
       ],
       settings: {
-        bulletPoints: false,
         aiAnalysis: {
           enabled: false,
           components: {
             differentialDiagnosis: false,
-            assessmentSummary: false,
             managementPlan: false,
           },
           level: 'medium',
         },
-        abbreviations: false,
       },
     },
   },
@@ -172,7 +169,7 @@ async function main() {
       await sql.query(
         'INSERT INTO templates (id, name, description, type, dsl) VALUES ($1, $2, $3, $4, $5)',
         [
-          template.id,
+          uuidv4(),
           template.name,
           template.description,
           template.type,

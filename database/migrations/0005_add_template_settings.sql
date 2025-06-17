@@ -6,12 +6,10 @@ SET dsl = jsonb_set(
   dsl,
   '{settings}',
   '{
-    "bulletPoints": false,
     "aiAnalysis": {
       "enabled": false,
       "components": {
         "differentialDiagnosis": false,
-        "assessmentSummary": false,
         "managementPlan": false
       },
       "level": "medium"

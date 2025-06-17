@@ -24,13 +24,12 @@ export function TemplateSelector() {
     userDefaultTemplateId = localStorage.getItem('userDefaultTemplateId');
   }
 
+  // Default settings for when template has no settings
   const defaultSettings: TemplateSettings = {
-    bulletPoints: false,
     aiAnalysis: {
       enabled: false,
       components: {
         differentialDiagnosis: false,
-        assessmentSummary: false,
         managementPlan: false,
       },
       level: 'medium',
@@ -42,21 +41,22 @@ export function TemplateSelector() {
     const settings = template.dsl?.settings || defaultSettings;
     const summary = [];
 
-    // Bullet points
-    if (settings.bulletPoints) {
-      summary.push({
-        icon: <span className="text-xs font-bold">•</span>,
-        label: 'Bullet Points',
-        color: 'text-orange-600',
-      });
-    }
-
     // AI Analysis
     if (settings.aiAnalysis.enabled) {
-      const enabledCount = Object.values(settings.aiAnalysis.components || {}).filter(Boolean).length;
+      const components = settings.aiAnalysis.components;
+      
+      // Build AI analysis summary
+      const aiComponents = [];
+      if (components.differentialDiagnosis) aiComponents.push('Differential');
+      if (components.managementPlan) aiComponents.push('Management');
+      
+      const aiSummary = settings.aiAnalysis.enabled 
+        ? `AI: ${aiComponents.length > 0 ? aiComponents.join(', ') : 'None'} (${settings.aiAnalysis.level})`
+        : null;
+
       summary.push({
         icon: <Zap className="size-3" />,
-        label: `AI Analysis (${enabledCount})`,
+        label: aiSummary,
         color: 'text-violet-600',
       });
     }

@@ -19,14 +19,12 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
   const sampleTranscription = 'This is a sample transcription of a general practice consultation.';
   const sampleQuickNotes = ['Sample quick note 1', 'Sample quick note 2'];
 
-  // Get default settings for comparison
+  // Default settings
   const defaultSettings: TemplateSettings = {
-    bulletPoints: false,
     aiAnalysis: {
       enabled: false,
       components: {
         differentialDiagnosis: false,
-        assessmentSummary: false,
         managementPlan: false,
       },
       level: 'medium',
@@ -34,6 +32,15 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
   };
 
   const settings = template.dsl?.settings || defaultSettings;
+
+  // Helper function to get component display names
+  const getComponentName = (key: string): string => {
+    switch (key) {
+      case 'differentialDiagnosis': return 'Differential Diagnosis';
+      case 'managementPlan': return 'Management Plan';
+      default: return key;
+    }
+  };
 
   // Helper function to get AI analysis display
   const getAiAnalysisDisplay = (settings: TemplateSettings) => {
@@ -43,14 +50,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
 
     const enabledComponents = Object.entries(settings.aiAnalysis.components)
       .filter(([_, enabled]) => enabled)
-      .map(([key, _]) => {
-        switch (key) {
-          case 'differentialDiagnosis': return 'Differential Diagnosis';
-          case 'assessmentSummary': return 'Assessment Summary';
-          case 'managementPlan': return 'Management Plan';
-          default: return key;
-        }
-      });
+      .map(([key, _]) => getComponentName(key));
 
     if (enabledComponents.length === 0) {
       return null;
@@ -113,14 +113,6 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
 
                 {/* Settings Display */}
                 <div className="mb-4 flex flex-wrap gap-2">
-                  {/* Bullet Points */}
-                  {settings.bulletPoints && (
-                    <Badge variant="outline" className="border-blue-200 text-blue-600">
-                      <List className="mr-1 size-3" />
-                      Bullet Points
-                    </Badge>
-                  )}
-
                   {/* AI Analysis */}
                   {(() => {
                     if (!aiAnalysis) {
@@ -139,27 +131,14 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
                 {/* Settings Details */}
                 <div className="space-y-2 text-sm text-gray-600">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium">Format:</span>
-                    {settings.bulletPoints ? 'Bullet points' : 'Narrative'}
+                    <span className="font-medium">AI Analysis:</span>
+                    <span>{aiAnalysis?.components.join(', ')}</span>
+                    <span className="text-gray-400">
+                      (
+                      {settings.aiAnalysis.level}
+                      )
+                    </span>
                   </div>
-
-                  {settings.aiAnalysis.enabled && (() => {
-                    if (!aiAnalysis) {
-                      return null;
-                    }
-
-                    return (
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">AI Analysis:</span>
-                        <span>{aiAnalysis.components.join(', ')}</span>
-                        <span className="text-gray-400">
-                          (
-                          {settings.aiAnalysis.level}
-                          )
-                        </span>
-                      </div>
-                    );
-                  })()}
                 </div>
               </div>
 

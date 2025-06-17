@@ -48,12 +48,10 @@ export async function POST(req: Request) {
     const templateDSL = { ...template.dsl };
     if (settingsOverride) {
       const defaultSettings: TemplateSettings = {
-        bulletPoints: false,
         aiAnalysis: {
           enabled: false,
           components: {
             differentialDiagnosis: false,
-            assessmentSummary: false,
             managementPlan: false,
           },
           level: 'medium',

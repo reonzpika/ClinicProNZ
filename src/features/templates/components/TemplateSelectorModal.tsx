@@ -32,13 +32,12 @@ type TemplateSelectorModalProps = {
 
 const EMPTY_TEMPLATES: Template[] = [];
 
+// Default settings for template comparison
 const defaultSettings: TemplateSettings = {
-  bulletPoints: false,
   aiAnalysis: {
     enabled: false,
     components: {
       differentialDiagnosis: false,
-      assessmentSummary: false,
       managementPlan: false,
     },
     level: 'medium',
@@ -60,31 +59,21 @@ export function TemplateSelectorModal({
   const { isSignedIn, userId } = useAuth();
   const router = useRouter();
 
-  // Helper function to get template settings summary
-  const getSettingsSummary = (template: Template) => {
+  const getTemplateFeatures = (template: Template) => {
     const settings = template.dsl?.settings || defaultSettings;
-    const summary = [];
-
-    // Bullet points
-    if (settings.bulletPoints) {
-      summary.push({
-        icon: <span className="text-xs font-bold">•</span>,
-        label: 'Bullet Points',
-        color: 'text-orange-600',
-      });
-    }
+    const features = [];
 
     // AI Analysis
     if (settings.aiAnalysis.enabled) {
-      const enabledCount = Object.values(settings.aiAnalysis.components || {}).filter(Boolean).length;
-      summary.push({
-        icon: <Zap className="size-3" />,
-        label: `AI Analysis (${enabledCount})`,
-        color: 'text-violet-600',
-      });
+      const components = settings.aiAnalysis.components;
+      const aiComponents = [];
+      if (components.differentialDiagnosis) aiComponents.push('Differential');
+      if (components.managementPlan) aiComponents.push('Management');
+      
+      features.push(`AI Analysis: ${aiComponents.join(', ')} (${settings.aiAnalysis.level})`);
     }
 
-    return summary;
+    return features;
   };
 
   // Reorder templates based on user settings when modal opens
@@ -202,7 +191,7 @@ export function TemplateSelectorModal({
                       <div className="space-y-2 pr-4">
                         {filteredTemplates.map((template) => {
                           const isExpanded = expandedTemplates.has(template.id);
-                          const settingsSummary = getSettingsSummary(template);
+                          const settingsSummary = getTemplateFeatures(template);
 
                           return (
                             <div
