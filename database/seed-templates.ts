@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 
+import type { Template } from '../src/features/templates/types';
 import { sql } from './client';
 
 const defaultTemplates: Omit<Template, 'id'>[] = [
