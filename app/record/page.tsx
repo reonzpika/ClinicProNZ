@@ -2,7 +2,7 @@
 
 import { AlertCircle, Clock, Loader2, Mic, MicOff, Pause, Play } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
 import { useMobileRecording } from '@/features/consultation/hooks/useMobileRecording';
 import { Alert } from '@/shared/components/ui/alert';
@@ -16,7 +16,8 @@ type ValidationResult = {
   expiresAt: string;
 };
 
-export default function MobileRecordingPage() {
+// Separate component that uses useSearchParams
+function MobileRecordingContent() {
   const searchParams = useSearchParams();
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isValidating, setIsValidating] = useState(true);
@@ -355,5 +356,30 @@ export default function MobileRecordingPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Loading fallback component
+function RecordingPageFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
+      <Card className="w-full max-w-md">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-center space-x-2">
+            <Loader2 className="size-6 animate-spin" />
+            <span>Loading recording session...</span>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Main page component with Suspense boundary
+export default function MobileRecordingPage() {
+  return (
+    <Suspense fallback={<RecordingPageFallback />}>
+      <MobileRecordingContent />
+    </Suspense>
   );
 }
