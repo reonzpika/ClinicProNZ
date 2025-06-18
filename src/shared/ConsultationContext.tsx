@@ -39,6 +39,16 @@ export type ConsultationState = {
   chatHistory: ChatMessage[];
   isChatContextEnabled: boolean;
   isChatLoading: boolean;
+  settings: {
+    autoSave: boolean;
+    microphoneGain: number;
+    volumeThreshold: number;
+  };
+  mobileRecording: {
+    isActive: boolean;
+    tokenGenerated: boolean;
+    qrExpiry: string | null;
+  };
 };
 
 const MULTIPROBLEM_SOAP_UUID = 'ef6b3139-69a0-4b4b-bf80-dcdabe0559ba';
@@ -73,6 +83,16 @@ const defaultState: ConsultationState = {
   chatHistory: [],
   isChatContextEnabled: false,
   isChatLoading: false,
+  settings: {
+    autoSave: false,
+    microphoneGain: 7.0,
+    volumeThreshold: 0.1,
+  },
+  mobileRecording: {
+    isActive: false,
+    tokenGenerated: false,
+    qrExpiry: null,
+  },
 };
 
 function generateSessionId() {
@@ -110,6 +130,13 @@ const ConsultationContext = createContext<
     setChatLoading: (loading: boolean) => void;
     setMicrophoneGain: (gain: number) => void;
     setVolumeThreshold: (threshold: number) => void;
+    // Mobile recording functions
+    setMobileRecordingActive: (active: boolean) => void;
+    setMobileTokenGenerated: (generated: boolean, expiry?: string) => void;
+    updateMobileRecordingSettings: (settings: Partial<ConsultationState['settings']>) => void;
+    isDesktopRecordingDisabled: () => boolean;
+    isMobileRecordingDisabled: () => boolean;
+    appendMobileTranscription: (transcript: string, sessionId: string) => void;
   })
   | null
 >(null);
@@ -131,6 +158,18 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
           // Ensure new fields have defaults if not present in stored data
           inputMode: parsed.inputMode || 'audio',
           typedInput: parsed.typedInput || '',
+          // Ensure mobileRecording object exists and is properly initialized
+          mobileRecording: parsed.mobileRecording || {
+            isActive: false,
+            tokenGenerated: false,
+            qrExpiry: null,
+          },
+          // Ensure settings object exists
+          settings: parsed.settings || {
+            autoSave: false,
+            microphoneGain: 7.0,
+            volumeThreshold: 0.1,
+          },
         };
       }
       return {
@@ -308,6 +347,63 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setState(prev => ({ ...prev, volumeThreshold: threshold }));
   }, []);
 
+  // Mobile recording functions
+  const setMobileRecordingActive = useCallback((active: boolean) => {
+    setState(prev => ({
+      ...prev,
+      mobileRecording: {
+        ...prev.mobileRecording,
+        isActive: active,
+      },
+    }));
+  }, []);
+
+  const setMobileTokenGenerated = useCallback((generated: boolean, expiry?: string) => {
+    setState(prev => ({
+      ...prev,
+      mobileRecording: {
+        ...prev.mobileRecording,
+        tokenGenerated: generated,
+        qrExpiry: expiry || null,
+      },
+    }));
+  }, []);
+
+  const updateMobileRecordingSettings = useCallback((settings: Partial<ConsultationState['settings']>) => {
+    setState(prev => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        ...settings,
+      },
+    }));
+  }, []);
+
+  // Check if desktop recording is disabled due to mobile activity
+  const isDesktopRecordingDisabled = useCallback(() => {
+    return state.mobileRecording.isActive;
+  }, [state.mobileRecording.isActive]);
+
+  // Check if mobile recording is disabled due to desktop activity
+  const isMobileRecordingDisabled = useCallback(() => {
+    return state.status === 'recording';
+  }, [state.status]);
+
+  const appendMobileTranscription = useCallback((transcript: string, sessionId: string) => {
+    // Only append if the sessionId matches the current session
+    if (sessionId === state.sessionId) {
+      setState(prev => ({
+        ...prev,
+        transcription: {
+          transcript: prev.transcription.transcript
+            ? `${prev.transcription.transcript} ${transcript}`.trim()
+            : transcript.trim(),
+          isLive: true, // Mark as live since it's coming from mobile
+        },
+      }));
+    }
+  }, [state.sessionId]);
+
   const value = useMemo(() => ({
     ...state,
     setStatus,
@@ -343,6 +439,13 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setChatLoading,
     setMicrophoneGain,
     setVolumeThreshold,
+    // Mobile recording functions
+    setMobileRecordingActive,
+    setMobileTokenGenerated,
+    updateMobileRecordingSettings,
+    isDesktopRecordingDisabled,
+    isMobileRecordingDisabled,
+    appendMobileTranscription,
   }), [
     state,
     setStatus,
@@ -373,6 +476,12 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setChatLoading,
     setMicrophoneGain,
     setVolumeThreshold,
+    setMobileRecordingActive,
+    setMobileTokenGenerated,
+    updateMobileRecordingSettings,
+    isDesktopRecordingDisabled,
+    isMobileRecordingDisabled,
+    appendMobileTranscription,
   ]);
 
   return (

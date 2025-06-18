@@ -4,10 +4,12 @@ import React, { useState } from 'react';
 
 import { GeneratedNotes } from '@/features/consultation/components/GeneratedNotes';
 import { InputModeToggle } from '@/features/consultation/components/InputModeToggle';
+import { MobileRecordingQR } from '@/features/consultation/components/MobileRecordingQR';
 import { QuickNotes } from '@/features/consultation/components/QuickNotes';
 import RightSidebarFeatures from '@/features/consultation/components/RightSidebarFeatures';
 import { TranscriptionControls } from '@/features/consultation/components/TranscriptionControls';
 import { TypedInput } from '@/features/consultation/components/TypedInput';
+import { useMobileSync } from '@/features/consultation/hooks/useMobileSync';
 import { TemplateSelector } from '@/features/templates/components/TemplateSelector';
 import { Footer } from '@/shared/components/Footer';
 import { Header } from '@/shared/components/Header';
@@ -25,12 +27,20 @@ export default function ConsultationPage() {
     typedInput,
     inputMode,
     settingsOverride,
+    sessionId,
+    mobileRecording,
     setGeneratedNotes,
     setError,
     setLastGeneratedInput,
   } = useConsultation();
   const [loading, setLoading] = useState(false);
   const [isNoteFocused, setIsNoteFocused] = useState(false);
+
+  // Enable mobile sync when mobile recording is active
+  useMobileSync({
+    enabled: mobileRecording.isActive,
+    sessionId,
+  });
 
   const handleClearAll = () => {
     setIsNoteFocused(false);
@@ -131,6 +141,9 @@ export default function ConsultationPage() {
                       <>
                         {/* Digital Recording */}
                         <TranscriptionControls collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
+
+                        {/* Mobile Recording QR Code */}
+                        <MobileRecordingQR />
 
                         {/* Clinical Notes */}
                         <QuickNotes collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />

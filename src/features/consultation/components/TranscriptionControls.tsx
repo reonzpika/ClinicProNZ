@@ -16,7 +16,13 @@ import { AudioSettingsModal } from './AudioSettingsModal';
 import { ConsentModal } from './ConsentModal';
 
 export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boolean; onExpand?: () => void }) {
-  const { error: contextError, consentObtained, setConsentObtained } = useConsultation();
+  const {
+    error: contextError,
+    consentObtained,
+    setConsentObtained,
+    mobileRecording,
+    isDesktopRecordingDisabled,
+  } = useConsultation();
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [showAudioSettings, setShowAudioSettings] = useState(false);
 
@@ -71,15 +77,15 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
     const intensity = Math.min(volumeLevel, 1);
     const scale = 1 + intensity * 0.5; // Scale from 1 to 1.5
     const opacity = 0.4 + intensity * 0.6; // Opacity from 0.4 to 1
-    
+
     return (
       <div className="flex justify-center py-1">
         <div
-          className="h-3 w-3 rounded-full bg-green-500 transition-all duration-100"
+          className="size-3 rounded-full bg-green-500 transition-all duration-100"
           style={{
             transform: `scale(${scale})`,
             opacity,
-            boxShadow: intensity > 0.3 ? `0 0 ${4 + intensity * 8}px rgba(34, 197, 94, 0.6)` : 'none'
+            boxShadow: intensity > 0.3 ? `0 0 ${4 + intensity * 8}px rgba(34, 197, 94, 0.6)` : 'none',
           }}
         />
       </div>
@@ -110,6 +116,21 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
             </Alert>
           )}
 
+          {/* Mobile Recording Status */}
+          {mobileRecording.isActive && (
+            <Alert variant="default" className="border-blue-200 bg-blue-50 p-1 text-xs">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-medium">Mobile recording active</div>
+                  <div className="text-xs text-muted-foreground">
+                    Desktop recording disabled while mobile session is active
+                  </div>
+                </div>
+                <div className="size-2 animate-pulse rounded-full bg-blue-500" />
+              </div>
+            </Alert>
+          )}
+
           <Section>
             <div className="flex w-full items-center justify-between">
               <div className="flex items-center gap-1">
@@ -130,7 +151,8 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
                     type="button"
                     variant="outline"
                     onClick={handleStartRecording}
-                    className="h-7 min-w-0 rounded border bg-white px-1 py-0.5 text-xs hover:bg-gray-100"
+                    disabled={isDesktopRecordingDisabled()}
+                    className="h-7 min-w-0 rounded border bg-white px-1 py-0.5 text-xs hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Start Recording
                   </Button>
@@ -189,9 +211,7 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
 
             {/* Audio input indicator */}
             {isRecording && (
-              <>
-                <AudioIndicator />
-              </>
+              <AudioIndicator />
             )}
 
             {/* Live transcript stream */}

@@ -13,8 +13,32 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
   }
 
+  // Allow POST requests to /api/recording/validate-token for token validation
+  if (
+    req.method === 'POST'
+    && req.nextUrl.pathname === '/api/recording/validate-token'
+  ) {
+    return NextResponse.next();
+  }
+
+  // Allow POST requests to /api/recording/generate-token for QR generation
+  if (
+    req.method === 'POST'
+    && req.nextUrl.pathname === '/api/recording/generate-token'
+  ) {
+    return NextResponse.next();
+  }
+
   // Protect all other /api/templates routes (POST, PUT, DELETE)
   if (req.nextUrl.pathname.startsWith('/api/templates')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return resolvedAuth.redirectToSignIn();
+    }
+  }
+
+  // Protect /api/recording routes except validate-token
+  if (req.nextUrl.pathname.startsWith('/api/recording')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
       return resolvedAuth.redirectToSignIn();
@@ -36,6 +60,7 @@ export const config = {
   matcher: [
     '/api/templates/:path*',
     '/api/user/:path*',
+    '/api/recording/:path*',
     '/templates/:path*',
   ],
 };
