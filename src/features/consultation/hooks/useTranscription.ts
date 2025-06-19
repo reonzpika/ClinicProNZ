@@ -196,16 +196,22 @@ export const useTranscription = () => {
 
   // Smart VAD monitoring loop
   const vadLoop = useCallback(() => {
+    console.log('VAD Loop - audioContext:', !!audioContextRef.current);
+    console.log('VAD Loop - analyser:', !!analyserRef.current);
+    console.log('VAD Loop - isPaused:', isPausedRef.current);
+    console.log('VAD Loop - isRecording:', isRecordingRef.current);
+    
     if (!audioContextRef.current || isPausedRef.current || !isRecordingRef.current) {
       vadLoopRef.current = requestAnimationFrame(vadLoop);
       return;
     }
 
     const volume = measureVolume();
+    console.log('RAW Volume:', volume);
+    
     const currentTime = audioContextRef.current.currentTime;
-
-    // Apply user-configured microphone gain
     const adjustedVolume = volume * microphoneGain;
+    console.log('Adjusted Volume:', adjustedVolume, 'Threshold:', volumeThreshold);
 
     // Scale volume for better UI feedback (2x multiplier, capped at 100%)
     const uiVolume = Math.min(adjustedVolume * 2, 1.0);
