@@ -29,6 +29,14 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
   }
 
+  // Allow POST requests to /api/recording/mobile-upload for mobile recording
+  if (
+    req.method === 'POST'
+    && req.nextUrl.pathname === '/api/recording/mobile-upload'
+  ) {
+    return NextResponse.next();
+  }
+
   // Protect all other /api/templates routes (POST, PUT, DELETE)
   if (req.nextUrl.pathname.startsWith('/api/templates')) {
     const resolvedAuth = await auth();
