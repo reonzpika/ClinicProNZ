@@ -196,22 +196,19 @@ export const useTranscription = () => {
 
   // Smart VAD monitoring loop
   const vadLoop = useCallback(() => {
-    console.error('VAD Loop - audioContext:', !!audioContextRef.current);
-    console.error('VAD Loop - analyser:', !!analyserRef.current);
-    console.error('VAD Loop - isPaused:', isPausedRef.current);
-    console.error('VAD Loop - isRecording:', isRecordingRef.current);
-
     if (!audioContextRef.current || isPausedRef.current || !isRecordingRef.current) {
       vadLoopRef.current = requestAnimationFrame(vadLoop);
       return;
     }
 
     const volume = measureVolume();
-    console.error('RAW Volume:', volume);
-
     const currentTime = audioContextRef.current.currentTime;
-    const adjustedVolume = volume * microphoneGain;
-    console.error('Adjusted Volume:', adjustedVolume, 'Threshold:', volumeThreshold);
+
+    // Apply user-configured microphone gain with safety check for NaN
+    const safeMicrophoneGain = Number.isNaN(microphoneGain) || microphoneGain === null || microphoneGain === undefined ? 7.0 : microphoneGain;
+    const safeVolumeThreshold = Number.isNaN(volumeThreshold) || volumeThreshold === null || volumeThreshold === undefined ? 0.1 : volumeThreshold;
+
+    const adjustedVolume = volume * safeMicrophoneGain;
 
     // Scale volume for better UI feedback (2x multiplier, capped at 100%)
     const uiVolume = Math.min(adjustedVolume * 2, 1.0);
@@ -220,7 +217,7 @@ export const useTranscription = () => {
     setState(prev => ({ ...prev, volumeLevel: uiVolume }));
 
     // Voice activity detection (uses gain-adjusted volume)
-    if (adjustedVolume > volumeThreshold) {
+    if (adjustedVolume > safeVolumeThreshold) {
       speechFrameCountRef.current += 1;
 
       // Only confirm speech after consecutive frames above threshold
