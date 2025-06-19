@@ -6,6 +6,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { db } from '@/client';
+import { SessionSyncService } from '@/lib/services/session-sync.service';
 import { recordingTokens } from '@/schema';
 
 export const runtime = 'nodejs';
@@ -97,17 +98,13 @@ export async function POST(req: NextRequest) {
         .set({ isUsed: true, updatedAt: new Date() })
         .where(eq(recordingTokens.id, record.id));
 
-      // Trigger immediate sync to desktop session
+      // Add transcription directly to session sync service (no HTTP call needed)
       try {
-        await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/recording/sync-session`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sessionId: record.sessionId,
-            transcript: transcript.trim(),
-            source: 'mobile',
-          }),
-        });
+        SessionSyncService.addTranscription(
+          record.sessionId,
+          transcript.trim(),
+          'mobile',
+        );
       } catch (syncError) {
         console.error('Failed to trigger desktop sync:', syncError);
         // Don't fail the entire request if sync fails

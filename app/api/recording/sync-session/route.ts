@@ -1,10 +1,6 @@
 import { NextResponse } from 'next/server';
 
-// In-memory store for session state (in production, use Redis or database)
-const sessionState: Record<string, {
-  transcriptions: Array<{ transcript: string; timestamp: number; source: 'mobile' | 'desktop' }>;
-  lastUpdate: string;
-}> = {};
+import { SessionSyncService } from '@/lib/services/session-sync.service';
 
 // This endpoint allows desktop sessions to poll for mobile transcriptions
 export async function GET(req: Request) {
@@ -20,28 +16,13 @@ export async function GET(req: Request) {
       );
     }
 
-    // Initialize session state if not exists
-    if (!sessionState[sessionId]) {
-      sessionState[sessionId] = {
-        transcriptions: [],
-        lastUpdate: new Date().toISOString(),
-      };
-    }
-
-    // Filter transcriptions since last checkpoint
-    let newTranscriptions = sessionState[sessionId].transcriptions;
-
-    if (lastCheckpoint) {
-      const checkpointTime = new Date(lastCheckpoint).getTime();
-      newTranscriptions = sessionState[sessionId].transcriptions.filter(
-        t => t.timestamp > checkpointTime,
-      );
-    }
+    // Use the shared session sync service
+    const result = SessionSyncService.getTranscriptions(sessionId, lastCheckpoint || undefined);
 
     return NextResponse.json({
-      transcriptions: newTranscriptions,
-      lastUpdate: sessionState[sessionId].lastUpdate,
-      hasNewData: newTranscriptions.length > 0,
+      transcriptions: result.transcriptions,
+      lastUpdate: result.lastUpdate,
+      hasNewData: result.hasNewData,
     });
   } catch (error) {
     console.error('Get session sync error:', error);
@@ -53,6 +34,7 @@ export async function GET(req: Request) {
 }
 
 // This endpoint allows mobile devices to notify desktop sessions of new transcriptions
+// Note: This is now primarily used by external clients since mobile-upload uses the service directly
 export async function POST(req: Request) {
   try {
     const { sessionId, transcript, source } = await req.json();
@@ -64,36 +46,20 @@ export async function POST(req: Request) {
       );
     }
 
-    // Initialize session state if not exists
-    if (!sessionState[sessionId]) {
-      sessionState[sessionId] = {
-        transcriptions: [],
-        lastUpdate: new Date().toISOString(),
-      };
-    }
-
-    // Add transcription to session
-    const timestamp = Date.now();
-    sessionState[sessionId].transcriptions.push({
-      transcript: transcript.trim(),
-      timestamp,
-      source: source as 'mobile' | 'desktop',
-    });
-
-    sessionState[sessionId].lastUpdate = new Date().toISOString();
-
-    // Clean up old transcriptions (keep last 100)
-    if (sessionState[sessionId].transcriptions.length > 100) {
-      sessionState[sessionId].transcriptions = sessionState[sessionId].transcriptions.slice(-100);
-    }
+    // Use the shared session sync service
+    const result = SessionSyncService.addTranscription(
+      sessionId,
+      transcript.trim(),
+      source as 'mobile' | 'desktop',
+    );
 
     // For mobile transcriptions, trigger server-side events to notify desktop clients
     // In a real production system, you'd use WebSockets, Server-Sent Events, or a message queue
     // For this implementation, we'll rely on polling from the desktop side
 
     return NextResponse.json({
-      success: true,
-      lastUpdate: sessionState[sessionId].lastUpdate,
+      success: result.success,
+      lastUpdate: result.lastUpdate,
       transcriptionAdded: true,
     });
   } catch (error) {
