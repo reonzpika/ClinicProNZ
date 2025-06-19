@@ -390,8 +390,16 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
   }, [state.status]);
 
   const appendMobileTranscription = useCallback((transcript: string, sessionId: string) => {
+    console.log('appendMobileTranscription called:', { 
+      transcript: transcript.substring(0, 50) + '...', 
+      sessionId, 
+      currentSessionId: state.sessionId,
+      matches: sessionId === state.sessionId 
+    });
+    
     // Only append if the sessionId matches the current session
     if (sessionId === state.sessionId) {
+      console.log('Appending mobile transcription to desktop context');
       setState(prev => ({
         ...prev,
         transcription: {
@@ -401,6 +409,8 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
           isLive: true, // Mark as live since it's coming from mobile
         },
       }));
+    } else {
+      console.log('Session ID mismatch - not appending transcription');
     }
   }, [state.sessionId]);
 
