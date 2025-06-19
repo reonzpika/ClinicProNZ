@@ -9,7 +9,6 @@ import { TemplateList } from '@/features/templates/components/TemplateList';
 import { TemplatePreview } from '@/features/templates/components/TemplatePreview';
 import type { Template } from '@/features/templates/types';
 import { createTemplate, deleteTemplate, fetchTemplates, updateTemplate } from '@/features/templates/utils/api';
-import { Header } from '@/shared/components/Header';
 import { Container } from '@/shared/components/layout/Container';
 import { Grid } from '@/shared/components/layout/Grid';
 import { Stack } from '@/shared/components/layout/Stack';
@@ -191,93 +190,90 @@ export default function TemplatesPage() {
   };
 
   return (
-    <>
-      <Header />
-      <Container size="lg">
-        <Grid cols={3} gap="lg">
-          {/* Left Column - Template List */}
-          <div className="lg:col-span-1">
-            <Stack spacing="sm">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between p-2 pb-0">
-                  <h2 className="text-xs font-semibold">Templates</h2>
-                </CardHeader>
-                <CardContent className="p-2 pt-0">
-                  {error && <div className="mb-2 text-xs text-red-500">{error}</div>}
-                  {loading
+    <Container size="lg">
+      <Grid cols={3} gap="lg">
+        {/* Left Column - Template List */}
+        <div className="lg:col-span-1">
+          <Stack spacing="sm">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between p-2 pb-0">
+                <h2 className="text-xs font-semibold">Templates</h2>
+              </CardHeader>
+              <CardContent className="p-2 pt-0">
+                {error && <div className="mb-2 text-xs text-red-500">{error}</div>}
+                {loading
+                  ? (
+                      <div className="text-xs">Loading templates...</div>
+                    )
+                  : (
+                      <TemplateList
+                        templates={templates}
+                        selectedTemplate={selectedTemplate}
+                        onTemplateSelect={handleTemplateSelect}
+                        onTemplateHover={() => {}}
+                        isSignedIn
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                        onCopy={handleCopy}
+                        onSetDefault={setUserDefaultTemplateId}
+                        userDefaultTemplateId={userDefaultTemplateId}
+                        onReorder={handleReorder}
+                        onCreateNew={handleCreateNew}
+                      />
+                    )}
+              </CardContent>
+            </Card>
+
+            {/* How it works section */}
+            <Card>
+              <CardContent className="p-3">
+                <div className="rounded-md bg-blue-50 p-3 text-xs text-blue-800">
+                  <p className="font-medium">How it works:</p>
+                  <ul className="ml-3 mt-1 list-disc space-y-0.5">
+                    <li>Create templates from scratch using "Create New" or copy existing ones</li>
+                    <li>Templates structure your consultation notes with consistent formatting</li>
+                    <li>Set a default template (★) to automatically use it for new consultations</li>
+                    <li>You can copy the default template and edit the example to customise it to your preferences</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </Stack>
+        </div>
+
+        {/* Right Column - Template Editor/Preview */}
+        <div className="lg:col-span-2">
+          <Stack spacing="sm">
+            <Card>
+              <CardHeader className="p-2 pb-0">
+                <h2 className="text-xs font-semibold">
+                  {selectedTemplate && isEditing ? 'Edit Template' : selectedTemplate ? 'Template Preview' : 'Create New Template'}
+                </h2>
+              </CardHeader>
+              <CardContent className="p-2 pt-0">
+                {selectedTemplate && isEditing
+                  ? (
+                      <TemplateEditor
+                        template={selectedTemplate}
+                        onSave={handleTemplateSave}
+                        onCancel={handleCancel}
+                      />
+                    )
+                  : selectedTemplate
                     ? (
-                        <div className="text-xs">Loading templates...</div>
+                        <TemplatePreview template={selectedTemplate} />
                       )
                     : (
-                        <TemplateList
-                          templates={templates}
-                          selectedTemplate={selectedTemplate}
-                          onTemplateSelect={handleTemplateSelect}
-                          onTemplateHover={() => {}}
-                          isSignedIn
-                          onEdit={handleEdit}
-                          onDelete={handleDelete}
-                          onCopy={handleCopy}
-                          onSetDefault={setUserDefaultTemplateId}
-                          userDefaultTemplateId={userDefaultTemplateId}
-                          onReorder={handleReorder}
-                          onCreateNew={handleCreateNew}
+                        <TemplateCreationWizard
+                          onSave={handleTemplateSave}
+                          onCancel={() => {}}
                         />
                       )}
-                </CardContent>
-              </Card>
-
-              {/* How it works section */}
-              <Card>
-                <CardContent className="p-3">
-                  <div className="rounded-md bg-blue-50 p-3 text-xs text-blue-800">
-                    <p className="font-medium">How it works:</p>
-                    <ul className="ml-3 mt-1 list-disc space-y-0.5">
-                      <li>Create templates from scratch using "Create New" or copy existing ones</li>
-                      <li>Templates structure your consultation notes with consistent formatting</li>
-                      <li>Set a default template (★) to automatically use it for new consultations</li>
-                      <li>You can copy the default template and edit the example to customise it to your preferences</li>
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
-            </Stack>
-          </div>
-
-          {/* Right Column - Template Editor/Preview */}
-          <div className="lg:col-span-2">
-            <Stack spacing="sm">
-              <Card>
-                <CardHeader className="p-2 pb-0">
-                  <h2 className="text-xs font-semibold">
-                    {selectedTemplate && isEditing ? 'Edit Template' : selectedTemplate ? 'Template Preview' : 'Create New Template'}
-                  </h2>
-                </CardHeader>
-                <CardContent className="p-2 pt-0">
-                  {selectedTemplate && isEditing
-                    ? (
-                        <TemplateEditor
-                          template={selectedTemplate}
-                          onSave={handleTemplateSave}
-                          onCancel={handleCancel}
-                        />
-                      )
-                    : selectedTemplate
-                      ? (
-                          <TemplatePreview template={selectedTemplate} />
-                        )
-                      : (
-                          <TemplateCreationWizard
-                            onSave={handleTemplateSave}
-                            onCancel={() => {}}
-                          />
-                        )}
-                </CardContent>
-              </Card>
-            </Stack>
-          </div>
-        </Grid>
-      </Container>
-    </>
+              </CardContent>
+            </Card>
+          </Stack>
+        </div>
+      </Grid>
+    </Container>
   );
 }

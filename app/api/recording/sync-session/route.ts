@@ -24,8 +24,8 @@ export async function GET(req: Request) {
       lastUpdate: result.lastUpdate,
       hasNewData: result.hasNewData,
     });
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
-    console.error('Get session sync error:', error);
     return NextResponse.json(
       { error: 'Failed to get session data' },
       { status: 500 },
@@ -62,8 +62,8 @@ export async function POST(req: Request) {
       lastUpdate: result.lastUpdate,
       transcriptionAdded: true,
     });
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (error) {
-    console.error('Sync session error:', error);
     return NextResponse.json(
       { error: 'Failed to sync session' },
       { status: 500 },

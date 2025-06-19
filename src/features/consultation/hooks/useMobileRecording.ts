@@ -139,7 +139,6 @@ export const useMobileRecording = ({
         }));
       }
     } catch (error: any) {
-      console.error('Mobile transcription session error:', error);
       const errorMessage = `Transcription failed: ${error.message}`;
       setState(prev => ({ ...prev, error: errorMessage }));
       onError?.(errorMessage);
@@ -181,8 +180,7 @@ export const useMobileRecording = ({
         await sendRecordingSession(audioBlob);
       };
 
-      mediaRecorder.onerror = (event) => {
-        console.error('MediaRecorder error:', event);
+      mediaRecorder.onerror = () => {
         isSessionActiveRef.current = false;
         setState(prev => ({
           ...prev,
@@ -192,8 +190,8 @@ export const useMobileRecording = ({
 
       currentRecorderRef.current = mediaRecorder;
       mediaRecorder.start(); // Record everything in one session
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (error: any) {
-      console.error('Failed to start recording session:', error);
       isSessionActiveRef.current = false;
     }
   }, [sendRecordingSession]);

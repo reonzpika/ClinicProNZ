@@ -43,16 +43,6 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
     totalChunks,
   } = useTranscription();
 
-  // Debug transcription updates
-  const { transcription: contextTranscription } = useConsultation();
-  console.log('TranscriptionControls render:', {
-    transcript: transcript?.substring(0, 50) + '...',
-    contextTranscript: contextTranscription.transcript?.substring(0, 50) + '...',
-    transcriptLength: transcript?.length || 0,
-    contextTranscriptLength: contextTranscription.transcript?.length || 0,
-    isLive: contextTranscription.isLive
-  });
-
   // Handle start recording - show consent modal first if consent not obtained
   const handleStartRecording = () => {
     if (!consentObtained) {

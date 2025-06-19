@@ -81,7 +81,6 @@ export async function POST(req: NextRequest) {
     );
 
     if (error) {
-      console.error('Deepgram transcription error:', error);
       return NextResponse.json({ error: 'Transcription failed' }, { status: 500 });
     }
 
@@ -105,8 +104,8 @@ export async function POST(req: NextRequest) {
           transcript.trim(),
           'mobile',
         );
+      // eslint-disable-next-line unused-imports/no-unused-vars
       } catch (syncError) {
-        console.error('Failed to trigger desktop sync:', syncError);
         // Don't fail the entire request if sync fails
       }
 
@@ -127,7 +126,6 @@ export async function POST(req: NextRequest) {
       success: true,
     });
   } catch (err: any) {
-    console.error('Mobile upload error:', err);
     return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
   }
 }

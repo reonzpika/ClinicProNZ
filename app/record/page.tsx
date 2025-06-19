@@ -31,10 +31,9 @@ function MobileRecordingContent() {
   const mobileRecording = useMobileRecording({
     sessionId: validationResult?.sessionId || '',
     token: token || '',
-    onTranscriptionReceived: (transcript) => {
+    onTranscriptionReceived: () => {
       // No need for additional API call - mobile-upload already handles syncing
       // via SessionSyncService.addTranscription() in the backend
-      console.log('Mobile transcription received:', transcript.length, 'characters');
     },
     onError: (errorMessage) => {
       setError(errorMessage);

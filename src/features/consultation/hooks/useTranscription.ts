@@ -126,7 +126,6 @@ export const useTranscription = () => {
         }));
       }
     } catch (error: any) {
-      console.error('Transcription session error:', error);
       setState(prev => ({
         ...prev,
         error: `Transcription failed: ${error.message}`,
@@ -169,8 +168,7 @@ export const useTranscription = () => {
         await sendRecordingSession(audioBlob);
       };
 
-      mediaRecorder.onerror = (event) => {
-        console.error('MediaRecorder error:', event);
+      mediaRecorder.onerror = () => {
         isSessionActiveRef.current = false;
         setState(prev => ({
           ...prev,
@@ -180,8 +178,8 @@ export const useTranscription = () => {
 
       currentRecorderRef.current = mediaRecorder;
       mediaRecorder.start(); // Record everything in one session
+    // eslint-disable-next-line unused-imports/no-unused-vars
     } catch (error: any) {
-      console.error('Failed to start recording session:', error);
       isSessionActiveRef.current = false;
     }
   }, [sendRecordingSession]);
@@ -473,13 +471,6 @@ export const useTranscription = () => {
   useEffect(() => {
     isPausedRef.current = state.isPaused;
   }, [state.isPaused]);
-
-  console.log('useTranscription returning transcript:', {
-    transcript: `${transcription.transcript?.substring(0, 50)}...`,
-    transcriptLength: transcription.transcript?.length || 0,
-    isLive: transcription.isLive,
-    state,
-  });
 
   return {
     isRecording: state.isRecording,

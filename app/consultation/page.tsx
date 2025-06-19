@@ -12,7 +12,6 @@ import { TypedInput } from '@/features/consultation/components/TypedInput';
 import { useMobileSync } from '@/features/consultation/hooks/useMobileSync';
 import { TemplateSelector } from '@/features/templates/components/TemplateSelector';
 import { Footer } from '@/shared/components/Footer';
-import { Header } from '@/shared/components/Header';
 import { Container } from '@/shared/components/layout/Container';
 import { Grid } from '@/shared/components/layout/Grid';
 import { Stack } from '@/shared/components/layout/Stack';
@@ -20,8 +19,6 @@ import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { useConsultation } from '@/shared/ConsultationContext';
 
 export default function ConsultationPage() {
-  console.log('=== CONSULTATION PAGE LOADED ===');
-  
   const {
     transcription,
     templateId,
@@ -37,11 +34,8 @@ export default function ConsultationPage() {
   } = useConsultation();
   const [loading, setLoading] = useState(false);
   const [isNoteFocused, setIsNoteFocused] = useState(false);
-  
-  console.log('=== CONSULTATION STATE ===', { sessionId, mobileRecording });
 
   // Enable mobile sync when mobile recording is active
-  console.log('Mobile sync enabled:', mobileRecording.isActive, 'Session ID:', sessionId);
   useMobileSync({
     enabled: mobileRecording.isActive,
     sessionId,
@@ -102,77 +96,73 @@ export default function ConsultationPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50">
-      <Header />
-
-      <main className="flex-1">
-        <Container size="lg">
-          <Grid cols={3} gap="lg">
-            {/* Left Column - Main Clinical Documentation Area */}
-            <div className="lg:col-span-2">
-              <Stack spacing="sm">
-                {/* Documentation Settings */}
-                <Card className="border-slate-200 bg-white shadow-sm">
-                  <CardHeader className="border-b border-slate-100 bg-slate-50">
-                    <h2 className="text-sm font-medium text-slate-700">Documentation Settings</h2>
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <div className="space-y-4">
-                      {/* Template and Input Mode Row */}
-                      <div className="flex items-start gap-6">
-                        {/* Note Template Selection */}
-                        <div className="flex-1">
-                          <div className="mb-2 text-sm font-medium text-slate-600">
-                            Note Template
-                          </div>
-                          <TemplateSelector />
+    <div className="flex min-h-full flex-col">
+      <Container size="lg">
+        <Grid cols={3} gap="lg">
+          {/* Left Column - Main Clinical Documentation Area */}
+          <div className="lg:col-span-2">
+            <Stack spacing="sm">
+              {/* Documentation Settings */}
+              <Card className="border-slate-200 bg-white shadow-sm">
+                <CardHeader className="border-b border-slate-100 bg-slate-50">
+                  <h2 className="text-sm font-medium text-slate-700">Documentation Settings</h2>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <div className="space-y-4">
+                    {/* Template and Input Mode Row */}
+                    <div className="flex items-start gap-6">
+                      {/* Note Template Selection */}
+                      <div className="flex-1">
+                        <div className="mb-2 text-sm font-medium text-slate-600">
+                          Note Template
                         </div>
+                        <TemplateSelector />
+                      </div>
 
-                        {/* Input Method Selection */}
-                        <div className="shrink-0">
-                          <div className="mb-2 text-sm font-medium text-slate-600">
-                            Input Method
-                          </div>
-                          <InputModeToggle />
+                      {/* Input Method Selection */}
+                      <div className="shrink-0">
+                        <div className="mb-2 text-sm font-medium text-slate-600">
+                          Input Method
                         </div>
+                        <InputModeToggle />
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </CardContent>
+              </Card>
 
-                {/* Conditional Input Components Based on Mode */}
-                {inputMode === 'audio'
-                  ? (
-                      <>
-                        {/* Digital Recording */}
-                        <TranscriptionControls collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
+              {/* Conditional Input Components Based on Mode */}
+              {inputMode === 'audio'
+                ? (
+                    <>
+                      {/* Digital Recording */}
+                      <TranscriptionControls collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
 
-                        {/* Mobile Recording QR Code */}
-                        <MobileRecordingQR />
+                      {/* Mobile Recording QR Code */}
+                      <MobileRecordingQR />
 
-                        {/* Clinical Notes */}
-                        <QuickNotes collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
-                      </>
-                    )
-                  : (
-                      <>
-                        {/* Manual Entry */}
-                        <TypedInput collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
-                      </>
-                    )}
+                      {/* Clinical Notes */}
+                      <QuickNotes collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
+                    </>
+                  )
+                : (
+                    <>
+                      {/* Manual Entry */}
+                      <TypedInput collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
+                    </>
+                  )}
 
-                {/* Clinical Documentation - Shared by both modes */}
-                <GeneratedNotes onGenerate={handleGenerateNotes} onClearAll={handleClearAll} loading={loading} isNoteFocused={isNoteFocused} />
-              </Stack>
-            </div>
+              {/* Clinical Documentation - Shared by both modes */}
+              <GeneratedNotes onGenerate={handleGenerateNotes} onClearAll={handleClearAll} loading={loading} isNoteFocused={isNoteFocused} />
+            </Stack>
+          </div>
 
-            {/* Right Column - Clinical Tools */}
-            <div className="lg:col-span-1">
-              <RightSidebarFeatures />
-            </div>
-          </Grid>
-        </Container>
-      </main>
+          {/* Right Column - Clinical Tools */}
+          <div className="lg:col-span-1">
+            <RightSidebarFeatures />
+          </div>
+        </Grid>
+      </Container>
 
       <Footer />
     </div>

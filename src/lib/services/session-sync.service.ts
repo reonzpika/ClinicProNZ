@@ -36,7 +36,6 @@ export class SessionSyncService {
     transcript: string,
     source: 'mobile' | 'desktop',
   ): { success: boolean; lastUpdate: string } {
-    console.log('SessionSyncService.addTranscription called:', { sessionId, transcriptLength: transcript.length, source });
     this.initializeSession(sessionId);
 
     const session = sessionState[sessionId]!; // Non-null assertion since we just initialized
@@ -49,7 +48,6 @@ export class SessionSyncService {
     });
 
     session.lastUpdate = new Date().toISOString();
-    console.log('Session updated. Total transcriptions:', session.transcriptions.length);
 
     // Clean up old transcriptions (keep last 100)
     if (session.transcriptions.length > 100) {
@@ -73,12 +71,10 @@ export class SessionSyncService {
       lastUpdate: string;
       hasNewData: boolean;
     } {
-    console.log('SessionSyncService.getTranscriptions called:', { sessionId, lastCheckpoint });
     this.initializeSession(sessionId);
 
     const session = sessionState[sessionId]!; // Non-null assertion since we just initialized
     let transcriptions = session.transcriptions;
-    console.log('Total transcriptions in session:', transcriptions.length);
 
     // Filter transcriptions since last checkpoint
     if (lastCheckpoint) {
@@ -86,16 +82,13 @@ export class SessionSyncService {
       transcriptions = session.transcriptions.filter(
         t => t.timestamp > checkpointTime,
       );
-      console.log('Filtered transcriptions since checkpoint:', transcriptions.length);
     }
 
-    const result = {
+    return {
       transcriptions,
       lastUpdate: session.lastUpdate,
       hasNewData: transcriptions.length > 0,
     };
-    console.log('Returning sync result:', { hasNewData: result.hasNewData, transcriptionCount: result.transcriptions.length });
-    return result;
   }
 
   /**
