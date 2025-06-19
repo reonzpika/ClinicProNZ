@@ -32,16 +32,9 @@ function MobileRecordingContent() {
     sessionId: validationResult?.sessionId || '',
     token: token || '',
     onTranscriptionReceived: (transcript) => {
-      // Just sync to desktop - no need to store locally for mobile display
-      fetch('/api/recording/sync-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sessionId: validationResult?.sessionId,
-          transcript,
-          source: 'mobile',
-        }),
-      }).catch(err => console.error('Failed to sync transcription:', err));
+      // No need for additional API call - mobile-upload already handles syncing
+      // via SessionSyncService.addTranscription() in the backend
+      console.log('Mobile transcription received:', transcript.length, 'characters');
     },
     onError: (errorMessage) => {
       setError(errorMessage);
