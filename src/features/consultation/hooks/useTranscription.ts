@@ -474,6 +474,13 @@ export const useTranscription = () => {
     isPausedRef.current = state.isPaused;
   }, [state.isPaused]);
 
+  console.log('useTranscription returning transcript:', {
+    transcript: `${transcription.transcript?.substring(0, 50)}...`,
+    transcriptLength: transcription.transcript?.length || 0,
+    isLive: transcription.isLive,
+    state,
+  });
+
   return {
     isRecording: state.isRecording,
     isPaused: state.isPaused,

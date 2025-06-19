@@ -43,6 +43,16 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
     totalChunks,
   } = useTranscription();
 
+  // Debug transcription updates
+  const { transcription: contextTranscription } = useConsultation();
+  console.log('TranscriptionControls render:', {
+    transcript: transcript?.substring(0, 50) + '...',
+    contextTranscript: contextTranscription.transcript?.substring(0, 50) + '...',
+    transcriptLength: transcript?.length || 0,
+    contextTranscriptLength: contextTranscription.transcript?.length || 0,
+    isLive: contextTranscription.isLive
+  });
+
   // Handle start recording - show consent modal first if consent not obtained
   const handleStartRecording = () => {
     if (!consentObtained) {
@@ -215,16 +225,20 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
             )}
 
             {/* Live transcript stream */}
-            {transcript && (isRecording || chunksCompleted > 0) && (
+            {transcript && (isRecording || chunksCompleted > 0 || mobileRecording.isActive) && (
               <div className="mt-2">
                 <div className="mb-1 text-xs font-medium text-muted-foreground">
-                  Live Transcript
+                  {mobileRecording.isActive ? 'Mobile Recording Transcript' : 'Live Transcript'}
                   {' '}
                   {isRecording && '(updating as you speak)'}
+                  {mobileRecording.isActive && '(from mobile device)'}
                 </div>
                 <div className="max-h-64 overflow-y-auto rounded-md bg-muted p-2">
                   <p className="whitespace-pre-wrap text-xs leading-relaxed">{transcript}</p>
                   {isRecording && (
+                    <span className="mt-1 inline-block h-3 w-1 animate-pulse bg-blue-500" />
+                  )}
+                  {mobileRecording.isActive && !isRecording && (
                     <span className="mt-1 inline-block h-3 w-1 animate-pulse bg-blue-500" />
                   )}
                 </div>

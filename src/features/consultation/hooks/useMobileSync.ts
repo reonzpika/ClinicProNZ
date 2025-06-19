@@ -56,13 +56,16 @@ export const useMobileSync = ({ enabled, sessionId }: MobileSyncHookProps) => {
 
   // Start/stop polling based on enabled state
   useEffect(() => {
+    console.log('useMobileSync enabled state changed:', enabled, 'sessionId:', sessionId);
     if (enabled) {
+      console.log('Starting mobile sync polling...');
       // Poll every 15 seconds when mobile recording is active
       pollIntervalRef.current = setInterval(pollForMobileTranscriptions, 15000);
 
       // Initial poll
       pollForMobileTranscriptions();
     } else {
+      console.log('Stopping mobile sync polling...');
       if (pollIntervalRef.current) {
         clearInterval(pollIntervalRef.current);
         pollIntervalRef.current = null;

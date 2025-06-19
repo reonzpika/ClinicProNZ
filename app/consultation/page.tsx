@@ -20,6 +20,8 @@ import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { useConsultation } from '@/shared/ConsultationContext';
 
 export default function ConsultationPage() {
+  console.log('=== CONSULTATION PAGE LOADED ===');
+  
   const {
     transcription,
     templateId,
@@ -35,8 +37,11 @@ export default function ConsultationPage() {
   } = useConsultation();
   const [loading, setLoading] = useState(false);
   const [isNoteFocused, setIsNoteFocused] = useState(false);
+  
+  console.log('=== CONSULTATION STATE ===', { sessionId, mobileRecording });
 
   // Enable mobile sync when mobile recording is active
+  console.log('Mobile sync enabled:', mobileRecording.isActive, 'Session ID:', sessionId);
   useMobileSync({
     enabled: mobileRecording.isActive,
     sessionId,
