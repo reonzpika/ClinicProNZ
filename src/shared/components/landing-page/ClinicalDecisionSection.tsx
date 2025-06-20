@@ -1,225 +1,167 @@
 'use client';
 
-import { AlertTriangle, BookOpen, Brain, Calendar, CheckCircle, Target } from 'lucide-react';
-
-import { Button } from '@/shared/components/ui/button';
+import { Eye, FileCheck, Globe, Lock, Shield } from 'lucide-react';
 
 export const ClinicalDecisionSection = () => {
   return (
-    <section className="py-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section className="bg-white py-20">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="mb-16 text-center">
           <h2 className="mb-4 text-4xl font-bold text-gray-900">
-            Not Just Documentation - Clinical Intelligence That Thinks Alongside You
+            Your Patients' Privacy Comes First
           </h2>
-          <p className="text-xl text-gray-600">
-            Go beyond transcription. Get AI that catches what you might miss and suggests what comes next.
+          <p className="mx-auto max-w-3xl text-xl text-gray-600">
+            Built by GPs, for GPs. Never replaces clinical judgment, always supports it.
+            Your privacy and patient confidentiality are our foundation.
           </p>
         </div>
 
-        <div className="mb-16 rounded-lg border border-red-200 bg-red-50 p-6">
-          <h3 className="mb-3 text-lg font-semibold text-red-900">The Problem with Basic AI Scribes</h3>
-          <p className="text-red-800">
-            AI scribes often miss important clinical details or add irrelevant information that wasn't part of the consultation.
-            GPs need documentation that is not just a transcription but accurate and clinically insightful. Otherwise,
-            extensive editing and fact-checking are needed, reducing the efficiency of using AI scribes.
-          </p>
-        </div>
-
-        <div className="mb-16 grid gap-8 md:grid-cols-3">
-          <div className="rounded-lg bg-white p-6 text-center shadow-lg">
-            <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-green-100">
-              <Calendar className="size-8 text-green-600" />
+        <div className="grid gap-8 lg:grid-cols-2">
+          {/* Left column - Privacy Features */}
+          <div className="space-y-6">
+            <div className="rounded-xl border border-green-200 bg-gradient-to-br from-green-50 to-blue-50 p-6">
+              <div className="flex items-start space-x-4">
+                <div className="shrink-0 rounded-lg bg-green-100 p-2">
+                  <Shield className="size-6 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="mb-2 text-lg font-semibold text-gray-900">End-to-End Data Protection</h3>
+                  <ul className="space-y-2 text-gray-600">
+                    <li className="flex items-center space-x-2">
+                      <span className="size-2 rounded-full bg-green-500"></span>
+                      <span>Deepgram redaction — no personal info captured or stored</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="size-2 rounded-full bg-green-500"></span>
+                      <span>Data Processing Agreements with Deepgram & OpenAI</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="size-2 rounded-full bg-green-500"></span>
+                      <span>End-to-end encryption for all transmissions</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
             </div>
-            <h4 className="mb-4 text-lg font-semibold text-gray-900">Predictive Care Insights</h4>
-            <ul className="space-y-3 text-left text-gray-600">
-              <li className="flex items-center space-x-2">
-                <Calendar className="size-4 text-green-500" />
-                <span className="text-sm">Follow-up timing suggestions</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <Target className="size-4 text-green-500" />
-                <span className="text-sm">Preventive care reminders</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <AlertTriangle className="size-4 text-green-500" />
-                <span className="text-sm">Risk stratification alerts</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <CheckCircle className="size-4 text-green-500" />
-                <span className="text-sm">Care pathway recommendations</span>
-              </li>
-            </ul>
-            <p className="mt-4 text-sm italic text-gray-500">
-              "Never miss important follow-up opportunities"
-            </p>
-          </div>
 
-          <div className="rounded-lg bg-white p-6 text-center shadow-lg">
-            <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-blue-100">
-              <Brain className="size-8 text-blue-600" />
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
+              <div className="flex items-start space-x-4">
+                <div className="shrink-0 rounded-lg bg-blue-100 p-2">
+                  <FileCheck className="size-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="mb-2 text-lg font-semibold text-gray-900">NZ Compliance & Standards</h3>
+                  <ul className="space-y-2 text-gray-600">
+                    <li className="flex items-center space-x-2">
+                      <span className="size-2 rounded-full bg-blue-500"></span>
+                      <span>Privacy Act 2020 & Health Information Privacy Code compliant</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="size-2 rounded-full bg-blue-500"></span>
+                      <span>Meets RNZCGP documentation standards</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="size-2 rounded-full bg-blue-500"></span>
+                      <span>Ensures medico-legal compliance for NZ practice</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
             </div>
-            <h4 className="mb-4 text-lg font-semibold text-gray-900">Clinical Reasoning Support</h4>
-            <ul className="space-y-3 text-left text-gray-600">
-              <li className="flex items-center space-x-2">
-                <Brain className="size-4 text-blue-500" />
-                <span className="text-sm">Differential diagnosis prompts</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <BookOpen className="size-4 text-blue-500" />
-                <span className="text-sm">Evidence-based suggestions</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <AlertTriangle className="size-4 text-blue-500" />
-                <span className="text-sm">Red flag identification</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <CheckCircle className="size-4 text-blue-500" />
-                <span className="text-sm">Assessment completeness checks</span>
-              </li>
-            </ul>
-            <p className="mt-4 text-sm italic text-gray-500">
-              "AI-powered clinical thinking support"
-            </p>
-          </div>
 
-          <div className="rounded-lg bg-white p-6 text-center shadow-lg">
-            <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-purple-100">
-              <CheckCircle className="size-8 text-purple-600" />
-            </div>
-            <h4 className="mb-4 text-lg font-semibold text-gray-900">Quality Documentation</h4>
-            <ul className="space-y-3 text-left text-gray-600">
-              <li className="flex items-center space-x-2">
-                <CheckCircle className="size-4 text-purple-500" />
-                <span className="text-sm">Documentation completeness checks</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <Target className="size-4 text-purple-500" />
-                <span className="text-sm">Clinical accuracy verification</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <BookOpen className="size-4 text-purple-500" />
-                <span className="text-sm">Professional standard compliance</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <CheckCircle className="size-4 text-purple-500" />
-                <span className="text-sm">Template auto-completion</span>
-              </li>
-            </ul>
-            <p className="mt-4 text-sm italic text-gray-500">
-              "Ensure every note meets clinical standards"
-            </p>
-          </div>
-        </div>
-
-        <div className="mb-12 grid gap-8 lg:grid-cols-2">
-          <div className="rounded-lg bg-gray-50 p-6">
-            <h4 className="mb-4 text-lg font-semibold text-gray-900">Basic Transcription</h4>
-            <div className="rounded border bg-white p-4 text-sm text-gray-600">
-              <p className="mb-2">
-                <strong>Chief Complaint:</strong>
-                {' '}
-                Patient complains of chest pain
-              </p>
-              <p className="mb-2">
-                <strong>Assessment:</strong>
-                {' '}
-                Chest pain, likely musculoskeletal
-              </p>
-              <p className="text-red-600">⚠️ Missing: Duration, triggers, associated symptoms</p>
-              <p className="text-red-600">⚠️ No risk assessment or follow-up plan</p>
+            <div className="rounded-xl border border-purple-200 bg-purple-50 p-6">
+              <div className="flex items-start space-x-4">
+                <div className="shrink-0 rounded-lg bg-purple-100 p-2">
+                  <Lock className="size-6 text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="mb-2 text-lg font-semibold text-gray-900">GP Data Control</h3>
+                  <ul className="space-y-2 text-gray-600">
+                    <li className="flex items-center space-x-2">
+                      <span className="size-2 rounded-full bg-purple-500"></span>
+                      <span>You control all your consultation data</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="size-2 rounded-full bg-purple-500"></span>
+                      <span>No data used for training or commercial purposes</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="size-2 rounded-full bg-purple-500"></span>
+                      <span>Export or delete your data anytime</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="rounded-lg bg-blue-50 p-6">
-            <h4 className="mb-4 text-lg font-semibold text-gray-900">ClinicalMind Enhanced Output</h4>
-            <div className="rounded border bg-white p-4 text-sm">
-              <p className="mb-2">
-                <strong>Chief Complaint:</strong>
-                {' '}
-                45-year-old presents with acute chest pain, onset 2 hours ago
+          {/* Right column - Trust & Design Philosophy */}
+          <div className="space-y-6">
+            <div className="rounded-xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50 p-8">
+              <div className="mb-6 text-center">
+                <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-indigo-100">
+                  <Eye className="size-8 text-indigo-600" />
+                </div>
+                <h3 className="mb-2 text-xl font-semibold text-gray-900">Designed by GPs, for GPs</h3>
+                <p className="text-gray-600">
+                  Every privacy decision is made with clinical practice in mind.
+                  We understand the trust patients place in you.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="rounded-lg bg-white/50 p-4">
+                  <h4 className="mb-2 font-medium text-gray-900">Clinical Judgment First</h4>
+                  <p className="text-sm text-gray-600">
+                    ClinicPro never replaces your clinical judgment — it supports and enhances
+                    your decision-making with contextual information.
+                  </p>
+                </div>
+
+                <div className="rounded-lg bg-white/50 p-4">
+                  <h4 className="mb-2 font-medium text-gray-900">Professional Liability Protection</h4>
+                  <p className="text-sm text-gray-600">
+                    Comprehensive documentation reduces professional liability risks while
+                    maintaining the highest standards of patient care.
+                  </p>
+                </div>
+
+                <div className="rounded-lg bg-white/50 p-4">
+                  <h4 className="mb-2 font-medium text-gray-900">Transparency</h4>
+                  <p className="text-sm text-gray-600">
+                    No hidden algorithms or black boxes. You understand exactly how
+                    your notes are generated and can verify every detail.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-6 text-center">
+              <Globe className="mx-auto mb-4 size-12 text-gray-400" />
+              <h3 className="mb-2 text-lg font-semibold text-gray-900">Built for New Zealand Healthcare</h3>
+              <p className="mb-4 text-gray-600">
+                Understanding local regulations, medical terminology, and clinical practices
+                that make NZ healthcare unique.
               </p>
-              <p className="mb-2">
-                <strong>Assessment:</strong>
-                {' '}
-                Chest pain, likely musculoskeletal based on examination
-              </p>
-              <div className="mt-2 rounded bg-blue-50 p-2">
-                <p className="text-xs text-blue-800"><strong>Clinical Insights:</strong></p>
-                <p className="text-xs text-blue-700">• Consider cardiac risk factors in 45+ patient</p>
-                <p className="text-xs text-blue-700">• Follow-up recommended in 24-48 hours if symptoms persist</p>
-                <p className="text-xs text-blue-700">• Safety net advice provided</p>
+              <div className="inline-flex items-center space-x-2 rounded-full border border-gray-200 bg-white px-4 py-2">
+                <span className="text-sm font-medium text-gray-700">Privacy-first design</span>
+                <span className="text-lg">🔒</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="mb-8 rounded-lg bg-white p-8 shadow-md">
-          <blockquote className="mb-4 text-lg italic leading-relaxed text-gray-700">
-            "The AI highlights any statements with low confidence to help catch errors. It also generates a checklist
-            of clinical considerations at the bottom so I can verify everything important was captured."
-          </blockquote>
-          <cite className="font-semibold not-italic text-blue-600">
-            - Dr. [Name], General Practitioner
-          </cite>
-        </div>
-
-        <div className="mb-8 overflow-hidden rounded-lg bg-white shadow-lg">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Feature
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Basic AI Scribes
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                    ClinicalMind Pro
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 bg-white">
-                <tr>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">Transcription</td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-green-600">✅ Basic</td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-green-600">✅ Enhanced</td>
-                </tr>
-                <tr>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">Clinical Insights</td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-red-600">❌</td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-green-600">✅ Predictive suggestions</td>
-                </tr>
-                <tr>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">Follow-up Planning</td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-red-600">❌</td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-green-600">✅ Automated recommendations</td>
-                </tr>
-                <tr>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">Risk Assessment</td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-red-600">❌</td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-green-600">✅ Clinical risk alerts</td>
-                </tr>
-                <tr>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">Differential Support</td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-red-600">❌</td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-green-600">✅ Evidence-based prompts</td>
-                </tr>
-                <tr>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">Confidence Scoring</td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-red-600">❌</td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-green-600">✅ Uncertainty highlighting</td>
-                </tr>
-              </tbody>
-            </table>
+        <div className="mt-16 text-center">
+          <div className="inline-flex flex-col items-center space-y-3 rounded-xl border border-green-200 bg-gradient-to-r from-green-50 to-blue-50 px-8 py-6">
+            <div className="flex items-center space-x-2">
+              <Shield className="size-5 text-green-600" />
+              <span className="text-lg font-semibold text-gray-900">Trust. Privacy. Clinical Excellence.</span>
+            </div>
+            <p className="max-w-lg text-sm text-gray-600">
+              Built by a practicing NZ GP who understands the importance of patient confidentiality
+              and the trust placed in healthcare professionals.
+            </p>
           </div>
-        </div>
-
-        <div className="text-center">
-          <Button className="bg-blue-600 px-8 py-3 text-white hover:bg-blue-700">
-            Experience Clinical Intelligence
-          </Button>
         </div>
       </div>
     </section>
