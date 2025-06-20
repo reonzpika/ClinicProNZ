@@ -63,7 +63,7 @@ export const FounderSection = () => {
                       </div>
                       <div className="flex items-center space-x-2">
                         <span className="size-2 rounded-full bg-blue-500"></span>
-                        <span>CEO & Founder, NexWave Solutions Ltd</span>
+                        <span>CEO & Founder, ClinicPro</span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <span className="size-2 rounded-full bg-blue-500"></span>
@@ -83,8 +83,8 @@ export const FounderSection = () => {
             <div className="text-sm text-gray-600">Years in NZ healthcare</div>
           </div>
           <div className="rounded-lg border border-gray-100 bg-white p-6 text-center">
-            <div className="mb-2 text-3xl font-bold text-green-600">1</div>
-            <div className="text-sm text-gray-600">Solo founder building for GPs</div>
+            <div className="mb-2 text-3xl font-bold text-green-600">80%</div>
+            <div className="text-sm text-gray-600">Less time on notes</div>
           </div>
           <div className="rounded-lg border border-gray-100 bg-white p-6 text-center">
             <div className="mb-2 text-3xl font-bold text-purple-600">100%</div>
