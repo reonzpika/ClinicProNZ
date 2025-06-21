@@ -24,24 +24,24 @@ export const SolutionSection = () => {
       {/* Enhanced Visual Background Elements */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         {/* Large artistic orbs */}
-        <div className="absolute -right-80 top-40 size-[1000px] rounded-full bg-gradient-to-br from-blue-400/8 to-indigo-500/5 blur-3xl"></div>
-        <div className="absolute -left-60 bottom-20 size-[800px] rounded-full bg-gradient-to-tr from-purple-400/10 to-pink-500/6 blur-3xl"></div>
-        
+        <div className="from-blue-400/8 absolute -right-80 top-40 size-[1000px] rounded-full bg-gradient-to-br to-indigo-500/5 blur-3xl"></div>
+        <div className="to-pink-500/6 absolute -left-60 bottom-20 size-[800px] rounded-full bg-gradient-to-tr from-purple-400/10 blur-3xl"></div>
+
         {/* Medium floating shapes */}
-        <div className="absolute right-[15%] top-[25%] size-72 rounded-full bg-gradient-to-r from-cyan-400/12 to-blue-500/8 blur-2xl"></div>
-        <div className="absolute left-[20%] bottom-[30%] size-64 rounded-full bg-gradient-to-r from-indigo-400/15 to-purple-500/10 blur-xl"></div>
-        <div className="absolute right-[45%] top-[60%] size-56 rounded-full bg-gradient-to-r from-blue-500/10 to-cyan-400/12 blur-xl"></div>
-        
+        <div className="from-cyan-400/12 to-blue-500/8 absolute right-[15%] top-1/4 size-72 rounded-full bg-gradient-to-r blur-2xl"></div>
+        <div className="absolute bottom-[30%] left-[20%] size-64 rounded-full bg-gradient-to-r from-indigo-400/15 to-purple-500/10 blur-xl"></div>
+        <div className="to-cyan-400/12 absolute right-[45%] top-[60%] size-56 rounded-full bg-gradient-to-r from-blue-500/10 blur-xl"></div>
+
         {/* Geometric accent shapes */}
-        <div className="absolute right-[25%] top-[20%] size-16 rounded-full bg-white/15"></div>
-        <div className="absolute left-[30%] bottom-[25%] size-12 rounded-full bg-blue-300/20"></div>
+        <div className="absolute right-1/4 top-[20%] size-16 rounded-full bg-white/15"></div>
+        <div className="absolute bottom-1/4 left-[30%] size-12 rounded-full bg-blue-300/20"></div>
         <div className="absolute right-[60%] top-[50%] size-10 rounded-full bg-indigo-300/25"></div>
         <div className="absolute left-[15%] top-[65%] size-16 rounded-full bg-purple-300/15"></div>
-        <div className="absolute right-[35%] bottom-[40%] size-8 rounded-full bg-cyan-300/30"></div>
-        
+        <div className="absolute bottom-[40%] right-[35%] size-8 rounded-full bg-cyan-300/30"></div>
+
         {/* Elegant line elements */}
         <div className="absolute right-[20%] top-[30%] h-48 w-px bg-gradient-to-b from-transparent via-white/20 to-transparent"></div>
-        <div className="absolute left-[35%] bottom-[45%] h-40 w-px bg-gradient-to-b from-transparent via-blue-300/25 to-transparent"></div>
+        <div className="absolute bottom-[45%] left-[35%] h-40 w-px bg-gradient-to-b from-transparent via-blue-300/25 to-transparent"></div>
         <div className="absolute right-[70%] top-[55%] h-36 w-px bg-gradient-to-b from-transparent via-indigo-300/20 to-transparent"></div>
       </div>
 
@@ -52,22 +52,22 @@ export const SolutionSection = () => {
             {/* Decorative accents behind title */}
             <div className="absolute -left-16 top-8 h-28 w-2 bg-gradient-to-b from-cyan-400 to-blue-500"></div>
             <div className="absolute -right-12 top-12 h-24 w-1.5 bg-gradient-to-b from-indigo-400 to-purple-500"></div>
-            
+
             <h2 className="relative mb-8 text-4xl font-extrabold leading-normal tracking-tight sm:text-5xl lg:text-6xl xl:text-7xl">
               <span className="block">End Admin Overwhelm,</span>
               <span className="block text-cyan-300">Start Focusing on Patients</span>
             </h2>
-            
+
             {/* Stylish accent elements */}
             <div className="absolute -right-20 top-12 size-6 rounded-full bg-cyan-400/70"></div>
-            <div className="absolute -left-18 top-24 size-5 rounded-full bg-blue-400/60"></div>
+            <div className="-left-18 absolute top-24 size-5 rounded-full bg-blue-400/60"></div>
           </div>
-          
+
           <div className="relative mx-auto max-w-4xl">
             <p className="text-xl leading-relaxed text-blue-100 lg:text-2xl">
               See how ClinicPro transforms your daily workflow from burnout to balance
             </p>
-            
+
             {/* Decorative line accent */}
             <div className="absolute -left-8 top-6 h-px w-24 bg-gradient-to-r from-cyan-400/50 to-transparent"></div>
             <div className="absolute -right-8 bottom-6 h-px w-20 bg-gradient-to-l from-blue-400/50 to-transparent"></div>
@@ -80,12 +80,12 @@ export const SolutionSection = () => {
             {/* Artistic image container */}
             <div className="relative overflow-hidden rounded-3xl border border-white/20 bg-white/5 p-2 shadow-2xl backdrop-blur-md">
               {/* Enhanced background elements */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-400/10 via-indigo-500/8 to-purple-600/5 rounded-3xl"></div>
-              
+              <div className="via-indigo-500/8 absolute inset-0 rounded-3xl bg-gradient-to-br from-blue-400/10 to-purple-600/5"></div>
+
               {/* Decorative corner accents */}
               <div className="absolute -right-8 -top-8 size-20 rounded-full bg-gradient-to-br from-cyan-400/15 to-blue-500/10"></div>
-              <div className="absolute -left-6 -bottom-6 size-16 rounded-full bg-gradient-to-tr from-indigo-400/20 to-purple-500/15"></div>
-              
+              <div className="absolute -bottom-6 -left-6 size-16 rounded-full bg-gradient-to-tr from-indigo-400/20 to-purple-500/15"></div>
+
               <div className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm">
                 <Image
                   src="/images/landing-page/gp-day-transformation.png"
@@ -127,8 +127,8 @@ export const SolutionSection = () => {
         <div className="mb-20">
           <div className="grid gap-8 sm:grid-cols-3">
             <div className="text-center">
-              <div className="relative mx-auto mb-6 flex size-20 items-center justify-center rounded-2xl border border-white/20 bg-white/10 backdrop-blur-sm shadow-xl">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-2xl"></div>
+              <div className="relative mx-auto mb-6 flex size-20 items-center justify-center rounded-2xl border border-white/20 bg-white/10 shadow-xl backdrop-blur-sm">
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/5 to-transparent"></div>
                 <span className="relative text-3xl">⏰</span>
                 {/* Decorative corner accent */}
                 <div className="absolute -right-2 -top-2 size-4 rounded-full bg-cyan-400/50"></div>
@@ -139,8 +139,8 @@ export const SolutionSection = () => {
             </div>
 
             <div className="text-center">
-              <div className="relative mx-auto mb-6 flex size-20 items-center justify-center rounded-2xl border border-white/20 bg-white/10 backdrop-blur-sm shadow-xl">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-2xl"></div>
+              <div className="relative mx-auto mb-6 flex size-20 items-center justify-center rounded-2xl border border-white/20 bg-white/10 shadow-xl backdrop-blur-sm">
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/5 to-transparent"></div>
                 <span className="relative text-3xl">📝</span>
                 {/* Decorative corner accent */}
                 <div className="absolute -right-2 -top-2 size-4 rounded-full bg-blue-400/50"></div>
@@ -151,8 +151,8 @@ export const SolutionSection = () => {
             </div>
 
             <div className="text-center">
-              <div className="relative mx-auto mb-6 flex size-20 items-center justify-center rounded-2xl border border-white/20 bg-white/10 backdrop-blur-sm shadow-xl">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-2xl"></div>
+              <div className="relative mx-auto mb-6 flex size-20 items-center justify-center rounded-2xl border border-white/20 bg-white/10 shadow-xl backdrop-blur-sm">
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/5 to-transparent"></div>
                 <span className="relative text-3xl">🩺</span>
                 {/* Decorative corner accent */}
                 <div className="absolute -right-2 -top-2 size-4 rounded-full bg-indigo-400/50"></div>
@@ -166,14 +166,14 @@ export const SolutionSection = () => {
 
         {/* Enhanced Results Summary */}
         <div className="text-center">
-          <div className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-8 backdrop-blur-sm shadow-2xl">
+          <div className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-sm">
             {/* Visual background elements */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-blue-500/5 to-indigo-600/8 rounded-3xl"></div>
-            
+            <div className="to-indigo-600/8 absolute inset-0 rounded-3xl bg-gradient-to-br from-white/5 via-blue-500/5"></div>
+
             {/* Decorative corner accents */}
-            <div className="absolute -right-10 -top-10 size-20 rounded-full bg-gradient-to-br from-cyan-400/10 to-blue-500/8"></div>
-            <div className="absolute -left-8 -bottom-8 size-16 rounded-full bg-gradient-to-tr from-indigo-400/15 to-purple-500/10"></div>
-            
+            <div className="to-blue-500/8 absolute -right-10 -top-10 size-20 rounded-full bg-gradient-to-br from-cyan-400/10"></div>
+            <div className="absolute -bottom-8 -left-8 size-16 rounded-full bg-gradient-to-tr from-indigo-400/15 to-purple-500/10"></div>
+
             <div className="relative">
               <h3 className="mb-6 text-3xl font-bold">The Result?</h3>
               <p className="mb-8 text-xl leading-relaxed text-blue-100">
@@ -203,7 +203,7 @@ export const SolutionSection = () => {
         {/* Stylish Transition Arrow */}
         <div className="mt-16 flex justify-center">
           <div className="flex flex-col items-center space-y-4">
-            <div className="rounded-full bg-white/20 p-4 backdrop-blur-sm shadow-xl">
+            <div className="rounded-full bg-white/20 p-4 shadow-xl backdrop-blur-sm">
               <svg className="size-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
               </svg>

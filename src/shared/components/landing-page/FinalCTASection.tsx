@@ -19,23 +19,23 @@ export const FinalCTASection = () => {
           <div className="absolute -right-96 top-24 size-[900px] rounded-full bg-gradient-to-r from-green-200/20 to-emerald-300/30 blur-3xl"></div>
           <div className="absolute -bottom-60 -left-40 size-[1000px] rounded-full bg-gradient-to-r from-purple-200/15 to-pink-300/25 blur-3xl"></div>
           <div className="absolute -bottom-32 -right-80 size-[700px] rounded-full bg-gradient-to-r from-orange-200/25 to-yellow-300/35 blur-3xl"></div>
-          
+
           {/* Medium floating shapes */}
-          <div className="absolute left-[25%] top-[40%] size-64 rounded-full bg-gradient-to-r from-blue-300/20 to-indigo-400/30 blur-2xl"></div>
+          <div className="absolute left-1/4 top-[40%] size-64 rounded-full bg-gradient-to-r from-blue-300/20 to-indigo-400/30 blur-2xl"></div>
           <div className="absolute right-[30%] top-[60%] size-72 rounded-full bg-gradient-to-r from-pink-300/25 to-rose-400/35 blur-xl"></div>
-          <div className="absolute left-[60%] bottom-[20%] size-56 rounded-full bg-gradient-to-r from-emerald-300/30 to-teal-400/40 blur-2xl"></div>
-          
+          <div className="absolute bottom-[20%] left-[60%] size-56 rounded-full bg-gradient-to-r from-emerald-300/30 to-teal-400/40 blur-2xl"></div>
+
           {/* Geometric accent shapes */}
           <div className="absolute left-[20%] top-[15%] size-8 rounded-full bg-white/50"></div>
-          <div className="absolute right-[25%] top-[25%] size-6 rounded-full bg-cyan-400/60"></div>
+          <div className="absolute right-1/4 top-1/4 size-6 rounded-full bg-cyan-400/60"></div>
           <div className="absolute left-[70%] top-[35%] size-10 rounded-full bg-green-400/50"></div>
-          <div className="absolute right-[15%] bottom-[40%] size-4 rounded-full bg-yellow-400/70"></div>
-          <div className="absolute left-[40%] bottom-[15%] size-12 rounded-full bg-purple-400/45"></div>
+          <div className="absolute bottom-[40%] right-[15%] size-4 rounded-full bg-yellow-400/70"></div>
+          <div className="absolute bottom-[15%] left-[40%] size-12 rounded-full bg-purple-400/45"></div>
 
           {/* Elegant line elements */}
           <div className="absolute left-[30%] top-[20%] h-48 w-px bg-gradient-to-b from-transparent via-white/30 to-transparent"></div>
           <div className="absolute right-[45%] top-[50%] h-40 w-px bg-gradient-to-b from-transparent via-cyan-400/40 to-transparent"></div>
-          <div className="absolute left-[80%] bottom-[30%] h-52 w-px bg-gradient-to-b from-transparent via-green-400/35 to-transparent"></div>
+          <div className="absolute bottom-[30%] left-[80%] h-52 w-px bg-gradient-to-b from-transparent via-green-400/35 to-transparent"></div>
         </div>
 
         {/* Enhanced background pattern */}
@@ -84,7 +84,7 @@ export const FinalCTASection = () => {
               <div className="relative mx-auto mb-6 flex size-24 items-center justify-center rounded-full border-2 border-white/20 bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-sm transition-all duration-300 sm:mb-8 sm:size-28">
                 <Clock className="size-12 text-white sm:size-14" />
                 {/* Enhanced glowing effect */}
-                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-green-400/25 to-emerald-400/35 blur-xl opacity-0 transition-opacity group-hover:opacity-100"></div>
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-green-400/25 to-emerald-400/35 opacity-0 blur-xl transition-opacity group-hover:opacity-100"></div>
                 {/* Floating particles around icon */}
                 <div className="absolute -right-2 -top-2 size-3 rounded-full bg-green-400/60"></div>
                 <div className="absolute -bottom-2 -left-2 size-2 rounded-full bg-emerald-400/70"></div>
@@ -97,7 +97,7 @@ export const FinalCTASection = () => {
               <div className="relative mx-auto mb-6 flex size-24 items-center justify-center rounded-full border-2 border-white/20 bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-sm transition-all duration-300 sm:mb-8 sm:size-28">
                 <Shield className="size-12 text-white sm:size-14" />
                 {/* Enhanced glowing effect */}
-                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400/25 to-indigo-400/35 blur-xl opacity-0 transition-opacity group-hover:opacity-100"></div>
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400/25 to-indigo-400/35 opacity-0 blur-xl transition-opacity group-hover:opacity-100"></div>
                 {/* Floating particles around icon */}
                 <div className="absolute -right-2 -top-2 size-3 rounded-full bg-blue-400/60"></div>
                 <div className="absolute -bottom-2 -left-2 size-2 rounded-full bg-indigo-400/70"></div>
@@ -110,7 +110,7 @@ export const FinalCTASection = () => {
               <div className="relative mx-auto mb-6 flex size-24 items-center justify-center rounded-full border-2 border-white/20 bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-sm transition-all duration-300 sm:mb-8 sm:size-28">
                 <Users className="size-12 text-white sm:size-14" />
                 {/* Enhanced glowing effect */}
-                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-400/25 to-violet-400/35 blur-xl opacity-0 transition-opacity group-hover:opacity-100"></div>
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-400/25 to-violet-400/35 opacity-0 blur-xl transition-opacity group-hover:opacity-100"></div>
                 {/* Floating particles around icon */}
                 <div className="absolute -right-2 -top-2 size-3 rounded-full bg-purple-400/60"></div>
                 <div className="absolute -bottom-2 -left-2 size-2 rounded-full bg-violet-400/70"></div>
@@ -124,7 +124,7 @@ export const FinalCTASection = () => {
           <div className="mb-16">
             <Button
               size="lg"
-              className="group relative overflow-hidden bg-gradient-to-r from-white to-gray-100 px-12 py-6 text-2xl font-semibold text-blue-600 shadow-2xl transition-all duration-300 hover:scale-105 hover:from-yellow-100 hover:to-white hover:shadow-3xl lg:px-16 lg:py-8 lg:text-3xl"
+              className="hover:shadow-3xl group relative overflow-hidden bg-gradient-to-r from-white to-gray-100 px-12 py-6 text-2xl font-semibold text-blue-600 shadow-2xl transition-all duration-300 hover:scale-105 hover:from-yellow-100 hover:to-white lg:px-16 lg:py-8 lg:text-3xl"
               onClick={() => setShowEmailModal(true)}
             >
               <span className="relative z-10 flex items-center">
@@ -136,7 +136,7 @@ export const FinalCTASection = () => {
               {/* Enhanced floating particles */}
               <div className="absolute right-6 top-6 size-3 rounded-full bg-blue-400/50"></div>
               <div className="absolute bottom-6 left-8 size-2 rounded-full bg-indigo-400/70"></div>
-              <div className="absolute right-12 bottom-4 size-2.5 rounded-full bg-purple-400/60"></div>
+              <div className="absolute bottom-4 right-12 size-2.5 rounded-full bg-purple-400/60"></div>
             </Button>
           </div>
 
@@ -145,7 +145,7 @@ export const FinalCTASection = () => {
               <span className="font-semibold text-yellow-300">Free access for early feedback</span>
               <span className="block sm:inline"> — No credit card required</span>
             </p>
-            
+
             {/* Enhanced trust indicators */}
             <div className="flex flex-col items-center justify-center gap-6 text-lg text-blue-200 sm:flex-row sm:gap-12">
               <span className="flex items-center rounded-full border border-white/20 bg-white/10 px-6 py-3 backdrop-blur-sm transition-all hover:bg-white/15">

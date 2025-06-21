@@ -8,25 +8,25 @@ export const ClinicalDecisionSection = () => {
       {/* Enhanced Visual Background Elements */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         {/* Large artistic orbs */}
-        <div className="absolute -left-80 top-24 size-[700px] rounded-full bg-gradient-to-br from-blue-200/10 to-indigo-300/6 blur-3xl"></div>
-        <div className="absolute -right-96 bottom-16 size-[800px] rounded-full bg-gradient-to-tr from-purple-200/8 to-pink-300/5 blur-3xl"></div>
+        <div className="to-indigo-300/6 absolute -left-80 top-24 size-[700px] rounded-full bg-gradient-to-br from-blue-200/10 blur-3xl"></div>
+        <div className="from-purple-200/8 absolute -right-96 bottom-16 size-[800px] rounded-full bg-gradient-to-tr to-pink-300/5 blur-3xl"></div>
 
         {/* Medium floating shapes */}
-        <div className="absolute left-[20%] top-[35%] size-56 rounded-full bg-gradient-to-r from-emerald-200/12 to-teal-300/8 blur-2xl"></div>
-        <div className="absolute right-[15%] top-[55%] size-64 rounded-full bg-gradient-to-r from-violet-200/10 to-purple-300/6 blur-xl"></div>
-        <div className="absolute left-[65%] bottom-[30%] size-48 rounded-full bg-gradient-to-r from-amber-200/15 to-orange-300/10 blur-xl"></div>
+        <div className="from-emerald-200/12 to-teal-300/8 absolute left-[20%] top-[35%] size-56 rounded-full bg-gradient-to-r blur-2xl"></div>
+        <div className="to-purple-300/6 absolute right-[15%] top-[55%] size-64 rounded-full bg-gradient-to-r from-violet-200/10 blur-xl"></div>
+        <div className="absolute bottom-[30%] left-[65%] size-48 rounded-full bg-gradient-to-r from-amber-200/15 to-orange-300/10 blur-xl"></div>
 
         {/* Geometric accent shapes */}
         <div className="absolute left-[30%] top-[20%] size-10 rounded-full bg-blue-400/35"></div>
-        <div className="absolute right-[25%] top-[25%] size-8 rounded-full bg-emerald-400/40"></div>
-        <div className="absolute left-[75%] top-[40%] size-12 rounded-full bg-purple-400/30"></div>
-        <div className="absolute right-[20%] bottom-[35%] size-6 rounded-full bg-orange-400/45"></div>
-        <div className="absolute left-[40%] bottom-[20%] size-14 rounded-full bg-indigo-400/25"></div>
+        <div className="absolute right-1/4 top-1/4 size-8 rounded-full bg-emerald-400/40"></div>
+        <div className="absolute left-3/4 top-[40%] size-12 rounded-full bg-purple-400/30"></div>
+        <div className="absolute bottom-[35%] right-[20%] size-6 rounded-full bg-orange-400/45"></div>
+        <div className="absolute bottom-[20%] left-[40%] size-14 rounded-full bg-indigo-400/25"></div>
 
         {/* Elegant line elements */}
         <div className="absolute left-[35%] top-[30%] h-40 w-px bg-gradient-to-b from-transparent via-blue-400/25 to-transparent"></div>
         <div className="absolute right-[45%] top-[65%] h-36 w-px bg-gradient-to-b from-transparent via-purple-400/30 to-transparent"></div>
-        <div className="absolute left-[80%] bottom-[40%] h-32 w-px bg-gradient-to-b from-transparent via-emerald-400/20 to-transparent"></div>
+        <div className="absolute bottom-[40%] left-[80%] h-32 w-px bg-gradient-to-b from-transparent via-emerald-400/20 to-transparent"></div>
       </div>
 
       {/* Sophisticated geometric patterns overlay */}
@@ -75,7 +75,7 @@ export const ClinicalDecisionSection = () => {
             <div className="group relative overflow-hidden rounded-2xl border border-green-200/60 bg-white/95 p-8 shadow-xl transition-all duration-300 hover:shadow-2xl">
               {/* Visual accent background */}
               <div className="absolute inset-0 bg-gradient-to-br from-green-50/40 via-transparent to-emerald-50/30 opacity-60"></div>
-              
+
               {/* Decorative corner accent */}
               <div className="absolute -right-6 -top-6 size-16 rounded-full bg-gradient-to-br from-green-200/20 to-emerald-300/15"></div>
 
@@ -86,7 +86,9 @@ export const ClinicalDecisionSection = () => {
                 <div>
                   <h3 className="mb-4 text-2xl font-semibold text-gray-900">Clinical Judgment First</h3>
                   <p className="text-lg leading-relaxed text-gray-600 group-hover:text-gray-700">
-                    <strong>Never replaces your expertise</strong> — ClinicPro enhances your decision-making
+                    <strong>Never replaces your expertise</strong>
+                    {' '}
+                    — ClinicPro enhances your decision-making
                     with contextual support. You remain in complete control of every clinical decision.
                   </p>
                 </div>
@@ -99,7 +101,7 @@ export const ClinicalDecisionSection = () => {
             <div className="group relative overflow-hidden rounded-2xl border border-blue-200/60 bg-white/95 p-8 shadow-xl transition-all duration-300 hover:shadow-2xl">
               {/* Visual accent background */}
               <div className="absolute inset-0 bg-gradient-to-br from-blue-50/40 via-transparent to-indigo-50/30 opacity-60"></div>
-              
+
               {/* Decorative corner accent */}
               <div className="absolute -right-6 -top-6 size-16 rounded-full bg-gradient-to-br from-blue-200/20 to-indigo-300/15"></div>
 
@@ -110,7 +112,9 @@ export const ClinicalDecisionSection = () => {
                 <div>
                   <h3 className="mb-4 text-2xl font-semibold text-gray-900">Privacy by Design</h3>
                   <p className="text-lg leading-relaxed text-gray-600 group-hover:text-gray-700">
-                    <strong>Your data, your control.</strong> Privacy Act 2020 compliant, end-to-end encryption,
+                    <strong>Your data, your control.</strong>
+                    {' '}
+                    Privacy Act 2020 compliant, end-to-end encryption,
                     and no patient data used for training. Built with NZ healthcare privacy standards in mind.
                   </p>
                 </div>
@@ -123,7 +127,7 @@ export const ClinicalDecisionSection = () => {
             <div className="group relative overflow-hidden rounded-2xl border border-purple-200/60 bg-white/95 p-8 shadow-xl transition-all duration-300 hover:shadow-2xl">
               {/* Visual accent background */}
               <div className="absolute inset-0 bg-gradient-to-br from-purple-50/40 via-transparent to-violet-50/30 opacity-60"></div>
-              
+
               {/* Decorative corner accent */}
               <div className="absolute -right-6 -top-6 size-16 rounded-full bg-gradient-to-br from-purple-200/20 to-violet-300/15"></div>
 
@@ -134,7 +138,9 @@ export const ClinicalDecisionSection = () => {
                 <div>
                   <h3 className="mb-4 text-2xl font-semibold text-gray-900">Built by GPs, for GPs</h3>
                   <p className="text-lg leading-relaxed text-gray-600 group-hover:text-gray-700">
-                    <strong>Real clinical experience drives every feature.</strong> Created by a practicing NZ GP
+                    <strong>Real clinical experience drives every feature.</strong>
+                    {' '}
+                    Created by a practicing NZ GP
                     who faces the same documentation challenges and burnout pressures you do.
                   </p>
                 </div>
@@ -151,7 +157,7 @@ export const ClinicalDecisionSection = () => {
               {/* Background decoratives */}
               <div className="absolute -right-8 -top-8 size-24 rounded-full bg-gradient-to-br from-indigo-200/20 to-purple-300/15 blur-2xl"></div>
               <div className="absolute -bottom-6 -left-6 size-20 rounded-full bg-gradient-to-tr from-blue-200/25 to-indigo-300/20 blur-xl"></div>
-              
+
               <div className="relative z-10 text-center">
                 <div className="mb-8">
                   <div className="mx-auto mb-6 flex size-20 items-center justify-center rounded-full bg-gradient-to-br from-indigo-100 to-purple-200 shadow-xl">
@@ -195,11 +201,15 @@ export const ClinicalDecisionSection = () => {
             <div className="relative overflow-hidden rounded-2xl border border-green-200/60 bg-gradient-to-br from-green-50/80 to-emerald-50/60 p-8 shadow-xl">
               {/* Background decoratives */}
               <div className="absolute -right-6 -top-6 size-20 rounded-full bg-gradient-to-br from-green-200/15 to-emerald-300/10 blur-xl"></div>
-              
+
               <div className="relative z-10 text-center">
                 <h3 className="mb-4 text-2xl font-semibold text-gray-900">🔒 Privacy-First Commitment</h3>
                 <p className="mb-6 text-lg text-gray-600">
-                  <strong>No patient data storage.</strong> <strong>No commercial use.</strong> <strong>No training on your consultations.</strong>
+                  <strong>No patient data storage.</strong>
+                  {' '}
+                  <strong>No commercial use.</strong>
+                  {' '}
+                  <strong>No training on your consultations.</strong>
                 </p>
                 <div className="inline-flex items-center space-x-3 rounded-full border border-green-300/60 bg-white/80 px-6 py-3 shadow-lg">
                   <Shield className="size-5 text-green-600" />
@@ -219,7 +229,7 @@ export const ClinicalDecisionSection = () => {
             {/* Background decoratives */}
             <div className="absolute -right-16 -top-16 size-40 rounded-full bg-gradient-to-br from-blue-200/15 to-indigo-300/10 blur-3xl"></div>
             <div className="absolute -bottom-12 -left-12 size-32 rounded-full bg-gradient-to-tr from-purple-200/20 to-pink-300/15 blur-2xl"></div>
-            
+
             <div className="relative z-10">
               <h3 className="mb-6 text-3xl font-bold text-gray-900 sm:text-4xl">
                 Trust Built on Clinical Experience
