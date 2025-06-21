@@ -11,6 +11,10 @@ export default {
   ],
   theme: {
     extend: {
+      screens: {
+        'xs': '400px',
+        // Add extra small breakpoint for screens under 400px
+      },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',

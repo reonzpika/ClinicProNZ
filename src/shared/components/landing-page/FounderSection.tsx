@@ -1,107 +1,274 @@
 'use client';
 
+import { Clock, Heart, Stethoscope, Users, Zap } from 'lucide-react';
+import { useState } from 'react';
+
+import { EmailCaptureModal } from '@/shared/components/EmailCaptureModal';
+import { Button } from '@/shared/components/ui/button';
+
 export const FounderSection = () => {
+  const [showEmailModal, setShowEmailModal] = useState(false);
+
   return (
-    <section className="bg-gray-50 py-20">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-16 text-center">
-          <h2 className="mb-4 text-4xl font-bold text-gray-900">
-            A NZ GP Who's Been in Your Shoes
-          </h2>
-          <p className="text-xl text-gray-600">
-            Built by someone who truly understands the daily challenges of NZ general practice.
-          </p>
+    <>
+      <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 via-white to-indigo-50 py-16 sm:py-24 lg:py-32">
+        {/* Enhanced Visual Background Elements */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          {/* Large artistic orbs */}
+          <div className="from-blue-200/12 to-indigo-300/8 absolute -left-40 top-32 size-[600px] rounded-full bg-gradient-to-br blur-3xl"></div>
+          <div className="to-pink-300/6 absolute -right-60 bottom-20 size-[700px] rounded-full bg-gradient-to-tr from-purple-200/10 blur-3xl"></div>
+
+          {/* Medium floating shapes */}
+          <div className="absolute left-[20%] top-1/4 size-48 rounded-full bg-gradient-to-r from-emerald-200/15 to-teal-300/10 blur-2xl"></div>
+          <div className="from-violet-200/12 to-purple-300/8 absolute right-[15%] top-[60%] size-56 rounded-full bg-gradient-to-r blur-xl"></div>
+          <div className="absolute bottom-[30%] left-[60%] size-40 rounded-full bg-gradient-to-r from-amber-200/20 to-orange-300/15 blur-xl"></div>
+
+          {/* Geometric accent shapes */}
+          <div className="absolute left-1/4 top-[15%] size-10 rounded-full bg-blue-400/35"></div>
+          <div className="absolute right-[30%] top-[20%] size-8 rounded-full bg-emerald-400/45"></div>
+          <div className="absolute left-[70%] top-[45%] size-12 rounded-full bg-purple-400/40"></div>
+          <div className="absolute bottom-1/4 right-[20%] size-6 rounded-full bg-orange-400/50"></div>
+          <div className="absolute bottom-[15%] left-[40%] size-14 rounded-full bg-indigo-400/30"></div>
+
+          {/* Elegant line elements */}
+          <div className="absolute left-[30%] top-[30%] h-32 w-px bg-gradient-to-b from-transparent via-blue-400/25 to-transparent"></div>
+          <div className="absolute right-[40%] top-[50%] h-28 w-px bg-gradient-to-b from-transparent via-purple-400/30 to-transparent"></div>
+          <div className="absolute bottom-[40%] left-[80%] h-36 w-px bg-gradient-to-b from-transparent via-emerald-400/20 to-transparent"></div>
         </div>
 
-        <div className="rounded-xl border border-gray-100 bg-white p-8 shadow-lg">
-          <div className="flex flex-col items-center gap-8 md:flex-row">
-            <div className="flex size-48 items-center justify-center rounded-full border-4 border-blue-50 bg-gradient-to-br from-blue-100 to-indigo-100">
-              <div className="text-center">
-                <div className="mb-1 text-4xl font-bold text-blue-600">Dr</div>
-                <div className="text-lg text-blue-700">RY</div>
+        {/* Sophisticated geometric patterns overlay */}
+        <div className="pointer-events-none absolute inset-0 opacity-[0.015]">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%236366f1' fill-opacity='1'%3E%3Cpath d='M40 40c0-4.4-3.6-8-8-8s-8 3.6-8 8 3.6 8 8 8 8-3.6 8-8zm16-16c0-4.4-3.6-8-8-8s-8 3.6-8 8 3.6 8 8 8 8-3.6 8-8zm0 32c0-4.4-3.6-8-8-8s-8 3.6-8 8 3.6 8 8 8 8-3.6 8-8zm-32-16c0-4.4-3.6-8-8-8s-8 3.6-8 8 3.6 8 8 8 8-3.6 8-8z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            }}
+          />
+        </div>
+
+        <div className="relative mx-auto max-w-6xl px-6 sm:px-8 lg:px-12">
+          {/* Stylish Header Section */}
+          <div className="mb-20 text-center">
+            <div className="relative inline-block">
+              {/* Decorative accents behind title */}
+              <div className="absolute -left-8 top-4 h-20 w-1.5 bg-gradient-to-b from-red-500 to-orange-600"></div>
+              <div className="absolute -right-6 top-8 h-16 w-1 bg-gradient-to-b from-blue-500 to-indigo-600"></div>
+
+              <h2 className="relative mb-6 text-4xl font-extrabold leading-normal tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
+                <span className="block">Built by a GP Who</span>
+                <span className="block text-red-600">Truly Knows the Struggle</span>
+              </h2>
+
+              {/* Stylish accent elements */}
+              <div className="absolute -right-12 top-6 size-4 rounded-full bg-red-400/60"></div>
+              <div className="absolute -left-10 top-16 size-3 rounded-full bg-blue-400/70"></div>
+            </div>
+
+            <div className="relative mx-auto max-w-3xl">
+              <p className="text-xl leading-relaxed text-gray-600 lg:text-2xl">
+                <span className="font-semibold text-red-600">"79% of GPs report burnout. I've been there too."</span>
+              </p>
+
+              {/* Decorative line accent */}
+              <div className="absolute -left-4 top-4 h-px w-16 bg-gradient-to-r from-red-400 to-transparent"></div>
+              <div className="absolute -right-4 bottom-4 h-px w-12 bg-gradient-to-l from-orange-400 to-transparent"></div>
+            </div>
+          </div>
+
+          <div className="grid gap-12 lg:grid-cols-2 lg:items-start lg:gap-16">
+            {/* Left: Enhanced Personal Story */}
+            <div className="order-2 lg:order-1">
+              <div className="relative overflow-hidden rounded-2xl border-2 border-blue-200/50 bg-white/95 p-8 shadow-2xl backdrop-blur-sm">
+                {/* Visual accent background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-indigo-50/20 to-purple-50/25 opacity-50"></div>
+
+                {/* Decorative corner accents */}
+                <div className="absolute -right-6 -top-6 size-16 rounded-full bg-gradient-to-br from-blue-200/20 to-indigo-300/15"></div>
+                <div className="absolute -bottom-4 -left-4 size-12 rounded-full bg-gradient-to-tr from-purple-200/25 to-pink-300/20"></div>
+
+                <div className="relative z-10">
+                  <div className="mb-8 flex items-center space-x-4">
+                    <div className="flex size-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-indigo-200 shadow-lg">
+                      <Stethoscope className="size-8 text-blue-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-900">Dr. Ryo Eguchi</h3>
+                      <p className="text-lg font-medium text-blue-600">Founder & Practising GP</p>
+                    </div>
+                  </div>
+
+                  <blockquote className="space-y-6 text-base leading-relaxed text-gray-700">
+                    <p>
+                      <span className="font-semibold text-red-600">I used to spend up to two extra hours each evening catching up on notes</span>
+                      — especially in practices with older patient lists — juggling paperwork long after clinic doors closed.
+                    </p>
+
+                    <p>
+                      I tried typing notes during consultations, but it disrupted the connection.
+                      <span className="font-medium text-gray-900"> Patients could tell I wasn't fully present.</span>
+                    </p>
+
+                    <div className="rounded-lg border-l-4 border-red-300 bg-red-50/80 p-4">
+                      <p className="font-medium text-red-700">Those extra hours stole time from my patients — and from my family, my downtime, my life.</p>
+                    </div>
+
+                    <p>
+                      Now that I practice in Auckland, I've trimmed that burden, but I haven't forgotten what it's like to feel buried under admin.
+                    </p>
+
+                    <div className="border-l-4 border-blue-300 bg-blue-50/50 p-4 italic">
+                      <p>
+                        "I tested every solution out there — overpriced, built for overseas systems, or too basic.
+                        None matched the pace or needs of New Zealand general practice."
+                      </p>
+                    </div>
+
+                    <p className="text-lg font-semibold text-blue-700">
+                      So I built ClinicPro: a consultation companion by a practising GP for practising GPs.
+                    </p>
+                  </blockquote>
+
+                  {/* Enhanced personal testimonial */}
+                  <div className="mt-8 rounded-xl border-2 border-green-200/60 bg-gradient-to-r from-green-50/80 to-emerald-50/60 p-6 shadow-lg">
+                    <p className="text-center text-lg font-medium italic text-green-800">
+                      "ClinicPro feels like the assistant I always needed — giving me back time and peace of mind."
+                    </p>
+                  </div>
+                </div>
+
+                {/* Floating accent elements */}
+                <div className="absolute -left-2 top-20 size-3 rounded-full bg-blue-400/40"></div>
+                <div className="absolute -right-2 bottom-32 size-4 rounded-full bg-purple-400/35"></div>
               </div>
             </div>
 
-            <div className="flex-1">
-              <blockquote className="mb-6 text-lg leading-relaxed text-gray-700">
-                "After 10+ years in healthcare, I was tired of staying late after work to finish my notes.
-                The documentation burden was taking time away from patients and from my life.
+            {/* Right: Enhanced Impact & Vision */}
+            <div className="order-1 space-y-8 lg:order-2">
+              {/* Enhanced Solution Stats */}
+              <div className="relative overflow-hidden rounded-2xl border-2 border-green-200/50 bg-gradient-to-br from-green-50/80 to-emerald-50/60 p-8 shadow-xl">
+                {/* Background decoratives */}
+                <div className="absolute -right-8 -top-8 size-20 rounded-full bg-gradient-to-br from-green-200/15 to-emerald-300/10 blur-xl"></div>
 
-                <br />
-                <br />
-
-                But it wasn't just about saving time — I wanted to create better documentation for continuity of care.
-                With more GPs working part-time, patients often see different doctors.
-                <span className="font-medium text-gray-900">Clear, comprehensive notes are essential for seamless patient care across providers.</span>
-
-                <br />
-                <br />
-
-                I tried every solution out there, but they were either too expensive, too complex, or built for overseas healthcare systems.
-                So I decided to build something specifically for NZ GPs, by a NZ GP.
-
-                <br />
-                <br />
-
-                <span className="font-medium text-blue-700">ClinicPro isn't just another transcription tool</span>
-                {' '}
-                — it's designed around how we actually work,
-                with NZ medical terminology, local guidelines, and the clinical workflows we use every day."
-              </blockquote>
-
-              <div className="border-t pt-6">
-                <div className="flex items-start space-x-4">
-                  <div>
-                    <div className="text-lg font-semibold text-blue-600">
-                      Dr. Ryo Eguchi
+                <div className="relative z-10">
+                  <h4 className="mb-6 text-center text-2xl font-bold text-green-800">What ClinicPro Delivers</h4>
+                  <div className="grid gap-6 text-center sm:grid-cols-3">
+                    <div className="rounded-lg bg-white/60 p-4 shadow-md">
+                      <div className="mb-2 text-3xl font-bold text-green-600">0</div>
+                      <div className="text-sm font-medium text-green-700">Hours unpaid overtime</div>
                     </div>
-                    <div className="mb-3 text-gray-600">Founder & Practicing GP</div>
-                    <div className="space-y-2 text-sm text-gray-500">
-                      <div className="flex items-center space-x-2">
-                        <span className="size-2 rounded-full bg-blue-500"></span>
-                        <span>4 years as a GP, 10+ years in healthcare</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className="size-2 rounded-full bg-blue-500"></span>
-                        <span>CEO & Founder, ClinicPro</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className="size-2 rounded-full bg-blue-500"></span>
-                        <span>Passionate about technology in healthcare</span>
-                      </div>
+                    <div className="rounded-lg bg-white/60 p-4 shadow-md">
+                      <div className="mb-2 text-3xl font-bold text-green-600">100%</div>
+                      <div className="text-sm font-medium text-green-700">Present with patients</div>
+                    </div>
+                    <div className="rounded-lg bg-white/60 p-4 shadow-md">
+                      <div className="mb-2 text-3xl font-bold text-green-600">∞</div>
+                      <div className="text-sm font-medium text-green-700">Time reclaimed for life</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Enhanced Mission Statement */}
+              <div className="relative overflow-hidden rounded-2xl border-2 border-indigo-200/50 bg-gradient-to-br from-indigo-50/80 to-purple-50/60 p-8 shadow-xl">
+                {/* Background decoratives */}
+                <div className="absolute -bottom-6 -left-6 size-24 rounded-full bg-gradient-to-tr from-indigo-200/20 to-purple-300/15 blur-2xl"></div>
+
+                <div className="relative z-10 text-center">
+                  <div className="mb-6">
+                    <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-gradient-to-br from-indigo-100 to-purple-200 shadow-lg">
+                      <Heart className="size-8 text-indigo-600" />
+                    </div>
+                  </div>
+                  <h3 className="mb-6 text-2xl font-bold text-gray-900">My Promise to You</h3>
+                  <p className="text-lg leading-relaxed text-gray-700">
+                    <span className="font-semibold text-indigo-700">No GP should sacrifice their life for documentation.</span>
+                    {' '}
+                    ClinicPro gives you back the time that belongs with your patients, your family, and yourself.
+                  </p>
+                </div>
+              </div>
+
+              {/* Enhanced Key Principles */}
+              <div className="space-y-6">
+                <h4 className="text-xl font-semibold text-gray-900">Built from Real Experience:</h4>
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-4 rounded-lg bg-white/80 p-4 shadow-md">
+                    <div className="flex size-10 items-center justify-center rounded-lg bg-red-100">
+                      <Clock className="size-5 text-red-500" />
+                    </div>
+                    <div>
+                      <span className="text-lg font-medium text-gray-900">Lived the Burnout</span>
+                      <p className="text-sm text-gray-600">Every feature solves a problem I personally faced</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-4 rounded-lg bg-white/80 p-4 shadow-md">
+                    <div className="flex size-10 items-center justify-center rounded-lg bg-blue-100">
+                      <Users className="size-5 text-blue-500" />
+                    </div>
+                    <div>
+                      <span className="text-lg font-medium text-gray-900">GP-to-GP Understanding</span>
+                      <p className="text-sm text-gray-600">Built by someone who practices what they preach</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-4 rounded-lg bg-white/80 p-4 shadow-md">
+                    <div className="flex size-10 items-center justify-center rounded-lg bg-green-100">
+                      <Zap className="size-5 text-green-500" />
+                    </div>
+                    <div>
+                      <span className="text-lg font-medium text-gray-900">NZ Healthcare Reality</span>
+                      <p className="text-sm text-gray-600">Designed for our unique pace and patient needs</p>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
-          <div className="rounded-lg border border-gray-100 bg-white p-6 text-center">
-            <div className="mb-2 text-3xl font-bold text-blue-600">10+</div>
-            <div className="text-sm text-gray-600">Years in NZ healthcare</div>
-          </div>
-          <div className="rounded-lg border border-gray-100 bg-white p-6 text-center">
-            <div className="mb-2 text-3xl font-bold text-green-600">80%</div>
-            <div className="text-sm text-gray-600">Less time on notes</div>
-          </div>
-          <div className="rounded-lg border border-gray-100 bg-white p-6 text-center">
-            <div className="mb-2 text-3xl font-bold text-purple-600">100%</div>
-            <div className="text-sm text-gray-600">Focused on NZ GP needs</div>
-          </div>
-        </div>
+          {/* Enhanced Call to Action */}
+          <div className="mt-20 text-center">
+            <div className="relative mx-auto max-w-4xl overflow-hidden rounded-2xl border-2 border-blue-200/50 bg-gradient-to-r from-blue-50/80 to-indigo-50/60 p-8 shadow-2xl">
+              {/* Background decoratives */}
+              <div className="absolute -right-12 -top-12 size-32 rounded-full bg-gradient-to-br from-blue-200/15 to-indigo-300/10 blur-3xl"></div>
+              <div className="absolute -bottom-8 -left-8 size-24 rounded-full bg-gradient-to-tr from-purple-200/20 to-pink-300/15 blur-2xl"></div>
 
-        <div className="mt-12 text-center">
-          <div className="inline-flex flex-col items-center space-y-2 rounded-xl border border-blue-200 bg-blue-50 px-8 py-4">
-            <div className="flex items-center space-x-2">
-              <span className="font-medium text-blue-600">💡</span>
-              <span className="text-sm font-medium text-blue-800">"Every feature comes from real clinical experience"</span>
+              <div className="relative z-10">
+                <h3 className="mb-6 text-3xl font-bold text-gray-900 sm:text-4xl">
+                  Reclaim Your Time, Reclaim Your Life
+                </h3>
+                <p className="mb-8 text-lg leading-relaxed text-gray-600 lg:text-xl">
+                  You became a GP to help patients, not to drown in paperwork.
+                  <span className="block font-medium text-blue-600 sm:inline"> Let's prove that technology can give you back what matters most.</span>
+                </p>
+
+                <div className="mb-6">
+                  <Button
+                    size="lg"
+                    className="group relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-4 text-lg font-semibold text-white shadow-xl transition-all duration-300 hover:scale-105 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl"
+                    onClick={() => setShowEmailModal(true)}
+                  >
+                    <span className="relative z-10">Join the Beta — Get Your Life Back</span>
+                    {/* Button shine effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                  </Button>
+                </div>
+
+                <p className="text-sm text-gray-500">
+                  Help shape the future of NZ clinical documentation
+                </p>
+              </div>
+
+              {/* Floating accent elements */}
+              <div className="absolute -left-3 top-16 size-3 rounded-full bg-blue-400/50"></div>
+              <div className="absolute -right-2 bottom-20 size-4 rounded-full bg-purple-400/40"></div>
             </div>
-            <span className="text-xs text-blue-600">Help shape the future of NZ clinical documentation</span>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <EmailCaptureModal
+        isOpen={showEmailModal}
+        onClose={() => setShowEmailModal(false)}
+      />
+    </>
   );
 };

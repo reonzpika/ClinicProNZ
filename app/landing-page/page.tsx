@@ -4,9 +4,9 @@ import { FinalCTASection } from '@/shared/components/landing-page/FinalCTASectio
 import { FounderSection } from '@/shared/components/landing-page/FounderSection';
 import { HeroSection } from '@/shared/components/landing-page/HeroSection';
 import { PainPointsSection } from '@/shared/components/landing-page/PainPointsSection';
-import { PricingSection } from '@/shared/components/landing-page/PricingSection';
 import { ProductSection } from '@/shared/components/landing-page/ProductSection';
 import { SolutionSection } from '@/shared/components/landing-page/SolutionSection';
+import { TestimonialsSection } from '@/shared/components/landing-page/TestimonialsSection';
 
 export default function LandingPage() {
   return (
@@ -16,9 +16,9 @@ export default function LandingPage() {
       <SolutionSection />
       <ProductSection />
       <CustomTemplatesSection />
+      <TestimonialsSection />
       <ClinicalDecisionSection />
       <FounderSection />
-      <PricingSection />
       <FinalCTASection />
     </main>
   );
