@@ -23,6 +23,8 @@ export const EmailCaptureModal = ({ isOpen, onClose }: EmailCaptureModalProps) =
     practiceName: '',
     practiceSize: '',
     biggestChallenge: '',
+    hasUsedAIScribing: '',
+    whichAITool: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -63,6 +65,8 @@ export const EmailCaptureModal = ({ isOpen, onClose }: EmailCaptureModalProps) =
           practiceName: '',
           practiceSize: '',
           biggestChallenge: '',
+          hasUsedAIScribing: '',
+          whichAITool: '',
         });
       }, 2000);
     } catch (err) {
@@ -79,7 +83,7 @@ export const EmailCaptureModal = ({ isOpen, onClose }: EmailCaptureModalProps) =
   if (isSuccess) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="border bg-white shadow-2xl sm:max-w-md">
           <div className="flex flex-col items-center space-y-4 py-8">
             <div className="rounded-full bg-green-100 p-3">
               <Check className="size-8 text-green-600" />
@@ -98,7 +102,7 @@ export const EmailCaptureModal = ({ isOpen, onClose }: EmailCaptureModalProps) =
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="max-h-[90vh] overflow-y-auto border bg-white shadow-2xl sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Mail className="size-5 text-blue-600" />
@@ -128,7 +132,7 @@ export const EmailCaptureModal = ({ isOpen, onClose }: EmailCaptureModalProps) =
               id="name"
               value={formData.name}
               onChange={e => handleChange('name', e.target.value)}
-              placeholder="Dr. Your Name"
+              placeholder="Your Name"
             />
           </div>
 
@@ -168,6 +172,32 @@ export const EmailCaptureModal = ({ isOpen, onClose }: EmailCaptureModalProps) =
             />
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="hasUsedAIScribing">Have you used AI scribing tools before? (Optional)</Label>
+            <Select value={formData.hasUsedAIScribing} onValueChange={value => handleChange('hasUsedAIScribing', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select your experience" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="no">No, I haven't used any</SelectItem>
+                <SelectItem value="yes">Yes, I have experience with AI scribing</SelectItem>
+                <SelectItem value="considering">I'm considering trying one</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {formData.hasUsedAIScribing === 'yes' && (
+            <div className="space-y-2">
+              <Label htmlFor="whichAITool">Which AI scribing tool(s) have you used? (Optional)</Label>
+              <Input
+                id="whichAITool"
+                value={formData.whichAITool}
+                onChange={e => handleChange('whichAITool', e.target.value)}
+                placeholder="e.g., Heidi, Nuance Dragon, Abridge, etc."
+              />
+            </div>
+          )}
+
           {error && (
             <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
               {error}
@@ -206,6 +236,9 @@ export const EmailCaptureModal = ({ isOpen, onClose }: EmailCaptureModalProps) =
             No commitment. We'll keep you updated on our progress and contact you when ready.
           </p>
         </form>
+
+        {/* Extra bottom padding for mobile keyboard scrolling */}
+        <div className="h-32 sm:h-0"></div>
       </DialogContent>
     </Dialog>
   );

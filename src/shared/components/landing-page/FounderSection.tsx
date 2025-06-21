@@ -1,10 +1,9 @@
 'use client';
 
-import { Clock, Heart, Stethoscope, Users, Zap } from 'lucide-react';
+import { Clock, Heart, Users, Zap } from 'lucide-react';
 import { useState } from 'react';
 
 import { EmailCaptureModal } from '@/shared/components/EmailCaptureModal';
-import { Button } from '@/shared/components/ui/button';
 
 export const FounderSection = () => {
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -48,30 +47,58 @@ export const FounderSection = () => {
 
         <div className="relative mx-auto max-w-6xl px-6 sm:px-8 lg:px-12">
           {/* Stylish Header Section */}
-          <div className="mb-20 text-center">
-            <div className="relative inline-block">
-              {/* Decorative accents behind title */}
-              <div className="absolute -left-8 top-4 h-20 w-1.5 bg-gradient-to-b from-red-500 to-orange-600"></div>
-              <div className="absolute -right-6 top-8 h-16 w-1 bg-gradient-to-b from-blue-500 to-indigo-600"></div>
+          <div className="mb-20">
+            <div className="grid items-center gap-12 lg:grid-cols-2">
+              {/* Left: Title and subtitle */}
+              <div className="text-center lg:text-left">
+                <div className="relative inline-block">
+                  {/* Decorative accents behind title */}
+                  <div className="absolute -left-8 top-4 h-20 w-1.5 bg-gradient-to-b from-red-500 to-orange-600"></div>
+                  <div className="absolute -right-6 top-8 h-16 w-1 bg-gradient-to-b from-blue-500 to-indigo-600"></div>
 
-              <h2 className="relative mb-6 text-4xl font-extrabold leading-normal tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-                <span className="block">Built by a GP Who</span>
-                <span className="block text-red-600">Truly Knows the Struggle</span>
-              </h2>
+                  <h2 className="relative mb-6 text-4xl font-extrabold leading-normal tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
+                    <span className="block">Built by a GP Who</span>
+                    <span className="block text-red-600">Truly Knows the Struggle</span>
+                  </h2>
 
-              {/* Stylish accent elements */}
-              <div className="absolute -right-12 top-6 size-4 rounded-full bg-red-400/60"></div>
-              <div className="absolute -left-10 top-16 size-3 rounded-full bg-blue-400/70"></div>
-            </div>
+                  {/* Stylish accent elements */}
+                  <div className="absolute -right-12 top-6 size-4 rounded-full bg-red-400/60"></div>
+                  <div className="absolute -left-10 top-16 size-3 rounded-full bg-blue-400/70"></div>
+                </div>
 
-            <div className="relative mx-auto max-w-3xl">
-              <p className="text-xl leading-relaxed text-gray-600 lg:text-2xl">
-                <span className="font-semibold text-red-600">"79% of GPs report burnout. I've been there too."</span>
-              </p>
+                <div className="relative mx-auto max-w-3xl lg:mx-0">
+                  <p className="text-xl leading-relaxed text-gray-600 lg:text-2xl">
+                    <span className="font-semibold text-red-600">"79% of GPs report burnout. I've been there too."</span>
+                  </p>
 
-              {/* Decorative line accent */}
-              <div className="absolute -left-4 top-4 h-px w-16 bg-gradient-to-r from-red-400 to-transparent"></div>
-              <div className="absolute -right-4 bottom-4 h-px w-12 bg-gradient-to-l from-orange-400 to-transparent"></div>
+                  {/* Decorative line accent */}
+                  <div className="absolute -left-4 top-4 h-px w-16 bg-gradient-to-r from-red-400 to-transparent"></div>
+                  <div className="absolute -right-4 bottom-4 h-px w-12 bg-gradient-to-l from-orange-400 to-transparent"></div>
+                </div>
+              </div>
+
+              {/* Right: Profile Image */}
+              <div className="flex justify-center lg:justify-end">
+                <div className="relative">
+                  <div className="overflow-hidden rounded-3xl border-4 border-white shadow-2xl">
+                    <img
+                      src="/images/landing-page/DrRyoEguchiProfilePicMain.jpg"
+                      alt="Dr. Ryo Eguchi - Founder & Practising GP"
+                      className="size-80 object-cover transition-transform duration-300 hover:scale-105"
+                    />
+                  </div>
+                  {/* Decorative elements around image */}
+                  <div className="absolute -right-4 -top-4 size-8 rounded-full bg-blue-500/30"></div>
+                  <div className="absolute -bottom-4 -left-4 size-6 rounded-full bg-green-500/40"></div>
+                  <div className="absolute -left-6 top-1/2 size-4 rounded-full bg-purple-500/35"></div>
+
+                  {/* Name label under image */}
+                  <div className="mt-4 text-center">
+                    <h3 className="text-2xl font-bold text-gray-900">Dr. Ryo Eguchi</h3>
+                    <p className="text-lg font-medium text-blue-600">Founder & Practising GP</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -87,14 +114,8 @@ export const FounderSection = () => {
                 <div className="absolute -bottom-4 -left-4 size-12 rounded-full bg-gradient-to-tr from-purple-200/25 to-pink-300/20"></div>
 
                 <div className="relative z-10">
-                  <div className="mb-8 flex items-center space-x-4">
-                    <div className="flex size-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-indigo-200 shadow-lg">
-                      <Stethoscope className="size-8 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-bold text-gray-900">Dr. Ryo Eguchi</h3>
-                      <p className="text-lg font-medium text-blue-600">Founder & Practising GP</p>
-                    </div>
+                  <div className="mb-8">
+                    <h3 className="text-2xl font-bold text-gray-900">My Story</h3>
                   </div>
 
                   <blockquote className="space-y-6 text-base leading-relaxed text-gray-700">
@@ -221,45 +242,6 @@ export const FounderSection = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Enhanced Call to Action */}
-          <div className="mt-20 text-center">
-            <div className="relative mx-auto max-w-4xl overflow-hidden rounded-2xl border-2 border-blue-200/50 bg-gradient-to-r from-blue-50/80 to-indigo-50/60 p-8 shadow-2xl">
-              {/* Background decoratives */}
-              <div className="absolute -right-12 -top-12 size-32 rounded-full bg-gradient-to-br from-blue-200/15 to-indigo-300/10 blur-3xl"></div>
-              <div className="absolute -bottom-8 -left-8 size-24 rounded-full bg-gradient-to-tr from-purple-200/20 to-pink-300/15 blur-2xl"></div>
-
-              <div className="relative z-10">
-                <h3 className="mb-6 text-3xl font-bold text-gray-900 sm:text-4xl">
-                  Reclaim Your Time, Reclaim Your Life
-                </h3>
-                <p className="mb-8 text-lg leading-relaxed text-gray-600 lg:text-xl">
-                  You became a GP to help patients, not to drown in paperwork.
-                  <span className="block font-medium text-blue-600 sm:inline"> Let's prove that technology can give you back what matters most.</span>
-                </p>
-
-                <div className="mb-6">
-                  <Button
-                    size="lg"
-                    className="group relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-4 text-lg font-semibold text-white shadow-xl transition-all duration-300 hover:scale-105 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl"
-                    onClick={() => setShowEmailModal(true)}
-                  >
-                    <span className="relative z-10">Join the Beta — Get Your Life Back</span>
-                    {/* Button shine effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
-                  </Button>
-                </div>
-
-                <p className="text-sm text-gray-500">
-                  Help shape the future of NZ clinical documentation
-                </p>
-              </div>
-
-              {/* Floating accent elements */}
-              <div className="absolute -left-3 top-16 size-3 rounded-full bg-blue-400/50"></div>
-              <div className="absolute -right-2 bottom-20 size-4 rounded-full bg-purple-400/40"></div>
             </div>
           </div>
         </div>

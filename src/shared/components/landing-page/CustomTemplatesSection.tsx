@@ -395,27 +395,29 @@ export const CustomTemplatesSection = () => {
 
           {/* Enhanced Beta Participation CTA */}
           <div className="mt-20 text-center">
-            <div className="relative mx-auto max-w-4xl overflow-hidden rounded-2xl border-2 border-blue-200/50 bg-gradient-to-r from-blue-50/80 to-indigo-50/60 p-10 shadow-2xl">
+            <div className="relative mx-auto max-w-4xl overflow-hidden rounded-2xl border-2 border-blue-200/50 bg-gradient-to-r from-blue-50/80 to-indigo-50/60 p-6 shadow-2xl sm:p-8 lg:p-10">
               {/* Background decoratives */}
               <div className="absolute -right-16 -top-16 size-40 rounded-full bg-gradient-to-br from-blue-200/15 to-indigo-300/10 blur-3xl"></div>
               <div className="absolute -bottom-12 -left-12 size-32 rounded-full bg-gradient-to-tr from-purple-200/20 to-pink-300/15 blur-2xl"></div>
 
               <div className="relative z-10">
-                <h3 className="mb-6 text-3xl font-bold text-gray-900 sm:text-4xl">
+                <h3 className="mb-6 text-2xl font-bold text-gray-900 sm:text-3xl lg:text-4xl">
                   Help Shape the Future of GP Practice
                 </h3>
-                <p className="mb-8 text-lg leading-relaxed text-gray-600 lg:text-xl">
+                <p className="mb-8 text-base leading-relaxed text-gray-600 sm:text-lg lg:text-xl">
                   As a beta tester, your feedback directly influences our roadmap.
                   <span className="block font-medium text-blue-600 sm:inline"> Be part of building the tools that will transform NZ healthcare.</span>
                 </p>
-                <Button
-                  size="lg"
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 px-10 py-4 text-xl text-white shadow-xl transition-all duration-200 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl"
-                  onClick={() => setShowEmailModal(true)}
-                >
-                  Join Beta & Influence Roadmap
-                </Button>
-                <p className="mt-6 text-base text-gray-500">
+                <div className="flex justify-center">
+                  <Button
+                    size="lg"
+                    className="max-w-full bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-base text-white shadow-xl transition-all duration-200 hover:from-blue-700 hover:to-indigo-700 hover:shadow-2xl sm:px-8 sm:py-4 sm:text-lg lg:px-10 lg:text-xl"
+                    onClick={() => setShowEmailModal(true)}
+                  >
+                    Join Beta & Influence Roadmap
+                  </Button>
+                </div>
+                <p className="mt-6 text-sm text-gray-500 sm:text-base">
                   <span className="font-medium">Priority access</span>
                   {' '}
                   to all new features as they're released

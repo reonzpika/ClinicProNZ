@@ -1,8 +1,12 @@
 'use client';
 
 import { Clock, Shield, Smartphone, Star, Users } from 'lucide-react';
+import { useState } from 'react';
+
+import { EmailCaptureModal } from '@/shared/components/EmailCaptureModal';
 
 export const TestimonialsSection = () => {
+  const [showEmailModal, setShowEmailModal] = useState(false);
   const testimonials = [
     {
       id: 1,
@@ -193,6 +197,40 @@ export const TestimonialsSection = () => {
                 <span className="block font-medium text-green-600 sm:inline"> Experience the same transformation in your clinic.</span>
               </p>
 
+              {/* CTA Button */}
+              <div className="mt-8">
+                <button
+                  className="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-green-600 via-blue-600 to-indigo-600 px-8 py-4 text-lg font-semibold text-white shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-green-500/25 focus:outline-none focus:ring-4 focus:ring-green-500/50"
+                  onClick={() => setShowEmailModal(true)}
+                >
+                  {/* Shine effect */}
+                  <div className="absolute inset-0 -top-2 flex size-full justify-center blur-md">
+                    <div className="size-full bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                  </div>
+
+                  {/* Button content */}
+                  <span className="relative z-10 flex items-center">
+                    Start Your Free Trial
+                    <svg
+                      className="ml-2 size-5 transition-transform duration-300 group-hover:translate-x-1"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 7l5 5m0 0l-5 5m5-5H6"
+                      />
+                    </svg>
+                  </span>
+
+                  {/* Hover glow effect */}
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-green-600 via-blue-600 to-indigo-600 opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-30"></div>
+                </button>
+              </div>
+
               {/* Enhanced trust indicators */}
               <div className="mt-8 flex flex-col items-center justify-center gap-4 text-base text-gray-500 sm:flex-row sm:gap-8">
                 <span className="flex items-center rounded-full border border-green-200 bg-white/60 px-4 py-2 shadow-sm">
@@ -216,6 +254,11 @@ export const TestimonialsSection = () => {
           </div>
         </div>
       </div>
+
+      <EmailCaptureModal
+        isOpen={showEmailModal}
+        onClose={() => setShowEmailModal(false)}
+      />
     </section>
   );
 };

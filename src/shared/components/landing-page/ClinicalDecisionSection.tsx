@@ -1,8 +1,59 @@
 'use client';
 
 import { Eye, Shield, Users, Zap } from 'lucide-react';
+import { useState } from 'react';
 
 export const ClinicalDecisionSection = () => {
+  const [expandedCard, setExpandedCard] = useState<number | null>(null);
+
+  const trustPillars = [
+    {
+      id: 1,
+      icon: Eye,
+      title: 'Clinical Judgment First',
+      summary: 'Never replaces your expertise — ClinicPro enhances your decision-making with contextual support.',
+      details: 'You remain in complete control of every clinical decision. ClinicPro provides intelligent support without ever overriding your professional judgment.',
+      color: 'green' as const,
+    },
+    {
+      id: 2,
+      icon: Shield,
+      title: 'Privacy by Design',
+      summary: 'Your data, your control. Privacy Act 2020 compliant, end-to-end encryption.',
+      details: 'No patient data used for training. Built with NZ healthcare privacy standards in mind. Complete transparency in how your data is handled.',
+      color: 'blue' as const,
+    },
+    {
+      id: 3,
+      icon: Users,
+      title: 'Built by GPs, for GPs',
+      summary: 'Created by a practicing NZ GP who faces the same documentation challenges.',
+      details: 'Real clinical experience drives every feature. Every decision comes from understanding the daily pressures and workflows of New Zealand general practice.',
+      color: 'purple' as const,
+    },
+  ];
+
+  const colorMap = {
+    green: {
+      bg: 'bg-gradient-to-br from-green-100 to-emerald-200',
+      text: 'text-green-700',
+      border: 'border-green-200',
+      gradient: 'from-green-50 via-emerald-50 to-teal-50',
+    },
+    blue: {
+      bg: 'bg-gradient-to-br from-blue-100 to-indigo-200',
+      text: 'text-blue-700',
+      border: 'border-blue-200',
+      gradient: 'from-blue-50 via-indigo-50 to-purple-50',
+    },
+    purple: {
+      bg: 'bg-gradient-to-br from-purple-100 to-violet-200',
+      text: 'text-purple-700',
+      border: 'border-purple-200',
+      gradient: 'from-purple-50 via-violet-50 to-indigo-50',
+    },
+  };
+
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 via-white to-blue-50 py-16 sm:py-24 lg:py-32">
       {/* Enhanced Visual Background Elements */}
@@ -41,7 +92,7 @@ export const ClinicalDecisionSection = () => {
 
       <div className="relative mx-auto max-w-6xl px-6 sm:px-8 lg:px-12">
         {/* Stylish Header Section */}
-        <div className="mb-20 text-center">
+        <div className="mb-16 text-center">
           <div className="relative inline-block">
             {/* Decorative accents behind title */}
             <div className="absolute -left-12 top-6 h-28 w-2 bg-gradient-to-b from-green-500 to-blue-600"></div>
@@ -60,7 +111,9 @@ export const ClinicalDecisionSection = () => {
           <div className="relative mx-auto max-w-3xl">
             <p className="text-xl leading-relaxed text-gray-600 lg:text-2xl">
               Built by a practicing NZ GP who understands the trust patients place in you.
-              <span className="block font-medium text-blue-600 sm:inline"> Every decision prioritizes your clinical judgment and patient privacy.</span>
+            </p>
+            <p className="mt-3 text-base leading-relaxed text-gray-500 sm:text-lg">
+              <span className="font-medium text-blue-600">Every decision prioritizes your clinical judgment and patient privacy.</span>
             </p>
 
             {/* Decorative line accent */}
@@ -69,125 +122,98 @@ export const ClinicalDecisionSection = () => {
           </div>
         </div>
 
-        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
-          {/* Left column - Enhanced Trust Pillars */}
-          <div className="space-y-8">
-            <div className="group relative overflow-hidden rounded-2xl border border-green-200/60 bg-white/95 p-8 shadow-xl transition-all duration-300 hover:shadow-2xl">
-              {/* Visual accent background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-green-50/40 via-transparent to-emerald-50/30 opacity-60"></div>
+        <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
+          {/* Left column - Collapsible Trust Pillars */}
+          <div className="space-y-6">
+            {trustPillars.map((pillar) => {
+              const colors = colorMap[pillar.color];
+              const Icon = pillar.icon;
+              const isExpanded = expandedCard === pillar.id;
 
-              {/* Decorative corner accent */}
-              <div className="absolute -right-6 -top-6 size-16 rounded-full bg-gradient-to-br from-green-200/20 to-emerald-300/15"></div>
+              return (
+                <div
+                  key={pillar.id}
+                  className={`group relative overflow-hidden rounded-2xl border ${colors.border} bg-white/95 shadow-xl transition-all duration-300 hover:shadow-2xl`}
+                >
+                  {/* Visual accent background */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradient} opacity-40`}></div>
 
-              <div className="relative z-10 flex items-start space-x-6">
-                <div className="shrink-0 rounded-xl bg-gradient-to-br from-green-100 to-emerald-200 p-4 shadow-lg">
-                  <Eye className="size-8 text-green-600" />
+                  {/* Decorative corner accent */}
+                  <div className={`absolute -right-6 -top-6 size-16 rounded-full ${colors.bg} opacity-20`}></div>
+
+                  <button
+                    onClick={() => setExpandedCard(isExpanded ? null : pillar.id)}
+                    className="relative z-10 w-full p-6 text-left"
+                  >
+                    <div className="flex items-start space-x-4">
+                      <div className={`shrink-0 rounded-xl ${colors.bg} p-3 shadow-lg`}>
+                        <Icon className={`size-6 ${colors.text}`} />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="mb-2 text-xl font-semibold text-gray-900">{pillar.title}</h3>
+                        <p className="text-base leading-relaxed text-gray-600">
+                          {pillar.summary}
+                        </p>
+                        {isExpanded && (
+                          <div className="mt-4 border-t border-gray-200 pt-4">
+                            <p className="text-sm leading-relaxed text-gray-700">
+                              {pillar.details}
+                            </p>
+                          </div>
+                        )}
+                        <div className="mt-3 text-sm font-medium text-blue-600">
+                          {isExpanded ? 'Show less' : 'Learn more'}
+                          {' '}
+                          →
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Floating accent elements */}
+                  <div className="absolute -left-2 top-20 size-3 rounded-full bg-blue-400/40"></div>
                 </div>
-                <div>
-                  <h3 className="mb-4 text-2xl font-semibold text-gray-900">Clinical Judgment First</h3>
-                  <p className="text-lg leading-relaxed text-gray-600 group-hover:text-gray-700">
-                    <strong>Never replaces your expertise</strong>
-                    {' '}
-                    — ClinicPro enhances your decision-making
-                    with contextual support. You remain in complete control of every clinical decision.
-                  </p>
-                </div>
-              </div>
-
-              {/* Floating accent elements */}
-              <div className="absolute -left-2 top-20 size-3 rounded-full bg-green-400/40"></div>
-            </div>
-
-            <div className="group relative overflow-hidden rounded-2xl border border-blue-200/60 bg-white/95 p-8 shadow-xl transition-all duration-300 hover:shadow-2xl">
-              {/* Visual accent background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-50/40 via-transparent to-indigo-50/30 opacity-60"></div>
-
-              {/* Decorative corner accent */}
-              <div className="absolute -right-6 -top-6 size-16 rounded-full bg-gradient-to-br from-blue-200/20 to-indigo-300/15"></div>
-
-              <div className="relative z-10 flex items-start space-x-6">
-                <div className="shrink-0 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-200 p-4 shadow-lg">
-                  <Shield className="size-8 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="mb-4 text-2xl font-semibold text-gray-900">Privacy by Design</h3>
-                  <p className="text-lg leading-relaxed text-gray-600 group-hover:text-gray-700">
-                    <strong>Your data, your control.</strong>
-                    {' '}
-                    Privacy Act 2020 compliant, end-to-end encryption,
-                    and no patient data used for training. Built with NZ healthcare privacy standards in mind.
-                  </p>
-                </div>
-              </div>
-
-              {/* Floating accent elements */}
-              <div className="absolute -left-2 top-20 size-3 rounded-full bg-blue-400/40"></div>
-            </div>
-
-            <div className="group relative overflow-hidden rounded-2xl border border-purple-200/60 bg-white/95 p-8 shadow-xl transition-all duration-300 hover:shadow-2xl">
-              {/* Visual accent background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-50/40 via-transparent to-violet-50/30 opacity-60"></div>
-
-              {/* Decorative corner accent */}
-              <div className="absolute -right-6 -top-6 size-16 rounded-full bg-gradient-to-br from-purple-200/20 to-violet-300/15"></div>
-
-              <div className="relative z-10 flex items-start space-x-6">
-                <div className="shrink-0 rounded-xl bg-gradient-to-br from-purple-100 to-violet-200 p-4 shadow-lg">
-                  <Users className="size-8 text-purple-600" />
-                </div>
-                <div>
-                  <h3 className="mb-4 text-2xl font-semibold text-gray-900">Built by GPs, for GPs</h3>
-                  <p className="text-lg leading-relaxed text-gray-600 group-hover:text-gray-700">
-                    <strong>Real clinical experience drives every feature.</strong>
-                    {' '}
-                    Created by a practicing NZ GP
-                    who faces the same documentation challenges and burnout pressures you do.
-                  </p>
-                </div>
-              </div>
-
-              {/* Floating accent elements */}
-              <div className="absolute -left-2 top-20 size-3 rounded-full bg-purple-400/40"></div>
-            </div>
+              );
+            })}
           </div>
 
-          {/* Right column - Enhanced Professional Assurance */}
+          {/* Right column - Professional Standards */}
           <div className="space-y-8">
-            <div className="relative overflow-hidden rounded-2xl border-2 border-indigo-200/60 bg-gradient-to-br from-indigo-50/80 to-purple-50/60 p-10 shadow-2xl">
+            <div className="relative overflow-hidden rounded-2xl border-2 border-indigo-200/60 bg-gradient-to-br from-indigo-50/80 to-purple-50/60 p-8 shadow-2xl">
               {/* Background decoratives */}
               <div className="absolute -right-8 -top-8 size-24 rounded-full bg-gradient-to-br from-indigo-200/20 to-purple-300/15 blur-2xl"></div>
               <div className="absolute -bottom-6 -left-6 size-20 rounded-full bg-gradient-to-tr from-blue-200/25 to-indigo-300/20 blur-xl"></div>
 
               <div className="relative z-10 text-center">
-                <div className="mb-8">
-                  <div className="mx-auto mb-6 flex size-20 items-center justify-center rounded-full bg-gradient-to-br from-indigo-100 to-purple-200 shadow-xl">
-                    <Zap className="size-10 text-indigo-600" />
+                <div className="mb-6">
+                  <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-gradient-to-br from-indigo-100 to-purple-200 shadow-xl">
+                    <Zap className="size-8 text-indigo-600" />
                   </div>
-                  <h3 className="mb-4 text-3xl font-bold text-gray-900">Professional Excellence</h3>
-                  <p className="text-lg leading-relaxed text-gray-600">
+                  <h3 className="mb-3 text-2xl font-bold text-gray-900">Professional Excellence</h3>
+                  <p className="text-base leading-relaxed text-gray-600">
                     Designed to enhance your professional practice while protecting what matters most.
                   </p>
                 </div>
 
-                <div className="space-y-6">
-                  <div className="rounded-xl border border-white/60 bg-white/80 p-6 shadow-lg backdrop-blur-sm">
-                    <h4 className="mb-3 text-lg font-semibold text-gray-900">✓ RNZCGP Documentation Standards</h4>
-                    <p className="text-base text-gray-600">
-                      Meets all professional documentation requirements for New Zealand general practice.
+                <div className="space-y-4">
+                  <div className="rounded-xl border border-white/60 bg-white/80 p-4 shadow-lg backdrop-blur-sm">
+                    <h4 className="mb-2 text-base font-semibold text-gray-900">✓ RNZCGP Standards</h4>
+                    <p className="text-sm text-gray-600">
+                      Meets all professional documentation requirements for NZ general practice.
                     </p>
                   </div>
 
-                  <div className="rounded-xl border border-white/60 bg-white/80 p-6 shadow-lg backdrop-blur-sm">
-                    <h4 className="mb-3 text-lg font-semibold text-gray-900">✓ Medico-Legal Protection</h4>
-                    <p className="text-base text-gray-600">
+                  <div className="rounded-xl border border-white/60 bg-white/80 p-4 shadow-lg backdrop-blur-sm">
+                    <h4 className="mb-2 text-base font-semibold text-gray-900">✓ Medico-Legal Protection</h4>
+                    <p className="text-sm text-gray-600">
                       Comprehensive documentation reduces liability risks while maintaining clinical accuracy.
                     </p>
                   </div>
 
-                  <div className="rounded-xl border border-white/60 bg-white/80 p-6 shadow-lg backdrop-blur-sm">
-                    <h4 className="mb-3 text-lg font-semibold text-gray-900">✓ Complete Transparency</h4>
-                    <p className="text-base text-gray-600">
-                      No black box algorithms. You understand exactly how notes are generated and can verify every detail.
+                  <div className="rounded-xl border border-white/60 bg-white/80 p-4 shadow-lg backdrop-blur-sm">
+                    <h4 className="mb-2 text-base font-semibold text-gray-900">✓ Complete Transparency</h4>
+                    <p className="text-sm text-gray-600">
+                      No black box algorithms. You understand exactly how notes are generated.
                     </p>
                   </div>
                 </div>
@@ -198,71 +224,28 @@ export const ClinicalDecisionSection = () => {
               <div className="absolute -right-2 bottom-32 size-5 rounded-full bg-purple-400/40"></div>
             </div>
 
-            <div className="relative overflow-hidden rounded-2xl border border-green-200/60 bg-gradient-to-br from-green-50/80 to-emerald-50/60 p-8 shadow-xl">
+            <div className="relative overflow-hidden rounded-2xl border border-green-200/60 bg-gradient-to-br from-green-50/80 to-emerald-50/60 p-6 shadow-xl">
               {/* Background decoratives */}
               <div className="absolute -right-6 -top-6 size-20 rounded-full bg-gradient-to-br from-green-200/15 to-emerald-300/10 blur-xl"></div>
 
               <div className="relative z-10 text-center">
-                <h3 className="mb-4 text-2xl font-semibold text-gray-900">🔒 Privacy-First Commitment</h3>
-                <p className="mb-6 text-lg text-gray-600">
+                <h3 className="mb-3 text-xl font-semibold text-gray-900">🔒 Privacy-First Commitment</h3>
+                <p className="mb-4 text-base text-gray-600">
                   <strong>No patient data storage.</strong>
                   {' '}
                   <strong>No commercial use.</strong>
                   {' '}
                   <strong>No training on your consultations.</strong>
                 </p>
-                <div className="inline-flex items-center space-x-3 rounded-full border border-green-300/60 bg-white/80 px-6 py-3 shadow-lg">
-                  <Shield className="size-5 text-green-600" />
-                  <span className="text-base font-medium text-gray-700">Privacy Act 2020 Compliant</span>
+                <div className="inline-flex items-center space-x-3 rounded-full border border-green-300/60 bg-white/80 px-4 py-2 shadow-lg">
+                  <Shield className="size-4 text-green-600" />
+                  <span className="text-sm font-medium text-gray-700">Privacy Act 2020 Compliant</span>
                 </div>
               </div>
 
               {/* Floating accent elements */}
               <div className="absolute -left-2 top-16 size-3 rounded-full bg-green-400/50"></div>
             </div>
-          </div>
-        </div>
-
-        {/* Enhanced Bottom CTA */}
-        <div className="mt-20 text-center">
-          <div className="relative mx-auto max-w-4xl overflow-hidden rounded-2xl border-2 border-blue-200/50 bg-gradient-to-r from-blue-50/80 to-indigo-50/60 p-10 shadow-2xl">
-            {/* Background decoratives */}
-            <div className="absolute -right-16 -top-16 size-40 rounded-full bg-gradient-to-br from-blue-200/15 to-indigo-300/10 blur-3xl"></div>
-            <div className="absolute -bottom-12 -left-12 size-32 rounded-full bg-gradient-to-tr from-purple-200/20 to-pink-300/15 blur-2xl"></div>
-
-            <div className="relative z-10">
-              <h3 className="mb-6 text-3xl font-bold text-gray-900 sm:text-4xl">
-                Trust Built on Clinical Experience
-              </h3>
-              <p className="text-lg leading-relaxed text-gray-600 lg:text-xl">
-                "Every privacy decision, every feature, every design choice comes from understanding
-                the sacred trust between GP and patient. That's why ClinicPro puts your clinical judgment
-                and patient confidentiality at the center of everything we build."
-              </p>
-              <p className="mt-6 text-base font-medium text-blue-600">
-                — Dr. Ryo Eguchi, Founder & Practicing GP
-              </p>
-
-              {/* Enhanced trust badges */}
-              <div className="mt-8 flex flex-col items-center justify-center gap-4 text-base text-gray-500 sm:flex-row sm:gap-8">
-                <span className="flex items-center rounded-full border border-blue-200 bg-white/60 px-6 py-3 shadow-sm">
-                  <span className="mr-3 text-lg">🩺</span>
-                  Practicing GP Built
-                </span>
-                <span className="flex items-center rounded-full border border-green-200 bg-white/60 px-6 py-3 shadow-sm">
-                  <span className="mr-3 text-lg">🛡️</span>
-                  Privacy First
-                </span>
-                <span className="flex items-center rounded-full border border-purple-200 bg-white/60 px-6 py-3 shadow-sm">
-                  <span className="mr-3 text-lg">🇳🇿</span>
-                  NZ Standards
-                </span>
-              </div>
-            </div>
-
-            {/* Floating accent elements */}
-            <div className="absolute -left-4 top-20 size-4 rounded-full bg-blue-400/40"></div>
-            <div className="absolute -right-3 bottom-24 size-5 rounded-full bg-purple-400/35"></div>
           </div>
         </div>
       </div>

@@ -15,8 +15,8 @@ export default function LandingPage() {
       <PainPointsSection />
       <SolutionSection />
       <ProductSection />
-      <CustomTemplatesSection />
       <TestimonialsSection />
+      <CustomTemplatesSection />
       <ClinicalDecisionSection />
       <FounderSection />
       <FinalCTASection />

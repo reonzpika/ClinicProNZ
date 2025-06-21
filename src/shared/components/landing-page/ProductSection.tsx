@@ -1,8 +1,19 @@
 'use client';
 
-import { ArrowRight, Brain, CheckCircle, FileCheck, Layers, Smartphone } from 'lucide-react';
+import { ArrowRight, Brain, CheckCircle, ChevronDown, FileCheck, Layers, Smartphone } from 'lucide-react';
+import { useState } from 'react';
 
 export const ProductSection = () => {
+  const [expandedSteps, setExpandedSteps] = useState<number[]>([]);
+
+  const toggleStep = (stepId: number) => {
+    setExpandedSteps(prev =>
+      prev.includes(stepId)
+        ? prev.filter(id => id !== stepId)
+        : [...prev, stepId],
+    );
+  };
+
   const processSteps = [
     {
       id: 1,
@@ -91,28 +102,28 @@ export const ProductSection = () => {
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 py-16 sm:py-24 lg:py-32">
-      {/* Enhanced Visual Background Elements */}
+      {/* Enhanced Visual Background Elements - mobile contained */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        {/* Large artistic orbs */}
-        <div className="absolute -right-60 top-20 size-[800px] rounded-full bg-gradient-to-br from-blue-200/15 to-indigo-300/10 blur-3xl"></div>
-        <div className="from-purple-200/12 to-pink-300/8 absolute -left-80 bottom-40 size-[900px] rounded-full bg-gradient-to-tr blur-3xl"></div>
+        {/* Large artistic orbs - scaled for mobile */}
+        <div className="from-blue-200/12 to-indigo-300/8 absolute -right-48 top-20 size-[500px] rounded-full bg-gradient-to-br blur-3xl sm:-right-60 sm:size-[800px]"></div>
+        <div className="to-pink-300/6 absolute -left-60 bottom-40 size-[600px] rounded-full bg-gradient-to-tr from-purple-200/10 blur-3xl sm:-left-80 sm:size-[900px]"></div>
 
-        {/* Medium floating shapes */}
-        <div className="absolute right-[20%] top-[30%] size-64 rounded-full bg-gradient-to-r from-emerald-200/20 to-teal-300/15 blur-2xl"></div>
-        <div className="from-violet-200/18 to-purple-300/12 absolute bottom-1/4 left-[15%] size-56 rounded-full bg-gradient-to-r blur-xl"></div>
-        <div className="absolute right-[45%] top-[60%] size-48 rounded-full bg-gradient-to-r from-amber-200/25 to-orange-300/20 blur-xl"></div>
+        {/* Medium floating shapes - mobile optimized */}
+        <div className="to-teal-300/12 absolute right-[15%] top-1/4 size-40 rounded-full bg-gradient-to-r from-emerald-200/15 blur-2xl sm:right-[20%] sm:top-[30%] sm:size-64"></div>
+        <div className="from-violet-200/14 absolute bottom-1/4 left-[10%] size-36 rounded-full bg-gradient-to-r to-purple-300/10 blur-xl sm:left-[15%] sm:size-56"></div>
+        <div className="absolute right-[40%] top-[55%] size-32 rounded-full bg-gradient-to-r from-amber-200/20 to-orange-300/15 blur-xl sm:right-[45%] sm:top-[60%] sm:size-48"></div>
 
-        {/* Geometric accent shapes */}
-        <div className="absolute right-1/4 top-[15%] size-12 rounded-full bg-blue-400/40"></div>
-        <div className="absolute bottom-[20%] left-[30%] size-10 rounded-full bg-emerald-400/50"></div>
-        <div className="absolute right-[60%] top-[45%] size-8 rounded-full bg-purple-400/45"></div>
-        <div className="absolute left-[20%] top-[70%] size-14 rounded-full bg-orange-400/35"></div>
-        <div className="absolute bottom-[35%] right-[35%] size-6 rounded-full bg-indigo-400/55"></div>
+        {/* Geometric accent shapes - mobile positioned */}
+        <div className="absolute right-1/4 top-[12%] size-8 rounded-full bg-blue-400/35 sm:top-[15%] sm:size-12"></div>
+        <div className="absolute bottom-[15%] left-1/4 size-6 rounded-full bg-emerald-400/45 sm:bottom-[20%] sm:left-[30%] sm:size-10"></div>
+        <div className="absolute right-[55%] top-[40%] size-5 rounded-full bg-purple-400/40 sm:right-[60%] sm:top-[45%] sm:size-8"></div>
+        <div className="absolute left-[15%] top-[65%] size-9 rounded-full bg-orange-400/30 sm:left-[20%] sm:top-[70%] sm:size-14"></div>
+        <div className="absolute bottom-[30%] right-[30%] size-4 rounded-full bg-indigo-400/50 sm:bottom-[35%] sm:right-[35%] sm:size-6"></div>
 
-        {/* Elegant line elements */}
-        <div className="absolute right-[20%] top-1/4 h-40 w-px bg-gradient-to-b from-transparent via-blue-400/30 to-transparent"></div>
-        <div className="absolute bottom-[40%] left-[35%] h-36 w-px bg-gradient-to-b from-transparent via-purple-400/25 to-transparent"></div>
-        <div className="absolute right-[70%] top-[55%] h-32 w-px bg-gradient-to-b from-transparent via-emerald-400/35 to-transparent"></div>
+        {/* Elegant line elements - mobile shortened */}
+        <div className="absolute right-[15%] top-1/4 h-24 w-px bg-gradient-to-b from-transparent via-blue-400/25 to-transparent sm:right-[20%] sm:h-40"></div>
+        <div className="absolute bottom-[35%] left-[30%] h-20 w-px bg-gradient-to-b from-transparent via-purple-400/20 to-transparent sm:bottom-[40%] sm:left-[35%] sm:h-36"></div>
+        <div className="absolute right-[65%] top-[50%] h-16 w-px bg-gradient-to-b from-transparent via-emerald-400/30 to-transparent sm:right-[70%] sm:top-[55%] sm:h-32"></div>
       </div>
 
       {/* Sophisticated geometric patterns overlay */}
@@ -125,341 +136,264 @@ export const ProductSection = () => {
         />
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-6 sm:px-8 lg:px-12">
+      <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         {/* Stylish Header Section */}
         <div className="mb-20 text-center">
           <div className="relative inline-block pb-6 pt-4">
-            {/* Decorative accents behind title */}
-            <div className="absolute -left-12 top-6 h-24 w-2 bg-gradient-to-b from-purple-500 to-pink-600"></div>
-            <div className="absolute -right-10 top-10 h-20 w-1.5 bg-gradient-to-b from-blue-500 to-indigo-600"></div>
+            {/* Decorative accents behind title - mobile scaled */}
+            <div className="absolute -left-8 top-6 h-20 w-1 bg-gradient-to-b from-purple-500 to-pink-600 sm:h-24 sm:w-2 lg:-left-12"></div>
+            <div className="absolute -right-6 top-10 h-16 w-1 bg-gradient-to-b from-blue-500 to-indigo-600 sm:h-20 sm:w-1.5 lg:-right-10"></div>
 
-            <h2 className="relative mb-8 text-4xl font-extrabold leading-relaxed tracking-tight text-gray-900 sm:text-5xl lg:text-6xl xl:text-7xl">
+            <h2 className="relative mb-8 text-3xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
               <span className="block">More Than Transcription</span>
               <span className="block text-purple-600">True Clinical Intelligence</span>
             </h2>
 
-            {/* Stylish accent elements */}
-            <div className="absolute -right-16 top-8 size-5 rounded-full bg-blue-400/70"></div>
-            <div className="absolute -left-14 top-20 size-4 rounded-full bg-purple-400/60"></div>
+            {/* Stylish accent elements - mobile positioned */}
+            <div className="absolute -right-12 top-8 size-3 rounded-full bg-blue-400/70 sm:size-5 lg:-right-16"></div>
+            <div className="absolute -left-10 top-20 size-2.5 rounded-full bg-purple-400/60 sm:size-4 lg:-left-14"></div>
           </div>
 
           <div className="relative mx-auto max-w-4xl">
-            <p className="text-xl leading-relaxed text-gray-600 lg:text-2xl">
+            <p className="text-lg leading-relaxed text-gray-600 sm:text-xl lg:text-2xl">
               Unlike basic transcription tools, ClinicPro actively supports your clinical decision-making
             </p>
-            <p className="mt-4 text-lg leading-relaxed text-gray-500 lg:text-xl">
+            <p className="mt-3 text-base leading-relaxed text-gray-500 sm:text-lg lg:text-xl">
               <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text font-semibold text-transparent">during the consultation itself.</span>
             </p>
 
-            {/* Decorative line accent */}
-            <div className="absolute -left-6 top-6 h-px w-20 bg-gradient-to-r from-purple-400 to-transparent"></div>
-            <div className="absolute -right-6 bottom-6 h-px w-16 bg-gradient-to-l from-blue-400 to-transparent"></div>
+            {/* Decorative line accent - mobile scaled */}
+            <div className="absolute -left-3 top-6 h-px w-12 bg-gradient-to-r from-purple-400 to-transparent sm:w-20 lg:-left-6"></div>
+            <div className="absolute -right-3 bottom-6 h-px w-10 bg-gradient-to-l from-blue-400 to-transparent sm:w-16 lg:-right-6"></div>
           </div>
         </div>
 
-        {/* Mobile: Stylish Process Steps */}
-        <div className="mb-16 space-y-8 lg:hidden">
+        {/* Mobile: Collapsible Process Steps */}
+        <div className="space-y-4 sm:space-y-6 lg:hidden">
           {processSteps.map((step) => {
             const colors = colorMap[step.color];
             const Icon = step.icon;
+            const isExpanded = expandedSteps.includes(step.id);
 
             return (
               <div
                 key={step.id}
-                className="relative overflow-hidden rounded-2xl border border-gray-200/50 bg-white/95 p-6 shadow-xl backdrop-blur-sm"
+                className="relative overflow-hidden rounded-2xl border border-gray-200/50 bg-white/95 shadow-xl backdrop-blur-sm transition-all duration-300 hover:shadow-2xl"
               >
                 {/* Visual accent background */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradient} opacity-3`}></div>
 
                 {/* Decorative corner accent */}
-                <div className={`absolute -right-8 -top-8 size-16 rounded-full ${colors.bg} opacity-15`}></div>
+                <div className={`absolute -right-6 -top-6 size-12 rounded-full ${colors.bg} opacity-15 sm:-right-8 sm:-top-8 sm:size-16`}></div>
 
                 <div className="relative z-10">
-                  <div className="mb-6 flex items-start space-x-5">
-                    <div className="shrink-0">
-                      <div className={`relative flex size-16 items-center justify-center rounded-2xl ${colors.bg} shadow-lg`}>
-                        <Icon className={`size-8 ${colors.text}`} />
-                        <div className={`absolute -right-2 -top-2 flex size-8 items-center justify-center rounded-full ${colors.accent} text-sm font-bold text-white shadow-md`}>
+                  {/* Clickable Header */}
+                  <button
+                    onClick={() => toggleStep(step.id)}
+                    className="flex w-full items-center justify-between p-6 text-left transition-colors hover:bg-gray-50/50"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className={`relative flex size-12 items-center justify-center rounded-xl ${colors.bg} shadow-lg sm:size-16 sm:rounded-2xl`}>
+                        <Icon className={`size-6 ${colors.text} sm:size-8`} />
+                        <div className={`absolute -right-1 -top-1 flex size-6 items-center justify-center rounded-full ${colors.accent} text-xs font-bold text-white shadow-md sm:size-8 sm:text-sm`}>
                           {step.id}
                         </div>
                       </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900 sm:text-xl">{step.title}</h3>
+                        {step.unique && (
+                          <div className={`mt-2 inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${colors.badge} shadow-md sm:text-sm`}>
+                            🔥
+                            {' '}
+                            {step.unique}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <h3 className="mb-3 text-xl font-bold text-gray-900">{step.title}</h3>
-                      {step.unique && (
-                        <div className={`mb-4 inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold ${colors.badge} shadow-md`}>
-                          🔥
-                          {' '}
-                          {step.unique}
-                        </div>
-                      )}
+                    <ChevronDown
+                      className={`size-5 text-gray-400 transition-transform duration-200 ${
+                        isExpanded ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {/* Expandable Content */}
+                  <div className={`overflow-hidden transition-all duration-300 ${
+                    isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                  }`}
+                  >
+                    <div className="border-t border-gray-100 p-6 pt-4">
                       <p className="text-base leading-relaxed text-gray-700">
                         <strong className="text-gray-900">
                           {step.description.split('.')[0]}
                           .
                         </strong>
-                        {step.description.split('.').slice(1).join('.')}
+                        {step.description.substring(step.description.indexOf('.') + 1)}
                       </p>
                     </div>
                   </div>
                 </div>
 
                 {/* Subtle side accent */}
-                <div className={`absolute inset-y-8 left-0 w-1.5 ${colors.accent} rounded-r-full`}></div>
+                <div className={`absolute inset-y-6 left-0 w-1 ${colors.accent} rounded-r-full`}></div>
               </div>
             );
           })}
         </div>
 
-        {/* Desktop: Stylish Process Flow - 2 Rows */}
+        {/* Desktop: 2-Row Card Layout */}
         <div className="hidden lg:block">
-          <div className="relative mb-20 pb-4 pt-8">
-            <div className="space-y-12">
-              {/* First Row - Steps 1, 2, 3 */}
-              <div className="relative">
-                {/* Connection line for first row */}
-                <div className="absolute left-0 top-1/2 h-2 w-full -translate-y-1/2">
-                  <div className="size-full rounded-full bg-gradient-to-r from-emerald-400/40 via-sky-400/40 to-violet-400/40 shadow-lg"></div>
-                </div>
+          {/* First Row - 3 Cards */}
+          <div className="mb-8 grid grid-cols-3 gap-6">
+            {processSteps.slice(0, 3).map((step) => {
+              const colors = colorMap[step.color];
+              const Icon = step.icon;
 
-                <div className="grid grid-cols-3 gap-8 px-4">
-                  {processSteps.slice(0, 3).map((step, index) => {
-                    const colors = colorMap[step.color];
-                    const Icon = step.icon;
-                    const isLastInRow = index === 2;
+              return (
+                <div
+                  key={step.id}
+                  className="group relative overflow-hidden rounded-2xl border border-gray-200/50 bg-white/95 p-6 shadow-xl transition-all duration-300 hover:shadow-2xl"
+                >
+                  {/* Visual accent background */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradient} opacity-5`}></div>
 
-                    return (
-                      <div key={step.id} className="relative pt-6 text-center">
-                        {/* Enhanced card design */}
-                        <div className="relative overflow-visible rounded-3xl border border-gray-200/50 bg-white/95 px-6 py-10 shadow-2xl backdrop-blur-sm">
-                          {/* Visual accent background */}
-                          <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradient} opacity-3 rounded-3xl`}></div>
+                  {/* Decorative corner accents */}
+                  <div className={`absolute -right-6 -top-6 size-12 rounded-full ${colors.bg} opacity-15`}></div>
+                  <div className={`absolute -bottom-3 -left-3 size-8 rounded-full ${colors.bg} opacity-10`}></div>
 
-                          {/* Decorative corner accent */}
-                          <div className={`absolute -right-6 -top-6 size-12 rounded-full ${colors.bg} opacity-15`}></div>
-
-                          {/* Step number badge */}
-                          <div className={`absolute -top-6 left-1/2 flex size-12 -translate-x-1/2 items-center justify-center rounded-full ${colors.accent} z-20 text-white shadow-xl`}>
-                            <span className="text-sm font-bold">{step.id}</span>
-                          </div>
-
-                          {/* Icon section */}
-                          <div className="relative z-10 mb-6 mt-2">
-                            <div className={`mx-auto mb-4 flex size-20 items-center justify-center rounded-2xl ${colors.bg} shadow-lg`}>
-                              <Icon className={`size-10 ${colors.text}`} />
-                            </div>
-
-                            {/* Decorative elements around icon */}
-                            <div className={`absolute -right-2 -top-2 size-4 rounded-full ${colors.accent} opacity-70`}></div>
-                            <div className={`absolute -bottom-2 -left-2 size-3 rounded-full ${colors.accent} opacity-50`}></div>
-                          </div>
-
-                          <div className="relative z-10 pb-2">
-                            <h3 className="mb-4 text-lg font-bold leading-tight text-gray-900">{step.title}</h3>
-
-                            {step.unique && (
-                              <div className={`mb-4 inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold ${colors.badge} shadow-md`}>
-                                🔥
-                                {' '}
-                                {step.unique}
-                              </div>
-                            )}
-
-                            <p className="pb-1 text-sm leading-relaxed text-gray-700">
-                              <strong className="text-gray-900">
-                                {step.description.split('.')[0]}
-                                .
-                              </strong>
-                              {step.description.split('.').slice(1).join('.')}
-                            </p>
-                          </div>
-
-                          {/* Arrow connector - only for first 2 cards in row */}
-                          {!isLastInRow && (
-                            <div className="absolute -right-6 top-1/2 z-20 -translate-y-1/2">
-                              <div className="flex size-10 items-center justify-center rounded-full border border-gray-200 bg-white shadow-lg">
-                                <ArrowRight className="size-5 text-gray-400" />
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Subtle side accent */}
-                          <div className={`absolute inset-y-12 left-0 w-1 ${colors.accent} rounded-r-full`}></div>
+                  <div className="relative z-10">
+                    {/* Enhanced Icon Section */}
+                    <div className="mb-4 flex items-center justify-between">
+                      <div className={`relative flex size-12 items-center justify-center rounded-xl ${colors.bg} shadow-lg transition-transform group-hover:scale-105`}>
+                        <Icon className={`size-6 ${colors.text}`} />
+                        <div className={`absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full ${colors.accent} text-xs font-bold text-white shadow-md`}>
+                          {step.id}
                         </div>
                       </div>
-                    );
-                  })}
+                      {step.unique && (
+                        <div className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${colors.badge} shadow-md`}>
+                          🔥
+                          {' '}
+                          {step.unique}
+                        </div>
+                      )}
+                    </div>
+
+                    <h3 className="mb-3 text-lg font-bold text-gray-900">
+                      {step.title}
+                    </h3>
+
+                    <p className="text-sm leading-relaxed text-gray-700">
+                      <strong className="text-gray-900">
+                        {step.description.split('.')[0]}
+                        .
+                      </strong>
+                      {step.description.substring(step.description.indexOf('.') + 1)}
+                    </p>
+                  </div>
+
+                  {/* Subtle side accent */}
+                  <div className={`absolute inset-y-4 left-0 w-1 ${colors.accent} rounded-r-full`}></div>
+
+                  {/* Floating accent elements */}
+                  <div className="absolute -left-1 top-12 size-2 rounded-full bg-blue-400/40"></div>
+                  <div className="absolute -right-2 bottom-8 size-3 rounded-full bg-purple-400/30"></div>
                 </div>
+              );
+            })}
+          </div>
 
-              </div>
+          {/* Second Row - 2 Cards Centered */}
+          <div className="grid grid-cols-2 gap-6">
+            {processSteps.slice(3, 5).map((step) => {
+              const colors = colorMap[step.color];
+              const Icon = step.icon;
 
-              {/* Second Row - Steps 4, 5 */}
-              <div className="relative mt-16">
-                {/* Connection line for second row - centered for 2 items */}
-                <div className="absolute left-1/3 top-1/2 h-2 w-1/3 -translate-y-1/2">
-                  <div className="size-full rounded-full bg-gradient-to-r from-amber-400/40 to-indigo-400/40 shadow-lg"></div>
-                </div>
+              return (
+                <div
+                  key={step.id}
+                  className="group relative overflow-hidden rounded-2xl border border-gray-200/50 bg-white/95 p-6 shadow-xl transition-all duration-300 hover:shadow-2xl"
+                >
+                  {/* Visual accent background */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradient} opacity-5`}></div>
 
-                <div className="grid grid-cols-2 gap-8 px-4">
-                  {processSteps.slice(3, 5).map((step, index) => {
-                    const colors = colorMap[step.color];
-                    const Icon = step.icon;
-                    const isLastInRow = index === 1;
+                  {/* Decorative corner accents */}
+                  <div className={`absolute -right-6 -top-6 size-12 rounded-full ${colors.bg} opacity-15`}></div>
+                  <div className={`absolute -bottom-3 -left-3 size-8 rounded-full ${colors.bg} opacity-10`}></div>
 
-                    return (
-                      <div key={step.id} className="relative pt-6 text-center">
-                        {/* Enhanced card design */}
-                        <div className="relative overflow-visible rounded-3xl border border-gray-200/50 bg-white/95 px-6 py-10 shadow-2xl backdrop-blur-sm">
-                          {/* Visual accent background */}
-                          <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradient} opacity-3 rounded-3xl`}></div>
-
-                          {/* Decorative corner accent */}
-                          <div className={`absolute -right-6 -top-6 size-12 rounded-full ${colors.bg} opacity-15`}></div>
-
-                          {/* Step number badge */}
-                          <div className={`absolute -top-6 left-1/2 flex size-12 -translate-x-1/2 items-center justify-center rounded-full ${colors.accent} z-20 text-white shadow-xl`}>
-                            <span className="text-sm font-bold">{step.id}</span>
-                          </div>
-
-                          {/* Icon section */}
-                          <div className="relative z-10 mb-6 mt-2">
-                            <div className={`mx-auto mb-4 flex size-20 items-center justify-center rounded-2xl ${colors.bg} shadow-lg`}>
-                              <Icon className={`size-10 ${colors.text}`} />
-                            </div>
-
-                            {/* Decorative elements around icon */}
-                            <div className={`absolute -right-2 -top-2 size-4 rounded-full ${colors.accent} opacity-70`}></div>
-                            <div className={`absolute -bottom-2 -left-2 size-3 rounded-full ${colors.accent} opacity-50`}></div>
-                          </div>
-
-                          <div className="relative z-10 pb-2">
-                            <h3 className="mb-4 text-lg font-bold leading-tight text-gray-900">{step.title}</h3>
-
-                            {step.unique && (
-                              <div className={`mb-4 inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold ${colors.badge} shadow-md`}>
-                                🔥
-                                {' '}
-                                {step.unique}
-                              </div>
-                            )}
-
-                            <p className="pb-1 text-sm leading-relaxed text-gray-700">
-                              <strong className="text-gray-900">
-                                {step.description.split('.')[0]}
-                                .
-                              </strong>
-                              {step.description.split('.').slice(1).join('.')}
-                            </p>
-                          </div>
-
-                          {/* Arrow connector - only for first card in second row */}
-                          {!isLastInRow && (
-                            <div className="absolute -right-6 top-1/2 z-20 -translate-y-1/2">
-                              <div className="flex size-10 items-center justify-center rounded-full border border-gray-200 bg-white shadow-lg">
-                                <ArrowRight className="size-5 text-gray-400" />
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Subtle side accent */}
-                          <div className={`absolute inset-y-12 left-0 w-1 ${colors.accent} rounded-r-full`}></div>
+                  <div className="relative z-10">
+                    {/* Enhanced Icon Section */}
+                    <div className="mb-4 flex items-center justify-between">
+                      <div className={`relative flex size-12 items-center justify-center rounded-xl ${colors.bg} shadow-lg transition-transform group-hover:scale-105`}>
+                        <Icon className={`size-6 ${colors.text}`} />
+                        <div className={`absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full ${colors.accent} text-xs font-bold text-white shadow-md`}>
+                          {step.id}
                         </div>
                       </div>
-                    );
-                  })}
+                      {step.unique && (
+                        <div className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${colors.badge} shadow-md`}>
+                          🔥
+                          {' '}
+                          {step.unique}
+                        </div>
+                      )}
+                    </div>
+
+                    <h3 className="mb-3 text-lg font-bold text-gray-900">
+                      {step.title}
+                    </h3>
+
+                    <p className="text-sm leading-relaxed text-gray-700">
+                      <strong className="text-gray-900">
+                        {step.description.split('.')[0]}
+                        .
+                      </strong>
+                      {step.description.substring(step.description.indexOf('.') + 1)}
+                    </p>
+                  </div>
+
+                  {/* Subtle side accent */}
+                  <div className={`absolute inset-y-4 left-0 w-1 ${colors.accent} rounded-r-full`}></div>
+
+                  {/* Floating accent elements */}
+                  <div className="absolute -left-1 top-12 size-2 rounded-full bg-blue-400/40"></div>
+                  <div className="absolute -right-2 bottom-8 size-3 rounded-full bg-purple-400/30"></div>
                 </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Stylish Comparison Section */}
-        <div className="mt-20">
-          <div className="relative overflow-hidden rounded-3xl border border-gray-200/50 bg-white/95 p-8 shadow-2xl backdrop-blur-sm">
-            {/* Visual background elements */}
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 via-pink-50/30 to-indigo-50/40"></div>
+        {/* Enhanced Call to Action */}
+        <div className="mt-20 text-center">
+          <div className="relative mx-auto max-w-4xl overflow-hidden rounded-2xl border-2 border-purple-200/50 bg-gradient-to-r from-purple-50/80 to-indigo-50/60 p-8 shadow-2xl">
+            {/* Background decoratives */}
+            <div className="absolute -right-8 -top-8 size-20 rounded-full bg-gradient-to-br from-purple-200/15 to-indigo-300/10 blur-2xl"></div>
+            <div className="absolute -bottom-6 -left-6 size-16 rounded-full bg-gradient-to-tr from-blue-200/20 to-purple-300/15 blur-xl"></div>
 
-            {/* Decorative corner accents */}
-            <div className="absolute -right-12 -top-12 size-24 rounded-full bg-gradient-to-br from-purple-200/20 to-pink-300/15"></div>
-            <div className="absolute -bottom-8 -left-8 size-20 rounded-full bg-gradient-to-tr from-blue-200/25 to-indigo-300/20"></div>
+            <div className="relative z-10">
+              <h3 className="mb-6 text-3xl font-bold text-gray-900 sm:text-4xl">
+                Ready to Experience True Clinical Intelligence?
+              </h3>
+              <p className="mb-8 text-lg leading-relaxed text-gray-600 lg:text-xl">
+                Join the beta and see how ClinicPro transforms not just your documentation,
+                <span className="block font-medium text-purple-600 sm:inline"> but your entire approach to patient care.</span>
+              </p>
 
-            <div className="relative">
-              <div className="mb-12 text-center">
-                <h3 className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-3xl font-bold text-transparent sm:text-4xl">
-                  ClinicPro vs Basic Transcription Tools
-                </h3>
-              </div>
-
-              <div className="grid gap-8 md:grid-cols-2">
-                <div className="relative">
-                  <div className="rounded-2xl border-2 border-red-200/50 bg-gradient-to-br from-red-50/80 to-orange-50/60 p-8 shadow-lg">
-                    <h4 className="mb-6 bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-xl font-bold text-transparent">❌ Basic Transcription (like others)</h4>
-                    <ul className="space-y-3 text-gray-700">
-                      <li className="flex items-start space-x-3">
-                        <span className="text-red-500">•</span>
-                        <span>Audio only — no visual context</span>
-                      </li>
-                      <li className="flex items-start space-x-3">
-                        <span className="text-red-500">•</span>
-                        <span>Simple text conversion</span>
-                      </li>
-                      <li className="flex items-start space-x-3">
-                        <span className="text-red-500">•</span>
-                        <span>No clinical intelligence</span>
-                      </li>
-                      <li className="flex items-start space-x-3">
-                        <span className="text-red-500">•</span>
-                        <span>Generic templates</span>
-                      </li>
-                      <li className="flex items-start space-x-3">
-                        <span className="text-red-500">•</span>
-                        <span>Limited to desktop recording</span>
-                      </li>
-                    </ul>
-                  </div>
-                  {/* Side accent */}
-                  <div className="absolute inset-y-8 left-0 w-1 rounded-r-full bg-gradient-to-b from-red-500 to-orange-500"></div>
-                </div>
-
-                <div className="relative">
-                  <div className="rounded-2xl border-2 border-emerald-200/50 bg-gradient-to-br from-emerald-50/80 to-teal-50/60 p-8 shadow-lg">
-                    <h4 className="mb-6 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-xl font-bold text-transparent">✅ ClinicPro Clinical Intelligence</h4>
-                    <ul className="space-y-3 text-gray-700">
-                      <li className="flex items-start space-x-3">
-                        <span className="text-emerald-500">•</span>
-                        <strong className="text-emerald-600">Audio + typing + images + checklists + reasoning</strong>
-                      </li>
-                      <li className="flex items-start space-x-3">
-                        <span className="text-emerald-500">•</span>
-                        <strong className="text-emerald-600">Mobile QR recording flexibility</strong>
-                      </li>
-                      <li className="flex items-start space-x-3">
-                        <span className="text-emerald-500">•</span>
-                        <strong className="text-emerald-600">Differential diagnosis suggestions</strong>
-                      </li>
-                      <li className="flex items-start space-x-3">
-                        <span className="text-emerald-500">•</span>
-                        <strong className="text-emerald-600">NZ-specific clinical decision support</strong>
-                      </li>
-                      <li className="flex items-start space-x-3">
-                        <span className="text-emerald-500">•</span>
-                        <strong className="text-emerald-600">Comprehensive structured documentation</strong>
-                      </li>
-                    </ul>
-                  </div>
-                  {/* Enhanced glow effect */}
-                  <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-r from-emerald-200/20 to-teal-200/15 blur-xl"></div>
-                  {/* Side accent */}
-                  <div className="absolute inset-y-8 left-0 w-1 rounded-r-full bg-gradient-to-b from-emerald-500 to-teal-500"></div>
-                </div>
+              <div className="flex flex-col items-center space-y-4 sm:flex-row sm:justify-center sm:space-x-4 sm:space-y-0">
+                <button className="group inline-flex items-center rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-8 py-4 text-lg font-semibold text-white shadow-xl transition-all duration-300 hover:from-purple-700 hover:to-indigo-700 hover:shadow-2xl">
+                  <span>Join Beta Testing</span>
+                  <ArrowRight className="ml-2 size-5 transition-transform group-hover:translate-x-1" />
+                </button>
+                <p className="text-sm text-gray-500">
+                  Free for the first 30 NZ GPs
+                </p>
               </div>
             </div>
 
             {/* Floating accent elements */}
-            <div className="absolute -left-4 -top-4 size-6 rounded-full bg-blue-400/50"></div>
-            <div className="absolute -right-3 -top-3 size-5 rounded-full bg-purple-400/60"></div>
-            <div className="absolute -bottom-3 -left-3 size-5 rounded-full bg-indigo-400/40"></div>
-            <div className="absolute -bottom-4 -right-4 size-4 rounded-full bg-emerald-400/55"></div>
+            <div className="absolute -left-3 top-16 size-3 rounded-full bg-purple-400/50"></div>
+            <div className="absolute -right-2 bottom-20 size-4 rounded-full bg-blue-400/40"></div>
           </div>
         </div>
       </div>
