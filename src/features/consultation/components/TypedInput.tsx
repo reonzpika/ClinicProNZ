@@ -6,10 +6,11 @@ import { Section } from '@/shared/components/layout/Section';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { useConsultation } from '@/shared/ConsultationContext';
 
-export function TypedInput({ collapsed, onExpand }: { collapsed?: boolean; onExpand?: () => void }) {
+export function TypedInput({ collapsed, onExpand, isMinimized }: { collapsed?: boolean; onExpand?: () => void; isMinimized?: boolean }) {
   const { typedInput, setTypedInput } = useConsultation();
   const [localInput, setLocalInput] = useState(typedInput);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isExpanded, setIsExpanded] = useState(!isMinimized);
 
   // Check if user has typed anything (not just empty lines)
   const hasContent = localInput.trim().length > 0;
@@ -48,6 +49,49 @@ export function TypedInput({ collapsed, onExpand }: { collapsed?: boolean; onExp
     }
   }, [localInput]);
 
+  // Handle minimized state (in documentation mode)
+  if (isMinimized) {
+    return (
+      <Card className="border-slate-200 bg-white shadow-sm">
+        <CardHeader className="flex flex-row items-center justify-between p-2 pb-2">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-slate-700">Consultation Notes</span>
+            {hasContent && <span className="text-xs text-slate-500">({localInput.length} chars)</span>}
+          </div>
+          <button 
+            type="button" 
+            className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800" 
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
+            {isExpanded ? '−' : '+'}
+          </button>
+        </CardHeader>
+        {isExpanded && (
+          <CardContent className="p-2 pt-0">
+            <Section>
+              <textarea
+                ref={textareaRef}
+                value={localInput}
+                onChange={e => setLocalInput(e.target.value)}
+                onBlur={handleBlur}
+                className="w-full resize-none rounded border p-2 text-xs leading-relaxed focus:border-primary focus:ring-1 focus:ring-primary"
+                placeholder="Type your consultation notes here..."
+                spellCheck
+                style={{ minHeight: 100, maxHeight: 200 }}
+              />
+              {hasContent && (
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {localInput.length} characters
+                </div>
+              )}
+            </Section>
+          </CardContent>
+        )}
+      </Card>
+    );
+  }
+
+  // Handle original collapsed state (backwards compatibility)
   if (collapsed) {
     return (
       <Card>

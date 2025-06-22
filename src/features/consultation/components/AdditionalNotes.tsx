@@ -18,6 +18,7 @@ type AdditionalNotesProps = {
   onNotesChange: (notes: string) => void;
   notes: string;
   placeholder?: string;
+  isMinimized?: boolean;
 };
 
 export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
@@ -25,9 +26,11 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   onNotesChange,
   notes,
   placeholder = 'Additional information gathered during consultation...',
+  isMinimized = false,
 }) => {
   // Track processed items to avoid duplicates
   const [processedItemIds] = React.useState(new Set<string>());
+  const [isExpanded, setIsExpanded] = React.useState(!isMinimized);
 
   // Auto-append new items to notes
   React.useEffect(() => {
@@ -53,6 +56,45 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     onNotesChange(newText);
   };
 
+  // Minimized view (in documentation mode)
+  if (isMinimized) {
+    return (
+      <Card className="border-slate-200 bg-white shadow-sm">
+        <CardHeader className="flex flex-row items-center justify-between p-2 pb-2">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-slate-700">Additional Notes</span>
+            {notes.trim() && <span className="text-xs text-slate-500">({notes.trim().length} chars)</span>}
+          </div>
+          <button 
+            type="button" 
+            className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800" 
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
+            {isExpanded ? '−' : '+'}
+          </button>
+        </CardHeader>
+        {isExpanded && (
+          <CardContent className="p-2 pt-0">
+            <div>
+              <Textarea
+                id="additional-notes-minimized"
+                value={notes}
+                onChange={e => handleTextChange(e.target.value)}
+                placeholder={placeholder}
+                className="resize-none text-xs"
+                rows={4}
+              />
+              <p className="mt-1 text-xs text-slate-500">
+                Information from clinical tools appears here
+              </p>
+            </div>
+          </CardContent>
+        )}
+      </Card>
+    );
+  }
+
+  // Standard view
   return (
     <Card className="border-slate-200 bg-white shadow-sm">
       <CardHeader className="border-b border-slate-100 bg-slate-50">

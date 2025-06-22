@@ -10,7 +10,7 @@ import { useConsultation } from '@/shared/ConsultationContext';
 
 // TODO: Fix button enable logic so Generate Notes is clickable when there is only a transcription (without requiring a quick note). Currently, it only enables after a quick note is added.
 
-export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused }: { onGenerate?: () => void; onClearAll?: () => void; loading?: boolean; isNoteFocused?: boolean }) {
+export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused, isDocumentationMode }: { onGenerate?: () => void; onClearAll?: () => void; loading?: boolean; isNoteFocused?: boolean; isDocumentationMode?: boolean }) {
   const {
     generatedNotes,
     error,
@@ -196,7 +196,10 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
               onChange={handleNotesChange}
               className="w-full rounded border border-slate-200 bg-white p-3 text-sm leading-relaxed text-slate-700 focus:border-slate-400 focus:ring-2 focus:ring-slate-400"
               placeholder="Clinical documentation will appear here..."
-              style={{ minHeight: 120, maxHeight: 1000, resize: 'none', overflowY: 'auto' }}
+              style={isDocumentationMode 
+                ? { minHeight: '400px', height: 'calc(100vh - 300px)', maxHeight: 'calc(100vh - 300px)', resize: 'none', overflowY: 'auto' }
+                : { minHeight: 120, maxHeight: 1000, resize: 'none', overflowY: 'auto' }
+              }
               disabled={loading}
               spellCheck={false}
             />

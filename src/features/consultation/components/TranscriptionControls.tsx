@@ -16,7 +16,7 @@ import { AudioSettingsModal } from './AudioSettingsModal';
 import { ConsentModal } from './ConsentModal';
 import { MobileRecordingQR } from './MobileRecordingQR';
 
-export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boolean; onExpand?: () => void }) {
+export function TranscriptionControls({ collapsed, onExpand, isMinimized }: { collapsed?: boolean; onExpand?: () => void; isMinimized?: boolean }) {
   const {
     error: contextError,
     consentObtained,
@@ -27,6 +27,7 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [showAudioSettings, setShowAudioSettings] = useState(false);
   const [showMobileRecording, setShowMobileRecording] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(!isMinimized);
 
   const {
     isRecording,
@@ -121,6 +122,83 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
     );
   };
 
+  // Handle minimized state (in documentation mode)
+  if (isMinimized) {
+    return (
+      <Card className="border-slate-200 bg-white shadow-sm">
+        <CardHeader className="flex flex-row items-center justify-between p-2 pb-2">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-slate-700">Consultation Notes</span>
+            {isRecording && <RecordingDot />}
+          </div>
+          <Button 
+            type="button" 
+            variant="ghost" 
+            size="sm" 
+            className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800" 
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
+            {isExpanded ? '−' : '+'}
+          </Button>
+        </CardHeader>
+        {isExpanded && (
+          <CardContent className="p-2 pt-0">
+            <Stack spacing="sm">
+              {(error || contextError) && (
+                <Alert variant="destructive" className="p-2 text-xs">
+                  {error || contextError}
+                </Alert>
+              )}
+
+              <Section>
+                <div className="flex w-full items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    {isRecording && <RecordingDot />}
+                    <span className="text-xs font-semibold">Audio Recording</span>
+                  </div>
+                  <div className="flex gap-1">
+                    {!isRecording && !isTranscribing && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleStartRecording}
+                        disabled={isDesktopRecordingDisabled()}
+                        className="h-7 min-w-0 rounded border bg-white px-2 py-0.5 text-xs hover:bg-gray-100"
+                      >
+                        Start Recording
+                      </Button>
+                    )}
+                    {isRecording && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={stopRecording}
+                        className="h-7 min-w-0 rounded border bg-white px-2 py-0.5 text-xs hover:bg-gray-100"
+                      >
+                        Stop
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </Section>
+
+              {transcript && (
+                <Section>
+                  <div className="rounded border border-slate-200 bg-white p-2 text-xs">
+                    <div className="max-h-20 overflow-y-auto text-slate-700">
+                      {transcript}
+                    </div>
+                  </div>
+                </Section>
+              )}
+            </Stack>
+          </CardContent>
+        )}
+      </Card>
+    );
+  }
+
+  // Handle original collapsed state (backwards compatibility)
   if (collapsed) {
     return (
       <Card>
