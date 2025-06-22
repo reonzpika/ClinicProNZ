@@ -5,7 +5,6 @@ import { generateSystemPrompt } from './systemPrompt';
 // Helper function to build consultation data section dynamically
 function buildConsultationData(
   transcription: string,
-  quickNotes: string[],
   typedInput?: string,
   inputMode: 'audio' | 'typed' = 'audio',
 ): string {
@@ -16,15 +15,6 @@ function buildConsultationData(
     if (transcription && transcription.trim()) {
       sections.push('[TRANSCRIPTION]');
       sections.push(transcription.trim());
-    }
-
-    // Add quick notes if available
-    if (quickNotes.length > 0) {
-      const quickNotesText = quickNotes.join('\n').trim();
-      if (quickNotesText) {
-        sections.push('[QUICKNOTES]');
-        sections.push(quickNotesText);
-      }
     }
   } else if (inputMode === 'typed') {
     // Add typed input if available
@@ -40,7 +30,6 @@ function buildConsultationData(
 export function compileTemplate(
   dsl: TemplateDSL,
   transcription: string,
-  quickNotes: string[],
   typedInput?: string,
   inputMode: 'audio' | 'typed' = 'audio',
 ): { system: string; user: string } {
@@ -66,7 +55,7 @@ export function compileTemplate(
   }, null, 2);
 
   // Build consultation data dynamically
-  const consultationData = buildConsultationData(transcription, quickNotes, typedInput, inputMode);
+  const consultationData = buildConsultationData(transcription, typedInput, inputMode);
 
   // Build the user message with process instructions
   const userMessage = [

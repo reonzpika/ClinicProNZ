@@ -25,16 +25,27 @@ export const ChatbotWidget: React.FC = () => {
     // Raw consultation data for Phase 1 context
     transcription,
     typedInput,
-    quickNotes,
     inputMode,
+    // Consultation notes functionality
+    addConsultationItem,
   } = useConsultation();
 
   const [inputMessage, setInputMessage] = useState('');
   const [streamingMessage, setStreamingMessage] = useState('');
-  const [isExpanded, setIsExpanded] = useState(false);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Handle adding chat message to consultation notes
+  const handleAddMessageToConsultation = useCallback((message: any) => {
+    const messageType = message.role === 'user' ? 'User Question' : 'Clinical Reference Answer';
+    addConsultationItem({
+      type: 'other',
+      title: messageType,
+      content: message.content,
+    });
+  }, [addConsultationItem]);
 
   // Auto-scroll to bottom when new messages are added
   const scrollToBottom = useCallback(() => {
@@ -89,7 +100,6 @@ export const ChatbotWidget: React.FC = () => {
       const rawConsultationData = {
         transcription: inputMode === 'audio' ? transcription.transcript : '',
         typedInput: inputMode === 'typed' ? typedInput : '',
-        quickNotes: quickNotes || [],
       };
 
       const response = await fetch('/api/consultation/chat', {
@@ -158,7 +168,6 @@ export const ChatbotWidget: React.FC = () => {
     inputMode,
     transcription,
     typedInput,
-    quickNotes,
   ]);
 
   // Handle Enter key press
@@ -174,9 +183,7 @@ export const ChatbotWidget: React.FC = () => {
     setInputMessage(e.target.value);
   };
 
-  const chatHeight = isExpanded
-    ? 'h-[400px]' // Reduced from 700px to 400px for better UX
-    : 'h-auto';
+  const chatHeight = 'h-[400px]'; // Fixed height for consistent UX
 
   const chatContent = useMemo(() => (
     <>
@@ -185,7 +192,7 @@ export const ChatbotWidget: React.FC = () => {
         <ScrollArea ref={scrollAreaRef} className="h-full pr-2">
           <div className="space-y-1">
             {(chatHistory || []).map(message => (
-              <ChatMessage key={message.id} message={message} />
+              <ChatMessage key={message.id} message={message} onAddToConsultation={handleAddMessageToConsultation} />
             ))}
 
             {/* Streaming message */}
@@ -284,13 +291,13 @@ export const ChatbotWidget: React.FC = () => {
                       id="context-toggle-modal"
                       checked={isChatContextEnabled}
                       onCheckedChange={setChatContextEnabled}
-                      disabled={!generatedNotes && !transcription.transcript && !typedInput && (!quickNotes || quickNotes.length === 0)}
+                      disabled={!generatedNotes && !transcription.transcript && !typedInput}
                     />
                     <label htmlFor="context-toggle-modal" className="text-sm text-slate-600">
                       {generatedNotes
                         ? 'Use clinical notes as context'
                         : 'Use consultation data as context'}
-                      {!generatedNotes && !transcription.transcript && !typedInput && (!quickNotes || quickNotes.length === 0) && (
+                      {!generatedNotes && !transcription.transcript && !typedInput && (
                         <span className="ml-1 text-slate-400">(No consultation data available)</span>
                       )}
                     </label>
@@ -300,7 +307,7 @@ export const ChatbotWidget: React.FC = () => {
                     <ScrollArea className="h-full pr-2">
                       <div className="space-y-2">
                         {(chatHistory || []).map(message => (
-                          <ChatMessage key={message.id} message={message} />
+                          <ChatMessage key={message.id} message={message} onAddToConsultation={handleAddMessageToConsultation} />
                         ))}
 
                         {/* Streaming message */}
@@ -362,14 +369,7 @@ export const ChatbotWidget: React.FC = () => {
                 </div>
               </DialogContent>
             </Dialog>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
-            >
-              {isExpanded ? '▼' : '▲'}
-            </Button>
+
             <Button
               variant="ghost"
               size="sm"
@@ -387,25 +387,23 @@ export const ChatbotWidget: React.FC = () => {
             id="context-toggle"
             checked={isChatContextEnabled}
             onCheckedChange={setChatContextEnabled}
-            disabled={!generatedNotes && !transcription.transcript && !typedInput && (!quickNotes || quickNotes.length === 0)}
+            disabled={!generatedNotes && !transcription.transcript && !typedInput}
           />
           <label htmlFor="context-toggle" className="text-sm text-slate-600">
             {generatedNotes
               ? 'Use clinical notes as context'
               : 'Use consultation data as context'}
-            {!generatedNotes && !transcription.transcript && !typedInput && (!quickNotes || quickNotes.length === 0) && (
+            {!generatedNotes && !transcription.transcript && !typedInput && (
               <span className="ml-1 text-slate-400">(No consultation data available)</span>
             )}
           </label>
         </div>
       </CardHeader>
 
-      {/* Only show chat content when expanded */}
-      {isExpanded && (
-        <CardContent className="flex flex-1 flex-col overflow-hidden p-3 pt-0">
-          {chatContent}
-        </CardContent>
-      )}
+      {/* Chat content - always visible */}
+      <CardContent className="flex flex-1 flex-col overflow-hidden p-3 pt-0">
+        {chatContent}
+      </CardContent>
     </Card>
   );
 };

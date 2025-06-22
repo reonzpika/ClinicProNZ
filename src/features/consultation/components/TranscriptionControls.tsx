@@ -1,7 +1,7 @@
 /* eslint-disable react/no-nested-components */
 'use client';
 
-import { Settings } from 'lucide-react';
+import { Settings, Smartphone } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Section } from '@/shared/components/layout/Section';
@@ -14,6 +14,7 @@ import { useConsultation } from '@/shared/ConsultationContext';
 import { useTranscription } from '../hooks/useTranscription';
 import { AudioSettingsModal } from './AudioSettingsModal';
 import { ConsentModal } from './ConsentModal';
+import { MobileRecordingQR } from './MobileRecordingQR';
 
 export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boolean; onExpand?: () => void }) {
   const {
@@ -25,6 +26,7 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
   } = useConsultation();
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [showAudioSettings, setShowAudioSettings] = useState(false);
+  const [showMobileRecording, setShowMobileRecording] = useState(false);
 
   const {
     isRecording,
@@ -62,6 +64,33 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
   // Handle consent cancellation
   const handleConsentCancel = () => {
     setShowConsentModal(false);
+  };
+
+  // Mobile recording button status and styling
+  const getMobileButtonStyle = () => {
+    if (mobileRecording.isActive) {
+      // Check if QR is expired
+      const now = new Date().getTime();
+      const expiry = mobileRecording.qrExpiry ? new Date(mobileRecording.qrExpiry).getTime() : 0;
+      const isExpired = expiry > 0 && now >= expiry;
+      
+      if (isExpired) {
+        return {
+          className: "h-7 min-w-0 rounded border bg-orange-100 px-1 py-0.5 text-xs text-orange-700 hover:bg-orange-200",
+          title: "Mobile recording expired - click to reconnect"
+        };
+      }
+      
+      return {
+        className: "h-7 min-w-0 rounded border bg-green-100 px-1 py-0.5 text-xs text-green-700 hover:bg-green-200",
+        title: "Mobile recording active - click to manage"
+      };
+    }
+    
+    return {
+      className: "h-7 min-w-0 rounded border bg-white px-1 py-0.5 text-xs hover:bg-gray-100",
+      title: "Connect mobile device for recording"
+    };
   };
 
   // Determine if we're waiting for speech to start
@@ -198,6 +227,18 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
                   </Button>
                 )}
                 <Button
+                  onClick={() => setShowMobileRecording(true)}
+                  variant="outline"
+                  size="sm"
+                  className={getMobileButtonStyle().className}
+                  title={getMobileButtonStyle().title}
+                >
+                  <Smartphone className="size-3" />
+                  {mobileRecording.isActive && (
+                    <span className="ml-1 size-1.5 rounded-full bg-current animate-pulse" />
+                  )}
+                </Button>
+                <Button
                   onClick={() => setShowAudioSettings(true)}
                   variant="outline"
                   size="sm"
@@ -264,6 +305,12 @@ export function TranscriptionControls({ collapsed, onExpand }: { collapsed?: boo
       <AudioSettingsModal
         isOpen={showAudioSettings}
         onClose={() => setShowAudioSettings(false)}
+      />
+
+      {/* Mobile Recording Modal */}
+      <MobileRecordingQR
+        isOpen={showMobileRecording}
+        onClose={() => setShowMobileRecording(false)}
       />
     </Card>
   );

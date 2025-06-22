@@ -2,11 +2,10 @@
 
 import React, { useState } from 'react';
 
+import { AdditionalNotes } from '@/features/consultation/components/AdditionalNotes';
 import { GeneratedNotes } from '@/features/consultation/components/GeneratedNotes';
 import { InputModeToggle } from '@/features/consultation/components/InputModeToggle';
-import { MobileRecordingQR } from '@/features/consultation/components/MobileRecordingQR';
-import { QuickNotes } from '@/features/consultation/components/QuickNotes';
-import RightSidebarFeatures from '@/features/consultation/components/RightSidebarFeatures';
+import RightPanelFeatures from '@/features/consultation/components/RightPanelFeatures';
 import { TranscriptionControls } from '@/features/consultation/components/TranscriptionControls';
 import { TypedInput } from '@/features/consultation/components/TypedInput';
 import { useMobileSync } from '@/features/consultation/hooks/useMobileSync';
@@ -22,15 +21,18 @@ export default function ConsultationPage() {
   const {
     transcription,
     templateId,
-    quickNotes,
     typedInput,
     inputMode,
     settingsOverride,
     sessionId,
     mobileRecording,
+    consultationItems,
+    consultationNotes,
     setGeneratedNotes,
     setError,
     setLastGeneratedInput,
+    setConsultationNotes,
+    getCompiledConsultationText,
   } = useConsultation();
   const [loading, setLoading] = useState(false);
   const [isNoteFocused, setIsNoteFocused] = useState(false);
@@ -56,7 +58,7 @@ export default function ConsultationPage() {
     // Get input based on current mode
     const transcript = inputMode === 'typed' ? '' : transcription.transcript;
     const currentTypedInput = inputMode === 'typed' ? typedInput : '';
-    const currentQuickNotes = inputMode === 'typed' ? [] : quickNotes;
+    const compiledConsultationText = getCompiledConsultationText();
 
     try {
       const res = await fetch('/api/consultation/notes', {
@@ -66,9 +68,9 @@ export default function ConsultationPage() {
           transcription: transcript,
           typedInput: currentTypedInput,
           templateId,
-          quickNotes: currentQuickNotes,
           inputMode,
           settingsOverride,
+          consultationNotes: compiledConsultationText,
         }),
       });
       if (!res.body) {
@@ -87,7 +89,7 @@ export default function ConsultationPage() {
         notes += decoder.decode(value, { stream: true });
         setGeneratedNotes(notes);
       }
-      setLastGeneratedInput(transcript, currentQuickNotes, currentTypedInput);
+              setLastGeneratedInput(transcript, currentTypedInput);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate notes');
     } finally {
@@ -138,17 +140,27 @@ export default function ConsultationPage() {
                       {/* Digital Recording */}
                       <TranscriptionControls collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
 
-                      {/* Mobile Recording QR Code */}
-                      <MobileRecordingQR />
-
-                      {/* Clinical Notes */}
-                      <QuickNotes collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
+                      {/* Additional Notes - Clinical tools and manual information */}
+                      <AdditionalNotes
+                        items={consultationItems}
+                        onNotesChange={setConsultationNotes}
+                        notes={consultationNotes}
+                        placeholder="Additional information gathered during consultation..."
+                      />
                     </>
                   )
                 : (
                     <>
                       {/* Manual Entry */}
                       <TypedInput collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
+
+                      {/* Additional Notes - Clinical tools information */}
+                      <AdditionalNotes
+                        items={consultationItems}
+                        onNotesChange={setConsultationNotes}
+                        notes={consultationNotes}
+                        placeholder="Additional information gathered during consultation..."
+                      />
                     </>
                   )}
 
@@ -159,7 +171,7 @@ export default function ConsultationPage() {
 
           {/* Right Column - Clinical Tools */}
           <div className="lg:col-span-1">
-            <RightSidebarFeatures />
+            <RightPanelFeatures />
           </div>
         </Grid>
       </Container>

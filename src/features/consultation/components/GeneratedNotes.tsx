@@ -15,13 +15,10 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
     generatedNotes,
     error,
     transcription,
-    quickNotes,
     resetConsultation,
     lastGeneratedTranscription,
-    lastGeneratedQuickNotes,
     lastGeneratedTypedInput,
     setGeneratedNotes,
-    setQuickNotes,
     consentObtained,
     inputMode,
     typedInput,
@@ -54,25 +51,21 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
     return generatedNotes + CONSENT_STATEMENT;
   }, [generatedNotes, consentObtained]);
 
-  // Helper: deep equality for quickNotes
-  const areQuickNotesEqual = (a: string[], b: string[]) =>
-    a.length === b.length && a.every((v, i) => v === b[i]);
-
   // Button enable logic - updated for both input modes
   const hasInput = inputMode === 'typed'
     ? (typedInput && typedInput.trim() !== '')
-    : (transcription.transcript && transcription.transcript.trim() !== '') || (quickNotes && quickNotes.length > 0);
+    : (transcription.transcript && transcription.transcript.trim() !== '');
 
   const isInputChanged = inputMode === 'typed'
     ? typedInput !== (lastGeneratedTypedInput || '')
-    : transcription.transcript !== (lastGeneratedTranscription || '') || !areQuickNotesEqual(quickNotes, lastGeneratedQuickNotes || []);
+    : transcription.transcript !== (lastGeneratedTranscription || '');
 
   const canGenerate = hasInput && isInputChanged;
 
   const hasContent = !!(displayNotes && displayNotes.trim() !== '');
   const hasAnyState = hasContent
     || (inputMode === 'typed' && typedInput && typedInput.trim() !== '')
-    || (inputMode === 'audio' && ((transcription.transcript && transcription.transcript.trim() !== '') || (quickNotes && quickNotes.length > 0)));
+    || (inputMode === 'audio' && (transcription.transcript && transcription.transcript.trim() !== ''));
 
   // Determine if we should show minimal or expanded view
   const shouldShowMinimal = !isExpanded && !hasContent && !loading;
@@ -124,7 +117,6 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused 
   // Clear all handler: reset consultation context and return to minimal state
   const handleClearAll = () => {
     resetConsultation(); // Clears all consultation data including transcript
-    setQuickNotes([]);
     setIsExpanded(false);
     if (onClearAll) {
       onClearAll();

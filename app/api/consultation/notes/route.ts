@@ -20,7 +20,7 @@ const openai = new OpenAI({
 
 export async function POST(req: Request) {
   try {
-    const { transcription, templateId, quickNotes, typedInput, inputMode, settingsOverride } = await req.json();
+    const { transcription, templateId, typedInput, inputMode, settingsOverride } = await req.json();
 
     // Validate required fields based on input mode
     if (!templateId) {
@@ -80,7 +80,6 @@ export async function POST(req: Request) {
     const { system, user } = compileTemplate(
       templateDSL,
       transcription || '',
-      quickNotes || [],
       typedInput,
       inputMode,
     );

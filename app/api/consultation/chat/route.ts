@@ -71,9 +71,7 @@ export async function POST(req: Request) {
           rawContext += `TYPED INPUT:\n${rawConsultationData.typedInput}\n\n`;
         }
 
-        if (rawConsultationData.quickNotes && rawConsultationData.quickNotes.length > 0) {
-          rawContext += `QUICK NOTES:\n${rawConsultationData.quickNotes.map((note: string, index: number) => `${index + 1}. ${note}`).join('\n')}\n\n`;
-        }
+
 
         if (rawContext.trim()) {
           systemPrompt += `

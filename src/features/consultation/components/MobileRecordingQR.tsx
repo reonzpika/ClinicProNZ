@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { Alert } from '@/shared/components/ui/alert';
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
 import { useConsultation } from '@/shared/ConsultationContext';
 
 type QRTokenData = {
@@ -16,7 +16,12 @@ type QRTokenData = {
   expiresAt: string;
 };
 
-export const MobileRecordingQR = () => {
+type MobileRecordingQRProps = {
+  isOpen: boolean;
+  onClose: () => void;
+};
+
+export const MobileRecordingQR: React.FC<MobileRecordingQRProps> = ({ isOpen, onClose }) => {
   const { isSignedIn, userId } = useAuth();
   const {
     sessionId,
@@ -138,14 +143,16 @@ export const MobileRecordingQR = () => {
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <Smartphone className="size-5" />
-          <span>Mobile Recording</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-md rounded-lg border border-gray-200 bg-white shadow-xl">
+        <DialogHeader className="pb-4">
+          <DialogTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+            <Smartphone className="size-5 text-gray-700" />
+            Mobile Recording
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
         {/* Authentication Status */}
         {!isSignedIn && (
           <Alert>
@@ -214,34 +221,34 @@ export const MobileRecordingQR = () => {
           </Alert>
         )}
 
-        {/* QR Code Display */}
-        {qrData && !isExpired && (
-          <div className="flex flex-col items-center space-y-4">
-            <div className="rounded-lg border-2 border-gray-200 bg-white p-4">
-              <QRCodeSVG
-                value={qrData.url}
-                size={200}
-                level="M"
-                includeMargin
-                className="block"
-              />
-            </div>
-            <div className="space-y-2 text-center">
-              <p className="text-sm text-gray-600">
-                Scan with mobile device to start recording
-              </p>
-              <div className="space-y-1 text-xs text-gray-500">
-                <div>
-                  Session:
-                  <span className="font-mono">{sessionId}</span>
-                </div>
-                <div className={isExpiringSoon ? 'font-medium text-orange-600' : ''}>
-                  {formatTimeRemaining(timeRemaining)}
+                  {/* QR Code Display - Optimized for Modal */}
+          {qrData && !isExpired && (
+            <div className="flex flex-col items-center space-y-3">
+              <div className="rounded-lg border-2 border-gray-200 bg-white p-3">
+                <QRCodeSVG
+                  value={qrData.url}
+                  size={160}
+                  level="M"
+                  includeMargin
+                  className="block"
+                />
+              </div>
+              <div className="space-y-2 text-center">
+                <p className="text-sm text-gray-600">
+                  Scan with your mobile device to start recording
+                </p>
+                <div className="space-y-1 text-xs text-gray-500">
+                  <div>
+                    Session:
+                    <span className="ml-1 font-mono text-xs">{sessionId}</span>
+                  </div>
+                  <div className={`font-medium ${isExpiringSoon ? 'text-orange-600' : 'text-gray-600'}`}>
+                    {formatTimeRemaining(timeRemaining)}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Control Buttons */}
         <div className="flex space-x-2">
@@ -304,18 +311,26 @@ export const MobileRecordingQR = () => {
                   )}
         </div>
 
-        {/* Instructions */}
-        <div className="rounded-lg bg-gray-50 p-3">
-          <h4 className="mb-2 text-sm font-medium">Instructions:</h4>
-          <ul className="space-y-1 text-xs text-gray-600">
+        {/* Instructions - Compact for Modal */}
+        <div className="rounded-lg bg-blue-50 p-3">
+          <h4 className="mb-2 text-sm font-medium text-blue-800">Quick Setup:</h4>
+          <ol className="space-y-1 text-xs text-blue-700">
             <li>1. Generate QR code above</li>
-            <li>2. Scan with mobile phone camera</li>
-            <li>3. Allow microphone access when prompted</li>
-            <li>4. Start recording on mobile device</li>
-            <li>5. Transcription appears automatically here</li>
-          </ul>
+            <li>2. Scan with your phone camera</li>
+            <li>3. Allow microphone access</li>
+            <li>4. Start recording on mobile</li>
+            <li>5. Transcription syncs automatically</li>
+          </ol>
         </div>
-      </CardContent>
-    </Card>
+
+        {/* Close button */}
+        <div className="flex justify-end pt-2">
+          <Button onClick={onClose} variant="outline">
+            Close
+          </Button>
+        </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };

@@ -12,6 +12,14 @@ export type ChatMessage = {
   timestamp: number;
 };
 
+export type ConsultationItem = {
+  id: string;
+  type: 'checklist' | 'differential-diagnosis' | 'acc-code' | 'other';
+  title: string;
+  content: string;
+  timestamp: number;
+};
+
 export type InputMode = 'audio' | 'typed';
 
 export type ConsultationState = {
@@ -24,12 +32,10 @@ export type ConsultationState = {
     isLive: boolean;
   };
   typedInput: string;
-  quickNotes: string[];
   generatedNotes: string | null;
   error: string | null;
   userDefaultTemplateId: string | null;
   lastGeneratedTranscription?: string;
-  lastGeneratedQuickNotes?: string[];
   lastGeneratedTypedInput?: string;
   consentObtained: boolean;
   settingsOverride: Partial<TemplateSettings> | null;
@@ -49,6 +55,9 @@ export type ConsultationState = {
     tokenGenerated: boolean;
     qrExpiry: string | null;
   };
+  // Consultation notes
+  consultationItems: ConsultationItem[];
+  consultationNotes: string;
 };
 
 const MULTIPROBLEM_SOAP_UUID = 'ef6b3139-69a0-4b4b-bf80-dcdabe0559ba';
@@ -67,7 +76,6 @@ const defaultState: ConsultationState = {
   inputMode: 'audio',
   transcription: { transcript: '', isLive: false },
   typedInput: '',
-  quickNotes: [],
   generatedNotes: null,
   error: null,
   userDefaultTemplateId: null,
@@ -93,6 +101,9 @@ const defaultState: ConsultationState = {
     tokenGenerated: false,
     qrExpiry: null,
   },
+  // Consultation notes defaults
+  consultationItems: [],
+  consultationNotes: '',
 };
 
 function generateSessionId() {
@@ -107,18 +118,14 @@ const ConsultationContext = createContext<
     setTranscription: (transcript: string, isLive: boolean) => void;
     appendTranscription: (newTranscript: string, isLive: boolean) => void;
     setTypedInput: (input: string) => void;
-    addQuickNote: (note: string) => void;
-    deleteQuickNote: (index: number) => void;
-    clearQuickNotes: () => void;
     setGeneratedNotes: (notes: string | null) => void;
     setError: (error: string | null) => void;
     resetConsultation: () => void;
     setUserDefaultTemplateId: (id: string) => void;
-    setLastGeneratedInput: (transcription: string, quickNotes: string[], typedInput?: string) => void;
+    setLastGeneratedInput: (transcription: string, typedInput?: string) => void;
     resetLastGeneratedInput: () => void;
     getCurrentTranscript: () => string;
     getCurrentInput: () => string;
-    setQuickNotes: (notes: string[]) => void;
     setConsentObtained: (consent: boolean) => void;
     setSettingsOverride: (settings: Partial<TemplateSettings> | null) => void;
     updateSettingsOverride: (updates: Partial<TemplateSettings>) => void;
@@ -137,6 +144,11 @@ const ConsultationContext = createContext<
     isDesktopRecordingDisabled: () => boolean;
     isMobileRecordingDisabled: () => boolean;
     appendMobileTranscription: (transcript: string, sessionId: string) => void;
+    // Consultation notes functions
+    addConsultationItem: (item: Omit<ConsultationItem, 'id' | 'timestamp'>) => void;
+    removeConsultationItem: (itemId: string) => void;
+    setConsultationNotes: (notes: string) => void;
+    getCompiledConsultationText: () => string;
   })
   | null
 >(null);
@@ -152,7 +164,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
           ...parsed,
           userDefaultTemplateId: userDefault,
           lastGeneratedTranscription: '',
-          lastGeneratedQuickNotes: [],
+
           lastGeneratedTypedInput: '',
           consentObtained: false,
           // Ensure new fields have defaults if not present in stored data
@@ -170,6 +182,9 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
             microphoneGain: 7.0,
             volumeThreshold: 0.1,
           },
+          // Ensure consultation notes exist
+          consultationItems: parsed.consultationItems || [],
+          consultationNotes: parsed.consultationNotes || '',
         };
       }
       return {
@@ -221,18 +236,6 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
   const setTypedInput = useCallback((typedInput: string) =>
     setState(prev => ({ ...prev, typedInput })), []);
 
-  const addQuickNote = useCallback((note: string) =>
-    setState(prev => ({ ...prev, quickNotes: [...prev.quickNotes, note] })), []);
-
-  const deleteQuickNote = useCallback((index: number) =>
-    setState(prev => ({
-      ...prev,
-      quickNotes: prev.quickNotes.filter((_, i) => i !== index),
-    })), []);
-
-  const clearQuickNotes = useCallback(() =>
-    setState(prev => ({ ...prev, quickNotes: [] })), []);
-
   const setGeneratedNotes = useCallback((notes: string | null) =>
     setState(prev => ({ ...prev, generatedNotes: notes })), []);
 
@@ -250,11 +253,10 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     }));
   }, []);
 
-  const setLastGeneratedInput = useCallback((transcription: string, quickNotes: string[], typedInput?: string) =>
+  const setLastGeneratedInput = useCallback((transcription: string, typedInput?: string) =>
     setState(prev => ({
       ...prev,
       lastGeneratedTranscription: transcription,
-      lastGeneratedQuickNotes: [...quickNotes],
       lastGeneratedTypedInput: typedInput || '',
     })), []);
 
@@ -262,7 +264,6 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setState(prev => ({
       ...prev,
       lastGeneratedTranscription: '',
-      lastGeneratedQuickNotes: [],
       lastGeneratedTypedInput: '',
     })), []);
 
@@ -274,7 +275,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       userDefaultTemplateId: prev.userDefaultTemplateId,
       inputMode: 'audio',
       lastGeneratedTranscription: '',
-      lastGeneratedQuickNotes: [],
+
       lastGeneratedTypedInput: '',
       transcription: { transcript: '', isLive: false },
       typedInput: '',
@@ -292,9 +293,6 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     }
     return state.transcription.transcript.trim();
   }, [state.inputMode, state.typedInput, state.transcription.transcript]);
-
-  const setQuickNotes = useCallback((notes: string[]) =>
-    setState(prev => ({ ...prev, quickNotes: notes })), []);
 
   const setConsentObtained = useCallback((consent: boolean) =>
     setState(prev => ({ ...prev, consentObtained: consent })), []);
@@ -404,14 +402,48 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [state.sessionId]);
 
+  // Consultation notes functions
+  const addConsultationItem = useCallback((item: Omit<ConsultationItem, 'id' | 'timestamp'>) => {
+    const newItem: ConsultationItem = {
+      ...item,
+      id: Math.random().toString(36).substr(2, 9),
+      timestamp: Date.now(),
+    };
+    setState(prev => ({
+      ...prev,
+      consultationItems: [...prev.consultationItems, newItem],
+    }));
+  }, []);
+
+  const removeConsultationItem = useCallback((itemId: string) => {
+    setState(prev => ({
+      ...prev,
+      consultationItems: prev.consultationItems.filter(item => item.id !== itemId),
+    }));
+  }, []);
+
+  const setConsultationNotes = useCallback((notes: string) => {
+    setState(prev => ({ ...prev, consultationNotes: notes }));
+  }, []);
+
+  const getCompiledConsultationText = useCallback(() => {
+    const itemsText = state.consultationItems.map(item => `${item.title}: ${item.content}`).join('\n\n');
+    const manualNotes = state.consultationNotes.trim();
+
+    if (itemsText && manualNotes) {
+      return `${itemsText}\n\n${manualNotes}`;
+    } else if (itemsText) {
+      return itemsText;
+    } else {
+      return manualNotes;
+    }
+  }, [state.consultationItems, state.consultationNotes]);
+
   const value = useMemo(() => ({
     ...state,
     setStatus,
     setTemplateId,
     setInputMode,
-    addQuickNote,
-    deleteQuickNote,
-    clearQuickNotes,
     setTranscription,
     appendTranscription,
     setTypedInput,
@@ -421,13 +453,11 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setUserDefaultTemplateId,
     setLastGeneratedInput,
     resetLastGeneratedInput,
-    setQuickNotes,
     setConsentObtained,
     setSettingsOverride,
     updateSettingsOverride,
     clearSettingsOverride,
     lastGeneratedTranscription: state.lastGeneratedTranscription || '',
-    lastGeneratedQuickNotes: state.lastGeneratedQuickNotes || [],
     lastGeneratedTypedInput: state.lastGeneratedTypedInput || '',
     userDefaultTemplateId: state.userDefaultTemplateId,
     getCurrentTranscript,
@@ -446,14 +476,16 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     isDesktopRecordingDisabled,
     isMobileRecordingDisabled,
     appendMobileTranscription,
+    // Consultation notes functions
+    addConsultationItem,
+    removeConsultationItem,
+    setConsultationNotes,
+    getCompiledConsultationText,
   }), [
     state,
     setStatus,
     setTemplateId,
     setInputMode,
-    addQuickNote,
-    deleteQuickNote,
-    clearQuickNotes,
     setTranscription,
     appendTranscription,
     setTypedInput,
@@ -463,7 +495,6 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setUserDefaultTemplateId,
     setLastGeneratedInput,
     resetLastGeneratedInput,
-    setQuickNotes,
     setConsentObtained,
     setSettingsOverride,
     updateSettingsOverride,
@@ -482,6 +513,10 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     isDesktopRecordingDisabled,
     isMobileRecordingDisabled,
     appendMobileTranscription,
+    addConsultationItem,
+    removeConsultationItem,
+    setConsultationNotes,
+    getCompiledConsultationText,
   ]);
 
   return (

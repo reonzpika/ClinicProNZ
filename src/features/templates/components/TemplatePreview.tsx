@@ -17,7 +17,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
   const [showFullPrompt, setShowFullPrompt] = useState(false);
   const [showSettingsDetails, setShowSettingsDetails] = useState(false);
   const sampleTranscription = 'This is a sample transcription of a general practice consultation.';
-  const sampleQuickNotes = ['Sample quick note 1', 'Sample quick note 2'];
+  
 
   // Default settings
   const defaultSettings: TemplateSettings = {
@@ -180,7 +180,7 @@ export function TemplatePreview({ template }: TemplatePreviewProps) {
                   </pre>
                   <h4 className="mt-2 text-xs font-medium">Full Final Prompt (as sent to AI)</h4>
                   <pre className="whitespace-pre-wrap rounded bg-muted p-1 text-xs">
-                    {compileTemplate(template.dsl, sampleTranscription, sampleQuickNotes, undefined, 'audio').user}
+                    {compileTemplate(template.dsl, sampleTranscription, undefined, 'audio').user}
                   </pre>
                 </div>
               )}
