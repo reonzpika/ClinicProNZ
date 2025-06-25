@@ -47,7 +47,7 @@ export const useMobileRecording = ({
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
-  const vadLoopRef = useRef<number | null>(null);
+  const vadLoopRef = useRef<NodeJS.Timeout | null>(null);
 
   // Recording session management - same as desktop
   const currentRecorderRef = useRef<MediaRecorder | null>(null);
