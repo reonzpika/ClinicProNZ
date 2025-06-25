@@ -192,10 +192,9 @@ export const useTranscription = () => {
     }
   }, []);
 
-  // Smart VAD monitoring loop
+  // Smart VAD monitoring loop - uses setInterval for consistent background operation
   const vadLoop = useCallback(() => {
     if (!audioContextRef.current || isPausedRef.current || !isRecordingRef.current) {
-      vadLoopRef.current = requestAnimationFrame(vadLoop);
       return;
     }
 
@@ -261,8 +260,6 @@ export const useTranscription = () => {
     if (silenceDuration > 5) {
       setState(prev => ({ ...prev, noInputWarning: true }));
     }
-
-    vadLoopRef.current = requestAnimationFrame(vadLoop);
   }, [measureVolume, startRecordingSession, stopRecordingSession, microphoneGain, volumeThreshold]);
 
   // Initialize audio context for VAD
@@ -307,7 +304,7 @@ export const useTranscription = () => {
   const cleanupAudio = useCallback(() => {
     // Stop VAD loop
     if (vadLoopRef.current) {
-      cancelAnimationFrame(vadLoopRef.current);
+      clearInterval(vadLoopRef.current);
       vadLoopRef.current = null;
     }
 
@@ -379,8 +376,8 @@ export const useTranscription = () => {
       sessionCountRef.current = 0;
       isSessionActiveRef.current = false;
 
-      // Start VAD monitoring
-      vadLoop();
+      // Start VAD monitoring with 30fps interval (33ms) for consistent background operation
+      vadLoopRef.current = setInterval(vadLoop, 33);
     } catch (error: any) {
       setState(prev => ({
         ...prev,

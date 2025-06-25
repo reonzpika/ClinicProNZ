@@ -204,10 +204,9 @@ export const useMobileRecording = ({
     }
   }, []);
 
-  // Smart VAD monitoring loop - EXACT SAME as desktop
+  // Smart VAD monitoring loop - uses setInterval for consistent background operation
   const vadLoop = useCallback(() => {
     if (!audioContextRef.current || isPausedRef.current || !isRecordingRef.current) {
-      vadLoopRef.current = requestAnimationFrame(vadLoop);
       return;
     }
 
@@ -272,8 +271,6 @@ export const useMobileRecording = ({
     if (silenceDuration > 5) {
       setState(prev => ({ ...prev, noInputWarning: true }));
     }
-
-    vadLoopRef.current = requestAnimationFrame(vadLoop);
   }, [measureVolume, startRecordingSession, stopRecordingSession]);
 
   // Initialize audio context for VAD - same as desktop
@@ -318,7 +315,7 @@ export const useMobileRecording = ({
   const cleanupAudio = useCallback(() => {
     // Stop VAD loop
     if (vadLoopRef.current) {
-      cancelAnimationFrame(vadLoopRef.current);
+      clearInterval(vadLoopRef.current);
       vadLoopRef.current = null;
     }
 
@@ -384,8 +381,8 @@ export const useMobileRecording = ({
       sessionCountRef.current = 0;
       isSessionActiveRef.current = false;
 
-      // Start VAD monitoring
-      vadLoop();
+      // Start VAD monitoring with 30fps interval (33ms) for consistent background operation
+      vadLoopRef.current = setInterval(vadLoop, 33);
     } catch (error: any) {
       setState(prev => ({
         ...prev,
