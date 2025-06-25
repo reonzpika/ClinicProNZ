@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
 import type { TemplateGenerationResponse } from '@/features/templates/types';
-import { GENERATE_FROM_PROMPT_PROMPT } from '@/features/templates/utils/aiPrompts';
-import { validateTemplateDSL } from '@/features/templates/utils/validation';
 import { getAuth } from '@/shared/services/auth/clerk';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -12,6 +10,40 @@ if (!OPENAI_API_KEY) {
 }
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+
+const GENERATE_FROM_PROMPT_PROMPT = `You are an expert medical documentation assistant. Your task is to create natural language clinical note templates based on user descriptions.
+
+TEMPLATE FORMAT:
+- Use natural language with placeholders in square brackets: [description of what goes here]
+- Include conditional instructions in parentheses: (only include if explicitly mentioned)
+- Follow this structure pattern:
+
+(Brief instructional preamble explaining the template purpose and rules)
+
+SECTION 1:
+- [Placeholder description] (conditional instructions)
+- [Another placeholder] (conditional instructions)
+
+SECTION 2:
+- [Placeholder description] (conditional instructions)
+
+(Final instructions about not generating information not in source data)
+
+EXAMPLE OUTPUT:
+{
+  "title": "Dermatology Consultation",
+  "description": "Template for dermatology consultations with detailed skin examination",
+  "templateBody": "(This template is for dermatology consultations. Only include information explicitly mentioned in the consultation data.)\\n\\nHISTORY:\\n- [Chief complaint and skin concerns] (only include if explicitly mentioned)\\n- [Duration and progression of skin condition] (only include if explicitly mentioned)\\n- [Previous treatments tried] (only include if explicitly mentioned)\\n\\nEXAMINATION:\\n- [Skin examination findings including location, appearance, size] (only include if explicitly mentioned)\\n- [Distribution pattern] (only include if explicitly mentioned)\\n\\nASSESSMENT:\\n- [Clinical diagnosis] (only include if explicitly mentioned)\\n\\nPLAN:\\n- [Treatment recommendations] (only include if explicitly mentioned)\\n- [Follow-up plan] (only include if explicitly mentioned)\\n\\n(Never generate clinical information not explicitly mentioned in the consultation data.)"
+}
+
+CRITICAL RULES:
+- Always include "(only include if explicitly mentioned)" for clinical content
+- Include strong anti-hallucination instructions at the end
+- Use \\n for line breaks in templateBody
+- Make placeholders descriptive and specific to the medical specialty
+- Include appropriate medical sections for the described use case
+
+Generate a JSON response with title, description, and templateBody fields.`;
 
 export async function POST(req: Request) {
   try {
@@ -32,21 +64,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // TODO: Enhanced User Prompt Construction
-    // Future improvement: Expand template type context with typical sections,
-    // special considerations, and NZ-specific requirements. Add dynamic context
-    // based on keywords in description, specialty-specific guidance, and
-    // complexity indicators for better AI generation results.
-
-    // Prepare the user prompt with description and optional template type
-    let userPrompt = `TEMPLATE DESCRIPTION:
-${description}`;
-
-    if (templateType && templateType.trim() !== '') {
-      userPrompt += `
-
-TEMPLATE TYPE: ${templateType}`;
-    }
+    // Build user prompt
+    const userPrompt = `Create a clinical note template for: ${description}${templateType ? `\n\nTemplate type: ${templateType}` : ''}`;
 
     // Call OpenAI to generate template structure
     const completion = await openai.chat.completions.create({
@@ -80,20 +99,10 @@ TEMPLATE TYPE: ${templateType}`;
     }
 
     // Validate the response structure
-    if (!templateResponse.title || !templateResponse.description || !templateResponse.dsl) {
+    if (!templateResponse.title || !templateResponse.description || !templateResponse.templateBody) {
       return NextResponse.json(
-        { code: 'AI_ERROR', message: 'AI response missing required fields (title, description, or dsl)' },
+        { code: 'AI_ERROR', message: 'AI response missing required fields (title, description, or templateBody)' },
         { status: 500 },
-      );
-    }
-
-    // Validate the generated DSL
-    const validation = validateTemplateDSL(templateResponse.dsl);
-    if (!validation.isValid) {
-      console.error('Invalid DSL generated:', validation.errors);
-      return NextResponse.json(
-        { code: 'VALIDATION_ERROR', message: 'Generated template structure is invalid', errors: validation.errors },
-        { status: 400 },
       );
     }
 
@@ -101,7 +110,7 @@ TEMPLATE TYPE: ${templateType}`;
   } catch (error) {
     console.error('Template generation error:', error);
     return NextResponse.json(
-      { code: 'INTERNAL_ERROR', message: error instanceof Error ? error.message : 'Failed to generate template from description' },
+      { code: 'INTERNAL_ERROR', message: error instanceof Error ? error.message : 'Failed to generate template' },
       { status: 500 },
     );
   }

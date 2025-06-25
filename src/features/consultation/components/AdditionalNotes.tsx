@@ -60,14 +60,21 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   if (isMinimized) {
     return (
       <Card className="border-slate-200 bg-white shadow-sm">
-        <CardHeader className="flex flex-row items-center justify-between p-2 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between p-2">
           <div className="flex items-center gap-2">
             <span className="text-xs font-medium text-slate-700">Additional Notes</span>
-            {notes.trim() && <span className="text-xs text-slate-500">({notes.trim().length} chars)</span>}
+            {notes.trim() && (
+              <span className="text-xs text-slate-500">
+                (
+                {notes.trim().length}
+                {' '}
+                chars)
+              </span>
+            )}
           </div>
-          <button 
-            type="button" 
-            className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800" 
+          <button
+            type="button"
+            className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
             onClick={() => setIsExpanded(!isExpanded)}
           >
             {isExpanded ? '−' : '+'}
@@ -123,4 +130,4 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
       </CardContent>
     </Card>
   );
-}; 
+};

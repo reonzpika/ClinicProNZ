@@ -7,10 +7,10 @@ import { Label } from '@/shared/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { Textarea } from '@/shared/components/ui/textarea';
 
-import type { TemplateDSL, TemplateGenerationResponse } from '../types';
+import type { TemplateGenerationResponse } from '../types';
 
 type TemplateFromDescriptionProps = {
-  onTemplateGenerated: (dsl: TemplateDSL, title?: string, description?: string) => void;
+  onTemplateGenerated: (templateBody: string, title?: string, description?: string) => void;
   onCancel: () => void;
 };
 
@@ -60,9 +60,9 @@ export function TemplateFromDescription({ onTemplateGenerated, onCancel }: Templ
         throw new Error(data.message || 'Failed to generate template from description');
       }
 
-      // Directly call onTemplateGenerated to navigate to TemplateEditor
+      // Call onTemplateGenerated with templateBody instead of dsl
       const generatedTemplate: TemplateGenerationResponse = data;
-      onTemplateGenerated(generatedTemplate.dsl, generatedTemplate.title, generatedTemplate.description);
+      onTemplateGenerated(generatedTemplate.templateBody, generatedTemplate.title, generatedTemplate.description);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
     } finally {

@@ -6,10 +6,10 @@ import { Button } from '@/shared/components/ui/button';
 import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
 
-import type { TemplateDSL, TemplateGenerationResponse } from '../types';
+import type { TemplateGenerationResponse } from '../types';
 
 type TemplateFromExampleProps = {
-  onTemplateGenerated: (dsl: TemplateDSL, title?: string, description?: string) => void;
+  onTemplateGenerated: (templateBody: string, title?: string, description?: string) => void;
   onCancel: () => void;
 };
 
@@ -45,7 +45,7 @@ export function TemplateFromExample({ onTemplateGenerated, onCancel }: TemplateF
     ));
   };
 
-  const handleExtractTemplate = async () => {
+  const handleGenerateTemplate = async () => {
     const validExamples = examples.filter(example => example.content.trim());
 
     if (validExamples.length === 0) {
@@ -74,9 +74,9 @@ export function TemplateFromExample({ onTemplateGenerated, onCancel }: TemplateF
         throw new Error(data.message || 'Failed to extract template from examples');
       }
 
-      // Directly call onTemplateGenerated to navigate to TemplateEditor
+      // Call onTemplateGenerated with templateBody instead of dsl
       const generatedTemplate: TemplateGenerationResponse = data;
-      onTemplateGenerated(generatedTemplate.dsl, generatedTemplate.title, generatedTemplate.description);
+      onTemplateGenerated(generatedTemplate.templateBody, generatedTemplate.title, generatedTemplate.description);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
     } finally {
@@ -205,7 +205,7 @@ Example:
 
         <div className="flex gap-3">
           <Button
-            onClick={handleExtractTemplate}
+            onClick={handleGenerateTemplate}
             disabled={isLoading || !hasValidExamples}
             className="flex-1"
           >

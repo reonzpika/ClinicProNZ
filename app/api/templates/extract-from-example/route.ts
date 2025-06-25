@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-import type { TemplateDSL } from '@/features/templates/types';
-import { EXTRACT_FROM_EXAMPLE_PROMPT } from '@/features/templates/utils/aiPrompts';
-import { validateTemplateDSL } from '@/features/templates/utils/validation';
+import type { TemplateGenerationResponse } from '@/features/templates/types';
 import { getAuth } from '@/shared/services/auth/clerk';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -12,6 +10,48 @@ if (!OPENAI_API_KEY) {
 }
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+
+const EXTRACT_FROM_EXAMPLE_PROMPT = `You are an expert medical documentation assistant. Your task is to analyze example clinical notes and create a reusable natural language template that captures their structure and style.
+
+TEMPLATE FORMAT:
+- Use natural language with placeholders in square brackets: [description of what goes here]
+- Include conditional instructions in parentheses: (only include if explicitly mentioned)
+- Preserve the documentation style and section headings from the examples
+- Follow this structure pattern:
+
+(Brief instructional preamble explaining the template purpose and rules)
+
+SECTION_NAME_FROM_EXAMPLES:
+- [Placeholder description based on example content] (conditional instructions)
+- [Another placeholder] (conditional instructions)
+
+ANOTHER_SECTION_FROM_EXAMPLES:
+- [Placeholder description] (conditional instructions)
+
+(Final instructions about not generating information not in source data)
+
+ANALYSIS PROCESS:
+1. Identify common section headings and structure across examples
+2. Determine the documentation style (abbreviations, format, etc.)
+3. Create placeholders that capture the type of information in each section
+4. Preserve the clinical workflow evident in the examples
+
+EXAMPLE OUTPUT:
+{
+  "title": "GP Consultation Note",
+  "description": "Template based on provided consultation note examples",
+  "templateBody": "(This template follows your documentation style. Only include information explicitly mentioned in the consultation data.)\\n\\nS//\\n- [Patient's presenting complaint and history] (only include if explicitly mentioned)\\n- [Relevant past medical history] (only include if explicitly mentioned)\\n\\nO//\\n- [Vital signs and examination findings] (only include if explicitly mentioned)\\n\\nA//\\n- [Clinical assessment and diagnosis] (only include if explicitly mentioned)\\n\\nP//\\n- [Treatment plan and follow-up] (only include if explicitly mentioned)\\n\\n(Never generate clinical information not explicitly mentioned in the consultation data.)"
+}
+
+CRITICAL RULES:
+- Preserve the exact section headings and abbreviations from examples
+- Always include "(only include if explicitly mentioned)" for clinical content
+- Include strong anti-hallucination instructions at the end
+- Use \\n for line breaks in templateBody
+- Match the documentation style and format of the examples
+- Create placeholders that reflect the specific content types seen in examples
+
+Generate a JSON response with title, description, and templateBody fields.`;
 
 export async function POST(req: Request) {
   try {
@@ -42,19 +82,17 @@ export async function POST(req: Request) {
       );
     }
 
-    // Prepare the user prompt with multiple examples
-    let userPrompt = `CONSULTATION NOTES TO ANALYZE:
+    // Build user prompt
+    let userPrompt = 'EXAMPLE CLINICAL NOTES:\n\n';
+    validExamples.forEach((example: string, index: number) => {
+      userPrompt += `Example ${index + 1}:\n${example}\n\n`;
+    });
 
-${validExamples.map((example: string, index: number) =>
-  `EXAMPLE ${index + 1}:
-${example}
-
-`).join('')}`;
-
-    if (additionalInstructions && additionalInstructions.trim() !== '') {
-      userPrompt += `ADDITIONAL INSTRUCTIONS:
-${additionalInstructions}`;
+    if (additionalInstructions) {
+      userPrompt += `ADDITIONAL INSTRUCTIONS:\n${additionalInstructions}\n\n`;
     }
+
+    userPrompt += 'Create a template that captures the structure and style of these examples.';
 
     // Call OpenAI to extract template structure
     const completion = await openai.chat.completions.create({
@@ -76,9 +114,9 @@ ${additionalInstructions}`;
     }
 
     // Parse the JSON response
-    let parsedResponse: any;
+    let templateResponse: TemplateGenerationResponse;
     try {
-      parsedResponse = JSON.parse(responseContent);
+      templateResponse = JSON.parse(responseContent);
     } catch (parseError) {
       console.error('Failed to parse AI response as JSON:', parseError);
       return NextResponse.json(
@@ -87,43 +125,15 @@ ${additionalInstructions}`;
       );
     }
 
-    // Extract DSL and metadata from the response
-    let dsl: TemplateDSL;
-    let title: string;
-    let description: string;
-
-    if (parsedResponse.dsl && parsedResponse.title && parsedResponse.description) {
-      // New format with metadata
-      dsl = parsedResponse.dsl;
-      title = parsedResponse.title;
-      description = parsedResponse.description;
-    } else if (parsedResponse.sections) {
-      // Legacy format - just DSL
-      dsl = parsedResponse;
-      title = `Template from ${validExamples.length} Example${validExamples.length > 1 ? 's' : ''}`;
-      description = `Template extracted from ${validExamples.length} consultation note example${validExamples.length > 1 ? 's' : ''}, preserving the GP's documentation style and structure.`;
-    } else {
+    // Validate the response structure
+    if (!templateResponse.title || !templateResponse.description || !templateResponse.templateBody) {
       return NextResponse.json(
-        { code: 'AI_ERROR', message: 'AI response missing required fields' },
+        { code: 'AI_ERROR', message: 'AI response missing required fields (title, description, or templateBody)' },
         { status: 500 },
       );
     }
 
-    // Validate the extracted DSL
-    const validation = validateTemplateDSL(dsl);
-    if (!validation.isValid) {
-      console.error('Invalid DSL extracted:', validation.errors);
-      return NextResponse.json(
-        { code: 'VALIDATION_ERROR', message: 'Extracted template structure is invalid', errors: validation.errors },
-        { status: 400 },
-      );
-    }
-
-    return NextResponse.json({
-      dsl,
-      title,
-      description,
-    });
+    return NextResponse.json(templateResponse);
   } catch (error) {
     console.error('Template extraction error:', error);
     return NextResponse.json(

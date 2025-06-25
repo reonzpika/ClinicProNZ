@@ -1,15 +1,13 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { Zap } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/shared/components/ui/button';
 import { useConsultation } from '@/shared/ConsultationContext';
 
-import type { Template, TemplateSettings } from '../types';
+import type { Template } from '../types';
 import { TemplateSelectorModal } from './TemplateSelectorModal';
-import { TemplateSettingsDropdown } from './TemplateSettingsModal';
 
 export function TemplateSelector() {
   const { isSignedIn, userId } = useAuth();
@@ -24,50 +22,6 @@ export function TemplateSelector() {
   if (typeof window !== 'undefined') {
     userDefaultTemplateId = localStorage.getItem('userDefaultTemplateId');
   }
-
-  // Default settings for when template has no settings
-  const defaultSettings: TemplateSettings = {
-    aiAnalysis: {
-      enabled: false,
-      components: {
-        differentialDiagnosis: false,
-        managementPlan: false,
-      },
-      level: 'medium',
-    },
-  };
-
-  // Helper function to get template settings summary
-  const getSettingsSummary = (template: Template) => {
-    const settings = template.dsl?.settings || defaultSettings;
-    const summary = [];
-
-    // AI Analysis
-    if (settings.aiAnalysis.enabled) {
-      const components = settings.aiAnalysis.components;
-
-      // Build AI analysis summary
-      const aiComponents = [];
-      if (components.differentialDiagnosis) {
-        aiComponents.push('Differential');
-      }
-      if (components.managementPlan) {
-        aiComponents.push('Management');
-      }
-
-      const aiSummary = settings.aiAnalysis.enabled
-        ? `AI: ${aiComponents.length > 0 ? aiComponents.join(', ') : 'None'} (${settings.aiAnalysis.level})`
-        : null;
-
-      summary.push({
-        icon: <Zap className="size-3" />,
-        label: aiSummary,
-        color: 'text-violet-600',
-      });
-    }
-
-    return summary;
-  };
 
   useEffect(() => {
     async function fetchTemplates() {
@@ -131,16 +85,13 @@ export function TemplateSelector() {
     name: '',
     type: 'default',
     description: '',
-    dsl: { sections: [{ heading: 'Default Section', prompt: 'Default prompt' }] },
+    templateBody: '',
   };
 
   const handleTemplateSelect = (template: Template) => {
     setTemplateId(template.id);
     setIsModalOpen(false);
   };
-
-  // Get settings summary for selected template
-  const settingsSummary = selectedTemplate ? getSettingsSummary(selectedTemplate) : [];
 
   return (
     <div className="flex items-center gap-2">
@@ -151,26 +102,9 @@ export function TemplateSelector() {
       >
         <div className="flex items-center gap-2">
           <span className="text-xs">{selectedTemplate ? selectedTemplate.name : 'Select a template'}</span>
-
-          {/* Settings Summary Icons */}
-          {settingsSummary.length > 0 && (
-            <div className="flex items-center gap-1">
-              {settingsSummary.map((setting, index) => (
-                <span
-                  key={index}
-                  className={`flex items-center ${setting.color}`}
-                  title={setting.label || undefined}
-                >
-                  {setting.icon}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
         <span className="text-xs">▼</span>
       </Button>
-
-      <TemplateSettingsDropdown selectedTemplate={selectedTemplate || fallbackTemplate} />
 
       <TemplateSelectorModal
         isOpen={isModalOpen}

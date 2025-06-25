@@ -1,10 +1,10 @@
 'use client';
 
-import { Camera, CheckSquare, ChevronDown, ChevronRight, MessageCircle, Search, Stethoscope } from 'lucide-react';
+import { Camera, CheckSquare, MessageCircle, Search, Stethoscope } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
+
 
 import { AccCodeSuggestions } from './AccCodeSuggestions';
 import { ChatbotWidget } from './ChatbotWidget';

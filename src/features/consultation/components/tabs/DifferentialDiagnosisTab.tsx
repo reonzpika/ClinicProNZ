@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { Checkbox } from '@/shared/components/ui/checkbox';
-import { Input } from '@/shared/components/ui/input';
+
 import { Textarea } from '@/shared/components/ui/textarea';
 import { ChevronDown, ChevronRight, X } from 'lucide-react';
 import { useConsultation } from '@/shared/ConsultationContext';

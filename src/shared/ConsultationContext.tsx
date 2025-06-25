@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-import type { TemplateSettings } from '@/features/templates/types';
+
 
 export type ChatMessage = {
   id: string;
@@ -38,7 +38,6 @@ export type ConsultationState = {
   lastGeneratedTranscription?: string;
   lastGeneratedTypedInput?: string;
   consentObtained: boolean;
-  settingsOverride: Partial<TemplateSettings> | null;
   microphoneGain: number; // 1 to 10, default 7
   volumeThreshold: number; // 0.005 to 0.2, default 0.1
   // Chatbot state
@@ -80,7 +79,6 @@ const defaultState: ConsultationState = {
   error: null,
   userDefaultTemplateId: null,
   consentObtained: false,
-  settingsOverride: null,
   microphoneGain: typeof window !== 'undefined'
     ? Number.parseFloat(localStorage.getItem('microphoneGain') || '7.0')
     : 7.0,
@@ -127,9 +125,6 @@ const ConsultationContext = createContext<
     getCurrentTranscript: () => string;
     getCurrentInput: () => string;
     setConsentObtained: (consent: boolean) => void;
-    setSettingsOverride: (settings: Partial<TemplateSettings> | null) => void;
-    updateSettingsOverride: (updates: Partial<TemplateSettings>) => void;
-    clearSettingsOverride: () => void;
     // Chatbot functions
     addChatMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => void;
     clearChatHistory: () => void;
@@ -297,18 +292,6 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
   const setConsentObtained = useCallback((consent: boolean) =>
     setState(prev => ({ ...prev, consentObtained: consent })), []);
 
-  const setSettingsOverride = useCallback((settings: Partial<TemplateSettings> | null) =>
-    setState(prev => ({ ...prev, settingsOverride: settings })), []);
-
-  const updateSettingsOverride = useCallback((updates: Partial<TemplateSettings>) =>
-    setState(prev => ({
-      ...prev,
-      settingsOverride: { ...prev.settingsOverride, ...updates },
-    })), []);
-
-  const clearSettingsOverride = useCallback(() =>
-    setState(prev => ({ ...prev, settingsOverride: null })), []);
-
   // Chatbot helper functions
   const addChatMessage = useCallback((message: Omit<ChatMessage, 'id' | 'timestamp'>) => {
     const newMessage: ChatMessage = {
@@ -454,9 +437,6 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setLastGeneratedInput,
     resetLastGeneratedInput,
     setConsentObtained,
-    setSettingsOverride,
-    updateSettingsOverride,
-    clearSettingsOverride,
     lastGeneratedTranscription: state.lastGeneratedTranscription || '',
     lastGeneratedTypedInput: state.lastGeneratedTypedInput || '',
     userDefaultTemplateId: state.userDefaultTemplateId,
@@ -496,9 +476,6 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setLastGeneratedInput,
     resetLastGeneratedInput,
     setConsentObtained,
-    setSettingsOverride,
-    updateSettingsOverride,
-    clearSettingsOverride,
     getCurrentTranscript,
     getCurrentInput,
     addChatMessage,

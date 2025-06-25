@@ -7,13 +7,14 @@ import { TemplateCreationWizard } from '@/features/templates/components/Template
 import { TemplateEditor } from '@/features/templates/components/TemplateEditor';
 import { TemplateList } from '@/features/templates/components/TemplateList';
 import { TemplatePreview } from '@/features/templates/components/TemplatePreview';
+import { TemplatePerformanceMonitor } from '@/features/templates/components/TemplatePerformanceMonitor';
 import type { Template } from '@/features/templates/types';
 import { createTemplate, deleteTemplate, fetchTemplates, updateTemplate } from '@/features/templates/utils/api';
 import { Container } from '@/shared/components/layout/Container';
 import { Grid } from '@/shared/components/layout/Grid';
-import { Stack } from '@/shared/components/layout/Stack';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { useConsultation } from '@/shared/ConsultationContext';
+import { Button } from '@/shared/components/ui/button';
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -90,60 +91,7 @@ export default function TemplatesPage() {
     });
   };
 
-  const handleTemplateSelect = (template: Template) => {
-    if (template) {
-      setSelectedTemplate(template);
-      setIsEditing(false);
-    }
-  };
-
-  const handleTemplateSave = async (template: Template) => {
-    setError(null);
-    try {
-      let saved: Template;
-      if (!template.id || template.id.startsWith('new-')) {
-        // Remove id for creation
-        const { id, ...rest } = template;
-        saved = await createTemplate(rest as Omit<Template, 'id'>);
-        setTemplates(prev => [...prev, saved]);
-      } else {
-        saved = await updateTemplate(template.id, template);
-        setTemplates(prev => prev.map(t => (t.id === saved.id ? saved : t)));
-      }
-      setSelectedTemplate(saved);
-      setIsEditing(false);
-    } catch (err: any) {
-      setError(err.message || 'Failed to save template');
-    }
-  };
-
-  const handleEdit = (template?: Template) => {
-    // Prevent editing default templates
-    if (template && template.type === 'default') {
-      return;
-    }
-    if (template) {
-      setSelectedTemplate(template);
-      setIsEditing(true);
-    } else {
-      // Create new template - start with empty DSL to show creation mode selector
-      const newTemplate: Template = {
-        id: `new-${Date.now()}`,
-        name: '',
-        type: 'custom',
-        description: '',
-        dsl: { sections: [] }, // Empty sections to trigger creation mode selector
-      };
-      setSelectedTemplate(newTemplate);
-      setIsEditing(true);
-    }
-  };
-
-  const handleCreateNew = () => {
-    // Clear selected template to show TemplateCreationWizard
-    setSelectedTemplate(null);
-    setIsEditing(false);
-  };
+  // Remove unused functions - functionality moved to inline handlers
 
   const handleDelete = async (template: Template) => {
     // Prevent deleting default templates
@@ -166,7 +114,7 @@ export default function TemplatesPage() {
       name: `Copy of ${template.name}`,
       type: 'custom' as const,
       description: template.description,
-      dsl: { ...template.dsl },
+      templateBody: template.templateBody,
     };
     try {
       const newTemplate = await createTemplate(copy);
@@ -178,102 +126,133 @@ export default function TemplatesPage() {
     }
   };
 
-  const handleCancel = () => {
-    // If it's a new template (ID starts with 'new-' or is empty), go back to creation selector
-    if (!selectedTemplate?.id || selectedTemplate.id.startsWith('new-')) {
-      setSelectedTemplate(null);
-      setIsEditing(false);
-    } else {
-      // For existing templates, just exit editing mode
-      setIsEditing(false);
-    }
-  };
+  // handleCancel function removed - functionality moved inline
 
   return (
-    <Container size="lg">
-      <Grid cols={3} gap="lg">
-        {/* Left Column - Template List */}
-        <div className="lg:col-span-1">
-          <Stack spacing="sm">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between p-2 pb-0">
-                <h2 className="text-xs font-semibold">Templates</h2>
-              </CardHeader>
-              <CardContent className="p-2 pt-0">
-                {error && <div className="mb-2 text-xs text-red-500">{error}</div>}
-                {loading
-                  ? (
-                      <div className="text-xs">Loading templates...</div>
-                    )
-                  : (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Performance Monitor - only in development */}
+      <TemplatePerformanceMonitor />
+      
+      <Container className="py-8">
+        <div className="space-y-6">
+          {/* Template Management */}
+          {isEditing ? (
+            // Check if we're editing an existing template or creating a new one
+            selectedTemplate && selectedTemplate.id && !selectedTemplate.id.startsWith('new-') ? (
+              // Editing existing template - go directly to TemplateEditor
+              <TemplateEditor
+                template={selectedTemplate}
+                onSave={async (template) => {
+                  try {
+                    await updateTemplate(selectedTemplate.id!, template);
+                    setTemplates(prev => prev.map(t => t.id === selectedTemplate.id ? template : t));
+                    setIsEditing(false);
+                    setSelectedTemplate(null);
+                  } catch (err) {
+                    setError(err instanceof Error ? err.message : 'Failed to save template');
+                  }
+                }}
+                onCancel={() => {
+                  setIsEditing(false);
+                  setSelectedTemplate(null);
+                }}
+              />
+            ) : (
+              // Creating new template - use TemplateCreationWizard
+              <TemplateCreationWizard
+                onSave={async (template) => {
+                  try {
+                    const newTemplate = await createTemplate(template);
+                    setTemplates(prev => [...prev, newTemplate]);
+                    setIsEditing(false);
+                    setSelectedTemplate(null);
+                  } catch (err) {
+                    setError(err instanceof Error ? err.message : 'Failed to save template');
+                  }
+                }}
+                onCancel={() => {
+                  setIsEditing(false);
+                  setSelectedTemplate(null);
+                }}
+              />
+            )
+          ) : (
+            <Grid cols={12} className="gap-6">
+              {/* Template List */}
+              <div className="col-span-12 lg:col-span-4">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <h2 className="text-lg font-semibold">Your Templates</h2>
+                    {!isSignedIn && (
+                      <p className="text-xs text-muted-foreground">Sign in to create custom templates</p>
+                    )}
+                  </CardHeader>
+                  <CardContent>
+                    {loading ? (
+                      <div className="space-y-2">
+                        {[...Array(3)].map((_, i) => (
+                          <div key={i} className="h-16 bg-muted animate-pulse rounded" />
+                        ))}
+                      </div>
+                    ) : error ? (
+                      <div className="text-center py-8 text-red-600">
+                        <p>Error: {error}</p>
+                        <Button variant="outline" size="sm" className="mt-2" onClick={() => window.location.reload()}>
+                          Retry
+                        </Button>
+                      </div>
+                    ) : (
                       <TemplateList
                         templates={templates}
                         selectedTemplate={selectedTemplate}
-                        onTemplateSelect={handleTemplateSelect}
+                        onTemplateSelect={setSelectedTemplate}
                         onTemplateHover={() => {}}
-                        isSignedIn
-                        onEdit={handleEdit}
+                        isSignedIn={!!isSignedIn}
+                        onEdit={(template) => {
+                          setSelectedTemplate(template);
+                          setIsEditing(true);
+                        }}
                         onDelete={handleDelete}
                         onCopy={handleCopy}
-                        onSetDefault={setUserDefaultTemplateId}
                         userDefaultTemplateId={userDefaultTemplateId}
+                        onSetDefault={setUserDefaultTemplateId}
                         onReorder={handleReorder}
-                        onCreateNew={handleCreateNew}
+                        onCreateNew={() => setIsEditing(true)}
                       />
                     )}
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              </div>
 
-            {/* How it works section */}
-            <Card>
-              <CardContent className="p-3">
-                <div className="rounded-md bg-blue-50 p-3 text-xs text-blue-800">
-                  <p className="font-medium">How it works:</p>
-                  <ul className="ml-3 mt-1 list-disc space-y-0.5">
-                    <li>Create templates from scratch using "Create New" or copy existing ones</li>
-                    <li>Templates structure your consultation notes with consistent formatting</li>
-                    <li>Set a default template (★) to automatically use it for new consultations</li>
-                    <li>You can copy the default template and edit the example to customise it to your preferences</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          </Stack>
+              {/* Template Preview/Details */}
+              <div className="col-span-12 lg:col-span-8">
+                {selectedTemplate ? (
+                  <TemplatePreview template={selectedTemplate} />
+                ) : (
+                  <Card className="h-full">
+                    <CardContent className="flex items-center justify-center h-full min-h-[400px]">
+                      <div className="text-center space-y-4">
+                        <div className="text-muted-foreground">
+                          <svg className="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          <h3 className="text-lg font-medium">No Template Selected</h3>
+                          <p className="text-sm">Select a template from the list to preview it</p>
+                        </div>
+                        {isSignedIn && (
+                          <Button onClick={() => setIsEditing(true)}>
+                            Create Your First Template
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </Grid>
+          )}
         </div>
-
-        {/* Right Column - Template Editor/Preview */}
-        <div className="lg:col-span-2">
-          <Stack spacing="sm">
-            <Card>
-              <CardHeader className="p-2 pb-0">
-                <h2 className="text-xs font-semibold">
-                  {selectedTemplate && isEditing ? 'Edit Template' : selectedTemplate ? 'Template Preview' : 'Create New Template'}
-                </h2>
-              </CardHeader>
-              <CardContent className="p-2 pt-0">
-                {selectedTemplate && isEditing
-                  ? (
-                      <TemplateEditor
-                        template={selectedTemplate}
-                        onSave={handleTemplateSave}
-                        onCancel={handleCancel}
-                      />
-                    )
-                  : selectedTemplate
-                    ? (
-                        <TemplatePreview template={selectedTemplate} />
-                      )
-                    : (
-                        <TemplateCreationWizard
-                          onSave={handleTemplateSave}
-                          onCancel={() => {}}
-                        />
-                      )}
-              </CardContent>
-            </Card>
-          </Stack>
-        </div>
-      </Grid>
-    </Container>
+      </Container>
+    </div>
   );
 }

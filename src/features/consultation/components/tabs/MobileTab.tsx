@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
+
 import { Input } from '@/shared/components/ui/input';
 
 // TODO: Integrate with ConsultationContext for global state management

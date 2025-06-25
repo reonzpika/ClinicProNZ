@@ -72,7 +72,6 @@ export default function ConsultationPage() {
     templateId,
     typedInput,
     inputMode,
-    settingsOverride,
     sessionId,
     mobileRecording,
     consultationItems,
@@ -129,7 +128,6 @@ export default function ConsultationPage() {
           typedInput: currentTypedInput,
           templateId,
           inputMode,
-          settingsOverride,
           consultationNotes: compiledConsultationText,
         }),
       });

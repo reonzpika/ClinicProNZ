@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
 import { TemplateService } from '@/features/templates/template-service';
-import type { TemplateSettings } from '@/features/templates/types';
 import { compileTemplate } from '@/features/templates/utils/compileTemplate';
 
 // TODO: Move to config/env util if needed
@@ -20,7 +19,7 @@ const openai = new OpenAI({
 
 export async function POST(req: Request) {
   try {
-    const { transcription, templateId, typedInput, inputMode, settingsOverride } = await req.json();
+    const { transcription, templateId, typedInput, inputMode, consultationNotes } = await req.json();
 
     // Validate required fields based on input mode
     if (!templateId) {
@@ -44,44 +43,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ code: 'NOT_FOUND', message: 'Template not found' }, { status: 404 });
     }
 
-    // Merge template settings with session overrides
-    const templateDSL = { ...template.dsl };
-    if (settingsOverride) {
-      const defaultSettings: TemplateSettings = {
-        aiAnalysis: {
-          enabled: false,
-          components: {
-            differentialDiagnosis: false,
-            managementPlan: false,
-          },
-          level: 'medium',
-        },
-      };
-
-      const templateSettings = template.dsl.settings || defaultSettings;
-      const mergedSettings: TemplateSettings = {
-        ...templateSettings,
-        ...settingsOverride,
-        // Handle nested aiAnalysis merge
-        aiAnalysis: {
-          ...templateSettings.aiAnalysis,
-          ...(settingsOverride.aiAnalysis || {}),
-          components: {
-            ...templateSettings.aiAnalysis.components,
-            ...(settingsOverride.aiAnalysis?.components || {}),
-          },
-        },
-      };
-
-      templateDSL.settings = mergedSettings;
-    }
-
-    // Compile template with input data based on mode
+    // Compile template with input data based on mode, including consultation notes
     const { system, user } = compileTemplate(
-      templateDSL,
+      template.templateBody,
       transcription || '',
       typedInput,
       inputMode,
+      consultationNotes,
     );
 
     // Call OpenAI

@@ -31,7 +31,7 @@ export async function GET(req: Request) {
         name: templates.name,
         type: templates.type,
         description: templates.description,
-        dsl: templates.dsl,
+        templateBody: templates.templateBody,
         ownerId: templates.ownerId,
         createdAt: templates.createdAt,
         updatedAt: templates.updatedAt,
@@ -60,11 +60,18 @@ export async function POST(req: Request) {
       );
     }
     const body = await req.json();
+    
+    // Remove temporary IDs that start with 'new-' to let database auto-generate UUID
+    const { id, ...templateDataWithoutId } = body;
+    const shouldIncludeId = id && !id.startsWith('new-');
+    
     const templateData = {
-      ...body,
+      ...(shouldIncludeId ? { id } : {}),
+      ...templateDataWithoutId,
       type: 'custom',
       ownerId: userId,
     };
+    
     const template = await db.insert(templates).values(templateData).returning();
     return NextResponse.json(template[0]);
   } catch (error) {

@@ -11,7 +11,7 @@ function mapDbTemplateToTemplate(dbTemplate: any): Template {
     description: dbTemplate.description ?? undefined,
     type: dbTemplate.type,
     ownerId: dbTemplate.ownerId ?? undefined,
-    dsl: dbTemplate.dsl,
+    templateBody: dbTemplate.templateBody,
     createdAt: dbTemplate.createdAt instanceof Date ? dbTemplate.createdAt.toISOString() : dbTemplate.createdAt,
     updatedAt: dbTemplate.updatedAt instanceof Date ? dbTemplate.updatedAt.toISOString() : dbTemplate.updatedAt,
   };
@@ -19,15 +19,17 @@ function mapDbTemplateToTemplate(dbTemplate: any): Template {
 
 export class TemplateService {
   static async create(template: Omit<Template, 'id'>): Promise<Template> {
-    if (!template.dsl || !template.dsl.sections || template.dsl.sections.length === 0) {
-      throw new Error('Template DSL with at least one section is required');
+    if (!template.templateBody || template.templateBody.trim() === '') {
+      throw new Error('Template body is required');
     }
+
     const { createdAt, updatedAt, ...rest } = template;
     const insertData: any = {
       ...rest,
       ...(createdAt && typeof createdAt !== 'string' ? { createdAt } : {}),
       ...(updatedAt && typeof updatedAt !== 'string' ? { updatedAt } : {}),
     };
+
     const [newTemplate] = await db.insert(templates).values(insertData).returning();
     if (!newTemplate) {
       throw new Error('Failed to create template');
@@ -41,21 +43,24 @@ export class TemplateService {
   }
 
   static async update(id: string, template: Partial<Template>): Promise<Template> {
-    // If updating fields that affect validation, validate the merged template
+    // Basic validation
     const [existing] = await db.select().from(templates).where(eq(templates.id, id));
     if (!existing) {
       throw new Error('Template not found');
     }
-    const merged = { ...mapDbTemplateToTemplate(existing), ...template };
-    if (!merged.dsl || !merged.dsl.sections || merged.dsl.sections.length === 0) {
-      throw new Error('Template DSL with at least one section is required');
+
+    // If updating templateBody, validate it's not empty
+    if (template.templateBody !== undefined && template.templateBody.trim() === '') {
+      throw new Error('Template body cannot be empty');
     }
+
     const { createdAt, updatedAt, ...rest } = template;
     const updateData: any = {
       ...rest,
       ...(createdAt && typeof createdAt !== 'string' ? { createdAt } : {}),
       ...(updatedAt && typeof updatedAt !== 'string' ? { updatedAt } : {}),
     };
+
     const [updatedTemplate] = await db
       .update(templates)
       .set(updateData)
@@ -90,6 +95,4 @@ export class TemplateService {
     }
     return dbTemplates.map(mapDbTemplateToTemplate);
   }
-
-  // No more section/structure validation needed
 }
