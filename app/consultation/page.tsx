@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { AdditionalNotes } from '@/features/consultation/components/AdditionalNotes';
 import { GeneratedNotes } from '@/features/consultation/components/GeneratedNotes';
@@ -24,15 +24,15 @@ function DocumentationSettingsMinimized() {
 
   return (
     <Card className="border-slate-200 bg-white shadow-sm">
-      <CardHeader className="flex flex-row items-center justify-between p-2 pb-2">
+      <CardHeader className="flex flex-row items-center justify-between p-2">
         <div className="flex items-center gap-2">
           <span className="text-xs font-medium text-slate-700">Documentation Settings</span>
         </div>
-        <Button 
-          type="button" 
-          variant="ghost" 
-          size="sm" 
-          className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800" 
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
           onClick={() => setIsExpanded(!isExpanded)}
         >
           {isExpanded ? '−' : '+'}
@@ -147,7 +147,7 @@ export default function ConsultationPage() {
         notes += decoder.decode(value, { stream: true });
         setGeneratedNotes(notes);
       }
-              setLastGeneratedInput(transcript, currentTypedInput);
+      setLastGeneratedInput(transcript, currentTypedInput);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate notes');
     } finally {
@@ -202,10 +202,10 @@ export default function ConsultationPage() {
 
                       {/* Clinical Documentation - Top Priority */}
                       <div style={{ minHeight: '500px', display: 'flex', flexDirection: 'column' }}>
-                        <GeneratedNotes 
-                          onGenerate={handleGenerateNotes} 
-                          onClearAll={handleClearAll} 
-                          loading={loading} 
+                        <GeneratedNotes
+                          onGenerate={handleGenerateNotes}
+                          onClearAll={handleClearAll}
+                          loading={loading}
                           isNoteFocused={isNoteFocused}
                           isDocumentationMode={isDocumentationMode}
                         />
@@ -216,25 +216,25 @@ export default function ConsultationPage() {
                         {inputMode === 'audio'
                           ? (
                               <>
-                                <TranscriptionControls collapsed={true} onExpand={() => setIsNoteFocused(false)} isMinimized={true} />
+                                <TranscriptionControls collapsed onExpand={() => setIsNoteFocused(false)} isMinimized />
                                 <AdditionalNotes
                                   items={consultationItems}
                                   onNotesChange={setConsultationNotes}
                                   notes={consultationNotes}
                                   placeholder="Additional information gathered during consultation..."
-                                  isMinimized={true}
+                                  isMinimized
                                 />
                               </>
                             )
                           : (
                               <>
-                                <TypedInput collapsed={true} onExpand={() => setIsNoteFocused(false)} isMinimized={true} />
+                                <TypedInput collapsed onExpand={() => setIsNoteFocused(false)} isMinimized />
                                 <AdditionalNotes
                                   items={consultationItems}
                                   onNotesChange={setConsultationNotes}
                                   notes={consultationNotes}
                                   placeholder="Additional information gathered during consultation..."
-                                  isMinimized={true}
+                                  isMinimized
                                 />
                               </>
                             )}
@@ -275,10 +275,10 @@ export default function ConsultationPage() {
                           )}
 
                       {/* Clinical Documentation - Bottom */}
-                      <GeneratedNotes 
-                        onGenerate={handleGenerateNotes} 
-                        onClearAll={handleClearAll} 
-                        loading={loading} 
+                      <GeneratedNotes
+                        onGenerate={handleGenerateNotes}
+                        onClearAll={handleClearAll}
+                        loading={loading}
                         isNoteFocused={isNoteFocused}
                         isDocumentationMode={isDocumentationMode}
                       />

@@ -11,4 +11,4 @@ export const ChatTab: React.FC = () => {
       <ChatbotWidget />
     </div>
   );
-}; 
+};

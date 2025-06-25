@@ -1,10 +1,10 @@
+import { Check, Plus } from 'lucide-react';
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import { Button } from '@/shared/components/ui/button';
 import type { ChatMessage as ChatMessageType } from '@/shared/ConsultationContext';
-import { Plus, Check } from 'lucide-react';
 
 type ChatMessageProps = {
   message: ChatMessageType;
@@ -32,9 +32,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAddToConsul
             size="sm"
             onClick={handleAddToConsultation}
             disabled={isAdded}
-            className={`mt-0.5 h-5 w-5 shrink-0 p-0 ${
-              isAdded 
-                ? 'text-green-600 hover:text-green-600' 
+            className={`mt-0.5 size-5 shrink-0 p-0 ${
+              isAdded
+                ? 'text-green-600 hover:text-green-600'
                 : 'text-slate-400 hover:text-slate-600'
             }`}
             title={isAdded ? 'Added to consultation' : 'Add to consultation'}

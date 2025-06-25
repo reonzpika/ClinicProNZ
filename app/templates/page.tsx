@@ -1,3 +1,4 @@
+/* eslint-disable style/multiline-ternary */
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
@@ -6,15 +7,15 @@ import { useEffect, useRef, useState } from 'react';
 import { TemplateCreationWizard } from '@/features/templates/components/TemplateCreationWizard';
 import { TemplateEditor } from '@/features/templates/components/TemplateEditor';
 import { TemplateList } from '@/features/templates/components/TemplateList';
-import { TemplatePreview } from '@/features/templates/components/TemplatePreview';
 import { TemplatePerformanceMonitor } from '@/features/templates/components/TemplatePerformanceMonitor';
+import { TemplatePreview } from '@/features/templates/components/TemplatePreview';
 import type { Template } from '@/features/templates/types';
 import { createTemplate, deleteTemplate, fetchTemplates, updateTemplate } from '@/features/templates/utils/api';
 import { Container } from '@/shared/components/layout/Container';
 import { Grid } from '@/shared/components/layout/Grid';
+import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { useConsultation } from '@/shared/ConsultationContext';
-import { Button } from '@/shared/components/ui/button';
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -132,7 +133,7 @@ export default function TemplatesPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Performance Monitor - only in development */}
       <TemplatePerformanceMonitor />
-      
+
       <Container className="py-8">
         <div className="space-y-6">
           {/* Template Management */}
@@ -188,66 +189,75 @@ export default function TemplatesPage() {
                     )}
                   </CardHeader>
                   <CardContent>
-                    {loading ? (
-                      <div className="space-y-2">
-                        {[...Array(3)].map((_, i) => (
-                          <div key={i} className="h-16 bg-muted animate-pulse rounded" />
-                        ))}
-                      </div>
-                    ) : error ? (
-                      <div className="text-center py-8 text-red-600">
-                        <p>Error: {error}</p>
-                        <Button variant="outline" size="sm" className="mt-2" onClick={() => window.location.reload()}>
-                          Retry
-                        </Button>
-                      </div>
-                    ) : (
-                      <TemplateList
-                        templates={templates}
-                        selectedTemplate={selectedTemplate}
-                        onTemplateSelect={setSelectedTemplate}
-                        onTemplateHover={() => {}}
-                        isSignedIn={!!isSignedIn}
-                        onEdit={(template) => {
-                          setSelectedTemplate(template);
-                          setIsEditing(true);
-                        }}
-                        onDelete={handleDelete}
-                        onCopy={handleCopy}
-                        userDefaultTemplateId={userDefaultTemplateId}
-                        onSetDefault={setUserDefaultTemplateId}
-                        onReorder={handleReorder}
-                        onCreateNew={() => setIsEditing(true)}
-                      />
-                    )}
+                    {loading
+                      ? (
+                          <div className="space-y-2">
+                            {[...Array(3)].map((_, i) => (
+                              <div key={i} className="h-16 animate-pulse rounded bg-muted" />
+                            ))}
+                          </div>
+                        )
+                      : error
+                        ? (
+                            <div className="py-8 text-center text-red-600">
+                              <p>
+                                Error:
+                                {error}
+                              </p>
+                              <Button variant="outline" size="sm" className="mt-2" onClick={() => window.location.reload()}>
+                                Retry
+                              </Button>
+                            </div>
+                          )
+                        : (
+                            <TemplateList
+                              templates={templates}
+                              selectedTemplate={selectedTemplate}
+                              onTemplateSelect={setSelectedTemplate}
+                              onTemplateHover={() => {}}
+                              isSignedIn={!!isSignedIn}
+                              onEdit={(template) => {
+                                setSelectedTemplate(template);
+                                setIsEditing(true);
+                              }}
+                              onDelete={handleDelete}
+                              onCopy={handleCopy}
+                              userDefaultTemplateId={userDefaultTemplateId}
+                              onSetDefault={setUserDefaultTemplateId}
+                              onReorder={handleReorder}
+                              onCreateNew={() => setIsEditing(true)}
+                            />
+                          )}
                   </CardContent>
                 </Card>
               </div>
 
               {/* Template Preview/Details */}
               <div className="col-span-12 lg:col-span-8">
-                {selectedTemplate ? (
-                  <TemplatePreview template={selectedTemplate} />
-                ) : (
-                  <Card className="h-full">
-                    <CardContent className="flex items-center justify-center h-full min-h-[400px]">
-                      <div className="text-center space-y-4">
-                        <div className="text-muted-foreground">
-                          <svg className="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          <h3 className="text-lg font-medium">No Template Selected</h3>
-                          <p className="text-sm">Select a template from the list to preview it</p>
-                        </div>
-                        {isSignedIn && (
-                          <Button onClick={() => setIsEditing(true)}>
-                            Create Your First Template
-                          </Button>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                {selectedTemplate
+                  ? (
+                      <TemplatePreview template={selectedTemplate} />
+                    )
+                  : (
+                      <Card className="h-full">
+                        <CardContent className="flex h-full min-h-[400px] items-center justify-center">
+                          <div className="space-y-4 text-center">
+                            <div className="text-muted-foreground">
+                              <svg className="mx-auto mb-4 size-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                              <h3 className="text-lg font-medium">No Template Selected</h3>
+                              <p className="text-sm">Select a template from the list to preview it</p>
+                            </div>
+                            {isSignedIn && (
+                              <Button onClick={() => setIsEditing(true)}>
+                                Create Your First Template
+                              </Button>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
               </div>
             </Grid>
           )}

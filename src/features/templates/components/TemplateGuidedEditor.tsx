@@ -1,14 +1,14 @@
 'use client';
 
+import { AlertCircle, CheckCircle, ChevronLeft, ChevronRight, Minus, Plus } from 'lucide-react';
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, CheckCircle, AlertCircle, Plus, Minus } from 'lucide-react';
 
+import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
-import { Badge } from '@/shared/components/ui/badge';
 
 import type { Template } from '../types';
 import { validateTemplate } from '../utils/validation';
@@ -76,8 +76,8 @@ export function TemplateGuidedEditor({ template: initialTemplate, onSave, onCanc
   };
 
   const updateSection = (id: string, updates: Partial<TemplateSection>) => {
-    setSections(sections.map(section => 
-      section.id === id ? { ...section, ...updates } : section
+    setSections(sections.map(section =>
+      section.id === id ? { ...section, ...updates } : section,
     ));
   };
 
@@ -87,7 +87,7 @@ export function TemplateGuidedEditor({ template: initialTemplate, onSave, onCanc
 
   const addPlaceholder = (sectionId: string, placeholder?: string) => {
     updateSection(sectionId, {
-      placeholders: [...sections.find(s => s.id === sectionId)?.placeholders || [], placeholder || '']
+      placeholders: [...sections.find(s => s.id === sectionId)?.placeholders || [], placeholder || ''],
     });
   };
 
@@ -118,10 +118,10 @@ export function TemplateGuidedEditor({ template: initialTemplate, onSave, onCanc
     }
 
     // Add sections
-    sections.forEach(section => {
+    sections.forEach((section) => {
       if (section.name.trim()) {
         parts.push(`${section.name.toUpperCase()}:`);
-        section.placeholders.forEach(placeholder => {
+        section.placeholders.forEach((placeholder) => {
           if (placeholder.trim()) {
             parts.push(`- [${placeholder}] (only include if explicitly mentioned)`);
           }
@@ -178,7 +178,7 @@ export function TemplateGuidedEditor({ template: initialTemplate, onSave, onCanc
       <div className="flex items-center justify-between">
         <h3 className="font-medium">Template Sections</h3>
         <Button onClick={() => addSection()} size="sm">
-          <Plus className="size-4 mr-1" />
+          <Plus className="mr-1 size-4" />
           Add Section
         </Button>
       </div>
@@ -186,7 +186,7 @@ export function TemplateGuidedEditor({ template: initialTemplate, onSave, onCanc
       {/* Quick Add Common Sections */}
       <div>
         <Label>Quick Add Common Sections</Label>
-        <div className="flex flex-wrap gap-2 mt-2">
+        <div className="mt-2 flex flex-wrap gap-2">
           {COMMON_SECTIONS.map(commonSection => (
             <Button
               key={commonSection.name}
@@ -203,7 +203,7 @@ export function TemplateGuidedEditor({ template: initialTemplate, onSave, onCanc
       {/* Current Sections */}
       <div className="space-y-2">
         {sections.map(section => (
-          <div key={section.id} className="flex items-center gap-2 p-2 border rounded">
+          <div key={section.id} className="flex items-center gap-2 rounded border p-2">
             <Input
               value={section.name}
               onChange={e => updateSection(section.id, { name: e.target.value })}
@@ -254,7 +254,7 @@ export function TemplateGuidedEditor({ template: initialTemplate, onSave, onCanc
               onClick={() => addPlaceholder(section.id)}
               className="w-full"
             >
-              <Plus className="size-4 mr-1" />
+              <Plus className="mr-1 size-4" />
               Add Placeholder
             </Button>
           </CardContent>
@@ -274,7 +274,7 @@ export function TemplateGuidedEditor({ template: initialTemplate, onSave, onCanc
           placeholder="Instructions for the AI about how to use this template..."
           rows={3}
         />
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className="mt-1 text-xs text-muted-foreground">
           This appears at the beginning and guides the AI's behavior
         </p>
       </div>
@@ -287,7 +287,7 @@ export function TemplateGuidedEditor({ template: initialTemplate, onSave, onCanc
           placeholder="Final instructions about handling missing information..."
           rows={3}
         />
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className="mt-1 text-xs text-muted-foreground">
           This appears at the end with final guidance
         </p>
       </div>
@@ -300,11 +300,11 @@ export function TemplateGuidedEditor({ template: initialTemplate, onSave, onCanc
       <div className="space-y-4">
         <div>
           <Label>Generated Template</Label>
-          <div className="mt-2 p-3 bg-muted rounded border">
-            <pre className="text-sm whitespace-pre-wrap">{generatedBody}</pre>
+          <div className="mt-2 rounded border bg-muted p-3">
+            <pre className="whitespace-pre-wrap text-sm">{generatedBody}</pre>
           </div>
         </div>
-        
+
         {!validation.isValid && (
           <div className="space-y-1">
             {validation.errors.map((error, index) => (
@@ -330,7 +330,7 @@ export function TemplateGuidedEditor({ template: initialTemplate, onSave, onCanc
     <div className="flex h-full flex-col">
       {/* Header */}
       <div className="border-b p-4">
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Guided Template Creator</h2>
           <Button variant="outline" onClick={onCancel}>
             Cancel
@@ -341,13 +341,14 @@ export function TemplateGuidedEditor({ template: initialTemplate, onSave, onCanc
         <div className="flex items-center gap-2">
           {steps.map((step, index) => (
             <div key={step.id} className="flex items-center">
-              <div className={`flex items-center gap-2 px-3 py-1 rounded ${
+              <div className={`flex items-center gap-2 rounded px-3 py-1 ${
                 index <= currentStepIndex ? 'bg-primary text-primary-foreground' : 'bg-muted'
-              }`}>
+              }`}
+              >
                 <span className="text-sm font-medium">{step.title}</span>
               </div>
               {index < steps.length - 1 && (
-                <ChevronRight className="size-4 mx-1 text-muted-foreground" />
+                <ChevronRight className="mx-1 size-4 text-muted-foreground" />
               )}
             </div>
           ))}
@@ -355,7 +356,7 @@ export function TemplateGuidedEditor({ template: initialTemplate, onSave, onCanc
       </div>
 
       {/* Content */}
-      <div className="flex-1 p-4 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto p-4">
         <Card>
           <CardHeader>
             <CardTitle>{steps[currentStepIndex]!.title}</CardTitle>
@@ -374,36 +375,44 @@ export function TemplateGuidedEditor({ template: initialTemplate, onSave, onCanc
       </div>
 
       {/* Footer */}
-      <div className="border-t p-4 flex items-center justify-between">
+      <div className="flex items-center justify-between border-t p-4">
         <Button
           variant="outline"
           onClick={handlePrevious}
           disabled={currentStepIndex === 0}
         >
-          <ChevronLeft className="size-4 mr-1" />
+          <ChevronLeft className="mr-1 size-4" />
           Previous
         </Button>
 
         <div className="flex items-center gap-2">
           <Badge variant="secondary">
-            Step {currentStepIndex + 1} of {steps.length}
+            Step
+            {' '}
+            {currentStepIndex + 1}
+            {' '}
+            of
+            {' '}
+            {steps.length}
           </Badge>
         </div>
 
-        {currentStepIndex === steps.length - 1 ? (
-          <Button
-            onClick={handleFinish}
-            disabled={!validation.isValid}
-          >
-            Save Template
-          </Button>
-        ) : (
-          <Button onClick={handleNext}>
-            Next
-            <ChevronRight className="size-4 ml-1" />
-          </Button>
-        )}
+        {currentStepIndex === steps.length - 1
+          ? (
+              <Button
+                onClick={handleFinish}
+                disabled={!validation.isValid}
+              >
+                Save Template
+              </Button>
+            )
+          : (
+              <Button onClick={handleNext}>
+                Next
+                <ChevronRight className="ml-1 size-4" />
+              </Button>
+            )}
       </div>
     </div>
   );
-} 
+}

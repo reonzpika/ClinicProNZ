@@ -1,9 +1,9 @@
-import { Edit3, FileText, MessageSquare, Sparkles, BookOpen, Wand2 } from 'lucide-react';
+import { BookOpen, Edit3, FileText, MessageSquare, Sparkles, Wand2 } from 'lucide-react';
 import { useState } from 'react';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
+import { Button } from '@/shared/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 
 import type { Template } from '../types';
 import { TemplateEditor } from './TemplateEditor';
@@ -45,7 +45,7 @@ PLAN:
 - [Treatment plan] (only include if mentioned)
 - [Follow-up arrangements] (only include if mentioned)
 
-(Do not generate any information not explicitly mentioned in the consultation data.)`
+(Do not generate any information not explicitly mentioned in the consultation data.)`,
   },
   {
     name: 'Mental Health Assessment',
@@ -70,7 +70,7 @@ PLAN:
 - [Safety planning] (only include if mentioned)
 - [Follow-up] (only include if mentioned)
 
-(Only use information explicitly provided in the consultation data.)`
+(Only use information explicitly provided in the consultation data.)`,
   },
   {
     name: 'Pediatric Consultation',
@@ -99,8 +99,8 @@ ASSESSMENT AND PLAN:
 - [Treatment recommendations] (only include if mentioned)
 - [Parent education provided] (only include if mentioned)
 
-(Use only information explicitly mentioned in the consultation data.)`
-  }
+(Use only information explicitly mentioned in the consultation data.)`,
+  },
 ];
 
 export function TemplateCreationWizard({ onSave, onCancel }: TemplateCreationWizardProps) {
@@ -114,7 +114,7 @@ export function TemplateCreationWizard({ onSave, onCancel }: TemplateCreationWiz
       name: title || '',
       type: 'custom',
       description: description || '',
-      templateBody: templateBody,
+      templateBody,
     };
     setGeneratedTemplate(newTemplate);
     setCreationMode('blank');
@@ -219,9 +219,10 @@ export function TemplateCreationWizard({ onSave, onCancel }: TemplateCreationWiz
                 <CardDescription className="mb-3">
                   {starter.description}
                 </CardDescription>
-                <div className="text-xs text-muted-foreground bg-muted p-2 rounded">
-                  <pre className="whitespace-pre-wrap line-clamp-4">
-                    {starter.templateBody.substring(0, 200)}...
+                <div className="rounded bg-muted p-2 text-xs text-muted-foreground">
+                  <pre className="line-clamp-4 whitespace-pre-wrap">
+                    {starter.templateBody.substring(0, 200)}
+                    ...
                   </pre>
                 </div>
               </CardContent>
@@ -256,7 +257,7 @@ export function TemplateCreationWizard({ onSave, onCancel }: TemplateCreationWiz
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="text-center flex-1">
+        <div className="flex-1 text-center">
           <h2 className="text-xl font-semibold">Create New Template</h2>
           <p className="mt-2 text-muted-foreground">Choose how you'd like to create your template</p>
         </div>
@@ -306,8 +307,8 @@ export function TemplateCreationWizard({ onSave, onCancel }: TemplateCreationWiz
           </CardContent>
         </Card>
 
-        <Card 
-          className="cursor-pointer transition-colors hover:bg-muted/50" 
+        <Card
+          className="cursor-pointer transition-colors hover:bg-muted/50"
           onClick={() => setCreationMode('from-example')}
         >
           <CardHeader className="text-center">
@@ -321,8 +322,8 @@ export function TemplateCreationWizard({ onSave, onCancel }: TemplateCreationWiz
           </CardContent>
         </Card>
 
-        <Card 
-          className="cursor-pointer transition-colors hover:bg-muted/50" 
+        <Card
+          className="cursor-pointer transition-colors hover:bg-muted/50"
           onClick={() => setCreationMode('from-description')}
         >
           <CardHeader className="text-center">
@@ -341,12 +342,22 @@ export function TemplateCreationWizard({ onSave, onCancel }: TemplateCreationWiz
       <Card className="border-blue-200 bg-blue-50">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <BookOpen className="size-5 text-blue-600 mt-0.5" />
+            <BookOpen className="mt-0.5 size-5 text-blue-600" />
             <div className="space-y-2 text-sm">
               <h3 className="font-medium text-blue-900">Template Creation Tips</h3>
               <ul className="space-y-1 text-blue-800">
-                <li>• Use <code className="bg-blue-100 px-1 rounded">[placeholder text]</code> for dynamic content</li>
-                <li>• Add <code className="bg-blue-100 px-1 rounded">(only include if mentioned)</code> to prevent AI hallucination</li>
+                <li>
+                  • Use
+                  <code className="rounded bg-blue-100 px-1">[placeholder text]</code>
+                  {' '}
+                  for dynamic content
+                </li>
+                <li>
+                  • Add
+                  <code className="rounded bg-blue-100 px-1">(only include if mentioned)</code>
+                  {' '}
+                  to prevent AI hallucination
+                </li>
                 <li>• Organize with clear section headers like HISTORY:, EXAMINATION:, PLAN:</li>
                 <li>• Try the new Guided Creator for step-by-step assistance</li>
               </ul>

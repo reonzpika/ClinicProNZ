@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import type { Template } from '../src/features/templates/types';
 import { sql } from './client';
 
@@ -318,12 +319,12 @@ PRE-OPERATIVE INSTRUCTIONS:
 - [Other preparations] (only include if explicitly mentioned)
 
 (Only include information explicitly discussed during the pre-operative assessment. Do not generate risk assessments or plans not mentioned.)`,
-  }
+  },
 ];
 
 export async function seedNewTemplates() {
   console.log('Seeding new natural language templates...');
-  
+
   // First, clear existing default templates
   try {
     await sql`DELETE FROM templates WHERE type = 'default'`;
@@ -331,7 +332,7 @@ export async function seedNewTemplates() {
   } catch (error) {
     console.error('✗ Failed to clear existing templates:', error);
   }
-  
+
   for (const template of newTemplates) {
     try {
       await sql`
@@ -346,11 +347,11 @@ export async function seedNewTemplates() {
         description: template.description,
         type: template.type,
         templateBodyLength: template.templateBody.length,
-        templateBodyPreview: template.templateBody.substring(0, 100) + '...'
+        templateBodyPreview: `${template.templateBody.substring(0, 100)}...`,
       });
     }
   }
-  
+
   console.log('Template seeding complete!');
 }
 
@@ -362,4 +363,4 @@ if (require.main === module) {
       console.error('Seeding failed:', error);
       process.exit(1);
     });
-} 
+}

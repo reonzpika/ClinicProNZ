@@ -11,4 +11,4 @@ export const AccTab: React.FC = () => {
       <AccCodeSuggestions />
     </div>
   );
-}; 
+};

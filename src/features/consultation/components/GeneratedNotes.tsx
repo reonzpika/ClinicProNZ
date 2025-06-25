@@ -146,7 +146,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused,
             variant="default"
             onClick={handleGenerate}
             disabled={!canGenerate}
-            className="h-10 flex-1 px-4 py-2 text-sm bg-slate-600 hover:bg-slate-700 text-white"
+            className="h-10 flex-1 bg-slate-600 px-4 py-2 text-sm text-white hover:bg-slate-700"
           >
             Process Notes
           </Button>
@@ -155,7 +155,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused,
             variant="outline"
             onClick={handleClearAll}
             disabled={!hasAnyState}
-            className="h-10 px-4 py-2 text-sm border-slate-300 text-slate-600 hover:bg-slate-50"
+            className="h-10 border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
             title="Clear all consultation data"
             aria-label="Clear all consultation data"
           >
@@ -172,7 +172,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused,
   // Expanded state - full interface
   return (
     <Card className="border-slate-200 bg-white shadow-sm">
-      <CardHeader className="flex flex-row items-center justify-between p-4 pb-2 border-b border-slate-100 bg-slate-50">
+      <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 bg-slate-50 p-4 pb-2">
         <div className="flex items-center gap-2">
           <h2 className="text-sm font-medium text-slate-700">Clinical Documentation</h2>
           {loading && (
@@ -196,10 +196,9 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused,
               onChange={handleNotesChange}
               className="w-full rounded border border-slate-200 bg-white p-3 text-sm leading-relaxed text-slate-700 focus:border-slate-400 focus:ring-2 focus:ring-slate-400"
               placeholder="Clinical documentation will appear here..."
-              style={isDocumentationMode 
+              style={isDocumentationMode
                 ? { minHeight: '400px', height: 'calc(100vh - 300px)', maxHeight: 'calc(100vh - 300px)', resize: 'none', overflowY: 'auto' }
-                : { minHeight: 120, maxHeight: 1000, resize: 'none', overflowY: 'auto' }
-              }
+                : { minHeight: 120, maxHeight: 1000, resize: 'none', overflowY: 'auto' }}
               disabled={loading}
               spellCheck={false}
             />
@@ -211,7 +210,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused,
                 variant="default"
                 onClick={handleGenerate}
                 disabled={!canGenerate || loading}
-                className="h-9 px-4 py-2 text-sm bg-slate-600 hover:bg-slate-700 text-white"
+                className="h-9 bg-slate-600 px-4 py-2 text-sm text-white hover:bg-slate-700"
               >
                 Process Notes
               </Button>
@@ -220,7 +219,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused,
                 variant="secondary"
                 onClick={handleCopy}
                 disabled={!hasContent || loading}
-                className="h-9 px-4 py-2 text-sm border-slate-300 text-slate-600 hover:bg-slate-50"
+                className="h-9 border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
               >
                 {copySuccess ? 'Copied!' : 'Copy to Clipboard'}
               </Button>

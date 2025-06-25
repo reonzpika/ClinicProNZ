@@ -74,23 +74,23 @@ export function TranscriptionControls({ collapsed, onExpand, isMinimized }: { co
       const now = new Date().getTime();
       const expiry = mobileRecording.qrExpiry ? new Date(mobileRecording.qrExpiry).getTime() : 0;
       const isExpired = expiry > 0 && now >= expiry;
-      
+
       if (isExpired) {
         return {
-          className: "h-7 min-w-0 rounded border bg-orange-100 px-1 py-0.5 text-xs text-orange-700 hover:bg-orange-200",
-          title: "Mobile recording expired - click to reconnect"
+          className: 'h-7 min-w-0 rounded border bg-orange-100 px-1 py-0.5 text-xs text-orange-700 hover:bg-orange-200',
+          title: 'Mobile recording expired - click to reconnect',
         };
       }
-      
+
       return {
-        className: "h-7 min-w-0 rounded border bg-green-100 px-1 py-0.5 text-xs text-green-700 hover:bg-green-200",
-        title: "Mobile recording active - click to manage"
+        className: 'h-7 min-w-0 rounded border bg-green-100 px-1 py-0.5 text-xs text-green-700 hover:bg-green-200',
+        title: 'Mobile recording active - click to manage',
       };
     }
-    
+
     return {
-      className: "h-7 min-w-0 rounded border bg-white px-1 py-0.5 text-xs hover:bg-gray-100",
-      title: "Connect mobile device for recording"
+      className: 'h-7 min-w-0 rounded border bg-white px-1 py-0.5 text-xs hover:bg-gray-100',
+      title: 'Connect mobile device for recording',
     };
   };
 
@@ -126,16 +126,16 @@ export function TranscriptionControls({ collapsed, onExpand, isMinimized }: { co
   if (isMinimized) {
     return (
       <Card className="border-slate-200 bg-white shadow-sm">
-        <CardHeader className="flex flex-row items-center justify-between p-2 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between p-2">
           <div className="flex items-center gap-2">
             <span className="text-xs font-medium text-slate-700">Consultation Notes</span>
             {isRecording && <RecordingDot />}
           </div>
-          <Button 
-            type="button" 
-            variant="ghost" 
-            size="sm" 
-            className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800" 
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
             onClick={() => setIsExpanded(!isExpanded)}
           >
             {isExpanded ? '−' : '+'}
@@ -313,7 +313,7 @@ export function TranscriptionControls({ collapsed, onExpand, isMinimized }: { co
                 >
                   <Smartphone className="size-3" />
                   {mobileRecording.isActive && (
-                    <span className="ml-1 size-1.5 rounded-full bg-current animate-pulse" />
+                    <span className="ml-1 size-1.5 animate-pulse rounded-full bg-current" />
                   )}
                 </Button>
                 <Button

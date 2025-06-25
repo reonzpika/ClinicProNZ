@@ -3,8 +3,6 @@
 import type { ReactNode } from 'react';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-
-
 export type ChatMessage = {
   id: string;
   role: 'user' | 'assistant';

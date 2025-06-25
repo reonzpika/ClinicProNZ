@@ -71,8 +71,6 @@ export async function POST(req: Request) {
           rawContext += `TYPED INPUT:\n${rawConsultationData.typedInput}\n\n`;
         }
 
-
-
         if (rawContext.trim()) {
           systemPrompt += `
 

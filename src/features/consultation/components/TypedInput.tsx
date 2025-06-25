@@ -53,14 +53,21 @@ export function TypedInput({ collapsed, onExpand, isMinimized }: { collapsed?: b
   if (isMinimized) {
     return (
       <Card className="border-slate-200 bg-white shadow-sm">
-        <CardHeader className="flex flex-row items-center justify-between p-2 pb-2">
+        <CardHeader className="flex flex-row items-center justify-between p-2">
           <div className="flex items-center gap-2">
             <span className="text-xs font-medium text-slate-700">Consultation Notes</span>
-            {hasContent && <span className="text-xs text-slate-500">({localInput.length} chars)</span>}
+            {hasContent && (
+              <span className="text-xs text-slate-500">
+                (
+                {localInput.length}
+                {' '}
+                chars)
+              </span>
+            )}
           </div>
-          <button 
-            type="button" 
-            className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800" 
+          <button
+            type="button"
+            className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
             onClick={() => setIsExpanded(!isExpanded)}
           >
             {isExpanded ? '−' : '+'}
@@ -81,7 +88,9 @@ export function TypedInput({ collapsed, onExpand, isMinimized }: { collapsed?: b
               />
               {hasContent && (
                 <div className="mt-1 text-xs text-muted-foreground">
-                  {localInput.length} characters
+                  {localInput.length}
+                  {' '}
+                  characters
                 </div>
               )}
             </Section>

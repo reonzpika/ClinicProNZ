@@ -1,53 +1,55 @@
+/* eslint-disable style/multiline-ternary */
+/* eslint-disable ts/no-use-before-define */
 'use client';
 
-import React, { useState, useMemo, useRef } from 'react';
+import { ChevronDown, ChevronRight, X } from 'lucide-react';
+import React, { useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { Checkbox } from '@/shared/components/ui/checkbox';
 import { Input } from '@/shared/components/ui/input';
-import { ChevronDown, ChevronRight, X } from 'lucide-react';
 import { useConsultation } from '@/shared/ConsultationContext';
 
 type ChecklistType = 'driving' | 'baby-6weeks' | 'adult-health' | 'mammography' | 'cervical-screening';
 type CategoryType = 'children' | 'adult' | 'screening';
 
-interface ChecklistItem {
+type ChecklistItem = {
   id: string;
   label: string;
   checked: boolean;
-}
+};
 
-interface Checklist {
+type Checklist = {
   id: ChecklistType;
   title: string;
   description: string;
   category: CategoryType;
   items: ChecklistItem[];
-}
+};
 
-interface Category {
+type Category = {
   id: CategoryType;
   title: string;
   description: string;
-}
+};
 
 const categories: Category[] = [
   {
     id: 'children',
     title: 'Children',
-    description: 'Pediatric care and child health assessments'
+    description: 'Pediatric care and child health assessments',
   },
   {
     id: 'adult',
     title: 'Adult',
-    description: 'Adult health assessments and evaluations'
+    description: 'Adult health assessments and evaluations',
   },
   {
     id: 'screening',
     title: 'Screening',
-    description: 'Preventive screening protocols'
-  }
+    description: 'Preventive screening protocols',
+  },
 ];
 
 const allChecklists: Checklist[] = [
@@ -132,15 +134,15 @@ const allChecklists: Checklist[] = [
 export const ChecklistTab: React.FC = () => {
   // Use ConsultationContext for adding items
   const { addConsultationItem } = useConsultation();
-  
+
   // Main state
   const [selectedChecklistIds, setSelectedChecklistIds] = useState<ChecklistType[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
-  
+
   // Selection mode state
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<CategoryType[]>([]);
-  
+
   // Work mode state
   const [expandedWorkChecklists, setExpandedWorkChecklists] = useState<ChecklistType[]>([]);
   const [workChecklists, setWorkChecklists] = useState<Checklist[]>([]);
@@ -150,7 +152,7 @@ export const ChecklistTab: React.FC = () => {
 
   // Derive selected checklists for work mode
   const selectedChecklists = useMemo(() => {
-    return selectedChecklistIds.map(id => {
+    return selectedChecklistIds.map((id) => {
       const baseChecklist = allChecklists.find(c => c.id === id);
       const workChecklist = workChecklists.find(c => c.id === id);
       return workChecklist || baseChecklist!;
@@ -159,11 +161,13 @@ export const ChecklistTab: React.FC = () => {
 
   // Filter checklists for selection mode
   const filteredChecklists = useMemo(() => {
-    if (!searchTerm.trim()) return allChecklists;
-    
-    return allChecklists.filter(checklist => 
-      checklist.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      checklist.description.toLowerCase().includes(searchTerm.toLowerCase())
+    if (!searchTerm.trim()) {
+      return allChecklists;
+    }
+
+    return allChecklists.filter(checklist =>
+      checklist.title.toLowerCase().includes(searchTerm.toLowerCase())
+      || checklist.description.toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }, [searchTerm]);
 
@@ -172,24 +176,24 @@ export const ChecklistTab: React.FC = () => {
     const grouped: Record<CategoryType, Checklist[]> = {
       children: [],
       adult: [],
-      screening: []
+      screening: [],
     };
-    
+
     const checklistsToGroup = searchTerm.trim() ? filteredChecklists : allChecklists;
-    
-    checklistsToGroup.forEach(checklist => {
+
+    checklistsToGroup.forEach((checklist) => {
       grouped[checklist.category].push(checklist);
     });
-    
+
     return grouped;
   }, [filteredChecklists, searchTerm]);
 
   // Selection mode handlers
   const handleCategoryToggle = (categoryId: CategoryType) => {
-    setExpandedCategories(prev => 
+    setExpandedCategories(prev =>
       prev.includes(categoryId)
         ? prev.filter(id => id !== categoryId)
-        : [...prev, categoryId]
+        : [...prev, categoryId],
     );
   };
 
@@ -199,10 +203,10 @@ export const ChecklistTab: React.FC = () => {
       if (checklist) {
         setSelectedChecklistIds(prev => [...prev, checklistId]);
         setWorkChecklists(prev => [...prev, { ...checklist }]);
-        
+
         // Auto-expand the newly selected checklist
         setExpandedWorkChecklists(prev => [...prev, checklistId]);
-        
+
         // Auto-close selection mode after adding
         handleExitSelectionMode();
       }
@@ -225,25 +229,25 @@ export const ChecklistTab: React.FC = () => {
 
   // Work mode handlers
   const handleWorkChecklistToggle = (checklistId: ChecklistType) => {
-    setExpandedWorkChecklists(prev => 
+    setExpandedWorkChecklists(prev =>
       prev.includes(checklistId)
         ? prev.filter(id => id !== checklistId)
-        : [...prev, checklistId]
+        : [...prev, checklistId],
     );
   };
 
   const handleWorkItemToggle = (checklistId: ChecklistType, itemId: string) => {
-    setWorkChecklists(prev => 
-      prev.map(checklist => 
+    setWorkChecklists(prev =>
+      prev.map(checklist =>
         checklist.id === checklistId
           ? {
               ...checklist,
               items: checklist.items.map(item =>
-                item.id === itemId ? { ...item, checked: !item.checked } : item
+                item.id === itemId ? { ...item, checked: !item.checked } : item,
               ),
             }
-          : checklist
-      )
+          : checklist,
+      ),
     );
   };
 
@@ -253,7 +257,7 @@ export const ChecklistTab: React.FC = () => {
       const checkedItems = checklist.items
         .filter(item => item.checked)
         .map(item => item.label);
-      
+
       if (checkedItems.length > 0) {
         // Add to consultation context
         addConsultationItem({
@@ -261,19 +265,19 @@ export const ChecklistTab: React.FC = () => {
           title: checklist.title,
           content: checkedItems.join(', '),
         });
-        
+
         // Reset checklist and collapse it
-        setWorkChecklists(prev => 
-          prev.map(c => 
+        setWorkChecklists(prev =>
+          prev.map(c =>
             c.id === checklistId
               ? {
                   ...c,
                   items: c.items.map(item => ({ ...item, checked: false })),
                 }
-              : c
-          )
+              : c,
+          ),
         );
-        
+
         // Collapse the checklist
         setExpandedWorkChecklists(prev => prev.filter(id => id !== checklistId));
       }
@@ -297,7 +301,7 @@ export const ChecklistTab: React.FC = () => {
             variant="ghost"
             size="sm"
             onClick={handleExitSelectionMode}
-            className="h-6 w-6 p-0 text-slate-600 hover:text-slate-800"
+            className="size-6 p-0 text-slate-600 hover:text-slate-800"
           >
             <X size={14} />
           </Button>
@@ -310,22 +314,22 @@ export const ChecklistTab: React.FC = () => {
             type="text"
             placeholder="Search checklists..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
             className="w-full text-sm"
           />
         </div>
 
         {/* Categories and Checklists */}
-        <div className="space-y-2 max-h-96 overflow-y-auto">
+        <div className="max-h-96 space-y-2 overflow-y-auto">
           {searchTerm.trim() ? (
             // Search Results - Show filtered checklists without category grouping
             <>
               {filteredChecklists.map((checklist) => {
                 const isAlreadySelected = selectedChecklistIds.includes(checklist.id);
-                
+
                 return (
-                  <Card 
-                    key={checklist.id} 
+                  <Card
+                    key={checklist.id}
                     className={`border-slate-200 bg-white shadow-sm ${!isAlreadySelected ? 'cursor-pointer hover:bg-slate-50' : 'opacity-50'} transition-colors`}
                     onClick={() => !isAlreadySelected && handleChecklistSelect(checklist.id)}
                   >
@@ -336,10 +340,12 @@ export const ChecklistTab: React.FC = () => {
                         </div>
                         <div className="flex items-center space-x-2">
                           <span className="text-xs text-slate-400">
-                            {checklist.items.length} items
+                            {checklist.items.length}
+                            {' '}
+                            items
                           </span>
                           {isAlreadySelected && (
-                            <span className="text-xs text-green-600 font-medium">Added</span>
+                            <span className="text-xs font-medium text-green-600">Added</span>
                           )}
                         </div>
                       </div>
@@ -350,8 +356,12 @@ export const ChecklistTab: React.FC = () => {
 
               {/* No Results */}
               {filteredChecklists.length === 0 && (
-                <div className="text-center py-4">
-                  <p className="text-sm text-slate-500">No checklists found matching "{searchTerm}"</p>
+                <div className="py-4 text-center">
+                  <p className="text-sm text-slate-500">
+                    No checklists found matching "
+                    {searchTerm}
+                    "
+                  </p>
                 </div>
               )}
             </>
@@ -361,29 +371,36 @@ export const ChecklistTab: React.FC = () => {
               {categories.map((category) => {
                 const categoryChecklists = checklistsByCategory[category.id];
                 const isCategoryExpanded = expandedCategories.includes(category.id);
-                
-                if (categoryChecklists.length === 0) return null;
-                
+
+                if (categoryChecklists.length === 0) {
+                  return null;
+                }
+
                 return (
                   <Card key={category.id} className="border-slate-300 bg-white shadow-sm">
                     {/* Category Header */}
-                    <CardHeader 
-                      className="cursor-pointer border-b border-slate-200 bg-slate-100 p-3 hover:bg-slate-200 transition-colors"
+                    <CardHeader
+                      className="cursor-pointer border-b border-slate-200 bg-slate-100 p-3 transition-colors hover:bg-slate-200"
                       onClick={() => handleCategoryToggle(category.id)}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          {isCategoryExpanded ? (
-                            <ChevronDown size={16} className="text-slate-700" />
-                          ) : (
-                            <ChevronRight size={16} className="text-slate-700" />
-                          )}
+                          {isCategoryExpanded
+                            ? (
+                                <ChevronDown size={16} className="text-slate-700" />
+                              )
+                            : (
+                                <ChevronRight size={16} className="text-slate-700" />
+                              )}
                           <div>
                             <h4 className="text-sm font-semibold text-slate-800">{category.title}</h4>
                           </div>
                         </div>
                         <span className="text-xs text-slate-500">
-                          {categoryChecklists.length} checklist{categoryChecklists.length !== 1 ? 's' : ''}
+                          {categoryChecklists.length}
+                          {' '}
+                          checklist
+                          {categoryChecklists.length !== 1 ? 's' : ''}
                         </span>
                       </div>
                     </CardHeader>
@@ -394,10 +411,10 @@ export const ChecklistTab: React.FC = () => {
                         <div className="space-y-2">
                           {categoryChecklists.map((checklist) => {
                             const isAlreadySelected = selectedChecklistIds.includes(checklist.id);
-                            
+
                             return (
-                              <Card 
-                                key={checklist.id} 
+                              <Card
+                                key={checklist.id}
                                 className={`border-slate-200 bg-white shadow-sm ${!isAlreadySelected ? 'cursor-pointer hover:bg-slate-50' : 'opacity-50'} transition-colors`}
                                 onClick={() => !isAlreadySelected && handleChecklistSelect(checklist.id)}
                               >
@@ -408,10 +425,12 @@ export const ChecklistTab: React.FC = () => {
                                     </div>
                                     <div className="flex items-center space-x-2">
                                       <span className="text-xs text-slate-400">
-                                        {checklist.items.length} items
+                                        {checklist.items.length}
+                                        {' '}
+                                        items
                                       </span>
                                       {isAlreadySelected && (
-                                        <span className="text-xs text-green-600 font-medium">Added</span>
+                                        <span className="text-xs font-medium text-green-600">Added</span>
                                       )}
                                     </div>
                                   </div>
@@ -437,7 +456,15 @@ export const ChecklistTab: React.FC = () => {
     <div className="space-y-3">
       {/* Search Bar (Clickable to open selection mode) */}
       <div
+        role="button"
+        tabIndex={0}
         onClick={handleSearchBarClick}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleSearchBarClick();
+          }
+        }}
         className="cursor-text"
       >
         <Input
@@ -445,7 +472,7 @@ export const ChecklistTab: React.FC = () => {
           placeholder="Search checklists..."
           value=""
           readOnly
-          className="w-full text-sm cursor-text"
+          className="w-full cursor-text text-sm"
         />
       </div>
 
@@ -455,22 +482,24 @@ export const ChecklistTab: React.FC = () => {
           {selectedChecklists.map((checklist) => {
             const isExpanded = expandedWorkChecklists.includes(checklist.id);
             const checkedCount = checklist.items.filter(item => item.checked).length;
-            
+
             return (
               <Card key={checklist.id} className="border-slate-200 bg-white shadow-sm">
                 {/* Checklist Header - Clickable */}
-                <CardHeader 
-                  className="cursor-pointer border-b border-slate-100 bg-slate-50 p-3 hover:bg-slate-100 transition-colors"
+                <CardHeader
+                  className="cursor-pointer border-b border-slate-100 bg-slate-50 p-3 transition-colors hover:bg-slate-100"
                   onClick={() => handleWorkChecklistToggle(checklist.id)}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2">
-                        {isExpanded ? (
-                          <ChevronDown size={16} className="text-slate-600" />
-                        ) : (
-                          <ChevronRight size={16} className="text-slate-600" />
-                        )}
+                        {isExpanded
+                          ? (
+                              <ChevronDown size={16} className="text-slate-600" />
+                            )
+                          : (
+                              <ChevronRight size={16} className="text-slate-600" />
+                            )}
                         <div>
                           <h4 className="text-sm font-medium text-slate-700">{checklist.title}</h4>
                         </div>
@@ -478,9 +507,16 @@ export const ChecklistTab: React.FC = () => {
                     </div>
                     <div className="flex items-center space-x-2">
                       <div className="text-xs text-slate-400">
-                        {checklist.items.length} items
+                        {checklist.items.length}
+                        {' '}
+                        items
                         {checkedCount > 0 && (
-                          <span className="ml-1 text-blue-600">({checkedCount} selected)</span>
+                          <span className="ml-1 text-blue-600">
+                            (
+                            {checkedCount}
+                            {' '}
+                            selected)
+                          </span>
                         )}
                       </div>
                       <Button
@@ -490,7 +526,7 @@ export const ChecklistTab: React.FC = () => {
                           e.stopPropagation();
                           handleRemoveSelectedChecklist(checklist.id);
                         }}
-                        className="h-6 w-6 p-0 text-slate-400 hover:text-red-600"
+                        className="size-6 p-0 text-slate-400 hover:text-red-600"
                       >
                         <X size={12} />
                       </Button>
@@ -504,7 +540,7 @@ export const ChecklistTab: React.FC = () => {
                     <div className="space-y-3">
                       {/* Checklist Items */}
                       <div className="space-y-2">
-                        {checklist.items.map((item) => (
+                        {checklist.items.map(item => (
                           <div key={item.id} className="flex items-start space-x-3">
                             <Checkbox
                               id={`work-${checklist.id}-${item.id}`}
@@ -514,7 +550,7 @@ export const ChecklistTab: React.FC = () => {
                             />
                             <label
                               htmlFor={`work-${checklist.id}-${item.id}`}
-                              className="text-sm leading-5 text-slate-700 cursor-pointer flex-1"
+                              className="flex-1 cursor-pointer text-sm leading-5 text-slate-700"
                             >
                               {item.label}
                             </label>
@@ -525,13 +561,18 @@ export const ChecklistTab: React.FC = () => {
                       {/* Add to Consultation Button */}
                       <div className="flex items-center justify-between border-t border-slate-100 pt-3">
                         <span className="text-xs text-slate-600">
-                          {checkedCount} of {checklist.items.length} selected
+                          {checkedCount}
+                          {' '}
+                          of
+                          {checklist.items.length}
+                          {' '}
+                          selected
                         </span>
                         <Button
                           onClick={() => handleAddToConsultation(checklist.id)}
                           disabled={checkedCount === 0}
                           size="sm"
-                          className="bg-green-600 text-white hover:bg-green-700 text-xs px-3 py-1"
+                          className="bg-green-600 px-3 py-1 text-xs text-white hover:bg-green-700"
                         >
                           Add to Consultation
                         </Button>
@@ -545,12 +586,12 @@ export const ChecklistTab: React.FC = () => {
         </div>
       ) : (
         // Empty State
-        <div className="text-center py-8">
-          <p className="text-sm text-slate-500 mb-3">No checklists selected</p>
+        <div className="py-8 text-center">
+          <p className="mb-3 text-sm text-slate-500">No checklists selected</p>
           <p className="text-xs text-slate-400">Click the search bar above to choose from available checklists</p>
         </div>
       )}
 
     </div>
   );
-}; 
+};

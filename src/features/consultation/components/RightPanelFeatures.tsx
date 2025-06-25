@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 
 import { Button } from '@/shared/components/ui/button';
 
-
 import { AccCodeSuggestions } from './AccCodeSuggestions';
 import { ChatbotWidget } from './ChatbotWidget';
 import { ChecklistTab } from './tabs/ChecklistTab';
@@ -14,12 +13,12 @@ import { MobileTab } from './tabs/MobileTab';
 
 type SectionId = 'mobile' | 'checklist' | 'ddx' | 'chat' | 'acc';
 
-interface AccordionSection {
+type AccordionSection = {
   id: SectionId;
   icon: React.ComponentType<{ size?: number; className?: string }>;
   title: string;
   component: React.ComponentType;
-}
+};
 
 const sections: AccordionSection[] = [
   { id: 'mobile', icon: Camera, title: 'QR Camera Upload', component: MobileTab },
@@ -48,11 +47,11 @@ const RightPanelFeatures: React.FC = () => {
           ❮
         </Button>
         <div className="flex flex-col space-y-2 p-2">
-          {sections.map((section) => (
+          {sections.map(section => (
             <button
               key={section.id}
               onClick={() => setIsCollapsed(false)}
-              className="flex h-8 w-8 items-center justify-center rounded text-slate-600 hover:bg-slate-100"
+              className="flex size-8 items-center justify-center rounded text-slate-600 hover:bg-slate-100"
               title={section.title}
             >
               <section.icon size={16} />
@@ -66,7 +65,7 @@ const RightPanelFeatures: React.FC = () => {
   return (
     <div className="flex h-full border-l border-slate-200 bg-white">
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex flex-1 flex-col">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2">
           <h3 className="text-sm font-medium text-slate-700">
@@ -76,7 +75,7 @@ const RightPanelFeatures: React.FC = () => {
             variant="ghost"
             size="sm"
             onClick={() => setIsCollapsed(true)}
-            className="h-6 w-6 p-0 text-slate-600 hover:text-slate-800"
+            className="size-6 p-0 text-slate-600 hover:text-slate-800"
           >
             ❯
           </Button>
@@ -94,12 +93,12 @@ const RightPanelFeatures: React.FC = () => {
           {sections.map((section) => {
             const Icon = section.icon;
             const isActive = activeSection === section.id;
-            
+
             return (
               <button
                 key={section.id}
                 onClick={() => setActiveSection(section.id)}
-                className={`flex h-10 w-10 items-center justify-center rounded-md transition-colors ${
+                className={`flex size-10 items-center justify-center rounded-md transition-colors ${
                   isActive
                     ? 'bg-blue-100 text-blue-600'
                     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-800'
@@ -116,4 +115,4 @@ const RightPanelFeatures: React.FC = () => {
   );
 };
 
-export default RightPanelFeatures; 
+export default RightPanelFeatures;

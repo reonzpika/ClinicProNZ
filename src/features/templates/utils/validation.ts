@@ -22,76 +22,76 @@ export function validateTemplate(template: Partial<Template>): ValidationResult 
 
   // Required field validation
   if (!template.name || template.name.trim() === '') {
-    errors.push({ 
-      field: 'name', 
+    errors.push({
+      field: 'name',
       message: 'Template name is required',
-      severity: 'error'
+      severity: 'error',
     });
   }
 
   if (!template.type) {
-    errors.push({ 
-      field: 'type', 
+    errors.push({
+      field: 'type',
       message: 'Template type is required',
-      severity: 'error'
+      severity: 'error',
     });
   }
 
   // Validate templateBody
   if (!template.templateBody) {
-    errors.push({ 
-      field: 'templateBody', 
+    errors.push({
+      field: 'templateBody',
       message: 'Template body is required',
-      severity: 'error'
+      severity: 'error',
     });
   } else if (template.templateBody.trim() === '') {
-    errors.push({ 
-      field: 'templateBody', 
+    errors.push({
+      field: 'templateBody',
       message: 'Template body cannot be empty',
-      severity: 'error'
+      severity: 'error',
     });
   } else {
     // Advanced validation for natural language templates
     const templateBody = template.templateBody;
-    
+
     // Check for placeholders
     const placeholders = templateBody.match(/\[([^\]]+)\]/g) || [];
     if (placeholders.length === 0) {
       warnings.push({
         field: 'templateBody',
         message: 'No placeholders found. Consider adding [placeholder text] for dynamic content',
-        severity: 'warning'
+        severity: 'warning',
       });
     }
 
     // Check for anti-hallucination instructions
-    const hasAntiHallucination = templateBody.toLowerCase().includes('only include') || 
-                                templateBody.toLowerCase().includes('only if mentioned') ||
-                                templateBody.toLowerCase().includes('explicitly mentioned');
-    
+    const hasAntiHallucination = templateBody.toLowerCase().includes('only include')
+      || templateBody.toLowerCase().includes('only if mentioned')
+      || templateBody.toLowerCase().includes('explicitly mentioned');
+
     if (placeholders.length > 0 && !hasAntiHallucination) {
       warnings.push({
         field: 'templateBody',
         message: 'Consider adding "(only include if mentioned)" instructions to prevent AI hallucination',
-        severity: 'warning'
+        severity: 'warning',
       });
     }
 
     // Check for proper structure
     const lines = templateBody.split('\n');
-    const hasHeaders = lines.some(line => 
-      line.trim() && 
-      !line.startsWith('-') && 
-      !line.startsWith('(') && 
-      !line.includes('[') &&
-      line.trim().length > 0
+    const hasHeaders = lines.some(line =>
+      line.trim()
+      && !line.startsWith('-')
+      && !line.startsWith('(')
+      && !line.includes('[')
+      && line.trim().length > 0,
     );
 
     if (!hasHeaders && placeholders.length > 3) {
       suggestions.push({
         field: 'templateBody',
         message: 'Consider organizing content with section headers (e.g., HISTORY:, EXAMINATION:)',
-        severity: 'suggestion'
+        severity: 'suggestion',
       });
     }
 
@@ -101,7 +101,7 @@ export function validateTemplate(template: Partial<Template>): ValidationResult 
       suggestions.push({
         field: 'templateBody',
         message: 'Consider adding instructional text in parentheses to guide AI behavior',
-        severity: 'suggestion'
+        severity: 'suggestion',
       });
     }
 
@@ -110,7 +110,7 @@ export function validateTemplate(template: Partial<Template>): ValidationResult 
       warnings.push({
         field: 'templateBody',
         message: 'Template seems quite short. Consider adding more structure or placeholders',
-        severity: 'warning'
+        severity: 'warning',
       });
     }
 
@@ -118,7 +118,7 @@ export function validateTemplate(template: Partial<Template>): ValidationResult 
       warnings.push({
         field: 'templateBody',
         message: 'Template is very long. Consider breaking it into smaller, focused templates',
-        severity: 'warning'
+        severity: 'warning',
       });
     }
 
@@ -129,7 +129,7 @@ export function validateTemplate(template: Partial<Template>): ValidationResult 
       errors.push({
         field: 'templateBody',
         message: 'Unmatched brackets detected. Each [ should have a corresponding ]',
-        severity: 'error'
+        severity: 'error',
       });
     }
 
@@ -140,26 +140,33 @@ export function validateTemplate(template: Partial<Template>): ValidationResult 
       warnings.push({
         field: 'templateBody',
         message: 'Unmatched parentheses detected. Check instruction formatting',
-        severity: 'warning'
+        severity: 'warning',
       });
     }
 
     // Check for common placeholder patterns
     const commonPlaceholders = [
-      'patient name', 'age', 'presenting complaint', 'history', 
-      'examination', 'assessment', 'plan', 'medications', 'allergies'
+      'patient name',
+      'age',
+      'presenting complaint',
+      'history',
+      'examination',
+      'assessment',
+      'plan',
+      'medications',
+      'allergies',
     ];
-    
+
     const templateLower = templateBody.toLowerCase();
-    const missingCommonFields = commonPlaceholders.filter(field => 
-      !templateLower.includes(field) && placeholders.length > 5
+    const missingCommonFields = commonPlaceholders.filter(field =>
+      !templateLower.includes(field) && placeholders.length > 5,
     );
 
     if (missingCommonFields.length > 3) {
       suggestions.push({
         field: 'templateBody',
         message: `Consider adding common medical fields: ${missingCommonFields.slice(0, 3).join(', ')}`,
-        severity: 'suggestion'
+        severity: 'suggestion',
       });
     }
   }
@@ -169,7 +176,7 @@ export function validateTemplate(template: Partial<Template>): ValidationResult 
     warnings.push({
       field: 'name',
       message: 'Template name is quite long. Consider a shorter, more concise name',
-      severity: 'warning'
+      severity: 'warning',
     });
   }
 
@@ -178,7 +185,7 @@ export function validateTemplate(template: Partial<Template>): ValidationResult 
     warnings.push({
       field: 'description',
       message: 'Description is very long. Consider keeping it concise',
-      severity: 'warning'
+      severity: 'warning',
     });
   }
 
@@ -186,7 +193,7 @@ export function validateTemplate(template: Partial<Template>): ValidationResult 
     suggestions.push({
       field: 'description',
       message: 'Consider adding a description to help others understand when to use this template',
-      severity: 'suggestion'
+      severity: 'suggestion',
     });
   }
 

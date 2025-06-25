@@ -1,9 +1,10 @@
+/* eslint-disable jsx-a11y/label-has-associated-control */
+/* eslint-disable no-console */
 'use client';
 
 import React, { useState } from 'react';
 
 import { Button } from '@/shared/components/ui/button';
-
 import { Input } from '@/shared/components/ui/input';
 
 // TODO: Integrate with ConsultationContext for global state management
@@ -20,10 +21,10 @@ export const MobileTab: React.FC = () => {
     if (files) {
       const fileNames = Array.from(files).map(file => file.name);
       setUploadedFiles(prev => [...prev, ...fileNames]);
-      
+
       // TODO: Process files and add to consultation data
       // For now, just simulate adding to compiled data
-      fileNames.forEach(fileName => {
+      fileNames.forEach((fileName) => {
         console.log(`Image: ${fileName}`);
         console.log(`AI Desc: ${fileName} appears normal.`);
       });
@@ -44,7 +45,7 @@ export const MobileTab: React.FC = () => {
           <img
             src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=consultai-mock"
             alt="QR Code"
-            className="h-32 w-32 rounded border border-slate-200"
+            className="size-32 rounded border border-slate-200"
           />
           <div className="text-center">
             <p className="text-xs text-slate-600">
@@ -55,7 +56,7 @@ export const MobileTab: React.FC = () => {
       )}
 
       <div className="border-t border-slate-100 pt-4">
-        <label className="block text-sm font-medium text-slate-600 mb-2">
+        <label className="mb-2 block text-sm font-medium text-slate-600">
           Simulate Mobile Capture:
         </label>
         <Input
@@ -69,7 +70,7 @@ export const MobileTab: React.FC = () => {
 
       {uploadedFiles.length > 0 && (
         <div className="border-t border-slate-100 pt-4">
-          <h5 className="text-sm font-medium text-slate-600 mb-2">
+          <h5 className="mb-2 text-sm font-medium text-slate-600">
             Uploaded Images:
           </h5>
           <div className="space-y-1">
@@ -87,4 +88,4 @@ export const MobileTab: React.FC = () => {
       )}
     </div>
   );
-}; 
+};

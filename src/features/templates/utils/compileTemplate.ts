@@ -36,12 +36,12 @@ function cleanupCache() {
       templateCache.delete(key);
     }
   }
-  
+
   // If cache is still too large, remove oldest entries
   if (templateCache.size > MAX_CACHE_SIZE) {
     const entries = Array.from(templateCache.entries())
       .sort((a, b) => a[1].timestamp - b[1].timestamp);
-    
+
     const toRemove = entries.slice(0, templateCache.size - MAX_CACHE_SIZE);
     toRemove.forEach(([key]) => templateCache.delete(key));
   }
@@ -58,7 +58,7 @@ function substitutePlaceholders(
   // Check cache first
   const cacheKey = generateCacheKey(templateBody, transcription, typedInput, inputMode, consultationNotes);
   const cached = templateCache.get(cacheKey);
-  
+
   if (cached && Date.now() - cached.timestamp < TEMPLATE_CACHE_TTL) {
     return cached.compiled;
   }
@@ -102,7 +102,7 @@ function substitutePlaceholders(
   // Cache the result
   templateCache.set(cacheKey, {
     compiled: completePrompt,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   });
 
   // Clean up cache periodically
@@ -116,14 +116,14 @@ function substitutePlaceholders(
 // Optimized system prompt generation with caching
 function getCachedSystemPrompt(): string {
   const now = Date.now();
-  
+
   if (cachedSystemPrompt && now - systemPromptCacheTime < SYSTEM_PROMPT_CACHE_TTL) {
     return cachedSystemPrompt;
   }
-  
+
   cachedSystemPrompt = generateSystemPrompt();
   systemPromptCacheTime = now;
-  
+
   return cachedSystemPrompt;
 }
 
@@ -164,12 +164,12 @@ export const templatePerformance = {
     systemPromptCached: !!cachedSystemPrompt,
     cacheHitRate: templateCache.size > 0 ? 'Available' : 'No data',
   }),
-  
+
   clearCache: () => {
     templateCache.clear();
     cachedSystemPrompt = null;
     systemPromptCacheTime = 0;
   },
-  
+
   getCacheSize: () => templateCache.size,
 };

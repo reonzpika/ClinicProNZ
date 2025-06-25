@@ -1,14 +1,15 @@
+/* eslint-disable no-alert */
 'use client';
 
-import { Lightbulb, CheckCircle, AlertCircle } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { Lightbulb } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
+import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
-import { Badge } from '@/shared/components/ui/badge';
 
 import type { Template } from '../types';
 import { validateTemplate } from '../utils/validation';
@@ -23,15 +24,15 @@ type TemplateEditorProps = {
 function analyzeTemplate(templateBody: string) {
   const placeholders = templateBody.match(/\[([^\]]+)\]/g) || [];
   const conditionals = templateBody.match(/\([^)]*only include[^)]*\)/gi) || [];
-  const sections = templateBody.split('\n').filter(line => 
-    line.trim() && !line.startsWith('-') && !line.startsWith('(') && !line.includes('[')
+  const sections = templateBody.split('\n').filter(line =>
+    line.trim() && !line.startsWith('-') && !line.startsWith('(') && !line.includes('['),
   ).length;
-  
+
   return {
     placeholderCount: placeholders.length,
     conditionalCount: conditionals.length,
     sectionCount: sections,
-    placeholders: placeholders.map(p => p.replace(/[\[\]]/g, '')),
+    placeholders: placeholders.map(p => p.replace(/[[\]]/g, '')),
   };
 }
 
@@ -83,17 +84,21 @@ export function TemplateEditor({ template: initialTemplate, onSave, onCancel }: 
 
       <div className="flex flex-1 gap-4 p-4">
         {/* Editor Panel */}
-        <Card className="flex flex-col w-[70%]">
+        <Card className="flex w-[70%] flex-col">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Template Details</CardTitle>
               {/* Template Analysis */}
               <div className="flex gap-1">
-                <Badge variant={analysis.placeholderCount > 0 ? "default" : "secondary"}>
-                  {analysis.placeholderCount} placeholders
+                <Badge variant={analysis.placeholderCount > 0 ? 'default' : 'secondary'}>
+                  {analysis.placeholderCount}
+                  {' '}
+                  placeholders
                 </Badge>
-                <Badge variant={analysis.conditionalCount > 0 ? "default" : "secondary"}>
-                  {analysis.conditionalCount} instructions
+                <Badge variant={analysis.conditionalCount > 0 ? 'default' : 'secondary'}>
+                  {analysis.conditionalCount}
+                  {' '}
+                  instructions
                 </Badge>
               </div>
             </div>
@@ -122,11 +127,13 @@ export function TemplateEditor({ template: initialTemplate, onSave, onCancel }: 
               />
             </div>
 
-            <div className="flex-1 flex flex-col">
-              <div className="flex items-center justify-between mb-1">
+            <div className="flex flex-1 flex-col">
+              <div className="mb-1 flex items-center justify-between">
                 <Label htmlFor="templateBody" className="text-sm">Template Body</Label>
                 <div className="text-xs text-muted-foreground">
-                  {template.templateBody.length} characters
+                  {template.templateBody.length}
+                  {' '}
+                  characters
                 </div>
               </div>
               <Textarea
@@ -146,32 +153,43 @@ SECTION 2:
 - [More placeholders] (only include if mentioned)
 
 (Final instructions about handling missing information)`}
-                className="flex-1 font-mono text-sm min-h-[400px]"
+                className="min-h-[400px] flex-1 font-mono text-sm"
               />
             </div>
-
 
           </CardContent>
         </Card>
 
         {/* Help Panel */}
-        <Card className="w-[30%] flex flex-col border-blue-200 bg-blue-50">
+        <Card className="flex w-[30%] flex-col border-blue-200 bg-blue-50">
           <CardHeader>
             <CardTitle className="text-blue-900">Template Writing Guide</CardTitle>
           </CardHeader>
           <CardContent className="flex-1">
             <div className="flex items-start gap-3">
-              <Lightbulb className="size-5 text-blue-600 mt-0.5" />
+              <Lightbulb className="mt-0.5 size-5 text-blue-600" />
               <div className="space-y-3 text-sm">
                 <div className="space-y-2">
                   <div>
-                    <strong>Placeholders:</strong> Use <code className="bg-blue-100 px-1 rounded">[description]</code> for content
+                    <strong>Placeholders:</strong>
+                    {' '}
+                    Use
+                    <code className="rounded bg-blue-100 px-1">[description]</code>
+                    {' '}
+                    for content
                   </div>
                   <div>
-                    <strong>Anti-hallucination:</strong> Add <code className="bg-blue-100 px-1 rounded">(only include if mentioned)</code> after placeholders
+                    <strong>Anti-hallucination:</strong>
+                    {' '}
+                    Add
+                    <code className="rounded bg-blue-100 px-1">(only include if mentioned)</code>
+                    {' '}
+                    after placeholders
                   </div>
                   <div>
-                    <strong>Example:</strong> <code className="bg-blue-100 px-1 rounded">- [Patient's complaint] (only include if explicitly mentioned)</code>
+                    <strong>Example:</strong>
+                    {' '}
+                    <code className="rounded bg-blue-100 px-1">- [Patient's complaint] (only include if explicitly mentioned)</code>
                   </div>
                 </div>
               </div>
