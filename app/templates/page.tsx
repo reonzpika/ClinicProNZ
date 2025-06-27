@@ -92,8 +92,6 @@ export default function TemplatesPage() {
     });
   };
 
-  // Remove unused functions - functionality moved to inline handlers
-
   const handleDelete = async (template: Template) => {
     // Prevent deleting default templates
     if (!template.id || template.type === 'default') {

@@ -8,8 +8,6 @@ import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { useConsultation } from '@/shared/ConsultationContext';
 
-// TODO: Fix button enable logic so Generate Notes is clickable when there is only a transcription (without requiring a quick note). Currently, it only enables after a quick note is added.
-
 export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused, isDocumentationMode }: { onGenerate?: () => void; onClearAll?: () => void; loading?: boolean; isNoteFocused?: boolean; isDocumentationMode?: boolean }) {
   const {
     generatedNotes,

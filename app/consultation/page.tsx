@@ -1,14 +1,15 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { AdditionalNotes } from '@/features/consultation/components/AdditionalNotes';
 import { GeneratedNotes } from '@/features/consultation/components/GeneratedNotes';
 import { InputModeToggle } from '@/features/consultation/components/InputModeToggle';
+import { PatientSessionManager } from '@/features/consultation/components/PatientSessionManager';
 import RightPanelFeatures from '@/features/consultation/components/RightPanelFeatures';
 import { TranscriptionControls } from '@/features/consultation/components/TranscriptionControls';
 import { TypedInput } from '@/features/consultation/components/TypedInput';
-import { useMobileSync } from '@/features/consultation/hooks/useMobileSync';
+import { useWebSocketSync } from '@/features/consultation/hooks/useWebSocketSync';
 import { TemplateSelector } from '@/features/templates/components/TemplateSelector';
 import { Footer } from '@/shared/components/Footer';
 import { Container } from '@/shared/components/layout/Container';
@@ -72,8 +73,7 @@ export default function ConsultationPage() {
     templateId,
     typedInput,
     inputMode,
-    sessionId,
-    mobileRecording,
+    mobileV2,
     consultationItems,
     consultationNotes,
     generatedNotes,
@@ -82,6 +82,10 @@ export default function ConsultationPage() {
     setLastGeneratedInput,
     setConsultationNotes,
     getCompiledConsultationText,
+    appendTranscription,
+    setMobileV2ConnectionStatus,
+    addMobileV2Device,
+    removeMobileV2Device,
   } = useConsultation();
   const [loading, setLoading] = useState(false);
   const [isNoteFocused, setIsNoteFocused] = useState(false);
@@ -94,10 +98,44 @@ export default function ConsultationPage() {
     }
   }, [generatedNotes, isDocumentationMode]);
 
-  // Enable mobile sync when mobile recording is active
-  useMobileSync({
-    enabled: mobileRecording.isActive,
-    sessionId,
+  // Memoized callbacks for WebSocket sync to prevent infinite re-renders
+  const handleTranscriptionReceived = useCallback((transcript: string, _patientSessionId?: string) => {
+    // Append mobile transcription to desktop transcription
+    appendTranscription(transcript, false); // false = not live transcription
+  }, [appendTranscription]);
+
+  const handlePatientSwitched = useCallback((_patientSessionId: string, _patientName?: string) => {
+    // Handle patient switching if needed
+  }, []);
+
+  const handleDeviceConnected = useCallback((deviceId: string, deviceName: string) => {
+    addMobileV2Device({ deviceId, deviceName, connectedAt: Date.now() });
+    setMobileV2ConnectionStatus('connected');
+  }, [addMobileV2Device, setMobileV2ConnectionStatus]);
+
+  const handleDeviceDisconnected = useCallback((deviceId: string) => {
+    removeMobileV2Device(deviceId);
+    if (mobileV2.connectedDevices.length <= 1) {
+      setMobileV2ConnectionStatus('disconnected');
+    }
+  }, [removeMobileV2Device, setMobileV2ConnectionStatus, mobileV2.connectedDevices.length]);
+
+  const handleWebSocketError = useCallback((error: string) => {
+    // WebSocket error handled silently
+    setError(error);
+    setMobileV2ConnectionStatus('error');
+  }, [setError, setMobileV2ConnectionStatus]);
+
+  // Enable WebSocket sync for Mobile V2 system
+  useWebSocketSync({
+    enabled: true, // Mobile V2 is now enabled by default
+    token: mobileV2.token || undefined, // Token can be undefined initially
+    isDesktop: true,
+    onTranscriptionReceived: handleTranscriptionReceived,
+    onPatientSwitched: handlePatientSwitched,
+    onDeviceConnected: handleDeviceConnected,
+    onDeviceDisconnected: handleDeviceDisconnected,
+    onError: handleWebSocketError,
   });
 
   const handleClearAll = () => {
@@ -162,6 +200,9 @@ export default function ConsultationPage() {
           {/* Left Column - Main Clinical Documentation Area */}
           <div className="lg:col-span-2">
             <Stack spacing="sm">
+              {/* Patient Session Manager - V2 Feature */}
+              <PatientSessionManager isCompact={isDocumentationMode} />
+
               {/* Documentation Settings - Only show in standard mode */}
               {!isDocumentationMode && (
                 <Card className="border-slate-200 bg-white shadow-sm">
@@ -289,7 +330,11 @@ export default function ConsultationPage() {
 
           {/* Right Column - Clinical Tools */}
           <div className="lg:col-span-1">
-            <RightPanelFeatures />
+            <Stack spacing="sm">
+              {/* Feature Flag Toggle - Development Only */}
+
+              <RightPanelFeatures />
+            </Stack>
           </div>
         </Grid>
       </Container>

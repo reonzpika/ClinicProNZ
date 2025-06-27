@@ -14,26 +14,27 @@ import { useConsultation } from '@/shared/ConsultationContext';
 import { useTranscription } from '../hooks/useTranscription';
 import { AudioSettingsModal } from './AudioSettingsModal';
 import { ConsentModal } from './ConsentModal';
-import { MobileRecordingQR } from './MobileRecordingQR';
+import { MobileRecordingQRV2 } from './MobileRecordingQRV2';
 
 export function TranscriptionControls({ collapsed, onExpand, isMinimized }: { collapsed?: boolean; onExpand?: () => void; isMinimized?: boolean }) {
   const {
     error: contextError,
     consentObtained,
     setConsentObtained,
-    mobileRecording,
-    isDesktopRecordingDisabled,
+    mobileV2 = { isEnabled: false, token: null, connectedDevices: [], connectionStatus: 'disconnected' },
+    transcription: contextTranscription,
   } = useConsultation();
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [showAudioSettings, setShowAudioSettings] = useState(false);
-  const [showMobileRecording, setShowMobileRecording] = useState(false);
+
+  const [showMobileRecordingV2, setShowMobileRecordingV2] = useState(false);
   const [isExpanded, setIsExpanded] = useState(!isMinimized);
+  const useMobileV2 = true; // Mobile V2 is now enabled by default
 
   const {
     isRecording,
     isPaused,
     isTranscribing,
-    transcript,
     error,
     startRecording,
     stopRecording,
@@ -42,9 +43,11 @@ export function TranscriptionControls({ collapsed, onExpand, isMinimized }: { co
     resetTranscription,
     volumeLevel,
     noInputWarning,
-    chunksCompleted,
     totalChunks,
   } = useTranscription();
+
+  // Always use context transcript for unified display (includes both desktop and mobile)
+  const transcript = contextTranscription.transcript;
 
   // Handle start recording - show consent modal first if consent not obtained
   const handleStartRecording = () => {
@@ -67,31 +70,23 @@ export function TranscriptionControls({ collapsed, onExpand, isMinimized }: { co
     setShowConsentModal(false);
   };
 
-  // Mobile recording button status and styling
+  // Mobile V2 recording button status and styling
   const getMobileButtonStyle = () => {
-    if (mobileRecording.isActive) {
-      // Check if QR is expired
-      const now = new Date().getTime();
-      const expiry = mobileRecording.qrExpiry ? new Date(mobileRecording.qrExpiry).getTime() : 0;
-      const isExpired = expiry > 0 && now >= expiry;
-
-      if (isExpired) {
-        return {
-          className: 'h-7 min-w-0 rounded border bg-orange-100 px-1 py-0.5 text-xs text-orange-700 hover:bg-orange-200',
-          title: 'Mobile recording expired - click to reconnect',
-        };
-      }
-
+    if (mobileV2.connectedDevices.length > 0) {
       return {
         className: 'h-7 min-w-0 rounded border bg-green-100 px-1 py-0.5 text-xs text-green-700 hover:bg-green-200',
-        title: 'Mobile recording active - click to manage',
+        title: `${mobileV2.connectedDevices.length} device(s) connected - click to manage`,
       };
     }
-
     return {
-      className: 'h-7 min-w-0 rounded border bg-white px-1 py-0.5 text-xs hover:bg-gray-100',
-      title: 'Connect mobile device for recording',
+      className: 'h-7 min-w-0 rounded border bg-blue-100 px-1 py-0.5 text-xs text-blue-700 hover:bg-blue-200',
+      title: 'Mobile Recording V2 - click to connect',
     };
+  };
+
+  // Handle mobile button click
+  const handleMobileClick = () => {
+    setShowMobileRecordingV2(true);
   };
 
   // Determine if we're waiting for speech to start
@@ -162,7 +157,6 @@ export function TranscriptionControls({ collapsed, onExpand, isMinimized }: { co
                         type="button"
                         variant="outline"
                         onClick={handleStartRecording}
-                        disabled={isDesktopRecordingDisabled()}
                         className="h-7 min-w-0 rounded border bg-white px-2 py-0.5 text-xs hover:bg-gray-100"
                       >
                         Start Recording
@@ -223,17 +217,21 @@ export function TranscriptionControls({ collapsed, onExpand, isMinimized }: { co
             </Alert>
           )}
 
-          {/* Mobile Recording Status */}
-          {mobileRecording.isActive && (
-            <Alert variant="default" className="border-blue-200 bg-blue-50 p-1 text-xs">
+          {/* Mobile Recording Status - V2 */}
+          {useMobileV2 && mobileV2.connectedDevices.length > 0 && (
+            <Alert variant="default" className="border-green-200 bg-green-50 p-1 text-xs">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-medium">Mobile recording active</div>
+                  <div className="font-medium">
+                    Mobile V2 connected (
+                    {mobileV2.connectedDevices.length}
+                    )
+                  </div>
                   <div className="text-xs text-muted-foreground">
-                    Desktop recording disabled while mobile session is active
+                    {mobileV2.connectedDevices.map(d => d.deviceName).join(', ')}
                   </div>
                 </div>
-                <div className="size-2 animate-pulse rounded-full bg-blue-500" />
+                <div className="size-2 animate-pulse rounded-full bg-green-500" />
               </div>
             </Alert>
           )}
@@ -258,8 +256,7 @@ export function TranscriptionControls({ collapsed, onExpand, isMinimized }: { co
                     type="button"
                     variant="outline"
                     onClick={handleStartRecording}
-                    disabled={isDesktopRecordingDisabled()}
-                    className="h-7 min-w-0 rounded border bg-white px-1 py-0.5 text-xs hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="h-7 min-w-0 rounded border bg-white px-1 py-0.5 text-xs hover:bg-gray-100"
                   >
                     Start Recording
                   </Button>
@@ -305,16 +302,17 @@ export function TranscriptionControls({ collapsed, onExpand, isMinimized }: { co
                   </Button>
                 )}
                 <Button
-                  onClick={() => setShowMobileRecording(true)}
+                  onClick={handleMobileClick}
                   variant="outline"
                   size="sm"
                   className={getMobileButtonStyle().className}
                   title={getMobileButtonStyle().title}
                 >
                   <Smartphone className="size-3" />
-                  {mobileRecording.isActive && (
+                  {mobileV2.connectedDevices.length > 0 && (
                     <span className="ml-1 size-1.5 animate-pulse rounded-full bg-current" />
                   )}
+
                 </Button>
                 <Button
                   onClick={() => setShowAudioSettings(true)}
@@ -334,21 +332,21 @@ export function TranscriptionControls({ collapsed, onExpand, isMinimized }: { co
             )}
 
             {/* Live transcript stream */}
-            {transcript && (isRecording || chunksCompleted > 0 || mobileRecording.isActive) && (
+            {transcript && (
               <div className="mt-2">
                 <div className="mb-1 text-xs font-medium text-muted-foreground">
-                  {mobileRecording.isActive ? 'Mobile Recording Transcript' : 'Live Transcript'}
+                  {(useMobileV2 && mobileV2.connectedDevices.length > 0) ? 'Mobile V2 Transcript' : 'Live Transcript'}
                   {' '}
                   {isRecording && '(updating as you speak)'}
-                  {mobileRecording.isActive && '(from mobile device)'}
+                  {(useMobileV2 && mobileV2.connectedDevices.length > 0) && '(from mobile V2 device)'}
                 </div>
                 <div className="max-h-64 overflow-y-auto rounded-md bg-muted p-2">
                   <p className="whitespace-pre-wrap text-xs leading-relaxed">{transcript}</p>
                   {isRecording && (
                     <span className="mt-1 inline-block h-3 w-1 animate-pulse bg-blue-500" />
                   )}
-                  {mobileRecording.isActive && !isRecording && (
-                    <span className="mt-1 inline-block h-3 w-1 animate-pulse bg-blue-500" />
+                  {(useMobileV2 && mobileV2.connectedDevices.length > 0) && !isRecording && (
+                    <span className="mt-1 inline-block h-3 w-1 animate-pulse bg-green-500" />
                   )}
                 </div>
               </div>
@@ -385,10 +383,10 @@ export function TranscriptionControls({ collapsed, onExpand, isMinimized }: { co
         onClose={() => setShowAudioSettings(false)}
       />
 
-      {/* Mobile Recording Modal */}
-      <MobileRecordingQR
-        isOpen={showMobileRecording}
-        onClose={() => setShowMobileRecording(false)}
+      {/* Mobile Recording Modal - V2 */}
+      <MobileRecordingQRV2
+        isOpen={showMobileRecordingV2}
+        onClose={() => setShowMobileRecordingV2(false)}
       />
     </Card>
   );

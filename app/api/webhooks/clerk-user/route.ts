@@ -5,7 +5,7 @@ import { users } from '../../../../database/schema/users';
 
 export async function POST(req: Request) {
   try {
-    // TODO: Verify Clerk webhook signature for security
+    // Note: Webhook signature verification should be implemented for production
     const body = await req.json();
     const { id, email_addresses } = body.data;
     const email = email_addresses?.[0]?.email_address;

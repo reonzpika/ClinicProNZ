@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars */
 'use client';
 
 import { Check, Loader2, Mail } from 'lucide-react';
@@ -69,7 +68,7 @@ export const EmailCaptureModal = ({ isOpen, onClose }: EmailCaptureModalProps) =
           whichAITool: '',
         });
       }, 2000);
-    } catch (err) {
+    } catch {
       setError('Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);

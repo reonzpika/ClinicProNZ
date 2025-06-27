@@ -4,7 +4,6 @@ import OpenAI from 'openai';
 import { TemplateService } from '@/features/templates/template-service';
 import { compileTemplate } from '@/features/templates/utils/compileTemplate';
 
-// TODO: Move to config/env util if needed
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 if (!OPENAI_API_KEY) {
   throw new Error('Missing OPENAI_API_KEY');
@@ -15,7 +14,7 @@ const openai = new OpenAI({
   timeout: 45000, // 45 second timeout to stay under Vercel limits
 });
 
-// TODO: Implement structured output for generated notes (e.g., JSON or sections) instead of plain text.
+// Generate clinical notes using AI
 
 export async function POST(req: Request) {
   try {
@@ -59,9 +58,6 @@ export async function POST(req: Request) {
         { role: 'system', content: system },
         { role: 'user', content: user },
       ],
-      // TODO: Add settings e.g. temperature, max_completion_tokens, top_p, frequency_penalty, presence_penalty
-
-      // TODO: Add response_format if structured output is needed
       stream: true,
       max_completion_tokens: 2000, // Limit response length to reduce processing time
       temperature: 0.1,

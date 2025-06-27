@@ -38,12 +38,11 @@ export const AccCodeSuggestions: React.FC = () => {
         body: JSON.stringify({ note: generatedNotes }),
       });
       let data = await res.json();
-      // TODO: Update the API to return a JSON object, not a stringified JSON object
+      // Handle string response from API
       if (typeof data === 'string') {
         try {
           data = JSON.parse(data);
-        // eslint-disable-next-line unused-imports/no-unused-vars
-        } catch (e) {
+        } catch {
           setError('Failed to parse suggestion from API.');
           setLoading(false);
           return;
@@ -159,7 +158,7 @@ export const AccCodeSuggestions: React.FC = () => {
                 )}
           </div>
         )}
-        {/* TODO: Add callback for selection, props for note override, etc. for future extensibility */}
+
       </CardContent>
     </Card>
   );

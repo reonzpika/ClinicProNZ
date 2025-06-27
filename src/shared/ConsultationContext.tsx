@@ -20,6 +20,18 @@ export type ConsultationItem = {
 
 export type InputMode = 'audio' | 'typed';
 
+export type PatientSession = {
+  id: string;
+  patientName: string;
+  status: 'active' | 'completed' | 'archived';
+  transcriptions: string[];
+  notes: string;
+  templateId: string;
+  consultationItems: ConsultationItem[];
+  createdAt: string;
+  completedAt?: string;
+};
+
 export type ConsultationState = {
   sessionId: string;
   templateId: string;
@@ -47,14 +59,20 @@ export type ConsultationState = {
     microphoneGain: number;
     volumeThreshold: number;
   };
-  mobileRecording: {
-    isActive: boolean;
-    tokenGenerated: boolean;
-    qrExpiry: string | null;
-  };
+
   // Consultation notes
   consultationItems: ConsultationItem[];
   consultationNotes: string;
+  // Patient session management (V2)
+  patientSessions: PatientSession[];
+  currentPatientSessionId: string | null;
+  // Mobile V2 state
+  mobileV2: {
+    isEnabled: boolean;
+    token: string | null;
+    connectedDevices: Array<{ deviceId: string; deviceName: string; connectedAt: number }>;
+    connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'error';
+  };
 };
 
 const MULTIPROBLEM_SOAP_UUID = 'ef6b3139-69a0-4b4b-bf80-dcdabe0559ba';
@@ -92,14 +110,20 @@ const defaultState: ConsultationState = {
     microphoneGain: 7.0,
     volumeThreshold: 0.1,
   },
-  mobileRecording: {
-    isActive: false,
-    tokenGenerated: false,
-    qrExpiry: null,
-  },
+
   // Consultation notes defaults
   consultationItems: [],
   consultationNotes: '',
+  // Patient session defaults
+  patientSessions: [],
+  currentPatientSessionId: null,
+  // Mobile V2 defaults
+  mobileV2: {
+    isEnabled: false,
+    token: null,
+    connectedDevices: [],
+    connectionStatus: 'disconnected',
+  },
 };
 
 function generateSessionId() {
@@ -130,18 +154,25 @@ const ConsultationContext = createContext<
     setChatLoading: (loading: boolean) => void;
     setMicrophoneGain: (gain: number) => void;
     setVolumeThreshold: (threshold: number) => void;
-    // Mobile recording functions
-    setMobileRecordingActive: (active: boolean) => void;
-    setMobileTokenGenerated: (generated: boolean, expiry?: string) => void;
-    updateMobileRecordingSettings: (settings: Partial<ConsultationState['settings']>) => void;
-    isDesktopRecordingDisabled: () => boolean;
-    isMobileRecordingDisabled: () => boolean;
-    appendMobileTranscription: (transcript: string, sessionId: string) => void;
+
     // Consultation notes functions
     addConsultationItem: (item: Omit<ConsultationItem, 'id' | 'timestamp'>) => void;
     removeConsultationItem: (itemId: string) => void;
     setConsultationNotes: (notes: string) => void;
     getCompiledConsultationText: () => string;
+    // Patient session management functions
+    createPatientSession: (patientName: string, templateId?: string) => Promise<PatientSession | null>;
+    switchToPatientSession: (sessionId: string) => void;
+    updatePatientSession: (sessionId: string, updates: Partial<PatientSession>) => void;
+    completePatientSession: (sessionId: string) => void;
+    loadPatientSessions: () => Promise<void>;
+    getCurrentPatientSession: () => PatientSession | null;
+    // Mobile V2 functions
+    setMobileV2Token: (token: string | null) => void;
+    setMobileV2ConnectionStatus: (status: 'disconnected' | 'connecting' | 'connected' | 'error') => void;
+    addMobileV2Device: (device: { deviceId: string; deviceName: string; connectedAt: number }) => void;
+    removeMobileV2Device: (deviceId: string) => void;
+    enableMobileV2: (enabled: boolean) => void;
   })
   | null
 >(null);
@@ -163,12 +194,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
           // Ensure new fields have defaults if not present in stored data
           inputMode: parsed.inputMode || 'audio',
           typedInput: parsed.typedInput || '',
-          // Ensure mobileRecording object exists and is properly initialized
-          mobileRecording: parsed.mobileRecording || {
-            isActive: false,
-            tokenGenerated: false,
-            qrExpiry: null,
-          },
+
           // Ensure settings object exists
           settings: parsed.settings || {
             autoSave: false,
@@ -326,63 +352,6 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setState(prev => ({ ...prev, volumeThreshold: threshold }));
   }, []);
 
-  // Mobile recording functions
-  const setMobileRecordingActive = useCallback((active: boolean) => {
-    setState(prev => ({
-      ...prev,
-      mobileRecording: {
-        ...prev.mobileRecording,
-        isActive: active,
-      },
-    }));
-  }, []);
-
-  const setMobileTokenGenerated = useCallback((generated: boolean, expiry?: string) => {
-    setState(prev => ({
-      ...prev,
-      mobileRecording: {
-        ...prev.mobileRecording,
-        tokenGenerated: generated,
-        qrExpiry: expiry || null,
-      },
-    }));
-  }, []);
-
-  const updateMobileRecordingSettings = useCallback((settings: Partial<ConsultationState['settings']>) => {
-    setState(prev => ({
-      ...prev,
-      settings: {
-        ...prev.settings,
-        ...settings,
-      },
-    }));
-  }, []);
-
-  // Check if desktop recording is disabled due to mobile activity
-  const isDesktopRecordingDisabled = useCallback(() => {
-    return state.mobileRecording.isActive;
-  }, [state.mobileRecording.isActive]);
-
-  // Check if mobile recording is disabled due to desktop activity
-  const isMobileRecordingDisabled = useCallback(() => {
-    return state.status === 'recording';
-  }, [state.status]);
-
-  const appendMobileTranscription = useCallback((transcript: string, sessionId: string) => {
-    // Only append if the sessionId matches the current session
-    if (sessionId === state.sessionId) {
-      setState(prev => ({
-        ...prev,
-        transcription: {
-          transcript: prev.transcription.transcript
-            ? `${prev.transcription.transcript} ${transcript}`.trim()
-            : transcript.trim(),
-          isLive: true, // Mark as live since it's coming from mobile
-        },
-      }));
-    }
-  }, [state.sessionId]);
-
   // Consultation notes functions
   const addConsultationItem = useCallback((item: Omit<ConsultationItem, 'id' | 'timestamp'>) => {
     const newItem: ConsultationItem = {
@@ -420,6 +389,128 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [state.consultationItems, state.consultationNotes]);
 
+  // Patient session management functions
+  const createPatientSession = useCallback(async (patientName: string, templateId?: string): Promise<PatientSession | null> => {
+    try {
+      const response = await fetch('/api/patient-sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patientName,
+          templateId: templateId || state.templateId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create patient session');
+      }
+
+      const { session } = await response.json();
+
+      setState(prev => ({
+        ...prev,
+        patientSessions: [...prev.patientSessions, session],
+        currentPatientSessionId: session.id,
+      }));
+
+      return session;
+    } catch (error) {
+      console.error('Error creating patient session:', error);
+      setError('Failed to create patient session');
+      return null;
+    }
+  }, [state.templateId]);
+
+  const switchToPatientSession = useCallback((sessionId: string) => {
+    setState(prev => ({
+      ...prev,
+      currentPatientSessionId: sessionId,
+    }));
+  }, []);
+
+  const updatePatientSession = useCallback((sessionId: string, updates: Partial<PatientSession>) => {
+    setState(prev => ({
+      ...prev,
+      patientSessions: prev.patientSessions.map(session =>
+        session.id === sessionId ? { ...session, ...updates } : session,
+      ),
+    }));
+  }, []);
+
+  const completePatientSession = useCallback((sessionId: string) => {
+    updatePatientSession(sessionId, {
+      status: 'completed',
+      completedAt: new Date().toISOString(),
+    });
+  }, [updatePatientSession]);
+
+  const loadPatientSessions = useCallback(async () => {
+    try {
+      const response = await fetch('/api/patient-sessions');
+      if (response.ok) {
+        const { sessions } = await response.json();
+        setState(prev => ({
+          ...prev,
+          patientSessions: sessions,
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading patient sessions:', error);
+    }
+  }, []);
+
+  const getCurrentPatientSession = useCallback(() => {
+    if (!state.currentPatientSessionId) {
+      return null;
+    }
+    return state.patientSessions.find(session => session.id === state.currentPatientSessionId) || null;
+  }, [state.currentPatientSessionId, state.patientSessions]);
+
+  // Mobile V2 functions
+  const setMobileV2Token = useCallback((token: string | null) => {
+    setState(prev => ({
+      ...prev,
+      mobileV2: { ...prev.mobileV2, token },
+    }));
+  }, []);
+
+  const setMobileV2ConnectionStatus = useCallback((status: 'disconnected' | 'connecting' | 'connected' | 'error') => {
+    setState(prev => ({
+      ...prev,
+      mobileV2: { ...prev.mobileV2, connectionStatus: status },
+    }));
+  }, []);
+
+  const addMobileV2Device = useCallback((device: { deviceId: string; deviceName: string; connectedAt: number }) => {
+    setState(prev => ({
+      ...prev,
+      mobileV2: {
+        ...prev.mobileV2,
+        connectedDevices: [
+          ...prev.mobileV2.connectedDevices.filter(d => d.deviceId !== device.deviceId),
+          device,
+        ],
+      },
+    }));
+  }, []);
+
+  const removeMobileV2Device = useCallback((deviceId: string) => {
+    setState(prev => ({
+      ...prev,
+      mobileV2: {
+        ...prev.mobileV2,
+        connectedDevices: prev.mobileV2.connectedDevices.filter(d => d.deviceId !== deviceId),
+      },
+    }));
+  }, []);
+
+  const enableMobileV2 = useCallback((enabled: boolean) => {
+    setState(prev => ({
+      ...prev,
+      mobileV2: { ...prev.mobileV2, isEnabled: enabled },
+    }));
+  }, []);
+
   const value = useMemo(() => ({
     ...state,
     setStatus,
@@ -447,18 +538,25 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setChatLoading,
     setMicrophoneGain,
     setVolumeThreshold,
-    // Mobile recording functions
-    setMobileRecordingActive,
-    setMobileTokenGenerated,
-    updateMobileRecordingSettings,
-    isDesktopRecordingDisabled,
-    isMobileRecordingDisabled,
-    appendMobileTranscription,
+
     // Consultation notes functions
     addConsultationItem,
     removeConsultationItem,
     setConsultationNotes,
     getCompiledConsultationText,
+    // Patient session functions
+    createPatientSession,
+    switchToPatientSession,
+    updatePatientSession,
+    completePatientSession,
+    loadPatientSessions,
+    getCurrentPatientSession,
+    // Mobile V2 functions
+    setMobileV2Token,
+    setMobileV2ConnectionStatus,
+    addMobileV2Device,
+    removeMobileV2Device,
+    enableMobileV2,
   }), [
     state,
     setStatus,
@@ -482,16 +580,21 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setChatLoading,
     setMicrophoneGain,
     setVolumeThreshold,
-    setMobileRecordingActive,
-    setMobileTokenGenerated,
-    updateMobileRecordingSettings,
-    isDesktopRecordingDisabled,
-    isMobileRecordingDisabled,
-    appendMobileTranscription,
     addConsultationItem,
     removeConsultationItem,
     setConsultationNotes,
     getCompiledConsultationText,
+    createPatientSession,
+    switchToPatientSession,
+    updatePatientSession,
+    completePatientSession,
+    loadPatientSessions,
+    getCurrentPatientSession,
+    setMobileV2Token,
+    setMobileV2ConnectionStatus,
+    addMobileV2Device,
+    removeMobileV2Device,
+    enableMobileV2,
   ]);
 
   return (

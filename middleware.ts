@@ -13,30 +13,6 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
   }
 
-  // Allow POST requests to /api/recording/validate-token for token validation
-  if (
-    req.method === 'POST'
-    && req.nextUrl.pathname === '/api/recording/validate-token'
-  ) {
-    return NextResponse.next();
-  }
-
-  // Allow POST requests to /api/recording/generate-token for QR generation
-  if (
-    req.method === 'POST'
-    && req.nextUrl.pathname === '/api/recording/generate-token'
-  ) {
-    return NextResponse.next();
-  }
-
-  // Allow POST requests to /api/recording/mobile-upload for mobile recording
-  if (
-    req.method === 'POST'
-    && req.nextUrl.pathname === '/api/recording/mobile-upload'
-  ) {
-    return NextResponse.next();
-  }
-
   // Protect all other /api/templates routes (POST, PUT, DELETE)
   if (req.nextUrl.pathname.startsWith('/api/templates')) {
     const resolvedAuth = await auth();
@@ -45,8 +21,24 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // Protect /api/recording routes except validate-token
-  if (req.nextUrl.pathname.startsWith('/api/recording')) {
+  // Protect /api/patient-sessions routes
+  if (req.nextUrl.pathname.startsWith('/api/patient-sessions')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return resolvedAuth.redirectToSignIn();
+    }
+  }
+
+  // Protect /api/mobile routes
+  if (req.nextUrl.pathname.startsWith('/api/mobile')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return resolvedAuth.redirectToSignIn();
+    }
+  }
+
+  // Protect /api/ws routes
+  if (req.nextUrl.pathname.startsWith('/api/ws')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
       return resolvedAuth.redirectToSignIn();
@@ -68,7 +60,10 @@ export const config = {
   matcher: [
     '/api/templates/:path*',
     '/api/user/:path*',
-    '/api/recording/:path*',
+
+    '/api/patient-sessions/:path*',
+    '/api/mobile/:path*',
+    '/api/ws/:path*',
     '/templates/:path*',
   ],
 };

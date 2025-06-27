@@ -12,25 +12,25 @@ import { useConsultation } from '@/shared/ConsultationContext';
 
 type QRTokenData = {
   token: string;
-  url: string;
+  mobileUrl: string;
   expiresAt: string;
 };
 
-type MobileRecordingQRProps = {
+type MobileRecordingQRV2Props = {
   isOpen: boolean;
   onClose: () => void;
 };
 
-export const MobileRecordingQR: React.FC<MobileRecordingQRProps> = ({ isOpen, onClose }) => {
+export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
+  isOpen,
+  onClose,
+}) => {
   const { isSignedIn, userId } = useAuth();
-  const {
-    sessionId,
-    setMobileRecordingActive,
-    setMobileTokenGenerated,
-    mobileRecording,
-    isMobileRecordingDisabled,
-  } = useConsultation();
+  const { mobileV2, setMobileV2Token, enableMobileV2 } = useConsultation();
 
+  // Get connected devices and status from context
+  const connectedDevices = mobileV2.connectedDevices;
+  const connectionStatus = mobileV2.connectionStatus;
   const [qrData, setQrData] = useState<QRTokenData | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,14 +50,17 @@ export const MobileRecordingQR: React.FC<MobileRecordingQRProps> = ({ isOpen, on
 
       setTimeRemaining(remaining);
 
-      // Show warning if less than 30 minutes remaining
-      setShowExpiryWarning(remaining > 0 && remaining < 1800);
+      // Show warning if less than 2 hours remaining (24hr token)
+      setShowExpiryWarning(remaining > 0 && remaining < 7200);
 
       // Auto-refresh if expired
       if (remaining <= 0 && qrData) {
         setQrData(null);
-        setMobileTokenGenerated(false);
         setError('QR code has expired. Please generate a new one.');
+
+        // Clear token from consultation context
+        setMobileV2Token(null);
+        enableMobileV2(false);
       }
     };
 
@@ -65,14 +68,9 @@ export const MobileRecordingQR: React.FC<MobileRecordingQRProps> = ({ isOpen, on
     const interval = setInterval(updateTimer, 1000);
 
     return () => clearInterval(interval);
-  }, [qrData, setMobileTokenGenerated]);
+  }, [qrData]);
 
   const generateToken = useCallback(async () => {
-    if (!sessionId) {
-      setError('No active session found');
-      return;
-    }
-
     if (!isSignedIn || !userId) {
       setError('Please sign in to generate QR code for mobile recording');
       return;
@@ -82,10 +80,9 @@ export const MobileRecordingQR: React.FC<MobileRecordingQRProps> = ({ isOpen, on
     setError(null);
 
     try {
-      const response = await fetch('/api/recording/generate-token', {
+      const response = await fetch('/api/mobile/generate-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId }),
       });
 
       if (!response.ok) {
@@ -93,29 +90,31 @@ export const MobileRecordingQR: React.FC<MobileRecordingQRProps> = ({ isOpen, on
         throw new Error(errorData.error || 'Failed to generate token');
       }
 
-      const { token, expiresAt } = await response.json();
-      const url = `${window.location.origin}/record?sessId=${sessionId}&token=${token}`;
+      const { token, mobileUrl, expiresAt } = await response.json();
 
-      const tokenData = { token, url, expiresAt };
+      const tokenData = { token, mobileUrl, expiresAt };
       setQrData(tokenData);
-      setMobileTokenGenerated(true, expiresAt);
-      setMobileRecordingActive(true);
+
+      // Set token in consultation context for WebSocket sync
+      setMobileV2Token(token);
+      enableMobileV2(true);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate QR code';
       setError(errorMessage);
       setQrData(null);
-      setMobileTokenGenerated(false);
     } finally {
       setIsGenerating(false);
     }
-  }, [sessionId, setMobileTokenGenerated, setMobileRecordingActive, isSignedIn, userId]);
+  }, [isSignedIn, userId]);
 
   const stopMobileRecording = useCallback(() => {
     setQrData(null);
-    setMobileTokenGenerated(false);
-    setMobileRecordingActive(false);
     setError(null);
-  }, [setMobileTokenGenerated, setMobileRecordingActive]);
+
+    // Clear token from consultation context
+    setMobileV2Token(null);
+    enableMobileV2(false);
+  }, [setMobileV2Token, enableMobileV2]);
 
   const formatTimeRemaining = (seconds: number) => {
     if (seconds <= 0) {
@@ -136,7 +135,7 @@ export const MobileRecordingQR: React.FC<MobileRecordingQRProps> = ({ isOpen, on
   };
 
   const isExpired = timeRemaining <= 0 && qrData;
-  const isExpiringSoon = timeRemaining > 0 && timeRemaining < 1800; // 30 minutes
+  const isExpiringSoon = timeRemaining > 0 && timeRemaining < 7200; // 2 hours
 
   const handleSignIn = () => {
     window.location.href = '/login';
@@ -148,7 +147,12 @@ export const MobileRecordingQR: React.FC<MobileRecordingQRProps> = ({ isOpen, on
         <DialogHeader className="pb-4">
           <DialogTitle className="flex items-center gap-2 text-lg font-semibold text-gray-900">
             <Smartphone className="size-5 text-gray-700" />
-            Mobile Recording
+            Mobile Recording V2
+            {false && ( // Debug info disabled
+              <span className="rounded bg-blue-100 px-2 py-1 text-xs text-blue-700">
+                Beta
+              </span>
+            )}
           </DialogTitle>
         </DialogHeader>
 
@@ -164,36 +168,30 @@ export const MobileRecordingQR: React.FC<MobileRecordingQRProps> = ({ isOpen, on
             </Alert>
           )}
 
-          {/* Desktop Recording Status */}
-          {isMobileRecordingDisabled() && (
-            <Alert>
-              <AlertTriangle className="size-4" />
+          {/* Connected Devices Status */}
+          {connectedDevices.length > 0 && (
+            <Alert className="border-green-200 bg-green-50">
+              <CheckCircle className="size-4 text-green-600" />
               <div>
-                <div className="font-medium">Desktop recording active</div>
-                <div className="text-sm">Stop desktop recording to enable mobile recording</div>
+                <div className="font-medium text-green-800">
+                  {connectedDevices.length}
+                  {' '}
+                  device(s) connected
+                </div>
+                <div className="text-sm text-green-700">
+                  {connectedDevices.map(device => device.deviceName).join(', ')}
+                </div>
               </div>
             </Alert>
           )}
 
-          {/* Mobile Recording Status */}
-          {mobileRecording.isActive && !isExpired && (
-            <Alert className={isExpiringSoon ? 'border-orange-200 bg-orange-50' : 'border-green-200 bg-green-50'}>
-              <div className="flex items-center space-x-2">
-                {isExpiringSoon
-                  ? (
-                      <Clock className="size-4 text-orange-600" />
-                    )
-                  : (
-                      <CheckCircle className="size-4 text-green-600" />
-                    )}
-                <div>
-                  <div className="font-medium">
-                    {isExpiringSoon ? 'Mobile recording expires soon' : 'Mobile recording ready'}
-                  </div>
-                  <div className="text-sm">
-                    {formatTimeRemaining(timeRemaining)}
-                  </div>
-                </div>
+          {/* Connection Status */}
+          {connectionStatus === 'connecting' && (
+            <Alert className="border-yellow-200 bg-yellow-50">
+              <Clock className="size-4 text-yellow-600" />
+              <div>
+                <div className="font-medium text-yellow-800">Waiting for mobile connection</div>
+                <div className="text-sm text-yellow-700">Scan QR code to connect</div>
               </div>
             </Alert>
           )}
@@ -221,12 +219,12 @@ export const MobileRecordingQR: React.FC<MobileRecordingQRProps> = ({ isOpen, on
             </Alert>
           )}
 
-          {/* QR Code Display - Optimized for Modal */}
+          {/* QR Code Display */}
           {qrData && !isExpired && (
             <div className="flex flex-col items-center space-y-3">
               <div className="rounded-lg border-2 border-gray-200 bg-white p-3">
                 <QRCodeSVG
-                  value={qrData.url}
+                  value={qrData.mobileUrl}
                   size={160}
                   level="M"
                   includeMargin
@@ -235,12 +233,11 @@ export const MobileRecordingQR: React.FC<MobileRecordingQRProps> = ({ isOpen, on
               </div>
               <div className="space-y-2 text-center">
                 <p className="text-sm text-gray-600">
-                  Scan with your mobile device to start recording
+                  Scan with your mobile device to connect
                 </p>
                 <div className="space-y-1 text-xs text-gray-500">
                   <div>
-                    Session:
-                    <span className="ml-1 font-mono text-xs">{sessionId}</span>
+                    24-hour access token
                   </div>
                   <div className={`font-medium ${isExpiringSoon ? 'text-orange-600' : 'text-gray-600'}`}>
                     {formatTimeRemaining(timeRemaining)}
@@ -263,7 +260,7 @@ export const MobileRecordingQR: React.FC<MobileRecordingQRProps> = ({ isOpen, on
                   ? (
                       <Button
                         onClick={generateToken}
-                        disabled={isGenerating || isMobileRecordingDisabled()}
+                        disabled={isGenerating}
                         className="flex-1"
                       >
                         {isGenerating
@@ -305,22 +302,22 @@ export const MobileRecordingQR: React.FC<MobileRecordingQRProps> = ({ isOpen, on
                         </Button>
 
                         <Button onClick={stopMobileRecording} variant="outline" className="flex-1">
-                          Stop Mobile Recording
+                          Disconnect Devices
                         </Button>
                       </>
                     )}
           </div>
 
-          {/* Instructions - Compact for Modal */}
+          {/* Instructions */}
           <div className="rounded-lg bg-blue-50 p-3">
-            <h4 className="mb-2 text-sm font-medium text-blue-800">Quick Setup:</h4>
-            <ol className="space-y-1 text-xs text-blue-700">
-              <li>1. Generate QR code above</li>
-              <li>2. Scan with your phone camera</li>
-              <li>3. Allow microphone access</li>
-              <li>4. Start recording on mobile</li>
-              <li>5. Transcription syncs automatically</li>
-            </ol>
+            <h4 className="mb-2 text-sm font-medium text-blue-800">New Features:</h4>
+            <ul className="space-y-1 text-xs text-blue-700">
+              <li>✨ Real-time transcription sync</li>
+              <li>✨ 24-hour persistent connection</li>
+              <li>✨ Multiple device support</li>
+              <li>✨ Better connection stability</li>
+              <li>✨ Patient session awareness</li>
+            </ul>
           </div>
 
           {/* Close button */}

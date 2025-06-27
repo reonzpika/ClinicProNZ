@@ -7,9 +7,6 @@ type TranscriptionState = {
   isPaused: boolean;
   isTranscribing: boolean;
   error: string | null;
-  audioBlob: Blob | null;
-  paragraphs: any[];
-  metadata: any;
   volumeLevel: number;
   noInputWarning: boolean;
   chunksCompleted: number;
@@ -41,9 +38,6 @@ export const useTranscription = () => {
     isPaused: false,
     isTranscribing: false,
     error: null,
-    audioBlob: null,
-    paragraphs: [],
-    metadata: {},
     volumeLevel: 0,
     noInputWarning: false,
     chunksCompleted: 0,
@@ -178,8 +172,7 @@ export const useTranscription = () => {
 
       currentRecorderRef.current = mediaRecorder;
       mediaRecorder.start(); // Record everything in one session
-    // eslint-disable-next-line unused-imports/no-unused-vars
-    } catch (error: any) {
+    } catch {
       isSessionActiveRef.current = false;
     }
   }, [sendRecordingSession]);
@@ -369,7 +362,6 @@ export const useTranscription = () => {
       }));
 
       setStatus('recording');
-      setTranscription('', true);
       setError(null);
 
       // Reset session management
@@ -440,9 +432,6 @@ export const useTranscription = () => {
       isPaused: false,
       isTranscribing: false,
       error: null,
-      audioBlob: null,
-      paragraphs: [],
-      metadata: {},
       volumeLevel: 0,
       noInputWarning: false,
       chunksCompleted: 0,
@@ -454,11 +443,6 @@ export const useTranscription = () => {
     setTranscription('', false);
     setError(null);
   }, [cleanupAudio, setStatus, setTranscription, setError]);
-
-  // Legacy method for compatibility
-  const transcribeAudio = useCallback(async () => {
-    // Not used in new session-based strategy
-  }, []);
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -475,9 +459,6 @@ export const useTranscription = () => {
     isTranscribing: state.isTranscribing,
     transcript: transcription.transcript,
     error: state.error,
-    audioBlob: state.audioBlob,
-    paragraphs: state.paragraphs,
-    metadata: state.metadata,
     volumeLevel: state.volumeLevel,
     noInputWarning: state.noInputWarning,
     chunksCompleted: state.chunksCompleted,
@@ -488,9 +469,6 @@ export const useTranscription = () => {
     stopRecording,
     pauseRecording,
     resumeRecording,
-    transcribeAudio,
     resetTranscription,
-    // Legacy properties for compatibility with TranscriptionControls
-    chunkTranscripts: [], // No longer used but kept for compatibility
   };
 };

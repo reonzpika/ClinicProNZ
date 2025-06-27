@@ -88,12 +88,7 @@ export class ErrorRecoveryService {
 
   private async handleTemplateError(): Promise<boolean> {
     try {
-      // TODO: Implement template error recovery logic if needed
-      // const lastTemplateId = await TemplateService.getLastUsedTemplate();
-      // if (lastTemplateId) {
-      //   await TemplateService.persistTemplateSelection(lastTemplateId);
-      //   return true;
-      // }
+      // Template error recovery not implemented yet
       return false;
     } catch (error) {
       console.error('Template error recovery failed:', error);
