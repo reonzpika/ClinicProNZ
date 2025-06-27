@@ -2,7 +2,7 @@
 
 import { AlertTriangle, CheckCircle, Mic, MicOff, Phone, Smartphone, Wifi, WifiOff } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 import { useWebSocketSync } from '@/features/consultation/hooks/useWebSocketSync';
 import { Alert } from '@/shared/components/ui/alert';
@@ -24,7 +24,25 @@ type MobilePageState = {
   chunksUploaded: number;
 };
 
-export default function MobilePage() {
+// Loading component for Suspense fallback
+function MobilePageLoading() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <Smartphone className="mx-auto size-12 text-blue-600" />
+          <CardTitle>Loading Mobile Recording</CardTitle>
+        </CardHeader>
+        <CardContent className="text-center">
+          <p className="text-gray-600">Please wait while we prepare your mobile recording session...</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Main mobile page component that uses useSearchParams
+function MobilePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [state, setState] = useState<MobilePageState>({
@@ -467,5 +485,14 @@ export default function MobilePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Export the wrapped component with Suspense boundary
+export default function MobilePage() {
+  return (
+    <Suspense fallback={<MobilePageLoading />}>
+      <MobilePageContent />
+    </Suspense>
   );
 }
