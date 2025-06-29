@@ -41,34 +41,11 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // Protect /api/mobile routes except for token validation
-  if (req.nextUrl.pathname.startsWith('/api/mobile')) {
-    // Allow mobile token validation without authentication
-    if (req.nextUrl.pathname === '/api/mobile/validate-token') {
-      return NextResponse.next();
-    }
+  // Allow /api/mobile routes to handle their own authentication (mobile token validation)
+  // Allow /api/ably routes to handle their own authentication (supports both Clerk and mobile tokens)
+  // Allow /api/ws routes to handle their own authentication
 
-    const resolvedAuth = await auth();
-    if (!resolvedAuth.userId) {
-      return returnUnauthorized();
-    }
-  }
-
-  // Protect /api/ws routes
-  if (req.nextUrl.pathname.startsWith('/api/ws')) {
-    const resolvedAuth = await auth();
-    if (!resolvedAuth.userId) {
-      return returnUnauthorized();
-    }
-  }
-
-  // Protect /api/ably routes
-  if (req.nextUrl.pathname.startsWith('/api/ably')) {
-    const resolvedAuth = await auth();
-    if (!resolvedAuth.userId) {
-      return returnUnauthorized();
-    }
-  }
+  // Note: These routes have their own authentication logic that supports mobile tokens
 
   // Protect /templates page - redirect to login if not authenticated
   if (req.nextUrl.pathname.startsWith('/templates')) {
@@ -86,9 +63,7 @@ export const config = {
     '/api/templates/:path*',
     '/api/user/:path*',
     '/api/patient-sessions/:path*',
-    '/api/mobile/:path*',
-    '/api/ws/:path*',
-    '/api/ably/:path*',
     '/templates/:path*',
+    // Note: /api/mobile, /api/ws, and /api/ably handle their own authentication
   ],
 };

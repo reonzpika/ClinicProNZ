@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 import { db } from '@/client';
-import { mobileTokens } from '@/schema';
+import { mobileTokens } from '@/schema/mobile_tokens';
 
 export async function POST(req: Request) {
   try {
@@ -27,12 +27,12 @@ export async function POST(req: Request) {
 
     // Check if token is expired
     if (tokenData.expiresAt < new Date()) {
-      return NextResponse.json({ error: 'Token has expired' }, { status: 401 });
+      return NextResponse.json({ error: 'Token expired' }, { status: 401 });
     }
 
     // Check if token is active
     if (!tokenData.isActive) {
-      return NextResponse.json({ error: 'Token has been deactivated' }, { status: 401 });
+      return NextResponse.json({ error: 'Token inactive' }, { status: 401 });
     }
 
     // Update last used timestamp
@@ -41,6 +41,7 @@ export async function POST(req: Request) {
       .set({ lastUsedAt: new Date() })
       .where(eq(mobileTokens.token, token));
 
+    // Return token validation success with user info
     return NextResponse.json({
       valid: true,
       userId: tokenData.userId,
@@ -48,6 +49,6 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error('Mobile token validation error:', error);
-    return NextResponse.json({ error: 'Failed to validate token' }, { status: 500 });
+    return NextResponse.json({ error: 'Token validation failed' }, { status: 500 });
   }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, CheckCircle, Mic, MicOff, Phone, Smartphone, Wifi } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Mic, MicOff, Phone, Smartphone, Wifi, WifiOff } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
@@ -62,6 +62,42 @@ function MobilePageContent() {
 
   // Extract and validate token from URL
   useEffect(() => {
+    const validateToken = async (tokenToValidate: string) => {
+      try {
+        const response = await fetch('/api/mobile/validate-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: tokenToValidate }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Token validation failed');
+        }
+
+        const { valid, userId: _userId } = await response.json();
+        if (!valid) {
+          throw new Error('Invalid token');
+        }
+
+        // Token is valid - set it in state
+        setState(prev => ({
+          ...prev,
+          token: tokenToValidate,
+          error: null,
+          isValidatingToken: false,
+        }));
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Token validation failed';
+        setState(prev => ({
+          ...prev,
+          error: `Authentication failed: ${errorMessage}. Please scan a new QR code.`,
+          token: null,
+          isValidatingToken: false,
+        }));
+      }
+    };
+
     const token = searchParams.get('token');
     if (!token) {
       setState(prev => ({
@@ -72,49 +108,8 @@ function MobilePageContent() {
       return;
     }
 
-    // Validate the token with the backend
-    const validateToken = async () => {
-      try {
-        console.error('🔍 Validating mobile token:', token);
-        const response = await fetch('/api/mobile/validate-token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token }),
-        });
-
-        console.error('📡 Token validation response status:', response.status);
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error('❌ Token validation failed:', errorData);
-          throw new Error(errorData.error || 'Invalid token');
-        }
-
-        const { valid, userId, expiresAt } = await response.json();
-        console.error('✅ Token validation successful:', { valid, userId, expiresAt });
-
-        if (!valid) {
-          throw new Error('Token validation failed');
-        }
-
-        setState(prev => ({
-          ...prev,
-          token,
-          isValidatingToken: false,
-          error: null,
-        }));
-      } catch (error) {
-        console.error('💥 Token validation error:', error);
-        setState(prev => ({
-          ...prev,
-          error: error instanceof Error ? error.message : 'Token validation failed',
-          isValidatingToken: false,
-          token: null,
-        }));
-      }
-    };
-
-    validateToken();
+    // Validate the token with the server
+    validateToken(token);
   }, [searchParams]);
 
   // Ably connection for real-time sync
@@ -126,7 +121,6 @@ function MobilePageContent() {
     token: state.token || undefined,
     isDesktop: false, // This is a mobile device
     onPatientSwitched: useCallback((patientSessionId: string, patientName?: string) => {
-      console.error('📱 Patient switched:', { patientSessionId, patientName });
       setState(prev => ({
         ...prev,
         currentPatientSessionId: patientSessionId,
@@ -134,16 +128,12 @@ function MobilePageContent() {
       }));
     }, []),
     onError: useCallback((error: string | null) => {
-      console.error('📱 Ably connection error:', error);
-
       // Filter out Ably configuration errors - these are expected when Ably is not configured
       if (error && (
         error.includes('Failed to create Ably connection')
         || error.includes('Failed to connect to Ably')
         || error.includes('Ably service not configured')
-        || error.includes('Failed to get user ID')
       )) {
-        console.error('📱 Treating as Ably not configured, not showing to user');
         return; // Don't show these as errors to users
       }
 
@@ -163,17 +153,8 @@ function MobilePageContent() {
   const hasConnectionError = connectionState.status === 'error';
   const isAblyDisconnected = connectionState.status === 'disconnected';
 
-  console.error('📱 Connection state:', {
-    status: connectionState.status,
-    isConnected,
-    isConnecting,
-    hasConnectionError,
-    isAblyDisconnected,
-  });
-
   // Consider mobile functional if either connected to Ably OR Ably is simply not configured
-  // We prioritize functionality over real-time sync
-  const isMobileFunctional = !state.isValidatingToken && !state.error;
+  const isMobileFunctional = isConnected || isAblyDisconnected;
 
   // Simple recording state management (WebSocket-based)
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
@@ -370,26 +351,40 @@ function MobilePageContent() {
 
           {/* Connection Status */}
           <div className="flex items-center space-x-2">
-            {isMobileFunctional
+            {isConnected
               ? (
                   <>
-                    <CheckCircle className="size-5 text-green-600" />
-                    <span className="text-sm font-medium text-green-600">Ready</span>
+                    <Wifi className="size-5 text-green-600" />
+                    <span className="text-sm font-medium text-green-600">Connected</span>
                   </>
                 )
-              : state.isValidatingToken
+              : hasConnectionError
                 ? (
                     <>
-                      <Wifi className="size-5 text-yellow-600" />
-                      <span className="text-sm font-medium text-yellow-600">Validating...</span>
-                    </>
-                  )
-                : (
-                    <>
-                      <AlertTriangle className="size-5 text-red-600" />
+                      <WifiOff className="size-5 text-red-600" />
                       <span className="text-sm font-medium text-red-600">Error</span>
                     </>
-                  )}
+                  )
+                : isConnecting
+                  ? (
+                      <>
+                        <Wifi className="size-5 text-yellow-600" />
+                        <span className="text-sm font-medium text-yellow-600">Connecting...</span>
+                      </>
+                    )
+                  : isAblyDisconnected
+                    ? (
+                        <>
+                          <Wifi className="size-5 text-blue-600" />
+                          <span className="text-sm font-medium text-blue-600">Ready</span>
+                        </>
+                      )
+                    : (
+                        <>
+                          <WifiOff className="size-5 text-gray-400" />
+                          <span className="text-sm font-medium text-gray-400">Disconnected</span>
+                        </>
+                      )}
           </div>
         </div>
       </div>
@@ -426,7 +421,16 @@ function MobilePageContent() {
           </Alert>
         )}
 
-        {/* Note: Connection errors are not shown to users as real-time sync is optional */}
+        {/* Connection Error - only show for actual errors, not configuration issues */}
+        {hasConnectionError && connectionState.error && !connectionState.error.includes('Failed to create connection') && (
+          <Alert variant="destructive">
+            <WifiOff className="size-4" />
+            <div>
+              <div className="font-medium">Connection Failed</div>
+              <div className="text-sm">{connectionState.error}</div>
+            </div>
+          </Alert>
+        )}
 
         {/* Recording Status */}
         {(isRecording || isPaused || isTranscribing) && (
