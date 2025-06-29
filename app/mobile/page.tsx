@@ -62,42 +62,6 @@ function MobilePageContent() {
 
   // Extract and validate token from URL
   useEffect(() => {
-    const validateToken = async (tokenToValidate: string) => {
-      try {
-        const response = await fetch('/api/mobile/validate-token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: tokenToValidate }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Token validation failed');
-        }
-
-        const { valid, userId: _userId } = await response.json();
-        if (!valid) {
-          throw new Error('Invalid token');
-        }
-
-        // Token is valid - set it in state
-        setState(prev => ({
-          ...prev,
-          token: tokenToValidate,
-          error: null,
-          isValidatingToken: false,
-        }));
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Token validation failed';
-        setState(prev => ({
-          ...prev,
-          error: `Authentication failed: ${errorMessage}. Please scan a new QR code.`,
-          token: null,
-          isValidatingToken: false,
-        }));
-      }
-    };
-
     const token = searchParams.get('token');
     if (!token) {
       setState(prev => ({
@@ -108,8 +72,52 @@ function MobilePageContent() {
       return;
     }
 
-    // Validate the token with the server
-    validateToken(token);
+    // Validate token by attempting to get Ably token
+    const validateToken = async () => {
+      try {
+        setState(prev => ({ ...prev, token, isValidatingToken: true }));
+
+        const url = new URL('/api/ably/token', window.location.origin);
+        url.searchParams.set('token', token);
+
+        const response = await fetch(url.toString(), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error('Invalid or expired QR code. Please generate a new one.');
+          } else if (response.status === 503) {
+            // Ably not configured - mobile can still work for basic recording
+            setState(prev => ({
+              ...prev,
+              isValidatingToken: false,
+            }));
+            return;
+          } else {
+            throw new Error('Token validation failed. Please try again.');
+          }
+        }
+
+        // Token is valid
+        setState(prev => ({
+          ...prev,
+          isValidatingToken: false,
+          error: null,
+        }));
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Token validation failed';
+        setState(prev => ({
+          ...prev,
+          error: errorMessage,
+          isValidatingToken: false,
+          token: null, // Clear invalid token
+        }));
+      }
+    };
+
+    validateToken();
   }, [searchParams]);
 
   // Ably connection for real-time sync
@@ -224,6 +232,16 @@ function MobilePageContent() {
 
   // Handle recording controls
   const handleStartRecording = useCallback(async () => {
+    if (!state.token) {
+      setState(prev => ({ ...prev, error: 'No valid token. Please scan a new QR code.' }));
+      return;
+    }
+
+    if (state.isValidatingToken) {
+      setState(prev => ({ ...prev, error: 'Please wait for token validation to complete.' }));
+      return;
+    }
+
     if (!isMobileFunctional && hasConnectionError) {
       setState(prev => ({ ...prev, error: 'Connection error. Please try refreshing the page.' }));
       return;
@@ -483,12 +501,12 @@ function MobilePageContent() {
                 ? (
                     <Button
                       onClick={handleStartRecording}
-                      disabled={!isMobileFunctional || state.isValidatingToken}
+                      disabled={!isMobileFunctional || state.isValidatingToken || !state.token}
                       className="h-16 w-full text-lg"
                       size="lg"
                     >
                       <Mic className="mr-2 size-6" />
-                      Start Recording
+                      {state.isValidatingToken ? 'Validating Token...' : 'Start Recording'}
                     </Button>
                   )
                 : (
