@@ -95,9 +95,33 @@ function MobilePageContent() {
       }));
     }, []),
     onError: useCallback((error: string | null) => {
-      setState(prev => ({ ...prev, error }));
+      // Filter out Ably configuration errors - these are expected when Ably is not configured
+      if (error && (
+        error.includes('Failed to create Ably connection')
+        || error.includes('Failed to connect to Ably')
+        || error.includes('Ably service not configured')
+      )) {
+        return; // Don't show these as errors to users
+      }
+
+      // Only show actual errors that users need to know about
+      if (error) {
+        setState(prev => ({ ...prev, error }));
+      } else {
+        // Clear error when null is passed
+        setState(prev => ({ ...prev, error: null }));
+      }
     }, []),
   });
+
+  // Connection status - treat 'disconnected' as acceptable when Ably is not configured
+  const isConnected = connectionState.status === 'connected';
+  const isConnecting = connectionState.status === 'connecting';
+  const hasConnectionError = connectionState.status === 'error';
+  const isAblyDisconnected = connectionState.status === 'disconnected';
+
+  // Consider mobile functional if either connected to Ably OR Ably is simply not configured
+  const isMobileFunctional = isConnected || isAblyDisconnected;
 
   // Simple recording state management (WebSocket-based)
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
@@ -125,18 +149,27 @@ function MobilePageContent() {
       const { transcript } = await response.json();
 
       if (transcript && transcript.trim()) {
-        // Send via WebSocket (now async)
-        try {
-          await sendTranscription(transcript.trim(), state.currentPatientSessionId || undefined);
+        // Send via Ably if available
+        if (isConnected) {
+          try {
+            await sendTranscription(transcript.trim(), state.currentPatientSessionId || undefined);
+            setState(prev => ({
+              ...prev,
+              chunksUploaded: prev.chunksUploaded + 1,
+            }));
+          } catch (error) {
+            console.warn('Failed to send transcription:', error);
+            setState(prev => ({
+              ...prev,
+              error: 'Failed to send transcription to desktop. Connection may be lost.',
+            }));
+          }
+        } else {
+          // Ably not available - just count the transcription
+          // console.info('Transcription processed:', transcript.trim());
           setState(prev => ({
             ...prev,
             chunksUploaded: prev.chunksUploaded + 1,
-          }));
-        } catch (error) {
-          console.warn('Failed to send transcription:', error);
-          setState(prev => ({
-            ...prev,
-            error: 'Failed to send transcription to desktop. Connection may be lost.',
           }));
         }
       }
@@ -149,12 +182,7 @@ function MobilePageContent() {
     } finally {
       setState(prev => ({ ...prev, isTranscribing: false }));
     }
-  }, [sendTranscription, state.currentPatientSessionId]);
-
-  // Connection status
-  const isConnected = connectionState.status === 'connected';
-  const isConnecting = connectionState.status === 'connecting';
-  const hasConnectionError = connectionState.status === 'error';
+  }, [sendTranscription, state.currentPatientSessionId, isConnected]);
 
   // Recording status
   const isRecording = state.isRecording && !state.isPaused;
@@ -163,8 +191,8 @@ function MobilePageContent() {
 
   // Handle recording controls
   const handleStartRecording = useCallback(async () => {
-    if (!isConnected) {
-      setState(prev => ({ ...prev, error: 'Not connected to desktop. Please check connection.' }));
+    if (!isMobileFunctional && hasConnectionError) {
+      setState(prev => ({ ...prev, error: 'Connection error. Please try refreshing the page.' }));
       return;
     }
 
@@ -210,7 +238,7 @@ function MobilePageContent() {
     } catch {
       setState(prev => ({ ...prev, error: 'Could not access microphone. Please check permissions.' }));
     }
-  }, [isConnected, processAudioForTranscription]);
+  }, [isMobileFunctional, hasConnectionError, processAudioForTranscription]);
 
   const handleStopRecording = useCallback(() => {
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
@@ -311,12 +339,19 @@ function MobilePageContent() {
                         <span className="text-sm font-medium text-yellow-600">Connecting...</span>
                       </>
                     )
-                  : (
-                      <>
-                        <WifiOff className="size-5 text-gray-400" />
-                        <span className="text-sm font-medium text-gray-400">Disconnected</span>
-                      </>
-                    )}
+                  : isAblyDisconnected
+                    ? (
+                        <>
+                          <Wifi className="size-5 text-blue-600" />
+                          <span className="text-sm font-medium text-blue-600">Ready</span>
+                        </>
+                      )
+                    : (
+                        <>
+                          <WifiOff className="size-5 text-gray-400" />
+                          <span className="text-sm font-medium text-gray-400">Disconnected</span>
+                        </>
+                      )}
           </div>
         </div>
       </div>
@@ -353,8 +388,8 @@ function MobilePageContent() {
           </Alert>
         )}
 
-        {/* Connection Error */}
-        {hasConnectionError && (
+        {/* Connection Error - only show for actual errors, not configuration issues */}
+        {hasConnectionError && connectionState.error && !connectionState.error.includes('Failed to create connection') && (
           <Alert variant="destructive">
             <WifiOff className="size-4" />
             <div>
@@ -415,7 +450,7 @@ function MobilePageContent() {
                 ? (
                     <Button
                       onClick={handleStartRecording}
-                      disabled={!isConnected || state.isValidatingToken}
+                      disabled={!isMobileFunctional || state.isValidatingToken}
                       className="h-16 w-full text-lg"
                       size="lg"
                     >

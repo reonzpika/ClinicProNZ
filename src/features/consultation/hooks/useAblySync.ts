@@ -66,7 +66,13 @@ export const useAblySync = ({
     }
 
     try {
-      const response = await fetch('/api/ably/token', {
+      // For mobile users, include the mobile token as a query parameter
+      const url = new URL('/api/ably/token', window.location.origin);
+      if (!isDesktop && token) {
+        url.searchParams.set('token', token);
+      }
+
+      const response = await fetch(url.toString(), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -83,7 +89,6 @@ export const useAblySync = ({
         // Ably not configured - this is expected in some deployments
         const data = await response.json();
         if (data.code === 'ABLY_NOT_CONFIGURED') {
-          console.info('Ably service not configured - real-time features disabled');
           return 'ably-disabled';
         }
       }
@@ -92,7 +97,7 @@ export const useAblySync = ({
     }
 
     return null;
-  }, [userId]);
+  }, [userId, isDesktop, token]);
 
   // Generate stable device info for identification
   const getDeviceInfo = useCallback(() => {
@@ -308,7 +313,6 @@ export const useAblySync = ({
       if (currentUserId === 'ably-disabled') {
         setConnectionState(prev => ({ ...prev, status: 'disconnected', error: undefined }));
         // Don't call onError for service not configured - this is expected
-        console.info('Ably service not configured - skipping connection');
         return;
       }
 
@@ -318,7 +322,13 @@ export const useAblySync = ({
       const ably = new Ably.Realtime({
         authCallback: async (_tokenParams, callback) => {
           try {
-            const response = await fetch('/api/ably/token', {
+            // For mobile users, include the mobile token as a query parameter
+            const url = new URL('/api/ably/token', window.location.origin);
+            if (!isDesktop && token) {
+              url.searchParams.set('token', token);
+            }
+
+            const response = await fetch(url.toString(), {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
             });
@@ -423,15 +433,14 @@ export const useAblySync = ({
       });
     } catch (error) {
       console.error('Error connecting to Ably:', error);
-      
+
       // Check if this is a configuration error (not a real error)
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       if (errorMessage.includes('Ably service not configured')) {
         setConnectionState(prev => ({ ...prev, status: 'disconnected', error: undefined }));
-        console.info('Ably service not configured - real-time features disabled');
         return;
       }
-      
+
       setConnectionState(prev => ({
         ...prev,
         status: 'error',
