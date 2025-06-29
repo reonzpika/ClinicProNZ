@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, CheckCircle, Mic, MicOff, Phone, Smartphone, Wifi, WifiOff } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Mic, MicOff, Phone, Smartphone, Wifi } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
@@ -126,6 +126,7 @@ function MobilePageContent() {
     token: state.token || undefined,
     isDesktop: false, // This is a mobile device
     onPatientSwitched: useCallback((patientSessionId: string, patientName?: string) => {
+      console.error('📱 Patient switched:', { patientSessionId, patientName });
       setState(prev => ({
         ...prev,
         currentPatientSessionId: patientSessionId,
@@ -133,12 +134,16 @@ function MobilePageContent() {
       }));
     }, []),
     onError: useCallback((error: string | null) => {
+      console.error('📱 Ably connection error:', error);
+
       // Filter out Ably configuration errors - these are expected when Ably is not configured
       if (error && (
         error.includes('Failed to create Ably connection')
         || error.includes('Failed to connect to Ably')
         || error.includes('Ably service not configured')
+        || error.includes('Failed to get user ID')
       )) {
+        console.error('📱 Treating as Ably not configured, not showing to user');
         return; // Don't show these as errors to users
       }
 
@@ -158,8 +163,17 @@ function MobilePageContent() {
   const hasConnectionError = connectionState.status === 'error';
   const isAblyDisconnected = connectionState.status === 'disconnected';
 
+  console.error('📱 Connection state:', {
+    status: connectionState.status,
+    isConnected,
+    isConnecting,
+    hasConnectionError,
+    isAblyDisconnected,
+  });
+
   // Consider mobile functional if either connected to Ably OR Ably is simply not configured
-  const isMobileFunctional = isConnected || isAblyDisconnected;
+  // We prioritize functionality over real-time sync
+  const isMobileFunctional = !state.isValidatingToken && !state.error;
 
   // Simple recording state management (WebSocket-based)
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
@@ -356,40 +370,26 @@ function MobilePageContent() {
 
           {/* Connection Status */}
           <div className="flex items-center space-x-2">
-            {isConnected
+            {isMobileFunctional
               ? (
                   <>
-                    <Wifi className="size-5 text-green-600" />
-                    <span className="text-sm font-medium text-green-600">Connected</span>
+                    <CheckCircle className="size-5 text-green-600" />
+                    <span className="text-sm font-medium text-green-600">Ready</span>
                   </>
                 )
-              : hasConnectionError
+              : state.isValidatingToken
                 ? (
                     <>
-                      <WifiOff className="size-5 text-red-600" />
-                      <span className="text-sm font-medium text-red-600">Error</span>
+                      <Wifi className="size-5 text-yellow-600" />
+                      <span className="text-sm font-medium text-yellow-600">Validating...</span>
                     </>
                   )
-                : isConnecting
-                  ? (
-                      <>
-                        <Wifi className="size-5 text-yellow-600" />
-                        <span className="text-sm font-medium text-yellow-600">Connecting...</span>
-                      </>
-                    )
-                  : isAblyDisconnected
-                    ? (
-                        <>
-                          <Wifi className="size-5 text-blue-600" />
-                          <span className="text-sm font-medium text-blue-600">Ready</span>
-                        </>
-                      )
-                    : (
-                        <>
-                          <WifiOff className="size-5 text-gray-400" />
-                          <span className="text-sm font-medium text-gray-400">Disconnected</span>
-                        </>
-                      )}
+                : (
+                    <>
+                      <AlertTriangle className="size-5 text-red-600" />
+                      <span className="text-sm font-medium text-red-600">Error</span>
+                    </>
+                  )}
           </div>
         </div>
       </div>
@@ -426,16 +426,7 @@ function MobilePageContent() {
           </Alert>
         )}
 
-        {/* Connection Error - only show for actual errors, not configuration issues */}
-        {hasConnectionError && connectionState.error && !connectionState.error.includes('Failed to create connection') && (
-          <Alert variant="destructive">
-            <WifiOff className="size-4" />
-            <div>
-              <div className="font-medium">Connection Failed</div>
-              <div className="text-sm">{connectionState.error}</div>
-            </div>
-          </Alert>
-        )}
+        {/* Note: Connection errors are not shown to users as real-time sync is optional */}
 
         {/* Recording Status */}
         {(isRecording || isPaused || isTranscribing) && (
