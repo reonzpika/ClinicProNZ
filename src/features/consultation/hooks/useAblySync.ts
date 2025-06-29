@@ -301,7 +301,7 @@ export const useAblySync = ({
 
       // Create Ably client with token-based auth using userId as clientId
       const ably = new Ably.Realtime({
-        authCallback: async (tokenParams, callback) => {
+        authCallback: async (_tokenParams, callback) => {
           try {
             const response = await fetch('/api/ably/token', {
               method: 'POST',
