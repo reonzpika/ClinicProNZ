@@ -166,7 +166,7 @@ export const useAblySync = ({
 
       if (ablyRef.current) {
         // Check if connection is still open before closing
-        if (ablyRef.current.connection.state !== 'closed' && ablyRef.current.connection.state !== 'closing') {
+        if ((ablyRef.current.connection.state as string) !== 'closed' && (ablyRef.current.connection.state as string) !== 'closing') {
           ablyRef.current.close();
         }
         ablyRef.current = null;
@@ -277,12 +277,12 @@ export const useAblySync = ({
     }
 
     // Prevent duplicate connections
-    if (ablyRef.current?.connection.state === 'connected' || ablyRef.current?.connection.state === 'connecting') {
+    if ((ablyRef.current?.connection.state as string) === 'connected' || (ablyRef.current?.connection.state as string) === 'connecting') {
       return;
     }
 
     // Only cleanup if we have a failed/closed connection
-    if (ablyRef.current?.connection.state === 'failed' || ablyRef.current?.connection.state === 'closed') {
+    if ((ablyRef.current?.connection.state as string) === 'failed' || (ablyRef.current?.connection.state as string) === 'closed') {
       cleanup();
     }
 
@@ -412,7 +412,7 @@ export const useAblySync = ({
 
   // Send message through Ably
   const sendMessage = useCallback((message: AblyMessage) => {
-    if (channelRef.current && ablyRef.current?.connection.state === 'connected') {
+    if (channelRef.current && (ablyRef.current?.connection.state as string) === 'connected') {
       channelRef.current.publish(message.type, message);
       return true;
     }
@@ -422,8 +422,8 @@ export const useAblySync = ({
   // Connect when enabled - Fixed dependencies to prevent cleanup loops
   useEffect(() => {
     // Prevent duplicate connections in React Strict Mode
-    if (ablyRef.current?.connection.state === 'connected'
-      || ablyRef.current?.connection.state === 'connecting') {
+    if ((ablyRef.current?.connection.state as string) === 'connected'
+      || (ablyRef.current?.connection.state as string) === 'connecting') {
       return;
     }
 
@@ -457,18 +457,18 @@ export const useAblySync = ({
       return false;
     }
 
-    if (ablyRef.current?.connection.state === 'connected') {
+    if ((ablyRef.current?.connection.state as string) === 'connected') {
       return true;
     }
 
-    if (ablyRef.current?.connection.state === 'connecting') {
+    if ((ablyRef.current?.connection.state as string) === 'connecting') {
       // Wait for current connection attempt
       return new Promise((resolve) => {
         const checkConnection = () => {
-          if (ablyRef.current?.connection.state === 'connected') {
+          if ((ablyRef.current?.connection.state as string) === 'connected') {
             resolve(true);
-          } else if (ablyRef.current?.connection.state === 'failed'
-            || ablyRef.current?.connection.state === 'disconnected') {
+          } else if ((ablyRef.current?.connection.state as string) === 'failed'
+            || (ablyRef.current?.connection.state as string) === 'disconnected') {
             resolve(false);
           } else {
             setTimeout(checkConnection, 100);
@@ -480,7 +480,7 @@ export const useAblySync = ({
 
     // Start connection
     await connect();
-    return ablyRef.current?.connection.state === 'connected';
+    return (ablyRef.current?.connection.state as string) === 'connected';
   }, [enabled, connect]);
 
   // Enhanced send methods that ensure connection first
