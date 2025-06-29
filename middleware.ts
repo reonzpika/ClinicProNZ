@@ -25,9 +25,6 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   };
 
-  // Check if this is an API route
-  const isApiRoute = req.nextUrl.pathname.startsWith('/api/');
-
   // Protect all other /api/templates routes (POST, PUT, DELETE)
   if (req.nextUrl.pathname.startsWith('/api/templates')) {
     const resolvedAuth = await auth();
