@@ -20,6 +20,8 @@ export async function POST(req: Request) {
       const mobileToken = url.searchParams.get('token') || req.headers.get('x-mobile-token');
 
       if (mobileToken) {
+        console.error('Validating mobile token:', mobileToken);
+
         // Validate mobile token
         const tokenRecord = await db
           .select()
@@ -27,8 +29,19 @@ export async function POST(req: Request) {
           .where(eq(mobileTokens.token, mobileToken))
           .limit(1);
 
+        console.error('Token record found:', tokenRecord.length > 0 ? 'YES' : 'NO');
+        if (tokenRecord.length > 0) {
+          console.error('Token record:', tokenRecord[0]);
+          console.error('Token expires at:', tokenRecord[0]!.expiresAt);
+          console.error('Current time:', new Date());
+          console.error('Is expired?', tokenRecord[0]!.expiresAt <= new Date());
+        }
+
         if (tokenRecord.length > 0 && tokenRecord[0]!.expiresAt > new Date()) {
           userId = tokenRecord[0]!.userId;
+          console.error('Token valid, userId:', userId);
+        } else {
+          console.error('Token validation failed');
         }
       }
     }
