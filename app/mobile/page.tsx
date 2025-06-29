@@ -60,7 +60,7 @@ function MobilePageContent() {
     chunksUploaded: 0,
   });
 
-  // Extract token from URL
+  // Extract and validate token from URL
   useEffect(() => {
     const token = searchParams.get('token');
     if (!token) {
@@ -72,11 +72,49 @@ function MobilePageContent() {
       return;
     }
 
-    setState(prev => ({
-      ...prev,
-      token,
-      isValidatingToken: false,
-    }));
+    // Validate the token with the backend
+    const validateToken = async () => {
+      try {
+        console.error('🔍 Validating mobile token:', token);
+        const response = await fetch('/api/mobile/validate-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token }),
+        });
+
+        console.error('📡 Token validation response status:', response.status);
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('❌ Token validation failed:', errorData);
+          throw new Error(errorData.error || 'Invalid token');
+        }
+
+        const { valid, userId, expiresAt } = await response.json();
+        console.error('✅ Token validation successful:', { valid, userId, expiresAt });
+
+        if (!valid) {
+          throw new Error('Token validation failed');
+        }
+
+        setState(prev => ({
+          ...prev,
+          token,
+          isValidatingToken: false,
+          error: null,
+        }));
+      } catch (error) {
+        console.error('💥 Token validation error:', error);
+        setState(prev => ({
+          ...prev,
+          error: error instanceof Error ? error.message : 'Token validation failed',
+          isValidatingToken: false,
+          token: null,
+        }));
+      }
+    };
+
+    validateToken();
   }, [searchParams]);
 
   // Ably connection for real-time sync

@@ -41,8 +41,13 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // Protect /api/mobile routes
+  // Protect /api/mobile routes except for token validation
   if (req.nextUrl.pathname.startsWith('/api/mobile')) {
+    // Allow mobile token validation without authentication
+    if (req.nextUrl.pathname === '/api/mobile/validate-token') {
+      return NextResponse.next();
+    }
+
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
       return returnUnauthorized();
@@ -80,7 +85,6 @@ export const config = {
   matcher: [
     '/api/templates/:path*',
     '/api/user/:path*',
-
     '/api/patient-sessions/:path*',
     '/api/mobile/:path*',
     '/api/ws/:path*',
