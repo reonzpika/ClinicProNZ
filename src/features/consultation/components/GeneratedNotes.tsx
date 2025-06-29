@@ -1,14 +1,11 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { Section } from '@/shared/components/layout/Section';
-import { Stack } from '@/shared/components/layout/Stack';
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { useConsultation } from '@/shared/ConsultationContext';
 
-export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused, isDocumentationMode }: { onGenerate?: () => void; onClearAll?: () => void; loading?: boolean; isNoteFocused?: boolean; isDocumentationMode?: boolean }) {
+export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused: _isNoteFocused, isDocumentationMode: _isDocumentationMode }: { onGenerate?: () => void; onClearAll?: () => void; loading?: boolean; isNoteFocused?: boolean; isDocumentationMode?: boolean }) {
   const {
     generatedNotes,
     error,
@@ -16,18 +13,27 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused,
     resetConsultation,
     lastGeneratedTranscription,
     lastGeneratedTypedInput,
+    lastGeneratedCompiledConsultationText,
+    lastGeneratedTemplateId,
     setGeneratedNotes,
     consentObtained,
     inputMode,
     typedInput,
+    templateId,
+    getCompiledConsultationText,
+    saveNotesToCurrentSession,
+    saveTypedInputToCurrentSession,
+    saveConsultationNotesToCurrentSession,
+    createPatientSession,
+    switchToPatientSession,
+    consultationNotes,
   } = useConsultation();
 
   // Local UI state
   const [copySuccess, setCopySuccess] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-
-  // Refs for auto-expanding textareas
-  const mainTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const [lastSavedNotes, setLastSavedNotes] = useState('');
+  const [_saveStatus, setSaveStatus] = useState('idle');
 
   // Consent statement to append when consent was obtained
   const CONSENT_STATEMENT = '\n\nPatient informed and consented verbally to the use of digital documentation assistance during this consultation, in line with NZ Health Information Privacy Principles. The patient retains the right to pause or stop the recording at any time.';
@@ -49,18 +55,39 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused,
     return generatedNotes + CONSENT_STATEMENT;
   }, [generatedNotes, consentObtained]);
 
-  // Button enable logic - updated for both input modes
-  const hasInput = inputMode === 'typed'
-    ? (typedInput && typedInput.trim() !== '')
-    : (transcription.transcript && transcription.transcript.trim() !== '');
+  // Button enable logic - check for changes in input, consultation text, or template
+  const canGenerate = React.useMemo(() => {
+    const hasInput = inputMode === 'typed'
+      ? (typedInput && typedInput.trim() !== '')
+      : (transcription.transcript && transcription.transcript.trim() !== '');
 
-  const isInputChanged = inputMode === 'typed'
-    ? typedInput !== (lastGeneratedTypedInput || '')
-    : transcription.transcript !== (lastGeneratedTranscription || '');
+    if (!hasInput) {
+      return false;
+    }
 
-  const canGenerate = hasInput && isInputChanged;
+    const isInputChanged = inputMode === 'typed'
+      ? typedInput !== (lastGeneratedTypedInput || '')
+      : transcription.transcript !== (lastGeneratedTranscription || '');
+
+    const currentCompiledConsultationText = getCompiledConsultationText();
+    const isConsultationTextChanged = currentCompiledConsultationText !== (lastGeneratedCompiledConsultationText || '');
+    const isTemplateChanged = templateId !== (lastGeneratedTemplateId || '');
+
+    return isInputChanged || isConsultationTextChanged || isTemplateChanged;
+  }, [
+    inputMode,
+    typedInput,
+    transcription.transcript,
+    lastGeneratedTypedInput,
+    lastGeneratedTranscription,
+    getCompiledConsultationText,
+    lastGeneratedCompiledConsultationText,
+    templateId,
+    lastGeneratedTemplateId,
+  ]);
 
   const hasContent = !!(displayNotes && displayNotes.trim() !== '');
+
   const hasAnyState = hasContent
     || (inputMode === 'typed' && typedInput && typedInput.trim() !== '')
     || (inputMode === 'audio' && (transcription.transcript && transcription.transcript.trim() !== ''));
@@ -82,6 +109,33 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused,
     }
   }, [hasAnyState, loading]);
 
+  // Track the source of notes changes to avoid auto-saving when loading from sessions
+  const [isManualEdit, setIsManualEdit] = useState(false);
+
+  // Sync lastSavedNotes when notes are loaded (from generation or session switching)
+  useEffect(() => {
+    if (generatedNotes && !isManualEdit) {
+      setLastSavedNotes(generatedNotes);
+    }
+  }, [generatedNotes, isManualEdit]);
+
+  // Save notes on blur (when user finishes editing)
+  const handleNotesBlur = async () => {
+    if (isManualEdit && generatedNotes && generatedNotes !== lastSavedNotes && generatedNotes.trim() !== '') {
+      try {
+        const success = await saveNotesToCurrentSession(generatedNotes);
+        if (success) {
+          setLastSavedNotes(generatedNotes);
+          setIsManualEdit(false); // Reset manual edit flag after saving
+          setSaveStatus('saved');
+        }
+      } catch (error) {
+        console.error('Failed to save notes:', error);
+        setSaveStatus('error');
+      }
+    }
+  };
+
   // Copy to clipboard logic - use displayNotes which includes consent statement
   const handleCopy = async () => {
     if (!displayNotes) {
@@ -102,6 +156,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused,
     // Remove consent statement if user manually edits it out
     const cleanedValue = value.replace(CONSENT_STATEMENT, '');
     setGeneratedNotes(cleanedValue);
+    setIsManualEdit(true); // Mark as manually edited
   };
 
   // Enhanced generate handler that expands the interface
@@ -116,23 +171,69 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused,
   const handleClearAll = () => {
     resetConsultation(); // Clears all consultation data including transcript
     setIsExpanded(false);
+    setLastSavedNotes(''); // Reset saved notes tracking
+    setIsManualEdit(false); // Reset manual edit flag
     if (onClearAll) {
       onClearAll();
     }
   };
 
-  // Auto-expand logic for main textarea
-  useEffect(() => {
-    const textarea = mainTextareaRef.current;
-    if (textarea) {
-      textarea.style.height = 'auto';
-      const minHeight = 100;
-      const maxHeight = 1000;
-      const newHeight = Math.max(minHeight, Math.min(textarea.scrollHeight, maxHeight));
-      textarea.style.height = `${newHeight}px`;
-      textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden';
+  // New Patient handler: save current notes, create new session, clear data
+  const handleNewPatient = async () => {
+    try {
+      // 1. Save all current data to current session if they exist
+      const savePromises = [];
+
+      if (generatedNotes && generatedNotes.trim() !== '') {
+        savePromises.push(saveNotesToCurrentSession(generatedNotes));
+      }
+
+      if (typedInput && typedInput.trim() !== '') {
+        savePromises.push(saveTypedInputToCurrentSession(typedInput));
+      }
+
+      if (consultationNotes && consultationNotes.trim() !== '') {
+        savePromises.push(saveConsultationNotesToCurrentSession(consultationNotes));
+      }
+
+      // Wait for all saves to complete
+      if (savePromises.length > 0) {
+        const saveResults = await Promise.all(savePromises);
+        const failedSaves = saveResults.filter(result => !result);
+        if (failedSaves.length > 0) {
+          console.warn(`${failedSaves.length} save operations failed, but continuing with new patient creation`);
+        }
+      }
+
+      // 2. Create new patient session with auto-generated name
+      const now = new Date();
+      const patientName = `Patient ${now.toLocaleDateString()} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+      const newSession = await createPatientSession(patientName);
+      if (!newSession) {
+        throw new Error('Failed to create new patient session');
+      }
+
+      // 3. Switch to new session
+      switchToPatientSession(newSession.id);
+
+      // 4. Clear all consultation data and reset to standard mode
+      resetConsultation();
+      setIsExpanded(false);
+      setLastSavedNotes('');
+      setIsManualEdit(false); // Reset manual edit flag
+
+      if (onClearAll) {
+        onClearAll();
+      }
+    } catch (error) {
+      console.error('Error creating new patient session:', error);
+      // You might want to show an error message to the user here
     }
-  }, [displayNotes, isNoteFocused]);
+  };
+
+  // Determine which button to show: "Clear All" before generation, "New Patient" after
+  const showNewPatientButton = hasContent;
 
   // Minimal state - just the generate button
   if (shouldShowMinimal) {
@@ -151,13 +252,13 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused,
           <Button
             type="button"
             variant="outline"
-            onClick={handleClearAll}
+            onClick={showNewPatientButton ? handleNewPatient : handleClearAll}
             disabled={!hasAnyState}
             className="h-10 border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
-            title="Clear all consultation data"
-            aria-label="Clear all consultation data"
+            title={showNewPatientButton ? 'Save notes and start new patient session' : 'Clear all consultation data'}
+            aria-label={showNewPatientButton ? 'Save notes and start new patient session' : 'Clear all consultation data'}
           >
-            Clear All
+            {showNewPatientButton ? 'New Patient' : 'Clear All'}
           </Button>
         </div>
         {error && (
@@ -169,73 +270,66 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused,
 
   // Expanded state - full interface
   return (
-    <Card className="border-slate-200 bg-white shadow-sm">
-      <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 bg-slate-50 p-4 pb-2">
-        <div className="flex items-center gap-2">
-          <h2 className="text-sm font-medium text-slate-700">Clinical Documentation</h2>
-          {loading && (
-            <span className="ml-2 flex items-center" aria-busy="true">
-              <svg className="mr-1 size-4 animate-spin text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    <div className="flex h-full flex-col">
+      {error && <div className="text-sm text-red-600">{error}</div>}
+      <div className="flex flex-1 flex-col space-y-3">
+        <textarea
+          value={displayNotes || ''}
+          onChange={handleNotesChange}
+          onBlur={handleNotesBlur}
+          className="min-h-[200px] w-full flex-1 resize-none overflow-y-auto rounded border border-slate-200 bg-white p-3 text-sm leading-relaxed text-slate-700 focus:border-slate-400 focus:ring-2 focus:ring-slate-400"
+          placeholder="Clinical documentation will appear here..."
+          disabled={loading}
+          spellCheck={false}
+        />
+        <div className="flex space-x-2">
+          <Button
+            type="button"
+            variant="default"
+            onClick={handleGenerate}
+            disabled={!canGenerate || loading}
+            className="h-9 bg-slate-600 px-4 py-2 text-sm text-white hover:bg-slate-700"
+          >
+            {loading && (
+              <svg className="mr-2 size-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
               </svg>
-              <span className="text-sm text-slate-600">Processing...</span>
-            </span>
-          )}
+            )}
+            {loading ? 'Processing...' : 'Process Notes'}
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleCopy}
+            disabled={!hasContent || loading}
+            className="h-9 border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
+          >
+            {copySuccess ? 'Copied!' : 'Copy to Clipboard'}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={showNewPatientButton ? handleNewPatient : handleClearAll}
+            disabled={!hasAnyState}
+            className="h-9 border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
+            title={showNewPatientButton ? 'Save notes and start new patient session' : 'Clear all consultation data'}
+            aria-label={showNewPatientButton ? 'Save notes and start new patient session' : 'Clear all consultation data'}
+          >
+            {showNewPatientButton ? 'New Patient' : 'Clear All'}
+          </Button>
         </div>
-      </CardHeader>
-      <CardContent className="p-4">
-        <Stack spacing="sm">
-          {error && <div className="text-sm text-red-600">{error}</div>}
-          <Section>
-            <textarea
-              ref={mainTextareaRef}
-              value={displayNotes || ''}
-              onChange={handleNotesChange}
-              className="w-full rounded border border-slate-200 bg-white p-3 text-sm leading-relaxed text-slate-700 focus:border-slate-400 focus:ring-2 focus:ring-slate-400"
-              placeholder="Clinical documentation will appear here..."
-              style={isDocumentationMode
-                ? { minHeight: '400px', height: 'calc(100vh - 300px)', maxHeight: 'calc(100vh - 300px)', resize: 'none', overflowY: 'auto' }
-                : { minHeight: 120, maxHeight: 1000, resize: 'none', overflowY: 'auto' }}
-              disabled={loading}
-              spellCheck={false}
-            />
-          </Section>
-          <Section>
-            <div className="flex space-x-2">
-              <Button
-                type="button"
-                variant="default"
-                onClick={handleGenerate}
-                disabled={!canGenerate || loading}
-                className="h-9 bg-slate-600 px-4 py-2 text-sm text-white hover:bg-slate-700"
-              >
-                Process Notes
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={handleCopy}
-                disabled={!hasContent || loading}
-                className="h-9 border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
-              >
-                {copySuccess ? 'Copied!' : 'Copy to Clipboard'}
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={handleClearAll}
-                disabled={!hasAnyState || loading}
-                title="Clear all consultation data"
-                aria-label="Clear all consultation data"
-                className="h-9 px-4 py-2 text-sm"
-              >
-                Clear All
-              </Button>
-            </div>
-          </Section>
-        </Stack>
-      </CardContent>
-    </Card>
+
+        {/* Warning message */}
+        {hasContent && (
+          <div className="flex items-center justify-center gap-2 rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-sm text-orange-800">
+            <svg className="size-4 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.19-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+            </svg>
+            <span>Review your note before use to ensure it accurately represents the visit</span>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

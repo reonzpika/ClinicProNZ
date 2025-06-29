@@ -4,7 +4,7 @@ import { AlertTriangle, CheckCircle, Mic, MicOff, Phone, Smartphone, Wifi, WifiO
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
-import { useWebSocketSync } from '@/features/consultation/hooks/useWebSocketSync';
+import { useAblySync } from '@/features/consultation/hooks/useAblySync';
 import { Alert } from '@/shared/components/ui/alert';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
@@ -79,11 +79,11 @@ function MobilePageContent() {
     }));
   }, [searchParams]);
 
-  // WebSocket connection for real-time sync
+  // Ably connection for real-time sync
   const {
     connectionState,
     sendTranscription,
-  } = useWebSocketSync({
+  } = useAblySync({
     enabled: !!state.token,
     token: state.token || undefined,
     isDesktop: false, // This is a mobile device
@@ -94,7 +94,7 @@ function MobilePageContent() {
         currentPatientName: patientName || 'Unknown Patient',
       }));
     }, []),
-    onError: useCallback((error: string) => {
+    onError: useCallback((error: string | null) => {
       setState(prev => ({ ...prev, error }));
     }, []),
   });
@@ -107,15 +107,11 @@ function MobilePageContent() {
 
   // Audio processing for transcription
   const processAudioForTranscription = useCallback(async (audioBlob: Blob) => {
-    if (!audioBlob || audioBlob.size < 1000) {
-      return;
-    } // Skip very small audio chunks
-
     setState(prev => ({ ...prev, isTranscribing: true }));
 
     try {
       const formData = new FormData();
-      formData.append('audio', audioBlob, 'mobile-audio.webm');
+      formData.append('audio', audioBlob, 'audio.webm');
 
       const response = await fetch('/api/deepgram/transcribe', {
         method: 'POST',
@@ -123,18 +119,26 @@ function MobilePageContent() {
       });
 
       if (!response.ok) {
-        throw new Error('Transcription failed');
+        throw new Error('Failed to transcribe audio');
       }
 
       const { transcript } = await response.json();
 
       if (transcript && transcript.trim()) {
-        // Send via WebSocket
-        sendTranscription(transcript.trim(), state.currentPatientSessionId || undefined);
-        setState(prev => ({
-          ...prev,
-          chunksUploaded: prev.chunksUploaded + 1,
-        }));
+        // Send via WebSocket (now async)
+        try {
+          await sendTranscription(transcript.trim(), state.currentPatientSessionId || undefined);
+          setState(prev => ({
+            ...prev,
+            chunksUploaded: prev.chunksUploaded + 1,
+          }));
+        } catch (error) {
+          console.warn('Failed to send transcription:', error);
+          setState(prev => ({
+            ...prev,
+            error: 'Failed to send transcription to desktop. Connection may be lost.',
+          }));
+        }
       }
     } catch {
       // Transcription error occurred

@@ -4,9 +4,10 @@ import type { WSMessage } from '@/lib/services/websocket-manager';
 
 // Extended message types for WebSocket communication
 type ExtendedWSMessage = WSMessage | {
-  type: 'connected' | 'pong' | 'ping';
+  type: 'connected' | 'pong' | 'ping' | 'force_disconnect';
   deviceId?: string;
   deviceName?: string;
+  targetDeviceId?: string;
   [key: string]: any;
 };
 
@@ -16,7 +17,7 @@ type WebSocketSyncHookProps = {
   isDesktop?: boolean; // true for desktop, false for mobile
   onTranscriptionReceived?: (transcript: string, patientSessionId?: string) => void;
   onPatientSwitched?: (patientSessionId: string, patientName?: string) => void;
-  onDeviceConnected?: (deviceId: string, deviceName: string) => void;
+  onDeviceConnected?: (deviceId: string, deviceName: string, deviceType?: string) => void;
   onDeviceDisconnected?: (deviceId: string) => void;
   onError?: (error: string) => void;
 };
@@ -59,7 +60,50 @@ export const useWebSocketSync = ({
     if (!deviceInfoRef.current) {
       const isMobile = !isDesktop;
       const deviceType = isMobile ? 'Mobile' : 'Desktop';
-      const deviceName = `${deviceType} Device`;
+
+      // Generate descriptive device name
+      let deviceName = `${deviceType} Device`;
+      if (typeof window !== 'undefined') {
+        const userAgent = navigator.userAgent;
+
+        // Detect device platform
+        let platform = '';
+        if (/iPhone|iPod/.test(userAgent)) {
+          platform = 'iPhone';
+        } else if (/iPad/.test(userAgent)) {
+          platform = 'iPad';
+        } else if (/Android/.test(userAgent)) {
+          platform = 'Android';
+        } else if (/Macintosh/.test(userAgent)) {
+          platform = 'Mac';
+        } else if (/Windows/.test(userAgent)) {
+          platform = 'Windows';
+        } else if (/Linux/.test(userAgent)) {
+          platform = 'Linux';
+        }
+
+        // Detect browser
+        let browser = '';
+        if (/Chrome/.test(userAgent) && !/Edge/.test(userAgent)) {
+          browser = 'Chrome';
+        } else if (/Safari/.test(userAgent) && !/Chrome/.test(userAgent)) {
+          browser = 'Safari';
+        } else if (/Firefox/.test(userAgent)) {
+          browser = 'Firefox';
+        } else if (/Edge/.test(userAgent)) {
+          browser = 'Edge';
+        }
+
+        // Combine platform and browser for descriptive name
+        if (platform && browser) {
+          deviceName = `${platform} ${browser}`;
+        } else if (platform) {
+          deviceName = platform;
+        } else if (browser) {
+          deviceName = `${deviceType} ${browser}`;
+        }
+      }
+
       const deviceId = `${deviceType.toLowerCase()}-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
 
       deviceInfoRef.current = { deviceId, deviceName };
@@ -125,9 +169,10 @@ export const useWebSocketSync = ({
           }
           break;
 
-        case 'device_connected':
+        case 'device_connected': {
           if (message.deviceId && message.deviceName && onDeviceConnected) {
-            onDeviceConnected(message.deviceId, message.deviceName);
+            const deviceType = 'deviceType' in message ? (message.deviceType as string) : undefined;
+            onDeviceConnected(message.deviceId, message.deviceName, deviceType);
             setConnectionState(prev => ({
               ...prev,
               connectedDevices: [
@@ -141,6 +186,7 @@ export const useWebSocketSync = ({
             }));
           }
           break;
+        }
 
         case 'device_disconnected':
           if (message.deviceId && onDeviceDisconnected) {
@@ -155,6 +201,16 @@ export const useWebSocketSync = ({
         case 'pong':
           setConnectionState(prev => ({ ...prev, lastSeen: Date.now() }));
           break;
+
+        case 'force_disconnect': {
+          // Check if this device is being targeted for disconnection
+          const { deviceId: currentDeviceId } = getDeviceInfo();
+          if (message.targetDeviceId === currentDeviceId) {
+            // Clean up and disconnect this device
+            cleanup();
+          }
+          break;
+        }
 
         default:
       }
@@ -262,6 +318,18 @@ export const useWebSocketSync = ({
     });
   }, [sendMessage]);
 
+  // Force disconnect a specific device
+  const forceDisconnectDevice = useCallback((targetDeviceId: string) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({
+        type: 'force_disconnect',
+        targetDeviceId,
+      }));
+      return true;
+    }
+    return false;
+  }, []);
+
   // Initialize WebSocket server (desktop only)
   const initializeWebSocketServer = useCallback(async () => {
     if (!isDesktop) {
@@ -303,6 +371,7 @@ export const useWebSocketSync = ({
     connectionState,
     sendTranscription,
     notifyPatientSwitch,
+    forceDisconnectDevice,
     reconnect: connect,
     disconnect: cleanup,
   };

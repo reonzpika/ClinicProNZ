@@ -1,71 +1,22 @@
 'use client';
 
+import { Stethoscope } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { AdditionalNotes } from '@/features/consultation/components/AdditionalNotes';
+import { DocumentationSettingsBadge } from '@/features/consultation/components/DocumentationSettingsBadge';
 import { GeneratedNotes } from '@/features/consultation/components/GeneratedNotes';
-import { InputModeToggle } from '@/features/consultation/components/InputModeToggle';
+import { MobileRightPanelOverlay } from '@/features/consultation/components/MobileRightPanelOverlay';
 import { PatientSessionManager } from '@/features/consultation/components/PatientSessionManager';
 import RightPanelFeatures from '@/features/consultation/components/RightPanelFeatures';
 import { TranscriptionControls } from '@/features/consultation/components/TranscriptionControls';
 import { TypedInput } from '@/features/consultation/components/TypedInput';
-import { useWebSocketSync } from '@/features/consultation/hooks/useWebSocketSync';
-import { TemplateSelector } from '@/features/templates/components/TemplateSelector';
-import { Footer } from '@/shared/components/Footer';
+import { useAblySync } from '@/features/consultation/hooks/useAblySync';
 import { Container } from '@/shared/components/layout/Container';
-import { Grid } from '@/shared/components/layout/Grid';
 import { Stack } from '@/shared/components/layout/Stack';
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { useConsultation } from '@/shared/ConsultationContext';
-
-// Minimized Documentation Settings Component
-function DocumentationSettingsMinimized() {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  return (
-    <Card className="border-slate-200 bg-white shadow-sm">
-      <CardHeader className="flex flex-row items-center justify-between p-2">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-slate-700">Documentation Settings</span>
-        </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
-          onClick={() => setIsExpanded(!isExpanded)}
-        >
-          {isExpanded ? '−' : '+'}
-        </Button>
-      </CardHeader>
-      {isExpanded && (
-        <CardContent className="p-2 pt-0">
-          <div className="space-y-2">
-            {/* Template and Input Mode Row */}
-            <div className="flex items-start gap-4">
-              {/* Note Template Selection */}
-              <div className="flex-1">
-                <div className="mb-1 text-xs font-medium text-slate-600">
-                  Note Template
-                </div>
-                <TemplateSelector />
-              </div>
-
-              {/* Input Method Selection */}
-              <div className="shrink-0">
-                <div className="mb-1 text-xs font-medium text-slate-600">
-                  Input Method
-                </div>
-                <InputModeToggle />
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      )}
-    </Card>
-  );
-}
+import { useResponsive } from '@/shared/hooks/useResponsive';
 
 export default function ConsultationPage() {
   const {
@@ -86,30 +37,39 @@ export default function ConsultationPage() {
     setMobileV2ConnectionStatus,
     addMobileV2Device,
     removeMobileV2Device,
+    currentPatientSessionId,
+    getCurrentPatientSession,
   } = useConsultation();
   const [loading, setLoading] = useState(false);
   const [isNoteFocused, setIsNoteFocused] = useState(false);
   const [isDocumentationMode, setIsDocumentationMode] = useState(false);
+  const [rightPanelOpen, setRightPanelOpen] = useState(false);
+  const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
+  const { isMobile, isTablet, isDesktop, isLargeDesktop } = useResponsive();
 
-  // Auto-enable documentation mode if notes already exist
+  // Auto-enable/disable documentation mode based on generated notes or loading state
   useEffect(() => {
-    if (generatedNotes && generatedNotes.trim() && !isDocumentationMode) {
-      setIsDocumentationMode(true);
+    if ((generatedNotes && generatedNotes.trim()) || loading) {
+      if (!isDocumentationMode) {
+        setIsDocumentationMode(true);
+      }
+    } else if ((!generatedNotes || !generatedNotes.trim()) && !loading && isDocumentationMode) {
+      setIsDocumentationMode(false);
     }
-  }, [generatedNotes, isDocumentationMode]);
+  }, [generatedNotes, loading, isDocumentationMode]);
 
   // Memoized callbacks for WebSocket sync to prevent infinite re-renders
-  const handleTranscriptionReceived = useCallback((transcript: string, _patientSessionId?: string) => {
+  const handleTranscriptionReceived = useCallback(async (transcript: string, _patientSessionId?: string) => {
     // Append mobile transcription to desktop transcription
-    appendTranscription(transcript, false); // false = not live transcription
+    await appendTranscription(transcript, false, 'mobile'); // false = not live, mobile source
   }, [appendTranscription]);
 
   const handlePatientSwitched = useCallback((_patientSessionId: string, _patientName?: string) => {
     // Handle patient switching if needed
   }, []);
 
-  const handleDeviceConnected = useCallback((deviceId: string, deviceName: string) => {
-    addMobileV2Device({ deviceId, deviceName, connectedAt: Date.now() });
+  const handleDeviceConnected = useCallback((deviceId: string, deviceName: string, deviceType?: string) => {
+    addMobileV2Device({ deviceId, deviceName, deviceType, connectedAt: Date.now() });
     setMobileV2ConnectionStatus('connected');
   }, [addMobileV2Device, setMobileV2ConnectionStatus]);
 
@@ -120,14 +80,14 @@ export default function ConsultationPage() {
     }
   }, [removeMobileV2Device, setMobileV2ConnectionStatus, mobileV2.connectedDevices.length]);
 
-  const handleWebSocketError = useCallback((error: string) => {
+  const handleWebSocketError = useCallback((error: string | null) => {
     // WebSocket error handled silently
     setError(error);
     setMobileV2ConnectionStatus('error');
   }, [setError, setMobileV2ConnectionStatus]);
 
-  // Enable WebSocket sync for Mobile V2 system
-  useWebSocketSync({
+  // Enable Ably sync for Mobile V2 system
+  const { notifyPatientSwitch, forceDisconnectDevice } = useAblySync({
     enabled: true, // Mobile V2 is now enabled by default
     token: mobileV2.token || undefined, // Token can be undefined initially
     isDesktop: true,
@@ -138,12 +98,43 @@ export default function ConsultationPage() {
     onError: handleWebSocketError,
   });
 
+  const handleForceDisconnectDevice = useCallback(async (deviceId: string) => {
+    // Send force disconnect message to the device
+    if (forceDisconnectDevice) {
+      try {
+        await forceDisconnectDevice(deviceId);
+      } catch {
+        // Silently handle error
+      }
+    }
+    // Remove from local state immediately
+    removeMobileV2Device(deviceId);
+    if (mobileV2.connectedDevices.length <= 1) {
+      setMobileV2ConnectionStatus('disconnected');
+    }
+  }, [forceDisconnectDevice, removeMobileV2Device, setMobileV2ConnectionStatus, mobileV2.connectedDevices.length]);
+
+  // Notify mobile devices when session changes
+  useEffect(() => {
+    const notifyMobileDevices = async () => {
+      if (currentPatientSessionId && notifyPatientSwitch) {
+        const currentSession = getCurrentPatientSession();
+        if (currentSession) {
+          try {
+            await notifyPatientSwitch(currentPatientSessionId, currentSession.patientName);
+          } catch {
+            // Silently handle error
+          }
+        }
+      }
+    };
+
+    notifyMobileDevices();
+  }, [currentPatientSessionId, notifyPatientSwitch, getCurrentPatientSession]);
+
   const handleClearAll = () => {
     setIsNoteFocused(false);
     setIsDocumentationMode(false);
-    // The following should be called in GeneratedNotes, but for clarity, you can also call context resets here if needed
-    // resetConsultation();
-    // resetLastGeneratedInput();
   };
 
   const handleGenerateNotes = async () => {
@@ -169,23 +160,27 @@ export default function ConsultationPage() {
           consultationNotes: compiledConsultationText,
         }),
       });
+
       if (!res.body) {
         setError('No response body');
-        setLoading(false);
         return;
       }
+
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let notes = '';
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) {
           break;
         }
+
         notes += decoder.decode(value, { stream: true });
         setGeneratedNotes(notes);
       }
-      setLastGeneratedInput(transcript, currentTypedInput);
+
+      setLastGeneratedInput(transcript, currentTypedInput, compiledConsultationText, templateId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate notes');
     } finally {
@@ -194,152 +189,291 @@ export default function ConsultationPage() {
   };
 
   return (
-    <div className="flex min-h-full flex-col">
-      <Container size="lg">
-        <Grid cols={3} gap="lg">
-          {/* Left Column - Main Clinical Documentation Area */}
-          <div className="lg:col-span-2">
-            <Stack spacing="sm">
-              {/* Patient Session Manager - V2 Feature */}
-              <PatientSessionManager isCompact={isDocumentationMode} />
+    <div className="flex h-full flex-col">
+      {/* Right Panel Sidebar (Desktop Only) */}
+      {isDesktop && (
+        <div className={`
+          fixed right-0 top-0 z-30 h-[calc(100vh-80px)] border-l border-slate-200 bg-white transition-all duration-300 ease-in-out
+          ${rightPanelCollapsed ? 'w-12' : 'w-80'}
+        `}
+        >
+          <RightPanelFeatures
+            isCollapsed={rightPanelCollapsed}
+            onToggle={() => setRightPanelCollapsed(!rightPanelCollapsed)}
+          />
+        </div>
+      )}
 
-              {/* Documentation Settings - Only show in standard mode */}
-              {!isDocumentationMode && (
-                <Card className="border-slate-200 bg-white shadow-sm">
-                  <CardHeader className="border-b border-slate-100 bg-slate-50">
-                    <h2 className="text-sm font-medium text-slate-700">Documentation Settings</h2>
-                  </CardHeader>
-                  <CardContent className="p-4">
-                    <div className="space-y-4">
-                      {/* Template and Input Mode Row */}
-                      <div className="flex items-start gap-6">
-                        {/* Note Template Selection */}
-                        <div className="flex-1">
-                          <div className="mb-2 text-sm font-medium text-slate-600">
-                            Note Template
-                          </div>
-                          <TemplateSelector />
-                        </div>
+      <div className={`
+        flex h-screen flex-col transition-all duration-300 ease-in-out
+        ${isDesktop
+      ? (rightPanelCollapsed ? 'mr-12' : 'mr-80')
+      : 'mr-0'
+    }
+      `}
+      >
+        <Container size="fluid" className="h-full">
+          <div className={`flex h-full flex-col ${(isMobile || isTablet) ? 'py-4' : 'py-6'}`}>
+            {/* Mobile Tools Button */}
+            {(isMobile || isTablet) && (
+              <div className="mb-4 flex justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setRightPanelOpen(true)}
+                  className="bg-white shadow-sm"
+                >
+                  <Stethoscope size={16} className="mr-2" />
+                  Clinical Tools
+                </Button>
+              </div>
+            )}
 
-                        {/* Input Method Selection */}
-                        <div className="shrink-0">
-                          <div className="mb-2 text-sm font-medium text-slate-600">
-                            Input Method
-                          </div>
-                          <InputModeToggle />
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Conditional Layout Based on Documentation Mode */}
-              {isDocumentationMode
+            {/* Main Clinical Documentation Area */}
+            <div className="h-full flex-1">
+              {/* Large Desktop Dual-Column Layout */}
+              {isLargeDesktop
                 ? (
-                    <>
-                      {/* Documentation Settings - Always at Top, Minimized */}
-                      <DocumentationSettingsMinimized />
+                    <div className="flex h-full gap-6">
+                      {/* Left Column - Supporting Information (30-35%) */}
+                      <div className="h-full w-1/3 space-y-4">
+                        {/* Patient Session Manager - V2 Feature */}
+                        <PatientSessionManager />
 
-                      {/* Clinical Documentation - Top Priority */}
-                      <div style={{ minHeight: '500px', display: 'flex', flexDirection: 'column' }}>
-                        <GeneratedNotes
-                          onGenerate={handleGenerateNotes}
-                          onClearAll={handleClearAll}
-                          loading={loading}
-                          isNoteFocused={isNoteFocused}
-                          isDocumentationMode={isDocumentationMode}
-                        />
+                        {/* Documentation Settings Badge - Always visible below session bar */}
+                        <DocumentationSettingsBadge />
+
+                        {/* Minimized Components in Documentation Mode */}
+                        {isDocumentationMode && (
+                          <div className="space-y-2">
+                            <div className="mb-2 border-b border-slate-200 pb-1 text-xs font-medium text-slate-600">
+                              Input Sources
+                            </div>
+                            <div className="space-y-2">
+                              {inputMode === 'audio'
+                                ? (
+                                    <TranscriptionControls
+                                      collapsed={false}
+                                      onExpand={() => setIsNoteFocused(false)}
+                                      isMinimized
+                                      onForceDisconnectDevice={handleForceDisconnectDevice}
+                                    />
+                                  )
+                                : (
+                                    <TypedInput
+                                      collapsed={false}
+                                      onExpand={() => setIsNoteFocused(false)}
+                                      isMinimized
+                                    />
+                                  )}
+
+                              {/* Separator */}
+                              <div className="border-t border-slate-200" />
+
+                              <AdditionalNotes
+                                items={consultationItems}
+                                onNotesChange={setConsultationNotes}
+                                notes={consultationNotes}
+                                placeholder="Additional information gathered during consultation..."
+                                isMinimized
+                                defaultExpanded={inputMode === 'audio'}
+                                expandedSize={inputMode === 'audio' ? 'large' : 'normal'}
+                              />
+                            </div>
+                          </div>
+                        )}
                       </div>
 
-                      {/* Minimized Consultation Sections */}
-                      <div className="space-y-1">
-                        {inputMode === 'audio'
+                      {/* Vertical Divider */}
+                      <div className="w-px bg-slate-200" />
+
+                      {/* Right Column - Main Workflow (65-70%) */}
+                      <div className="h-full flex-1 space-y-4">
+                        {/* Conditional Layout Based on Documentation Mode */}
+                        {isDocumentationMode
                           ? (
                               <>
-                                <TranscriptionControls collapsed onExpand={() => setIsNoteFocused(false)} isMinimized />
-                                <AdditionalNotes
-                                  items={consultationItems}
-                                  onNotesChange={setConsultationNotes}
-                                  notes={consultationNotes}
-                                  placeholder="Additional information gathered during consultation..."
-                                  isMinimized
-                                />
+                                {/* Clinical Documentation - Top Priority */}
+                                <div className={`flex flex-col ${(generatedNotes && generatedNotes.trim()) || loading ? 'h-full' : ''}`}>
+                                  <GeneratedNotes
+                                    onGenerate={handleGenerateNotes}
+                                    onClearAll={handleClearAll}
+                                    loading={loading}
+                                    isNoteFocused={isNoteFocused}
+                                    isDocumentationMode={isDocumentationMode}
+                                  />
+                                </div>
                               </>
                             )
                           : (
-                              <>
-                                <TypedInput collapsed onExpand={() => setIsNoteFocused(false)} isMinimized />
+                              <div className="flex h-full flex-col space-y-4">
+                                {/* Input Components */}
+                                <div className="flex flex-1 flex-col space-y-4">
+                                  {inputMode === 'audio'
+                                    ? (
+                                        <TranscriptionControls
+                                          collapsed={isNoteFocused}
+                                          onExpand={() => setIsNoteFocused(false)}
+                                          isMinimized={false}
+                                          onForceDisconnectDevice={handleForceDisconnectDevice}
+                                        />
+                                      )
+                                    : (
+                                        <TypedInput
+                                          collapsed={isNoteFocused}
+                                          onExpand={() => setIsNoteFocused(false)}
+                                          isMinimized={false}
+                                        />
+                                      )}
+
+                                  {/* Separator */}
+                                  <div className="border-t border-slate-200" />
+
+                                  <AdditionalNotes
+                                    items={consultationItems}
+                                    onNotesChange={setConsultationNotes}
+                                    notes={consultationNotes}
+                                    placeholder="Additional information gathered during consultation..."
+                                    isMinimized={false}
+                                    defaultExpanded={inputMode === 'audio'}
+                                    expandedSize={inputMode === 'audio' ? 'large' : 'normal'}
+                                  />
+                                </div>
+
+                                {/* Clinical Documentation - Bottom */}
+                                <div className={`flex flex-col ${(generatedNotes && generatedNotes.trim()) || loading ? 'min-h-0 flex-1' : ''}`}>
+                                  <GeneratedNotes
+                                    onGenerate={handleGenerateNotes}
+                                    onClearAll={handleClearAll}
+                                    loading={loading}
+                                    isNoteFocused={isNoteFocused}
+                                    isDocumentationMode={isDocumentationMode}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                      </div>
+                    </div>
+                  )
+                : (
+                  /* Tablet/Mobile/Small Desktop Single-Column Layout (Unchanged) */
+                    <Stack spacing={isDesktop ? 'sm' : 'sm'} className="h-full">
+                      {/* Patient Session Manager - V2 Feature */}
+                      <PatientSessionManager />
+
+                      {/* Documentation Settings Badge - Always visible below session bar */}
+                      <DocumentationSettingsBadge />
+
+                      {/* Conditional Layout Based on Documentation Mode */}
+                      {isDocumentationMode
+                        ? (
+                            <>
+                              {/* Clinical Documentation - Top Priority */}
+                              <div className={`flex flex-col ${(generatedNotes && generatedNotes.trim()) || loading ? 'flex-1' : ''}`}>
+                                <GeneratedNotes
+                                  onGenerate={handleGenerateNotes}
+                                  onClearAll={handleClearAll}
+                                  loading={loading}
+                                  isNoteFocused={isNoteFocused}
+                                  isDocumentationMode={isDocumentationMode}
+                                />
+                              </div>
+
+                              {/* Minimized Consultation Sections */}
+                              <div className="space-y-1">
+                                <div className="space-y-2">
+                                  {inputMode === 'audio'
+                                    ? (
+                                        <TranscriptionControls
+                                          collapsed={false}
+                                          onExpand={() => setIsNoteFocused(false)}
+                                          isMinimized
+                                          onForceDisconnectDevice={handleForceDisconnectDevice}
+                                        />
+                                      )
+                                    : (
+                                        <TypedInput
+                                          collapsed={false}
+                                          onExpand={() => setIsNoteFocused(false)}
+                                          isMinimized
+                                        />
+                                      )}
+
+                                  {/* Separator */}
+                                  <div className="border-t border-slate-200" />
+
+                                  <AdditionalNotes
+                                    items={consultationItems}
+                                    onNotesChange={setConsultationNotes}
+                                    notes={consultationNotes}
+                                    placeholder="Additional information gathered during consultation..."
+                                    isMinimized
+                                    defaultExpanded={inputMode === 'audio'}
+                                    expandedSize={inputMode === 'audio' ? 'large' : 'normal'}
+                                  />
+                                </div>
+                              </div>
+                            </>
+                          )
+                        : (
+                            <div className="flex flex-1 flex-col space-y-4">
+                              {/* Input Components */}
+                              <div className="flex flex-1 flex-col space-y-4">
+                                {inputMode === 'audio'
+                                  ? (
+                                      <TranscriptionControls
+                                        collapsed={isNoteFocused}
+                                        onExpand={() => setIsNoteFocused(false)}
+                                        isMinimized={false}
+                                        onForceDisconnectDevice={handleForceDisconnectDevice}
+                                      />
+                                    )
+                                  : (
+                                      <TypedInput
+                                        collapsed={isNoteFocused}
+                                        onExpand={() => setIsNoteFocused(false)}
+                                        isMinimized={false}
+                                      />
+                                    )}
+
+                                {/* Separator */}
+                                <div className="border-t border-slate-200" />
+
                                 <AdditionalNotes
                                   items={consultationItems}
                                   onNotesChange={setConsultationNotes}
                                   notes={consultationNotes}
                                   placeholder="Additional information gathered during consultation..."
-                                  isMinimized
+                                  isMinimized={false}
+                                  defaultExpanded={inputMode === 'audio'}
+                                  expandedSize={inputMode === 'audio' ? 'large' : 'normal'}
                                 />
-                              </>
-                            )}
-                      </div>
-                    </>
-                  )
-                : (
-                    <>
-                      {/* Standard Layout - Consultation Input First */}
-                      {inputMode === 'audio'
-                        ? (
-                            <>
-                              {/* Digital Recording */}
-                              <TranscriptionControls collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
+                              </div>
 
-                              {/* Additional Notes - Clinical tools and manual information */}
-                              <AdditionalNotes
-                                items={consultationItems}
-                                onNotesChange={setConsultationNotes}
-                                notes={consultationNotes}
-                                placeholder="Additional information gathered during consultation..."
-                              />
-                            </>
-                          )
-                        : (
-                            <>
-                              {/* Manual Entry */}
-                              <TypedInput collapsed={isNoteFocused} onExpand={() => setIsNoteFocused(false)} />
-
-                              {/* Additional Notes - Clinical tools information */}
-                              <AdditionalNotes
-                                items={consultationItems}
-                                onNotesChange={setConsultationNotes}
-                                notes={consultationNotes}
-                                placeholder="Additional information gathered during consultation..."
-                              />
-                            </>
+                              {/* Clinical Documentation - Bottom */}
+                              <div className={`flex flex-col ${(generatedNotes && generatedNotes.trim()) || loading ? 'min-h-0 flex-1' : ''}`}>
+                                <GeneratedNotes
+                                  onGenerate={handleGenerateNotes}
+                                  onClearAll={handleClearAll}
+                                  loading={loading}
+                                  isNoteFocused={isNoteFocused}
+                                  isDocumentationMode={isDocumentationMode}
+                                />
+                              </div>
+                            </div>
                           )}
-
-                      {/* Clinical Documentation - Bottom */}
-                      <GeneratedNotes
-                        onGenerate={handleGenerateNotes}
-                        onClearAll={handleClearAll}
-                        loading={loading}
-                        isNoteFocused={isNoteFocused}
-                        isDocumentationMode={isDocumentationMode}
-                      />
-                    </>
+                    </Stack>
                   )}
-            </Stack>
+            </div>
           </div>
+        </Container>
+      </div>
 
-          {/* Right Column - Clinical Tools */}
-          <div className="lg:col-span-1">
-            <Stack spacing="sm">
-              {/* Feature Flag Toggle - Development Only */}
-
-              <RightPanelFeatures />
-            </Stack>
-          </div>
-        </Grid>
-      </Container>
-
-      <Footer />
+      {/* Mobile Right Panel Overlay */}
+      <MobileRightPanelOverlay
+        isOpen={rightPanelOpen}
+        onClose={() => setRightPanelOpen(false)}
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertCircle, CheckCircle, ChevronLeft, ChevronRight, Minus, Plus } from 'lucide-react';
+import { AlertCircle, ArrowLeft, CheckCircle, ChevronLeft, ChevronRight, Minus, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 import { Badge } from '@/shared/components/ui/badge';
@@ -327,18 +327,22 @@ export function TemplateGuidedEditor({ template: initialTemplate, onSave, onCanc
   };
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="h-full bg-white">
       {/* Header */}
-      <div className="border-b p-4">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Guided Template Creator</h2>
-          <Button variant="outline" onClick={onCancel}>
-            Cancel
+      <div className="border-b border-slate-200 bg-white px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-900">Guided Template Creator</h2>
+            <p className="mt-1 text-sm text-slate-600">Step-by-step wizard to build your template</p>
+          </div>
+          <Button variant="outline" onClick={onCancel} className="h-9">
+            <ArrowLeft className="mr-2 size-4" />
+            Back
           </Button>
         </div>
 
         {/* Step Progress */}
-        <div className="flex items-center gap-2">
+        <div className="mt-4 flex items-center gap-2">
           {steps.map((step, index) => (
             <div key={step.id} className="flex items-center">
               <div className={`flex items-center gap-2 rounded px-3 py-1 ${
@@ -356,26 +360,28 @@ export function TemplateGuidedEditor({ template: initialTemplate, onSave, onCanc
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>{steps[currentStepIndex]!.title}</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {steps[currentStepIndex]!.description}
-            </p>
-          </CardHeader>
-          <CardContent>
-            {currentStep === 'basics' && renderBasicsStep()}
-            {currentStep === 'structure' && renderStructureStep()}
-            {currentStep === 'placeholders' && renderPlaceholdersStep()}
-            {currentStep === 'instructions' && renderInstructionsStep()}
-            {currentStep === 'review' && renderReviewStep()}
-          </CardContent>
-        </Card>
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="mx-auto max-w-4xl">
+          <Card>
+            <CardHeader>
+              <CardTitle>{steps[currentStepIndex]!.title}</CardTitle>
+              <p className="text-sm text-slate-600">
+                {steps[currentStepIndex]!.description}
+              </p>
+            </CardHeader>
+            <CardContent>
+              {currentStep === 'basics' && renderBasicsStep()}
+              {currentStep === 'structure' && renderStructureStep()}
+              {currentStep === 'placeholders' && renderPlaceholdersStep()}
+              {currentStep === 'instructions' && renderInstructionsStep()}
+              {currentStep === 'review' && renderReviewStep()}
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between border-t p-4">
+      <div className="flex items-center justify-between border-t border-slate-200 bg-white px-6 py-4">
         <Button
           variant="outline"
           onClick={handlePrevious}

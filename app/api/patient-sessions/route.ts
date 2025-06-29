@@ -79,6 +79,9 @@ export async function POST(req: NextRequest) {
         status: 'active',
         transcriptions: JSON.stringify([]),
         consultationItems: JSON.stringify([]),
+        typedInput: '',
+        consultationNotes: '',
+        notes: '',
       })
       .returning();
 
@@ -118,6 +121,8 @@ export async function PUT(req: NextRequest) {
       status,
       transcriptions,
       notes,
+      typedInput,
+      consultationNotes,
       consultationItems,
     } = await req.json();
 
@@ -138,6 +143,12 @@ export async function PUT(req: NextRequest) {
     }
     if (notes !== undefined) {
       updateData.notes = notes;
+    }
+    if (typedInput !== undefined) {
+      updateData.typedInput = typedInput;
+    }
+    if (consultationNotes !== undefined) {
+      updateData.consultationNotes = consultationNotes;
     }
     if (transcriptions !== undefined) {
       updateData.transcriptions = JSON.stringify(transcriptions);
@@ -179,5 +190,45 @@ export async function PUT(req: NextRequest) {
   } catch (error) {
     console.error('Error updating patient session:', error);
     return NextResponse.json({ error: 'Failed to update session' }, { status: 500 });
+  }
+}
+
+// DELETE - Delete patient session
+export async function DELETE(req: NextRequest) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { sessionId } = await req.json();
+
+    if (!sessionId) {
+      return NextResponse.json({ error: 'Session ID is required' }, { status: 400 });
+    }
+
+    // Delete session (only if it belongs to the user)
+    const deletedSession = await db
+      .delete(patientSessions)
+      .where(
+        and(
+          eq(patientSessions.id, sessionId),
+          eq(patientSessions.userId, userId),
+        ),
+      )
+      .returning();
+
+    if (deletedSession.length === 0) {
+      return NextResponse.json({ error: 'Session not found or unauthorized' }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Session deleted successfully',
+      deletedSessionId: sessionId,
+    });
+  } catch (error) {
+    console.error('Error deleting patient session:', error);
+    return NextResponse.json({ error: 'Failed to delete session' }, { status: 500 });
   }
 }

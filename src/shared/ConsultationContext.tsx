@@ -20,12 +20,22 @@ export type ConsultationItem = {
 
 export type InputMode = 'audio' | 'typed';
 
+export type TranscriptionEntry = {
+  id: string;
+  text: string;
+  timestamp: string;
+  source: 'desktop' | 'mobile';
+  deviceId?: string;
+};
+
 export type PatientSession = {
   id: string;
   patientName: string;
   status: 'active' | 'completed' | 'archived';
-  transcriptions: string[];
+  transcriptions: TranscriptionEntry[];
   notes: string;
+  typedInput: string;
+  consultationNotes: string;
   templateId: string;
   consultationItems: ConsultationItem[];
   createdAt: string;
@@ -47,6 +57,8 @@ export type ConsultationState = {
   userDefaultTemplateId: string | null;
   lastGeneratedTranscription?: string;
   lastGeneratedTypedInput?: string;
+  lastGeneratedCompiledConsultationText?: string;
+  lastGeneratedTemplateId?: string;
   consentObtained: boolean;
   microphoneGain: number; // 1 to 10, default 7
   volumeThreshold: number; // 0.005 to 0.2, default 0.1
@@ -70,7 +82,13 @@ export type ConsultationState = {
   mobileV2: {
     isEnabled: boolean;
     token: string | null;
-    connectedDevices: Array<{ deviceId: string; deviceName: string; connectedAt: number }>;
+    connectedDevices: Array<{
+      deviceId: string;
+      deviceName: string;
+      deviceType?: string;
+      presenceKey?: string;
+      connectedAt: number;
+    }>;
     connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'error';
   };
 };
@@ -136,13 +154,13 @@ const ConsultationContext = createContext<
     setTemplateId: (id: string) => void;
     setInputMode: (mode: InputMode) => void;
     setTranscription: (transcript: string, isLive: boolean) => void;
-    appendTranscription: (newTranscript: string, isLive: boolean) => void;
+    appendTranscription: (newTranscript: string, isLive: boolean, source?: 'desktop' | 'mobile', deviceId?: string) => Promise<void>;
     setTypedInput: (input: string) => void;
     setGeneratedNotes: (notes: string | null) => void;
     setError: (error: string | null) => void;
     resetConsultation: () => void;
     setUserDefaultTemplateId: (id: string) => void;
-    setLastGeneratedInput: (transcription: string, typedInput?: string) => void;
+    setLastGeneratedInput: (transcription: string, typedInput?: string, compiledConsultationText?: string, templateId?: string) => void;
     resetLastGeneratedInput: () => void;
     getCurrentTranscript: () => string;
     getCurrentInput: () => string;
@@ -161,18 +179,29 @@ const ConsultationContext = createContext<
     setConsultationNotes: (notes: string) => void;
     getCompiledConsultationText: () => string;
     // Patient session management functions
+    ensureActiveSession: () => Promise<string | null>;
     createPatientSession: (patientName: string, templateId?: string) => Promise<PatientSession | null>;
-    switchToPatientSession: (sessionId: string) => void;
-    updatePatientSession: (sessionId: string, updates: Partial<PatientSession>) => void;
-    completePatientSession: (sessionId: string) => void;
+    switchToPatientSession: (sessionId: string, onSwitch?: (sessionId: string, patientName: string) => void) => void;
+    updatePatientSession: (sessionId: string, updates: Partial<PatientSession>) => Promise<void>;
+    completePatientSession: (sessionId: string) => Promise<void>;
+    deletePatientSession: (sessionId: string) => Promise<boolean>;
     loadPatientSessions: () => Promise<void>;
     getCurrentPatientSession: () => PatientSession | null;
     // Mobile V2 functions
     setMobileV2Token: (token: string | null) => void;
     setMobileV2ConnectionStatus: (status: 'disconnected' | 'connecting' | 'connected' | 'error') => void;
-    addMobileV2Device: (device: { deviceId: string; deviceName: string; connectedAt: number }) => void;
+    addMobileV2Device: (device: {
+      deviceId: string;
+      deviceName: string;
+      deviceType?: string;
+      presenceKey?: string;
+      connectedAt: number;
+    }) => void;
     removeMobileV2Device: (deviceId: string) => void;
     enableMobileV2: (enabled: boolean) => void;
+    saveNotesToCurrentSession: (notes: string) => Promise<boolean>;
+    saveTypedInputToCurrentSession: (typedInput: string) => Promise<boolean>;
+    saveConsultationNotesToCurrentSession: (consultationNotes: string) => Promise<boolean>;
   })
   | null
 >(null);
@@ -188,8 +217,9 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
           ...parsed,
           userDefaultTemplateId: userDefault,
           lastGeneratedTranscription: '',
-
           lastGeneratedTypedInput: '',
+          lastGeneratedCompiledConsultationText: '',
+          lastGeneratedTemplateId: '',
           consentObtained: false,
           // Ensure new fields have defaults if not present in stored data
           inputMode: parsed.inputMode || 'audio',
@@ -240,7 +270,10 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     }));
   }, []);
 
-  const appendTranscription = useCallback((newTranscript: string, isLive: boolean) => {
+  const appendTranscription = useCallback(async (newTranscript: string, isLive: boolean, source: 'desktop' | 'mobile' = 'desktop', deviceId?: string) => {
+    const sessionId = state.currentPatientSessionId;
+
+    // Update local state
     setState(prev => ({
       ...prev,
       transcription: {
@@ -250,7 +283,49 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
         isLive,
       },
     }));
-  }, []);
+
+    // Save to database if we have a session
+    if (sessionId && newTranscript.trim()) {
+      try {
+        const transcriptionEntry: TranscriptionEntry = {
+          id: Math.random().toString(36).substr(2, 9),
+          text: newTranscript.trim(),
+          timestamp: new Date().toISOString(),
+          source,
+          deviceId,
+        };
+
+        // Get current session's transcriptions
+        const currentSession = state.patientSessions.find(s => s.id === sessionId);
+        const updatedTranscriptions = [
+          ...(currentSession?.transcriptions || []),
+          transcriptionEntry,
+        ];
+
+        // Update session in database
+        await fetch('/api/patient-sessions', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId,
+            transcriptions: updatedTranscriptions,
+          }),
+        });
+
+        // Update local state
+        setState(prev => ({
+          ...prev,
+          patientSessions: prev.patientSessions.map(session =>
+            session.id === sessionId
+              ? { ...session, transcriptions: updatedTranscriptions }
+              : session,
+          ),
+        }));
+      } catch (error) {
+        console.error('Failed to save transcription:', error);
+      }
+    }
+  }, [state.currentPatientSessionId, state.patientSessions]);
 
   const setTypedInput = useCallback((typedInput: string) =>
     setState(prev => ({ ...prev, typedInput })), []);
@@ -272,11 +347,13 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     }));
   }, []);
 
-  const setLastGeneratedInput = useCallback((transcription: string, typedInput?: string) =>
+  const setLastGeneratedInput = useCallback((transcription: string, typedInput?: string, compiledConsultationText?: string, templateId?: string) =>
     setState(prev => ({
       ...prev,
       lastGeneratedTranscription: transcription,
       lastGeneratedTypedInput: typedInput || '',
+      lastGeneratedCompiledConsultationText: compiledConsultationText || '',
+      lastGeneratedTemplateId: templateId || '',
     })), []);
 
   const resetLastGeneratedInput = useCallback(() =>
@@ -284,6 +361,8 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       ...prev,
       lastGeneratedTranscription: '',
       lastGeneratedTypedInput: '',
+      lastGeneratedCompiledConsultationText: '',
+      lastGeneratedTemplateId: '',
     })), []);
 
   const resetConsultation = useCallback(() => {
@@ -294,11 +373,15 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       userDefaultTemplateId: prev.userDefaultTemplateId,
       inputMode: 'audio',
       lastGeneratedTranscription: '',
-
       lastGeneratedTypedInput: '',
+      lastGeneratedCompiledConsultationText: '',
+      lastGeneratedTemplateId: '',
       transcription: { transcript: '', isLive: false },
       typedInput: '',
       consentObtained: false,
+      // Preserve patient session state
+      patientSessions: prev.patientSessions,
+      currentPatientSessionId: prev.currentPatientSessionId,
     }));
   }, []);
 
@@ -389,6 +472,46 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [state.consultationItems, state.consultationNotes]);
 
+  // Auto-create session helper
+  const ensureActiveSession = useCallback(async (): Promise<string | null> => {
+    // Return existing session if we have one
+    if (state.currentPatientSessionId) {
+      return state.currentPatientSessionId;
+    }
+
+    // Auto-create session with default name
+    const now = new Date();
+    const defaultName = `Patient ${now.toLocaleDateString()} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+    try {
+      const response = await fetch('/api/patient-sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patientName: defaultName,
+          templateId: state.templateId,
+        }),
+      });
+
+      if (response.ok) {
+        const { session } = await response.json();
+
+        // Update local state
+        setState(prev => ({
+          ...prev,
+          patientSessions: [...prev.patientSessions, session],
+          currentPatientSessionId: session.id,
+        }));
+
+        return session.id;
+      }
+    } catch (error) {
+      console.error('Failed to auto-create session:', error);
+    }
+
+    return null;
+  }, [state.currentPatientSessionId, state.templateId]);
+
   // Patient session management functions
   const createPatientSession = useCallback(async (patientName: string, templateId?: string): Promise<PatientSession | null> => {
     try {
@@ -421,28 +544,179 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [state.templateId]);
 
-  const switchToPatientSession = useCallback((sessionId: string) => {
+  const switchToPatientSession = useCallback((sessionId: string, onSwitch?: (sessionId: string, patientName: string) => void) => {
+    // Find the session and load its transcriptions
+    const targetSession = state.patientSessions.find(session => session.id === sessionId);
+
+    // Reconstruct transcript text from transcription entries
+    let reconstructedTranscript = '';
+    if (targetSession?.transcriptions) {
+      reconstructedTranscript = targetSession.transcriptions
+        .map(entry => entry.text)
+        .join(' ')
+        .trim();
+    }
+
     setState(prev => ({
       ...prev,
       currentPatientSessionId: sessionId,
+      // Load the session's transcript
+      transcription: {
+        transcript: reconstructedTranscript,
+        isLive: false,
+      },
+      // Load session data
+      generatedNotes: targetSession?.notes || null,
+      typedInput: targetSession?.typedInput || '',
+      consultationNotes: targetSession?.consultationNotes || '',
+      consultationItems: targetSession?.consultationItems || [],
     }));
-  }, []);
 
-  const updatePatientSession = useCallback((sessionId: string, updates: Partial<PatientSession>) => {
+    // Notify about the switch
+    if (onSwitch && targetSession) {
+      onSwitch(sessionId, targetSession.patientName);
+    }
+  }, [state.patientSessions]);
+
+  const updatePatientSession = useCallback(async (sessionId: string, updates: Partial<PatientSession>) => {
+    // Update local state immediately for optimistic UI updates
     setState(prev => ({
       ...prev,
       patientSessions: prev.patientSessions.map(session =>
         session.id === sessionId ? { ...session, ...updates } : session,
       ),
     }));
+
+    // Persist to database
+    try {
+      const response = await fetch('/api/patient-sessions', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId,
+          ...updates,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update session');
+      }
+
+      const { session } = await response.json();
+
+      // Update with server response to ensure consistency
+      setState(prev => ({
+        ...prev,
+        patientSessions: prev.patientSessions.map(s =>
+          s.id === sessionId ? session : s,
+        ),
+      }));
+    } catch (error) {
+      console.error('Error updating patient session:', error);
+      // Revert optimistic update on failure
+      setState(prev => ({
+        ...prev,
+        patientSessions: prev.patientSessions.map(session =>
+          session.id === sessionId ? { ...session, ...updates } : session,
+        ),
+      }));
+      throw error;
+    }
   }, []);
 
-  const completePatientSession = useCallback((sessionId: string) => {
-    updatePatientSession(sessionId, {
+  // New function to save notes to current session
+  const saveNotesToCurrentSession = useCallback(async (notes: string) => {
+    if (!state.currentPatientSessionId) {
+      console.warn('No current patient session to save notes to');
+      return false;
+    }
+
+    try {
+      await updatePatientSession(state.currentPatientSessionId, { notes });
+      return true;
+    } catch (error) {
+      console.error('Error saving notes to current session:', error);
+      return false;
+    }
+  }, [state.currentPatientSessionId, updatePatientSession]);
+
+  // Auto-save typed input to current session
+  const saveTypedInputToCurrentSession = useCallback(async (typedInput: string) => {
+    if (!state.currentPatientSessionId) {
+      console.warn('No current patient session to save typed input to');
+      return false;
+    }
+
+    try {
+      await updatePatientSession(state.currentPatientSessionId, { typedInput });
+      return true;
+    } catch (error) {
+      console.error('Error saving typed input to current session:', error);
+      return false;
+    }
+  }, [state.currentPatientSessionId, updatePatientSession]);
+
+  // Auto-save consultation notes to current session
+  const saveConsultationNotesToCurrentSession = useCallback(async (consultationNotes: string) => {
+    if (!state.currentPatientSessionId) {
+      console.warn('No current patient session to save consultation notes to');
+      return false;
+    }
+
+    try {
+      await updatePatientSession(state.currentPatientSessionId, { consultationNotes });
+      return true;
+    } catch (error) {
+      console.error('Error saving consultation notes to current session:', error);
+      return false;
+    }
+  }, [state.currentPatientSessionId, updatePatientSession]);
+
+  const completePatientSession = useCallback(async (sessionId: string) => {
+    await updatePatientSession(sessionId, {
       status: 'completed',
       completedAt: new Date().toISOString(),
     });
-  }, [updatePatientSession]);
+
+    // Clear current session if we're completing the active session
+    if (sessionId === state.currentPatientSessionId) {
+      setState(prev => ({
+        ...prev,
+        currentPatientSessionId: null,
+        transcription: { transcript: '', isLive: false },
+      }));
+    }
+  }, [updatePatientSession, state.currentPatientSessionId]);
+
+  const deletePatientSession = useCallback(async (sessionId: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/patient-sessions', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete session');
+      }
+
+      // Update state - clear session data if we deleted the current session
+      setState((prev) => {
+        const isCurrentSession = prev.currentPatientSessionId === sessionId;
+        return {
+          ...prev,
+          patientSessions: prev.patientSessions.filter(session => session.id !== sessionId),
+          currentPatientSessionId: isCurrentSession ? null : prev.currentPatientSessionId,
+          transcription: isCurrentSession ? { transcript: '', isLive: false } : prev.transcription,
+        };
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error deleting patient session:', error);
+      return false;
+    }
+  }, []);
 
   const loadPatientSessions = useCallback(async () => {
     try {
@@ -481,7 +755,13 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     }));
   }, []);
 
-  const addMobileV2Device = useCallback((device: { deviceId: string; deviceName: string; connectedAt: number }) => {
+  const addMobileV2Device = useCallback((device: {
+    deviceId: string;
+    deviceName: string;
+    deviceType?: string;
+    presenceKey?: string;
+    connectedAt: number;
+  }) => {
     setState(prev => ({
       ...prev,
       mobileV2: {
@@ -528,6 +808,8 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setConsentObtained,
     lastGeneratedTranscription: state.lastGeneratedTranscription || '',
     lastGeneratedTypedInput: state.lastGeneratedTypedInput || '',
+    lastGeneratedCompiledConsultationText: state.lastGeneratedCompiledConsultationText || '',
+    lastGeneratedTemplateId: state.lastGeneratedTemplateId || '',
     userDefaultTemplateId: state.userDefaultTemplateId,
     getCurrentTranscript,
     getCurrentInput,
@@ -544,11 +826,12 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     removeConsultationItem,
     setConsultationNotes,
     getCompiledConsultationText,
-    // Patient session functions
+    ensureActiveSession,
     createPatientSession,
     switchToPatientSession,
     updatePatientSession,
     completePatientSession,
+    deletePatientSession,
     loadPatientSessions,
     getCurrentPatientSession,
     // Mobile V2 functions
@@ -557,6 +840,10 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     addMobileV2Device,
     removeMobileV2Device,
     enableMobileV2,
+    // New function
+    saveNotesToCurrentSession,
+    saveTypedInputToCurrentSession,
+    saveConsultationNotesToCurrentSession,
   }), [
     state,
     setStatus,
@@ -584,10 +871,12 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     removeConsultationItem,
     setConsultationNotes,
     getCompiledConsultationText,
+    ensureActiveSession,
     createPatientSession,
     switchToPatientSession,
     updatePatientSession,
     completePatientSession,
+    deletePatientSession,
     loadPatientSessions,
     getCurrentPatientSession,
     setMobileV2Token,
@@ -595,6 +884,9 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     addMobileV2Device,
     removeMobileV2Device,
     enableMobileV2,
+    saveNotesToCurrentSession,
+    saveTypedInputToCurrentSession,
+    saveConsultationNotesToCurrentSession,
   ]);
 
   return (

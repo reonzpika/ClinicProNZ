@@ -31,6 +31,7 @@ export const useTranscription = () => {
     transcription,
     microphoneGain,
     volumeThreshold,
+    ensureActiveSession,
   } = useConsultation();
 
   const [state, setState] = useState<TranscriptionState>({
@@ -110,7 +111,7 @@ export const useTranscription = () => {
 
       if (transcript && transcript.trim()) {
         // Append new transcript using the safe append function
-        appendTranscription(transcript.trim(), state.isRecording);
+        await appendTranscription(transcript.trim(), state.isRecording, 'desktop');
 
         // Update completion counter
         setState(prev => ({
@@ -350,6 +351,9 @@ export const useTranscription = () => {
         recordingEnd: null,
       }));
 
+      // Ensure we have an active patient session before recording
+      await ensureActiveSession();
+
       const success = await initializeAudio();
       if (!success) {
         return;
@@ -380,7 +384,7 @@ export const useTranscription = () => {
       setError(`Failed to start recording: ${error.message}`);
       cleanupAudio();
     }
-  }, [initializeAudio, setStatus, setTranscription, setError, vadLoop, cleanupAudio]);
+  }, [initializeAudio, setStatus, setTranscription, setError, vadLoop, cleanupAudio, ensureActiveSession]);
 
   // Stop recording and finalize any active session
   const stopRecording = useCallback(async () => {

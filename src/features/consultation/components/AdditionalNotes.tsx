@@ -1,9 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { Textarea } from '@/shared/components/ui/textarea';
+import { useConsultation } from '@/shared/ConsultationContext';
 
 type ConsultationItem = {
   id: string;
@@ -19,6 +19,8 @@ type AdditionalNotesProps = {
   notes: string;
   placeholder?: string;
   isMinimized?: boolean;
+  defaultExpanded?: boolean;
+  expandedSize?: 'normal' | 'large';
 };
 
 export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
@@ -27,17 +29,54 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   notes,
   placeholder = 'Additional information gathered during consultation...',
   isMinimized = false,
+  defaultExpanded = true,
+  expandedSize = 'normal',
 }) => {
+  const { saveConsultationNotesToCurrentSession } = useConsultation();
   // Track processed items to avoid duplicates
-  const [processedItemIds] = React.useState(new Set<string>());
-  const [isExpanded, setIsExpanded] = React.useState(!isMinimized);
+  const [processedItemIds] = useState(new Set<string>());
+  const [isExpanded, setIsExpanded] = useState(isMinimized ? false : defaultExpanded);
+  const [lastSavedNotes, setLastSavedNotes] = useState('');
+
+  // Sync expansion state with defaultExpanded prop changes (input mode changes)
+  useEffect(() => {
+    if (!isMinimized) {
+      setIsExpanded(defaultExpanded);
+    }
+  }, [defaultExpanded, isMinimized]);
+
+  // Initialize lastSavedNotes when component mounts
+  useEffect(() => {
+    setLastSavedNotes(notes);
+  }, []);
+
+  // Update lastSavedNotes when notes are loaded from session switching
+  useEffect(() => {
+    if (notes !== lastSavedNotes) {
+      setLastSavedNotes(notes);
+    }
+  }, [notes, lastSavedNotes]);
+
+  // Save consultation notes on blur (when user finishes editing)
+  const handleNotesBlur = async () => {
+    if (notes !== lastSavedNotes && notes.trim() !== '') {
+      try {
+        const success = await saveConsultationNotesToCurrentSession(notes);
+        if (success) {
+          setLastSavedNotes(notes);
+        }
+      } catch (error) {
+        console.error('Failed to save consultation notes:', error);
+      }
+    }
+  };
 
   // Auto-append new items to notes
-  React.useEffect(() => {
-    const newItems = items.filter((item: ConsultationItem) => !processedItemIds.has(item.id));
+  useEffect(() => {
+    const newItems = items.filter(item => !processedItemIds.has(item.id));
 
     if (newItems.length > 0) {
-      const newItemsText = newItems.map((item: ConsultationItem) => `${item.title}: ${item.content}`).join('\n\n');
+      const newItemsText = newItems.map(item => `${item.title}: ${item.content}`).join('\n\n');
       const currentNotes = notes.trim();
 
       const updatedNotes = currentNotes
@@ -45,7 +84,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
         : newItemsText;
 
       // Mark items as processed
-      newItems.forEach((item: ConsultationItem) => processedItemIds.add(item.id));
+      newItems.forEach(item => processedItemIds.add(item.id));
 
       onNotesChange(updatedNotes);
     }
@@ -56,21 +95,29 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     onNotesChange(newText);
   };
 
+  // Character count display helper
+  const renderCharacterCount = () => {
+    if (!notes.trim()) {
+      return null;
+    }
+    return (
+      <span className="text-xs text-slate-500">
+        (
+        {notes.trim().length}
+        {' '}
+        chars)
+      </span>
+    );
+  };
+
   // Minimized view (in documentation mode)
   if (isMinimized) {
     return (
-      <Card className="border-slate-200 bg-white shadow-sm">
-        <CardHeader className="flex flex-row items-center justify-between p-2">
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-xs font-medium text-slate-700">Additional Notes</span>
-            {notes.trim() && (
-              <span className="text-xs text-slate-500">
-                (
-                {notes.trim().length}
-                {' '}
-                chars)
-              </span>
-            )}
+            {renderCharacterCount()}
           </div>
           <button
             type="button"
@@ -79,55 +126,108 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
           >
             {isExpanded ? '−' : '+'}
           </button>
-        </CardHeader>
+        </div>
         {isExpanded && (
-          <CardContent className="p-2 pt-0">
-            <div>
-              <Textarea
-                id="additional-notes-minimized"
-                value={notes}
-                onChange={e => handleTextChange(e.target.value)}
-                placeholder={placeholder}
-                className="resize-none text-xs"
-                rows={4}
-              />
-              <p className="mt-1 text-xs text-slate-500">
-                Information from clinical tools appears here
-              </p>
-            </div>
-          </CardContent>
+          <div>
+            <Textarea
+              id="additional-notes-minimized"
+              value={notes}
+              onChange={e => handleTextChange(e.target.value)}
+              onBlur={handleNotesBlur}
+              placeholder={placeholder}
+              className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              rows={4}
+            />
+            <p className="mt-1 text-xs text-slate-500">
+              Information from clinical tools appears here
+            </p>
+          </div>
         )}
-      </Card>
+      </div>
+    );
+  }
+
+  // Collapsed standard view
+  if (!isExpanded) {
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-slate-700">Additional Notes (optional)</span>
+            {renderCharacterCount()}
+          </div>
+          <button
+            type="button"
+            className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
+            onClick={() => setIsExpanded(true)}
+          >
+            +
+          </button>
+        </div>
+      </div>
     );
   }
 
   // Standard view
-  return (
-    <Card className="border-slate-200 bg-white shadow-sm">
-      <CardHeader className="border-b border-slate-100 bg-slate-50">
-        <h3 className="text-sm font-medium text-slate-700">Additional Notes</h3>
-      </CardHeader>
-      <CardContent className="p-4">
-        <div className="space-y-4">
-          {/* Editable Additional Notes */}
-          <div>
-            <label htmlFor="additional-notes" className="mb-2 block text-xs font-medium uppercase tracking-wide text-slate-600">
-              Additional Notes
-            </label>
-            <Textarea
-              id="additional-notes"
-              value={notes}
-              onChange={e => handleTextChange(e.target.value)}
-              placeholder={placeholder}
-              className="resize-none text-sm"
-              rows={8}
-            />
-            <p className="mt-1 text-xs text-slate-500">
-              Information added from clinical tools will appear here and can be edited as needed.
-            </p>
-          </div>
+  if (expandedSize === 'large') {
+    return (
+      <div className="flex h-full flex-col">
+        <div className="mb-3 flex items-center justify-between">
+          <label htmlFor="additional-notes" className="text-sm font-medium text-slate-700">
+            Additional Notes (optional)
+          </label>
+          <button
+            type="button"
+            className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
+            onClick={() => setIsExpanded(false)}
+          >
+            −
+          </button>
         </div>
-      </CardContent>
-    </Card>
+        <div className="flex flex-1 flex-col space-y-2">
+          <Textarea
+            id="additional-notes"
+            value={notes}
+            onChange={e => handleTextChange(e.target.value)}
+            onBlur={handleNotesBlur}
+            placeholder={placeholder}
+            className="min-h-[200px] w-full flex-1 resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          />
+          <p className="text-xs text-slate-500">
+            Information added from clinical tools will appear here and can be edited as needed.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Normal sized view
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <label htmlFor="additional-notes" className="text-sm font-medium text-slate-700">
+          Additional Notes (optional)
+        </label>
+        <button
+          type="button"
+          className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
+          onClick={() => setIsExpanded(false)}
+        >
+          −
+        </button>
+      </div>
+      <Textarea
+        id="additional-notes"
+        value={notes}
+        onChange={e => handleTextChange(e.target.value)}
+        onBlur={handleNotesBlur}
+        placeholder={placeholder}
+        className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+        rows={8}
+      />
+      <p className="text-xs text-slate-500">
+        Information added from clinical tools will appear here and can be edited as needed.
+      </p>
+    </div>
   );
 };

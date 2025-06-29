@@ -23,6 +23,9 @@ import { submitFeatureRequest } from '@/features/roadmap/roadmap-service';
 type SidebarProps = {
   isCollapsed: boolean;
   onToggle: () => void;
+  isMobileOpen?: boolean;
+  onMobileClose?: () => void;
+  isDesktop?: boolean;
 };
 
 type NavItem = {
@@ -45,7 +48,13 @@ const infoNavItems: NavItem[] = [
   { href: '/privacy-info', label: 'Privacy', icon: Shield },
 ];
 
-export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
+export const Sidebar: React.FC<SidebarProps> = ({
+  isCollapsed,
+  onToggle,
+  isMobileOpen = false,
+  onMobileClose,
+  isDesktop = true,
+}) => {
   const { isSignedIn } = useAuth();
   const router = useRouter();
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -76,6 +85,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
       setShowAuthModal(true);
     } else {
       router.push(item.href);
+      // Close mobile sidebar after navigation
+      if (!isDesktop && onMobileClose) {
+        onMobileClose();
+      }
     }
   };
 
@@ -100,8 +113,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggle }) => {
   return (
     <>
       <div className={`
-        fixed left-0 top-0 z-40 h-full border-r border-slate-200 bg-white transition-all duration-300 ease-in-out
-        ${isCollapsed ? 'w-16' : 'w-64'}
+        fixed left-0 top-0 h-full border-r border-slate-200 bg-white transition-all duration-300 ease-in-out
+        ${isDesktop
+      ? `z-40 ${isCollapsed ? 'w-16' : 'w-64'}`
+      : `z-50 w-64 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}`
+    }
       `}
       >
         {/* Logo and Toggle Button */}

@@ -33,7 +33,6 @@ export async function POST(_req: Request) {
     return NextResponse.json({
       token,
       mobileUrl,
-      wsUrl: 'ws://localhost:8080/ws/mobile',
       expiresAt: expiresAt.toISOString(),
       qrData: mobileUrl, // For QR code generation
     });

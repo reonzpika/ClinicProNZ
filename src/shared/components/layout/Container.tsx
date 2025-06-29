@@ -3,7 +3,7 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 export type ContainerProps = {
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'fluid';
 } & React.HTMLAttributes<HTMLDivElement>;
 
 const Container = React.forwardRef<HTMLDivElement, ContainerProps>(
@@ -12,12 +12,13 @@ const Container = React.forwardRef<HTMLDivElement, ContainerProps>(
       <div
         ref={ref}
         className={cn(
-          'mx-auto w-full px-4',
+          'mx-auto w-full',
           {
-            'max-w-screen-sm': size === 'sm',
-            'max-w-screen-md': size === 'md',
-            'max-w-screen-lg': size === 'lg',
-            'max-w-screen-xl': size === 'xl',
+            'max-w-screen-sm px-4': size === 'sm',
+            'max-w-screen-md px-4': size === 'md',
+            'max-w-screen-lg px-4': size === 'lg',
+            'max-w-screen-xl px-4': size === 'xl',
+            'px-4 sm:px-6 lg:px-8': size === 'fluid',
           },
           className,
         )}

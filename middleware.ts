@@ -45,6 +45,14 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
+  // Protect /api/ably routes
+  if (req.nextUrl.pathname.startsWith('/api/ably')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return resolvedAuth.redirectToSignIn();
+    }
+  }
+
   // Protect /templates page - redirect to sign in if not authenticated
   if (req.nextUrl.pathname.startsWith('/templates')) {
     const resolvedAuth = await auth();
@@ -64,6 +72,7 @@ export const config = {
     '/api/patient-sessions/:path*',
     '/api/mobile/:path*',
     '/api/ws/:path*',
+    '/api/ably/:path*',
     '/templates/:path*',
   ],
 };

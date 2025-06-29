@@ -12,10 +12,9 @@ import { TemplatePreview } from '@/features/templates/components/TemplatePreview
 import type { Template } from '@/features/templates/types';
 import { createTemplate, deleteTemplate, fetchTemplates, updateTemplate } from '@/features/templates/utils/api';
 import { Container } from '@/shared/components/layout/Container';
-import { Grid } from '@/shared/components/layout/Grid';
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { useConsultation } from '@/shared/ConsultationContext';
+import { useResponsive } from '@/shared/hooks/useResponsive';
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -25,6 +24,7 @@ export default function TemplatesPage() {
   const [error, setError] = useState<string | null>(null);
   const { setUserDefaultTemplateId, userDefaultTemplateId } = useConsultation();
   const { isSignedIn } = useAuth();
+  const { isMobile: _isMobile, isTablet: _isTablet, isLargeDesktop } = useResponsive();
   const hasReorderedRef = useRef(false);
 
   useEffect(() => {
@@ -125,80 +125,112 @@ export default function TemplatesPage() {
     }
   };
 
-  // handleCancel function removed - functionality moved inline
+  const handleSaveTemplate = async (template: Omit<Template, 'id'>) => {
+    try {
+      if (selectedTemplate && selectedTemplate.id && !selectedTemplate.id.startsWith('new-')) {
+        // Editing existing template
+        await updateTemplate(selectedTemplate.id, template);
+        setTemplates(prev => prev.map(t => t.id === selectedTemplate.id ? { ...template, id: selectedTemplate.id } : t));
+      } else {
+        // Creating new template
+        const newTemplate = await createTemplate(template);
+        setTemplates(prev => [...prev, newTemplate]);
+        setSelectedTemplate(newTemplate);
+      }
+      setIsEditing(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save template');
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    if (selectedTemplate && selectedTemplate.id?.startsWith('new-')) {
+      setSelectedTemplate(null);
+    }
+  };
+
+  const renderEmptyState = () => (
+    <div className="flex h-full min-h-[400px] items-center justify-center">
+      <div className="space-y-4 text-center">
+        <div className="text-slate-500">
+          <svg className="mx-auto mb-4 size-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <h3 className="text-lg font-medium text-slate-700">No Template Selected</h3>
+          <p className="text-sm text-slate-500">Select a template from the list to preview it</p>
+        </div>
+        {isSignedIn && (
+          <Button onClick={() => setIsEditing(true)} className="bg-slate-600 hover:bg-slate-700">
+            Create Your First Template
+          </Button>
+        )}
+      </div>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="h-screen bg-white">
       {/* Performance Monitor - only in development */}
       <TemplatePerformanceMonitor />
 
-      <Container className="py-8">
-        <div className="space-y-6">
-          {/* Template Management */}
-          {isEditing ? (
-            // Check if we're editing an existing template or creating a new one
-            selectedTemplate && selectedTemplate.id && !selectedTemplate.id.startsWith('new-') ? (
-              // Editing existing template - go directly to TemplateEditor
-              <TemplateEditor
-                template={selectedTemplate}
-                onSave={async (template) => {
-                  try {
-                    await updateTemplate(selectedTemplate.id!, template);
-                    setTemplates(prev => prev.map(t => t.id === selectedTemplate.id ? template : t));
-                    setIsEditing(false);
-                    setSelectedTemplate(null);
-                  } catch (err) {
-                    setError(err instanceof Error ? err.message : 'Failed to save template');
-                  }
-                }}
-                onCancel={() => {
-                  setIsEditing(false);
-                  setSelectedTemplate(null);
-                }}
-              />
+      <Container size="fluid" className="h-full">
+        <div className="flex h-full flex-col">
+          {!isSignedIn && (
+            <div className="p-4">
+              <p className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-600">
+                Sign in to create and manage custom templates
+              </p>
+            </div>
+          )}
+
+          {/* Main Content Area */}
+          <div className="min-h-0 flex-1">
+            {isEditing ? (
+              // Full-width editing mode
+              <div className="h-full">
+                {selectedTemplate && selectedTemplate.id && !selectedTemplate.id.startsWith('new-') ? (
+                  <TemplateEditor
+                    template={selectedTemplate}
+                    onSave={handleSaveTemplate}
+                    onCancel={handleCancel}
+                  />
+                ) : (
+                  <TemplateCreationWizard
+                    onSave={handleSaveTemplate}
+                    onCancel={handleCancel}
+                  />
+                )}
+              </div>
             ) : (
-              // Creating new template - use TemplateCreationWizard
-              <TemplateCreationWizard
-                onSave={async (template) => {
-                  try {
-                    const newTemplate = await createTemplate(template);
-                    setTemplates(prev => [...prev, newTemplate]);
-                    setIsEditing(false);
-                    setSelectedTemplate(null);
-                  } catch (err) {
-                    setError(err instanceof Error ? err.message : 'Failed to save template');
-                  }
-                }}
-                onCancel={() => {
-                  setIsEditing(false);
-                  setSelectedTemplate(null);
-                }}
-              />
-            )
-          ) : (
-            <Grid cols={12} className="gap-6">
-              {/* Template List */}
-              <div className="col-span-12 lg:col-span-4">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <h2 className="text-lg font-semibold">Your Templates</h2>
-                    {!isSignedIn && (
-                      <p className="text-xs text-muted-foreground">Sign in to create custom templates</p>
-                    )}
-                  </CardHeader>
-                  <CardContent>
-                    {loading
-                      ? (
-                          <div className="space-y-2">
-                            {[...Array(3)].map((_, i) => (
-                              <div key={i} className="h-16 animate-pulse rounded bg-muted" />
-                            ))}
-                          </div>
-                        )
-                      : error
-                        ? (
+              // Dual-column or single-column layout based on screen size
+              <>
+                {isLargeDesktop ? (
+                  <div className="flex h-full gap-6 p-4">
+                    {/* Left Column - Template Navigator (30-35%) */}
+                    <div className="h-full w-1/3">
+                      <div className="flex h-full flex-col rounded-lg border border-slate-200 bg-white">
+                        <div className="shrink-0 border-b border-slate-200 p-4">
+                          <h2 className="text-lg font-medium text-slate-900">Your Templates</h2>
+                          <p className="mt-1 text-sm text-slate-600">
+                            {templates.length}
+                            {' '}
+                            template
+                            {templates.length !== 1 ? 's' : ''}
+                            {' '}
+                            available
+                          </p>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-4">
+                          {loading ? (
+                            <div className="space-y-2">
+                              {[...Array(3)].map((_, i) => (
+                                <div key={i} className="h-12 animate-pulse rounded bg-slate-100" />
+                              ))}
+                            </div>
+                          ) : error ? (
                             <div className="py-8 text-center text-red-600">
-                              <p>
+                              <p className="text-sm">
                                 Error:
                                 {error}
                               </p>
@@ -206,8 +238,7 @@ export default function TemplatesPage() {
                                 Retry
                               </Button>
                             </div>
-                          )
-                        : (
+                          ) : (
                             <TemplateList
                               templates={templates}
                               selectedTemplate={selectedTemplate}
@@ -223,42 +254,113 @@ export default function TemplatesPage() {
                               userDefaultTemplateId={userDefaultTemplateId}
                               onSetDefault={setUserDefaultTemplateId}
                               onReorder={handleReorder}
-                              onCreateNew={() => setIsEditing(true)}
+                              onCreateNew={() => {
+                                setSelectedTemplate(null);
+                                setIsEditing(true);
+                              }}
                             />
                           )}
-                  </CardContent>
-                </Card>
-              </div>
+                        </div>
+                      </div>
+                    </div>
 
-              {/* Template Preview/Details */}
-              <div className="col-span-12 lg:col-span-8">
-                {selectedTemplate
-                  ? (
-                      <TemplatePreview template={selectedTemplate} />
-                    )
-                  : (
-                      <Card className="h-full">
-                        <CardContent className="flex h-full min-h-[400px] items-center justify-center">
-                          <div className="space-y-4 text-center">
-                            <div className="text-muted-foreground">
-                              <svg className="mx-auto mb-4 size-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                              </svg>
-                              <h3 className="text-lg font-medium">No Template Selected</h3>
-                              <p className="text-sm">Select a template from the list to preview it</p>
-                            </div>
-                            {isSignedIn && (
-                              <Button onClick={() => setIsEditing(true)}>
-                                Create Your First Template
-                              </Button>
-                            )}
+                    {/* Vertical Divider */}
+                    <div className="w-px bg-slate-200" />
+
+                    {/* Right Column - Template Preview/Details (65-70%) */}
+                    <div className="h-full flex-1">
+                      <div className="h-full rounded-lg border border-slate-200 bg-white">
+                        {selectedTemplate ? (
+                          <TemplatePreview
+                            template={selectedTemplate}
+                            onEdit={(template) => {
+                              setSelectedTemplate(template);
+                              setIsEditing(true);
+                            }}
+                          />
+                        ) : (
+                          renderEmptyState()
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  // Mobile/Tablet single-column layout
+                  <div className="flex h-full flex-col gap-4 p-4">
+                    {/* Template List Section */}
+                    <div className="shrink-0 rounded-lg border border-slate-200 bg-white">
+                      <div className="border-b border-slate-200 p-4">
+                        <h2 className="text-lg font-medium text-slate-900">Your Templates</h2>
+                        <p className="mt-1 text-sm text-slate-600">
+                          {templates.length}
+                          {' '}
+                          template
+                          {templates.length !== 1 ? 's' : ''}
+                          {' '}
+                          available
+                        </p>
+                      </div>
+                      <div className="max-h-60 overflow-y-auto p-4">
+                        {loading ? (
+                          <div className="space-y-2">
+                            {[...Array(3)].map((_, i) => (
+                              <div key={i} className="h-12 animate-pulse rounded bg-slate-100" />
+                            ))}
                           </div>
-                        </CardContent>
-                      </Card>
-                    )}
-              </div>
-            </Grid>
-          )}
+                        ) : error ? (
+                          <div className="py-8 text-center text-red-600">
+                            <p className="text-sm">
+                              Error:
+                              {error}
+                            </p>
+                            <Button variant="outline" size="sm" className="mt-2" onClick={() => window.location.reload()}>
+                              Retry
+                            </Button>
+                          </div>
+                        ) : (
+                          <TemplateList
+                            templates={templates}
+                            selectedTemplate={selectedTemplate}
+                            onTemplateSelect={setSelectedTemplate}
+                            onTemplateHover={() => {}}
+                            isSignedIn={!!isSignedIn}
+                            onEdit={(template) => {
+                              setSelectedTemplate(template);
+                              setIsEditing(true);
+                            }}
+                            onDelete={handleDelete}
+                            onCopy={handleCopy}
+                            userDefaultTemplateId={userDefaultTemplateId}
+                            onSetDefault={setUserDefaultTemplateId}
+                            onReorder={handleReorder}
+                            onCreateNew={() => {
+                              setSelectedTemplate(null);
+                              setIsEditing(true);
+                            }}
+                          />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Template Preview Section */}
+                    <div className="min-h-0 flex-1 rounded-lg border border-slate-200 bg-white">
+                      {selectedTemplate ? (
+                        <TemplatePreview
+                          template={selectedTemplate}
+                          onEdit={(template) => {
+                            setSelectedTemplate(template);
+                            setIsEditing(true);
+                          }}
+                        />
+                      ) : (
+                        renderEmptyState()
+                      )}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </Container>
     </div>

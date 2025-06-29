@@ -1,16 +1,18 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { Section } from '@/shared/components/layout/Section';
-import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
 import { useConsultation } from '@/shared/ConsultationContext';
 
+import { ConsultationInputHeader } from './ConsultationInputHeader';
+
 export function TypedInput({ collapsed, onExpand, isMinimized }: { collapsed?: boolean; onExpand?: () => void; isMinimized?: boolean }) {
-  const { typedInput, setTypedInput } = useConsultation();
+  const { typedInput, setTypedInput, saveTypedInputToCurrentSession } = useConsultation();
   const [localInput, setLocalInput] = useState(typedInput);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isExpanded, setIsExpanded] = useState(!isMinimized);
+  const [lastSavedInput, setLastSavedInput] = useState('');
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'editing' | 'saving'>('saved');
+  const [showHelp, setShowHelp] = useState(false);
 
   // Check if user has typed anything (not just empty lines)
   const hasContent = localInput.trim().length > 0;
@@ -18,7 +20,17 @@ export function TypedInput({ collapsed, onExpand, isMinimized }: { collapsed?: b
   // Sync local state with context when typedInput changes externally
   useEffect(() => {
     setLocalInput(typedInput);
+    setLastSavedInput(typedInput); // Update saved tracking when loaded from session
   }, [typedInput]);
+
+  // Update save status when typing
+  useEffect(() => {
+    if (localInput !== lastSavedInput) {
+      setSaveStatus('editing');
+    } else {
+      setSaveStatus('saved');
+    }
+  }, [localInput, lastSavedInput]);
 
   // Autosave every 2 seconds when typing
   useEffect(() => {
@@ -31,38 +43,51 @@ export function TypedInput({ collapsed, onExpand, isMinimized }: { collapsed?: b
     return () => clearTimeout(timeoutId);
   }, [localInput, typedInput, setTypedInput]);
 
-  // Save on blur
-  const handleBlur = useCallback(() => {
+  // Save on blur - sync to context
+  const handleBlur = () => {
     setTypedInput(localInput);
-  }, [localInput, setTypedInput]);
+  };
 
-  // Auto-expand textarea based on content
-  useEffect(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = 'auto';
-      const minHeight = 200;
-      const maxHeight = 600;
-      const newHeight = Math.max(minHeight, Math.min(textarea.scrollHeight, maxHeight));
-      textarea.style.height = `${newHeight}px`;
-      textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden';
+  // Save typed input to session
+  const handleSaveToSession = async () => {
+    if (localInput !== lastSavedInput && localInput.trim() !== '') {
+      try {
+        setSaveStatus('saving');
+        const success = await saveTypedInputToCurrentSession(localInput);
+        if (success) {
+          setLastSavedInput(localInput);
+          setSaveStatus('saved');
+        }
+      } catch (error) {
+        console.error('Failed to save typed input:', error);
+        setSaveStatus('editing');
+      }
     }
-  }, [localInput]);
+  };
+
+  // Combined blur handler - handles both sync and async operations
+  const handleCombinedBlur = async () => {
+    handleBlur(); // Sync to context immediately
+    await handleSaveToSession(); // Save to session asynchronously
+  };
+
+  // Handle Enter key for autosave
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      // Save on Enter (but don't prevent newline)
+      setTimeout(() => handleSaveToSession(), 100);
+    }
+  };
 
   // Handle minimized state (in documentation mode)
   if (isMinimized) {
     return (
-      <Card className="border-slate-200 bg-white shadow-sm">
-        <CardHeader className="flex flex-row items-center justify-between p-2">
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-slate-700">Consultation Notes</span>
-            {hasContent && (
-              <span className="text-xs text-slate-500">
-                (
-                {localInput.length}
-                {' '}
-                chars)
-              </span>
+            <span className="text-xs font-medium text-slate-700">Consultation Note</span>
+            {saveStatus === 'saved' && (
+              <span className="text-xs text-slate-500">✓ Saved</span>
             )}
           </div>
           <button
@@ -72,93 +97,99 @@ export function TypedInput({ collapsed, onExpand, isMinimized }: { collapsed?: b
           >
             {isExpanded ? '−' : '+'}
           </button>
-        </CardHeader>
+        </div>
         {isExpanded && (
-          <CardContent className="p-2 pt-0">
-            <Section>
-              <textarea
-                ref={textareaRef}
-                value={localInput}
-                onChange={e => setLocalInput(e.target.value)}
-                onBlur={handleBlur}
-                className="w-full resize-none rounded border p-2 text-xs leading-relaxed focus:border-primary focus:ring-1 focus:ring-primary"
-                placeholder="Type your consultation notes here..."
-                spellCheck
-                style={{ minHeight: 100, maxHeight: 200 }}
-              />
-              {hasContent && (
-                <div className="mt-1 text-xs text-muted-foreground">
-                  {localInput.length}
-                  {' '}
-                  characters
-                </div>
-              )}
-            </Section>
-          </CardContent>
+          <div className="rounded border border-slate-200 bg-white p-3">
+            <textarea
+              value={localInput}
+              onChange={e => setLocalInput(e.target.value)}
+              onBlur={handleCombinedBlur}
+              onKeyDown={handleKeyDown}
+              className="w-full resize-none border-none text-sm leading-relaxed focus:outline-none"
+              placeholder="Type your consultation notes here..."
+              spellCheck
+              rows={6}
+            />
+            {hasContent && (
+              <div className="mt-1 text-xs text-slate-500">
+                {localInput.length}
+                {' '}
+                characters
+              </div>
+            )}
+          </div>
         )}
-      </Card>
+      </div>
     );
   }
 
   // Handle original collapsed state (backwards compatibility)
   if (collapsed) {
     return (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between p-1 pb-0">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold">Consultation Notes</span>
-          </div>
+      <div className="p-2">
+        <div className="flex items-center justify-between">
+          <ConsultationInputHeader
+            mode="typed"
+            status={saveStatus === 'saved' ? 'Saved' : saveStatus === 'editing' ? 'Editing' : 'Saving...'}
+          />
           <button type="button" className="text-xs text-blue-600 hover:underline" onClick={onExpand}>
             Expand
           </button>
-        </CardHeader>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <h2 className="text-xs font-semibold">Consultation Notes</h2>
-      </CardHeader>
-      <CardContent>
-        <Section>
-          <textarea
-            ref={textareaRef}
-            value={localInput}
-            onChange={e => setLocalInput(e.target.value)}
-            onBlur={handleBlur}
-            className="w-full resize-none rounded border p-3 text-sm leading-relaxed focus:border-primary focus:ring-2 focus:ring-primary"
-            placeholder={`Type your consultation notes here...
+    <div className="flex h-full flex-col">
+      <ConsultationInputHeader
+        mode="typed"
+        status={saveStatus === 'saved' ? 'Saved' : saveStatus === 'editing' ? 'Editing' : 'Saving...'}
+        onHelpToggle={() => setShowHelp(!showHelp)}
+        showHelp={showHelp}
+      />
 
-Include patient history, examination findings, assessment, and management plan. This will be used to generate the final consultation note.`}
-            spellCheck
-            style={{ minHeight: 200, maxHeight: 600 }}
-          />
+      <div className="mt-4 flex flex-1 flex-col space-y-3">
+        <textarea
+          value={localInput}
+          onChange={e => setLocalInput(e.target.value)}
+          onBlur={handleCombinedBlur}
+          onKeyDown={handleKeyDown}
+          className="min-h-[200px] w-full flex-1 resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          placeholder="Type your consultation notes here..."
+          spellCheck
+        />
 
-          {/* Instructions for first-time users */}
-          {!hasContent && (
-            <div className="mt-3 rounded-md bg-blue-50 p-3 text-xs text-blue-800">
-              <p className="font-medium">Typed Input Mode:</p>
-              <ul className="ml-3 mt-1 list-disc space-y-0.5">
-                <li>Type all consultation details directly into this text box</li>
-                <li>Include patient history, examination findings, assessment, and plan</li>
-                <li>Your notes auto-save as you type</li>
-                <li>Use this mode when you prefer typing over voice recording</li>
-                <li>Click "Generate Notes" when ready to create the final consultation note</li>
-              </ul>
-            </div>
-          )}
-
-          {hasContent && (
-            <div className="mt-2 text-xs text-muted-foreground">
+        {/* Status and character count */}
+        {hasContent && (
+          <div className="flex items-center justify-between text-xs text-slate-500">
+            <span>
               {localInput.length}
               {' '}
-              characters • Auto-saves as you type
-            </div>
-          )}
-        </Section>
-      </CardContent>
-    </Card>
+              characters
+            </span>
+            <span>
+              {saveStatus === 'saved' && '✓ Auto-saved'}
+              {saveStatus === 'editing' && 'Editing...'}
+              {saveStatus === 'saving' && 'Saving...'}
+            </span>
+          </div>
+        )}
+
+        {/* Help section (hidden by default) */}
+        {showHelp && (
+          <div className="rounded-md bg-blue-50 p-3 text-xs text-blue-800">
+            <p className="font-medium">Typed Input Mode:</p>
+            <ul className="ml-3 mt-1 list-disc space-y-0.5">
+              <li>Type all consultation details directly into this text box</li>
+              <li>Include patient history, examination findings, assessment, and plan</li>
+              <li>Your notes auto-save as you type and on Enter</li>
+              <li>Use this mode when you prefer typing over voice recording</li>
+              <li>Click "Generate Notes" when ready to create the final consultation note</li>
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

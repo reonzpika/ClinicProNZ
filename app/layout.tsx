@@ -1,6 +1,7 @@
 import './globals.css';
 
 import { ClerkProvider } from '@clerk/nextjs';
+import { StagewiseToolbar } from '@stagewise/toolbar-next';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 
@@ -24,6 +25,7 @@ export default async function RootLayout({
       <ConsultationProvider>
         <html lang="en">
           <body className={inter.className}>
+            <StagewiseToolbar />
             <AppLayoutWrapper>{children}</AppLayoutWrapper>
           </body>
         </html>

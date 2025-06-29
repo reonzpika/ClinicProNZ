@@ -26,7 +26,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
   onClose,
 }) => {
   const { isSignedIn, userId } = useAuth();
-  const { mobileV2, setMobileV2Token, enableMobileV2 } = useConsultation();
+  const { mobileV2, setMobileV2Token, enableMobileV2, ensureActiveSession } = useConsultation();
 
   // Get connected devices and status from context
   const connectedDevices = mobileV2.connectedDevices;
@@ -80,6 +80,9 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
     setError(null);
 
     try {
+      // Ensure we have an active patient session before generating mobile token
+      await ensureActiveSession();
+
       const response = await fetch('/api/mobile/generate-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -105,7 +108,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
     } finally {
       setIsGenerating(false);
     }
-  }, [isSignedIn, userId]);
+  }, [isSignedIn, userId, ensureActiveSession]);
 
   const stopMobileRecording = useCallback(() => {
     setQrData(null);
@@ -174,12 +177,15 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
               <CheckCircle className="size-4 text-green-600" />
               <div>
                 <div className="font-medium text-green-800">
-                  {connectedDevices.length}
+                  {connectedDevices.filter(d => d.deviceType === 'Mobile').length}
                   {' '}
-                  device(s) connected
+                  mobile device(s) connected
                 </div>
                 <div className="text-sm text-green-700">
-                  {connectedDevices.map(device => device.deviceName).join(', ')}
+                  {connectedDevices
+                    .filter(d => d.deviceType === 'Mobile')
+                    .map(device => device.deviceName)
+                    .join(', ')}
                 </div>
               </div>
             </Alert>

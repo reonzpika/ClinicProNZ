@@ -1,9 +1,8 @@
-import { BookOpen, Edit3, FileText, MessageSquare, Sparkles, Wand2 } from 'lucide-react';
+import { ArrowLeft, BookOpen, Edit3, FileText, MessageSquare, Sparkles, Wand2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 
 import type { Template } from '../types';
 import { TemplateEditor } from './TemplateEditor';
@@ -195,39 +194,56 @@ export function TemplateCreationWizard({ onSave, onCancel }: TemplateCreationWiz
   // If we're in starter template mode, show starter options
   if (creationMode === 'from-starter') {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold">Choose a Starter Template</h2>
-            <p className="mt-2 text-muted-foreground">Pick a template to customize for your needs</p>
+      <div className="h-full bg-white">
+        {/* Header */}
+        <div className="border-b border-slate-200 bg-white px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-slate-900">Choose a Starter Template</h2>
+              <p className="mt-1 text-sm text-slate-600">Pick a template to customise for your needs</p>
+            </div>
+            <Button variant="outline" onClick={() => setCreationMode(null)} className="h-9">
+              <ArrowLeft className="mr-2 size-4" />
+              Back
+            </Button>
           </div>
-          <Button variant="outline" onClick={() => setCreationMode(null)}>
-            Back
-          </Button>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
-          {STARTER_TEMPLATES.map((starter, index) => (
-            <Card key={index} className="cursor-pointer transition-colors hover:bg-muted/50" onClick={() => handleStarterTemplate(starter)}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">{starter.name}</CardTitle>
-                  <Badge variant="secondary">Starter</Badge>
+        {/* Content */}
+        <div className="overflow-y-auto p-6">
+          <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+            {STARTER_TEMPLATES.map((starter, index) => (
+              <div
+                key={index}
+                role="button"
+                tabIndex={0}
+                className="group cursor-pointer rounded-lg border border-slate-200 bg-white p-4 transition-all hover:border-slate-300 hover:shadow-sm"
+                onClick={() => handleStarterTemplate(starter)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleStarterTemplate(starter);
+                  }
+                }}
+              >
+                <div className="mb-3 flex items-start justify-between">
+                  <h3 className="text-lg font-medium text-slate-900 group-hover:text-slate-700">
+                    {starter.name}
+                  </h3>
+                  <Badge variant="secondary" className="text-xs">Starter</Badge>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="mb-3">
+                <p className="mb-4 text-sm text-slate-600">
                   {starter.description}
-                </CardDescription>
-                <div className="rounded bg-muted p-2 text-xs text-muted-foreground">
-                  <pre className="line-clamp-4 whitespace-pre-wrap">
+                </p>
+                <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
+                  <pre className="line-clamp-4 whitespace-pre-wrap text-xs leading-relaxed text-slate-600">
                     {starter.templateBody.substring(0, 200)}
                     ...
                   </pre>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -255,116 +271,167 @@ export function TemplateCreationWizard({ onSave, onCancel }: TemplateCreationWiz
 
   // Default: Show creation mode selector
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex-1 text-center">
-          <h2 className="text-xl font-semibold">Create New Template</h2>
-          <p className="mt-2 text-muted-foreground">Choose how you'd like to create your template</p>
+    <div className="h-full bg-white">
+      {/* Header */}
+      <div className="border-b border-slate-200 bg-white px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex-1 text-center">
+            <h2 className="text-xl font-semibold text-slate-900">Create New Template</h2>
+            <p className="mt-1 text-sm text-slate-600">Choose how you'd like to create your template</p>
+          </div>
+          {onCancel && (
+            <Button variant="outline" onClick={onCancel} className="h-9">
+              <ArrowLeft className="mr-2 size-4" />
+              Back
+            </Button>
+          )}
         </div>
-        {onCancel && (
-          <Button variant="outline" onClick={onCancel}>
-            Back
-          </Button>
-        )}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        <Card className="cursor-pointer transition-colors hover:bg-muted/50" onClick={() => setCreationMode('from-starter')}>
-          <CardHeader className="text-center">
-            <Sparkles className="mx-auto size-12 text-indigo-600" />
-            <CardTitle className="text-lg">Quick Start</CardTitle>
-            <Badge variant="secondary" className="mx-auto">Recommended</Badge>
-          </CardHeader>
-          <CardContent>
-            <CardDescription>
-              Start with a proven template structure and customize it for your needs.
-            </CardDescription>
-          </CardContent>
-        </Card>
+      {/* Content */}
+      <div className="overflow-y-auto p-6">
+        <div className="mx-auto max-w-5xl space-y-8">
+          {/* Creation Options */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            <div
+              role="button"
+              tabIndex={0}
+              className="group cursor-pointer rounded-lg border border-slate-200 bg-white p-4 text-center transition-all hover:border-slate-300 hover:shadow-sm"
+              onClick={() => setCreationMode('from-starter')}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setCreationMode('from-starter');
+                }
+              }}
+            >
+              <Sparkles className="mx-auto mb-3 size-12 text-indigo-600" />
+              <h3 className="mb-2 text-lg font-medium text-slate-900">Quick Start</h3>
+              <Badge variant="secondary" className="mb-3">Recommended</Badge>
+              <p className="text-sm text-slate-600">
+                Start with a proven template structure and customize it for your needs.
+              </p>
+            </div>
 
-        <Card className="cursor-pointer transition-colors hover:bg-muted/50" onClick={handleStartGuided}>
-          <CardHeader className="text-center">
-            <Wand2 className="mx-auto size-12 text-emerald-600" />
-            <CardTitle className="text-lg">Guided Creator</CardTitle>
-            <Badge variant="default" className="mx-auto">New</Badge>
-          </CardHeader>
-          <CardContent>
-            <CardDescription>
-              Step-by-step wizard to build your template with guided assistance.
-            </CardDescription>
-          </CardContent>
-        </Card>
+            <div
+              role="button"
+              tabIndex={0}
+              className="group cursor-pointer rounded-lg border border-slate-200 bg-white p-4 text-center transition-all hover:border-slate-300 hover:shadow-sm"
+              onClick={handleStartGuided}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleStartGuided();
+                }
+              }}
+            >
+              <Wand2 className="mx-auto mb-3 size-12 text-emerald-600" />
+              <h3 className="mb-2 text-lg font-medium text-slate-900">Guided Creator</h3>
+              <Badge variant="default" className="mb-3">New</Badge>
+              <p className="text-sm text-slate-600">
+                Step-by-step wizard to build your template with guided assistance.
+              </p>
+            </div>
 
-        <Card className="cursor-pointer transition-colors hover:bg-muted/50" onClick={handleStartFromScratch}>
-          <CardHeader className="text-center">
-            <Edit3 className="mx-auto size-12 text-blue-600" />
-            <CardTitle className="text-lg">From Scratch</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CardDescription>
-              Create a template manually with full control over structure and content.
-            </CardDescription>
-          </CardContent>
-        </Card>
+            <div
+              role="button"
+              tabIndex={0}
+              className="group cursor-pointer rounded-lg border border-slate-200 bg-white p-4 text-center transition-all hover:border-slate-300 hover:shadow-sm"
+              onClick={handleStartFromScratch}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleStartFromScratch();
+                }
+              }}
+            >
+              <Edit3 className="mx-auto mb-3 size-12 text-blue-600" />
+              <h3 className="mb-2 text-lg font-medium text-slate-900">From Scratch</h3>
+              <p className="text-sm text-slate-600">
+                Create a template manually with full control over structure and content.
+              </p>
+            </div>
 
-        <Card
-          className="cursor-pointer transition-colors hover:bg-muted/50"
-          onClick={() => setCreationMode('from-example')}
-        >
-          <CardHeader className="text-center">
-            <FileText className="mx-auto size-12 text-green-600" />
-            <CardTitle className="text-lg">From Examples</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CardDescription>
-              Upload example consultation notes and let AI extract the structure.
-            </CardDescription>
-          </CardContent>
-        </Card>
+            <div
+              role="button"
+              tabIndex={0}
+              className="group cursor-pointer rounded-lg border border-slate-200 bg-white p-4 text-center transition-all hover:border-slate-300 hover:shadow-sm"
+              onClick={() => setCreationMode('from-example')}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setCreationMode('from-example');
+                }
+              }}
+            >
+              <FileText className="mx-auto mb-3 size-12 text-green-600" />
+              <h3 className="mb-2 text-lg font-medium text-slate-900">From Examples</h3>
+              <p className="text-sm text-slate-600">
+                Upload example consultation notes and let AI extract the structure.
+              </p>
+            </div>
 
-        <Card
-          className="cursor-pointer transition-colors hover:bg-muted/50"
-          onClick={() => setCreationMode('from-description')}
-        >
-          <CardHeader className="text-center">
-            <MessageSquare className="mx-auto size-12 text-purple-600" />
-            <CardTitle className="text-lg">From Description</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CardDescription>
-              Describe what you need and let AI generate a template structure.
-            </CardDescription>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Help Section */}
-      <Card className="border-blue-200 bg-blue-50">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <BookOpen className="mt-0.5 size-5 text-blue-600" />
-            <div className="space-y-2 text-sm">
-              <h3 className="font-medium text-blue-900">Template Creation Tips</h3>
-              <ul className="space-y-1 text-blue-800">
-                <li>
-                  • Use
-                  <code className="rounded bg-blue-100 px-1">[placeholder text]</code>
-                  {' '}
-                  for dynamic content
-                </li>
-                <li>
-                  • Add
-                  <code className="rounded bg-blue-100 px-1">(only include if mentioned)</code>
-                  {' '}
-                  to prevent AI hallucination
-                </li>
-                <li>• Organize with clear section headers like HISTORY:, EXAMINATION:, PLAN:</li>
-                <li>• Try the new Guided Creator for step-by-step assistance</li>
-              </ul>
+            <div
+              role="button"
+              tabIndex={0}
+              className="group cursor-pointer rounded-lg border border-slate-200 bg-white p-4 text-center transition-all hover:border-slate-300 hover:shadow-sm"
+              onClick={() => setCreationMode('from-description')}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setCreationMode('from-description');
+                }
+              }}
+            >
+              <MessageSquare className="mx-auto mb-3 size-12 text-purple-600" />
+              <h3 className="mb-2 text-lg font-medium text-slate-900">From Description</h3>
+              <p className="text-sm text-slate-600">
+                Describe what you need and let AI generate a template structure.
+              </p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+
+          {/* Help Section */}
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-6">
+            <div className="flex items-start gap-4">
+              <BookOpen className="mt-0.5 size-6 shrink-0 text-blue-600" />
+              <div>
+                <h3 className="mb-3 font-medium text-blue-900">Template Creation Tips</h3>
+                <ul className="space-y-2 text-sm text-blue-800">
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5 text-blue-600">•</span>
+                    <span>
+                      Use
+                      {' '}
+                      <code className="rounded bg-blue-100 px-1.5 py-0.5 font-mono text-xs text-blue-900">[placeholder text]</code>
+                      {' '}
+                      for dynamic content
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5 text-blue-600">•</span>
+                    <span>
+                      Add
+                      {' '}
+                      <code className="rounded bg-blue-100 px-1.5 py-0.5 font-mono text-xs text-blue-900">(only include if mentioned)</code>
+                      {' '}
+                      to prevent AI hallucination
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5 text-blue-600">•</span>
+                    <span>Organise with clear section headers like HISTORY:, EXAMINATION:, PLAN:</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5 text-blue-600">•</span>
+                    <span>Try the new Guided Creator for step-by-step assistance</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

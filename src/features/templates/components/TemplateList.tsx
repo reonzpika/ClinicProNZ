@@ -1,6 +1,6 @@
 'use client';
 
-import { Edit, MoreVertical, Plus } from 'lucide-react';
+import { Edit, MoreVertical, Plus, Star } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/shared/components/ui/button';
@@ -39,60 +39,112 @@ export function TemplateList({
   const filteredTemplates = templates;
 
   return (
-    <div className="space-y-0 divide-y divide-gray-200">
+    <div className="space-y-2">
+      {/* Template Items */}
       {filteredTemplates.map((template) => {
         const isSelected = selectedTemplate?.id === template.id;
+        const isDefault = userDefaultTemplateId === template.id;
         const originalIdx = templates.findIndex(t => t.id === template.id);
+
         return (
           <div
             key={template.id}
             className={cn(
-              'flex items-center justify-between px-2 py-1 min-h-[36px] cursor-pointer',
-              isSelected ? 'bg-blue-100' : '',
-              !isSelected && 'hover:bg-muted',
-              'transition-colors',
+              'group flex items-center gap-3 rounded-lg border p-3 transition-all duration-200 cursor-pointer',
+              isSelected
+                ? 'border-slate-300 bg-slate-50 shadow-sm'
+                : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50',
             )}
-            style={{ fontSize: '0.85rem' }}
+            onClick={() => onTemplateSelect(template)}
+            onMouseEnter={() => onTemplateHover(template)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onTemplateSelect(template);
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label={`Select template: ${template.name}`}
           >
-            <Button
-              variant="ghost"
-              className={cn('flex-1 justify-start gap-2 px-0 py-0 h-auto min-w-0')}
-              onClick={() => onTemplateSelect(template)}
-              onMouseEnter={() => onTemplateHover(template)}
-              style={{ fontSize: '0.85rem', minWidth: 0 }}
-            >
-              <span className={cn('truncate max-w-[160px] text-xs', isSelected ? 'font-semibold' : 'font-medium')}>
-                {template.name}
-              </span>
-              {userDefaultTemplateId === template.id && (
-                <span title="Default Template" aria-label="Default Template" className="ml-1 text-xs font-semibold text-yellow-500">★</span>
+            {/* Template Info */}
+            <div className="min-w-0 flex-1">
+              <div className="mb-1 flex items-center gap-2">
+                <h4 className={cn(
+                  'text-sm font-medium truncate',
+                  isSelected ? 'text-slate-900' : 'text-slate-700',
+                )}
+                >
+                  {template.name}
+                </h4>
+                {isDefault && (
+                  <span title="Default Template">
+                    <Star className="size-3 fill-amber-500 text-amber-500" />
+                  </span>
+                )}
+              </div>
+              {template.description && (
+                <p className="truncate text-xs text-slate-500">
+                  {template.description}
+                </p>
               )}
-            </Button>
-            <div className="ml-1 flex items-center gap-0">
+              <div className="mt-1 flex items-center gap-2">
+                <span className={cn(
+                  'text-xs px-1.5 py-0.5 rounded',
+                  template.type === 'default'
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'bg-green-100 text-green-700',
+                )}
+                >
+                  {template.type === 'default' ? 'Default' : 'Custom'}
+                </span>
+                {template.templateBody && (
+                  <span className="text-xs text-slate-400">
+                    {template.templateBody.length.toLocaleString()}
+                    {' '}
+                    chars
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-1">
               {template.type !== 'default' && (
                 <Button
                   variant="ghost"
-                  size="icon"
-                  onClick={() => onEdit(template)}
-                  title="Edit"
-                  className="p-0.5"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(template);
+                  }}
+                  className="size-7 p-0 opacity-0 transition-opacity hover:bg-slate-200 group-hover:opacity-100"
+                  title="Edit template"
                 >
-                  <Edit className="size-4" />
+                  <Edit className="size-3" />
                 </Button>
               )}
+
               <DropdownMenu>
                 <DropdownMenuTrigger>
-                  <MoreVertical className="size-4" />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="size-7 p-0 opacity-0 transition-opacity hover:bg-slate-200 group-hover:opacity-100"
+                    onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                  >
+                    <MoreVertical className="size-3" />
+                  </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem onClick={() => onCopy(template)}>
-                    Copy
+                    Copy Template
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => onSetDefault(template.id)}
-                    disabled={userDefaultTemplateId === template.id}
+                    disabled={isDefault}
                   >
-                    {userDefaultTemplateId === template.id ? 'Default Template' : 'Set as Default'}
+                    {isDefault ? 'Default Template' : 'Set as Default'}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => originalIdx > 0 && onReorder(originalIdx, originalIdx - 1)}
@@ -107,9 +159,12 @@ export function TemplateList({
                     Move Down
                   </DropdownMenuItem>
                   {template.type !== 'default' && (
-                    <DropdownMenuItem onClick={() => onDelete(template)}>
-                      <span className="text-red-600 hover:bg-red-50">Delete</span>
-                    </DropdownMenuItem>
+                    <>
+                      <div className="my-1 border-t border-slate-100" />
+                      <DropdownMenuItem onClick={() => onDelete(template)}>
+                        <span className="text-red-600">Delete Template</span>
+                      </DropdownMenuItem>
+                    </>
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -117,14 +172,18 @@ export function TemplateList({
           </div>
         );
       })}
-      <Button
-        variant="ghost"
-        className="mt-2 w-full justify-start gap-2 text-xs text-primary"
-        onClick={onCreateNew}
-      >
-        <Plus className="size-4" />
-        Create New Template
-      </Button>
+
+      {/* Create New Button */}
+      <div className="border-t border-slate-200 pt-2">
+        <Button
+          variant="outline"
+          className="h-10 w-full justify-start gap-2 border-dashed border-slate-300 text-slate-600 hover:border-slate-400 hover:bg-slate-50"
+          onClick={onCreateNew}
+        >
+          <Plus className="size-4" />
+          Create New Template
+        </Button>
+      </div>
     </div>
   );
 }

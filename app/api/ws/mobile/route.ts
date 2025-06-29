@@ -106,8 +106,7 @@ export async function GET(_req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      wsUrl: 'ws://localhost:8080/ws/mobile',
-      message: 'WebSocket server is running',
+      message: 'Ably integration active - WebSocket server no longer needed',
     });
   } catch {
     // Error starting WebSocket server

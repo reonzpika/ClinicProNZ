@@ -28,9 +28,16 @@ const sections: AccordionSection[] = [
   { id: 'acc', icon: Stethoscope, title: 'ACC Code Suggestions', component: AccCodeSuggestions },
 ];
 
-const RightPanelFeatures: React.FC = () => {
+type RightPanelFeaturesProps = {
+  isCollapsed?: boolean;
+  onToggle?: () => void;
+};
+
+const RightPanelFeatures: React.FC<RightPanelFeaturesProps> = ({
+  isCollapsed = false,
+  onToggle,
+}) => {
   const [activeSection, setActiveSection] = useState<SectionId>('mobile');
-  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const currentSection = sections.find(section => section.id === activeSection);
   const CurrentComponent = currentSection?.component || MobileTab;
@@ -41,7 +48,7 @@ const RightPanelFeatures: React.FC = () => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setIsCollapsed(false)}
+          onClick={onToggle}
           className="m-2 h-6 w-8 p-0 text-slate-600 hover:text-slate-800"
         >
           ❮
@@ -50,7 +57,7 @@ const RightPanelFeatures: React.FC = () => {
           {sections.map(section => (
             <button
               key={section.id}
-              onClick={() => setIsCollapsed(false)}
+              onClick={onToggle}
               className="flex size-8 items-center justify-center rounded text-slate-600 hover:bg-slate-100"
               title={section.title}
             >
@@ -74,7 +81,7 @@ const RightPanelFeatures: React.FC = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setIsCollapsed(true)}
+            onClick={onToggle}
             className="size-6 p-0 text-slate-600 hover:text-slate-800"
           >
             ❯
