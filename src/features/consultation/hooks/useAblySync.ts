@@ -79,6 +79,13 @@ export const useAblySync = ({
           setUserId(userIdFromToken);
           return userIdFromToken;
         }
+      } else if (response.status === 503) {
+        // Ably not configured - this is expected in some deployments
+        const data = await response.json();
+        if (data.code === 'ABLY_NOT_CONFIGURED') {
+          console.info('Ably service not configured - real-time features disabled');
+          return 'ably-disabled';
+        }
       }
     } catch (error) {
       console.error('Error getting userId:', error);
@@ -297,6 +304,14 @@ export const useAblySync = ({
         throw new Error('Failed to get user ID');
       }
 
+      // Check if Ably is disabled
+      if (currentUserId === 'ably-disabled') {
+        setConnectionState(prev => ({ ...prev, status: 'disconnected', error: undefined }));
+        // Don't call onError for service not configured - this is expected
+        console.info('Ably service not configured - skipping connection');
+        return;
+      }
+
       const { deviceId, deviceName, deviceType } = getDeviceInfo();
 
       // Create Ably client with token-based auth using userId as clientId
@@ -309,6 +324,13 @@ export const useAblySync = ({
             });
 
             if (!response.ok) {
+              if (response.status === 503) {
+                const data = await response.json();
+                if (data.code === 'ABLY_NOT_CONFIGURED') {
+                  callback(new Error('Ably service not configured') as Ably.ErrorInfo, null);
+                  return;
+                }
+              }
               throw new Error('Failed to get Ably token');
             }
 
@@ -401,6 +423,15 @@ export const useAblySync = ({
       });
     } catch (error) {
       console.error('Error connecting to Ably:', error);
+      
+      // Check if this is a configuration error (not a real error)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (errorMessage.includes('Ably service not configured')) {
+        setConnectionState(prev => ({ ...prev, status: 'disconnected', error: undefined }));
+        console.info('Ably service not configured - real-time features disabled');
+        return;
+      }
+      
       setConnectionState(prev => ({
         ...prev,
         status: 'error',

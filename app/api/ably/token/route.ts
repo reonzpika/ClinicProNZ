@@ -9,6 +9,14 @@ export async function POST() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Check if Ably is configured
+    if (!process.env.ABLY_API_KEY) {
+      return NextResponse.json({ 
+        error: 'Ably service not configured',
+        code: 'ABLY_NOT_CONFIGURED'
+      }, { status: 503 });
+    }
+
     // Create Ably client with your API key (server-side only)
     const ably = new Ably.Rest({ key: process.env.ABLY_API_KEY });
 

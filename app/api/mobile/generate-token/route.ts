@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { db } from '@/client';
 import { mobileTokens } from '@/schema';
 
-export async function POST(_req: Request) {
+export async function POST(req: Request) {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -26,8 +26,26 @@ export async function POST(_req: Request) {
       isActive: true,
     });
 
-    // Generate the mobile connection URL
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    // Generate the mobile connection URL with dynamic host detection
+    const getBaseUrl = () => {
+      // First try environment variable
+      if (process.env.NEXT_PUBLIC_APP_URL) {
+        return process.env.NEXT_PUBLIC_APP_URL;
+      }
+
+      // Extract from request headers for dynamic detection
+      const host = req.headers.get('host');
+      const protocol = req.headers.get('x-forwarded-proto') || 'https';
+
+      if (host) {
+        return `${protocol}://${host}`;
+      }
+
+      // Final fallback for local development
+      return 'http://localhost:3000';
+    };
+
+    const baseUrl = getBaseUrl();
     const mobileUrl = `${baseUrl}/mobile?token=${token}`;
 
     return NextResponse.json({

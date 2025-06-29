@@ -13,11 +13,26 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
   }
 
+  // Helper function to redirect to login with return URL for pages
+  const redirectToLogin = (returnUrl: string) => {
+    const loginUrl = new URL('/login', req.url);
+    loginUrl.searchParams.set('redirect_url', returnUrl);
+    return NextResponse.redirect(loginUrl);
+  };
+
+  // Helper function to return 401 for API routes
+  const returnUnauthorized = () => {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  };
+
+  // Check if this is an API route
+  const isApiRoute = req.nextUrl.pathname.startsWith('/api/');
+
   // Protect all other /api/templates routes (POST, PUT, DELETE)
   if (req.nextUrl.pathname.startsWith('/api/templates')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
-      return resolvedAuth.redirectToSignIn();
+      return returnUnauthorized();
     }
   }
 
@@ -25,7 +40,7 @@ export default clerkMiddleware(async (auth, req) => {
   if (req.nextUrl.pathname.startsWith('/api/patient-sessions')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
-      return resolvedAuth.redirectToSignIn();
+      return returnUnauthorized();
     }
   }
 
@@ -33,7 +48,7 @@ export default clerkMiddleware(async (auth, req) => {
   if (req.nextUrl.pathname.startsWith('/api/mobile')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
-      return resolvedAuth.redirectToSignIn();
+      return returnUnauthorized();
     }
   }
 
@@ -41,7 +56,7 @@ export default clerkMiddleware(async (auth, req) => {
   if (req.nextUrl.pathname.startsWith('/api/ws')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
-      return resolvedAuth.redirectToSignIn();
+      return returnUnauthorized();
     }
   }
 
@@ -49,15 +64,15 @@ export default clerkMiddleware(async (auth, req) => {
   if (req.nextUrl.pathname.startsWith('/api/ably')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
-      return resolvedAuth.redirectToSignIn();
+      return returnUnauthorized();
     }
   }
 
-  // Protect /templates page - redirect to sign in if not authenticated
+  // Protect /templates page - redirect to login if not authenticated
   if (req.nextUrl.pathname.startsWith('/templates')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
-      return resolvedAuth.redirectToSignIn();
+      return redirectToLogin(req.url);
     }
   }
 

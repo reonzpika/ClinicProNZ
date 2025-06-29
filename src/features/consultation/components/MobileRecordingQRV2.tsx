@@ -90,6 +90,12 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
 
       if (!response.ok) {
         const errorData = await response.json();
+        
+        // Check if this is an Ably configuration issue
+        if (response.status === 503 || errorData.error?.includes('Ably service not configured')) {
+          throw new Error('Real-time features are not configured on this deployment. Mobile recording is temporarily unavailable.');
+        }
+        
         throw new Error(errorData.error || 'Failed to generate token');
       }
 
