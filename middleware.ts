@@ -2,6 +2,11 @@ import { clerkMiddleware } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
 export default clerkMiddleware(async (auth, req) => {
+  // Allow /api/ably/token to handle its own authentication (mobile + desktop)
+  if (req.nextUrl.pathname === '/api/ably/token') {
+    return NextResponse.next();
+  }
+
   // Allow GET requests to /api/templates and /api/templates/[id] for everyone
   if (
     req.method === 'GET'
@@ -49,14 +54,6 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // Protect /api/ws routes
-  if (req.nextUrl.pathname.startsWith('/api/ws')) {
-    const resolvedAuth = await auth();
-    if (!resolvedAuth.userId) {
-      return returnUnauthorized();
-    }
-  }
-
   // Protect /api/ably routes
   if (req.nextUrl.pathname.startsWith('/api/ably')) {
     const resolvedAuth = await auth();
@@ -83,7 +80,6 @@ export const config = {
 
     '/api/patient-sessions/:path*',
     '/api/mobile/:path*',
-    '/api/ws/:path*',
     '/api/ably/:path*',
     '/templates/:path*',
   ],

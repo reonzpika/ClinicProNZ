@@ -4,7 +4,6 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { db } from '@/client';
-import { WebSocketManager } from '@/lib/services/websocket-manager';
 import { patientSessions } from '@/schema';
 
 // GET - List patient sessions for a user
@@ -87,13 +86,7 @@ export async function POST(req: NextRequest) {
 
     const session = newSession[0]!;
 
-    // Notify connected mobile devices about new session
-    WebSocketManager.broadcastToUser(userId, {
-      type: 'session_created',
-      patientSessionId: session.id,
-      patientName: session.patientName ?? undefined,
-    });
-
+    // Note: Mobile devices will be notified via Ably when patient session changes
     return NextResponse.json({
       session: {
         ...session,
