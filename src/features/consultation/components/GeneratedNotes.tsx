@@ -90,7 +90,8 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
 
   const hasAnyState = hasContent
     || (inputMode === 'typed' && typedInput && typedInput.trim() !== '')
-    || (inputMode === 'audio' && (transcription.transcript && transcription.transcript.trim() !== ''));
+    || (inputMode === 'audio' && (transcription.transcript && transcription.transcript.trim() !== ''))
+    || (consultationNotes && consultationNotes.trim() !== '');
 
   // Determine if we should show minimal or expanded view
   const shouldShowMinimal = !isExpanded && !hasContent && !loading;

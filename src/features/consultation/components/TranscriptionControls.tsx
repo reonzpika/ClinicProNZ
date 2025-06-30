@@ -419,11 +419,6 @@ export function TranscriptionControls({
                 Transcribed Text — Edit as needed
               </div>
             )}
-            {!isRecording && !transcript && (
-              <div className="text-xs font-medium text-slate-600">
-                Transcript
-              </div>
-            )}
 
             {/* Show text box only when there's transcription or currently recording */}
             {(transcript || isRecording)

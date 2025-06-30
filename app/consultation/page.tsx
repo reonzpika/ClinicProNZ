@@ -11,6 +11,7 @@ import { PatientSessionManager } from '@/features/consultation/components/Patien
 import RightPanelFeatures from '@/features/consultation/components/RightPanelFeatures';
 import { TranscriptionControls } from '@/features/consultation/components/TranscriptionControls';
 import { TypedInput } from '@/features/consultation/components/TypedInput';
+import { WorkflowInstructions } from '@/features/consultation/components/WorkflowInstructions';
 import { useAblySync } from '@/features/consultation/hooks/useAblySync';
 import { Container } from '@/shared/components/layout/Container';
 import { Stack } from '@/shared/components/layout/Stack';
@@ -86,10 +87,10 @@ export default function ConsultationPage() {
     setMobileV2ConnectionStatus('error');
   }, [setError, setMobileV2ConnectionStatus]);
 
-  // Enable Ably sync for Mobile V2 system
+  // Enable Ably sync only when Mobile V2 token exists
   const { notifyPatientSwitch, forceDisconnectDevice } = useAblySync({
-    enabled: true, // Mobile V2 is now enabled by default
-    token: mobileV2.token || undefined, // Token can be undefined initially
+    enabled: !!mobileV2.token, // Only enable when user has generated a token
+    token: mobileV2.token || undefined,
     isDesktop: true,
     onTranscriptionReceived: handleTranscriptionReceived,
     onPatientSwitched: handlePatientSwitched,
@@ -242,6 +243,9 @@ export default function ConsultationPage() {
 
                         {/* Documentation Settings Badge - Always visible below session bar */}
                         <DocumentationSettingsBadge />
+
+                        {/* Workflow Instructions - Only visible on large desktop */}
+                        <WorkflowInstructions />
 
                         {/* Minimized Components in Documentation Mode */}
                         {isDocumentationMode && (

@@ -19,18 +19,12 @@ export async function POST(req: Request) {
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     // Store the token in database
-    console.log('Creating mobile token for userId:', userId);
-    console.log('Token:', token);
-    console.log('Expires at:', expiresAt);
-    
     await db.insert(mobileTokens).values({
       userId,
       token,
       expiresAt,
       isActive: true,
     });
-
-    console.log('Token created successfully');
 
     // Generate the mobile connection URL with dynamic host detection
     const getBaseUrl = () => {

@@ -26,7 +26,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
   onClose,
 }) => {
   const { isSignedIn, userId } = useAuth();
-  const { mobileV2, setMobileV2Token, enableMobileV2, ensureActiveSession } = useConsultation();
+  const { mobileV2, setMobileV2TokenData, enableMobileV2, ensureActiveSession } = useConsultation();
 
   // Get connected devices and status from context
   const connectedDevices = mobileV2.connectedDevices;
@@ -36,6 +36,13 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
   const [error, setError] = useState<string | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [showExpiryWarning, setShowExpiryWarning] = useState(false);
+
+  // Restore QR data from context when component mounts or tokenData changes
+  useEffect(() => {
+    if (mobileV2.tokenData && !qrData) {
+      setQrData(mobileV2.tokenData);
+    }
+  }, [mobileV2.tokenData, qrData]);
 
   // Update remaining time and show warnings
   useEffect(() => {
@@ -58,8 +65,8 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
         setQrData(null);
         setError('QR code has expired. Please generate a new one.');
 
-        // Clear token from consultation context
-        setMobileV2Token(null);
+        // Clear token data from consultation context
+        setMobileV2TokenData(null);
         enableMobileV2(false);
       }
     };
@@ -104,8 +111,8 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
       const tokenData = { token, mobileUrl, expiresAt };
       setQrData(tokenData);
 
-      // Set token in consultation context for WebSocket sync
-      setMobileV2Token(token);
+      // Set token data in consultation context for persistence and WebSocket sync
+      setMobileV2TokenData(tokenData);
       enableMobileV2(true);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate QR code';
@@ -120,10 +127,10 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
     setQrData(null);
     setError(null);
 
-    // Clear token from consultation context
-    setMobileV2Token(null);
+    // Clear token data from consultation context
+    setMobileV2TokenData(null);
     enableMobileV2(false);
-  }, [setMobileV2Token, enableMobileV2]);
+  }, [setMobileV2TokenData, enableMobileV2]);
 
   const formatTimeRemaining = (seconds: number) => {
     if (seconds <= 0) {

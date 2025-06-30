@@ -82,6 +82,11 @@ export type ConsultationState = {
   mobileV2: {
     isEnabled: boolean;
     token: string | null;
+    tokenData: {
+      token: string;
+      mobileUrl: string;
+      expiresAt: string;
+    } | null;
     connectedDevices: Array<{
       deviceId: string;
       deviceName: string;
@@ -139,6 +144,7 @@ const defaultState: ConsultationState = {
   mobileV2: {
     isEnabled: false,
     token: null,
+    tokenData: null,
     connectedDevices: [],
     connectionStatus: 'disconnected',
   },
@@ -189,6 +195,7 @@ const ConsultationContext = createContext<
     getCurrentPatientSession: () => PatientSession | null;
     // Mobile V2 functions
     setMobileV2Token: (token: string | null) => void;
+    setMobileV2TokenData: (tokenData: { token: string; mobileUrl: string; expiresAt: string } | null) => void;
     setMobileV2ConnectionStatus: (status: 'disconnected' | 'connecting' | 'connected' | 'error') => void;
     addMobileV2Device: (device: {
       deviceId: string;
@@ -249,6 +256,66 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     localStorage.setItem('consultationState', JSON.stringify(state));
   }, [state]);
+
+  // Validate mobile token on mount
+  useEffect(() => {
+    const validateMobileToken = async (token: string) => {
+      try {
+        // Check if token is still valid by calling Ably token API
+        const response = await fetch('/api/ably/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-mobile-token': token,
+          },
+        });
+
+        if (!response.ok) {
+          // Token is invalid/expired - clear it
+          setState(prev => ({
+            ...prev,
+            mobileV2: {
+              ...prev.mobileV2,
+              token: null,
+              tokenData: null,
+              connectionStatus: 'disconnected',
+              connectedDevices: [],
+            },
+          }));
+        }
+        // If response is ok, token is still valid - keep current state
+      } catch (error) {
+        console.warn('Failed to validate mobile token:', error);
+        // On validation error, clear token to be safe
+        setState(prev => ({
+          ...prev,
+          mobileV2: {
+            ...prev.mobileV2,
+            token: null,
+            tokenData: null,
+            connectionStatus: 'disconnected',
+            connectedDevices: [],
+          },
+        }));
+      }
+    };
+
+    // Validate token from localStorage on mount
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('consultationState');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          const token = parsed?.mobileV2?.token;
+          if (token) {
+            validateMobileToken(token);
+          }
+        } catch (error) {
+          console.warn('Failed to parse stored consultation state:', error);
+        }
+      }
+    }
+  }, []); // Run only on mount
 
   // Helper functions
   const setStatus = useCallback((status: ConsultationState['status']) =>
@@ -744,7 +811,23 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
   const setMobileV2Token = useCallback((token: string | null) => {
     setState(prev => ({
       ...prev,
-      mobileV2: { ...prev.mobileV2, token },
+      mobileV2: {
+        ...prev.mobileV2,
+        token,
+        // Clear tokenData when token is cleared
+        tokenData: token ? prev.mobileV2.tokenData : null,
+      },
+    }));
+  }, []);
+
+  const setMobileV2TokenData = useCallback((tokenData: { token: string; mobileUrl: string; expiresAt: string } | null) => {
+    setState(prev => ({
+      ...prev,
+      mobileV2: {
+        ...prev.mobileV2,
+        token: tokenData?.token || null,
+        tokenData,
+      },
     }));
   }, []);
 
@@ -836,6 +919,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     getCurrentPatientSession,
     // Mobile V2 functions
     setMobileV2Token,
+    setMobileV2TokenData,
     setMobileV2ConnectionStatus,
     addMobileV2Device,
     removeMobileV2Device,
@@ -880,6 +964,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     loadPatientSessions,
     getCurrentPatientSession,
     setMobileV2Token,
+    setMobileV2TokenData,
     setMobileV2ConnectionStatus,
     addMobileV2Device,
     removeMobileV2Device,
