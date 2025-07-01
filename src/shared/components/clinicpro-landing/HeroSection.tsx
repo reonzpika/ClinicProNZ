@@ -127,7 +127,7 @@ export const ClinicProHeroSection = () => {
                   {clinicProLandingData.hero.secondaryCTA}
                 </button>
               </div>
-              
+
               {/* Login Button */}
               <div>
                 <a

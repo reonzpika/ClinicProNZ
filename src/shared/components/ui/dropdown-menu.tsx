@@ -21,13 +21,24 @@ export function DropdownMenuTrigger({ children }: { children: React.ReactNode })
     throw new Error('DropdownMenuTrigger must be used within DropdownMenu');
   }
   return (
-    <button
-      type="button"
-      onClick={() => ctx.setOpen(!ctx.open)}
-      className="focus:outline-none"
+    <div
+      onClick={(e) => {
+        e.stopPropagation();
+        ctx.setOpen(!ctx.open);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          e.stopPropagation();
+          ctx.setOpen(!ctx.open);
+        }
+      }}
+             className="cursor-pointer focus:outline-none"
+      role="button"
+      tabIndex={0}
     >
       {children}
-    </button>
+    </div>
   );
 }
 
@@ -50,7 +61,7 @@ export function DropdownMenuContent({ children }: { children: React.ReactNode })
     return null;
   }
   return (
-    <div ref={ref} className="absolute right-0 z-50 mt-2 min-w-40 rounded-md border border-gray-200 bg-white shadow-lg">
+    <div ref={ref} className="absolute right-0 z-50 mt-2 min-w-40 rounded-md border border-gray-200 bg-white py-1 shadow-lg">
       {children}
     </div>
   );

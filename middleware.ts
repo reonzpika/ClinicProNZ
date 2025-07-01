@@ -78,14 +78,6 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // Protect /consult page - redirect to login if not authenticated
-  if (req.nextUrl.pathname.startsWith('/consult')) {
-    const resolvedAuth = await auth();
-    if (!resolvedAuth.userId) {
-      return redirectToLogin(req.url);
-    }
-  }
-
   return NextResponse.next();
 });
 
@@ -98,5 +90,6 @@ export const config = {
     '/api/mobile/:path*',
     '/api/ably/:path*',
     '/templates/:path*',
+    '/consultation/:path*',
   ],
 };

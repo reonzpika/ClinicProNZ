@@ -127,14 +127,12 @@ export function TemplateList({
 
               <DropdownMenu>
                 <DropdownMenuTrigger>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="size-7 p-0 opacity-0 transition-opacity hover:bg-slate-200 group-hover:opacity-100"
-                    onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                  <div
+                    className="inline-flex size-7 items-center justify-center rounded-md p-0 opacity-0 transition-opacity hover:bg-slate-200 group-hover:opacity-100"
+                    title="Template options"
                   >
                     <MoreVertical className="size-3" />
-                  </Button>
+                  </div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem onClick={() => onCopy(template)}>
