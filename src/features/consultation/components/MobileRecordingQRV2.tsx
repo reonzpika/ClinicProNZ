@@ -26,7 +26,12 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
   onClose,
 }) => {
   const { isSignedIn, userId } = useAuth();
-  const { mobileV2, setMobileV2TokenData, enableMobileV2, ensureActiveSession } = useConsultation();
+  const {
+    mobileV2 = { isEnabled: false, token: null, tokenData: null, connectedDevices: [], connectionStatus: 'disconnected' },
+    setMobileV2TokenData,
+    enableMobileV2,
+    ensureActiveSession,
+  } = useConsultation();
 
   // Get connected devices and status from context
   const connectedDevices = mobileV2.connectedDevices;

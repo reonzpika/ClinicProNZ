@@ -1,18 +1,22 @@
 import './globals.css';
 
 import { ClerkProvider } from '@clerk/nextjs';
-import { StagewiseToolbar } from '@stagewise/toolbar-next';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 
 import { AppLayoutWrapper } from '@/shared/components/AppLayoutWrapper';
 import { ConsultationProvider } from '@/shared/ConsultationContext';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  preload: true,
+  fallback: ['system-ui', 'arial'],
+});
 
 export const metadata: Metadata = {
-  title: 'ConsultAI NZ',
-  description: 'AI-powered medical consultation platform for New Zealand healthcare professionals',
+  title: 'ClinicPro - AI Medical Scribing for NZ GPs',
+  description: 'Finish your consultation notes in under 1 minute. AI-powered medical scribing built specifically for New Zealand general practice.',
 };
 
 export default async function RootLayout({
@@ -25,7 +29,7 @@ export default async function RootLayout({
       <ConsultationProvider>
         <html lang="en">
           <body className={inter.className}>
-            <StagewiseToolbar />
+            {/* <StagewiseToolbar /> */}
             <AppLayoutWrapper>{children}</AppLayoutWrapper>
           </body>
         </html>

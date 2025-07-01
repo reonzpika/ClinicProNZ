@@ -4,7 +4,6 @@ The report will analyze top-performing examples, identify structural and UX/UI t
 
 I’ll get back to you shortly with the findings.
 
-
 # Best Landing Page Structures for Medical SaaS Lead Generation (2025)
 
 Landing pages for healthcare SaaS must balance clear conversion goals with trust-building. The **core structure** typically includes: an above-the-fold *hero section* with a bold value proposition and primary call-to-action (CTA), followed by feature/benefit summaries, trust elements (testimonials, certifications), and footer resources.  All elements (headings, visuals, CTAs) should reinforce one primary goal, e.g. “book a demo” or “start free trial”.  For example, Userpilot notes most SaaS pages use a hero headline, a strong CTA button, feature/benefit sections, supporting media, and extra resources (like docs or awards). LandingPicks similarly emphasizes **focus and clarity**: “It must immediately announce its purpose and the action… CTA”. In practice this means a clean, centered layout: minimal nav links, a concise headline/subtitle, a high-contrast CTA above the fold, and logical scrolling hierarchy.
@@ -57,7 +56,7 @@ To target NZ GPs effectively, tailor language and assurances to the local contex
 
 * **Local evidence:** If the product is used by any NZ practices or integrated with NZ systems (e.g. MedTech32, ELMS), mention it. Even a line like “Trusted by clinics across New Zealand” or an Auckland/Dunedin backdrop photo subtly reinforces local adoption.
 
-The most trustable source is @https://www.rnzcgp.org.nz/our-voice/workforce-survey/ 
+The most trustable source is @https://www.rnzcgp.org.nz/our-voice/workforce-survey/
 === Summary of workforce survey ===
 Increasing Workload and Complexity
 Increased complexity of patient care, with more complex, multi-morbidity and mental health conditions managed in the community.

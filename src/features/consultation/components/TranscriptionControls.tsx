@@ -55,6 +55,7 @@ export function TranscriptionControls({
     pauseRecording,
     resumeRecording,
     resetTranscription,
+    resetAudioPermissions,
     volumeLevel,
     noInputWarning,
     totalChunks,
@@ -229,8 +230,40 @@ export function TranscriptionControls({
       <div>
         <Stack spacing="sm">
           {(error || contextError) && (
-            <Alert variant="destructive" className="p-2 text-xs">
-              {error || contextError}
+            <Alert variant="destructive" className="p-3 text-xs">
+              <div className="space-y-2">
+                <div className="whitespace-pre-line leading-relaxed">
+                  {error || contextError}
+                </div>
+                {/* Show Reset Audio button for audio initialization errors */}
+                {(error?.includes('Microphone not available')
+                  || error?.includes('device not found')
+                  || error?.includes('Failed to initialize audio')) && (
+                  <div className="flex gap-2 pt-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        await resetAudioPermissions();
+                        window.location.reload();
+                      }}
+                      className="h-7 px-2 text-xs"
+                    >
+                      Reset Audio & Refresh
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => resetTranscription()}
+                      className="h-7 px-2 text-xs"
+                    >
+                      Clear Error
+                    </Button>
+                  </div>
+                )}
+              </div>
             </Alert>
           )}
 

@@ -8,7 +8,7 @@ Based on your requirement to make the application more subtle for GP use in New 
 
 ### 1. **Branding & Terminology Changes**
 - **App Name**: Changed from "ConsultAI NZ" → "MedScribe NZ"
-- **Navigation**: 
+- **Navigation**:
   - "AI Scribe" → "Digital Scribing"
   - "Consultation" → "Clinical Notes"
   - "Templates" → "Note Templates"
@@ -110,9 +110,8 @@ Current → Recommended
 
 ### CSS Variables Updated
 ```css
---primary: 215.4 16.3% 46.9% (Professional slate)
---background: 0 0% 100% (Clean white)
---foreground: 215.4 16.3% 46.9% (Readable slate)
+--primary: 215.4 16.3% 46.9% (Professional slate) --background: 0 0% 100% (Clean white) --foreground: 215.4 16.3% 46.9%
+  (Readable slate);
 ```
 
 ### Component Structure
@@ -143,4 +142,4 @@ Current → Recommended
 
 The implemented changes successfully transform your SaaS from an obvious AI tool into a professional clinical documentation system that resembles traditional PMS software. The subtle approach ensures GPs can use it confidently in front of patients while maintaining all the powerful AI capabilities behind the scenes.
 
-The key is that patients will see what appears to be standard medical software for note-taking, while GPs benefit from advanced AI assistance disguised as clinical tools and references. 
+The key is that patients will see what appears to be standard medical software for note-taking, while GPs benefit from advanced AI assistance disguised as clinical tools and references.

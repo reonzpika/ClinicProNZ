@@ -25,7 +25,7 @@ export default function ConsultationPage() {
     templateId,
     typedInput,
     inputMode,
-    mobileV2,
+    mobileV2 = { isEnabled: false, token: null, tokenData: null, connectedDevices: [], connectionStatus: 'disconnected' },
     consultationItems,
     consultationNotes,
     generatedNotes,

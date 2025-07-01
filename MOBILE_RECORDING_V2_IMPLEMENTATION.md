@@ -66,14 +66,14 @@ CREATE TABLE "patient_sessions" (
 
 ### **Old System (Complex)**
 ```
-Desktop → Generate Token → QR Code → Mobile Scan → Mobile Recording Hook → 
-File Upload → Server Validation → Deepgram → SessionSyncService → 
+Desktop → Generate Token → QR Code → Mobile Scan → Mobile Recording Hook →
+File Upload → Server Validation → Deepgram → SessionSyncService →
 Polling (15s delay) → Desktop Sync
 ```
 
 ### **New System (Simplified)**
 ```
-Desktop → Generate Token → QR Code → Mobile Scan → WebSocket Connection → 
+Desktop → Generate Token → QR Code → Mobile Scan → WebSocket Connection →
 Real-time Transcription → Instant Desktop Sync
 ```
 
@@ -183,4 +183,4 @@ Real-time Transcription → Instant Desktop Sync
 3. **Environment Variables**: No new variables needed
 4. **Dependencies**: Uses existing `ws` library (already installed)
 
-The foundation is now complete and ready for frontend integration! 
+The foundation is now complete and ready for frontend integration!

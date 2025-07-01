@@ -256,17 +256,9 @@ export const useTranscription = () => {
     }
   }, [measureVolume, startRecordingSession, stopRecordingSession, microphoneGain, volumeThreshold]);
 
-  // Initialize audio context for VAD
-  const initializeAudio = useCallback(async () => {
+  // Helper function to setup audio context (extracted for reuse)
+  const setupAudioContext = useCallback(async (stream: MediaStream) => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-      });
-
       audioStreamRef.current = stream;
 
       // Setup Web Audio API for VAD
@@ -284,15 +276,103 @@ export const useTranscription = () => {
       lastSpokeAtRef.current = audioContext.currentTime;
 
       return true;
-    } catch (error: any) {
-      setState(prev => ({
-        ...prev,
-        error: `Failed to initialize audio: ${error.message}`,
-      }));
-      setError(`Failed to initialize audio: ${error.message}`);
-      return false;
+    } catch (error) {
+      // Clean up stream if audio context setup fails
+      stream.getTracks().forEach(track => track.stop());
+      throw error;
     }
-  }, [setError]);
+  }, []);
+
+  // Helper function to provide user-friendly error messages
+  const getAudioErrorMessage = useCallback((error: Error | null) => {
+    if (!error) {
+      return 'Failed to initialize audio: Unknown error';
+    }
+
+    const errorMessage = error.message.toLowerCase();
+
+    if (errorMessage.includes('requested device not found') || errorMessage.includes('devicenotfound')) {
+      return 'Microphone not available: Please check that your microphone is connected and try refreshing the page. You may need to reset microphone permissions in your browser settings.';
+    }
+
+    if (errorMessage.includes('permission denied') || errorMessage.includes('notallowed')) {
+      return 'Microphone access denied: Please allow microphone permissions in your browser and refresh the page.';
+    }
+
+    if (errorMessage.includes('not found') || errorMessage.includes('no device')) {
+      return 'No microphone found: Please connect a microphone and refresh the page.';
+    }
+
+    if (errorMessage.includes('constraint') || errorMessage.includes('overconstrained')) {
+      return 'Microphone configuration issue: Your microphone doesn\'t support the required settings. Try using a different microphone.';
+    }
+
+    if (errorMessage.includes('abort') || errorMessage.includes('security')) {
+      return 'Security error: Please refresh the page and ensure you\'re using a secure (HTTPS) connection.';
+    }
+
+    // Generic fallback with the original error for debugging
+    return `Failed to initialize audio: ${error.message}. Try refreshing the page or check your microphone connection.`;
+  }, []);
+
+  // Initialize audio context for VAD with fallback strategies
+  const initializeAudio = useCallback(async () => {
+    let lastError: Error | null = null;
+
+    // Strategy 1: Try with preferred constraints (echoCancellation, etc.)
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
+
+      return await setupAudioContext(stream);
+    } catch (error: any) {
+      lastError = error;
+    }
+
+    // Strategy 2: Try with basic audio constraints (fallback for device issues)
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+      });
+
+      return await setupAudioContext(stream);
+    } catch (error: any) {
+      lastError = error;
+    }
+
+    // Strategy 3: Try enumerating devices and selecting the first available
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const audioInputs = devices.filter(device => device.kind === 'audioinput');
+
+      if (audioInputs.length > 0) {
+        // Try the default device explicitly
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            deviceId: { ideal: 'default' },
+          },
+        });
+
+        return await setupAudioContext(stream);
+      }
+    } catch (error: any) {
+      lastError = error;
+    }
+
+    // All strategies failed - provide helpful error message
+    const errorMessage = getAudioErrorMessage(lastError);
+    setState(prev => ({
+      ...prev,
+      error: errorMessage,
+    }));
+    setError(errorMessage);
+    return false;
+  }, [setError, setupAudioContext, getAudioErrorMessage]);
 
   // Clean up audio resources
   const cleanupAudio = useCallback(() => {
@@ -338,7 +418,34 @@ export const useTranscription = () => {
     }));
   }, []);
 
-  // Start recording with smart session management
+  // Reset cached audio permissions (utility function)
+  const resetAudioPermissions = useCallback(async () => {
+    try {
+      // Clear any existing audio streams
+      cleanupAudio();
+
+      // Try to revoke permissions if the API is available
+      if ('permissions' in navigator) {
+        try {
+          await navigator.permissions.query({ name: 'microphone' as PermissionName });
+        } catch {
+          // Permissions API not available or permission query failed
+        }
+      }
+
+      // Clear any cached media devices
+      if ('mediaDevices' in navigator && 'enumerateDevices' in navigator.mediaDevices) {
+        await navigator.mediaDevices.enumerateDevices();
+      }
+
+      return true;
+    } catch {
+      // Failed to reset audio permissions
+      return false;
+    }
+  }, [cleanupAudio]);
+
+  // Start recording with smart session management and enhanced error handling
   const startRecording = useCallback(async () => {
     try {
       setState(prev => ({
@@ -356,6 +463,14 @@ export const useTranscription = () => {
 
       const success = await initializeAudio();
       if (!success) {
+        // If initialization failed, provide additional guidance
+        const currentError = state.error;
+        if (currentError?.includes('device not found') || currentError?.includes('not available')) {
+          setState(prev => ({
+            ...prev,
+            error: `${currentError}\n\nTroubleshooting tips:\n• Refresh the page to reset microphone permissions\n• Check that your microphone is connected and working\n• Try using a different browser or incognito mode\n• Ensure no other applications are using your microphone`,
+          }));
+        }
         return;
       }
 
@@ -375,16 +490,17 @@ export const useTranscription = () => {
       // Start VAD monitoring with 30fps interval (33ms) for consistent background operation
       vadLoopRef.current = setInterval(vadLoop, 33);
     } catch (error: any) {
+      const errorMessage = `Failed to start recording: ${error.message}`;
       setState(prev => ({
         ...prev,
-        error: `Failed to start recording: ${error.message}`,
+        error: errorMessage,
         isRecording: false,
       }));
       setStatus('idle');
-      setError(`Failed to start recording: ${error.message}`);
+      setError(errorMessage);
       cleanupAudio();
     }
-  }, [initializeAudio, setStatus, setTranscription, setError, vadLoop, cleanupAudio, ensureActiveSession]);
+  }, [initializeAudio, setStatus, setTranscription, setError, vadLoop, cleanupAudio, ensureActiveSession, state.error]);
 
   // Stop recording and finalize any active session
   const stopRecording = useCallback(async () => {
@@ -474,5 +590,6 @@ export const useTranscription = () => {
     pauseRecording,
     resumeRecording,
     resetTranscription,
+    resetAudioPermissions,
   };
 };

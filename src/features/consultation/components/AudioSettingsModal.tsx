@@ -40,7 +40,7 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
   };
 
   // Measure volume for testing
-  const measureTestVolume = () => {
+  const measureTestVolume = useCallback(() => {
     if (!testAnalyserRef.current) {
       return 0;
     }
@@ -55,7 +55,7 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
       sum += sample * sample;
     }
     return Math.sqrt(sum / dataArray.length);
-  };
+  }, []);
 
   // Test microphone animation loop
   const testLoop = useCallback(() => {
@@ -69,10 +69,29 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
 
     setTestVolumeLevel(uiVolume);
     testAnimationRef.current = requestAnimationFrame(testLoop);
-  }, [isTestingMic, microphoneGain]);
+  }, [isTestingMic, microphoneGain, measureTestVolume]);
 
-  // Start microphone test
-  const startMicTest = async () => {
+  // Helper function to setup test audio context
+  const setupTestAudio = useCallback(async (stream: MediaStream) => {
+    testStreamRef.current = stream;
+
+    const audioContext = new AudioContext();
+    const sourceNode = audioContext.createMediaStreamSource(stream);
+    const analyser = audioContext.createAnalyser();
+
+    analyser.fftSize = 512;
+    analyser.smoothingTimeConstant = 0.3;
+    sourceNode.connect(analyser);
+
+    testAudioContextRef.current = audioContext;
+    testAnalyserRef.current = analyser;
+  }, []);
+
+  // Start microphone test with fallback strategies
+  const startMicTest = useCallback(async () => {
+    let lastError: Error | null = null;
+
+    // Strategy 1: Try with preferred constraints
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -82,24 +101,47 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
         },
       });
 
-      testStreamRef.current = stream;
-
-      const audioContext = new AudioContext();
-      const sourceNode = audioContext.createMediaStreamSource(stream);
-      const analyser = audioContext.createAnalyser();
-
-      analyser.fftSize = 512;
-      analyser.smoothingTimeConstant = 0.3;
-      sourceNode.connect(analyser);
-
-      testAudioContextRef.current = audioContext;
-      testAnalyserRef.current = analyser;
-
+      await setupTestAudio(stream);
       setIsTestingMic(true);
-    } catch (error) {
-      console.error('Failed to start microphone test:', error);
+      return;
+    } catch (error: any) {
+      lastError = error;
     }
-  };
+
+    // Strategy 2: Try with basic audio constraints
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+      });
+
+      await setupTestAudio(stream);
+      setIsTestingMic(true);
+      return;
+    } catch (error: any) {
+      lastError = error;
+    }
+
+    // Strategy 3: Try with default device
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          deviceId: { ideal: 'default' },
+        },
+      });
+
+      await setupTestAudio(stream);
+      setIsTestingMic(true);
+      return;
+    } catch (error: any) {
+      lastError = error;
+    }
+
+    // All strategies failed - provide user-friendly error handling
+    if (lastError) {
+      // Could add more sophisticated error handling here if needed
+      setIsTestingMic(false);
+    }
+  }, [setupTestAudio]);
 
   // Start test loop when isTestingMic becomes true
   useEffect(() => {
@@ -109,7 +151,7 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
   }, [isTestingMic, testLoop]);
 
   // Stop microphone test
-  const stopMicTest = () => {
+  const stopMicTest = useCallback(() => {
     setIsTestingMic(false);
 
     if (testAnimationRef.current) {
@@ -129,14 +171,14 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
 
     testAnalyserRef.current = null;
     setTestVolumeLevel(0);
-  };
+  }, []);
 
   // Cleanup on unmount or modal close
   useEffect(() => {
     if (!isOpen && isTestingMic) {
       stopMicTest();
     }
-  }, [isOpen, isTestingMic]);
+  }, [isOpen, isTestingMic, stopMicTest]);
 
   useEffect(() => {
     return () => {
@@ -144,7 +186,7 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
         stopMicTest();
       }
     };
-  }, []);
+  }, [isTestingMic, stopMicTest]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

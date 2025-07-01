@@ -110,7 +110,7 @@ export const Header = () => {
         </div>
       </div>
       <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
-        <DialogContent className="bg-white border border-slate-200 shadow-lg">
+        <DialogContent className="border border-slate-200 bg-white shadow-lg">
           <DialogHeader>
             <h2 className="text-center text-sm font-semibold text-slate-900">You need to sign in or sign up to access note templates.</h2>
           </DialogHeader>

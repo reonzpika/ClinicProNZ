@@ -10,7 +10,7 @@
     --card-foreground: 215.4 16.3% 46.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 215.4 16.3% 46.9%;
-    --primary: 215.4 16.3% 46.9%;
+    --primary: 221 83% 53%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96%;
     --secondary-foreground: 215.4 16.3% 46.9%;
@@ -61,6 +61,15 @@
 
 * {
   border-color: hsl(var(--border));
+}
+
+/* Ensure button colors override any third-party CSS */
+.bg-gradient-to-r.from-nz-green-600.to-nz-green-700 {
+  background: linear-gradient(to right, #16a34a, #15803d) !important;
+}
+
+button[class*='from-nz-green-600'] {
+  background: linear-gradient(to right, #16a34a, #15803d) !important;
 }
 
 body {

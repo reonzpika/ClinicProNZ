@@ -241,6 +241,14 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
           // Ensure consultation notes exist
           consultationItems: parsed.consultationItems || [],
           consultationNotes: parsed.consultationNotes || '',
+          // Ensure mobileV2 object exists with all required properties
+          mobileV2: {
+            isEnabled: parsed.mobileV2?.isEnabled || false,
+            token: parsed.mobileV2?.token || null,
+            tokenData: parsed.mobileV2?.tokenData || null,
+            connectedDevices: parsed.mobileV2?.connectedDevices || [],
+            connectionStatus: parsed.mobileV2?.connectionStatus || 'disconnected',
+          },
         };
       }
       return {

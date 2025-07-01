@@ -18,7 +18,12 @@ type QRTokenData = {
 
 export const MobileTab: React.FC = () => {
   const { isSignedIn, userId } = useAuth();
-  const { mobileV2, setMobileV2TokenData, enableMobileV2, ensureActiveSession } = useConsultation();
+  const {
+    mobileV2 = { isEnabled: false, token: null, tokenData: null, connectedDevices: [], connectionStatus: 'disconnected' },
+    setMobileV2TokenData,
+    enableMobileV2,
+    ensureActiveSession,
+  } = useConsultation();
 
   const [qrData, setQrData] = useState<QRTokenData | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
