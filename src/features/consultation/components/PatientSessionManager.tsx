@@ -16,6 +16,7 @@ export const PatientSessionManager: React.FC = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   const handleSessionSelect = useCallback((sessionId: string) => {
     switchToPatientSession(sessionId);
@@ -25,14 +26,22 @@ export const PatientSessionManager: React.FC = () => {
     switchToPatientSession(sessionId);
   }, [switchToPatientSession]);
 
-  // Load patient sessions on mount
+  // Client-side initialization
   useEffect(() => {
-    if (typeof window !== 'undefined' && loadPatientSessions) {
+    setIsClient(true);
+  }, []);
+
+  // Load patient sessions on client mount
+  useEffect(() => {
+    if (isClient && loadPatientSessions) {
       loadPatientSessions().then(() => {
+        setHasInitialized(true);
+      }).catch(() => {
+        // Silently handle errors and still mark as initialized
         setHasInitialized(true);
       });
     }
-  }, [loadPatientSessions]);
+  }, [isClient, loadPatientSessions]);
 
   // Auto-open modal when no session is selected and component has initialized
   useEffect(() => {
@@ -40,11 +49,6 @@ export const PatientSessionManager: React.FC = () => {
       setIsModalOpen(true);
     }
   }, [hasInitialized, currentPatientSessionId]);
-
-  // Don't render if feature is not enabled or on server side
-  if (typeof window === 'undefined') {
-    return null;
-  }
 
   const handleSwitchSession = () => {
     setIsModalOpen(true);
@@ -59,13 +63,15 @@ export const PatientSessionManager: React.FC = () => {
       {/* Always show the current session bar */}
       <CurrentSessionBar onSwitchSession={handleSwitchSession} />
 
-      {/* Session management modal */}
-      <SessionModal
-        isOpen={isModalOpen}
-        onClose={handleModalClose}
-        onSessionSelected={handleSessionSelect}
-        onSessionCreated={handleSessionCreate}
-      />
+      {/* Session management modal - only show on client to prevent hydration issues */}
+      {isClient && (
+        <SessionModal
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+          onSessionSelected={handleSessionSelect}
+          onSessionCreated={handleSessionCreate}
+        />
+      )}
     </>
   );
 };

@@ -41,17 +41,23 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
   const [error, setError] = useState<string | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [showExpiryWarning, setShowExpiryWarning] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
-  // Restore QR data from context when component mounts or tokenData changes
+  // Client-side initialization
   useEffect(() => {
-    if (mobileV2.tokenData && !qrData) {
+    setIsClient(true);
+  }, []);
+
+  // Restore QR data from context when component mounts or tokenData changes (client-side only)
+  useEffect(() => {
+    if (isClient && mobileV2.tokenData && !qrData) {
       setQrData(mobileV2.tokenData);
     }
-  }, [mobileV2.tokenData, qrData]);
+  }, [isClient, mobileV2.tokenData, qrData]);
 
-  // Update remaining time and show warnings
+  // Update remaining time and show warnings (client-side only)
   useEffect(() => {
-    if (!qrData) {
+    if (!isClient || !qrData) {
       return;
     }
 
@@ -80,7 +86,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
     const interval = setInterval(updateTimer, 1000);
 
     return () => clearInterval(interval);
-  }, [qrData]);
+  }, [isClient, qrData, setMobileV2TokenData, enableMobileV2]);
 
   const generateToken = useCallback(async () => {
     if (!isSignedIn || !userId) {
@@ -126,7 +132,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
     } finally {
       setIsGenerating(false);
     }
-  }, [isSignedIn, userId, ensureActiveSession]);
+  }, [isSignedIn, userId, ensureActiveSession, setMobileV2TokenData, enableMobileV2]);
 
   const stopMobileRecording = useCallback(() => {
     setQrData(null);
@@ -159,7 +165,9 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
   const isExpiringSoon = timeRemaining > 0 && timeRemaining < 7200; // 2 hours
 
   const handleSignIn = () => {
-    window.location.href = '/login';
+    if (isClient) {
+      window.location.href = '/login';
+    }
   };
 
   return (
@@ -243,8 +251,8 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
             </Alert>
           )}
 
-          {/* QR Code Display */}
-          {qrData && !isExpired && (
+          {/* QR Code Display - only render on client to prevent SSR issues */}
+          {isClient && qrData && !isExpired && (
             <div className="flex flex-col items-center space-y-3">
               <div className="rounded-lg border-2 border-gray-200 bg-white p-3">
                 <QRCodeSVG

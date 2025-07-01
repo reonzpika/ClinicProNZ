@@ -107,6 +107,7 @@ function getUserDefaultTemplateId() {
   return null;
 }
 
+// Make defaultState completely static with no localStorage access
 const defaultState: ConsultationState = {
   sessionId: '',
   templateId: MULTIPROBLEM_SOAP_UUID,
@@ -118,12 +119,9 @@ const defaultState: ConsultationState = {
   error: null,
   userDefaultTemplateId: null,
   consentObtained: false,
-  microphoneGain: typeof window !== 'undefined'
-    ? Number.parseFloat(localStorage.getItem('microphoneGain') || '7.0')
-    : 7.0,
-  volumeThreshold: typeof window !== 'undefined'
-    ? Number.parseFloat(localStorage.getItem('volumeThreshold') || '0.1')
-    : 0.1,
+  // Use static defaults - no localStorage access during SSR
+  microphoneGain: 7.0,
+  volumeThreshold: 0.1,
   // Chatbot defaults
   chatHistory: [],
   isChatContextEnabled: false,
@@ -214,29 +212,47 @@ const ConsultationContext = createContext<
 >(null);
 
 export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
-  const [state, setState] = useState<ConsultationState>(() => {
-    if (typeof window !== 'undefined') {
+  // Initialize with static defaults - no localStorage access during SSR
+  const [state, setState] = useState<ConsultationState>(() => ({
+    ...defaultState,
+    sessionId: generateSessionId(),
+  }));
+
+  // Track if we're on the client side to prevent hydration mismatches
+  const [isClient, setIsClient] = useState(false);
+
+  // Client-side only: Restore state from localStorage after hydration
+  useEffect(() => {
+    setIsClient(true);
+
+    try {
       const stored = localStorage.getItem('consultationState');
       const userDefault = getUserDefaultTemplateId();
+
+      // Load stored microphone settings immediately
+      const microphoneGain = Number.parseFloat(localStorage.getItem('microphoneGain') || '7.0');
+      const volumeThreshold = Number.parseFloat(localStorage.getItem('volumeThreshold') || '0.1');
+
       if (stored) {
         const parsed = JSON.parse(stored);
-        return {
+        setState({
           ...parsed,
+          // Override with fresh values
           userDefaultTemplateId: userDefault,
           lastGeneratedTranscription: '',
           lastGeneratedTypedInput: '',
           lastGeneratedCompiledConsultationText: '',
           lastGeneratedTemplateId: '',
           consentObtained: false,
+          microphoneGain,
+          volumeThreshold,
           // Ensure new fields have defaults if not present in stored data
           inputMode: parsed.inputMode || 'audio',
           typedInput: parsed.typedInput || '',
-
-          // Ensure settings object exists
-          settings: parsed.settings || {
-            autoSave: false,
-            microphoneGain: 7.0,
-            volumeThreshold: 0.1,
+          settings: {
+            autoSave: parsed.settings?.autoSave || false,
+            microphoneGain,
+            volumeThreshold,
           },
           // Ensure consultation notes exist
           consultationItems: parsed.consultationItems || [],
@@ -249,24 +265,61 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
             connectedDevices: parsed.mobileV2?.connectedDevices || [],
             connectionStatus: parsed.mobileV2?.connectionStatus || 'disconnected',
           },
-        };
+        });
+      } else {
+        // No stored state, just update with user defaults and settings
+        setState(prev => ({
+          ...prev,
+          templateId: userDefault || MULTIPROBLEM_SOAP_UUID,
+          userDefaultTemplateId: userDefault,
+          microphoneGain,
+          volumeThreshold,
+          settings: {
+            ...prev.settings,
+            microphoneGain,
+            volumeThreshold,
+          },
+        }));
       }
-      return {
-        ...defaultState,
-        sessionId: generateSessionId(),
+    } catch (error) {
+      console.warn('Failed to restore consultation state from localStorage:', error);
+      // On error, just set user defaults and continue
+      const userDefault = getUserDefaultTemplateId();
+      const microphoneGain = Number.parseFloat(localStorage.getItem('microphoneGain') || '7.0');
+      const volumeThreshold = Number.parseFloat(localStorage.getItem('volumeThreshold') || '0.1');
+
+      setState(prev => ({
+        ...prev,
         templateId: userDefault || MULTIPROBLEM_SOAP_UUID,
         userDefaultTemplateId: userDefault,
-      };
+        microphoneGain,
+        volumeThreshold,
+        settings: {
+          ...prev.settings,
+          microphoneGain,
+          volumeThreshold,
+        },
+      }));
     }
-    return { ...defaultState, sessionId: generateSessionId() };
-  });
+  }, []);
 
+  // Client-side only: Save state to localStorage
   useEffect(() => {
-    localStorage.setItem('consultationState', JSON.stringify(state));
-  }, [state]);
+    if (isClient) {
+      try {
+        localStorage.setItem('consultationState', JSON.stringify(state));
+      } catch (error) {
+        console.warn('Failed to save consultation state to localStorage:', error);
+      }
+    }
+  }, [state, isClient]);
 
-  // Validate mobile token on mount
+  // Client-side only: Validate mobile token after state restoration
   useEffect(() => {
+    if (!isClient) {
+      return;
+    }
+
     const validateMobileToken = async (token: string) => {
       try {
         // Check if token is still valid by calling Ably token API
@@ -308,22 +361,12 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    // Validate token from localStorage on mount
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('consultationState');
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          const token = parsed?.mobileV2?.token;
-          if (token) {
-            validateMobileToken(token);
-          }
-        } catch (error) {
-          console.warn('Failed to parse stored consultation state:', error);
-        }
-      }
+    // Validate mobile token if it exists
+    const token = state.mobileV2?.token;
+    if (token) {
+      validateMobileToken(token);
     }
-  }, []); // Run only on mount
+  }, [isClient, state.mobileV2?.token]); // Only run when isClient becomes true or token changes
 
   // Helper functions
   const setStatus = useCallback((status: ConsultationState['status']) =>

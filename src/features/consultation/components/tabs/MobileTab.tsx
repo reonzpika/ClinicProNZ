@@ -29,20 +29,26 @@ export const MobileTab: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
+  const [isClient, setIsClient] = useState(false);
+
+  // Client-side initialization
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Get connected devices from context
   const connectedDevices = mobileV2.connectedDevices.filter(d => d.deviceType === 'Mobile');
 
-  // Restore QR data from context when component mounts or tokenData changes
+  // Restore QR data from context when component mounts or tokenData changes (client-side only)
   useEffect(() => {
-    if (mobileV2.tokenData && !qrData) {
+    if (isClient && mobileV2.tokenData && !qrData) {
       setQrData(mobileV2.tokenData);
     }
-  }, [mobileV2.tokenData, qrData]);
+  }, [isClient, mobileV2.tokenData, qrData]);
 
-  // Update remaining time
+  // Update remaining time (client-side only)
   useEffect(() => {
-    if (!qrData) {
+    if (!isClient || !qrData) {
       return;
     }
 
@@ -64,7 +70,7 @@ export const MobileTab: React.FC = () => {
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, [qrData, setMobileV2TokenData, enableMobileV2]);
+  }, [isClient, qrData, setMobileV2TokenData, enableMobileV2]);
 
   const generateToken = useCallback(async () => {
     if (!isSignedIn || !userId) {
@@ -127,7 +133,13 @@ export const MobileTab: React.FC = () => {
   };
 
   const isExpired = timeRemaining <= 0 && qrData;
-  const isExpiringSoon = timeRemaining > 0 && timeRemaining < 3600; // 1 hour
+  const isExpiringSoon = timeRemaining > 0 && timeRemaining < 3600;
+
+  const handleSignIn = () => {
+    if (isClient) {
+      window.location.href = '/login';
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -187,7 +199,8 @@ export const MobileTab: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {qrData && !isExpired
+          {/* QR Code Display - only render on client to prevent SSR issues */}
+          {isClient && qrData && !isExpired
             ? (
                 <div className="flex flex-col items-center space-y-3">
                   <div className="rounded-lg border-2 border-gray-200 bg-white p-3">
@@ -216,11 +229,11 @@ export const MobileTab: React.FC = () => {
               )}
 
           {/* Control Buttons */}
-          <div className="space-y-2">
+          <div className="flex flex-col space-y-2">
             {!isSignedIn
               ? (
                   <Button
-                    onClick={() => window.location.href = '/login'}
+                    onClick={handleSignIn}
                     className="w-full"
                     size="sm"
                   >
@@ -252,24 +265,33 @@ export const MobileTab: React.FC = () => {
                       </Button>
                     )
                   : (
-                      <div className="grid grid-cols-2 gap-2">
+                      <>
                         <Button
                           onClick={generateToken}
                           disabled={isGenerating}
                           variant="outline"
+                          className="w-full"
                           size="sm"
                         >
-                          <RefreshCw className="mr-1 size-3" />
-                          Refresh
+                          {isGenerating
+                            ? (
+                                <>
+                                  <RefreshCw className="mr-2 size-4 animate-spin" />
+                                  Generating...
+                                </>
+                              )
+                            : (
+                                <>
+                                  <RefreshCw className="mr-2 size-4" />
+                                  New QR Code
+                                </>
+                              )}
                         </Button>
-                        <Button
-                          onClick={stopMobileRecording}
-                          variant="outline"
-                          size="sm"
-                        >
-                          Disconnect
+
+                        <Button onClick={stopMobileRecording} variant="outline" className="w-full" size="sm">
+                          Disconnect Devices
                         </Button>
-                      </div>
+                      </>
                     )}
           </div>
         </CardContent>
