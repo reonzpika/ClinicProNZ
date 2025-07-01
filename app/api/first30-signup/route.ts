@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { eq } from 'drizzle-orm';
 
 import { db } from '../../../database/client';
 import { emailCaptures } from '../../../database/schema';
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
     const existingCapture = await db
       .select()
       .from(emailCaptures)
-      .where(emailCaptures.email.eq(email.toLowerCase().trim()))
+      .where(eq(emailCaptures.email, email.toLowerCase().trim()))
       .limit(1);
 
     if (existingCapture.length > 0) {
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest) {
     const first30Count = await db
       .select()
       .from(emailCaptures)
-      .where(emailCaptures.source.eq('first_30'));
+      .where(eq(emailCaptures.source, 'first_30'));
 
     if (first30Count.length >= 30) {
       return NextResponse.json(
