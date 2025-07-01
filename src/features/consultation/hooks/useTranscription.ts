@@ -292,87 +292,36 @@ export const useTranscription = () => {
     const errorMessage = error.message.toLowerCase();
 
     if (errorMessage.includes('requested device not found') || errorMessage.includes('devicenotfound')) {
-      return 'Microphone not available: Please check that your microphone is connected and try refreshing the page. You may need to reset microphone permissions in your browser settings.';
+      return 'Microphone device not found: This usually happens when:\n• Another application is using your microphone\n• Your microphone was disconnected after the page loaded\n• Browser cached an invalid device ID\n\nSolutions:\n• Close other apps that might be using your microphone (Zoom, Teams, etc.)\n• Refresh this page to reset device connections\n• Try unplugging and reconnecting your microphone\n• Check your browser\'s microphone settings';
     }
 
     if (errorMessage.includes('permission denied') || errorMessage.includes('notallowed')) {
-      return 'Microphone access denied: Please allow microphone permissions in your browser and refresh the page.';
+      return 'Microphone access denied: Please click "Allow" when your browser asks for microphone permission, then refresh the page if needed. Check your browser\'s site permissions if the prompt doesn\'t appear.';
     }
 
     if (errorMessage.includes('not found') || errorMessage.includes('no device')) {
-      return 'No microphone found: Please connect a microphone and refresh the page.';
+      return 'No microphone detected: Please connect a microphone to your computer and refresh the page. If you have a microphone connected, check that it\'s set as the default recording device in your system settings.';
     }
 
     if (errorMessage.includes('constraint') || errorMessage.includes('overconstrained')) {
-      return 'Microphone configuration issue: Your microphone doesn\'t support the required settings. Try using a different microphone.';
+      return 'Microphone compatibility issue: Your microphone doesn\'t support the required audio settings. This is usually fixed by using the built-in microphone or a different external microphone.';
     }
 
     if (errorMessage.includes('abort') || errorMessage.includes('security')) {
-      return 'Security error: Please refresh the page and ensure you\'re using a secure (HTTPS) connection.';
+      return 'Security error: Please ensure you\'re using a secure (HTTPS) connection. If the problem persists, try refreshing the page or using a different browser.';
+    }
+
+    if (errorMessage.includes('in use') || errorMessage.includes('busy')) {
+      return 'Microphone in use: Another application or browser tab is currently using your microphone. Please close other audio applications and refresh this page.';
+    }
+
+    if (errorMessage.includes('hardware') || errorMessage.includes('unavailable')) {
+      return 'Microphone hardware unavailable: Your microphone may be disabled in system settings or having hardware issues. Check your system\'s audio settings and microphone status.';
     }
 
     // Generic fallback with the original error for debugging
-    return `Failed to initialize audio: ${error.message}. Try refreshing the page or check your microphone connection.`;
+    return `Audio initialization failed: ${error.message}\n\nGeneral troubleshooting:\n• Refresh the page\n• Check microphone connections\n• Close other apps using microphone\n• Try a different browser\n• Ensure HTTPS connection`;
   }, []);
-
-  // Initialize audio context for VAD with fallback strategies
-  const initializeAudio = useCallback(async () => {
-    let lastError: Error | null = null;
-
-    // Strategy 1: Try with preferred constraints (echoCancellation, etc.)
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-      });
-
-      return await setupAudioContext(stream);
-    } catch (error: any) {
-      lastError = error;
-    }
-
-    // Strategy 2: Try with basic audio constraints (fallback for device issues)
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-      });
-
-      return await setupAudioContext(stream);
-    } catch (error: any) {
-      lastError = error;
-    }
-
-    // Strategy 3: Try enumerating devices and selecting the first available
-    try {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const audioInputs = devices.filter(device => device.kind === 'audioinput');
-
-      if (audioInputs.length > 0) {
-        // Try the default device explicitly
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            deviceId: { ideal: 'default' },
-          },
-        });
-
-        return await setupAudioContext(stream);
-      }
-    } catch (error: any) {
-      lastError = error;
-    }
-
-    // All strategies failed - provide helpful error message
-    const errorMessage = getAudioErrorMessage(lastError);
-    setState(prev => ({
-      ...prev,
-      error: errorMessage,
-    }));
-    setError(errorMessage);
-    return false;
-  }, [setError, setupAudioContext, getAudioErrorMessage]);
 
   // Clean up audio resources
   const cleanupAudio = useCallback(() => {
@@ -418,6 +367,88 @@ export const useTranscription = () => {
     }));
   }, []);
 
+  // Initialize audio context for VAD with improved fallback strategies
+  const initializeAudio = useCallback(async () => {
+    // Ensure we're on client-side before attempting audio access
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+      const errorMessage = 'Audio not available: Running on server side';
+      setState(prev => ({ ...prev, error: errorMessage }));
+      setError(errorMessage);
+      return false;
+    }
+
+    // Check if MediaDevices API is available
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      const errorMessage = 'Audio not available: Your browser does not support microphone access. Please use a modern browser like Chrome, Firefox, or Safari.';
+      setState(prev => ({ ...prev, error: errorMessage }));
+      setError(errorMessage);
+      return false;
+    }
+
+    // Clean up any existing audio resources before initializing new ones
+    cleanupAudio();
+
+    // Add a small delay to ensure previous cleanup is complete
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    let lastError: Error | null = null;
+
+    // Strategy 1: Try with preferred constraints (echoCancellation, etc.)
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
+
+      return await setupAudioContext(stream);
+    } catch (error: any) {
+      lastError = error;
+      console.warn('Audio Strategy 1 failed:', error.message);
+    }
+
+    // Strategy 2: Try with basic audio constraints (fallback for device issues)
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+      });
+
+      return await setupAudioContext(stream);
+    } catch (error: any) {
+      lastError = error;
+      console.warn('Audio Strategy 2 failed:', error.message);
+    }
+
+    // Strategy 3: Try with explicit default device (only if we have permission context)
+    try {
+      // First check if we can get any devices (this requires permission in some browsers)
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          deviceId: { ideal: 'default' },
+          echoCancellation: false, // Simplified constraints for compatibility
+          noiseSuppression: false,
+          autoGainControl: false,
+        },
+      });
+
+      return await setupAudioContext(stream);
+    } catch (error: any) {
+      lastError = error;
+      console.warn('Audio Strategy 3 failed:', error.message);
+    }
+
+    // All strategies failed - provide helpful error message
+    const errorMessage = getAudioErrorMessage(lastError);
+    setState(prev => ({
+      ...prev,
+      error: errorMessage,
+    }));
+    setError(errorMessage);
+    return false;
+  }, [setError, setupAudioContext, getAudioErrorMessage, cleanupAudio]);
+
   // Reset cached audio permissions (utility function)
   const resetAudioPermissions = useCallback(async () => {
     try {
@@ -425,7 +456,7 @@ export const useTranscription = () => {
       cleanupAudio();
 
       // Try to revoke permissions if the API is available
-      if ('permissions' in navigator) {
+      if (typeof window !== 'undefined' && 'permissions' in navigator) {
         try {
           await navigator.permissions.query({ name: 'microphone' as PermissionName });
         } catch {
@@ -433,9 +464,13 @@ export const useTranscription = () => {
         }
       }
 
-      // Clear any cached media devices
-      if ('mediaDevices' in navigator && 'enumerateDevices' in navigator.mediaDevices) {
-        await navigator.mediaDevices.enumerateDevices();
+      // Clear any cached media devices (only if available)
+      if (typeof window !== 'undefined' && 'mediaDevices' in navigator && 'enumerateDevices' in navigator.mediaDevices) {
+        try {
+          await navigator.mediaDevices.enumerateDevices();
+        } catch {
+          // Device enumeration failed, but that's ok
+        }
       }
 
       return true;
@@ -447,6 +482,11 @@ export const useTranscription = () => {
 
   // Start recording with smart session management and enhanced error handling
   const startRecording = useCallback(async () => {
+    // Early return if not on client side
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     try {
       setState(prev => ({
         ...prev,
@@ -468,7 +508,7 @@ export const useTranscription = () => {
         if (currentError?.includes('device not found') || currentError?.includes('not available')) {
           setState(prev => ({
             ...prev,
-            error: `${currentError}\n\nTroubleshooting tips:\n• Refresh the page to reset microphone permissions\n• Check that your microphone is connected and working\n• Try using a different browser or incognito mode\n• Ensure no other applications are using your microphone`,
+            error: `${currentError}\n\nTroubleshooting tips:\n• Refresh the page to reset microphone permissions\n• Check that your microphone is connected and working\n• Try using a different browser or incognito mode\n• Ensure no other applications are using your microphone\n• Make sure you're using HTTPS (required for microphone access)`,
           }));
         }
         return;
