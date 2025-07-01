@@ -118,13 +118,25 @@ export const ClinicProHeroSection = () => {
             </div>
 
             {/* Secondary CTA */}
-            <div className="mb-8">
-              <button
-                onClick={() => setShowEmailModal(true)}
-                className="font-medium text-nz-blue-600 underline transition-colors hover:text-nz-blue-700"
-              >
-                {clinicProLandingData.hero.secondaryCTA}
-              </button>
+            <div className="mb-8 space-y-4">
+              <div>
+                <button
+                  onClick={() => setShowEmailModal(true)}
+                  className="font-medium text-nz-blue-600 underline transition-colors hover:text-nz-blue-700"
+                >
+                  {clinicProLandingData.hero.secondaryCTA}
+                </button>
+              </div>
+              
+              {/* Login Button */}
+              <div>
+                <a
+                  href="/login"
+                  className="inline-flex items-center rounded-lg border border-nz-blue-600 bg-white px-6 py-3 text-base font-medium text-nz-blue-600 shadow-sm transition-colors hover:bg-nz-blue-50 hover:text-nz-blue-700"
+                >
+                  Already have an account? Sign In
+                </a>
+              </div>
             </div>
 
             {/* Countdown Timer */}

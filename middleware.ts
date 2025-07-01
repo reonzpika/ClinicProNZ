@@ -70,6 +70,22 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
+  // Protect /consultation page - redirect to login if not authenticated
+  if (req.nextUrl.pathname.startsWith('/consultation')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return redirectToLogin(req.url);
+    }
+  }
+
+  // Protect /consult page - redirect to login if not authenticated
+  if (req.nextUrl.pathname.startsWith('/consult')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return redirectToLogin(req.url);
+    }
+  }
+
   return NextResponse.next();
 });
 
