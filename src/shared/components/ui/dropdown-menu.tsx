@@ -56,7 +56,7 @@ export function DropdownMenuContent({ children }: { children: React.ReactNode })
     }
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
-  }, [ctx && ctx.open]);
+  }, [ctx]);
   if (!ctx || !ctx.open) {
     return null;
   }
