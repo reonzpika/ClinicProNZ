@@ -500,6 +500,12 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       // Preserve patient session state
       patientSessions: prev.patientSessions,
       currentPatientSessionId: prev.currentPatientSessionId,
+      // Preserve user-level settings that should persist across patient sessions
+      mobileV2: prev.mobileV2, // Keep QR code and mobile device connections
+      microphoneGain: prev.microphoneGain, // Keep user's microphone settings
+      volumeThreshold: prev.volumeThreshold, // Keep user's volume settings
+      settings: prev.settings, // Keep user's general settings
+      chatHistory: prev.chatHistory, // Keep chat history (user-level context)
     }));
   }, []);
 
