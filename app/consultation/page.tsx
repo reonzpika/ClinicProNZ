@@ -69,11 +69,6 @@ export default function ConsultationPage() {
     // Handle patient switching if needed
   }, []);
 
-  const handleDeviceConnected = useCallback((deviceId: string, deviceName: string, deviceType?: string) => {
-    addMobileV2Device({ deviceId, deviceName, deviceType, connectedAt: Date.now() });
-    setMobileV2ConnectionStatus('connected');
-  }, [addMobileV2Device, setMobileV2ConnectionStatus]);
-
   const handleDeviceDisconnected = useCallback((deviceId: string) => {
     removeMobileV2Device(deviceId);
     if (mobileV2.connectedDevices.length <= 1) {
@@ -87,8 +82,13 @@ export default function ConsultationPage() {
     setMobileV2ConnectionStatus('error');
   }, [setError, setMobileV2ConnectionStatus]);
 
+  const handleDeviceConnected = useCallback((deviceId: string, deviceName: string, deviceType?: string) => {
+    addMobileV2Device({ deviceId, deviceName, deviceType, connectedAt: Date.now() });
+    setMobileV2ConnectionStatus('connected');
+  }, [addMobileV2Device, setMobileV2ConnectionStatus]);
+
   // Enable Ably sync only when Mobile V2 token exists
-  const { notifyPatientSwitch, forceDisconnectDevice } = useAblySync({
+  const { notifyPatientSwitch, syncCurrentPatient, forceDisconnectDevice } = useAblySync({
     enabled: !!mobileV2.token, // Only enable when user has generated a token
     token: mobileV2.token || undefined,
     isDesktop: true,
@@ -98,6 +98,17 @@ export default function ConsultationPage() {
     onDeviceDisconnected: handleDeviceDisconnected,
     onError: handleWebSocketError,
   });
+
+  // Send current patient state to newly connected mobile devices
+  useEffect(() => {
+    const lastConnectedDevice = mobileV2.connectedDevices[mobileV2.connectedDevices.length - 1];
+    if (lastConnectedDevice && lastConnectedDevice.deviceType === 'Mobile' && currentPatientSessionId && syncCurrentPatient) {
+      const currentSession = getCurrentPatientSession();
+      if (currentSession) {
+        syncCurrentPatient(currentPatientSessionId, currentSession.patientName);
+      }
+    }
+  }, [mobileV2.connectedDevices, currentPatientSessionId, syncCurrentPatient, getCurrentPatientSession]);
 
   const handleForceDisconnectDevice = useCallback(async (deviceId: string) => {
     // Send force disconnect message to the device

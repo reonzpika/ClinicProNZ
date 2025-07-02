@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Message types for Ably communication
 type AblyMessage = {
-  type: 'transcription' | 'switch_patient' | 'device_connected' | 'device_disconnected' | 'session_created' | 'force_disconnect';
+  type: 'transcription' | 'switch_patient' | 'device_connected' | 'device_disconnected' | 'session_created' | 'force_disconnect' | 'sync_current_patient';
   userId?: string;
   patientSessionId?: string;
   transcript?: string;
@@ -250,6 +250,13 @@ export const useAblySync = ({
                 },
               ],
             }));
+          }
+          break;
+
+        case 'sync_current_patient':
+          // Handle current patient sync message (sent when mobile connects)
+          if (data.patientSessionId && data.patientName && onPatientSwitched) {
+            onPatientSwitched(data.patientSessionId, data.patientName);
           }
           break;
 
@@ -567,10 +574,25 @@ export const useAblySync = ({
     });
   }, [ensureConnection, sendMessage]);
 
+  // Send current patient state to newly connected devices
+  const syncCurrentPatient = useCallback(async (patientSessionId: string, patientName?: string) => {
+    const isConnected = await ensureConnection();
+    if (!isConnected) {
+      return false;
+    }
+
+    return sendMessage({
+      type: 'sync_current_patient',
+      patientSessionId,
+      patientName,
+    });
+  }, [ensureConnection, sendMessage]);
+
   return {
     connectionState,
     sendTranscription,
     notifyPatientSwitch,
+    syncCurrentPatient,
     forceDisconnectDevice,
     reconnect: connect,
     disconnect: cleanup,
