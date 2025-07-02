@@ -1,7 +1,7 @@
+import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { eq } from 'drizzle-orm';
 
 import { db } from '../../../database/client';
 import { emailCaptures } from '../../../database/schema';

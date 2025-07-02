@@ -814,9 +814,11 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
 
   // Clinical images management functions
   const addClinicalImage = useCallback((image: ClinicalImage) => {
-    setState(prev => {
+    setState((prev) => {
       const currentSession = prev.patientSessions.find(s => s.id === prev.currentPatientSessionId);
-      if (!currentSession) return prev;
+      if (!currentSession) {
+        return prev;
+      }
 
       const updatedImages = [...(currentSession.clinicalImages || []), image];
       return {
@@ -824,16 +826,18 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
         patientSessions: prev.patientSessions.map(session =>
           session.id === prev.currentPatientSessionId
             ? { ...session, clinicalImages: updatedImages }
-            : session
+            : session,
         ),
       };
     });
   }, []);
 
   const removeClinicalImage = useCallback((imageId: string) => {
-    setState(prev => {
+    setState((prev) => {
       const currentSession = prev.patientSessions.find(s => s.id === prev.currentPatientSessionId);
-      if (!currentSession) return prev;
+      if (!currentSession) {
+        return prev;
+      }
 
       const updatedImages = (currentSession.clinicalImages || []).filter(img => img.id !== imageId);
       return {
@@ -841,26 +845,28 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
         patientSessions: prev.patientSessions.map(session =>
           session.id === prev.currentPatientSessionId
             ? { ...session, clinicalImages: updatedImages }
-            : session
+            : session,
         ),
       };
     });
   }, []);
 
   const updateImageDescription = useCallback((imageId: string, description: string) => {
-    setState(prev => {
+    setState((prev) => {
       const currentSession = prev.patientSessions.find(s => s.id === prev.currentPatientSessionId);
-      if (!currentSession) return prev;
+      if (!currentSession) {
+        return prev;
+      }
 
       const updatedImages = (currentSession.clinicalImages || []).map(img =>
-        img.id === imageId ? { ...img, aiDescription: description } : img
+        img.id === imageId ? { ...img, aiDescription: description } : img,
       );
       return {
         ...prev,
         patientSessions: prev.patientSessions.map(session =>
           session.id === prev.currentPatientSessionId
             ? { ...session, clinicalImages: updatedImages }
-            : session
+            : session,
         ),
       };
     });

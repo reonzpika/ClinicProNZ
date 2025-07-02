@@ -62,6 +62,14 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
+  // Protect /api/uploads routes (clinical images)
+  if (req.nextUrl.pathname.startsWith('/api/uploads')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return returnUnauthorized();
+    }
+  }
+
   // Protect /templates page - redirect to login if not authenticated
   if (req.nextUrl.pathname.startsWith('/templates')) {
     const resolvedAuth = await auth();
@@ -85,7 +93,7 @@ export const config = {
   matcher: [
     '/api/templates/:path*',
     '/api/user/:path*',
-
+    '/api/uploads/:path*',
     '/api/patient-sessions/:path*',
     '/api/mobile/:path*',
     '/api/ably/:path*',

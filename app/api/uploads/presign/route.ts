@@ -1,7 +1,8 @@
-import { auth } from '@clerk/nextjs/server';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
 // Initialize S3 client for NZ region
@@ -20,7 +21,7 @@ export async function GET(req: NextRequest) {
     // Check authentication - support both Clerk JWT and mobile session token
     const { userId } = await auth();
     const sessionToken = req.nextUrl.searchParams.get('session');
-    
+
     if (!userId && !sessionToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -77,9 +78,9 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error('Error generating presigned URL:', error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: 'Failed to generate upload URL',
-      details: process.env.NODE_ENV === 'development' ? error : undefined 
+      details: process.env.NODE_ENV === 'development' ? error : undefined,
     }, { status: 500 });
   }
-} 
+}

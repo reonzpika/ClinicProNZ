@@ -1,7 +1,8 @@
-import { auth } from '@clerk/nextjs/server';
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 // Initialize S3 client for NZ region
 const s3Client = new S3Client({
@@ -49,9 +50,9 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error('Error generating download URL:', error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: 'Failed to generate download URL',
-      details: process.env.NODE_ENV === 'development' ? error : undefined 
+      details: process.env.NODE_ENV === 'development' ? error : undefined,
     }, { status: 500 });
   }
-} 
+}

@@ -1,14 +1,13 @@
 'use client';
 
 import { Camera, Download, Trash2 } from 'lucide-react';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { Input } from '@/shared/components/ui/input';
-import { useConsultation } from '@/shared/ConsultationContext';
-
 import type { ClinicalImage } from '@/shared/ConsultationContext';
+import { useConsultation } from '@/shared/ConsultationContext';
 
 type ClinicalImageUploadProps = {
   isMinimized?: boolean;
@@ -19,21 +18,21 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
   isMinimized = false,
   onImageUploaded,
 }) => {
-  const { 
-    getCurrentPatientSession, 
-    addClinicalImage, 
-    removeClinicalImage, 
+  const {
+    getCurrentPatientSession,
+    addClinicalImage,
+    removeClinicalImage,
     saveClinicalImagesToCurrentSession,
-    currentPatientSessionId 
+    currentPatientSessionId,
   } = useConsultation();
-  
+
   const [isExpanded, setIsExpanded] = useState(!isMinimized);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentSession = getCurrentPatientSession();
-  const clinicalImages = currentSession?.clinicalImages || [];
+  const clinicalImages = useMemo(() => currentSession?.clinicalImages || [], [currentSession?.clinicalImages]);
 
   // Client-side image resizing
   const resizeImage = useCallback((file: File, maxSize: number = 1024): Promise<Blob> => {
@@ -50,11 +49,9 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
             height = (height * maxSize) / width;
             width = maxSize;
           }
-        } else {
-          if (height > maxSize) {
-            width = (width * maxSize) / height;
-            height = maxSize;
-          }
+        } else if (height > maxSize) {
+          width = (width * maxSize) / height;
+          height = maxSize;
         }
 
         canvas.width = width;
@@ -62,7 +59,7 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
 
         // Draw and resize
         ctx.drawImage(img, 0, 0, width, height);
-        
+
         canvas.toBlob((blob) => {
           resolve(blob!);
         }, file.type, 0.8); // 80% quality
@@ -84,7 +81,7 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
     try {
       // Client-side resize
       const resizedBlob = await resizeImage(file);
-      
+
       // Get presigned URL
       const presignParams = new URLSearchParams({
         filename: file.name,
@@ -105,11 +102,22 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
         body: resizedBlob,
         headers: {
           'Content-Type': file.type,
+          'X-Amz-Server-Side-Encryption': 'AES256',
         },
       });
 
       if (!uploadResponse.ok) {
-        throw new Error('Failed to upload image');
+        console.error('S3 Upload failed:', {
+          status: uploadResponse.status,
+          statusText: uploadResponse.statusText,
+          headers: Object.fromEntries(uploadResponse.headers.entries()),
+          url: uploadUrl
+        });
+        
+        const errorText = await uploadResponse.text().catch(() => 'No error details');
+        console.error('S3 Error response:', errorText);
+        
+        throw new Error(`Failed to upload image (${uploadResponse.status}: ${uploadResponse.statusText})`);
       }
 
       // Create image metadata
@@ -162,7 +170,7 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
       }
 
       const { downloadUrl } = await response.json();
-      
+
       // Open in new tab for download
       window.open(downloadUrl, '_blank');
     } catch (err) {
@@ -172,10 +180,17 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
   }, []);
 
   const renderCharacterCount = () => {
-    if (clinicalImages.length === 0) return null;
+    if (clinicalImages.length === 0) {
+      return null;
+    }
     return (
       <span className="text-xs text-slate-500">
-        ({clinicalImages.length} image{clinicalImages.length === 1 ? '' : 's'})
+        (
+        {clinicalImages.length}
+        {' '}
+        image
+        {clinicalImages.length === 1 ? '' : 's'}
+        )
       </span>
     );
   };
@@ -201,15 +216,15 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
           <div className="space-y-2">
             {clinicalImages.length > 0 && (
               <div className="grid grid-cols-2 gap-2">
-                {clinicalImages.map((image) => (
+                {clinicalImages.map(image => (
                   <div key={image.id} className="relative">
                     <Card className="overflow-hidden">
                       <CardContent className="p-2">
-                        <div className="text-xs text-slate-600 truncate">
+                        <div className="truncate text-xs text-slate-600">
                           {image.filename}
                         </div>
                         {image.aiDescription && (
-                          <div className="text-xs text-slate-500 mt-1 line-clamp-2">
+                          <div className="mt-1 line-clamp-2 text-xs text-slate-500">
                             {image.aiDescription}
                           </div>
                         )}
@@ -259,9 +274,9 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-slate-700">
+        <div className="text-sm font-medium text-slate-700">
           Clinical Images (optional)
-        </label>
+        </div>
         <button
           type="button"
           className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
@@ -272,32 +287,32 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
       </div>
 
       {error && (
-        <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
+        <div className="rounded bg-red-50 p-2 text-sm text-red-600">
           {error}
         </div>
       )}
 
       {/* Image Grid */}
       {clinicalImages.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {clinicalImages.map((image) => (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {clinicalImages.map(image => (
             <Card key={image.id} className="overflow-hidden">
               <CardContent className="p-3">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-slate-700 truncate">
+                <div className="mb-2 flex items-start justify-between">
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-medium text-slate-700">
                       {image.filename}
                     </div>
                     <div className="text-xs text-slate-500">
                       {new Date(image.uploadedAt).toLocaleDateString()}
                     </div>
                   </div>
-                  <div className="flex gap-1 ml-2">
+                  <div className="ml-2 flex gap-1">
                     <Button
                       size="sm"
                       variant="ghost"
                       onClick={() => handleDownloadImage(image)}
-                      className="h-6 w-6 p-0"
+                      className="size-6 p-0"
                     >
                       <Download size={12} />
                     </Button>
@@ -305,7 +320,7 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
                       size="sm"
                       variant="ghost"
                       onClick={() => handleRemoveImage(image.id)}
-                      className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
+                      className="size-6 p-0 text-red-600 hover:text-red-700"
                     >
                       <Trash2 size={12} />
                     </Button>
@@ -313,8 +328,8 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
                 </div>
 
                 {image.aiDescription && (
-                  <div className="text-xs text-slate-600 mt-2 p-2 bg-slate-50 rounded">
-                    <div className="font-medium mb-1">AI Analysis:</div>
+                  <div className="mt-2 rounded bg-slate-50 p-2 text-xs text-slate-600">
+                    <div className="mb-1 font-medium">AI Analysis:</div>
                     {image.aiDescription}
                   </div>
                 )}
@@ -325,7 +340,7 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
       )}
 
       {/* Upload Button */}
-      <div className="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center">
+      <div className="rounded-lg border-2 border-dashed border-slate-200 p-4 text-center">
         <Button
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
@@ -335,7 +350,7 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
           <Camera size={16} />
           {uploading ? 'Uploading...' : 'Add Clinical Image'}
         </Button>
-        <p className="text-xs text-slate-500 mt-2">
+        <p className="mt-2 text-xs text-slate-500">
           Images are automatically resized and securely stored. They expire after consultation.
         </p>
       </div>
@@ -350,4 +365,4 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
       />
     </div>
   );
-}; 
+};

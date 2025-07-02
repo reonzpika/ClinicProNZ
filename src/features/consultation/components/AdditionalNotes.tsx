@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 
 import { Textarea } from '@/shared/components/ui/textarea';
 import { useConsultation } from '@/shared/ConsultationContext';
+
 import { ClinicalImageUpload } from './ClinicalImageUpload';
 
 type ConsultationItem = {
@@ -139,7 +140,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               rows={4}
             />
-            <ClinicalImageUpload isMinimized={true} />
+            <ClinicalImageUpload isMinimized />
             <p className="mt-1 text-xs text-slate-500">
               Information from clinical tools appears here
             </p>
