@@ -46,6 +46,7 @@ export async function GET(req: NextRequest) {
         ...session,
         transcriptions: session.transcriptions ? JSON.parse(session.transcriptions) : [],
         consultationItems: session.consultationItems ? JSON.parse(session.consultationItems) : [],
+        clinicalImages: session.clinicalImages ? JSON.parse(session.clinicalImages) : [],
       })),
     });
   } catch (error) {
@@ -78,6 +79,7 @@ export async function POST(req: NextRequest) {
         status: 'active',
         transcriptions: JSON.stringify([]),
         consultationItems: JSON.stringify([]),
+        clinicalImages: JSON.stringify([]),
         typedInput: '',
         consultationNotes: '',
         notes: '',
@@ -92,6 +94,7 @@ export async function POST(req: NextRequest) {
         ...session,
         transcriptions: [],
         consultationItems: [],
+        clinicalImages: [],
       },
     });
   } catch (error) {
@@ -117,6 +120,7 @@ export async function PUT(req: NextRequest) {
       typedInput,
       consultationNotes,
       consultationItems,
+      clinicalImages,
     } = await req.json();
 
     if (!sessionId) {
@@ -149,6 +153,9 @@ export async function PUT(req: NextRequest) {
     if (consultationItems !== undefined) {
       updateData.consultationItems = JSON.stringify(consultationItems);
     }
+    if (clinicalImages !== undefined) {
+      updateData.clinicalImages = JSON.stringify(clinicalImages);
+    }
 
     // Set completedAt when status changes to completed
     if (status === 'completed') {
@@ -178,6 +185,7 @@ export async function PUT(req: NextRequest) {
         ...session,
         transcriptions: session.transcriptions ? JSON.parse(session.transcriptions) : [],
         consultationItems: session.consultationItems ? JSON.parse(session.consultationItems) : [],
+        clinicalImages: session.clinicalImages ? JSON.parse(session.clinicalImages) : [],
       },
     });
   } catch (error) {

@@ -28,6 +28,15 @@ export type TranscriptionEntry = {
   deviceId?: string;
 };
 
+export type ClinicalImage = {
+  id: string;
+  key: string; // S3 object key
+  filename: string;
+  mimeType: string;
+  uploadedAt: string;
+  aiDescription?: string;
+};
+
 export type PatientSession = {
   id: string;
   patientName: string;
@@ -38,6 +47,7 @@ export type PatientSession = {
   consultationNotes: string;
   templateId: string;
   consultationItems: ConsultationItem[];
+  clinicalImages: ClinicalImage[];
   createdAt: string;
   completedAt?: string;
 };
@@ -208,6 +218,11 @@ const ConsultationContext = createContext<
     saveNotesToCurrentSession: (notes: string) => Promise<boolean>;
     saveTypedInputToCurrentSession: (typedInput: string) => Promise<boolean>;
     saveConsultationNotesToCurrentSession: (consultationNotes: string) => Promise<boolean>;
+    // Clinical images functions
+    addClinicalImage: (image: ClinicalImage) => void;
+    removeClinicalImage: (imageId: string) => void;
+    updateImageDescription: (imageId: string, description: string) => void;
+    saveClinicalImagesToCurrentSession: (clinicalImages: ClinicalImage[]) => Promise<boolean>;
   })
   | null
 >(null);
@@ -797,6 +812,75 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [state.currentPatientSessionId, updatePatientSession]);
 
+  // Clinical images management functions
+  const addClinicalImage = useCallback((image: ClinicalImage) => {
+    setState(prev => {
+      const currentSession = prev.patientSessions.find(s => s.id === prev.currentPatientSessionId);
+      if (!currentSession) return prev;
+
+      const updatedImages = [...(currentSession.clinicalImages || []), image];
+      return {
+        ...prev,
+        patientSessions: prev.patientSessions.map(session =>
+          session.id === prev.currentPatientSessionId
+            ? { ...session, clinicalImages: updatedImages }
+            : session
+        ),
+      };
+    });
+  }, []);
+
+  const removeClinicalImage = useCallback((imageId: string) => {
+    setState(prev => {
+      const currentSession = prev.patientSessions.find(s => s.id === prev.currentPatientSessionId);
+      if (!currentSession) return prev;
+
+      const updatedImages = (currentSession.clinicalImages || []).filter(img => img.id !== imageId);
+      return {
+        ...prev,
+        patientSessions: prev.patientSessions.map(session =>
+          session.id === prev.currentPatientSessionId
+            ? { ...session, clinicalImages: updatedImages }
+            : session
+        ),
+      };
+    });
+  }, []);
+
+  const updateImageDescription = useCallback((imageId: string, description: string) => {
+    setState(prev => {
+      const currentSession = prev.patientSessions.find(s => s.id === prev.currentPatientSessionId);
+      if (!currentSession) return prev;
+
+      const updatedImages = (currentSession.clinicalImages || []).map(img =>
+        img.id === imageId ? { ...img, aiDescription: description } : img
+      );
+      return {
+        ...prev,
+        patientSessions: prev.patientSessions.map(session =>
+          session.id === prev.currentPatientSessionId
+            ? { ...session, clinicalImages: updatedImages }
+            : session
+        ),
+      };
+    });
+  }, []);
+
+  const saveClinicalImagesToCurrentSession = useCallback(async (clinicalImages: ClinicalImage[]) => {
+    if (!state.currentPatientSessionId) {
+      console.warn('No current patient session to save clinical images to');
+      return false;
+    }
+
+    try {
+      await updatePatientSession(state.currentPatientSessionId, { clinicalImages });
+      return true;
+    } catch (error) {
+      console.error('Error saving clinical images to current session:', error);
+      return false;
+    }
+  }, [state.currentPatientSessionId, updatePatientSession]);
+
   const completePatientSession = useCallback(async (sessionId: string) => {
     await updatePatientSession(sessionId, {
       status: 'completed',
@@ -1018,6 +1102,11 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     saveNotesToCurrentSession,
     saveTypedInputToCurrentSession,
     saveConsultationNotesToCurrentSession,
+    // Clinical images functions
+    addClinicalImage,
+    removeClinicalImage,
+    updateImageDescription,
+    saveClinicalImagesToCurrentSession,
   }), [
     state,
     setStatus,
@@ -1063,6 +1152,10 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     saveNotesToCurrentSession,
     saveTypedInputToCurrentSession,
     saveConsultationNotesToCurrentSession,
+    addClinicalImage,
+    removeClinicalImage,
+    updateImageDescription,
+    saveClinicalImagesToCurrentSession,
   ]);
 
   return (

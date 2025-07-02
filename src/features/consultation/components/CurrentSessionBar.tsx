@@ -93,7 +93,6 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
 
       // Switch to the new session
       switchToPatientSession(newSession.id);
-
       // Reset consultation data for the new patient
       resetConsultation();
     } catch (error) {

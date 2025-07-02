@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 
 import { Textarea } from '@/shared/components/ui/textarea';
 import { useConsultation } from '@/shared/ConsultationContext';
+import { ClinicalImageUpload } from './ClinicalImageUpload';
 
 type ConsultationItem = {
   id: string;
@@ -128,7 +129,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
           </button>
         </div>
         {isExpanded && (
-          <div>
+          <div className="space-y-3">
             <Textarea
               id="additional-notes-minimized"
               value={notes}
@@ -138,6 +139,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               rows={4}
             />
+            <ClinicalImageUpload isMinimized={true} />
             <p className="mt-1 text-xs text-slate-500">
               Information from clinical tools appears here
             </p>
@@ -184,7 +186,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             −
           </button>
         </div>
-        <div className="flex flex-1 flex-col space-y-2">
+        <div className="flex flex-1 flex-col space-y-3">
           <Textarea
             id="additional-notes"
             value={notes}
@@ -193,6 +195,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             placeholder={placeholder}
             className="min-h-[200px] w-full flex-1 resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           />
+          <ClinicalImageUpload isMinimized={false} />
           <p className="text-xs text-slate-500">
             Information added from clinical tools will appear here and can be edited as needed.
           </p>
@@ -225,6 +228,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
         className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
         rows={8}
       />
+      <ClinicalImageUpload isMinimized={false} />
       <p className="text-xs text-slate-500">
         Information added from clinical tools will appear here and can be edited as needed.
       </p>
