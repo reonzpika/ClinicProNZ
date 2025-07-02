@@ -55,10 +55,21 @@ export const SessionModal: React.FC<SessionModalProps> = ({
     session.patientName.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  // Sort sessions by createdAt (most recent first)
-  const sortedSessions = filteredSessions.sort((a, b) =>
-    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
+  // Sort sessions: active sessions first (most recent first), then completed sessions (most recent first)
+  const sortedSessions = filteredSessions.sort((a, b) => {
+    // First, sort by status: active sessions come before completed sessions
+    if (a.status !== b.status) {
+      if (a.status === 'completed' && b.status !== 'completed') {
+        return 1; // a goes after b
+      }
+      if (a.status !== 'completed' && b.status === 'completed') {
+        return -1; // a goes before b
+      }
+    }
+
+    // Within the same status group, sort by createdAt (most recent first)
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 
   const handleCreateSession = async () => {
     setIsCreating(true);
@@ -194,7 +205,10 @@ export const SessionModal: React.FC<SessionModalProps> = ({
           {showDeleteAllConfirm && (
             <div className="rounded-lg border border-red-200 bg-red-50 p-3">
               <p className="text-sm text-red-800">
-                Are you sure you want to delete all {patientSessions.length} patient sessions? This action cannot be undone.
+                Are you sure you want to delete all
+                {patientSessions.length}
+                {' '}
+                patient sessions? This action cannot be undone.
               </p>
               <div className="mt-2 flex gap-2">
                 <Button
