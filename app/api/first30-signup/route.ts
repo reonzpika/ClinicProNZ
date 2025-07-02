@@ -66,9 +66,6 @@ export async function POST(request: NextRequest) {
       source: 'first_30',
     });
 
-    // TODO: Send notification email to admin about new first30 signup
-    // TODO: Send confirmation email to user with payment instructions
-
     return NextResponse.json({
       success: true,
       message: `Welcome to the first 30! You are spot #${first30Count.length + 1}`,

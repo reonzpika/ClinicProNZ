@@ -1,5 +1,3 @@
-// TODO: Remove this file if not used. All section, sections, and subsection validation logic has been removed.
-
 import type { Template } from '../types';
 
 export type ValidationError = {

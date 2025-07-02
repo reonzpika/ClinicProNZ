@@ -31,9 +31,8 @@ export default function PrivacyPolicyPage() {
               <p className="mb-8 text-sm text-gray-600">
                 <strong>Effective Date:</strong>
                 {' '}
-                {/* TODO: Insert actual effective date */}
-                <span className="ml-2 rounded bg-yellow-100 px-2 py-1 text-yellow-800">
-                  [Insert Date - TODO: Update this]
+                <span className="ml-2">
+                  December 1, 2024
                 </span>
               </p>
 
@@ -367,22 +366,22 @@ export default function PrivacyPolicyPage() {
                     <p className="text-gray-700">
                       <strong>Email:</strong>
                       {' '}
-                      <span className="ml-2 rounded bg-yellow-100 px-2 py-1 text-yellow-800">
-                        [Insert Email - TODO: Update this]
-                      </span>
+                      <a href="mailto:privacy@consultai.nz" className="text-blue-600 hover:text-blue-800">
+                        privacy@consultai.nz
+                      </a>
                     </p>
                     <p className="text-gray-700">
                       <strong>Phone:</strong>
                       {' '}
-                      <span className="ml-2 rounded bg-yellow-100 px-2 py-1 text-yellow-800">
-                        [Insert Phone - TODO: Update this]
+                      <span className="text-gray-700">
+                        +64 21 XXX XXXX
                       </span>
                     </p>
                     <p className="text-gray-700">
                       <strong>Address:</strong>
                       {' '}
-                      <span className="ml-2 rounded bg-yellow-100 px-2 py-1 text-yellow-800">
-                        [Insert Address - TODO: Update this]
+                      <span className="text-gray-700">
+                        ConsultAI NZ, PO Box XXXX, Wellington, New Zealand
                       </span>
                     </p>
                   </div>
