@@ -20,6 +20,9 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
     getCurrentPatientSession = () => null,
     completePatientSession = () => {},
     updatePatientSession = () => {},
+    createPatientSession = () => null,
+    switchToPatientSession = () => {},
+    resetConsultation = () => {},
   } = useConsultation();
 
   const { isLargeDesktop } = useResponsive();
@@ -73,6 +76,28 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
       await completePatientSession(currentSession.id);
     } catch (error) {
       console.error('Failed to complete session:', error);
+    }
+  };
+
+  const handleNewPatient = async () => {
+    try {
+      // Generate a new patient name with current timestamp
+      const now = new Date();
+      const patientName = `Patient ${now.toLocaleDateString()} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      
+      // Create new patient session
+      const newSession = await createPatientSession(patientName);
+      if (!newSession) {
+        throw new Error('Failed to create new patient session');
+      }
+
+      // Switch to the new session
+      switchToPatientSession(newSession.id);
+
+      // Reset consultation data for the new patient
+      resetConsultation();
+    } catch (error) {
+      console.error('Error creating new patient:', error);
     }
   };
 
@@ -184,6 +209,16 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
             >
               <span className="mr-1">Switch Session</span>
               <ChevronDown className="size-3" />
+            </Button>
+
+            <Button
+              onClick={handleNewPatient}
+              size="sm"
+              variant="default"
+              className="h-7 bg-blue-600 px-3 text-xs text-white hover:bg-blue-700"
+              title="Create new patient session"
+            >
+              New Patient
             </Button>
           </div>
         </div>
