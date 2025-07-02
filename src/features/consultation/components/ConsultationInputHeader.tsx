@@ -4,6 +4,7 @@ import { Info, Keyboard, Mic } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Button } from '@/shared/components/ui/button';
+import { useConsultation } from '@/shared/ConsultationContext';
 
 type ConsultationInputHeaderProps = {
   mode: 'audio' | 'typed';
@@ -20,11 +21,17 @@ export const ConsultationInputHeader: React.FC<ConsultationInputHeaderProps> = (
   onHelpToggle,
   showHelp = false,
 }) => {
+  const { inputMode, setInputMode } = useConsultation();
   const [helpVisible, setHelpVisible] = useState(showHelp);
 
   const handleHelpClick = () => {
     setHelpVisible(!helpVisible);
     onHelpToggle?.();
+  };
+
+  const handleInputModeToggle = () => {
+    const newInputMode = inputMode === 'audio' ? 'typed' : 'audio';
+    setInputMode(newInputMode);
   };
 
   const getStatusDisplay = () => {
@@ -74,15 +81,24 @@ export const ConsultationInputHeader: React.FC<ConsultationInputHeaderProps> = (
         {getStatusDisplay()}
       </div>
 
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={handleHelpClick}
-        className="size-6 p-0 text-slate-500 hover:text-slate-700"
-        title="Show help"
-      >
-        <Info size={14} />
-      </Button>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={handleInputModeToggle}
+          className="cursor-pointer text-xs font-medium text-green-600 hover:text-green-800 hover:underline"
+          title={`Click to switch to ${inputMode === 'audio' ? 'typed' : 'audio'} mode`}
+        >
+          {inputMode === 'audio' ? 'Audio' : 'Typed'}
+        </button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleHelpClick}
+          className="size-6 p-0 text-slate-500 hover:text-slate-700"
+          title="Show help"
+        >
+          <Info size={14} />
+        </Button>
+      </div>
     </div>
   );
 };
