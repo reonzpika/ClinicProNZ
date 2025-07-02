@@ -27,12 +27,15 @@ export const SessionModal: React.FC<SessionModalProps> = ({
     createPatientSession = async () => null,
     switchToPatientSession = () => {},
     deletePatientSession = async () => false,
+    deleteAllPatientSessions = async () => false,
     loadPatientSessions = async () => {},
   } = useConsultation();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
 
   // Load sessions when modal opens
   useEffect(() => {
@@ -99,6 +102,23 @@ export const SessionModal: React.FC<SessionModalProps> = ({
     }
   };
 
+  const handleDeleteAllSessions = async () => {
+    if (showDeleteAllConfirm) {
+      setIsDeletingAll(true);
+      try {
+        await deleteAllPatientSessions();
+        setShowDeleteAllConfirm(false);
+        // Modal should stay open after deleting all sessions (empty state)
+      } catch (error) {
+        console.error('Failed to delete all patient sessions:', error);
+      } finally {
+        setIsDeletingAll(false);
+      }
+    } else {
+      setShowDeleteAllConfirm(true);
+    }
+  };
+
   const formatSessionDate = (dateString: string) => {
     const date = new Date(dateString);
     return {
@@ -130,7 +150,7 @@ export const SessionModal: React.FC<SessionModalProps> = ({
         </DialogHeader>
 
         <div className="flex min-h-0 flex-1 flex-col gap-4">
-          {/* Search and Create New Row */}
+          {/* Search, Create New, and Delete All Row */}
           <div className="flex gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
@@ -149,7 +169,45 @@ export const SessionModal: React.FC<SessionModalProps> = ({
               <Plus className="mr-2 size-4" />
               {isCreating ? 'Creating...' : 'Create New'}
             </Button>
+            {patientSessions.length > 0 && (
+              <Button
+                onClick={handleDeleteAllSessions}
+                disabled={isDeletingAll}
+                variant="outline"
+                className={`shrink-0 ${
+                  showDeleteAllConfirm
+                    ? 'border-red-300 bg-red-50 text-red-700 hover:bg-red-100'
+                    : 'text-red-600 hover:bg-red-50 hover:text-red-700'
+                }`}
+              >
+                <Trash2 className="mr-2 size-4" />
+                {isDeletingAll
+                  ? 'Deleting...'
+                  : showDeleteAllConfirm
+                    ? 'Confirm Delete All'
+                    : 'Delete All'}
+              </Button>
+            )}
           </div>
+
+          {/* Confirmation message for delete all */}
+          {showDeleteAllConfirm && (
+            <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+              <p className="text-sm text-red-800">
+                Are you sure you want to delete all {patientSessions.length} patient sessions? This action cannot be undone.
+              </p>
+              <div className="mt-2 flex gap-2">
+                <Button
+                  onClick={() => setShowDeleteAllConfirm(false)}
+                  size="sm"
+                  variant="outline"
+                  className="text-gray-600"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* Sessions List */}
           <div className="flex-1 space-y-2 overflow-y-auto">

@@ -189,6 +189,7 @@ const ConsultationContext = createContext<
     updatePatientSession: (sessionId: string, updates: Partial<PatientSession>) => Promise<void>;
     completePatientSession: (sessionId: string) => Promise<void>;
     deletePatientSession: (sessionId: string) => Promise<boolean>;
+    deleteAllPatientSessions: () => Promise<boolean>;
     loadPatientSessions: () => Promise<void>;
     getCurrentPatientSession: () => PatientSession | null;
     // Mobile V2 functions
@@ -842,6 +843,37 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  const deleteAllPatientSessions = useCallback(async (): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/patient-sessions', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deleteAll: true }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete all sessions');
+      }
+
+      // Clear all sessions and current session state
+      setState(prev => ({
+        ...prev,
+        patientSessions: [],
+        currentPatientSessionId: null,
+        transcription: { transcript: '', isLive: false },
+        generatedNotes: null,
+        typedInput: '',
+        consultationNotes: '',
+        consultationItems: [],
+      }));
+
+      return true;
+    } catch (error) {
+      console.error('Error deleting all patient sessions:', error);
+      return false;
+    }
+  }, []);
+
   const loadPatientSessions = useCallback(async () => {
     try {
       const response = await fetch('/api/patient-sessions');
@@ -972,6 +1004,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     updatePatientSession,
     completePatientSession,
     deletePatientSession,
+    deleteAllPatientSessions,
     loadPatientSessions,
     getCurrentPatientSession,
     // Mobile V2 functions
@@ -1018,6 +1051,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     updatePatientSession,
     completePatientSession,
     deletePatientSession,
+    deleteAllPatientSessions,
     loadPatientSessions,
     getCurrentPatientSession,
     setMobileV2Token,

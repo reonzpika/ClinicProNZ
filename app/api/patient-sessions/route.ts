@@ -194,8 +194,23 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { sessionId } = await req.json();
+    const { sessionId, deleteAll } = await req.json();
 
+    // Handle delete all sessions
+    if (deleteAll === true) {
+      const deletedSessions = await db
+        .delete(patientSessions)
+        .where(eq(patientSessions.userId, userId))
+        .returning();
+
+      return NextResponse.json({
+        success: true,
+        message: `${deletedSessions.length} sessions deleted successfully`,
+        deletedCount: deletedSessions.length,
+      });
+    }
+
+    // Handle single session delete
     if (!sessionId) {
       return NextResponse.json({ error: 'Session ID is required' }, { status: 400 });
     }
