@@ -114,12 +114,12 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
           status: uploadResponse.status,
           statusText: uploadResponse.statusText,
           headers: Object.fromEntries(uploadResponse.headers.entries()),
-          url: uploadUrl
+          url: uploadUrl,
         });
-        
+
         const errorText = await uploadResponse.text().catch(() => 'No error details');
         console.error('S3 Error response:', errorText);
-        
+
         throw new Error(`Failed to upload image (${uploadResponse.status}: ${uploadResponse.statusText})`);
       }
 
@@ -189,7 +189,7 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
     }
 
     // Clear any previous error for this image
-    setAnalysisErrors(prev => {
+    setAnalysisErrors((prev) => {
       const updated = { ...prev };
       delete updated[image.id];
       return updated;
@@ -227,7 +227,9 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
 
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          break;
+        }
 
         const chunk = decoder.decode(value, { stream: true });
         const lines = chunk.split('\n');
@@ -236,7 +238,7 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6));
-              
+
               if (data.imageId === image.id) {
                 if (data.status === 'processing' && data.description) {
                   // Update description in real-time
@@ -246,9 +248,9 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
                   updateImageDescription(image.id, data.description);
                   // Save to session
                   const updatedImages = clinicalImages.map(img =>
-                    img.id === image.id 
+                    img.id === image.id
                       ? { ...img, aiDescription: data.description }
-                      : img
+                      : img,
                   );
                   await saveClinicalImagesToCurrentSession(updatedImages);
                 } else if (data.status === 'error') {
@@ -264,19 +266,19 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
     } catch (err) {
       console.error('AI analysis error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Analysis failed';
-      
+
       setAnalysisErrors(prev => ({
         ...prev,
         [image.id]: errorMessage,
       }));
-      
+
       // Also set general error if it's a critical error
       if (errorMessage.includes('Unauthorized') || errorMessage.includes('No active patient session')) {
         setError(errorMessage);
       }
     } finally {
       // Remove image from analyzing set
-      setAnalyzingImages(prev => {
+      setAnalyzingImages((prev) => {
         const updated = new Set(prev);
         updated.delete(image.id);
         return updated;
@@ -326,10 +328,10 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
           <div className="space-y-2">
             {clinicalImages.length > 0 && (
               <div className="grid grid-cols-2 gap-2">
-                {clinicalImages.map(image => {
+                {clinicalImages.map((image) => {
                   const isAnalyzing = analyzingImages.has(image.id);
                   const hasError = analysisErrors[image.id];
-                  
+
                   return (
                     <div key={image.id} className="relative">
                       <Card className="overflow-hidden">
@@ -341,12 +343,16 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
                               </div>
                               {image.aiDescription && (
                                 <div className="mt-1 line-clamp-2 text-xs text-slate-500">
-                                  AI: {image.aiDescription}
+                                  AI:
+                                  {' '}
+                                  {image.aiDescription}
                                 </div>
                               )}
                               {hasError && (
                                 <div className="mt-1 text-xs text-red-500">
-                                  Error: {hasError}
+                                  Error:
+                                  {' '}
+                                  {hasError}
                                 </div>
                               )}
                             </div>
@@ -355,14 +361,16 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
                               variant="ghost"
                               onClick={() => handleAnalyzeImage(image)}
                               disabled={isAnalyzing}
-                              className="size-6 p-0 ml-1"
+                              className="ml-1 size-6 p-0"
                               title={isAnalyzing ? 'Analyzing...' : 'Analyze with AI'}
                             >
-                              {isAnalyzing ? (
-                                <Loader2 size={10} className="animate-spin" />
-                              ) : (
-                                <Brain size={10} />
-                              )}
+                              {isAnalyzing
+                                ? (
+                                    <Loader2 size={10} className="animate-spin" />
+                                  )
+                                : (
+                                    <Brain size={10} />
+                                  )}
                             </Button>
                           </div>
                         </CardContent>
@@ -433,10 +441,10 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
       {/* Image Grid */}
       {clinicalImages.length > 0 && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {clinicalImages.map(image => {
+          {clinicalImages.map((image) => {
             const isAnalyzing = analyzingImages.has(image.id);
             const hasError = analysisErrors[image.id];
-            
+
             return (
               <Card key={image.id} className="overflow-hidden">
                 <CardContent className="p-3">
@@ -458,11 +466,13 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
                         className="size-6 p-0"
                         title={isAnalyzing ? 'Analyzing...' : 'Analyze with AI'}
                       >
-                        {isAnalyzing ? (
-                          <Loader2 size={12} className="animate-spin" />
-                        ) : (
-                          <Brain size={12} />
-                        )}
+                        {isAnalyzing
+                          ? (
+                              <Loader2 size={12} className="animate-spin" />
+                            )
+                          : (
+                              <Brain size={12} />
+                            )}
                       </Button>
                       <Button
                         size="sm"
@@ -489,14 +499,14 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
                       {image.aiDescription}
                     </div>
                   )}
-                  
+
                   {hasError && (
                     <div className="mt-2 rounded bg-red-50 p-2 text-xs text-red-600">
                       <div className="mb-1 font-medium">Analysis Error:</div>
                       {hasError}
                     </div>
                   )}
-                  
+
                   {isAnalyzing && (
                     <div className="mt-2 rounded bg-blue-50 p-2 text-xs text-blue-600">
                       <div className="flex items-center gap-2">
