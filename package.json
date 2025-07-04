@@ -26,6 +26,7 @@
     "db:seed-templates": "tsx database/seed-templates-new.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.56.0",
     "@aws-sdk/client-s3": "^3.840.0",
     "@aws-sdk/s3-request-presigner": "^3.840.0",
     "@clerk/localizations": "^3.14.4",
