@@ -70,6 +70,14 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
+  // Protect /api/clinical-images routes (AI analysis)
+  if (req.nextUrl.pathname.startsWith('/api/clinical-images')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return returnUnauthorized();
+    }
+  }
+
   // Protect /templates page - redirect to login if not authenticated
   if (req.nextUrl.pathname.startsWith('/templates')) {
     const resolvedAuth = await auth();
@@ -97,6 +105,7 @@ export const config = {
     '/api/patient-sessions/:path*',
     '/api/mobile/:path*',
     '/api/ably/:path*',
+    '/api/clinical-images/:path*',
     '/templates/:path*',
     '/consultation/:path*',
   ],
