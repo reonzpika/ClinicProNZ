@@ -1,0 +1,9 @@
+---
+description: Rules when creating a new route.ts file
+globs: 
+alwaysApply: false
+---
+# When creating /api/new-feature/route.ts:
+1. Add to middleware matcher: '/api/new-feature/:path*'
+2. Add auth protection if needed
+3. Test with authenticated/unauthenticated users

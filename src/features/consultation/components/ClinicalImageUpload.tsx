@@ -35,7 +35,16 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentSession = getCurrentPatientSession();
-  const clinicalImages = useMemo(() => currentSession?.clinicalImages || [], [currentSession?.clinicalImages]);
+  const clinicalImages = useMemo(() => {
+    const images = currentSession?.clinicalImages || [];
+    console.log('🖼️ Current clinical images:', images.map(img => ({ 
+      id: img.id, 
+      filename: img.filename, 
+      hasAiDescription: !!img.aiDescription,
+      aiDescriptionLength: img.aiDescription?.length || 0
+    })));
+    return images;
+  }, [currentSession?.clinicalImages]);
 
   // Client-side image resizing
   const resizeImage = useCallback((file: File, maxSize: number = 1024): Promise<Blob> => {
@@ -183,6 +192,10 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
   }, []);
 
   const handleAnalyzeImage = useCallback(async (image: ClinicalImage) => {
+    console.log('🔬 Starting AI analysis for image:', image.filename, 'ID:', image.id);
+    console.log('📋 Current session ID:', currentPatientSessionId);
+    console.log('🖼️ Image data:', image);
+
     if (!currentPatientSessionId) {
       setError('No active patient session');
       return;
@@ -208,7 +221,6 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
           imageKey: image.key,
           patientSessionId: currentPatientSessionId,
           imageId: image.id,
-          priority: 'normal',
         }),
       });
 
@@ -238,14 +250,19 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6));
+              console.log('🧠 AI Analysis data received:', data);
 
               if (data.imageId === image.id) {
                 if (data.status === 'processing' && data.description) {
+                  console.log('📝 Updating description (processing):', data.description.substring(0, 50) + '...');
                   // Update description in real-time
                   updateImageDescription(image.id, data.description);
+                  console.log('🔄 Called updateImageDescription for processing');
                 } else if (data.status === 'completed') {
+                  console.log('✅ Analysis completed, final description length:', data.description?.length);
                   // Final update
                   updateImageDescription(image.id, data.description);
+                  console.log('🔄 Called updateImageDescription for completion');
                   // Save to session
                   const updatedImages = clinicalImages.map(img =>
                     img.id === image.id
@@ -254,6 +271,7 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
                   );
                   await saveClinicalImagesToCurrentSession(updatedImages);
                 } else if (data.status === 'error') {
+                  console.error('❌ AI Analysis error:', data.error);
                   throw new Error(data.error || 'Analysis failed');
                 }
               }
