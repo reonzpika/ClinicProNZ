@@ -1,0 +1,55 @@
+# Cursor Rules for ClinicPro
+
+## API Route & Middleware Rule
+**CRITICAL**: When creating or editing files in `app/api/` directory (especially `route.ts` files):
+
+### ⚠️ ALWAYS CHECK MIDDLEWARE AUTHENTICATION ⚠️
+
+Before completing any API route work, verify:
+
+1. **Route Matcher**: Does `middleware.ts` config matcher include your new route?
+   ```typescript
+   // Example: if creating /api/new-feature/route.ts
+   // Add to matcher: '/api/new-feature/:path*'
+   ```
+
+2. **Authentication Logic**: If the route needs authentication, add protection:
+   ```typescript
+   // Add before return NextResponse.next():
+   if (req.nextUrl.pathname.startsWith('/api/new-feature')) {
+     const resolvedAuth = await auth();
+     if (!resolvedAuth.userId) {
+       return returnUnauthorized();
+     }
+   }
+   ```
+
+3. **Test Authentication**: Always test that:
+   - Authenticated users can access the route
+   - Unauthenticated users get 401 Unauthorized
+
+### 🔒 Routes That Need Authentication:
+- `/api/clinical-images/*` - AI analysis, medical data
+- `/api/uploads/*` - File uploads
+- `/api/patient-sessions/*` - Patient data
+- `/api/mobile/*` - Mobile app routes
+- `/api/templates/*` - POST/PUT/DELETE (GET allowed for everyone)
+- `/api/user/*` - User settings
+- `/api/ably/*` - Real-time messaging
+
+### 🌐 Routes That Don't Need Authentication:
+- `/api/ably/token` - Handles own auth
+- `/api/templates` - GET requests only
+- `/api/webhooks/*` - External webhooks
+- `/api/email-capture/*` - Public forms
+
+### 📋 Checklist for New API Routes:
+- [ ] Route functionality implemented
+- [ ] Authentication requirements determined
+- [ ] `middleware.ts` matcher updated (if needed)
+- [ ] Authentication protection added (if needed)
+- [ ] Tested with authenticated user
+- [ ] Tested with unauthenticated user
+- [ ] Error handling for auth failures
+
+**Remember**: Authentication failures show as "Clerk: auth() was called but Clerk can't detect usage of clerkMiddleware()" - this means the route is not in the middleware matcher! 
