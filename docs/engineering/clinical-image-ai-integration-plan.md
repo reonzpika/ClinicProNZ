@@ -15,7 +15,7 @@ This document outlines the implementation plan for integrating AI-powered image 
 
 ### Gap Analysis
 - **Vision Model Integration**: No current image analysis capability
-- **API Endpoint**: Missing `/api/clinical-images/analyze` endpoint
+- **API Endpoint**: Missing `/api/clinical-images/analyse` endpoint
 - **Async Processing**: Need background processing for image analysis
 - **Error Recovery**: Image-specific error handling patterns needed
 
@@ -46,18 +46,19 @@ This document outlines the implementation plan for integrating AI-powered image 
 
 ### 2. Architecture Design
 
-**Optimized Architecture (No Image Download Required)**:
-```
-[Frontend] → [API Gateway] → [AI Service] → [Claude Vision] → [Database Update] → [Real-time UI Update]
-     ↓              ↓             ↓              ↓                   ↓                    ↓
-Image Upload → S3 Storage → Generate URL → Claude Downloads → Store Description → Display Result
-```
+**Optimised Architecture (No Image Download Required)**:
 
-**Key Improvement**: Claude downloads images directly from S3 presigned URLs - **no intermediate download step needed**!
+1. **Client uploads image** → S3 (existing flow)
+2. **Client requests analysis** → `/api/clinical-images/analyse`
+3. **API generates S3 presigned URL** → Direct Claude access
+4. **Claude analyses image** via presigned URL (no server download)
+5. **API streams results** → Client via SSE
+
+**New Endpoint**: `POST /api/clinical-images/analyse`
 
 ### 3. API Endpoint Design
 
-**New Endpoint**: `POST /api/clinical-images/analyze`
+**New Endpoint**: `POST /api/clinical-images/analyse`
 
 ```typescript
 // Request
@@ -84,22 +85,21 @@ Image Upload → S3 Storage → Generate URL → Claude Downloads → Store Desc
 
 ### 4. Implementation Strategy
 
-#### Phase 1: Core AI Analysis (Week 1-2)
-1. **API Endpoint Creation**
-   - Create `/api/clinical-images/analyze/route.ts`
-   - Implement S3 image retrieval
-   - OpenAI Vision API integration
-   - Streaming response handling
+#### Phase 1: Core API Development ✅
 
-2. **Frontend Integration**
-   - Add "Analyze with AI" button to image cards
-   - Implement real-time description updates
-   - Loading states and progress indicators
+**Tasks:**
+1. **Core API Structure**
+   - Create `/api/clinical-images/analyse/route.ts`
+   - Add authentication middleware
+   - Implement request validation
 
-3. **Error Handling**
-   - Network timeout handling
-   - AI service availability checks
-   - Graceful degradation patterns
+2. **Claude Integration**
+   - Add "Analyse with AI" button to image cards
+   - Implement streaming responses (SSE)
+   - Handle errors gracefully
+
+3. **Performance Optimisation**
+   - Image size optimisation for AI processing
 
 #### Phase 2: Enhanced Features (Week 3)
 1. **Automatic Analysis**
@@ -130,9 +130,9 @@ Image Upload → S3 Storage → Generate URL → Claude Downloads → Store Desc
 
 ## Detailed Implementation Plan
 
-### 1. AI Analysis API Endpoint
+### 1. API Analysis API Endpoint
 
-**File**: `app/api/clinical-images/analyze/route.ts`
+**File**: `app/api/clinical-images/analyse/route.ts`
 
 ```typescript
 import Anthropic from '@anthropic-ai/sdk';
@@ -167,14 +167,14 @@ export async function POST(req: Request) {
 
 ```typescript
 // Add analysis functions
-const handleAnalyzeImage = useCallback(async (image: ClinicalImage) => {
+const handleAnalyseImage = useCallback(async (image: ClinicalImage) => {
   // Trigger AI analysis with streaming updates
   // Update image description in real-time
   // Handle loading states and errors
 }, []);
 
 // Update UI components to show AI analysis status
-// Add "Analyze with AI" buttons
+// Add "Analyse with AI" buttons
 // Implement progress indicators
 ```
 
@@ -192,7 +192,7 @@ const [imageAnalysisStates, setImageAnalysisStates] = useState<{
 }>({});
 
 // Add analysis trigger functions
-const analyzeImage = useCallback(async (imageId: string) => {
+const analyseImage = useCallback(async (imageId: string) => {
   // Implementation
 }, []);
 ```
@@ -202,27 +202,9 @@ const analyzeImage = useCallback(async (imageId: string) => {
 ### Base Prompt Template
 
 ```
-You are a clinical AI assistant analyzing medical images for healthcare documentation.
+You are a clinical AI assistant analysing medical images for healthcare documentation.
 
-CONTEXT:
-- Patient Session: {patientSessionId}
-- Consultation Type: {templateType}
-- Existing Notes: {consultationNotes}
-
-INSTRUCTIONS:
-1. Provide a clear, clinical description of what you observe
-2. Note any concerning findings that may require attention
-3. Use professional medical terminology
-4. Be specific about anatomical locations and characteristics
-5. Include measurements or scale references when visible
-6. Flag any image quality issues that might affect interpretation
-
-IMPORTANT:
-- This is a clinical documentation aid, not a diagnostic tool
-- All observations should be verified by qualified healthcare professionals
-- Focus on objective visual findings, not diagnostic conclusions
-
-Please analyze this clinical image:
+Please analyse this clinical image:
 ```
 
 ### Specialized Prompts by Context
@@ -349,33 +331,34 @@ Focus on: overall appearance, any visible abnormalities, anatomical structures, 
 
 ## Implementation Timeline
 
-### Week 1: Foundation
-- [ ] Create AI analysis API endpoint
-- [ ] Implement OpenAI Vision integration
-- [ ] Basic error handling and validation
-- [ ] Unit tests for core functionality
+### Week 1: Core Development ✅
+- [x] Create API endpoint structure
+- [x] Implement Claude integration
+- [x] Add streaming support
+- [x] Basic error handling
 
-### Week 2: Frontend Integration
-- [ ] Add AI analysis triggers to UI
-- [ ] Implement streaming response handling
-- [ ] Loading states and progress indicators
-- [ ] Integration tests
+### Week 2: UI Enhancement ✅  
+- [x] Add analysis buttons to image cards
+- [x] Implement loading states
+- [x] Add progress indicators
+- [x] Error display and recovery
 
-### Week 3: Enhancement & Optimization
-- [ ] Automatic analysis on upload
-- [ ] Clinical context integration
-- [ ] Performance optimization
+### Week 3: Enhancement & Optimisation
 - [ ] Advanced error handling
+- [ ] Retry mechanisms  
+- [ ] Performance optimisation
+- [ ] Usage analytics
+- [ ] User feedback collection
 
 ### Week 4: Testing & Deployment
-- [ ] User acceptance testing
-- [ ] Performance testing
-- [ ] Security audit
+- [ ] Comprehensive testing
+- [ ] Performance validation
+- [ ] Cost monitoring and optimisation
 - [ ] Production deployment
 
 ### Week 5+: Monitoring & Iteration
 - [ ] Usage analytics implementation
-- [ ] Cost monitoring and optimization
+- [ ] Cost monitoring and optimisation
 - [ ] User feedback collection
 - [ ] Feature refinement based on real-world usage
 

@@ -89,7 +89,7 @@ PRESENTING CONCERNS:
 - [Impact on daily functioning] (only include if explicitly mentioned)
 
 MENTAL STATE EXAMINATION:
-- [Appearance and behavior] (only include if explicitly mentioned)
+- [Appearance and behaviour] (only include if explicitly mentioned)
 - [Speech and communication] (only include if explicitly mentioned)
 - [Mood and affect] (only include if explicitly mentioned)
 - [Thought content and process] (only include if explicitly mentioned)
@@ -153,7 +153,7 @@ HISTORY:
 EXAMINATION:
 - [Growth parameters (height, weight, head circumference)] (only include if explicitly mentioned)
 - [Vital signs] (only include if explicitly mentioned)
-- [General appearance and behavior] (only include if explicitly mentioned)
+- [General appearance and behaviour] (only include if explicitly mentioned)
 - [System examination findings] (only include if explicitly mentioned and use as many bullet points as needed)
 
 ASSESSMENT:

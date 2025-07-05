@@ -327,7 +327,7 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
               )}
               {!isTestingMic && (
                 <p className="text-xs text-gray-500">
-                  Click "Start Test" to optimize your microphone settings
+                  Click "Start Test" to optimise your microphone settings
                 </p>
               )}
             </div>

@@ -1,0 +1,34 @@
+---
+description: Debugging strategy: disciplined error handling. Use this file when a user present any kinds of errors.
+globs: 
+alwaysApply: false
+---
+# Rule: When user provides an error or stack trace…
+
+1. Do not rush to fix. Do not start with code changes.
+2. Instead, go through this 3-step debug triage process:
+
+## Step 1: Categorise  
+- Classify error by type (e.g. syntax, type, runtime, build, config).
+- If unknown, say so clearly and request missing details.
+
+## Step 2: Hypothesise Multiple Possibilities  
+- List **3–5 plausible causes** — not just the most obvious.
+- Rank them by likelihood. Label each: [likely], [possible], [edge case].
+
+## Step 3: Recommend Next Step  
+- Suggest **the lowest-effort diagnostic action first** (e.g., check import, re-run with verbose logs, isolate the component).
+- Only offer code fix if:
+  - Error is clearly diagnosed, or  
+  - Fix is simple, safe, and reversible.
+
+# Output Style  
+- Bullet points only.  
+- No changes to codebase unless explicitly approved.  
+- Ask: “Want me to apply a fix or dig deeper?”
+
+# Philosophy  
+- Prioritise: understanding > acting.  
+- Often, the real fix is much simpler than expected.  
+
+

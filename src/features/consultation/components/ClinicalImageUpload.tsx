@@ -12,11 +12,13 @@ import { useConsultation } from '@/shared/ConsultationContext';
 type ClinicalImageUploadProps = {
   isMinimized?: boolean;
   onImageUploaded?: (image: ClinicalImage) => void;
+  onImageAnalyzed?: (filename: string, analysis: string) => void;
 };
 
 export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
   isMinimized = false,
   onImageUploaded,
+  onImageAnalyzed,
 }) => {
   const {
     getCurrentPatientSession,
@@ -37,12 +39,6 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
   const currentSession = getCurrentPatientSession();
   const clinicalImages = useMemo(() => {
     const images = currentSession?.clinicalImages || [];
-    console.log('🖼️ Current clinical images:', images.map(img => ({ 
-      id: img.id, 
-      filename: img.filename, 
-      hasAiDescription: !!img.aiDescription,
-      aiDescriptionLength: img.aiDescription?.length || 0
-    })));
     return images;
   }, [currentSession?.clinicalImages]);
 
@@ -192,10 +188,6 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
   }, []);
 
   const handleAnalyzeImage = useCallback(async (image: ClinicalImage) => {
-    console.log('🔬 Starting AI analysis for image:', image.filename, 'ID:', image.id);
-    console.log('📋 Current session ID:', currentPatientSessionId);
-    console.log('🖼️ Image data:', image);
-
     if (!currentPatientSessionId) {
       setError('No active patient session');
       return;
@@ -248,21 +240,20 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
 
         for (const line of lines) {
           if (line.startsWith('data: ')) {
+            const jsonData = line.slice(6).trim();
+            if (!jsonData) continue; // Skip empty data lines
+
             try {
-              const data = JSON.parse(line.slice(6));
-              console.log('🧠 AI Analysis data received:', data);
+              const data = JSON.parse(jsonData);
 
               if (data.imageId === image.id) {
                 if (data.status === 'processing' && data.description) {
-                  console.log('📝 Updating description (processing):', data.description.substring(0, 50) + '...');
                   // Update description in real-time
                   updateImageDescription(image.id, data.description);
-                  console.log('🔄 Called updateImageDescription for processing');
                 } else if (data.status === 'completed') {
-                  console.log('✅ Analysis completed, final description length:', data.description?.length);
                   // Final update
                   updateImageDescription(image.id, data.description);
-                  console.log('🔄 Called updateImageDescription for completion');
+
                   // Save to session
                   const updatedImages = clinicalImages.map(img =>
                     img.id === image.id
@@ -270,13 +261,19 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
                       : img,
                   );
                   await saveClinicalImagesToCurrentSession(updatedImages);
+
+                  // Trigger callback to add to additional notes
+                  if (onImageAnalyzed) {
+                    onImageAnalyzed(image.filename, data.description);
+                  }
                 } else if (data.status === 'error') {
                   console.error('❌ AI Analysis error:', data.error);
                   throw new Error(data.error || 'Analysis failed');
                 }
               }
             } catch (parseError) {
-              console.warn('Failed to parse SSE data:', parseError);
+              console.warn('Failed to parse SSE data:', { line, parseError });
+              // Continue processing other lines instead of failing
             }
           }
         }
@@ -360,10 +357,8 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
                                 {image.filename}
                               </div>
                               {image.aiDescription && (
-                                <div className="mt-1 line-clamp-2 text-xs text-slate-500">
-                                  AI:
-                                  {' '}
-                                  {image.aiDescription}
+                                <div className="mt-1 text-xs text-green-600">
+                                  ✓ Analyzed
                                 </div>
                               )}
                               {hasError && (
@@ -380,7 +375,7 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
                               onClick={() => handleAnalyzeImage(image)}
                               disabled={isAnalyzing}
                               className="ml-1 size-6 p-0"
-                              title={isAnalyzing ? 'Analyzing...' : 'Analyze with AI'}
+                              title={isAnalyzing ? 'Analysing...' : 'Analyse with AI'}
                             >
                               {isAnalyzing
                                 ? (
@@ -482,7 +477,7 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
                         onClick={() => handleAnalyzeImage(image)}
                         disabled={isAnalyzing}
                         className="size-6 p-0"
-                        title={isAnalyzing ? 'Analyzing...' : 'Analyze with AI'}
+                        title={isAnalyzing ? 'Analysing...' : 'Analyse with AI'}
                       >
                         {isAnalyzing
                           ? (
@@ -512,9 +507,9 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
                   </div>
 
                   {image.aiDescription && (
-                    <div className="mt-2 rounded bg-slate-50 p-2 text-xs text-slate-600">
-                      <div className="mb-1 font-medium">AI Analysis:</div>
-                      {image.aiDescription}
+                    <div className="mt-2 rounded bg-green-50 p-2 text-xs text-green-600">
+                      <div className="font-medium">✓ Analysis completed</div>
+                      <div className="text-slate-600">Added to Additional Notes</div>
                     </div>
                   )}
 
@@ -529,7 +524,7 @@ export const ClinicalImageUpload: React.FC<ClinicalImageUploadProps> = ({
                     <div className="mt-2 rounded bg-blue-50 p-2 text-xs text-blue-600">
                       <div className="flex items-center gap-2">
                         <Loader2 size={12} className="animate-spin" />
-                        <span>Analyzing image...</span>
+                        <span>Analysing image...</span>
                       </div>
                     </div>
                   )}

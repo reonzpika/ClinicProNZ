@@ -52,7 +52,7 @@ export async function POST(req: Request) {
     });
 
     // Clinical prompt template
-    const systemPrompt = `You are a clinical AI assistant analyzing medical images for healthcare documentation.
+    const systemPrompt = `You are a clinical AI assistant analysing medical images for healthcare documentation.
 
 IMPORTANT GUIDELINES:
 - This is a clinical documentation aid, not a diagnostic tool
@@ -71,7 +71,7 @@ INSTRUCTIONS:
 5. Include measurements or scale references when visible
 6. Flag any image quality issues that might affect interpretation
 
-Please analyze this clinical image and provide a comprehensive clinical description:`;
+Please analyse this clinical image and provide a comprehensive clinical description:`;
 
     // Call Claude Vision API with streaming
     const stream = await anthropic.messages.create({
@@ -116,30 +116,52 @@ Please analyze this clinical image and provide a comprehensive clinical descript
           let description = '';
 
           for await (const chunk of stream) {
-            if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text') {
+            if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
               description += chunk.delta.text;
 
-              // Send incremental update
-              const updateData = JSON.stringify({
-                imageId,
-                status: 'processing',
-                description,
-              });
-              controller.enqueue(encoder.encode(`data: ${updateData}\n\n`));
+              // Send incremental update with safe JSON serialization
+              try {
+                const updateData = JSON.stringify({
+                  imageId,
+                  status: 'processing',
+                  description,
+                });
+                controller.enqueue(encoder.encode(`data: ${updateData}\n\n`));
+              } catch (jsonError) {
+                console.error('Failed to serialize update data:', jsonError);
+                // Send a safe fallback
+                const safeUpdate = JSON.stringify({
+                  imageId,
+                  status: 'processing',
+                  description: '[Processing...]',
+                });
+                controller.enqueue(encoder.encode(`data: ${safeUpdate}\n\n`));
+              }
             }
           }
 
-          // Send completion status
-          const completionData = JSON.stringify({
-            imageId,
-            status: 'completed',
-            description,
-            metadata: {
-              processingTime: Date.now(),
-              modelUsed: 'claude-3-5-sonnet-20241022',
-            },
-          });
-          controller.enqueue(encoder.encode(`data: ${completionData}\n\n`));
+          // Send completion status with safe JSON serialization
+          try {
+            const completionData = JSON.stringify({
+              imageId,
+              status: 'completed',
+              description,
+              metadata: {
+                processingTime: Date.now(),
+                modelUsed: 'claude-3-5-sonnet-20241022',
+              },
+            });
+            controller.enqueue(encoder.encode(`data: ${completionData}\n\n`));
+          } catch (jsonError) {
+            console.error('Failed to serialize completion data:', jsonError);
+            // Send error status
+            const errorData = JSON.stringify({
+              imageId,
+              status: 'error',
+              error: 'Failed to process analysis result',
+            });
+            controller.enqueue(encoder.encode(`data: ${errorData}\n\n`));
+          }
 
           controller.close();
         } catch (error) {
@@ -188,7 +210,7 @@ Please analyze this clinical image and provide a comprehensive clinical descript
     }
 
     return NextResponse.json({
-      error: 'Failed to analyze image',
+      error: 'Failed to analyse image',
       code: 'INTERNAL_ERROR',
       details: process.env.NODE_ENV === 'development' ? error : undefined,
     }, { status: 500 });

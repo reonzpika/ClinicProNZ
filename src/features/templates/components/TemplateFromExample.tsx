@@ -109,12 +109,12 @@ export function TemplateFromExample({ onTemplateGenerated, onCancel }: TemplateF
         <div className="mx-auto max-w-4xl space-y-6">
           <div className="flex items-center gap-2">
             <FileText className="size-5 text-blue-600" />
-            <h3 className="text-lg font-semibold">Example Analyzer</h3>
+            <h3 className="text-lg font-semibold">Example Analyser</h3>
           </div>
 
           <div className="space-y-4">
             <p className="text-sm text-slate-600">
-              Paste example consultation notes below, and our AI will analyze their structure to create a reusable template that matches your documentation style.
+              Paste example consultation notes below, and our AI will analyse their structure to create a reusable template that matches your documentation style.
             </p>
 
             <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
@@ -232,7 +232,7 @@ Example:
                   ? (
                       <>
                         <Loader2 className="mr-2 size-4 animate-spin" />
-                        Analyzing Examples...
+                        Analysing Examples...
                       </>
                     )
                   : (

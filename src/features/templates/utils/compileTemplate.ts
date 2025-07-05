@@ -1,11 +1,11 @@
 import { generateSystemPrompt } from './systemPrompt';
 
-// Performance optimization: Cache compiled system prompts
+// Performance optimisation: Cache compiled system prompts
 let cachedSystemPrompt: string | null = null;
 let systemPromptCacheTime: number = 0;
 const SYSTEM_PROMPT_CACHE_TTL = 60000; // 1 minute cache
 
-// Performance optimization: Template compilation cache
+// Performance optimisation: Template compilation cache
 const templateCache = new Map<string, { compiled: string; timestamp: number }>();
 const TEMPLATE_CACHE_TTL = 30000; // 30 seconds cache
 const MAX_CACHE_SIZE = 100; // Maximum number of cached templates
@@ -47,7 +47,7 @@ function cleanupCache() {
   }
 }
 
-// Optimized function to substitute placeholders in natural language templates
+// Optimised function to substitute placeholders in natural language templates
 function substitutePlaceholders(
   templateBody: string,
   transcription: string,
@@ -63,7 +63,7 @@ function substitutePlaceholders(
     return cached.compiled;
   }
 
-  // Prepare consultation data sections with optimized string building
+  // Prepare consultation data sections with optimised string building
   const dataSections: string[] = [];
 
   if (inputMode === 'audio') {
@@ -85,7 +85,7 @@ function substitutePlaceholders(
 
   const consultationData = dataSections.join('\n\n');
 
-  // Create the complete prompt with optimized string concatenation
+  // Create the complete prompt with optimised string concatenation
   const completePrompt = [
     '--- TEMPLATE INSTRUCTIONS ---',
     templateBody,
@@ -113,7 +113,7 @@ function substitutePlaceholders(
   return completePrompt;
 }
 
-// Optimized system prompt generation with caching
+// Optimised system prompt generation with caching
 function getCachedSystemPrompt(): string {
   const now = Date.now();
 
@@ -142,7 +142,7 @@ export function compileTemplate(
   // Use cached system prompt
   const systemPrompt = getCachedSystemPrompt();
 
-  // Create the user prompt with optimized substitution
+  // Create the user prompt with optimised substitution
   const userPrompt = substitutePlaceholders(
     templateBody,
     transcription || '',

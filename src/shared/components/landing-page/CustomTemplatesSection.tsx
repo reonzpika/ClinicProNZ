@@ -48,7 +48,7 @@ export const CustomTemplatesSection = () => {
         {
           icon: Network,
           title: 'Session Management',
-          description: 'Advanced consultation workflow control and organization',
+          description: 'Advanced consultation workflow control and organisation',
         },
         {
           icon: Share2,
@@ -92,7 +92,7 @@ export const CustomTemplatesSection = () => {
         },
         {
           icon: Rocket,
-          title: 'Workflow Optimization',
+          title: 'Workflow Optimisation',
           description: 'Streamlined access patterns based on consultation type',
         },
       ],

@@ -98,7 +98,7 @@ export function validateTemplate(template: Partial<Template>): ValidationResult 
     if (!hasInstructions && placeholders.length > 0) {
       suggestions.push({
         field: 'templateBody',
-        message: 'Consider adding instructional text in parentheses to guide AI behavior',
+        message: 'Consider adding instructional text in parentheses to guide AI behaviour',
         severity: 'suggestion',
       });
     }

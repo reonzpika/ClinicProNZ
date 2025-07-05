@@ -181,7 +181,7 @@ export function TemplatePerformanceMonitor() {
             {stats.templateCacheSize > 10 && (
               <div className="flex items-center justify-center gap-1 text-green-600">
                 <Zap className="size-3" />
-                <span>Cache optimized</span>
+                <span>Cache optimised</span>
               </div>
             )}
             {stats.templateCacheSize === 0 && (

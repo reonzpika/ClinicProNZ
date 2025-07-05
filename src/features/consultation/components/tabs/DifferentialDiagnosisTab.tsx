@@ -91,7 +91,7 @@ export const DifferentialDiagnosisTab: React.FC = () => {
 
     // Simulate AI generation delay
     setTimeout(() => {
-      // In real implementation, this would call an API to analyze consultation data
+      // In real implementation, this would call an API to analyse consultation data
       // For now, just shuffle the existing problems
       const shuffled = [...mockProblems].sort(() => Math.random() - 0.5);
       setProblems(shuffled.map(problem => ({
@@ -338,7 +338,7 @@ export const DifferentialDiagnosisTab: React.FC = () => {
         // Empty State
         <div className="py-8 text-center">
           <p className="mb-3 text-sm text-slate-500">No problems identified</p>
-          <p className="text-xs text-slate-400">Click "Generate Problems" to analyze consultation data</p>
+          <p className="text-xs text-slate-400">Click "Generate Problems" to analyse consultation data</p>
         </div>
       )}
 

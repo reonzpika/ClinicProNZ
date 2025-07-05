@@ -56,7 +56,7 @@ PRESENTING CONCERNS:
 - [Duration and onset] (only include if mentioned)
 
 MENTAL STATE EXAMINATION:
-- [Appearance and behavior] (only include if mentioned)
+- [Appearance and behaviour] (only include if mentioned)
 - [Mood and affect] (only include if mentioned)
 - [Thought content and process] (only include if mentioned)
 - [Risk assessment] (only include if mentioned)
@@ -309,7 +309,7 @@ export function TemplateCreationWizard({ onSave, onCancel }: TemplateCreationWiz
               <h3 className="mb-2 text-lg font-medium text-slate-900">Quick Start</h3>
               <Badge variant="secondary" className="mb-3">Recommended</Badge>
               <p className="text-sm text-slate-600">
-                Start with a proven template structure and customize it for your needs.
+                Start with a proven template structure and customise it for your needs.
               </p>
             </div>
 

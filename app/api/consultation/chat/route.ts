@@ -80,7 +80,7 @@ The following raw consultation data provides clinical context for this conversat
 ${rawContext.trim()}
 ---
 
-Please use this raw consultation data to provide relevant guidance. This is unstructured consultation information that may need clarification or organization.`;
+Please use this raw consultation data to provide relevant guidance. This is unstructured consultation information that may need clarification or organisation.`;
         }
       }
     }

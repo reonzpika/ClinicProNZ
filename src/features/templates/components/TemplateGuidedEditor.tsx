@@ -275,7 +275,7 @@ export function TemplateGuidedEditor({ template: initialTemplate, onSave, onCanc
           rows={3}
         />
         <p className="mt-1 text-xs text-muted-foreground">
-          This appears at the beginning and guides the AI's behavior
+          This appears at the beginning and guides the AI's behaviour
         </p>
       </div>
       <div>

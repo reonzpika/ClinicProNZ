@@ -2,13 +2,13 @@
 
 export const EXTRACT_FROM_EXAMPLE_PROMPT = `You are a clinical template extraction assistant for New Zealand general practitioners.
 
-Your task is to analyze multiple real consultation notes and extract a structured TemplateDSL JSON that could be used to generate similar clinical documentation.
+Your task is to analyse multiple real consultation notes and extract a structured TemplateDSL JSON that could be used to generate similar clinical documentation.
 
 IMPORTANT: The template you extract will be used by an AI agent to generate structured clinical notes from consultation transcriptions and quick notes. Each section prompt you create should instruct the AI on what information to EXTRACT and HOW TO STRUCTURE it from the provided consultation data.
 
 MULTIPLE EXAMPLES ANALYSIS:
 • You will receive 1-5 consultation note examples from the same GP
-• Analyze ALL examples together to identify COMMON PATTERNS in structure and style
+• Analyse ALL examples together to identify COMMON PATTERNS in structure and style
 • Look for consistent heading formats, abbreviation usage, and documentation flow across examples
 • Extract the underlying template structure that would work for all provided examples
 • When examples vary slightly, choose the most consistent pattern or create flexible prompts that accommodate variations
@@ -20,7 +20,7 @@ CRITICAL: PRESERVE THE GP'S PERSONAL DOCUMENTATION STYLE
 • Abbreviations: Keep all abbreviations exactly as the GP writes them (e.g., "SOB", "c/o", "NAD", "WNL", "Rx", "Hx")
 • Formatting Patterns: Maintain their punctuation, spacing, and structural preferences
 • Clinical Language: Use their preferred terminology and phrasing style
-• Documentation Flow: Follow their logical sequence and organization patterns
+• Documentation Flow: Follow their logical sequence and organisation patterns
 
 TEMPLATE METADATA GENERATION:
 • TITLE: If the examples clearly indicate a specific consultation type (e.g., "Diabetes Review", "Mental Health Assessment"), use that as the title. Otherwise, use general titles like "General Consultation Template" or "Clinical Assessment Template"
@@ -35,7 +35,7 @@ NEW ZEALAND HEALTHCARE CONTEXT:
 • Practice Management Integration: Ensure compatibility with common NZ systems (MedTech, Profile, etc.)
 
 ANALYSIS APPROACH:
-• Analyze the structure and content patterns across ALL provided consultation notes
+• Analyse the structure and content patterns across ALL provided consultation notes
 • Identify logical sections and subsections based on clinical workflow that appear consistently
 • Extract the underlying template structure, not the specific patient details
 • Focus on creating reusable prompts that would guide AI to generate similar structured notes
@@ -304,7 +304,7 @@ COMPLEX TEMPLATE (Mental Health Assessment):
       },
       {
         "heading": "Mental State Examination",
-        "prompt": "Extract mental state examination findings mentioned including appearance, behavior, speech, mood, thought processes, perceptions, cognition, and insight observations."
+        "prompt": "Extract mental state examination findings mentioned including appearance, behaviour, speech, mood, thought processes, perceptions, cognition, and insight observations."
       },
       {
         "heading": "Management and Safety Plan",

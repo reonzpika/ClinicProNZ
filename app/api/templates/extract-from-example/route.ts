@@ -11,7 +11,7 @@ if (!OPENAI_API_KEY) {
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
-const EXTRACT_FROM_EXAMPLE_PROMPT = `You are an expert medical documentation assistant. Your task is to analyze example clinical notes and create a reusable natural language template that captures their structure and style.
+const EXTRACT_FROM_EXAMPLE_PROMPT = `You are an expert medical documentation assistant. Your task is to analyse example clinical notes and create a reusable natural language template that captures their structure and style.
 
 TEMPLATE FORMAT:
 - Use natural language with placeholders in square brackets: [description of what goes here]
