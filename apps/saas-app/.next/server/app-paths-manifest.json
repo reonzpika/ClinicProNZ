@@ -1,0 +1,10 @@
+{
+  "/api/uploads/presign/route": "app/api/uploads/presign/route.js",
+  "/api/templates/route": "app/api/templates/route.js",
+  "/api/patient-sessions/route": "app/api/patient-sessions/route.js",
+  "/api/user/settings/route": "app/api/user/settings/route.js",
+  "/api/clinical-images/analyze/route": "app/api/clinical-images/analyze/route.js",
+  "/clinical-reference/page": "app/clinical-reference/page.js",
+  "/clinical-image/page": "app/clinical-image/page.js",
+  "/consultation/page": "app/consultation/page.js"
+}
