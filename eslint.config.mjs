@@ -25,11 +25,13 @@ export default antfu(
       'node_modules/**/*',
       '.next/**/*',
       'out/**/*',
+      '**/*.md',
     ],
   },
   ...tailwind.configs['flat/recommended'],
   jsxA11y.flatConfigs.recommended,
   {
+    files: ['apps/**/*.{js,jsx,ts,tsx}'],
     plugins: {
       '@next/next': nextPlugin,
     },

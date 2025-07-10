@@ -2,4 +2,4 @@
 export * from './components';
 
 // Placeholder for now
-export const UI_PACKAGE_VERSION = '0.1.0'; 
+export const UI_PACKAGE_VERSION = '0.1.0';
