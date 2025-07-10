@@ -293,8 +293,8 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
             variant="default"
             onClick={handleGenerate}
             disabled={!canGenerate}
-            className="h-10 flex-1 bg-slate-600 px-4 py-2 text-sm text-white hover:bg-slate-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-            title={!isSignedIn && !canCreateSession ? "Session limit reached - see Usage Dashboard for upgrade options" : ""}
+            className="h-10 flex-1 bg-slate-600 px-4 py-2 text-sm text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+            title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
           >
             Process Notes
           </Button>
@@ -350,8 +350,8 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
             variant="default"
             onClick={handleGenerate}
             disabled={!canGenerate || loading}
-            className="h-9 bg-slate-600 px-4 py-2 text-sm text-white hover:bg-slate-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-            title={!isSignedIn && !canCreateSession ? "Session limit reached - see Usage Dashboard for upgrade options" : ""}
+            className="h-9 bg-slate-600 px-4 py-2 text-sm text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+            title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
           >
             {loading && (
               <svg className="mr-2 size-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

@@ -183,6 +183,7 @@ const ConsultationContext = createContext<
     setTypedInput: (input: string) => void;
     setGeneratedNotes: (notes: string | null) => void;
     setError: (error: string | null) => void;
+    setGuestToken: (guestToken: string | null) => void;
     resetConsultation: () => void;
     setUserDefaultTemplateId: (id: string) => void;
     setLastGeneratedInput: (transcription: string, typedInput?: string, compiledConsultationText?: string, templateId?: string) => void;
@@ -261,7 +262,7 @@ function ensureGuestToken(isAuthenticated: boolean) {
 
 export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
   const { isSignedIn } = useAuth();
-  
+
   // Initialize with static defaults - no localStorage access during SSR
   const [state, setState] = useState<ConsultationState>(() => ({
     ...defaultState,
@@ -358,8 +359,8 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
         // Migrate old default template ID if it exists in userDefault
         const migratedUserDefault = userDefault === 'ef6b3139-69a0-4b4b-bf80-dcdabe0559ba' ? MULTIPROBLEM_SOAP_UUID : userDefault;
 
-                  // Still try to get guest token even on error (unauthenticated users only)
-          const guestToken = ensureGuestToken(isSignedIn || false);
+        // Still try to get guest token even on error (unauthenticated users only)
+        const guestToken = ensureGuestToken(isSignedIn || false);
 
         setState(prev => ({
           ...prev,

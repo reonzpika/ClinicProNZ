@@ -52,18 +52,7 @@ export default function UsageTracker() {
     return `${minutes}m`;
   };
 
-  const _getUsageColor = (percentage: number) => {
-    if (percentage >= 90) {
-      return 'text-red-600 bg-red-50';
-    }
-    if (percentage >= 75) {
-      return 'text-orange-600 bg-orange-50';
-    }
-    if (percentage >= 50) {
-      return 'text-yellow-600 bg-yellow-50';
-    }
-    return 'text-green-600 bg-green-50';
-  };
+  // Removed unused getUsageColor function - color logic is inline in JSX
 
   const getRoleDisplayName = (role: string) => {
     switch (role) {

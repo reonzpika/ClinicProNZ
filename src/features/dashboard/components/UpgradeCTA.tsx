@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
+import { useClerkMetadata } from '@/shared/hooks/useClerkMetadata';
 import { ArrowRight, Crown, Zap } from 'lucide-react';
 import Link from 'next/link';
 
@@ -8,8 +8,9 @@ import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
 
 export default function UpgradeCTA() {
-  const { user } = useUser();
-  const role = user?.publicMetadata?.role as string;
+  const { user: _user } = useClerkMetadata();
+  const { getUserRole } = useClerkMetadata();
+  const role = getUserRole();
 
   // Don't show upgrade CTA for standard or admin users
   if (role === 'standard' || role === 'admin') {

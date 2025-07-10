@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
+import { useClerkMetadata } from '@/shared/hooks/useClerkMetadata';
 
 import { useRoleTesting } from '@/shared/contexts/RoleTestingContext';
 import { useTestUser } from '@/shared/contexts/TestUserContext';
@@ -8,7 +8,7 @@ import { useTestUser } from '@/shared/contexts/TestUserContext';
 export function RoleTestingBanner() {
   const { isTestingRole, testingRole, originalRole, stopRoleTesting } = useRoleTesting();
   const { isTestUserMode, originalAdminEmail, clearOriginalAdminEmail } = useTestUser();
-  const { user } = useUser();
+  const { user: _user } = useClerkMetadata();
 
   // Only show banner for role impersonation, NOT for test user login
   // (Test users should use emergency page to switch back)
@@ -55,7 +55,8 @@ export function RoleTestingBanner() {
         originalInfo: originalRole,
       };
     } else if (isTestUserLogin) {
-      const currentRole = user?.publicMetadata?.role as string || (user ? 'signed_up' : 'public');
+      const { getUserRole } = useClerkMetadata();
+  const currentRole = getUserRole();
       return {
         mode: '👥 Test User Login',
         currentRole,

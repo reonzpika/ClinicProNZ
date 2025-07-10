@@ -6,12 +6,7 @@ export default async function BillingPage() {
   // Require at least signed_up role to access billing
   const currentRole = await requireRole('signed_up');
 
-  const _handleUpgrade = async (targetRole: string) => {
-    'use server';
-    // This would integrate with Stripe checkout
-    // For now, just log the upgrade request
-    console.log(`User wants to upgrade to ${targetRole}`);
-  };
+  // Removed unused function - Stripe integration would go here
 
   // Mock usage data - in real app, fetch from rate limit store
   const currentUsage = {
@@ -33,7 +28,7 @@ export default async function BillingPage() {
           <div className="mb-8">
             <UsageLimits
               role={currentRole}
-              currentUsage={currentUsage}
+              currentUsage={{ sessionsToday: currentUsage.requestsToday }}
             />
           </div>
 

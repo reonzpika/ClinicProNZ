@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 
-import { useRoleTesting } from '@/shared/contexts/RoleTestingContext';
 import { getTierFromRole } from '@/lib/rbac-enforcer';
+import { useRoleTesting } from '@/shared/contexts/RoleTestingContext';
 import type { UserRole } from '@/shared/utils/roles';
 
 type RoleImpersonatorProps = {

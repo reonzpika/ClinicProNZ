@@ -539,7 +539,7 @@ export const useAblySync = ({
     }
 
     const { deviceId, deviceType } = getDeviceInfo();
-    const message = {
+    const message: AblyMessage = {
       type: 'transcription',
       transcript,
       patientSessionId,

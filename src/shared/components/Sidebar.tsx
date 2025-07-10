@@ -1,6 +1,7 @@
 'use client';
 
-import { SignInButton, SignUpButton, useAuth, UserButton, useUser } from '@clerk/nextjs';
+import { SignInButton, SignUpButton, useAuth, UserButton } from '@clerk/nextjs';
+import { useClerkMetadata } from '@/shared/hooks/useClerkMetadata';
 import {
   Bell,
   Book,
@@ -76,7 +77,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isDesktop = true,
 }) => {
   const { isSignedIn } = useAuth();
-  const { user } = useUser();
+  const { user: _user } = useClerkMetadata();
   const { hasFeatureAccess } = useRBAC();
   const router = useRouter();
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -88,7 +89,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [feedbackSuccess, setFeedbackSuccess] = useState(false);
 
   // Get user role for admin access
-  const userRole = user?.publicMetadata?.role as string;
+  const { getUserRole } = useClerkMetadata();
+  const userRole = getUserRole();
   const isAdmin = userRole === 'admin';
 
   const handleFeedback = async (data: { idea: string; details?: string; email?: string }) => {
@@ -176,18 +178,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
             )}
             <div className="space-y-1">
               {mainNavItems
-                .filter(item => {
+                .filter((item) => {
                   // Filter out admin-only items for non-admin users
-                  if (item.adminOnly && !isAdmin) return false;
-                  
+                  if (item.adminOnly && !isAdmin) {
+                    return false;
+                  }
+
                   // Filter out templates for users without template management access (public + basic tier)
                   if (item.href === '/templates') {
                     // Hide for public users
-                    if (!isSignedIn) return false;
+                    if (!isSignedIn) {
+                      return false;
+                    }
                     // Hide for signed-in basic tier users
-                    if (!hasFeatureAccess('templateManagement')) return false;
+                    if (!hasFeatureAccess('templateManagement')) {
+                      return false;
+                    }
                   }
-                  
+
                   return true;
                 })
                 .map(item => (

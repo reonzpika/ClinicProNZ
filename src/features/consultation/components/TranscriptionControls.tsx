@@ -170,19 +170,7 @@ export function TranscriptionControls({
     setShowConsentModal(false);
   };
 
-  // Mobile V2 recording button status and styling
-  const _getMobileButtonStyle = () => {
-    if (hasMobileDevices) {
-      return {
-        className: 'h-7 min-w-0 rounded border bg-green-100 px-1 py-0.5 text-xs text-green-700 hover:bg-green-200',
-        title: `${connectedMobileDevices.length} mobile device(s) connected - click to manage`,
-      };
-    }
-    return {
-      className: 'h-7 min-w-0 rounded border bg-blue-100 px-1 py-0.5 text-xs text-blue-700 hover:bg-blue-200',
-      title: 'Mobile Recording V2 - click to connect',
-    };
-  };
+  // Mobile V2 recording button status and styling - removed unused function
 
   // Handle mobile button click
   const handleMobileClick = () => {
@@ -392,8 +380,8 @@ export function TranscriptionControls({
                           type="button"
                           onClick={handleStartRecording}
                           disabled={!isSignedIn && !canCreateSession}
-                          className="h-8 bg-green-600 px-3 text-xs text-white hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                          title={!isSignedIn && !canCreateSession ? "Session limit reached - see Usage Dashboard for upgrade options" : ""}
+                          className="h-8 bg-green-600 px-3 text-xs text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                          title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
                         >
                           <Smartphone className="mr-1 size-3" />
                           Start Mobile
@@ -404,8 +392,8 @@ export function TranscriptionControls({
                           type="button"
                           onClick={handleMobileClick}
                           disabled={!isSignedIn && !canCreateSession}
-                          className="h-8 bg-blue-600 px-3 text-xs text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                          title={!isSignedIn && !canCreateSession ? "Session limit reached - see Usage Dashboard for upgrade options" : ""}
+                          className="h-8 bg-blue-600 px-3 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                          title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
                         >
                           <Smartphone className="mr-1 size-3" />
                           Connect Mobile
@@ -441,8 +429,8 @@ export function TranscriptionControls({
                             variant="outline"
                             onClick={handleStartRecording}
                             disabled={!isSignedIn && !canCreateSession}
-                            className="h-7 w-full border-slate-300 text-xs disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-                            title={!isSignedIn && !canCreateSession ? "Session limit reached - see Usage Dashboard for upgrade options" : ""}
+                            className="h-7 w-full border-slate-300 text-xs disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+                            title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
                           >
                             Start Desktop Recording
                           </Button>

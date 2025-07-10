@@ -81,8 +81,8 @@ export async function POST(req: Request) {
                   emailAddress: [customerEmail],
                   publicMetadata: {
                     role: 'standard',
-                    stripeCustomerId: customerId,
-                    subscriptionId: session.subscription,
+                    stripeCustomerId: typeof customerId === 'string' ? customerId : customerId?.id || '',
+                    subscriptionId: typeof session.subscription === 'string' ? session.subscription : session.subscription?.id || '',
                     planName: 'Standard',
                     upgradeDate: new Date().toISOString(),
                     emailVerified: false, // Will need email verification
@@ -104,8 +104,8 @@ export async function POST(req: Request) {
             await clerk.users.updateUserMetadata(userId, {
               publicMetadata: {
                 role: 'standard',
-                stripeCustomerId: customerId,
-                subscriptionId: session.subscription,
+                stripeCustomerId: typeof customerId === 'string' ? customerId : customerId?.id || '',
+                subscriptionId: typeof session.subscription === 'string' ? session.subscription : session.subscription?.id || '',
                 planName: 'Standard',
                 upgradeDate: new Date().toISOString(),
               },
@@ -155,7 +155,7 @@ export async function POST(req: Request) {
         await clerk.users.updateUserMetadata(userId, {
           publicMetadata: {
             role,
-            stripeCustomerId: customerId,
+            stripeCustomerId: typeof customerId === 'string' ? customerId : customerId?.id || '',
             subscriptionId: subscription.id,
             priceId,
             subscriptionStatus: subscription.status,
@@ -197,7 +197,7 @@ export async function POST(req: Request) {
           await clerk.users.updateUserMetadata(userId, {
             publicMetadata: {
               role: 'signed_up',
-              stripeCustomerId: customerId,
+              stripeCustomerId: typeof customerId === 'string' ? customerId : customerId?.id || '',
               subscriptionId: subscription.id,
               subscriptionStatus: subscription.status,
               downgradedAt: new Date().toISOString(),
@@ -212,7 +212,7 @@ export async function POST(req: Request) {
             await clerk.users.updateUserMetadata(userId, {
               publicMetadata: {
                 role,
-                stripeCustomerId: customerId,
+                stripeCustomerId: typeof customerId === 'string' ? customerId : customerId?.id || '',
                 subscriptionId: subscription.id,
                 priceId,
                 subscriptionStatus: subscription.status,
@@ -249,7 +249,7 @@ export async function POST(req: Request) {
           await clerk.users.updateUserMetadata(userId, {
             publicMetadata: {
               role: 'signed_up',
-              stripeCustomerId: customerId,
+              stripeCustomerId: typeof customerId === 'string' ? customerId : customerId?.id || '',
               subscriptionStatus: 'canceled',
               canceledAt: new Date().toISOString(),
             },

@@ -29,8 +29,6 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
   }
 
-
-
   // Allow GET requests to /api/templates and /api/templates/[id] for everyone
   if (
     req.method === 'GET'
@@ -94,6 +92,32 @@ export default clerkMiddleware(async (auth, req) => {
   if (req.nextUrl.pathname.startsWith('/api/clinical-images')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
+      return returnUnauthorized();
+    }
+  }
+
+  // Protect /api/rag/admin routes (admin only)
+  if (req.nextUrl.pathname.startsWith('/api/rag/admin')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return returnUnauthorized();
+    }
+
+    const userRole = resolvedAuth.sessionClaims?.metadata?.role || 'public';
+    if (userRole !== 'admin') {
+      return returnUnauthorized();
+    }
+  }
+
+  // Protect /api/rag/query routes (signed_up or higher)
+  if (req.nextUrl.pathname.startsWith('/api/rag/query')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return returnUnauthorized();
+    }
+
+    const userRole = resolvedAuth.sessionClaims?.metadata?.role || 'public';
+    if (userRole === 'public') {
       return returnUnauthorized();
     }
   }
@@ -176,6 +200,7 @@ export const config = {
     '/api/mobile/:path*',
     '/api/ably/:path*',
     '/api/clinical-images/:path*',
+    '/api/rag/:path*',
     '/api/admin/:path*',
     '/api/debug/:path*',
     '/api/test-rate-limit/:path*',

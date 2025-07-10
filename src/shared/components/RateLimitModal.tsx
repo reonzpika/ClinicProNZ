@@ -1,6 +1,7 @@
 'use client';
 
-import { useAuth, useUser } from '@clerk/nextjs';
+import { useAuth } from '@clerk/nextjs';
+import { useClerkMetadata } from '@/shared/hooks/useClerkMetadata';
 import { AlertTriangle, Crown, Loader2, UserPlus, Zap } from 'lucide-react';
 import { useState } from 'react';
 
@@ -22,12 +23,13 @@ type RateLimitModalProps = {
 
 export const RateLimitModal = ({ isOpen, onClose, error }: RateLimitModalProps) => {
   const { isSignedIn } = useAuth();
-  const { user } = useUser();
+  const { user } = useClerkMetadata();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [loadingAction, setLoadingAction] = useState<'signup' | 'upgrade' | null>(null);
 
-  const userRole = user?.publicMetadata?.role as string;
+  const { getUserRole } = useClerkMetadata();
+  const userRole = getUserRole();
   const isPublicUser = !isSignedIn;
   const isSignedUpUser = isSignedIn && userRole === 'signed_up';
 

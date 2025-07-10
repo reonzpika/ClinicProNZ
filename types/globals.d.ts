@@ -1,16 +1,49 @@
 export {};
 
-// Create a type for the roles
-export type Roles = 'public' | 'signed_up' | 'standard' | 'admin';
+// Import the consolidated UserRole type
+import type { UserRole } from '../src/shared/utils/roles';
 
+// Extend Clerk's types with our custom metadata
 declare global {
-  type CustomJwtSessionClaims = {
+  interface CustomJwtSessionClaims {
     metadata: {
-      role?: Roles;
+      role?: UserRole;
     };
-  };
+  }
 
-  type UserPublicMetadata = {
-    role?: Roles;
-  };
+  interface UserPublicMetadata {
+    role?: UserRole;
+    stripeCustomerId?: string;
+    subscriptionId?: string;
+    priceId?: string;
+    subscriptionStatus?: string;
+    currentPeriodEnd?: string;
+    assignedAt?: string;
+    downgradedAt?: string;
+  }
+
+  // Add window.Clerk type declaration
+  interface Window {
+    Clerk?: {
+      signOut(): Promise<void>;
+      openSignIn(): void;
+      openSignUp(): void;
+      user?: any;
+      session?: any;
+    };
+  }
+}
+
+// Augment Clerk's User type to include our custom metadata
+declare module '@clerk/nextjs' {
+  interface UserPublicMetadata {
+    role?: UserRole;
+    stripeCustomerId?: string;
+    subscriptionId?: string;
+    priceId?: string;
+    subscriptionStatus?: string;
+    currentPeriodEnd?: string;
+    assignedAt?: string;
+    downgradedAt?: string;
+  }
 }

@@ -1,6 +1,7 @@
 'use client';
 
-import { useSignIn, useUser } from '@clerk/nextjs';
+import { useSignIn } from '@clerk/nextjs';
+import { useClerkMetadata } from '@/shared/hooks/useClerkMetadata';
 import { useState } from 'react';
 
 import { useTestUser } from '@/shared/contexts/TestUserContext';
@@ -40,10 +41,10 @@ const TEST_USERS: TestUser[] = [
 
 export function TestUserLogin() {
   const { signIn, isLoaded } = useSignIn();
-  const { user } = useUser();
+  const { user: _user } = useClerkMetadata();
   const { setOriginalAdminEmail } = useTestUser();
   const [loading, setLoading] = useState<string | null>(null);
-  const [adminEmail] = useState(user?.emailAddresses?.[0]?.emailAddress || '');
+  const [adminEmail] = useState(_user?.emailAddresses?.[0]?.emailAddress || '');
 
   const handleTestLogin = async (testUser: TestUser) => {
     if (!isLoaded || !signIn) {
@@ -196,12 +197,12 @@ export function TestUserLogin() {
       </div>
 
       {/* Current User Info */}
-      {user && (
+      {_user && (
         <div className="mt-4 rounded border border-green-200 bg-green-100 p-3">
           <div className="text-sm">
             <strong>Current Admin:</strong>
             {' '}
-            {user.emailAddresses?.[0]?.emailAddress}
+            {_user.emailAddresses?.[0]?.emailAddress}
           </div>
         </div>
       )}

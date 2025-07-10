@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
+import { useClerkMetadata } from '@/shared/hooks/useClerkMetadata';
 import { useEffect, useState } from 'react';
 
 import { useRoleTesting } from '@/shared/contexts/RoleTestingContext';
@@ -9,7 +9,7 @@ import { useTestUser } from '@/shared/contexts/TestUserContext';
 export default function EmergencyAdminPage() {
   const { originalAdminEmail, clearOriginalAdminEmail, isTestUserMode } = useTestUser();
   const { stopRoleTesting, isTestingRole } = useRoleTesting();
-  const { user } = useUser();
+  const { user } = useClerkMetadata();
   const [localStorageChecked, setLocalStorageChecked] = useState(false);
 
   useEffect(() => {

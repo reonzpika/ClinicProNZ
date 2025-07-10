@@ -1,8 +1,8 @@
 import { auth as getAuth } from '@clerk/nextjs/server';
 import { eq } from 'drizzle-orm';
 
-import { db } from '@/client';
-import { mobileTokens } from '@/schema';
+import { db } from '../../database/client';
+import { mobileTokens } from '../../database/schema';
 
 import { checkGuestSessionLimit, checkUserSessionLimit } from './services/guest-session-service';
 
@@ -68,8 +68,8 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
 
     if (userId) {
       // Authenticated user - get tier from session claims
-      const userRole = sessionClaims?.metadata?.role as string;
-      const tier = mapRoleToTier(userRole);
+      const userRole = sessionClaims?.metadata?.role;
+      const tier = mapRoleToTier(userRole || 'signed_up');
 
       // Authenticated users don't use guest tokens - they have user-specific tracking
       return {

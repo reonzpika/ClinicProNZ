@@ -1,9 +1,9 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
 import type { ReactNode } from 'react';
 
 import type { UserRole } from '@/shared/utils/roles';
+import { useClerkMetadata } from '@/shared/hooks/useClerkMetadata';
 
 type RoleGuardProps = {
   allowedRoles: UserRole[];
@@ -16,15 +16,15 @@ type RoleGuardProps = {
  * Client-side role guard component
  */
 export function RoleGuard({ allowedRoles, children, fallback = null, requireExact = false }: RoleGuardProps) {
-  const { user, isLoaded } = useUser();
+  const { isLoaded, getUserRole } = useClerkMetadata();
 
   // Show nothing while loading
   if (!isLoaded) {
     return null;
   }
 
-  // Get user role from metadata, default to 'public'
-  const userRole = (user?.publicMetadata?.role as UserRole) || 'public';
+  // Get user role from metadata, type-safe
+  const userRole = getUserRole();
 
   // Role hierarchy for permission checking
   const roleHierarchy: UserRole[] = ['public', 'signed_up', 'standard', 'admin'];
@@ -71,9 +71,9 @@ export const AdminOnly = ({ children, fallback }: { children: ReactNode; fallbac
  * Hook for getting current user role
  */
 export function useUserRole(): { role: UserRole; isLoaded: boolean } {
-  const { user, isLoaded } = useUser();
+  const { isLoaded, getUserRole } = useClerkMetadata();
 
-  const role = (user?.publicMetadata?.role as UserRole) || 'public';
+  const role = getUserRole();
 
   return { role, isLoaded };
 }

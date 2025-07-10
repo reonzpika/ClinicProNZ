@@ -1,7 +1,7 @@
 import { and, eq, gt } from 'drizzle-orm';
 
-import { db } from '@/client';
-import { patientSessions, users } from '@/schema';
+import { db } from '../../../database/client';
+import { patientSessions, users } from '../../../database/schema';
 
 // Session limits for basic tier users
 const GUEST_SESSION_LIMIT = 5;
@@ -60,7 +60,7 @@ export async function checkGuestSessionLimit(guestToken: string): Promise<GuestS
  * Check if an authenticated user can create a new session (for basic tier users)
  */
 export async function checkUserSessionLimit(userId: string): Promise<UserSessionStatus> {
-  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+  const today = new Date().toISOString().split('T')[0]!; // YYYY-MM-DD format
 
   // Get user session data
   const userRecords = await db
@@ -90,11 +90,15 @@ export async function checkUserSessionLimit(userId: string): Promise<UserSession
   }
 
   const user = userRecords[0];
+  if (!user) {
+    throw new Error('User record not found');
+  }
+  
   let sessionsUsed = user.coreSessionsUsed;
   let resetDate = user.sessionResetDate;
 
   // Check if we need to reset the counter (new day)
-  if (resetDate < today) {
+  if (resetDate && resetDate < today) {
     sessionsUsed = 0;
     resetDate = today;
 

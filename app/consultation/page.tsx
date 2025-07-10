@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuth } from '@clerk/nextjs';
 import { Stethoscope } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -20,7 +21,6 @@ import { RateLimitModal } from '@/shared/components/RateLimitModal';
 import { Button } from '@/shared/components/ui/button';
 import { useConsultation } from '@/shared/ConsultationContext';
 import { useResponsive } from '@/shared/hooks/useResponsive';
-import { useAuth } from '@clerk/nextjs';
 
 export default function ConsultationPage() {
   const {

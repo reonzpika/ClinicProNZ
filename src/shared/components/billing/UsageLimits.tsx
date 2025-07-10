@@ -15,7 +15,7 @@ type UsageLimitsProps = {
 
 export function UsageLimits({ role, currentUsage = {}, className = '' }: UsageLimitsProps) {
   const tier = getTierFromRole(role);
-  
+
   // Session limits per tier
   const sessionLimits = {
     basic: 5,

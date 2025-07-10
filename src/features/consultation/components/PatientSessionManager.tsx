@@ -3,8 +3,8 @@
 import { useAuth } from '@clerk/nextjs';
 import { useCallback, useEffect, useState } from 'react';
 
-import { useRBAC } from '@/shared/hooks/useRBAC';
 import { useConsultation } from '@/shared/ConsultationContext';
+import { useRBAC } from '@/shared/hooks/useRBAC';
 
 import { CurrentSessionBar } from './CurrentSessionBar';
 import { SessionModal } from './SessionModal';
@@ -72,7 +72,7 @@ export const PatientSessionManager: React.FC = () => {
     <>
       {/* Show current session bar only for users with session management access */}
       {canManageSessions && (
-      <CurrentSessionBar onSwitchSession={handleSwitchSession} />
+        <CurrentSessionBar onSwitchSession={handleSwitchSession} />
       )}
 
       {/* Session management modal - only show for users with session management access */}

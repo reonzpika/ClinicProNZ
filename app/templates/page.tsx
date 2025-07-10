@@ -184,10 +184,9 @@ export default function TemplatesPage() {
           {(!isSignedIn || !hasTemplateAccess) && (
             <div className="p-4">
               <p className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-600">
-                {!isSignedIn 
-                  ? "Sign in to create and manage custom templates"
-                  : "Upgrade to Standard to create and manage custom templates"
-                }
+                {!isSignedIn
+                  ? 'Sign in to create and manage custom templates'
+                  : 'Upgrade to Standard to create and manage custom templates'}
               </p>
             </div>
           )}

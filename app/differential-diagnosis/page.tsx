@@ -100,7 +100,7 @@ export default function DifferentialDiagnosisPage() {
   };
 
   return (
-    <Container size="full" className="h-full">
+    <Container size="fluid" className="h-full">
       <div className="flex h-full flex-col py-6">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">

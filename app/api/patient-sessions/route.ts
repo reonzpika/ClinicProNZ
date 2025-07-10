@@ -3,9 +3,9 @@ import { and, desc, eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { db } from '@/client';
+import { db } from '../../../database/client';
 import { checkFeatureAccess, extractRBACContext } from '@/lib/rbac-enforcer';
-import { patientSessions } from '@/schema';
+import { patientSessions } from '../../../database/schema';
 
 // GET - List patient sessions for a user
 export async function GET(req: NextRequest) {

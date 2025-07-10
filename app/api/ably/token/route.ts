@@ -3,8 +3,8 @@ import * as Ably from 'ably';
 import { eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
-import { db } from '@/client';
-import { mobileTokens } from '@/schema/mobile_tokens';
+import { db } from '../../../../database/client';
+import { mobileTokens } from '../../../../database/schema/mobile_tokens';
 
 export async function POST(req: Request) {
   try {

@@ -1,6 +1,7 @@
 'use client';
 
-import { useAuth, useUser } from '@clerk/nextjs';
+import { useAuth } from '@clerk/nextjs';
+import { useClerkMetadata } from '@/shared/hooks/useClerkMetadata';
 import { Crown, TrendingUp, Users, Zap } from 'lucide-react';
 import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 
@@ -24,7 +25,7 @@ type UsageData = {
 
 const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref) => {
   const { isSignedIn } = useAuth();
-  const { user } = useUser();
+  const { user } = useClerkMetadata();
   const { mobileV2: _mobileV2, getEffectiveGuestToken } = useConsultation();
   const [usageData, setUsageData] = useState<UsageData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,7 +38,8 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
     if (!isSignedIn) {
       return 'basic';
     }
-    const userRole = user?.publicMetadata?.role as string;
+    const { getUserRole } = useClerkMetadata();
+  const userRole = getUserRole();
     switch (userRole) {
       case 'admin':
         return 'admin'; // Admin users get admin tier features

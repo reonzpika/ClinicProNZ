@@ -2,9 +2,9 @@ import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
-import { db } from '@/client';
+import { db } from '../../../../database/client';
 import { checkGuestSessionLimit } from '@/lib/services/guest-session-service';
-import { mobileTokens } from '@/schema';
+import { mobileTokens } from '../../../../database/schema';
 
 export async function POST(req: Request) {
   try {

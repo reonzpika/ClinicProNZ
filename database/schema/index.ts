@@ -3,6 +3,7 @@ export * from './feature_requests';
 export * from './features';
 export * from './mobile_tokens';
 export * from './patient_sessions';
+export * from './rag';
 export * from './templates';
 export * from './user_settings';
 export * from './users';

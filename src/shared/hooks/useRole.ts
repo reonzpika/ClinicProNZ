@@ -1,9 +1,8 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
-
 import { useRoleTesting } from '@/shared/contexts/RoleTestingContext';
 import type { UserRole } from '@/shared/utils/roles';
+import { useClerkMetadata } from './useClerkMetadata';
 
 /**
  * Hook that returns the effective role for the current user
@@ -16,11 +15,11 @@ export function useRole(): {
   isTestingRole: boolean;
   realRole: UserRole | null;
 } {
-  const { user, isLoaded } = useUser();
+  const { isLoaded, getUserRole } = useClerkMetadata();
   const { testingRole, isTestingRole } = useRoleTesting();
 
-  // Get role from Clerk user metadata (client-safe)
-  const realRole = user?.publicMetadata?.role as UserRole || (user ? 'signed_up' : 'public');
+  // Get role from Clerk user metadata (type-safe)
+  const realRole = getUserRole();
   const effectiveRole = testingRole || realRole;
 
   return {
