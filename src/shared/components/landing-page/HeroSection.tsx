@@ -4,8 +4,8 @@ import { Clock, Eye, FileText } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 
-import { EmailCaptureModal } from '@/shared/components/EmailCaptureModal';
-import { Button } from '@/shared/components/ui/button';
+import { EmailCaptureModal } from '@/src/shared/components/EmailCaptureModal';
+import { Button } from '@/src/shared/components/ui/button';
 
 export const HeroSection = () => {
   const [showEmailModal, setShowEmailModal] = useState(false);

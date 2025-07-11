@@ -1,7 +1,7 @@
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 
-import { getCurrentRole, type UserRole } from '@/shared/utils/roles';
+import { getCurrentRole, type UserRole } from '@/src/shared/utils/roles';
 
 if (!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
   throw new Error('Missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY');

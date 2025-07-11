@@ -2,8 +2,8 @@
 
 import { AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 
-import { getTierFromRole, type UserTier } from '@/lib/rbac-enforcer';
-import type { UserRole } from '@/shared/utils/roles';
+import { getTierFromRole, type UserTier } from '@/src/lib/rbac-enforcer';
+import type { UserRole } from '@/src/shared/utils/roles';
 
 type UsageLimitsProps = {
   role: UserRole;
@@ -13,7 +13,9 @@ type UsageLimitsProps = {
   className?: string;
 };
 
-export function UsageLimits({ role, currentUsage = {}, className = '' }: UsageLimitsProps) {
+const DEFAULT_USAGE = {};
+
+export function UsageLimits({ role, currentUsage = DEFAULT_USAGE, className = '' }: UsageLimitsProps) {
   const tier = getTierFromRole(role);
 
   // Session limits per tier

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRole } from '@/shared/hooks/useRole';
+import { useRole } from '@/src/shared/hooks/useRole';
 
 import { RoleImpersonator } from './RoleImpersonator';
 import { TestUserLogin } from './TestUserLogin';

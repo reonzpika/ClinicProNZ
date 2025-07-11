@@ -1,4 +1,4 @@
-import type { Template } from '@/features/templates/types';
+import type { Template } from '@/src/features/templates/types';
 
 export type SessionStatus = 'draft' | 'in_progress' | 'completed' | 'archived';
 

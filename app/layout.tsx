@@ -4,10 +4,10 @@ import { ClerkProvider } from '@clerk/nextjs';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 
-import { AppLayoutWrapper } from '@/shared/components/AppLayoutWrapper';
-import { ConsultationProvider } from '@/shared/ConsultationContext';
-import { RoleTestingProvider } from '@/shared/contexts/RoleTestingContext';
-import { TestUserProvider } from '@/shared/contexts/TestUserContext';
+import { AppLayoutWrapper } from '@/src/shared/components/AppLayoutWrapper';
+import { ConsultationProvider } from '@/src/shared/ConsultationContext';
+import { RoleTestingProvider } from '@/src/shared/contexts/RoleTestingContext';
+import { TestUserProvider } from '@/src/shared/contexts/TestUserContext';
 
 const inter = Inter({
   subsets: ['latin'],

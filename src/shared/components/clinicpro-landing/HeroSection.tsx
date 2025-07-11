@@ -4,12 +4,12 @@ import { ArrowRight, Play, Users } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 
-import { EmailCaptureModal } from '@/shared/components/EmailCaptureModal';
-import { First30Modal } from '@/shared/components/First30Modal';
-import { Button } from '@/shared/components/ui/button';
-import { Countdown } from '@/shared/components/ui/Countdown';
-import { clinicProLandingData } from '@/shared/data/clinicpro-landing';
-import { getLaunchDate } from '@/shared/utils/launch-config';
+import { EmailCaptureModal } from '@/src/shared/components/EmailCaptureModal';
+import { First30Modal } from '@/src/shared/components/First30Modal';
+import { Button } from '@/src/shared/components/ui/button';
+import { Countdown } from '@/src/shared/components/ui/Countdown';
+import { clinicProLandingData } from '@/src/shared/data/clinicpro-landing';
+import { getLaunchDate } from '@/src/shared/utils/launch-config';
 
 export const ClinicProHeroSection = () => {
   const [showEmailModal, setShowEmailModal] = useState(false);

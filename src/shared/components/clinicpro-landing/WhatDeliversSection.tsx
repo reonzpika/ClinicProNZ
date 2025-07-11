@@ -2,7 +2,7 @@
 
 import { FileText, Mic, Settings, Shield } from 'lucide-react';
 
-import { clinicProLandingData } from '@/shared/data/clinicpro-landing';
+import { clinicProLandingData } from '@/src/shared/data/clinicpro-landing';
 
 const iconMap = {
   FileText,

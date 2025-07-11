@@ -3,7 +3,7 @@
 import { ChevronDown, HelpCircle } from 'lucide-react';
 import { useState } from 'react';
 
-import { clinicProLandingData } from '@/shared/data/clinicpro-landing';
+import { clinicProLandingData } from '@/src/shared/data/clinicpro-landing';
 
 export const FAQSection = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);

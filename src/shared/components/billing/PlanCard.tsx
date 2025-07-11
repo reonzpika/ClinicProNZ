@@ -2,29 +2,29 @@
 
 import { Check, Crown, Star } from 'lucide-react';
 
-import { Button } from '@/shared/components/ui/button';
-import { getPlanByRole } from '@/shared/utils/billing-config';
-import type { UserRole } from '@/shared/utils/roles';
+import { Button } from '@/src/shared/components/ui/button';
+import { getPlanByRole } from '@/src/shared/utils/billing-config';
+import type { UserRole } from '@/src/shared/utils/roles';
 
 type PlanCardProps = {
-  role: UserRole;
+  planRole: UserRole;
   currentUserRole: UserRole;
-  onUpgrade?: (role: UserRole) => void;
+  onUpgrade?: (planRole: UserRole) => void;
   className?: string;
 };
 
-export function PlanCard({ role, currentUserRole, onUpgrade, className = '' }: PlanCardProps) {
-  const plan = getPlanByRole(role);
+export function PlanCard({ planRole, currentUserRole, onUpgrade, className = '' }: PlanCardProps) {
+  const plan = getPlanByRole(planRole);
 
   if (!plan) {
     return null;
   }
 
-  const isCurrentPlan = currentUserRole === role;
-  const canUpgrade = role === 'standard' && (currentUserRole === 'signed_up' || currentUserRole === 'public');
+  const isCurrentPlan = currentUserRole === planRole;
+  const canUpgrade = planRole === 'standard' && (currentUserRole === 'signed_up' || currentUserRole === 'public');
 
   const getIcon = () => {
-    switch (role) {
+    switch (planRole) {
       case 'signed_up':
         return <Star className="size-6 text-blue-600" />;
       case 'standard':
@@ -40,7 +40,7 @@ export function PlanCard({ role, currentUserRole, onUpgrade, className = '' }: P
     if (isCurrentPlan) {
       return 'border-green-500 bg-green-50';
     }
-    if (role === 'standard') {
+    if (planRole === 'standard') {
       return 'border-blue-500';
     }
     return 'border-gray-200';
@@ -56,7 +56,7 @@ export function PlanCard({ role, currentUserRole, onUpgrade, className = '' }: P
         </div>
       )}
 
-      {role === 'standard' && !isCurrentPlan && (
+      {planRole === 'standard' && !isCurrentPlan && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
           <span className="rounded-full bg-blue-500 px-3 py-1 text-sm font-medium text-white">
             Recommended
@@ -95,7 +95,7 @@ export function PlanCard({ role, currentUserRole, onUpgrade, className = '' }: P
           : canUpgrade
             ? (
                 <Button
-                  onClick={() => onUpgrade?.(role)}
+                  onClick={() => onUpgrade?.(planRole)}
                   className="w-full bg-blue-600 text-white hover:bg-blue-700"
                 >
                   Upgrade to
@@ -103,7 +103,7 @@ export function PlanCard({ role, currentUserRole, onUpgrade, className = '' }: P
                   {plan.name}
                 </Button>
               )
-            : role === 'admin'
+            : planRole === 'admin'
               ? (
                   <Button disabled className="w-full">
                     Admin Only

@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/shared/components/ui/button';
+import { Button } from '@/src/shared/components/ui/button';
 
 export const PricingCTA = () => {
   return (

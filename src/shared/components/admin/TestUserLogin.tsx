@@ -1,11 +1,18 @@
 'use client';
 
 import { useSignIn } from '@clerk/nextjs';
-import { useClerkMetadata } from '@/shared/hooks/useClerkMetadata';
 import { useState } from 'react';
 
-import { useTestUser } from '@/shared/contexts/TestUserContext';
-import type { UserRole } from '@/shared/utils/roles';
+import { useTestUser } from '@/src/shared/contexts/TestUserContext';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import type { UserRole } from '@/src/shared/utils/roles';
+
+// Type assertion for Clerk on window
+type ClerkWindow = Window & {
+  Clerk?: {
+    signOut: () => Promise<void>;
+  };
+};
 
 type TestUser = {
   role: UserRole;
@@ -61,34 +68,24 @@ export function TestUserLogin() {
 
       if (testUser.role === 'public') {
         // Sign out for public testing
-        await window.Clerk?.signOut();
+        await (window as ClerkWindow).Clerk?.signOut();
         window.location.reload();
         return;
       }
 
-      console.log(`Signing out current user before login as ${testUser.email}`);
-
       // Must sign out first before signing in as different user
-      await window.Clerk?.signOut();
+      await (window as ClerkWindow).Clerk?.signOut();
 
       // Small delay to ensure sign out completes
       await new Promise(resolve => setTimeout(resolve, 500));
-
-      console.log(`Attempting login for ${testUser.email} with password "${testUser.password}"`);
 
       await signIn.create({
         identifier: testUser.email,
         password: testUser.password,
       });
-
-      console.log('Login successful, redirecting...');
       // Redirect to dashboard after login
       window.location.href = '/dashboard';
     } catch (error: any) {
-      console.error('Full error object:', error);
-      console.error('Error status:', error?.status);
-      console.error('Error errors array:', error?.errors);
-
       // Show more specific error message
       let errorMessage = 'Test login failed. ';
 
@@ -104,7 +101,8 @@ export function TestUserLogin() {
         errorMessage += `Unknown error (status: ${error?.status}). Check browser console for details.`;
       }
 
-      alert(errorMessage);
+      // TODO: Replace with proper error handling UI
+      console.error(errorMessage);
     } finally {
       setLoading(null);
     }
@@ -112,7 +110,8 @@ export function TestUserLogin() {
 
   const handleBackToAdmin = async () => {
     if (!adminEmail) {
-      alert('Admin email not found. Please login manually.');
+      // TODO: Replace with proper error handling UI
+      console.error('Admin email not found. Please login manually.');
       return;
     }
 
@@ -120,8 +119,8 @@ export function TestUserLogin() {
     try {
       // Redirect to sign in with admin email pre-filled
       window.location.href = `/login?email=${encodeURIComponent(adminEmail)}`;
-    } catch (error) {
-      console.error('Back to admin failed:', error);
+    } catch {
+      // Error handling for redirect failure
     } finally {
       setLoading(null);
     }
@@ -134,6 +133,7 @@ export function TestUserLogin() {
           👥 Test User Quick Login
         </h3>
         <button
+          type="button"
           onClick={handleBackToAdmin}
           disabled={loading !== null}
           className="inline-flex items-center rounded-md border border-transparent bg-purple-600 px-3 py-2 text-sm font-medium leading-4 text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-300"
@@ -155,6 +155,7 @@ export function TestUserLogin() {
         {TEST_USERS.map(testUser => (
           <button
             key={testUser.role}
+            type="button"
             onClick={() => handleTestLogin(testUser)}
             disabled={loading !== null}
             className={`rounded-lg p-4 text-white transition-colors ${testUser.color} disabled:cursor-not-allowed disabled:bg-gray-300`}

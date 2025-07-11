@@ -1,11 +1,11 @@
 import { ArrowLeft, Loader2, MessageSquare, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 
-import { Alert } from '@/shared/components/ui/alert';
-import { Button } from '@/shared/components/ui/button';
-import { Label } from '@/shared/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
-import { Textarea } from '@/shared/components/ui/textarea';
+import { Alert } from '@/src/shared/components/ui/alert';
+import { Button } from '@/src/shared/components/ui/button';
+import { Label } from '@/src/shared/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/src/shared/components/ui/select';
+import { Textarea } from '@/src/shared/components/ui/textarea';
 
 import type { TemplateGenerationResponse } from '../types';
 
@@ -127,11 +127,11 @@ export function TemplateFromDescription({ onTemplateGenerated, onCancel }: Templ
                 placeholder="Describe what kind of template you need...
 
 Examples:
-• 'Create a template for dermatology consultations with detailed skin examination sections'
-• 'I need a template for diabetes follow-up visits including HbA1c monitoring and medication review'
-• 'Template for mental health assessments with mood evaluation and risk assessment'
-• 'Pediatric vaccination visit template with developmental milestones'
-• 'Template for pre-operative assessments including cardiac risk evaluation'"
+â€¢ 'Create a template for dermatology consultations with detailed skin examination sections'
+â€¢ 'I need a template for diabetes follow-up visits including HbA1c monitoring and medication review'
+â€¢ 'Template for mental health assessments with mood evaluation and risk assessment'
+â€¢ 'Pediatric vaccination visit template with developmental milestones'
+â€¢ 'Template for pre-operative assessments including cardiac risk evaluation'"
                 rows={8}
               />
             </div>

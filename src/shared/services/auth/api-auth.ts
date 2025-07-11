@@ -1,7 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
-import type { ApiError } from '@/features/templates/types';
+import type { ApiError } from '@/src/features/templates/types';
 
 export const checkApiAuth = async () => {
   const { userId } = await auth();

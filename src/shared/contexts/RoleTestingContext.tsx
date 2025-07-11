@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import { createContext, useContext, useMemo, useState } from 'react';
 
-import type { UserRole } from '@/shared/utils/roles';
+import type { UserRole } from '@/src/shared/utils/roles';
 
 type RoleTestingContextType = {
   // Current role being tested (null = using real role)

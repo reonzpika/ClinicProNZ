@@ -1,0 +1,23 @@
+---
+description: Architecture — enforce scalable, secure, modular ClinicPro structure
+globs: ["src/**", "db/**", "api/**"]
+alwaysApply: true
+---
+
+- Design for a **lightweight**, **scalable**, and **secure** SaaS architecture.
+- Architecture must support **low maintenance overhead** and clear extensibility.
+
+### ✅ Folder & Module Structure
+
+
+### ✅ DB & ORM (Drizzle)
+
+
+### ✅ Component Boundaries
+
+
+### ✅ Security & Separation
+
+### ⚠️ Common Pitfalls
+
+- **Bold**: Avoid flattening or mixing domains into shared folders.

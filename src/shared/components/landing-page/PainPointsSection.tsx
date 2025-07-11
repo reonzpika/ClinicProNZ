@@ -4,8 +4,8 @@ import { AlertTriangle, Building2, ChevronDown, Clock, FileText, Users } from 'l
 import Image from 'next/image';
 import { useState } from 'react';
 
-import { EmailCaptureModal } from '@/shared/components/EmailCaptureModal';
-import { Button } from '@/shared/components/ui/button';
+import { EmailCaptureModal } from '@/src/shared/components/EmailCaptureModal';
+import { Button } from '@/src/shared/components/ui/button';
 
 export const PainPointsSection = () => {
   const [expandedCards, setExpandedCards] = useState<number[]>([]);

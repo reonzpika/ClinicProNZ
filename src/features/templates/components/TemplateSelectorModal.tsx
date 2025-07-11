@@ -5,10 +5,10 @@ import { useAuth } from '@clerk/nextjs';
 import { Check, Heart, Star, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
-import { Badge } from '@/shared/components/ui/badge';
-import { Button } from '@/shared/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
-import { ScrollArea } from '@/shared/components/ui/scroll-area';
+import { Badge } from '@/src/shared/components/ui/badge';
+import { Button } from '@/src/shared/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
+import { ScrollArea } from '@/src/shared/components/ui/scroll-area';
 
 import type { Template } from '../types';
 

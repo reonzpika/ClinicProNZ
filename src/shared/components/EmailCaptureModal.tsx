@@ -3,12 +3,12 @@
 import { Check, Loader2, Mail } from 'lucide-react';
 import { useState } from 'react';
 
-import { Button } from '@/shared/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
-import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
-import { Textarea } from '@/shared/components/ui/textarea';
+import { Button } from '@/src/shared/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
+import { Input } from '@/src/shared/components/ui/input';
+import { Label } from '@/src/shared/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/src/shared/components/ui/select';
+import { Textarea } from '@/src/shared/components/ui/textarea';
 
 type EmailCaptureModalProps = {
   isOpen: boolean;

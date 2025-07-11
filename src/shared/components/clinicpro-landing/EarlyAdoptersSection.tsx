@@ -4,9 +4,9 @@ import { ArrowRight, CheckCircle, Clock, Zap } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 
-import { First30Modal } from '@/shared/components/First30Modal';
-import { Button } from '@/shared/components/ui/button';
-import { clinicProLandingData } from '@/shared/data/clinicpro-landing';
+import { First30Modal } from '@/src/shared/components/First30Modal';
+import { Button } from '@/src/shared/components/ui/button';
+import { clinicProLandingData } from '@/src/shared/data/clinicpro-landing';
 
 export const EarlyAdoptersSection = () => {
   const [showFirst30Modal, setShowFirst30Modal] = useState(false);

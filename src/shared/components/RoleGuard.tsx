@@ -2,8 +2,8 @@
 
 import type { ReactNode } from 'react';
 
-import type { UserRole } from '@/shared/utils/roles';
-import { useClerkMetadata } from '@/shared/hooks/useClerkMetadata';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import type { UserRole } from '@/src/shared/utils/roles';
 
 type RoleGuardProps = {
   allowedRoles: UserRole[];

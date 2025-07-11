@@ -1,6 +1,6 @@
 import { Clock } from 'lucide-react';
 
-import { useCountdown } from '@/shared/hooks/useCountdown';
+import { useCountdown } from '@/src/shared/hooks/useCountdown';
 
 type CountdownProps = {
   targetDate: Date;

@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 
-import { getTierFromRole } from '@/lib/rbac-enforcer';
-import { useRoleTesting } from '@/shared/contexts/RoleTestingContext';
-import type { UserRole } from '@/shared/utils/roles';
+import { getTierFromRole } from '@/src/lib/rbac-enforcer';
+import { useRoleTesting } from '@/src/shared/contexts/RoleTestingContext';
+import type { UserRole } from '@/src/shared/utils/roles';
 
 type RoleImpersonatorProps = {
   currentRole: UserRole;
@@ -47,6 +47,7 @@ export function RoleImpersonator({ currentRole }: RoleImpersonatorProps) {
         </h3>
         {isTestingRole && (
           <button
+            type="button"
             onClick={handleStopTesting}
             className="inline-flex items-center rounded-md border border-transparent bg-red-600 px-3 py-2 text-sm font-medium leading-4 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
           >
@@ -81,36 +82,46 @@ export function RoleImpersonator({ currentRole }: RoleImpersonatorProps) {
       {/* Role Selection */}
       {!isTestingRole && (
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-gray-700">
-            Test as Role:
-          </label>
-          <div className="grid grid-cols-2 gap-2">
-            {allRoles.map(role => (
-              <label key={role} className="flex cursor-pointer items-center space-x-2">
-                <input
-                  type="radio"
-                  name="testRole"
-                  value={role}
-                  checked={selectedRole === role}
-                  onChange={e => setSelectedRole(e.target.value as UserRole)}
-                  className="text-yellow-600 focus:ring-yellow-500"
-                />
-                <span className="text-sm">
-                  <span className={`rounded px-2 py-1 text-xs font-medium ${ROLE_COLORS[role]}`}>
+          <fieldset>
+            <legend className="block text-sm font-medium text-gray-700">
+              Test as Role:
+            </legend>
+            <div className="grid grid-cols-2 gap-2">
+              {allRoles.map(role => (
+                <label key={role} className="flex cursor-pointer items-center space-x-2">
+                  <input
+                    type="radio"
+                    name="testRole"
+                    value={role}
+                    checked={selectedRole === role}
+                    onChange={e => setSelectedRole(e.target.value as UserRole)}
+                    className="text-yellow-600 focus:ring-yellow-500"
+                  />
+                  <span className="text-sm">
+                    <span className={`rounded px-2 py-1 text-xs font-medium ${ROLE_COLORS[role]}`}>
+                      {role}
+                    </span>
+                    <span className="ml-2 text-gray-600">
+                      {(() => {
+                        const tier = getTierFromRole(role);
+                        const sessionLimit = tier === 'basic' ? 5 : -1;
+                        return `(${sessionLimit === -1 ? 'unlimited' : `${sessionLimit} sessions/day`})`;
+                      })()}
+                    </span>
+                  </span>
+                  <span className="sr-only">
+                    Select
+                    {' '}
                     {role}
+                    {' '}
+                    role for testing
                   </span>
-                  <span className="ml-2 text-gray-600">
-                    {(() => {
-                      const tier = getTierFromRole(role);
-                      const sessionLimit = tier === 'basic' ? 5 : -1;
-                      return `(${sessionLimit === -1 ? 'unlimited' : `${sessionLimit} sessions/day`})`;
-                    })()}
-                  </span>
-                </span>
-              </label>
-            ))}
-          </div>
+                </label>
+              ))}
+            </div>
+          </fieldset>
           <button
+            type="button"
             onClick={handleStartTesting}
             disabled={selectedRole === currentRole}
             className="inline-flex w-full items-center justify-center rounded-md border border-transparent bg-yellow-600 px-4 py-2 text-sm font-medium text-white hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-300"

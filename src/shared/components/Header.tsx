@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
-import { FeedbackModal } from '@/features/roadmap/components/FeedbackModal';
-import { submitFeatureRequest } from '@/features/roadmap/roadmap-service';
-import { Dialog, DialogContent, DialogFooter, DialogHeader } from '@/shared/components/ui/dialog';
+import { FeedbackModal } from '@/src/features/marketing/roadmap/components/FeedbackModal';
+import { submitFeatureRequest } from '@/src/features/marketing/roadmap/roadmap-service';
+import { Dialog, DialogContent, DialogFooter, DialogHeader } from '@/src/shared/components/ui/dialog';
 
 export const Header = () => {
   const { isSignedIn } = useAuth();

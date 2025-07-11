@@ -1,6 +1,7 @@
 'use client';
 
 import { useUser } from '@clerk/nextjs';
+
 import type { UserRole } from '../utils/roles';
 
 /**
@@ -14,8 +15,10 @@ export function useClerkMetadata() {
    * Get user role with safe fallback
    */
   const getUserRole = (): UserRole => {
-    if (!user) return 'public';
-    return user.publicMetadata?.role || 'signed_up';
+    if (!user) {
+      return 'public';
+    }
+    return (user.publicMetadata?.role as UserRole) || 'signed_up';
   };
 
   /**
@@ -40,8 +43,10 @@ export function useClerkMetadata() {
    * Get billing metadata safely
    */
   const getBillingMetadata = () => {
-    if (!user?.publicMetadata) return null;
-    
+    if (!user?.publicMetadata) {
+      return null;
+    }
+
     return {
       stripeCustomerId: user.publicMetadata.stripeCustomerId,
       subscriptionId: user.publicMetadata.subscriptionId,
@@ -55,8 +60,10 @@ export function useClerkMetadata() {
    * Get assignment metadata safely
    */
   const getAssignmentMetadata = () => {
-    if (!user?.publicMetadata) return null;
-    
+    if (!user?.publicMetadata) {
+      return null;
+    }
+
     return {
       assignedAt: user.publicMetadata.assignedAt,
       downgradedAt: user.publicMetadata.downgradedAt,
@@ -74,4 +81,4 @@ export function useClerkMetadata() {
     // Direct safe access to metadata
     metadata: user?.publicMetadata || null,
   };
-} 
+}

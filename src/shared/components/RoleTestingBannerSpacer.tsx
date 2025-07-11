@@ -1,6 +1,6 @@
 'use client';
 
-import { useRoleTesting } from '@/shared/contexts/RoleTestingContext';
+import { useRoleTesting } from '@/src/shared/contexts/RoleTestingContext';
 
 type RoleTestingBannerSpacerProps = {
   children: React.ReactNode;

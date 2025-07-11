@@ -3,7 +3,7 @@
 import { Clock, Shield, Smartphone, Star, Users } from 'lucide-react';
 import { useState } from 'react';
 
-import { EmailCaptureModal } from '@/shared/components/EmailCaptureModal';
+import { EmailCaptureModal } from '@/src/shared/components/EmailCaptureModal';
 
 export const TestimonialsSection = () => {
   const [showEmailModal, setShowEmailModal] = useState(false);

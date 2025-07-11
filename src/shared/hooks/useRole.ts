@@ -1,7 +1,8 @@
 'use client';
 
-import { useRoleTesting } from '@/shared/contexts/RoleTestingContext';
-import type { UserRole } from '@/shared/utils/roles';
+import { useRoleTesting } from '@/src/shared/contexts/RoleTestingContext';
+import type { UserRole } from '@/src/shared/utils/roles';
+
 import { useClerkMetadata } from './useClerkMetadata';
 
 /**

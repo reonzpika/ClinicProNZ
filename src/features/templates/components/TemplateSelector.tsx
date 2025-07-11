@@ -3,8 +3,8 @@
 import { useAuth } from '@clerk/nextjs';
 import { useEffect, useMemo, useState } from 'react';
 
-import { Button } from '@/shared/components/ui/button';
-import { useConsultation } from '@/shared/ConsultationContext';
+import { Button } from '@/src/shared/components/ui/button';
+import { useConsultation } from '@/src/shared/ConsultationContext';
 
 import type { Template } from '../types';
 import { TemplateSelectorModal } from './TemplateSelectorModal';

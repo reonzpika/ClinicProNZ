@@ -1,0 +1,37 @@
+---
+description: Output style and communication structure for ClinicPro agents
+alwaysApply: true
+---
+
+# Output Style – ClinicPro Engineering Agent
+
+## Summary First
+- Begin every response with a **TL;DR**:
+  - ≤ 2 sentences, ≤ 40 tokens.
+  - Bullet point or single phrase preferred.
+  - Only include what’s **actionable or decision-critical**.
+
+## Details on Request
+- Do **not** include full implementation details unless explicitly requested.
+- Wait for approval before:
+  - Showing patch/diff
+  - Running code
+  - Making structural suggestions
+
+## Tone & Format
+- Use **telegraphic** style: short phrases, not full sentences.
+- Omit boilerplate or redundant context.
+- Use **NZ English spelling** (e.g., optimise, behaviour, centre).
+- Format using:
+  - Bullets (`-` or `•`) for lists
+  - `1.` or `2.` for step-by-step
+  - Monospace for code references: `UserSession`, `src/api/users.ts`
+
+## Code Diffs / Edits
+- Show minimal diffs only when changes are approved.
+- Use 3-line context (before/after) unless more is essential.
+- Patch-style preferred: `+`, `-`, or fenced `diff` blocks.
+
+## Trade-Offs & Risks
+- **Overly terse output may lack context for juniors** — be ready to expand if asked.
+

@@ -1,7 +1,6 @@
 'use client';
 
 import { SignInButton, SignUpButton, useAuth, UserButton } from '@clerk/nextjs';
-import { useClerkMetadata } from '@/shared/hooks/useClerkMetadata';
 import {
   Bell,
   Book,
@@ -24,9 +23,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
-import { FeedbackModal } from '@/features/roadmap/components/FeedbackModal';
-import { submitFeatureRequest } from '@/features/roadmap/roadmap-service';
-import { useRBAC } from '@/shared/hooks/useRBAC';
+import { FeedbackModal } from '@/src/features/marketing/roadmap/components/FeedbackModal';
+import { submitFeatureRequest } from '@/src/features/marketing/roadmap/roadmap-service';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { useRBAC } from '@/src/shared/hooks/useRBAC';
 
 type SidebarProps = {
   isCollapsed: boolean;
@@ -128,6 +128,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     return (
       <button
+        type="button"
         onClick={e => handleNavClick(item, e)}
         className={`
           flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-800
@@ -159,6 +160,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </Link>
           )}
           <button
+            type="button"
             onClick={onToggle}
             className="rounded-md p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
             title={isCollapsed ? 'ClinicPro for GP - Expand Menu' : 'Collapse Menu'}
@@ -263,6 +265,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="space-y-1">
               {/* Feedback Button */}
               <button
+                type="button"
                 onClick={() => {
                   setFeedbackModalOpen(true);
                   setFeedbackSuccess(false);
@@ -294,6 +297,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <div className="space-y-1">
                       <SignInButton mode="modal">
                         <button
+                          type="button"
                           className={`
                       flex w-full items-center gap-3 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-50
                       ${isCollapsed ? 'justify-center' : ''}
@@ -305,6 +309,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       </SignInButton>
                       <SignUpButton mode="modal">
                         <button
+                          type="button"
                           className={`
                       flex w-full items-center gap-3 rounded-lg bg-slate-700 px-3 py-2 text-sm text-white transition-colors hover:bg-slate-800
                       ${isCollapsed ? 'justify-center' : ''}

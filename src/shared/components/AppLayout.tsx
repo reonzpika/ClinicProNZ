@@ -3,7 +3,7 @@
 import { Menu } from 'lucide-react';
 import React, { useState } from 'react';
 
-import { useResponsive } from '@/shared/hooks/useResponsive';
+import { useResponsive } from '@/src/shared/hooks/useResponsive';
 
 import { Sidebar } from './Sidebar';
 import { Button } from './ui/button';

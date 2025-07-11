@@ -1,17 +1,17 @@
 export {};
 
-// Import the consolidated UserRole type
-import type { UserRole } from '../src/shared/utils/roles';
-
 // Extend Clerk's types with our custom metadata
 declare global {
-  interface CustomJwtSessionClaims {
+  // Import the consolidated UserRole type
+  import type { UserRole } from '../src/shared/utils/roles';
+
+  type CustomJwtSessionClaims = {
     metadata: {
       role?: UserRole;
     };
-  }
+  };
 
-  interface UserPublicMetadata {
+  type UserPublicMetadata = {
     role?: UserRole;
     stripeCustomerId?: string;
     subscriptionId?: string;
@@ -20,23 +20,23 @@ declare global {
     currentPeriodEnd?: string;
     assignedAt?: string;
     downgradedAt?: string;
-  }
+  };
 
   // Add window.Clerk type declaration
-  interface Window {
+  type Window = {
     Clerk?: {
-      signOut(): Promise<void>;
-      openSignIn(): void;
-      openSignUp(): void;
+      signOut: () => Promise<void>;
+      openSignIn: () => void;
+      openSignUp: () => void;
       user?: any;
       session?: any;
     };
-  }
+  };
 }
 
 // Augment Clerk's User type to include our custom metadata
 declare module '@clerk/nextjs' {
-  interface UserPublicMetadata {
+  type UserPublicMetadata = {
     role?: UserRole;
     stripeCustomerId?: string;
     subscriptionId?: string;
@@ -45,5 +45,5 @@ declare module '@clerk/nextjs' {
     currentPeriodEnd?: string;
     assignedAt?: string;
     downgradedAt?: string;
-  }
+  };
 }

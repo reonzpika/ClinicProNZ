@@ -1,14 +1,20 @@
 'use client';
 
-import { useClerkMetadata } from '@/shared/hooks/useClerkMetadata';
+import { useRoleTesting } from '@/src/shared/contexts/RoleTestingContext';
+import { useTestUser } from '@/src/shared/contexts/TestUserContext';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
-import { useRoleTesting } from '@/shared/contexts/RoleTestingContext';
-import { useTestUser } from '@/shared/contexts/TestUserContext';
+// Type assertion for Clerk on window
+type ClerkWindow = Window & {
+  Clerk?: {
+    signOut: () => Promise<void>;
+  };
+};
 
 export function RoleTestingBanner() {
   const { isTestingRole, testingRole, originalRole, stopRoleTesting } = useRoleTesting();
   const { isTestUserMode, originalAdminEmail, clearOriginalAdminEmail } = useTestUser();
-  const { user: _user } = useClerkMetadata();
+  const { user: _user, getUserRole } = useClerkMetadata();
 
   // Only show banner for role impersonation, NOT for test user login
   // (Test users should use emergency page to switch back)
@@ -29,16 +35,14 @@ export function RoleTestingBanner() {
     } else if (isTestUserLogin) {
       try {
         // CRITICAL: Sign out the test user first
-        console.log('Signing out test user and returning to admin...');
-        await window.Clerk?.signOut();
+        await (window as ClerkWindow).Clerk?.signOut();
 
         // Clear the test mode
         clearOriginalAdminEmail();
 
         // Redirect to login with admin email pre-filled
         window.location.href = `/login?email=${encodeURIComponent(originalAdminEmail)}`;
-      } catch (error) {
-        console.error('Error during admin revert:', error);
+      } catch {
         // Fallback: just redirect to login
         clearOriginalAdminEmail();
         window.location.href = '/login';
@@ -55,8 +59,7 @@ export function RoleTestingBanner() {
         originalInfo: originalRole,
       };
     } else if (isTestUserLogin) {
-      const { getUserRole } = useClerkMetadata();
-  const currentRole = getUserRole();
+      const currentRole = getUserRole();
       return {
         mode: '👥 Test User Login',
         currentRole,
@@ -89,6 +92,7 @@ export function RoleTestingBanner() {
 
         {/* Right side - Revert button */}
         <button
+          type="button"
           onClick={handleRevert}
           className="ml-2 whitespace-nowrap rounded bg-white px-3 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 md:px-4 md:text-sm"
         >

@@ -3,9 +3,9 @@
 import { Activity, Clock, Database, RefreshCw, TrendingUp, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { Badge } from '@/shared/components/ui/badge';
-import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Badge } from '@/src/shared/components/ui/badge';
+import { Button } from '@/src/shared/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 
 import { templatePerformance } from '../utils/compileTemplate';
 
@@ -93,7 +93,7 @@ export function TemplatePerformanceMonitor() {
                 onClick={() => setIsVisible(false)}
                 className="size-6 p-0"
               >
-                ×
+                Ã—
               </Button>
             </div>
           </div>

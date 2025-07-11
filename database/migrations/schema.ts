@@ -2,6 +2,15 @@ import { bigint, boolean, foreignKey, integer, jsonb, pgEnum, pgTable, serial, t
 
 export const featureStatus = pgEnum('feature_status', ['planned', 'in_progress', 'completed']);
 
+export const users = pgTable('users', {
+  id: text().primaryKey().notNull(),
+  email: text().notNull(),
+  createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
+}, table => [
+  unique('users_email_unique').on(table.email),
+]);
+
 export const userSettings = pgTable('user_settings', {
   userId: text('user_id').primaryKey().notNull(),
   settings: jsonb().notNull(),
@@ -12,15 +21,6 @@ export const userSettings = pgTable('user_settings', {
     foreignColumns: [users.id],
     name: 'user_settings_user_id_users_id_fk',
   }),
-]);
-
-export const users = pgTable('users', {
-  id: text().primaryKey().notNull(),
-  email: text().notNull(),
-  createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
-}, table => [
-  unique('users_email_unique').on(table.email),
 ]);
 
 export const features = pgTable('features', {

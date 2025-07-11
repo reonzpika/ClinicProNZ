@@ -3,8 +3,8 @@
 import { ArrowRight, FileText, Mail, Phone, Shield } from 'lucide-react';
 import { useState } from 'react';
 
-import { First30Modal } from '@/shared/components/First30Modal';
-import { Button } from '@/shared/components/ui/button';
+import { First30Modal } from '@/src/shared/components/First30Modal';
+import { Button } from '@/src/shared/components/ui/button';
 
 export const FooterSection = () => {
   const [showFirst30Modal, setShowFirst30Modal] = useState(false);

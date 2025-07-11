@@ -2,9 +2,9 @@
 
 import { Edit, MoreVertical, Plus, Star } from 'lucide-react';
 
-import { cn } from '@/lib/utils';
-import { Button } from '@/shared/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/shared/components/ui/dropdown-menu';
+import { cn } from '@/src/lib/utils';
+import { Button } from '@/src/shared/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/src/shared/components/ui/dropdown-menu';
 
 import type { Template } from '../types';
 

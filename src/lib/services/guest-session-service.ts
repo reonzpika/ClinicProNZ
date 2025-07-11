@@ -93,7 +93,7 @@ export async function checkUserSessionLimit(userId: string): Promise<UserSession
   if (!user) {
     throw new Error('User record not found');
   }
-  
+
   let sessionsUsed = user.coreSessionsUsed;
   let resetDate = user.sessionResetDate;
 

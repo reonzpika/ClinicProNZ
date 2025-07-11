@@ -1,15 +1,15 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { useClerkMetadata } from '@/shared/hooks/useClerkMetadata';
 import { AlertTriangle, Crown, Loader2, UserPlus, Zap } from 'lucide-react';
 import { useState } from 'react';
 
-import { Button } from '@/shared/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
-import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
-import { BILLING_CONFIG } from '@/shared/utils/billing-config';
+import { Button } from '@/src/shared/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
+import { Input } from '@/src/shared/components/ui/input';
+import { Label } from '@/src/shared/components/ui/label';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { BILLING_CONFIG } from '@/src/shared/utils/billing-config';
 
 type RateLimitModalProps = {
   isOpen: boolean;

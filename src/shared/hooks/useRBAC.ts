@@ -2,7 +2,8 @@
 
 import { useAuth } from '@clerk/nextjs';
 
-import type { UserTier } from '@/lib/rbac-enforcer';
+import type { UserTier } from '@/src/lib/rbac-enforcer';
+
 import { useClerkMetadata } from './useClerkMetadata';
 
 export type FeaturePermission = 'sessionManagement' | 'templateManagement' | 'premiumActions';

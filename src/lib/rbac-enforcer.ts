@@ -3,7 +3,6 @@ import { eq } from 'drizzle-orm';
 
 import { db } from '../../database/client';
 import { mobileTokens } from '../../database/schema';
-
 import { checkGuestSessionLimit, checkUserSessionLimit } from './services/guest-session-service';
 
 export type UserTier = 'basic' | 'standard' | 'admin';

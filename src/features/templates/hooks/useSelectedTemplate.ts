@@ -1,7 +1,7 @@
 import { useAuth } from '@clerk/nextjs';
 import { useEffect, useMemo, useState } from 'react';
 
-import { useConsultation } from '@/shared/ConsultationContext';
+import { useConsultation } from '@/src/shared/ConsultationContext';
 
 import type { Template } from '../types';
 

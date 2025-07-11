@@ -1,8 +1,8 @@
 import { Edit2, FileText } from 'lucide-react';
 
-import { Badge } from '@/shared/components/ui/badge';
-import { Button } from '@/shared/components/ui/button';
-import { ScrollArea } from '@/shared/components/ui/scroll-area';
+import { Badge } from '@/src/shared/components/ui/badge';
+import { Button } from '@/src/shared/components/ui/button';
+import { ScrollArea } from '@/src/shared/components/ui/scroll-area';
 
 import type { Template } from '../types';
 
