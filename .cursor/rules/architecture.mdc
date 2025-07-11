@@ -4,20 +4,252 @@ globs: ["src/**", "db/**", "api/**"]
 alwaysApply: true
 ---
 
+# ClinicPro Architecture Guide
+
+## 🎯 Architectural Principles
+
 - Design for a **lightweight**, **scalable**, and **secure** SaaS architecture.
 - Architecture must support **low maintenance overhead** and clear extensibility.
+- **Feature-based organization** over technical layer separation
+- **RBAC-first design** with role checks embedded throughout
+- **Type safety** enforced at all levels (no `any` types)
 
-### ✅ Folder & Module Structure
+## 🏗️ Technology Stack
 
+```
+Frontend:     Next.js 15 + React 19 + TypeScript + Tailwind CSS
+Auth:         Clerk with RBAC (public → signed_up → standard → admin)
+Database:     Neon PostgreSQL + Drizzle ORM + pgvector (RAG)
+AI Services:  OpenAI GPT-4o, Anthropic Claude, Deepgram transcription
+Storage:      AWS S3 + presigned URLs
+Real-time:    Ably for live transcription sync
+Payments:     Stripe subscription management
+Deployment:   Vercel + Edge functions
+```
 
-### ✅ DB & ORM (Drizzle)
+### Frontend Architecture
+- **Next.js 15 App Router**: Route groups for business domain organization
+- **React 19**: Latest features with concurrent rendering
+- **TypeScript**: Strict mode with comprehensive type safety
+- **Tailwind CSS**: Utility-first styling with NZ-themed design system
+- **Radix UI**: Accessible component primitives
 
+### Backend Architecture  
+- **API Routes**: Mirror page structure for consistency
+- **Middleware**: Clerk-based authentication with RBAC enforcement
+- **Edge Functions**: Low-latency API responses via Vercel
+- **Webhooks**: External service integration (Stripe, Clerk)
 
-### ✅ Component Boundaries
+### Database Architecture
+- **Neon PostgreSQL**: Managed database with connection pooling
+- **Drizzle ORM**: Type-safe database operations
+- **pgvector Extension**: Vector embeddings for RAG system
+- **Schema Modularity**: Business domain separation
 
+### AI/ML Architecture
+- **OpenAI Integration**: GPT-4o for clinical note generation
+- **RAG System**: Clinical guidelines with vector similarity search
+- **Deepgram**: Real-time medical transcription
+- **Image Analysis**: GPT-4o vision for clinical images
 
-### ✅ Security & Separation
+## 📁 Project Structure (Feature-Based)
 
-### ⚠️ Common Pitfalls
+### Root Directory
+```
+ClinicPro/
+├── .cursor/rules/              # AI development guidelines & patterns
+├── app/                        # Next.js 15 App Router (pages & API routes)
+├── src/                        # Application source code
+├── database/                   # Database schema & migrations
+├── docs/                       # Technical documentation
+├── public/                     # Static assets
+├── types/                      # Global TypeScript definitions
+└── config files               # Build & dev configuration
+```
 
-- **Bold**: Avoid flattening or mixing domains into shared folders.
+### App Router Structure (Route Groups)
+```
+app/
+├── (admin)/                    # Admin-only pages
+│   ├── admin/                 # User management, system config
+│   └── emergency-admin/       # Emergency access tools
+├── (business)/                 # Business logic pages
+│   ├── billing/               # Subscription management
+│   ├── pricing/               # Pricing information
+│   └── templates/             # Template management UI
+├── (clinical)/                 # Core clinical features
+│   ├── ai-scribing/           # AI transcription interface
+│   ├── consultation/          # Main consultation workflow
+│   ├── differential-diagnosis/ # Clinical decision support
+│   ├── image/                 # Clinical image analysis
+│   └── reference/             # Clinical reference materials
+├── (integration)/              # External integrations
+│   └── mobile/                # Mobile recording interface
+├── (legal)/                    # Legal & compliance pages
+│   ├── privacy/               # Privacy policy
+│   ├── privacy-info/          # Privacy information
+│   └── terms/                 # Terms of service
+├── (marketing)/                # Marketing & landing pages
+│   ├── about/                 # About page
+│   ├── clinicpro/             # Product landing
+│   ├── contact/               # Contact information
+│   ├── landing-page/          # Main landing page
+│   ├── roadmap/               # Product roadmap
+│   └── thank-you/             # Post-signup confirmation
+├── (user)/                     # User-specific pages
+│   ├── auth/                  # Authentication flows
+│   ├── dashboard/             # User dashboard
+│   └── settings/              # User settings
+├── api/                        # API routes (mirrors page structure)
+└── globals.css, layout.tsx, page.tsx  # Root app files
+```
+
+### Source Code Organization
+```
+src/
+├── features/                   # Feature-based modules
+│   ├── clinical/              # Clinical workflow features
+│   │   ├── main-ui/           # Core consultation interface
+│   │   ├── mobile/            # Mobile recording components
+│   │   ├── right-sidebar/     # Clinical decision support
+│   │   └── session-management/ # Patient session handling
+│   ├── marketing/             # Marketing features
+│   │   └── roadmap/           # Product roadmap & feedback
+│   ├── templates/             # Template management
+│   │   ├── components/        # Template UI components
+│   │   ├── hooks/             # Template-specific hooks
+│   │   └── utils/             # Template processing logic
+│   └── user/                  # User management features
+│       └── dashboard/         # User dashboard components
+├── shared/                     # Shared application code
+│   ├── components/            # Reusable UI components
+│   │   ├── ui/                # Base UI components (Radix)
+│   │   ├── admin/             # Admin-specific components
+│   │   ├── billing/           # Billing components
+│   │   ├── landing-page/      # Landing page sections
+│   │   └── layout/            # Layout components
+│   ├── hooks/                 # Shared React hooks
+│   ├── services/              # External service integrations
+│   ├── contexts/              # React context providers
+│   ├── types/                 # Shared TypeScript types
+│   └── utils/                 # Utility functions
+└── lib/                        # Core libraries
+    ├── rag/                   # RAG system implementation
+    ├── services/              # Service layer abstractions
+    └── utils.ts               # Core utility functions
+```
+
+### Database Structure
+```
+database/
+├── schema/                     # Drizzle schema definitions
+│   ├── index.ts               # Schema exports
+│   ├── users.ts               # User data & metadata
+│   ├── patient_sessions.ts    # Consultation sessions
+│   ├── templates.ts           # Clinical templates
+│   ├── rag.ts                 # RAG documents & embeddings
+│   ├── mobile_tokens.ts       # Mobile recording tokens
+│   ├── user_settings.ts       # User preferences
+│   ├── feature_requests.ts    # Product feedback
+│   ├── features.ts            # Product roadmap features
+│   ├── votes.ts               # Feature voting system
+│   └── email_captures.ts      # Marketing email list
+├── migrations/                 # Database migrations
+│   ├── *.sql                  # Generated SQL migrations
+│   └── meta/                  # Migration metadata
+├── client.ts                   # Database connection
+└── seed-templates-new.ts      # Default template seeding
+```
+
+## 🏛️ Architectural Patterns
+
+### Feature-Based Organization
+- **Business domain grouping**: Clinical, templates, user, marketing
+- **Vertical slicing**: Each feature contains components, hooks, utils
+- **Shared code separation**: Common functionality in `src/shared/`
+- **Import path consistency**: Relative paths for database, aliases for app code
+
+### Route Group Strategy
+- **URL-agnostic organization**: `(admin)`, `(clinical)`, `(business)` groups
+- **API mirroring**: API routes mirror page structure for consistency
+- **Role-based access**: Group-level protection via middleware
+- **Clear boundaries**: Logical separation without URL impact
+
+### RBAC Architecture
+- **Middleware enforcement**: Route-level protection at edge
+- **Context extraction**: Support for authenticated users + guest tokens
+- **Usage tracking**: Tier-based limits with real-time enforcement
+- **Type safety**: Proper Clerk metadata typing throughout
+
+### Database Patterns
+- **Schema modularity**: Business domain separation
+- **Relationship design**: User-centric with guest token support
+- **JSON storage**: Text fields with application-level parsing
+- **Migration strategy**: Generated SQL with metadata tracking
+
+### Security Architecture
+- **Authentication**: Clerk with custom metadata
+- **Authorization**: Role-based with usage limits
+- **Data encryption**: End-to-end for patient data
+- **Privacy compliance**: NZ Privacy Act 2020 adherence
+- **Audit trails**: All patient data access logged
+
+## 🚀 Deployment Architecture
+
+### Vercel Edge Network
+- **Global distribution**: Edge functions for low latency
+- **Automatic scaling**: Zero-config horizontal scaling
+- **Environment separation**: Development, staging, production
+- **CI/CD integration**: GitHub-triggered deployments
+
+### Database & Storage
+- **Neon PostgreSQL**: Managed database with branching
+- **AWS S3**: File storage with presigned URLs
+- **Connection pooling**: Managed by Neon
+- **Backup strategy**: Automated by Neon
+
+### Monitoring & Observability
+- **Structured logging**: Pino with Logtail integration
+- **Error tracking**: Built-in Next.js error boundaries
+- **Performance monitoring**: Vercel analytics
+- **Usage metrics**: Custom tracking for RBAC limits
+
+## ⚠️ Architectural Constraints
+
+### Performance Constraints
+- **Database queries**: Optimize for Neon connection limits
+- **AI API calls**: Rate limiting and retry mechanisms
+- **File uploads**: 10MB limit for clinical images
+- **Real-time sync**: Ably channel limitations
+
+### Security Constraints
+- **Role validation**: Every API route must check permissions
+- **Guest tokens**: 24-hour expiration for anonymous users
+- **Patient data**: Encryption at rest and in transit
+- **Audit requirements**: All clinical actions logged
+
+### Scalability Constraints
+- **Solo GP focus**: Architecture optimized for small practices
+- **Usage limits**: Tier-based restrictions prevent abuse
+- **AI costs**: Token usage tracking for cost control
+- **Database size**: Managed growth with data retention policies
+
+## 🔍 Common Architectural Pitfalls
+
+### Import Path Issues
+- **❌ Avoid**: Using `@/client` for database imports
+- **✅ Use**: Relative paths for database: `../../../database/client`
+- **❌ Avoid**: Mixing path aliases with relative imports
+- **✅ Use**: Consistent patterns per code category
+
+### RBAC Violations
+- **❌ Avoid**: Direct metadata access without type checking
+- **✅ Use**: `useClerkMetadata` hook for type safety
+- **❌ Avoid**: Skipping usage limit checks
+- **✅ Use**: `enforceUsageLimit` before feature access
+
+### Feature Coupling
+- **❌ Avoid**: Cross-feature dependencies
+- **✅ Use**: Shared code via `src/shared/`
+- **❌ Avoid**: Mixing business domains in components
+- **✅ Use**: Clear feature boundaries with well-defined interfaces
