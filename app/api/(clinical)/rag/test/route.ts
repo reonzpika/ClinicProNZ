@@ -10,8 +10,8 @@ export async function GET(_request: NextRequest) {
       timestamp: new Date().toISOString(),
       auth: {
         userId: userId || 'Not authenticated',
-        userRole: sessionClaims?.metadata?.role || 'public',
-        hasAccess: userId && sessionClaims?.metadata?.role !== 'public',
+        userRole: (sessionClaims as any)?.metadata?.role || 'public',
+        hasAccess: userId && (sessionClaims as any)?.metadata?.role !== 'public',
       },
       setup: {
         database: 'Not tested - requires DATABASE_URL',

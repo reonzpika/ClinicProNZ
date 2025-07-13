@@ -2,21 +2,16 @@
 
 import { SignInButton, SignUpButton, useAuth, UserButton } from '@clerk/nextjs';
 import {
-  Bell,
   Book,
   Brain,
   Camera,
   ChevronLeft,
   ChevronRight,
   CreditCard,
-  DollarSign,
   FileText,
-  Info,
   MessageSquare,
   Settings,
-  Shield,
   ShieldCheck,
-  Sparkles,
   Stethoscope,
 } from 'lucide-react';
 import Link from 'next/link';

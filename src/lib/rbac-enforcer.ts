@@ -48,7 +48,7 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
 
     if (userId) {
       // Authenticated user - get tier from session claims
-      const userRole = sessionClaims?.metadata?.role;
+      const userRole = (sessionClaims as any)?.metadata?.role;
       const tier = getTierFromRole(userRole || 'signed_up');
 
       // Authenticated users don't use guest tokens - they have user-specific tracking

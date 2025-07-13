@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check user role - require signed_up or higher
-    const userRole = sessionClaims?.metadata?.role || 'public';
+    const userRole = (sessionClaims as any)?.metadata?.role || 'public';
     if (userRole === 'public') {
       return new Response('Forbidden - Account required', { status: 403 });
     }

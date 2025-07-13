@@ -19,7 +19,7 @@ export async function getCurrentRole(): Promise<UserRole> {
     }
 
     // Get role from session claims metadata (now available thanks to custom claims)
-    const role = sessionClaims?.metadata?.role;
+    const role = (sessionClaims as any)?.metadata?.role;
 
     return role || 'signed_up';
   } catch (error) {

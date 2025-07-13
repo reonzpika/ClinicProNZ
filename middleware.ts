@@ -60,7 +60,7 @@ export default clerkMiddleware(async (auth, req) => {
     }
 
     // Check role - templates require at least signed_up
-    const userRole = resolvedAuth.sessionClaims?.metadata?.role || 'public';
+    const userRole = (resolvedAuth.sessionClaims as any)?.metadata?.role || 'public';
     if (userRole === 'public') {
       return returnUnauthorized();
     }
@@ -103,7 +103,7 @@ export default clerkMiddleware(async (auth, req) => {
       return returnUnauthorized();
     }
 
-    const userRole = resolvedAuth.sessionClaims?.metadata?.role || 'public';
+    const userRole = (resolvedAuth.sessionClaims as any)?.metadata?.role || 'public';
     if (userRole !== 'admin') {
       return returnUnauthorized();
     }
@@ -116,7 +116,7 @@ export default clerkMiddleware(async (auth, req) => {
       return returnUnauthorized();
     }
 
-    const userRole = resolvedAuth.sessionClaims?.metadata?.role || 'public';
+    const userRole = (resolvedAuth.sessionClaims as any)?.metadata?.role || 'public';
     if (userRole === 'public') {
       return returnUnauthorized();
     }
@@ -129,7 +129,7 @@ export default clerkMiddleware(async (auth, req) => {
       return redirectToLogin(req.url);
     }
 
-    const userRole = resolvedAuth.sessionClaims?.metadata?.role || 'public';
+    const userRole = (resolvedAuth.sessionClaims as any)?.metadata?.role || 'public';
     if (userRole === 'public') {
       return redirectToLogin(req.url);
     }
@@ -144,7 +144,7 @@ export default clerkMiddleware(async (auth, req) => {
       return redirectToLogin(req.url);
     }
 
-    const userRole = resolvedAuth.sessionClaims?.metadata?.role || 'public';
+    const userRole = (resolvedAuth.sessionClaims as any)?.metadata?.role || 'public';
     if (userRole === 'public') {
       return redirectToLogin(req.url);
     }
@@ -157,7 +157,7 @@ export default clerkMiddleware(async (auth, req) => {
       return redirectToLogin(req.url);
     }
 
-    const userRole = resolvedAuth.sessionClaims?.metadata?.role || 'public';
+    const userRole = (resolvedAuth.sessionClaims as any)?.metadata?.role || 'public';
     if (userRole === 'public') {
       return redirectToLogin(req.url);
     }
@@ -170,7 +170,7 @@ export default clerkMiddleware(async (auth, req) => {
       return redirectToLogin(req.url);
     }
 
-    const userRole = resolvedAuth.sessionClaims?.metadata?.role || 'public';
+    const userRole = (resolvedAuth.sessionClaims as any)?.metadata?.role || 'public';
     if (userRole === 'public') {
       return redirectToLogin(req.url);
     }

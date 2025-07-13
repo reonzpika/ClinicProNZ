@@ -24,7 +24,7 @@ export async function GET() {
       privateMetadata: user.privateMetadata,
       unsafeMetadata: user.unsafeMetadata,
       sessionClaims,
-      currentRole: sessionClaims?.metadata?.role || 'no role set',
+      currentRole: (sessionClaims as any)?.metadata?.role || 'no role set',
     });
   } catch (error) {
     console.error('Error fetching user data:', error);

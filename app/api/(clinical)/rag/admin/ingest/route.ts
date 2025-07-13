@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check admin role
-    const userRole = sessionClaims?.metadata?.role || 'public';
+    const userRole = (sessionClaims as any)?.metadata?.role || 'public';
     if (userRole !== 'admin') {
       return new Response('Forbidden - Admin access required', { status: 403 });
     }
