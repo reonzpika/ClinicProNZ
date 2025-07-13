@@ -226,7 +226,7 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
               <span className="text-xs text-gray-400">Loud</span>
             </div>
             <p className="mt-1 text-xs font-medium text-blue-600">
-              ðŸ’¡ Higher settings improve transcription accuracy for quiet voices
+              Higher settings improve transcription accuracy for quiet voices
             </p>
           </div>
 
@@ -257,7 +257,7 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
               <span className="text-xs text-gray-400">Ignores noise</span>
             </div>
             <p className="mt-1 text-xs font-medium text-blue-600">
-              ðŸ’¡ Set above background noise level to improve transcription accuracy
+              Set above background noise level to improve transcription accuracy
             </p>
           </div>
 
@@ -290,7 +290,7 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
             </div>
 
             <div className="mb-3 rounded-lg bg-blue-50 p-3">
-              <p className="mb-1 text-xs font-medium text-blue-800">ðŸ“‹ Setup Instructions:</p>
+              <p className="mb-1 text-xs font-medium text-blue-800">Setup Instructions:</p>
               <ol className="ml-3 list-decimal space-y-1 text-xs text-blue-700">
                 <li>Click "Start Test" and speak at normal consultation volume</li>
                 <li>Adjust "Volume Boost" until your voice shows 40-70%</li>
@@ -322,7 +322,7 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
               </div>
               {isTestingMic && (
                 <p className="text-xs text-blue-600">
-                  ðŸŽ¤ Speak at your normal consultation volume
+                  Speak at your normal consultation volume
                 </p>
               )}
               {!isTestingMic && (
@@ -342,7 +342,7 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
                   testVolumeLevel > volumeThreshold ? 'text-green-600' : 'text-orange-600'
                 }`}
                 >
-                  {testVolumeLevel > volumeThreshold ? 'âœ“ Will Record' : 'â—‹ Too Quiet'}
+                  {testVolumeLevel > volumeThreshold ? 'Will Record' : 'Too Quiet'}
                 </span>
               </div>
               <p className="text-xs text-green-700">
@@ -357,7 +357,7 @@ export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, 
               </p>
               {testVolumeLevel <= volumeThreshold && (
                 <p className="mt-1 text-xs font-medium text-orange-600">
-                  ðŸ’¡ Increase Volume Boost or lower Noise Filter to capture your voice
+                  Increase Volume Boost or lower Noise Filter to capture your voice
                 </p>
               )}
             </div>

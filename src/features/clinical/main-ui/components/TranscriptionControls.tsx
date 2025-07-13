@@ -315,7 +315,7 @@ export function TranscriptionControls({
                 <div className="flex items-center gap-2">
                   <div className="size-2 animate-pulse rounded-full bg-green-500" />
                   <div className="font-medium text-green-800">
-                    ðŸ“± Mobile device ready
+                    Mobile device ready
                   </div>
                 </div>
                 <div className="space-y-1">
@@ -363,7 +363,7 @@ export function TranscriptionControls({
                       {!hasMobileDevices
                         ? (
                             <div className="rounded border border-blue-200 bg-blue-50 px-2 py-1 text-xs text-blue-700">
-                              ðŸ“± Better audio with mobile recording - 30 second setup
+                              Better audio with mobile recording - 30 second setup
                             </div>
                           )
                         : (
@@ -612,7 +612,7 @@ export function TranscriptionControls({
               <p className="font-medium">Audio Recording Guide:</p>
               <div className="mt-2 space-y-2">
                 <div>
-                  <p className="font-medium text-green-700">ðŸ“± Mobile Recording (Recommended):</p>
+                  <p className="font-medium text-green-700">Mobile Recording (Recommended):</p>
                   <ul className="ml-3 mt-1 list-disc space-y-0.5">
                     <li>Scan QR code with your phone - takes 30 seconds</li>
                     <li>Superior audio quality with phone's microphone</li>
@@ -621,7 +621,7 @@ export function TranscriptionControls({
                   </ul>
                 </div>
                 <div>
-                  <p className="font-medium">ðŸ’» Desktop Recording:</p>
+                  <p className="font-medium">Desktop Recording:</p>
                   <ul className="ml-3 mt-1 list-disc space-y-0.5">
                     <li>Good backup option if mobile setup fails</li>
                     <li>Must stay near computer during consultation</li>

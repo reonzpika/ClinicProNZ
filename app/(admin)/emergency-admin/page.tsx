@@ -1,5 +1,6 @@
 'use client';
 
+import { useClerk } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
 
 import { useRoleTesting } from '@/src/shared/contexts/RoleTestingContext';
@@ -10,6 +11,7 @@ export default function EmergencyAdminPage() {
   const { originalAdminEmail, clearOriginalAdminEmail, isTestUserMode } = useTestUser();
   const { stopRoleTesting, isTestingRole } = useRoleTesting();
   const { user } = useClerkMetadata();
+  const clerk = useClerk();
   const [localStorageChecked, setLocalStorageChecked] = useState(false);
 
   useEffect(() => {
@@ -25,7 +27,7 @@ export default function EmergencyAdminPage() {
       // Emergency admin recovery - forcing sign out
 
       // STEP 1: Force sign out of current user (critical!)
-      await window.Clerk?.signOut();
+      await clerk.signOut();
 
       // STEP 2: Clear all testing modes
       if (isTestingRole) {
@@ -61,7 +63,7 @@ export default function EmergencyAdminPage() {
       // Nuclear option - clearing everything
 
       // Force sign out
-      await window.Clerk?.signOut();
+      await clerk.signOut();
 
       // Clear all testing data
       localStorage.removeItem('clinicpro-test-mode-admin-email');
@@ -92,7 +94,7 @@ export default function EmergencyAdminPage() {
   const handleForceManualLogin = async () => {
     try {
       // Force manual login - signing out and clearing everything
-      await window.Clerk?.signOut();
+      await clerk.signOut();
       localStorage.clear();
       sessionStorage.clear();
       await new Promise(resolve => setTimeout(resolve, 1500));
@@ -107,7 +109,7 @@ export default function EmergencyAdminPage() {
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg">
         <div className="text-center">
           <h1 className="mb-4 text-2xl font-bold text-red-600">
-            ðŸš¨ Emergency Admin Access
+            Emergency Admin Access
           </h1>
           <p className="mb-6 text-gray-600">
             Use this page to get back to admin access if you're stuck in test mode.
@@ -148,7 +150,7 @@ export default function EmergencyAdminPage() {
             onClick={handleBackToAdmin}
             className="w-full rounded bg-red-600 px-4 py-3 font-medium text-white transition-colors hover:bg-red-700"
           >
-            ðŸ”™ Back to Admin Login (Improved)
+            Back to Admin Login (Improved)
           </button>
 
           <button
@@ -156,7 +158,7 @@ export default function EmergencyAdminPage() {
             onClick={handleForceManualLogin}
             className="w-full rounded bg-orange-600 px-4 py-3 font-medium text-white transition-colors hover:bg-orange-700"
           >
-            ðŸ’¥ FORCE Sign Out & Manual Login
+            FORCE Sign Out & Manual Login
           </button>
 
           <button
@@ -164,7 +166,7 @@ export default function EmergencyAdminPage() {
             onClick={handleClearAllTestingData}
             className="w-full rounded bg-gray-600 px-4 py-3 font-medium text-white transition-colors hover:bg-gray-700"
           >
-            ðŸ§¹ Nuclear Option (Clear Everything)
+            Nuclear Option (Clear Everything)
           </button>
 
           <a
@@ -177,7 +179,7 @@ export default function EmergencyAdminPage() {
 
         {/* Instructions */}
         <div className="mt-6 rounded bg-blue-50 p-4 text-sm text-blue-800">
-          <p className="mb-2 font-medium">ðŸ’¡ How to use (try in order):</p>
+          <p className="mb-2 font-medium">How to use (try in order):</p>
           <ol className="space-y-1">
             <li>
               <strong>1. "Back to Admin Login"</strong>
@@ -204,7 +206,7 @@ export default function EmergencyAdminPage() {
 
         {/* Access Info */}
         <div className="mt-4 text-center text-xs text-gray-500">
-          ðŸ’¡ Bookmark this page:
+          Bookmark this page:
           {' '}
           <strong>/emergency-admin</strong>
         </div>

@@ -61,13 +61,7 @@ const adminNavItems: NavItem[] = [
   { href: '/admin', label: 'Admin Panel', icon: ShieldCheck, requiresAuth: true },
 ];
 
-const infoNavItems: NavItem[] = [
-  { href: '/landing-page', label: 'Digital Scribing', icon: Sparkles },
-  { href: '/pricing', label: 'Pricing', icon: DollarSign },
-  { href: '/about', label: 'About', icon: Info },
-  { href: '/roadmap', label: 'Updates', icon: Bell },
-  { href: '/privacy-info', label: 'Privacy', icon: Shield },
-];
+const infoNavItems: NavItem[] = [];
 
 export const Sidebar: React.FC<SidebarProps> = ({
   isCollapsed,
@@ -76,7 +70,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onMobileClose,
   isDesktop = true,
 }) => {
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, isLoaded } = useAuth();
   const { user: _user } = useClerkMetadata();
   const { hasFeatureAccess } = useRBAC();
   const router = useRouter();
@@ -298,9 +292,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <SignInButton mode="modal">
                         <button
                           type="button"
+                          disabled={!isLoaded}
                           className={`
                       flex w-full items-center gap-3 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-50
                       ${isCollapsed ? 'justify-center' : ''}
+                      ${!isLoaded ? 'opacity-50 cursor-not-allowed' : ''}
                     `}
                           title={isCollapsed ? 'Sign In' : undefined}
                         >
@@ -310,9 +306,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <SignUpButton mode="modal">
                         <button
                           type="button"
+                          disabled={!isLoaded}
                           className={`
                       flex w-full items-center gap-3 rounded-lg bg-slate-700 px-3 py-2 text-sm text-white transition-colors hover:bg-slate-800
                       ${isCollapsed ? 'justify-center' : ''}
+                      ${!isLoaded ? 'opacity-50 cursor-not-allowed' : ''}
                     `}
                           title={isCollapsed ? 'Sign Up' : undefined}
                         >

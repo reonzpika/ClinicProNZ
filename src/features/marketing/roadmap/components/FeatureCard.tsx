@@ -13,13 +13,11 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({ feature, onVote, voted
   return (
     <div className="mb-3 flex flex-col gap-2 rounded-lg border bg-white p-3 shadow-sm">
       <div className="text-sm font-semibold">
-        ðŸ©º
         {feature.title}
       </div>
       <div className="text-xs leading-snug text-gray-700">{feature.description}</div>
       <div className="mt-1 flex items-center gap-4">
         <span className="text-xs text-gray-500">
-          ðŸ‘¥
           {feature.vote_count}
           {' '}
           GPs want this
@@ -29,7 +27,7 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({ feature, onVote, voted
           onClick={() => onVote(feature.id)}
           disabled={voted}
         >
-          ðŸ‘ I want this too
+          I want this too
         </button>
       </div>
     </div>

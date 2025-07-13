@@ -39,11 +39,11 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ open, onClose, onS
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
       <div className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
         <button className="absolute right-2 top-2 text-gray-400 hover:text-gray-600" onClick={onClose}>&times;</button>
-        <h2 className="mb-2 text-lg font-semibold">ðŸ’¡ Got an idea to make your life easier?</h2>
+        <h2 className="mb-2 text-lg font-semibold">Got an idea to make your life easier?</h2>
         <p className="mb-4 text-sm text-gray-600">We'd love to hear from you.</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <label htmlFor="idea-input" className="text-sm font-medium">
-            ðŸ“Œ What's your idea?
+            What's your idea?
             <span className="text-red-500">*</span>
           </label>
           <input
@@ -55,7 +55,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ open, onClose, onS
             maxLength={256}
             placeholder="Describe your idea in one sentence"
           />
-          <label htmlFor="details-textarea" className="text-sm font-medium">âœï¸ Tell us more (optional)</label>
+          <label htmlFor="details-textarea" className="text-sm font-medium">Tell us more (optional)</label>
           <textarea
             id="details-textarea"
             className="rounded border px-2 py-1"
@@ -64,7 +64,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ open, onClose, onS
             maxLength={1024}
             placeholder="Add more details if you like"
           />
-          <label htmlFor="email-input" className="text-sm font-medium">ðŸ“§ Your email (optional)</label>
+          <label htmlFor="email-input" className="text-sm font-medium">Your email (optional)</label>
           <input
             id="email-input"
             className="rounded border px-2 py-1"
@@ -81,7 +81,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ open, onClose, onS
             className="mt-2 rounded bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:bg-gray-300"
             disabled={loading || !idea.trim()}
           >
-            {loading ? 'Sending...' : 'ðŸ§  Send suggestion'}
+            {loading ? 'Sending...' : 'Send suggestion'}
           </button>
         </form>
       </div>

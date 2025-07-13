@@ -74,7 +74,7 @@ export default async function DashboardPage() {
 
             {/* Tips Card */}
             <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-              <h3 className="mb-2 font-medium text-blue-900">ðŸ’¡ Quick Tip</h3>
+              <h3 className="mb-2 font-medium text-blue-900">Quick Tip</h3>
               <p className="text-sm text-blue-700">
                 Start with the Consultation Suite to create your first AI-powered clinical note.
                 Use templates to speed up your documentation workflow.

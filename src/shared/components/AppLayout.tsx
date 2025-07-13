@@ -76,7 +76,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
             >
               <Menu size={20} />
             </Button>
-            <h1 className="text-lg font-semibold text-slate-900">MedScribe NZ</h1>
+            <h1 className="text-lg font-semibold text-slate-900">ClinicPro for GP</h1>
             <div className="w-10" />
             {' '}
             {/* Spacer for centering */}

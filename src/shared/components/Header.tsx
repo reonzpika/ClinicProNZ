@@ -39,7 +39,7 @@ export const Header = () => {
       <div className="container mx-auto flex items-center justify-between px-4 py-2">
         <div className="flex items-center space-x-6">
           <Link href="/" className="text-lg font-semibold text-slate-700">
-            MedScribe NZ
+            ClinicPro for GP
           </Link>
           <div className="hidden items-center space-x-4 md:flex">
             <Link href="/landing-page" className="text-sm text-slate-600 hover:text-slate-800">

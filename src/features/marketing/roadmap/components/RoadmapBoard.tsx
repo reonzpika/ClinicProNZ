@@ -81,9 +81,9 @@ export const RoadmapBoard: React.FC = () => {
   return (
     <div className="mx-auto max-w-5xl px-2 py-6">
       <div className="mb-3 flex gap-4 border-b pb-2 text-center">
-        <div className="flex-1 font-medium text-yellow-600">ðŸŸ¡ Planned</div>
-        <div className="flex-1 rounded bg-blue-100 px-2 py-1 font-semibold text-blue-700">ðŸ”µ In Progress</div>
-        <div className="flex-1 font-medium text-green-600">âœ… Completed</div>
+        <div className="flex-1 font-medium text-yellow-600">Planned</div>
+        <div className="flex-1 rounded bg-blue-100 px-2 py-1 font-semibold text-blue-700">In Progress</div>
+        <div className="flex-1 font-medium text-green-600">Completed</div>
       </div>
       {loading
         ? (
@@ -115,7 +115,7 @@ export const RoadmapBoard: React.FC = () => {
             </div>
           )}
       <div className="mt-6 flex flex-col items-center border-t pt-4">
-        <div className="mb-2 text-base font-medium">ðŸ’¡ Got an idea to make your life easier?</div>
+        <div className="mb-2 text-base font-medium">Got an idea to make your life easier?</div>
         <button
           className="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
           onClick={() => {

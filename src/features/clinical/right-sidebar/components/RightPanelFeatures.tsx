@@ -5,11 +5,7 @@ import React, { useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
 
-import { AccCodeSuggestions } from './AccCodeSuggestions';
-import { ChatbotWidget } from './ChatbotWidget';
-import { ChecklistTab } from './ChecklistTab';
-import { ClinicalImageTab } from './ClinicalImageTab';
-import { DifferentialDiagnosisTab } from './DifferentialDiagnosisTab';
+import { ComingSoonPlaceholder } from './ComingSoonPlaceholder';
 
 type SectionId = 'images' | 'checklist' | 'ddx' | 'chat' | 'acc';
 
@@ -17,15 +13,46 @@ type AccordionSection = {
   id: SectionId;
   icon: React.ComponentType<{ size?: number; className?: string }>;
   title: string;
+  description: string;
   component: React.ComponentType;
 };
 
 const sections: AccordionSection[] = [
-  { id: 'images', icon: Camera, title: 'Clinical Images', component: ClinicalImageTab },
-  { id: 'checklist', icon: CheckSquare, title: 'Interactive Checklist', component: ChecklistTab },
-  { id: 'ddx', icon: Search, title: 'Differential Diagnosis', component: DifferentialDiagnosisTab },
-  { id: 'chat', icon: MessageCircle, title: 'Clinical Reference', component: ChatbotWidget },
-  { id: 'acc', icon: Stethoscope, title: 'ACC Code Suggestions', component: AccCodeSuggestions },
+  { 
+    id: 'images', 
+    icon: Camera, 
+    title: 'Clinical Images', 
+    description: 'Upload and analyze medical images with AI-powered insights and diagnostic assistance',
+    component: () => <ComingSoonPlaceholder title="Clinical Images" description="Upload and analyze medical images with AI-powered insights and diagnostic assistance" icon={Camera} />
+  },
+  { 
+    id: 'checklist', 
+    icon: CheckSquare, 
+    title: 'Interactive Checklist', 
+    description: 'Smart clinical checklists that adapt to your workflow and patient presentations',
+    component: () => <ComingSoonPlaceholder title="Interactive Checklist" description="Smart clinical checklists that adapt to your workflow and patient presentations" icon={CheckSquare} />
+  },
+  { 
+    id: 'ddx', 
+    icon: Search, 
+    title: 'Differential Diagnosis', 
+    description: 'AI-powered differential diagnosis suggestions based on clinical presentation and symptoms',
+    component: () => <ComingSoonPlaceholder title="Differential Diagnosis" description="AI-powered differential diagnosis suggestions based on clinical presentation and symptoms" icon={Search} />
+  },
+  { 
+    id: 'chat', 
+    icon: MessageCircle, 
+    title: 'Clinical Reference', 
+    description: 'Ask questions about clinical guidelines, medications, and best practices',
+    component: () => <ComingSoonPlaceholder title="Clinical Reference" description="Ask questions about clinical guidelines, medications, and best practices" icon={MessageCircle} />
+  },
+  { 
+    id: 'acc', 
+    icon: Stethoscope, 
+    title: 'ACC Code Suggestions', 
+    description: 'Intelligent ACC code suggestions based on your consultation notes and patient presentation',
+    component: () => <ComingSoonPlaceholder title="ACC Code Suggestions" description="Intelligent ACC code suggestions based on your consultation notes and patient presentation" icon={Stethoscope} />
+  },
 ];
 
 type RightPanelFeaturesProps = {
@@ -40,7 +67,7 @@ const RightPanelFeatures: React.FC<RightPanelFeaturesProps> = ({
   const [activeSection, setActiveSection] = useState<SectionId>('images');
 
   const currentSection = sections.find(section => section.id === activeSection);
-  const CurrentComponent = currentSection?.component || ClinicalImageTab;
+  const CurrentComponent = currentSection?.component || (() => <ComingSoonPlaceholder title="Clinical Tools" description="Advanced clinical tools to enhance your consultation workflow" icon={Camera} />);
 
   if (isCollapsed) {
     return (
@@ -89,7 +116,7 @@ const RightPanelFeatures: React.FC<RightPanelFeaturesProps> = ({
         </div>
 
         {/* Tool Content */}
-        <div className="flex-1 overflow-y-auto p-3">
+        <div className="flex-1 overflow-y-auto">
           <CurrentComponent />
         </div>
       </div>
