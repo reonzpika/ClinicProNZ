@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { getTierFromRole } from '@/src/lib/rbac-enforcer';
+import { getTierFromRole } from '@/src/lib/rbac-client';
 import { useRoleTesting } from '@/src/shared/contexts/RoleTestingContext';
 import type { UserRole } from '@/src/shared/utils/roles';
 

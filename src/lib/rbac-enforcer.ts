@@ -5,7 +5,17 @@ import { db } from '../../database/client';
 import { mobileTokens } from '../../database/schema';
 import { checkGuestSessionLimit, checkUserSessionLimit } from './services/guest-session-service';
 
-export type UserTier = 'basic' | 'standard' | 'admin';
+// Import client-safe utilities
+import {
+  getTierFromRole,
+  canAccessTemplates,
+  TIER_LIMITS,
+  type UserTier,
+  type SessionLimits,
+} from './rbac-client';
+
+// Re-export client-safe utilities for backward compatibility
+export { canAccessTemplates, getTierFromRole, type SessionLimits, type UserTier };
 
 export type RBACContext = {
   userId: string | null;
@@ -20,35 +30,6 @@ export type RBACResult = {
   upgradePrompt?: string;
   remaining?: number;
   resetTime?: Date;
-};
-
-export type SessionLimits = {
-  coreSessions: number; // -1 = unlimited
-  premiumActions: number; // -1 = unlimited
-  templateManagement: boolean;
-  sessionManagement: boolean;
-};
-
-// RBAC tier configuration matching RBAC.md
-const TIER_LIMITS: Record<UserTier, SessionLimits> = {
-  basic: {
-    coreSessions: 5,
-    premiumActions: 5,
-    templateManagement: false,
-    sessionManagement: false,
-  },
-  standard: {
-    coreSessions: -1, // unlimited
-    premiumActions: 5,
-    templateManagement: true,
-    sessionManagement: true,
-  },
-  admin: {
-    coreSessions: -1, // unlimited
-    premiumActions: -1, // unlimited
-    templateManagement: true,
-    sessionManagement: true,
-  },
 };
 
 /**
@@ -68,7 +49,7 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
     if (userId) {
       // Authenticated user - get tier from session claims
       const userRole = sessionClaims?.metadata?.role;
-      const tier = mapRoleToTier(userRole || 'signed_up');
+      const tier = getTierFromRole(userRole || 'signed_up');
 
       // Authenticated users don't use guest tokens - they have user-specific tracking
       return {
@@ -128,22 +109,6 @@ export async function extractGuestTokenFromMobile(mobileToken: string): Promise<
   }
 
   return null;
-}
-
-/**
- * Map user role to tier
- */
-function mapRoleToTier(role: string): UserTier {
-  switch (role) {
-    case 'admin':
-      return 'admin';
-    case 'standard':
-      return 'standard';
-    case 'signed_up':
-    case 'public':
-    default:
-      return 'basic';
-  }
 }
 
 /**
@@ -239,21 +204,6 @@ export async function incrementGuestSessionUsage(guestToken: string, patientName
   // when creating a new patient session
   const { createGuestSession } = await import('./services/guest-session-service');
   await createGuestSession(guestToken, patientName, templateId);
-}
-
-/**
- * Check if user can access templates (replaces billing-config function)
- */
-export function canAccessTemplates(tier: UserTier): boolean {
-  const limits = TIER_LIMITS[tier];
-  return limits.templateManagement;
-}
-
-/**
- * Get user tier from role (convenience function)
- */
-export function getTierFromRole(role: string): UserTier {
-  return mapRoleToTier(role);
 }
 
 // withRBAC function removed - using direct pattern for better Clerk middleware compatibility

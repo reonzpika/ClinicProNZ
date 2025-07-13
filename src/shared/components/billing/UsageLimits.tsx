@@ -2,7 +2,7 @@
 
 import { AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 
-import { getTierFromRole, type UserTier } from '@/src/lib/rbac-enforcer';
+import { getTierFromRole, type UserTier } from '@/src/lib/rbac-client';
 import type { UserRole } from '@/src/shared/utils/roles';
 
 type UsageLimitsProps = {

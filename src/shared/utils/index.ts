@@ -24,4 +24,4 @@ export {
 export {
   canAccessTemplates,
   getTierFromRole,
-} from '../../lib/rbac-enforcer';
+} from '../../lib/rbac-client';
