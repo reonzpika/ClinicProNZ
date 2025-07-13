@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation';
 import { RoleTestingDashboard } from '@/src/shared/components/admin/RoleTestingDashboard';
 import { checkRole } from '@/src/shared/utils/roles';
 
+// Force dynamic rendering since this page depends on user authentication
+export const dynamic = 'force-dynamic';
+
 export default async function AdminDashboard() {
   // Protect the page from users who are not admins
   const isAdmin = await checkRole('admin');
