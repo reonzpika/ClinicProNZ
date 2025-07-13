@@ -104,7 +104,7 @@ export async function POST(req: Request) {
       ],
       stream: true,
       max_completion_tokens: 2000, // Limit response length to reduce processing time
-      temperature: 0.1,
+      temperature: 1,
       top_p: 0.4,
     });
 
