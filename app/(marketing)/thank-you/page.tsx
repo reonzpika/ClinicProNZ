@@ -3,12 +3,12 @@
 import { ArrowRight, Check } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 
 import { Container } from '@/src/shared/components/layout/Container';
 import { Button } from '@/src/shared/components/ui/button';
 
-export default function ThankYouPage() {
+function ThankYouContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
   const [countdown, setCountdown] = useState(10);
@@ -125,5 +125,29 @@ export default function ThankYouPage() {
         </div>
       </Container>
     </div>
+  );
+}
+
+export default function ThankYouPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-16">
+        <Container size="sm">
+          <div className="text-center">
+            <div className="mx-auto mb-8 flex size-20 items-center justify-center rounded-full bg-green-100">
+              <Check className="size-10 text-green-600" />
+            </div>
+            <h1 className="mb-4 text-4xl font-bold text-gray-900">
+              Welcome to ClinicPro Standard!
+            </h1>
+            <p className="mb-8 text-xl text-gray-600">
+              Loading your success page...
+            </p>
+          </div>
+        </Container>
+      </div>
+    }>
+      <ThankYouContent />
+    </Suspense>
   );
 }

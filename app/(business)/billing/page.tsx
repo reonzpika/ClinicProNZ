@@ -2,6 +2,9 @@ import { PlanCard } from '@/src/shared/components/billing/PlanCard';
 import { UsageLimits } from '@/src/shared/components/billing/UsageLimits';
 import { requireRole } from '@/src/shared/utils/roles';
 
+// Force dynamic rendering since this page depends on user authentication
+export const dynamic = 'force-dynamic';
+
 export default async function BillingPage() {
   // Require at least signed_up role to access billing
   const currentRole = await requireRole('signed_up');

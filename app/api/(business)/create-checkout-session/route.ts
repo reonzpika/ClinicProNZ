@@ -4,10 +4,6 @@ import Stripe from 'stripe';
 
 import { BILLING_CONFIG } from '@/src/shared/utils/billing-config';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-06-30.basil', // Use latest stable version
-});
-
 export async function POST(req: Request) {
   // Validate request method (though Next.js handles this)
   if (req.method && req.method !== 'POST') {
@@ -18,6 +14,19 @@ export async function POST(req: Request) {
   }
 
   try {
+    // Initialize Stripe inside the function with proper error handling
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeSecretKey) {
+      console.error('STRIPE_SECRET_KEY environment variable not set');
+      return NextResponse.json(
+        { error: 'Payment service configuration error' },
+        { status: 500 },
+      );
+    }
+
+    const stripe = new Stripe(stripeSecretKey, {
+      apiVersion: '2025-06-30.basil', // Use latest stable version
+    });
     // Parse and validate request body
     let body;
     try {

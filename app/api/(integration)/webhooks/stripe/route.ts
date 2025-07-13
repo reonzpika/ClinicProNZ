@@ -4,13 +4,23 @@ import Stripe from 'stripe';
 
 import { getRoleByStripePriceId } from '@/src/shared/utils/billing-config';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-06-30.basil',
-});
-
 // Stripe webhook handler for billing events
 export async function POST(req: Request) {
   try {
+    // Initialize Stripe inside the function with proper error handling
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeSecretKey) {
+      console.error('STRIPE_SECRET_KEY environment variable not set');
+      return NextResponse.json(
+        { error: 'Payment service configuration error' },
+        { status: 500 },
+      );
+    }
+
+    const stripe = new Stripe(stripeSecretKey, {
+      apiVersion: '2025-06-30.basil',
+    });
+
     const body = await req.text();
     const signature = req.headers.get('stripe-signature');
 
