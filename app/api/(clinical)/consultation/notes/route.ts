@@ -104,8 +104,6 @@ export async function POST(req: Request) {
       ],
       stream: true,
       max_completion_tokens: 2000, // Limit response length to reduce processing time
-      temperature: 1,
-      top_p: 0.4,
     });
 
     // Stream the response to the client with timeout handling
