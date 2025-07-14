@@ -19,7 +19,7 @@ export default function AboutPage() {
             </p>
 
             <p className="mb-8 text-lg leading-relaxed text-gray-700">
-              As a practising New Zealand GP, I know firsthand how much time we spend on consultation notesâ€”time that could be better spent with patients or for our own wellbeing. That's why I created ConsultAI NZ: a simple, smart tool to take the paperwork off your plate and put your focus back where it belongs.
+              As a practising New Zealand GP, I know firsthand how much time we spend on consultation notes—time that could be better spent with patients or for our own wellbeing. That's why I created ConsultAI NZ: a simple, smart tool to take the paperwork off your plate and put your focus back where it belongs.
             </p>
 
             <div className="space-y-8">
@@ -28,7 +28,7 @@ export default function AboutPage() {
                   What is ConsultAI NZ?
                 </h3>
                 <p className="leading-relaxed text-gray-700">
-                  It's a lightweight, browser-based app that listens to your consultations, transcribes them live, and generates structured, editable clinical notes with just one click. No complicated setups, no bulky devicesâ€”just the tools you need to streamline your workflow while respecting New Zealand's unique practice environment.
+                  It's a lightweight, browser-based app that listens to your consultations, transcribes them live, and generates structured, editable clinical notes with just one click. No complicated setups, no bulky devices—just the tools you need to streamline your workflow while respecting New Zealand's unique practice environment.
                 </p>
               </section>
 
@@ -41,7 +41,7 @@ export default function AboutPage() {
                   <li>Capture all important details accurately with live transcription</li>
                   <li>Use templates tailored to typical NZ GP consultations</li>
                   <li>Retain full control with instantly generated notes you can review, edit, and export to your existing EHR</li>
-                  <li>Keep patient data privacy front and centre â€” consult our dedicated Privacy page for details</li>
+                  <li>Keep patient data privacy front and centre — consult our dedicated Privacy page for details</li>
                 </ul>
               </section>
 
@@ -60,7 +60,7 @@ export default function AboutPage() {
                 </h3>
                 <div className="rounded-lg bg-green-50 p-6">
                   <p className="text-lg font-medium italic text-green-900">
-                    To cut your admin time in half, so you can do what you became a GP to doâ€”care for your patients, not your paperwork.
+                    To cut your admin time in half, so you can do what you became a GP to do—care for your patients, not your paperwork.
                   </p>
                 </div>
               </section>
@@ -77,7 +77,7 @@ export default function AboutPage() {
                     href="/ai-scribing"
                     className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
                   >
-                    Read AI Scribing Guide â†’
+                    Read AI Scribing Guide →
                   </Link>
                 </div>
               </section>
@@ -90,7 +90,7 @@ export default function AboutPage() {
                 If you share this vision, you're in the right place.
               </p>
               <p className="mt-2 text-blue-800">
-                Welcome to ConsultAI NZâ€”your partner in smarter, faster consultations.
+                Welcome to ConsultAI NZ—your partner in smarter, faster consultations.
               </p>
             </div>
           </div>

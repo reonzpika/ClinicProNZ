@@ -1,119 +1,161 @@
-# RAG System Setup - Phase 1
+# RAG (Retrieval-Augmented Generation) Setup Guide
 
 ## Overview
-Retrieval-Augmented Generation (RAG) system for ClinicPro - provides NZ clinical guidelines search with AI-powered responses.
+ClinicPro's RAG system provides contextual clinical information during consultations by searching through a curated knowledge base of medical resources.
 
-## Architecture
-- **Database**: Neon PostgreSQL + pgvector extension
-- **Embeddings**: OpenAI text-embedding-3-small (1536 dimensions)
-- **AI Model**: GPT-4o-mini via AI SDK with streaming
-- **Auth**: Clerk role-based (`admin` for ingestion, `signed_up+` for queries)
+**Key Features:**
+- **Knowledge Base**: Curated medical content for clinical decision support
+- **Semantic Search**: Vector-based search for relevant clinical information
+- **Auth**: Clerk tier-based (`admin` for ingestion, `basic+` for queries)
+- **Rate Limiting**: Tier-based limits (5 queries/day for basic, unlimited for standard+)
 
-## Setup Steps
+## Quick Start
 
-### 1. Database Setup
-```sql
--- In your Neon database console
-CREATE EXTENSION IF NOT EXISTS vector;
-```
-
-### 2. Environment Variables
-Ensure these are set in your `.env.local`:
-```
-DATABASE_URL=your_neon_connection_string
-OPENAI_API_KEY=your_openai_api_key
-```
-
-### 3. Database Migration
+### 1. Environment Setup
 ```bash
-npm run db:generate
-npm run db:push
+# Required environment variables
+OPENAI_API_KEY=your_openai_api_key
+PINECONE_API_KEY=your_pinecone_api_key
+PINECONE_ENVIRONMENT=your_pinecone_environment
+PINECONE_INDEX_NAME=clinicpro-rag
 ```
 
-### 4. User Role Setup
-Set admin role in Clerk:
+### 2. Pinecone Index Setup
+```bash
+# Create index (1536 dimensions for OpenAI text-embedding-ada-002)
+curl -X POST "https://controller.${PINECONE_ENVIRONMENT}.pinecone.io/databases" \
+  -H "Api-Key: ${PINECONE_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "clinicpro-rag",
+    "dimension": 1536,
+    "metric": "cosine"
+  }'
+```
+
+### 3. Database Schema
+Already included in main migrations - see `schema/rag.ts`
+
+### 4. User Tier Setup
+Set admin tier in Clerk:
 ```json
 {
-  "role": "admin"
+  "tier": "admin"
 }
 ```
 
 ## API Endpoints
 
-### Test Setup
-```bash
-GET /api/rag/test
+### Content Ingestion (Admin Only)
 ```
-- **Auth**: Any user
-- **Purpose**: Verify RAG system configuration
-
-### Get Sample Documents
-```bash
-GET /api/rag/sample
-```
-- **Auth**: Admin only
-- **Purpose**: Get test documents for ingestion
-
-### Ingest Documents
-```bash
 POST /api/rag/admin/ingest
 Content-Type: application/json
+Authorization: Basic tier or higher required
 
 {
-  "documents": [
-    {
-      "title": "Document Title",
-      "content": "Document content...",
-      "source": "https://example.com",
-      "sourceType": "bpac" // or "moh" or "manual"
-    }
-  ]
+  "content": "Clinical content to index",
+  "source": "Source reference",
+  "category": "diagnosis|treatment|medication|procedure"
 }
 ```
-- **Auth**: Admin only
-- **Purpose**: Add documents to RAG knowledge base
 
-### Query RAG System
-```bash
+### Query Interface
+```
 POST /api/rag/query
 Content-Type: application/json
+Authorization: Basic tier or higher required
 
 {
-  "query": "What are the blood pressure targets for hypertension?"
+  "query": "What are the symptoms of pneumonia?",
+  "limit": 5
 }
 ```
-- **Auth**: signed_up role or higher
-- **Purpose**: Query clinical guidelines with AI responses
-- **Response**: Streaming AI response with citations
 
-## Testing Flow
-
-1. **Test setup**: `GET /api/rag/test`
-2. **Get samples**: `GET /api/rag/sample`
-3. **Ingest samples**: `POST /api/rag/admin/ingest`
-4. **Query system**: `POST /api/rag/query`
-
-## File Structure
+### Sample Data
 ```
-├── database/schema/rag.ts          # Database schema
-├── src/lib/rag/
-│   ├── index.ts                    # Core RAG functions
-│   └── types.ts                    # Type definitions
-├── app/api/rag/
-│   ├── test/route.ts              # Setup verification
-│   ├── sample/route.ts            # Sample documents
-│   ├── admin/ingest/route.ts      # Document ingestion
-│   └── query/route.ts             # RAG queries
-└── middleware.ts                   # Auth protection
+GET /api/rag/sample
+Authorization: Basic tier or higher required
 ```
 
-## Trade-offs
-- **Performance**: ~1-2s response time (Neon query + OpenAI streaming)
-- **Cost**: ~$0.0001 per embedding + $0.0015 per query (OpenAI)
-- **Accuracy**: Depends on document quality and retrieval threshold (0.7)
+## Usage Examples
 
-## Next Steps (Phase 2)
-- Document parsing utilities (PDF, HTML)
-- Bulk ingestion from BPAC/MoH
-- User upload functionality
-- Enhanced citation formatting 
+### Basic Query
+```javascript
+const response = await fetch('/api/rag/query', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    query: 'chest pain differential diagnosis',
+    limit: 3
+  })
+});
+
+const { results } = await response.json();
+```
+
+### Content Ingestion
+```javascript
+const response = await fetch('/api/rag/admin/ingest', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    content: 'Acute myocardial infarction presents with...',
+    source: 'Clinical Guidelines 2024',
+    category: 'diagnosis'
+  })
+});
+```
+
+## Rate Limiting
+- **Basic Tier**: 5 queries per day
+- **Standard Tier**: Unlimited queries
+- **Premium Tier**: Unlimited queries
+- **Admin Tier**: Unlimited queries
+
+## Security Features
+- **Authentication**: Clerk-based tier verification
+- **Authorization**: Tier-based access control
+- **Rate Limiting**: Prevents abuse
+- **Content Validation**: Sanitizes input data
+
+## Implementation Details
+
+### Vector Search Flow
+1. User submits query
+2. System checks tier permissions
+3. Query is embedded using OpenAI
+4. Vector search performed in Pinecone
+5. Results ranked by relevance
+6. Formatted response returned
+
+### Data Pipeline
+1. **Ingestion**: Content → Embeddings → Pinecone
+2. **Storage**: Metadata stored in PostgreSQL
+3. **Search**: Query → Embeddings → Vector Search
+4. **Retrieval**: Results + Metadata → Formatted Response
+
+## Testing
+- **Unit Tests**: `npm test rag`
+- **Integration Tests**: Available in `/api/rag/test`
+- **Manual Testing**: Use `/api/rag/sample` for test data
+
+## Performance Considerations
+- **Caching**: Implement Redis for frequent queries
+- **Batch Processing**: For large ingestion jobs
+- **Index Optimization**: Regular Pinecone index maintenance
+
+## Troubleshooting
+- **Auth Issues**: Check tier in Clerk metadata
+- **Rate Limits**: Verify tier-based limits
+- **Vector Search**: Ensure Pinecone index is properly configured
+- **OpenAI API**: Verify API key and rate limits
+
+## Future Enhancements
+- **Semantic Caching**: Cache similar queries
+- **Advanced Filters**: Category-based filtering
+- **Multi-Modal**: Support for image/document upload
+- **Personalization**: User-specific relevance scoring 

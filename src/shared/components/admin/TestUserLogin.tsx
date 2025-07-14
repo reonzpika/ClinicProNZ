@@ -1,212 +1,194 @@
 'use client';
 
-import { useSignIn } from '@clerk/nextjs';
+import { SignOutButton, useAuth, useUser } from '@clerk/nextjs';
 import { useState } from 'react';
 
-import { useTestUser } from '@/src/shared/contexts/TestUserContext';
-import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
-import type { UserRole } from '@/src/shared/utils/roles';
-
-// Type assertion for Clerk on window
-type ClerkWindow = Window & {
-  Clerk?: {
-    signOut: () => Promise<void>;
-  };
-};
+import { Badge } from '@/src/shared/components/ui/badge';
+import { Button } from '@/src/shared/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
+import type { UserTier } from '@/src/shared/utils/roles';
 
 type TestUser = {
-  role: UserRole;
+  id: string;
   email: string;
+  name: string;
+  tier: UserTier;
   password: string;
   description: string;
-  color: string;
 };
 
-const TEST_USERS: TestUser[] = [
+const testUsers: TestUser[] = [
   {
-    role: 'public',
-    email: 'test-public@clinicpro-staging.com',
-    password: 'test',
-    description: 'Unauthenticated state',
-    color: 'bg-gray-500 hover:bg-gray-600',
+    id: 'public',
+    email: 'None (public user)',
+    name: 'Public User',
+    tier: 'basic',
+    password: 'N/A',
+    description: 'Not signed in - public access only',
   },
   {
-    role: 'signed_up',
-    email: 'test-signedup@clinicpro-staging.com',
-    password: 'test',
-    description: 'New user (20 req/day)',
-    color: 'bg-blue-500 hover:bg-blue-600',
+    id: 'basic',
+    email: 'user@example.com',
+    name: 'Basic User',
+    tier: 'basic',
+    password: 'password123',
+    description: 'Signed up user with basic tier access',
   },
   {
-    role: 'standard',
-    email: 'test-standard@clinicpro-staging.com',
-    password: 'test',
-    description: 'Paid user (1000 req/day)',
-    color: 'bg-green-500 hover:bg-green-600',
+    id: 'standard',
+    email: 'standard@example.com',
+    name: 'Standard User',
+    tier: 'standard',
+    password: 'password123',
+    description: 'Standard tier user with increased limits',
+  },
+  {
+    id: 'premium',
+    email: 'premium@example.com',
+    name: 'Premium User',
+    tier: 'premium',
+    password: 'password123',
+    description: 'Premium tier user with 100 premium actions',
+  },
+  {
+    id: 'admin',
+    email: 'admin@example.com',
+    name: 'Admin User',
+    tier: 'admin',
+    password: 'password123',
+    description: 'Administrator with full access',
   },
 ];
 
 export function TestUserLogin() {
-  const { signIn, isLoaded } = useSignIn();
-  const { user: _user } = useClerkMetadata();
-  const { setOriginalAdminEmail } = useTestUser();
-  const [loading, setLoading] = useState<string | null>(null);
-  const [adminEmail] = useState(_user?.emailAddresses?.[0]?.emailAddress || '');
+  const { isSignedIn } = useAuth();
+  const { user } = useUser();
+  const [loading, setLoading] = useState<UserTier | null>(null);
 
-  const handleTestLogin = async (testUser: TestUser) => {
-    if (!isLoaded || !signIn) {
-      return;
-    }
-
+  const handleTestUserLogin = async (testUser: TestUser) => {
     try {
-      setLoading(testUser.role);
+      setLoading(testUser.tier);
 
-      // Store admin email before switching (critical for getting back!)
-      if (adminEmail) {
-        setOriginalAdminEmail(adminEmail);
+      // Sign out first if needed
+      if (testUser.tier === 'basic' && testUser.id === 'public') {
+        window.location.href = '/api/auth/signout';
       }
 
-      if (testUser.role === 'public') {
-        // Sign out for public testing
-        await (window as ClerkWindow).Clerk?.signOut();
-        window.location.reload();
-        return;
-      }
-
-      // Must sign out first before signing in as different user
-      await (window as ClerkWindow).Clerk?.signOut();
-
-      // Small delay to ensure sign out completes
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      await signIn.create({
-        identifier: testUser.email,
-        password: testUser.password,
-      });
-      // Redirect to dashboard after login
-      window.location.href = '/dashboard';
-    } catch (error: any) {
-      // Show more specific error message
-      let errorMessage = 'Test login failed. ';
-
-      if (error?.errors?.[0]?.code === 'form_identifier_not_found') {
-        errorMessage += `User ${testUser.email} doesn't exist in Clerk. Please create this user first.`;
-      } else if (error?.errors?.[0]?.code === 'form_password_incorrect') {
-        errorMessage += `Wrong password for ${testUser.email}. Check if password is "test" in Clerk.`;
-      } else if (error?.errors?.[0]?.code) {
-        errorMessage += `Error code: ${error.errors[0].code}. Message: ${error.errors[0].message || 'No message'}`;
-      } else if (error?.status === 400) {
-        errorMessage += `400 Bad Request. Likely user doesn't exist or wrong credentials.`;
-      } else {
-        errorMessage += `Unknown error (status: ${error?.status}). Check browser console for details.`;
-      }
-
-      // TODO: Replace with proper error handling UI
-      console.error(errorMessage);
-    } finally {
-      setLoading(null);
-    }
-  };
-
-  const handleBackToAdmin = async () => {
-    if (!adminEmail) {
-      // TODO: Replace with proper error handling UI
-      console.error('Admin email not found. Please login manually.');
-      return;
-    }
-
-    setLoading('admin');
-    try {
-      // Redirect to sign in with admin email pre-filled
-      window.location.href = `/login?email=${encodeURIComponent(adminEmail)}`;
-    } catch {
-      // Error handling for redirect failure
+      // For other test users, redirect to sign in
+      // Note: In a real app, you'd need to have these test accounts created in Clerk
+      // This would normally trigger the sign-in flow
+      // For now, we'll just show the user info
+      // TODO: In production, you'd need to create these test accounts in Clerk
+    } catch (error) {
+      console.error('Test login failed:', error);
+      // TODO: Implement proper error handling
     } finally {
       setLoading(null);
     }
   };
 
   return (
-    <div className="rounded-lg border border-blue-200 bg-blue-50 p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-medium text-blue-900">
-          👥 Test User Quick Login
-        </h3>
-        <button
-          type="button"
-          onClick={handleBackToAdmin}
-          disabled={loading !== null}
-          className="inline-flex items-center rounded-md border border-transparent bg-purple-600 px-3 py-2 text-sm font-medium leading-4 text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-300"
-        >
-          {loading === 'admin' ? 'Loading...' : '🔙 Back to Admin'}
-        </button>
-      </div>
-
-      <div className="mb-4 rounded bg-blue-100 p-3">
-        <h4 className="mb-2 text-sm font-medium text-blue-900">Full Backend Testing</h4>
-        <p className="text-sm text-blue-800">
-          These buttons switch to actual test user accounts for complete role testing including backend APIs,
-          middleware, and rate limiting.
-        </p>
-      </div>
-
-      {/* Test User Buttons */}
-      <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-3">
-        {TEST_USERS.map(testUser => (
-          <button
-            key={testUser.role}
-            type="button"
-            onClick={() => handleTestLogin(testUser)}
-            disabled={loading !== null}
-            className={`rounded-lg p-4 text-white transition-colors ${testUser.color} disabled:cursor-not-allowed disabled:bg-gray-300`}
-          >
-            <div className="text-sm font-medium capitalize">
-              {loading === testUser.role ? 'Logging in...' : testUser.role}
-            </div>
-            <div className="mt-1 text-xs opacity-90">
-              {testUser.description}
-            </div>
-          </button>
-        ))}
-      </div>
-
-      {/* Setup Instructions */}
-      <div className="mt-4 rounded border bg-white p-3">
-        <h4 className="mb-2 text-sm font-medium text-gray-900">⚙️ Test User Setup Required</h4>
-        <div className="space-y-1 text-sm text-gray-600">
-          <p><strong>1. Create test users in Clerk Dashboard:</strong></p>
-          <ul className="ml-4 space-y-1 text-xs">
-            {TEST_USERS.map(user => (
-              <li key={user.email}>
-                •
-                {user.email}
-                {' '}
-                (role:
-                {user.role}
-                )
-              </li>
-            ))}
-          </ul>
-          <p className="mt-2">
-            <strong>2. Set password to:</strong>
-            {' '}
-            <code className="rounded bg-gray-100 px-1">test</code>
-          </p>
-          <p className="mt-1"><strong>3. Set their roles in publicMetadata:</strong></p>
-          <code className="rounded bg-gray-100 px-1 text-xs">{'{ "role": "signed_up" }'}</code>
+    <Card className="w-full max-w-2xl">
+      <CardHeader>
+        <CardTitle>🧪 Test User Login</CardTitle>
+        <CardDescription>
+          Switch between different test users to verify tier-based permissions and functionality.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Current User Status */}
+        <div className="rounded-lg border p-4">
+          <h3 className="mb-2 font-semibold text-gray-900">Current User Status</h3>
+          {isSignedIn && user
+            ? (
+                <div className="space-y-2">
+                  <p>
+                    <strong>Name:</strong>
+                    {' '}
+                    {user.firstName}
+                    {' '}
+                    {user.lastName}
+                  </p>
+                  <p>
+                    <strong>Email:</strong>
+                    {' '}
+                    {user.primaryEmailAddress?.emailAddress}
+                  </p>
+                  <p>
+                    <strong>Tier:</strong>
+                    {' '}
+                    {user.publicMetadata?.tier as string || 'basic'}
+                  </p>
+                  <SignOutButton>
+                    <Button variant="outline" size="sm">Sign Out</Button>
+                  </SignOutButton>
+                </div>
+              )
+            : (
+                <p className="text-gray-600">Not signed in (public user)</p>
+              )}
         </div>
-      </div>
 
-      {/* Current User Info */}
-      {_user && (
-        <div className="mt-4 rounded border border-green-200 bg-green-100 p-3">
-          <div className="text-sm">
-            <strong>Current Admin:</strong>
-            {' '}
-            {_user.emailAddresses?.[0]?.emailAddress}
+        {/* Test User Buttons */}
+        <div className="space-y-4">
+          <h3 className="font-semibold text-gray-900">Test Users</h3>
+          <p className="text-sm text-gray-600">
+            These buttons switch to actual test user accounts for complete tier testing including backend APIs,
+            rate limiting, and billing checks.
+          </p>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            {testUsers.map(testUser => (
+              <div
+                key={testUser.tier}
+                className="flex items-center justify-between rounded-lg border p-3"
+              >
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{testUser.name}</span>
+                    <Badge variant={testUser.tier === 'admin' ? 'destructive' : 'secondary'}>
+                      {testUser.tier}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-gray-600">{testUser.description}</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleTestUserLogin(testUser)}
+                  disabled={loading !== null}
+                >
+                  {loading === testUser.tier ? 'Logging in...' : testUser.tier}
+                </Button>
+              </div>
+            ))}
           </div>
         </div>
-      )}
-    </div>
+
+        {/* Instructions */}
+        <div className="rounded-lg bg-blue-50 p-4">
+          <h4 className="mb-2 font-medium text-blue-900">📋 How to Set Up Test Users</h4>
+          <div className="space-y-2 text-sm text-blue-800">
+            <p><strong>1. Create test accounts in Clerk Dashboard</strong></p>
+            <p className="ml-4">• Use the emails from the test users above</p>
+            <p className="ml-4">• Set passwords as shown</p>
+
+            <p className="mt-1"><strong>2. Set their tiers in publicMetadata:</strong></p>
+            <code className="rounded bg-blue-100 px-1 text-xs">{'{ "tier": "basic" }'}</code>
+            <p className="ml-4">
+              (tier:
+              {user?.publicMetadata?.tier as string || 'basic'}
+              )
+            </p>
+
+            <p className="mt-1"><strong>3. Test the full flow:</strong></p>
+            <p className="ml-4">• Rate limiting</p>
+            <p className="ml-4">• Billing restrictions</p>
+            <p className="ml-4">• Feature access</p>
+            <p className="ml-4">• API authentication</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

@@ -3,7 +3,7 @@
 import { ArrowRight, Check } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState, Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
 import { Container } from '@/src/shared/components/layout/Container';
 import { Button } from '@/src/shared/components/ui/button';
@@ -130,7 +130,7 @@ function ThankYouContent() {
 
 export default function ThankYouPage() {
   return (
-    <Suspense fallback={
+    <Suspense fallback={(
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-16">
         <Container size="sm">
           <div className="text-center">
@@ -146,7 +146,8 @@ export default function ThankYouPage() {
           </div>
         </Container>
       </div>
-    }>
+    )}
+    >
       <ThankYouContent />
     </Suspense>
   );

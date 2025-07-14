@@ -1,26 +1,17 @@
 # RBAC Patterns & Usage Enforcement
 
-## 🔒 Role Hierarchy & Permissions
+## 🔒 Tier-Based Permissions System
 
-### Role Structure (Strict Order)
+### Tier Structure (Strict Order)
 ```typescript
-type UserRole = 'public' | 'signed_up' | 'standard' | 'admin';
+type UserTier = 'basic' | 'standard' | 'premium' | 'admin';
 
 // Higher index = more permissions
-const ROLE_HIERARCHY = ['public', 'signed_up', 'standard', 'admin'];
+const TIER_HIERARCHY = ['basic', 'standard', 'premium', 'admin'];
 ```
 
-### Tier Mapping & Limits
+### Tier Limits Configuration
 ```typescript
-type UserTier = 'basic' | 'standard' | 'admin';
-
-const ROLE_TO_TIER = {
-  'public': 'basic',
-  'signed_up': 'basic',  
-  'standard': 'standard',
-  'admin': 'admin'
-};
-
 const TIER_LIMITS = {
   basic: {
     coreSessions: 5,           // Transcription + note generation
@@ -31,6 +22,12 @@ const TIER_LIMITS = {
   standard: {
     coreSessions: -1,          // Unlimited
     premiumActions: 5,         // Still limited
+    templateManagement: true,
+    sessionManagement: true
+  },
+  premium: {
+    coreSessions: -1,          // Unlimited
+    premiumActions: 100,       // High limit for premium users
     templateManagement: true,
     sessionManagement: true
   },
@@ -45,15 +42,15 @@ const TIER_LIMITS = {
 
 ## 🛡️ Implementation Patterns
 
-### 1. Component Role Checking
+### 1. Component Tier Checking
 ```typescript
 // ✅ CORRECT - Use utility hook
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
 const Component = () => {
-  const { getUserRole, hasRole } = useClerkMetadata();
+  const { getUserTier, hasTier } = useClerkMetadata();
   
-  if (!hasRole('signed_up')) {
+  if (!hasTier('standard')) {
     return <UpgradePrompt />;
   }
   
@@ -61,7 +58,7 @@ const Component = () => {
 };
 
 // ❌ AVOID - Direct metadata access
-const role = user?.publicMetadata?.role as UserRole; // Type unsafe
+const tier = user?.publicMetadata?.tier as UserTier; // Type unsafe
 ```
 
 ### 2. API Route Protection Pattern
@@ -69,9 +66,9 @@ const role = user?.publicMetadata?.role as UserRole; // Type unsafe
 // In middleware.ts - Route-level protection
 if (req.nextUrl.pathname.startsWith('/api/templates')) {
   const { userId, sessionClaims } = await auth();
-  const role = sessionClaims?.metadata?.role || 'public';
+  const tier = sessionClaims?.metadata?.tier || 'basic';
   
-  if (role === 'public') {
+  if (tier === 'basic') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 }
@@ -89,13 +86,13 @@ export async function POST(req: Request) {
 }
 ```
 
-### 3. Server Component Role Checking
+### 3. Server Component Tier Checking
 ```typescript
 import { auth } from '@clerk/nextjs/server';
-import { getCurrentRole, checkRole } from '@/src/shared/utils/roles';
+import { getCurrentTier, checkTier } from '@/src/shared/utils/tiers';
 
 export default async function Page() {
-  const hasAccess = await checkRole('signed_up');
+  const hasAccess = await checkTier('standard');
   
   if (!hasAccess) {
     redirect('/login');
@@ -120,7 +117,7 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
       return {
         userId,
         guestToken: null,  // Authenticated users don't use guest tokens
-        tier: mapRoleToTier(sessionClaims?.metadata?.role),
+        tier: sessionClaims?.metadata?.tier || 'basic',
         isAuthenticated: true
       };
     }
@@ -166,10 +163,10 @@ export async function enforceUsageLimit(
 
 ### Template Management
 ```typescript
-// All template operations require signed_up or higher
+// All template operations require standard tier or higher
 if (req.nextUrl.pathname.startsWith('/api/templates') && req.method !== 'GET') {
-  const role = sessionClaims?.metadata?.role || 'public';
-  if (role === 'public') {
+  const tier = sessionClaims?.metadata?.tier || 'basic';
+  if (tier === 'basic') {
     return unauthorized();
   }
 }
@@ -177,10 +174,15 @@ if (req.nextUrl.pathname.startsWith('/api/templates') && req.method !== 'GET') {
 
 ### Session Management  
 ```typescript
-// Patient session access requires signed_up
+// Patient session access requires standard tier or higher
 if (req.nextUrl.pathname.startsWith('/api/patient-sessions')) {
-  const { userId } = await auth();
+  const { userId, sessionClaims } = await auth();
   if (!userId) {
+    return unauthorized();
+  }
+  
+  const tier = sessionClaims?.metadata?.tier || 'basic';
+  if (tier === 'basic') {
     return unauthorized();
   }
 }
@@ -188,10 +190,10 @@ if (req.nextUrl.pathname.startsWith('/api/patient-sessions')) {
 
 ### Admin Operations
 ```typescript
-// RAG admin operations require admin role
+// RAG admin operations require admin tier
 if (req.nextUrl.pathname.startsWith('/api/rag/admin')) {
-  const role = sessionClaims?.metadata?.role || 'public';
-  if (role !== 'admin') {
+  const tier = sessionClaims?.metadata?.tier || 'basic';
+  if (tier !== 'admin') {
     return unauthorized();
   }
 }
@@ -242,20 +244,20 @@ if (error.code === 'UNAUTHORIZED') {
 
 ## 🧪 Testing RBAC
 
-### Role Testing Components
+### Tier Testing Components
 ```typescript
-// Use RoleTestingBanner for development
-<RoleTestingBanner />
+// Use TierTestingBanner for development
+<TierTestingBanner />
 
-// Test with different roles
-<RoleTestingProvider initialRole="signed_up">
+// Test with different tiers
+<TierTestingProvider initialTier="standard">
   <Component />
-</RoleTestingProvider>
+</TierTestingProvider>
 ```
 
 ### API Testing Pattern
 ```typescript
-test('requires admin role', async () => {
+test('requires admin tier', async () => {
   const response = await request
     .post('/api/admin/endpoint')
     .set('Authorization', 'Bearer invalid-token');

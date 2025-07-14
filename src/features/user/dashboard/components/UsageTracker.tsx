@@ -1,13 +1,13 @@
 'use client';
 
-import { Activity, Clock } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { Badge } from '@/src/shared/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
+import { Progress } from '@/src/shared/components/ui/progress';
 
 type UsageData = {
-  role: string;
+  tier: string;
   limit: string | number;
   used: number;
   remaining: string | number;
@@ -36,15 +36,11 @@ export default function UsageTracker() {
     };
 
     fetchUsage();
-
-    // Refresh usage data every 30 seconds
-    const interval = setInterval(fetchUsage, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   const formatTimeUntilReset = (resetIn: number) => {
-    const hours = Math.floor(resetIn / (1000 * 60 * 60));
-    const minutes = Math.floor((resetIn % (1000 * 60 * 60)) / (1000 * 60));
+    const hours = Math.floor(resetIn / 3600);
+    const minutes = Math.floor((resetIn % 3600) / 60);
 
     if (hours > 0) {
       return `${hours}h ${minutes}m`;
@@ -54,12 +50,13 @@ export default function UsageTracker() {
 
   // Removed unused getUsageColor function - color logic is inline in JSX
 
-  const getRoleDisplayName = (role: string) => {
-    switch (role) {
-      case 'signed_up': return 'Free Plan';
+  const getTierDisplayName = (tier: string) => {
+    switch (tier) {
+      case 'basic': return 'Basic Plan';
       case 'standard': return 'Standard Plan';
+      case 'premium': return 'Premium Plan';
       case 'admin': return 'Admin';
-      default: return role;
+      default: return tier;
     }
   };
 
@@ -67,16 +64,15 @@ export default function UsageTracker() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="size-5" />
-            Usage Summary
-          </CardTitle>
+          <CardTitle>Usage Tracking</CardTitle>
+          <CardDescription>Monitor your API usage and limits</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="animate-pulse space-y-3">
-            <div className="h-4 w-3/4 rounded bg-gray-200"></div>
-            <div className="h-8 rounded bg-gray-200"></div>
-            <div className="h-4 w-1/2 rounded bg-gray-200"></div>
+          <div className="flex items-center justify-center py-8">
+            <div className="text-center">
+              <div className="mx-auto mb-4 size-8 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600"></div>
+              <p className="text-gray-600">Loading usage data...</p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -87,119 +83,156 @@ export default function UsageTracker() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="size-5" />
-            Usage Summary
-          </CardTitle>
+          <CardTitle>Usage Tracking</CardTitle>
+          <CardDescription>Monitor your API usage and limits</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-500">Unable to load usage data</p>
+          <div className="flex items-center justify-center py-8">
+            <div className="text-center">
+              <p className="text-gray-600">Unable to load usage data</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="mt-2 text-blue-600 hover:text-blue-800"
+              >
+                Try again
+              </button>
+            </div>
+          </div>
         </CardContent>
       </Card>
     );
   }
 
-  const isUnlimited = usage.limit === 'unlimited';
-
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Activity className="size-5" />
-          Usage Summary
-        </CardTitle>
+        <CardTitle>Usage Tracking</CardTitle>
+        <CardDescription>Monitor your API usage and limits</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Plan Badge */}
-        <div className="flex items-center justify-between">
-          <Badge variant="outline" className="text-xs">
-            {getRoleDisplayName(usage.role)}
-          </Badge>
-          {!isUnlimited && (
-            <div className="flex items-center gap-1 text-xs text-gray-500">
-              <Clock className="size-3" />
-              Resets in
-              {' '}
-              {formatTimeUntilReset(usage.resetIn)}
+      <CardContent>
+        <div className="space-y-6">
+          {/* Current Plan */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-medium">Current Plan</h3>
+              <p className="text-gray-600">
+                {getTierDisplayName(usage.tier)}
+              </p>
+            </div>
+            <Badge variant="secondary" className="text-sm">
+              {usage.tier}
+            </Badge>
+          </div>
+
+          {/* Usage Progress */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Sessions Used</span>
+              <span className="text-sm text-gray-600">
+                {usage.used}
+                {' '}
+                of
+                {usage.limit === -1 ? 'unlimited' : usage.limit}
+              </span>
+            </div>
+
+            {usage.limit !== -1 && (
+              <div className="space-y-2">
+                <Progress
+                  value={usage.percentage}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-gray-600">
+                  <span>
+                    {usage.used}
+                    {' '}
+                    used
+                  </span>
+                  <span>
+                    {usage.remaining}
+                    {' '}
+                    remaining
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {usage.limit === -1 && (
+              <div className="rounded-lg bg-green-50 p-4">
+                <div className="flex items-center">
+                  <div className="shrink-0">
+                    <svg className="size-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-green-800">
+                      Unlimited Usage
+                    </p>
+                    <p className="text-sm text-green-700">
+                      You have unlimited sessions with your current plan
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {usage.limit !== -1 && (
+              <div className="rounded-lg bg-gray-50 p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      Usage resets in
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {formatTimeUntilReset(usage.resetIn)}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-gray-500">
+                      Reset time
+                    </p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {new Date(usage.resetAt).toLocaleTimeString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Upgrade Prompt */}
+          {usage.percentage > 80 && usage.limit !== -1 && (
+            <div className="rounded-lg bg-orange-50 p-4">
+              <div className="flex">
+                <div className="shrink-0">
+                  <svg className="size-5 text-orange-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-orange-800">
+                    Approaching Usage Limit
+                  </p>
+                  <p className="text-sm text-orange-700">
+                    You've used
+                    {' '}
+                    {usage.percentage}
+                    % of your monthly limit. Consider upgrading for unlimited access.
+                  </p>
+                  <div className="mt-2">
+                    <button
+                      type="button"
+                      className="text-sm font-medium text-orange-800 hover:text-orange-900"
+                    >
+                      Upgrade Plan →
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
-
-        {/* Usage Display */}
-        {isUnlimited
-          ? (
-              <div className="py-4 text-center">
-                <div className="text-2xl font-bold text-green-600">Unlimited</div>
-                <p className="text-sm text-gray-500">No request limits</p>
-              </div>
-            )
-          : (
-              <>
-                {/* Usage Bar */}
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Daily Requests</span>
-                    <span className="font-medium">
-                      {usage.used}
-                      {' '}
-                      /
-                      {usage.limit}
-                    </span>
-                  </div>
-                  <div className="h-2 w-full rounded-full bg-gray-200">
-                    {(() => {
-                      const getProgressBarColor = () => {
-                        if (usage.percentage >= 90) {
-                          return 'bg-red-500';
-                        }
-                        if (usage.percentage >= 75) {
-                          return 'bg-orange-500';
-                        }
-                        if (usage.percentage >= 50) {
-                          return 'bg-yellow-500';
-                        }
-                        return 'bg-green-500';
-                      };
-
-                      return (
-                        <div
-                          className={`h-2 rounded-full transition-all duration-300 ${getProgressBarColor()}`}
-                          style={{ width: `${Math.min(usage.percentage, 100)}%` }}
-                        >
-                        </div>
-                      );
-                    })()}
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>
-                      {usage.percentage}
-                      % used
-                    </span>
-                    <span>
-                      {usage.remaining}
-                      {' '}
-                      remaining
-                    </span>
-                  </div>
-                </div>
-
-                {/* Usage Stats */}
-                <div className="grid grid-cols-2 gap-4 border-t pt-2">
-                  <div className="text-center">
-                    <div className="text-lg font-semibold text-gray-900">
-                      {usage.used}
-                    </div>
-                    <div className="text-xs text-gray-500">Used Today</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-lg font-semibold text-gray-900">
-                      {usage.remaining}
-                    </div>
-                    <div className="text-xs text-gray-500">Remaining</div>
-                  </div>
-                </div>
-              </>
-            )}
       </CardContent>
     </Card>
   );

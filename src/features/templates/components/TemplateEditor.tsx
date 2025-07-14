@@ -223,10 +223,10 @@ PLAN:
               <div>
                 <h4 className="mb-2 font-medium text-blue-900">Structure Tips</h4>
                 <ul className="space-y-1 text-xs text-blue-800">
-                  <li>â€¢ Start with template instructions in parentheses</li>
-                  <li>â€¢ Use clear section headings</li>
-                  <li>â€¢ Group related information together</li>
-                  <li>â€¢ End with handling missing information</li>
+                  <li>• Start with template instructions in parentheses</li>
+                  <li>• Use clear section headings</li>
+                  <li>• Group related information together</li>
+                  <li>• End with handling missing information</li>
                 </ul>
               </div>
 
@@ -249,7 +249,7 @@ PLAN:
                   <ul className="space-y-1 text-xs text-red-800">
                     {validation.errors.map((error, index) => (
                       <li key={index}>
-                        â€¢
+                        •
                         {error.message}
                       </li>
                     ))}

@@ -127,11 +127,11 @@ export function TemplateFromDescription({ onTemplateGenerated, onCancel }: Templ
                 placeholder="Describe what kind of template you need...
 
 Examples:
-â€¢ 'Create a template for dermatology consultations with detailed skin examination sections'
-â€¢ 'I need a template for diabetes follow-up visits including HbA1c monitoring and medication review'
-â€¢ 'Template for mental health assessments with mood evaluation and risk assessment'
-â€¢ 'Pediatric vaccination visit template with developmental milestones'
-â€¢ 'Template for pre-operative assessments including cardiac risk evaluation'"
+• 'Create a template for dermatology consultations with detailed skin examination sections'
+• 'I need a template for diabetes follow-up visits including HbA1c monitoring and medication review'
+• 'Template for mental health assessments with mood evaluation and risk assessment'
+• 'Pediatric vaccination visit template with developmental milestones'
+• 'Template for pre-operative assessments including cardiac risk evaluation'"
                 rows={8}
               />
             </div>

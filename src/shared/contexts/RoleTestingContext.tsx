@@ -1,63 +1,67 @@
 'use client';
 
-import type { ReactNode } from 'react';
-import { createContext, useContext, useMemo, useState } from 'react';
+import { createContext, type ReactNode, useContext, useMemo, useState } from 'react';
 
-import type { UserRole } from '@/src/shared/utils/roles';
+import type { UserTier } from '@/src/shared/utils/roles';
 
-type RoleTestingContextType = {
-  // Current role being tested (null = using real role)
-  testingRole: UserRole | null;
-  // Original role (always preserved)
-  originalRole: UserRole | null;
-  // Start testing a specific role
-  startRoleTesting: (role: UserRole, originalRole: UserRole) => void;
-  // Stop testing and revert to original role
-  stopRoleTesting: () => void;
-  // Check if currently testing a role
-  isTestingRole: boolean;
+type TierTestingContextType = {
+  testingTier: UserTier | null;
+  isTestingTier: boolean;
+  originalTier: UserTier | null;
+  startTierTesting: (tier: UserTier, originalTier: UserTier) => void;
+  stopTierTesting: () => void;
 };
 
-const RoleTestingContext = createContext<RoleTestingContextType | undefined>(undefined);
+const TierTestingContext = createContext<TierTestingContextType | undefined>(undefined);
 
-export function RoleTestingProvider({ children }: { children: ReactNode }) {
-  const [testingRole, setTestingRole] = useState<UserRole | null>(null);
-  const [originalRole, setOriginalRole] = useState<UserRole | null>(null);
+export function TierTestingProvider({ children }: { children: ReactNode }) {
+  const [testingTier, setTestingTier] = useState<UserTier | null>(null);
+  const [originalTier, setOriginalTier] = useState<UserTier | null>(null);
 
-  const startRoleTesting = (role: UserRole, original: UserRole) => {
-    setTestingRole(role);
-    setOriginalRole(original);
+  const startTierTesting = (tier: UserTier, original: UserTier) => {
+    setTestingTier(tier);
+    setOriginalTier(original);
   };
 
-  const stopRoleTesting = () => {
-    setTestingRole(null);
-    setOriginalRole(null);
+  const stopTierTesting = () => {
+    setTestingTier(null);
+    setOriginalTier(null);
   };
 
-  const value = useMemo(() => ({
-    testingRole,
-    originalRole,
-    startRoleTesting,
-    stopRoleTesting,
-    isTestingRole: testingRole !== null,
-  }), [testingRole, originalRole, startRoleTesting, stopRoleTesting]);
+  const contextValue = useMemo(() => ({
+    testingTier,
+    isTestingTier: testingTier !== null,
+    originalTier,
+    startTierTesting,
+    stopTierTesting,
+  }), [testingTier, originalTier, startTierTesting, stopTierTesting]);
 
   return (
-    <RoleTestingContext.Provider value={value}>
+    <TierTestingContext.Provider value={contextValue}>
       {children}
-    </RoleTestingContext.Provider>
+    </TierTestingContext.Provider>
   );
 }
 
-export function useRoleTesting() {
-  const context = useContext(RoleTestingContext);
+export function useTierTestingContext() {
+  const context = useContext(TierTestingContext);
   if (context === undefined) {
-    throw new Error('useRoleTesting must be used within a RoleTestingProvider');
+    throw new Error('useTierTestingContext must be used within a TierTestingProvider');
   }
   return context;
 }
 
-export function useEffectiveRole(actualRole: UserRole): UserRole {
-  const { testingRole } = useRoleTesting();
-  return testingRole || actualRole;
+/**
+ * Hook to get effective tier (testing tier if active, otherwise actual tier)
+ */
+export function useEffectiveTier(actualTier: UserTier): UserTier {
+  const { testingTier } = useTierTestingContext();
+  return testingTier || actualTier;
 }
+
+// Export old names for backward compatibility
+export const RoleTestingContext = TierTestingContext;
+export const RoleTestingProvider = TierTestingProvider;
+export const useRoleTestingContext = useTierTestingContext;
+export const useRoleTesting = useTierTestingContext;
+export const useEffectiveRole = useEffectiveTier;

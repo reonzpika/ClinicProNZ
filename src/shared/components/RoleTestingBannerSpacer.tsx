@@ -1,16 +1,22 @@
 'use client';
 
-import { useRoleTesting } from '@/src/shared/contexts/RoleTestingContext';
+import type { ReactNode } from 'react';
 
-type RoleTestingBannerSpacerProps = {
-  children: React.ReactNode;
+import { useTierTestingContext } from '@/src/shared/contexts/RoleTestingContext';
+
+type TierTestingBannerSpacerProps = {
+  children: ReactNode;
 };
 
-export function RoleTestingBannerSpacer({ children }: RoleTestingBannerSpacerProps) {
-  const { isTestingRole } = useRoleTesting();
+export function RoleTestingBannerSpacer({ children }: TierTestingBannerSpacerProps) {
+  return <TierTestingBannerSpacer>{children}</TierTestingBannerSpacer>;
+}
+
+export function TierTestingBannerSpacer({ children }: TierTestingBannerSpacerProps) {
+  const { isTestingTier } = useTierTestingContext();
 
   return (
-    <div className={isTestingRole ? 'pt-12' : ''}>
+    <div className={isTestingTier ? 'pt-12' : ''}>
       {children}
     </div>
   );

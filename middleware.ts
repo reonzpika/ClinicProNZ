@@ -52,24 +52,30 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   };
 
-  // Protect all other /api/templates routes (POST, PUT, DELETE) - require signed_up or higher
+  // Protect all other /api/templates routes (POST, PUT, DELETE) - require standard or higher
   if (req.nextUrl.pathname.startsWith('/api/templates')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
       return returnUnauthorized();
     }
 
-    // Check role - templates require at least signed_up
-    const userRole = (resolvedAuth.sessionClaims as any)?.metadata?.role || 'public';
-    if (userRole === 'public') {
+    // Check tier - templates require at least standard
+    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
+    if (userTier === 'basic') {
       return returnUnauthorized();
     }
   }
 
-  // Protect /api/patient-sessions routes
+  // Protect /api/patient-sessions routes - require standard or higher
   if (req.nextUrl.pathname.startsWith('/api/patient-sessions')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
+      return returnUnauthorized();
+    }
+
+    // Check tier - session management requires at least standard
+    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
+    if (userTier === 'basic') {
       return returnUnauthorized();
     }
   }
@@ -103,75 +109,75 @@ export default clerkMiddleware(async (auth, req) => {
       return returnUnauthorized();
     }
 
-    const userRole = (resolvedAuth.sessionClaims as any)?.metadata?.role || 'public';
-    if (userRole !== 'admin') {
+    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
+    if (userTier !== 'admin') {
       return returnUnauthorized();
     }
   }
 
-  // Protect /api/rag/query routes (signed_up or higher)
+  // Protect /api/rag/query routes (standard or higher)
   if (req.nextUrl.pathname.startsWith('/api/rag/query')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
       return returnUnauthorized();
     }
 
-    const userRole = (resolvedAuth.sessionClaims as any)?.metadata?.role || 'public';
-    if (userRole === 'public') {
+    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
+    if (userTier === 'basic') {
       return returnUnauthorized();
     }
   }
 
-  // Protect /templates page - require signed_up or higher
+  // Protect /templates page - require standard or higher
   if (req.nextUrl.pathname.startsWith('/templates')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
       return redirectToLogin(req.url);
     }
 
-    const userRole = (resolvedAuth.sessionClaims as any)?.metadata?.role || 'public';
-    if (userRole === 'public') {
+    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
+    if (userTier === 'basic') {
       return redirectToLogin(req.url);
     }
   }
 
   // /consultation page is now open to everyone (CTAs handle auth prompts)
 
-  // Protect /billing page - require signed_up or higher
+  // Protect /billing page - require standard or higher
   if (req.nextUrl.pathname.startsWith('/billing')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
       return redirectToLogin(req.url);
     }
 
-    const userRole = (resolvedAuth.sessionClaims as any)?.metadata?.role || 'public';
-    if (userRole === 'public') {
+    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
+    if (userTier === 'basic') {
       return redirectToLogin(req.url);
     }
   }
 
-  // Protect /dashboard page - require signed_up or higher
+  // Protect /dashboard page - require standard or higher
   if (req.nextUrl.pathname.startsWith('/dashboard')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
       return redirectToLogin(req.url);
     }
 
-    const userRole = (resolvedAuth.sessionClaims as any)?.metadata?.role || 'public';
-    if (userRole === 'public') {
+    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
+    if (userTier === 'basic') {
       return redirectToLogin(req.url);
     }
   }
 
-  // Protect /settings page - require signed_up or higher
+  // Protect /settings page - require standard or higher
   if (req.nextUrl.pathname.startsWith('/settings')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
       return redirectToLogin(req.url);
     }
 
-    const userRole = (resolvedAuth.sessionClaims as any)?.metadata?.role || 'public';
-    if (userRole === 'public') {
+    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
+    if (userTier === 'basic') {
       return redirectToLogin(req.url);
     }
   }

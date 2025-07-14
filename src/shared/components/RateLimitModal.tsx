@@ -21,17 +21,17 @@ type RateLimitModalProps = {
   };
 };
 
-export const RateLimitModal = ({ isOpen, onClose, error }: RateLimitModalProps) => {
+export function RateLimitModal({ isOpen, onClose, error }: RateLimitModalProps) {
   const { isSignedIn } = useAuth();
-  const { user } = useClerkMetadata();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [loadingAction, setLoadingAction] = useState<'signup' | 'upgrade' | null>(null);
 
-  const { getUserRole } = useClerkMetadata();
-  const userRole = getUserRole();
+  const { getUserTier } = useClerkMetadata();
+  const userTier = getUserTier();
+
   const isPublicUser = !isSignedIn;
-  const isSignedUpUser = isSignedIn && userRole === 'signed_up';
+  const isBasicUser = isSignedIn && userTier === 'basic';
 
   const resetTimeMinutes = Math.ceil(error.resetIn / 1000 / 60);
   const standardPlan = BILLING_CONFIG.plans.standard;
@@ -219,8 +219,8 @@ export const RateLimitModal = ({ isOpen, onClose, error }: RateLimitModalProps) 
             </div>
           )}
 
-          {/* Signed up user options */}
-          {isSignedUpUser && (
+          {/* Basic tier user options */}
+          {isBasicUser && (
             <div className="space-y-4">
               <div className="text-center">
                 <p className="mb-4 text-sm text-gray-600">

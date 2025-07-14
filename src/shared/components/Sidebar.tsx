@@ -78,9 +78,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [feedbackSuccess, setFeedbackSuccess] = useState(false);
 
   // Get user role for admin access
-  const { getUserRole } = useClerkMetadata();
-  const userRole = getUserRole();
-  const isAdmin = userRole === 'admin';
+  const { getUserTier } = useClerkMetadata();
+  const userTier = getUserTier();
+  const isAdmin = userTier === 'admin';
 
   const handleFeedback = async (data: { idea: string; details?: string; email?: string }) => {
     setFeedbackLoading(true);
@@ -291,7 +291,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           className={`
                       flex w-full items-center gap-3 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-50
                       ${isCollapsed ? 'justify-center' : ''}
-                      ${!isLoaded ? 'opacity-50 cursor-not-allowed' : ''}
+                      ${!isLoaded ? 'cursor-not-allowed opacity-50' : ''}
                     `}
                           title={isCollapsed ? 'Sign In' : undefined}
                         >
@@ -305,7 +305,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           className={`
                       flex w-full items-center gap-3 rounded-lg bg-slate-700 px-3 py-2 text-sm text-white transition-colors hover:bg-slate-800
                       ${isCollapsed ? 'justify-center' : ''}
-                      ${!isLoaded ? 'opacity-50 cursor-not-allowed' : ''}
+                      ${!isLoaded ? 'cursor-not-allowed opacity-50' : ''}
                     `}
                           title={isCollapsed ? 'Sign Up' : undefined}
                         >

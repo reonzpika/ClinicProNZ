@@ -3,19 +3,17 @@ import { eq } from 'drizzle-orm';
 
 import { db } from '../../database/client';
 import { mobileTokens } from '../../database/schema';
-import { checkGuestSessionLimit, checkUserSessionLimit } from './services/guest-session-service';
-
 // Import client-safe utilities
 import {
-  getTierFromRole,
   canAccessTemplates,
+  type SessionLimits,
   TIER_LIMITS,
   type UserTier,
-  type SessionLimits,
 } from './rbac-client';
+import { checkGuestSessionLimit, checkUserSessionLimit } from './services/guest-session-service';
 
 // Re-export client-safe utilities for backward compatibility
-export { canAccessTemplates, getTierFromRole, type SessionLimits, type UserTier };
+export { canAccessTemplates, type SessionLimits, type UserTier };
 
 export type RBACContext = {
   userId: string | null;
@@ -47,9 +45,8 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
     const { userId, sessionClaims } = await getAuth();
 
     if (userId) {
-      // Authenticated user - get tier from session claims
-      const userRole = (sessionClaims as any)?.metadata?.role;
-      const tier = getTierFromRole(userRole || 'signed_up');
+      // Authenticated user - get tier directly from session claims
+      const tier = (sessionClaims as any)?.metadata?.tier || 'basic';
 
       // Authenticated users don't use guest tokens - they have user-specific tracking
       return {
@@ -73,11 +70,11 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
     };
   }
 
-  // No authentication and no guest token
+  // No authentication and no guest token - public user
   return {
     userId: null,
     guestToken: null,
-    tier: 'basic', // Default to basic tier
+    tier: 'basic', // Public users get basic tier limits
     isAuthenticated: false,
   };
 }

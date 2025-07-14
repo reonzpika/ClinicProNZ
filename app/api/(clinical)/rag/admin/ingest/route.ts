@@ -1,21 +1,22 @@
 import { auth } from '@clerk/nextjs/server';
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { ingestDocument } from '@/src/lib/rag';
 import type { DocumentToIngest } from '@/src/lib/rag/types';
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
     const { userId, sessionClaims } = await auth();
+
     if (!userId) {
-      return new Response('Unauthorized', { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check admin role
-    const userRole = (sessionClaims as any)?.metadata?.role || 'public';
-    if (userRole !== 'admin') {
-      return new Response('Forbidden - Admin access required', { status: 403 });
+    // Check if user has admin tier
+    const userTier = (sessionClaims as any)?.metadata?.tier || 'basic';
+    if (userTier !== 'admin') {
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
     // Parse request body

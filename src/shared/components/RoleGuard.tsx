@@ -3,43 +3,43 @@
 import type { ReactNode } from 'react';
 
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
-import type { UserRole } from '@/src/shared/utils/roles';
+import type { UserTier } from '@/src/shared/utils/roles';
+import { TIER_HIERARCHY } from '@/src/shared/utils/roles';
 
-type RoleGuardProps = {
-  allowedRoles: UserRole[];
+type TierGuardProps = {
+  allowedTiers: UserTier[];
   children: ReactNode;
   fallback?: ReactNode;
-  requireExact?: boolean; // If true, user must have exactly one of the allowed roles
+  requireExact?: boolean; // If true, user must have exactly one of the allowed tiers
 };
 
 /**
- * Client-side role guard component
+ * Client-side tier guard component
  */
-export function RoleGuard({ allowedRoles, children, fallback = null, requireExact = false }: RoleGuardProps) {
-  const { isLoaded, getUserRole } = useClerkMetadata();
+export function TierGuard({ allowedTiers, children, fallback = null, requireExact = false }: TierGuardProps) {
+  const { isLoaded, getUserTier } = useClerkMetadata();
 
   // Show nothing while loading
   if (!isLoaded) {
     return null;
   }
 
-  // Get user role from metadata, type-safe
-  const userRole = getUserRole();
+  // Get user tier from metadata, type-safe
+  const userTier = getUserTier();
 
-  // Role hierarchy for permission checking
-  const roleHierarchy: UserRole[] = ['public', 'signed_up', 'standard', 'admin'];
-  const userRoleIndex = roleHierarchy.indexOf(userRole);
+  // Tier hierarchy for permission checking
+  const userTierIndex = TIER_HIERARCHY.indexOf(userTier);
 
   let hasAccess = false;
 
   if (requireExact) {
-    // User must have exactly one of the allowed roles
-    hasAccess = allowedRoles.includes(userRole);
+    // User must have exactly one of the allowed tiers
+    hasAccess = allowedTiers.includes(userTier);
   } else {
-    // User must have at least one of the allowed roles (hierarchical)
-    hasAccess = allowedRoles.some((role) => {
-      const requiredIndex = roleHierarchy.indexOf(role);
-      return userRoleIndex >= requiredIndex;
+    // User must have at least one of the allowed tiers (hierarchical)
+    hasAccess = allowedTiers.some((tier) => {
+      const requiredIndex = TIER_HIERARCHY.indexOf(tier);
+      return userTierIndex >= requiredIndex;
     });
   }
 
@@ -47,33 +47,37 @@ export function RoleGuard({ allowedRoles, children, fallback = null, requireExac
 }
 
 /**
- * Convenience components for common role checks
+ * Convenience components for common tier checks
  */
-export const SignedUpOnly = ({ children, fallback }: { children: ReactNode; fallback?: ReactNode }) => (
-  <RoleGuard allowedRoles={['signed_up']} fallback={fallback}>
+export const StandardOnly = ({ children, fallback }: { children: ReactNode; fallback?: ReactNode }) => (
+  <TierGuard allowedTiers={['standard']} fallback={fallback}>
     {children}
-  </RoleGuard>
+  </TierGuard>
 );
 
-export const StandardOnly = ({ children, fallback }: { children: ReactNode; fallback?: ReactNode }) => (
-  <RoleGuard allowedRoles={['standard']} fallback={fallback}>
+export const PremiumOnly = ({ children, fallback }: { children: ReactNode; fallback?: ReactNode }) => (
+  <TierGuard allowedTiers={['premium']} fallback={fallback}>
     {children}
-  </RoleGuard>
+  </TierGuard>
 );
 
 export const AdminOnly = ({ children, fallback }: { children: ReactNode; fallback?: ReactNode }) => (
-  <RoleGuard allowedRoles={['admin']} fallback={fallback}>
+  <TierGuard allowedTiers={['admin']} fallback={fallback}>
     {children}
-  </RoleGuard>
+  </TierGuard>
 );
 
 /**
- * Hook for getting current user role
+ * Hook to get current user tier
  */
-export function useUserRole(): { role: UserRole; isLoaded: boolean } {
-  const { isLoaded, getUserRole } = useClerkMetadata();
+export function useUserTier(): { tier: UserTier; isLoaded: boolean } {
+  const { getUserTier, isLoaded } = useClerkMetadata();
 
-  const role = getUserRole();
-
-  return { role, isLoaded };
+  return {
+    tier: getUserTier(),
+    isLoaded,
+  };
 }
+
+// Export RoleGuard as alias for backward compatibility
+export { TierGuard as RoleGuard };

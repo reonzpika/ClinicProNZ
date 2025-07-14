@@ -1,5 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
 import { formatContextForRag, searchSimilarDocuments } from '@/src/lib/rag';
@@ -10,16 +11,16 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
     const { userId, sessionClaims } = await auth();
+
     if (!userId) {
-      return new Response('Unauthorized', { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check user role - require signed_up or higher
-    const userRole = (sessionClaims as any)?.metadata?.role || 'public';
-    if (userRole === 'public') {
-      return new Response('Forbidden - Account required', { status: 403 });
+    // Check if user has standard tier or higher (basic users can't use RAG)
+    const userTier = (sessionClaims as any)?.metadata?.tier || 'basic';
+    if (userTier === 'basic') {
+      return NextResponse.json({ error: 'Standard tier or higher required' }, { status: 403 });
     }
 
     // Parse request body

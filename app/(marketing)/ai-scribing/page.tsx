@@ -40,7 +40,7 @@ export default function AIScribingPage() {
                       rel="noopener noreferrer"
                       className="inline-flex items-center rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700"
                     >
-                      Visit GPNZ AI Working Group â†’
+                      Visit GPNZ AI Working Group →
                     </a>
                   </div>
 
@@ -57,7 +57,7 @@ export default function AIScribingPage() {
                       rel="noopener noreferrer"
                       className="inline-flex items-center rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700"
                     >
-                      Access WellSouth AI Guidance â†’
+                      Access WellSouth AI Guidance →
                     </a>
                   </div>
 
@@ -74,7 +74,7 @@ export default function AIScribingPage() {
                       rel="noopener noreferrer"
                       className="inline-flex items-center rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700"
                     >
-                      Access Training Modules â†’
+                      Access Training Modules →
                     </a>
                   </div>
 
@@ -97,7 +97,7 @@ export default function AIScribingPage() {
                           rel="noopener noreferrer"
                           className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
                         >
-                          Watch on YouTube â†’
+                          Watch on YouTube →
                         </a>
                       </div>
                       <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
@@ -111,7 +111,7 @@ export default function AIScribingPage() {
                           rel="noopener noreferrer"
                           className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
                         >
-                          Watch on YouTube â†’
+                          Watch on YouTube →
                         </a>
                       </div>
                       <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
@@ -125,7 +125,7 @@ export default function AIScribingPage() {
                           rel="noopener noreferrer"
                           className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
                         >
-                          Watch on YouTube â†’
+                          Watch on YouTube →
                         </a>
                       </div>
                       <div className="mt-3">
@@ -135,7 +135,7 @@ export default function AIScribingPage() {
                           rel="noopener noreferrer"
                           className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
                         >
-                          View All WellSouth AI Webinars â†’
+                          View All WellSouth AI Webinars →
                         </a>
                       </div>
                     </div>
@@ -154,7 +154,7 @@ export default function AIScribingPage() {
                       rel="noopener noreferrer"
                       className="inline-flex items-center rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700"
                     >
-                      Read OPC AI Guidance â†’
+                      Read OPC AI Guidance →
                     </a>
                   </div>
 
@@ -171,7 +171,7 @@ export default function AIScribingPage() {
                       rel="noopener noreferrer"
                       className="inline-flex items-center rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700"
                     >
-                      Read Te Whatu Ora Guidance â†’
+                      Read Te Whatu Ora Guidance →
                     </a>
                   </div>
                 </div>
@@ -345,7 +345,7 @@ export default function AIScribingPage() {
                       Need for Human Oversight
                     </h3>
                     <p className="text-gray-700">
-                      There is a risk of automation bias â€“ over-relying on or blindly trusting automated systems. You must critically review the output. AI should be viewed as a tool to support, not replace, clinical judgment. Using AI for diagnosis or treatment advice carries far greater risk than for summarisation and changes the nature of how clinicians think.
+                      There is a risk of automation bias — over-relying on or blindly trusting automated systems. You must critically review the output. AI should be viewed as a tool to support, not replace, clinical judgment. Using AI for diagnosis or treatment advice carries far greater risk than for summarisation and changes the nature of how clinicians think.
                     </p>
                   </div>
                 </div>

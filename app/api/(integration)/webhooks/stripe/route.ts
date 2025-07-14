@@ -2,7 +2,7 @@ import { clerkClient } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-import { getRoleByStripePriceId } from '@/src/shared/utils/billing-config';
+import { getTierByStripePriceId } from '@/src/shared/utils/billing-config';
 
 // Stripe webhook handler for billing events
 export async function POST(req: Request) {
@@ -50,8 +50,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Processing Stripe webhook event
-
     const clerk = await clerkClient();
 
     switch (event.type) {
@@ -63,14 +61,12 @@ export async function POST(req: Request) {
         const isNewUser = session.metadata?.isNewUser === 'true';
 
         if (!clientReferenceId && !customerEmail) {
-          // No client_reference_id or customer email in checkout session
+          console.error('No client_reference_id or customer email in checkout session');
           return NextResponse.json({ error: 'Missing user identification' }, { status: 400 });
         }
 
         // Get the subscription to find the price ID
         if (session.subscription) {
-          // Processing successful checkout
-
           let userId: string | null = clientReferenceId;
 
           // Handle new user creation
@@ -84,13 +80,12 @@ export async function POST(req: Request) {
               if (existingUsers.data.length > 0) {
                 // User exists, use existing user ID
                 userId = existingUsers.data[0]!.id;
-                // Found existing user with email
               } else {
                 // Create new user
                 const newUser = await clerk.users.createUser({
                   emailAddress: [customerEmail],
                   publicMetadata: {
-                    role: 'standard',
+                    tier: 'standard',
                     stripeCustomerId: typeof customerId === 'string' ? customerId : customerId?.id || '',
                     subscriptionId: typeof session.subscription === 'string' ? session.subscription : session.subscription?.id || '',
                     planName: 'Standard',
@@ -101,10 +96,9 @@ export async function POST(req: Request) {
                 });
 
                 userId = newUser.id;
-                // Created new user with email
               }
-            } catch {
-              // Error creating/finding user
+            } catch (error) {
+              console.error('Error creating/finding user:', error);
               return NextResponse.json({ error: 'Failed to create user account' }, { status: 500 });
             }
           }
@@ -113,15 +107,13 @@ export async function POST(req: Request) {
           if (userId) {
             await clerk.users.updateUserMetadata(userId, {
               publicMetadata: {
-                role: 'standard',
+                tier: 'standard',
                 stripeCustomerId: typeof customerId === 'string' ? customerId : customerId?.id || '',
                 subscriptionId: typeof session.subscription === 'string' ? session.subscription : session.subscription?.id || '',
                 planName: 'Standard',
                 upgradeDate: new Date().toISOString(),
               },
             });
-
-            // Updated user to 'standard' role
           }
         }
         break;
@@ -133,7 +125,6 @@ export async function POST(req: Request) {
         const priceId = subscription.items.data[0]?.price.id;
 
         if (!priceId) {
-          // No price ID found in subscription
           break;
         }
 
@@ -152,19 +143,17 @@ export async function POST(req: Request) {
         }
 
         if (!userId) {
-          // No user found for Stripe customer
           break;
         }
 
-        const role = getRoleByStripePriceId(priceId);
-        if (!role) {
-          // No role mapping found for price ID
+        const tier = getTierByStripePriceId(priceId);
+        if (!tier) {
           break;
         }
 
         await clerk.users.updateUserMetadata(userId, {
           publicMetadata: {
-            role,
+            tier,
             stripeCustomerId: typeof customerId === 'string' ? customerId : customerId?.id || '',
             subscriptionId: subscription.id,
             priceId,
@@ -174,8 +163,6 @@ export async function POST(req: Request) {
               : new Date().toISOString(),
           },
         });
-
-        // Updated user role via subscription
         break;
       }
 
@@ -198,30 +185,27 @@ export async function POST(req: Request) {
         }
 
         if (!userId) {
-          // No user found for Stripe customer
           break;
         }
 
         if (subscription.status === 'canceled' || subscription.status === 'unpaid') {
-          // Downgrade to free tier
+          // Downgrade to basic tier (authenticated users get basic tier, not signed_up)
           await clerk.users.updateUserMetadata(userId, {
             publicMetadata: {
-              role: 'signed_up',
+              tier: 'basic',
               stripeCustomerId: typeof customerId === 'string' ? customerId : customerId?.id || '',
               subscriptionId: subscription.id,
               subscriptionStatus: subscription.status,
               downgradedAt: new Date().toISOString(),
             },
           });
-
-          // Downgraded user to 'signed_up' role due to subscription status
         } else if (priceId) {
-          // Update to new role based on price
-          const role = getRoleByStripePriceId(priceId);
-          if (role) {
+          // Update to new tier based on price
+          const tier = getTierByStripePriceId(priceId);
+          if (tier) {
             await clerk.users.updateUserMetadata(userId, {
               publicMetadata: {
-                role,
+                tier,
                 stripeCustomerId: typeof customerId === 'string' ? customerId : customerId?.id || '',
                 subscriptionId: subscription.id,
                 priceId,
@@ -231,8 +215,6 @@ export async function POST(req: Request) {
                   : new Date().toISOString(),
               },
             });
-
-            // Updated user role via subscription update
           }
         }
         break;
@@ -242,7 +224,7 @@ export async function POST(req: Request) {
         const subscription = event.data.object;
         const customerId = subscription.customer;
 
-        // Find user by Stripe customer ID and downgrade to free tier
+        // Find user by Stripe customer ID and downgrade to basic tier
         const users = await clerk.users.getUserList({
           limit: 1,
         });
@@ -258,27 +240,26 @@ export async function POST(req: Request) {
         if (userId) {
           await clerk.users.updateUserMetadata(userId, {
             publicMetadata: {
-              role: 'signed_up',
+              tier: 'basic',
               stripeCustomerId: typeof customerId === 'string' ? customerId : customerId?.id || '',
               subscriptionStatus: 'canceled',
               canceledAt: new Date().toISOString(),
             },
           });
-
-          // Downgraded user to 'signed_up' role due to subscription cancellation
         }
         break;
       }
 
       default:
-        // Unhandled event type received
+        // Unhandled event type
+        break;
     }
 
     return NextResponse.json({ received: true });
-  } catch {
-    // Stripe webhook error occurred
+  } catch (error) {
+    console.error('Error processing Stripe webhook:', error);
     return NextResponse.json(
-      { error: 'Webhook handler failed' },
+      { error: 'Webhook processing failed' },
       { status: 500 },
     );
   }

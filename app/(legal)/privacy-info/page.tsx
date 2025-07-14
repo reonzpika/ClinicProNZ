@@ -20,7 +20,7 @@ export default function PrivacyInfoPage() {
 
               <p className="mb-8 text-lg leading-relaxed text-gray-700">
                 At ConsultAI NZ, we understand that confidentiality and trust are vital to your work as a GP.
-                Protecting your patients' privacyâ€”and yoursâ€”is our top priority. Here's how we handle data when you use our app.
+                Protecting your patients' privacy—and yours—is our top priority. Here's how we handle data when you use our app.
               </p>
 
               <div className="space-y-8">
@@ -150,7 +150,7 @@ export default function PrivacyInfoPage() {
                   Your trust matters to us.
                 </p>
                 <p className="mb-4 text-blue-800">
-                  This page is a summaryâ€”please contact us anytime for detailed privacy info or to discuss concerns.
+                  This page is a summary—please contact us anytime for detailed privacy info or to discuss concerns.
                 </p>
                 <p className="text-blue-800">
                   For full details on our privacy practices, please see our dedicated

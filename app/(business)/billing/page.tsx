@@ -1,15 +1,20 @@
+import { redirect } from 'next/navigation';
+
 import { PlanCard } from '@/src/shared/components/billing/PlanCard';
 import { UsageLimits } from '@/src/shared/components/billing/UsageLimits';
-import { requireRole } from '@/src/shared/utils/roles';
+import { getCurrentTier, hasTier } from '@/src/shared/utils/roles';
 
 // Force dynamic rendering since this page depends on user authentication
 export const dynamic = 'force-dynamic';
 
 export default async function BillingPage() {
-  // Require at least signed_up role to access billing
-  const currentRole = await requireRole('signed_up');
+  // Require at least standard tier to access billing
+  const hasAccess = await hasTier('standard');
+  if (!hasAccess) {
+    redirect('/login');
+  }
 
-  // Removed unused function - Stripe integration would go here
+  const currentTier = await getCurrentTier();
 
   // Mock usage data - in real app, fetch from rate limit store
   const currentUsage = {
@@ -29,65 +34,53 @@ export default async function BillingPage() {
 
           {/* Current Usage */}
           <div className="mb-8">
-            <UsageLimits
-              role={currentRole}
-              currentUsage={{ sessionsToday: currentUsage.requestsToday }}
-            />
+            <UsageLimits tier={currentTier} currentUsage={currentUsage} />
           </div>
 
-          {/* Available Plans */}
+          {/* Plan Cards */}
           <div className="mb-8">
             <h2 className="mb-6 text-2xl font-semibold text-gray-900">
               Available Plans
             </h2>
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-3">
               <PlanCard
-                planRole="signed_up"
-                currentUserRole={currentRole}
+                planTier="basic"
+                currentUserTier={currentTier}
               />
 
               <PlanCard
-                planRole="standard"
-                currentUserRole={currentRole}
-                onUpgrade={async (_planRole) => {
+                planTier="standard"
+                currentUserTier={currentTier}
+                onUpgrade={async (_planTier) => {
                   'use server';
                   // In real implementation, redirect to Stripe checkout
                   // TODO: Implement Stripe checkout integration
-                  // redirect('/api/create-checkout-session?planRole=' + _planRole);
+                  // redirect('/api/create-checkout-session?planTier=' + _planTier);
+                }}
+              />
+
+              <PlanCard
+                planTier="premium"
+                currentUserTier={currentTier}
+                onUpgrade={async (_planTier) => {
+                  'use server';
+                  // In real implementation, redirect to Stripe checkout
+                  // TODO: Implement Stripe checkout integration
+                  // redirect('/api/create-checkout-session?planTier=' + _planTier);
                 }}
               />
             </div>
           </div>
 
           {/* Billing History */}
-          <div className="rounded-lg border bg-white p-6">
+          <div className="rounded-lg bg-white p-6 shadow">
             <h3 className="mb-4 text-lg font-semibold text-gray-900">
               Billing History
             </h3>
-
-            <div className="py-8 text-center">
-              <p className="text-gray-500">
-                {currentRole === 'signed_up'
-                  ? 'No billing history yet. Upgrade to see your invoices here.'
-                  : 'Your billing history will appear here once we integrate with Stripe.'}
-              </p>
-            </div>
-          </div>
-
-          {/* Role Information */}
-          <div className="mt-8 rounded-lg bg-blue-50 p-6">
-            <h3 className="mb-2 text-lg font-semibold text-blue-900">
-              Your Current Role:
-              {' '}
-              {currentRole}
-            </h3>
-            <div className="text-sm text-blue-700">
-              <p>â€¢ Public: No access to protected features</p>
-              <p>â€¢ Signed Up: Basic access with usage limits</p>
-              <p>â€¢ Standard: Full access with no limits</p>
-              <p>â€¢ Admin: Administrative access to all features</p>
-            </div>
+            <p className="text-gray-600">
+              Your billing history will appear here when you have an active subscription.
+            </p>
           </div>
         </div>
       </div>

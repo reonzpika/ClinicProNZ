@@ -1,132 +1,93 @@
 'use client';
 
-import { AlertCircle, CheckCircle, XCircle } from 'lucide-react';
-
-import { getTierFromRole, type UserTier } from '@/src/lib/rbac-client';
-import type { UserRole } from '@/src/shared/utils/roles';
+import { TIER_LIMITS } from '@/src/lib/rbac-client';
+import { Progress } from '@/src/shared/components/ui/progress';
+import type { UserTier } from '@/src/shared/utils/roles';
 
 type UsageLimitsProps = {
-  role: UserRole;
-  currentUsage?: {
-    sessionsToday?: number;
+  tier: UserTier;
+  currentUsage: {
+    requestsToday: number;
   };
-  className?: string;
 };
 
-const DEFAULT_USAGE = {};
+export function UsageLimits({ tier, currentUsage }: UsageLimitsProps) {
+  const limits = TIER_LIMITS[tier];
 
-export function UsageLimits({ role, currentUsage = DEFAULT_USAGE, className = '' }: UsageLimitsProps) {
-  const tier = getTierFromRole(role);
+  const coreSessionsUsed = currentUsage.requestsToday;
+  const coreSessionsLimit = limits.coreSessions;
+  const premiumActionsLimit = limits.premiumActions;
 
-  // Session limits per tier
-  const sessionLimits = {
-    basic: 5,
-    standard: -1, // unlimited
-    admin: -1, // unlimited
-  } as Record<UserTier, number>;
+  const coreSessionsPercentage = coreSessionsLimit === -1 ? 0 : (coreSessionsUsed / coreSessionsLimit) * 100;
 
-  const getUsageStatus = (current: number, limit: number) => {
-    if (limit === -1) {
-      return 'unlimited';
-    } // Unlimited
-    if (current >= limit) {
-      return 'exceeded';
-    }
-    if (current >= limit * 0.8) {
-      return 'warning';
-    }
-    return 'ok';
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'exceeded':
-        return <XCircle className="size-4 text-red-500" />;
-      case 'warning':
-        return <AlertCircle className="size-4 text-yellow-500" />;
-      case 'unlimited':
-      case 'ok':
-        return <CheckCircle className="size-4 text-green-500" />;
-      default:
-        return null;
+  const getTierColor = (tier: UserTier) => {
+    switch (tier) {
+      case 'basic': return 'text-blue-600';
+      case 'standard': return 'text-green-600';
+      case 'premium': return 'text-purple-600';
+      case 'admin': return 'text-red-600';
+      default: return 'text-gray-600';
     }
   };
-
-  const getStatusText = (current: number, limit: number) => {
-    if (limit === -1) {
-      return 'Unlimited';
-    }
-    return `${current} / ${limit}`;
-  };
-
-  const sessionLimit = sessionLimits[tier];
-  const dailyStatus = getUsageStatus(
-    currentUsage.sessionsToday || 0,
-    sessionLimit,
-  );
 
   return (
-    <div className={`rounded-lg border bg-white p-6 ${className}`}>
+    <div className="rounded-lg bg-white p-6 shadow">
       <h3 className="mb-4 text-lg font-semibold text-gray-900">
-        Current Usage Limits
+        Current Usage -
+        {' '}
+        <span className={`capitalize ${getTierColor(tier)}`}>
+          {tier}
+          {' '}
+          Tier
+        </span>
       </h3>
 
       <div className="space-y-4">
-        {/* Daily Sessions */}
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="font-medium text-gray-700">Daily Sessions</p>
-            <p className="text-sm text-gray-500">
-              {getStatusText(
-                currentUsage.sessionsToday || 0,
-                sessionLimit,
-              )}
-            </p>
+        {/* Core Sessions */}
+        <div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">Core Sessions</span>
+            <span className="text-sm text-gray-500">
+              {coreSessionsUsed}
+              {' '}
+              /
+              {coreSessionsLimit === -1 ? 'Unlimited' : coreSessionsLimit}
+            </span>
           </div>
-          <div className="flex items-center">
-            {getStatusIcon(dailyStatus)}
-          </div>
+          {coreSessionsLimit !== -1 && (
+            <Progress value={coreSessionsPercentage} className="mt-2" />
+          )}
         </div>
 
-        {/* Feature Access */}
-        <div className="border-t pt-4">
-          <p className="mb-3 font-medium text-gray-700">Feature Access</p>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Templates</span>
-              <div className="flex items-center">
-                {tier !== 'basic'
-                  ? (
-                      <CheckCircle className="size-4 text-green-500" />
-                    )
-                  : (
-                      <XCircle className="size-4 text-red-500" />
-                    )}
-                <span className="ml-2 text-sm">
-                  {tier !== 'basic' ? 'Available' : 'Upgrade required'}
-                </span>
-              </div>
-            </div>
+        {/* Premium Actions */}
+        <div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">Premium Actions</span>
+            <span className="text-sm text-gray-500">
+              0 /
+              {' '}
+              {premiumActionsLimit === -1 ? 'Unlimited' : premiumActionsLimit}
+            </span>
           </div>
+          {premiumActionsLimit !== -1 && (
+            <Progress value={0} className="mt-2" />
+          )}
         </div>
 
-        {/* Tier-specific messaging */}
-        {tier === 'basic' && (
-          <div className="rounded-md bg-blue-50 p-3">
-            <p className="text-sm text-blue-700">
-              Upgrade to Standard for unlimited sessions and template management.
-            </p>
-          </div>
-        )}
-
-        {role === 'public' && (
-          <div className="rounded-md bg-yellow-50 p-3">
-            <p className="text-sm text-yellow-700">
-              Sign up for free to start using ClinicPro.
-            </p>
-          </div>
-        )}
+        {/* Features */}
+        <div className="pt-2">
+          <span className="text-sm font-medium text-gray-700">Available Features:</span>
+          <ul className="mt-1 space-y-1 text-sm text-gray-600">
+            <li>
+              • Template Management:
+              {limits.templateManagement ? '✓' : '✗'}
+            </li>
+            <li>
+              • Session Management:
+              {limits.sessionManagement ? '✓' : '✗'}
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   );

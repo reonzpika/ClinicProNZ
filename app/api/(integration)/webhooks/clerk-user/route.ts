@@ -45,23 +45,29 @@ export async function POST(req: Request) {
       return NextResponse.json({ code: 'BAD_REQUEST', message: 'Missing user id or email' }, { status: 400 });
     }
 
-    // Handle user creation event
-    if (type === 'user.created') {
-      // Insert user into our database
+    // Handle user creation AND update events
+    if (type === 'user.created' || type === 'user.updated') {
+      // Insert or update user in our database
       await db.insert(users)
         .values({ id: userId, email })
-        .onConflictDoNothing();
+        .onConflictDoUpdate({
+          target: users.id,
+          set: {
+            email,
+            updatedAt: new Date(),
+          },
+        });
 
-      // Assign 'signed_up' role via Clerk metadata
-      const client = await clerkClient();
-      await client.users.updateUserMetadata(userId, {
-        publicMetadata: {
-          role: 'signed_up',
-          assignedAt: new Date().toISOString(),
-        },
-      });
-
-      // Assigned 'signed_up' role to user
+      // Only assign basic tier on creation, not updates
+      if (type === 'user.created') {
+        const client = await clerkClient();
+        await client.users.updateUserMetadata(userId, {
+          publicMetadata: {
+            tier: 'basic',
+            assignedAt: new Date().toISOString(),
+          },
+        });
+      }
     }
 
     return NextResponse.json({ success: true });

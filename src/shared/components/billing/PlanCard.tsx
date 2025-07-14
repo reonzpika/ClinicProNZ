@@ -1,120 +1,103 @@
 'use client';
 
-import { Check, Crown, Star } from 'lucide-react';
-
+import { Badge } from '@/src/shared/components/ui/badge';
 import { Button } from '@/src/shared/components/ui/button';
-import { getPlanByRole } from '@/src/shared/utils/billing-config';
-import type { UserRole } from '@/src/shared/utils/roles';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
+import { cn } from '@/src/shared/utils';
+import { BILLING_CONFIG } from '@/src/shared/utils/billing-config';
+import type { UserTier } from '@/src/shared/utils/roles';
 
 type PlanCardProps = {
-  planRole: UserRole;
-  currentUserRole: UserRole;
-  onUpgrade?: (planRole: UserRole) => void;
+  planTier: UserTier;
+  currentUserTier: UserTier;
+  onUpgrade?: (planTier: UserTier) => void;
   className?: string;
 };
 
-export function PlanCard({ planRole, currentUserRole, onUpgrade, className = '' }: PlanCardProps) {
-  const plan = getPlanByRole(planRole);
+export function PlanCard({ planTier, currentUserTier, onUpgrade, className = '' }: PlanCardProps) {
+  const plan = BILLING_CONFIG.plans[planTier];
 
   if (!plan) {
     return null;
   }
 
-  const isCurrentPlan = currentUserRole === planRole;
-  const canUpgrade = planRole === 'standard' && (currentUserRole === 'signed_up' || currentUserRole === 'public');
-
-  const getIcon = () => {
-    switch (planRole) {
-      case 'signed_up':
-        return <Star className="size-6 text-blue-600" />;
-      case 'standard':
-        return <Crown className="size-6 text-green-600" />;
-      case 'admin':
-        return <Star className="size-6 text-purple-600" />;
-      default:
-        return null;
-    }
-  };
-
-  const getBorderStyle = () => {
-    if (isCurrentPlan) {
-      return 'border-green-500 bg-green-50';
-    }
-    if (planRole === 'standard') {
-      return 'border-blue-500';
-    }
-    return 'border-gray-200';
-  };
+  const isCurrentPlan = currentUserTier === planTier;
+  const canUpgrade = planTier === 'standard' && (currentUserTier === 'basic');
+  const canUpgradeToPremium = planTier === 'premium' && (currentUserTier === 'basic' || currentUserTier === 'standard');
 
   return (
-    <div className={`relative rounded-lg border-2 p-6 ${getBorderStyle()} ${className}`}>
+    <Card className={cn('relative h-full', className)}>
       {isCurrentPlan && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="rounded-full bg-green-500 px-3 py-1 text-sm font-medium text-white">
-            Current Plan
-          </span>
+        <div className="absolute -top-2 left-1/2 z-10 -translate-x-1/2">
+          <Badge className="bg-green-600">Current Plan</Badge>
         </div>
       )}
 
-      {planRole === 'standard' && !isCurrentPlan && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span className="rounded-full bg-blue-500 px-3 py-1 text-sm font-medium text-white">
-            Recommended
-          </span>
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-xl">{plan.name}</CardTitle>
+          {plan.price > 0 && (
+            <div className="text-right">
+              <span className="text-2xl font-bold">
+                $
+                {plan.price}
+              </span>
+              <span className="text-sm text-gray-500">/month</span>
+            </div>
+          )}
+          {plan.price === 0 && (
+            <div className="text-right">
+              <span className="text-2xl font-bold">Free</span>
+            </div>
+          )}
         </div>
-      )}
+        <CardDescription>
+          Perfect for
+          {' '}
+          {planTier === 'basic'
+            ? 'getting started'
+            : planTier === 'standard'
+              ? 'regular use'
+              : planTier === 'premium' ? 'power users' : 'administrators'}
+        </CardDescription>
+      </CardHeader>
 
-      <div className="text-center">
-        <div className="mb-4 flex items-center justify-center">
-          {getIcon()}
-          <h3 className="ml-2 text-xl font-bold text-gray-900">{plan.name}</h3>
-        </div>
-
-        <div className="mb-6">
-          <div className="text-4xl font-bold text-gray-900">
-            {plan.price === 0 ? 'Free' : `$${plan.price}`}
-            {plan.price > 0 && <span className="text-lg font-normal text-gray-600">/month</span>}
-          </div>
-        </div>
-
-        <ul className="mb-8 space-y-3">
+      <CardContent>
+        <ul className="space-y-2 text-sm">
           {plan.features.map((feature, index) => (
             <li key={index} className="flex items-center">
-              <Check className="mr-3 size-4 text-green-500" />
-              <span className="text-sm text-gray-700">{feature}</span>
+              <span className="mr-2 text-green-500">✓</span>
+              {feature}
             </li>
           ))}
         </ul>
 
-        {isCurrentPlan
-          ? (
-              <Button disabled className="w-full">
-                Current Plan
-              </Button>
-            )
-          : canUpgrade
+        <div className="mt-6">
+          {isCurrentPlan
             ? (
-                <Button
-                  onClick={() => onUpgrade?.(planRole)}
-                  className="w-full bg-blue-600 text-white hover:bg-blue-700"
-                >
-                  Upgrade to
-                  {' '}
-                  {plan.name}
+                <Button disabled className="w-full" variant="outline">
+                  {currentUserTier === 'standard' ? 'Your Plan' : 'Current Plan'}
                 </Button>
               )
-            : planRole === 'admin'
-              ? (
-                  <Button disabled className="w-full">
-                    Admin Only
-                  </Button>
-                )
-              : (
-                  <Button disabled className="w-full">
-                    {currentUserRole === 'standard' ? 'Your Plan' : 'Not Available'}
-                  </Button>
-                )}
-      </div>
-    </div>
+            : (canUpgrade || canUpgradeToPremium) && onUpgrade
+                ? (
+                    <Button
+                      onClick={() => onUpgrade(planTier)}
+                      className="w-full"
+                      variant={planTier === 'premium' ? 'default' : 'outline'}
+                    >
+                      Upgrade to
+                      {' '}
+                      {plan.name}
+                    </Button>
+                  )
+                : (
+                    <Button disabled className="w-full" variant="outline">
+                      {planTier === 'admin' ? 'Contact Admin' : 'Not Available'}
+                    </Button>
+                  )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

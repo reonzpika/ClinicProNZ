@@ -1,215 +1,213 @@
 'use client';
 
-import { useClerk } from '@clerk/nextjs';
+import { useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
 
-import { useRoleTesting } from '@/src/shared/contexts/RoleTestingContext';
-import { useTestUser } from '@/src/shared/contexts/TestUserContext';
-import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { Alert, AlertDescription } from '@/src/shared/components/ui/alert';
+import { Badge } from '@/src/shared/components/ui/badge';
+import { Button } from '@/src/shared/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
+import { useTierTestingContext } from '@/src/shared/contexts/RoleTestingContext';
 
 export default function EmergencyAdminPage() {
-  const { originalAdminEmail, clearOriginalAdminEmail, isTestUserMode } = useTestUser();
-  const { stopRoleTesting, isTestingRole } = useRoleTesting();
-  const { user } = useClerkMetadata();
-  const clerk = useClerk();
-  const [localStorageChecked, setLocalStorageChecked] = useState(false);
+  const { user } = useUser();
+  const { stopTierTesting, isTestingTier } = useTierTestingContext();
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  const currentTier = user?.publicMetadata?.tier as string || 'basic';
 
   useEffect(() => {
-    // Check localStorage directly as fallback
-    const storedEmail = localStorage.getItem('clinicpro-test-mode-admin-email');
-    if (storedEmail) {
-      setLocalStorageChecked(true);
+    // Auto-disable tier testing when accessing emergency admin
+    if (isTestingTier) {
+      stopTierTesting();
     }
-  }, []);
+  }, [isTestingTier, stopTierTesting]);
 
-  const handleBackToAdmin = async () => {
+  const handleMakeAdmin = async () => {
     try {
-      // Emergency admin recovery - forcing sign out
+      setIsLoading(true);
+      setMessage(null);
 
-      // STEP 1: Force sign out of current user (critical!)
-      await clerk.signOut();
-
-      // STEP 2: Clear all testing modes
-      if (isTestingRole) {
-        stopRoleTesting();
-      }
-
-      // STEP 3: Clear test user mode
-      clearOriginalAdminEmail();
-      localStorage.removeItem('clinicpro-test-mode-admin-email');
-
-      // STEP 4: Wait for sign out to complete
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // STEP 5: Get admin email and redirect
-      const adminEmail = originalAdminEmail || localStorage.getItem('clinicpro-test-mode-admin-email');
-
-      if (adminEmail) {
-        // Redirecting to admin login
-        window.location.href = `/login?email=${encodeURIComponent(adminEmail)}`;
-      } else {
-        // No admin email found, going to login page
-        window.location.href = '/login';
-      }
-    } catch {
-      // Emergency recovery failed - nuclear option: force page reload to clear everything
-      localStorage.removeItem('clinicpro-test-mode-admin-email');
-      window.location.href = '/login';
-    }
-  };
-
-  const handleClearAllTestingData = async () => {
-    try {
-      // Nuclear option - clearing everything
-
-      // Force sign out
-      await clerk.signOut();
-
-      // Clear all testing data
-      localStorage.removeItem('clinicpro-test-mode-admin-email');
-      if (isTestingRole) {
-        stopRoleTesting();
-      }
-      if (isTestUserMode) {
-        clearOriginalAdminEmail();
-      }
-
-      // Clear all localStorage data related to our app
-      Object.keys(localStorage).forEach((key) => {
-        if (key.includes('clinicpro') || key.includes('clerk')) {
-          localStorage.removeItem(key);
-        }
+      const response = await fetch('/api/admin/make-admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user?.id,
+        }),
       });
 
-      // Wait and redirect
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      window.location.href = '/login';
-    } catch {
-      // Nuclear clear failed - force reload
+      if (!response.ok) {
+        throw new Error('Failed to update admin status');
+      }
+
+      const result = await response.json();
+      setMessage(result.message || 'Admin status updated successfully');
+
+      // Reload the page to reflect the new admin status
       window.location.reload();
+    } catch (error) {
+      console.error('Error updating admin status:', error);
+      setMessage('Error updating admin status. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // New: Force manual admin login (bypasses all automation)
-  const handleForceManualLogin = async () => {
-    try {
-      // Force manual login - signing out and clearing everything
-      await clerk.signOut();
-      localStorage.clear();
-      sessionStorage.clear();
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      window.location.href = '/login';
-    } catch {
-      window.location.reload();
+  const handleDisableTesting = () => {
+    if (isTestingTier) {
+      stopTierTesting();
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 py-12">
-      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg">
+    <div className="container mx-auto max-w-4xl p-6">
+      <div className="space-y-6">
+        {/* Header */}
         <div className="text-center">
-          <h1 className="mb-4 text-2xl font-bold text-red-600">
-            Emergency Admin Access
+          <h1 className="mb-2 text-3xl font-bold text-red-600">
+            🚨 Emergency Admin Access
           </h1>
-          <p className="mb-6 text-gray-600">
-            Use this page to get back to admin access if you're stuck in test mode.
+          <p className="text-gray-600">
+            Emergency access for admin tier promotion and system recovery
           </p>
         </div>
 
         {/* Current Status */}
-        <div className="mb-6 rounded bg-gray-100 p-4">
-          <h3 className="mb-2 font-medium text-gray-900">Current Status:</h3>
-          <ul className="space-y-1 text-sm text-gray-600">
-            <li>
-              â€¢ Role Impersonation:
-              {isTestingRole ? 'âœ… Active' : 'âŒ Inactive'}
-            </li>
-            <li>
-              â€¢ Test User Login:
-              {isTestUserMode ? 'âœ… Active' : 'âŒ Inactive'}
-            </li>
-            <li>
-              â€¢ Stored Admin Email:
-              {originalAdminEmail || 'None'}
-            </li>
-            <li>
-              â€¢ Current User:
-              {user?.emailAddresses?.[0]?.emailAddress || 'Not logged in'}
-            </li>
-            <li>
-              â€¢ LocalStorage Backup:
-              {localStorageChecked ? 'âœ… Found' : 'âŒ Not found'}
-            </li>
-          </ul>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Current User Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="font-medium">User ID:</span>
+                <code className="rounded bg-gray-100 px-2 py-1 text-sm">
+                  {user?.id || 'Not available'}
+                </code>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Email:</span>
+                <span>{user?.primaryEmailAddress?.emailAddress || 'Not available'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Current Tier:</span>
+                <Badge variant={currentTier === 'admin' ? 'destructive' : 'secondary'}>
+                  {currentTier}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-medium">Tier Testing:</span>
+                <Badge variant={isTestingTier ? 'destructive' : 'default'}>
+                  {isTestingTier ? '✅ Active' : '❌ Inactive'}
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Action Buttons */}
-        <div className="space-y-3">
-          <button
-            type="button"
-            onClick={handleBackToAdmin}
-            className="w-full rounded bg-red-600 px-4 py-3 font-medium text-white transition-colors hover:bg-red-700"
-          >
-            Back to Admin Login (Improved)
-          </button>
+        {/* Admin Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-red-600">⚠️ Admin Actions</CardTitle>
+            <CardDescription>
+              Use these actions carefully. They have immediate effect on user permissions.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {/* Make Admin */}
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div>
+                  <h3 className="font-medium">Promote to Admin Tier</h3>
+                  <p className="text-sm text-gray-600">
+                    Grants full admin tier access to your current user account
+                  </p>
+                </div>
+                <Button
+                  onClick={handleMakeAdmin}
+                  disabled={isLoading || currentTier === 'admin'}
+                  variant="destructive"
+                  size="sm"
+                >
+                  {isLoading ? 'Updating...' : 'Make Admin'}
+                </Button>
+              </div>
 
-          <button
-            type="button"
-            onClick={handleForceManualLogin}
-            className="w-full rounded bg-orange-600 px-4 py-3 font-medium text-white transition-colors hover:bg-orange-700"
-          >
-            FORCE Sign Out & Manual Login
-          </button>
+              {/* Disable Testing */}
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div>
+                  <h3 className="font-medium">Disable Tier Testing</h3>
+                  <p className="text-sm text-gray-600">
+                    Stops tier testing mode and returns to real user tier
+                  </p>
+                </div>
+                <Button
+                  onClick={handleDisableTesting}
+                  disabled={!isTestingTier}
+                  variant="outline"
+                  size="sm"
+                >
+                  Disable Testing
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-          <button
-            type="button"
-            onClick={handleClearAllTestingData}
-            className="w-full rounded bg-gray-600 px-4 py-3 font-medium text-white transition-colors hover:bg-gray-700"
-          >
-            Nuclear Option (Clear Everything)
-          </button>
+        {/* Message Display */}
+        {message && (
+          <Alert>
+            <AlertDescription>{message}</AlertDescription>
+          </Alert>
+        )}
 
-          <a
-            href="/login"
-            className="block w-full rounded bg-blue-600 px-4 py-3 text-center font-medium text-white transition-colors hover:bg-blue-700"
-          >
-            â†—ï¸ Direct Login Page
-          </a>
-        </div>
-
-        {/* Instructions */}
-        <div className="mt-6 rounded bg-blue-50 p-4 text-sm text-blue-800">
-          <p className="mb-2 font-medium">How to use (try in order):</p>
-          <ol className="space-y-1">
-            <li>
-              <strong>1. "Back to Admin Login"</strong>
-              {' '}
-              - Improved with proper sign out
-            </li>
-            <li>
-              <strong>2. "FORCE Sign Out"</strong>
-              {' '}
-              - If still stuck, this clears everything
-            </li>
-            <li>
-              <strong>3. "Nuclear Option"</strong>
-              {' '}
-              - Clears all app data (last resort)
-            </li>
-            <li>
-              <strong>4. "Direct Login Page"</strong>
-              {' '}
-              - Manual login without automation
-            </li>
-          </ol>
-        </div>
+        {/* Warning */}
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardHeader>
+            <CardTitle className="text-yellow-800">⚠️ Important Notes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2 text-sm text-yellow-800">
+              <li>• This page is for emergency admin access only</li>
+              <li>• Changes take effect immediately</li>
+              <li>• Admin tier grants full system access</li>
+              <li>• Use responsibly and only when necessary</li>
+              <li>• All actions are logged for security</li>
+            </ul>
+          </CardContent>
+        </Card>
 
         {/* Access Info */}
-        <div className="mt-4 text-center text-xs text-gray-500">
-          Bookmark this page:
-          {' '}
-          <strong>/emergency-admin</strong>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>🔐 Access Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3 text-sm">
+              <div>
+                <strong>How to Access:</strong>
+                <p className="text-gray-600">
+                  This page is accessible to all authenticated users for emergency admin promotion.
+                </p>
+              </div>
+              <div>
+                <strong>When to Use:</strong>
+                <p className="text-gray-600">
+                  Use when you need admin access but don't currently have it, or when recovering from tier issues.
+                </p>
+              </div>
+              <div>
+                <strong>Security:</strong>
+                <p className="text-gray-600">
+                  All admin promotions are logged. Only use this for legitimate administrative needs.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

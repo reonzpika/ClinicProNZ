@@ -1,50 +1,47 @@
 'use client';
 
-import { useRoleTesting } from '@/src/shared/contexts/RoleTestingContext';
-import type { UserRole } from '@/src/shared/utils/roles';
-
-import { useClerkMetadata } from './useClerkMetadata';
+import { useRoleTestingContext } from '@/src/shared/contexts/RoleTestingContext';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import type { UserTier } from '@/src/shared/utils/roles';
 
 /**
- * Hook that returns the effective role for the current user
- * This will be the testing role if role impersonation is active,
- * otherwise the user's actual role from Clerk client-side
+ * Hook to get current user tier with testing support
  */
-export function useRole(): {
-  role: UserRole;
+export function useTier(): {
+  tier: UserTier;
   isLoading: boolean;
-  isTestingRole: boolean;
-  realRole: UserRole | null;
+  realTier: UserTier | null;
 } {
-  const { isLoaded, getUserRole } = useClerkMetadata();
-  const { testingRole, isTestingRole } = useRoleTesting();
+  const { isLoaded, getUserTier } = useClerkMetadata();
+  const { testingTier } = useRoleTestingContext();
 
-  // Get role from Clerk user metadata (type-safe)
-  const realRole = getUserRole();
-  const effectiveRole = testingRole || realRole;
+  const realTier = getUserTier();
 
   return {
-    role: effectiveRole,
+    tier: testingTier || realTier,
     isLoading: !isLoaded,
-    isTestingRole,
-    realRole,
+    realTier: testingTier ? realTier : null,
   };
 }
 
 /**
- * Hook for checking if user has a specific role or higher
- * Uses the effective role (testing role if active)
+ * Hook for checking if user has a specific tier or higher
+ * Uses the effective tier (testing tier if active)
  */
-export function useHasRole(requiredRole: UserRole): boolean {
-  const { role, isLoading } = useRole();
+export function useHasTier(requiredTier: UserTier): boolean {
+  const { tier, isLoading } = useTier();
 
   if (isLoading) {
     return false;
   }
 
-  const roleHierarchy: UserRole[] = ['public', 'signed_up', 'standard', 'admin'];
-  const userRoleIndex = roleHierarchy.indexOf(role);
-  const requiredRoleIndex = roleHierarchy.indexOf(requiredRole);
+  const tierHierarchy: UserTier[] = ['basic', 'standard', 'premium', 'admin'];
+  const userTierIndex = tierHierarchy.indexOf(tier);
+  const requiredTierIndex = tierHierarchy.indexOf(requiredTier);
 
-  return userRoleIndex >= requiredRoleIndex;
+  return userTierIndex >= requiredTierIndex;
 }
+
+// Export useRole as alias for backward compatibility
+export const useRole = useTier;
+export const useHasRole = useHasTier;

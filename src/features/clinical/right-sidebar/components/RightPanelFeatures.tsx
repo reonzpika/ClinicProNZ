@@ -18,40 +18,40 @@ type AccordionSection = {
 };
 
 const sections: AccordionSection[] = [
-  { 
-    id: 'images', 
-    icon: Camera, 
-    title: 'Clinical Images', 
+  {
+    id: 'images',
+    icon: Camera,
+    title: 'Clinical Images',
     description: 'Upload and analyze medical images with AI-powered insights and diagnostic assistance',
-    component: () => <ComingSoonPlaceholder title="Clinical Images" description="Upload and analyze medical images with AI-powered insights and diagnostic assistance" icon={Camera} />
+    component: () => <ComingSoonPlaceholder title="Clinical Images" description="Upload and analyze medical images with AI-powered insights and diagnostic assistance" icon={Camera} />,
   },
-  { 
-    id: 'checklist', 
-    icon: CheckSquare, 
-    title: 'Interactive Checklist', 
+  {
+    id: 'checklist',
+    icon: CheckSquare,
+    title: 'Interactive Checklist',
     description: 'Smart clinical checklists that adapt to your workflow and patient presentations',
-    component: () => <ComingSoonPlaceholder title="Interactive Checklist" description="Smart clinical checklists that adapt to your workflow and patient presentations" icon={CheckSquare} />
+    component: () => <ComingSoonPlaceholder title="Interactive Checklist" description="Smart clinical checklists that adapt to your workflow and patient presentations" icon={CheckSquare} />,
   },
-  { 
-    id: 'ddx', 
-    icon: Search, 
-    title: 'Differential Diagnosis', 
+  {
+    id: 'ddx',
+    icon: Search,
+    title: 'Differential Diagnosis',
     description: 'AI-powered differential diagnosis suggestions based on clinical presentation and symptoms',
-    component: () => <ComingSoonPlaceholder title="Differential Diagnosis" description="AI-powered differential diagnosis suggestions based on clinical presentation and symptoms" icon={Search} />
+    component: () => <ComingSoonPlaceholder title="Differential Diagnosis" description="AI-powered differential diagnosis suggestions based on clinical presentation and symptoms" icon={Search} />,
   },
-  { 
-    id: 'chat', 
-    icon: MessageCircle, 
-    title: 'Clinical Reference', 
+  {
+    id: 'chat',
+    icon: MessageCircle,
+    title: 'Clinical Reference',
     description: 'Ask questions about clinical guidelines, medications, and best practices',
-    component: () => <ComingSoonPlaceholder title="Clinical Reference" description="Ask questions about clinical guidelines, medications, and best practices" icon={MessageCircle} />
+    component: () => <ComingSoonPlaceholder title="Clinical Reference" description="Ask questions about clinical guidelines, medications, and best practices" icon={MessageCircle} />,
   },
-  { 
-    id: 'acc', 
-    icon: Stethoscope, 
-    title: 'ACC Code Suggestions', 
+  {
+    id: 'acc',
+    icon: Stethoscope,
+    title: 'ACC Code Suggestions',
     description: 'Intelligent ACC code suggestions based on your consultation notes and patient presentation',
-    component: () => <ComingSoonPlaceholder title="ACC Code Suggestions" description="Intelligent ACC code suggestions based on your consultation notes and patient presentation" icon={Stethoscope} />
+    component: () => <ComingSoonPlaceholder title="ACC Code Suggestions" description="Intelligent ACC code suggestions based on your consultation notes and patient presentation" icon={Stethoscope} />,
   },
 ];
 

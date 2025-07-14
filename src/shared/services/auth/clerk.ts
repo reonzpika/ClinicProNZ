@@ -1,82 +1,35 @@
-import { auth, currentUser } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
+import { auth } from '@clerk/nextjs/server';
 
-import { getCurrentRole, type UserRole } from '@/src/shared/utils/roles';
+import { getCurrentTier, type UserTier } from '@/src/shared/utils/roles';
 
-if (!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
-  throw new Error('Missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY');
-}
+/**
+ * Server-side helper functions for Clerk authentication
+ */
 
-if (!process.env.CLERK_SECRET_KEY) {
-  throw new Error('Missing CLERK_SECRET_KEY');
-}
+/**
+ * Get the current user's tier
+ */
+export const getUserTier = async (): Promise<UserTier> => getCurrentTier();
 
-// Helper functions for authentication
-export const getAuth = async () => auth();
-export const getUser = async () => currentUser();
-
-// Role-based authentication helpers
-export const getUserRole = async (): Promise<UserRole> => getCurrentRole();
-
-// Type definitions for Clerk user
-export type ClerkUser = Awaited<ReturnType<typeof currentUser>>;
-
-// Helper function to check if user is authenticated
-export const isAuthenticated = async (_req: Request) => {
-  const { userId } = await getAuth();
-  return !!userId;
+/**
+ * Check if the current user has a specific tier or higher
+ */
+export const checkUserTier = async (requiredTier: UserTier): Promise<boolean> => {
+  const { hasTier } = await import('@/src/shared/utils/roles');
+  return hasTier(requiredTier);
 };
 
-// Helper function to get user ID
-export const getUserId = async (_req: Request) => {
-  const { userId } = await getAuth();
-  return userId;
-};
+/**
+ * Get the current user's authentication context
+ */
+export const getAuthContext = async () => {
+  const { userId, sessionClaims } = await auth();
+  const tier = await getCurrentTier();
 
-// Session management
-export const handleSessionExpiry = async (_req: Request) => {
-  const { userId } = await getAuth();
-  if (!userId) {
-    redirect('/sign-in');
-  }
-};
-
-// Session recovery
-export const recoverSession = async (_req: Request) => {
-  try {
-    const { userId } = await getAuth();
-    if (!userId) {
-      return null;
-    }
-
-    // Attempt to recover any saved state
-    const savedState = typeof localStorage !== 'undefined' ? localStorage.getItem('consultationState') : null;
-    if (savedState) {
-      return JSON.parse(savedState);
-    }
-
-    return null;
-  } catch (error) {
-    console.error('Session recovery failed:', error);
-    return null;
-  }
-};
-
-// Session cleanup
-export const cleanupSession = async (_req: Request) => {
-  try {
-    // Clear any saved state
-    if (typeof localStorage !== 'undefined') {
-      localStorage.removeItem('consultationState');
-    }
-
-    // Additional cleanup if needed
-    const { userId } = await getAuth();
-    if (userId && typeof localStorage !== 'undefined') {
-      // Clear any user-specific data
-      localStorage.removeItem(`user_${userId}_preferences`);
-    }
-  } catch (error) {
-    console.error('Session cleanup failed:', error);
-  }
+  return {
+    userId,
+    tier,
+    isAuthenticated: !!userId,
+    sessionClaims,
+  };
 };

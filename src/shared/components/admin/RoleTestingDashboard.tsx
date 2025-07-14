@@ -1,94 +1,128 @@
 'use client';
 
-import { useRole } from '@/src/shared/hooks/useRole';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
+import { useTier } from '@/src/shared/hooks/useRole';
 
-import { RoleImpersonator } from './RoleImpersonator';
+import { TierImpersonator } from './RoleImpersonator';
 import { TestUserLogin } from './TestUserLogin';
 
 export function RoleTestingDashboard() {
-  const { realRole, isLoading } = useRole();
+  return <TierTestingDashboard />;
+}
+
+export function TierTestingDashboard() {
+  const { realTier, isLoading } = useTier();
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-6">
-        <div className="text-center text-gray-500">Loading role testing dashboard...</div>
-      </div>
+      <div className="text-center text-gray-500">Loading tier testing dashboard...</div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-2 text-xl font-bold text-gray-900">
-          🧪 Role Testing Dashboard
-        </h2>
-        <p className="text-gray-600">
-          Test different user roles to verify permissions, rate limits, and UI behaviour.
-          Choose between
-          {' '}
-          <strong>Role Impersonation</strong>
-          {' '}
-          (UI testing) or
-          {' '}
-          <strong>Test User Login</strong>
-          {' '}
-          (full backend testing).
+      <div className="text-center">
+        <h1 className="mb-2 text-3xl font-bold text-gray-900">
+          🧪 Tier Testing Dashboard
+        </h1>
+        <p className="mx-auto max-w-2xl text-gray-600">
+          Test different user tiers to verify permissions, rate limits, and UI behaviour.
         </p>
       </div>
 
-      {/* Role Impersonation */}
-      <RoleImpersonator currentRole={realRole || 'admin'} />
+      {/* Tier Impersonation Section */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold text-gray-900">
+          <strong>Tier Impersonation</strong>
+        </h2>
+        <p className="text-gray-600">
+          Test how the frontend behaves for different user tiers without switching accounts.
+        </p>
 
-      {/* Test User Login */}
-      <TestUserLogin />
-
-      {/* Quick Testing Guide */}
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-6">
-        <h3 className="mb-4 text-lg font-medium text-gray-900">
-          🚀 Quick Testing Guide
-        </h3>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div className="space-y-3">
-            <h4 className="font-medium text-gray-900">🎭 Role Impersonation (Frontend)</h4>
-            <ul className="space-y-1 text-sm text-gray-600">
-              <li>• Test UI component visibility</li>
-              <li>• Check rate limit displays</li>
-              <li>• Verify navigation access</li>
-              <li>• Quick role switching</li>
-            </ul>
-          </div>
-          <div className="space-y-3">
-            <h4 className="font-medium text-gray-900">👥 Test User Login (Backend)</h4>
-            <ul className="space-y-1 text-sm text-gray-600">
-              <li>• Test API permissions</li>
-              <li>• Verify middleware protection</li>
-              <li>• Check actual rate limiting</li>
-              <li>• Test authentication flows</li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="mt-4 rounded bg-blue-100 p-3">
-          <h4 className="mb-1 text-sm font-medium text-blue-900">💡 Testing Workflow</h4>
-          <ol className="space-y-1 text-sm text-blue-800">
-            <li>
-              1. Use
-              <strong>Role Impersonation</strong>
-              {' '}
-              for quick UI checks
-            </li>
-            <li>
-              2. Use
-              <strong>Test User Login</strong>
-              {' '}
-              for comprehensive backend testing
-            </li>
-            <li>3. Always test critical features like `/consultation`, `/templates`, rate limits</li>
-            <li>4. Use "🔙 Back to Admin" to return to admin privileges</li>
-          </ol>
+        <div className="flex justify-center">
+          <TierImpersonator currentTier={realTier || 'admin'} />
         </div>
       </div>
+
+      {/* Test User Login Section */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold text-gray-900">
+          <strong>Test User Login</strong>
+        </h2>
+        <p className="text-gray-600">
+          Switch to actual test user accounts for complete end-to-end testing.
+        </p>
+
+        <div className="flex justify-center">
+          <TestUserLogin />
+        </div>
+      </div>
+
+      {/* Information Cards */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">🎭 Tier Impersonation (Frontend)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2 text-sm text-gray-600">
+              <li>• Quick tier switching</li>
+              <li>• Frontend-only changes</li>
+              <li>• Real API calls unaffected</li>
+              <li>• Perfect for UI testing</li>
+            </ul>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">👤 Test User Login (Full Stack)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2 text-sm text-gray-600">
+              <li>• Complete tier testing</li>
+              <li>• Real API authentication</li>
+              <li>• Rate limiting verification</li>
+              <li>• Billing system testing</li>
+            </ul>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Usage Guide */}
+      <Card>
+        <CardHeader>
+          <CardTitle>📋 Testing Guide</CardTitle>
+          <CardDescription>
+            How to effectively test different user tiers
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4 text-sm">
+            <div>
+              <h4 className="mb-2 font-medium text-gray-900">🎯 What to Test</h4>
+              <ul className="ml-4 space-y-1 text-gray-600">
+                <li>• Feature access and restrictions</li>
+                <li>• Rate limiting behaviour</li>
+                <li>• Billing and usage limits</li>
+                <li>• UI component visibility</li>
+                <li>• Navigation and redirects</li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="mb-2 font-medium text-gray-900">🔄 Testing Workflow</h4>
+              <ol className="ml-4 list-decimal space-y-1 text-gray-600">
+                <li>Start with tier impersonation for quick UI checks</li>
+                <li>Switch to test user login for full API testing</li>
+                <li>Test edge cases and error handling</li>
+                <li>Verify tier transitions work correctly</li>
+              </ol>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

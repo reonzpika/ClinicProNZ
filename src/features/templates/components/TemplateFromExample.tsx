@@ -121,25 +121,25 @@ export function TemplateFromExample({ onTemplateGenerated, onCancel }: TemplateF
               <h4 className="mb-2 font-medium text-blue-900">What makes good examples:</h4>
               <ul className="space-y-1 text-sm text-blue-800">
                 <li>
-                  â€¢
+                  •
                   <strong>Similar consultation types</strong>
                   {' '}
                   (e.g., all general consultations or all follow-ups)
                 </li>
                 <li>
-                  â€¢
+                  •
                   <strong>Your typical documentation style</strong>
                   {' '}
                   - use your normal headings, abbreviations, and formatting
                 </li>
                 <li>
-                  â€¢
+                  •
                   <strong>Complete notes</strong>
                   {' '}
                   with all sections you usually include
                 </li>
                 <li>
-                  â€¢
+                  •
                   <strong>Consistent structure</strong>
                   {' '}
                   across examples to help identify your patterns

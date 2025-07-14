@@ -1,27 +1,22 @@
-// Role-based access control utilities
-export type { UserRole } from './roles';
+// Tier-based access control utilities
+export type { UserTier } from './roles';
 export * from './roles';
 
-// Re-export common role guards for convenience
+// Re-export common tier functions for convenience
 export {
-  checkRole,
-  getCurrentRole,
-  getUserRoleInfo,
-  hasRole,
-  requireRole,
-  RoleGuards,
+  checkTierFromSessionClaims,
+  getCurrentTier,
+  hasExactTier,
+  hasTier,
+  isAdmin,
+  isPremiumOrHigher,
+  isStandardOrHigher,
+  TIER_HIERARCHY,
 } from './roles';
 
 // Billing and plan utilities
-export * from './billing-config';
-export {
-  BILLING_CONFIG,
-  getPlanByRole,
-  getRoleByStripePriceId,
-} from './billing-config';
+export { BILLING_CONFIG, getPlanByTier, getTierByStripePriceId } from './billing-config';
 
-// RBAC utilities
-export {
-  canAccessTemplates,
-  getTierFromRole,
-} from '../../lib/rbac-client';
+// Other utilities
+export { cn } from '../../lib/utils';
+export { LAUNCH_CONFIG } from './launch-config';

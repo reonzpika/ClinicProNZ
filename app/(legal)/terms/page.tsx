@@ -19,7 +19,7 @@ export default function TermsPage() {
                 href="/"
                 className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
-                â† Back to Home
+                ← Back to Home
               </Link>
             </div>
 
@@ -187,7 +187,7 @@ export default function TermsPage() {
                 href="/"
                 className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
-                â† Back to Home
+                ← Back to Home
               </Link>
             </div>
           </div>

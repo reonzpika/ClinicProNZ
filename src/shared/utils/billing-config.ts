@@ -1,4 +1,4 @@
-import type { UserRole } from './roles';
+import type { UserTier } from './roles';
 
 // Billing plan configuration
 export const BILLING_CONFIG = {
@@ -7,11 +7,12 @@ export const BILLING_CONFIG = {
     free: {
       name: 'Free',
       price: 0,
-      role: 'signed_up' as UserRole,
+      tier: 'basic' as UserTier,
       stripePriceId: null, // No Stripe involvement for free
       features: [
         'Basic templates',
-        'Up to 20 requests/day',
+        'Up to 5 core sessions/day',
+        'Up to 5 premium actions/day',
         'Email support',
       ],
     },
@@ -20,14 +21,32 @@ export const BILLING_CONFIG = {
     standard: {
       name: 'Standard',
       price: 89,
-      role: 'standard' as UserRole,
+      tier: 'standard' as UserTier,
       stripePriceId: process.env.STRIPE_STANDARD_PRICE_ID, // Set in .env
       features: [
-        'Up to 1000 requests/day',
+        'Unlimited core sessions',
+        'Up to 5 premium actions/day',
         'All templates',
+        'Template management',
+        'Session management',
         'Real-time transcription',
         'AI-generated notes',
         'Priority support',
+      ],
+    },
+
+    premium: {
+      name: 'Premium',
+      price: 199,
+      tier: 'premium' as UserTier,
+      stripePriceId: process.env.STRIPE_PREMIUM_PRICE_ID, // Set in .env
+      features: [
+        'All standard features',
+        'Up to 100 premium actions/day',
+        'Advanced clinical tools',
+        'Differential diagnosis',
+        'Image analysis',
+        'Premium support',
       ],
     },
 
@@ -35,10 +54,11 @@ export const BILLING_CONFIG = {
     admin: {
       name: 'Admin',
       price: 0,
-      role: 'admin' as UserRole,
+      tier: 'admin' as UserTier,
       stripePriceId: null,
       features: [
-        'All standard features',
+        'All premium features',
+        'Unlimited premium actions',
         'Admin dashboard',
         'User management',
         'System analytics',
@@ -50,18 +70,16 @@ export const BILLING_CONFIG = {
 } as const;
 
 /**
- * Get plan configuration by role
+ * Get plan configuration by tier
  */
-export function getPlanByRole(role: UserRole) {
-  return Object.values(BILLING_CONFIG.plans).find(plan => plan.role === role);
+export function getPlanByTier(tier: UserTier) {
+  return Object.values(BILLING_CONFIG.plans).find(plan => plan.tier === tier);
 }
 
 /**
- * Get role by Stripe price ID
+ * Get tier by Stripe Price ID
  */
-export function getRoleByStripePriceId(priceId: string): UserRole | null {
-  const plan = Object.values(BILLING_CONFIG.plans).find(
-    plan => plan.stripePriceId === priceId,
-  );
-  return plan?.role || null;
+export function getTierByStripePriceId(priceId: string): UserTier | null {
+  const plan = Object.values(BILLING_CONFIG.plans).find(p => p.stripePriceId === priceId);
+  return plan?.tier || null;
 }

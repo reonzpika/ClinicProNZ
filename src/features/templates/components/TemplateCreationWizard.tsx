@@ -399,7 +399,7 @@ export function TemplateCreationWizard({ onSave, onCancel }: TemplateCreationWiz
                 <h3 className="mb-3 font-medium text-blue-900">Template Creation Tips</h3>
                 <ul className="space-y-2 text-sm text-blue-800">
                   <li className="flex items-start gap-2">
-                    <span className="mt-0.5 text-blue-600">â€¢</span>
+                    <span className="mt-0.5 text-blue-600">•</span>
                     <span>
                       Use
                       {' '}
@@ -409,7 +409,7 @@ export function TemplateCreationWizard({ onSave, onCancel }: TemplateCreationWiz
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="mt-0.5 text-blue-600">â€¢</span>
+                    <span className="mt-0.5 text-blue-600">•</span>
                     <span>
                       Add
                       {' '}
@@ -419,11 +419,11 @@ export function TemplateCreationWizard({ onSave, onCancel }: TemplateCreationWiz
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="mt-0.5 text-blue-600">â€¢</span>
+                    <span className="mt-0.5 text-blue-600">•</span>
                     <span>Organise with clear section headers like HISTORY:, EXAMINATION:, PLAN:</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="mt-0.5 text-blue-600">â€¢</span>
+                    <span className="mt-0.5 text-blue-600">•</span>
                     <span>Try the new Guided Creator for step-by-step assistance</span>
                   </li>
                 </ul>

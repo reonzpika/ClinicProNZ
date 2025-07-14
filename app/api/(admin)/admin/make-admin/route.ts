@@ -18,7 +18,7 @@ export async function POST() {
     // Update user to admin
     const updatedUser = await clerkClient.users.updateUserMetadata(userId, {
       publicMetadata: {
-        role: 'admin',
+        tier: 'admin',
       },
     });
 

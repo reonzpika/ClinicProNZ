@@ -224,7 +224,7 @@ export function TranscriptionControls({
             className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
             onClick={() => setIsExpanded(!isExpanded)}
           >
-            {isExpanded ? 'âˆ’' : '+'}
+            {isExpanded ? '−' : '+'}
           </button>
         </div>
         {isExpanded && transcript && (
@@ -322,7 +322,7 @@ export function TranscriptionControls({
                   {connectedMobileDevices.map(device => (
                     <div key={device.deviceId} className="flex items-center justify-between">
                       <span className="text-xs text-green-700">
-                        âœ“
+                        ✓
                         {device.deviceName}
                       </span>
                       <Button
@@ -346,11 +346,11 @@ export function TranscriptionControls({
           <div className="space-y-2">
             {/* Status and Warnings */}
             {noInputWarning && !isWaitingForSpeech && (
-              <div className="text-xs text-red-500">No audio detectedâ€”check your mic</div>
+              <div className="text-xs text-red-500">No audio detected—check your mic</div>
             )}
             {hasMobileDevices && !isRecording && (
               <div className="text-xs text-green-600">
-                âœ“ Mobile device ready
+                ✓ Mobile device ready
               </div>
             )}
 
@@ -368,9 +368,9 @@ export function TranscriptionControls({
                           )
                         : (
                             <div className="flex items-center gap-3 text-xs text-slate-500">
-                              <span>âœ“ Superior audio</span>
-                              <span>âœ“ 30s setup</span>
-                              <span>âœ“ Move freely</span>
+                              <span>✓ Superior audio</span>
+                              <span>✓ 30s setup</span>
+                              <span>✓ Move freely</span>
                             </div>
                           )}
 
@@ -569,7 +569,7 @@ export function TranscriptionControls({
             )}
             {!isRecording && transcript && (
               <div className="text-xs font-medium text-slate-600">
-                Transcribed Text â€” Edit as needed
+                Transcribed Text — Edit as needed
               </div>
             )}
 

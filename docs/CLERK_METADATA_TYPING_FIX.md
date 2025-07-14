@@ -1,115 +1,98 @@
-# Clerk Metadata Typing Fix - Complete
+# Clerk Metadata Typing Fix
 
-## Overview
-Comprehensive fix of Clerk role metadata typing issues across the ClinicPro codebase, implementing proper TypeScript type safety for user metadata access.
+## Problem
+Previously, accessing `user.publicMetadata.tier` was unsafe due to lack of TypeScript typing, leading to runtime errors and unsafe type casting.
 
-## Issues Fixed
-- **48 TypeScript errors reduced to 39** (9 errors eliminated)
-- **All Clerk metadata typing issues resolved** (15+ files affected)
-- **Unsafe type casting eliminated** (`as string`, `as UserRole`)
-- **Proper module augmentation added** for Clerk types
+## Solution
+We've implemented a comprehensive tier-based RBAC system with proper TypeScript typing:
 
-## Changes Made
+### Key Changes:
+- **Type safety enforced** - No more unsafe casting
+- **Unsafe type casting eliminated** (`as string`, `as UserTier`)
+- **Consistent tier access** - Single source of truth for tier checking
+- **Proper error handling** - Graceful fallbacks for missing tier data
+- **Runtime validation** - Tier values are validated at runtime
+- **Unified on `UserTier` type** from `src/shared/utils/roles.ts`
 
-### 1. Type System Consolidation
-- **Removed duplicate `Roles` type** from `types/globals.d.ts`
-- **Unified on `UserRole` type** from `src/shared/utils/roles.ts`
-- **Added proper Clerk module augmentation** with full metadata interface
-
-### 2. Created Utility Hook
-- **New `useClerkMetadata` hook** for type-safe metadata access
-- **Centralized role logic** with hierarchy support
-- **Safe fallback handling** for undefined metadata
-
-### 3. Fixed All Components (15+ files)
-**Hooks:**
-- `src/shared/hooks/useRBAC.ts` ✅
-- `src/shared/hooks/useRole.ts` ✅
-
-**Components:**
-- `src/shared/components/RoleGuard.tsx` ✅
-- `src/shared/components/Sidebar.tsx` ✅
-- `src/shared/components/RoleTestingBanner.tsx` ✅
-- `src/shared/components/RateLimitModal.tsx` ✅
-- `src/shared/components/admin/TestUserLogin.tsx` ✅
-- `src/features/dashboard/components/UpgradeCTA.tsx` ✅
-- `src/features/consultation/components/UsageDashboard.tsx` ✅
-- `app/emergency-admin/page.tsx` ✅
-
-**API Routes:**
-- `src/shared/utils/roles.ts` ✅
-- `src/lib/rbac-enforcer.ts` ✅
-
-## Key Improvements
-
-### Before (Unsafe)
+### Core Types:
 ```typescript
-// Unsafe type casting
-const userRole = user?.publicMetadata?.role as string;
-const role = user?.publicMetadata?.role as UserRole;
+// src/shared/utils/roles.ts
+export type UserTier = 'basic' | 'standard' | 'premium' | 'admin';
 
-// No type safety
-user?.publicMetadata?.role // TypeScript sees this as 'any'
-```
-
-### After (Type-Safe)
-```typescript
-// Type-safe utility hook
-const { getUserRole, hasRole } = useClerkMetadata();
-const userRole = getUserRole(); // Properly typed as UserRole
-
-// Full type safety with module augmentation
-user?.publicMetadata?.role // TypeScript knows this is UserRole | undefined
-```
-
-## Module Augmentation
-```typescript
-// types/globals.d.ts
-declare module '@clerk/nextjs' {
+// globals.d.ts
+declare global {
   interface UserPublicMetadata {
-    role?: UserRole;
-    stripeCustomerId?: string;
-    subscriptionId?: string;
-    // ... other metadata fields
+    tier?: UserTier;
   }
 }
 ```
 
-## Utility Hook API
+### Before (Unsafe):
 ```typescript
-const {
-  user,                    // Clerk user object
-  isLoaded,               // Loading state
-  getUserRole,            // Get user role safely
-  hasRole,                // Hierarchical role check
-  hasExactRole,           // Exact role check
-  getBillingMetadata,     // Safe billing data access
-  getAssignmentMetadata,  // Safe assignment data access
-  metadata,               // Direct metadata access
-} = useClerkMetadata();
+// ❌ Unsafe - no type checking
+const tier = user?.publicMetadata?.tier as string;
+const isAdmin = tier === 'admin'; // Could break if tier is undefined
+
+// ❌ Unsafe type casting
+const tier = user?.publicMetadata?.tier as UserTier;
 ```
 
-## Remaining Errors (Non-Metadata)
-- **8 Stripe webhook type issues** (separate from metadata)
-- **3 window.Clerk type issues** (separate from metadata)
-- **Misc unused variables** (cleanup needed)
+### After (Safe):
+```typescript
+// ✅ Safe - proper typing and validation
+const { getUserTier, hasTier } = useClerkMetadata();
+const userTier = getUserTier(); // Properly typed as UserTier
+const isAdmin = hasTier('admin'); // Safe boolean result
+
+// ✅ Safe - TypeScript knows the type
+user?.publicMetadata?.tier // TypeScript knows this is UserTier | undefined
+```
+
+## Implementation Details
+
+### 1. Enhanced `useClerkMetadata` Hook
+```typescript
+// src/shared/hooks/useClerkMetadata.ts
+export function useClerkMetadata() {
+  const { user } = useUser();
+  
+  return {
+    user,
+    getUserTier,            // Get user tier safely
+    hasTier,                // Hierarchical tier check
+    isLoading: !user,
+  };
+}
+```
+
+### 2. Proper Usage Examples
+```typescript
+// In components:
+const { getUserTier, hasTier } = useClerkMetadata();
+const userTier = getUserTier();
+const isAdmin = hasTier('admin');
+
+// In API routes:
+const tier = sessionClaims?.metadata?.tier || 'basic';
+const hasAccess = TIER_HIERARCHY[tier] >= TIER_HIERARCHY.standard;
+```
+
+### 3. Migration Impact
+- **All components** updated to use `UserTier` instead of `UserRole`
+- **All API routes** updated to check tier directly from metadata
+- **Billing system** updated to tier-based plans
+- **Middleware** updated to use tier-based authentication
+- **Testing system** updated to tier-based impersonation
 
 ## Benefits
-- **Complete type safety** for Clerk metadata access
-- **Eliminated unsafe casting** across entire codebase
-- **Centralised role logic** with consistent API
-- **Future-proof** with proper module augmentation
-- **Better developer experience** with IntelliSense support
+1. **Type Safety**: No more runtime errors from undefined tier values
+2. **Developer Experience**: Better autocomplete and compile-time error detection
+3. **Maintainability**: Single source of truth for tier checking
+4. **Performance**: Reduced need for type casting and validation
+5. **Consistency**: Unified tier access pattern across the application
 
-## Usage Example
-```typescript
-// Old way (unsafe)
-const userRole = user?.publicMetadata?.role as string;
-
-// New way (type-safe)
-const { getUserRole, hasRole } = useClerkMetadata();
-const userRole = getUserRole();
-const isAdmin = hasRole('admin');
-```
-
-Status: ✅ **Complete** - All Clerk metadata typing issues resolved 
+## Testing
+The tier testing system has been updated to work with the new tier-based approach:
+- **Tier Impersonation**: Frontend-only tier testing
+- **Test User Login**: Full-stack tier testing with real accounts
+- **Emergency Admin**: Tier promotion for recovery scenarios 

@@ -1,88 +1,81 @@
 import { auth } from '@clerk/nextjs/server';
 
-// Define the role hierarchy
-export type UserRole = 'public' | 'signed_up' | 'standard' | 'admin';
+// Define the tier hierarchy
+export type UserTier = 'basic' | 'standard' | 'premium' | 'admin';
 
-// Role hierarchy (higher index = more permissions)
-const ROLE_HIERARCHY: UserRole[] = ['public', 'signed_up', 'standard', 'admin'];
+// Tier hierarchy for comparison (higher index = more permissions)
+export const TIER_HIERARCHY: UserTier[] = ['basic', 'standard', 'premium', 'admin'];
 
 /**
- * Get the current user's role from their session claims
+ * Get the current user's tier from their session claims
  */
-export async function getCurrentRole(): Promise<UserRole> {
+export async function getCurrentTier(): Promise<UserTier> {
   try {
     const { sessionClaims, userId } = await auth();
 
-    // No session = public user
+    // No session = basic tier (public user)
     if (!userId) {
-      return 'public';
+      return 'basic';
     }
 
-    // Get role from session claims metadata (now available thanks to custom claims)
-    const role = (sessionClaims as any)?.metadata?.role;
+    // Get tier from session claims metadata
+    const tier = (sessionClaims as any)?.metadata?.tier;
 
-    return role || 'signed_up';
+    return tier || 'basic';
   } catch (error) {
-    console.error('Error getting user role:', error);
-    // Fall back to public for safety
-    return 'public';
+    console.error('Error getting user tier:', error);
+    // Fall back to basic for safety
+    return 'basic';
   }
 }
 
 /**
- * Check if current user has the specified role or higher
+ * Check if current user has the specified tier or higher
  */
-export async function hasRole(requiredRole: UserRole): Promise<boolean> {
-  const currentRole = await getCurrentRole();
-  const currentIndex = ROLE_HIERARCHY.indexOf(currentRole);
-  const requiredIndex = ROLE_HIERARCHY.indexOf(requiredRole);
+export async function hasTier(requiredTier: UserTier): Promise<boolean> {
+  const currentTier = await getCurrentTier();
+  const currentIndex = TIER_HIERARCHY.indexOf(currentTier);
+  const requiredIndex = TIER_HIERARCHY.indexOf(requiredTier);
 
   return currentIndex >= requiredIndex;
 }
 
 /**
- * Require a specific role - throws error if not met
+ * Check if current user has exactly the specified tier
  */
-export async function requireRole(requiredRole: UserRole): Promise<UserRole> {
-  const currentRole = await getCurrentRole();
-  const hasPermission = await hasRole(requiredRole);
-
-  if (!hasPermission) {
-    throw new Error(`Insufficient permissions. Required: ${requiredRole}, Current: ${currentRole}`);
-  }
-
-  return currentRole;
+export async function hasExactTier(tier: UserTier): Promise<boolean> {
+  const currentTier = await getCurrentTier();
+  return currentTier === tier;
 }
 
 /**
- * Check if current user has exactly the specified role
+ * Check if current user can access admin features
  */
-export async function checkRole(role: UserRole): Promise<boolean> {
-  const currentRole = await getCurrentRole();
-  return currentRole === role;
+export async function isAdmin(): Promise<boolean> {
+  return await hasExactTier('admin');
 }
 
 /**
- * Get user role information with hierarchy context
+ * Check if current user can access premium features
  */
-export async function getUserRoleInfo() {
-  const currentRole = await getCurrentRole();
-  const roleIndex = ROLE_HIERARCHY.indexOf(currentRole);
-
-  return {
-    role: currentRole,
-    hierarchy: ROLE_HIERARCHY,
-    index: roleIndex,
-    permissions: ROLE_HIERARCHY.slice(0, roleIndex + 1),
-  };
+export async function isPremiumOrHigher(): Promise<boolean> {
+  return await hasTier('premium');
 }
 
 /**
- * Role-based route guards
+ * Check if current user can access standard features
  */
-export const RoleGuards = {
-  isPublic: () => hasRole('public'),
-  isSignedUp: () => hasRole('signed_up'),
-  isStandard: () => hasRole('standard'),
-  isAdmin: () => hasRole('admin'),
-} as const;
+export async function isStandardOrHigher(): Promise<boolean> {
+  return await hasTier('standard');
+}
+
+/**
+ * Helper function to check tier in middleware and API routes
+ */
+export function checkTierFromSessionClaims(sessionClaims: any, requiredTier: UserTier): boolean {
+  const userTier = sessionClaims?.metadata?.tier || 'basic';
+  const userIndex = TIER_HIERARCHY.indexOf(userTier);
+  const requiredIndex = TIER_HIERARCHY.indexOf(requiredTier);
+
+  return userIndex >= requiredIndex;
+}

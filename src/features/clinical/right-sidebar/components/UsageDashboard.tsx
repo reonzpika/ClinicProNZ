@@ -33,26 +33,9 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
   const [upgradeEmail, setUpgradeEmail] = useState('');
   const [showEmailInput, setShowEmailInput] = useState(false);
 
-  // Get user role for tier determination
-  const { getUserRole } = useClerkMetadata();
-
-  // Determine user tier
-  const getUserTier = (): UserTier => {
-    if (!isSignedIn) {
-      return 'basic';
-    }
-    const userRole = getUserRole();
-    switch (userRole) {
-      case 'admin':
-        return 'admin'; // Admin users get admin tier features
-      case 'standard':
-        return 'standard';
-      case 'signed_up':
-      case 'public':
-      default:
-        return 'basic';
-    }
-  };
+  // Get user tier directly from Clerk metadata
+  const { getUserTier } = useClerkMetadata();
+  const tier = getUserTier();
 
   // Refresh usage data function
   const refreshUsage = () => {
@@ -68,10 +51,12 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
   useEffect(() => {
     const fetchUsageData = async () => {
       setLoading(true);
-      try {
-        const tier = getUserTier();
 
-        if (tier === 'basic') {
+      try {
+        // Get user tier for limits
+        const currentTier = tier;
+
+        if (currentTier === 'basic') {
           if (isSignedIn) {
             // Authenticated basic tier user - fetch from user-specific API
             const response = await fetch('/api/user/usage');
@@ -111,18 +96,19 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
             }
           }
         } else {
-          // Standard/Admin authenticated users - set tier-based limits (no API call needed)
+          // Standard/Premium/Admin authenticated users - set tier-based limits (no API call needed)
           const limits = {
             standard: { core: -1, premium: 5 }, // Unlimited core, limited premium
+            premium: { core: -1, premium: 100 }, // Unlimited core, high premium limit
             admin: { core: -1, premium: -1 }, // Unlimited everything
           };
 
           setUsageData({
             tier,
-            coreSessionsUsed: 0, // Standard/Admin don't have core session limits
-            coreSessionsLimit: limits[tier as 'standard' | 'admin'].core,
+            coreSessionsUsed: 0, // Standard/Premium/Admin don't have core session limits
+            coreSessionsLimit: limits[tier as 'standard' | 'premium' | 'admin'].core,
             premiumActionsUsed: 0,
-            premiumActionsLimit: limits[tier as 'standard' | 'admin'].premium,
+            premiumActionsLimit: limits[tier as 'standard' | 'premium' | 'admin'].premium,
             resetTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
           });
         }
@@ -134,7 +120,7 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
     };
 
     fetchUsageData();
-  }, [isSignedIn, getEffectiveGuestToken, user, refreshKey]);
+  }, [isSignedIn, getEffectiveGuestToken, user, refreshKey, tier]);
 
   if (loading) {
     return (

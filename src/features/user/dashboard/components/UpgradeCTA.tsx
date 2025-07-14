@@ -8,12 +8,11 @@ import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
 export default function UpgradeCTA() {
-  const { user: _user } = useClerkMetadata();
-  const { getUserRole } = useClerkMetadata();
-  const role = getUserRole();
+  const { getUserTier } = useClerkMetadata();
+  const tier = getUserTier();
 
-  // Don't show upgrade CTA for standard or admin users
-  if (role === 'standard' || role === 'admin') {
+  // Only show for basic tier users
+  if (tier !== 'basic') {
     return null;
   }
 
