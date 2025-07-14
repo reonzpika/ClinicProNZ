@@ -2,8 +2,8 @@ import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
-import { db } from '@/client';
-import { mobileTokens } from '@/schema';
+import { db } from '../../../../database/client';
+import { mobileTokens } from '../../../../database/schema/mobile_tokens';
 
 export async function POST(req: Request) {
   try {

@@ -3,8 +3,8 @@ import { and, desc, eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { db } from '@/client';
-import { patientSessions } from '@/schema';
+import { db } from '../../../database/client';
+import { patientSessions } from '../../../database/schema/patient_sessions';
 
 // GET - List patient sessions for a user
 export async function GET(req: NextRequest) {

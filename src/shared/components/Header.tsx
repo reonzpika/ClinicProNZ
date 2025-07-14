@@ -91,7 +91,7 @@ export const Header = () => {
           </button>
           {isSignedIn
             ? (
-                <UserButton afterSignOutUrl="/" />
+                <UserButton />
               )
             : (
                 <div className="space-x-2">

@@ -30,6 +30,14 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   };
 
+  // Protect /api/user routes
+  if (req.nextUrl.pathname.startsWith('/api/user')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return returnUnauthorized();
+    }
+  }
+
   // Protect all other /api/templates routes (POST, PUT, DELETE)
   if (req.nextUrl.pathname.startsWith('/api/templates')) {
     const resolvedAuth = await auth();
@@ -85,7 +93,6 @@ export const config = {
   matcher: [
     '/api/templates/:path*',
     '/api/user/:path*',
-
     '/api/patient-sessions/:path*',
     '/api/mobile/:path*',
     '/api/ably/:path*',
