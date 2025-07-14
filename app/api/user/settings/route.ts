@@ -33,14 +33,14 @@ export async function POST(req: Request) {
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  
+
   try {
     const body = await req.json();
     const newSettings = body.settings;
     if (!newSettings || typeof newSettings !== 'object') {
       return NextResponse.json({ error: 'Invalid settings' }, { status: 400 });
     }
-    
+
     // Upsert settings
     await db
       .insert(userSettings)

@@ -33,7 +33,7 @@ export function DropdownMenuTrigger({ children }: { children: React.ReactNode })
           ctx.setOpen(!ctx.open);
         }
       }}
-             className="cursor-pointer focus:outline-none"
+      className="cursor-pointer focus:outline-none"
       role="button"
       tabIndex={0}
     >
