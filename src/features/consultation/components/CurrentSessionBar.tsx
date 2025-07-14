@@ -84,7 +84,7 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
       // Generate a new patient name with current timestamp
       const now = new Date();
       const patientName = `Patient ${now.toLocaleDateString()} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-      
+
       // Create new patient session
       const newSession = await createPatientSession(patientName);
       if (!newSession) {

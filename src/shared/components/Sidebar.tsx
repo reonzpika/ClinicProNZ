@@ -202,7 +202,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   ${isCollapsed ? 'justify-center' : ''}
                 `}
                     >
-                      <UserButton afterSignOutUrl="/" />
+                      <UserButton />
                       {!isCollapsed && <span className="text-sm text-slate-600">Account</span>}
                     </div>
                   )
