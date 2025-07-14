@@ -53,15 +53,16 @@ export async function POST(req: Request) {
 
     // Call OpenAI
     const stream = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'o4-mini',
+      // changed from gpt-4o-mini
       messages: [
         { role: 'system', content: system },
         { role: 'user', content: user },
       ],
       stream: true,
       max_completion_tokens: 2000, // Limit response length to reduce processing time
-      temperature: 0.1,
-      top_p: 0.4,
+      // temperature: 0.1,
+      // top_p: 0.4,
     });
 
     // Stream the response to the client with timeout handling
