@@ -8,7 +8,9 @@ import type { Template } from '@/src/features/templates/types';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { MULTIPROBLEM_SOAP_UUID, useConsultation } from '@/src/shared/ConsultationContext';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { useResponsive } from '@/src/shared/hooks/useResponsive';
+import { createAuthHeaders } from '@/src/shared/utils';
 
 import { DocumentationSettingsModal } from './DocumentationSettingsModal';
 
@@ -45,6 +47,7 @@ const saveLastUsedSettings = (templateId: string, inputMode: 'audio' | 'typed') 
 
 export const DocumentationSettingsBadge: React.FC = () => {
   const { isSignedIn, userId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
   const { templateId, inputMode, setTemplateId, setInputMode } = useConsultation();
   const { isLargeDesktop } = useResponsive();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -79,7 +82,9 @@ export const DocumentationSettingsBadge: React.FC = () => {
           ];
 
           // Fetch user template order and reorder if available
-          const settingsRes = await fetch('/api/user/settings');
+          const settingsRes = await fetch('/api/user/settings', {
+            headers: createAuthHeaders(userId, getUserTier()),
+          });
           if (settingsRes.ok) {
             const settingsData = await settingsRes.json();
             if (settingsData.settings && Array.isArray(settingsData.settings.templateOrder)) {

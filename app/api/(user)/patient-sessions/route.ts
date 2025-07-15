@@ -1,4 +1,3 @@
-import { auth } from '@clerk/nextjs/server';
 import { and, desc, eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
@@ -27,7 +26,8 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const { userId } = await auth();
+    // Get userId from request headers (sent by client)
+    const userId = req.headers.get('x-user-id');
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -93,7 +93,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { userId } = await auth();
+    // Get userId from request headers (sent by client)
+    const userId = req.headers.get('x-user-id');
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -158,7 +159,8 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    const { userId } = await auth();
+    // Get userId from request headers (sent by client)
+    const userId = req.headers.get('x-user-id');
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -266,7 +268,8 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    const { userId } = await auth();
+    // Get userId from request headers (sent by client)
+    const userId = req.headers.get('x-user-id');
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

@@ -1,4 +1,3 @@
-import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -8,7 +7,9 @@ import { checkGuestSessionLimit } from '@/src/lib/services/guest-session-service
 
 export async function POST(req: Request) {
   try {
-    const { userId } = await auth();
+    // Get userId from request headers (sent by client)
+    const userId = req.headers.get('x-user-id');
+
     const body = await req.json().catch(() => ({}));
     const { guestToken: existingGuestToken } = body;
 
@@ -60,56 +61,50 @@ export async function POST(req: Request) {
           })
           .where(eq(mobileTokens.token, token));
       } else {
-        // Guest token doesn't exist in DB yet, insert it
+        // Token doesn't exist, create it
         await db.insert(mobileTokens).values({
-          userId: null, // Guest token
           token,
+          userId: null, // Guest token
           expiresAt,
           isActive: true,
+          lastUsedAt: new Date(),
         });
       }
     } else {
-      // New token, insert into database
+      // New token (authenticated user) or new guest token
       await db.insert(mobileTokens).values({
-        userId: userId || null,
         token,
+        userId: userId || null,
         expiresAt,
         isActive: true,
+        lastUsedAt: new Date(),
       });
     }
 
-    // Generate the mobile connection URL with dynamic host detection
-    const getBaseUrl = () => {
-      // First try environment variable
-      if (process.env.NEXT_PUBLIC_APP_URL) {
-        return process.env.NEXT_PUBLIC_APP_URL;
-      }
+    // Check if Ably is configured
+    if (!process.env.ABLY_API_KEY) {
+      return NextResponse.json({
+        error: 'Ably service not configured',
+        code: 'ABLY_NOT_CONFIGURED',
+      }, { status: 503 });
+    }
 
-      // Extract from request headers for dynamic detection
-      const host = req.headers.get('host');
-      const protocol = req.headers.get('x-forwarded-proto') || 'https';
-
-      if (host) {
-        return `${protocol}://${host}`;
-      }
-
-      // Final fallback for local development
-      return 'http://localhost:3000';
-    };
-
-    const baseUrl = getBaseUrl();
-    const mobileUrl = `${baseUrl}/mobile?token=${token}`;
+    // Create mobile URL for QR code
+    const baseUrl = process.env.NEXT_PUBLIC_MOBILE_APP_URL || 'https://mobile.clinicpro.co.nz';
+    const mobileUrl = `${baseUrl}/connect?token=${token}`;
 
     return NextResponse.json({
       token,
       mobileUrl,
       expiresAt: expiresAt.toISOString(),
-      qrData: mobileUrl, // For QR code generation
-      isGuest: !userId, // Indicate if this is a guest token
-      guestToken: !userId ? token : null, // Return guest token for client storage
+      isGuest: !userId, // Indicate if this is a guest session
+      guestToken: !userId ? token : undefined, // Return guest token for client storage
     });
   } catch (error) {
-    console.error('Mobile token generation error:', error);
-    return NextResponse.json({ error: 'Failed to generate mobile token' }, { status: 500 });
+    console.error('Error generating mobile token:', error);
+    return NextResponse.json({
+      error: 'Failed to generate mobile token',
+      details: error instanceof Error ? error.message : 'Unknown error',
+    }, { status: 500 });
   }
 }

@@ -1,4 +1,3 @@
-import { auth as getAuth } from '@clerk/nextjs/server';
 import { eq } from 'drizzle-orm';
 
 import { db } from '../../database/client';
@@ -31,33 +30,29 @@ export type RBACResult = {
 };
 
 /**
- * Extract RBAC context from request
+ * Extract RBAC context from request headers (client-side auth pattern)
  */
 export async function extractRBACContext(req: Request): Promise<RBACContext> {
   const url = new URL(req.url);
+
+  // Get user information from request headers (sent by client)
+  const userId = req.headers.get('x-user-id');
+  const userTier = req.headers.get('x-user-tier') as UserTier || 'basic';
+
+  // Also check for guest token
   const guestToken
     = req.headers.get('x-guest-token')
       || url.searchParams.get('guestToken')
       || null;
 
-  // Try Clerk authentication FIRST - authenticated users take priority
-  try {
-    const { userId, sessionClaims } = await getAuth();
-
-    if (userId) {
-      // Authenticated user - get tier directly from session claims
-      const tier = (sessionClaims as any)?.metadata?.tier || 'basic';
-
-      // Authenticated users don't use guest tokens - they have user-specific tracking
-      return {
-        userId,
-        guestToken: null,
-        tier,
-        isAuthenticated: true,
-      };
-    }
-  } catch {
-    // Auth not available - this is normal for unauthenticated requests
+  // Authenticated user takes priority
+  if (userId) {
+    return {
+      userId,
+      guestToken: null,
+      tier: userTier,
+      isAuthenticated: true,
+    };
   }
 
   // No authenticated user, check for guest token

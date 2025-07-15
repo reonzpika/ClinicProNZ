@@ -9,6 +9,8 @@ import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
 import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 
 type QRTokenData = {
   token: string;
@@ -26,6 +28,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
   onClose,
 }) => {
   const { isSignedIn, userId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
   const {
     mobileV2 = { isEnabled: false, token: null, tokenData: null, connectedDevices: [], connectionStatus: 'disconnected' },
     setMobileV2TokenData,
@@ -134,7 +137,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
 
       const response = await fetch('/api/mobile/generate-token', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: createAuthHeadersWithGuest(userId, getUserTier(), !isSignedIn ? getEffectiveGuestToken() : null),
         body: JSON.stringify({
           guestToken: !isSignedIn ? getEffectiveGuestToken() : undefined,
         }),

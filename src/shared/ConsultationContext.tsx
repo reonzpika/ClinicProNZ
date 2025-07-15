@@ -4,6 +4,9 @@ import { useAuth } from '@clerk/nextjs';
 import type { ReactNode } from 'react';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { createAuthHeadersWithGuest } from '@/src/shared/utils';
+
 export type ChatMessage = {
   id: string;
   role: 'user' | 'assistant';
@@ -261,7 +264,8 @@ function ensureGuestToken(isAuthenticated: boolean) {
 }
 
 export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, userId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
 
   // Initialize with static defaults - no localStorage access during SSR
   const [state, setState] = useState<ConsultationState>(() => ({
@@ -501,7 +505,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
         // Update session in database
         await fetch('/api/patient-sessions', {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: createAuthHeadersWithGuest(userId, getUserTier(), state.guestToken),
           body: JSON.stringify({
             sessionId,
             transcriptions: updatedTranscriptions,
@@ -693,7 +697,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await fetch('/api/patient-sessions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: createAuthHeadersWithGuest(userId, getUserTier(), state.guestToken),
         body: JSON.stringify({
           patientName: defaultName,
           templateId: state.templateId,
@@ -724,7 +728,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await fetch('/api/patient-sessions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: createAuthHeadersWithGuest(userId, getUserTier(), state.guestToken),
         body: JSON.stringify({
           patientName,
           templateId: templateId || state.templateId,
@@ -798,7 +802,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await fetch('/api/patient-sessions', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: createAuthHeadersWithGuest(userId, getUserTier(), state.guestToken),
         body: JSON.stringify({
           sessionId,
           ...updates,
@@ -974,7 +978,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await fetch('/api/patient-sessions', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: createAuthHeadersWithGuest(userId, getUserTier(), state.guestToken),
         body: JSON.stringify({ sessionId }),
       });
 
@@ -1004,7 +1008,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await fetch('/api/patient-sessions', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: createAuthHeadersWithGuest(userId, getUserTier(), state.guestToken),
         body: JSON.stringify({ deleteAll: true }),
       });
 
@@ -1033,7 +1037,9 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
 
   const loadPatientSessions = useCallback(async () => {
     try {
-      const response = await fetch('/api/patient-sessions');
+      const response = await fetch('/api/patient-sessions', {
+        headers: createAuthHeadersWithGuest(userId, getUserTier(), state.guestToken),
+      });
       if (response.ok) {
         const { sessions } = await response.json();
         setState(prev => ({

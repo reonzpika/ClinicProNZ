@@ -5,12 +5,15 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
 import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { createAuthHeaders } from '@/src/shared/utils';
 
 import type { Template } from '../types';
 import { TemplateSelectorModal } from './TemplateSelectorModal';
 
 export function TemplateSelector() {
   const { isSignedIn, userId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
   const { templateId, setTemplateId } = useConsultation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -49,7 +52,9 @@ export function TemplateSelector() {
           ];
 
           // Fetch user template order and reorder if available
-          const settingsRes = await fetch('/api/user/settings');
+          const settingsRes = await fetch('/api/user/settings', {
+            headers: createAuthHeaders(userId, getUserTier()),
+          });
           if (settingsRes.ok) {
             const settingsData = await settingsRes.json();
             if (settingsData.settings && Array.isArray(settingsData.settings.templateOrder)) {
