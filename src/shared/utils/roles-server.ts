@@ -67,4 +67,4 @@ export async function isPremiumOrHigher(): Promise<boolean> {
  */
 export async function isStandardOrHigher(): Promise<boolean> {
   return await hasTier('standard');
-} 
+}

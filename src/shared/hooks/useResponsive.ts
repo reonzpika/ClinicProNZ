@@ -9,18 +9,23 @@ type UseResponsiveReturn = {
   isDesktop: boolean;
   isLargeDesktop: boolean;
   width: number;
+  isHydrated: boolean;
 };
 
 export const useResponsive = (): UseResponsiveReturn => {
-  const [width, setWidth] = useState(0);
+  // Start with desktop as default to prevent hydration mismatch
+  // Most users are on desktop and this prevents layout shift
+  const [width, setWidth] = useState(1024); // Default to desktop width
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
+    // Mark as hydrated and set actual width
+    setIsHydrated(true);
+    setWidth(window.innerWidth);
+
     const handleResize = () => {
       setWidth(window.innerWidth);
     };
-
-    // Set initial width
-    handleResize();
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -48,5 +53,6 @@ export const useResponsive = (): UseResponsiveReturn => {
     isDesktop: breakpoint === 'desktop' || breakpoint === 'largeDesktop',
     isLargeDesktop: breakpoint === 'largeDesktop',
     width,
+    isHydrated,
   };
 };
