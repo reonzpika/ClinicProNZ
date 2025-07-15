@@ -8,27 +8,12 @@ import { checkFeatureAccess, extractRBACContext } from '@/src/lib/rbac-enforcer'
 
 // GET - List patient sessions for a user
 export async function GET(req: NextRequest) {
-  console.log('🚀 [patient-sessions GET] Request received');
-  
   try {
-    // Log headers received
-    const headers = {
-      'x-user-id': req.headers.get('x-user-id'),
-      'x-user-tier': req.headers.get('x-user-tier'),
-      'x-guest-token': req.headers.get('x-guest-token'),
-    };
-    console.log('📋 [patient-sessions GET] Headers:', headers);
-
     // Extract RBAC context and check session management permissions
-    console.log('🔒 [patient-sessions GET] Extracting RBAC context...');
     const context = await extractRBACContext(req);
-    console.log('🔒 [patient-sessions GET] RBAC context:', context);
-    
     const permissionCheck = await checkFeatureAccess(context, 'sessions');
-    console.log('🔒 [patient-sessions GET] Permission check:', permissionCheck);
 
     if (!permissionCheck.allowed) {
-      console.log('❌ [patient-sessions GET] Permission denied');
       return new Response(
         JSON.stringify({
           error: permissionCheck.reason || 'Access denied',
@@ -43,19 +28,14 @@ export async function GET(req: NextRequest) {
 
     // Get userId from request headers (sent by client)
     const userId = req.headers.get('x-user-id');
-    console.log('👤 [patient-sessions GET] UserId from headers:', userId);
-    
     if (!userId) {
-      console.log('❌ [patient-sessions GET] No userId in headers');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const url = new URL(req.url);
     const status = url.searchParams.get('status') as 'active' | 'completed' | 'archived' | null;
     const limit = Number.parseInt(url.searchParams.get('limit') || '50');
-    console.log('🔍 [patient-sessions GET] Query params - status:', status, 'limit:', limit);
 
-    console.log('💾 [patient-sessions GET] Executing database query...');
     let query = db
       .select()
       .from(patientSessions)
@@ -78,7 +58,6 @@ export async function GET(req: NextRequest) {
     }
 
     const sessions = await query;
-    console.log('✅ [patient-sessions GET] Database query successful, found', sessions.length, 'sessions');
 
     return NextResponse.json({
       sessions: sessions.map(session => ({
@@ -89,38 +68,19 @@ export async function GET(req: NextRequest) {
       })),
     });
   } catch (error) {
-    console.error('❌ [patient-sessions GET] Error details:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      error
-    });
+    console.error('Error fetching patient sessions:', error);
     return NextResponse.json({ error: 'Failed to fetch sessions' }, { status: 500 });
   }
 }
 
 // POST - Create a new patient session
 export async function POST(req: NextRequest) {
-  console.log('🚀 [patient-sessions POST] Request received');
-  
   try {
-    // Log headers received
-    const headers = {
-      'x-user-id': req.headers.get('x-user-id'),
-      'x-user-tier': req.headers.get('x-user-tier'),
-      'x-guest-token': req.headers.get('x-guest-token'),
-    };
-    console.log('📋 [patient-sessions POST] Headers:', headers);
-
     // Extract RBAC context and check session management permissions
-    console.log('🔒 [patient-sessions POST] Extracting RBAC context...');
     const context = await extractRBACContext(req);
-    console.log('🔒 [patient-sessions POST] RBAC context:', context);
-    
     const permissionCheck = await checkFeatureAccess(context, 'sessions');
-    console.log('🔒 [patient-sessions POST] Permission check:', permissionCheck);
 
     if (!permissionCheck.allowed) {
-      console.log('❌ [patient-sessions POST] Permission denied');
       return new Response(
         JSON.stringify({
           error: permissionCheck.reason || 'Access denied',
@@ -135,24 +95,17 @@ export async function POST(req: NextRequest) {
 
     // Get userId from request headers (sent by client)
     const userId = req.headers.get('x-user-id');
-    console.log('👤 [patient-sessions POST] UserId from headers:', userId);
-    
     if (!userId) {
-      console.log('❌ [patient-sessions POST] No userId in headers');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    console.log('📝 [patient-sessions POST] Parsing request body...');
     const { patientName, templateId } = await req.json();
-    console.log('📝 [patient-sessions POST] Request body:', { patientName, templateId });
 
     if (!patientName || !patientName.trim()) {
-      console.log('❌ [patient-sessions POST] Invalid patient name');
       return NextResponse.json({ error: 'Patient name is required' }, { status: 400 });
     }
 
     // Create new patient session
-    console.log('💾 [patient-sessions POST] Creating new session in database...');
     const newSession = await db
       .insert(patientSessions)
       .values({
@@ -170,7 +123,6 @@ export async function POST(req: NextRequest) {
       .returning();
 
     const session = newSession[0]!;
-    console.log('✅ [patient-sessions POST] Session created successfully with ID:', session.id);
 
     // Note: Mobile devices will be notified via Ably when patient session changes
     return NextResponse.json({
@@ -182,11 +134,7 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('❌ [patient-sessions POST] Error details:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      error
-    });
+    console.error('Error creating patient session:', error);
     return NextResponse.json({ error: 'Failed to create session' }, { status: 500 });
   }
 }
