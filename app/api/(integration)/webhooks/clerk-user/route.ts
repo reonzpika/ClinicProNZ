@@ -38,68 +38,25 @@ export async function POST(req: Request) {
 
     // Parse the verified body
     const { type, data: userData } = JSON.parse(body);
-    
-    // Debug logging to see what we're receiving
-    console.log('🔍 Clerk webhook received:', {
-      type,
-      userId: userData.id,
-      emailAddresses: userData.email_addresses,
-      fullUserData: JSON.stringify(userData, null, 2)
-    });
-    
     const userId = userData.id;
-    
-    // Try multiple ways to extract email from Clerk webhook payload
-    let email = null;
-    
-    // Method 1: Standard email_addresses array
-    if (userData.email_addresses && userData.email_addresses.length > 0) {
-      email = userData.email_addresses[0]?.email_address;
-    }
-    
-    // Method 2: Fallback to primary email
-    if (!email && userData.primary_email_address) {
-      email = userData.primary_email_address.email_address;
-    }
-    
-    // Method 3: Direct email property (some webhook versions)
-    if (!email && userData.email) {
-      email = userData.email;
-    }
-    
-    console.log('📧 Extracted email:', email);
+    const email = userData.email_addresses?.[0]?.email_address;
 
     if (!userId || !email) {
-      console.error('❌ Missing user data:', { userId, email, available: Object.keys(userData) });
-      return NextResponse.json({ 
-        code: 'BAD_REQUEST', 
-        message: 'Missing user id or email',
-        debug: { userId: !!userId, email: !!email, availableFields: Object.keys(userData) }
-      }, { status: 400 });
+      return NextResponse.json({ code: 'BAD_REQUEST', message: 'Missing user id or email' }, { status: 400 });
     }
 
     // Handle user creation AND update events
     if (type === 'user.created' || type === 'user.updated') {
-      console.log('💾 Attempting to save user to database:', { userId, email });
-      
-      try {
-        // Insert or update user in our database
-        const result = await db.insert(users)
-          .values({ id: userId, email })
-          .onConflictDoUpdate({
-            target: users.id,
-            set: {
-              email,
-              updatedAt: new Date(),
-            },
-          })
-          .returning();
-          
-        console.log('✅ Successfully saved user to database:', result);
-      } catch (dbError) {
-        console.error('❌ Database error:', dbError);
-        throw dbError;
-      }
+      // Insert or update user in our database
+      await db.insert(users)
+        .values({ id: userId, email })
+        .onConflictDoUpdate({
+          target: users.id,
+          set: {
+            email,
+            updatedAt: new Date(),
+          },
+        });
 
       // Only assign basic tier on creation, not updates
       if (type === 'user.created') {
