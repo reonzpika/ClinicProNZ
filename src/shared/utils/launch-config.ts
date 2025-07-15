@@ -99,6 +99,18 @@ export const LAUNCH_PHASES = {
 export const CURRENT_PHASE = LAUNCH_PHASES.PRODUCTION;
 
 /**
+ * Launch date configuration
+ */
+export const LAUNCH_DATE = new Date('2024-01-01T00:00:00Z');
+
+/**
+ * Get the launch date
+ */
+export function getLaunchDate(): Date {
+  return LAUNCH_DATE;
+}
+
+/**
  * Phase-based feature availability
  */
 export function isFeatureAvailableInPhase(feature: keyof typeof LAUNCH_CONFIG): boolean {

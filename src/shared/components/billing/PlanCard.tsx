@@ -4,7 +4,7 @@ import { Badge } from '@/src/shared/components/ui/badge';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { cn } from '@/src/shared/utils';
-import { BILLING_CONFIG } from '@/src/shared/utils/billing-config';
+import { getPlanByTier } from '@/src/shared/utils/billing-config';
 import type { UserTier } from '@/src/shared/utils/roles';
 
 type PlanCardProps = {
@@ -15,7 +15,7 @@ type PlanCardProps = {
 };
 
 export function PlanCard({ planTier, currentUserTier, onUpgrade, className = '' }: PlanCardProps) {
-  const plan = BILLING_CONFIG.plans[planTier];
+  const plan = getPlanByTier(planTier);
 
   if (!plan) {
     return null;

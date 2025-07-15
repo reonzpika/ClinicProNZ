@@ -7,7 +7,7 @@ import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
-export default function UpgradeCTA() {
+export function UpgradeCTA() {
   const { getUserTier } = useClerkMetadata();
   const tier = getUserTier();
 

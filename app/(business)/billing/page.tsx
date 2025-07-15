@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 
 import { PlanCard } from '@/src/shared/components/billing/PlanCard';
 import { UsageLimits } from '@/src/shared/components/billing/UsageLimits';
-import { getCurrentTier, hasTier } from '@/src/shared/utils/roles';
+import { getCurrentTier, hasTier } from '@/src/shared/utils/roles-server';
 
 // Force dynamic rendering since this page depends on user authentication
 export const dynamic = 'force-dynamic';

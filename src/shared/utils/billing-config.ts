@@ -73,6 +73,11 @@ export const BILLING_CONFIG = {
  * Get plan configuration by tier
  */
 export function getPlanByTier(tier: UserTier) {
+  // Handle basic tier (authenticated users) - map to free plan
+  if (tier === 'basic') {
+    return BILLING_CONFIG.plans.free;
+  }
+
   return Object.values(BILLING_CONFIG.plans).find(plan => plan.tier === tier);
 }
 

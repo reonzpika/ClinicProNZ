@@ -1,5 +1,3 @@
-import { recoverSession } from '../auth/clerk';
-
 export type ErrorType = 'network' | 'api' | 'session' | 'template' | 'unknown';
 
 export type ErrorRecoveryOptions = {
@@ -77,13 +75,15 @@ export class ErrorRecoveryService {
   }
 
   private async handleSessionError(): Promise<boolean> {
-    const recoveredState = await recoverSession(new Request(''));
-    if (recoveredState) {
-      // Restore the recovered state
-      localStorage.setItem('consultationState', JSON.stringify(recoveredState));
-      return true;
+    try {
+      // Session error recovery - clear potentially corrupted session data
+      // and let the app recover gracefully
+      localStorage.removeItem('consultationState');
+      return false; // Let the app handle re-authentication
+    } catch (error) {
+      console.error('Session error recovery failed:', error);
+      return false;
     }
-    return false;
   }
 
   private async handleTemplateError(): Promise<boolean> {

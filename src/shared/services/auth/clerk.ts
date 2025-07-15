@@ -1,6 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
 
-import { getCurrentTier, type UserTier } from '@/src/shared/utils/roles';
+import { getCurrentTier, hasTier, type UserTier } from '@/src/shared/utils/roles-server';
 
 /**
  * Server-side helper functions for Clerk authentication
@@ -15,7 +15,6 @@ export const getUserTier = async (): Promise<UserTier> => getCurrentTier();
  * Check if the current user has a specific tier or higher
  */
 export const checkUserTier = async (requiredTier: UserTier): Promise<boolean> => {
-  const { hasTier } = await import('@/src/shared/utils/roles');
   return hasTier(requiredTier);
 };
 
@@ -33,3 +32,8 @@ export const getAuthContext = async () => {
     sessionClaims,
   };
 };
+
+/**
+ * Get authentication information (alias for auth function)
+ */
+export const getAuth = auth;

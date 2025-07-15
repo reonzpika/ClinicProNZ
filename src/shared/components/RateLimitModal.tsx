@@ -60,8 +60,7 @@ export function RateLimitModal({ isOpen, onClose, error }: RateLimitModalProps) 
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: userEmail || user?.primaryEmailAddress?.emailAddress,
-          userId: user?.id,
+          email: userEmail,
         }),
       });
 

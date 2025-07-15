@@ -65,7 +65,7 @@ const tools: ToolLink[] = [
   },
 ];
 
-export default function QuickToolAccess() {
+export function QuickToolAccess() {
   return (
     <Card>
       <CardHeader>
