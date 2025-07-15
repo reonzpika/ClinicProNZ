@@ -29,6 +29,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
 }) => {
   const { isSignedIn, userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
+  const userTier = getUserTier();
   const {
     mobileV2 = { isEnabled: false, token: null, tokenData: null, connectedDevices: [], connectionStatus: 'disconnected' },
     setMobileV2TokenData,
@@ -137,7 +138,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
 
       const response = await fetch('/api/mobile/generate-token', {
         method: 'POST',
-        headers: createAuthHeadersWithGuest(userId, getUserTier(), !isSignedIn ? getEffectiveGuestToken() : null),
+        headers: createAuthHeadersWithGuest(userId, userTier, !isSignedIn ? getEffectiveGuestToken() : null),
         body: JSON.stringify({
           guestToken: !isSignedIn ? getEffectiveGuestToken() : undefined,
         }),
@@ -183,7 +184,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
     } finally {
       setIsGenerating(false);
     }
-  }, [isSignedIn, userId, ensureActiveSession, setMobileV2TokenData, enableMobileV2, getEffectiveGuestToken, setGuestToken, isClient, fetchSessionStatus]);
+  }, [isSignedIn, userId, ensureActiveSession, setMobileV2TokenData, enableMobileV2, getEffectiveGuestToken, setGuestToken, isClient, fetchSessionStatus, userTier]);
 
   const stopMobileRecording = useCallback(() => {
     setQrData(null);

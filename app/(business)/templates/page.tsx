@@ -14,8 +14,10 @@ import { createTemplate, deleteTemplate, fetchTemplates, updateTemplate } from '
 import { Container } from '@/src/shared/components/layout/Container';
 import { Button } from '@/src/shared/components/ui/button';
 import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { useRBAC } from '@/src/shared/hooks/useRBAC';
 import { useResponsive } from '@/src/shared/hooks/useResponsive';
+import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -24,7 +26,9 @@ export default function TemplatesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { setUserDefaultTemplateId, userDefaultTemplateId } = useConsultation();
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, userId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
+  const userTier = getUserTier();
   const { hasFeatureAccess } = useRBAC();
   const { isMobile: _isMobile, isTablet: _isTablet, isLargeDesktop } = useResponsive();
   const hasReorderedRef = useRef(false);
@@ -47,10 +51,12 @@ export default function TemplatesPage() {
   }, []);
 
   useEffect(() => {
-    if (!isSignedIn || loading || templates.length === 0 || hasReorderedRef.current) {
+    if (!isSignedIn || loading || templates.length === 0 || hasReorderedRef.current || !userId) {
       return;
     }
-    fetch('/api/user/settings')
+    fetch('/api/user/settings', {
+      headers: createAuthHeadersWithGuest(userId, userTier, null),
+    })
       .then((res) => {
         if (!res.ok) {
           return null;
@@ -86,10 +92,10 @@ export default function TemplatesPage() {
         return prev;
       } // Guard: do nothing if invalid
       arr.splice(to, 0, moved);
-      if (isSignedIn) {
+      if (isSignedIn && userId) {
         fetch('/api/user/settings', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: createAuthHeadersWithGuest(userId, userTier, null),
           body: JSON.stringify({ settings: { templateOrder: arr.map(t => t.id) } }),
         });
       }

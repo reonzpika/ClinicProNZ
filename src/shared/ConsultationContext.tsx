@@ -267,6 +267,9 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
   const { isSignedIn, userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
 
+  // Get the current tier value instead of the function for stable dependency
+  const userTier = getUserTier();
+
   // Initialize with static defaults - no localStorage access during SSR
   const [state, setState] = useState<ConsultationState>(() => ({
     ...defaultState,
@@ -505,7 +508,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
         // Update session in database
         await fetch('/api/patient-sessions', {
           method: 'PUT',
-          headers: createAuthHeadersWithGuest(userId, getUserTier(), state.guestToken),
+          headers: createAuthHeadersWithGuest(userId, userTier, state.guestToken),
           body: JSON.stringify({
             sessionId,
             transcriptions: updatedTranscriptions,
@@ -525,7 +528,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
         console.error('Failed to save transcription:', error);
       }
     }
-  }, [state.currentPatientSessionId, state.patientSessions]);
+  }, [state.currentPatientSessionId, state.patientSessions, userId, userTier, state.guestToken]);
 
   const setTypedInput = useCallback((typedInput: string) =>
     setState(prev => ({ ...prev, typedInput })), []);
@@ -697,7 +700,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await fetch('/api/patient-sessions', {
         method: 'POST',
-        headers: createAuthHeadersWithGuest(userId, getUserTier(), state.guestToken),
+        headers: createAuthHeadersWithGuest(userId, userTier, state.guestToken),
         body: JSON.stringify({
           patientName: defaultName,
           templateId: state.templateId,
@@ -721,14 +724,14 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     }
 
     return null;
-  }, [state.currentPatientSessionId, state.templateId]);
+  }, [state.currentPatientSessionId, state.templateId, userId, userTier, state.guestToken]);
 
   // Patient session management functions
   const createPatientSession = useCallback(async (patientName: string, templateId?: string): Promise<PatientSession | null> => {
     try {
       const response = await fetch('/api/patient-sessions', {
         method: 'POST',
-        headers: createAuthHeadersWithGuest(userId, getUserTier(), state.guestToken),
+        headers: createAuthHeadersWithGuest(userId, userTier, state.guestToken),
         body: JSON.stringify({
           patientName,
           templateId: templateId || state.templateId,
@@ -753,7 +756,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       setError('Failed to create patient session');
       return null;
     }
-  }, [state.templateId]);
+  }, [state.templateId, userId, userTier, state.guestToken]);
 
   const switchToPatientSession = useCallback((sessionId: string, onSwitch?: (sessionId: string, patientName: string) => void) => {
     // Find the session and load its transcriptions
@@ -802,7 +805,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await fetch('/api/patient-sessions', {
         method: 'PUT',
-        headers: createAuthHeadersWithGuest(userId, getUserTier(), state.guestToken),
+        headers: createAuthHeadersWithGuest(userId, userTier, state.guestToken),
         body: JSON.stringify({
           sessionId,
           ...updates,
@@ -833,7 +836,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       }));
       throw error;
     }
-  }, []);
+  }, [userId, userTier, state.guestToken]);
 
   // New function to save notes to current session
   const saveNotesToCurrentSession = useCallback(async (notes: string) => {
@@ -978,7 +981,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await fetch('/api/patient-sessions', {
         method: 'DELETE',
-        headers: createAuthHeadersWithGuest(userId, getUserTier(), state.guestToken),
+        headers: createAuthHeadersWithGuest(userId, userTier, state.guestToken),
         body: JSON.stringify({ sessionId }),
       });
 
@@ -1002,13 +1005,13 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       console.error('Error deleting patient session:', error);
       return false;
     }
-  }, []);
+  }, [userId, userTier, state.guestToken]);
 
   const deleteAllPatientSessions = useCallback(async (): Promise<boolean> => {
     try {
       const response = await fetch('/api/patient-sessions', {
         method: 'DELETE',
-        headers: createAuthHeadersWithGuest(userId, getUserTier(), state.guestToken),
+        headers: createAuthHeadersWithGuest(userId, userTier, state.guestToken),
         body: JSON.stringify({ deleteAll: true }),
       });
 
@@ -1033,12 +1036,17 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       console.error('Error deleting all patient sessions:', error);
       return false;
     }
-  }, []);
+  }, [userId, userTier, state.guestToken]);
 
   const loadPatientSessions = useCallback(async () => {
+    // Don't make API calls if auth is still loading for signed-in users
+    if (isSignedIn && !userId) {
+      return;
+    }
+
     try {
       const response = await fetch('/api/patient-sessions', {
-        headers: createAuthHeadersWithGuest(userId, getUserTier(), state.guestToken),
+        headers: createAuthHeadersWithGuest(userId, userTier, state.guestToken),
       });
       if (response.ok) {
         const { sessions } = await response.json();
@@ -1046,11 +1054,13 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
           ...prev,
           patientSessions: sessions,
         }));
+      } else {
+        console.error('Failed to load patient sessions:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error loading patient sessions:', error);
     }
-  }, []);
+  }, [userId, userTier, state.guestToken, isSignedIn]);
 
   const getCurrentPatientSession = useCallback(() => {
     if (!state.currentPatientSessionId) {

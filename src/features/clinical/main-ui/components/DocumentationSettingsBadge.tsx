@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { MULTIPROBLEM_SOAP_UUID, useConsultation } from '@/src/shared/ConsultationContext';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { useResponsive } from '@/src/shared/hooks/useResponsive';
-import { createAuthHeaders } from '@/src/shared/utils';
+import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 
 import { DocumentationSettingsModal } from './DocumentationSettingsModal';
 
@@ -48,6 +48,7 @@ const saveLastUsedSettings = (templateId: string, inputMode: 'audio' | 'typed') 
 export const DocumentationSettingsBadge: React.FC = () => {
   const { isSignedIn, userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
+  const userTier = getUserTier();
   const { templateId, inputMode, setTemplateId, setInputMode } = useConsultation();
   const { isLargeDesktop } = useResponsive();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -83,7 +84,7 @@ export const DocumentationSettingsBadge: React.FC = () => {
 
           // Fetch user template order and reorder if available
           const settingsRes = await fetch('/api/user/settings', {
-            headers: createAuthHeaders(userId, getUserTier()),
+            headers: createAuthHeadersWithGuest(userId, userTier, null),
           });
           if (settingsRes.ok) {
             const settingsData = await settingsRes.json();
