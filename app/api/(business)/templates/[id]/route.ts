@@ -82,7 +82,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
 }
 
 // DELETE /api/templates/[id] - Delete a template
-export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
+export async function DELETE(_request: Request, context: { params: Promise<{ id: string }> }) {
   const params = await context.params;
   try {
     // Use same auth pattern as middleware
