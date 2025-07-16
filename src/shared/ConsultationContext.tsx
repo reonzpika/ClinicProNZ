@@ -182,8 +182,8 @@ const ConsultationContext = createContext<
     setStatus: (status: ConsultationState['status']) => void;
     setTemplateId: (id: string) => void;
     setInputMode: (mode: InputMode) => void;
-    setTranscription: (transcript: string, isLive: boolean) => void;
-    appendTranscription: (newTranscript: string, isLive: boolean, source?: 'desktop' | 'mobile', deviceId?: string) => Promise<void>;
+    setTranscription: (transcript: string, isLive: boolean, diarizedTranscript?: string) => void;
+    appendTranscription: (newTranscript: string, isLive: boolean, source?: 'desktop' | 'mobile', deviceId?: string, diarizedTranscript?: string) => Promise<void>;
     setTypedInput: (input: string) => void;
     setGeneratedNotes: (notes: string | null) => void;
     setError: (error: string | null) => void;
@@ -464,26 +464,27 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
   const setInputMode = useCallback((inputMode: InputMode) =>
     setState(prev => ({ ...prev, inputMode })), []);
 
-  const setTranscription = useCallback((transcript: string, isLive: boolean) => {
+  const setTranscription = useCallback((transcript: string, isLive: boolean, diarizedTranscript?: string) => {
     setState(prev => ({
       ...prev,
       transcription: {
         transcript,
+        diarizedTranscript,
         isLive,
       },
     }));
   }, []);
 
-  const appendTranscription = useCallback(async (newTranscript: string, isLive: boolean, source: 'desktop' | 'mobile' = 'desktop', deviceId?: string) => {
+  const appendTranscription = useCallback(async (newTranscript: string, isLive: boolean, source: 'desktop' | 'mobile' = 'desktop', deviceId?: string, diarizedTranscript?: string) => {
     const sessionId = state.currentPatientSessionId;
 
-    // Update local state
     setState(prev => ({
       ...prev,
       transcription: {
         transcript: prev.transcription.transcript
           ? `${prev.transcription.transcript} ${newTranscript}`.trim()
           : newTranscript.trim(),
+        diarizedTranscript: diarizedTranscript || prev.transcription.diarizedTranscript,
         isLive,
       },
     }));

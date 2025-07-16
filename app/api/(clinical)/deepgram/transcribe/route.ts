@@ -80,10 +80,12 @@ export async function POST(req: NextRequest) {
     const paragraphs = alt?.paragraphs || [];
     const metadata = result?.metadata || {};
 
-    // Diarization: format as speaker-attributed paragraphs
+    // Diarization: use Deepgram's built-in paragraphs.transcript if available
     let diarizedTranscript = '';
-    if (alt?.words && Array.isArray(alt.words)) {
-      // Group words by speaker
+    if (alt?.paragraphs && typeof alt.paragraphs === 'object' && typeof alt.paragraphs.transcript === 'string') {
+      diarizedTranscript = alt.paragraphs.transcript;
+    } else if (alt?.words && Array.isArray(alt.words)) {
+      // Fallback: manual grouping (should rarely be needed)
       let currentSpeaker = null;
       let currentParagraph = [];
       const paragraphsArr = [];
@@ -106,7 +108,6 @@ export async function POST(req: NextRequest) {
           text: currentParagraph.join(' '),
         });
       }
-      // Format as paragraphs
       diarizedTranscript = paragraphsArr
         .map(p => `Speaker ${p.speaker}: ${p.text}`)
         .join('\n\n');

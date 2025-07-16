@@ -131,7 +131,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
         // Prefer diarizedTranscript if available
         const finalTranscript = diarizedTranscript && diarizedTranscript.trim() ? diarizedTranscript : transcript;
         if (finalTranscript && finalTranscript.trim()) {
-          await appendTranscription(finalTranscript.trim(), state.isRecording, 'desktop');
+          await appendTranscription(finalTranscript.trim(), state.isRecording, 'desktop', undefined, diarizedTranscript);
           setState(prev => ({
             ...prev,
             noInputWarning: false,

@@ -72,7 +72,7 @@ export function TranscriptionControls({
   } = useTranscription();
 
   // Always use context transcript for unified display (includes both desktop and mobile)
-  const transcript = contextTranscription.transcript;
+  const transcript = contextTranscription.diarizedTranscript || contextTranscription.transcript;
 
   // Filter to only mobile devices for UI display
   const connectedMobileDevices = mobileV2.connectedDevices.filter(d => d.deviceType === 'Mobile');
