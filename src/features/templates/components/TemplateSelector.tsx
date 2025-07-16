@@ -41,7 +41,7 @@ export function TemplateSelector() {
 
         // If signed in, fetch custom templates
         if (isSignedIn && userId) {
-          const customRes = await fetch(`/api/templates?type=custom&userId=${userId}`);
+          const customRes = await fetch('/api/templates?type=custom');
           if (!customRes.ok) {
             throw new Error('Failed to fetch custom templates');
           }

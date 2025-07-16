@@ -1,28 +1,19 @@
 'use client';
 
 import { useUser } from '@clerk/nextjs';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { Alert, AlertDescription } from '@/src/shared/components/ui/alert';
 import { Badge } from '@/src/shared/components/ui/badge';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
-import { useTierTestingContext } from '@/src/shared/contexts/RoleTestingContext';
 
 export default function EmergencyAdminPage() {
   const { user } = useUser();
-  const { stopTierTesting, isTestingTier } = useTierTestingContext();
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   const currentTier = user?.publicMetadata?.tier as string || 'basic';
-
-  useEffect(() => {
-    // Auto-disable tier testing when accessing emergency admin
-    if (isTestingTier) {
-      stopTierTesting();
-    }
-  }, [isTestingTier, stopTierTesting]);
 
   const handleMakeAdmin = async () => {
     try {
@@ -53,12 +44,6 @@ export default function EmergencyAdminPage() {
       setMessage('Error updating admin status. Please try again.');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleDisableTesting = () => {
-    if (isTestingTier) {
-      stopTierTesting();
     }
   };
 
@@ -98,12 +83,6 @@ export default function EmergencyAdminPage() {
                   {currentTier}
                 </Badge>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="font-medium">Tier Testing:</span>
-                <Badge variant={isTestingTier ? 'destructive' : 'default'}>
-                  {isTestingTier ? '✅ Active' : '❌ Inactive'}
-                </Badge>
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -133,24 +112,6 @@ export default function EmergencyAdminPage() {
                   size="sm"
                 >
                   {isLoading ? 'Updating...' : 'Make Admin'}
-                </Button>
-              </div>
-
-              {/* Disable Testing */}
-              <div className="flex items-center justify-between rounded-lg border p-4">
-                <div>
-                  <h3 className="font-medium">Disable Tier Testing</h3>
-                  <p className="text-sm text-gray-600">
-                    Stops tier testing mode and returns to real user tier
-                  </p>
-                </div>
-                <Button
-                  onClick={handleDisableTesting}
-                  disabled={!isTestingTier}
-                  variant="outline"
-                  size="sm"
-                >
-                  Disable Testing
                 </Button>
               </div>
             </div>

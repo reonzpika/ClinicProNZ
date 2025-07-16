@@ -90,8 +90,8 @@ export async function POST(req: Request) {
     }
 
     // Create mobile URL for QR code
-    const baseUrl = process.env.NEXT_PUBLIC_MOBILE_APP_URL || 'https://mobile.clinicpro.co.nz';
-    const mobileUrl = `${baseUrl}/connect?token=${token}`;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || req.headers.get('origin') || 'https://clinicpro.co.nz';
+    const mobileUrl = `${baseUrl}/mobile?token=${token}`;
 
     return NextResponse.json({
       token,

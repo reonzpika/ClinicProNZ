@@ -6,7 +6,6 @@ import { Inter } from 'next/font/google';
 
 import { AppLayoutWrapper } from '@/src/shared/components/AppLayoutWrapper';
 import { ConsultationProvider } from '@/src/shared/ConsultationContext';
-import { RoleTestingProvider } from '@/src/shared/contexts/RoleTestingContext';
 import { TestUserProvider } from '@/src/shared/contexts/TestUserContext';
 
 const inter = Inter({
@@ -29,16 +28,14 @@ export default async function RootLayout({
   return (
     <ClerkProvider>
       <TestUserProvider>
-        <RoleTestingProvider>
-          <ConsultationProvider>
-            <html lang="en">
-              <body className={inter.className}>
-                {/* <StagewiseToolbar /> */}
-                <AppLayoutWrapper>{children}</AppLayoutWrapper>
-              </body>
-            </html>
-          </ConsultationProvider>
-        </RoleTestingProvider>
+        <ConsultationProvider>
+          <html lang="en">
+            <body className={inter.className}>
+              {/* <StagewiseToolbar /> */}
+              <AppLayoutWrapper>{children}</AppLayoutWrapper>
+            </body>
+          </html>
+        </ConsultationProvider>
       </TestUserProvider>
     </ClerkProvider>
   );

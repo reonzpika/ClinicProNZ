@@ -3,11 +3,51 @@ import { NextResponse } from 'next/server';
 
 import { TemplateService } from '@/src/features/templates/template-service';
 import type { ApiError } from '@/src/features/templates/types';
+import { checkFeatureAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
-// PATCH /api/templates/[id] - Update a template
-export async function PATCH(_request: Request, context: { params: Promise<{ id: string }> }) {
+// GET /api/templates/[id] - Get a specific template
+export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
   const params = await context.params;
   try {
+    const template = await TemplateService.getById(params.id);
+    if (!template) {
+      return NextResponse.json<ApiError>(
+        { code: 'NOT_FOUND', message: 'Template not found' },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json(template);
+  } catch (error) {
+    console.error('Error fetching template:', error);
+    return NextResponse.json<ApiError>(
+      { code: 'INTERNAL_ERROR', message: 'Failed to fetch template' },
+      { status: 500 },
+    );
+  }
+}
+
+// PATCH /api/templates/[id] - Update a template
+export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
+  try {
+    // Extract RBAC context and check permissions
+    const rbacContext = await extractRBACContext(request);
+    const permissionCheck = await checkFeatureAccess(rbacContext, 'templates');
+
+    if (!permissionCheck.allowed) {
+      return new Response(
+        JSON.stringify({
+          error: permissionCheck.reason || 'Access denied',
+          message: permissionCheck.upgradePrompt || 'Insufficient permissions',
+        }),
+        {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+    }
+
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json<ApiError>(
@@ -15,7 +55,7 @@ export async function PATCH(_request: Request, context: { params: Promise<{ id: 
         { status: 401 },
       );
     }
-    const body = await _request.json();
+    const body = await request.json();
     // Only allow update if user owns the template or it's a system template
     const template = await TemplateService.getById(params.id);
     if (!template) {
@@ -42,9 +82,26 @@ export async function PATCH(_request: Request, context: { params: Promise<{ id: 
 }
 
 // DELETE /api/templates/[id] - Delete a template
-export async function DELETE(_request: Request, context: { params: Promise<{ id: string }> }) {
+export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
   const params = await context.params;
   try {
+    // Extract RBAC context and check permissions
+    const rbacContext = await extractRBACContext(request);
+    const permissionCheck = await checkFeatureAccess(rbacContext, 'templates');
+
+    if (!permissionCheck.allowed) {
+      return new Response(
+        JSON.stringify({
+          error: permissionCheck.reason || 'Access denied',
+          message: permissionCheck.upgradePrompt || 'Insufficient permissions',
+        }),
+        {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+    }
+
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json<ApiError>(

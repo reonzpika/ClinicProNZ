@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, or } from 'drizzle-orm';
 
 import { db } from '../../../database/client';
 import { templates } from '../../../database/schema/templates';
@@ -78,21 +78,23 @@ export class TemplateService {
 
   static async list(userId?: string, type?: 'default' | 'custom'): Promise<Template[]> {
     let dbTemplates;
-    if (type) {
-      if (type === 'default') {
-        dbTemplates = await db.select().from(templates).where(eq(templates.type, 'default'));
-      } else if (type === 'custom' && userId) {
-        dbTemplates = await db.select().from(templates).where(eq(templates.ownerId, userId));
-      }
+
+    if (type === 'default') {
+      // Only default templates
+      dbTemplates = await db.select().from(templates).where(eq(templates.type, 'default'));
+    } else if (type === 'custom' && userId) {
+      // Only custom templates for the user
+      dbTemplates = await db.select().from(templates).where(eq(templates.ownerId, userId));
+    } else if (userId) {
+      // Default: fetch both default and custom templates for signed-in user
+      dbTemplates = await db.select().from(templates).where(
+        or(eq(templates.type, 'default'), eq(templates.ownerId, userId)),
+      );
+    } else {
+      // Guests: only default templates
+      dbTemplates = await db.select().from(templates).where(eq(templates.type, 'default'));
     }
-    // Default: fetch both default and custom for signed-in user, or just default for guests
-    if (!dbTemplates) {
-      if (userId) {
-        dbTemplates = await db.select().from(templates).where(eq(templates.ownerId, userId));
-      } else {
-        dbTemplates = await db.select().from(templates).where(eq(templates.type, 'default'));
-      }
-    }
+
     return dbTemplates.map(mapDbTemplateToTemplate);
   }
 }

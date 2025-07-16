@@ -4,8 +4,6 @@ import { usePathname } from 'next/navigation';
 import React from 'react';
 
 import { AppLayout } from './AppLayout';
-import { RoleTestingBanner } from './RoleTestingBanner';
-import { RoleTestingBannerSpacer } from './RoleTestingBannerSpacer';
 
 type AppLayoutWrapperProps = {
   children: React.ReactNode;
@@ -15,6 +13,7 @@ const EXCLUDED_ROUTES = [
   '/', // Root welcome page for unauthenticated users
   '/landing-page', // Landing page should not have sidebar
   '/clinicpro', // ClinicPro landing page should not have sidebar
+  '/mobile', // Mobile recording page should not have sidebar
 ];
 
 const EXCLUDED_ROUTE_PATTERNS = [
@@ -30,24 +29,12 @@ export const AppLayoutWrapper: React.FC<AppLayoutWrapperProps> = ({ children }) 
     || EXCLUDED_ROUTE_PATTERNS.some(pattern => pattern.test(pathname));
 
   if (shouldExclude) {
-    return (
-      <>
-        <RoleTestingBanner />
-        <RoleTestingBannerSpacer>
-          {children}
-        </RoleTestingBannerSpacer>
-      </>
-    );
+    return children;
   }
 
   return (
-    <>
-      <RoleTestingBanner />
-      <AppLayout>
-        <RoleTestingBannerSpacer>
-          {children}
-        </RoleTestingBannerSpacer>
-      </AppLayout>
-    </>
+    <AppLayout>
+      {children}
+    </AppLayout>
   );
 };

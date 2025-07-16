@@ -1,7 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 
-import { TierTestingDashboard } from '@/src/shared/components/admin/RoleTestingDashboard';
 import { checkTierFromSessionClaims } from '@/src/shared/utils/roles';
 
 export default async function AdminDashboard() {
@@ -97,9 +96,6 @@ export default async function AdminDashboard() {
               </button>
             </div>
           </div>
-
-          {/* Tier Testing Dashboard */}
-          <TierTestingDashboard />
         </div>
       </div>
     </div>
