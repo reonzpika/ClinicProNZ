@@ -77,7 +77,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [feedbackError, setFeedbackError] = useState<string | undefined>();
   const [feedbackSuccess, setFeedbackSuccess] = useState(false);
 
-  // Get user role for admin access
+  // Use production tier detection for real features (not testing)
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
   const isAdmin = userTier === 'admin';

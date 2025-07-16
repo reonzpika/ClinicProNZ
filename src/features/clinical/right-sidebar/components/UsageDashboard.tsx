@@ -33,8 +33,8 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
   const [upgradeEmail, setUpgradeEmail] = useState('');
   const [showEmailInput, setShowEmailInput] = useState(false);
 
-  // Get user tier directly from Clerk metadata
-  const { getUserTier } = useClerkMetadata();
+  // Use production tier detection for real features (not testing)
+  const { getUserTier, isLoaded } = useClerkMetadata();
   const tier = getUserTier();
 
   // Refresh usage data function
@@ -119,10 +119,13 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
       }
     };
 
-    fetchUsageData();
-  }, [isSignedIn, getEffectiveGuestToken, user, refreshKey, tier]);
+    // Only fetch data when clerk is loaded
+    if (isLoaded) {
+      fetchUsageData();
+    }
+  }, [isSignedIn, getEffectiveGuestToken, user, refreshKey, tier, isLoaded]);
 
-  if (loading) {
+  if (loading || !isLoaded) {
     return (
       <Card className="w-full">
         <CardHeader>

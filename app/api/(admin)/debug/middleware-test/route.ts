@@ -1,13 +1,25 @@
+import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
 export async function GET(_req: Request) {
   const startTime = Date.now();
 
   try {
+    // Get auth information
+    const { userId, sessionClaims } = await auth();
+
     // Test various operations that could cause timeouts
     const results = {
       timestamp: new Date().toISOString(),
       region: process.env.VERCEL_REGION || 'unknown',
+
+      // Authentication and tier info
+      authInfo: {
+        userId,
+        isAuthenticated: !!userId,
+        sessionClaimsTier: (sessionClaims as any)?.metadata?.tier || 'not set',
+        sessionClaims: sessionClaims ? Object.keys(sessionClaims) : [],
+      },
 
       // Test database connection speed
       dbTest: await testDatabaseSpeed(),
