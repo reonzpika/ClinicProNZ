@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 
 import { TemplateService } from '@/src/features/templates/template-service';
 import type { ApiError } from '@/src/features/templates/types';
-import { checkFeatureAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 // GET /api/templates/[id] - Get a specific template
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
@@ -31,31 +30,30 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   const params = await context.params;
   try {
-    // Extract RBAC context and check permissions
-    const rbacContext = await extractRBACContext(request);
-    const permissionCheck = await checkFeatureAccess(rbacContext, 'templates');
+    // Use same auth pattern as middleware
+    const { userId, sessionClaims } = await auth();
 
-    if (!permissionCheck.allowed) {
-      return new Response(
-        JSON.stringify({
-          error: permissionCheck.reason || 'Access denied',
-          message: permissionCheck.upgradePrompt || 'Insufficient permissions',
-        }),
-        {
-          status: 403,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
-    }
-
-    const { userId } = await auth();
     if (!userId) {
       return NextResponse.json<ApiError>(
         { code: 'UNAUTHORIZED', message: 'You must be logged in to update a template' },
         { status: 401 },
       );
     }
+
+    // Check tier - templates require at least standard (same logic as middleware)
+    const userTier = (sessionClaims as any)?.metadata?.tier || 'basic';
+    if (userTier === 'basic') {
+      return NextResponse.json(
+        {
+          error: 'Template management requires Standard tier or higher',
+          message: 'Upgrade to Standard to create and manage custom templates',
+        },
+        { status: 403 },
+      );
+    }
+
     const body = await request.json();
+
     // Only allow update if user owns the template or it's a system template
     const template = await TemplateService.getById(params.id);
     if (!template) {
@@ -64,12 +62,14 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
         { status: 404 },
       );
     }
+
     if (template.type === 'custom' && template.ownerId !== userId) {
       return NextResponse.json<ApiError>(
         { code: 'FORBIDDEN', message: 'You do not have permission to update this template' },
         { status: 403 },
       );
     }
+
     const updated = await TemplateService.update(params.id, body);
     return NextResponse.json(updated);
   } catch (error) {
@@ -85,30 +85,28 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
 export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
   const params = await context.params;
   try {
-    // Extract RBAC context and check permissions
-    const rbacContext = await extractRBACContext(request);
-    const permissionCheck = await checkFeatureAccess(rbacContext, 'templates');
+    // Use same auth pattern as middleware
+    const { userId, sessionClaims } = await auth();
 
-    if (!permissionCheck.allowed) {
-      return new Response(
-        JSON.stringify({
-          error: permissionCheck.reason || 'Access denied',
-          message: permissionCheck.upgradePrompt || 'Insufficient permissions',
-        }),
-        {
-          status: 403,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
-    }
-
-    const { userId } = await auth();
     if (!userId) {
       return NextResponse.json<ApiError>(
         { code: 'UNAUTHORIZED', message: 'You must be logged in to delete a template' },
         { status: 401 },
       );
     }
+
+    // Check tier - templates require at least standard (same logic as middleware)
+    const userTier = (sessionClaims as any)?.metadata?.tier || 'basic';
+    if (userTier === 'basic') {
+      return NextResponse.json(
+        {
+          error: 'Template management requires Standard tier or higher',
+          message: 'Upgrade to Standard to create and manage custom templates',
+        },
+        { status: 403 },
+      );
+    }
+
     const template = await TemplateService.getById(params.id);
     if (!template) {
       return NextResponse.json<ApiError>(
@@ -116,12 +114,14 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
         { status: 404 },
       );
     }
+
     if (template.type === 'custom' && template.ownerId !== userId) {
       return NextResponse.json<ApiError>(
         { code: 'FORBIDDEN', message: 'You do not have permission to delete this template' },
         { status: 403 },
       );
     }
+
     await TemplateService.delete(params.id);
     return NextResponse.json({ success: true });
   } catch (error) {

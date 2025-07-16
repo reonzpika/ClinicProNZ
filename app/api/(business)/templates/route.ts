@@ -1,14 +1,13 @@
+import { auth } from '@clerk/nextjs/server';
 import { desc, eq, or } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 import { db } from '@/db/client';
 import { templates } from '@/db/schema/templates';
-import { checkFeatureAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
-import { getAuth } from '@/src/shared/services/auth/clerk';
 
 export async function GET(req: Request) {
   try {
-    const { userId } = await getAuth();
+    const { userId } = await auth();
     const { searchParams } = new URL(req.url);
     const type = searchParams.get('type');
 
@@ -52,30 +51,28 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    // Extract RBAC context and check permissions
-    const context = await extractRBACContext(req);
-    const permissionCheck = await checkFeatureAccess(context, 'templates');
+    // Use same auth pattern as middleware
+    const { userId, sessionClaims } = await auth();
 
-    if (!permissionCheck.allowed) {
-      return new Response(
-        JSON.stringify({
-          error: permissionCheck.reason || 'Access denied',
-          message: permissionCheck.upgradePrompt || 'Insufficient permissions',
-        }),
-        {
-          status: 403,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
-    }
-
-    const { userId } = await getAuth();
     if (!userId) {
       return NextResponse.json(
         { code: 'UNAUTHORIZED', message: 'You must be logged in to create a template' },
         { status: 401 },
       );
     }
+
+    // Check tier - templates require at least standard (same logic as middleware)
+    const userTier = (sessionClaims as any)?.metadata?.tier || 'basic';
+    if (userTier === 'basic') {
+      return NextResponse.json(
+        {
+          error: 'Template management requires Standard tier or higher',
+          message: 'Upgrade to Standard to create and manage custom templates',
+        },
+        { status: 403 },
+      );
+    }
+
     const body = await req.json();
 
     // Remove temporary IDs that start with 'new-' to let database auto-generate UUID
