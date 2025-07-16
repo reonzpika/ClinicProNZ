@@ -16,7 +16,7 @@ type TranscriptionState = {
 };
 
 // Smart timing constants
-const SILENCE_THRESHOLD = 8; // seconds of silence to trigger sending recording (was 3)
+const SILENCE_THRESHOLD = 5; // seconds of silence to trigger sending recording
 const SMART_BOUNDARY_THRESHOLD = 90; // seconds - when to start looking for word boundaries (was 25)
 const WORD_BOUNDARY_PAUSE = 4; // seconds - micro-pause indicating word boundary (was 1)
 const FORCE_STOP_DURATION = 120; // seconds - absolute maximum before force-stopping (was 35)
