@@ -62,7 +62,6 @@ export async function POST(req: NextRequest) {
       paragraphs: true,
       utterances: true, // Enable utterances for speaker segmentation
     };
-    console.log('[Deepgram Config]', deepgramConfig);
     const { result, error } = await deepgram.listen.prerecorded.transcribeFile(
       audioBuffer,
       deepgramConfig,
@@ -83,9 +82,8 @@ export async function POST(req: NextRequest) {
     // Fix: utterances may be at channels[0] level, not alt
     const channel = result?.results?.channels?.[0];
     // Use bracket notation and type assertion to avoid TS error
-    const utterances = ((alt && (alt as any)['utterances']) || (channel && (channel as any)['utterances']) || []);
+    const utterances = ((alt && (alt as any).utterances) || (channel && (channel as any).utterances) || []);
     const metadata = result?.metadata || {};
-    console.log('[Deepgram Utterances]', utterances);
 
     // Diarization: use Deepgram's built-in paragraphs.transcript if available
     let diarizedTranscript = '';
@@ -121,7 +119,6 @@ export async function POST(req: NextRequest) {
     }
 
     const apiResponse = { transcript, paragraphs, metadata, diarizedTranscript, utterances };
-    console.log('[API Response Keys]', Object.keys(apiResponse));
     return NextResponse.json(apiResponse);
   } catch (err: any) {
     console.error('API error:', err);

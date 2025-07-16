@@ -73,9 +73,21 @@ export default function ConsultationPage() {
   }, [generatedNotes, loading, isDocumentationMode]);
 
   // Memoized callbacks for WebSocket sync to prevent infinite re-renders
-  const handleTranscriptionReceived = useCallback(async (transcript: string, _patientSessionId?: string) => {
-    // Append mobile transcription to desktop transcription
-    await appendTranscription(transcript, false, 'mobile'); // false = not live, mobile source
+  const handleTranscriptionReceived = useCallback(async (
+    transcript: string,
+    _patientSessionId?: string,
+    diarizedTranscript?: string | null,
+    utterances?: any[],
+  ) => {
+    // Append mobile transcription with diarization data to desktop transcription
+    await appendTranscription(
+      transcript,
+      false, // false = not live
+      'mobile', // mobile source
+      undefined, // no sessionId override
+      diarizedTranscript || undefined,
+      utterances || undefined,
+    );
   }, [appendTranscription]);
 
   const handlePatientSwitched = useCallback((_patientSessionId: string, _patientName?: string) => {

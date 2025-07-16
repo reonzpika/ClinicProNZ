@@ -127,11 +127,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
         }
 
         const data = await response.json();
-        const { transcript, diarizedTranscript } = data;
-        const alt = data?.results?.channels?.[0]?.alternatives?.[0];
-        const utterances = alt?.utterances || [];
-        // Debug log
-        console.log('Utterances:', utterances);
+        const { transcript, diarizedTranscript, utterances = [] } = data;
 
         // Prefer diarizedTranscript if available
         const finalTranscript = diarizedTranscript && diarizedTranscript.trim() ? diarizedTranscript : transcript;

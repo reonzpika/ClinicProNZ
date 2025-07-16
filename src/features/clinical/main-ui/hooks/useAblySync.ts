@@ -9,6 +9,8 @@ type AblyMessage = {
   userId?: string;
   patientSessionId?: string;
   transcript?: string;
+  diarizedTranscript?: string | null; // Enhanced: diarized transcript with speaker labels
+  utterances?: any[]; // Enhanced: utterances array for speaker segmentation
   deviceId?: string;
   deviceName?: string;
   deviceType?: string;
@@ -21,7 +23,7 @@ type AblySyncHookProps = {
   enabled: boolean;
   token?: string;
   isDesktop?: boolean; // true for desktop, false for mobile
-  onTranscriptionReceived?: (transcript: string, patientSessionId?: string) => void;
+  onTranscriptionReceived?: (transcript: string, patientSessionId?: string, diarizedTranscript?: string | null, utterances?: any[]) => void;
   onPatientSwitched?: (patientSessionId: string, patientName?: string) => void;
   onDeviceConnected?: (deviceId: string, deviceName: string, deviceType?: string) => void;
   onDeviceDisconnected?: (deviceId: string) => void;
@@ -239,6 +241,34 @@ export const useAblySync = ({
     }
   }, []);
 
+  // Send enhanced transcription with diarization data
+  const sendTranscriptionWithDiarization = useCallback(async (
+    transcript: string,
+    patientSessionId?: string,
+    diarizedTranscript?: string | null,
+    utterances?: any[],
+  ) => {
+    if (!channelRef.current) {
+      return false;
+    }
+
+    try {
+      const message: AblyMessage = {
+        type: 'transcription',
+        transcript,
+        patientSessionId,
+        diarizedTranscript,
+        utterances,
+      };
+
+      await channelRef.current.publish('transcription', message);
+      return true;
+    } catch (error) {
+      console.error('Failed to send transcription:', error);
+      return false;
+    }
+  }, []);
+
   // Send message through Ably
   const sendMessage = useCallback((message: AblyMessage) => {
     if (channelRef.current && (ablyRef.current?.connection.state as string) === 'connected') {
@@ -363,7 +393,7 @@ export const useAblySync = ({
         switch (data.type) {
           case 'transcription':
             if (isDesktop && data.transcript) {
-              onTranscriptionReceived?.(data.transcript, data.patientSessionId);
+              onTranscriptionReceived?.(data.transcript, data.patientSessionId, data.diarizedTranscript, data.utterances);
             }
             break;
           case 'switch_patient':
@@ -472,6 +502,7 @@ export const useAblySync = ({
   return {
     connectionState,
     sendTranscription,
+    sendTranscriptionWithDiarization,
     notifyPatientSwitch,
     syncCurrentPatient,
     forceDisconnectDevice,

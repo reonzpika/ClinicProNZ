@@ -178,7 +178,7 @@ function MobilePageContent() {
   }, [searchParams]);
 
   // Ably connection for real-time sync - only start after token validation completes
-  const { connectionState, sendTranscription } = useAblySync({
+  const { connectionState, sendTranscriptionWithDiarization } = useAblySync({
     enabled: !!tokenState.token && !tokenState.isValidating && !tokenState.error,
     token: tokenState.token || undefined,
     isDesktop: false,
@@ -217,7 +217,7 @@ function MobilePageContent() {
     isMobile: true,
     mobileChunkTimeout: 2, // 2s silence threshold for mobile
     onChunkComplete: async (audioBlob: Blob) => {
-      // Mobile-specific processing
+      // Mobile-specific processing with diarization support
       const formData = new FormData();
       formData.append('audio', audioBlob, 'audio.webm');
       const headers: Record<string, string> = {};
@@ -232,9 +232,19 @@ function MobilePageContent() {
       if (!response.ok) {
         return;
       }
-      const { transcript } = await response.json();
-      if (transcript?.trim() && connectionState.status === 'connected') {
-        await sendTranscription(transcript.trim(), patientState.sessionId || undefined);
+      const { transcript, diarizedTranscript, utterances = [] } = await response.json();
+
+      // Prefer diarizedTranscript if available, fallback to transcript
+      const finalTranscript = diarizedTranscript && diarizedTranscript.trim() ? diarizedTranscript : transcript;
+
+      if (finalTranscript?.trim() && connectionState.status === 'connected') {
+        // Send enhanced transcription data with diarization info
+        await sendTranscriptionWithDiarization(
+          finalTranscript.trim(),
+          patientState.sessionId || undefined,
+          diarizedTranscript || null,
+          utterances,
+        );
       }
     },
   });
