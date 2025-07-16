@@ -78,9 +78,12 @@ export function TranscriptionControls({
   // Debug log for diarized transcript and utterances
   if (typeof window !== 'undefined') {
     // eslint-disable-next-line no-console
-    console.log('Diarized Transcript:', contextTranscription.diarizedTranscript);
-    // eslint-disable-next-line no-console
-    console.log('Utterances:', utterances);
+    console.log('[TranscriptionControls] Context Values:', {
+      diarizedTranscript: contextTranscription.diarizedTranscript,
+      transcript: contextTranscription.transcript,
+      utterances,
+      finalTranscript: transcript,
+    });
   }
 
   // Filter to only mobile devices for UI display

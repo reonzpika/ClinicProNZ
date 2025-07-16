@@ -480,6 +480,14 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
   const appendTranscription = useCallback(async (newTranscript: string, isLive: boolean, source: 'desktop' | 'mobile' = 'desktop', deviceId?: string, diarizedTranscript?: string, utterances?: any[]) => {
     const sessionId = state.currentPatientSessionId;
 
+    // Debug: Log what appendTranscription received
+    console.log('[AppendTranscription] Received:', {
+      newTranscript,
+      diarizedTranscript,
+      utterances,
+      source,
+    });
+
     setState(prev => ({
       ...prev,
       transcription: {
