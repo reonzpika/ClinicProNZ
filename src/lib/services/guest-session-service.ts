@@ -162,9 +162,11 @@ export async function createGuestSession(guestToken: string, patientName: string
  * Create a new patient session for an authenticated user
  */
 export async function createUserSession(userId: string, patientName: string, templateId?: string, userTier: 'basic' | 'standard' | 'premium' | 'admin' = 'basic') {
+  let sessionStatus: any = null;
+
   // Only check session limits for basic tier users
   if (userTier === 'basic') {
-    const sessionStatus = await checkUserSessionLimit(userId);
+    sessionStatus = await checkUserSessionLimit(userId);
 
     if (!sessionStatus.canCreateSession) {
       throw new Error(`User session limit exceeded. You have used ${sessionStatus.sessionsUsed}/${USER_SESSION_LIMIT} sessions. Try again after ${sessionStatus.resetTime.toISOString()}`);
@@ -191,7 +193,7 @@ export async function createUserSession(userId: string, patientName: string, tem
     .returning();
 
   // Increment the user's session counter (only for basic tier)
-  if (userTier === 'basic') {
+  if (userTier === 'basic' && sessionStatus) {
     await db
       .update(users)
       .set({
