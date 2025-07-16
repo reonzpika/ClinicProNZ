@@ -1,6 +1,8 @@
 import * as Ably from 'ably';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useConsultation } from '@/src/shared/ConsultationContext';
+
 // Message types for Ably communication
 type AblyMessage = {
   type: 'transcription' | 'switch_patient' | 'device_connected' | 'device_disconnected' | 'session_created' | 'force_disconnect' | 'sync_current_patient';
@@ -59,8 +61,12 @@ export const useAblySync = ({
   const [userId, setUserId] = useState<string | null>(null);
   const [processedMessageIds] = useState(new Set<string>());
 
-  // Get userId from token API when needed
+  // Get guest token from ConsultationContext for fallback user ID
+  const { getEffectiveGuestToken } = useConsultation();
+
+  // Get userId from token API when needed, fallback to guest token
   const getUserId = useCallback(async () => {
+    // If we have a real userId, use it
     if (userId) {
       return userId;
     }
@@ -72,9 +78,20 @@ export const useAblySync = ({
         url.searchParams.set('token', token);
       }
 
+      // Prepare headers with guest token for desktop guest users
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      // Include guest token in headers for authentication
+      const guestToken = getEffectiveGuestToken();
+      if (guestToken && !token) { // Only for desktop users (no mobile token)
+        headers['x-guest-token'] = guestToken;
+      }
+
       const response = await fetch(url.toString(), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
       });
 
       if (response.ok) {
@@ -96,8 +113,14 @@ export const useAblySync = ({
       console.error('Error getting userId:', error);
     }
 
+    // Fallback: Use guest token as user ID for guest users
+    const guestToken = getEffectiveGuestToken();
+    if (guestToken) {
+      return guestToken;
+    }
+
     return null;
-  }, [userId, isDesktop, token]);
+  }, [userId, token, getEffectiveGuestToken]);
 
   // Generate stable device info for identification
   const getDeviceInfo = useCallback(() => {

@@ -44,6 +44,14 @@ export async function POST(req: Request) {
             }
           }
         }
+      } else {
+        // If no mobile token, check for guest token (desktop guest users)
+        const guestToken = req.headers.get('x-guest-token') || url.searchParams.get('guestToken');
+        
+        if (guestToken) {
+          // Use guest token directly as client ID for desktop guest users
+          clientId = guestToken;
+        }
       }
     }
 
