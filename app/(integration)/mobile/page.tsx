@@ -40,6 +40,69 @@ function MobilePageLoading() {
   );
 }
 
+// Custom hook for screen wake lock
+function useWakeLock() {
+  const [wakeLock, setWakeLock] = useState<WakeLockSentinel | null>(null);
+  const [isSupported, setIsSupported] = useState(false);
+
+  useEffect(() => {
+    setIsSupported('wakeLock' in navigator);
+  }, []);
+
+  const requestWakeLock = useCallback(async () => {
+    if (!isSupported || wakeLock) {
+      return;
+    }
+    try {
+      const sentinel = await navigator.wakeLock.request('screen');
+      setWakeLock(sentinel);
+      sentinel.addEventListener('release', () => {
+        setWakeLock(null);
+      });
+    } catch (error) {
+      console.warn('Failed to request wake lock:', error);
+    }
+  }, [isSupported, wakeLock]);
+
+  const releaseWakeLock = useCallback(async () => {
+    if (wakeLock) {
+      try {
+        await wakeLock.release();
+        setWakeLock(null);
+      } catch (error) {
+        console.warn('Failed to release wake lock:', error);
+      }
+    }
+  }, [wakeLock]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && wakeLock) {
+        releaseWakeLock();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [wakeLock, releaseWakeLock]);
+
+  useEffect(() => {
+    return () => {
+      if (wakeLock) {
+        releaseWakeLock();
+      }
+    };
+  }, [wakeLock, releaseWakeLock]);
+
+  return {
+    isSupported,
+    isActive: !!wakeLock,
+    requestWakeLock,
+    releaseWakeLock,
+  };
+}
+
 // Main mobile page component
 function MobilePageContent() {
   const router = useRouter();
@@ -146,6 +209,9 @@ function MobilePageContent() {
     }, []),
   });
 
+  // Wake lock hook
+  const { isSupported: wakeLockSupported, isActive: wakeLockActive, requestWakeLock, releaseWakeLock } = useWakeLock();
+
   // Use new VAD-based smart recording
   const { isRecording, isTranscribing, chunksCompleted, startRecording, stopRecording } = useTranscription({
     isMobile: true,
@@ -172,6 +238,15 @@ function MobilePageContent() {
       }
     },
   });
+
+  // Manage wake lock based on recording state
+  useEffect(() => {
+    if (isRecording) {
+      requestWakeLock();
+    } else {
+      releaseWakeLock();
+    }
+  }, [isRecording, requestWakeLock, releaseWakeLock]);
 
   // Update refs with current function references
   useEffect(() => {
@@ -321,6 +396,24 @@ function MobilePageContent() {
                   audio chunks processed
                 </div>
               )}
+              {/* Wake Lock Status */}
+              {wakeLockSupported && (
+                <div className="flex items-center space-x-2 text-sm">
+                  {wakeLockActive
+                    ? (
+                        <>
+                          <div className="size-2 rounded-full bg-green-500" />
+                          <span className="text-green-600">Screen will stay on</span>
+                        </>
+                      )
+                    : (
+                        <>
+                          <div className="size-2 rounded-full bg-gray-400" />
+                          <span className="text-gray-500">Screen may lock</span>
+                        </>
+                      )}
+                </div>
+              )}
             </div>
 
             {/* Recording Button */}
@@ -363,6 +456,9 @@ function MobilePageContent() {
               <li>• Audio is automatically chunked at natural pauses in speech (smart recording)</li>
               <li>• Transcriptions are sent to your desktop in real-time</li>
               <li>• Keep this page open during the consultation</li>
+              {wakeLockSupported && (
+                <li>• Screen will stay on automatically during recording</li>
+              )}
             </ul>
           </CardContent>
         </Card>

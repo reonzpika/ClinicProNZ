@@ -64,6 +64,7 @@ export type ConsultationState = {
   transcription: {
     transcript: string;
     diarizedTranscript?: string;
+    utterances?: any[];
     isLive: boolean;
   };
   typedInput: string;
@@ -136,7 +137,7 @@ const defaultState: ConsultationState = {
   templateId: MULTIPROBLEM_SOAP_UUID,
   status: 'idle',
   inputMode: 'audio',
-  transcription: { transcript: '', isLive: false },
+  transcription: { transcript: '', isLive: false, utterances: [] },
   typedInput: '',
   generatedNotes: null,
   error: null,
@@ -182,8 +183,8 @@ const ConsultationContext = createContext<
     setStatus: (status: ConsultationState['status']) => void;
     setTemplateId: (id: string) => void;
     setInputMode: (mode: InputMode) => void;
-    setTranscription: (transcript: string, isLive: boolean, diarizedTranscript?: string) => void;
-    appendTranscription: (newTranscript: string, isLive: boolean, source?: 'desktop' | 'mobile', deviceId?: string, diarizedTranscript?: string) => Promise<void>;
+    setTranscription: (transcript: string, isLive: boolean, diarizedTranscript?: string, utterances?: any[]) => void;
+    appendTranscription: (newTranscript: string, isLive: boolean, source?: 'desktop' | 'mobile', deviceId?: string, diarizedTranscript?: string, utterances?: any[]) => Promise<void>;
     setTypedInput: (input: string) => void;
     setGeneratedNotes: (notes: string | null) => void;
     setError: (error: string | null) => void;
@@ -464,18 +465,19 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
   const setInputMode = useCallback((inputMode: InputMode) =>
     setState(prev => ({ ...prev, inputMode })), []);
 
-  const setTranscription = useCallback((transcript: string, isLive: boolean, diarizedTranscript?: string) => {
+  const setTranscription = useCallback((transcript: string, isLive: boolean, diarizedTranscript?: string, utterances?: any[]) => {
     setState(prev => ({
       ...prev,
       transcription: {
         transcript,
         diarizedTranscript,
+        utterances: utterances || [],
         isLive,
       },
     }));
   }, []);
 
-  const appendTranscription = useCallback(async (newTranscript: string, isLive: boolean, source: 'desktop' | 'mobile' = 'desktop', deviceId?: string, diarizedTranscript?: string) => {
+  const appendTranscription = useCallback(async (newTranscript: string, isLive: boolean, source: 'desktop' | 'mobile' = 'desktop', deviceId?: string, diarizedTranscript?: string, utterances?: any[]) => {
     const sessionId = state.currentPatientSessionId;
 
     setState(prev => ({
@@ -485,6 +487,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
           ? `${prev.transcription.transcript} ${newTranscript}`.trim()
           : newTranscript.trim(),
         diarizedTranscript: diarizedTranscript || prev.transcription.diarizedTranscript,
+        utterances: utterances || prev.transcription.utterances || [],
         isLive,
       },
     }));
@@ -584,7 +587,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       lastGeneratedTypedInput: '',
       lastGeneratedCompiledConsultationText: '',
       lastGeneratedTemplateId: '',
-      transcription: { transcript: '', isLive: false },
+      transcription: { transcript: '', isLive: false, utterances: [] },
       typedInput: '',
       consentObtained: false,
       // Preserve patient session state

@@ -73,11 +73,14 @@ export function TranscriptionControls({
 
   // Always use context transcript for unified display (includes both desktop and mobile)
   const transcript = contextTranscription.diarizedTranscript || contextTranscription.transcript;
+  const utterances = contextTranscription.utterances || [];
 
-  // Debug log for diarized transcript
+  // Debug log for diarized transcript and utterances
   if (typeof window !== 'undefined') {
     // eslint-disable-next-line no-console
     console.log('Diarized Transcript:', contextTranscription.diarizedTranscript);
+    // eslint-disable-next-line no-console
+    console.log('Utterances:', utterances);
   }
 
   // Filter to only mobile devices for UI display
@@ -599,16 +602,28 @@ export function TranscriptionControls({
                   <div className="max-h-64 overflow-y-auto rounded-md border bg-white p-2">
                     {!isRecording
                       ? (
-                          <textarea
-                            value={transcript}
-                            onChange={(_e) => {
-                              // Allow editing after recording stops
-                              // This would need to be connected to a context method to update transcript
-                            }}
-                            className="w-full resize-none border-none text-sm leading-relaxed focus:outline-none"
-                            placeholder="Transcription will appear here..."
-                            rows={Math.min(Math.max(transcript.split('\n').length || 3, 3), 12)}
-                          />
+                          utterances.length > 0
+                            ? (
+                                utterances.map((u, i) => (
+                                  <p key={i} className="mb-2 whitespace-pre-wrap text-sm leading-relaxed">
+                                    <b>{`Speaker ${u.speaker}:`}</b>
+                                    {' '}
+                                    {u.transcript}
+                                  </p>
+                                ))
+                              )
+                            : (
+                                <textarea
+                                  value={transcript}
+                                  onChange={(_e) => {
+                                    // Allow editing after recording stops
+                                    // This would need to be connected to a context method to update transcript
+                                  }}
+                                  className="w-full resize-none border-none text-sm leading-relaxed focus:outline-none"
+                                  placeholder="Transcription will appear here..."
+                                  rows={Math.min(Math.max(transcript.split('\n').length || 3, 3), 12)}
+                                />
+                              )
                         )
                       : (
                           <div>

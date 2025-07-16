@@ -126,12 +126,17 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
           throw new Error(`Transcription failed: ${response.statusText}`);
         }
 
-        const { transcript, diarizedTranscript } = await response.json();
+        const data = await response.json();
+        const { transcript, diarizedTranscript } = data;
+        const alt = data?.results?.channels?.[0]?.alternatives?.[0];
+        const utterances = alt?.utterances || [];
+        // Debug log
+        console.log('Utterances:', utterances);
 
         // Prefer diarizedTranscript if available
         const finalTranscript = diarizedTranscript && diarizedTranscript.trim() ? diarizedTranscript : transcript;
         if (finalTranscript && finalTranscript.trim()) {
-          await appendTranscription(finalTranscript.trim(), state.isRecording, 'desktop', undefined, diarizedTranscript);
+          await appendTranscription(finalTranscript.trim(), state.isRecording, 'desktop', undefined, diarizedTranscript, utterances);
           setState(prev => ({
             ...prev,
             noInputWarning: false,
