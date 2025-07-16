@@ -51,19 +51,21 @@ export async function POST(req: NextRequest) {
     const deepgram = createClient(process.env.DEEPGRAM_API_KEY!);
 
     // Transcribe the audio file
+    const deepgramConfig = {
+      model: 'nova-3',
+      punctuate: true,
+      language: 'en-NZ',
+      smart_format: true,
+      redact: ['name_given', 'name_family'],
+      diarize: true,
+      filler_words: true,
+      paragraphs: true,
+      utterances: true, // Enable utterances for speaker segmentation
+    };
+    console.log('[Deepgram Config]', deepgramConfig);
     const { result, error } = await deepgram.listen.prerecorded.transcribeFile(
       audioBuffer,
-      {
-        model: 'nova-3',
-        punctuate: true,
-        language: 'en-NZ',
-        smart_format: true,
-        redact: ['name_given', 'name_family'],
-        diarize: true,
-        filler_words: true,
-        paragraphs: true,
-        utterances: false,
-      },
+      deepgramConfig,
     );
 
     if (error) {
@@ -74,11 +76,16 @@ export async function POST(req: NextRequest) {
     // Log the full Deepgram response for debugging
     console.error('[Deepgram Full Response]', JSON.stringify(result, null, 2));
 
-    // Extract transcript, paragraphs, metadata
+    // Extract transcript, paragraphs, metadata, utterances
     const alt = result?.results?.channels?.[0]?.alternatives?.[0];
     const transcript = alt?.transcript || '';
     const paragraphs = alt?.paragraphs || [];
+    // Fix: utterances may be at channels[0] level, not alt
+    const channel = result?.results?.channels?.[0];
+    // Use bracket notation and type assertion to avoid TS error
+    const utterances = ((alt && (alt as any)['utterances']) || (channel && (channel as any)['utterances']) || []);
     const metadata = result?.metadata || {};
+    console.log('[Deepgram Utterances]', utterances);
 
     // Diarization: use Deepgram's built-in paragraphs.transcript if available
     let diarizedTranscript = '';
@@ -113,7 +120,9 @@ export async function POST(req: NextRequest) {
         .join('\n\n');
     }
 
-    return NextResponse.json({ transcript, paragraphs, metadata, diarizedTranscript });
+    const apiResponse = { transcript, paragraphs, metadata, diarizedTranscript, utterances };
+    console.log('[API Response Keys]', Object.keys(apiResponse));
+    return NextResponse.json(apiResponse);
   } catch (err: any) {
     console.error('API error:', err);
     return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
