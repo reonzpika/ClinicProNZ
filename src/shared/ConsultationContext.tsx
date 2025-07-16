@@ -486,8 +486,14 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
         transcript: prev.transcription.transcript
           ? `${prev.transcription.transcript} ${newTranscript}`.trim()
           : newTranscript.trim(),
-        diarizedTranscript: diarizedTranscript || prev.transcription.diarizedTranscript,
-        utterances: utterances !== undefined ? utterances : (prev.transcription.utterances || []),
+        diarizedTranscript: diarizedTranscript
+          ? (prev.transcription.diarizedTranscript
+              ? `${prev.transcription.diarizedTranscript}\n\n${diarizedTranscript}`.trim()
+              : diarizedTranscript.trim())
+          : prev.transcription.diarizedTranscript,
+        utterances: utterances !== undefined
+          ? [...(prev.transcription.utterances || []), ...utterances]
+          : (prev.transcription.utterances || []),
         isLive,
       },
     }));
