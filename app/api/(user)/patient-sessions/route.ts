@@ -9,9 +9,9 @@ import { checkFeatureAccess, extractRBACContext } from '@/src/lib/rbac-enforcer'
 // GET - List patient sessions for a user
 export async function GET(req: NextRequest) {
   try {
-    // Extract RBAC context and check session management permissions
+    // Extract RBAC context and check session history permissions
     const context = await extractRBACContext(req);
-    const permissionCheck = await checkFeatureAccess(context, 'sessions');
+    const permissionCheck = await checkFeatureAccess(context, 'session-history');
 
     if (!permissionCheck.allowed) {
       return new Response(
@@ -39,7 +39,12 @@ export async function GET(req: NextRequest) {
     let query = db
       .select()
       .from(patientSessions)
-      .where(eq(patientSessions.userId, userId))
+      .where(
+        and(
+          eq(patientSessions.userId, userId),
+          eq(patientSessions.isTemporary, false), // Only show persistent sessions
+        ),
+      )
       .orderBy(desc(patientSessions.createdAt))
       .limit(limit);
 
@@ -51,6 +56,7 @@ export async function GET(req: NextRequest) {
           and(
             eq(patientSessions.userId, userId),
             eq(patientSessions.status, status),
+            eq(patientSessions.isTemporary, false), // Only show persistent sessions
           ),
         )
         .orderBy(desc(patientSessions.createdAt))
@@ -105,24 +111,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Patient name is required' }, { status: 400 });
     }
 
-    // Create new patient session
-    const newSession = await db
-      .insert(patientSessions)
-      .values({
-        userId,
-        patientName: patientName.trim(),
-        templateId,
-        status: 'active',
-        transcriptions: JSON.stringify([]),
-        consultationItems: JSON.stringify([]),
-        clinicalImages: JSON.stringify([]),
-        typedInput: '',
-        consultationNotes: '',
-        notes: '',
-      })
-      .returning();
-
-    const session = newSession[0]!;
+    // Create new patient session using service (handles tier-based temporary sessions)
+    const { createUserSession } = await import('@/src/lib/services/guest-session-service');
+    const session = await createUserSession(
+      userId,
+      patientName.trim(),
+      templateId,
+      context.tier,
+    );
 
     // Note: Mobile devices will be notified via Ably when patient session changes
     return NextResponse.json({

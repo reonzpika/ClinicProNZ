@@ -172,16 +172,29 @@ export async function checkPremiumActionLimit(context: RBACContext): Promise<RBA
 /**
  * Check if user can access feature (templates, session management)
  */
-export async function checkFeatureAccess(context: RBACContext, feature: 'templates' | 'sessions'): Promise<RBACResult> {
+export async function checkFeatureAccess(context: RBACContext, feature: 'templates' | 'sessions' | 'session-history'): Promise<RBACResult> {
   const limits = TIER_LIMITS[context.tier];
 
-  const hasAccess = feature === 'templates' ? limits.templateManagement : limits.sessionManagement;
+  let hasAccess: boolean;
+
+  if (feature === 'templates') {
+    hasAccess = limits.templateManagement;
+  } else if (feature === 'session-history') {
+    // Session history (viewing past sessions) requires standard+
+    hasAccess = limits.sessionManagement;
+  } else if (feature === 'sessions') {
+    // Active session management (during consultation) is allowed for all authenticated users
+    hasAccess = context.isAuthenticated;
+  } else {
+    hasAccess = false;
+  }
 
   if (!hasAccess) {
+    const featureName = feature === 'session-history' ? 'session history' : `${feature} management`;
     return {
       allowed: false,
-      reason: `${feature} management requires Standard tier or higher`,
-      upgradePrompt: 'Upgrade to Standard to access this feature',
+      reason: `${featureName} requires ${feature === 'sessions' ? 'authentication' : 'Standard tier or higher'}`,
+      upgradePrompt: feature === 'sessions' ? 'Please sign in to access this feature' : 'Upgrade to Standard to access this feature',
     };
   }
 

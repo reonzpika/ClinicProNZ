@@ -39,10 +39,11 @@ export async function POST(req: Request) {
     // Parse the verified body
     const { type, data: userData } = JSON.parse(body);
     const userId = userData.id;
-    const email = userData.email_addresses?.[0]?.email_address;
+    const email = userData.email_addresses?.[0]?.email_address || null;
 
-    if (!userId || !email) {
-      return NextResponse.json({ code: 'BAD_REQUEST', message: 'Missing user id or email' }, { status: 400 });
+    // Only require userId, email is optional
+    if (!userId) {
+      return NextResponse.json({ code: 'BAD_REQUEST', message: 'Missing user id' }, { status: 400 });
     }
 
     // Handle user creation AND update events

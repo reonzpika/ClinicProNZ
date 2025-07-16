@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { boolean, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 import { users } from './users';
 
@@ -11,6 +11,7 @@ export const patientSessions = pgTable('patient_sessions', {
   status: text('status', {
     enum: ['active', 'completed', 'archived'],
   }).notNull().default('active'),
+  isTemporary: boolean('is_temporary').default(false).notNull(), // For basic tier temporary sessions
   transcriptions: text('transcriptions'), // JSON string of transcription array
   notes: text('notes'), // Generated consultation notes
   typedInput: text('typed_input'), // Text input when in typed mode

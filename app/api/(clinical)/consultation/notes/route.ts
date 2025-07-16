@@ -12,7 +12,7 @@ if (!OPENAI_API_KEY) {
 
 const openai = new OpenAI({
   apiKey: OPENAI_API_KEY,
-  timeout: 45000, // 45 second timeout to stay under Vercel limits
+  timeout: 30000, // Reduced to 30 seconds for faster failure detection
 });
 
 // Generate clinical notes using AI
@@ -95,15 +95,16 @@ export async function POST(req: Request) {
       }
     }
 
-    // Call OpenAI
+    // Call OpenAI with optimized settings for speed
     const stream = await openai.chat.completions.create({
-      model: 'o4-mini',
+      model: 'gpt-4o-mini', // Use faster model variant
       messages: [
         { role: 'system', content: system },
         { role: 'user', content: user },
       ],
       stream: true,
-      max_completion_tokens: 2000, // Limit response length to reduce processing time
+      max_completion_tokens: 1500, // Reduced from 2000 to speed up generation
+      temperature: 0.3, // Lower temperature for faster, more deterministic responses
     });
 
     // Stream the response to the client with timeout handling
@@ -113,7 +114,7 @@ export async function POST(req: Request) {
         try {
           const timeoutId = setTimeout(() => {
             controller.error(new Error('Stream timeout'));
-          }, 40000); // 40 second timeout for streaming
+          }, 25000); // 25 second timeout for streaming (under overall 30s limit)
 
           for await (const chunk of stream) {
             const content = chunk.choices?.[0]?.delta?.content;

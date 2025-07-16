@@ -268,33 +268,66 @@ export const useAblySync = ({
 
       const ably = new Ably.Realtime({
         authCallback: async (_tokenParams, callback) => {
-          try {
-            const url = new URL('/api/ably/token', window.location.origin);
-            if (token) {
-              url.searchParams.set('token', token);
-            }
+          const maxRetries = 3;
+          let attempt = 0;
 
-            const response = await fetch(url.toString(), {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-            });
+          const attemptAuth = async (): Promise<void> => {
+            try {
+              const url = new URL('/api/ably/token', window.location.origin);
+              if (token) {
+                url.searchParams.set('token', token);
+              }
 
-            if (!response.ok) {
-              if (response.status === 503) {
-                const data = await response.json();
-                if (data.code === 'ABLY_NOT_CONFIGURED') {
-                  callback(new Error('Ably service not configured') as Ably.ErrorInfo, null);
+              // Prepare headers with guest token for desktop guest users
+              const headers: Record<string, string> = {
+                'Content-Type': 'application/json',
+              };
+
+              // Include guest token in headers for authentication
+              const guestToken = getEffectiveGuestToken();
+              if (guestToken && !token) { // Only for desktop users (no mobile token)
+                headers['x-guest-token'] = guestToken;
+              }
+
+              const response = await fetch(url.toString(), {
+                method: 'POST',
+                headers,
+              });
+
+              if (!response.ok) {
+                if (response.status === 503) {
+                  const data = await response.json();
+                  if (data.code === 'ABLY_NOT_CONFIGURED') {
+                    callback(new Error('Ably service not configured') as Ably.ErrorInfo, null);
+                    return;
+                  }
+                }
+
+                // For 401 errors, retry with exponential backoff
+                if (response.status === 401 && attempt < maxRetries) {
+                  attempt++;
+                  const delay = 2 ** attempt * 1000; // 2s, 4s, 8s
+                  setTimeout(() => attemptAuth(), delay);
                   return;
                 }
-              }
-              throw new Error('Failed to get Ably token');
-            }
 
-            const { tokenRequest } = await response.json();
-            callback(null, tokenRequest);
-          } catch (error) {
-            callback(error as Ably.ErrorInfo, null);
-          }
+                throw new Error(`Failed to get Ably token (${response.status})`);
+              }
+
+              const { tokenRequest } = await response.json();
+              callback(null, tokenRequest);
+            } catch (error) {
+              if (attempt < maxRetries) {
+                attempt++;
+                const delay = 2 ** attempt * 1000; // 2s, 4s, 8s
+                setTimeout(() => attemptAuth(), delay);
+              } else {
+                callback(error as Ably.ErrorInfo, null);
+              }
+            }
+          };
+
+          await attemptAuth();
         },
         clientId: currentUserId,
       });

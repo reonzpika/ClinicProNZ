@@ -75,7 +75,7 @@ export async function checkUserSessionLimit(userId: string): Promise<UserSession
       .insert(users)
       .values({
         id: userId,
-        email: `${userId}@temp.com`, // Temporary email, should be updated by Clerk webhook
+        email: null, // No fake email, webhook will update with real email if available
         coreSessionsUsed: 0,
         sessionResetDate: today,
       })
@@ -146,6 +146,7 @@ export async function createGuestSession(guestToken: string, patientName: string
       patientName: patientName.trim(),
       templateId,
       status: 'active',
+      isTemporary: true, // Guest sessions are always temporary (basic tier)
       transcriptions: JSON.stringify([]),
       consultationItems: JSON.stringify([]),
       clinicalImages: JSON.stringify([]),
@@ -158,13 +159,16 @@ export async function createGuestSession(guestToken: string, patientName: string
 }
 
 /**
- * Create a new patient session for an authenticated user (for basic tier users)
+ * Create a new patient session for an authenticated user
  */
-export async function createUserSession(userId: string, patientName: string, templateId?: string) {
-  const sessionStatus = await checkUserSessionLimit(userId);
+export async function createUserSession(userId: string, patientName: string, templateId?: string, userTier: 'basic' | 'standard' | 'premium' | 'admin' = 'basic') {
+  // Only check session limits for basic tier users
+  if (userTier === 'basic') {
+    const sessionStatus = await checkUserSessionLimit(userId);
 
-  if (!sessionStatus.canCreateSession) {
-    throw new Error(`User session limit exceeded. You have used ${sessionStatus.sessionsUsed}/${USER_SESSION_LIMIT} sessions. Try again after ${sessionStatus.resetTime.toISOString()}`);
+    if (!sessionStatus.canCreateSession) {
+      throw new Error(`User session limit exceeded. You have used ${sessionStatus.sessionsUsed}/${USER_SESSION_LIMIT} sessions. Try again after ${sessionStatus.resetTime.toISOString()}`);
+    }
   }
 
   // Create the patient session
@@ -176,6 +180,7 @@ export async function createUserSession(userId: string, patientName: string, tem
       patientName: patientName.trim(),
       templateId,
       status: 'active',
+      isTemporary: userTier === 'basic', // Basic tier gets temporary sessions
       transcriptions: JSON.stringify([]),
       consultationItems: JSON.stringify([]),
       clinicalImages: JSON.stringify([]),
@@ -185,13 +190,15 @@ export async function createUserSession(userId: string, patientName: string, tem
     })
     .returning();
 
-  // Increment the user's session counter
-  await db
-    .update(users)
-    .set({
-      coreSessionsUsed: sessionStatus.sessionsUsed + 1,
-    })
-    .where(eq(users.id, userId));
+  // Increment the user's session counter (only for basic tier)
+  if (userTier === 'basic') {
+    await db
+      .update(users)
+      .set({
+        coreSessionsUsed: sessionStatus.sessionsUsed + 1,
+      })
+      .where(eq(users.id, userId));
+  }
 
   return newSession[0];
 }

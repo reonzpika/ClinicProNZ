@@ -1,7 +1,10 @@
+import { resolve } from 'node:path';
+
 import * as dotenv from 'dotenv';
 import { defineConfig } from 'drizzle-kit';
 
-// Load environment variables
+// Load environment variables from .env.local first, then .env
+dotenv.config({ path: resolve(process.cwd(), '.env.local') });
 dotenv.config();
 
 if (!process.env.DATABASE_URL) {
