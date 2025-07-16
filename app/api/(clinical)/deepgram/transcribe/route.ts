@@ -80,7 +80,39 @@ export async function POST(req: NextRequest) {
     const paragraphs = alt?.paragraphs || [];
     const metadata = result?.metadata || {};
 
-    return NextResponse.json({ transcript, paragraphs, metadata });
+    // Diarization: format as speaker-attributed paragraphs
+    let diarizedTranscript = '';
+    if (alt?.words && Array.isArray(alt.words)) {
+      // Group words by speaker
+      let currentSpeaker = null;
+      let currentParagraph = [];
+      const paragraphsArr = [];
+      for (const wordObj of alt.words) {
+        if (wordObj.speaker !== currentSpeaker) {
+          if (currentParagraph.length > 0) {
+            paragraphsArr.push({
+              speaker: currentSpeaker,
+              text: currentParagraph.join(' '),
+            });
+            currentParagraph = [];
+          }
+          currentSpeaker = wordObj.speaker;
+        }
+        currentParagraph.push(wordObj.word);
+      }
+      if (currentParagraph.length > 0) {
+        paragraphsArr.push({
+          speaker: currentSpeaker,
+          text: currentParagraph.join(' '),
+        });
+      }
+      // Format as paragraphs
+      diarizedTranscript = paragraphsArr
+        .map(p => `Speaker ${p.speaker}: ${p.text}`)
+        .join('\n\n');
+    }
+
+    return NextResponse.json({ transcript, paragraphs, metadata, diarizedTranscript });
   } catch (err: any) {
     console.error('API error:', err);
     return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });

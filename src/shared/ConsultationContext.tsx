@@ -63,6 +63,7 @@ export type ConsultationState = {
   inputMode: InputMode;
   transcription: {
     transcript: string;
+    diarizedTranscript?: string;
     isLive: boolean;
   };
   typedInput: string;
@@ -600,8 +601,8 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const getCurrentTranscript = useCallback(() => {
-    return state.transcription.transcript.trim();
-  }, [state.transcription.transcript]);
+    return state.transcription.diarizedTranscript || state.transcription.transcript.trim();
+  }, [state.transcription.diarizedTranscript, state.transcription.transcript]);
 
   const getCurrentInput = useCallback(() => {
     if (state.inputMode === 'typed') {

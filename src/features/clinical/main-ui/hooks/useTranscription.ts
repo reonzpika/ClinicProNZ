@@ -126,13 +126,12 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
           throw new Error(`Transcription failed: ${response.statusText}`);
         }
 
-        const { transcript } = await response.json();
+        const { transcript, diarizedTranscript } = await response.json();
 
-        if (transcript && transcript.trim()) {
-          // Append new transcript using the safe append function
-          await appendTranscription(transcript.trim(), state.isRecording, 'desktop');
-
-          // Update completion counter
+        // Prefer diarizedTranscript if available
+        const finalTranscript = diarizedTranscript && diarizedTranscript.trim() ? diarizedTranscript : transcript;
+        if (finalTranscript && finalTranscript.trim()) {
+          await appendTranscription(finalTranscript.trim(), state.isRecording, 'desktop');
           setState(prev => ({
             ...prev,
             noInputWarning: false,

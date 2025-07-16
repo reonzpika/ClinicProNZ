@@ -360,7 +360,7 @@ function MobilePageContent() {
           <CardContent>
             <ul className="space-y-2 text-sm text-gray-600">
               <li>• Tap "Start Recording" to begin audio capture</li>
-              <li>• Audio is processed in 5-second chunks</li>
+              <li>• Audio is automatically chunked at natural pauses in speech (smart recording)</li>
               <li>• Transcriptions are sent to your desktop in real-time</li>
               <li>• Keep this page open during the consultation</li>
             </ul>
