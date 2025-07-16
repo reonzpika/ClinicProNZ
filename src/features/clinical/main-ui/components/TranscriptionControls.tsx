@@ -74,6 +74,12 @@ export function TranscriptionControls({
   // Always use context transcript for unified display (includes both desktop and mobile)
   const transcript = contextTranscription.diarizedTranscript || contextTranscription.transcript;
 
+  // Debug log for diarized transcript
+  if (typeof window !== 'undefined') {
+    // eslint-disable-next-line no-console
+    console.log('Diarized Transcript:', contextTranscription.diarizedTranscript);
+  }
+
   // Filter to only mobile devices for UI display
   const connectedMobileDevices = mobileV2.connectedDevices.filter(d => d.deviceType === 'Mobile');
   const hasMobileDevices = connectedMobileDevices.length > 0;
