@@ -57,14 +57,11 @@ export async function POST(req: NextRequest) {
       language: 'en-NZ',
       smart_format: true,
       redact: ['name_given', 'name_family'],
-      diarize: true,
+      diarize: false, // Disable speaker diarization
       filler_words: true,
-      paragraphs: true,
-      utterances: true, // Enable utterances for speaker segmentation
-      utt_split: 0.8, // Utterance split sensitivity (0.0-1.0, higher = more sensitive)
+      paragraphs: true, // Keep paragraphs for better formatting
       interim_results: true, // Enable interim results for better real-time processing
       endpointing: 500, // Time in ms to wait before considering utterance complete
-      utterance_end_ms: 1000, // Minimum time in ms for utterance end detection
     };
     const { result, error } = await deepgram.listen.prerecorded.transcribeFile(
       audioBuffer,
@@ -76,53 +73,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Transcription failed' }, { status: 500 });
     }
 
-    // Log the full Deepgram response for debugging
-    console.error('[Deepgram Full Response]', JSON.stringify(result, null, 2));
-
-    // Extract transcript, paragraphs, metadata, utterances
+    // Extract transcript, paragraphs, and metadata (no diarization data)
     const alt = result?.results?.channels?.[0]?.alternatives?.[0];
     const transcript = alt?.transcript || '';
     const paragraphs = alt?.paragraphs || [];
-    // Fix: utterances may be at channels[0] level, not alt
-    const channel = result?.results?.channels?.[0];
-    // Use bracket notation and type assertion to avoid TS error
-    const utterances = ((alt && (alt as any).utterances) || (channel && (channel as any).utterances) || []);
     const metadata = result?.metadata || {};
 
-    // Diarization: use Deepgram's built-in paragraphs.transcript if available
-    let diarizedTranscript = '';
-    if (alt?.paragraphs && typeof alt.paragraphs === 'object' && typeof alt.paragraphs.transcript === 'string') {
-      diarizedTranscript = alt.paragraphs.transcript;
-    } else if (alt?.words && Array.isArray(alt.words)) {
-      // Fallback: manual grouping (should rarely be needed)
-      let currentSpeaker = null;
-      let currentParagraph = [];
-      const paragraphsArr = [];
-      for (const wordObj of alt.words) {
-        if (wordObj.speaker !== currentSpeaker) {
-          if (currentParagraph.length > 0) {
-            paragraphsArr.push({
-              speaker: currentSpeaker,
-              text: currentParagraph.join(' '),
-            });
-            currentParagraph = [];
-          }
-          currentSpeaker = wordObj.speaker;
-        }
-        currentParagraph.push(wordObj.word);
-      }
-      if (currentParagraph.length > 0) {
-        paragraphsArr.push({
-          speaker: currentSpeaker,
-          text: currentParagraph.join(' '),
-        });
-      }
-      diarizedTranscript = paragraphsArr
-        .map(p => `Speaker ${p.speaker}: ${p.text}`)
-        .join('\n\n');
-    }
-
-    const apiResponse = { transcript, paragraphs, metadata, diarizedTranscript, utterances };
+    const apiResponse = { transcript, paragraphs, metadata };
     return NextResponse.json(apiResponse);
   } catch (err: any) {
     console.error('API error:', err);

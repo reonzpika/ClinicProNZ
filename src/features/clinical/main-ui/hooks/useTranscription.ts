@@ -127,12 +127,11 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
         }
 
         const data = await response.json();
-        const { transcript, diarizedTranscript, utterances = [] } = data;
+        const { transcript } = data;
 
-        // Prefer diarizedTranscript if available
-        const finalTranscript = diarizedTranscript && diarizedTranscript.trim() ? diarizedTranscript : transcript;
-        if (finalTranscript && finalTranscript.trim()) {
-          await appendTranscription(finalTranscript.trim(), state.isRecording, 'desktop', undefined, diarizedTranscript, utterances);
+        // Use regular transcript since diarization is disabled
+        if (transcript && transcript.trim()) {
+          await appendTranscription(transcript.trim(), state.isRecording, 'desktop');
           setState(prev => ({
             ...prev,
             noInputWarning: false,

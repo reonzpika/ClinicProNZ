@@ -232,18 +232,16 @@ function MobilePageContent() {
       if (!response.ok) {
         return;
       }
-      const { transcript, diarizedTranscript, utterances = [] } = await response.json();
+      const { transcript } = await response.json();
 
-      // Prefer diarizedTranscript if available, fallback to transcript
-      const finalTranscript = diarizedTranscript && diarizedTranscript.trim() ? diarizedTranscript : transcript;
-
-      if (finalTranscript?.trim() && connectionState.status === 'connected') {
-        // Send enhanced transcription data with diarization info
+      // Use regular transcript since diarization is disabled
+      if (transcript?.trim() && connectionState.status === 'connected') {
+        // Send regular transcription data
         await sendTranscriptionWithDiarization(
-          finalTranscript.trim(),
+          transcript.trim(),
           patientState.sessionId || undefined,
-          diarizedTranscript || null,
-          utterances,
+          null, // No diarized transcript
+          [], // No utterances
         );
       }
     },
