@@ -1,27 +1,27 @@
 import { NextResponse } from 'next/server';
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   const startTime = Date.now();
-  
+
   try {
     // Test various operations that could cause timeouts
     const results = {
       timestamp: new Date().toISOString(),
       region: process.env.VERCEL_REGION || 'unknown',
-      
+
       // Test database connection speed
       dbTest: await testDatabaseSpeed(),
-      
+
       // Test external API latency
       apiTest: await testExternalAPISpeed(),
-      
+
       // Environment info
       environment: {
         nodeVersion: process.version,
         memory: process.memoryUsage(),
         uptime: process.uptime(),
       },
-      
+
       // Timing info
       totalExecutionTime: Date.now() - startTime,
     };
@@ -45,13 +45,13 @@ async function testDatabaseSpeed() {
     return {
       success: true,
       latency: Date.now() - start,
-      note: 'DB test skipped - add your DB import'
+      note: 'DB test skipped - add your DB import',
     };
   } catch (error) {
     return {
       success: false,
       latency: Date.now() - start,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -61,9 +61,9 @@ async function testExternalAPISpeed() {
   try {
     // Test a simple HTTP request
     const response = await fetch('https://httpbin.org/get', {
-      signal: AbortSignal.timeout(5000)
+      signal: AbortSignal.timeout(5000),
     });
-    
+
     return {
       success: response.ok,
       latency: Date.now() - start,
@@ -73,7 +73,7 @@ async function testExternalAPISpeed() {
     return {
       success: false,
       latency: Date.now() - start,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
-} 
+}
