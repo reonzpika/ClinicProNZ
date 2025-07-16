@@ -79,13 +79,6 @@ export default function ConsultationPage() {
     diarizedTranscript?: string | null,
     utterances?: any[],
   ) => {
-    // Debug: Log what we received from mobile via Ably
-    console.log('[Desktop] Received from Ably:', {
-      transcript,
-      diarizedTranscript,
-      utterances,
-    });
-
     // Append mobile transcription with diarization data to desktop transcription
     await appendTranscription(
       transcript,

@@ -61,6 +61,10 @@ export async function POST(req: NextRequest) {
       filler_words: true,
       paragraphs: true,
       utterances: true, // Enable utterances for speaker segmentation
+      utt_split: 0.8, // Utterance split sensitivity (0.0-1.0, higher = more sensitive)
+      interim_results: true, // Enable interim results for better real-time processing
+      endpointing: 500, // Time in ms to wait before considering utterance complete
+      utterance_end_ms: 1000, // Minimum time in ms for utterance end detection
     };
     const { result, error } = await deepgram.listen.prerecorded.transcribeFile(
       audioBuffer,

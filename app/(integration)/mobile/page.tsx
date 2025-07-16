@@ -234,20 +234,10 @@ function MobilePageContent() {
       }
       const { transcript, diarizedTranscript, utterances = [] } = await response.json();
 
-      // Debug: Log what we received from API
-      console.log('[Mobile] API Response:', { transcript, diarizedTranscript, utterances });
-
       // Prefer diarizedTranscript if available, fallback to transcript
       const finalTranscript = diarizedTranscript && diarizedTranscript.trim() ? diarizedTranscript : transcript;
 
       if (finalTranscript?.trim() && connectionState.status === 'connected') {
-        // Debug: Log what we're sending via Ably
-        console.log('[Mobile] Sending via Ably:', {
-          finalTranscript: finalTranscript.trim(),
-          diarizedTranscript: diarizedTranscript || null,
-          utterances,
-        });
-
         // Send enhanced transcription data with diarization info
         await sendTranscriptionWithDiarization(
           finalTranscript.trim(),

@@ -75,17 +75,6 @@ export function TranscriptionControls({
   const transcript = contextTranscription.diarizedTranscript || contextTranscription.transcript;
   const utterances = contextTranscription.utterances || [];
 
-  // Debug log for diarized transcript and utterances
-  if (typeof window !== 'undefined') {
-    // eslint-disable-next-line no-console
-    console.log('[TranscriptionControls] Context Values:', {
-      diarizedTranscript: contextTranscription.diarizedTranscript,
-      transcript: contextTranscription.transcript,
-      utterances,
-      finalTranscript: transcript,
-    });
-  }
-
   // Filter to only mobile devices for UI display
   const connectedMobileDevices = mobileV2.connectedDevices.filter(d => d.deviceType === 'Mobile');
   const hasMobileDevices = connectedMobileDevices.length > 0;
