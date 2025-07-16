@@ -5,7 +5,7 @@ import { useConsultation } from '@/src/shared/ConsultationContext';
 
 // Message types for Ably communication
 type AblyMessage = {
-  type: 'transcription' | 'switch_patient' | 'device_connected' | 'device_disconnected' | 'session_created' | 'force_disconnect' | 'sync_current_patient';
+  type: 'transcription' | 'switch_patient' | 'device_connected' | 'device_disconnected' | 'session_created' | 'force_disconnect' | 'sync_current_patient' | 'start_recording' | 'stop_recording';
   userId?: string;
   patientSessionId?: string;
   transcript?: string;
@@ -26,6 +26,8 @@ type AblySyncHookProps = {
   onDeviceConnected?: (deviceId: string, deviceName: string, deviceType?: string) => void;
   onDeviceDisconnected?: (deviceId: string) => void;
   onError?: (error: string | null) => void;
+  onStartRecording?: () => void;
+  onStopRecording?: () => void;
 };
 
 type ConnectionState = {
@@ -50,6 +52,8 @@ export const useAblySync = ({
   onDeviceConnected,
   onDeviceDisconnected,
   onError,
+  onStartRecording,
+  onStopRecording,
 }: AblySyncHookProps) => {
   const [connectionState, setConnectionState] = useState<ConnectionState>({
     status: 'disconnected',
@@ -372,6 +376,16 @@ export const useAblySync = ({
               cleanup();
             }
             break;
+          case 'start_recording':
+            if (!isDesktop) {
+              onStartRecording?.();
+            }
+            break;
+          case 'stop_recording':
+            if (!isDesktop) {
+              onStopRecording?.();
+            }
+            break;
         }
       });
 
@@ -404,7 +418,7 @@ export const useAblySync = ({
       setConnectionState(prev => ({ ...prev, status: 'error', error: errorMessage }));
       onError?.(errorMessage);
     }
-  }, [enabled, token, isDesktop, getUserId, getDeviceInfo, onTranscriptionReceived, onPatientSwitched, onDeviceConnected, onDeviceDisconnected, onError, processedMessageIds]);
+  }, [enabled, token, isDesktop, getUserId, getDeviceInfo, onTranscriptionReceived, onPatientSwitched, onDeviceConnected, onDeviceDisconnected, onError, processedMessageIds, onStartRecording, onStopRecording]);
 
   // Enhanced notify method
   const notifyPatientSwitch = useCallback(async (patientSessionId: string, patientName?: string) => {
@@ -463,5 +477,11 @@ export const useAblySync = ({
     forceDisconnectDevice,
     reconnect: connect,
     disconnect: cleanup,
+    startMobileRecording: useCallback(async () => {
+      return sendMessage({ type: 'start_recording' });
+    }, [sendMessage]),
+    stopMobileRecording: useCallback(async () => {
+      return sendMessage({ type: 'stop_recording' });
+    }, [sendMessage]),
   };
 };

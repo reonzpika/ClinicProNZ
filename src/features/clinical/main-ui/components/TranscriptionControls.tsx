@@ -14,6 +14,7 @@ import { useConsultation } from '@/src/shared/ConsultationContext';
 import { AudioSettingsModal } from '../../mobile/components/AudioSettingsModal';
 import { MobileRecordingQRV2 } from '../../mobile/components/MobileRecordingQRV2';
 import { ConsentModal } from '../../session-management/components/ConsentModal';
+import { useAblySync } from '../hooks/useAblySync';
 import { useTranscription } from '../hooks/useTranscription';
 import { ConsultationInputHeader } from './ConsultationInputHeader';
 
@@ -38,6 +39,11 @@ export function TranscriptionControls({
     removeMobileV2Device,
     getEffectiveGuestToken,
   } = useConsultation();
+  const { startMobileRecording } = useAblySync({
+    enabled: !!mobileV2.token || mobileV2.connectedDevices.length > 0,
+    token: mobileV2.token || undefined,
+    isDesktop: true,
+  });
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [showAudioSettings, setShowAudioSettings] = useState(false);
   const [showMobileRecordingV2, setShowMobileRecordingV2] = useState(false);
@@ -258,6 +264,14 @@ export function TranscriptionControls({
     );
   }
 
+  const handleStartMobileRecording = () => {
+    if (hasMobileDevices) {
+      startMobileRecording();
+    } else {
+      startRecording();
+    }
+  };
+
   return (
     <div className="space-y-3">
       <ConsultationInputHeader
@@ -379,7 +393,7 @@ export function TranscriptionControls({
                         ? (
                             <Button
                               type="button"
-                              onClick={handleStartRecording}
+                              onClick={handleStartMobileRecording}
                               disabled={!isSignedIn && !canCreateSession}
                               className="h-8 bg-green-600 px-3 text-xs text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
                               title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}

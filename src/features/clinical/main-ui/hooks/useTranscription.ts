@@ -22,7 +22,15 @@ const WORD_BOUNDARY_PAUSE = 1; // seconds - micro-pause indicating word boundary
 const FORCE_STOP_DURATION = 35; // seconds - absolute maximum before force-stopping
 const SPEECH_CONFIRMATION_FRAMES = 3; // Number of consecutive frames above threshold to confirm speech
 
-export const useTranscription = () => {
+// Add options for mobile support
+export type UseTranscriptionOptions = {
+  isMobile?: boolean;
+  onChunkComplete?: (audioBlob: Blob) => Promise<void>;
+  mobileChunkTimeout?: number;
+};
+
+export const useTranscription = (options: UseTranscriptionOptions = {}) => {
+  const { isMobile = false, onChunkComplete } = options;
   const {
     setStatus,
     setTranscription,
@@ -96,37 +104,41 @@ export const useTranscription = () => {
       sessionCountRef.current += 1;
       const currentSession = sessionCountRef.current;
 
-      const formData = new FormData();
-      formData.append('audio', audioBlob, `session-${currentSession}.webm`);
+      if (isMobile && onChunkComplete) {
+        await onChunkComplete(audioBlob);
+      } else {
+        const formData = new FormData();
+        formData.append('audio', audioBlob, `session-${currentSession}.webm`);
 
-      const guestToken = getEffectiveGuestToken();
-      const headers: Record<string, string> = {};
-      if (guestToken) {
-        headers['x-guest-token'] = guestToken;
-      }
+        const guestToken = getEffectiveGuestToken();
+        const headers: Record<string, string> = {};
+        if (guestToken) {
+          headers['x-guest-token'] = guestToken;
+        }
 
-      const response = await fetch('/api/deepgram/transcribe', {
-        method: 'POST',
-        headers,
-        body: formData,
-      });
+        const response = await fetch('/api/deepgram/transcribe', {
+          method: 'POST',
+          headers,
+          body: formData,
+        });
 
-      if (!response.ok) {
-        throw new Error(`Transcription failed: ${response.statusText}`);
-      }
+        if (!response.ok) {
+          throw new Error(`Transcription failed: ${response.statusText}`);
+        }
 
-      const { transcript } = await response.json();
+        const { transcript } = await response.json();
 
-      if (transcript && transcript.trim()) {
-        // Append new transcript using the safe append function
-        await appendTranscription(transcript.trim(), state.isRecording, 'desktop');
+        if (transcript && transcript.trim()) {
+          // Append new transcript using the safe append function
+          await appendTranscription(transcript.trim(), state.isRecording, 'desktop');
 
-        // Update completion counter
-        setState(prev => ({
-          ...prev,
-          noInputWarning: false,
-          chunksCompleted: prev.chunksCompleted + 1,
-        }));
+          // Update completion counter
+          setState(prev => ({
+            ...prev,
+            noInputWarning: false,
+            chunksCompleted: prev.chunksCompleted + 1,
+          }));
+        }
       }
     } catch (error: any) {
       setState(prev => ({
@@ -136,7 +148,7 @@ export const useTranscription = () => {
     } finally {
       setState(prev => ({ ...prev, isTranscribing: false }));
     }
-  }, [appendTranscription, state.isRecording, getEffectiveGuestToken]);
+  }, [appendTranscription, state.isRecording, getEffectiveGuestToken, isMobile, onChunkComplete]);
 
   // Start a new recording session
   const startRecordingSession = useCallback(() => {

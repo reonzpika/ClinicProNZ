@@ -2,9 +2,10 @@
 
 import { AlertTriangle, CheckCircle, Mic, MicOff, Smartphone, Wifi, WifiOff } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 
 import { useAblySync } from '@/src/features/clinical/main-ui/hooks/useAblySync';
+import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTranscription';
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
@@ -20,14 +21,6 @@ type TokenState = {
 type PatientState = {
   sessionId: string | null;
   name: string | null;
-};
-
-type RecordingState = {
-  isRecording: boolean;
-  isPaused: boolean;
-  isTranscribing: boolean;
-  duration: number;
-  chunksUploaded: number;
 };
 
 // Loading component for Suspense fallback
@@ -63,14 +56,6 @@ function MobilePageContent() {
   const [patientState, setPatientState] = useState<PatientState>({
     sessionId: null,
     name: null,
-  });
-
-  const [recordingState, setRecordingState] = useState<RecordingState>({
-    isRecording: false,
-    isPaused: false,
-    isTranscribing: false,
-    duration: 0,
-    chunksUploaded: 0,
   });
 
   // Validate token on mount
@@ -140,6 +125,12 @@ function MobilePageContent() {
         name: name || 'Unknown Patient',
       });
     }, []),
+    onStartRecording: useCallback(() => {
+      // This callback is now handled by the useTranscription hook
+    }, []),
+    onStopRecording: useCallback(() => {
+      // This callback is now handled by the useTranscription hook
+    }, []),
     onError: useCallback((error: string | null) => {
       // Filter out expected Ably configuration errors
       if (error && (
@@ -149,149 +140,43 @@ function MobilePageContent() {
       )) {
         return;
       }
-
       if (error) {
         setTokenState(prev => ({ ...prev, error }));
       }
     }, []),
   });
 
-  // Recording management
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
-  const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
-  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Process audio for transcription
-  const processAudio = useCallback(async (audioBlob: Blob) => {
-    setRecordingState(prev => ({ ...prev, isTranscribing: true }));
-
-    try {
+  // Use new VAD-based smart recording
+  const { isRecording, isTranscribing, chunksCompleted, startRecording, stopRecording } = useTranscription({
+    isMobile: true,
+    mobileChunkTimeout: 2, // 2s silence threshold for mobile
+    onChunkComplete: async (audioBlob: Blob) => {
+      // Mobile-specific processing
       const formData = new FormData();
       formData.append('audio', audioBlob, 'audio.webm');
-
       const headers: Record<string, string> = {};
       if (tokenState.token) {
         headers['x-guest-token'] = tokenState.token;
       }
-
       const response = await fetch('/api/deepgram/transcribe', {
         method: 'POST',
         headers,
         body: formData,
       });
-
       if (!response.ok) {
-        throw new Error('Transcription failed');
+        return;
       }
-
       const { transcript } = await response.json();
-
-      if (transcript?.trim()) {
-        // Send to desktop if connected
-        if (connectionState.status === 'connected') {
-          try {
-            await sendTranscription(transcript.trim(), patientState.sessionId || undefined);
-            setRecordingState(prev => ({
-              ...prev,
-              chunksUploaded: prev.chunksUploaded + 1,
-            }));
-          } catch {
-            setTokenState(prev => ({
-              ...prev,
-              error: 'Failed to send to desktop. Connection lost.',
-            }));
-          }
-        } else {
-          // Just count locally if no connection
-          setRecordingState(prev => ({
-            ...prev,
-            chunksUploaded: prev.chunksUploaded + 1,
-          }));
-        }
+      if (transcript?.trim() && connectionState.status === 'connected') {
+        await sendTranscription(transcript.trim(), patientState.sessionId || undefined);
       }
-    } catch {
-      setTokenState(prev => ({ ...prev, error: 'Transcription failed. Please try again.' }));
-    } finally {
-      setRecordingState(prev => ({ ...prev, isTranscribing: false }));
-    }
-  }, [connectionState.status, sendTranscription, patientState.sessionId]);
+    },
+  });
 
-  // Recording controls
-  const startRecording = useCallback(async () => {
-    if (!tokenState.token || tokenState.isValidating) {
-      setTokenState(prev => ({ ...prev, error: 'Please wait for token validation.' }));
-      return;
-    }
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
-
-      let chunks: Blob[] = [];
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          chunks.push(event.data);
-        }
-      };
-
-      recorder.onstop = () => {
-        const audioBlob = new Blob(chunks, { type: 'audio/webm;codecs=opus' });
-        processAudio(audioBlob);
-        chunks = [];
-      };
-
-      setMediaRecorder(recorder);
-      setAudioStream(stream);
-      recorder.start();
-      setRecordingState(prev => ({ ...prev, isRecording: true, duration: 0 }));
-
-      // Record in 5-second chunks
-      const chunkInterval = setInterval(() => {
-        if (recorder.state === 'recording') {
-          recorder.stop();
-          recorder.start();
-        }
-      }, 5000);
-      recordingIntervalRef.current = chunkInterval;
-
-      // Update duration
-      const durationInterval = setInterval(() => {
-        setRecordingState(prev => ({ ...prev, duration: prev.duration + 1 }));
-      }, 1000);
-      durationIntervalRef.current = durationInterval;
-    } catch {
-      setTokenState(prev => ({ ...prev, error: 'Could not access microphone.' }));
-    }
-  }, [tokenState.token, tokenState.isValidating, processAudio]);
-
-  const stopRecording = useCallback(() => {
-    if (mediaRecorder?.state !== 'inactive') {
-      mediaRecorder?.stop();
-    }
-
-    audioStream?.getTracks().forEach(track => track.stop());
-    setAudioStream(null);
-
-    if (recordingIntervalRef.current) {
-      clearInterval(recordingIntervalRef.current);
-      recordingIntervalRef.current = null;
-    }
-
-    if (durationIntervalRef.current) {
-      clearInterval(durationIntervalRef.current);
-      durationIntervalRef.current = null;
-    }
-
-    setMediaRecorder(null);
-    setRecordingState({
-      isRecording: false,
-      isPaused: false,
-      isTranscribing: false,
-      duration: 0,
-      chunksUploaded: 0,
-    });
-  }, [mediaRecorder, audioStream]);
+  // Update refs with current function references
+  useEffect(() => {
+    // These refs are no longer needed as startRecording/stopRecording are managed by the hook
+  }, []);
 
   // Connection status helpers
   const isConnected = connectionState.status === 'connected';
@@ -410,28 +295,28 @@ function MobilePageContent() {
           <CardContent className="space-y-4">
             {/* Recording Status */}
             <div className="space-y-2">
-              {recordingState.isRecording && (
+              {isRecording && (
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center space-x-2">
                     <div className="size-2 animate-pulse rounded-full bg-red-500" />
                     <span className="font-medium">Recording...</span>
                   </div>
-                  <span className="font-mono">{formatDuration(recordingState.duration)}</span>
+                  <span className="font-mono">{formatDuration(chunksCompleted)}</span>
                 </div>
               )}
 
-              {recordingState.isTranscribing && (
+              {isTranscribing && (
                 <div className="flex items-center space-x-2 text-sm text-blue-600">
                   <div className="size-2 animate-pulse rounded-full bg-blue-500" />
                   <span>Processing audio...</span>
                 </div>
               )}
 
-              {recordingState.chunksUploaded > 0 && (
+              {chunksCompleted > 0 && (
                 <div className="text-sm text-green-600">
                   ✓
                   {' '}
-                  {recordingState.chunksUploaded}
+                  {chunksCompleted}
                   {' '}
                   audio chunks processed
                 </div>
@@ -440,7 +325,7 @@ function MobilePageContent() {
 
             {/* Recording Button */}
             <div className="space-y-2">
-              {!recordingState.isRecording
+              {!isRecording
                 ? (
                     <Button
                       onClick={startRecording}
