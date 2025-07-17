@@ -61,7 +61,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
     try {
       const response = await fetch('/api/guest-sessions/status', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: createAuthHeadersWithGuest(userId, userTier, token),
         body: JSON.stringify({ guestToken: token }),
       });
 

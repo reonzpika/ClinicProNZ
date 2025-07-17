@@ -127,7 +127,7 @@ export default function TemplatesPage() {
       templateBody: template.templateBody,
     };
     try {
-      const newTemplate = await createTemplate(copy);
+      const newTemplate = await createTemplate(copy, userId, userTier, null);
       setTemplates(prev => [...prev, newTemplate]);
       setSelectedTemplate(newTemplate);
       setIsEditing(true);
@@ -140,11 +140,11 @@ export default function TemplatesPage() {
     try {
       if (selectedTemplate && selectedTemplate.id && !selectedTemplate.id.startsWith('new-')) {
         // Editing existing template
-        await updateTemplate(selectedTemplate.id, template);
+        await updateTemplate(selectedTemplate.id, template, userId, userTier, null);
         setTemplates(prev => prev.map(t => t.id === selectedTemplate.id ? { ...template, id: selectedTemplate.id } : t));
       } else {
         // Creating new template
-        const newTemplate = await createTemplate(template);
+        const newTemplate = await createTemplate(template, userId, userTier, null);
         setTemplates(prev => [...prev, newTemplate]);
         setSelectedTemplate(newTemplate);
       }

@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuth } from '@clerk/nextjs';
 import {
   AlertCircle,
   Camera,
@@ -19,6 +20,8 @@ import { useRef, useState } from 'react';
 import { Container } from '@/src/shared/components/layout/Container';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 
 type UploadedImage = {
   id: string;
@@ -35,6 +38,10 @@ type UploadedImage = {
 };
 
 export default function ClinicalImagePage() {
+  const { userId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
+  const userTier = getUserTier();
+  
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState<string | null>(null);
@@ -52,7 +59,7 @@ export default function ClinicalImagePage() {
       // Get presigned URL
       const presignResponse = await fetch('/api/uploads/presign', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: createAuthHeadersWithGuest(userId, userTier, null),
         body: JSON.stringify({
           fileName: file.name,
           fileType: file.type,
@@ -124,7 +131,7 @@ export default function ClinicalImagePage() {
 
       const response = await fetch('/api/clinical-images/analyze', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: createAuthHeadersWithGuest(userId, userTier, null),
         body: JSON.stringify({
           fileKey: image.fileKey,
           prompt: analysisPrompt || undefined,

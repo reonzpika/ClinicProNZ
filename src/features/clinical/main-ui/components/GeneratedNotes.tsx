@@ -5,9 +5,13 @@ import React, { useEffect, useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
 import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 
 export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused: _isNoteFocused, isDocumentationMode: _isDocumentationMode }: { onGenerate?: () => void; onClearAll?: () => void; loading?: boolean; isNoteFocused?: boolean; isDocumentationMode?: boolean }) {
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, userId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
+  const userTier = getUserTier();
   const {
     generatedNotes,
     error,
@@ -74,12 +78,12 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
         return;
       }
 
-      try {
-        const response = await fetch('/api/guest-sessions/status', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ guestToken: effectiveGuestToken }),
-        });
+              try {
+          const response = await fetch('/api/guest-sessions/status', {
+            method: 'POST',
+            headers: createAuthHeadersWithGuest(userId, userTier, effectiveGuestToken),
+            body: JSON.stringify({ guestToken: effectiveGuestToken }),
+          });
 
         if (response.ok) {
           const data = await response.json();
