@@ -94,9 +94,9 @@ function substitutePlaceholders(
     consultationData,
     '',
     '--- OUTPUT INSTRUCTIONS ---',
-    'Fill only the placeholders in the template with facts from the data.',
+    'Fill only the placeholders in the template with facts from the data. Only include facts clearly stated in the consultation data.',
     'Omit any empty sections.',
-    'Append a final “Items for review:” checklist of omissions/hallucinations/uncertainties if needed.',
+    'Append a QA checklist at the end: Omission/Hallucination/Uncertain.',
     '',
     '[Begin output]',
   ].join('\n');
