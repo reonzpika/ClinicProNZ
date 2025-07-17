@@ -94,9 +94,11 @@ function substitutePlaceholders(
     consultationData,
     '',
     '--- OUTPUT INSTRUCTIONS ---',
-    'Follow the template above exactly. Only include information that is explicitly mentioned in the consultation data. If a section has no relevant information, leave it blank or omit it entirely.',
+    'Fill only the placeholders in the template with facts from the data.',
+    'Omit any empty sections.',
+    'Append a final “Items for review:” checklist of omissions/hallucinations/uncertainties if needed.',
     '',
-    '[Output begins here]',
+    '[Begin output]',
   ].join('\n');
 
   // Cache the result
