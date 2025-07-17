@@ -10,11 +10,12 @@ type ExaminationTypesListProps = {
   onSelectType: (typeId: string) => void;
   searchQuery: string;
   highlightSearchTerm: (text: string) => string;
+  focusedIndex?: number; // Index of focused exam type for keyboard navigation
   className?: string;
 };
 
 export const ExaminationTypesList = forwardRef<HTMLDivElement, ExaminationTypesListProps>(
-  ({ examTypes, selectedTypeId, onSelectType, searchQuery, highlightSearchTerm, className }, ref) => {
+  ({ examTypes, selectedTypeId, onSelectType, searchQuery, highlightSearchTerm, focusedIndex, className }, ref) => {
     return (
       <div
         ref={ref}
@@ -35,29 +36,36 @@ export const ExaminationTypesList = forwardRef<HTMLDivElement, ExaminationTypesL
                 </div>
               )
             : (
-                examTypes.map(examType => (
-                  <button
-                    key={examType.id}
-                    onClick={() => onSelectType(examType.id)}
-                    className={`w-full rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                      selectedTypeId === examType.id
-                        ? 'border border-blue-300 bg-blue-100 text-blue-800'
-                        : 'border border-transparent hover:bg-gray-100'
-                    }`}
-                  >
-                    <div
-                      className="font-medium"
-                      dangerouslySetInnerHTML={{
-                        __html: highlightSearchTerm(examType.title),
-                      }}
-                    />
-                    <div className="mt-1 text-xs text-gray-600">
-                      {examType.items.length}
-                      {' '}
-                      items
-                    </div>
-                  </button>
-                ))
+                examTypes.map((examType, index) => {
+                  const isSelected = selectedTypeId === examType.id;
+                  const isFocused = focusedIndex === index;
+
+                  return (
+                    <button
+                      key={examType.id}
+                      onClick={() => onSelectType(examType.id)}
+                      className={`w-full rounded-md px-3 py-2 text-left text-sm transition-colors ${
+                        isSelected
+                          ? 'border border-blue-300 bg-blue-100 text-blue-800'
+                          : isFocused
+                            ? 'border border-indigo-300 bg-indigo-100 text-indigo-800'
+                            : 'border border-transparent hover:bg-gray-100'
+                      }`}
+                    >
+                      <div
+                        className="font-medium"
+                        dangerouslySetInnerHTML={{
+                          __html: highlightSearchTerm(examType.title),
+                        }}
+                      />
+                      <div className="mt-1 text-xs text-gray-600">
+                        {examType.items.length}
+                        {' '}
+                        items
+                      </div>
+                    </button>
+                  );
+                })
               )}
         </div>
 

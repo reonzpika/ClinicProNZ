@@ -18,6 +18,7 @@ type ChecklistItemsPanelProps = {
   onSelectAll: (examTypeId: string, examTypeTitle: string, items: string[]) => void;
   searchQuery: string;
   highlightSearchTerm: (text: string) => string;
+  focusedIndex?: number; // Index of focused checklist item for keyboard navigation
   className?: string;
 };
 
@@ -30,6 +31,7 @@ export const ChecklistItemsPanel = forwardRef<HTMLDivElement, ChecklistItemsPane
     onSelectAll,
     searchQuery,
     highlightSearchTerm,
+    focusedIndex,
     className,
   }, ref) => {
     if (!selectedExamType) {
@@ -101,10 +103,18 @@ export const ChecklistItemsPanel = forwardRef<HTMLDivElement, ChecklistItemsPane
             : (
                 filteredItems.map((item, index) => {
                   const isSelected = hasItem(selectedExamType.id, item);
+                  const isFocused = focusedIndex === index;
                   const itemId = `${selectedExamType.id}-${index}`;
 
                   return (
-                    <div key={itemId} className="group flex items-start space-x-3">
+                    <div
+                      key={itemId}
+                      className={`group flex items-start space-x-3 rounded-md p-2 transition-colors ${
+                        isFocused
+                          ? 'border border-indigo-300 bg-indigo-100'
+                          : ''
+                      }`}
+                    >
                       <Checkbox
                         id={itemId}
                         checked={isSelected}

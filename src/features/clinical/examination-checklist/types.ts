@@ -11,7 +11,7 @@ export type SelectedItem = {
   item: string;
 };
 
-export type FocusArea = 'search' | 'examTypes' | 'checklist' | 'cart' | 'actions';
+export type FocusArea = 'search' | 'examTypes' | 'checklist' | 'actions';
 
 export type ExaminationCartState = {
   selectedItems: SelectedItem[];

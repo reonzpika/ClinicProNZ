@@ -1,7 +1,7 @@
 'use client';
 
 import { Stethoscope } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
 
@@ -15,6 +15,19 @@ export const ExaminationChecklistButton: React.FC<ExaminationChecklistButtonProp
   className,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Global keyboard shortcut for Alt+C
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey && e.key.toLowerCase() === 'c' && !isModalOpen) {
+        e.preventDefault();
+        setIsModalOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isModalOpen]);
 
   return (
     <>

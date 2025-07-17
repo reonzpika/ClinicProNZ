@@ -40,7 +40,6 @@ export const useKeyboardNavigation = ({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const examTypesRef = useRef<HTMLDivElement>(null);
   const checklistRef = useRef<HTMLDivElement>(null);
-  const cartRef = useRef<HTMLDivElement>(null);
   const actionsRef = useRef<HTMLDivElement>(null);
 
   // Reset state when modal opens
@@ -70,9 +69,6 @@ export const useKeyboardNavigation = ({
         case 'checklist':
           checklistRef.current?.focus();
           break;
-        case 'cart':
-          cartRef.current?.focus();
-          break;
         case 'actions': {
           const buttons = actionsRef.current?.querySelectorAll('button');
           if (buttons && buttons[actionButtonIndex]) {
@@ -87,28 +83,28 @@ export const useKeyboardNavigation = ({
   }, [currentFocus, isModalOpen, actionButtonIndex]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    // Alt+C to open modal (global shortcut)
-    if (e.altKey && e.key.toLowerCase() === 'c') {
-      e.preventDefault();
-      setIsModalOpen(true);
-      return;
-    }
-
     if (!isModalOpen) {
       return;
     }
 
-    // Escape to close modal
-    if (e.key === 'Escape') {
+    // Escape or Alt+C to close modal
+    if (e.key === 'Escape' || (e.altKey && e.key.toLowerCase() === 'c')) {
       e.preventDefault();
       setIsModalOpen(false);
       return;
     }
 
-    // Tab to cycle through focus areas
+    // Shift+Enter to add selected items to notes
+    if (e.key === 'Enter' && e.shiftKey) {
+      e.preventDefault();
+      onAddToNotes();
+      return;
+    }
+
+    // Tab to cycle through focus areas (only search and examination types)
     if (e.key === 'Tab') {
       e.preventDefault();
-      const focusOrder: FocusArea[] = ['search', 'examTypes', 'checklist', 'cart', 'actions'];
+      const focusOrder: FocusArea[] = ['search', 'examTypes'];
       const currentIndex = focusOrder.indexOf(currentFocus);
       const nextIndex = e.shiftKey
         ? (currentIndex - 1 + focusOrder.length) % focusOrder.length
@@ -129,10 +125,12 @@ export const useKeyboardNavigation = ({
           e.preventDefault();
           const newIndex = Math.max(0, selectedExamTypeIndex - 1);
           setSelectedExamTypeIndex(newIndex);
+          onSelectExamType(newIndex); // Update right panel immediately
         } else if (e.key === 'ArrowDown') {
           e.preventDefault();
           const newIndex = Math.min(examTypesCount - 1, selectedExamTypeIndex + 1);
           setSelectedExamTypeIndex(newIndex);
+          onSelectExamType(newIndex); // Update right panel immediately
         } else if (e.key === 'ArrowRight' || e.key === 'Enter') {
           e.preventDefault();
           onSelectExamType(selectedExamTypeIndex);
@@ -152,7 +150,7 @@ export const useKeyboardNavigation = ({
         } else if (e.key === 'ArrowLeft') {
           e.preventDefault();
           setCurrentFocus('examTypes');
-        } else if (e.key === 'Enter') {
+        } else if (e.key === 'ArrowRight') {
           e.preventDefault();
           onToggleItem(selectedItemIndex);
         } else if (e.key === ' ') {
@@ -162,10 +160,6 @@ export const useKeyboardNavigation = ({
           e.preventDefault();
           onSelectAll();
         }
-        break;
-
-      case 'cart':
-        // Cart items navigation could be implemented here if needed
         break;
 
       case 'actions':
@@ -219,7 +213,6 @@ export const useKeyboardNavigation = ({
     searchInputRef,
     examTypesRef,
     checklistRef,
-    cartRef,
     actionsRef,
     getFocusClasses,
     actionButtonIndex,

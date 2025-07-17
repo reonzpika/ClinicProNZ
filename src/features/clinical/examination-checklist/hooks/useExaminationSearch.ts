@@ -30,17 +30,10 @@ export const useExaminationSearch = (searchQuery: string, selectedExamTypeId?: s
       return [];
     }
 
-    if (!searchQuery.trim()) {
-      return examType.items;
-    }
-
-    const query = searchQuery.toLowerCase();
-
-    // Filter items within selected exam type
-    return examType.items.filter(item =>
-      item.toLowerCase().includes(query),
-    );
-  }, [selectedExamTypeId, searchQuery]);
+    // Always return ALL items for selected exam type - never filter content
+    // GPs should see all available examination items to choose from
+    return examType.items;
+  }, [selectedExamTypeId]); // Removed searchQuery dependency
 
   const getSearchResultsCount = () => {
     if (!searchQuery.trim()) {

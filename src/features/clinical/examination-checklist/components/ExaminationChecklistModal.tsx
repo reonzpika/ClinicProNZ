@@ -1,7 +1,7 @@
 'use client';
 
 import { Stethoscope } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
@@ -14,7 +14,6 @@ import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation';
 import { ChecklistItemsPanel } from './ChecklistItemsPanel';
 import { ExaminationSearchInput } from './ExaminationSearchInput';
 import { ExaminationTypesList } from './ExaminationTypesList';
-import { SelectedItemsCart } from './SelectedItemsCart';
 
 type ExaminationChecklistModalProps = {
   isOpen: boolean;
@@ -39,6 +38,22 @@ export const ExaminationChecklistModal: React.FC<ExaminationChecklistModalProps>
     searchQuery,
     selectedExamTypeId,
   );
+
+  // Auto-select first examination type from search results
+  useEffect(() => {
+    if (filteredExamTypes.length > 0) {
+      // If no current selection or current selection not in filtered results
+      const isCurrentSelectionInResults = selectedExamTypeId
+        && filteredExamTypes.some(examType => examType.id === selectedExamTypeId);
+
+      if (!selectedExamTypeId || !isCurrentSelectionInResults) {
+        // Auto-select the first examination type from search results
+        setSelectedExamTypeId(filteredExamTypes[0]!.id);
+        setSelectedExamTypeIndex(0);
+        setSelectedItemIndex(0);
+      }
+    }
+  }, [filteredExamTypes, selectedExamTypeId]);
 
   // Get current selected exam type
   const selectedExamType = selectedExamTypeId
@@ -207,6 +222,7 @@ export const ExaminationChecklistModal: React.FC<ExaminationChecklistModalProps>
                 onSelectType={handleSelectExamType}
                 searchQuery={searchQuery}
                 highlightSearchTerm={highlightSearchTerm}
+                focusedIndex={navigation.currentFocus === 'examTypes' ? selectedExamTypeIndex : undefined}
               />
             </div>
 
@@ -221,17 +237,9 @@ export const ExaminationChecklistModal: React.FC<ExaminationChecklistModalProps>
                 onSelectAll={handleSelectAll}
                 searchQuery={searchQuery}
                 highlightSearchTerm={highlightSearchTerm}
+                focusedIndex={navigation.currentFocus === 'checklist' ? selectedItemIndex : undefined}
               />
             </div>
-          </div>
-
-          {/* Cart at bottom */}
-          <div className={navigation.getFocusClasses('cart')}>
-            <SelectedItemsCart
-              ref={navigation.cartRef}
-              selectedItems={cart.selectedItems}
-              onRemoveItem={cart.removeItem}
-            />
           </div>
 
           {/* Action buttons */}
