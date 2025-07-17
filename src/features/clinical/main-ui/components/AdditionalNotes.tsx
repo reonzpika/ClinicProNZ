@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 
 import { Textarea } from '@/src/shared/components/ui/textarea';
 import { useConsultation } from '@/src/shared/ConsultationContext';
+import { ExaminationChecklistButton } from '@/src/features/clinical/examination-checklist/components/ExaminationChecklistButton';
 
 type ConsultationItem = {
   id: string;
@@ -119,13 +120,16 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             <span className="text-xs font-medium text-slate-700">Additional Notes</span>
             {renderCharacterCount()}
           </div>
-          <button
-            type="button"
-            className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            {isExpanded ? '−' : '+'}
-          </button>
+          <div className="flex items-center gap-1">
+            <ExaminationChecklistButton />
+            <button
+              type="button"
+              className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              {isExpanded ? '−' : '+'}
+            </button>
+          </div>
         </div>
         {isExpanded && (
           <div className="space-y-3">
@@ -156,13 +160,16 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             <span className="text-sm font-medium text-slate-700">Additional Notes (optional)</span>
             {renderCharacterCount()}
           </div>
-          <button
-            type="button"
-            className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
-            onClick={() => setIsExpanded(true)}
-          >
-            +
-          </button>
+          <div className="flex items-center gap-1">
+            <ExaminationChecklistButton />
+            <button
+              type="button"
+              className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
+              onClick={() => setIsExpanded(true)}
+            >
+              +
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -176,13 +183,16 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
           <label htmlFor="additional-notes" className="text-sm font-medium text-slate-700">
             Additional Notes (optional)
           </label>
-          <button
-            type="button"
-            className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
-            onClick={() => setIsExpanded(false)}
-          >
-            −
-          </button>
+          <div className="flex items-center gap-1">
+            <ExaminationChecklistButton />
+            <button
+              type="button"
+              className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
+              onClick={() => setIsExpanded(false)}
+            >
+              −
+            </button>
+          </div>
         </div>
         <div className="flex flex-1 flex-col space-y-3">
           <Textarea
@@ -208,13 +218,16 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
         <label htmlFor="additional-notes" className="text-sm font-medium text-slate-700">
           Additional Notes (optional)
         </label>
-        <button
-          type="button"
-          className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
-          onClick={() => setIsExpanded(false)}
-        >
-          −
-        </button>
+        <div className="flex items-center gap-1">
+          <ExaminationChecklistButton />
+          <button
+            type="button"
+            className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
+            onClick={() => setIsExpanded(false)}
+          >
+            −
+          </button>
+        </div>
       </div>
       <Textarea
         id="additional-notes"
