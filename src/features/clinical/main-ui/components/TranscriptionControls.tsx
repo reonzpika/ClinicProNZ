@@ -10,6 +10,8 @@ import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardHeader } from '@/src/shared/components/ui/card';
 import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 
 import { AudioSettingsModal } from '../../mobile/components/AudioSettingsModal';
 import { MobileRecordingQRV2 } from '../../mobile/components/MobileRecordingQRV2';
@@ -29,7 +31,9 @@ export function TranscriptionControls({
   isMinimized?: boolean;
   onForceDisconnectDevice?: (deviceId: string) => void;
 }) {
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, userId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
+  const userTier = getUserTier();
   const {
     error: contextError,
     consentObtained,
@@ -124,7 +128,7 @@ export function TranscriptionControls({
       try {
         const response = await fetch('/api/guest-sessions/status', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: createAuthHeadersWithGuest(userId, userTier, effectiveGuestToken),
           body: JSON.stringify({ guestToken: effectiveGuestToken }),
         });
 

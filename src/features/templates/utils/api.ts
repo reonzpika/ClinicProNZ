@@ -1,4 +1,5 @@
 import type { Template } from '../types';
+import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 
 export async function fetchTemplates(): Promise<Template[]> {
   const res = await fetch('/api/templates');
@@ -9,10 +10,15 @@ export async function fetchTemplates(): Promise<Template[]> {
   return data.templates;
 }
 
-export async function createTemplate(template: Omit<Template, 'id'>): Promise<Template> {
+export async function createTemplate(
+  template: Omit<Template, 'id'>,
+  userId?: string | null,
+  userTier?: string,
+  guestToken?: string | null,
+): Promise<Template> {
   const res = await fetch('/api/templates', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: createAuthHeadersWithGuest(userId, userTier, guestToken),
     body: JSON.stringify(template),
   });
   if (!res.ok) {
@@ -21,10 +27,16 @@ export async function createTemplate(template: Omit<Template, 'id'>): Promise<Te
   return res.json();
 }
 
-export async function updateTemplate(id: string, template: Partial<Template>): Promise<Template> {
+export async function updateTemplate(
+  id: string,
+  template: Partial<Template>,
+  userId?: string | null,
+  userTier?: string,
+  guestToken?: string | null,
+): Promise<Template> {
   const res = await fetch(`/api/templates/${id}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: createAuthHeadersWithGuest(userId, userTier, guestToken),
     body: JSON.stringify(template),
   });
   if (!res.ok) {

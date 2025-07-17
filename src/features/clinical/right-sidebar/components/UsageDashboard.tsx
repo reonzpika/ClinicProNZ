@@ -13,6 +13,7 @@ import { Label } from '@/src/shared/components/ui/label';
 import { Progress } from '@/src/shared/components/ui/progress';
 import { useConsultation } from '@/src/shared/ConsultationContext';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 
 type UsageData = {
   tier: UserTier;
@@ -24,7 +25,7 @@ type UsageData = {
 };
 
 const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref) => {
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, userId } = useAuth();
   const { user } = useClerkMetadata();
   const { mobileV2: _mobileV2, getEffectiveGuestToken } = useConsultation();
   const [usageData, setUsageData] = useState<UsageData | null>(null);
@@ -78,7 +79,7 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
             if (effectiveGuestToken) {
               const response = await fetch('/api/guest-sessions/status', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: createAuthHeadersWithGuest(userId, tier, effectiveGuestToken),
                 body: JSON.stringify({ guestToken: effectiveGuestToken }),
               });
 
@@ -348,7 +349,7 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
                 try {
                   const response = await fetch('/api/create-checkout-session', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: createAuthHeadersWithGuest(userId, tier, null),
                     body: JSON.stringify({
                       email: isSignedIn ? user?.primaryEmailAddress?.emailAddress : upgradeEmail,
                       userId: user?.id,

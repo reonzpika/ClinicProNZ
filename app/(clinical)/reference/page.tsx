@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuth } from '@clerk/nextjs';
 import {
   AlertCircle,
   Book,
@@ -16,6 +17,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Container } from '@/src/shared/components/layout/Container';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 
 type Message = {
   id: string;
@@ -25,6 +28,10 @@ type Message = {
 };
 
 export default function ClinicalReferencePage() {
+  const { userId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
+  const userTier = getUserTier();
+  
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -65,7 +72,7 @@ export default function ClinicalReferencePage() {
     try {
       const response = await fetch('/api/consultation/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: createAuthHeadersWithGuest(userId, userTier, null),
         body: JSON.stringify({
           messages: [...messages, newMessage].map(msg => ({
             role: msg.role,

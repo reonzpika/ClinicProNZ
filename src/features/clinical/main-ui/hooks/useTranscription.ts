@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useAuth } from '@clerk/nextjs';
 
 import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 
 type TranscriptionState = {
   isRecording: boolean;
@@ -30,6 +33,9 @@ export type UseTranscriptionOptions = {
 };
 
 export const useTranscription = (options: UseTranscriptionOptions = {}) => {
+  const { userId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
+  const userTier = getUserTier();
   const { isMobile = false, onChunkComplete } = options;
   const {
     setStatus,
@@ -111,14 +117,10 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
         formData.append('audio', audioBlob, `session-${currentSession}.webm`);
 
         const guestToken = getEffectiveGuestToken();
-        const headers: Record<string, string> = {};
-        if (guestToken) {
-          headers['x-guest-token'] = guestToken;
-        }
 
         const response = await fetch('/api/deepgram/transcribe', {
           method: 'POST',
-          headers,
+          headers: createAuthHeadersWithGuest(userId, userTier, guestToken),
           body: formData,
         });
 

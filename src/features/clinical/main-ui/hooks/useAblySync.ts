@@ -1,7 +1,10 @@
 import * as Ably from 'ably';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useAuth } from '@clerk/nextjs';
 
 import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 
 // Message types for Ably communication
 type AblyMessage = {
@@ -57,6 +60,9 @@ export const useAblySync = ({
   onStartRecording,
   onStopRecording,
 }: AblySyncHookProps) => {
+  const { userId: authUserId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
+  const userTier = getUserTier();
   const [connectionState, setConnectionState] = useState<ConnectionState>({
     status: 'disconnected',
     connectedDevices: [],
@@ -84,20 +90,13 @@ export const useAblySync = ({
         url.searchParams.set('token', token);
       }
 
-      // Prepare headers with guest token for desktop guest users
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-
-      // Include guest token in headers for authentication
+      // Get effective guest token for authentication
       const guestToken = getEffectiveGuestToken();
-      if (guestToken && !token) { // Only for desktop users (no mobile token)
-        headers['x-guest-token'] = guestToken;
-      }
+      const effectiveGuestToken = guestToken && !token ? guestToken : null; // Only for desktop users (no mobile token)
 
       const response = await fetch(url.toString(), {
         method: 'POST',
-        headers,
+        headers: createAuthHeadersWithGuest(authUserId, userTier, effectiveGuestToken),
       });
 
       if (response.ok) {
@@ -312,20 +311,13 @@ export const useAblySync = ({
                 url.searchParams.set('token', token);
               }
 
-              // Prepare headers with guest token for desktop guest users
-              const headers: Record<string, string> = {
-                'Content-Type': 'application/json',
-              };
-
-              // Include guest token in headers for authentication
+              // Get effective guest token for authentication
               const guestToken = getEffectiveGuestToken();
-              if (guestToken && !token) { // Only for desktop users (no mobile token)
-                headers['x-guest-token'] = guestToken;
-              }
+              const effectiveGuestToken = guestToken && !token ? guestToken : null; // Only for desktop users (no mobile token)
 
               const response = await fetch(url.toString(), {
                 method: 'POST',
-                headers,
+                headers: createAuthHeadersWithGuest(authUserId, userTier, effectiveGuestToken),
               });
 
               if (!response.ok) {
