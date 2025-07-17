@@ -21,6 +21,8 @@ import { RateLimitModal } from '@/src/shared/components/RateLimitModal';
 import { Button } from '@/src/shared/components/ui/button';
 import { useConsultation } from '@/src/shared/ConsultationContext';
 import { useResponsive } from '@/src/shared/hooks/useResponsive';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 
 export default function ConsultationPage() {
   const {
@@ -45,7 +47,9 @@ export default function ConsultationPage() {
     getCurrentPatientSession,
     getEffectiveGuestToken,
   } = useConsultation();
-  const { isSignedIn: _isSignedIn } = useAuth();
+  const { isSignedIn: _isSignedIn, userId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
+  const userTier = getUserTier();
   const [loading, setLoading] = useState(false);
   const [isNoteFocused, setIsNoteFocused] = useState(false);
   const [isDocumentationMode, setIsDocumentationMode] = useState(false);
@@ -186,8 +190,7 @@ export default function ConsultationPage() {
     const compiledConsultationText = getCompiledConsultationText();
 
     try {
-      // Prepare headers and body with guest token if available
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      // Get effective guest token
       const effectiveGuestToken = getEffectiveGuestToken();
 
       // Include guest token in request body for consistency with other APIs
@@ -200,14 +203,9 @@ export default function ConsultationPage() {
         guestToken: effectiveGuestToken, // Use effective guest token
       };
 
-      // Also add to headers for RBAC context extraction
-      if (effectiveGuestToken) {
-        headers['x-guest-token'] = effectiveGuestToken;
-      }
-
       const res = await fetch('/api/consultation/notes', {
         method: 'POST',
-        headers,
+        headers: createAuthHeadersWithGuest(userId, userTier, effectiveGuestToken),
         body: JSON.stringify(requestBody),
       });
 
