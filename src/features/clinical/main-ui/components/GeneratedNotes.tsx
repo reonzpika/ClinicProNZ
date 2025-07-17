@@ -78,12 +78,12 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
         return;
       }
 
-              try {
-          const response = await fetch('/api/guest-sessions/status', {
-            method: 'POST',
-            headers: createAuthHeadersWithGuest(userId, userTier, effectiveGuestToken),
-            body: JSON.stringify({ guestToken: effectiveGuestToken }),
-          });
+      try {
+        const response = await fetch('/api/guest-sessions/status', {
+          method: 'POST',
+          headers: createAuthHeadersWithGuest(userId, userTier, effectiveGuestToken),
+          body: JSON.stringify({ guestToken: effectiveGuestToken }),
+        });
 
         if (response.ok) {
           const data = await response.json();

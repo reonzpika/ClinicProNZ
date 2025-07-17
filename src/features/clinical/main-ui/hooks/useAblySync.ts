@@ -1,6 +1,6 @@
+import { useAuth } from '@clerk/nextjs';
 import * as Ably from 'ably';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useAuth } from '@clerk/nextjs';
 
 import { useConsultation } from '@/src/shared/ConsultationContext';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';

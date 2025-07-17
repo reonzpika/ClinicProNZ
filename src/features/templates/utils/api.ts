@@ -1,5 +1,6 @@
-import type { Template } from '../types';
 import { createAuthHeadersWithGuest } from '@/src/shared/utils';
+
+import type { Template } from '../types';
 
 export async function fetchTemplates(): Promise<Template[]> {
   const res = await fetch('/api/templates');

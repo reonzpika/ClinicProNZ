@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
+import React, { useState } from 'react';
 
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';

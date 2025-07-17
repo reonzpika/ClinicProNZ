@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 
+import { ExaminationChecklistButton } from '@/src/features/clinical/examination-checklist/components/ExaminationChecklistButton';
 import { Textarea } from '@/src/shared/components/ui/textarea';
 import { useConsultation } from '@/src/shared/ConsultationContext';
-import { ExaminationChecklistButton } from '@/src/features/clinical/examination-checklist/components/ExaminationChecklistButton';
 
 type ConsultationItem = {
   id: string;

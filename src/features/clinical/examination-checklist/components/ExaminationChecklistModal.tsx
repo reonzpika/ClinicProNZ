@@ -45,48 +45,7 @@ export const ExaminationChecklistModal: React.FC<ExaminationChecklistModalProps>
     ? EXAMINATION_CHECKLISTS.find(e => e.id === selectedExamTypeId)
     : undefined;
 
-  // Keyboard navigation
-  const navigation = useKeyboardNavigation({
-    isModalOpen: isOpen,
-    setIsModalOpen: (open) => {
-      if (!open) {
-        onClose();
-      }
-    },
-    examTypesCount: filteredExamTypes.length,
-    filteredItemsCount: filteredItems.length,
-    selectedExamTypeIndex,
-    setSelectedExamTypeIndex,
-    selectedItemIndex,
-    setSelectedItemIndex,
-    onSelectExamType: (index) => {
-      const examType = filteredExamTypes[index];
-      if (examType) {
-        setSelectedExamTypeId(examType.id);
-        setSelectedItemIndex(0);
-      }
-    },
-    onToggleItem: (index) => {
-      if (selectedExamType && filteredItems[index]) {
-        const item = filteredItems[index];
-        if (cart.hasItem(selectedExamType.id, item)) {
-          const itemId = `${selectedExamType.id}-${item}`;
-          cart.removeItem(itemId);
-        } else {
-          cart.addItem(selectedExamType.id, selectedExamType.title, item);
-        }
-      }
-    },
-    onSelectAll: () => {
-      if (selectedExamType && filteredItems.length > 0) {
-        handleSelectAll(selectedExamType.id, selectedExamType.title, filteredItems);
-      }
-    },
-    onAddToNotes: handleAddToNotes,
-    onClearCart: cart.clearAll,
-  });
-
-  // Handlers
+  // Handlers (defined before keyboard navigation to avoid use-before-define errors)
   const handleSelectExamType = useCallback((typeId: string) => {
     setSelectedExamTypeId(typeId);
     setSelectedItemIndex(0);
@@ -151,6 +110,47 @@ export const ExaminationChecklistModal: React.FC<ExaminationChecklistModalProps>
     cart.clearAll();
     onClose();
   }
+
+  // Keyboard navigation
+  const navigation = useKeyboardNavigation({
+    isModalOpen: isOpen,
+    setIsModalOpen: (open) => {
+      if (!open) {
+        onClose();
+      }
+    },
+    examTypesCount: filteredExamTypes.length,
+    filteredItemsCount: filteredItems.length,
+    selectedExamTypeIndex,
+    setSelectedExamTypeIndex,
+    selectedItemIndex,
+    setSelectedItemIndex,
+    onSelectExamType: (index) => {
+      const examType = filteredExamTypes[index];
+      if (examType) {
+        setSelectedExamTypeId(examType.id);
+        setSelectedItemIndex(0);
+      }
+    },
+    onToggleItem: (index) => {
+      if (selectedExamType && filteredItems[index]) {
+        const item = filteredItems[index];
+        if (cart.hasItem(selectedExamType.id, item)) {
+          const itemId = `${selectedExamType.id}-${item}`;
+          cart.removeItem(itemId);
+        } else {
+          cart.addItem(selectedExamType.id, selectedExamType.title, item);
+        }
+      }
+    },
+    onSelectAll: () => {
+      if (selectedExamType && filteredItems.length > 0) {
+        handleSelectAll(selectedExamType.id, selectedExamType.title, filteredItems);
+      }
+    },
+    onAddToNotes: handleAddToNotes,
+    onClearCart: cart.clearAll,
+  });
 
   const handleClose = useCallback(() => {
     setSearchQuery('');

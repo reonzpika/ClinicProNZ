@@ -113,6 +113,7 @@ export const ChecklistItemsPanel = forwardRef<HTMLDivElement, ChecklistItemsPane
                       />
                       <label
                         htmlFor={itemId}
+                        aria-label={item}
                         className={`flex-1 cursor-pointer text-sm leading-5 transition-colors ${
                           isSelected
                             ? 'font-medium text-slate-700'

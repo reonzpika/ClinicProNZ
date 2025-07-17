@@ -20,8 +20,8 @@ import { Stack } from '@/src/shared/components/layout/Stack';
 import { RateLimitModal } from '@/src/shared/components/RateLimitModal';
 import { Button } from '@/src/shared/components/ui/button';
 import { useConsultation } from '@/src/shared/ConsultationContext';
-import { useResponsive } from '@/src/shared/hooks/useResponsive';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { useResponsive } from '@/src/shared/hooks/useResponsive';
 import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 
 export default function ConsultationPage() {

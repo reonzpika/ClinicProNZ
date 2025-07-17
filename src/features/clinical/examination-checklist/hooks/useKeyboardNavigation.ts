@@ -73,12 +73,13 @@ export const useKeyboardNavigation = ({
         case 'cart':
           cartRef.current?.focus();
           break;
-        case 'actions':
+        case 'actions': {
           const buttons = actionsRef.current?.querySelectorAll('button');
           if (buttons && buttons[actionButtonIndex]) {
             (buttons[actionButtonIndex] as HTMLElement).focus();
           }
           break;
+        }
       }
     }, 50); // Small delay to ensure DOM is ready
 
@@ -113,7 +114,7 @@ export const useKeyboardNavigation = ({
         ? (currentIndex - 1 + focusOrder.length) % focusOrder.length
         : (currentIndex + 1) % focusOrder.length;
 
-      setCurrentFocus(focusOrder[nextIndex]);
+      setCurrentFocus(focusOrder[nextIndex]!);
       return;
     }
 
