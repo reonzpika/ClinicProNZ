@@ -1,11 +1,12 @@
 import { SignUp } from '@clerk/nextjs';
 
-export default function RegisterPage({
+export default async function RegisterPage({
   searchParams,
 }: {
-  searchParams: { redirect?: string };
+  searchParams: Promise<{ redirect?: string }>;
 }) {
-  const isUpgradeRedirect = searchParams.redirect === 'upgrade';
+  const resolvedSearchParams = await searchParams;
+  const isUpgradeRedirect = resolvedSearchParams.redirect === 'upgrade';
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
