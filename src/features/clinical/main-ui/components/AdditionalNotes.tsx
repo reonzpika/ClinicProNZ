@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { ExaminationChecklistButton } from '@/src/features/clinical/examination-checklist/components/ExaminationChecklistButton';
+import { PlanSafetyNettingButton } from '@/src/features/clinical/plan-safety-netting';
 import { Textarea } from '@/src/shared/components/ui/textarea';
 import { useConsultation } from '@/src/shared/ConsultationContext';
 
@@ -122,6 +123,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
           </div>
           <div className="flex items-center gap-1">
             <ExaminationChecklistButton />
+            <PlanSafetyNettingButton />
             <button
               type="button"
               className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
@@ -162,6 +164,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
           </div>
           <div className="flex items-center gap-1">
             <ExaminationChecklistButton />
+            <PlanSafetyNettingButton />
             <button
               type="button"
               className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
@@ -185,6 +188,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
           </label>
           <div className="flex items-center gap-1">
             <ExaminationChecklistButton />
+            <PlanSafetyNettingButton />
             <button
               type="button"
               className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
@@ -220,6 +224,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
         </label>
         <div className="flex items-center gap-1">
           <ExaminationChecklistButton />
+          <PlanSafetyNettingButton />
           <button
             type="button"
             className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"

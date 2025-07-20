@@ -10,109 +10,162 @@ export const EarlyHeroSection = () => {
 
   const handleSuperEarlyClick = async () => {
     setIsLoading(true);
-
     try {
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          priceId: process.env.NEXT_PUBLIC_STRIPE_STANDARD_PRICE_ID,
-          tier: 'standard',
+          tier: 'super_early',
+          successUrl: `${window.location.origin}/thank-you`,
+          cancelUrl: `${window.location.origin}/early`,
         }),
       });
 
-      if (response.ok) {
-        const { url } = await response.json();
-        window.location.href = url;
-      } else {
-        console.error('Failed to create checkout session');
-        setIsLoading(false);
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session');
       }
+
+      const { url } = await response.json();
+      window.location.href = url;
     } catch (error) {
       console.error('Error:', error);
+    } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <section className="relative bg-gradient-to-br from-nz-green-50 via-white to-nz-blue-50 py-16 sm:py-24 lg:py-32">
-      {/* Background Elements */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="to-nz-blue-300/8 absolute -right-40 top-20 size-[500px] rounded-full bg-gradient-to-br from-nz-green-200/10 blur-3xl"></div>
-        <div className="from-nz-blue-200/8 absolute -left-60 bottom-32 size-[600px] rounded-full bg-gradient-to-tr to-nz-green-300/10 blur-3xl"></div>
-      </div>
+    <section className="relative min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
 
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          {/* Trust Badge */}
-          <div className="mb-8 flex justify-center">
-            <div className="relative">
-              <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-nz-green-200 to-nz-blue-200 opacity-30 blur"></div>
-              <div className="relative inline-flex items-center rounded-full border border-nz-green-200/50 bg-nz-green-50/80 px-4 py-2 text-sm font-medium text-nz-green-700 backdrop-blur-sm sm:px-5 sm:py-2.5">
+          {/* Left Column - Content */}
+          <div className="flex flex-col justify-center text-center lg:text-left">
+            {/* Trust Badge */}
+            <div className="mb-6">
+              <div className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-medium text-green-700">
                 🩺 Built by a Practising NZ GP
               </div>
             </div>
-          </div>
 
-          {/* Main Headline */}
-          <div className="mb-8">
-            <h1 className="mx-auto max-w-4xl text-4xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-5xl md:text-6xl lg:text-7xl">
-              <span className="block">ClinicPro turns consults</span>
-              <span className="block text-nz-green-600">into notes — in seconds.</span>
+            {/* Headline */}
+            <h1 className="mb-6 leading-tight text-gray-900">
+              <span className="block text-3xl font-bold tracking-tight text-gray-800 lg:text-4xl xl:text-5xl">
+                <span className="bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">ClinicPro</span>
+                {' '}
+                turns consults into
+              </span>
+              <span className="mt-2 block text-4xl font-black tracking-tight text-green-600 lg:text-6xl xl:text-7xl">Notes </span>
+              <span className="block text-4xl font-black tracking-tight text-green-600 lg:text-6xl xl:text-7xl">in Seconds.</span>
             </h1>
-          </div>
 
-          {/* Sub-headline */}
-          <div className="mx-auto mb-12 max-w-3xl">
-            <p className="text-xl text-gray-600 sm:text-2xl">
+            {/* Subtitle */}
+            <p className="mb-8 text-lg text-gray-600 lg:text-xl">
               Join other NZ GPs making note-taking smarter and faster.
             </p>
-          </div>
 
-          {/* Key Points */}
-          <div className="mx-auto mb-12 max-w-4xl space-y-4">
-            {[
-              { icon: Zap, text: 'Works instantly in your browser — private, encrypted, and GP-safe' },
-              { icon: Smartphone, text: 'Use your phone mic — no app installs, just scan and record' },
-              { icon: Globe, text: 'Fast, accurate notes ready to review in moments' },
-              { icon: Lock, text: 'Understands NZ consults — made by a GP, trained on local patterns' },
-              { icon: Mic, text: 'Less admin. Less burnout. More life.' },
-            ].map((point, index) => (
-              <div key={index} className="flex items-center justify-center gap-3 text-lg text-gray-700 sm:text-xl">
-                <div className="flex size-8 items-center justify-center rounded-full bg-nz-green-100">
-                  <point.icon className="size-4 text-nz-green-600" />
+            {/* Benefits */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-center gap-3 lg:justify-start">
+                <div className="flex size-6 items-center justify-center rounded-full bg-green-100">
+                  <Zap className="size-3 text-green-600" />
                 </div>
-                <span>{point.text}</span>
+                <span className="text-gray-700">Browser-based, private & GP-safe</span>
               </div>
-            ))}
-          </div>
-
-          {/* CTAs */}
-          <div className="space-y-6">
-            {/* Primary CTA */}
-            <div className="relative inline-block">
-              <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-nz-green-600/20 to-nz-blue-600/20 blur-lg sm:-inset-2 sm:rounded-2xl"></div>
-              <Button
-                size="lg"
-                className="relative bg-gradient-to-r from-nz-green-600 to-nz-green-700 px-8 py-4 text-lg font-semibold text-white shadow-xl transition-all duration-300 hover:from-nz-green-700 hover:to-nz-green-800 hover:shadow-2xl sm:px-10 sm:py-5 sm:text-xl"
-                onClick={handleSuperEarlyClick}
-                disabled={isLoading}
-              >
-                {isLoading ? 'Loading...' : 'Join Super Early (NZ$30/mo) — Only 15 Spots'}
-                {!isLoading && <ArrowRight className="ml-2 size-5" />}
-              </Button>
+              <div className="flex items-center justify-center gap-3 lg:justify-start">
+                <div className="flex size-6 items-center justify-center rounded-full bg-blue-100">
+                  <Smartphone className="size-3 text-blue-600" />
+                </div>
+                <span className="text-gray-700">Phone recording via QR scan</span>
+              </div>
+              <div className="flex items-center justify-center gap-3 lg:justify-start">
+                <div className="flex size-6 items-center justify-center rounded-full bg-green-100">
+                  <Mic className="size-3 text-green-600" />
+                </div>
+                <span className="text-gray-700">Notes ready in moments</span>
+              </div>
+              <div className="flex items-center justify-center gap-3 lg:justify-start">
+                <div className="flex size-6 items-center justify-center rounded-full bg-blue-100">
+                  <Lock className="size-3 text-blue-600" />
+                </div>
+                <span className="text-gray-700">Built for NZ consultations</span>
+              </div>
+              <div className="flex items-center justify-center gap-3 lg:justify-start">
+                <div className="flex size-6 items-center justify-center rounded-full bg-green-100">
+                  <Globe className="size-3 text-green-600" />
+                </div>
+                <span className="text-gray-700">Less admin. More life.</span>
+              </div>
             </div>
 
-            {/* Secondary CTA */}
-            <div>
-              <a
-                href="/consultation"
-                className="inline-flex items-center rounded-lg border border-nz-blue-600 bg-white px-6 py-3 text-base font-medium text-nz-blue-600 shadow-sm transition-colors hover:bg-nz-blue-50 hover:text-nz-blue-700"
-              >
-                See How It Works — Demo Version
-              </a>
+            {/* Mobile Image - Between Benefits and CTA */}
+            <div className="my-8 lg:hidden">
+              <div className="relative">
+                <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 shadow-2xl">
+                  <img
+                    src="/images/landing-page/hero-image.png"
+                    alt="ClinicPro AI Medical Scribe Interface"
+                    className="size-full object-cover"
+                  />
+                </div>
+                {/* Mobile Decorative elements */}
+                <div className="absolute -right-4 -top-4 size-8 rounded-full bg-blue-500/30"></div>
+                <div className="absolute -bottom-4 -left-4 size-6 rounded-full bg-green-500/40"></div>
+                <div className="absolute -left-6 top-1/2 size-4 rounded-full bg-purple-500/35"></div>
+              </div>
             </div>
           </div>
+
+          {/* Right Column - Hero Image - Desktop Only */}
+          <div className="hidden lg:flex lg:items-center lg:justify-center">
+            <div className="relative">
+              <div className="aspect-[4/3] w-full max-w-lg overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 shadow-2xl">
+                <img
+                  src="/images/landing-page/hero-image.png"
+                  alt="ClinicPro AI Medical Scribe Interface"
+                  className="size-full object-cover"
+                />
+              </div>
+              {/* Desktop Decorative elements around image */}
+              <div className="absolute -right-4 -top-4 size-8 rounded-full bg-blue-500/30"></div>
+              <div className="absolute -bottom-4 -left-4 size-6 rounded-full bg-green-500/40"></div>
+              <div className="absolute -left-6 top-1/2 size-4 rounded-full bg-purple-500/35"></div>
+              <div className="absolute -right-2 top-1/3 size-5 rounded-full bg-indigo-500/25"></div>
+              <div className="absolute -bottom-2 right-1/4 size-7 rounded-full bg-cyan-400/20"></div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* CTA Buttons - Centered at Bottom */}
+        <div className="mt-16 flex flex-col items-center gap-6 text-center">
+          <Button
+            onClick={handleSuperEarlyClick}
+            disabled={isLoading}
+            className="hover:shadow-3xl bg-green-600 px-12 py-6 text-xl font-bold text-white shadow-2xl transition-all duration-300 hover:scale-105 hover:bg-green-700 lg:px-16 lg:py-8 lg:text-2xl"
+          >
+            {isLoading
+              ? 'Loading...'
+              : (
+                  <>
+                    Join Super Early — Only 15 Spots
+                    <div className="ml-3 text-base lg:text-lg">
+                      <span className="text-green-200 line-through">NZ$89</span>
+                      <span className="ml-1">→NZ$30/mo</span>
+                    </div>
+                    <ArrowRight className="ml-3 size-6 lg:size-7" />
+                  </>
+                )}
+          </Button>
+
+          <a
+            href="/consultation"
+            className="text-blue-600 hover:text-blue-800 hover:underline"
+          >
+            See How It Works — Demo Version
+          </a>
         </div>
       </div>
     </section>

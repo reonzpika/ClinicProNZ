@@ -47,7 +47,17 @@ export const PersonalStorySection = () => {
                   of NZ GPs report burnout
                 </p>
                 <p className="mt-2 text-base text-red-600">
-                  according to the RNZCGP Workforce Survey. It's a challenge we must face together.
+                  according to the
+                  {' '}
+                  <a
+                    href="https://www.rnzcgp.org.nz/our-voice/workforce-survey/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-red-700 underline transition-colors duration-200 hover:text-red-800"
+                  >
+                    RNZCGP Workforce Survey
+                  </a>
+                  . It's a challenge we must face together.
                 </p>
               </div>
             </div>

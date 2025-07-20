@@ -10,19 +10,19 @@ export const HowItWorksSection = () => {
     },
     {
       icon: QrCode,
-      title: 'Scan QR Code',
-      description: 'Scan with your phone to instantly start recording',
+      title: 'Scan and Record',
+      description: 'Scan QR code with your phone to instantly start recording',
       color: 'nz-blue',
     },
     {
       icon: Smartphone,
-      title: 'Record on Phone',
-      description: 'No apps, no complicated microphone setups needed',
+      title: 'Add Extra Details',
+      description: 'Type in exam findings or observations not captured by recording',
       color: 'nz-green',
     },
     {
       icon: CheckCircle,
-      title: 'Review & Save',
+      title: 'Generate and Review',
       description: 'Clean, NZ-specific clinical notes ready in moments',
       color: 'nz-blue',
     },
@@ -54,24 +54,8 @@ export const HowItWorksSection = () => {
           </div>
         </div>
 
-        {/* Description */}
-        <div className="mx-auto mb-16 max-w-4xl text-center">
-          <p className="text-lg leading-relaxed text-gray-700 sm:text-xl lg:text-2xl">
-            ClinicPro runs entirely in your browser with zero setup. Just open it on your desktop and scan a QR code with your phone to instantly start recording your consultation — no apps, no complicated microphone setups.
-          </p>
-
-          <div className="mt-8 rounded-2xl border-2 border-nz-blue-200/50 bg-gradient-to-r from-nz-blue-50/80 to-nz-green-50/60 p-6 shadow-lg">
-            <p className="text-lg font-medium text-gray-800">
-              It captures your consultation speech live, then uses all available data — including your typed notes — to generate a clean, NZ-specific clinical note that's ready for review.
-            </p>
-            <p className="mt-4 text-base font-semibold text-nz-green-700">
-              You stay fully in control: review and edit your notes before saving, ensuring accuracy and privacy.
-            </p>
-          </div>
-        </div>
-
         {/* Process Steps */}
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+        <div className="mb-16 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, index) => {
             const IconComponent = step.icon;
             const isGreen = step.color === 'nz-green';
@@ -144,6 +128,18 @@ export const HowItWorksSection = () => {
               </div>
             );
           })}
+        </div>
+
+        {/* Description */}
+        <div className="mx-auto max-w-4xl text-center">
+          <div className="rounded-2xl border-2 border-nz-blue-200/50 bg-gradient-to-r from-nz-blue-50/80 to-nz-green-50/60 p-6 shadow-lg">
+            <p className="text-lg font-medium text-gray-800">
+              It captures your consultation speech live, then uses all available data — including your typed notes — to generate a clean, NZ-specific clinical note that's ready for review.
+            </p>
+            <p className="mt-4 text-base font-semibold text-nz-green-700">
+              You stay fully in control: review and edit your notes before saving, ensuring accuracy and privacy.
+            </p>
+          </div>
         </div>
       </div>
     </section>

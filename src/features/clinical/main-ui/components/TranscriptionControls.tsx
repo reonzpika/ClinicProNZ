@@ -347,63 +347,6 @@ export function TranscriptionControls({
             </Alert>
           )}
 
-          {/* Recording Health Status Widget */}
-          <RecordingStatusIndicator
-            status={healthStatus}
-            issues={healthIssues}
-            isRunningHealthCheck={isRunningHealthCheck}
-            lastSync={lastSync}
-            transcriptionRate={transcriptionRate}
-            canStartRecording={canStartRecording}
-            onClick={() => setShowStatusModal(true)} // Open detailed modal
-            onShowMobileSetup={() => setShowMobileRecordingV2(true)}
-          />
-
-          {/* Detailed Status Modal */}
-          <RecordingStatusModal
-            isOpen={showStatusModal}
-            onClose={() => setShowStatusModal(false)}
-            status={healthStatus}
-            issues={healthIssues}
-            isRunningHealthCheck={isRunningHealthCheck}
-            lastSync={lastSync}
-            transcriptionRate={transcriptionRate}
-            canStartRecording={canStartRecording}
-            onRunHealthCheck={runHealthCheck}
-            onShowMobileSetup={() => setShowMobileRecordingV2(true)}
-            apiCacheStatus={apiCacheStatus}
-          />
-
-          {/* Mobile Device Management */}
-          {useMobileV2 && hasMobileDevices && connectedMobileDevices.length > 0 && (
-            <Alert variant="default" className="border-slate-200 bg-slate-50 p-2 text-xs">
-              <div className="space-y-1">
-                <div className="text-xs font-medium text-slate-700">
-                  Connected Devices
-                </div>
-                <div className="space-y-1">
-                  {connectedMobileDevices.map(device => (
-                    <div key={device.deviceId} className="flex items-center justify-between">
-                      <span className="text-xs text-slate-600">
-                        {device.deviceName}
-                      </span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeviceDisconnect(device.deviceId)}
-                        className="size-4 p-0 text-slate-500 hover:text-red-500"
-                        title="Disconnect device"
-                      >
-                        <X className="size-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </Alert>
-          )}
-
           {/* Recording Controls */}
           <div className="space-y-2">
             {/* Status and Warnings */}
@@ -424,45 +367,81 @@ export function TranscriptionControls({
                             </div>
                           )
                         : (
-                            <div className="flex items-center gap-3 text-xs text-slate-500">
-                              <span>✓ Superior audio</span>
-                              <span>✓ 30s setup</span>
-                              <span>✓ Move freely</span>
+                            <div className="flex items-center gap-2 text-xs text-slate-500">
+                              {/* Connected devices count - minimal */}
+                              {connectedMobileDevices.length > 0 && (
+                                <div className="flex items-center gap-1 rounded bg-slate-100 px-2 py-1">
+                                  <Smartphone className="size-3" />
+                                  <span>
+                                    {connectedMobileDevices.length}
+                                    {' '}
+                                    connected
+                                  </span>
+                                  {connectedMobileDevices.map(device => (
+                                    <Button
+                                      key={device.deviceId}
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleDeviceDisconnect(device.deviceId)}
+                                      className="size-4 p-0 text-slate-400 hover:text-red-500"
+                                      title={`Disconnect ${device.deviceName}`}
+                                    >
+                                      <X className="size-2" />
+                                    </Button>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           )}
 
-                      {/* Mobile Recording Button */}
-                      {hasMobileDevices
-                        ? (
-                            <Button
-                              type="button"
-                              onClick={handleStartMobileRecording}
-                              disabled={!canStartRecording || (!isSignedIn && !canCreateSession)}
-                              className="h-8 bg-green-600 px-3 text-xs text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-                              title={
-                                !canStartRecording
-                                  ? `Cannot start recording: ${healthIssues.map(issue => issue.message).join(', ')}`
-                                  : !isSignedIn && !canCreateSession
-                                      ? 'Session limit reached - see Usage Dashboard for upgrade options'
-                                      : ''
-                              }
-                            >
-                              <Smartphone className="mr-1 size-3" />
-                              Start Mobile
-                            </Button>
-                          )
-                        : (
-                            <Button
-                              type="button"
-                              onClick={handleMobileClick}
-                              disabled={(!isSignedIn && !canCreateSession)}
-                              className="h-8 bg-blue-600 px-3 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-                              title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
-                            >
-                              <Smartphone className="mr-1 size-3" />
-                              Connect Mobile
-                            </Button>
-                          )}
+                      {/* Right side: Status indicator + Mobile button */}
+                      <div className="flex items-center gap-2">
+                        {/* Minimal status indicator */}
+                        <RecordingStatusIndicator
+                          status={healthStatus}
+                          issues={healthIssues}
+                          isRunningHealthCheck={isRunningHealthCheck}
+                          lastSync={lastSync}
+                          transcriptionRate={transcriptionRate}
+                          canStartRecording={canStartRecording}
+                          onClick={() => setShowStatusModal(true)}
+                          onShowMobileSetup={() => setShowMobileRecordingV2(true)}
+                        />
+
+                        {/* Mobile Recording Button */}
+                        {hasMobileDevices
+                          ? (
+                              <Button
+                                type="button"
+                                onClick={handleStartMobileRecording}
+                                disabled={!canStartRecording || (!isSignedIn && !canCreateSession)}
+                                className="h-8 bg-green-600 px-3 text-xs text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                                title={
+                                  !canStartRecording
+                                    ? `Cannot start recording: ${healthIssues.map(issue => issue.message).join(', ')}`
+                                    : !isSignedIn && !canCreateSession
+                                        ? 'Session limit reached - see Usage Dashboard for upgrade options'
+                                        : ''
+                                }
+                              >
+                                <Smartphone className="mr-1 size-3" />
+                                Start Mobile
+                              </Button>
+                            )
+                          : (
+                              <Button
+                                type="button"
+                                onClick={handleMobileClick}
+                                disabled={(!isSignedIn && !canCreateSession)}
+                                className="h-8 bg-blue-600 px-3 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                                title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
+                              >
+                                <Settings className="mr-1 size-3" />
+                                Connect Mobile
+                              </Button>
+                            )}
+                      </div>
                     </div>
 
                     {/* Desktop Recording Option */}
@@ -684,8 +663,8 @@ export function TranscriptionControls({
                   <p className="font-medium text-green-700">Mobile Recording (Recommended):</p>
                   <ul className="ml-3 mt-1 list-disc space-y-0.5">
                     <li>Scan QR code with your phone - takes 30 seconds</li>
-                    <li>Superior audio quality with phone's microphone</li>
-                    <li>Move freely around the consultation room</li>
+                    <li>Use your phone's microphone for recording</li>
+                    <li>No need to stay near the computer</li>
                     <li>Start/stop recording from your phone</li>
                   </ul>
                 </div>
@@ -728,6 +707,21 @@ export function TranscriptionControls({
       <MobileRecordingQRV2
         isOpen={showMobileRecordingV2}
         onClose={() => setShowMobileRecordingV2(false)}
+      />
+
+      {/* Detailed Status Modal */}
+      <RecordingStatusModal
+        isOpen={showStatusModal}
+        onClose={() => setShowStatusModal(false)}
+        status={healthStatus}
+        issues={healthIssues}
+        isRunningHealthCheck={isRunningHealthCheck}
+        lastSync={lastSync}
+        transcriptionRate={transcriptionRate}
+        canStartRecording={canStartRecording}
+        onRunHealthCheck={runHealthCheck}
+        onShowMobileSetup={() => setShowMobileRecordingV2(true)}
+        apiCacheStatus={apiCacheStatus}
       />
     </div>
   );
