@@ -117,7 +117,7 @@ export default function ConsultationPage() {
   }, [addMobileV2Device, setMobileV2ConnectionStatus]);
 
   // Enable Ably sync when token exists OR when mobile devices are connected
-  const { notifyPatientSwitch, syncCurrentPatient, forceDisconnectDevice } = useAblySync({
+  const { notifyPatientSwitch, syncCurrentPatient, forceDisconnectDevice, startMobileRecording } = useAblySync({
     enabled: !!mobileV2.token || mobileV2.connectedDevices.length > 0, // Enable when token exists OR devices connected
     token: mobileV2.token || undefined,
     isDesktop: true,
@@ -328,6 +328,7 @@ export default function ConsultationPage() {
                                       onExpand={() => setIsNoteFocused(false)}
                                       isMinimized
                                       onForceDisconnectDevice={handleForceDisconnectDevice}
+                                      startMobileRecording={startMobileRecording}
                                     />
                                   )
                                 : (
@@ -387,6 +388,7 @@ export default function ConsultationPage() {
                                           onExpand={() => setIsNoteFocused(false)}
                                           isMinimized={false}
                                           onForceDisconnectDevice={handleForceDisconnectDevice}
+                                          startMobileRecording={startMobileRecording}
                                         />
                                       )
                                     : (
@@ -457,6 +459,7 @@ export default function ConsultationPage() {
                                           onExpand={() => setIsNoteFocused(false)}
                                           isMinimized
                                           onForceDisconnectDevice={handleForceDisconnectDevice}
+                                          startMobileRecording={startMobileRecording}
                                         />
                                       )
                                     : (
@@ -491,6 +494,7 @@ export default function ConsultationPage() {
                                         onExpand={() => setIsNoteFocused(false)}
                                         isMinimized={false}
                                         onForceDisconnectDevice={handleForceDisconnectDevice}
+                                        startMobileRecording={startMobileRecording}
                                       />
                                     )
                                   : (

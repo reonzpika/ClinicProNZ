@@ -1,10 +1,13 @@
 import { useAuth } from '@clerk/nextjs';
 import * as Ably from 'ably';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useConsultation } from '@/src/shared/ConsultationContext';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { createAuthHeadersWithGuest } from '@/src/shared/utils';
+
+// Global connection registry to prevent duplicate connections
+const globalConnectionRegistry = new Map<string, { connection: Ably.Realtime; refCount: number }>();
 
 // Message types for Ably communication
 type AblyMessage = {
@@ -76,59 +79,27 @@ export const useAblySync = ({
   // Get guest token from ConsultationContext for fallback user ID
   const { getEffectiveGuestToken } = useConsultation();
 
-  // Get userId from token API when needed, fallback to guest token
-  const getUserId = useCallback(async () => {
-    // If we have a real userId, use it
-    if (userId) {
-      return userId;
-    }
+  // Stabilize callback references to prevent unnecessary reconnections
+  const stableCallbacks = useMemo(() => ({
+    onTranscriptionReceived,
+    onPatientSwitched,
+    onDeviceConnected,
+    onDeviceDisconnected,
+    onError,
+    onStartRecording,
+    onStopRecording,
+  }), [
+    onTranscriptionReceived,
+    onPatientSwitched,
+    onDeviceConnected,
+    onDeviceDisconnected,
+    onError,
+    onStartRecording,
+    onStopRecording,
+  ]);
 
-    try {
-      // Include mobile token for both desktop and mobile when available
-      const url = new URL('/api/ably/token', window.location.origin);
-      if (token) {
-        url.searchParams.set('token', token);
-      }
-
-      // Get effective guest token for authentication
-      const guestToken = getEffectiveGuestToken();
-      const effectiveGuestToken = guestToken && !token ? guestToken : null; // Only for desktop users (no mobile token)
-
-      const response = await fetch(url.toString(), {
-        method: 'POST',
-        headers: createAuthHeadersWithGuest(authUserId, userTier, effectiveGuestToken),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        // Extract userId from tokenRequest if available
-        const userIdFromToken = data.tokenRequest?.clientId;
-        if (userIdFromToken) {
-          setUserId(userIdFromToken);
-          return userIdFromToken;
-        }
-      } else if (response.status === 503) {
-        // Ably not configured - this is expected in some deployments
-        const data = await response.json();
-        if (data.code === 'ABLY_NOT_CONFIGURED') {
-          return 'ably-disabled';
-        }
-      }
-    } catch (error) {
-      console.error('Error getting userId:', error);
-    }
-
-    // Fallback: Use guest token as user ID for guest users
-    const guestToken = getEffectiveGuestToken();
-    if (guestToken) {
-      return guestToken;
-    }
-
-    return null;
-  }, [userId, token, getEffectiveGuestToken]);
-
-  // Generate stable device info for identification
-  const getDeviceInfo = useCallback(() => {
+  // Memoize device info to prevent recreation on every render
+  const deviceInfo = useMemo(() => {
     const isMobile = !isDesktop;
     const deviceType = isMobile ? 'Mobile' : 'Desktop';
 
@@ -196,7 +167,63 @@ export const useAblySync = ({
     return { deviceId, deviceName, deviceType };
   }, [isDesktop]);
 
-  // Clean up connection - Added safety checks
+  // Get userId from token API when needed, fallback to guest token
+  const getUserId = useCallback(async () => {
+    // If we have a real userId, use it
+    if (userId) {
+      return userId;
+    }
+
+    try {
+      // Include mobile token for both desktop and mobile when available
+      const url = new URL('/api/ably/token', window.location.origin);
+      if (token) {
+        url.searchParams.set('token', token);
+      }
+
+      // Get effective guest token for authentication
+      const guestToken = getEffectiveGuestToken();
+      const effectiveGuestToken = guestToken && !token ? guestToken : null; // Only for desktop users (no mobile token)
+
+      const response = await fetch(url.toString(), {
+        method: 'POST',
+        headers: createAuthHeadersWithGuest(authUserId, userTier, effectiveGuestToken),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Extract userId from tokenRequest if available
+        const userIdFromToken = data.tokenRequest?.clientId;
+        if (userIdFromToken) {
+          setUserId(userIdFromToken);
+          return userIdFromToken;
+        }
+      } else if (response.status === 503) {
+        // Ably not configured - this is expected in some deployments
+        const data = await response.json();
+        if (data.code === 'ABLY_NOT_CONFIGURED') {
+          return 'ably-disabled';
+        }
+      }
+    } catch (error) {
+      console.error('Error getting userId:', error);
+    }
+
+    // Fallback: Use guest token as user ID for guest users
+    const guestToken = getEffectiveGuestToken();
+    if (guestToken) {
+      return guestToken;
+    }
+
+    return null;
+  }, [userId, token, authUserId, userTier, getEffectiveGuestToken]);
+
+  // Generate stable device info for identification
+  const getDeviceInfo = useCallback(() => {
+    return deviceInfo;
+  }, [deviceInfo]);
+
+  // Clean up connection - Added safety checks and global registry management
   const cleanup = useCallback(() => {
     try {
       if (channelRef.current) {
@@ -205,10 +232,24 @@ export const useAblySync = ({
       }
 
       if (ablyRef.current) {
-        // Check if connection is still open before closing
-        if ((ablyRef.current.connection.state as string) !== 'closed' && (ablyRef.current.connection.state as string) !== 'closing') {
-          ablyRef.current.close();
+        // Find and decrement reference count in global registry
+        for (const [channelName, entry] of globalConnectionRegistry.entries()) {
+          if (entry.connection === ablyRef.current) {
+            entry.refCount--;
+
+            // Only close connection if no other instances are using it
+            if (entry.refCount <= 0) {
+              globalConnectionRegistry.delete(channelName);
+
+              // Check if connection is still open before closing
+              if ((ablyRef.current.connection.state as string) !== 'closed' && (ablyRef.current.connection.state as string) !== 'closing') {
+                ablyRef.current.close();
+              }
+            }
+            break;
+          }
         }
+
         ablyRef.current = null;
       }
 
@@ -277,6 +318,59 @@ export const useAblySync = ({
     return false;
   }, []);
 
+  // Separate function to set up channel handlers to avoid duplication
+  const setupChannelHandlers = useCallback((channel: Ably.RealtimeChannel, deviceId: string) => {
+    // Handle incoming messages
+    channel.subscribe((message: Ably.Message) => {
+      const data: AblyMessage = message.data;
+      const messageId = `${data.type}-${message.timestamp}-${data.deviceId || 'unknown'}`;
+
+      if (processedMessageIds.has(messageId)) {
+        return;
+      }
+      processedMessageIds.add(messageId);
+
+      switch (data.type) {
+        case 'transcription':
+          if (isDesktop && data.transcript) {
+            stableCallbacks.onTranscriptionReceived?.(data.transcript, data.patientSessionId, data.diarizedTranscript, data.utterances);
+          }
+          break;
+        case 'switch_patient':
+          if (!isDesktop && data.patientSessionId) {
+            stableCallbacks.onPatientSwitched?.(data.patientSessionId, data.patientName);
+          }
+          break;
+        case 'force_disconnect':
+          if (!isDesktop && data.targetDeviceId === deviceId) {
+            cleanup();
+          }
+          break;
+        case 'start_recording':
+          if (!isDesktop) {
+            stableCallbacks.onStartRecording?.();
+          }
+          break;
+        case 'stop_recording':
+          if (!isDesktop) {
+            stableCallbacks.onStopRecording?.();
+          }
+          break;
+      }
+    });
+
+    // Handle presence changes
+    channel.presence.subscribe((presenceMsg) => {
+      const { deviceId: presenceDeviceId, deviceName: presenceDeviceName, deviceType: presenceDeviceType } = presenceMsg.data;
+
+      if (presenceMsg.action === 'enter') {
+        stableCallbacks.onDeviceConnected?.(presenceDeviceId, presenceDeviceName, presenceDeviceType);
+      } else if (presenceMsg.action === 'leave') {
+        stableCallbacks.onDeviceDisconnected?.(presenceDeviceId);
+      }
+    });
+  }, [isDesktop, stableCallbacks, cleanup, processedMessageIds]);
+
   // Connect to Ably
   const connect = useCallback(async () => {
     if (!enabled) {
@@ -285,7 +379,7 @@ export const useAblySync = ({
 
     try {
       setConnectionState(prev => ({ ...prev, status: 'connecting', error: undefined }));
-      onError?.(null);
+      stableCallbacks.onError?.(null);
 
       const currentUserId = await getUserId();
       if (!currentUserId) {
@@ -296,6 +390,37 @@ export const useAblySync = ({
         setConnectionState(prev => ({ ...prev, status: 'disconnected', error: undefined }));
         return;
       }
+
+      const channelName = `user-${currentUserId}`;
+
+      // Check if there's already an active connection for this user
+      if (globalConnectionRegistry.has(channelName)) {
+        const existing = globalConnectionRegistry.get(channelName)!;
+        const connectionState = existing.connection.connection.state;
+
+        if (connectionState === 'connected' || connectionState === 'connecting') {
+          // Reuse existing connection
+          existing.refCount++;
+          ablyRef.current = existing.connection;
+
+          const channel = existing.connection.channels.get(channelName);
+          channelRef.current = channel;
+
+          // Set up event handlers for this instance
+          setupChannelHandlers(channel, currentUserId);
+
+          if (connectionState === 'connected') {
+            setConnectionState(prev => ({ ...prev, status: 'connected' }));
+          }
+          return;
+        } else {
+          // Clean up stale connection
+          globalConnectionRegistry.delete(channelName);
+        }
+      }
+
+      // Clean up any existing connection first
+      cleanup();
 
       const { deviceId, deviceName, deviceType } = getDeviceInfo();
 
@@ -358,9 +483,10 @@ export const useAblySync = ({
         clientId: currentUserId,
       });
 
+      // Register this connection globally
+      globalConnectionRegistry.set(channelName, { connection: ably, refCount: 1 });
       ablyRef.current = ably;
 
-      const channelName = `user-${currentUserId}`;
       const channel = ably.channels.get(channelName);
       channelRef.current = channel;
 
@@ -372,55 +498,8 @@ export const useAblySync = ({
         connectedAt: Date.now(),
       });
 
-      // Handle incoming messages
-      channel.subscribe((message: Ably.Message) => {
-        const data: AblyMessage = message.data;
-        const messageId = `${data.type}-${message.timestamp}-${data.deviceId || 'unknown'}`;
-
-        if (processedMessageIds.has(messageId)) {
-          return;
-        }
-        processedMessageIds.add(messageId);
-
-        switch (data.type) {
-          case 'transcription':
-            if (isDesktop && data.transcript) {
-              onTranscriptionReceived?.(data.transcript, data.patientSessionId, data.diarizedTranscript, data.utterances);
-            }
-            break;
-          case 'switch_patient':
-            if (!isDesktop && data.patientSessionId) {
-              onPatientSwitched?.(data.patientSessionId, data.patientName);
-            }
-            break;
-          case 'force_disconnect':
-            if (!isDesktop && data.targetDeviceId === deviceId) {
-              cleanup();
-            }
-            break;
-          case 'start_recording':
-            if (!isDesktop) {
-              onStartRecording?.();
-            }
-            break;
-          case 'stop_recording':
-            if (!isDesktop) {
-              onStopRecording?.();
-            }
-            break;
-        }
-      });
-
-      // Handle presence changes
-      channel.presence.subscribe((presenceMsg) => {
-        const { deviceId: presenceDeviceId, deviceName: presenceDeviceName, deviceType: presenceDeviceType } = presenceMsg.data;
-
-        if (presenceMsg.action === 'enter') {
-          onDeviceConnected?.(presenceDeviceId, presenceDeviceName, presenceDeviceType);
-        } else if (presenceMsg.action === 'leave') {
-          onDeviceDisconnected?.(presenceDeviceId);
-        }
-      });
+      // Set up event handlers
+      setupChannelHandlers(channel, deviceId);
 
       // Handle connection state changes
       ably.connection.on('connected', () => {
@@ -433,14 +512,15 @@ export const useAblySync = ({
 
       ably.connection.on('failed', () => {
         setConnectionState(prev => ({ ...prev, status: 'error', error: 'Connection error' }));
-        onError?.('Connection error');
+        stableCallbacks.onError?.('Connection error');
       });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Connection failed';
       setConnectionState(prev => ({ ...prev, status: 'error', error: errorMessage }));
-      onError?.(errorMessage);
+      stableCallbacks.onError?.(errorMessage);
     }
-  }, [enabled, token, isDesktop, getUserId, getDeviceInfo, onTranscriptionReceived, onPatientSwitched, onDeviceConnected, onDeviceDisconnected, onError, processedMessageIds, onStartRecording, onStopRecording]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, token, isDesktop, getUserId, getDeviceInfo, stableCallbacks, cleanup, authUserId, userTier, getEffectiveGuestToken, processedMessageIds, setupChannelHandlers]);
 
   // Enhanced notify method
   const notifyPatientSwitch = useCallback(async (patientSessionId: string, patientName?: string) => {
@@ -484,11 +564,8 @@ export const useAblySync = ({
       cleanup();
     }
 
-    return () => {
-      if (!enabled) {
-        cleanup();
-      }
-    };
+    // Always cleanup on unmount or when effect re-runs
+    return cleanup;
   }, [enabled, token, isDesktop, connect, cleanup]);
 
   return {

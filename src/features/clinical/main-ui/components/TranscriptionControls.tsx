@@ -16,20 +16,23 @@ import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 import { AudioSettingsModal } from '../../mobile/components/AudioSettingsModal';
 import { MobileRecordingQRV2 } from '../../mobile/components/MobileRecordingQRV2';
 import { ConsentModal } from '../../session-management/components/ConsentModal';
-import { useAblySync } from '../hooks/useAblySync';
+import { useRecordingHealthCheck } from '../hooks/useRecordingHealthCheck';
 import { useTranscription } from '../hooks/useTranscription';
 import { ConsultationInputHeader } from './ConsultationInputHeader';
+import { RecordingStatusWidget } from './RecordingStatusWidget';
 
 export function TranscriptionControls({
   collapsed,
   onExpand,
   isMinimized,
   onForceDisconnectDevice,
+  startMobileRecording,
 }: {
   collapsed?: boolean;
   onExpand?: () => void;
   isMinimized?: boolean;
   onForceDisconnectDevice?: (deviceId: string) => void;
+  startMobileRecording?: () => Promise<boolean>;
 }) {
   const { isSignedIn, userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
@@ -43,11 +46,6 @@ export function TranscriptionControls({
     removeMobileV2Device,
     getEffectiveGuestToken,
   } = useConsultation();
-  const { startMobileRecording } = useAblySync({
-    enabled: !!mobileV2.token || mobileV2.connectedDevices.length > 0,
-    token: mobileV2.token || undefined,
-    isDesktop: true,
-  });
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [showAudioSettings, setShowAudioSettings] = useState(false);
   const [showMobileRecordingV2, setShowMobileRecordingV2] = useState(false);
@@ -74,6 +72,21 @@ export function TranscriptionControls({
     noInputWarning,
     totalChunks,
   } = useTranscription();
+
+  // Recording health check system
+  const {
+    status: healthStatus,
+    issues: healthIssues,
+    lastSync,
+    transcriptionRate,
+    canStartRecording,
+    isRunningHealthCheck,
+    runHealthCheck,
+  } = useRecordingHealthCheck({
+    enabled: true,
+    healthCheckInterval: 5000,
+    syncTimeout: 10000,
+  });
 
   // Use regular transcript since diarization is disabled
   const transcript = contextTranscription.transcript;
@@ -270,7 +283,7 @@ export function TranscriptionControls({
 
   const handleStartMobileRecording = () => {
     if (hasMobileDevices) {
-      startMobileRecording();
+      startMobileRecording?.();
     } else {
       startRecording();
     }
@@ -326,21 +339,29 @@ export function TranscriptionControls({
             </Alert>
           )}
 
-          {/* Mobile Recording Status - V2 */}
-          {useMobileV2 && hasMobileDevices && (
-            <Alert variant="default" className="border-green-200 bg-green-50 p-2 text-xs">
+          {/* Recording Health Status Widget */}
+          <RecordingStatusWidget
+            status={healthStatus}
+            issues={healthIssues}
+            isRunningHealthCheck={isRunningHealthCheck}
+            lastSync={lastSync}
+            transcriptionRate={transcriptionRate}
+            canStartRecording={canStartRecording}
+            onRunHealthCheck={runHealthCheck}
+            onShowMobileSetup={() => setShowMobileRecordingV2(true)}
+          />
+
+          {/* Mobile Device Management */}
+          {useMobileV2 && hasMobileDevices && connectedMobileDevices.length > 0 && (
+            <Alert variant="default" className="border-slate-200 bg-slate-50 p-2 text-xs">
               <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <div className="size-2 animate-pulse rounded-full bg-green-500" />
-                  <div className="font-medium text-green-800">
-                    Mobile device ready
-                  </div>
+                <div className="text-xs font-medium text-slate-700">
+                  Connected Devices
                 </div>
                 <div className="space-y-1">
                   {connectedMobileDevices.map(device => (
                     <div key={device.deviceId} className="flex items-center justify-between">
-                      <span className="text-xs text-green-700">
-                        ✓
+                      <span className="text-xs text-slate-600">
                         {device.deviceName}
                       </span>
                       <Button
@@ -348,7 +369,7 @@ export function TranscriptionControls({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDeviceDisconnect(device.deviceId)}
-                        className="size-4 p-0 text-green-600 hover:text-red-500"
+                        className="size-4 p-0 text-slate-500 hover:text-red-500"
                         title="Disconnect device"
                       >
                         <X className="size-3" />
@@ -365,11 +386,6 @@ export function TranscriptionControls({
             {/* Status and Warnings */}
             {noInputWarning && !isWaitingForSpeech && (
               <div className="text-xs text-red-500">No audio detected—check your mic</div>
-            )}
-            {hasMobileDevices && !isRecording && (
-              <div className="text-xs text-green-600">
-                ✓ Mobile device ready
-              </div>
             )}
 
             {/* Primary Recording Options */}
@@ -398,9 +414,15 @@ export function TranscriptionControls({
                             <Button
                               type="button"
                               onClick={handleStartMobileRecording}
-                              disabled={!isSignedIn && !canCreateSession}
+                              disabled={!canStartRecording || (!isSignedIn && !canCreateSession)}
                               className="h-8 bg-green-600 px-3 text-xs text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-                              title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
+                              title={
+                                !canStartRecording
+                                  ? `Cannot start recording: ${healthIssues.map(issue => issue.message).join(', ')}`
+                                  : !isSignedIn && !canCreateSession
+                                      ? 'Session limit reached - see Usage Dashboard for upgrade options'
+                                      : ''
+                              }
                             >
                               <Smartphone className="mr-1 size-3" />
                               Start Mobile
@@ -410,7 +432,7 @@ export function TranscriptionControls({
                             <Button
                               type="button"
                               onClick={handleMobileClick}
-                              disabled={!isSignedIn && !canCreateSession}
+                              disabled={(!isSignedIn && !canCreateSession)}
                               className="h-8 bg-blue-600 px-3 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
                               title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
                             >
@@ -447,9 +469,15 @@ export function TranscriptionControls({
                                 type="button"
                                 variant="outline"
                                 onClick={handleStartRecording}
-                                disabled={!isSignedIn && !canCreateSession}
+                                disabled={!canStartRecording || (!isSignedIn && !canCreateSession)}
                                 className="h-7 w-full border-slate-300 text-xs disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
-                                title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
+                                title={
+                                  !canStartRecording
+                                    ? `Cannot start recording: ${healthIssues.map(issue => issue.message).join(', ')}`
+                                    : !isSignedIn && !canCreateSession
+                                        ? 'Session limit reached - see Usage Dashboard for upgrade options'
+                                        : ''
+                                }
                               >
                                 Start Desktop Recording
                               </Button>
