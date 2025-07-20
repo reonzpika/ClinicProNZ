@@ -6,8 +6,6 @@ import { useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
-import { Input } from '@/src/shared/components/ui/input';
-import { Label } from '@/src/shared/components/ui/label';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { BILLING_CONFIG } from '@/src/shared/utils/billing-config';
 
@@ -23,7 +21,6 @@ type RateLimitModalProps = {
 
 export function RateLimitModal({ isOpen, onClose, error }: RateLimitModalProps) {
   const { isSignedIn } = useAuth();
-  const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [loadingAction, setLoadingAction] = useState<'signup' | 'upgrade' | null>(null);
 
@@ -79,10 +76,8 @@ export function RateLimitModal({ isOpen, onClose, error }: RateLimitModalProps) 
   };
 
   const handlePublicUpgrade = () => {
-    if (!email) {
-      return;
-    }
-    handleUpgrade(email);
+    // Redirect public users to sign up first
+    window.location.href = '/register?redirect=upgrade';
   };
 
   return (
@@ -121,102 +116,137 @@ export function RateLimitModal({ isOpen, onClose, error }: RateLimitModalProps) 
           </div>
 
           {/* Public user options */}
-          {isPublicUser && (
-            <div className="space-y-4">
-              <div className="text-center">
-                <p className="mb-4 text-sm text-gray-600">
-                  Get more sessions by creating an account or upgrading:
-                </p>
-              </div>
-
-              {/* Free signup option */}
-              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-semibold text-blue-900">Free Account</h4>
-                    <p className="text-sm text-blue-700">
-                      {basicSessionLimit}
-                      {' '}
-                      sessions/day
+          {isPublicUser
+            ? (
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <p className="mb-4 text-sm text-gray-600">
+                      You've reached the session limit for guest users.
                     </p>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-blue-300 text-blue-700 hover:bg-blue-100"
-                    onClick={handleSignUp}
-                    disabled={isLoading}
-                  >
-                    {loadingAction === 'signup'
-                      ? (
-                          <Loader2 className="size-4 animate-spin" />
-                        )
-                      : (
-                          <>
-                            <UserPlus className="mr-1 size-3" />
-                            Sign Up Free
-                          </>
-                        )}
-                  </Button>
-                </div>
-              </div>
 
-              {/* Direct upgrade option */}
-              <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="flex items-center gap-1 font-semibold text-green-900">
-                        <Crown className="size-4" />
-                        {standardPlan.name}
-                        {' '}
-                        Plan
-                      </h4>
-                      <p className="text-sm text-green-700">
-                        {standardSessionLimit}
-                        {' '}
-                        sessions/day • $
-                        {standardPlan.price}
-                        /month
-                      </p>
+                  <div className="space-y-3">
+                    <Button
+                      onClick={handleSignUp}
+                      disabled={isLoading}
+                      className="w-full"
+                      size="sm"
+                    >
+                      {loadingAction === 'signup' ? 'Redirecting...' : 'Create Free Account (5 sessions/day)'}
+                    </Button>
+
+                    <div className="text-center">
+                      <span className="text-sm text-gray-500">or</span>
+                    </div>
+
+                    <Button
+                      onClick={handlePublicUpgrade}
+                      disabled={isLoading}
+                      className="w-full bg-green-600 hover:bg-green-700"
+                      size="sm"
+                    >
+                      {loadingAction === 'upgrade' ? 'Redirecting...' : 'Sign Up & Upgrade to Standard ($30/month)'}
+                    </Button>
+                  </div>
+
+                  <p className="text-center text-xs text-gray-500">
+                    Both options require creating an account first
+                  </p>
+                </div>
+              )
+            : (
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <p className="mb-4 text-sm text-gray-600">
+                      Get more sessions by creating an account or upgrading:
+                    </p>
+                  </div>
+
+                  {/* Free signup option */}
+                  <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-semibold text-blue-900">Free Account</h4>
+                        <p className="text-sm text-blue-700">
+                          {basicSessionLimit}
+                          {' '}
+                          sessions/day
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-blue-300 text-blue-700 hover:bg-blue-100"
+                        onClick={handleSignUp}
+                        disabled={isLoading}
+                      >
+                        {loadingAction === 'signup'
+                          ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            )
+                          : (
+                              <>
+                                <UserPlus className="mr-1 size-3" />
+                                Sign Up Free
+                              </>
+                            )}
+                      </Button>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm text-green-800">
-                      Email for checkout:
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      placeholder="your.email@example.com"
-                      className="border-green-300 focus:border-green-500"
-                    />
-                  </div>
+                  {/* Direct upgrade option */}
+                  <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="flex items-center gap-1 font-semibold text-green-900">
+                            <Crown className="size-4" />
+                            {standardPlan.name}
+                            {' '}
+                            Plan
+                          </h4>
+                          <p className="text-sm text-green-700">
+                            {standardSessionLimit}
+                            {' '}
+                            sessions/day • $
+                            {standardPlan.price}
+                            /month
+                            {' '}
+                            <span className="text-xs font-medium text-green-800">(First 15 GPs only!)</span>
+                          </p>
+                        </div>
+                      </div>
 
-                  <Button
-                    size="sm"
-                    className="w-full bg-green-600 hover:bg-green-700"
-                    onClick={handlePublicUpgrade}
-                    disabled={!email || isLoading}
-                  >
-                    {loadingAction === 'upgrade'
-                      ? (
-                          <Loader2 className="size-4 animate-spin" />
-                        )
-                      : (
-                          <>
-                            <Zap className="mr-1 size-3" />
-                            Upgrade Now
-                          </>
-                        )}
-                  </Button>
+                      <Button
+                        size="sm"
+                        className="w-full bg-green-600 hover:bg-green-700"
+                        onClick={handlePublicUpgrade}
+                        disabled={isLoading}
+                      >
+                        {loadingAction === 'upgrade'
+                          ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            )
+                          : (
+                              <>
+                                <Zap className="mr-1 size-3" />
+                                Sign Up & Upgrade
+                              </>
+                            )}
+                      </Button>
+
+                      <ul className="space-y-1 text-sm text-green-700">
+                        {standardPlan.features.map((feature, index) => (
+                          <li key={index} className="flex items-center gap-2">
+                            <div className="size-1.5 rounded-full bg-green-600" />
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          )}
+              )}
 
           {/* Basic tier user options */}
           {isBasicUser && (
@@ -243,6 +273,8 @@ export function RateLimitModal({ isOpen, onClose, error }: RateLimitModalProps) 
                         sessions/day • $
                         {standardPlan.price}
                         /month
+                        {' '}
+                        <span className="text-xs font-medium text-green-800">(First 15 GPs only!)</span>
                       </p>
                     </div>
                   </div>

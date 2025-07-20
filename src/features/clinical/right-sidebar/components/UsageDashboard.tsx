@@ -8,8 +8,6 @@ import type { UserTier } from '@/src/lib/rbac-client';
 import { Badge } from '@/src/shared/components/ui/badge';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
-import { Input } from '@/src/shared/components/ui/input';
-import { Label } from '@/src/shared/components/ui/label';
 import { Progress } from '@/src/shared/components/ui/progress';
 import { useConsultation } from '@/src/shared/ConsultationContext';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
@@ -31,8 +29,6 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
   const [usageData, setUsageData] = useState<UsageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [upgradeEmail, setUpgradeEmail] = useState('');
-  const [showEmailInput, setShowEmailInput] = useState(false);
 
   // Use production tier detection for real features (not testing)
   const { getUserTier, isLoaded } = useClerkMetadata();
@@ -338,12 +334,10 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
               className={`w-full ${isCoreAtLimit ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}`}
               size="sm"
               onClick={async () => {
-                // For public users, collect email first
+                // For public users, redirect to sign up first
                 if (!isSignedIn) {
-                  if (!upgradeEmail || !upgradeEmail.includes('@')) {
-                    setShowEmailInput(true);
-                    return;
-                  }
+                  window.location.href = '/register?redirect=upgrade';
+                  return;
                 }
 
                 try {
@@ -351,7 +345,7 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
                     method: 'POST',
                     headers: createAuthHeadersWithGuest(userId, tier, null),
                     body: JSON.stringify({
-                      email: isSignedIn ? user?.primaryEmailAddress?.emailAddress : upgradeEmail,
+                      email: user?.primaryEmailAddress?.emailAddress,
                       userId: user?.id,
                     }),
                   });
@@ -372,32 +366,14 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
               }}
             >
               <Crown className="mr-2 size-4" />
-              {!isSignedIn && showEmailInput
-                ? 'Enter Email to Continue'
+              {!isSignedIn
+                ? 'Sign Up to Upgrade - $30/month (First 15 GPs!)'
                 : isCoreAtLimit
                   ? 'Upgrade Now - Unlimited Access'
-                  : 'Upgrade to Standard - $89/month'}
+                  : 'Upgrade to Standard - $30/month (First 15 GPs!)'}
             </Button>
 
-            {/* Email input for public users */}
-            {!isSignedIn && showEmailInput && (
-              <div className="space-y-2">
-                <Label htmlFor="upgrade-email" className="text-sm text-gray-700">
-                  Enter your email to continue with upgrade:
-                </Label>
-                <Input
-                  id="upgrade-email"
-                  type="email"
-                  value={upgradeEmail}
-                  onChange={e => setUpgradeEmail(e.target.value)}
-                  placeholder="your.email@example.com"
-                  className="text-sm"
-                />
-                <p className="text-xs text-gray-500">
-                  You'll complete signup during checkout
-                </p>
-              </div>
-            )}
+            {/* Remove email input section for public users */}
           </div>
         )}
 

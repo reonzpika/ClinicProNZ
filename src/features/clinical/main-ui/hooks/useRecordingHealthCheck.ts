@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useConsultation } from '@/src/shared/ConsultationContext';
 
@@ -28,15 +28,19 @@ export type RecordingHealthState = {
 
 export type UseRecordingHealthCheckOptions = {
   enabled?: boolean;
-  healthCheckInterval?: number; // ms, default 5000
+  healthCheckInterval?: number; // ms, default 30000 (30s during recording)
   syncTimeout?: number; // ms, default 10000
+  autoStart?: boolean; // default false - don't auto-start health checks
+  triggerOnMobileConnect?: boolean; // default true - check when mobile connects
 };
 
 export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions = {}) => {
   const {
     enabled = true,
-    healthCheckInterval = 5000,
+    healthCheckInterval = 30000, // Increased to 30s to reduce cost
     syncTimeout = 10000,
+    autoStart = false, // Don't auto-start by default
+    triggerOnMobileConnect = true,
   } = options;
 
   const {
@@ -59,6 +63,57 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
   const healthCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const transcriptionStartRef = useRef<number | null>(null);
   const wordCountRef = useRef<number>(0);
+
+  // API connectivity cache to reduce costs
+  const [apiConnectivityCache, setApiConnectivityCache] = useState<{
+    lastChecked: number | null;
+    isAvailable: boolean;
+    cacheFor: number;
+  }>({
+    lastChecked: null,
+    isAvailable: false,
+    cacheFor: 5 * 60 * 1000, // 5 minute cache
+  });
+
+  // UI stabilization - minimum display times to prevent flickering
+  const [stableStatus, setStableStatus] = useState<RecordingHealthStatus>('setup-required');
+  const statusTransitionRef = useRef<NodeJS.Timeout | null>(null);
+
+  const STATE_MIN_DURATION = useMemo(() => ({
+    'testing': 2000, // Show "testing" for at least 2s
+    'ready': 1000, // Show "ready" for at least 1s
+    'error': 3000, // Show errors longer for user to read
+    'setup-required': 500,
+    'recording': 0, // No delay for recording status
+  }), []);
+
+  // Update stable status with minimum display duration
+  const updateStableStatus = useCallback((newStatus: RecordingHealthStatus) => {
+    const currentTime = Date.now();
+    const minDuration = STATE_MIN_DURATION[stableStatus];
+
+    if (statusTransitionRef.current) {
+      clearTimeout(statusTransitionRef.current);
+    }
+
+    if (newStatus === stableStatus) {
+      return; // No change needed
+    }
+
+    // If we haven't shown current status long enough, delay the transition
+    if (healthState.lastHealthCheck && currentTime - healthState.lastHealthCheck < minDuration) {
+      statusTransitionRef.current = setTimeout(() => {
+        setStableStatus(newStatus);
+      }, minDuration - (currentTime - healthState.lastHealthCheck));
+    } else {
+      setStableStatus(newStatus);
+    }
+  }, [stableStatus, healthState.lastHealthCheck, STATE_MIN_DURATION]);
+
+  // Update stable status when health state changes
+  useEffect(() => {
+    updateStableStatus(healthState.status);
+  }, [healthState.status, updateStableStatus]);
 
   // Track transcription rate during recording
   useEffect(() => {
@@ -175,9 +230,23 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
     return issues;
   }, []);
 
-  // Test transcription API connectivity
+  // Test transcription API connectivity with caching
   const testTranscriptionAPI = useCallback(async (): Promise<HealthCheckIssue[]> => {
     const issues: HealthCheckIssue[] = [];
+    const currentTime = Date.now();
+
+    // Check if we have a valid cached result
+    if (apiConnectivityCache.lastChecked
+      && currentTime - apiConnectivityCache.lastChecked < apiConnectivityCache.cacheFor) {
+      if (!apiConnectivityCache.isAvailable) {
+        issues.push({
+          type: 'transcription-api',
+          message: 'Transcription service unavailable (cached)',
+          actionable: false,
+        });
+      }
+      return issues;
+    }
 
     try {
       // Simple connectivity test to transcription endpoint
@@ -185,7 +254,16 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
         method: 'OPTIONS', // Preflight request to check connectivity
       });
 
-      if (!response.ok && response.status !== 405) { // 405 is OK for OPTIONS
+      const isAvailable = response.ok || response.status === 405; // 405 is OK for OPTIONS
+
+      // Update cache
+      setApiConnectivityCache({
+        lastChecked: currentTime,
+        isAvailable,
+        cacheFor: apiConnectivityCache.cacheFor,
+      });
+
+      if (!isAvailable) {
         issues.push({
           type: 'transcription-api',
           message: 'Transcription service unavailable',
@@ -193,6 +271,13 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
         });
       }
     } catch {
+      // Update cache with failure
+      setApiConnectivityCache({
+        lastChecked: currentTime,
+        isAvailable: false,
+        cacheFor: apiConnectivityCache.cacheFor,
+      });
+
       issues.push({
         type: 'transcription-api',
         message: 'Cannot reach transcription service',
@@ -201,7 +286,7 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
     }
 
     return issues;
-  }, []);
+  }, [apiConnectivityCache]);
 
   // Run comprehensive health check
   const runHealthCheck = useCallback(async (): Promise<boolean> => {
@@ -302,19 +387,21 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
     }));
   }, [consultationStatus]);
 
-  // Start periodic health checks when enabled
+  // Start periodic health checks when enabled (but don't auto-start unless specified)
   useEffect(() => {
     if (!enabled) {
       return;
     }
 
-    // Run initial health check
-    runHealthCheck();
+    // Only run initial health check if autoStart is enabled
+    if (autoStart) {
+      runHealthCheck();
+    }
 
-    // Set up periodic checks
-    healthCheckIntervalRef.current = setInterval(() => {
-      if (consultationStatus === 'recording') {
-        // During recording, run lighter checks
+    // Set up periodic checks during recording only
+    if (consultationStatus === 'recording') {
+      healthCheckIntervalRef.current = setInterval(() => {
+        // During recording, run lighter checks (local only, no API calls)
         const syncIssues = checkSyncStatus();
         if (syncIssues.length > 0) {
           setHealthState(prev => ({
@@ -323,33 +410,49 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
             isHealthy: false,
           }));
         }
-      } else {
-        // When not recording, run full health check
-        runHealthCheck();
-      }
-    }, healthCheckInterval);
+      }, healthCheckInterval);
+    }
 
     return () => {
       if (healthCheckIntervalRef.current) {
         clearInterval(healthCheckIntervalRef.current);
+        healthCheckIntervalRef.current = null;
       }
     };
-  }, [enabled, runHealthCheck, checkSyncStatus, consultationStatus, healthCheckInterval]);
+  }, [enabled, autoStart, runHealthCheck, checkSyncStatus, consultationStatus, healthCheckInterval]);
 
-  // Force health check when mobile connection status changes
+  // Trigger health check when mobile connects (if enabled)
   useEffect(() => {
-    if (enabled) {
+    if (enabled && triggerOnMobileConnect && mobileV2.connectionStatus === 'connected') {
       runHealthCheck();
     }
-  }, [mobileV2.connectionStatus, mobileV2.connectedDevices.length, enabled, runHealthCheck]);
+  }, [enabled, triggerOnMobileConnect, mobileV2.connectionStatus, runHealthCheck]);
+
+  // Cleanup status transition timeouts
+  useEffect(() => {
+    return () => {
+      if (statusTransitionRef.current) {
+        clearTimeout(statusTransitionRef.current);
+      }
+    };
+  }, []);
+
+  // Manual trigger for user-initiated health checks
+  const triggerHealthCheck = useCallback(async () => {
+    return await runHealthCheck();
+  }, [runHealthCheck]);
 
   return {
     healthState,
     isRunningHealthCheck,
     runHealthCheck,
-    // Convenience getters
+    triggerHealthCheck, // Manual trigger for "Connect Mobile" button
+    // Convenience getters - use stable status to prevent UI flickering
     get status() {
-      return healthState.status;
+      return stableStatus; // Return stable status instead of raw status
+    },
+    get rawStatus() {
+      return healthState.status; // Provide access to immediate status if needed
     },
     get isHealthy() {
       return healthState.isHealthy;
@@ -364,7 +467,10 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
       return healthState.transcriptionRate;
     },
     get canStartRecording() {
-      return healthState.status === 'ready' && healthState.isHealthy && !!currentPatientSessionId;
+      return stableStatus === 'ready' && healthState.isHealthy && !!currentPatientSessionId;
+    },
+    get apiCacheStatus() {
+      return apiConnectivityCache; // For debugging/monitoring
     },
   };
 };

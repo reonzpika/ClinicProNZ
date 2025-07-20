@@ -4,6 +4,38 @@ import Stripe from 'stripe';
 
 import { getTierByStripePriceId } from '@/src/shared/utils/billing-config';
 
+// Helper function to find user by Stripe customer ID
+async function findUserByStripeCustomerId(customerId: string | Stripe.Customer | Stripe.DeletedCustomer): Promise<string | null> {
+  const clerk = await clerkClient();
+  const customerIdString = typeof customerId === 'string' ? customerId : customerId.id;
+
+  let offset = 0;
+  const limit = 100;
+
+  while (true) {
+    const users = await clerk.users.getUserList({
+      limit,
+      offset,
+    });
+
+    // Search through current batch
+    for (const user of users.data) {
+      if (user.publicMetadata?.stripeCustomerId === customerIdString) {
+        return user.id;
+      }
+    }
+
+    // If we got less than the limit, we've seen all users
+    if (users.data.length < limit) {
+      break;
+    }
+
+    offset += limit;
+  }
+
+  return null;
+}
+
 // Stripe webhook handler for billing events
 export async function POST(req: Request) {
   try {
@@ -55,65 +87,28 @@ export async function POST(req: Request) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object;
-        const customerId = session.customer;
         const clientReferenceId = session.client_reference_id;
-        const customerEmail = session.customer_details?.email;
-        const isNewUser = session.metadata?.isNewUser === 'true';
 
-        if (!clientReferenceId && !customerEmail) {
-          console.error('No client_reference_id or customer email in checkout session');
+        if (!clientReferenceId) {
+          console.error('No client_reference_id in checkout session - user must be signed in');
           return NextResponse.json({ error: 'Missing user identification' }, { status: 400 });
         }
 
         // Get the subscription to find the price ID
         if (session.subscription) {
-          let userId: string | null = clientReferenceId;
-
-          // Handle new user creation
-          if (isNewUser && customerEmail && !clientReferenceId) {
-            try {
-              // Check if user already exists with this email
-              const existingUsers = await clerk.users.getUserList({
-                emailAddress: [customerEmail],
-              });
-
-              if (existingUsers.data.length > 0) {
-                // User exists, use existing user ID
-                userId = existingUsers.data[0]!.id;
-              } else {
-                // Create new user
-                const newUser = await clerk.users.createUser({
-                  emailAddress: [customerEmail],
-                  publicMetadata: {
-                    tier: 'standard',
-                    stripeCustomerId: typeof customerId === 'string' ? customerId : customerId?.id || '',
-                    subscriptionId: typeof session.subscription === 'string' ? session.subscription : session.subscription?.id || '',
-                    planName: 'Standard',
-                    upgradeDate: new Date().toISOString(),
-                    emailVerified: false, // Will need email verification
-                  },
-                  skipPasswordRequirement: true, // User will set password on first login
-                });
-
-                userId = newUser.id;
-              }
-            } catch (error) {
-              console.error('Error creating/finding user:', error);
-              return NextResponse.json({ error: 'Failed to create user account' }, { status: 500 });
-            }
-          }
-
-          // Update user metadata for both new and existing users
-          if (userId) {
-            await clerk.users.updateUserMetadata(userId, {
+          try {
+            await clerk.users.updateUserMetadata(clientReferenceId, {
               publicMetadata: {
                 tier: 'standard',
-                stripeCustomerId: typeof customerId === 'string' ? customerId : customerId?.id || '',
+                stripeCustomerId: typeof session.customer === 'string' ? session.customer : session.customer?.id || '',
                 subscriptionId: typeof session.subscription === 'string' ? session.subscription : session.subscription?.id || '',
                 planName: 'Standard',
                 upgradeDate: new Date().toISOString(),
               },
             });
+          } catch (error) {
+            console.error('Error updating user metadata:', error);
+            // Don't fail the webhook for metadata update errors
           }
         }
         break;
@@ -128,41 +123,36 @@ export async function POST(req: Request) {
           break;
         }
 
-        // Find user by Stripe customer ID
-        const users = await clerk.users.getUserList({
-          limit: 1,
-        });
-
-        // Find the user with this Stripe customer ID
-        let userId: string | null = null;
-        for (const user of users.data) {
-          if (user.publicMetadata?.stripeCustomerId === customerId) {
-            userId = user.id;
-            break;
-          }
-        }
+        // Find user by Stripe customer ID using fixed lookup
+        const userId = await findUserByStripeCustomerId(customerId);
 
         if (!userId) {
+          console.error('User not found for Stripe customer ID:', customerId);
           break;
         }
 
         const tier = getTierByStripePriceId(priceId);
         if (!tier) {
+          console.error('No tier found for price ID:', priceId);
           break;
         }
 
-        await clerk.users.updateUserMetadata(userId, {
-          publicMetadata: {
-            tier,
-            stripeCustomerId: typeof customerId === 'string' ? customerId : customerId?.id || '',
-            subscriptionId: subscription.id,
-            priceId,
-            subscriptionStatus: subscription.status,
-            currentPeriodEnd: subscription.items.data[0]?.current_period_end
-              ? new Date(subscription.items.data[0].current_period_end * 1000).toISOString()
-              : new Date().toISOString(),
-          },
-        });
+        try {
+          await clerk.users.updateUserMetadata(userId, {
+            publicMetadata: {
+              tier,
+              stripeCustomerId: typeof customerId === 'string' ? customerId : customerId.id,
+              subscriptionId: subscription.id,
+              priceId,
+              subscriptionStatus: subscription.status,
+              currentPeriodEnd: subscription.items.data[0]?.current_period_end
+                ? new Date(subscription.items.data[0].current_period_end * 1000).toISOString()
+                : new Date().toISOString(),
+            },
+          });
+        } catch (error) {
+          console.error('Error updating user metadata for subscription.created:', error);
+        }
         break;
       }
 
@@ -171,51 +161,46 @@ export async function POST(req: Request) {
         const customerId = subscription.customer;
         const priceId = subscription.items.data[0]?.price.id;
 
-        // Find user by Stripe customer ID
-        const users = await clerk.users.getUserList({
-          limit: 1,
-        });
-
-        let userId: string | null = null;
-        for (const user of users.data) {
-          if (user.publicMetadata?.stripeCustomerId === customerId) {
-            userId = user.id;
-            break;
-          }
-        }
+        // Find user by Stripe customer ID using fixed lookup
+        const userId = await findUserByStripeCustomerId(customerId);
 
         if (!userId) {
+          console.error('User not found for Stripe customer ID:', customerId);
           break;
         }
 
-        if (subscription.status === 'canceled' || subscription.status === 'unpaid') {
-          // Downgrade to basic tier (authenticated users get basic tier, not signed_up)
-          await clerk.users.updateUserMetadata(userId, {
-            publicMetadata: {
-              tier: 'basic',
-              stripeCustomerId: typeof customerId === 'string' ? customerId : customerId?.id || '',
-              subscriptionId: subscription.id,
-              subscriptionStatus: subscription.status,
-              downgradedAt: new Date().toISOString(),
-            },
-          });
-        } else if (priceId) {
-          // Update to new tier based on price
-          const tier = getTierByStripePriceId(priceId);
-          if (tier) {
+        try {
+          if (subscription.status === 'canceled' || subscription.status === 'unpaid') {
+            // Downgrade to basic tier (authenticated users get basic tier, not signed_up)
             await clerk.users.updateUserMetadata(userId, {
               publicMetadata: {
-                tier,
-                stripeCustomerId: typeof customerId === 'string' ? customerId : customerId?.id || '',
+                tier: 'basic',
+                stripeCustomerId: typeof customerId === 'string' ? customerId : customerId.id,
                 subscriptionId: subscription.id,
-                priceId,
                 subscriptionStatus: subscription.status,
-                currentPeriodEnd: subscription.items.data[0]?.current_period_end
-                  ? new Date(subscription.items.data[0].current_period_end * 1000).toISOString()
-                  : new Date().toISOString(),
+                downgradedAt: new Date().toISOString(),
               },
             });
+          } else if (priceId) {
+            // Update to new tier based on price
+            const tier = getTierByStripePriceId(priceId);
+            if (tier) {
+              await clerk.users.updateUserMetadata(userId, {
+                publicMetadata: {
+                  tier,
+                  stripeCustomerId: typeof customerId === 'string' ? customerId : customerId.id,
+                  subscriptionId: subscription.id,
+                  priceId,
+                  subscriptionStatus: subscription.status,
+                  currentPeriodEnd: subscription.items.data[0]?.current_period_end
+                    ? new Date(subscription.items.data[0].current_period_end * 1000).toISOString()
+                    : new Date().toISOString(),
+                },
+              });
+            }
           }
+        } catch (error) {
+          console.error('Error updating user metadata for subscription.updated:', error);
         }
         break;
       }
@@ -225,27 +210,24 @@ export async function POST(req: Request) {
         const customerId = subscription.customer;
 
         // Find user by Stripe customer ID and downgrade to basic tier
-        const users = await clerk.users.getUserList({
-          limit: 1,
-        });
+        const userId = await findUserByStripeCustomerId(customerId);
 
-        let userId: string | null = null;
-        for (const user of users.data) {
-          if (user.publicMetadata?.stripeCustomerId === customerId) {
-            userId = user.id;
-            break;
-          }
+        if (!userId) {
+          console.error('User not found for Stripe customer ID:', customerId);
+          break;
         }
 
-        if (userId) {
+        try {
           await clerk.users.updateUserMetadata(userId, {
             publicMetadata: {
               tier: 'basic',
-              stripeCustomerId: typeof customerId === 'string' ? customerId : customerId?.id || '',
+              stripeCustomerId: typeof customerId === 'string' ? customerId : customerId.id,
               subscriptionStatus: 'canceled',
               canceledAt: new Date().toISOString(),
             },
           });
+        } catch (error) {
+          console.error('Error updating user metadata for subscription.deleted:', error);
         }
         break;
       }

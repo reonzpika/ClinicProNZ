@@ -14,8 +14,8 @@ export default function Home() {
         // All authenticated users go to consultation
         router.push('/consultation');
       } else {
-        // Unauthenticated users go to landing page
-        router.push('/landing-page');
+        // Unauthenticated users go to early access page
+        router.push('/early');
       }
     }
   }, [isLoaded, isSignedIn, router]);

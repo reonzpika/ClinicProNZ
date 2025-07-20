@@ -1,18 +1,27 @@
 import { SignUp } from '@clerk/nextjs';
 
-export default function RegisterPage() {
+export default function RegisterPage({
+  searchParams,
+}: {
+  searchParams: { redirect?: string };
+}) {
+  const isUpgradeRedirect = searchParams.redirect === 'upgrade';
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            Create your ClinicPro account
+            {isUpgradeRedirect ? 'Create account to upgrade' : 'Create your ClinicPro account'}
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Start your journey with us today
+            {isUpgradeRedirect
+              ? 'Get your account first, then upgrade to Standard for $30/month'
+              : 'Start your journey with us today'}
           </p>
         </div>
         <SignUp
+          afterSignUpUrl={isUpgradeRedirect ? '/consultation?showUpgrade=true' : '/dashboard'}
           appearance={{
             elements: {
               formButtonPrimary: 'bg-blue-600 hover:bg-blue-700 text-sm normal-case',

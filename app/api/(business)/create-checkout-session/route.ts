@@ -27,6 +27,7 @@ export async function POST(req: Request) {
     const stripe = new Stripe(stripeSecretKey, {
       apiVersion: '2025-06-30.basil', // Use latest stable version
     });
+
     // Parse and validate request body
     let body;
     try {
@@ -38,24 +39,19 @@ export async function POST(req: Request) {
       );
     }
 
-    const { userId, email } = body;
+    const { email } = body;
     const { userId: authUserId } = await auth();
 
-    // For signed-up users, use authenticated user ID
-    // For public users, use provided email
-    const clientReferenceId = authUserId || userId;
-    const customerEmail = email;
-
-    // Enhanced validation per docs recommendations
-    if (!clientReferenceId && !customerEmail) {
+    // Require authenticated user (since public users sign up first)
+    if (!authUserId) {
       return NextResponse.json(
-        { error: 'Either user ID or email required' },
-        { status: 400 },
+        { error: 'Authentication required' },
+        { status: 401 },
       );
     }
 
     // Validate email format if provided
-    if (customerEmail && !/^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(customerEmail)) {
+    if (email && !/^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/.test(email)) {
       return NextResponse.json(
         { error: 'Invalid email format' },
         { status: 400 },
@@ -81,25 +77,24 @@ export async function POST(req: Request) {
       ],
       discounts: [
         {
-          coupon: 'earlydiscount', // ← Use the coupon ID, not promo code ID
+          coupon: 'hS2CN99E', // ← Use the coupon ID for $30 first 15 GPs discount
         },
       ],
-      client_reference_id: clientReferenceId,
-      customer_email: customerEmail,
+      client_reference_id: authUserId,
+      customer_email: email,
       success_url: `${req.headers.get('origin')}/thank-you?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get('origin')}/consultation`,
       metadata: {
         plan: 'standard',
-        isNewUser: !authUserId ? 'true' : 'false',
-        couponApplied: 'EARLYDISCOUNT',
+        couponApplied: 'hS2CN99E',
       },
       billing_address_collection: 'required',
       payment_method_types: ['card'],
       subscription_data: {
         metadata: {
           plan: 'standard',
-          userId: clientReferenceId,
-          couponApplied: 'EARLYDISCOUNT',
+          userId: authUserId,
+          couponApplied: 'hS2CN99E',
         },
       },
     });
@@ -107,25 +102,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error('Error creating checkout session:', error);
-
-    // Enhanced error handling per docs recommendations
-    if (error instanceof Error) {
-      // Handle specific Stripe errors
-      if (error.message.includes('No such price')) {
-        return NextResponse.json(
-          { error: 'Invalid price configuration' },
-          { status: 400 },
-        );
-      }
-
-      if (error.message.includes('authentication')) {
-        return NextResponse.json(
-          { error: 'Payment service configuration error' },
-          { status: 500 },
-        );
-      }
-    }
-
     return NextResponse.json(
       { error: 'Failed to create checkout session' },
       { status: 500 },

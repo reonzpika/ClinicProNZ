@@ -20,7 +20,8 @@ export const BILLING_CONFIG = {
     // Paid plans mapped to Stripe Price IDs
     standard: {
       name: 'Standard',
-      price: 89,
+      price: 30, // Special discount: $30 for first 15 GPs (was $89)
+      originalPrice: 89,
       tier: 'standard' as UserTier,
       stripePriceId: process.env.STRIPE_STANDARD_PRICE_ID, // Set in .env
       features: [

@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { Stethoscope } from 'lucide-react';
+import { Crown, Stethoscope } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { AdditionalNotes } from '@/src/features/clinical/main-ui/components/AdditionalNotes';
@@ -58,6 +58,21 @@ export default function ConsultationPage() {
   const [rateLimitModalOpen, setRateLimitModalOpen] = useState(false);
   const [rateLimitError, setRateLimitError] = useState<{ limit: number; resetIn: number; message: string } | null>(null);
   const { isMobile, isTablet, isDesktop, isLargeDesktop } = useResponsive();
+
+  // Check for upgrade redirect
+  const [showUpgradeNotification, setShowUpgradeNotification] = useState(false);
+
+  useEffect(() => {
+    // Check URL parameters for upgrade redirect
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('showUpgrade') === 'true') {
+      setShowUpgradeNotification(true);
+      // Remove the parameter from URL without reload
+      urlParams.delete('showUpgrade');
+      const newUrl = window.location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : '');
+      window.history.replaceState(null, '', newUrl);
+    }
+  }, []);
 
   // Usage dashboard refresh ref
   const usageDashboardRef = useRef<{ refresh: () => void } | null>(null);
@@ -294,6 +309,46 @@ export default function ConsultationPage() {
               </div>
             )}
 
+            {/* Upgrade Notification for users redirected from registration */}
+            {showUpgradeNotification && (
+              <div className="mb-4 rounded-lg border border-green-200 bg-gradient-to-r from-green-50 to-blue-50 p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Crown className="size-6 text-green-600" />
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Welcome! Ready to upgrade?</h3>
+                      <p className="text-sm text-gray-600">
+                        Get unlimited access for just $30/month (first 15 GPs only!)
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setShowUpgradeNotification(false)}
+                    >
+                      Later
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700"
+                      onClick={() => {
+                        // Scroll to usage dashboard
+                        const dashboard = document.querySelector('[data-component="usage-dashboard"]');
+                        if (dashboard) {
+                          dashboard.scrollIntoView({ behavior: 'smooth' });
+                        }
+                        setShowUpgradeNotification(false);
+                      }}
+                    >
+                      Upgrade Now
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Main Clinical Documentation Area */}
             <div className="h-full flex-1">
               {/* Large Desktop Dual-Column Layout */}
@@ -309,7 +364,9 @@ export default function ConsultationPage() {
                         <DocumentationSettingsBadge />
 
                         {/* Usage Dashboard - Shows tier limits and usage */}
-                        <UsageDashboard ref={usageDashboardRef} />
+                        <div data-component="usage-dashboard">
+                          <UsageDashboard ref={usageDashboardRef} />
+                        </div>
 
                         {/* Workflow Instructions - Only visible on large desktop */}
                         <WorkflowInstructions />

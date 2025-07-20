@@ -19,7 +19,8 @@ import { ConsentModal } from '../../session-management/components/ConsentModal';
 import { useRecordingHealthCheck } from '../hooks/useRecordingHealthCheck';
 import { useTranscription } from '../hooks/useTranscription';
 import { ConsultationInputHeader } from './ConsultationInputHeader';
-import { RecordingStatusWidget } from './RecordingStatusWidget';
+import { RecordingStatusIndicator } from './RecordingStatusIndicator';
+import { RecordingStatusModal } from './RecordingStatusModal';
 
 export function TranscriptionControls({
   collapsed,
@@ -55,6 +56,7 @@ export function TranscriptionControls({
   const [recordingStartTime, setRecordingStartTime] = useState<number | null>(null);
   const [showNoTranscriptWarning, setShowNoTranscriptWarning] = useState(false);
   const [canCreateSession, setCanCreateSession] = useState(true);
+  const [showStatusModal, setShowStatusModal] = useState(false); // For detailed status popup
   const useMobileV2 = true; // Mobile V2 is now enabled by default
 
   const {
@@ -73,7 +75,7 @@ export function TranscriptionControls({
     totalChunks,
   } = useTranscription();
 
-  // Recording health check system
+  // Recording health check system - only trigger when user initiates mobile setup
   const {
     status: healthStatus,
     issues: healthIssues,
@@ -82,9 +84,13 @@ export function TranscriptionControls({
     canStartRecording,
     isRunningHealthCheck,
     runHealthCheck,
+    triggerHealthCheck,
+    apiCacheStatus,
   } = useRecordingHealthCheck({
     enabled: true,
-    healthCheckInterval: 5000,
+    autoStart: false, // Don't auto-start - only when user clicks "Connect Mobile"
+    triggerOnMobileConnect: true, // Test when mobile device connects
+    healthCheckInterval: 30000, // 30s intervals during recording (reduced cost)
     syncTimeout: 10000,
   });
 
@@ -195,9 +201,11 @@ export function TranscriptionControls({
 
   // Mobile V2 recording button status and styling - removed unused function
 
-  // Handle mobile button click
+  // Handle mobile button click - trigger health check when user initiates mobile setup
   const handleMobileClick = () => {
     setShowMobileRecordingV2(true);
+    // Trigger health check when user initiates mobile recording setup
+    triggerHealthCheck();
   };
 
   // Handle device disconnect
@@ -340,7 +348,21 @@ export function TranscriptionControls({
           )}
 
           {/* Recording Health Status Widget */}
-          <RecordingStatusWidget
+          <RecordingStatusIndicator
+            status={healthStatus}
+            issues={healthIssues}
+            isRunningHealthCheck={isRunningHealthCheck}
+            lastSync={lastSync}
+            transcriptionRate={transcriptionRate}
+            canStartRecording={canStartRecording}
+            onClick={() => setShowStatusModal(true)} // Open detailed modal
+            onShowMobileSetup={() => setShowMobileRecordingV2(true)}
+          />
+
+          {/* Detailed Status Modal */}
+          <RecordingStatusModal
+            isOpen={showStatusModal}
+            onClose={() => setShowStatusModal(false)}
             status={healthStatus}
             issues={healthIssues}
             isRunningHealthCheck={isRunningHealthCheck}
@@ -349,6 +371,7 @@ export function TranscriptionControls({
             canStartRecording={canStartRecording}
             onRunHealthCheck={runHealthCheck}
             onShowMobileSetup={() => setShowMobileRecordingV2(true)}
+            apiCacheStatus={apiCacheStatus}
           />
 
           {/* Mobile Device Management */}

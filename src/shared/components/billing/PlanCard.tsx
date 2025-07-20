@@ -43,6 +43,17 @@ export function PlanCard({ planTier, currentUserTier, onUpgrade, className = '' 
                 {plan.price}
               </span>
               <span className="text-sm text-gray-500">/month</span>
+              {(plan as any).originalPrice && (
+                <div className="mt-1">
+                  <span className="text-sm text-gray-400 line-through">
+                    was $
+                    {(plan as any).originalPrice}
+                  </span>
+                  <div className="mt-1 inline-block rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
+                    First 15 GPs!
+                  </div>
+                </div>
+              )}
             </div>
           )}
           {plan.price === 0 && (
