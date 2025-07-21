@@ -4,7 +4,10 @@ import { Camera, CheckSquare, MessageCircle, Search, Stethoscope } from 'lucide-
 import React, { useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
+import { useRBAC } from '@/src/shared/hooks/useRBAC';
 
+import { ChatbotWidget } from './ChatbotWidget';
+import { ClinicalImageTab } from './ClinicalImageTab';
 import { ComingSoonPlaceholder } from './ComingSoonPlaceholder';
 
 type SectionId = 'images' | 'checklist' | 'ddx' | 'chat' | 'acc';
@@ -65,8 +68,36 @@ const RightPanelFeatures: React.FC<RightPanelFeaturesProps> = ({
   onToggle,
 }) => {
   const [activeSection, setActiveSection] = useState<SectionId>('images');
+  const { isAdmin } = useRBAC();
 
-  const currentSection = sections.find(section => section.id === activeSection);
+  // Update sections with conditional components based on user tier
+  const sectionsWithConditionalFeatures: AccordionSection[] = sections.map((section) => {
+    if (section.id === 'chat') {
+      return {
+        ...section,
+        component: () => {
+          if (isAdmin()) {
+            return <ChatbotWidget />;
+          }
+          return <ComingSoonPlaceholder title="Clinical Reference" description="Ask questions about clinical guidelines, medications, and best practices" icon={MessageCircle} />;
+        },
+      };
+    }
+    if (section.id === 'images') {
+      return {
+        ...section,
+        component: () => {
+          if (isAdmin()) {
+            return <ClinicalImageTab />;
+          }
+          return <ComingSoonPlaceholder title="Clinical Images" description="Upload and analyze medical images with AI-powered insights and diagnostic assistance" icon={Camera} />;
+        },
+      };
+    }
+    return section;
+  });
+
+  const currentSection = sectionsWithConditionalFeatures.find(section => section.id === activeSection);
   const CurrentComponent = currentSection?.component || (() => <ComingSoonPlaceholder title="Clinical Tools" description="Advanced clinical tools to enhance your consultation workflow" icon={Camera} />);
 
   if (isCollapsed) {
@@ -81,7 +112,7 @@ const RightPanelFeatures: React.FC<RightPanelFeaturesProps> = ({
           ❮
         </Button>
         <div className="flex flex-col space-y-2 p-2">
-          {sections.map(section => (
+          {sectionsWithConditionalFeatures.map(section => (
             <button
               key={section.id}
               onClick={onToggle}
@@ -124,7 +155,7 @@ const RightPanelFeatures: React.FC<RightPanelFeaturesProps> = ({
       {/* Permanent Icon Sidebar */}
       <div className="w-12 border-l border-slate-100 bg-slate-50">
         <div className="flex flex-col p-1">
-          {sections.map((section) => {
+          {sectionsWithConditionalFeatures.map((section) => {
             const Icon = section.icon;
             const isActive = activeSection === section.id;
 
