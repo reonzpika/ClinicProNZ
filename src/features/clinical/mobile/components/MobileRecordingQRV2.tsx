@@ -181,6 +181,10 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate QR code';
       setError(errorMessage);
       setQrData(null);
+      
+      // Clear any problematic token data to prevent connection issues
+      setMobileV2TokenData(null);
+      enableMobileV2(false);
     } finally {
       setIsGenerating(false);
     }
