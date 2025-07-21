@@ -141,8 +141,6 @@ function MobilePageContent() {
       return;
     }
 
-    let isCancelled = false; // Prevent race conditions
-
     const validateToken = async () => {
       try {
         setTokenState(prev => ({ ...prev, token, isValidating: true }));
@@ -155,16 +153,11 @@ function MobilePageContent() {
           headers: { 'Content-Type': 'application/json' },
         });
 
-        // Check if component was unmounted or token changed
-        if (isCancelled) {
-          return;
-        }
-
         if (!response.ok) {
           if (response.status === 401) {
             throw new Error('Invalid or expired QR code. Please generate a new one.');
           } else if (response.status === 503) {
-            // Ably not configured - continue anyway but with limited functionality
+            // Ably not configured - continue anyway
             setTokenState({ token, isValidating: false, error: null, isGuest: false });
             return;
           } else {
@@ -176,28 +169,19 @@ function MobilePageContent() {
         const clientId = data.tokenRequest?.clientId || '';
         const isGuestToken = clientId.startsWith('guest-');
 
-        if (!isCancelled) {
-          setTokenState({ token, isValidating: false, error: null, isGuest: isGuestToken });
-        }
+        setTokenState({ token, isValidating: false, error: null, isGuest: isGuestToken });
       } catch (error) {
-        if (!isCancelled) {
-          const errorMessage = error instanceof Error ? error.message : 'Token validation failed';
-          setTokenState({
-            token: null,
-            isValidating: false,
-            error: errorMessage,
-            isGuest: false,
-          });
-        }
+        const errorMessage = error instanceof Error ? error.message : 'Token validation failed';
+        setTokenState({
+          token: null,
+          isValidating: false,
+          error: errorMessage,
+          isGuest: false,
+        });
       }
     };
 
     validateToken();
-
-    // Cleanup function to prevent race conditions
-    return () => {
-      isCancelled = true;
-    };
   }, [searchParams]);
 
   // Ably connection for real-time sync - only start after token validation completes
@@ -252,23 +236,16 @@ function MobilePageContent() {
       // This callback is now handled by the useTranscription hook
     }, []),
     onError: useCallback((error: string | null) => {
-      // Filter out expected Ably configuration errors and prevent UI freezing
+      // Filter out expected Ably configuration errors
       if (error && (
         error.includes('Failed to create Ably connection')
         || error.includes('Failed to connect to Ably')
         || error.includes('Ably service not configured')
-        || error.includes('Connection closed')
-        || error.includes('Attach request superseded')
-        || error.includes('Channel attach timeout')
       )) {
-        // These are expected in certain deployments or during connection issues
-        console.warn('Ably connection issue (expected):', error);
         return;
       }
-      
-      // Only show user-facing errors for critical issues
-      if (error && !error.includes('Token validation failed')) {
-        setTokenState(prev => ({ ...prev, error: 'Connection issue. Please try refreshing the page.' }));
+      if (error) {
+        setTokenState(prev => ({ ...prev, error }));
       }
     }, []),
   });
@@ -329,22 +306,6 @@ function MobilePageContent() {
     };
   }, []);
 
-  // Add cleanup for connection and wake lock on unmount
-  useEffect(() => {
-    return () => {
-      // Clean up any active wake lock
-      if (wakeLockActive) {
-        releaseWakeLock();
-      }
-      
-      // Clean up any active timeouts
-      if (syncTimeoutRef.current) {
-        clearTimeout(syncTimeoutRef.current);
-        syncTimeoutRef.current = null;
-      }
-    };
-  }, [wakeLockActive, releaseWakeLock]);
-
   // Update refs with current function references
   useEffect(() => {
     // These refs are no longer needed as startRecording/stopRecording are managed by the hook
@@ -355,17 +316,6 @@ function MobilePageContent() {
   const isConnecting = connectionState.status === 'connecting';
   const hasConnectionError = connectionState.status === 'error';
   const isFunctional = isConnected || connectionState.status === 'disconnected';
-
-  // Add connection recovery function
-  const handleConnectionRecovery = useCallback(() => {
-    // Clear token state errors
-    setTokenState(prev => ({ ...prev, error: null }));
-    
-    // Force page reload to reset all connection state
-    if (typeof window !== 'undefined') {
-      window.location.reload();
-    }
-  }, []);
 
   // Show error page for invalid tokens
   if (tokenState.error && !tokenState.isValidating && !tokenState.token) {
@@ -518,21 +468,7 @@ function MobilePageContent() {
         {tokenState.error && (
           <Alert variant="destructive">
             <AlertTriangle className="size-4" />
-            <div>
-              <div className="text-sm">{tokenState.error}</div>
-              {tokenState.error.includes('Connection issue') && (
-                <div className="mt-2">
-                  <Button 
-                    onClick={handleConnectionRecovery}
-                    variant="outline"
-                    size="sm"
-                    className="text-xs"
-                  >
-                    Refresh Connection
-                  </Button>
-                </div>
-              )}
-            </div>
+            <div className="text-sm">{tokenState.error}</div>
           </Alert>
         )}
 
