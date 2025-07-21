@@ -76,27 +76,12 @@ export function TranscriptionControls({
   } = useTranscription();
 
   // Recording health check system - only trigger when user initiates mobile setup
-  const {
-    status: healthStatus,
-    issues: healthIssues,
-    lastSync,
-    transcriptionRate,
-    canStartRecording,
-    isRunningHealthCheck,
-    runHealthCheck,
-    triggerHealthCheck,
-    apiCacheStatus,
-    retryCount,
-    maxRetries,
-  } = useRecordingHealthCheck({
+  const { status, issues, canStartRecording, triggerHealthCheck, retryCount, maxRetries } = useRecordingHealthCheck({
     enabled: true,
-    autoStart: false, // Don't auto-start - only when user clicks "Connect Mobile"
-    triggerOnMobileConnect: true, // Test when mobile device connects
-    triggerOnPatientChange: true, // Auto-trigger on patient session changes
-    healthCheckInterval: 30000, // 30s intervals during recording (reduced cost)
-    syncTimeout: 10000,
-    autoRetryCount: 3, // Auto-retry failed health checks
-    autoRetryDelay: 2000, // 2s delay between retries
+    autoStart: false,
+    triggerOnMobileConnect: true,
+    triggerOnPatientChange: true,
+    autoRetryCount: 3, // Allow up to 3 retries for health checks
   });
 
   // Use regular transcript since diarization is disabled
@@ -411,11 +396,11 @@ export function TranscriptionControls({
                       <div className="flex items-center gap-2">
                         {/* Minimal status indicator */}
                         <RecordingStatusIndicator
-                          status={healthStatus}
-                          issues={healthIssues}
-                          isRunningHealthCheck={isRunningHealthCheck}
-                          lastSync={lastSync}
-                          transcriptionRate={transcriptionRate}
+                          status={status}
+                          issues={issues}
+                          isRunningHealthCheck={false}
+                          lastSync={null}
+                          transcriptionRate={0}
                           canStartRecording={canStartRecording}
                           onClick={() => setShowStatusModal(true)}
                           onShowMobileSetup={() => setShowMobileRecordingV2(true)}
@@ -431,7 +416,7 @@ export function TranscriptionControls({
                                 className="h-8 bg-green-600 px-3 text-xs text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
                                 title={
                                   !canStartRecording
-                                    ? `Cannot start recording: ${healthIssues.map(issue => issue.message).join(', ')}`
+                                    ? `Cannot start recording: ${issues.map(issue => issue.message).join(', ')}`
                                     : !isSignedIn && !canCreateSession
                                         ? 'Session limit reached - see Usage Dashboard for upgrade options'
                                         : ''
@@ -487,7 +472,7 @@ export function TranscriptionControls({
                                 className="h-7 w-full border-slate-300 text-xs disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
                                 title={
                                   !canStartRecording
-                                    ? `Cannot start recording: ${healthIssues.map(issue => issue.message).join(', ')}`
+                                    ? `Cannot start recording: ${issues.map(issue => issue.message).join(', ')}`
                                     : !isSignedIn && !canCreateSession
                                         ? 'Session limit reached - see Usage Dashboard for upgrade options'
                                         : ''
@@ -725,15 +710,15 @@ export function TranscriptionControls({
       <RecordingStatusModal
         isOpen={showStatusModal}
         onClose={() => setShowStatusModal(false)}
-        status={healthStatus}
-        issues={healthIssues}
-        isRunningHealthCheck={isRunningHealthCheck}
-        lastSync={lastSync}
-        transcriptionRate={transcriptionRate}
+        status={status}
+        issues={issues}
+        isRunningHealthCheck={false}
+        lastSync={null}
+        transcriptionRate={0}
         canStartRecording={canStartRecording}
-        onRunHealthCheck={runHealthCheck}
+        onRunHealthCheck={() => triggerHealthCheck()}
         onShowMobileSetup={() => setShowMobileRecordingV2(true)}
-        apiCacheStatus={apiCacheStatus}
+        apiCacheStatus={undefined}
         retryCount={retryCount}
         maxRetries={maxRetries}
       />

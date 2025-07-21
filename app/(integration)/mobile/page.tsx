@@ -187,30 +187,22 @@ function MobilePageContent() {
     token: tokenState.token || undefined,
     isDesktop: false,
     onPatientSwitched: useCallback((sessionId: string, name?: string) => {
+      // Show brief syncing state for user feedback
       setPatientState({
-        sessionId,
-        name: name || 'Unknown Patient',
-        syncStatus: 'synced',
-        lastSyncTime: Date.now(),
-      });
-    }, []),
-    onPatientSyncStarted: useCallback((sessionId: string, name?: string) => {
-      setPatientState(prev => ({
-        ...prev,
         sessionId,
         name: name || 'Unknown Patient',
         syncStatus: 'syncing',
         lastSyncTime: null,
-      }));
-    }, []),
-    onPatientSyncCompleted: useCallback((sessionId: string, name?: string) => {
-      setPatientState(prev => ({
-        ...prev,
-        sessionId,
-        name: name || 'Unknown Patient',
-        syncStatus: 'synced',
-        lastSyncTime: Date.now(),
-      }));
+      });
+
+      // After brief delay, show synced state
+      setTimeout(() => {
+        setPatientState(prev => ({
+          ...prev,
+          syncStatus: 'synced',
+          lastSyncTime: Date.now(),
+        }));
+      }, 1000); // 1 second syncing feedback
     }, []),
     onHealthCheckRequested: useCallback(async (): Promise<boolean> => {
       // Mobile health check: verify microphone access and connection
@@ -421,6 +413,37 @@ function MobilePageContent() {
             </CardContent>
           </Card>
         )}
+
+        {/* System Status */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">System Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center space-x-2">
+              {patientState.sessionId && connectionState.status === 'connected'
+                ? (
+                    <>
+                      <CheckCircle className="size-5 text-green-600" />
+                      <span className="font-medium text-green-600">Ready to Record</span>
+                    </>
+                  )
+                : (
+                    <>
+                      <AlertTriangle className="size-5 text-amber-500" />
+                      <span className="font-medium text-amber-600">Setup Required</span>
+                    </>
+                  )}
+            </div>
+            <div className="mt-2 text-xs text-gray-500">
+              {patientState.sessionId && connectionState.status === 'connected'
+                ? 'All systems ready for mobile recording'
+                : !patientState.sessionId
+                    ? 'Waiting for patient session from desktop'
+                    : 'Connecting to desktop...'}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Error Display */}
         {tokenState.error && (

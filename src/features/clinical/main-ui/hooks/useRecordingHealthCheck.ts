@@ -34,7 +34,6 @@ export type UseRecordingHealthCheckOptions = {
   triggerOnMobileConnect?: boolean; // default true - check when mobile connects
   triggerOnPatientChange?: boolean; // default true - check when patient session changes
   autoRetryCount?: number; // default 3 - auto retry failed health checks
-  autoRetryDelay?: number; // ms, default 2000 - delay between retries
 };
 
 export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions = {}) => {
@@ -46,7 +45,6 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
     triggerOnMobileConnect = true,
     triggerOnPatientChange = true, // Auto-trigger on patient session changes
     autoRetryCount = 3, // Auto-retry failed health checks
-    autoRetryDelay = 2000, // 2s delay between retries
   } = options;
 
   const {
@@ -72,7 +70,6 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
 
   // Auto-retry state
   const [retryCount, setRetryCount] = useState(0);
-  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // API connectivity cache to reduce costs
   const [apiConnectivityCache, setApiConnectivityCache] = useState<{
@@ -159,24 +156,16 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
   const checkMobileConnection = useCallback((): HealthCheckIssue[] => {
     const issues: HealthCheckIssue[] = [];
 
-    // Check if mobile is connected
-    if (!mobileV2.token || mobileV2.connectionStatus !== 'connected') {
+    // Simple check: mobile connected and devices present
+    const mobileDevices = mobileV2.connectedDevices.filter(d => d.deviceType === 'Mobile');
+    const isConnected = mobileV2.connectionStatus === 'connected' && mobileDevices.length > 0;
+
+    if (!isConnected) {
       issues.push({
         type: 'mobile-disconnected',
         message: 'Mobile device not connected',
         actionable: true,
         action: 'Connect mobile device using QR code',
-      });
-    }
-
-    // Check if mobile devices are present
-    const mobileDevices = mobileV2.connectedDevices.filter(d => d.deviceType === 'Mobile');
-    if (mobileDevices.length === 0) {
-      issues.push({
-        type: 'mobile-disconnected',
-        message: 'No mobile devices connected',
-        actionable: true,
-        action: 'Scan QR code with mobile device',
       });
     }
 
@@ -314,35 +303,37 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
     try {
       const allIssues: HealthCheckIssue[] = [];
 
-      // Run all checks in parallel
+      // Run essential checks only
       const [
         mobileIssues,
-        syncIssues,
         micIssues,
-        apiIssues,
       ] = await Promise.all([
         Promise.resolve(checkMobileConnection()),
-        Promise.resolve(checkSyncStatus()),
         testMicrophoneAccess(),
-        testTranscriptionAPI(),
       ]);
 
-      allIssues.push(...mobileIssues, ...syncIssues, ...micIssues, ...apiIssues);
+      allIssues.push(...mobileIssues, ...micIssues);
 
-      // Determine overall health status
+      // Check if patient session exists
+      if (!currentPatientSessionId) {
+        allIssues.push({
+          type: 'mobile-disconnected',
+          message: 'No patient session selected',
+          actionable: true,
+          action: 'Create or select a patient session',
+        });
+      }
+
+      // Determine overall health status - simplified logic
       const hasBlockingIssues = allIssues.some(issue =>
-        issue.type === 'mobile-disconnected'
-        || issue.type === 'mic-permission'
-        || issue.type === 'transcription-api',
+        issue.type === 'mobile-disconnected' || issue.type === 'mic-permission',
       );
 
       const newStatus: RecordingHealthStatus = consultationStatus === 'recording'
         ? 'recording'
         : hasBlockingIssues
           ? 'setup-required'
-          : allIssues.length > 0
-            ? 'error'
-            : 'ready';
+          : 'ready'; // Simplified: just ready if no blocking issues
 
       setHealthState(prev => ({
         ...prev,
@@ -377,37 +368,31 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
     testMicrophoneAccess,
     testTranscriptionAPI,
     consultationStatus,
+    currentPatientSessionId,
   ]);
 
-  // Auto-retry wrapper function
+  // Simple auto-retry wrapper function
   const runHealthCheckWithRetry = useCallback(async (): Promise<boolean> => {
-    // Clear any existing retry timeout
-    if (retryTimeoutRef.current) {
-      clearTimeout(retryTimeoutRef.current);
-      retryTimeoutRef.current = null;
-    }
-
     const success = await runHealthCheck();
 
-    if (!success && retryCount < autoRetryCount) {
-      // Auto-retry after delay
+    if (!success && retryCount < 2) { // Just 2 retries max
+      // Simple retry after short delay
       setRetryCount(prev => prev + 1);
 
-      retryTimeoutRef.current = setTimeout(async () => {
-        retryTimeoutRef.current = null; // Clear reference after timeout executes
-        await runHealthCheckWithRetry();
-      }, autoRetryDelay);
+      setTimeout(async () => {
+        await runHealthCheck(); // Direct retry, no complex recursion
+      }, 1000); // 1 second delay
 
       return false;
     }
 
-    // Reset retry count on success or max retries reached
-    if (success || retryCount >= autoRetryCount) {
+    // Reset retry count
+    if (success || retryCount >= 2) {
       setRetryCount(0);
     }
 
     return success;
-  }, [runHealthCheck, retryCount, autoRetryCount, autoRetryDelay]);
+  }, [runHealthCheck, retryCount]);
 
   // Update sync timestamp when transcription is received
   useEffect(() => {
@@ -488,9 +473,6 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
     return () => {
       if (statusTransitionRef.current) {
         clearTimeout(statusTransitionRef.current);
-      }
-      if (retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current);
       }
     };
   }, []);

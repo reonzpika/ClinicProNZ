@@ -11,7 +11,7 @@ const globalConnectionRegistry = new Map<string, { connection: Ably.Realtime; re
 
 // Message types for Ably communication
 type AblyMessage = {
-  type: 'transcription' | 'switch_patient' | 'device_connected' | 'device_disconnected' | 'session_created' | 'force_disconnect' | 'sync_current_patient' | 'start_recording' | 'stop_recording' | 'patient_sync_request' | 'patient_sync_confirm' | 'patient_sync_complete' | 'health_check_request' | 'health_check_response';
+  type: 'transcription' | 'device_connected' | 'device_disconnected' | 'session_created' | 'force_disconnect' | 'start_recording' | 'stop_recording' | 'patient_updated' | 'health_check_request' | 'health_check_response';
   userId?: string;
   patientSessionId?: string;
   transcript?: string;
@@ -22,8 +22,7 @@ type AblyMessage = {
   deviceType?: string;
   patientName?: string;
   targetDeviceId?: string; // For targeting specific devices to disconnect
-  syncId?: string; // For tracking patient sync handover
-  confirmationId?: string; // For confirming message receipt
+  confirmationId?: string; // For health check confirmations
   isHealthy?: boolean; // For health check responses
   issues?: string[]; // For health check issue reporting
   data?: any;
@@ -35,14 +34,12 @@ type AblySyncHookProps = {
   isDesktop?: boolean; // true for desktop, false for mobile
   onTranscriptionReceived?: (transcript: string, patientSessionId?: string, diarizedTranscript?: string | null, utterances?: any[]) => void;
   onPatientSwitched?: (patientSessionId: string, patientName?: string) => void;
-  onPatientSyncStarted?: (patientSessionId: string, patientName?: string) => void; // New: mobile shows syncing state
-  onPatientSyncCompleted?: (patientSessionId: string, patientName?: string) => void; // New: sync confirmed
   onDeviceConnected?: (deviceId: string, deviceName: string, deviceType?: string) => void;
   onDeviceDisconnected?: (deviceId: string) => void;
   onError?: (error: string | null) => void;
   onStartRecording?: () => void;
   onStopRecording?: () => void;
-  onHealthCheckRequested?: () => Promise<boolean>; // New: mobile responds to health checks
+  onHealthCheckRequested?: () => Promise<boolean>; // Mobile responds to health checks
 };
 
 type ConnectionState = {
@@ -64,8 +61,6 @@ export const useAblySync = ({
   isDesktop = true,
   onTranscriptionReceived,
   onPatientSwitched,
-  onPatientSyncStarted,
-  onPatientSyncCompleted,
   onDeviceConnected,
   onDeviceDisconnected,
   onError,
@@ -93,8 +88,6 @@ export const useAblySync = ({
   const stableCallbacks = useMemo(() => ({
     onTranscriptionReceived,
     onPatientSwitched,
-    onPatientSyncStarted,
-    onPatientSyncCompleted,
     onDeviceConnected,
     onDeviceDisconnected,
     onError,
@@ -104,8 +97,6 @@ export const useAblySync = ({
   }), [
     onTranscriptionReceived,
     onPatientSwitched,
-    onPatientSyncStarted,
-    onPatientSyncCompleted,
     onDeviceConnected,
     onDeviceDisconnected,
     onError,
@@ -352,11 +343,6 @@ export const useAblySync = ({
             stableCallbacks.onTranscriptionReceived?.(data.transcript, data.patientSessionId, data.diarizedTranscript, data.utterances);
           }
           break;
-        case 'switch_patient':
-          if (!isDesktop && data.patientSessionId) {
-            stableCallbacks.onPatientSwitched?.(data.patientSessionId, data.patientName);
-          }
-          break;
         case 'force_disconnect':
           if (!isDesktop && data.targetDeviceId === deviceId) {
             cleanup();
@@ -372,36 +358,10 @@ export const useAblySync = ({
             stableCallbacks.onStopRecording?.();
           }
           break;
-        case 'patient_sync_request':
-          if (!isDesktop && data.patientSessionId && data.syncId) {
-            // Mobile: Start syncing state and confirm receipt
-            stableCallbacks.onPatientSyncStarted?.(data.patientSessionId, data.patientName || 'Unknown Patient');
-
-            // Send confirmation back to desktop
-            sendMessage({
-              type: 'patient_sync_confirm',
-              patientSessionId: data.patientSessionId,
-              patientName: data.patientName || 'Unknown Patient',
-              syncId: data.syncId,
-              deviceId,
-            });
-          }
-          break;
-        case 'patient_sync_confirm':
-          if (isDesktop && data.syncId) {
-            // Desktop: Mobile confirmed sync, complete the handover
-            sendMessage({
-              type: 'patient_sync_complete',
-              patientSessionId: data.patientSessionId,
-              patientName: data.patientName || 'Unknown Patient',
-              syncId: data.syncId,
-            });
-          }
-          break;
-        case 'patient_sync_complete':
+        case 'patient_updated':
           if (!isDesktop && data.patientSessionId) {
-            // Mobile: Sync completed, update to final state
-            stableCallbacks.onPatientSyncCompleted?.(data.patientSessionId, data.patientName || 'Unknown Patient');
+            // Mobile: Direct patient update
+            stableCallbacks.onPatientSwitched?.(data.patientSessionId, data.patientName || 'Unknown Patient');
           }
           break;
         case 'health_check_request':
@@ -596,29 +556,11 @@ export const useAblySync = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, token, isDesktop, getUserId, getDeviceInfo, stableCallbacks, cleanup, authUserId, userTier, getEffectiveGuestToken, processedMessageIds, setupChannelHandlers]);
 
-  // Enhanced notify method
-  const notifyPatientSwitch = useCallback(async (patientSessionId: string, patientName?: string) => {
-    return sendMessage({
-      type: 'switch_patient',
-      patientSessionId,
-      patientName,
-    });
-  }, [sendMessage]);
-
   // Enhanced force disconnect
   const forceDisconnectDevice = useCallback(async (targetDeviceId: string) => {
     return sendMessage({
       type: 'force_disconnect',
       targetDeviceId,
-    });
-  }, [sendMessage]);
-
-  // Send current patient state
-  const syncCurrentPatient = useCallback(async (patientSessionId: string, patientName?: string) => {
-    return sendMessage({
-      type: 'sync_current_patient',
-      patientSessionId,
-      patientName,
     });
   }, [sendMessage]);
 
@@ -646,8 +588,6 @@ export const useAblySync = ({
     connectionState,
     sendTranscription,
     sendTranscriptionWithDiarization,
-    notifyPatientSwitch,
-    syncCurrentPatient,
     forceDisconnectDevice,
     reconnect: connect,
     disconnect: cleanup,
@@ -659,14 +599,12 @@ export const useAblySync = ({
     }, [sendMessage]),
     // Enhanced patient session sync functions
     syncPatientSession: useCallback(async (patientSessionId: string, patientName?: string): Promise<string> => {
-      const syncId = `sync-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
       const success = sendMessage({
-        type: 'patient_sync_request',
+        type: 'patient_updated',
         patientSessionId,
         patientName,
-        syncId,
       });
-      return success ? syncId : '';
+      return success ? patientSessionId : '';
     }, [sendMessage]),
     requestHealthCheck: useCallback(async (): Promise<string> => {
       const confirmationId = `health-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;

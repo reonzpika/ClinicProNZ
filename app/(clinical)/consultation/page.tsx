@@ -132,7 +132,7 @@ export default function ConsultationPage() {
   }, [addMobileV2Device, setMobileV2ConnectionStatus]);
 
   // Enable Ably sync when token exists OR when mobile devices are connected
-  const { notifyPatientSwitch, syncCurrentPatient, syncPatientSession, forceDisconnectDevice, startMobileRecording } = useAblySync({
+  const { syncPatientSession, forceDisconnectDevice, startMobileRecording } = useAblySync({
     enabled: !!mobileV2.token || mobileV2.connectedDevices.length > 0, // Enable when token exists OR devices connected
     token: mobileV2.token || undefined,
     isDesktop: true,
@@ -143,23 +143,12 @@ export default function ConsultationPage() {
     onError: handleWebSocketError,
   });
 
-  // Send current patient state to newly connected mobile devices
-  useEffect(() => {
-    const lastConnectedDevice = mobileV2.connectedDevices[mobileV2.connectedDevices.length - 1];
-    if (lastConnectedDevice && lastConnectedDevice.deviceType === 'Mobile' && currentPatientSessionId && syncCurrentPatient) {
-      const currentSession = getCurrentPatientSession();
-      if (currentSession) {
-        syncCurrentPatient(currentPatientSessionId, currentSession.patientName);
-      }
-    }
-  }, [mobileV2.connectedDevices, currentPatientSessionId, syncCurrentPatient, getCurrentPatientSession]);
-
-  // Enhanced patient session sync for session changes
+  // Patient session sync for session changes
   useEffect(() => {
     if (currentPatientSessionId && mobileV2.connectedDevices.length > 0 && syncPatientSession) {
       const currentSession = getCurrentPatientSession();
       if (currentSession) {
-        // Use new enhanced sync with confirmation
+        // Sync patient session to mobile devices
         syncPatientSession(currentPatientSessionId, currentSession.patientName).catch(() => {
           // Sync errors are handled silently - mobile will show appropriate state
         });
@@ -182,24 +171,6 @@ export default function ConsultationPage() {
       setMobileV2ConnectionStatus('disconnected');
     }
   }, [forceDisconnectDevice, removeMobileV2Device, setMobileV2ConnectionStatus, mobileV2.connectedDevices.length]);
-
-  // Notify mobile devices when session changes
-  useEffect(() => {
-    const notifyMobileDevices = async () => {
-      if (currentPatientSessionId && notifyPatientSwitch) {
-        const currentSession = getCurrentPatientSession();
-        if (currentSession) {
-          try {
-            await notifyPatientSwitch(currentPatientSessionId, currentSession.patientName);
-          } catch {
-            // Silently handle error
-          }
-        }
-      }
-    };
-
-    notifyMobileDevices();
-  }, [currentPatientSessionId, notifyPatientSwitch, getCurrentPatientSession]);
 
   const handleClearAll = () => {
     setIsNoteFocused(false);
