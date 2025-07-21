@@ -27,13 +27,11 @@ export function TranscriptionControls({
   onExpand,
   isMinimized,
   onForceDisconnectDevice,
-  startMobileRecording,
 }: {
   collapsed?: boolean;
   onExpand?: () => void;
   isMinimized?: boolean;
   onForceDisconnectDevice?: (deviceId: string) => void;
-  startMobileRecording?: () => Promise<boolean>;
 }) {
   const { isSignedIn, userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
@@ -278,22 +276,6 @@ export function TranscriptionControls({
     );
   }
 
-  const handleStartMobileRecording = () => {
-    // Check session limits for public users
-    if (!isSignedIn && !canCreateSession) {
-      // Session limit reached - UI will show appropriate feedback
-      return;
-    }
-
-    if (!consentObtained) {
-      setShowConsentModal(true);
-    } else if (hasMobileDevices) {
-      startMobileRecording?.();
-    } else {
-      startRecording();
-    }
-  };
-
   return (
     <div className="space-y-3">
       <ConsultationInputHeader
@@ -411,7 +393,7 @@ export function TranscriptionControls({
                           ? (
                               <Button
                                 type="button"
-                                onClick={handleStartMobileRecording}
+                                onClick={handleStartRecording}
                                 disabled={!canStartRecording || (!isSignedIn && !canCreateSession)}
                                 className="h-8 bg-green-600 px-3 text-xs text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
                                 title={

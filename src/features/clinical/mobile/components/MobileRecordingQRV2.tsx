@@ -86,12 +86,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
     }
   }, [isSignedIn, fetchSessionStatus, getEffectiveGuestToken]);
 
-  // Restore QR data from context when component mounts or tokenData changes (client-side only)
-  useEffect(() => {
-    if (isClient && mobileV2.tokenData && !qrData) {
-      setQrData(mobileV2.tokenData);
-    }
-  }, [isClient, mobileV2.tokenData, qrData]);
+  // Simplified: No complex state restoration needed
 
   // Update remaining time and show warnings (client-side only)
   useEffect(() => {
@@ -113,10 +108,6 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
       if (remaining <= 0 && qrData) {
         setQrData(null);
         setError('QR code has expired. Please generate a new one.');
-
-        // Clear token data from consultation context
-        setMobileV2TokenData(null);
-        enableMobileV2(false);
       }
     };
 
@@ -124,7 +115,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
     const interval = setInterval(updateTimer, 1000);
 
     return () => clearInterval(interval);
-  }, [isClient, qrData, setMobileV2TokenData, enableMobileV2]);
+  }, [isClient, qrData, enableMobileV2]);
 
   const generateToken = useCallback(async () => {
     setIsGenerating(true);
@@ -174,9 +165,8 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
         fetchSessionStatus(newGuestToken);
       }
 
-      // Set token data in consultation context for persistence and WebSocket sync
-      setMobileV2TokenData(tokenData);
-      enableMobileV2(true);
+      // Simplified: Just set QR data, no complex state cascade
+      // The useAblyConnection hook will handle the rest
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate QR code';
       setError(errorMessage);
@@ -189,17 +179,8 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
   const stopMobileRecording = useCallback(() => {
     setQrData(null);
     setError(null);
-
-    // Clear guest token from localStorage for anonymous users
-    if (!isSignedIn && isClient) {
-      // localStorage.removeItem('clinicpro_guest_token'); // This is now handled by getEffectiveGuestToken
-      // setGuestToken(null); // This is now handled by getEffectiveGuestToken
-    }
-
-    // Clear token data from consultation context
-    setMobileV2TokenData(null);
     enableMobileV2(false);
-  }, [setMobileV2TokenData, enableMobileV2, isSignedIn, isClient]);
+      }, [enableMobileV2, isSignedIn, isClient]);
 
   const formatTimeRemaining = (seconds: number) => {
     if (seconds <= 0) {

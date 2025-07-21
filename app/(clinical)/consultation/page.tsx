@@ -9,7 +9,7 @@ import { DocumentationSettingsBadge } from '@/src/features/clinical/main-ui/comp
 import { GeneratedNotes } from '@/src/features/clinical/main-ui/components/GeneratedNotes';
 import { TranscriptionControls } from '@/src/features/clinical/main-ui/components/TranscriptionControls';
 import { TypedInput } from '@/src/features/clinical/main-ui/components/TypedInput';
-import { useAblySync } from '@/src/features/clinical/main-ui/hooks/useAblySync';
+import { useAblyConnection } from '@/src/features/clinical/main-ui/hooks/useAblyConnection';
 import { MobileRightPanelOverlay } from '@/src/features/clinical/mobile/components/MobileRightPanelOverlay';
 import RightPanelFeatures from '@/src/features/clinical/right-sidebar/components/RightPanelFeatures';
 import UsageDashboard from '@/src/features/clinical/right-sidebar/components/UsageDashboard';
@@ -131,9 +131,9 @@ export default function ConsultationPage() {
     setMobileV2ConnectionStatus('connected');
   }, [addMobileV2Device, setMobileV2ConnectionStatus]);
 
-  // Enable Ably sync when token exists OR when mobile devices are connected
-  const { syncPatientSession, forceDisconnectDevice, startMobileRecording } = useAblySync({
-    enabled: !!mobileV2.token || mobileV2.connectedDevices.length > 0, // Enable when token exists OR devices connected
+  // Simplified Ably connection - always enabled for desktop
+  const { updatePatientSession, forceDisconnectDevice } = useAblyConnection({
+    enabled: true, // Always enabled for desktop
     token: mobileV2.token || undefined,
     isDesktop: true,
     onTranscriptionReceived: handleTranscriptionReceived,
@@ -145,16 +145,14 @@ export default function ConsultationPage() {
 
   // Patient session sync for session changes
   useEffect(() => {
-    if (currentPatientSessionId && mobileV2.connectedDevices.length > 0 && syncPatientSession) {
+    if (currentPatientSessionId && updatePatientSession) {
       const currentSession = getCurrentPatientSession();
       if (currentSession) {
-        // Sync patient session to mobile devices
-        syncPatientSession(currentPatientSessionId, currentSession.patientName).catch(() => {
-          // Sync errors are handled silently - mobile will show appropriate state
-        });
+        // Broadcast patient session to mobile devices
+        updatePatientSession(currentPatientSessionId, currentSession.patientName);
       }
     }
-  }, [currentPatientSessionId, mobileV2.connectedDevices.length, syncPatientSession, getCurrentPatientSession]);
+  }, [currentPatientSessionId, updatePatientSession, getCurrentPatientSession]);
 
   const handleForceDisconnectDevice = useCallback(async (deviceId: string) => {
     // Send force disconnect message to the device
@@ -369,7 +367,6 @@ export default function ConsultationPage() {
                                       onExpand={() => setIsNoteFocused(false)}
                                       isMinimized
                                       onForceDisconnectDevice={handleForceDisconnectDevice}
-                                      startMobileRecording={startMobileRecording}
                                     />
                                   )
                                 : (
@@ -429,7 +426,6 @@ export default function ConsultationPage() {
                                           onExpand={() => setIsNoteFocused(false)}
                                           isMinimized={false}
                                           onForceDisconnectDevice={handleForceDisconnectDevice}
-                                          startMobileRecording={startMobileRecording}
                                         />
                                       )
                                     : (
@@ -500,7 +496,6 @@ export default function ConsultationPage() {
                                           onExpand={() => setIsNoteFocused(false)}
                                           isMinimized
                                           onForceDisconnectDevice={handleForceDisconnectDevice}
-                                          startMobileRecording={startMobileRecording}
                                         />
                                       )
                                     : (
@@ -535,7 +530,6 @@ export default function ConsultationPage() {
                                         onExpand={() => setIsNoteFocused(false)}
                                         isMinimized={false}
                                         onForceDisconnectDevice={handleForceDisconnectDevice}
-                                        startMobileRecording={startMobileRecording}
                                       />
                                     )
                                   : (

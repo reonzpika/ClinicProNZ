@@ -4,7 +4,7 @@ import { AlertTriangle, CheckCircle, Mic, MicOff, Smartphone, Wifi, WifiOff } fr
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
-import { useAblySync } from '@/src/features/clinical/main-ui/hooks/useAblySync';
+import { useAblyConnection } from '@/src/features/clinical/main-ui/hooks/useAblyConnection';
 import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTranscription';
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
@@ -184,9 +184,9 @@ function MobilePageContent() {
     validateToken();
   }, [searchParams]);
 
-  // Ably connection for real-time sync - only start after token validation completes
-  const { connectionState, sendTranscriptionWithDiarization } = useAblySync({
-    enabled: !!tokenState.token && !tokenState.isValidating && !tokenState.error,
+  // Simplified Ably connection with stable dependencies
+  const { connectionState, sendTranscription } = useAblyConnection({
+    enabled: !!tokenState.token,
     token: tokenState.token || undefined,
     isDesktop: false,
     onPatientSwitched: useCallback((sessionId: string, name?: string) => {
@@ -213,27 +213,6 @@ function MobilePageContent() {
         }));
         syncTimeoutRef.current = null; // Clear ref after timeout executes
       }, 1000); // 1 second syncing feedback
-    }, []),
-    onHealthCheckRequested: useCallback(async (): Promise<boolean> => {
-      // Mobile health check: verify microphone access and connection
-      try {
-        // Quick microphone test
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach(track => track.stop()); // Clean up
-
-        // Check if we have a valid patient session
-        const hasValidSession = !!patientState.sessionId;
-
-        return hasValidSession;
-      } catch {
-        return false;
-      }
-    }, [patientState.sessionId]),
-    onStartRecording: useCallback(() => {
-      // This callback is now handled by the useTranscription hook
-    }, []),
-    onStopRecording: useCallback(() => {
-      // This callback is now handled by the useTranscription hook
     }, []),
     onError: useCallback((error: string | null) => {
       // Filter out expected Ably configuration errors
@@ -278,7 +257,7 @@ function MobilePageContent() {
       // Use regular transcript since diarization is disabled
       if (transcript?.trim() && connectionState.status === 'connected') {
         // Send regular transcription data
-        await sendTranscriptionWithDiarization(
+        await sendTranscription(
           transcript.trim(),
           patientState.sessionId || undefined,
           null, // No diarized transcript
