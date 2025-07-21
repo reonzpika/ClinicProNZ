@@ -32,6 +32,9 @@ export type UseRecordingHealthCheckOptions = {
   syncTimeout?: number; // ms, default 10000
   autoStart?: boolean; // default false - don't auto-start health checks
   triggerOnMobileConnect?: boolean; // default true - check when mobile connects
+  triggerOnPatientChange?: boolean; // default true - check when patient session changes
+  autoRetryCount?: number; // default 3 - auto retry failed health checks
+  autoRetryDelay?: number; // ms, default 2000 - delay between retries
 };
 
 export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions = {}) => {
@@ -41,6 +44,9 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
     syncTimeout = 10000,
     autoStart = false, // Don't auto-start by default
     triggerOnMobileConnect = true,
+    triggerOnPatientChange = true, // Auto-trigger on patient session changes
+    autoRetryCount = 3, // Auto-retry failed health checks
+    autoRetryDelay = 2000, // 2s delay between retries
   } = options;
 
   const {
@@ -63,6 +69,10 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
   const healthCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const transcriptionStartRef = useRef<number | null>(null);
   const wordCountRef = useRef<number>(0);
+
+  // Auto-retry state
+  const [retryCount, setRetryCount] = useState(0);
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // API connectivity cache to reduce costs
   const [apiConnectivityCache, setApiConnectivityCache] = useState<{
@@ -343,8 +353,8 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
       }));
 
       return !hasBlockingIssues;
-    } catch (error) {
-      console.error('Health check failed:', error);
+    } catch {
+      // Health check system errors are handled by setting error state
       setHealthState(prev => ({
         ...prev,
         status: 'error',
@@ -368,6 +378,36 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
     testTranscriptionAPI,
     consultationStatus,
   ]);
+
+  // Auto-retry wrapper function
+  const runHealthCheckWithRetry = useCallback(async (): Promise<boolean> => {
+    // Clear any existing retry timeout
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
+
+    const success = await runHealthCheck();
+
+    if (!success && retryCount < autoRetryCount) {
+      // Auto-retry after delay
+      setRetryCount(prev => prev + 1);
+
+      retryTimeoutRef.current = setTimeout(async () => {
+        retryTimeoutRef.current = null; // Clear reference after timeout executes
+        await runHealthCheckWithRetry();
+      }, autoRetryDelay);
+
+      return false;
+    }
+
+    // Reset retry count on success or max retries reached
+    if (success || retryCount >= autoRetryCount) {
+      setRetryCount(0);
+    }
+
+    return success;
+  }, [runHealthCheck, retryCount, autoRetryCount, autoRetryDelay]);
 
   // Update sync timestamp when transcription is received
   useEffect(() => {
@@ -424,23 +464,41 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
   // Trigger health check when mobile connects (if enabled)
   useEffect(() => {
     if (enabled && triggerOnMobileConnect && mobileV2.connectionStatus === 'connected') {
-      runHealthCheck();
+      runHealthCheckWithRetry();
     }
-  }, [enabled, triggerOnMobileConnect, mobileV2.connectionStatus, runHealthCheck]);
+  }, [enabled, triggerOnMobileConnect, mobileV2.connectionStatus, runHealthCheckWithRetry]);
 
-  // Cleanup status transition timeouts
+  // Trigger health check when patient session changes (if enabled)
+  useEffect(() => {
+    if (enabled && triggerOnPatientChange && currentPatientSessionId && mobileV2.connectionStatus === 'connected') {
+      // Delay slightly to ensure patient session is fully set up
+      const timer = setTimeout(() => {
+        runHealthCheckWithRetry();
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+
+    // Return empty cleanup function if condition not met
+    return () => {};
+  }, [enabled, triggerOnPatientChange, currentPatientSessionId, mobileV2.connectionStatus, runHealthCheckWithRetry]);
+
+  // Cleanup timeouts
   useEffect(() => {
     return () => {
       if (statusTransitionRef.current) {
         clearTimeout(statusTransitionRef.current);
       }
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+      }
     };
   }, []);
 
-  // Manual trigger for user-initiated health checks
+  // Manual trigger for user-initiated health checks with auto-retry
   const triggerHealthCheck = useCallback(async () => {
-    return await runHealthCheck();
-  }, [runHealthCheck]);
+    return await runHealthCheckWithRetry();
+  }, [runHealthCheckWithRetry]);
 
   return {
     healthState,
@@ -471,6 +529,12 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
     },
     get apiCacheStatus() {
       return apiConnectivityCache; // For debugging/monitoring
+    },
+    get retryCount() {
+      return retryCount; // Current retry attempt count
+    },
+    get maxRetries() {
+      return autoRetryCount; // Maximum retry attempts
     },
   };
 };

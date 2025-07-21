@@ -242,3 +242,4 @@ export const RecordingStatusWidget: React.FC<RecordingStatusWidgetProps> = ({
     </Alert>
   );
 };
+ 

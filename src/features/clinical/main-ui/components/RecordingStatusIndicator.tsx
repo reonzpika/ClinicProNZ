@@ -139,3 +139,4 @@ export const RecordingStatusIndicator: React.FC<RecordingStatusIndicatorProps> =
     </Button>
   );
 };
+ 

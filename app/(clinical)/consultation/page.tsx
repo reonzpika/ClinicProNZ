@@ -132,7 +132,7 @@ export default function ConsultationPage() {
   }, [addMobileV2Device, setMobileV2ConnectionStatus]);
 
   // Enable Ably sync when token exists OR when mobile devices are connected
-  const { notifyPatientSwitch, syncCurrentPatient, forceDisconnectDevice, startMobileRecording } = useAblySync({
+  const { notifyPatientSwitch, syncCurrentPatient, syncPatientSession, forceDisconnectDevice, startMobileRecording } = useAblySync({
     enabled: !!mobileV2.token || mobileV2.connectedDevices.length > 0, // Enable when token exists OR devices connected
     token: mobileV2.token || undefined,
     isDesktop: true,
@@ -153,6 +153,19 @@ export default function ConsultationPage() {
       }
     }
   }, [mobileV2.connectedDevices, currentPatientSessionId, syncCurrentPatient, getCurrentPatientSession]);
+
+  // Enhanced patient session sync for session changes
+  useEffect(() => {
+    if (currentPatientSessionId && mobileV2.connectedDevices.length > 0 && syncPatientSession) {
+      const currentSession = getCurrentPatientSession();
+      if (currentSession) {
+        // Use new enhanced sync with confirmation
+        syncPatientSession(currentPatientSessionId, currentSession.patientName).catch(() => {
+          // Sync errors are handled silently - mobile will show appropriate state
+        });
+      }
+    }
+  }, [currentPatientSessionId, mobileV2.connectedDevices.length, syncPatientSession, getCurrentPatientSession]);
 
   const handleForceDisconnectDevice = useCallback(async (deviceId: string) => {
     // Send force disconnect message to the device

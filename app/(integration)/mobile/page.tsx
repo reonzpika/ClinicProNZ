@@ -21,6 +21,8 @@ type TokenState = {
 type PatientState = {
   sessionId: string | null;
   name: string | null;
+  syncStatus: 'idle' | 'syncing' | 'synced' | 'error';
+  lastSyncTime: number | null;
 };
 
 // Loading component for Suspense fallback
@@ -54,13 +56,13 @@ function useWakeLock() {
       return;
     }
     try {
-      const sentinel = await navigator.wakeLock.request('screen');
-      setWakeLock(sentinel);
-      sentinel.addEventListener('release', () => {
+      wakeLock = await navigator.wakeLock.request('screen');
+      setWakeLock(wakeLock);
+      wakeLock.addEventListener('release', () => {
         setWakeLock(null);
       });
-    } catch (error) {
-      console.warn('Failed to request wake lock:', error);
+    } catch {
+      // Wake lock request failures are handled silently
     }
   }, [isSupported, wakeLock]);
 
@@ -69,8 +71,8 @@ function useWakeLock() {
       try {
         await wakeLock.release();
         setWakeLock(null);
-      } catch (error) {
-        console.warn('Failed to release wake lock:', error);
+      } catch {
+        // Wake lock release failures are handled silently
       }
     }
   }, [wakeLock]);
@@ -119,6 +121,8 @@ function MobilePageContent() {
   const [patientState, setPatientState] = useState<PatientState>({
     sessionId: null,
     name: null,
+    syncStatus: 'idle',
+    lastSyncTime: null,
   });
 
   // Validate token on mount
@@ -186,8 +190,43 @@ function MobilePageContent() {
       setPatientState({
         sessionId,
         name: name || 'Unknown Patient',
+        syncStatus: 'synced',
+        lastSyncTime: Date.now(),
       });
     }, []),
+    onPatientSyncStarted: useCallback((sessionId: string, name?: string) => {
+      setPatientState(prev => ({
+        ...prev,
+        sessionId,
+        name: name || 'Unknown Patient',
+        syncStatus: 'syncing',
+        lastSyncTime: null,
+      }));
+    }, []),
+    onPatientSyncCompleted: useCallback((sessionId: string, name?: string) => {
+      setPatientState(prev => ({
+        ...prev,
+        sessionId,
+        name: name || 'Unknown Patient',
+        syncStatus: 'synced',
+        lastSyncTime: Date.now(),
+      }));
+    }, []),
+    onHealthCheckRequested: useCallback(async (): Promise<boolean> => {
+      // Mobile health check: verify microphone access and connection
+      try {
+        // Quick microphone test
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop()); // Clean up
+
+        // Check if we have a valid patient session
+        const hasValidSession = !!patientState.sessionId;
+
+        return hasValidSession;
+      } catch {
+        return false;
+      }
+    }, [patientState.sessionId]),
     onStartRecording: useCallback(() => {
       // This callback is now handled by the useTranscription hook
     }, []),
@@ -347,9 +386,30 @@ function MobilePageContent() {
             <CardContent>
               {patientState.name
                 ? (
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="size-5 text-green-600" />
-                      <span className="font-medium">{patientState.name}</span>
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        {patientState.syncStatus === 'syncing'
+                          ? <div className="size-5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                          : patientState.syncStatus === 'synced'
+                            ? <CheckCircle className="size-5 text-green-600" />
+                            : <AlertTriangle className="size-5 text-amber-500" />}
+                        <span className="font-medium">{patientState.name}</span>
+                      </div>
+                      {patientState.syncStatus === 'syncing' && (
+                        <div className="text-xs text-blue-600">
+                          <div className="flex items-center space-x-1">
+                            <div className="size-1 animate-pulse rounded-full bg-blue-600" />
+                            <span>Syncing patient data...</span>
+                          </div>
+                        </div>
+                      )}
+                      {patientState.syncStatus === 'synced' && patientState.lastSyncTime && (
+                        <div className="text-xs text-green-600">
+                          Synced
+                          {' '}
+                          {new Date(patientState.lastSyncTime).toLocaleTimeString()}
+                        </div>
+                      )}
                     </div>
                   )
                 : (

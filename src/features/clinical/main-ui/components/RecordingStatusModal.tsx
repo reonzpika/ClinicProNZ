@@ -22,6 +22,8 @@ type RecordingStatusModalProps = {
     isAvailable: boolean;
     cacheFor: number;
   };
+  retryCount?: number;
+  maxRetries?: number;
 };
 
 export const RecordingStatusModal: React.FC<RecordingStatusModalProps> = ({
@@ -36,6 +38,8 @@ export const RecordingStatusModal: React.FC<RecordingStatusModalProps> = ({
   onRunHealthCheck,
   onShowMobileSetup,
   apiCacheStatus,
+  retryCount = 0,
+  maxRetries = 3,
 }) => {
   const getStatusConfig = useCallback(() => {
     switch (status) {
@@ -147,6 +151,20 @@ export const RecordingStatusModal: React.FC<RecordingStatusModalProps> = ({
           {/* Status Description */}
           <div className={`rounded-lg p-3 ${config.bgColor} ${config.borderColor} border`}>
             <p className="text-sm text-gray-700">{config.description}</p>
+            {/* Auto-retry status */}
+            {retryCount > 0 && (
+              <div className="mt-2 text-xs text-blue-600">
+                <div className="flex items-center gap-1">
+                  <RefreshCw className="size-3" />
+                  <span>
+                    Auto-retry
+                    {retryCount}
+                    /
+                    {maxRetries}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Live Stats (during recording) */}

@@ -11,7 +11,7 @@ const globalConnectionRegistry = new Map<string, { connection: Ably.Realtime; re
 
 // Message types for Ably communication
 type AblyMessage = {
-  type: 'transcription' | 'switch_patient' | 'device_connected' | 'device_disconnected' | 'session_created' | 'force_disconnect' | 'sync_current_patient' | 'start_recording' | 'stop_recording';
+  type: 'transcription' | 'switch_patient' | 'device_connected' | 'device_disconnected' | 'session_created' | 'force_disconnect' | 'sync_current_patient' | 'start_recording' | 'stop_recording' | 'patient_sync_request' | 'patient_sync_confirm' | 'patient_sync_complete' | 'health_check_request' | 'health_check_response';
   userId?: string;
   patientSessionId?: string;
   transcript?: string;
@@ -22,6 +22,10 @@ type AblyMessage = {
   deviceType?: string;
   patientName?: string;
   targetDeviceId?: string; // For targeting specific devices to disconnect
+  syncId?: string; // For tracking patient sync handover
+  confirmationId?: string; // For confirming message receipt
+  isHealthy?: boolean; // For health check responses
+  issues?: string[]; // For health check issue reporting
   data?: any;
 };
 
@@ -31,11 +35,14 @@ type AblySyncHookProps = {
   isDesktop?: boolean; // true for desktop, false for mobile
   onTranscriptionReceived?: (transcript: string, patientSessionId?: string, diarizedTranscript?: string | null, utterances?: any[]) => void;
   onPatientSwitched?: (patientSessionId: string, patientName?: string) => void;
+  onPatientSyncStarted?: (patientSessionId: string, patientName?: string) => void; // New: mobile shows syncing state
+  onPatientSyncCompleted?: (patientSessionId: string, patientName?: string) => void; // New: sync confirmed
   onDeviceConnected?: (deviceId: string, deviceName: string, deviceType?: string) => void;
   onDeviceDisconnected?: (deviceId: string) => void;
   onError?: (error: string | null) => void;
   onStartRecording?: () => void;
   onStopRecording?: () => void;
+  onHealthCheckRequested?: () => Promise<boolean>; // New: mobile responds to health checks
 };
 
 type ConnectionState = {
@@ -57,11 +64,14 @@ export const useAblySync = ({
   isDesktop = true,
   onTranscriptionReceived,
   onPatientSwitched,
+  onPatientSyncStarted,
+  onPatientSyncCompleted,
   onDeviceConnected,
   onDeviceDisconnected,
   onError,
   onStartRecording,
   onStopRecording,
+  onHealthCheckRequested,
 }: AblySyncHookProps) => {
   const { userId: authUserId } = useAuth();
   const { getUserTier } = useClerkMetadata();
@@ -83,19 +93,25 @@ export const useAblySync = ({
   const stableCallbacks = useMemo(() => ({
     onTranscriptionReceived,
     onPatientSwitched,
+    onPatientSyncStarted,
+    onPatientSyncCompleted,
     onDeviceConnected,
     onDeviceDisconnected,
     onError,
     onStartRecording,
     onStopRecording,
+    onHealthCheckRequested,
   }), [
     onTranscriptionReceived,
     onPatientSwitched,
+    onPatientSyncStarted,
+    onPatientSyncCompleted,
     onDeviceConnected,
     onDeviceDisconnected,
     onError,
     onStartRecording,
     onStopRecording,
+    onHealthCheckRequested,
   ]);
 
   // Memoize device info to prevent recreation on every render
@@ -205,8 +221,8 @@ export const useAblySync = ({
           return 'ably-disabled';
         }
       }
-    } catch (error) {
-      console.error('Error getting userId:', error);
+    } catch {
+      // getUserId errors are handled silently - fallback logic will handle this
     }
 
     // Fallback: Use guest token as user ID for guest users
@@ -275,8 +291,8 @@ export const useAblySync = ({
 
       await channelRef.current.publish('transcription', message);
       return true;
-    } catch (error) {
-      console.error('Failed to send transcription:', error);
+    } catch {
+      // Transcription send failures are handled silently - UI will show appropriate feedback
       return false;
     }
   }, []);
@@ -303,8 +319,8 @@ export const useAblySync = ({
 
       await channelRef.current.publish('transcription', message);
       return true;
-    } catch (error) {
-      console.error('Failed to send transcription:', error);
+    } catch {
+      // Enhanced transcription send failures are handled silently - UI will show appropriate feedback
       return false;
     }
   }, []);
@@ -355,6 +371,64 @@ export const useAblySync = ({
           if (!isDesktop) {
             stableCallbacks.onStopRecording?.();
           }
+          break;
+        case 'patient_sync_request':
+          if (!isDesktop && data.patientSessionId && data.syncId) {
+            // Mobile: Start syncing state and confirm receipt
+            stableCallbacks.onPatientSyncStarted?.(data.patientSessionId, data.patientName || 'Unknown Patient');
+
+            // Send confirmation back to desktop
+            sendMessage({
+              type: 'patient_sync_confirm',
+              patientSessionId: data.patientSessionId,
+              patientName: data.patientName || 'Unknown Patient',
+              syncId: data.syncId,
+              deviceId,
+            });
+          }
+          break;
+        case 'patient_sync_confirm':
+          if (isDesktop && data.syncId) {
+            // Desktop: Mobile confirmed sync, complete the handover
+            sendMessage({
+              type: 'patient_sync_complete',
+              patientSessionId: data.patientSessionId,
+              patientName: data.patientName || 'Unknown Patient',
+              syncId: data.syncId,
+            });
+          }
+          break;
+        case 'patient_sync_complete':
+          if (!isDesktop && data.patientSessionId) {
+            // Mobile: Sync completed, update to final state
+            stableCallbacks.onPatientSyncCompleted?.(data.patientSessionId, data.patientName || 'Unknown Patient');
+          }
+          break;
+        case 'health_check_request':
+          if (!isDesktop && data.confirmationId && stableCallbacks.onHealthCheckRequested) {
+            // Mobile: Respond to health check request
+            stableCallbacks.onHealthCheckRequested()
+              .then((isHealthy) => {
+                sendMessage({
+                  type: 'health_check_response',
+                  confirmationId: data.confirmationId,
+                  isHealthy,
+                  deviceId,
+                });
+              })
+              .catch(() => {
+                sendMessage({
+                  type: 'health_check_response',
+                  confirmationId: data.confirmationId,
+                  isHealthy: false,
+                  deviceId,
+                  issues: ['Health check failed on mobile'],
+                });
+              });
+          }
+          break;
+        case 'health_check_response':
+          // Desktop: Handle health check response (will be processed by health check hook)
           break;
       }
     });
@@ -582,6 +656,25 @@ export const useAblySync = ({
     }, [sendMessage]),
     stopMobileRecording: useCallback(async () => {
       return sendMessage({ type: 'stop_recording' });
+    }, [sendMessage]),
+    // Enhanced patient session sync functions
+    syncPatientSession: useCallback(async (patientSessionId: string, patientName?: string): Promise<string> => {
+      const syncId = `sync-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+      const success = sendMessage({
+        type: 'patient_sync_request',
+        patientSessionId,
+        patientName,
+        syncId,
+      });
+      return success ? syncId : '';
+    }, [sendMessage]),
+    requestHealthCheck: useCallback(async (): Promise<string> => {
+      const confirmationId = `health-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+      const success = sendMessage({
+        type: 'health_check_request',
+        confirmationId,
+      });
+      return success ? confirmationId : '';
     }, [sendMessage]),
   };
 };

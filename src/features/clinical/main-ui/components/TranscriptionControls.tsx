@@ -86,12 +86,17 @@ export function TranscriptionControls({
     runHealthCheck,
     triggerHealthCheck,
     apiCacheStatus,
+    retryCount,
+    maxRetries,
   } = useRecordingHealthCheck({
     enabled: true,
     autoStart: false, // Don't auto-start - only when user clicks "Connect Mobile"
     triggerOnMobileConnect: true, // Test when mobile device connects
+    triggerOnPatientChange: true, // Auto-trigger on patient session changes
     healthCheckInterval: 30000, // 30s intervals during recording (reduced cost)
     syncTimeout: 10000,
+    autoRetryCount: 3, // Auto-retry failed health checks
+    autoRetryDelay: 2000, // 2s delay between retries
   });
 
   // Use regular transcript since diarization is disabled
@@ -155,9 +160,8 @@ export function TranscriptionControls({
           const data = await response.json();
           setCanCreateSession(data.canCreateSession);
         }
-      } catch (error) {
-        console.error('Error checking session limits:', error);
-        // Default to allowing session creation on error
+      } catch {
+        // Session limit check errors are handled silently - default to allowing session creation
         setCanCreateSession(true);
       }
     };
@@ -169,7 +173,7 @@ export function TranscriptionControls({
   const handleStartRecording = () => {
     // Check session limits for public users
     if (!isSignedIn && !canCreateSession) {
-      console.warn('Cannot start recording: session limit reached');
+      // Session limit reached - UI will show appropriate feedback
       return;
     }
 
@@ -258,10 +262,10 @@ export function TranscriptionControls({
             {isExpanded ? '−' : '+'}
           </button>
         </div>
-        {isExpanded && transcript && (
+        {isExpanded && (
           <div className="rounded border border-slate-200 bg-white p-3">
             <div className="max-h-20 overflow-y-auto text-sm text-slate-700">
-              {transcript}
+              {transcript || 'No transcript available yet...'}
             </div>
           </div>
         )}
@@ -290,7 +294,15 @@ export function TranscriptionControls({
   }
 
   const handleStartMobileRecording = () => {
-    if (hasMobileDevices) {
+    // Check session limits for public users
+    if (!isSignedIn && !canCreateSession) {
+      // Session limit reached - UI will show appropriate feedback
+      return;
+    }
+
+    if (!consentObtained) {
+      setShowConsentModal(true);
+    } else if (hasMobileDevices) {
       startMobileRecording?.();
     } else {
       startRecording();
@@ -722,6 +734,8 @@ export function TranscriptionControls({
         onRunHealthCheck={runHealthCheck}
         onShowMobileSetup={() => setShowMobileRecordingV2(true)}
         apiCacheStatus={apiCacheStatus}
+        retryCount={retryCount}
+        maxRetries={maxRetries}
       />
     </div>
   );
