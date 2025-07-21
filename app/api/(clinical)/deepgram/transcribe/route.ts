@@ -58,7 +58,6 @@ export async function POST(req: NextRequest) {
       smart_format: true,
       redact: ['name_given', 'name_family'],
       diarize: false, // Disable speaker diarization
-      filler_words: true,
       paragraphs: true, // Keep paragraphs for better formatting
       interim_results: true, // Enable interim results for better real-time processing
       endpointing: 500, // Time in ms to wait before considering utterance complete

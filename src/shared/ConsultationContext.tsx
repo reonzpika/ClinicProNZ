@@ -67,6 +67,13 @@ export type ConsultationState = {
     utterances?: any[];
     isLive: boolean;
   };
+  // Structured transcript for enhanced note generation
+  structuredTranscript: {
+    content: string | null;
+    originalTranscript: string | null;
+    generatedAt: number | null;
+    status: 'none' | 'structuring' | 'completed' | 'failed';
+  };
   typedInput: string;
   generatedNotes: string | null;
   error: string | null;
@@ -138,6 +145,13 @@ const defaultState: ConsultationState = {
   status: 'idle',
   inputMode: 'audio',
   transcription: { transcript: '', isLive: false, utterances: [] },
+  // Structured transcript defaults
+  structuredTranscript: {
+    content: null,
+    originalTranscript: null,
+    generatedAt: null,
+    status: 'none',
+  },
   typedInput: '',
   generatedNotes: null,
   error: null,
@@ -196,6 +210,12 @@ const ConsultationContext = createContext<
     getCurrentTranscript: () => string;
     getCurrentInput: () => string;
     setConsentObtained: (consent: boolean) => void;
+    // Structured transcript functions
+    setStructuredTranscriptStatus: (status: 'none' | 'structuring' | 'completed' | 'failed') => void;
+    setStructuredTranscript: (content: string, originalTranscript: string) => void;
+    clearStructuredTranscript: () => void;
+    isStructuredTranscriptFresh: (transcript: string) => boolean;
+    getEffectiveTranscript: () => string;
     // Chatbot functions
     addChatMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => void;
     clearChatHistory: () => void;
@@ -594,6 +614,13 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       lastGeneratedCompiledConsultationText: '',
       lastGeneratedTemplateId: '',
       transcription: { transcript: '', isLive: false, utterances: [] },
+      // Reset structured transcript
+      structuredTranscript: {
+        content: null,
+        originalTranscript: null,
+        generatedAt: null,
+        status: 'none',
+      },
       typedInput: '',
       consentObtained: false,
       // Preserve patient session state
@@ -623,6 +650,71 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
 
   const setConsentObtained = useCallback((consent: boolean) =>
     setState(prev => ({ ...prev, consentObtained: consent })), []);
+
+  // Structured transcript functions
+  const setStructuredTranscriptStatus = useCallback((status: 'none' | 'structuring' | 'completed' | 'failed') => {
+    setState(prev => ({
+      ...prev,
+      structuredTranscript: {
+        ...prev.structuredTranscript,
+        status,
+      },
+    }));
+  }, []);
+
+  const setStructuredTranscript = useCallback((content: string, originalTranscript: string) => {
+    setState(prev => ({
+      ...prev,
+      structuredTranscript: {
+        content,
+        originalTranscript,
+        generatedAt: Date.now(),
+        status: 'completed',
+      },
+    }));
+  }, []);
+
+  const clearStructuredTranscript = useCallback(() => {
+    setState(prev => ({
+      ...prev,
+      structuredTranscript: {
+        content: null,
+        originalTranscript: null,
+        generatedAt: null,
+        status: 'none',
+      },
+    }));
+  }, []);
+
+  // Check if structured transcript is fresh (within 5 minutes and matches current transcript)
+  const isStructuredTranscriptFresh = useCallback((transcript: string) => {
+    const { structuredTranscript } = state;
+    if (!structuredTranscript.content || !structuredTranscript.generatedAt || !structuredTranscript.originalTranscript) {
+      return false;
+    }
+
+    // Check if it's within 5 minutes
+    const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+    const isRecent = structuredTranscript.generatedAt > fiveMinutesAgo;
+
+    // Check if the transcript matches (allowing for small changes)
+    const originalNormalized = structuredTranscript.originalTranscript.trim().toLowerCase();
+    const currentNormalized = transcript.trim().toLowerCase();
+    const isSimilar = originalNormalized === currentNormalized;
+
+    return isRecent && isSimilar && structuredTranscript.status === 'completed';
+  }, [state.structuredTranscript]);
+
+  // Get the best available transcript (structured if fresh, otherwise raw)
+  const getEffectiveTranscript = useCallback(() => {
+    const rawTranscript = getCurrentTranscript();
+
+    if (isStructuredTranscriptFresh(rawTranscript) && state.structuredTranscript.content) {
+      return state.structuredTranscript.content;
+    }
+
+    return rawTranscript;
+  }, [getCurrentTranscript, isStructuredTranscriptFresh, state.structuredTranscript.content]);
 
   // Chatbot helper functions
   const addChatMessage = useCallback((message: Omit<ChatMessage, 'id' | 'timestamp'>) => {
@@ -1175,6 +1267,12 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     userDefaultTemplateId: state.userDefaultTemplateId,
     getCurrentTranscript,
     getCurrentInput,
+    // Structured transcript functions
+    setStructuredTranscriptStatus,
+    setStructuredTranscript,
+    clearStructuredTranscript,
+    isStructuredTranscriptFresh,
+    getEffectiveTranscript,
     // Chatbot functions
     addChatMessage,
     clearChatHistory,
@@ -1232,6 +1330,11 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setConsentObtained,
     getCurrentTranscript,
     getCurrentInput,
+    setStructuredTranscriptStatus,
+    setStructuredTranscript,
+    clearStructuredTranscript,
+    isStructuredTranscriptFresh,
+    getEffectiveTranscript,
     addChatMessage,
     clearChatHistory,
     setChatContextEnabled,

@@ -8,6 +8,7 @@ import { AdditionalNotes } from '@/src/features/clinical/main-ui/components/Addi
 import { DocumentationSettingsBadge } from '@/src/features/clinical/main-ui/components/DocumentationSettingsBadge';
 import { GeneratedNotes } from '@/src/features/clinical/main-ui/components/GeneratedNotes';
 import { TranscriptionControls } from '@/src/features/clinical/main-ui/components/TranscriptionControls';
+import { TranscriptProcessingStatus } from '@/src/features/clinical/main-ui/components/TranscriptProcessingStatus';
 import { TypedInput } from '@/src/features/clinical/main-ui/components/TypedInput';
 import { useAblySync } from '@/src/features/clinical/main-ui/hooks/useAblySync';
 import { MobileRightPanelOverlay } from '@/src/features/clinical/mobile/components/MobileRightPanelOverlay';
@@ -46,6 +47,13 @@ export default function ConsultationPage() {
     currentPatientSessionId,
     getCurrentPatientSession,
     getEffectiveGuestToken,
+    // Structured transcript functions
+    setStatus,
+    setStructuredTranscriptStatus,
+    setStructuredTranscript,
+    isStructuredTranscriptFresh,
+    getEffectiveTranscript,
+    structuredTranscript,
   } = useConsultation();
   const { isSignedIn: _isSignedIn, userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
@@ -192,14 +200,69 @@ export default function ConsultationPage() {
       // Get effective guest token
       const effectiveGuestToken = getEffectiveGuestToken();
 
-      // Include guest token in request body for consistency with other APIs
+      // Step 1: Structure transcript (if in audio mode and transcript exists)
+      let processedTranscript = transcript;
+
+      if (inputMode === 'audio' && transcript?.trim()) {
+        // Check if we have a fresh structured transcript
+        if (isStructuredTranscriptFresh(transcript)) {
+          // Use existing structured transcript
+          processedTranscript = getEffectiveTranscript();
+        } else {
+          // Structure the transcript
+          setStatus('processing'); // Set status to show we're working
+          setStructuredTranscriptStatus('structuring');
+
+          try {
+            const structureRes = await fetch('/api/consultation/structure-transcript', {
+              method: 'POST',
+              headers: createAuthHeadersWithGuest(userId, userTier, effectiveGuestToken),
+              body: JSON.stringify({
+                transcription: transcript,
+                guestToken: effectiveGuestToken,
+              }),
+            });
+
+            if (structureRes.ok) {
+              const structureData = await structureRes.json();
+              const structuredContent = structureData.structuredTranscript;
+
+              if (structuredContent) {
+                // Cache the structured transcript
+                setStructuredTranscript(structuredContent, transcript);
+                processedTranscript = structuredContent;
+              } else {
+                console.warn('No structured content received, using original transcript');
+                setStructuredTranscriptStatus('failed');
+              }
+            } else {
+              // Handle structuring errors gracefully
+              const errorData = await structureRes.json();
+              console.warn('Transcript structuring failed:', errorData.message);
+
+              // Use fallback transcript if provided
+              if (errorData.fallbackTranscript) {
+                processedTranscript = errorData.fallbackTranscript;
+              }
+
+              setStructuredTranscriptStatus('failed');
+            }
+          } catch (structureError) {
+            console.warn('Transcript structuring error:', structureError);
+            setStructuredTranscriptStatus('failed');
+            // Continue with original transcript
+          }
+        }
+      }
+
+      // Step 2: Generate notes using processed transcript
       const requestBody = {
-        transcription: transcript,
+        transcription: processedTranscript,
         typedInput: currentTypedInput,
         templateId,
         inputMode,
         consultationNotes: compiledConsultationText,
-        guestToken: effectiveGuestToken, // Use effective guest token
+        guestToken: effectiveGuestToken,
       };
 
       const res = await fetch('/api/consultation/notes', {
@@ -239,6 +302,7 @@ export default function ConsultationPage() {
         setGeneratedNotes(notes);
       }
 
+      // Use the original transcript for tracking, not the processed one
       setLastGeneratedInput(transcript, currentTypedInput, compiledConsultationText, templateId);
 
       // Refresh usage dashboard after successful notes generation
@@ -408,6 +472,11 @@ export default function ConsultationPage() {
                               <>
                                 {/* Clinical Documentation - Top Priority */}
                                 <div className={`flex flex-col ${(generatedNotes && generatedNotes.trim()) || loading ? 'h-full' : ''}`}>
+                                  <TranscriptProcessingStatus
+                                    isLoading={loading}
+                                    structuredTranscriptStatus={structuredTranscript.status}
+                                    inputMode={inputMode}
+                                  />
                                   <GeneratedNotes
                                     onGenerate={handleGenerateNotes}
                                     onClearAll={handleClearAll}
@@ -453,6 +522,11 @@ export default function ConsultationPage() {
 
                                 {/* Clinical Documentation - Bottom */}
                                 <div className={`flex flex-col ${(generatedNotes && generatedNotes.trim()) || loading ? 'min-h-0 flex-1' : ''}`}>
+                                  <TranscriptProcessingStatus
+                                    isLoading={loading}
+                                    structuredTranscriptStatus={structuredTranscript.status}
+                                    inputMode={inputMode}
+                                  />
                                   <GeneratedNotes
                                     onGenerate={handleGenerateNotes}
                                     onClearAll={handleClearAll}
@@ -481,6 +555,11 @@ export default function ConsultationPage() {
                             <>
                               {/* Clinical Documentation - Top Priority */}
                               <div className={`flex flex-col ${(generatedNotes && generatedNotes.trim()) || loading ? 'flex-1' : ''}`}>
+                                <TranscriptProcessingStatus
+                                  isLoading={loading}
+                                  structuredTranscriptStatus={structuredTranscript.status}
+                                  inputMode={inputMode}
+                                />
                                 <GeneratedNotes
                                   onGenerate={handleGenerateNotes}
                                   onClearAll={handleClearAll}
@@ -559,6 +638,11 @@ export default function ConsultationPage() {
 
                               {/* Clinical Documentation - Bottom */}
                               <div className={`flex flex-col ${(generatedNotes && generatedNotes.trim()) || loading ? 'min-h-0 flex-1' : ''}`}>
+                                <TranscriptProcessingStatus
+                                  isLoading={loading}
+                                  structuredTranscriptStatus={structuredTranscript.status}
+                                  inputMode={inputMode}
+                                />
                                 <GeneratedNotes
                                   onGenerate={handleGenerateNotes}
                                   onClearAll={handleClearAll}
