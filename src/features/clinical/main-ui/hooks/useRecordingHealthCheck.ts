@@ -70,6 +70,7 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
 
   // Auto-retry state
   const [retryCount, setRetryCount] = useState(0);
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // API connectivity cache to reduce costs
   const [apiConnectivityCache, setApiConnectivityCache] = useState<{
@@ -373,13 +374,20 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
 
   // Simple auto-retry wrapper function
   const runHealthCheckWithRetry = useCallback(async (): Promise<boolean> => {
+    // Clear any existing retry timeout
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
+
     const success = await runHealthCheck();
 
     if (!success && retryCount < 2) { // Just 2 retries max
       // Simple retry after short delay
       setRetryCount(prev => prev + 1);
 
-      setTimeout(async () => {
+      retryTimeoutRef.current = setTimeout(async () => {
+        retryTimeoutRef.current = null; // Clear ref after timeout executes
         await runHealthCheck(); // Direct retry, no complex recursion
       }, 1000); // 1 second delay
 
@@ -455,7 +463,7 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
 
   // Trigger health check when patient session changes (if enabled)
   useEffect(() => {
-    if (enabled && triggerOnPatientChange && currentPatientSessionId && mobileV2.connectionStatus === 'connected') {
+    if (enabled && triggerOnPatientChange && currentPatientSessionId && mobileV2.connectionStatus === 'connected' && !isRunningHealthCheck) {
       // Delay slightly to ensure patient session is fully set up
       const timer = setTimeout(() => {
         runHealthCheckWithRetry();
@@ -466,13 +474,16 @@ export const useRecordingHealthCheck = (options: UseRecordingHealthCheckOptions 
 
     // Return empty cleanup function if condition not met
     return () => {};
-  }, [enabled, triggerOnPatientChange, currentPatientSessionId, mobileV2.connectionStatus, runHealthCheckWithRetry]);
+  }, [enabled, triggerOnPatientChange, currentPatientSessionId, mobileV2.connectionStatus, isRunningHealthCheck, runHealthCheckWithRetry]);
 
   // Cleanup timeouts
   useEffect(() => {
     return () => {
       if (statusTransitionRef.current) {
         clearTimeout(statusTransitionRef.current);
+      }
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
       }
     };
   }, []);

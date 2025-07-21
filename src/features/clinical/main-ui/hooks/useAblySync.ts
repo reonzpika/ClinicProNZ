@@ -318,10 +318,24 @@ export const useAblySync = ({
 
   // Send message through Ably
   const sendMessage = useCallback((message: AblyMessage) => {
-    if (channelRef.current && (ablyRef.current?.connection.state as string) === 'connected') {
-      channelRef.current.publish(message.type, message);
-      return true;
+    // More robust connection state checking to prevent error 80017
+    if (!channelRef.current || !ablyRef.current) {
+      return false;
     }
+
+    const connectionState = ablyRef.current.connection.state;
+
+    // Only send if connection is truly connected and stable
+    if (connectionState === 'connected') {
+      try {
+        channelRef.current.publish(message.type, message);
+        return true;
+      } catch {
+        // Handle publish failures gracefully
+        return false;
+      }
+    }
+
     return false;
   }, []);
 

@@ -2,7 +2,7 @@
 
 import { AlertTriangle, CheckCircle, Mic, MicOff, Smartphone, Wifi, WifiOff } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAblySync } from '@/src/features/clinical/main-ui/hooks/useAblySync';
 import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTranscription';
@@ -125,6 +125,9 @@ function MobilePageContent() {
     lastSyncTime: null,
   });
 
+  // Refs to track timeouts and prevent leaks
+  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Validate token on mount
   useEffect(() => {
     const token = searchParams.get('token');
@@ -187,6 +190,12 @@ function MobilePageContent() {
     token: tokenState.token || undefined,
     isDesktop: false,
     onPatientSwitched: useCallback((sessionId: string, name?: string) => {
+      // Clear any existing sync timeout to prevent overlaps
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+        syncTimeoutRef.current = null;
+      }
+
       // Show brief syncing state for user feedback
       setPatientState({
         sessionId,
@@ -196,12 +205,13 @@ function MobilePageContent() {
       });
 
       // After brief delay, show synced state
-      setTimeout(() => {
+      syncTimeoutRef.current = setTimeout(() => {
         setPatientState(prev => ({
           ...prev,
           syncStatus: 'synced',
           lastSyncTime: Date.now(),
         }));
+        syncTimeoutRef.current = null; // Clear ref after timeout executes
       }, 1000); // 1 second syncing feedback
     }, []),
     onHealthCheckRequested: useCallback(async (): Promise<boolean> => {
@@ -286,6 +296,15 @@ function MobilePageContent() {
       releaseWakeLock();
     }
   }, [isRecording, requestWakeLock, releaseWakeLock]);
+
+  // Cleanup timeout on component unmount
+  useEffect(() => {
+    return () => {
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Update refs with current function references
   useEffect(() => {
