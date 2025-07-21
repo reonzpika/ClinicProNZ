@@ -56,9 +56,9 @@ function useWakeLock() {
       return;
     }
     try {
-      wakeLock = await navigator.wakeLock.request('screen');
-      setWakeLock(wakeLock);
-      wakeLock.addEventListener('release', () => {
+      const sentinel = await navigator.wakeLock.request('screen');
+      setWakeLock(sentinel);
+      sentinel.addEventListener('release', () => {
         setWakeLock(null);
       });
     } catch {
