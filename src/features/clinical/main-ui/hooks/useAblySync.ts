@@ -81,11 +81,13 @@ export const useAblySync = ({
   const [userId, setUserId] = useState<string | null>(null);
   const [processedMessageIds] = useState(new Set<string>());
   
-  // Add refs to track lifecycle state and prevent race conditions
+  // Enhanced refs to track lifecycle state and prevent race conditions
   const isConnectingRef = useRef(false);
   const isCleaningUpRef = useRef(false);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const channelAttachPromiseRef = useRef<Promise<void> | null>(null);
+  const isDestroyedRef = useRef(false); // Track if component is destroyed
+  const activeOperationRef = useRef<'none' | 'connecting' | 'cleaning'>('none'); // Track active operations
 
   // Get guest token from ConsultationContext for fallback user ID
   const { getEffectiveGuestToken } = useConsultation();
@@ -239,36 +241,58 @@ export const useAblySync = ({
   // Enhanced cleanup with proper state checks and race condition prevention
   const cleanup = useCallback(async () => {
     // Prevent multiple simultaneous cleanup operations
-    if (isCleaningUpRef.current) {
+    if (activeOperationRef.current === 'cleaning' || isDestroyedRef.current) {
       return;
     }
+    
+    const wasConnecting = activeOperationRef.current === 'connecting';
+    activeOperationRef.current = 'cleaning';
     isCleaningUpRef.current = true;
 
     try {
-      // Wait for any pending attach operation to complete first
-      if (channelAttachPromiseRef.current) {
+      // Cancel any pending debounced connection
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+        debounceTimeoutRef.current = null;
+      }
+
+      // Wait for any pending attach operation to complete first, but with timeout
+      if (channelAttachPromiseRef.current && !wasConnecting) {
         try {
-          await channelAttachPromiseRef.current;
+          await Promise.race([
+            channelAttachPromiseRef.current,
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000))
+          ]);
         } catch {
           // Ignore attach errors during cleanup
         }
         channelAttachPromiseRef.current = null;
       }
 
-      // Clean up channel with proper state checking
+      // Clean up channel with proper state checking and error handling
       if (channelRef.current) {
         try {
-          // Check if channel is actually attached before detaching
-          const channelState = channelRef.current.state;
+          const channel = channelRef.current;
+          const channelState = channel.state;
+          
+          // Only attempt detach if channel is in attachable state
           if (channelState === 'attached' || channelState === 'attaching') {
-                       await new Promise<void>((resolve) => {
-             channelRef.current!.detach();
-             // Detach is synchronous in current Ably version
-             resolve();
-           });
+            // Use a timeout to prevent hanging
+            await Promise.race([
+              new Promise<void>((resolve) => {
+                try {
+                  channel.detach();
+                  // Detach is synchronous in current Ably version
+                  resolve();
+                } catch {
+                  resolve();
+                }
+              }),
+              new Promise<void>((resolve) => setTimeout(resolve, 1000)) // 1 second timeout
+            ]);
           }
         } catch {
-          // Ignore detach errors - connection might already be closed
+          // Ignore all detach errors - connection might already be closed
         }
         channelRef.current = null;
       }
@@ -301,18 +325,26 @@ export const useAblySync = ({
         ablyRef.current = null;
       }
 
-      setConnectionState(prev => ({ ...prev, status: 'disconnected' }));
+      // Only update state if not destroyed
+      if (!isDestroyedRef.current) {
+        setConnectionState(prev => ({ ...prev, status: 'disconnected' }));
+      }
     } catch {
       // Silently handle cleanup errors - connection might already be closed
-      setConnectionState(prev => ({ ...prev, status: 'disconnected' }));
+      if (!isDestroyedRef.current) {
+        setConnectionState(prev => ({ ...prev, status: 'disconnected' }));
+      }
     } finally {
       isCleaningUpRef.current = false;
+      if (activeOperationRef.current === 'cleaning') {
+        activeOperationRef.current = 'none';
+      }
     }
   }, []);
 
   // Send transcription to connected desktop device
   const sendTranscription = useCallback(async (transcript: string, patientSessionId?: string) => {
-    if (!channelRef.current || !ablyRef.current) {
+    if (!channelRef.current || !ablyRef.current || isDestroyedRef.current) {
       return false;
     }
 
@@ -344,7 +376,7 @@ export const useAblySync = ({
     diarizedTranscript?: string | null,
     utterances?: any[],
   ) => {
-    if (!channelRef.current || !ablyRef.current) {
+    if (!channelRef.current || !ablyRef.current || isDestroyedRef.current) {
       return false;
     }
 
@@ -374,7 +406,7 @@ export const useAblySync = ({
   // Send message through Ably with enhanced connection state checking
   const sendMessage = useCallback((message: AblyMessage) => {
     // More robust connection state checking to prevent error 80017
-    if (!channelRef.current || !ablyRef.current) {
+    if (!channelRef.current || !ablyRef.current || isDestroyedRef.current) {
       return false;
     }
 
@@ -399,6 +431,10 @@ export const useAblySync = ({
   const setupChannelHandlers = useCallback((channel: Ably.RealtimeChannel, deviceId: string) => {
     // Handle incoming messages
     channel.subscribe((message: Ably.Message) => {
+      if (isDestroyedRef.current) {
+        return;
+      }
+
       const data: AblyMessage = message.data;
       const messageId = `${data.type}-${message.timestamp}-${data.deviceId || 'unknown'}`;
 
@@ -465,6 +501,10 @@ export const useAblySync = ({
 
     // Handle presence changes
     channel.presence.subscribe((presenceMsg) => {
+      if (isDestroyedRef.current) {
+        return;
+      }
+
       const { deviceId: presenceDeviceId, deviceName: presenceDeviceName, deviceType: presenceDeviceType } = presenceMsg.data;
 
       if (presenceMsg.action === 'enter') {
@@ -477,10 +517,11 @@ export const useAblySync = ({
 
   // Enhanced connect function with proper lifecycle management
   const connect = useCallback(async () => {
-    if (!enabled || isConnectingRef.current || isCleaningUpRef.current) {
+    if (!enabled || activeOperationRef.current !== 'none' || isDestroyedRef.current) {
       return;
     }
 
+    activeOperationRef.current = 'connecting';
     isConnectingRef.current = true;
 
     try {
@@ -527,6 +568,11 @@ export const useAblySync = ({
 
       // Clean up any existing connection first
       await cleanup();
+
+      // Check if we were destroyed during cleanup
+      if (isDestroyedRef.current || activeOperationRef.current !== 'connecting') {
+        return;
+      }
 
       const { deviceId, deviceName, deviceType } = getDeviceInfo();
 
@@ -596,11 +642,20 @@ export const useAblySync = ({
       const channel = ably.channels.get(channelName);
       channelRef.current = channel;
 
-      // Properly handle channel attachment with promise tracking
-      channelAttachPromiseRef.current = new Promise<void>((resolve) => {
-        channel.attach();
-        // Attach is synchronous in current Ably version
-        resolve();
+      // Properly handle channel attachment with promise tracking and timeout
+      channelAttachPromiseRef.current = new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Channel attach timeout'));
+        }, 10000); // 10 second timeout
+
+        try {
+          channel.attach();
+          clearTimeout(timeout);
+          resolve();
+        } catch (error) {
+          clearTimeout(timeout);
+          reject(error);
+        }
       });
 
       try {
@@ -609,6 +664,11 @@ export const useAblySync = ({
       } catch (error) {
         channelAttachPromiseRef.current = null;
         throw error;
+      }
+
+      // Check if we were destroyed during attachment
+      if (isDestroyedRef.current || activeOperationRef.current !== 'connecting') {
+        return;
       }
 
       // Set up presence only after successful attachment
@@ -629,26 +689,36 @@ export const useAblySync = ({
 
       // Handle connection state changes
       ably.connection.on('connected', () => {
-        setConnectionState(prev => ({ ...prev, status: 'connected' }));
+        if (!isDestroyedRef.current) {
+          setConnectionState(prev => ({ ...prev, status: 'connected' }));
+        }
       });
 
       ably.connection.on('disconnected', () => {
-        setConnectionState(prev => ({ ...prev, status: 'disconnected' }));
+        if (!isDestroyedRef.current) {
+          setConnectionState(prev => ({ ...prev, status: 'disconnected' }));
+        }
       });
 
       ably.connection.on('failed', () => {
-        setConnectionState(prev => ({ ...prev, status: 'error', error: 'Connection error' }));
-        stableCallbacks.onError?.('Connection error');
+        if (!isDestroyedRef.current) {
+          setConnectionState(prev => ({ ...prev, status: 'error', error: 'Connection error' }));
+          stableCallbacks.onError?.('Connection error');
+        }
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Connection failed';
-      setConnectionState(prev => ({ ...prev, status: 'error', error: errorMessage }));
-      stableCallbacks.onError?.(errorMessage);
+      if (!isDestroyedRef.current) {
+        const errorMessage = error instanceof Error ? error.message : 'Connection failed';
+        setConnectionState(prev => ({ ...prev, status: 'error', error: errorMessage }));
+        stableCallbacks.onError?.(errorMessage);
+      }
     } finally {
       isConnectingRef.current = false;
+      if (activeOperationRef.current === 'connecting') {
+        activeOperationRef.current = 'none';
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, token, isDesktop, getUserId, getDeviceInfo, stableCallbacks, cleanup, authUserId, userTier, getEffectiveGuestToken, processedMessageIds, setupChannelHandlers]);
+  }, [enabled, token, isDesktop, getUserId, getDeviceInfo, stableCallbacks, cleanup, authUserId, userTier, getEffectiveGuestToken, setupChannelHandlers]);
 
   // Enhanced force disconnect
   const forceDisconnectDevice = useCallback(async (targetDeviceId: string) => {
@@ -665,8 +735,12 @@ export const useAblySync = ({
       clearTimeout(debounceTimeoutRef.current);
     }
 
-    // Debounce connection changes by 200ms
+    // Debounce connection changes by 500ms (increased from 200ms)
     debounceTimeoutRef.current = setTimeout(() => {
+      if (isDestroyedRef.current) {
+        return;
+      }
+
       if (enabled) {
         if (isDesktop) {
           connect();
@@ -680,7 +754,7 @@ export const useAblySync = ({
       } else {
         cleanup();
       }
-    }, 200);
+    }, 500);
   }, [enabled, token, isDesktop, connect, cleanup]);
 
   // Connect when enabled with debouncing
@@ -689,6 +763,7 @@ export const useAblySync = ({
 
     // Always cleanup on unmount or when effect re-runs
     return () => {
+      isDestroyedRef.current = true;
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current);
       }
