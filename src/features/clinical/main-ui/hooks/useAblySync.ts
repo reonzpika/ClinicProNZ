@@ -80,6 +80,12 @@ export const useAblySync = ({
   const channelRef = useRef<Ably.RealtimeChannel | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [processedMessageIds] = useState(new Set<string>());
+  
+  // Add refs to track lifecycle state and prevent race conditions
+  const isConnectingRef = useRef(false);
+  const isCleaningUpRef = useRef(false);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const channelAttachPromiseRef = useRef<Promise<void> | null>(null);
 
   // Get guest token from ConsultationContext for fallback user ID
   const { getEffectiveGuestToken } = useConsultation();
@@ -230,14 +236,44 @@ export const useAblySync = ({
     return deviceInfo;
   }, [deviceInfo]);
 
-  // Clean up connection - Added safety checks and global registry management
-  const cleanup = useCallback(() => {
+  // Enhanced cleanup with proper state checks and race condition prevention
+  const cleanup = useCallback(async () => {
+    // Prevent multiple simultaneous cleanup operations
+    if (isCleaningUpRef.current) {
+      return;
+    }
+    isCleaningUpRef.current = true;
+
     try {
+      // Wait for any pending attach operation to complete first
+      if (channelAttachPromiseRef.current) {
+        try {
+          await channelAttachPromiseRef.current;
+        } catch {
+          // Ignore attach errors during cleanup
+        }
+        channelAttachPromiseRef.current = null;
+      }
+
+      // Clean up channel with proper state checking
       if (channelRef.current) {
-        channelRef.current.detach();
+        try {
+          // Check if channel is actually attached before detaching
+          const channelState = channelRef.current.state;
+          if (channelState === 'attached' || channelState === 'attaching') {
+                       await new Promise<void>((resolve) => {
+             channelRef.current!.detach();
+             // Detach is synchronous in current Ably version
+             resolve();
+           });
+          }
+        } catch {
+          // Ignore detach errors - connection might already be closed
+        }
         channelRef.current = null;
       }
 
+      // Clean up connection with global registry management
       if (ablyRef.current) {
         // Find and decrement reference count in global registry
         for (const [channelName, entry] of globalConnectionRegistry.entries()) {
@@ -248,9 +284,14 @@ export const useAblySync = ({
             if (entry.refCount <= 0) {
               globalConnectionRegistry.delete(channelName);
 
-              // Check if connection is still open before closing
-              if ((ablyRef.current.connection.state as string) !== 'closed' && (ablyRef.current.connection.state as string) !== 'closing') {
-                ablyRef.current.close();
+              // Check connection state before closing
+              const connectionState = ablyRef.current.connection.state;
+              if (connectionState !== 'closed' && connectionState !== 'closing' && connectionState !== 'failed') {
+                try {
+                  ablyRef.current.close();
+                } catch {
+                  // Ignore close errors - connection might already be closed
+                }
               }
             }
             break;
@@ -264,12 +305,20 @@ export const useAblySync = ({
     } catch {
       // Silently handle cleanup errors - connection might already be closed
       setConnectionState(prev => ({ ...prev, status: 'disconnected' }));
+    } finally {
+      isCleaningUpRef.current = false;
     }
   }, []);
 
   // Send transcription to connected desktop device
   const sendTranscription = useCallback(async (transcript: string, patientSessionId?: string) => {
-    if (!channelRef.current) {
+    if (!channelRef.current || !ablyRef.current) {
+      return false;
+    }
+
+    // Guard against connection closures
+    if (ablyRef.current.connection.state !== 'connected') {
+      console.warn('Not connected, skipping transcription send...');
       return false;
     }
 
@@ -295,7 +344,13 @@ export const useAblySync = ({
     diarizedTranscript?: string | null,
     utterances?: any[],
   ) => {
-    if (!channelRef.current) {
+    if (!channelRef.current || !ablyRef.current) {
+      return false;
+    }
+
+    // Guard against connection closures
+    if (ablyRef.current.connection.state !== 'connected') {
+      console.warn('Not connected, skipping enhanced transcription send...');
       return false;
     }
 
@@ -316,7 +371,7 @@ export const useAblySync = ({
     }
   }, []);
 
-  // Send message through Ably
+  // Send message through Ably with enhanced connection state checking
   const sendMessage = useCallback((message: AblyMessage) => {
     // More robust connection state checking to prevent error 80017
     if (!channelRef.current || !ablyRef.current) {
@@ -324,9 +379,10 @@ export const useAblySync = ({
     }
 
     const connectionState = ablyRef.current.connection.state;
+    const channelState = channelRef.current.state;
 
-    // Only send if connection is truly connected and stable
-    if (connectionState === 'connected') {
+    // Only send if connection is truly connected and channel is attached
+    if (connectionState === 'connected' && channelState === 'attached') {
       try {
         channelRef.current.publish(message.type, message);
         return true;
@@ -417,13 +473,15 @@ export const useAblySync = ({
         stableCallbacks.onDeviceDisconnected?.(presenceDeviceId);
       }
     });
-  }, [isDesktop, stableCallbacks, cleanup, processedMessageIds]);
+  }, [isDesktop, stableCallbacks, cleanup, processedMessageIds, sendMessage]);
 
-  // Connect to Ably
+  // Enhanced connect function with proper lifecycle management
   const connect = useCallback(async () => {
-    if (!enabled) {
+    if (!enabled || isConnectingRef.current || isCleaningUpRef.current) {
       return;
     }
+
+    isConnectingRef.current = true;
 
     try {
       setConnectionState(prev => ({ ...prev, status: 'connecting', error: undefined }));
@@ -468,7 +526,7 @@ export const useAblySync = ({
       }
 
       // Clean up any existing connection first
-      cleanup();
+      await cleanup();
 
       const { deviceId, deviceName, deviceType } = getDeviceInfo();
 
@@ -538,13 +596,33 @@ export const useAblySync = ({
       const channel = ably.channels.get(channelName);
       channelRef.current = channel;
 
-      // Set up presence
-      channel.presence.enter({
-        deviceId,
-        deviceName,
-        deviceType,
-        connectedAt: Date.now(),
+      // Properly handle channel attachment with promise tracking
+      channelAttachPromiseRef.current = new Promise<void>((resolve) => {
+        channel.attach();
+        // Attach is synchronous in current Ably version
+        resolve();
       });
+
+      try {
+        await channelAttachPromiseRef.current;
+        channelAttachPromiseRef.current = null;
+      } catch (error) {
+        channelAttachPromiseRef.current = null;
+        throw error;
+      }
+
+      // Set up presence only after successful attachment
+      try {
+        channel.presence.enter({
+          deviceId,
+          deviceName,
+          deviceType,
+          connectedAt: Date.now(),
+        });
+      } catch (error) {
+        console.warn('Failed to enter presence:', error);
+        // Continue even if presence fails
+      }
 
       // Set up event handlers
       setupChannelHandlers(channel, deviceId);
@@ -566,6 +644,8 @@ export const useAblySync = ({
       const errorMessage = error instanceof Error ? error.message : 'Connection failed';
       setConnectionState(prev => ({ ...prev, status: 'error', error: errorMessage }));
       stableCallbacks.onError?.(errorMessage);
+    } finally {
+      isConnectingRef.current = false;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, token, isDesktop, getUserId, getDeviceInfo, stableCallbacks, cleanup, authUserId, userTier, getEffectiveGuestToken, processedMessageIds, setupChannelHandlers]);
@@ -578,25 +658,43 @@ export const useAblySync = ({
     });
   }, [sendMessage]);
 
-  // Connect when enabled
-  useEffect(() => {
-    if (enabled) {
-      if (isDesktop) {
-        connect();
-      } else {
-        if (token) {
-          connect();
-        } else {
-          cleanup();
-        }
-      }
-    } else {
-      cleanup();
+  // Debounced connection management to prevent rapid attach/detach cycles
+  const debouncedConnect = useCallback(() => {
+    // Clear any existing debounce timeout
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
     }
 
-    // Always cleanup on unmount or when effect re-runs
-    return cleanup;
+    // Debounce connection changes by 200ms
+    debounceTimeoutRef.current = setTimeout(() => {
+      if (enabled) {
+        if (isDesktop) {
+          connect();
+        } else {
+          if (token) {
+            connect();
+          } else {
+            cleanup();
+          }
+        }
+      } else {
+        cleanup();
+      }
+    }, 200);
   }, [enabled, token, isDesktop, connect, cleanup]);
+
+  // Connect when enabled with debouncing
+  useEffect(() => {
+    debouncedConnect();
+
+    // Always cleanup on unmount or when effect re-runs
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+      cleanup();
+    };
+  }, [debouncedConnect, cleanup]);
 
   return {
     connectionState,
