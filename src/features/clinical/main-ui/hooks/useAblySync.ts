@@ -11,7 +11,7 @@ const globalConnectionRegistry = new Map<string, { connection: Ably.Realtime; re
 
 // Simplified message types for Ably communication (Phase 1: Removed health check messages)
 type AblyMessage = {
-  type: 'transcription' | 'patient_updated' | 'start_recording' | 'stop_recording';
+  type: 'transcription' | 'patient_updated' | 'start_recording' | 'stop_recording' | 'force_disconnect';
   userId?: string;
   patientSessionId?: string;
   transcript?: string;
@@ -21,6 +21,7 @@ type AblyMessage = {
   deviceName?: string;
   deviceType?: string;
   patientName?: string;
+  targetDeviceId?: string; // Required for force_disconnect messages
   data?: any;
 };
 
@@ -84,7 +85,7 @@ export const useAblySync = ({
   const [processedMessageIds] = useState(new Set<string>());
 
   // Get guest token from ConsultationContext for fallback user ID
-  const { getEffectiveGuestToken } = useConsultation();
+  const { getEffectiveGuestToken, getCurrentPatientSession } = useConsultation();
 
   // Stabilize callback references to prevent unnecessary reconnections
   const stableCallbacks = useMemo(() => ({
@@ -410,7 +411,7 @@ export const useAblySync = ({
     } else if (presenceMsg.action === 'leave') {
       stableCallbacks.onDeviceDisconnected?.(presenceDeviceId);
     }
-  }, [isDesktop, stableCallbacks, sendMessage]);
+  }, [isDesktop, stableCallbacks, sendMessage, getCurrentPatientSession]);
 
   // Phase 1: Switch transcript channel for mobile devices
   const switchTranscriptChannel = useCallback(async (newSessionId: string) => {
@@ -437,7 +438,7 @@ export const useAblySync = ({
         currentTranscriptChannel: newTranscriptChannelName,
       }));
 
-      console.log(`[Mobile] Switched to transcript channel: ${newTranscriptChannelName}`);
+      // Successfully switched to new transcript channel
     } catch (error) {
       console.error('Failed to switch transcript channel:', error);
       stableCallbacks.onError?.('Failed to switch to new session channel');
@@ -445,7 +446,7 @@ export const useAblySync = ({
   }, [isDesktop, stableCallbacks]);
 
   // Separate function to set up channel handlers to avoid duplication
-  const setupChannelHandlers = useCallback((channel: Ably.RealtimeChannel, deviceId: string) => {
+  const setupChannelHandlers = useCallback((channel: Ably.RealtimeChannel, _deviceId: string) => {
     // Handle incoming messages
     channel.subscribe((message: Ably.Message) => {
       const data: AblyMessage = message.data;

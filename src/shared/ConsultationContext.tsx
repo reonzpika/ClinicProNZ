@@ -829,6 +829,22 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     return null;
   }, [state.currentPatientSessionId, state.templateId, userId, userTier, state.guestToken]);
 
+  // Phase 2: Add Ably sync for patient session updates
+  const sendPatientUpdatedMessage = useCallback((sessionId: string, patientName: string) => {
+    // Send message to mobile devices via Ably
+    if (typeof window !== 'undefined' && (window as any).ablySyncHook) {
+      try {
+        (window as any).ablySyncHook.sendMessage({
+          type: 'patient_updated',
+          patientSessionId: sessionId,
+          patientName,
+        });
+      } catch (error) {
+        console.error('Failed to send patient_updated message:', error);
+      }
+    }
+  }, []);
+
   // Patient session management functions
   const createPatientSession = useCallback(async (patientName: string, templateId?: string): Promise<PatientSession | null> => {
     try {
@@ -863,22 +879,6 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       return null;
     }
   }, [state.templateId, userId, userTier, state.guestToken, sendPatientUpdatedMessage]);
-
-  // Phase 2: Add Ably sync for patient session updates
-  const sendPatientUpdatedMessage = useCallback((sessionId: string, patientName: string) => {
-    // Send message to mobile devices via Ably
-    if (typeof window !== 'undefined' && (window as any).ablySyncHook) {
-      try {
-        (window as any).ablySyncHook.sendMessage({
-          type: 'patient_updated',
-          patientSessionId: sessionId,
-          patientName,
-        });
-      } catch (error) {
-        console.error('Failed to send patient_updated message:', error);
-      }
-    }
-  }, []);
 
   const switchToPatientSession = useCallback((sessionId: string, onSwitch?: (sessionId: string, patientName: string) => void) => {
     // Find the session and load its transcriptions

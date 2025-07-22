@@ -394,9 +394,9 @@ function MobilePageContent() {
 
   // Connection status helpers
   const isConnected = connectionState.status === 'connected';
-  const isConnecting = connectionState.status === 'connecting';
-  const hasConnectionError = connectionState.status === 'error';
-  const isFunctional = isConnected || connectionState.status === 'disconnected';
+  const _isConnecting = connectionState.status === 'connecting';
+  const _hasConnectionError = connectionState.status === 'error';
+  const _isFunctional = isConnected || connectionState.status === 'disconnected';
 
   // Show error page for invalid tokens
   if (tokenState.error && !tokenState.isValidating && !tokenState.token) {

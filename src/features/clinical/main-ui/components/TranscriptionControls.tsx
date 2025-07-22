@@ -19,8 +19,6 @@ import { ConsentModal } from '../../session-management/components/ConsentModal';
 // Phase 5: Removed health check imports
 import { useTranscription } from '../hooks/useTranscription';
 import { ConsultationInputHeader } from './ConsultationInputHeader';
-import { RecordingStatusIndicator } from './RecordingStatusIndicator';
-import { RecordingStatusModal } from './RecordingStatusModal';
 
 export function TranscriptionControls({
   collapsed,
