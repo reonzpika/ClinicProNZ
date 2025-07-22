@@ -853,17 +853,40 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
         currentPatientSessionId: session.id,
       }));
 
+      // Phase 2: Send patient_updated message to mobile devices for new sessions
+      sendPatientUpdatedMessage(session.id, session.patientName);
+
       return session;
     } catch (error) {
       console.error('Error creating patient session:', error);
       setError('Failed to create patient session');
       return null;
     }
-  }, [state.templateId, userId, userTier, state.guestToken]);
+  }, [state.templateId, userId, userTier, state.guestToken, sendPatientUpdatedMessage]);
+
+  // Phase 2: Add Ably sync for patient session updates
+  const sendPatientUpdatedMessage = useCallback((sessionId: string, patientName: string) => {
+    // Send message to mobile devices via Ably
+    if (typeof window !== 'undefined' && (window as any).ablySyncHook) {
+      try {
+        (window as any).ablySyncHook.sendMessage({
+          type: 'patient_updated',
+          patientSessionId: sessionId,
+          patientName,
+        });
+      } catch (error) {
+        console.error('Failed to send patient_updated message:', error);
+      }
+    }
+  }, []);
 
   const switchToPatientSession = useCallback((sessionId: string, onSwitch?: (sessionId: string, patientName: string) => void) => {
     // Find the session and load its transcriptions
     const targetSession = state.patientSessions.find(session => session.id === sessionId);
+    if (!targetSession) {
+      console.error('Session not found:', sessionId);
+      return;
+    }
 
     // Reconstruct transcript text from transcription entries
     let reconstructedTranscript = '';
@@ -889,11 +912,14 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       consultationItems: targetSession?.consultationItems || [],
     }));
 
+    // Phase 2: Send patient_updated message to mobile devices
+    sendPatientUpdatedMessage(sessionId, targetSession.patientName);
+
     // Notify about the switch
     if (onSwitch && targetSession) {
       onSwitch(sessionId, targetSession.patientName);
     }
-  }, [state.patientSessions]);
+  }, [state.patientSessions, sendPatientUpdatedMessage]);
 
   const updatePatientSession = useCallback(async (sessionId: string, updates: Partial<PatientSession>) => {
     // Update local state immediately for optimistic UI updates

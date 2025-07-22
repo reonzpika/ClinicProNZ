@@ -1,9 +1,12 @@
 import { Buffer } from 'node:buffer';
 
 import { createClient } from '@deepgram/sdk';
+import { eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { db } from '@/db/client';
+import { patientSessions } from '@/db/schema';
 import { checkCoreSessionLimit, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 export const runtime = 'nodejs'; // Ensure Node.js runtime for Buffer support
@@ -41,6 +44,48 @@ export async function POST(req: NextRequest) {
     const file = formData.get('audio');
     if (!file || typeof file === 'string') {
       return NextResponse.json({ error: 'No audio file uploaded' }, { status: 400 });
+    }
+
+    // Phase 3: Session validation for transcript chunks
+    const sessionId = formData.get('sessionId') as string;
+    if (sessionId) {
+      // Validate that the session exists and is active
+      const sessionRecords = await db
+        .select()
+        .from(patientSessions)
+        .where(eq(patientSessions.id, sessionId))
+        .limit(1);
+
+      if (sessionRecords.length === 0) {
+        return NextResponse.json({
+          error: 'Invalid session',
+          message: 'Session not found',
+        }, { status: 400 });
+      }
+
+      const session = sessionRecords[0];
+      if (session?.status !== 'active') {
+        return NextResponse.json({
+          error: 'Invalid session',
+          message: 'Session is not active',
+        }, { status: 400 });
+      }
+
+      // Validate session ownership for authenticated users
+      if (context.userId && session.userId !== context.userId) {
+        return NextResponse.json({
+          error: 'Access denied',
+          message: 'Session does not belong to user',
+        }, { status: 403 });
+      }
+
+      // Validate session ownership for guest users
+      if (context.guestToken && session.guestToken !== context.guestToken) {
+        return NextResponse.json({
+          error: 'Access denied',
+          message: 'Session does not belong to guest user',
+        }, { status: 403 });
+      }
     }
 
     // Convert file (Blob) to Buffer

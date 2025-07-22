@@ -1,8 +1,8 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { Calendar, ChevronDown, User, UserCheck } from 'lucide-react';
-import { useState } from 'react';
+import { Calendar, ChevronDown, Smartphone, User, UserCheck } from 'lucide-react';
+import { useCallback, useRef, useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
@@ -25,9 +25,14 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
     createPatientSession = () => null,
     switchToPatientSession = () => {},
     resetConsultation = () => {},
+    // Phase 4: Access mobile device state
+    mobileV2 = { isEnabled: false, token: null, tokenData: null, connectedDevices: [], connectionStatus: 'disconnected' },
   } = useConsultation();
 
   const { isLargeDesktop } = useResponsive();
+
+  // Phase 2: Add debouncing for new patient creation
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [editingSession, setEditingSession] = useState<{
     sessionId: string | null;
@@ -81,26 +86,33 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
     }
   };
 
-  const handleNewPatient = async () => {
-    try {
-      // Generate a new patient name with current timestamp
-      const now = new Date();
-      const patientName = `Patient ${now.toLocaleDateString()} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-
-      // Create new patient session
-      const newSession = await createPatientSession(patientName);
-      if (!newSession) {
-        throw new Error('Failed to create new patient session');
-      }
-
-      // Switch to the new session
-      switchToPatientSession(newSession.id);
-      // Reset consultation data for the new patient
-      resetConsultation();
-    } catch (error) {
-      console.error('Error creating new patient:', error);
+  const handleNewPatient = useCallback(async () => {
+    // Phase 2: Debounce rapid clicks (500ms)
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
     }
-  };
+
+    debounceTimeoutRef.current = setTimeout(async () => {
+      try {
+        // Generate a new patient name with current timestamp
+        const now = new Date();
+        const patientName = `Patient ${now.toLocaleDateString()} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+
+        // Create new patient session
+        const newSession = await createPatientSession(patientName);
+        if (!newSession) {
+          throw new Error('Failed to create new patient session');
+        }
+
+        // Switch to the new session
+        switchToPatientSession(newSession.id);
+        // Reset consultation data for the new patient
+        resetConsultation();
+      } catch (error) {
+        console.error('Error creating new patient:', error);
+      }
+    }, 500);
+  }, [createPatientSession, switchToPatientSession, resetConsultation]);
 
   const formatSessionDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -228,6 +240,28 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
                   <span className="rounded bg-blue-200 px-1.5 py-0.5 text-xs text-blue-700">
                     Completed
                   </span>
+                )}
+
+                {/* Phase 4: Mobile Device Status */}
+                {mobileV2.isEnabled && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-400">•</span>
+                    <Smartphone className="size-3" />
+                    <span className={`text-xs ${
+                      mobileV2.connectionStatus === 'connected' && mobileV2.connectedDevices.length > 0
+                        ? 'text-green-600'
+                        : mobileV2.connectionStatus === 'connecting'
+                          ? 'text-yellow-600'
+                          : 'text-gray-500'
+                    }`}
+                    >
+                      {mobileV2.connectedDevices.length > 0
+                        ? `${mobileV2.connectedDevices.length} mobile device${mobileV2.connectedDevices.length > 1 ? 's' : ''}`
+                        : mobileV2.connectionStatus === 'connecting'
+                          ? 'connecting mobile'
+                          : 'mobile ready'}
+                    </span>
+                  </div>
                 )}
               </div>
             )}

@@ -70,12 +70,19 @@ export async function POST(req: Request) {
     // Create Ably client with your API key (server-side only)
     const ably = new Ably.Rest({ key: process.env.ABLY_API_KEY });
 
+    // Phase 1: Updated capability-based authentication with new channel naming
+    const isGuestUser = clientId.startsWith('guest-');
+    const baseChannelPattern = isGuestUser
+      ? `guest:${clientId.replace('guest-', '')}*`
+      : `user:${clientId}*`;
+
     // Generate a token for the client
     const tokenRequest = await ably.auth.createTokenRequest({
       clientId,
-      // Optional: Add capabilities/restrictions
+      // Phase 1: Capability-based access control for new channel architecture
       capability: {
-        [`user-${clientId}`]: ['publish', 'subscribe', 'presence'],
+        [baseChannelPattern]: ['publish', 'subscribe', 'presence'],
+        'consult:*': ['publish', 'subscribe'], // Access to all consultation transcript channels
       },
       // Token expires in 24 hours (same as mobile token)
       ttl: 24 * 60 * 60 * 1000,

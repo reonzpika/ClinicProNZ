@@ -16,7 +16,7 @@ import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 import { AudioSettingsModal } from '../../mobile/components/AudioSettingsModal';
 import { MobileRecordingQRV2 } from '../../mobile/components/MobileRecordingQRV2';
 import { ConsentModal } from '../../session-management/components/ConsentModal';
-import { useRecordingHealthCheck } from '../hooks/useRecordingHealthCheck';
+// Phase 5: Removed health check imports
 import { useTranscription } from '../hooks/useTranscription';
 import { ConsultationInputHeader } from './ConsultationInputHeader';
 import { RecordingStatusIndicator } from './RecordingStatusIndicator';
@@ -56,7 +56,7 @@ export function TranscriptionControls({
   const [recordingStartTime, setRecordingStartTime] = useState<number | null>(null);
   const [showNoTranscriptWarning, setShowNoTranscriptWarning] = useState(false);
   const [canCreateSession, setCanCreateSession] = useState(true);
-  const [showStatusModal, setShowStatusModal] = useState(false); // For detailed status popup
+  // Phase 5: Removed showStatusModal as health check components are deleted
   const useMobileV2 = true; // Mobile V2 is now enabled by default
 
   const {
@@ -74,15 +74,6 @@ export function TranscriptionControls({
     noInputWarning,
     totalChunks,
   } = useTranscription();
-
-  // Recording health check system - only trigger when user initiates mobile setup
-  const { status, issues, canStartRecording, triggerHealthCheck, retryCount, maxRetries } = useRecordingHealthCheck({
-    enabled: true,
-    autoStart: false,
-    triggerOnMobileConnect: true,
-    triggerOnPatientChange: true,
-    autoRetryCount: 3, // Allow up to 3 retries for health checks
-  });
 
   // Use regular transcript since diarization is disabled
   const transcript = contextTranscription.transcript;
@@ -194,7 +185,7 @@ export function TranscriptionControls({
   const handleMobileClick = () => {
     setShowMobileRecordingV2(true);
     // Trigger health check when user initiates mobile recording setup
-    triggerHealthCheck();
+    // triggerHealthCheck(); // Removed health check functionality
   };
 
   // Handle device disconnect
@@ -394,17 +385,7 @@ export function TranscriptionControls({
 
                       {/* Right side: Status indicator + Mobile button */}
                       <div className="flex items-center gap-2">
-                        {/* Minimal status indicator */}
-                        <RecordingStatusIndicator
-                          status={status}
-                          issues={issues}
-                          isRunningHealthCheck={false}
-                          lastSync={null}
-                          transcriptionRate={0}
-                          canStartRecording={canStartRecording}
-                          onClick={() => setShowStatusModal(true)}
-                          onShowMobileSetup={() => setShowMobileRecordingV2(true)}
-                        />
+                        {/* Phase 5: Removed RecordingStatusIndicator - health check system eliminated */}
 
                         {/* Mobile Recording Button */}
                         {hasMobileDevices
@@ -412,15 +393,9 @@ export function TranscriptionControls({
                               <Button
                                 type="button"
                                 onClick={handleStartMobileRecording}
-                                disabled={!canStartRecording || (!isSignedIn && !canCreateSession)}
+                                disabled={!canCreateSession} // Removed canStartRecording check
                                 className="h-8 bg-green-600 px-3 text-xs text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-                                title={
-                                  !canStartRecording
-                                    ? `Cannot start recording: ${issues.map(issue => issue.message).join(', ')}`
-                                    : !isSignedIn && !canCreateSession
-                                        ? 'Session limit reached - see Usage Dashboard for upgrade options'
-                                        : ''
-                                }
+                                title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
                               >
                                 <Smartphone className="mr-1 size-3" />
                                 Start Mobile
@@ -434,7 +409,7 @@ export function TranscriptionControls({
                                 className="h-8 bg-blue-600 px-3 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
                                 title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
                               >
-                                <Settings className="mr-1 size-3" />
+                                <Smartphone className="mr-1 size-3" />
                                 Connect Mobile
                               </Button>
                             )}
@@ -468,15 +443,9 @@ export function TranscriptionControls({
                                 type="button"
                                 variant="outline"
                                 onClick={handleStartRecording}
-                                disabled={!canStartRecording || (!isSignedIn && !canCreateSession)}
+                                disabled={!canCreateSession} // Removed canStartRecording check
                                 className="h-7 w-full border-slate-300 text-xs disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
-                                title={
-                                  !canStartRecording
-                                    ? `Cannot start recording: ${issues.map(issue => issue.message).join(', ')}`
-                                    : !isSignedIn && !canCreateSession
-                                        ? 'Session limit reached - see Usage Dashboard for upgrade options'
-                                        : ''
-                                }
+                                title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
                               >
                                 Start Desktop Recording
                               </Button>
@@ -706,22 +675,7 @@ export function TranscriptionControls({
         onClose={() => setShowMobileRecordingV2(false)}
       />
 
-      {/* Detailed Status Modal */}
-      <RecordingStatusModal
-        isOpen={showStatusModal}
-        onClose={() => setShowStatusModal(false)}
-        status={status}
-        issues={issues}
-        isRunningHealthCheck={false}
-        lastSync={null}
-        transcriptionRate={0}
-        canStartRecording={canStartRecording}
-        onRunHealthCheck={() => triggerHealthCheck()}
-        onShowMobileSetup={() => setShowMobileRecordingV2(true)}
-        apiCacheStatus={undefined}
-        retryCount={retryCount}
-        maxRetries={maxRetries}
-      />
+      {/* Phase 5: Removed RecordingStatusModal - health check system eliminated */}
     </div>
   );
 }

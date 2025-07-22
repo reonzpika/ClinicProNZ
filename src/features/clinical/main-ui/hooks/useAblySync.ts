@@ -9,9 +9,9 @@ import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 // Global connection registry to prevent duplicate connections
 const globalConnectionRegistry = new Map<string, { connection: Ably.Realtime; refCount: number }>();
 
-// Message types for Ably communication
+// Simplified message types for Ably communication (Phase 1: Removed health check messages)
 type AblyMessage = {
-  type: 'transcription' | 'device_connected' | 'device_disconnected' | 'session_created' | 'force_disconnect' | 'start_recording' | 'stop_recording' | 'patient_updated' | 'health_check_request' | 'health_check_response';
+  type: 'transcription' | 'patient_updated' | 'start_recording' | 'stop_recording';
   userId?: string;
   patientSessionId?: string;
   transcript?: string;
@@ -21,10 +21,6 @@ type AblyMessage = {
   deviceName?: string;
   deviceType?: string;
   patientName?: string;
-  targetDeviceId?: string; // For targeting specific devices to disconnect
-  confirmationId?: string; // For health check confirmations
-  isHealthy?: boolean; // For health check responses
-  issues?: string[]; // For health check issue reporting
   data?: any;
 };
 
@@ -39,7 +35,7 @@ type AblySyncHookProps = {
   onError?: (error: string | null) => void;
   onStartRecording?: () => void;
   onStopRecording?: () => void;
-  onHealthCheckRequested?: () => Promise<boolean>; // Mobile responds to health checks
+  // Removed: onHealthCheckRequested - health checks eliminated per Phase 1
 };
 
 type ConnectionState = {
@@ -53,6 +49,8 @@ type ConnectionState = {
   }>;
   error?: string;
   lastSeen?: number;
+  // Phase 1: Added current transcript channel tracking
+  currentTranscriptChannel?: string;
 };
 
 export const useAblySync = ({
@@ -66,7 +64,7 @@ export const useAblySync = ({
   onError,
   onStartRecording,
   onStopRecording,
-  onHealthCheckRequested,
+  // Removed: onHealthCheckRequested
 }: AblySyncHookProps) => {
   const { userId: authUserId } = useAuth();
   const { getUserTier } = useClerkMetadata();
@@ -78,6 +76,10 @@ export const useAblySync = ({
 
   const ablyRef = useRef<Ably.Realtime | null>(null);
   const channelRef = useRef<Ably.RealtimeChannel | null>(null);
+  // Phase 1: Add separate tracking for control and transcript channels
+  const controlChannelRef = useRef<Ably.RealtimeChannel | null>(null);
+  const transcriptChannelRef = useRef<Ably.RealtimeChannel | null>(null);
+  const currentSessionIdRef = useRef<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [processedMessageIds] = useState(new Set<string>());
 
@@ -93,7 +95,7 @@ export const useAblySync = ({
     onError,
     onStartRecording,
     onStopRecording,
-    onHealthCheckRequested,
+    // Removed: onHealthCheckRequested
   }), [
     onTranscriptionReceived,
     onPatientSwitched,
@@ -102,7 +104,7 @@ export const useAblySync = ({
     onError,
     onStartRecording,
     onStopRecording,
-    onHealthCheckRequested,
+    // Removed: onHealthCheckRequested
   ]);
 
   // Memoize device info to prevent recreation on every render
@@ -233,6 +235,17 @@ export const useAblySync = ({
   // Clean up connection - Added safety checks and global registry management
   const cleanup = useCallback(() => {
     try {
+      // Phase 1: Clean up both control and transcript channels
+      if (controlChannelRef.current) {
+        controlChannelRef.current.detach();
+        controlChannelRef.current = null;
+      }
+
+      if (transcriptChannelRef.current) {
+        transcriptChannelRef.current.detach();
+        transcriptChannelRef.current = null;
+      }
+
       if (channelRef.current) {
         channelRef.current.detach();
         channelRef.current = null;
@@ -260,16 +273,26 @@ export const useAblySync = ({
         ablyRef.current = null;
       }
 
-      setConnectionState(prev => ({ ...prev, status: 'disconnected' }));
+      // Reset session tracking
+      currentSessionIdRef.current = null;
+      setConnectionState(prev => ({ ...prev, status: 'disconnected', currentTranscriptChannel: undefined }));
     } catch {
       // Silently handle cleanup errors - connection might already be closed
-      setConnectionState(prev => ({ ...prev, status: 'disconnected' }));
+      setConnectionState(prev => ({ ...prev, status: 'disconnected', currentTranscriptChannel: undefined }));
     }
   }, []);
 
   // Send transcription to connected desktop device
   const sendTranscription = useCallback(async (transcript: string, patientSessionId?: string) => {
-    if (!channelRef.current) {
+    // Phase 1: Mobile uses transcript channel, desktop uses control channel
+    const targetChannel = !isDesktop && transcriptChannelRef.current
+      ? transcriptChannelRef.current
+      : channelRef.current;
+
+    if (!targetChannel) {
+      // Phase 4: Better error feedback instead of silent failure
+      console.warn('Cannot send transcription: No active channel');
+      stableCallbacks.onError?.('No active connection to send transcription');
       return false;
     }
 
@@ -280,13 +303,15 @@ export const useAblySync = ({
         patientSessionId,
       };
 
-      await channelRef.current.publish('transcription', message);
+      await targetChannel.publish('transcription', message);
       return true;
-    } catch {
-      // Transcription send failures are handled silently - UI will show appropriate feedback
+    } catch (error) {
+      // Phase 4: Improved error handling with specific feedback
+      console.error('Failed to send transcription:', error);
+      stableCallbacks.onError?.('Failed to send transcription to desktop');
       return false;
     }
-  }, []);
+  }, [isDesktop, stableCallbacks]);
 
   // Send enhanced transcription with diarization data
   const sendTranscriptionWithDiarization = useCallback(async (
@@ -295,7 +320,15 @@ export const useAblySync = ({
     diarizedTranscript?: string | null,
     utterances?: any[],
   ) => {
-    if (!channelRef.current) {
+    // Phase 1: Mobile uses transcript channel, desktop uses control channel
+    const targetChannel = !isDesktop && transcriptChannelRef.current
+      ? transcriptChannelRef.current
+      : channelRef.current;
+
+    if (!targetChannel) {
+      // Phase 4: Better error feedback instead of silent failure
+      console.warn('Cannot send transcription: No active channel');
+      stableCallbacks.onError?.('No active connection to send transcription');
       return false;
     }
 
@@ -308,13 +341,15 @@ export const useAblySync = ({
         utterances,
       };
 
-      await channelRef.current.publish('transcription', message);
+      await targetChannel.publish('transcription', message);
       return true;
-    } catch {
-      // Enhanced transcription send failures are handled silently - UI will show appropriate feedback
+    } catch (error) {
+      // Phase 4: Improved error handling with specific feedback
+      console.error('Failed to send enhanced transcription:', error);
+      stableCallbacks.onError?.('Failed to send transcription to desktop');
       return false;
     }
-  }, []);
+  }, [isDesktop, stableCallbacks]);
 
   // Send message through Ably
   const sendMessage = useCallback((message: AblyMessage) => {
@@ -339,6 +374,76 @@ export const useAblySync = ({
     return false;
   }, []);
 
+  // Phase 2: Expose sendMessage globally for consultation context
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).ablySyncHook = { sendMessage };
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete (window as any).ablySyncHook;
+      }
+    };
+  }, [sendMessage]);
+
+  // Phase 2: Presence-based reconnection recovery
+  const handlePresenceChanges = useCallback((presenceMsg: Ably.PresenceMessage) => {
+    const { deviceId: presenceDeviceId, deviceName: presenceDeviceName, deviceType: presenceDeviceType } = presenceMsg.data;
+
+    if (presenceMsg.action === 'enter') {
+      stableCallbacks.onDeviceConnected?.(presenceDeviceId, presenceDeviceName, presenceDeviceType);
+
+      // Phase 2: If we're desktop and a mobile device reconnects, resend current session
+      if (isDesktop && presenceDeviceType === 'Mobile') {
+        // Get current session from consultation context and resend
+        const currentSession = getCurrentPatientSession?.();
+        if (currentSession) {
+          setTimeout(() => {
+            sendMessage({
+              type: 'patient_updated',
+              patientSessionId: currentSession.id,
+              patientName: currentSession.patientName,
+            });
+          }, 1000); // Give mobile device time to set up channel handlers
+        }
+      }
+    } else if (presenceMsg.action === 'leave') {
+      stableCallbacks.onDeviceDisconnected?.(presenceDeviceId);
+    }
+  }, [isDesktop, stableCallbacks, sendMessage]);
+
+  // Phase 1: Switch transcript channel for mobile devices
+  const switchTranscriptChannel = useCallback(async (newSessionId: string) => {
+    if (isDesktop || !ablyRef.current || newSessionId === currentSessionIdRef.current) {
+      return; // Desktop doesn't switch channels, or no change needed
+    }
+
+    try {
+      // Detach from old transcript channel
+      if (transcriptChannelRef.current) {
+        transcriptChannelRef.current.detach();
+        transcriptChannelRef.current = null;
+      }
+
+      // Connect to new transcript channel
+      const newTranscriptChannelName = `consult:${newSessionId}`;
+      const newTranscriptChannel = ablyRef.current.channels.get(newTranscriptChannelName);
+      transcriptChannelRef.current = newTranscriptChannel;
+      currentSessionIdRef.current = newSessionId;
+
+      // Update connection state
+      setConnectionState(prev => ({
+        ...prev,
+        currentTranscriptChannel: newTranscriptChannelName,
+      }));
+
+      console.log(`[Mobile] Switched to transcript channel: ${newTranscriptChannelName}`);
+    } catch (error) {
+      console.error('Failed to switch transcript channel:', error);
+      stableCallbacks.onError?.('Failed to switch to new session channel');
+    }
+  }, [isDesktop, stableCallbacks]);
+
   // Separate function to set up channel handlers to avoid duplication
   const setupChannelHandlers = useCallback((channel: Ably.RealtimeChannel, deviceId: string) => {
     // Handle incoming messages
@@ -357,11 +462,6 @@ export const useAblySync = ({
             stableCallbacks.onTranscriptionReceived?.(data.transcript, data.patientSessionId, data.diarizedTranscript, data.utterances);
           }
           break;
-        case 'force_disconnect':
-          if (!isDesktop && data.targetDeviceId === deviceId) {
-            cleanup();
-          }
-          break;
         case 'start_recording':
           if (!isDesktop) {
             stableCallbacks.onStartRecording?.();
@@ -374,50 +474,21 @@ export const useAblySync = ({
           break;
         case 'patient_updated':
           if (!isDesktop && data.patientSessionId) {
+            // Phase 1: Mobile transcript channel switching
+            switchTranscriptChannel(data.patientSessionId);
             // Mobile: Direct patient update
             stableCallbacks.onPatientSwitched?.(data.patientSessionId, data.patientName || 'Unknown Patient');
           }
           break;
-        case 'health_check_request':
-          if (!isDesktop && data.confirmationId && stableCallbacks.onHealthCheckRequested) {
-            // Mobile: Respond to health check request
-            stableCallbacks.onHealthCheckRequested()
-              .then((isHealthy) => {
-                sendMessage({
-                  type: 'health_check_response',
-                  confirmationId: data.confirmationId,
-                  isHealthy,
-                  deviceId,
-                });
-              })
-              .catch(() => {
-                sendMessage({
-                  type: 'health_check_response',
-                  confirmationId: data.confirmationId,
-                  isHealthy: false,
-                  deviceId,
-                  issues: ['Health check failed on mobile'],
-                });
-              });
-          }
-          break;
-        case 'health_check_response':
-          // Desktop: Handle health check response (will be processed by health check hook)
-          break;
+        // Phase 1: Removed health check message handling
       }
     });
 
     // Handle presence changes
     channel.presence.subscribe((presenceMsg) => {
-      const { deviceId: presenceDeviceId, deviceName: presenceDeviceName, deviceType: presenceDeviceType } = presenceMsg.data;
-
-      if (presenceMsg.action === 'enter') {
-        stableCallbacks.onDeviceConnected?.(presenceDeviceId, presenceDeviceName, presenceDeviceType);
-      } else if (presenceMsg.action === 'leave') {
-        stableCallbacks.onDeviceDisconnected?.(presenceDeviceId);
-      }
+      handlePresenceChanges(presenceMsg);
     });
-  }, [isDesktop, stableCallbacks, cleanup, processedMessageIds]);
+  }, [isDesktop, stableCallbacks, cleanup, processedMessageIds, switchTranscriptChannel, handlePresenceChanges]);
 
   // Connect to Ably
   const connect = useCallback(async () => {
@@ -439,11 +510,15 @@ export const useAblySync = ({
         return;
       }
 
-      const channelName = `user-${currentUserId}`;
+      // Phase 1: Updated channel naming - use control channel format
+      const isGuestUser = currentUserId.startsWith('guest-') || (!authUserId && token);
+      const controlChannelName = isGuestUser
+        ? `guest:${currentUserId.replace('guest-', '')}`
+        : `user:${currentUserId}`;
 
       // Check if there's already an active connection for this user
-      if (globalConnectionRegistry.has(channelName)) {
-        const existing = globalConnectionRegistry.get(channelName)!;
+      if (globalConnectionRegistry.has(controlChannelName)) {
+        const existing = globalConnectionRegistry.get(controlChannelName)!;
         const connectionState = existing.connection.connection.state;
 
         if (connectionState === 'connected' || connectionState === 'connecting') {
@@ -451,8 +526,9 @@ export const useAblySync = ({
           existing.refCount++;
           ablyRef.current = existing.connection;
 
-          const channel = existing.connection.channels.get(channelName);
+          const channel = existing.connection.channels.get(controlChannelName);
           channelRef.current = channel;
+          controlChannelRef.current = channel; // Phase 1: Track control channel
 
           // Set up event handlers for this instance
           setupChannelHandlers(channel, currentUserId);
@@ -463,7 +539,7 @@ export const useAblySync = ({
           return;
         } else {
           // Clean up stale connection
-          globalConnectionRegistry.delete(channelName);
+          globalConnectionRegistry.delete(controlChannelName);
         }
       }
 
@@ -532,11 +608,12 @@ export const useAblySync = ({
       });
 
       // Register this connection globally
-      globalConnectionRegistry.set(channelName, { connection: ably, refCount: 1 });
+      globalConnectionRegistry.set(controlChannelName, { connection: ably, refCount: 1 });
       ablyRef.current = ably;
 
-      const channel = ably.channels.get(channelName);
+      const channel = ably.channels.get(controlChannelName);
       channelRef.current = channel;
+      controlChannelRef.current = channel; // Phase 1: Track control channel
 
       // Set up presence
       channel.presence.enter({
@@ -620,13 +697,12 @@ export const useAblySync = ({
       });
       return success ? patientSessionId : '';
     }, [sendMessage]),
-    requestHealthCheck: useCallback(async (): Promise<string> => {
-      const confirmationId = `health-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
-      const success = sendMessage({
-        type: 'health_check_request',
-        confirmationId,
+    // Phase 5: Removed requestHealthCheck - health check system eliminated
+    forceDisconnectDevice: useCallback(async (deviceId: string): Promise<void> => {
+      sendMessage({
+        type: 'force_disconnect',
+        targetDeviceId: deviceId,
       });
-      return success ? confirmationId : '';
     }, [sendMessage]),
   };
 };

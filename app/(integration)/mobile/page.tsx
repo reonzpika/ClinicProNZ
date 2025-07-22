@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, CheckCircle, Mic, MicOff, Smartphone, Wifi, WifiOff } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Clock, Mic, MicOff, Smartphone, Wifi, WifiOff } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
@@ -10,7 +10,16 @@ import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 
-// Simplified state types
+// Phase 4: Comprehensive mobile state machine
+type MobileState =
+  | 'disconnected' // No token or invalid token
+  | 'connecting' // Validating token and establishing Ably connection
+  | 'waiting_session' // Connected but no patient session
+  | 'ready' // Session received, ready to record
+  | 'recording' // Currently recording
+  | 'session_ended' // Session was completed/ended
+  | 'error'; // Error state
+
 type TokenState = {
   token: string | null;
   isValidating: boolean;
@@ -21,9 +30,70 @@ type TokenState = {
 type PatientState = {
   sessionId: string | null;
   name: string | null;
-  syncStatus: 'idle' | 'syncing' | 'synced' | 'error';
+  syncStatus: 'idle' | 'syncing' | 'synced';
   lastSyncTime: number | null;
 };
+
+// Phase 4: State machine with clear transitions
+type StateMachineState = {
+  currentState: MobileState;
+  tokenState: TokenState;
+  patientState: PatientState;
+  connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'error';
+  error: string | null;
+  canRecord: boolean;
+  statusMessage: string;
+};
+
+// Phase 4: State machine reducer for clear state transitions
+function getStateMachineState(
+  tokenState: TokenState,
+  patientState: PatientState,
+  connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'error',
+  isRecording: boolean,
+): StateMachineState {
+  let currentState: MobileState;
+  let error: string | null = null;
+  let canRecord = false;
+  let statusMessage = '';
+
+  if (tokenState.error) {
+    currentState = 'error';
+    error = tokenState.error;
+    statusMessage = tokenState.error;
+  } else if (tokenState.isValidating || !tokenState.token) {
+    currentState = tokenState.isValidating ? 'connecting' : 'disconnected';
+    statusMessage = tokenState.isValidating ? 'Validating token...' : 'No valid token';
+  } else if (connectionStatus === 'error') {
+    currentState = 'error';
+    error = 'Connection failed';
+    statusMessage = 'Connection failed';
+  } else if (connectionStatus !== 'connected') {
+    currentState = 'connecting';
+    statusMessage = 'Connecting...';
+  } else if (!patientState.sessionId) {
+    currentState = 'waiting_session';
+    statusMessage = 'Waiting for patient session...';
+  } else if (isRecording) {
+    currentState = 'recording';
+    canRecord = true;
+    statusMessage = `Recording for ${patientState.name || 'Patient'}`;
+  } else {
+    currentState = 'ready';
+    canRecord = true;
+    statusMessage = `Ready to record for ${patientState.name || 'Patient'}`;
+  }
+
+  return {
+    currentState,
+    tokenState,
+    patientState,
+    connectionStatus,
+    error,
+    canRecord,
+    statusMessage,
+  };
+}
 
 // Loading component for Suspense fallback
 function MobilePageLoading() {
@@ -110,7 +180,7 @@ function MobilePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Simplified state management
+  // Phase 4: State machine-based state management
   const [tokenState, setTokenState] = useState<TokenState>({
     token: null,
     isValidating: true,
@@ -214,21 +284,7 @@ function MobilePageContent() {
         syncTimeoutRef.current = null; // Clear ref after timeout executes
       }, 1000); // 1 second syncing feedback
     }, []),
-    onHealthCheckRequested: useCallback(async (): Promise<boolean> => {
-      // Mobile health check: verify microphone access and connection
-      try {
-        // Quick microphone test
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach(track => track.stop()); // Clean up
-
-        // Check if we have a valid patient session
-        const hasValidSession = !!patientState.sessionId;
-
-        return hasValidSession;
-      } catch {
-        return false;
-      }
-    }, [patientState.sessionId]),
+    // Phase 5: Removed onHealthCheckRequested - health check system eliminated
     onStartRecording: useCallback(() => {
       // This callback is now handled by the useTranscription hook
     }, []),
@@ -261,32 +317,57 @@ function MobilePageContent() {
       // Mobile-specific processing with diarization support
       const formData = new FormData();
       formData.append('audio', audioBlob, 'audio.webm');
+
+      // Phase 3: Add sessionId for backend validation
+      if (patientState.sessionId) {
+        formData.append('sessionId', patientState.sessionId);
+      }
+
       const headers: Record<string, string> = {};
       if (tokenState.token) {
         headers['x-guest-token'] = tokenState.token;
       }
-      const response = await fetch('/api/deepgram/transcribe', {
-        method: 'POST',
-        headers,
-        body: formData,
-      });
-      if (!response.ok) {
-        return;
-      }
-      const { transcript } = await response.json();
 
-      // Use regular transcript since diarization is disabled
-      if (transcript?.trim() && connectionState.status === 'connected') {
-        // Send regular transcription data
-        await sendTranscriptionWithDiarization(
-          transcript.trim(),
-          patientState.sessionId || undefined,
-          null, // No diarized transcript
-          [], // No utterances
-        );
+      try {
+        const response = await fetch('/api/deepgram/transcribe', {
+          method: 'POST',
+          headers,
+          body: formData,
+        });
+
+        if (!response.ok) {
+          // Phase 4: Better error handling with user feedback
+          const errorData = await response.json().catch(() => ({}));
+          console.error('Transcription failed:', response.status, errorData);
+          return;
+        }
+
+        const { transcript } = await response.json();
+
+        // Use regular transcript since diarization is disabled
+        if (transcript?.trim() && connectionState.status === 'connected') {
+          // Send regular transcription data
+          await sendTranscriptionWithDiarization(
+            transcript.trim(),
+            patientState.sessionId || undefined,
+            null, // No diarized transcript
+            [], // No utterances
+          );
+        }
+      } catch (error) {
+        // Phase 4: Handle network errors with user feedback
+        console.error('Network error during transcription:', error);
       }
     },
   });
+
+  // Phase 4: Calculate current state using state machine
+  const stateMachine = getStateMachineState(
+    tokenState,
+    patientState,
+    connectionState.status,
+    isRecording,
+  );
 
   // Manage wake lock based on recording state
   useEffect(() => {
@@ -355,39 +436,128 @@ function MobilePageContent() {
 
           {/* Connection Status */}
           <div className="flex items-center space-x-2">
-            {isConnected
+            {stateMachine.currentState === 'connected' || stateMachine.currentState === 'ready' || stateMachine.currentState === 'recording'
               ? (
                   <>
                     <Wifi className="size-5 text-green-600" />
                     <span className="text-sm font-medium text-green-600">Connected</span>
                   </>
                 )
-              : hasConnectionError
+              : stateMachine.currentState === 'error'
                 ? (
                     <>
                       <WifiOff className="size-5 text-red-600" />
                       <span className="text-sm font-medium text-red-600">Error</span>
                     </>
                   )
-                : isConnecting
+                : stateMachine.currentState === 'connecting'
                   ? (
                       <>
                         <Wifi className="size-5 text-yellow-600" />
                         <span className="text-sm font-medium text-yellow-600">Connecting...</span>
                       </>
                     )
-                  : (
-                      <>
-                        <Wifi className="size-5 text-blue-600" />
-                        <span className="text-sm font-medium text-blue-600">Ready</span>
-                      </>
-                    )}
+                  : stateMachine.currentState === 'waiting_session'
+                    ? (
+                        <>
+                          <Wifi className="size-5 text-blue-600" />
+                          <span className="text-sm font-medium text-blue-600">Waiting Session</span>
+                        </>
+                      )
+                    : (
+                        <>
+                          <Wifi className="size-5 text-gray-600" />
+                          <span className="text-sm font-medium text-gray-600">Disconnected</span>
+                        </>
+                      )}
           </div>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 space-y-4 p-4">
+        {/* Phase 4: Comprehensive Status Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">System Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {/* Current State Display */}
+              <div className="flex items-center space-x-3">
+                {stateMachine.currentState === 'error' && (
+                  <>
+                    <AlertTriangle className="size-6 text-red-500" />
+                    <div>
+                      <div className="font-medium text-red-700">Error</div>
+                      <div className="text-sm text-red-600">{stateMachine.error}</div>
+                    </div>
+                  </>
+                )}
+                {stateMachine.currentState === 'disconnected' && (
+                  <>
+                    <WifiOff className="size-6 text-gray-500" />
+                    <div>
+                      <div className="font-medium text-gray-700">Disconnected</div>
+                      <div className="text-sm text-gray-600">No valid token</div>
+                    </div>
+                  </>
+                )}
+                {stateMachine.currentState === 'connecting' && (
+                  <>
+                    <div className="size-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                    <div>
+                      <div className="font-medium text-blue-700">Connecting</div>
+                      <div className="text-sm text-blue-600">Establishing connection...</div>
+                    </div>
+                  </>
+                )}
+                {stateMachine.currentState === 'waiting_session' && (
+                  <>
+                    <Clock className="size-6 text-yellow-500" />
+                    <div>
+                      <div className="font-medium text-yellow-700">Waiting for Session</div>
+                      <div className="text-sm text-yellow-600">Connected, waiting for patient session from desktop</div>
+                    </div>
+                  </>
+                )}
+                {stateMachine.currentState === 'ready' && (
+                  <>
+                    <CheckCircle className="size-6 text-green-500" />
+                    <div>
+                      <div className="font-medium text-green-700">Ready to Record</div>
+                      <div className="text-sm text-green-600">
+                        Session:
+                        {patientState.name}
+                      </div>
+                    </div>
+                  </>
+                )}
+                {stateMachine.currentState === 'recording' && (
+                  <>
+                    <div className="flex items-center space-x-2">
+                      <div className="size-3 animate-pulse rounded-full bg-red-500" />
+                      <Mic className="size-6 text-red-500" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-red-700">Recording Active</div>
+                      <div className="text-sm text-red-600">
+                        Recording for
+                        {patientState.name}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Status Message */}
+              <div className="rounded-md bg-gray-50 p-3">
+                <div className="text-sm text-gray-700">{stateMachine.statusMessage}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Current Patient - Only show for authenticated users */}
         {!tokenState.isGuest && (
           <Card>
@@ -432,37 +602,6 @@ function MobilePageContent() {
             </CardContent>
           </Card>
         )}
-
-        {/* System Status */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">System Status</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-2">
-              {patientState.sessionId && connectionState.status === 'connected'
-                ? (
-                    <>
-                      <CheckCircle className="size-5 text-green-600" />
-                      <span className="font-medium text-green-600">Ready to Record</span>
-                    </>
-                  )
-                : (
-                    <>
-                      <AlertTriangle className="size-5 text-amber-500" />
-                      <span className="font-medium text-amber-600">Setup Required</span>
-                    </>
-                  )}
-            </div>
-            <div className="mt-2 text-xs text-gray-500">
-              {patientState.sessionId && connectionState.status === 'connected'
-                ? 'All systems ready for mobile recording'
-                : !patientState.sessionId
-                    ? 'Waiting for patient session from desktop'
-                    : 'Connecting to desktop...'}
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Error Display */}
         {tokenState.error && (
@@ -532,12 +671,18 @@ function MobilePageContent() {
                 ? (
                     <Button
                       onClick={startRecording}
-                      disabled={!isFunctional || tokenState.isValidating || !tokenState.token}
+                      disabled={!stateMachine.canRecord}
                       className="h-16 w-full text-lg"
                       size="lg"
                     >
                       <Mic className="mr-2 size-6" />
-                      {tokenState.isValidating ? 'Validating Token...' : 'Start Recording'}
+                      {stateMachine.currentState === 'connecting'
+                        ? 'Connecting...'
+                        : stateMachine.currentState === 'waiting_session'
+                          ? 'Waiting for Session...'
+                          : stateMachine.currentState === 'error'
+                            ? 'Error - Cannot Record'
+                            : 'Start Recording'}
                     </Button>
                   )
                 : (
