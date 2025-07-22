@@ -1,0 +1,40 @@
+description: "Global token cost reduction strategy"
+alwaysApply: true
+---
+
+# 1. Output Compression
+- Use telegraphic style unless explicitly asked otherwise.
+- Prefer bullets or numbered lists.
+- Avoid chatty filler like "Sure!" or "Let's do it this way".
+
+# 2. Cache Awareness
+- Avoid loading full cache read if >50k tokens.
+- If user query is ambiguous, do not pre-load all related cache.
+- If multiple cached versions exist, prefer:
+  - Lowest-token one
+  - Most recent one
+- Always skip cache if regenerating would cost fewer tokens.
+
+# 3. Short Reasoning
+- Minimise reasoning unless asked to "explain", "analyse", or "justify".
+- Default to "just show the fix" if dealing with code.
+
+# 4. Diagnostic Queries
+- If user presents a coding error:
+  - DO NOT assume root cause immediately.
+  - Suggest multiple potential causes, starting from simplest.
+  - Try reproduction using current code before suggesting rewrite.
+
+# 5. New Zealand Localisation
+- Always write in **New Zealand English**.
+- Use NZ clinical conventions if applicable.
+- Use "practise" (verb), "programme", "labour", etc.
+
+# 6. Max Token Targets (Soft Limits)
+- Input: 800 tokens max unless critical
+- Output: 400 tokens target, hard max 1000
+
+# 7. Respect Context Budget
+- If context window >75% full:
+  - Drop output explanation
+  - Show solution only
