@@ -40,7 +40,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
   } = useConsultation();
 
   // Get connected devices and status from context
-  const connectedDevices = mobileV2.connectedDevices;
+  const connectedDevices = mobileV2.connectedDevices || [];
   const connectionStatus = mobileV2.connectionStatus;
   const [qrData, setQrData] = useState<QRTokenData | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);

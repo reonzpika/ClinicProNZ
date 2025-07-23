@@ -1251,7 +1251,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       mobileV2: {
         ...prev.mobileV2,
         connectedDevices: [
-          ...prev.mobileV2.connectedDevices.filter(d => d.deviceId !== device.deviceId),
+          ...(prev.mobileV2.connectedDevices || []).filter(d => d.deviceId !== device.deviceId),
           device,
         ],
       },
@@ -1263,7 +1263,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       ...prev,
       mobileV2: {
         ...prev.mobileV2,
-        connectedDevices: prev.mobileV2.connectedDevices.filter(d => d.deviceId !== deviceId),
+        connectedDevices: (prev.mobileV2.connectedDevices || []).filter(d => d.deviceId !== deviceId),
       },
     }));
   }, []);

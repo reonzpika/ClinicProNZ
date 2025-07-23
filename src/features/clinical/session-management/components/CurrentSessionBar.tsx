@@ -248,15 +248,15 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
                     <span className="text-gray-400">•</span>
                     <Smartphone className="size-3" />
                     <span className={`text-xs ${
-                      mobileV2.connectionStatus === 'connected' && mobileV2.connectedDevices.length > 0
+                      mobileV2.connectionStatus === 'connected' && (mobileV2.connectedDevices || []).length > 0
                         ? 'text-green-600'
                         : mobileV2.connectionStatus === 'connecting'
                           ? 'text-yellow-600'
                           : 'text-gray-500'
                     }`}
                     >
-                      {mobileV2.connectedDevices.length > 0
-                        ? `${mobileV2.connectedDevices.length} mobile device${mobileV2.connectedDevices.length > 1 ? 's' : ''}`
+                      {(mobileV2.connectedDevices || []).length > 0
+                        ? `${(mobileV2.connectedDevices || []).length} mobile device${(mobileV2.connectedDevices || []).length > 1 ? 's' : ''}`
                         : mobileV2.connectionStatus === 'connecting'
                           ? 'connecting mobile'
                           : 'mobile ready'}

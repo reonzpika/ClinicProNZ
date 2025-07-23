@@ -77,7 +77,7 @@ export function TranscriptionControls({
   const transcript = contextTranscription.transcript;
 
   // Filter to only mobile devices for UI display
-  const connectedMobileDevices = mobileV2.connectedDevices.filter(d => d.deviceType === 'Mobile');
+  const connectedMobileDevices = (mobileV2.connectedDevices || []).filter(d => d.deviceType === 'Mobile');
   const hasMobileDevices = connectedMobileDevices.length > 0;
 
   // Track recording time and transcript warning
