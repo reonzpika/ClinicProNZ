@@ -387,8 +387,6 @@ function MobilePageContent() {
     };
   }, []);
 
-
-
   // Show error page for invalid tokens
   if (tokenState.error && !tokenState.isValidating && !tokenState.token) {
     return (

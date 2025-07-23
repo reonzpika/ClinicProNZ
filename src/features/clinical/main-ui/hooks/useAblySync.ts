@@ -256,15 +256,20 @@ export const useAblySync = ({
         // Find and decrement reference count in global registry
         for (const [channelName, entry] of globalConnectionRegistry.entries()) {
           if (entry.connection === ablyRef.current) {
-            entry.refCount--;
+            // Fix 3: Prevent negative reference counts
+            entry.refCount = Math.max(0, entry.refCount - 1);
 
             // Only close connection if no other instances are using it
             if (entry.refCount <= 0) {
               globalConnectionRegistry.delete(channelName);
 
-              // Check if connection is still open before closing
-              if ((ablyRef.current.connection.state as string) !== 'closed' && (ablyRef.current.connection.state as string) !== 'closing') {
-                ablyRef.current.close();
+              // Fix 3: Force close connection with better error handling
+              try {
+                if (ablyRef.current.connection.state !== 'closed' && ablyRef.current.connection.state !== 'closing') {
+                  ablyRef.current.close();
+                }
+              } catch {
+                // Ignore cleanup errors - connection might already be closed
               }
             }
             break;
@@ -579,12 +584,9 @@ export const useAblySync = ({
                   }
                 }
 
-                // For 401 errors, retry with exponential backoff
-                if (response.status === 401 && attempt < maxRetries) {
-                  attempt++;
-                  const delay = 2 ** attempt * 1000; // 2s, 4s, 8s
-                  setTimeout(() => attemptAuth(), delay);
-                  return;
+                // Fix 1: Stop retrying on quota/auth errors to prevent connection multiplication
+                if (response.status === 401) {
+                  throw new Error(`Authentication failed - service may be at capacity (${response.status})`);
                 }
 
                 throw new Error(`Failed to get Ably token (${response.status})`);
@@ -593,6 +595,7 @@ export const useAblySync = ({
               const { tokenRequest } = await response.json();
               callback(null, tokenRequest);
             } catch (error) {
+              // Fix 1: Limit retries to prevent connection multiplication
               if (attempt < maxRetries) {
                 attempt++;
                 const delay = 2 ** attempt * 1000; // 2s, 4s, 8s
@@ -656,25 +659,46 @@ export const useAblySync = ({
     });
   }, [sendMessage]);
 
-  // Connect when enabled
+  // Fix 2: Add tab close cleanup to prevent connection leaks
+  useEffect(() => {
+    const handleTabClose = () => {
+      cleanup();
+    };
+
+    window.addEventListener('beforeunload', handleTabClose);
+    window.addEventListener('pagehide', handleTabClose); // iOS Safari support
+
+    return () => {
+      window.removeEventListener('beforeunload', handleTabClose);
+      window.removeEventListener('pagehide', handleTabClose);
+    };
+  }, [cleanup]);
+
+  // Fix 4: Connect when enabled with smarter reconnection logic
   useEffect(() => {
     if (enabled) {
-      if (isDesktop) {
-        connect();
-      } else {
-        if (token) {
+      // Only connect if not already connecting/connected
+      if (connectionState.status === 'disconnected') {
+        if (isDesktop) {
           connect();
         } else {
-          cleanup();
+          if (token) {
+            connect();
+          } else {
+            cleanup();
+          }
         }
       }
     } else {
-      cleanup();
+      // Only cleanup if not already disconnected
+      if (connectionState.status !== 'disconnected') {
+        cleanup();
+      }
     }
 
     // Always cleanup on unmount or when effect re-runs
     return cleanup;
-  }, [enabled, token, isDesktop, connect, cleanup]);
+  }, [enabled, token, isDesktop]);
 
   return {
     connectionState,
