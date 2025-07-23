@@ -9,6 +9,9 @@ import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 // Global connection registry to prevent duplicate connections
 const globalConnectionRegistry = new Map<string, { connection: Ably.Realtime; refCount: number }>();
 
+// Global hook instance manager to prevent multiple simultaneous instances
+let activeHookInstance: string | null = null;
+
 // Simplified message types for Ably communication (Phase 1: Removed health check messages)
 type AblyMessage = {
   type: 'transcription' | 'patient_updated' | 'start_recording' | 'stop_recording' | 'force_disconnect';
@@ -70,13 +73,7 @@ export const useAblySync = ({
   // Create unique instance ID to track multiple hook instances
   const instanceId = useRef(`ably-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`);
 
-  // Keep minimal logging for monitoring multiple instances
-  console.log('🔧 [ABLY_HOOK] Instance created:', {
-    instanceId: instanceId.current,
-    enabled,
-    isDesktop,
-  });
-
+  // All React hooks MUST be called before any early returns
   const { userId: authUserId } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
@@ -96,6 +93,45 @@ export const useAblySync = ({
 
   // Get guest token from ConsultationContext for fallback user ID
   const { getEffectiveGuestToken, getCurrentPatientSession } = useConsultation();
+
+  // Hook instance management - ensure only one instance is active
+  const [isActiveInstance, setIsActiveInstance] = useState(false);
+
+  // Keep minimal logging for monitoring multiple instances
+  console.log('🔧 [ABLY_HOOK] Instance created:', {
+    instanceId: instanceId.current,
+    enabled,
+    isDesktop,
+  });
+
+  useEffect(() => {
+    // Check if another instance is already active
+    if (activeHookInstance && activeHookInstance !== instanceId.current) {
+      console.log('🔇 [ABLY_HOOK] Inactive instance (another is active):', {
+        thisInstance: instanceId.current,
+        activeInstance: activeHookInstance,
+      });
+      setIsActiveInstance(false);
+      return;
+    }
+
+    // Claim this instance as active
+    activeHookInstance = instanceId.current;
+    setIsActiveInstance(true);
+    console.log('🎯 [ABLY_HOOK] Active instance claimed:', instanceId.current);
+
+    return () => {
+      // Release claim when this instance unmounts
+      if (activeHookInstance === instanceId.current) {
+        activeHookInstance = null;
+        console.log('🔚 [ABLY_HOOK] Active instance released:', instanceId.current);
+      }
+    };
+  }, []); // Only run on mount/unmount
+
+  console.log('✅ [ABLY_HOOK] Running active instance:', instanceId.current);
+
+  const [processedMessageIds] = useState(new Set<string>());
 
   // Stabilize callback references to prevent unnecessary reconnections
   const stableCallbacks = useMemo(() => ({
@@ -186,6 +222,7 @@ export const useAblySync = ({
 
     return { deviceId, deviceName, deviceType };
   }, [isDesktop]);
+
   // Get userId from token API when needed, with proper authentication separation
   const getUserId = useCallback(async () => {
     // If we have a real userId, use it
@@ -311,6 +348,11 @@ export const useAblySync = ({
 
   // Send transcription to connected desktop device
   const sendTranscription = useCallback(async (transcript: string, patientSessionId?: string) => {
+    // Early return for inactive instances
+    if (!isActiveInstance) {
+      return false;
+    }
+
     // Phase 1: Mobile uses transcript channel, desktop uses control channel
     const targetChannel = !isDesktop && transcriptChannelRef.current
       ? transcriptChannelRef.current
@@ -338,7 +380,7 @@ export const useAblySync = ({
       stableCallbacks.onError?.('Failed to send transcription to desktop');
       return false;
     }
-  }, [isDesktop, stableCallbacks]);
+  }, [isDesktop, stableCallbacks, isActiveInstance]);
 
   // Send enhanced transcription with diarization data
   const sendTranscriptionWithDiarization = useCallback(async (
@@ -347,6 +389,11 @@ export const useAblySync = ({
     diarizedTranscript?: string | null,
     utterances?: any[],
   ) => {
+    // Early return for inactive instances
+    if (!isActiveInstance) {
+      return false;
+    }
+
     // Phase 1: Mobile uses transcript channel, desktop uses control channel
     const targetChannel = !isDesktop && transcriptChannelRef.current
       ? transcriptChannelRef.current
@@ -376,10 +423,15 @@ export const useAblySync = ({
       stableCallbacks.onError?.('Failed to send transcription to desktop');
       return false;
     }
-  }, [isDesktop, stableCallbacks]);
+  }, [isDesktop, stableCallbacks, isActiveInstance]);
 
   // Send message through Ably
   const sendMessage = useCallback((message: AblyMessage) => {
+    // Early return for inactive instances
+    if (!isActiveInstance) {
+      return false;
+    }
+
     // More robust connection state checking to prevent error 80017
     if (!channelRef.current || !ablyRef.current) {
       return false;
@@ -399,7 +451,7 @@ export const useAblySync = ({
     }
 
     return false;
-  }, []);
+  }, [isActiveInstance]);
 
   // Phase 2: Expose sendMessage globally for consultation context
   useEffect(() => {
@@ -415,6 +467,10 @@ export const useAblySync = ({
 
   // Phase 2: Presence-based reconnection recovery
   const handlePresenceChanges = useCallback((presenceMsg: Ably.PresenceMessage) => {
+    if (!isActiveInstance) {
+      return;
+    }
+
     const { deviceId: presenceDeviceId, deviceName: presenceDeviceName, deviceType: presenceDeviceType } = presenceMsg.data;
 
     if (presenceMsg.action === 'enter') {
@@ -437,10 +493,14 @@ export const useAblySync = ({
     } else if (presenceMsg.action === 'leave') {
       stableCallbacks.onDeviceDisconnected?.(presenceDeviceId);
     }
-  }, [isDesktop, stableCallbacks, sendMessage, getCurrentPatientSession]);
+  }, [isDesktop, stableCallbacks, sendMessage, getCurrentPatientSession, isActiveInstance]);
 
   // Phase 1: Switch transcript channel for mobile devices
   const switchTranscriptChannel = useCallback(async (newSessionId: string) => {
+    if (!isActiveInstance) {
+      return;
+    }
+
     if (isDesktop || !ablyRef.current || newSessionId === currentSessionIdRef.current) {
       return; // Desktop doesn't switch channels, or no change needed
     }
@@ -469,10 +529,14 @@ export const useAblySync = ({
       console.error('Failed to switch transcript channel:', error);
       stableCallbacks.onError?.('Failed to switch to new session channel');
     }
-  }, [isDesktop, stableCallbacks]);
+  }, [isDesktop, stableCallbacks, isActiveInstance]);
 
   // Separate function to set up channel handlers to avoid duplication
   const setupChannelHandlers = useCallback((channel: Ably.RealtimeChannel, _deviceId: string) => {
+    if (!isActiveInstance) {
+      return;
+    }
+
     // Handle incoming messages
     channel.subscribe((message: Ably.Message) => {
       const data: AblyMessage = message.data;
@@ -515,11 +579,11 @@ export const useAblySync = ({
     channel.presence.subscribe((presenceMsg) => {
       handlePresenceChanges(presenceMsg);
     });
-  }, [isDesktop, stableCallbacks, cleanup, processedMessageIds, switchTranscriptChannel, handlePresenceChanges]);
+  }, [isDesktop, stableCallbacks, cleanup, processedMessageIds, switchTranscriptChannel, handlePresenceChanges, isActiveInstance]);
 
   // Connect to Ably
   const connect = useCallback(async () => {
-    if (!enabled) {
+    if (!enabled || !isActiveInstance) {
       return;
     }
 
@@ -727,15 +791,18 @@ export const useAblySync = ({
       setConnectionState(prev => ({ ...prev, status: 'error', error: errorMessage }));
       stableCallbacks.onError?.(errorMessage);
     }
-  }, [getUserId, getDeviceInfo, stableCallbacks, setupChannelHandlers, enabled, token, isDesktop, connectionState.status]); // FIXED: Minimal dependencies
+  }, [getUserId, getDeviceInfo, stableCallbacks, setupChannelHandlers, enabled, token, isDesktop, connectionState.status, isActiveInstance]); // FIXED: Minimal dependencies
 
   // Enhanced force disconnect
   const forceDisconnectDevice = useCallback(async (targetDeviceId: string) => {
+    if (!isActiveInstance) {
+      return;
+    }
     return sendMessage({
       type: 'force_disconnect',
       targetDeviceId,
     });
-  }, [sendMessage]);
+  }, [sendMessage, isActiveInstance]);
 
   // Fix 2: Add tab close cleanup to prevent connection leaks
   useEffect(() => {
@@ -758,7 +825,7 @@ export const useAblySync = ({
   useEffect(() => {
     let connectionTimeout: NodeJS.Timeout | null = null;
 
-    if (enabled) {
+    if (enabled && isActiveInstance) {
       // Only connect if not already connecting/connected and not in cleanup phase
       if (connectionState.status === 'disconnected' && ablyRef.current === null) {
         console.log('🚀 [ABLY_HOOK] Connecting...', instanceId.current);
@@ -771,7 +838,7 @@ export const useAblySync = ({
           }
         }, 50); // 50ms debounce
       }
-    } else {
+    } else if (isActiveInstance) {
       // Only cleanup if we have an active connection
       if (connectionState.status !== 'disconnected' && ablyRef.current !== null) {
         console.log('🧹 [ABLY_HOOK] Cleaning up...', instanceId.current);
@@ -800,19 +867,25 @@ export const useAblySync = ({
         cleanup();
       }
     };
-  }, [enabled, token, isDesktop, connectionState.status]); // FIXED: Minimal dependencies
+  }, [enabled, token, isDesktop, connectionState.status, isActiveInstance]); // FIXED: Minimal dependencies
 
-  // Add cleanup on unmount
-  useEffect(() => {
-    return () => {
-      console.log('🔚 [ABLY_HOOK] Component unmounting, final cleanup', {
-        instanceId: instanceId.current,
-      });
-      if (ablyRef.current !== null) {
-        cleanup();
-      }
+  // Early return for inactive instances - return no-op functions
+  if (!isActiveInstance) {
+    return {
+      connectionState: {
+        status: 'disconnected' as const,
+        connectedDevices: [],
+      },
+      sendTranscription: async () => false,
+      sendTranscriptionWithDiarization: async () => false,
+      forceDisconnectDevice: async () => {},
+      reconnect: async () => {},
+      disconnect: () => {},
+      startMobileRecording: async () => false,
+      stopMobileRecording: async () => false,
+      syncPatientSession: async () => '',
     };
-  }, []); // Only run on mount/unmount
+  }
 
   return {
     connectionState,
