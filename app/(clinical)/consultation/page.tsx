@@ -176,6 +176,9 @@ export default function ConsultationPage() {
         console.warn('Patient session sync skipped: session not found in state for ID:', currentPatientSessionId);
       }
     }
+
+    // FIXED: Return undefined for all other code paths
+    return undefined;
   }, [currentPatientSessionId, mobileV2.connectedDevices.length, syncPatientSession, getCurrentPatientSession]);
 
   const handleForceDisconnectDevice = useCallback(async (deviceId: string) => {

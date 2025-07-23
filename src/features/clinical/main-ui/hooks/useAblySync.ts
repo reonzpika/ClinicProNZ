@@ -176,7 +176,6 @@ export const useAblySync = ({
 
     return { deviceId, deviceName, deviceType };
   }, [isDesktop]);
-
   // Get userId from token API when needed, with proper authentication separation
   const getUserId = useCallback(async () => {
     // If we have a real userId, use it
