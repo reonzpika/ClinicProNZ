@@ -16,7 +16,6 @@ import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 import { AudioSettingsModal } from '../../mobile/components/AudioSettingsModal';
 import { MobileRecordingQRV2 } from '../../mobile/components/MobileRecordingQRV2';
 import { ConsentModal } from '../../session-management/components/ConsentModal';
-// Phase 5: Removed health check imports
 import { useTranscription } from '../hooks/useTranscription';
 import { ConsultationInputHeader } from './ConsultationInputHeader';
 
@@ -24,13 +23,11 @@ export function TranscriptionControls({
   collapsed,
   onExpand,
   isMinimized,
-  onForceDisconnectDevice,
   startMobileRecording,
 }: {
   collapsed?: boolean;
   onExpand?: () => void;
   isMinimized?: boolean;
-  onForceDisconnectDevice?: (deviceId: string) => void;
   startMobileRecording?: () => Promise<boolean>;
 }) {
   const { isSignedIn, userId } = useAuth();
@@ -40,9 +37,9 @@ export function TranscriptionControls({
     error: contextError,
     consentObtained,
     setConsentObtained,
-    mobileV2 = { isEnabled: false, token: null, connectedDevices: [], connectionStatus: 'disconnected' },
+    mobileV2 = { isEnabled: false, token: null, connectionStatus: 'disconnected' },
     transcription: contextTranscription,
-    removeMobileV2Device,
+
     getEffectiveGuestToken,
   } = useConsultation();
   const [showConsentModal, setShowConsentModal] = useState(false);
@@ -54,7 +51,6 @@ export function TranscriptionControls({
   const [recordingStartTime, setRecordingStartTime] = useState<number | null>(null);
   const [showNoTranscriptWarning, setShowNoTranscriptWarning] = useState(false);
   const [canCreateSession, setCanCreateSession] = useState(true);
-  // Phase 5: Removed showStatusModal as health check components are deleted
   const useMobileV2 = true; // Mobile V2 is now enabled by default
 
   const {
@@ -76,9 +72,8 @@ export function TranscriptionControls({
   // Use regular transcript since diarization is disabled
   const transcript = contextTranscription.transcript;
 
-  // Filter to only mobile devices for UI display
-  const connectedMobileDevices = (mobileV2.connectedDevices || []).filter(d => d.deviceType === 'Mobile');
-  const hasMobileDevices = connectedMobileDevices.length > 0;
+  // For MVP, simplify to just check connection status
+  const hasMobileDevices = mobileV2.connectionStatus === 'connected';
 
   // Track recording time and transcript warning
   useEffect(() => {
@@ -179,22 +174,15 @@ export function TranscriptionControls({
 
   // Mobile V2 recording button status and styling - removed unused function
 
-  // Handle mobile button click - trigger health check when user initiates mobile setup
+  // Handle mobile button click
   const handleMobileClick = () => {
     setShowMobileRecordingV2(true);
-    // Trigger health check when user initiates mobile recording setup
-    // triggerHealthCheck(); // Removed health check functionality
   };
 
-  // Handle device disconnect
+  // Handle device disconnect - simplified for MVP
   const handleDeviceDisconnect = (deviceId: string) => {
-    if (onForceDisconnectDevice) {
-      // Use the prop function which handles both sending disconnect message and local state removal
-      onForceDisconnectDevice(deviceId);
-    } else {
-      // Fallback to just removing from local state
-      removeMobileV2Device?.(deviceId);
-    }
+    // Just remove from local state
+    // Device management simplified for MVP - no action needed
   };
 
   // Determine if we're waiting for speech to start
@@ -354,28 +342,11 @@ export function TranscriptionControls({
                           )
                         : (
                             <div className="flex items-center gap-2 text-xs text-slate-500">
-                              {/* Connected devices count - minimal */}
-                              {connectedMobileDevices.length > 0 && (
-                                <div className="flex items-center gap-1 rounded bg-slate-100 px-2 py-1">
+                              {/* Connected mobile status - simplified for MVP */}
+                              {hasMobileDevices && (
+                                <div className="flex items-center gap-1 rounded bg-green-100 px-2 py-1 text-green-700">
                                   <Smartphone className="size-3" />
-                                  <span>
-                                    {connectedMobileDevices.length}
-                                    {' '}
-                                    connected
-                                  </span>
-                                  {connectedMobileDevices.map(device => (
-                                    <Button
-                                      key={device.deviceId}
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleDeviceDisconnect(device.deviceId)}
-                                      className="size-4 p-0 text-slate-400 hover:text-red-500"
-                                      title={`Disconnect ${device.deviceName}`}
-                                    >
-                                      <X className="size-2" />
-                                    </Button>
-                                  ))}
+                                  <span>Mobile connected</span>
                                 </div>
                               )}
                             </div>
@@ -383,8 +354,6 @@ export function TranscriptionControls({
 
                       {/* Right side: Status indicator + Mobile button */}
                       <div className="flex items-center gap-2">
-                        {/* Phase 5: Removed RecordingStatusIndicator - health check system eliminated */}
-
                         {/* Mobile Recording Button */}
                         {hasMobileDevices
                           ? (
@@ -672,8 +641,6 @@ export function TranscriptionControls({
         isOpen={showMobileRecordingV2}
         onClose={() => setShowMobileRecordingV2(false)}
       />
-
-      {/* Phase 5: Removed RecordingStatusModal - health check system eliminated */}
     </div>
   );
 }

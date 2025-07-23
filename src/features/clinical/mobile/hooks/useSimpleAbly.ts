@@ -2,11 +2,10 @@ import * as Ably from 'ably';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 type SimpleAblyMessage = {
-  type: 'transcription' | 'patient_updated' | 'start_recording' | 'stop_recording' | 'device_connected' | 'device_disconnected';
+  type: 'transcription' | 'patient_updated';
   transcript?: string;
   sessionId?: string;
   patientName?: string;
-  deviceName?: string;
   timestamp?: number;
   data?: any;
 };
@@ -15,8 +14,6 @@ type SimpleAblyProps = {
   tokenId: string | null;
   onTranscriptReceived?: (transcript: string, sessionId: string) => void;
   onSessionChanged?: (sessionId: string, patientName: string) => void;
-  onDeviceConnected?: (deviceName: string) => void;
-  onDeviceDisconnected?: (deviceName: string) => void;
   onError?: (error: string) => void;
 };
 
@@ -24,16 +21,30 @@ export const useSimpleAbly = ({
   tokenId,
   onTranscriptReceived,
   onSessionChanged,
-  onDeviceConnected,
-  onDeviceDisconnected,
   onError,
 }: SimpleAblyProps) => {
   const [isConnected, setIsConnected] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
-  const [connectedDevices, setConnectedDevices] = useState<string[]>([]);
+  const [lastSessionFetch, setLastSessionFetch] = useState<number>(0);
 
   const ablyRef = useRef<Ably.Realtime | null>(null);
   const channelRef = useRef<Ably.RealtimeChannel | null>(null);
+
+  // Stable callback refs to prevent re-connections
+  const callbacksRef = useRef({
+    onTranscriptReceived,
+    onSessionChanged,
+    onError,
+  });
+
+  // Update callbacks without triggering reconnection
+  useEffect(() => {
+    callbacksRef.current = {
+      onTranscriptReceived,
+      onSessionChanged,
+      onError,
+    };
+  }, [onTranscriptReceived, onSessionChanged, onError]);
 
   // Connect when tokenId is provided
   useEffect(() => {
@@ -47,6 +58,8 @@ export const useSimpleAbly = ({
       }
       return;
     }
+
+    let isCurrentConnection = true; // Prevent race conditions
 
     const connect = async () => {
       try {
@@ -62,6 +75,11 @@ export const useSimpleAbly = ({
         }
 
         const { ablyToken } = await response.json();
+
+        // Check if this connection is still current
+        if (!isCurrentConnection) {
+          return;
+        }
 
         // Create Ably connection
         const ably = new Ably.Realtime({
@@ -79,28 +97,14 @@ export const useSimpleAbly = ({
           switch (type) {
             case 'transcription':
               if (data.transcript && data.sessionId) {
-                onTranscriptReceived?.(data.transcript, data.sessionId);
+                callbacksRef.current.onTranscriptReceived?.(data.transcript, data.sessionId);
               }
               break;
 
             case 'patient_updated':
               if (data.sessionId && data.patientName) {
                 setCurrentSessionId(data.sessionId);
-                onSessionChanged?.(data.sessionId, data.patientName);
-              }
-              break;
-
-            case 'device_connected':
-              if (data.deviceName) {
-                setConnectedDevices(prev => [...prev.filter(d => d !== data.deviceName), data.deviceName!]);
-                onDeviceConnected?.(data.deviceName);
-              }
-              break;
-
-            case 'device_disconnected':
-              if (data.deviceName) {
-                setConnectedDevices(prev => prev.filter(d => d !== data.deviceName));
-                onDeviceDisconnected?.(data.deviceName);
+                callbacksRef.current.onSessionChanged?.(data.sessionId, data.patientName);
               }
               break;
           }
@@ -108,58 +112,56 @@ export const useSimpleAbly = ({
 
         // Track connection state
         ably.connection.on('connected', () => {
-          setIsConnected(true);
-
-          // Announce device connection
-          if (typeof window !== 'undefined') {
-            const deviceName = navigator.userAgent.includes('Mobile') ? 'Mobile Device' : 'Desktop';
-            channel.publish('device_connected', {
-              type: 'device_connected',
-              deviceName,
-              timestamp: Date.now(),
-            });
+          if (!isCurrentConnection) {
+            return;
           }
+          setIsConnected(true);
         });
 
         ably.connection.on('disconnected', () => {
+          if (!isCurrentConnection) {
+            return;
+          }
           setIsConnected(false);
         });
 
         ably.connection.on('failed', (error) => {
+          if (!isCurrentConnection) {
+            return;
+          }
           setIsConnected(false);
-          onError?.(`Connection failed: ${error?.reason || 'Unknown error'}`);
+          callbacksRef.current.onError?.(`Connection failed: ${error?.reason || 'Unknown error'}`);
         });
 
-        ablyRef.current = ably;
-        channelRef.current = channel;
+        // Only set refs if this is still the current connection
+        if (isCurrentConnection) {
+          ablyRef.current = ably;
+          channelRef.current = channel;
+        } else {
+          // Clean up abandoned connection
+          ably.close();
+        }
       } catch (error: any) {
-        onError?.(`Failed to connect: ${error.message}`);
+        if (isCurrentConnection) {
+          callbacksRef.current.onError?.(`Failed to connect: ${error.message}`);
+        }
       }
     };
 
     connect();
 
     return () => {
-      if (ablyRef.current) {
-        // Announce device disconnection before closing
-        if (channelRef.current && typeof window !== 'undefined') {
-          const deviceName = navigator.userAgent.includes('Mobile') ? 'Mobile Device' : 'Desktop';
-          channelRef.current.publish('device_disconnected', {
-            type: 'device_disconnected',
-            deviceName,
-            timestamp: Date.now(),
-          });
-        }
+      isCurrentConnection = false; // Mark this connection as outdated
 
+      if (ablyRef.current) {
         ablyRef.current.close();
         ablyRef.current = null;
         channelRef.current = null;
       }
       setIsConnected(false);
       setCurrentSessionId(null);
-      setConnectedDevices([]);
     };
-  }, [tokenId, onTranscriptReceived, onSessionChanged, onDeviceConnected, onDeviceDisconnected, onError]);
+  }, [tokenId]); // Only tokenId in dependency array
 
   // Send transcript (mobile to desktop)
   const sendTranscript = useCallback((transcript: string) => {
@@ -202,11 +204,62 @@ export const useSimpleAbly = ({
     }
   }, [onError]);
 
+  // Fallback session fetching when Ably is disconnected
+  const fetchCurrentSession = useCallback(async () => {
+    if (!tokenId || isConnected) {
+      return; // Don't fetch if connected or no token
+    }
+
+    // Throttle requests - only fetch every 10 seconds
+    const now = Date.now();
+    if (now - lastSessionFetch < 10000) {
+      return;
+    }
+
+    try {
+      setLastSessionFetch(now);
+
+      const response = await fetch(`/api/mobile/current-session?token=${encodeURIComponent(tokenId)}`);
+
+      if (!response.ok) {
+        console.warn('Failed to fetch current session:', response.statusText);
+        return;
+      }
+
+      const sessionData = await response.json();
+
+      if (sessionData.sessionId && sessionData.patientName) {
+        // Only update if session has changed
+        if (sessionData.sessionId !== currentSessionId) {
+          setCurrentSessionId(sessionData.sessionId);
+          callbacksRef.current.onSessionChanged?.(sessionData.sessionId, sessionData.patientName);
+        }
+      }
+    } catch (error) {
+      console.warn('Error fetching current session:', error);
+    }
+  }, [tokenId, isConnected, lastSessionFetch, currentSessionId]);
+
+  // Poll for session updates when disconnected
+  useEffect(() => {
+    if (!tokenId || isConnected) {
+      return;
+    }
+
+    // Initial fetch
+    fetchCurrentSession();
+
+    // Set up polling every 15 seconds when disconnected
+    const interval = setInterval(fetchCurrentSession, 15000);
+
+    return () => clearInterval(interval);
+  }, [tokenId, isConnected, fetchCurrentSession]);
+
   return {
     isConnected,
     currentSessionId,
-    connectedDevices,
     sendTranscript,
     updateSession,
+    fetchCurrentSession, // Expose for manual refresh
   };
 };

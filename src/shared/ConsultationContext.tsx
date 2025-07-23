@@ -112,13 +112,7 @@ export type ConsultationState = {
       mobileUrl: string;
       expiresAt: string;
     } | null;
-    connectedDevices: Array<{
-      deviceId: string;
-      deviceName: string;
-      deviceType?: string;
-      presenceKey?: string;
-      connectedAt: number;
-    }>;
+
     connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'error';
   };
 };
@@ -183,7 +177,6 @@ const defaultState: ConsultationState = {
     isEnabled: false,
     token: null,
     tokenData: null,
-    connectedDevices: [],
     connectionStatus: 'disconnected',
   },
 };
@@ -245,14 +238,7 @@ const ConsultationContext = createContext<
     setMobileV2Token: (token: string | null) => void;
     setMobileV2TokenData: (tokenData: { token: string; mobileUrl: string; expiresAt: string } | null) => void;
     setMobileV2ConnectionStatus: (status: 'disconnected' | 'connecting' | 'connected' | 'error') => void;
-    addMobileV2Device: (device: {
-      deviceId: string;
-      deviceName: string;
-      deviceType?: string;
-      presenceKey?: string;
-      connectedAt: number;
-    }) => void;
-    removeMobileV2Device: (deviceId: string) => void;
+
     enableMobileV2: (enabled: boolean) => void;
     saveNotesToCurrentSession: (notes: string) => Promise<boolean>;
     saveTypedInputToCurrentSession: (typedInput: string) => Promise<boolean>;
@@ -354,7 +340,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
               isEnabled: parsed.mobileV2?.isEnabled || false,
               token: parsed.mobileV2?.token || null, // Keep mobile token separate
               tokenData: parsed.mobileV2?.tokenData || null,
-              connectedDevices: parsed.mobileV2?.connectedDevices || [],
+
               connectionStatus: parsed.mobileV2?.connectionStatus || 'disconnected',
             },
           });
@@ -447,13 +433,13 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
               token: null,
               tokenData: null,
               connectionStatus: 'disconnected',
-              connectedDevices: [],
             },
           }));
         } else {
           // If response is ok, token is still valid - keep current state
         }
-      } catch (error) {
+      // eslint-disable-next-line unused-imports/no-unused-vars
+      } catch (_error) {
         // On validation error, clear token to be safe
         setState(prev => ({
           ...prev,
@@ -462,7 +448,6 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
             token: null,
             tokenData: null,
             connectionStatus: 'disconnected',
-            connectedDevices: [],
           },
         }));
       }
@@ -1239,35 +1224,6 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     }));
   }, []);
 
-  const addMobileV2Device = useCallback((device: {
-    deviceId: string;
-    deviceName: string;
-    deviceType?: string;
-    presenceKey?: string;
-    connectedAt: number;
-  }) => {
-    setState(prev => ({
-      ...prev,
-      mobileV2: {
-        ...prev.mobileV2,
-        connectedDevices: [
-          ...(prev.mobileV2.connectedDevices || []).filter(d => d.deviceId !== device.deviceId),
-          device,
-        ],
-      },
-    }));
-  }, []);
-
-  const removeMobileV2Device = useCallback((deviceId: string) => {
-    setState(prev => ({
-      ...prev,
-      mobileV2: {
-        ...prev.mobileV2,
-        connectedDevices: (prev.mobileV2.connectedDevices || []).filter(d => d.deviceId !== deviceId),
-      },
-    }));
-  }, []);
-
   const enableMobileV2 = useCallback((enabled: boolean) => {
     setState(prev => ({
       ...prev,
@@ -1336,8 +1292,6 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setMobileV2Token,
     setMobileV2TokenData,
     setMobileV2ConnectionStatus,
-    addMobileV2Device,
-    removeMobileV2Device,
     enableMobileV2,
     // New function
     saveNotesToCurrentSession,
@@ -1394,8 +1348,6 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setMobileV2Token,
     setMobileV2TokenData,
     setMobileV2ConnectionStatus,
-    addMobileV2Device,
-    removeMobileV2Device,
     enableMobileV2,
     saveNotesToCurrentSession,
     saveTypedInputToCurrentSession,

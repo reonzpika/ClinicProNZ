@@ -86,26 +86,25 @@ function MobilePageContent() {
   const { isSupported: wakeLockSupported, isActive: wakeLockActive, requestWakeLock, releaseWakeLock } = useWakeLock();
 
   // Simple Ably connection
-  const { isConnected, currentSessionId, sendTranscript } = useSimpleAbly({
+  // Memoized callbacks to prevent reconnections
+  const handleSessionChanged = useCallback((sessionId: string, patientName: string) => {
+    // Update session when desktop changes patient
+    setSessionState({ sessionId, patientName });
+  }, []);
+
+  const handleError = useCallback((error: string) => {
+    setTokenState(prev => ({ ...prev, error }));
+    setMobileState('error');
+  }, []);
+
+  const { isConnected, currentSessionId, sendTranscript, fetchCurrentSession } = useSimpleAbly({
     tokenId: tokenState.token,
     onTranscriptReceived: (transcript, sessionId) => {
       // Mobile shouldn't receive transcripts, only send them
       console.log('Unexpected transcript received on mobile:', transcript, sessionId);
     },
-    onSessionChanged: (sessionId, patientName) => {
-      // Update session when desktop changes patient
-      setSessionState({ sessionId, patientName });
-    },
-    onDeviceConnected: (deviceName) => {
-      console.log('Device connected:', deviceName);
-    },
-    onDeviceDisconnected: (deviceName) => {
-      console.log('Device disconnected:', deviceName);
-    },
-    onError: (error) => {
-      setTokenState(prev => ({ ...prev, error }));
-      setMobileState('error');
-    },
+    onSessionChanged: handleSessionChanged,
+    onError: handleError,
   });
 
   // Transcription hook with simple handling
@@ -114,7 +113,7 @@ function MobilePageContent() {
     mobileChunkTimeout: 2, // 2s silence threshold for mobile
     onChunkComplete: async (audioBlob: Blob) => {
       if (!currentSessionId) {
-        console.warn('No session ID available for transcription');
+        setTokenState(prev => ({ ...prev, error: 'No session available for recording. Please check your connection.' }));
         return;
       }
 
@@ -130,7 +129,7 @@ function MobilePageContent() {
         });
 
         if (!response.ok) {
-          console.error('Transcription failed:', response.statusText);
+          setTokenState(prev => ({ ...prev, error: `Transcription failed: ${response.statusText}` }));
           return;
         }
 
@@ -138,10 +137,13 @@ function MobilePageContent() {
 
         // Send transcript via simple Ably
         if (transcript?.trim()) {
-          sendTranscript(transcript.trim());
+          const success = sendTranscript(transcript.trim());
+          if (!success) {
+            setTokenState(prev => ({ ...prev, error: 'Failed to send transcription to desktop' }));
+          }
         }
       } catch (error) {
-        console.error('Error during transcription:', error);
+        setTokenState(prev => ({ ...prev, error: `Recording error: ${error instanceof Error ? error.message : 'Unknown error'}` }));
       }
     },
   });
@@ -359,8 +361,23 @@ function MobilePageContent() {
                 <li>2. Tap the red button to start recording</li>
                 <li>3. Speak clearly into your device microphone</li>
                 <li>4. Transcriptions will appear on desktop in real-time</li>
+                {!isConnected && sessionState.sessionId && (
+                  <li className="text-orange-600">• Using fallback mode - session sync via polling</li>
+                )}
               </ul>
             </div>
+
+            {/* Manual refresh for disconnected state */}
+            {!isConnected && tokenState.token && (
+              <div className="text-center">
+                <button
+                  onClick={fetchCurrentSession}
+                  className="text-xs text-blue-600 hover:text-blue-800"
+                >
+                  Refresh session info
+                </button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -27,33 +27,29 @@ import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 
 export default function ConsultationPage() {
   const {
-    transcription,
-    templateId,
-    typedInput,
+    setError,
+    setStatus,
+    mobileV2 = { isEnabled: false, token: null, tokenData: null, connectionStatus: 'disconnected' },
+    getCurrentPatientSession,
+    currentPatientSessionId,
     inputMode,
-    mobileV2 = { isEnabled: false, token: null, tokenData: null, connectedDevices: [], connectionStatus: 'disconnected' },
-    consultationItems,
-    consultationNotes,
+    typedInput,
+    transcription,
+    appendTranscription,
     generatedNotes,
     setGeneratedNotes,
-    setError,
-    setLastGeneratedInput,
+    consultationNotes,
     setConsultationNotes,
+    consultationItems,
+    structuredTranscript,
     getCompiledConsultationText,
-    appendTranscription,
-    setMobileV2ConnectionStatus,
-    addMobileV2Device,
-    removeMobileV2Device,
-    currentPatientSessionId,
-    getCurrentPatientSession,
+    templateId,
     getEffectiveGuestToken,
-    // Structured transcript functions
-    setStatus,
+    setLastGeneratedInput,
     setStructuredTranscriptStatus,
     setStructuredTranscript,
     isStructuredTranscriptFresh,
     getEffectiveTranscript,
-    structuredTranscript,
   } = useConsultation();
   const { isSignedIn: _isSignedIn, userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
@@ -99,39 +95,29 @@ export default function ConsultationPage() {
     }
   }, [generatedNotes, loading, isDocumentationMode]);
 
+  // Memoize callbacks to prevent re-renders
+  const handleTranscriptReceived = useCallback((transcript: string, sessionId: string) => {
+    // Only process transcripts for the current session
+    if (sessionId === currentPatientSessionId) {
+      appendTranscription(transcript, true, 'mobile');
+    }
+  }, [currentPatientSessionId, appendTranscription]);
+
+  const handleSessionChanged = useCallback((_sessionId: string, _patientName: string) => {
+    // Mobile received session update - this shouldn't happen on desktop
+    console.log('Session changed on desktop (unexpected):', _sessionId, _patientName);
+  }, []);
+
+  const handleError = useCallback((error: string) => {
+    setError(error);
+  }, []);
+
   // Simple Ably sync implementation using single channel approach
   const { updateSession } = useSimpleAbly({
     tokenId: mobileV2?.token || null,
-    onTranscriptReceived: (transcript, sessionId) => {
-      // Only process transcripts for the current session
-      if (sessionId === currentPatientSessionId) {
-        appendTranscription(transcript, true, 'mobile');
-      }
-    },
-    onSessionChanged: (sessionId, patientName) => {
-      // Mobile received session update - this shouldn't happen on desktop
-      console.log('Session changed on desktop (unexpected):', sessionId, patientName);
-    },
-    onDeviceConnected: (deviceName) => {
-      // Update local state when device connects
-      addMobileV2Device({
-        deviceId: `mobile-${Date.now()}`,
-        deviceName,
-        deviceType: 'Mobile',
-        connectedAt: Date.now(),
-      });
-      setMobileV2ConnectionStatus('connected');
-    },
-    onDeviceDisconnected: (_deviceName) => {
-      // Update local state when device disconnects
-      const currentDevices = mobileV2?.connectedDevices || [];
-      if (currentDevices.length <= 1) {
-        setMobileV2ConnectionStatus('disconnected');
-      }
-    },
-    onError: (error) => {
-      setError(error);
-    },
+    onTranscriptReceived: handleTranscriptReceived,
+    onSessionChanged: handleSessionChanged,
+    onError: handleError,
   });
 
   // Send session updates to mobile when patient changes
@@ -143,16 +129,6 @@ export default function ConsultationPage() {
       }
     }
   }, [currentPatientSessionId, mobileV2?.token, updateSession, getCurrentPatientSession]);
-
-  const handleForceDisconnectDevice = useCallback(async (deviceId: string) => {
-    // TODO: Implement simple force disconnect when we have the new hook
-    // For now, just remove from local state
-    removeMobileV2Device(deviceId);
-    const currentDevices = mobileV2?.connectedDevices || [];
-    if (currentDevices.length <= 1) {
-      setMobileV2ConnectionStatus('disconnected');
-    }
-  }, [removeMobileV2Device, setMobileV2ConnectionStatus]);
 
   const handleClearAll = () => {
     setIsNoteFocused(false);
@@ -168,7 +144,6 @@ export default function ConsultationPage() {
     // Get input based on current mode
     const transcript = inputMode === 'typed' ? '' : transcription.transcript;
     const currentTypedInput = inputMode === 'typed' ? typedInput : '';
-    const compiledConsultationText = getCompiledConsultationText();
 
     try {
       // Get effective guest token
@@ -235,7 +210,7 @@ export default function ConsultationPage() {
         typedInput: currentTypedInput,
         templateId,
         inputMode,
-        consultationNotes: compiledConsultationText,
+        consultationNotes: getCompiledConsultationText(),
         guestToken: effectiveGuestToken,
       };
 
@@ -277,7 +252,7 @@ export default function ConsultationPage() {
       }
 
       // Use the original transcript for tracking, not the processed one
-      setLastGeneratedInput(transcript, currentTypedInput, compiledConsultationText, templateId);
+      setLastGeneratedInput(transcript, currentTypedInput, getCompiledConsultationText(), templateId);
 
       // Refresh usage dashboard after successful notes generation
       if (usageDashboardRef.current?.refresh) {
@@ -406,7 +381,6 @@ export default function ConsultationPage() {
                                       collapsed={false}
                                       onExpand={() => setIsNoteFocused(false)}
                                       isMinimized
-                                      onForceDisconnectDevice={handleForceDisconnectDevice}
                                       startMobileRecording={async () => false}
                                     />
                                   )
@@ -471,7 +445,6 @@ export default function ConsultationPage() {
                                           collapsed={isNoteFocused}
                                           onExpand={() => setIsNoteFocused(false)}
                                           isMinimized={false}
-                                          onForceDisconnectDevice={handleForceDisconnectDevice}
                                           startMobileRecording={async () => false}
                                         />
                                       )
@@ -552,7 +525,6 @@ export default function ConsultationPage() {
                                           collapsed={false}
                                           onExpand={() => setIsNoteFocused(false)}
                                           isMinimized
-                                          onForceDisconnectDevice={handleForceDisconnectDevice}
                                           startMobileRecording={async () => false}
                                         />
                                       )
@@ -587,7 +559,6 @@ export default function ConsultationPage() {
                                         collapsed={isNoteFocused}
                                         onExpand={() => setIsNoteFocused(false)}
                                         isMinimized={false}
-                                        onForceDisconnectDevice={handleForceDisconnectDevice}
                                         startMobileRecording={async () => false}
                                       />
                                     )

@@ -31,7 +31,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
   const {
-    mobileV2 = { isEnabled: false, token: null, tokenData: null, connectedDevices: [], connectionStatus: 'disconnected' },
+    mobileV2 = { isEnabled: false, token: null, tokenData: null, connectionStatus: 'disconnected' },
     setMobileV2TokenData,
     enableMobileV2,
     ensureActiveSession,
@@ -168,7 +168,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
   };
 
   const isExpired = timeRemaining <= 0 && qrData;
-  const connectedDevices = mobileV2.connectedDevices || [];
+  const isConnected = mobileV2.connectionStatus === 'connected';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -181,15 +181,13 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Connected Devices Status */}
-          {connectedDevices.length > 0 && (
+          {/* Connection Status */}
+          {isConnected && (
             <Alert className="border-green-200 bg-green-50">
               <CheckCircle className="size-4 text-green-600" />
               <div>
                 <div className="font-medium text-green-800">
-                  {connectedDevices.length}
-                  {' '}
-                  device(s) connected
+                  Mobile device connected
                 </div>
                 <div className="text-sm text-green-700">
                   Ready to receive transcriptions

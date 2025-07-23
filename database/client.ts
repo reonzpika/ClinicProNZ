@@ -20,14 +20,3 @@ export const db = drizzle(sql, { schema });
 
 // Export schema for use in other files
 export { schema };
-
-// Health check function
-export const checkDatabaseHealth = async (): Promise<boolean> => {
-  try {
-    await sql.query('SELECT 1');
-    return true;
-  } catch (error) {
-    console.error('Database health check failed:', error);
-    return false;
-  }
-};
