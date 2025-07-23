@@ -324,6 +324,14 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
           // Migrate old default template ID to new one
           const migratedTemplateId = parsed.templateId === 'ef6b3139-69a0-4b4b-bf80-dcdabe0559ba' ? MULTIPROBLEM_SOAP_UUID : parsed.templateId;
 
+          // DEBUG: Log state restoration
+          console.log('💾 [CONTEXT] Restoring state from localStorage:', {
+            'has stored mobileV2': !!parsed.mobileV2,
+            'stored token': parsed.mobileV2?.token ? `${parsed.mobileV2.token.substring(0, 8)}...` : null,
+            'parsed mobileV2': parsed.mobileV2,
+            'timestamp': new Date().toISOString(),
+          });
+
           setState({
             ...parsed,
             // Override with fresh values
@@ -428,6 +436,12 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     }
 
     const validateMobileToken = async (token: string) => {
+      // DEBUG: Log validation start
+      console.log('🔍 [CONTEXT] Starting token validation:', {
+        token: `${token.substring(0, 8)}...`,
+        timestamp: new Date().toISOString(),
+      });
+
       try {
         // Check if token is still valid by calling Ably token API
         const url = new URL('/api/ably/token', window.location.origin);
@@ -439,6 +453,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
         });
 
         if (!response.ok) {
+          console.log('❌ [CONTEXT] Token validation failed - clearing token:', response.status);
           // Token is invalid/expired - clear it
           setState(prev => ({
             ...prev,
@@ -450,10 +465,12 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
               connectedDevices: [],
             },
           }));
+        } else {
+          console.log('✅ [CONTEXT] Token validation successful');
         }
         // If response is ok, token is still valid - keep current state
       } catch (error) {
-        console.warn('Failed to validate mobile token:', error);
+        console.log('💥 [CONTEXT] Token validation error - clearing token:', error);
         // On validation error, clear token to be safe
         setState(prev => ({
           ...prev,
@@ -1210,6 +1227,14 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
 
   // Mobile V2 functions
   const setMobileV2Token = useCallback((token: string | null) => {
+    // DEBUG: Log token changes
+    console.log('📱 [CONTEXT] setMobileV2Token called:', {
+      'new token': token ? `${token.substring(0, 8)}...` : null,
+      'previous token': state.mobileV2.token ? `${state.mobileV2.token.substring(0, 8)}...` : null,
+      'timestamp': new Date().toISOString(),
+      'stack': new Error().stack?.split('\n').slice(1, 4).join('\n'), // Show call stack
+    });
+
     setState(prev => ({
       ...prev,
       mobileV2: {
@@ -1219,9 +1244,17 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
         tokenData: token ? prev.mobileV2.tokenData : null,
       },
     }));
-  }, []);
+  }, [state.mobileV2.token]);
 
   const setMobileV2TokenData = useCallback((tokenData: { token: string; mobileUrl: string; expiresAt: string } | null) => {
+    // DEBUG: Log token data changes
+    console.log('📱 [CONTEXT] setMobileV2TokenData called:', {
+      'has tokenData': !!tokenData,
+      'token': tokenData?.token ? `${tokenData.token.substring(0, 8)}...` : null,
+      'timestamp': new Date().toISOString(),
+      'stack': new Error().stack?.split('\n').slice(1, 4).join('\n'),
+    });
+
     setState(prev => ({
       ...prev,
       mobileV2: {

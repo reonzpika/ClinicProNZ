@@ -141,6 +141,15 @@ export default function ConsultationPage() {
 
   // ENHANCED: Enable Ably sync when mobile token exists (desktop switches to mobile token approach)
   // Desktop and mobile will use same mobile token for unified connection
+
+  // DEBUG: Log what triggers useAblySync
+  console.log('🔍 [CONSULTATION] useAblySync values:', {
+    'mobileV2.token': mobileV2.token,
+    'enabled': !!mobileV2.token,
+    'mobileV2 full object': mobileV2,
+    'timestamp': new Date().toISOString(),
+  });
+
   const { syncPatientSession, forceDisconnectDevice, startMobileRecording } = useAblySync({
     enabled: !!mobileV2.token, // Enable when QR token exists, not when devices connect
     token: mobileV2.token || undefined,

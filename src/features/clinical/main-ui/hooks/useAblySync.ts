@@ -67,6 +67,14 @@ export const useAblySync = ({
   onStopRecording,
   // Removed: onHealthCheckRequested
 }: AblySyncHookProps) => {
+  // DEBUG: Log hook initialization
+  console.log('🔧 [ABLY_HOOK] useAblySync initialized:', {
+    enabled,
+    token: token ? `${token.substring(0, 8)}...` : null,
+    isDesktop,
+    timestamp: new Date().toISOString()
+  });
+
   const { userId: authUserId } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
@@ -547,6 +555,17 @@ export const useAblySync = ({
         controlChannelName = `user:${currentUserId}`;
       }
 
+      // DEBUG: Log connection attempt
+      console.log('🔗 [ABLY_HOOK] Attempting to connect to Ably:', {
+        channelName: controlChannelName,
+        isDesktop,
+        currentUserId,
+        authUserId,
+        hasToken: !!token,
+        status: connectionState.status,
+        timestamp: new Date().toISOString()
+      });
+
       // FIXED: Better global registry conflict detection
       if (globalConnectionRegistry.has(controlChannelName)) {
         const existing = globalConnectionRegistry.get(controlChannelName)!;
@@ -703,7 +722,7 @@ export const useAblySync = ({
       setConnectionState(prev => ({ ...prev, status: 'error', error: errorMessage }));
       stableCallbacks.onError?.(errorMessage);
     }
-  }, [getUserId, getDeviceInfo, stableCallbacks, setupChannelHandlers]); // FIXED: Removed from main effect dependencies
+  }, [getUserId, getDeviceInfo, stableCallbacks, setupChannelHandlers, enabled, token, isDesktop, connectionState.status]); // FIXED: Minimal dependencies
 
   // Enhanced force disconnect
   const forceDisconnectDevice = useCallback(async (targetDeviceId: string) => {
@@ -734,9 +753,20 @@ export const useAblySync = ({
   useEffect(() => {
     let connectionTimeout: NodeJS.Timeout | null = null;
 
+    // DEBUG: Log effect trigger
+    console.log('⚡ [ABLY_HOOK] Main effect triggered:', {
+      enabled,
+      'connectionState.status': connectionState.status,
+      'ablyRef.current': !!ablyRef.current,
+      'token exists': !!token,
+      isDesktop,
+      timestamp: new Date().toISOString()
+    });
+
     if (enabled) {
       // Only connect if not already connecting/connected and not in cleanup phase
       if (connectionState.status === 'disconnected' && ablyRef.current === null) {
+        console.log('🚀 [ABLY_HOOK] Starting connection...', { isDesktop, hasToken: !!token });
         // Add small delay to prevent rapid connect/disconnect cycles
         connectionTimeout = setTimeout(() => {
           if (isDesktop) {
@@ -745,16 +775,21 @@ export const useAblySync = ({
             connect();
           }
         }, 50); // 50ms debounce
+      } else {
+        console.log('⏭️ [ABLY_HOOK] Skipping connection (already connected or connecting)');
       }
     } else {
       // Only cleanup if we have an active connection
       if (connectionState.status !== 'disconnected' && ablyRef.current !== null) {
+        console.log('🧹 [ABLY_HOOK] Cleaning up connection...');
         // Clear any pending connections
         if (connectionTimeout) {
           clearTimeout(connectionTimeout);
           connectionTimeout = null;
         }
         cleanup();
+      } else {
+        console.log('⏭️ [ABLY_HOOK] Skipping cleanup (already disconnected)');
       }
     }
 
