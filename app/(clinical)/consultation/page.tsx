@@ -156,11 +156,8 @@ export default function ConsultationPage() {
     onError: handleWebSocketError,
   }), [
     mobileV2?.token,
-    handleTranscriptionReceived,
-    handlePatientSwitched,
-    handleDeviceConnected,
-    handleDeviceDisconnected,
-    handleWebSocketError,
+    // Removed callback dependencies since they're already memoized with useCallback
+    // This prevents unnecessary recreation of the config object
   ]);
 
   const { syncPatientSession, forceDisconnectDevice, startMobileRecording } = useAblySync(ablySyncConfig);
