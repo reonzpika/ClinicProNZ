@@ -8,7 +8,19 @@ import { mobileTokens } from '@/db/schema';
 
 export async function POST(request: NextRequest) {
   try {
-    const { tokenId } = await request.json();
+    let tokenId: string | null = null;
+
+    // FIXED: Handle both JSON and form data since Ably authParams uses form encoding
+    const contentType = request.headers.get('content-type') || '';
+
+    if (contentType.includes('application/json')) {
+      const { tokenId: jsonTokenId } = await request.json();
+      tokenId = jsonTokenId;
+    } else {
+      // Handle form data (Ably authParams default)
+      const formData = await request.formData();
+      tokenId = formData.get('tokenId') as string;
+    }
 
     if (!tokenId) {
       return NextResponse.json(
