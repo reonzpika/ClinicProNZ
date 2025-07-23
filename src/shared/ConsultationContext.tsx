@@ -884,8 +884,15 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     // Find the session and load its transcriptions
     const targetSession = state.patientSessions.find(session => session.id === sessionId);
     if (!targetSession) {
-      console.error('Session not found:', sessionId);
-      return;
+      // FIXED: Better error handling for missing sessions
+      // This can happen due to race conditions or session sync timing
+      console.warn('Session not found in local state:', sessionId, {
+        availableSessions: state.patientSessions.map(s => ({ id: s.id, name: s.patientName })),
+        currentSessionId: state.currentPatientSessionId,
+      });
+
+      // Don't throw error - just skip the switch to avoid breaking the UI
+      return false;
     }
 
     // Reconstruct transcript text from transcription entries

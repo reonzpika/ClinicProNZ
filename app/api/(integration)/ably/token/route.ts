@@ -72,6 +72,14 @@ export async function POST(req: Request) {
 
     // Phase 1: Updated capability-based authentication with new channel naming
     const isGuestUser = clientId.startsWith('guest-');
+
+    // FIXED: Match exact channel patterns used in useAblySync
+    // Actual channels: user:${userId} and guest:${guestId} (no wildcards)
+    // Also need wildcard patterns for flexibility and transcript channels
+    const baseChannelExact = isGuestUser
+      ? `guest:${clientId.replace('guest-', '')}`
+      : `user:${clientId}`;
+
     const baseChannelPattern = isGuestUser
       ? `guest:${clientId.replace('guest-', '')}*`
       : `user:${clientId}*`;
@@ -81,7 +89,8 @@ export async function POST(req: Request) {
       clientId,
       // Phase 1: Capability-based access control for new channel architecture
       capability: {
-        [baseChannelPattern]: ['publish', 'subscribe', 'presence'],
+        [baseChannelExact]: ['publish', 'subscribe', 'presence'], // Exact channel match
+        [baseChannelPattern]: ['publish', 'subscribe', 'presence'], // Wildcard pattern for flexibility
         'consult:*': ['publish', 'subscribe'], // Access to all consultation transcript channels
       },
       // Token expires in 24 hours (same as mobile token)

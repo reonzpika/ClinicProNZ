@@ -177,7 +177,7 @@ export const useAblySync = ({
     return { deviceId, deviceName, deviceType };
   }, [isDesktop]);
 
-  // Get userId from token API when needed, fallback to guest token
+  // Get userId from token API when needed, with proper authentication separation
   const getUserId = useCallback(async () => {
     // If we have a real userId, use it
     if (userId) {
@@ -191,9 +191,20 @@ export const useAblySync = ({
         url.searchParams.set('token', token);
       }
 
-      // Get effective guest token for authentication
-      const guestToken = getEffectiveGuestToken();
-      const effectiveGuestToken = guestToken && !token ? guestToken : null; // Only for desktop users (no mobile token)
+      // FIXED: Authentication context separation
+      // Desktop authenticated users: Use Clerk auth only, never guest tokens
+      // Desktop guest users: Use guest token only
+      // Mobile devices: Use mobile token only
+      let effectiveGuestToken: string | null = null;
+
+      if (authUserId) {
+        // Authenticated user - never use guest token
+        effectiveGuestToken = null;
+      } else if (!token && !authUserId) {
+        // Desktop guest user (no mobile token, no Clerk auth)
+        effectiveGuestToken = getEffectiveGuestToken();
+      }
+      // Mobile users (have token) don't need guest token
 
       const response = await fetch(url.toString(), {
         method: 'POST',
@@ -516,11 +527,25 @@ export const useAblySync = ({
         return;
       }
 
-      // Phase 1: Updated channel naming - use control channel format
-      const isGuestUser = currentUserId.startsWith('guest-') || (!authUserId && token);
-      const controlChannelName = isGuestUser
-        ? `guest:${currentUserId.replace('guest-', '')}`
-        : `user:${currentUserId}`;
+      // FIXED: More robust channel naming with clear authentication separation
+      // Desktop authenticated users: user:${clerkUserId}
+      // Desktop guest users: guest:${guestToken}
+      // Mobile devices: guest:${mobileToken} (inherits from creator)
+      let controlChannelName: string;
+
+      if (authUserId && !token) {
+        // Desktop authenticated user - use Clerk user ID
+        controlChannelName = `user:${currentUserId}`;
+      } else if (token) {
+        // Mobile device - always uses guest pattern with mobile token
+        controlChannelName = `guest:${currentUserId.replace('guest-', '')}`;
+      } else if (currentUserId.startsWith('guest-')) {
+        // Desktop guest user
+        controlChannelName = `guest:${currentUserId.replace('guest-', '')}`;
+      } else {
+        // Fallback for edge cases
+        controlChannelName = `user:${currentUserId}`;
+      }
 
       // Check if there's already an active connection for this user
       if (globalConnectionRegistry.has(controlChannelName)) {
@@ -674,31 +699,45 @@ export const useAblySync = ({
     };
   }, [cleanup]);
 
-  // Fix 4: Connect when enabled with smarter reconnection logic
+  // FIXED: Improved connection lifecycle management with conflict prevention
   useEffect(() => {
+    let connectionTimeout: NodeJS.Timeout | null = null;
+
     if (enabled) {
-      // Only connect if not already connecting/connected
-      if (connectionState.status === 'disconnected') {
-        if (isDesktop) {
-          connect();
-        } else {
-          if (token) {
+      // Only connect if not already connecting/connected and not in cleanup phase
+      if (connectionState.status === 'disconnected' && ablyRef.current === null) {
+        // Add small delay to prevent rapid connect/disconnect cycles
+        connectionTimeout = setTimeout(() => {
+          if (isDesktop) {
             connect();
-          } else {
-            cleanup();
+          } else if (token) {
+            connect();
           }
-        }
+        }, 50); // 50ms debounce
       }
     } else {
-      // Only cleanup if not already disconnected
-      if (connectionState.status !== 'disconnected') {
+      // Only cleanup if we have an active connection
+      if (connectionState.status !== 'disconnected' && ablyRef.current !== null) {
+        // Clear any pending connections
+        if (connectionTimeout) {
+          clearTimeout(connectionTimeout);
+          connectionTimeout = null;
+        }
         cleanup();
       }
     }
 
-    // Always cleanup on unmount or when effect re-runs
-    return cleanup;
-  }, [enabled, token, isDesktop]);
+    // Cleanup function
+    return () => {
+      if (connectionTimeout) {
+        clearTimeout(connectionTimeout);
+      }
+      // Only cleanup if we actually have a connection
+      if (ablyRef.current !== null) {
+        cleanup();
+      }
+    };
+  }, [enabled, token, isDesktop, connectionState.status]);
 
   return {
     connectionState,

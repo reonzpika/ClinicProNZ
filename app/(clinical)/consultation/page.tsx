@@ -139,9 +139,10 @@ export default function ConsultationPage() {
     setMobileV2ConnectionStatus('connected');
   }, [addMobileV2Device, setMobileV2ConnectionStatus]);
 
-  // Enable Ably sync when token exists OR when mobile devices are connected
+  // FIXED: Only enable Ably sync when mobile devices are actually connected
+  // Don't enable just because QR token exists - wait for actual device connection
   const { syncPatientSession, forceDisconnectDevice, startMobileRecording } = useAblySync({
-    enabled: !!mobileV2.token || mobileV2.connectedDevices.length > 0, // Enable when token exists OR devices connected
+    enabled: mobileV2.connectedDevices.length > 0, // Only enable when devices are actually connected
     token: mobileV2.token || undefined,
     isDesktop: true,
     onTranscriptionReceived: handleTranscriptionReceived,
@@ -151,15 +152,28 @@ export default function ConsultationPage() {
     onError: handleWebSocketError,
   });
 
-  // Patient session sync for session changes
+  // FIXED: Improved patient session sync with better existence checks
   useEffect(() => {
+    // Only sync if we have all required components and session exists
     if (currentPatientSessionId && mobileV2.connectedDevices.length > 0 && syncPatientSession) {
       const currentSession = getCurrentPatientSession();
-      if (currentSession) {
-        // Sync patient session to mobile devices
-        syncPatientSession(currentPatientSessionId, currentSession.patientName).catch(() => {
-          // Sync errors are handled silently - mobile will show appropriate state
-        });
+
+      // Better session existence validation
+      if (currentSession && currentSession.patientName) {
+        // Add small delay to ensure session state is fully updated
+        const syncTimeout = setTimeout(() => {
+          syncPatientSession(currentPatientSessionId, currentSession.patientName).catch((error) => {
+            // Only log unexpected errors, not "session not found" race conditions
+            if (error && !error.message?.includes('Session not found')) {
+              console.warn('Patient session sync failed:', error);
+            }
+          });
+        }, 100); // 100ms delay to allow state to settle
+
+        return () => clearTimeout(syncTimeout);
+      } else if (currentPatientSessionId) {
+        // Session ID exists but session not found in state - likely race condition
+        console.warn('Patient session sync skipped: session not found in state for ID:', currentPatientSessionId);
       }
     }
   }, [currentPatientSessionId, mobileV2.connectedDevices.length, syncPatientSession, getCurrentPatientSession]);
