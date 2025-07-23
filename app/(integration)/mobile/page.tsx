@@ -98,7 +98,7 @@ function MobilePageContent() {
   // FIXED: Only initialize useSimpleAbly when token is validated
   const { isConnected, currentSessionId, sendTranscript, fetchCurrentSession } = useSimpleAbly({
     tokenId: tokenState.isValid ? tokenState.token : null,
-    onTranscriptReceived: (transcript, sessionId) => {
+    onTranscriptReceived: (_transcript, _sessionId) => {
       // Mobile shouldn't receive transcripts, only send them
       // Transcript received unexpectedly on mobile
     },
