@@ -67,12 +67,14 @@ export const useAblySync = ({
   onStopRecording,
   // Removed: onHealthCheckRequested
 }: AblySyncHookProps) => {
-  // DEBUG: Log hook initialization
-  console.log('🔧 [ABLY_HOOK] useAblySync initialized:', {
+  // Create unique instance ID to track multiple hook instances
+  const instanceId = useRef(`ably-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`);
+
+  // Keep minimal logging for monitoring multiple instances
+  console.log('🔧 [ABLY_HOOK] Instance created:', {
+    instanceId: instanceId.current,
     enabled,
-    token: token ? `${token.substring(0, 8)}...` : null,
     isDesktop,
-    timestamp: new Date().toISOString()
   });
 
   const { userId: authUserId } = useAuth();
@@ -557,13 +559,14 @@ export const useAblySync = ({
 
       // DEBUG: Log connection attempt
       console.log('🔗 [ABLY_HOOK] Attempting to connect to Ably:', {
+        instanceId: instanceId.current,
         channelName: controlChannelName,
         isDesktop,
         currentUserId,
         authUserId,
         hasToken: !!token,
         status: connectionState.status,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
       // FIXED: Better global registry conflict detection
@@ -573,6 +576,7 @@ export const useAblySync = ({
 
         // Log potential conflicts for debugging
         console.log('Global registry check:', {
+          instanceId: instanceId.current,
           channelName: controlChannelName,
           existingState: connectionState,
           isDesktop,
@@ -607,6 +611,7 @@ export const useAblySync = ({
           } else {
             // Potential conflict - force cleanup of stale connection
             console.warn('Potential connection conflict detected, forcing cleanup:', {
+              instanceId: instanceId.current,
               channelName: controlChannelName,
               existingRefCount: existing.refCount,
             });
@@ -753,20 +758,10 @@ export const useAblySync = ({
   useEffect(() => {
     let connectionTimeout: NodeJS.Timeout | null = null;
 
-    // DEBUG: Log effect trigger
-    console.log('⚡ [ABLY_HOOK] Main effect triggered:', {
-      enabled,
-      'connectionState.status': connectionState.status,
-      'ablyRef.current': !!ablyRef.current,
-      'token exists': !!token,
-      isDesktop,
-      timestamp: new Date().toISOString()
-    });
-
     if (enabled) {
       // Only connect if not already connecting/connected and not in cleanup phase
       if (connectionState.status === 'disconnected' && ablyRef.current === null) {
-        console.log('🚀 [ABLY_HOOK] Starting connection...', { isDesktop, hasToken: !!token });
+        console.log('🚀 [ABLY_HOOK] Connecting...', instanceId.current);
         // Add small delay to prevent rapid connect/disconnect cycles
         connectionTimeout = setTimeout(() => {
           if (isDesktop) {
@@ -775,26 +770,28 @@ export const useAblySync = ({
             connect();
           }
         }, 50); // 50ms debounce
-      } else {
-        console.log('⏭️ [ABLY_HOOK] Skipping connection (already connected or connecting)');
       }
     } else {
       // Only cleanup if we have an active connection
       if (connectionState.status !== 'disconnected' && ablyRef.current !== null) {
-        console.log('🧹 [ABLY_HOOK] Cleaning up connection...');
+        console.log('🧹 [ABLY_HOOK] Cleaning up...', instanceId.current);
         // Clear any pending connections
         if (connectionTimeout) {
           clearTimeout(connectionTimeout);
           connectionTimeout = null;
         }
         cleanup();
-      } else {
-        console.log('⏭️ [ABLY_HOOK] Skipping cleanup (already disconnected)');
       }
     }
 
     // Cleanup function
     return () => {
+      console.log('🗑️ [ABLY_HOOK] Effect cleanup triggered', {
+        instanceId: instanceId.current,
+        hasTimeout: !!connectionTimeout,
+        hasConnection: !!ablyRef.current,
+      });
+
       if (connectionTimeout) {
         clearTimeout(connectionTimeout);
       }
@@ -804,6 +801,18 @@ export const useAblySync = ({
       }
     };
   }, [enabled, token, isDesktop, connectionState.status]); // FIXED: Minimal dependencies
+
+  // Add cleanup on unmount
+  useEffect(() => {
+    return () => {
+      console.log('🔚 [ABLY_HOOK] Component unmounting, final cleanup', {
+        instanceId: instanceId.current,
+      });
+      if (ablyRef.current !== null) {
+        cleanup();
+      }
+    };
+  }, []); // Only run on mount/unmount
 
   return {
     connectionState,

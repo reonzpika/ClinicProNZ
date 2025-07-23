@@ -2,7 +2,7 @@
 
 import { useAuth } from '@clerk/nextjs';
 import { Crown, Stethoscope } from 'lucide-react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { AdditionalNotes } from '@/src/features/clinical/main-ui/components/AdditionalNotes';
 import { DocumentationSettingsBadge } from '@/src/features/clinical/main-ui/components/DocumentationSettingsBadge';
@@ -123,7 +123,9 @@ export default function ConsultationPage() {
 
   const handleDeviceDisconnected = useCallback((deviceId: string) => {
     removeMobileV2Device(deviceId);
-    if (mobileV2.connectedDevices.length <= 1) {
+    // Use a ref for dynamic access to avoid dependency
+    const currentDevices = mobileV2.connectedDevices;
+    if (currentDevices.length <= 1) {
       setMobileV2ConnectionStatus('disconnected');
     }
   }, [removeMobileV2Device, setMobileV2ConnectionStatus, mobileV2.connectedDevices.length]);
@@ -142,16 +144,9 @@ export default function ConsultationPage() {
   // ENHANCED: Enable Ably sync when mobile token exists (desktop switches to mobile token approach)
   // Desktop and mobile will use same mobile token for unified connection
 
-  // DEBUG: Log what triggers useAblySync
-  console.log('🔍 [CONSULTATION] useAblySync values:', {
-    'mobileV2.token': mobileV2.token,
-    'enabled': !!mobileV2.token,
-    'mobileV2 full object': mobileV2,
-    'timestamp': new Date().toISOString(),
-  });
-
-  const { syncPatientSession, forceDisconnectDevice, startMobileRecording } = useAblySync({
-    enabled: !!mobileV2.token, // Enable when QR token exists, not when devices connect
+  // Memoize the Ably sync configuration to prevent multiple hook instances
+  const ablySyncConfig = useMemo(() => ({
+    enabled: !!mobileV2.token,
     token: mobileV2.token || undefined,
     isDesktop: true,
     onTranscriptionReceived: handleTranscriptionReceived,
@@ -159,7 +154,16 @@ export default function ConsultationPage() {
     onDeviceConnected: handleDeviceConnected,
     onDeviceDisconnected: handleDeviceDisconnected,
     onError: handleWebSocketError,
-  });
+  }), [
+    mobileV2.token,
+    handleTranscriptionReceived,
+    handlePatientSwitched,
+    handleDeviceConnected,
+    handleDeviceDisconnected,
+    handleWebSocketError,
+  ]);
+
+  const { syncPatientSession, forceDisconnectDevice, startMobileRecording } = useAblySync(ablySyncConfig);
 
   // ENHANCED: Patient session sync based on mobile token existence
   useEffect(() => {
