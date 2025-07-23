@@ -78,7 +78,7 @@ Manages Ably connection with stable callbacks and automatic fallback:
 ### Mobile Recording
 
 - Uses `useTranscription` hook for audio capture
-- 2-second silence threshold for mobile chunks
+- 5-second silence threshold for mobile chunks
 - Automatic transcription via Deepgram API
 - Real-time transmission to desktop
 - Fallback session polling during disconnection
@@ -119,6 +119,17 @@ Manages Ably connection with stable callbacks and automatic fallback:
 - **Fallback**: HTTP polling every 15 seconds
 - **Recovery**: Automatic reconnection when network restored
 - **User Feedback**: Visual indicators for connection state
+
+// TODO: Implement smart polling back-off strategy
+// - Start with 15s polling interval when Ably is disconnected
+// - Gradually increase interval (e.g. 15s → 30s → 60s) if no session changes detected
+// - Reset to 15s if:
+//     a) Token changes
+//     b) App regains focus
+//     c) Manual session refresh triggered
+// - Use a `lastFetchedAt` timestamp to avoid redundant fetches
+// - Goal: reduce backend/API load, battery usage, and cost during prolonged disconnection
+
 
 ### Session Continuity
 - Mobile maintains last known session during disconnection

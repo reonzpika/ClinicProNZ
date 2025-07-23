@@ -2,7 +2,7 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { ChevronDown, ChevronUp, Settings, Smartphone, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, Settings, Smartphone } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import { Stack } from '@/src/shared/components/layout/Stack';
@@ -177,12 +177,6 @@ export function TranscriptionControls({
   // Handle mobile button click
   const handleMobileClick = () => {
     setShowMobileRecordingV2(true);
-  };
-
-  // Handle device disconnect - simplified for MVP
-  const handleDeviceDisconnect = (deviceId: string) => {
-    // Just remove from local state
-    // Device management simplified for MVP - no action needed
   };
 
   // Determine if we're waiting for speech to start

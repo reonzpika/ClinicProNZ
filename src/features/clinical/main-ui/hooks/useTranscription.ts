@@ -19,10 +19,10 @@ type TranscriptionState = {
 };
 
 // Smart timing constants
-const SILENCE_THRESHOLD = 5; // seconds of silence to trigger sending recording
-const SMART_BOUNDARY_THRESHOLD = 90; // seconds - when to start looking for word boundaries (was 25)
-const WORD_BOUNDARY_PAUSE = 4; // seconds - micro-pause indicating word boundary (was 1)
-const FORCE_STOP_DURATION = 120; // seconds - absolute maximum before force-stopping (was 35)
+const SILENCE_THRESHOLD = 10; // seconds of silence to trigger sending recording
+const SMART_BOUNDARY_THRESHOLD = 250; // seconds - when to start looking for word boundaries (was 25)
+const WORD_BOUNDARY_PAUSE = 2; // seconds - micro-pause indicating word boundary (was 1)
+const FORCE_STOP_DURATION = 360; // seconds - absolute maximum before force-stopping (was 35)
 const SPEECH_CONFIRMATION_FRAMES = 5; // Number of consecutive frames above threshold to confirm speech (was 3)
 
 // Add options for mobile support
