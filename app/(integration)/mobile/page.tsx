@@ -288,41 +288,30 @@ function MobilePageContent() {
       return;
     }
 
-    // Log all other errors for debugging
+    // FIXED: Log errors but DON'T update state to prevent infinite loops
     if (error) {
       console.error('Mobile Ably connection error:', error);
-      setTokenState(prev => ({ ...prev, error: `Connection failed: ${error}` }));
+      // Removed: setTokenState call that was causing infinite restart loops
     }
   }, []); // Empty deps to prevent useAblySync reconnections
 
-  // FIXED: Better connection state tracking and logging
-  const ablySyncEnabled = !!tokenState.token && !tokenState.isValidating && !tokenState.error;
+  // FIXED: Stabilize enabled state - remove error dependency to prevent restart loops
+  const ablySyncEnabled = !!tokenState.token && !tokenState.isValidating;
 
-  // Log connection state changes for debugging
+  // FIXED: Simplified logging - only log meaningful changes
   useEffect(() => {
-    console.log('Mobile Ably sync state:', {
-      enabled: ablySyncEnabled,
-      hasToken: !!tokenState.token,
-      isValidating: tokenState.isValidating,
-      hasError: !!tokenState.error,
-      tokenState,
-    });
-  }, [ablySyncEnabled, tokenState]);
+    console.log('Mobile Ably sync enabled:', ablySyncEnabled);
+  }, [ablySyncEnabled]);
 
-  // Ably connection for real-time sync - only start after token validation completes
+  // FIXED: Simplified Ably connection - removed unnecessary empty callbacks
   const { connectionState, sendTranscriptionWithDiarization } = useAblySync({
     enabled: ablySyncEnabled,
     token: tokenState.token || undefined,
     isDesktop: false,
     onPatientSwitched: stableOnPatientSwitched,
-    // Phase 5: Removed onHealthCheckRequested - health check system eliminated
-    onStartRecording: useCallback(() => {
-      // This callback is now handled by the useTranscription hook
-    }, []),
-    onStopRecording: useCallback(() => {
-      // This callback is now handled by the useTranscription hook
-    }, []),
     onError: stableOnError,
+    // FIXED: Removed empty callbacks that were causing reference instability
+    // onStartRecording and onStopRecording removed - handled by useTranscription
   });
 
   // Wake lock hook
@@ -380,14 +369,14 @@ function MobilePageContent() {
     },
   });
 
-  // FIXED: Log connection state changes for debugging
+  // FIXED: Debounced connection state logging to prevent spam
   useEffect(() => {
-    console.log('Mobile connection state changed:', {
-      status: connectionState.status,
-      connectedDevices: connectionState.connectedDevices.length,
-      error: connectionState.error,
-    });
-  }, [connectionState.status, connectionState.connectedDevices.length, connectionState.error]);
+    const timeoutId = setTimeout(() => {
+      console.log('Mobile connection state:', connectionState.status);
+    }, 100); // 100ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [connectionState.status]); // Only log status changes, not device count
 
   // Phase 4: Calculate current state using state machine
   const stateMachine = getStateMachineState(

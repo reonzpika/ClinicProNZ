@@ -479,13 +479,13 @@ export const useAblySync = ({
           }
           break;
         case 'start_recording':
-          if (!isDesktop) {
-            stableCallbacks.onStartRecording?.();
+          if (!isDesktop && stableCallbacks.onStartRecording) {
+            stableCallbacks.onStartRecording();
           }
           break;
         case 'stop_recording':
-          if (!isDesktop) {
-            stableCallbacks.onStopRecording?.();
+          if (!isDesktop && stableCallbacks.onStopRecording) {
+            stableCallbacks.onStopRecording();
           }
           break;
         case 'patient_updated':
@@ -702,8 +702,7 @@ export const useAblySync = ({
       setConnectionState(prev => ({ ...prev, status: 'error', error: errorMessage }));
       stableCallbacks.onError?.(errorMessage);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, token, isDesktop, getUserId, getDeviceInfo, stableCallbacks, cleanup, authUserId, userTier, getEffectiveGuestToken, processedMessageIds, setupChannelHandlers]);
+  }, [getUserId, getDeviceInfo, stableCallbacks, setupChannelHandlers]); // FIXED: Removed from main effect dependencies
 
   // Enhanced force disconnect
   const forceDisconnectDevice = useCallback(async (targetDeviceId: string) => {
@@ -728,7 +727,9 @@ export const useAblySync = ({
     };
   }, [cleanup]);
 
-  // FIXED: Improved connection lifecycle management with conflict prevention
+  // FIXED: Split effects to break circular dependencies
+
+  // Effect 1: Handle connection enable/disable (core logic only)
   useEffect(() => {
     let connectionTimeout: NodeJS.Timeout | null = null;
 
@@ -766,7 +767,7 @@ export const useAblySync = ({
         cleanup();
       }
     };
-  }, [enabled, token, isDesktop, connectionState.status]);
+  }, [enabled, token, isDesktop, connectionState.status]); // FIXED: Minimal dependencies
 
   return {
     connectionState,
