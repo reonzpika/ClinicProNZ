@@ -6,9 +6,6 @@ import { NextResponse } from 'next/server';
 import { db } from '@/db/client';
 import { mobileTokens } from '@/db/schema';
 
-// Initialize Ably with API key
-const ably = new Ably.Rest(process.env.ABLY_API_KEY || '');
-
 export async function POST(request: NextRequest) {
   try {
     const { tokenId } = await request.json();
@@ -20,7 +17,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if Ably is configured
+    // FIXED: Check if Ably is configured BEFORE creating client
     if (!process.env.ABLY_API_KEY) {
       return NextResponse.json(
         {
@@ -65,7 +62,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // FIXED: Create Ably token and return it directly for authUrl compatibility
+    // FIXED: Create Ably client with proper constructor pattern
+    const ably = new Ably.Rest({ key: process.env.ABLY_API_KEY });
+
+    // Create Ably token request for authUrl compatibility
     const ablyTokenRequest = await ably.auth.createTokenRequest({
       clientId: token.userId || token.token, // Use token itself as clientId for guest users
       capability: {
@@ -74,17 +74,9 @@ export async function POST(request: NextRequest) {
       ttl: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
     });
 
-    // Create an actual token from the token request for direct use
-    const ablyToken = await ably.auth.requestToken(ablyTokenRequest);
-
-    // FIXED: Return token string directly for Ably authUrl
-    // When using authUrl, Ably expects the response to be a token string
-    return new Response(ablyToken.token, {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/plain',
-      },
-    });
+    // FIXED: Return TokenRequest object instead of raw token
+    // Ably authUrl expects TokenRequest object for proper token management
+    return NextResponse.json(ablyTokenRequest);
   } catch (error) {
     console.error('Error creating simple Ably token:', error);
     return NextResponse.json(
