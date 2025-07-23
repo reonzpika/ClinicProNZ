@@ -190,20 +190,21 @@ export const useAblySync = ({
         url.searchParams.set('token', token);
       }
 
-      // FIXED: Authentication context separation
-      // Desktop authenticated users: Use Clerk auth only, never guest tokens
-      // Desktop guest users: Use guest token only
-      // Mobile devices: Use mobile token only
+      // ENHANCED: Mobile token takes priority for unified connection
+      // Priority: Mobile token > Clerk auth > Guest token
+      // When mobile token exists, both desktop and mobile use it
       let effectiveGuestToken: string | null = null;
 
-      if (authUserId) {
-        // Authenticated user - never use guest token
+      if (token) {
+        // Mobile token exists - both desktop and mobile use it (no guest token needed)
         effectiveGuestToken = null;
-      } else if (!token && !authUserId) {
+      } else if (authUserId) {
+        // Authenticated user without mobile token - use Clerk auth
+        effectiveGuestToken = null;
+      } else {
         // Desktop guest user (no mobile token, no Clerk auth)
         effectiveGuestToken = getEffectiveGuestToken();
       }
-      // Mobile users (have token) don't need guest token
 
       const response = await fetch(url.toString(), {
         method: 'POST',
@@ -526,20 +527,20 @@ export const useAblySync = ({
         return;
       }
 
-      // FIXED: More robust channel naming with clear authentication separation
-      // Desktop authenticated users: user:${clerkUserId}
-      // Desktop guest users: guest:${guestToken}
-      // Mobile devices: guest:${mobileToken} (inherits from creator)
+      // ENHANCED: Unified channel naming for mobile token approach
+      // Mobile token (both desktop & mobile): guest:${mobileToken}
+      // Desktop authenticated (no mobile): user:${clerkUserId}
+      // Desktop guest (no mobile): guest:${guestToken}
       let controlChannelName: string;
 
-      if (authUserId && !token) {
-        // Desktop authenticated user - use Clerk user ID
-        controlChannelName = `user:${currentUserId}`;
-      } else if (token) {
-        // Mobile device - always uses guest pattern with mobile token
+      if (token) {
+        // Mobile token exists - both desktop and mobile use guest pattern
         controlChannelName = `guest:${currentUserId.replace('guest-', '')}`;
+      } else if (authUserId) {
+        // Desktop authenticated user without mobile token - use Clerk user ID
+        controlChannelName = `user:${currentUserId}`;
       } else if (currentUserId.startsWith('guest-')) {
-        // Desktop guest user
+        // Desktop guest user without mobile token
         controlChannelName = `guest:${currentUserId.replace('guest-', '')}`;
       } else {
         // Fallback for edge cases
@@ -564,8 +565,8 @@ export const useAblySync = ({
         if (connectionState === 'connected' || connectionState === 'connecting') {
           // Check if this is a legitimate shared connection or a conflict
           const isLegitimateReuse = (
-            (isDesktop && !token) // Desktop user reusing their own connection
-            || (!isDesktop && token) // Mobile device connection
+            token // Mobile token - both desktop and mobile should share the connection
+            || (isDesktop && !token) // Desktop user reusing their own connection
           );
 
           if (isLegitimateReuse) {

@@ -139,10 +139,10 @@ export default function ConsultationPage() {
     setMobileV2ConnectionStatus('connected');
   }, [addMobileV2Device, setMobileV2ConnectionStatus]);
 
-  // FIXED: Only enable Ably sync when mobile devices are actually connected
-  // Don't enable just because QR token exists - wait for actual device connection
+  // ENHANCED: Enable Ably sync when mobile token exists (desktop switches to mobile token approach)
+  // Desktop and mobile will use same mobile token for unified connection
   const { syncPatientSession, forceDisconnectDevice, startMobileRecording } = useAblySync({
-    enabled: mobileV2.connectedDevices.length > 0, // Only enable when devices are actually connected
+    enabled: !!mobileV2.token, // Enable when QR token exists, not when devices connect
     token: mobileV2.token || undefined,
     isDesktop: true,
     onTranscriptionReceived: handleTranscriptionReceived,
@@ -152,10 +152,10 @@ export default function ConsultationPage() {
     onError: handleWebSocketError,
   });
 
-  // FIXED: Improved patient session sync with better existence checks
+  // ENHANCED: Patient session sync based on mobile token existence
   useEffect(() => {
-    // Only sync if we have all required components and session exists
-    if (currentPatientSessionId && mobileV2.connectedDevices.length > 0 && syncPatientSession) {
+    // Only sync if we have mobile token, session exists, and sync function available
+    if (currentPatientSessionId && mobileV2.token && syncPatientSession) {
       const currentSession = getCurrentPatientSession();
 
       // Better session existence validation
@@ -177,9 +177,9 @@ export default function ConsultationPage() {
       }
     }
 
-    // FIXED: Return undefined for all other code paths
+    // Return undefined for all other code paths
     return undefined;
-  }, [currentPatientSessionId, mobileV2.connectedDevices.length, syncPatientSession, getCurrentPatientSession]);
+  }, [currentPatientSessionId, mobileV2.token, syncPatientSession, getCurrentPatientSession]);
 
   const handleForceDisconnectDevice = useCallback(async (deviceId: string) => {
     // Send force disconnect message to the device
