@@ -65,7 +65,7 @@ export const useSimpleAbly = ({
       try {
         // FIXED: Use authCallback instead of authParams to control request format
         const ably = new Ably.Realtime({
-          authCallback: async (tokenParams, callback) => {
+          authCallback: async (_tokenParams, callback) => {
             try {
               const response = await fetch('/api/ably/simple-token', {
                 method: 'POST',
