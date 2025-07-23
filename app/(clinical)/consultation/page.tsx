@@ -2,7 +2,7 @@
 
 import { useAuth } from '@clerk/nextjs';
 import { Crown, Stethoscope } from 'lucide-react';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { AdditionalNotes } from '@/src/features/clinical/main-ui/components/AdditionalNotes';
 import { DocumentationSettingsBadge } from '@/src/features/clinical/main-ui/components/DocumentationSettingsBadge';
@@ -10,8 +10,8 @@ import { GeneratedNotes } from '@/src/features/clinical/main-ui/components/Gener
 import { TranscriptionControls } from '@/src/features/clinical/main-ui/components/TranscriptionControls';
 import { TranscriptProcessingStatus } from '@/src/features/clinical/main-ui/components/TranscriptProcessingStatus';
 import { TypedInput } from '@/src/features/clinical/main-ui/components/TypedInput';
-import { useAblySync } from '@/src/features/clinical/main-ui/hooks/useAblySync';
 import { MobileRightPanelOverlay } from '@/src/features/clinical/mobile/components/MobileRightPanelOverlay';
+import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 import RightPanelFeatures from '@/src/features/clinical/right-sidebar/components/RightPanelFeatures';
 import UsageDashboard from '@/src/features/clinical/right-sidebar/components/UsageDashboard';
 import { WorkflowInstructions } from '@/src/features/clinical/right-sidebar/components/WorkflowInstructions';
@@ -99,114 +99,60 @@ export default function ConsultationPage() {
     }
   }, [generatedNotes, loading, isDocumentationMode]);
 
-  // Memoized callbacks for WebSocket sync to prevent infinite re-renders
-  const handleTranscriptionReceived = useCallback(async (
-    transcript: string,
-    _patientSessionId?: string,
-    diarizedTranscript?: string | null,
-    utterances?: any[],
-  ) => {
-    // Append mobile transcription with diarization data to desktop transcription
-    await appendTranscription(
-      transcript,
-      false, // false = not live
-      'mobile', // mobile source
-      undefined, // deviceId (not sessionId!)
-      diarizedTranscript || undefined,
-      utterances || undefined,
-    );
-  }, [appendTranscription]);
+  // Simple Ably sync implementation using single channel approach
+  const { updateSession } = useSimpleAbly({
+    tokenId: mobileV2?.token || null,
+    onTranscriptReceived: (transcript, sessionId) => {
+      // Only process transcripts for the current session
+      if (sessionId === currentPatientSessionId) {
+        appendTranscription(transcript, true, 'mobile');
+      }
+    },
+    onSessionChanged: (sessionId, patientName) => {
+      // Mobile received session update - this shouldn't happen on desktop
+      console.log('Session changed on desktop (unexpected):', sessionId, patientName);
+    },
+    onDeviceConnected: (deviceName) => {
+      // Update local state when device connects
+      addMobileV2Device({
+        deviceId: `mobile-${Date.now()}`,
+        deviceName,
+        deviceType: 'Mobile',
+        connectedAt: Date.now(),
+      });
+      setMobileV2ConnectionStatus('connected');
+    },
+    onDeviceDisconnected: (_deviceName) => {
+      // Update local state when device disconnects
+      const currentDevices = mobileV2?.connectedDevices || [];
+      if (currentDevices.length <= 1) {
+        setMobileV2ConnectionStatus('disconnected');
+      }
+    },
+    onError: (error) => {
+      setError(error);
+    },
+  });
 
-  const handlePatientSwitched = useCallback((_patientSessionId: string, _patientName?: string) => {
-    // Handle patient switching if needed
-  }, []);
+  // Send session updates to mobile when patient changes
+  useEffect(() => {
+    if (currentPatientSessionId && mobileV2?.token && updateSession) {
+      const session = getCurrentPatientSession();
+      if (session?.patientName) {
+        updateSession(currentPatientSessionId, session.patientName);
+      }
+    }
+  }, [currentPatientSessionId, mobileV2?.token, updateSession, getCurrentPatientSession]);
 
-  const handleDeviceDisconnected = useCallback((deviceId: string) => {
+  const handleForceDisconnectDevice = useCallback(async (deviceId: string) => {
+    // TODO: Implement simple force disconnect when we have the new hook
+    // For now, just remove from local state
     removeMobileV2Device(deviceId);
-    // Use safe access to avoid undefined length error
     const currentDevices = mobileV2?.connectedDevices || [];
     if (currentDevices.length <= 1) {
       setMobileV2ConnectionStatus('disconnected');
     }
   }, [removeMobileV2Device, setMobileV2ConnectionStatus]);
-
-  const handleWebSocketError = useCallback((error: string | null) => {
-    // WebSocket error handled silently
-    setError(error);
-    setMobileV2ConnectionStatus('error');
-  }, [setError, setMobileV2ConnectionStatus]);
-
-  const handleDeviceConnected = useCallback((deviceId: string, deviceName: string, deviceType?: string) => {
-    addMobileV2Device({ deviceId, deviceName, deviceType: deviceType || 'Unknown', connectedAt: Date.now() });
-    setMobileV2ConnectionStatus('connected');
-  }, [addMobileV2Device, setMobileV2ConnectionStatus]);
-
-  // ENHANCED: Enable Ably sync when mobile token exists (desktop switches to mobile token approach)
-  // Desktop and mobile will use same mobile token for unified connection
-
-  // Memoize the Ably sync configuration to prevent multiple hook instances
-  const ablySyncConfig = useMemo(() => ({
-    enabled: !!mobileV2?.token,
-    token: mobileV2?.token || undefined,
-    isDesktop: true,
-    onTranscriptionReceived: handleTranscriptionReceived,
-    onPatientSwitched: handlePatientSwitched,
-    onDeviceConnected: handleDeviceConnected,
-    onDeviceDisconnected: handleDeviceDisconnected,
-    onError: handleWebSocketError,
-  }), [
-    mobileV2?.token,
-    // Removed callback dependencies since they're already memoized with useCallback
-    // This prevents unnecessary recreation of the config object
-  ]);
-
-  const { syncPatientSession, forceDisconnectDevice, startMobileRecording } = useAblySync(ablySyncConfig);
-
-  // ENHANCED: Patient session sync based on mobile token existence
-  useEffect(() => {
-    // Only sync if we have mobile token, session exists, and sync function available
-    if (currentPatientSessionId && mobileV2?.token && syncPatientSession) {
-      const currentSession = getCurrentPatientSession();
-
-      // Better session existence validation
-      if (currentSession && currentSession.patientName) {
-        // Add small delay to ensure session state is fully updated
-        const syncTimeout = setTimeout(() => {
-          syncPatientSession(currentPatientSessionId, currentSession.patientName).catch((error) => {
-            // Only log unexpected errors, not "session not found" race conditions
-            if (error && !error.message?.includes('Session not found')) {
-              console.warn('Patient session sync failed:', error);
-            }
-          });
-        }, 100); // 100ms delay to allow state to settle
-
-        return () => clearTimeout(syncTimeout);
-      } else if (currentPatientSessionId) {
-        // Session ID exists but session not found in state - likely race condition
-        console.warn('Patient session sync skipped: session not found in state for ID:', currentPatientSessionId);
-      }
-    }
-
-    // Return undefined for all other code paths
-    return undefined;
-  }, [currentPatientSessionId, mobileV2?.token, syncPatientSession, getCurrentPatientSession]);
-
-  const handleForceDisconnectDevice = useCallback(async (deviceId: string) => {
-    // Send force disconnect message to the device
-    if (forceDisconnectDevice) {
-      try {
-        await forceDisconnectDevice(deviceId);
-      } catch {
-        // Silently handle error
-      }
-    }
-    // Remove from local state immediately
-    removeMobileV2Device(deviceId);
-    const currentDevices = mobileV2?.connectedDevices || [];
-    if (currentDevices.length <= 1) {
-      setMobileV2ConnectionStatus('disconnected');
-    }
-  }, [forceDisconnectDevice, removeMobileV2Device, setMobileV2ConnectionStatus]);
 
   const handleClearAll = () => {
     setIsNoteFocused(false);
@@ -461,7 +407,7 @@ export default function ConsultationPage() {
                                       onExpand={() => setIsNoteFocused(false)}
                                       isMinimized
                                       onForceDisconnectDevice={handleForceDisconnectDevice}
-                                      startMobileRecording={startMobileRecording}
+                                      startMobileRecording={async () => false}
                                     />
                                   )
                                 : (
@@ -526,7 +472,7 @@ export default function ConsultationPage() {
                                           onExpand={() => setIsNoteFocused(false)}
                                           isMinimized={false}
                                           onForceDisconnectDevice={handleForceDisconnectDevice}
-                                          startMobileRecording={startMobileRecording}
+                                          startMobileRecording={async () => false}
                                         />
                                       )
                                     : (
@@ -607,7 +553,7 @@ export default function ConsultationPage() {
                                           onExpand={() => setIsNoteFocused(false)}
                                           isMinimized
                                           onForceDisconnectDevice={handleForceDisconnectDevice}
-                                          startMobileRecording={startMobileRecording}
+                                          startMobileRecording={async () => false}
                                         />
                                       )
                                     : (
@@ -642,7 +588,7 @@ export default function ConsultationPage() {
                                         onExpand={() => setIsNoteFocused(false)}
                                         isMinimized={false}
                                         onForceDisconnectDevice={handleForceDisconnectDevice}
-                                        startMobileRecording={startMobileRecording}
+                                        startMobileRecording={async () => false}
                                       />
                                     )
                                   : (
