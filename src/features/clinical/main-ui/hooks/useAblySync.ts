@@ -131,8 +131,6 @@ export const useAblySync = ({
 
   console.log('✅ [ABLY_HOOK] Running active instance:', instanceId.current);
 
-  const [processedMessageIds] = useState(new Set<string>());
-
   // Stabilize callback references to prevent unnecessary reconnections
   const stableCallbacks = useMemo(() => ({
     onTranscriptionReceived,
