@@ -63,12 +63,26 @@ export const useSimpleAbly = ({
 
     const connect = async () => {
       try {
-        // FIXED: Use proper authUrl configuration instead of manual token fetch
+        // FIXED: Use authCallback instead of authParams to control request format
         const ably = new Ably.Realtime({
-          authUrl: '/api/ably/simple-token',
-          authMethod: 'POST',
-          authHeaders: { 'Content-Type': 'application/json' },
-          authParams: { tokenId },
+          authCallback: async (tokenParams, callback) => {
+            try {
+              const response = await fetch('/api/ably/simple-token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tokenId }),
+              });
+
+              if (!response.ok) {
+                throw new Error(`Failed to get Ably token: ${response.statusText}`);
+              }
+
+              const tokenRequest = await response.json();
+              callback(null, tokenRequest);
+            } catch (error) {
+              callback(error as string, null);
+            }
+          },
           autoConnect: true,
           // Add proper error handling and retry configuration
           disconnectedRetryTimeout: 15000,
