@@ -926,6 +926,9 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     if (onSwitch && targetSession) {
       onSwitch(sessionId, targetSession.patientName);
     }
+
+    // FIXED: Return true to indicate successful switch
+    return true;
   }, [state.patientSessions, sendPatientUpdatedMessage]);
 
   const updatePatientSession = useCallback(async (sessionId: string, updates: Partial<PatientSession>) => {
