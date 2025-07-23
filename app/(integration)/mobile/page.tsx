@@ -9,6 +9,7 @@ import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbl
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
+import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 
 // Simple mobile state types (now using inline types)
 
@@ -122,8 +123,12 @@ function MobilePageContent() {
         formData.append('audio', audioBlob, 'audio.webm');
         formData.append('sessionId', currentSessionId);
 
+        // FIXED: Add auth headers using mobile token as guest token
+        const authHeaders = createAuthHeadersWithGuest(null, 'basic', tokenState.token);
+
         const response = await fetch('/api/deepgram/transcribe', {
           method: 'POST',
+          headers: authHeaders,
           body: formData,
         });
 
