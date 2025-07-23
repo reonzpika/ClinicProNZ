@@ -1,4 +1,4 @@
-import { and, desc, eq, gt, or } from 'drizzle-orm';
+import { and, desc, eq, gt } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
 
     // FIXED: Support guest tokens (userId can be null for guest users)
     let sessionQuery;
-    
+
     if (userId) {
       // Authenticated user - look up sessions by userId
       sessionQuery = db
