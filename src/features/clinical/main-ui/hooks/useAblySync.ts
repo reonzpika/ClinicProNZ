@@ -698,12 +698,5 @@ export const useAblySync = ({
       });
       return success ? patientSessionId : '';
     }, [sendMessage]),
-    // Phase 5: Removed requestHealthCheck - health check system eliminated
-    forceDisconnectDevice: useCallback(async (deviceId: string): Promise<void> => {
-      sendMessage({
-        type: 'force_disconnect',
-        targetDeviceId: deviceId,
-      });
-    }, [sendMessage]),
   };
 };

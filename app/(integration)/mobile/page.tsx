@@ -387,16 +387,7 @@ function MobilePageContent() {
     };
   }, []);
 
-  // Update refs with current function references
-  useEffect(() => {
-    // These refs are no longer needed as startRecording/stopRecording are managed by the hook
-  }, []);
 
-  // Connection status helpers
-  const isConnected = connectionState.status === 'connected';
-  const _isConnecting = connectionState.status === 'connecting';
-  const _hasConnectionError = connectionState.status === 'error';
-  const _isFunctional = isConnected || connectionState.status === 'disconnected';
 
   // Show error page for invalid tokens
   if (tokenState.error && !tokenState.isValidating && !tokenState.token) {
@@ -436,7 +427,7 @@ function MobilePageContent() {
 
           {/* Connection Status */}
           <div className="flex items-center space-x-2">
-            {stateMachine.currentState === 'connected' || stateMachine.currentState === 'ready' || stateMachine.currentState === 'recording'
+            {stateMachine.currentState === 'ready' || stateMachine.currentState === 'recording'
               ? (
                   <>
                     <Wifi className="size-5 text-green-600" />
