@@ -123,12 +123,12 @@ export default function ConsultationPage() {
 
   const handleDeviceDisconnected = useCallback((deviceId: string) => {
     removeMobileV2Device(deviceId);
-    // Use a ref for dynamic access to avoid dependency
-    const currentDevices = mobileV2.connectedDevices;
+    // Use safe access to avoid undefined length error
+    const currentDevices = mobileV2.connectedDevices || [];
     if (currentDevices.length <= 1) {
       setMobileV2ConnectionStatus('disconnected');
     }
-  }, [removeMobileV2Device, setMobileV2ConnectionStatus, mobileV2.connectedDevices.length]);
+  }, [removeMobileV2Device, setMobileV2ConnectionStatus]);
 
   const handleWebSocketError = useCallback((error: string | null) => {
     // WebSocket error handled silently
@@ -205,10 +205,11 @@ export default function ConsultationPage() {
     }
     // Remove from local state immediately
     removeMobileV2Device(deviceId);
-    if (mobileV2.connectedDevices.length <= 1) {
+    const currentDevices = mobileV2.connectedDevices || [];
+    if (currentDevices.length <= 1) {
       setMobileV2ConnectionStatus('disconnected');
     }
-  }, [forceDisconnectDevice, removeMobileV2Device, setMobileV2ConnectionStatus, mobileV2.connectedDevices.length]);
+  }, [forceDisconnectDevice, removeMobileV2Device, setMobileV2ConnectionStatus]);
 
   const handleClearAll = () => {
     setIsNoteFocused(false);
