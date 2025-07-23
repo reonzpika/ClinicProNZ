@@ -10,17 +10,34 @@ export async function POST(request: NextRequest) {
   try {
     let tokenId: string | null = null;
 
-    // FIXED: Handle both JSON and form data since Ably authParams uses form encoding
+    // DEBUG: Log what we're actually receiving
     const contentType = request.headers.get('content-type') || '';
+    console.log('🔍 Received content-type:', contentType);
 
-    if (contentType.includes('application/json')) {
-      const { tokenId: jsonTokenId } = await request.json();
-      tokenId = jsonTokenId;
-    } else {
-      // Handle form data (Ably authParams default)
-      const formData = await request.formData();
-      tokenId = formData.get('tokenId') as string;
+    try {
+      if (contentType.includes('application/json')) {
+        console.log('📝 Parsing as JSON');
+        const { tokenId: jsonTokenId } = await request.json();
+        tokenId = jsonTokenId;
+      } else {
+        console.log('📝 Parsing as form data');
+        // Handle URL-encoded form data (Ably authParams default)
+        const body = await request.text();
+        console.log('🔍 Raw body:', `${body.slice(0, 50)}...`);
+
+        // Parse URL-encoded data manually
+        const params = new URLSearchParams(body);
+        tokenId = params.get('tokenId');
+      }
+    } catch (parseError) {
+      console.error('❌ Error parsing request:', parseError);
+      return NextResponse.json(
+        { error: 'Invalid request format' },
+        { status: 400 },
+      );
     }
+
+    console.log('🎯 Extracted tokenId:', `${tokenId?.slice(0, 8)}...`);
 
     if (!tokenId) {
       return NextResponse.json(
