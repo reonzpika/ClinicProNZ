@@ -254,36 +254,67 @@ function MobilePageContent() {
     validateToken();
   }, [searchParams]);
 
+  // FIXED: Stabilized callback to prevent reconnection loops
+  const stableOnPatientSwitched = useCallback((sessionId: string, name?: string) => {
+    // Clear any existing sync timeout to prevent overlaps
+    if (syncTimeoutRef.current) {
+      clearTimeout(syncTimeoutRef.current);
+      syncTimeoutRef.current = null;
+    }
+
+    // Show brief syncing state for user feedback
+    setPatientState({
+      sessionId,
+      name: name || 'Unknown Patient',
+      syncStatus: 'syncing',
+      lastSyncTime: null,
+    });
+
+    // After brief delay, show synced state
+    syncTimeoutRef.current = setTimeout(() => {
+      setPatientState(prev => ({
+        ...prev,
+        syncStatus: 'synced',
+        lastSyncTime: Date.now(),
+      }));
+      syncTimeoutRef.current = null; // Clear ref after timeout executes
+    }, 1000); // 1 second syncing feedback
+  }, []); // Empty deps to prevent useAblySync reconnections
+
+  const stableOnError = useCallback((error: string | null) => {
+    // FIXED: Only filter out specific deployment-related errors, not connection errors
+    if (error && error.includes('Ably service not configured')) {
+      // This is expected in some deployments - continue without Ably
+      return;
+    }
+
+    // Log all other errors for debugging
+    if (error) {
+      console.error('Mobile Ably connection error:', error);
+      setTokenState(prev => ({ ...prev, error: `Connection failed: ${error}` }));
+    }
+  }, []); // Empty deps to prevent useAblySync reconnections
+
+  // FIXED: Better connection state tracking and logging
+  const ablySyncEnabled = !!tokenState.token && !tokenState.isValidating && !tokenState.error;
+
+  // Log connection state changes for debugging
+  useEffect(() => {
+    console.log('Mobile Ably sync state:', {
+      enabled: ablySyncEnabled,
+      hasToken: !!tokenState.token,
+      isValidating: tokenState.isValidating,
+      hasError: !!tokenState.error,
+      tokenState,
+    });
+  }, [ablySyncEnabled, tokenState]);
+
   // Ably connection for real-time sync - only start after token validation completes
   const { connectionState, sendTranscriptionWithDiarization } = useAblySync({
-    enabled: !!tokenState.token && !tokenState.isValidating && !tokenState.error,
+    enabled: ablySyncEnabled,
     token: tokenState.token || undefined,
     isDesktop: false,
-    onPatientSwitched: useCallback((sessionId: string, name?: string) => {
-      // Clear any existing sync timeout to prevent overlaps
-      if (syncTimeoutRef.current) {
-        clearTimeout(syncTimeoutRef.current);
-        syncTimeoutRef.current = null;
-      }
-
-      // Show brief syncing state for user feedback
-      setPatientState({
-        sessionId,
-        name: name || 'Unknown Patient',
-        syncStatus: 'syncing',
-        lastSyncTime: null,
-      });
-
-      // After brief delay, show synced state
-      syncTimeoutRef.current = setTimeout(() => {
-        setPatientState(prev => ({
-          ...prev,
-          syncStatus: 'synced',
-          lastSyncTime: Date.now(),
-        }));
-        syncTimeoutRef.current = null; // Clear ref after timeout executes
-      }, 1000); // 1 second syncing feedback
-    }, []),
+    onPatientSwitched: stableOnPatientSwitched,
     // Phase 5: Removed onHealthCheckRequested - health check system eliminated
     onStartRecording: useCallback(() => {
       // This callback is now handled by the useTranscription hook
@@ -291,19 +322,7 @@ function MobilePageContent() {
     onStopRecording: useCallback(() => {
       // This callback is now handled by the useTranscription hook
     }, []),
-    onError: useCallback((error: string | null) => {
-      // Filter out expected Ably configuration errors
-      if (error && (
-        error.includes('Failed to create Ably connection')
-        || error.includes('Failed to connect to Ably')
-        || error.includes('Ably service not configured')
-      )) {
-        return;
-      }
-      if (error) {
-        setTokenState(prev => ({ ...prev, error }));
-      }
-    }, []),
+    onError: stableOnError,
   });
 
   // Wake lock hook
@@ -360,6 +379,15 @@ function MobilePageContent() {
       }
     },
   });
+
+  // FIXED: Log connection state changes for debugging
+  useEffect(() => {
+    console.log('Mobile connection state changed:', {
+      status: connectionState.status,
+      connectedDevices: connectionState.connectedDevices.length,
+      error: connectionState.error,
+    });
+  }, [connectionState.status, connectionState.connectedDevices.length, connectionState.error]);
 
   // Phase 4: Calculate current state using state machine
   const stateMachine = getStateMachineState(

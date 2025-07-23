@@ -546,27 +546,57 @@ export const useAblySync = ({
         controlChannelName = `user:${currentUserId}`;
       }
 
-      // Check if there's already an active connection for this user
+      // FIXED: Better global registry conflict detection
       if (globalConnectionRegistry.has(controlChannelName)) {
         const existing = globalConnectionRegistry.get(controlChannelName)!;
         const connectionState = existing.connection.connection.state;
 
+        // Log potential conflicts for debugging
+        console.log('Global registry check:', {
+          channelName: controlChannelName,
+          existingState: connectionState,
+          isDesktop,
+          currentUserId,
+          authUserId,
+          hasToken: !!token,
+        });
+
         if (connectionState === 'connected' || connectionState === 'connecting') {
-          // Reuse existing connection
-          existing.refCount++;
-          ablyRef.current = existing.connection;
+          // Check if this is a legitimate shared connection or a conflict
+          const isLegitimateReuse = (
+            (isDesktop && !token) // Desktop user reusing their own connection
+            || (!isDesktop && token) // Mobile device connection
+          );
 
-          const channel = existing.connection.channels.get(controlChannelName);
-          channelRef.current = channel;
-          controlChannelRef.current = channel; // Phase 1: Track control channel
+          if (isLegitimateReuse) {
+            // Reuse existing connection
+            existing.refCount++;
+            ablyRef.current = existing.connection;
 
-          // Set up event handlers for this instance
-          setupChannelHandlers(channel, currentUserId);
+            const channel = existing.connection.channels.get(controlChannelName);
+            channelRef.current = channel;
+            controlChannelRef.current = channel; // Phase 1: Track control channel
 
-          if (connectionState === 'connected') {
-            setConnectionState(prev => ({ ...prev, status: 'connected' }));
+            // Set up event handlers for this instance
+            setupChannelHandlers(channel, currentUserId);
+
+            if (connectionState === 'connected') {
+              setConnectionState(prev => ({ ...prev, status: 'connected' }));
+            }
+            return;
+          } else {
+            // Potential conflict - force cleanup of stale connection
+            console.warn('Potential connection conflict detected, forcing cleanup:', {
+              channelName: controlChannelName,
+              existingRefCount: existing.refCount,
+            });
+            globalConnectionRegistry.delete(controlChannelName);
+            try {
+              existing.connection.close();
+            } catch {
+              // Ignore cleanup errors
+            }
           }
-          return;
         } else {
           // Clean up stale connection
           globalConnectionRegistry.delete(controlChannelName);
