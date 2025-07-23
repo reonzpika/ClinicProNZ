@@ -113,8 +113,9 @@ export default function ConsultationPage() {
   }, []);
 
   // Simple Ably sync implementation using single channel approach
+  // FIXED: Only initialize when mobile V2 is enabled and has valid token
   const { updateSession } = useSimpleAbly({
-    tokenId: mobileV2?.token || null,
+    tokenId: mobileV2?.isEnabled && mobileV2?.token ? mobileV2.token : null,
     onTranscriptReceived: handleTranscriptReceived,
     onSessionChanged: handleSessionChanged,
     onError: handleError,

@@ -413,6 +413,11 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
+    // FIXED: Only validate mobile token when mobile V2 is enabled and token exists
+    if (!state.mobileV2.isEnabled || !state.mobileV2.token) {
+      return;
+    }
+
     const validateMobileToken = async (token: string) => {
       try {
         // Check if token is still valid by calling Ably token API
@@ -425,7 +430,8 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
         });
 
         if (!response.ok) {
-          // Token is invalid/expired - clear it
+          // Token is invalid/expired - clear it immediately
+          console.warn('Mobile token validation failed, clearing token');
           setState(prev => ({
             ...prev,
             mobileV2: {
@@ -433,14 +439,14 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
               token: null,
               tokenData: null,
               connectionStatus: 'disconnected',
+              isEnabled: false, // FIXED: Disable mobile V2 when token is invalid
             },
           }));
-        } else {
-          // If response is ok, token is still valid - keep current state
         }
-      // eslint-disable-next-line unused-imports/no-unused-vars
-      } catch (_error) {
-        // On validation error, clear token to be safe
+        // If response is ok, token is still valid - keep current state
+      } catch (error) {
+        // On validation error, clear token to be safe and prevent cascade failures
+        console.warn('Mobile token validation error, clearing token:', error);
         setState(prev => ({
           ...prev,
           mobileV2: {
@@ -448,17 +454,19 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
             token: null,
             tokenData: null,
             connectionStatus: 'disconnected',
+            isEnabled: false, // FIXED: Disable mobile V2 on validation error
           },
         }));
       }
     };
 
-    // Validate mobile token if it exists
-    const token = state.mobileV2?.token;
-    if (token) {
-      validateMobileToken(token);
-    }
-  }, [isClient, state.mobileV2?.token]); // Only run when isClient becomes true or token changes
+    // FIXED: Add debounce to prevent rapid validation calls
+    const validationTimeout = setTimeout(() => {
+      validateMobileToken(state.mobileV2.token!); // Safe: already checked token exists above
+    }, 1000);
+
+    return () => clearTimeout(validationTimeout);
+  }, [isClient, state.mobileV2.isEnabled, state.mobileV2.token]); // FIXED: Only run when enabled and token changes
 
   // Helper functions
   const setStatus = useCallback((status: ConsultationState['status']) =>

@@ -1,4 +1,4 @@
-import { and, desc, eq, gt } from 'drizzle-orm';
+import { and, desc, eq, gt, or } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
@@ -17,16 +17,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get the mobile token to find the user
+    // FIXED: Use mobileTokens.token instead of mobileTokens.id for lookup
     const tokenResult = await db
       .select({
         userId: mobileTokens.userId,
         expiresAt: mobileTokens.expiresAt,
+        token: mobileTokens.token,
       })
       .from(mobileTokens)
       .where(
         and(
-          eq(mobileTokens.id, tokenId),
+          eq(mobileTokens.token, tokenId), // FIXED: was mobileTokens.id
           gt(mobileTokens.expiresAt, new Date()),
         ),
       )
@@ -49,24 +50,37 @@ export async function GET(request: NextRequest) {
 
     const { userId } = tokenData;
 
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Token not associated with a user' },
-        { status: 401 },
-      );
+    // FIXED: Support guest tokens (userId can be null for guest users)
+    let sessionQuery;
+    
+    if (userId) {
+      // Authenticated user - look up sessions by userId
+      sessionQuery = db
+        .select({
+          id: patientSessions.id,
+          patientName: patientSessions.patientName,
+          createdAt: patientSessions.createdAt,
+        })
+        .from(patientSessions)
+        .where(eq(patientSessions.userId, userId))
+        .orderBy(desc(patientSessions.createdAt))
+        .limit(1);
+    } else {
+      // Guest user - look up sessions by guestToken
+      // For mobile tokens used by guests, match the token with guest sessions
+      sessionQuery = db
+        .select({
+          id: patientSessions.id,
+          patientName: patientSessions.patientName,
+          createdAt: patientSessions.createdAt,
+        })
+        .from(patientSessions)
+        .where(eq(patientSessions.guestToken, tokenId))
+        .orderBy(desc(patientSessions.createdAt))
+        .limit(1);
     }
 
-    // Get the most recent patient session for this user
-    const sessionResult = await db
-      .select({
-        id: patientSessions.id,
-        patientName: patientSessions.patientName,
-        createdAt: patientSessions.createdAt,
-      })
-      .from(patientSessions)
-      .where(eq(patientSessions.userId, userId))
-      .orderBy(desc(patientSessions.createdAt))
-      .limit(1);
+    const sessionResult = await sessionQuery;
 
     if (sessionResult.length === 0) {
       return NextResponse.json({

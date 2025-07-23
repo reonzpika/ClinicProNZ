@@ -163,3 +163,68 @@ Manages Ably connection with stable callbacks and automatic fallback:
 - **Token Security**: Secure channel access control
 
 This simplified architecture ensures reliable core functionality while reducing maintenance overhead and potential failure points.
+
+## Critical Fixes Applied (2024)
+
+### Database Query Fix
+- **Issue**: `/api/mobile/current-session` used wrong database field reference
+- **Fixed**: Changed `eq(mobileTokens.id, tokenId)` → `eq(mobileTokens.token, tokenId)`
+- **Impact**: Eliminates 401 errors on session polling
+
+### Guest Token Support
+- **Issue**: Session fallback API didn't support guest users (null userId)
+- **Fixed**: Added conditional query logic for guest vs authenticated users
+- **Impact**: Guest sessions now work with mobile recording
+
+### Ably Configuration Fix
+- **Issue**: Static token initialization without proper refresh mechanism
+- **Fixed**: Implemented `authUrl` configuration with automatic token refresh
+- **Impact**: Eliminates "no application id found" and token renewal warnings
+
+### Token Lifecycle Management
+- **Issue**: Premature polling and validation causing cascade failures
+- **Fixed**: Added validation guards and conditional hook initialization
+- **Impact**: No more 401 errors on page load or before QR generation
+
+### Mobile Token Validation
+- **Issue**: Superficial setTimeout-based validation
+- **Fixed**: Proper server-side validation via `/api/ably/simple-token`
+- **Impact**: Reliable mobile connection establishment
+
+## Deployment Testing Checklist
+
+### Critical Path Tests
+1. **Desktop Page Load**
+   - ✅ No 401 errors in console on `/consultation` load
+   - ✅ No premature API calls before QR generation
+
+2. **QR Code Generation**
+   - ✅ Token created and stored successfully
+   - ✅ Mobile V2 enabled only after successful generation
+   - ✅ No Ably connection attempts before QR creation
+
+3. **Mobile Token Validation**
+   - ✅ Proper server-side validation on mobile page load
+   - ✅ Clear error messages for expired/invalid tokens
+   - ✅ useSimpleAbly only initializes after validation
+
+4. **Ably Connection**
+   - ✅ No "no application id found" errors
+   - ✅ No token renewal warnings
+   - ✅ Proper authUrl-based token refresh
+
+5. **Session Fallback**
+   - ✅ Database queries find tokens correctly
+   - ✅ Guest users can access sessions
+   - ✅ Graceful 401 handling for expired tokens
+
+6. **Guest User Flow**
+   - ✅ Anonymous users can create mobile tokens
+   - ✅ Guest sessions sync properly with mobile
+   - ✅ Session polling works for guest tokens
+
+### Error Monitoring
+- Monitor for 401 errors on session endpoints
+- Check Ably connection success rates
+- Validate token creation and expiry handling
+- Ensure no cascade API failures

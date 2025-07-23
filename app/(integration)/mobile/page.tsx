@@ -10,19 +10,7 @@ import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 
-// Simple mobile state types
-type MobileState = 'disconnected' | 'connecting' | 'connected' | 'recording' | 'error';
-
-type TokenState = {
-  token: string | null;
-  isValidating: boolean;
-  error: string | null;
-};
-
-type SessionState = {
-  sessionId: string | null;
-  patientName: string | null;
-};
+// Simple mobile state types (now using inline types)
 
 // Custom hook for screen wake lock
 function useWakeLock() {
@@ -69,24 +57,34 @@ function useWakeLock() {
 function MobilePageContent() {
   const searchParams = useSearchParams();
 
-  const [tokenState, setTokenState] = useState<TokenState>({
+  // Token validation state
+  const [tokenState, setTokenState] = useState<{
+    token: string | null;
+    isValidating: boolean;
+    isValid: boolean; // FIXED: Add isValid flag for proper validation tracking
+    error: string | null;
+  }>({
     token: null,
     isValidating: false,
+    isValid: false, // FIXED: Add isValid flag
     error: null,
   });
 
-  const [sessionState, setSessionState] = useState<SessionState>({
+  // Session state for patient info
+  const [sessionState, setSessionState] = useState<{
+    sessionId: string | null;
+    patientName: string | null;
+  }>({
     sessionId: null,
     patientName: null,
   });
 
-  const [mobileState, setMobileState] = useState<MobileState>('disconnected');
+  // Mobile state for UI
+  const [mobileState, setMobileState] = useState<'disconnected' | 'connecting' | 'connected' | 'recording' | 'error'>('disconnected');
 
-  // Wake lock hook
-  const { isSupported: wakeLockSupported, isActive: wakeLockActive, requestWakeLock, releaseWakeLock } = useWakeLock();
+  // Wake lock functionality
+  const { isSupported: wakeLockSupported, requestWakeLock, releaseWakeLock } = useWakeLock();
 
-  // Simple Ably connection
-  // Memoized callbacks to prevent reconnections
   const handleSessionChanged = useCallback((sessionId: string, patientName: string) => {
     // Update session when desktop changes patient
     setSessionState({ sessionId, patientName });
@@ -97,11 +95,12 @@ function MobilePageContent() {
     setMobileState('error');
   }, []);
 
+  // FIXED: Only initialize useSimpleAbly when token is validated
   const { isConnected, currentSessionId, sendTranscript, fetchCurrentSession } = useSimpleAbly({
-    tokenId: tokenState.token,
+    tokenId: tokenState.isValid ? tokenState.token : null,
     onTranscriptReceived: (transcript, sessionId) => {
       // Mobile shouldn't receive transcripts, only send them
-      console.log('Unexpected transcript received on mobile:', transcript, sessionId);
+      // Transcript received unexpectedly on mobile
     },
     onSessionChanged: handleSessionChanged,
     onError: handleError,
@@ -155,21 +154,55 @@ function MobilePageContent() {
       setTokenState({
         token,
         isValidating: true,
+        isValid: false, // FIXED: Start with false until validated
         error: null,
       });
 
-      // Simple validation - just set the token
-      // The useSimpleAbly hook will handle the actual validation
-      setTimeout(() => {
-        setTokenState(prev => ({
-          ...prev,
-          isValidating: false,
-        }));
-      }, 1000);
+      // FIXED: Proper server-side token validation instead of setTimeout
+      const validateToken = async () => {
+        try {
+          // Validate token by calling the simple-token API
+          const response = await fetch('/api/ably/simple-token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tokenId: token }),
+          });
+
+          if (response.ok) {
+            // Token is valid
+            setTokenState(prev => ({
+              ...prev,
+              isValidating: false,
+              isValid: true,
+              error: null,
+            }));
+          } else {
+            // Token is invalid or expired
+            const errorData = await response.json().catch(() => ({ error: 'Token validation failed' }));
+            setTokenState(prev => ({
+              ...prev,
+              isValidating: false,
+              isValid: false,
+              error: errorData.error || 'Invalid or expired token',
+            }));
+          }
+        } catch (error) {
+          // Network or other error
+          setTokenState(prev => ({
+            ...prev,
+            isValidating: false,
+            isValid: false,
+            error: error instanceof Error ? error.message : 'Token validation failed',
+          }));
+        }
+      };
+
+      validateToken();
     } else {
       setTokenState({
         token: null,
         isValidating: false,
+        isValid: false, // FIXED: Add isValid flag
         error: 'No token provided in URL',
       });
     }
@@ -181,7 +214,7 @@ function MobilePageContent() {
       setMobileState('error');
     } else if (tokenState.isValidating) {
       setMobileState('connecting');
-    } else if (!tokenState.token) {
+    } else if (!tokenState.token || !tokenState.isValid) { // FIXED: Check both token and isValid
       setMobileState('disconnected');
     } else if (!isConnected) {
       setMobileState('connecting');
@@ -190,7 +223,7 @@ function MobilePageContent() {
     } else {
       setMobileState('connected');
     }
-  }, [tokenState, isConnected, isRecording]);
+  }, [tokenState, isConnected, isRecording]); // FIXED: Include all tokenState changes
 
   // Manage wake lock based on recording state
   useEffect(() => {
@@ -329,7 +362,7 @@ function MobilePageContent() {
                   <div className="text-center text-xs text-gray-400">
                     Screen lock:
                     {' '}
-                    {wakeLockActive ? 'Disabled' : 'Enabled'}
+                    {wakeLockSupported ? 'Enabled' : 'Disabled'}
                   </div>
                 )}
               </div>

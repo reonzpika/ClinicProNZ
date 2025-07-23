@@ -63,29 +63,23 @@ export const useSimpleAbly = ({
 
     const connect = async () => {
       try {
-        // Get Ably token from backend
-        const response = await fetch('/api/ably/simple-token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tokenId }),
+        // FIXED: Use proper authUrl configuration instead of manual token fetch
+        const ably = new Ably.Realtime({
+          authUrl: '/api/ably/simple-token',
+          authMethod: 'POST',
+          authHeaders: { 'Content-Type': 'application/json' },
+          authParams: { tokenId },
+          autoConnect: true,
+          // Add proper error handling and retry configuration
+          disconnectedRetryTimeout: 15000,
+          suspendedRetryTimeout: 30000,
         });
-
-        if (!response.ok) {
-          throw new Error(`Failed to get Ably token: ${response.statusText}`);
-        }
-
-        const { ablyToken } = await response.json();
 
         // Check if this connection is still current
         if (!isCurrentConnection) {
+          ably.close();
           return;
         }
-
-        // Create Ably connection
-        const ably = new Ably.Realtime({
-          token: ablyToken,
-          autoConnect: true,
-        });
 
         // Single channel based on tokenId
         const channel = ably.channels.get(`token:${tokenId}`);
@@ -110,7 +104,7 @@ export const useSimpleAbly = ({
           }
         });
 
-        // Track connection state
+        // Track connection state with better error handling
         ably.connection.on('connected', () => {
           if (!isCurrentConnection) {
             return;
@@ -125,12 +119,30 @@ export const useSimpleAbly = ({
           setIsConnected(false);
         });
 
+        ably.connection.on('suspended', () => {
+          if (!isCurrentConnection) {
+            return;
+          }
+          setIsConnected(false);
+        });
+
         ably.connection.on('failed', (error) => {
           if (!isCurrentConnection) {
             return;
           }
           setIsConnected(false);
           callbacksRef.current.onError?.(`Connection failed: ${error?.reason || 'Unknown error'}`);
+        });
+
+        // Handle auth failures specifically
+        ably.connection.on('update', (change) => {
+          if (!isCurrentConnection) {
+            return;
+          }
+          if (change.reason?.code === 40142 || change.reason?.code === 40140) {
+            // Token expired or invalid - clear connection
+            callbacksRef.current.onError?.('Authentication failed: Token expired or invalid');
+          }
         });
 
         // Only set refs if this is still the current connection
@@ -178,10 +190,10 @@ export const useSimpleAbly = ({
       });
       return true;
     } catch (error: any) {
-      onError?.(`Failed to send transcript: ${error.message}`);
+      callbacksRef.current.onError?.(`Failed to send transcript: ${error.message}`);
       return false;
     }
-  }, [currentSessionId, onError]);
+  }, [currentSessionId]);
 
   // Update session (desktop to mobile)
   const updateSession = useCallback((sessionId: string, patientName: string) => {
@@ -199,10 +211,10 @@ export const useSimpleAbly = ({
       setCurrentSessionId(sessionId);
       return true;
     } catch (error: any) {
-      onError?.(`Failed to update session: ${error.message}`);
+      callbacksRef.current.onError?.(`Failed to update session: ${error.message}`);
       return false;
     }
-  }, [onError]);
+  }, []);
 
   // Fallback session fetching when Ably is disconnected
   const fetchCurrentSession = useCallback(async () => {
@@ -222,7 +234,12 @@ export const useSimpleAbly = ({
       const response = await fetch(`/api/mobile/current-session?token=${encodeURIComponent(tokenId)}`);
 
       if (!response.ok) {
-        console.warn('Failed to fetch current session:', response.statusText);
+        // FIXED: Better error handling for session fetch failures
+        if (response.status === 401) {
+          callbacksRef.current.onError?.('Token expired or invalid');
+        } else {
+          console.warn('Failed to fetch current session:', response.statusText);
+        }
         return;
       }
 

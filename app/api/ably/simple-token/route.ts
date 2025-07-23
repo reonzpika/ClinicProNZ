@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create Ably token with specific channel access
+    // FIXED: Create Ably token and return it directly for authUrl compatibility
     const ablyTokenRequest = await ably.auth.createTokenRequest({
       clientId: token.userId || token.token, // Use token itself as clientId for guest users
       capability: {
@@ -74,11 +74,16 @@ export async function POST(request: NextRequest) {
       ttl: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
     });
 
-    return NextResponse.json({
-      ablyToken: ablyTokenRequest,
-      tokenId,
-      userId: token.userId,
-      isGuest: !token.userId, // Indicate if this is a guest token
+    // Create an actual token from the token request for direct use
+    const ablyToken = await ably.auth.requestToken(ablyTokenRequest);
+
+    // FIXED: Return token string directly for Ably authUrl
+    // When using authUrl, Ably expects the response to be a token string
+    return new Response(ablyToken.token, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/plain',
+      },
     });
   } catch (error) {
     console.error('Error creating simple Ably token:', error);
