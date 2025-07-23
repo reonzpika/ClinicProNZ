@@ -867,7 +867,34 @@ export const useAblySync = ({
     };
   }, [enabled, token, isDesktop, connectionState.status, isActiveInstance]); // FIXED: Minimal dependencies
 
-  // Early return for inactive instances - return no-op functions
+  // All hooks must be called before any early returns
+  const startMobileRecording = useCallback(async () => {
+    if (!isActiveInstance) {
+      return false;
+    }
+    return sendMessage({ type: 'start_recording' });
+  }, [isActiveInstance, sendMessage]);
+
+  const stopMobileRecording = useCallback(async () => {
+    if (!isActiveInstance) {
+      return false;
+    }
+    return sendMessage({ type: 'stop_recording' });
+  }, [isActiveInstance, sendMessage]);
+
+  const syncPatientSession = useCallback(async (patientSessionId: string, patientName?: string): Promise<string> => {
+    if (!isActiveInstance) {
+      return '';
+    }
+    const success = sendMessage({
+      type: 'patient_updated',
+      patientSessionId,
+      patientName,
+    });
+    return success ? patientSessionId : '';
+  }, [isActiveInstance, sendMessage]);
+
+  // Early return for inactive instances - all hooks called above
   if (!isActiveInstance) {
     return {
       connectionState: {
@@ -876,7 +903,7 @@ export const useAblySync = ({
       },
       sendTranscription: async () => false,
       sendTranscriptionWithDiarization: async () => false,
-      forceDisconnectDevice: async () => {},
+      forceDisconnectDevice: async () => false,
       reconnect: async () => {},
       disconnect: () => {},
       startMobileRecording: async () => false,
@@ -892,20 +919,8 @@ export const useAblySync = ({
     forceDisconnectDevice,
     reconnect: connect,
     disconnect: cleanup,
-    startMobileRecording: useCallback(async () => {
-      return sendMessage({ type: 'start_recording' });
-    }, [sendMessage]),
-    stopMobileRecording: useCallback(async () => {
-      return sendMessage({ type: 'stop_recording' });
-    }, [sendMessage]),
-    // Enhanced patient session sync functions
-    syncPatientSession: useCallback(async (patientSessionId: string, patientName?: string): Promise<string> => {
-      const success = sendMessage({
-        type: 'patient_updated',
-        patientSessionId,
-        patientName,
-      });
-      return success ? patientSessionId : '';
-    }, [sendMessage]),
+    startMobileRecording,
+    stopMobileRecording,
+    syncPatientSession,
   };
 };

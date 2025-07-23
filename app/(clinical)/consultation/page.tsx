@@ -124,7 +124,7 @@ export default function ConsultationPage() {
   const handleDeviceDisconnected = useCallback((deviceId: string) => {
     removeMobileV2Device(deviceId);
     // Use safe access to avoid undefined length error
-    const currentDevices = mobileV2.connectedDevices || [];
+    const currentDevices = mobileV2?.connectedDevices || [];
     if (currentDevices.length <= 1) {
       setMobileV2ConnectionStatus('disconnected');
     }
@@ -137,7 +137,7 @@ export default function ConsultationPage() {
   }, [setError, setMobileV2ConnectionStatus]);
 
   const handleDeviceConnected = useCallback((deviceId: string, deviceName: string, deviceType?: string) => {
-    addMobileV2Device({ deviceId, deviceName, deviceType, connectedAt: Date.now() });
+    addMobileV2Device({ deviceId, deviceName, deviceType: deviceType || 'Unknown', connectedAt: Date.now() });
     setMobileV2ConnectionStatus('connected');
   }, [addMobileV2Device, setMobileV2ConnectionStatus]);
 
@@ -146,8 +146,8 @@ export default function ConsultationPage() {
 
   // Memoize the Ably sync configuration to prevent multiple hook instances
   const ablySyncConfig = useMemo(() => ({
-    enabled: !!mobileV2.token,
-    token: mobileV2.token || undefined,
+    enabled: !!mobileV2?.token,
+    token: mobileV2?.token || undefined,
     isDesktop: true,
     onTranscriptionReceived: handleTranscriptionReceived,
     onPatientSwitched: handlePatientSwitched,
@@ -155,7 +155,7 @@ export default function ConsultationPage() {
     onDeviceDisconnected: handleDeviceDisconnected,
     onError: handleWebSocketError,
   }), [
-    mobileV2.token,
+    mobileV2?.token,
     handleTranscriptionReceived,
     handlePatientSwitched,
     handleDeviceConnected,
@@ -168,7 +168,7 @@ export default function ConsultationPage() {
   // ENHANCED: Patient session sync based on mobile token existence
   useEffect(() => {
     // Only sync if we have mobile token, session exists, and sync function available
-    if (currentPatientSessionId && mobileV2.token && syncPatientSession) {
+    if (currentPatientSessionId && mobileV2?.token && syncPatientSession) {
       const currentSession = getCurrentPatientSession();
 
       // Better session existence validation
@@ -192,7 +192,7 @@ export default function ConsultationPage() {
 
     // Return undefined for all other code paths
     return undefined;
-  }, [currentPatientSessionId, mobileV2.token, syncPatientSession, getCurrentPatientSession]);
+  }, [currentPatientSessionId, mobileV2?.token, syncPatientSession, getCurrentPatientSession]);
 
   const handleForceDisconnectDevice = useCallback(async (deviceId: string) => {
     // Send force disconnect message to the device
@@ -205,7 +205,7 @@ export default function ConsultationPage() {
     }
     // Remove from local state immediately
     removeMobileV2Device(deviceId);
-    const currentDevices = mobileV2.connectedDevices || [];
+    const currentDevices = mobileV2?.connectedDevices || [];
     if (currentDevices.length <= 1) {
       setMobileV2ConnectionStatus('disconnected');
     }
