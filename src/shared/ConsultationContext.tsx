@@ -871,11 +871,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       if (typeof window !== 'undefined' && (window as any).ablySyncHook) {
         try {
           console.warn('📱 Broadcasting to connected mobile:', sessionId, patientName);
-          (window as any).ablySyncHook.sendMessage({
-            type: 'patient_updated',
-            patientSessionId: sessionId,
-            patientName,
-          });
+          (window as any).ablySyncHook.updateSession(sessionId, patientName);
         } catch (error) {
           console.error('Failed to send patient_updated message:', error);
         }

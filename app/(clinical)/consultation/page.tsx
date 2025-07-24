@@ -108,12 +108,27 @@ export default function ConsultationPage() {
 
   // Simple Ably sync implementation using single channel approach
   // FIXED: Only initialize when mobile V2 is enabled and has valid token
-  useSimpleAbly({
+  const { updateSession } = useSimpleAbly({
     tokenId: mobileV2?.isEnabled && mobileV2?.token ? mobileV2.token : null,
     onTranscriptReceived: handleTranscriptReceived,
     onError: handleError,
     isMobile: false, // FIXED: Identify as desktop to prevent self-messaging
   });
+
+  // Expose updateSession to global for ConsultationContext session broadcasting
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).ablySyncHook = {
+        updateSession: updateSession || (() => false),
+      };
+    }
+    
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete (window as any).ablySyncHook;
+      }
+    };
+  }, [updateSession]);
 
   // REMOVED: Redundant session broadcasting - now handled by ConsultationContext only
   // This eliminates dual broadcasting sources and race conditions
