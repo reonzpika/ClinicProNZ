@@ -119,14 +119,18 @@ export default function ConsultationPage() {
     onTranscriptReceived: handleTranscriptReceived,
     onSessionChanged: handleSessionChanged,
     onError: handleError,
+    isMobile: false, // FIXED: Identify as desktop to prevent self-messaging
   });
 
   // Send session updates to mobile when patient changes
   useEffect(() => {
     if (currentPatientSessionId && mobileV2?.token && updateSession) {
+      // FIXED: Get fresh session data to avoid stale closure values
       const session = getCurrentPatientSession();
       if (session?.patientName) {
-        updateSession(currentPatientSessionId, session.patientName);
+        console.log('📱 Broadcasting fresh session to mobile:', session.id, session.patientName);
+        // Use fresh session.id instead of potentially stale currentPatientSessionId
+        updateSession(session.id, session.patientName);
       }
     }
   }, [currentPatientSessionId, mobileV2?.token, updateSession, getCurrentPatientSession]);

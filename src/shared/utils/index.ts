@@ -48,6 +48,36 @@ export function createAuthHeadersWithGuest(
   return headers;
 }
 
+/**
+ * Create auth headers for FormData requests (excludes Content-Type)
+ * @param userId - User ID from useAuth hook
+ * @param userTier - User tier from useClerkMetadata hook or sessionClaims
+ * @param guestToken - Guest token for non-authenticated users
+ * @returns Headers object without Content-Type for FormData compatibility
+ */
+export function createAuthHeadersForFormData(
+  userId?: string | null,
+  userTier?: string,
+  guestToken?: string | null,
+): HeadersInit {
+  const headers: HeadersInit = {};
+
+  if (userId) {
+    (headers as Record<string, string>)['x-user-id'] = userId;
+  }
+
+  if (userTier) {
+    (headers as Record<string, string>)['x-user-tier'] = userTier;
+  }
+
+  if (guestToken && !userId) {
+    (headers as Record<string, string>)['x-guest-token'] = guestToken;
+  }
+
+  // FIXED: No Content-Type header - let browser set multipart/form-data
+  return headers;
+}
+
 // Tier-based access control utilities
 export type { UserTier } from './roles';
 export { checkTierFromSessionClaims, TIER_HIERARCHY } from './roles';

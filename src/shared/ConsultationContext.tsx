@@ -824,18 +824,22 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
 
   // Phase 2: Add Ably sync for patient session updates
   const sendPatientUpdatedMessage = useCallback((sessionId: string, patientName: string) => {
-    // Send message to mobile devices via Ably
-    if (typeof window !== 'undefined' && (window as any).ablySyncHook) {
-      try {
-        (window as any).ablySyncHook.sendMessage({
-          type: 'patient_updated',
-          patientSessionId: sessionId,
-          patientName,
-        });
-      } catch (error) {
-        console.error('Failed to send patient_updated message:', error);
+    // FIXED: Add delay to prevent React state race condition
+    // Wait for React state to settle before broadcasting
+    setTimeout(() => {
+      // Send message to mobile devices via Ably
+      if (typeof window !== 'undefined' && (window as any).ablySyncHook) {
+        try {
+          (window as any).ablySyncHook.sendMessage({
+            type: 'patient_updated',
+            patientSessionId: sessionId,
+            patientName,
+          });
+        } catch (error) {
+          console.error('Failed to send patient_updated message:', error);
+        }
       }
-    }
+    }, 100); // 100ms delay to allow React state to settle
   }, []);
 
   // Patient session management functions

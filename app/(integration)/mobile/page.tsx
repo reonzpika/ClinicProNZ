@@ -9,7 +9,7 @@ import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbl
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
-import { createAuthHeadersWithGuest } from '@/src/shared/utils';
+import { createAuthHeadersForFormData } from '@/src/shared/utils';
 
 // Simple mobile state types (now using inline types)
 
@@ -96,15 +96,15 @@ function MobilePageContent() {
     setMobileState('error');
   }, []);
 
-  // FIXED: Only initialize useSimpleAbly when token is validated
+  // Simple Ably for real-time sync
   const { isConnected, currentSessionId, sendTranscript, fetchCurrentSession } = useSimpleAbly({
     tokenId: tokenState.isValid ? tokenState.token : null,
-    onTranscriptReceived: (_transcript, _sessionId) => {
-      // Mobile shouldn't receive transcripts, only send them
+    onTranscriptReceived: (_transcript: string, _sessionId: string) => {
       // Transcript received unexpectedly on mobile
     },
     onSessionChanged: handleSessionChanged,
     onError: handleError,
+    isMobile: true, // FIXED: Identify as mobile device
   });
 
   // Transcription hook with simple handling
@@ -124,7 +124,7 @@ function MobilePageContent() {
         formData.append('sessionId', currentSessionId);
 
         // FIXED: Add auth headers using mobile token as guest token
-        const authHeaders = createAuthHeadersWithGuest(null, 'basic', tokenState.token);
+        const authHeaders = createAuthHeadersForFormData(null, 'basic', tokenState.token);
 
         const response = await fetch('/api/deepgram/transcribe', {
           method: 'POST',

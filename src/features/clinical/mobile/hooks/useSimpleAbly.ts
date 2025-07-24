@@ -10,11 +10,12 @@ type SimpleAblyMessage = {
   data?: any;
 };
 
-type SimpleAblyProps = {
+type UseSimpleAblyOptions = {
   tokenId: string | null;
   onTranscriptReceived?: (transcript: string, sessionId: string) => void;
   onSessionChanged?: (sessionId: string, patientName: string) => void;
   onError?: (error: string) => void;
+  isMobile?: boolean; // NEW: Device type detection
 };
 
 export const useSimpleAbly = ({
@@ -22,7 +23,8 @@ export const useSimpleAbly = ({
   onTranscriptReceived,
   onSessionChanged,
   onError,
-}: SimpleAblyProps) => {
+  isMobile = false, // Default to false (desktop)
+}: UseSimpleAblyOptions) => {
   const [isConnected, setIsConnected] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [lastSessionFetch, setLastSessionFetch] = useState<number>(0);
@@ -112,7 +114,11 @@ export const useSimpleAbly = ({
             case 'patient_updated':
               if (data.sessionId && data.patientName) {
                 setCurrentSessionId(data.sessionId);
-                callbacksRef.current.onSessionChanged?.(data.sessionId, data.patientName);
+                // FIXED: Only mobile devices should receive session updates
+                // Desktop shouldn't process its own broadcasts
+                if (isMobile) {
+                  callbacksRef.current.onSessionChanged?.(data.sessionId, data.patientName);
+                }
               }
               break;
           }

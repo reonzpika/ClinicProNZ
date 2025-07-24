@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useConsultation } from '@/src/shared/ConsultationContext';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
-import { createAuthHeadersWithGuest } from '@/src/shared/utils';
+import { createAuthHeadersForFormData } from '@/src/shared/utils';
 
 type TranscriptionState = {
   isRecording: boolean;
@@ -120,7 +120,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
 
         const response = await fetch('/api/deepgram/transcribe', {
           method: 'POST',
-          headers: createAuthHeadersWithGuest(userId, userTier, guestToken),
+          headers: createAuthHeadersForFormData(userId, userTier, guestToken),
           body: formData,
         });
 
