@@ -907,8 +907,10 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
         currentPatientSessionId: session.id,
       }));
 
-      // Phase 2: Send patient_updated message to mobile devices for new sessions
-      sendPatientUpdatedMessage(session.id, session.patientName);
+      // Phase 2: Send patient_updated message to mobile devices for new sessions (only if connected)
+      if (shouldBroadcastToMobile()) {
+        sendPatientUpdatedMessage(session.id, session.patientName);
+      }
 
       return session;
     } catch (error) {
@@ -916,7 +918,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       setError('Failed to create patient session');
       return null;
     }
-  }, [state.templateId, userId, userTier, state.guestToken, sendPatientUpdatedMessage]);
+  }, [state.templateId, userId, userTier, state.guestToken, sendPatientUpdatedMessage, shouldBroadcastToMobile]);
 
   const switchToPatientSession = useCallback((sessionId: string, onSwitch?: (sessionId: string, patientName: string) => void) => {
     // Find the session and load its transcriptions
@@ -957,8 +959,10 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       consultationItems: targetSession?.consultationItems || [],
     }));
 
-    // Phase 2: Send patient_updated message to mobile devices
-    sendPatientUpdatedMessage(sessionId, targetSession.patientName);
+    // Phase 2: Send patient_updated message to mobile devices (only if connected)
+    if (shouldBroadcastToMobile()) {
+      sendPatientUpdatedMessage(sessionId, targetSession.patientName);
+    }
 
     // Notify about the switch
     if (onSwitch && targetSession) {
@@ -967,7 +971,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
 
     // FIXED: Return true to indicate successful switch
     return true;
-  }, [state.patientSessions, sendPatientUpdatedMessage]);
+  }, [state.patientSessions, sendPatientUpdatedMessage, shouldBroadcastToMobile]);
 
   const updatePatientSession = useCallback(async (sessionId: string, updates: Partial<PatientSession>) => {
     // Update local state immediately for optimistic UI updates

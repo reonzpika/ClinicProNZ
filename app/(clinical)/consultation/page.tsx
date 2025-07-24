@@ -102,12 +102,6 @@ export default function ConsultationPage() {
     }
   }, [currentPatientSessionId, appendTranscription]);
 
-  const handleSessionChanged = useCallback((_sessionId: string, _patientName: string) => {
-    // Mobile received session update - this shouldn't happen on desktop anymore
-    // This is kept for debugging in case there are still unexpected messages
-    console.warn('Desktop received session change (should not happen):', _sessionId, _patientName);
-  }, []);
-
   const handleError = useCallback((error: string) => {
     setError(error);
   }, []);
@@ -117,7 +111,6 @@ export default function ConsultationPage() {
   useSimpleAbly({
     tokenId: mobileV2?.isEnabled && mobileV2?.token ? mobileV2.token : null,
     onTranscriptReceived: handleTranscriptReceived,
-    onSessionChanged: handleSessionChanged,
     onError: handleError,
     isMobile: false, // FIXED: Identify as desktop to prevent self-messaging
   });
