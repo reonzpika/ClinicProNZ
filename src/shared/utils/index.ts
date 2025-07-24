@@ -78,6 +78,28 @@ export function createAuthHeadersForFormData(
   return headers;
 }
 
+/**
+ * Create auth headers for mobile devices using mobile tokens
+ * @param mobileToken - Mobile token from QR code authentication
+ * @param userTier - Optional user tier if known (defaults to 'basic')
+ * @returns Headers object with mobile token authentication
+ */
+export function createAuthHeadersForMobile(
+  mobileToken: string,
+  userTier?: string,
+): HeadersInit {
+  const headers: HeadersInit = {};
+
+  (headers as Record<string, string>)['x-mobile-token'] = mobileToken;
+
+  if (userTier) {
+    (headers as Record<string, string>)['x-user-tier'] = userTier;
+  }
+
+  // No Content-Type header for FormData compatibility
+  return headers;
+}
+
 // Tier-based access control utilities
 export type { UserTier } from './roles';
 export { checkTierFromSessionClaims, TIER_HIERARCHY } from './roles';

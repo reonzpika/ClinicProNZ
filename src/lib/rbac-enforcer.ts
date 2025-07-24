@@ -39,6 +39,65 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
   const userId = req.headers.get('x-user-id');
   const userTier = req.headers.get('x-user-tier') as UserTier || 'basic';
 
+  // Check for mobile token first
+  const mobileToken = req.headers.get('x-mobile-token') || url.searchParams.get('mobileToken');
+
+  if (mobileToken) {
+    // Validate mobile token and get associated user context
+    const tokenRecord = await db
+      .select()
+      .from(mobileTokens)
+      .where(eq(mobileTokens.token, mobileToken))
+      .limit(1);
+
+    if (tokenRecord.length > 0) {
+      const record = tokenRecord[0];
+      if (!record) {
+        // Invalid token record - treat as unauthenticated
+        return {
+          userId: null,
+          guestToken: null,
+          tier: 'basic',
+          isAuthenticated: false,
+        };
+      }
+
+      const isExpired = record.expiresAt <= new Date();
+      if (isExpired) {
+        // Expired mobile token - treat as unauthenticated
+        return {
+          userId: null,
+          guestToken: null,
+          tier: 'basic',
+          isAuthenticated: false,
+        };
+      }
+
+      // Valid mobile token
+      if (record.userId) {
+        // Mobile token linked to authenticated user
+        // Note: We don't have tier info from mobile token, so we default to basic
+        // The tier should be sent via x-user-tier header if needed
+        return {
+          userId: record.userId,
+          guestToken: null,
+          tier: userTier, // Use tier from header if provided
+          isAuthenticated: true,
+        };
+      } else {
+        // Mobile token for guest user (userId is null)
+        // Use mobile token as guest token for session tracking
+        return {
+          userId: null,
+          guestToken: mobileToken,
+          tier: 'basic',
+          isAuthenticated: false,
+        };
+      }
+    }
+    // Invalid mobile token - fall through to other auth methods
+  }
+
   // Also check for guest token
   const guestToken
     = req.headers.get('x-guest-token')
