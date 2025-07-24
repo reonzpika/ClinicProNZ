@@ -10,11 +10,12 @@ type SimpleAblyMessage = {
   data?: any;
 };
 
-type UseSimpleAblyOptions = {
+export type UseSimpleAblyOptions = {
   tokenId: string | null;
   onTranscriptReceived?: (transcript: string, sessionId: string) => void;
   onSessionChanged?: (sessionId: string, patientName: string) => void;
   onError?: (error: string) => void;
+  onConnectionStatusChanged?: (status: 'disconnected' | 'connecting' | 'connected' | 'error') => void; // NEW: Connection status bridge
   isMobile?: boolean; // NEW: Device type detection
 };
 
@@ -23,6 +24,7 @@ export const useSimpleAbly = ({
   onTranscriptReceived,
   onSessionChanged,
   onError,
+  onConnectionStatusChanged,
   isMobile = false, // Default to false (desktop)
 }: UseSimpleAblyOptions) => {
   const [isConnected, setIsConnected] = useState(false);
@@ -130,6 +132,7 @@ export const useSimpleAbly = ({
             return;
           }
           setIsConnected(true);
+          onConnectionStatusChanged?.('connected');
         });
 
         ably.connection.on('disconnected', () => {
@@ -137,6 +140,7 @@ export const useSimpleAbly = ({
             return;
           }
           setIsConnected(false);
+          onConnectionStatusChanged?.('disconnected');
         });
 
         ably.connection.on('suspended', () => {
@@ -144,6 +148,7 @@ export const useSimpleAbly = ({
             return;
           }
           setIsConnected(false);
+          onConnectionStatusChanged?.('disconnected');
         });
 
         ably.connection.on('failed', (error) => {
@@ -151,6 +156,7 @@ export const useSimpleAbly = ({
             return;
           }
           setIsConnected(false);
+          onConnectionStatusChanged?.('error');
           callbacksRef.current.onError?.(`Connection failed: ${error?.reason || 'Unknown error'}`);
         });
 
@@ -161,6 +167,7 @@ export const useSimpleAbly = ({
           }
           if (change.reason?.code === 40142 || change.reason?.code === 40140) {
             // Token expired or invalid - clear connection
+            onConnectionStatusChanged?.('error');
             callbacksRef.current.onError?.('Authentication failed: Token expired or invalid');
           }
         });
@@ -175,6 +182,7 @@ export const useSimpleAbly = ({
         }
       } catch (error: any) {
         if (isCurrentConnection) {
+          onConnectionStatusChanged?.('error');
           callbacksRef.current.onError?.(`Failed to connect: ${error.message}`);
         }
       }
@@ -193,7 +201,7 @@ export const useSimpleAbly = ({
       setIsConnected(false);
       setCurrentSessionId(null);
     };
-  }, [tokenId]); // Only tokenId in dependency array
+  }, [tokenId, onConnectionStatusChanged, isMobile]); // Only tokenId in dependency array
 
   // Send transcript (mobile to desktop)
   const sendTranscript = useCallback((transcript: string) => {

@@ -851,23 +851,9 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    // FIXED: Verify session exists in state before broadcasting to prevent race conditions
+    // FIXED: Direct broadcast without stale state checks - caller validates session data
     setTimeout(() => {
-      // Verify session exists in local state before broadcasting
-      const sessionExists = state.patientSessions.find(s => s.id === sessionId);
-      const isCurrentSession = state.currentPatientSessionId === sessionId;
-
-      if (!sessionExists) {
-        console.warn('Skipping Ably broadcast - session not found in local state:', sessionId);
-        return;
-      }
-
-      if (!isCurrentSession) {
-        console.warn('Skipping Ably broadcast - not current session:', sessionId, 'current:', state.currentPatientSessionId);
-        return;
-      }
-
-      // Safe to broadcast - mobile connected and session exists
+      // Direct broadcast - trust caller's session validation
       if (typeof window !== 'undefined' && (window as any).ablySyncHook) {
         try {
           console.warn('📱 Broadcasting to connected mobile:', sessionId, patientName);
@@ -876,8 +862,8 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
           console.error('Failed to send patient_updated message:', error);
         }
       }
-    }, 200); // Delay for state to settle with verification
-  }, [shouldBroadcastToMobile, state.patientSessions, state.currentPatientSessionId, state.mobileV2?.connectionStatus]);
+    }, 200); // Keep delay for Ably connection stability
+  }, [shouldBroadcastToMobile]);
 
   // Patient session management functions
   const createPatientSession = useCallback(async (patientName: string, templateId?: string): Promise<PatientSession | null> => {

@@ -49,6 +49,7 @@ export default function ConsultationPage() {
     setStructuredTranscript,
     isStructuredTranscriptFresh,
     getEffectiveTranscript,
+    setMobileV2ConnectionStatus, // NEW: Connection status bridge
   } = useConsultation();
   const { isSignedIn: _isSignedIn, userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
@@ -107,11 +108,12 @@ export default function ConsultationPage() {
   }, []);
 
   // Simple Ably sync implementation using single channel approach
-  // FIXED: Only initialize when mobile V2 is enabled and has valid token
+  // ALWAYS initialize to ensure updateSession availability, but only connect with valid token
   const { updateSession } = useSimpleAbly({
     tokenId: mobileV2?.isEnabled && mobileV2?.token ? mobileV2.token : null,
     onTranscriptReceived: handleTranscriptReceived,
     onError: handleError,
+    onConnectionStatusChanged: setMobileV2ConnectionStatus, // NEW: Bridge connection status to context
     isMobile: false, // FIXED: Identify as desktop to prevent self-messaging
   });
 
@@ -122,7 +124,7 @@ export default function ConsultationPage() {
         updateSession: updateSession || (() => false),
       };
     }
-    
+
     return () => {
       if (typeof window !== 'undefined') {
         delete (window as any).ablySyncHook;
