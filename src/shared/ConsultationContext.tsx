@@ -824,10 +824,23 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
 
   // Phase 2: Add Ably sync for patient session updates
   const sendPatientUpdatedMessage = useCallback((sessionId: string, patientName: string) => {
-    // FIXED: Add delay to prevent React state race condition
-    // Wait for React state to settle before broadcasting
+    // FIXED: Verify session exists in state before broadcasting to prevent race conditions
     setTimeout(() => {
-      // Send message to mobile devices via Ably
+      // Verify session exists in local state before broadcasting
+      const sessionExists = state.patientSessions.find(s => s.id === sessionId);
+      const isCurrentSession = state.currentPatientSessionId === sessionId;
+
+      if (!sessionExists) {
+        console.warn('Skipping Ably broadcast - session not found in local state:', sessionId);
+        return;
+      }
+
+      if (!isCurrentSession) {
+        console.warn('Skipping Ably broadcast - not current session:', sessionId, 'current:', state.currentPatientSessionId);
+        return;
+      }
+
+      // Safe to broadcast - session exists and is current
       if (typeof window !== 'undefined' && (window as any).ablySyncHook) {
         try {
           (window as any).ablySyncHook.sendMessage({
@@ -839,8 +852,8 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
           console.error('Failed to send patient_updated message:', error);
         }
       }
-    }, 100); // 100ms delay to allow React state to settle
-  }, []);
+    }, 200); // Increased delay for state to settle with verification
+  }, [state.patientSessions, state.currentPatientSessionId]);
 
   // Patient session management functions
   const createPatientSession = useCallback(async (patientName: string, templateId?: string): Promise<PatientSession | null> => {
