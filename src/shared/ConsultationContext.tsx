@@ -822,8 +822,35 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     return null;
   }, [state.currentPatientSessionId, state.templateId, userId, userTier, state.guestToken]);
 
+  // Centralized helper to check if mobile broadcasting is safe and needed
+  const shouldBroadcastToMobile = useCallback(() => {
+    const mobile = state.mobileV2;
+
+    // Explicit null checks - more reliable than optional chaining
+    if (!mobile) {
+      return false;
+    }
+    if (!mobile.isEnabled) {
+      return false;
+    }
+    if (!mobile.token) {
+      return false;
+    }
+    if (mobile.connectionStatus !== 'connected') {
+      return false;
+    }
+
+    return true;
+  }, [state.mobileV2]);
+
   // Phase 2: Add Ably sync for patient session updates
   const sendPatientUpdatedMessage = useCallback((sessionId: string, patientName: string) => {
+    // Single, clear condition check
+    if (!shouldBroadcastToMobile()) {
+      console.warn('Skipping broadcast - mobile not connected:', state.mobileV2?.connectionStatus || 'no mobile');
+      return;
+    }
+
     // FIXED: Verify session exists in state before broadcasting to prevent race conditions
     setTimeout(() => {
       // Verify session exists in local state before broadcasting
@@ -840,9 +867,10 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      // Safe to broadcast - session exists and is current
+      // Safe to broadcast - mobile connected and session exists
       if (typeof window !== 'undefined' && (window as any).ablySyncHook) {
         try {
+          console.warn('📱 Broadcasting to connected mobile:', sessionId, patientName);
           (window as any).ablySyncHook.sendMessage({
             type: 'patient_updated',
             patientSessionId: sessionId,
@@ -852,8 +880,8 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
           console.error('Failed to send patient_updated message:', error);
         }
       }
-    }, 200); // Increased delay for state to settle with verification
-  }, [state.patientSessions, state.currentPatientSessionId]);
+    }, 200); // Delay for state to settle with verification
+  }, [shouldBroadcastToMobile, state.patientSessions, state.currentPatientSessionId, state.mobileV2?.connectionStatus]);
 
   // Patient session management functions
   const createPatientSession = useCallback(async (patientName: string, templateId?: string): Promise<PatientSession | null> => {
@@ -1217,6 +1245,19 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     }
     return state.patientSessions.find(session => session.id === state.currentPatientSessionId) || null;
   }, [state.currentPatientSessionId, state.patientSessions]);
+
+  // Send catch-up session info when mobile connects (placed after function definitions)
+  useEffect(() => {
+    // When mobile status changes to 'connected', send current session info
+    if (state.mobileV2?.connectionStatus === 'connected'
+      && state.currentPatientSessionId) {
+      const currentSession = getCurrentPatientSession();
+      if (currentSession?.patientName) {
+        console.warn('📱 Mobile connected - sending catch-up session info');
+        sendPatientUpdatedMessage(currentSession.id, currentSession.patientName);
+      }
+    }
+  }, [state.mobileV2?.connectionStatus, state.currentPatientSessionId, getCurrentPatientSession, sendPatientUpdatedMessage]);
 
   // Mobile V2 functions
   const setMobileV2Token = useCallback((token: string | null) => {

@@ -30,7 +30,6 @@ export default function ConsultationPage() {
     setError,
     setStatus,
     mobileV2 = { isEnabled: false, token: null, tokenData: null, connectionStatus: 'disconnected' },
-    getCurrentPatientSession,
     currentPatientSessionId,
     inputMode,
     typedInput,
@@ -104,8 +103,9 @@ export default function ConsultationPage() {
   }, [currentPatientSessionId, appendTranscription]);
 
   const handleSessionChanged = useCallback((_sessionId: string, _patientName: string) => {
-    // Mobile received session update - this shouldn't happen on desktop
-    console.log('Session changed on desktop (unexpected):', _sessionId, _patientName);
+    // Mobile received session update - this shouldn't happen on desktop anymore
+    // This is kept for debugging in case there are still unexpected messages
+    console.warn('Desktop received session change (should not happen):', _sessionId, _patientName);
   }, []);
 
   const handleError = useCallback((error: string) => {
@@ -114,7 +114,7 @@ export default function ConsultationPage() {
 
   // Simple Ably sync implementation using single channel approach
   // FIXED: Only initialize when mobile V2 is enabled and has valid token
-  const { updateSession } = useSimpleAbly({
+  useSimpleAbly({
     tokenId: mobileV2?.isEnabled && mobileV2?.token ? mobileV2.token : null,
     onTranscriptReceived: handleTranscriptReceived,
     onSessionChanged: handleSessionChanged,
@@ -122,18 +122,8 @@ export default function ConsultationPage() {
     isMobile: false, // FIXED: Identify as desktop to prevent self-messaging
   });
 
-  // Send session updates to mobile when patient changes
-  useEffect(() => {
-    if (currentPatientSessionId && mobileV2?.token && updateSession) {
-      // FIXED: Get fresh session data to avoid stale closure values
-      const session = getCurrentPatientSession();
-      if (session?.patientName) {
-        console.log('📱 Broadcasting fresh session to mobile:', session.id, session.patientName);
-        // Use fresh session.id instead of potentially stale currentPatientSessionId
-        updateSession(session.id, session.patientName);
-      }
-    }
-  }, [currentPatientSessionId, mobileV2?.token, updateSession, getCurrentPatientSession]);
+  // REMOVED: Redundant session broadcasting - now handled by ConsultationContext only
+  // This eliminates dual broadcasting sources and race conditions
 
   const handleClearAll = () => {
     setIsNoteFocused(false);
