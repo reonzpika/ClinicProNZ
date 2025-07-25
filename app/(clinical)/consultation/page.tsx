@@ -196,12 +196,8 @@ export default function ConsultationPage() {
 
       // Step 2: Generate notes using only structured content
       const requestBody = {
-        structuredContent, // New field with structured content
-        transcription: '', // Empty - not used in new system
-        typedInput: '', // Empty - not used in new system
+        structuredContent,
         templateId,
-        inputMode,
-        consultationNotes: '', // Empty - already included in structured content
         guestToken: effectiveGuestToken,
       };
 
