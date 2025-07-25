@@ -46,12 +46,12 @@ const defaultTemplates = [
       },
     ],
     prompts: {
-      structure: 'Format the consultation notes following the SOAP structure for each problem discussed. For each problem, organize the information into Subjective, Objective, Assessment, and Plan sections.',
+      structure: 'Format the consultation notes following the SOAP structure for each problem discussed. For each problem, organise the information into Subjective, Objective, Assessment, and Plan sections.',
     },
   },
   {
     id: uuidv4(),
-    name: 'Driver\'s License Medical',
+    name: 'Driver\'s Licence Medical',
     type: 'default',
     sections: [
       {
@@ -87,11 +87,11 @@ const defaultTemplates = [
         type: 'text',
         required: true,
         description: 'Plan and recommendations',
-        prompt: 'State your recommendations and any follow-up required for the driver\'s license application.',
+        prompt: 'State your recommendations and any follow-up required for the driver\'s licence application.',
       },
     ],
     prompts: {
-      structure: 'Document the medical assessment for a driver\'s license application. Include medical history, examination, vision, assessment, and plan/recommendation.',
+      structure: 'Document the medical assessment for a driver\'s licence application. Include medical history, examination, vision, assessment, and plan/recommendation.',
     },
   },
 ];

@@ -88,7 +88,7 @@ export function validateTemplate(template: Partial<Template>): ValidationResult 
     if (!hasHeaders && placeholders.length > 3) {
       suggestions.push({
         field: 'templateBody',
-        message: 'Consider organizing content with section headers (e.g., HISTORY:, EXAMINATION:)',
+        message: 'Consider organising content with section headers (e.g., HISTORY:, EXAMINATION:)',
         severity: 'suggestion',
       });
     }

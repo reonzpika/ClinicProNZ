@@ -253,7 +253,7 @@ MODERATE TEMPLATE (6-Week Baby and Maternal Check):
       },
       {
         "heading": "Management Plan",
-        "prompt": "Extract management plans discussed for both infant and mother including referrals, follow-up appointments, immunization schedules, and health education provided."
+        "prompt": "Extract management plans discussed for both infant and mother including referrals, follow-up appointments, immunisation schedules, and health education provided."
       }
     ]
   }

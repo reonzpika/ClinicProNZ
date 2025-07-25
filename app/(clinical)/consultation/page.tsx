@@ -413,7 +413,7 @@ export default function ConsultationPage() {
                                 <div className={`flex flex-col ${(generatedNotes && generatedNotes.trim()) || loading ? 'h-full' : ''}`}>
                                   <TranscriptProcessingStatus
                                     isLoading={loading}
-                                    structuredTranscriptStatus={structuredTranscript.status}
+                                    structuredTranscriptStatus={structuredTranscript?.status || 'none'}
                                     inputMode={inputMode}
                                   />
                                   <GeneratedNotes
@@ -461,7 +461,7 @@ export default function ConsultationPage() {
                                 <div className={`flex flex-col ${(generatedNotes && generatedNotes.trim()) || loading ? 'min-h-0 flex-1' : ''}`}>
                                   <TranscriptProcessingStatus
                                     isLoading={loading}
-                                    structuredTranscriptStatus={structuredTranscript.status}
+                                    structuredTranscriptStatus={structuredTranscript?.status || 'none'}
                                     inputMode={inputMode}
                                   />
                                   <GeneratedNotes
@@ -494,7 +494,7 @@ export default function ConsultationPage() {
                               <div className={`flex flex-col ${(generatedNotes && generatedNotes.trim()) || loading ? 'flex-1' : ''}`}>
                                 <TranscriptProcessingStatus
                                   isLoading={loading}
-                                  structuredTranscriptStatus={structuredTranscript.status}
+                                  structuredTranscriptStatus={structuredTranscript?.status || 'none'}
                                   inputMode={inputMode}
                                 />
                                 <GeneratedNotes
@@ -573,7 +573,7 @@ export default function ConsultationPage() {
                               <div className={`flex flex-col ${(generatedNotes && generatedNotes.trim()) || loading ? 'min-h-0 flex-1' : ''}`}>
                                 <TranscriptProcessingStatus
                                   isLoading={loading}
-                                  structuredTranscriptStatus={structuredTranscript.status}
+                                  structuredTranscriptStatus={structuredTranscript?.status || 'none'}
                                   inputMode={inputMode}
                                 />
                                 <GeneratedNotes

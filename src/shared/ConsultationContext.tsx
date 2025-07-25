@@ -205,10 +205,8 @@ const ConsultationContext = createContext<
     setConsentObtained: (consent: boolean) => void;
     // Structured transcript functions
     setStructuredTranscriptStatus: (status: 'none' | 'structuring' | 'completed' | 'failed') => void;
-    setStructuredTranscript: (content: string, originalTranscript: string) => void;
-    clearStructuredTranscript: () => void;
-    isStructuredTranscriptFresh: (transcript: string) => boolean;
-    getEffectiveTranscript: () => string;
+    // REMOVED: setStructuredTranscript, clearStructuredTranscript - no longer needed since we removed caching
+    // REMOVED: isStructuredTranscriptFresh - no longer needed since we removed caching
     // Chatbot functions
     addChatMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => void;
     clearChatHistory: () => void;
@@ -655,59 +653,8 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     }));
   }, []);
 
-  const setStructuredTranscript = useCallback((content: string, originalTranscript: string) => {
-    setState(prev => ({
-      ...prev,
-      structuredTranscript: {
-        content,
-        originalTranscript,
-        generatedAt: Date.now(),
-        status: 'completed',
-      },
-    }));
-  }, []);
-
-  const clearStructuredTranscript = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      structuredTranscript: {
-        content: null,
-        originalTranscript: null,
-        generatedAt: null,
-        status: 'none',
-      },
-    }));
-  }, []);
-
-  // Check if structured transcript is fresh (within 5 minutes and matches current transcript)
-  const isStructuredTranscriptFresh = useCallback((transcript: string) => {
-    const { structuredTranscript } = state;
-    if (!structuredTranscript.content || !structuredTranscript.generatedAt || !structuredTranscript.originalTranscript) {
-      return false;
-    }
-
-    // Check if it's within 5 minutes
-    const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
-    const isRecent = structuredTranscript.generatedAt > fiveMinutesAgo;
-
-    // Check if the transcript matches (allowing for small changes)
-    const originalNormalized = structuredTranscript.originalTranscript.trim().toLowerCase();
-    const currentNormalized = transcript.trim().toLowerCase();
-    const isSimilar = originalNormalized === currentNormalized;
-
-    return isRecent && isSimilar && structuredTranscript.status === 'completed';
-  }, [state.structuredTranscript]);
-
   // Get the best available transcript (structured if fresh, otherwise raw)
-  const getEffectiveTranscript = useCallback(() => {
-    const rawTranscript = getCurrentTranscript();
-
-    if (isStructuredTranscriptFresh(rawTranscript) && state.structuredTranscript.content) {
-      return state.structuredTranscript.content;
-    }
-
-    return rawTranscript;
-  }, [getCurrentTranscript, isStructuredTranscriptFresh, state.structuredTranscript.content]);
+  // REMOVED: getEffectiveTranscript - no longer needed since we removed caching
 
   // Chatbot helper functions
   const addChatMessage = useCallback((message: Omit<ChatMessage, 'id' | 'timestamp'>) => {
@@ -1313,10 +1260,6 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     getCurrentInput,
     // Structured transcript functions
     setStructuredTranscriptStatus,
-    setStructuredTranscript,
-    clearStructuredTranscript,
-    isStructuredTranscriptFresh,
-    getEffectiveTranscript,
     // Chatbot functions
     addChatMessage,
     clearChatHistory,
@@ -1373,10 +1316,6 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     getCurrentTranscript,
     getCurrentInput,
     setStructuredTranscriptStatus,
-    setStructuredTranscript,
-    clearStructuredTranscript,
-    isStructuredTranscriptFresh,
-    getEffectiveTranscript,
     addChatMessage,
     clearChatHistory,
     setChatContextEnabled,

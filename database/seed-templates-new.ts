@@ -126,48 +126,63 @@ PLAN:
 (Only use information explicitly provided in the consultation data. Do not generate psychiatric assessments, diagnoses, or treatment plans not mentioned in the transcript or notes.)`,
   },
   {
-    name: 'Pediatric Consultation',
-    description: 'Specialized template for pediatric consultations',
+    name: 'Paediatric Consultation',
+    description: 'Specialised template for paediatric consultations',
     type: 'default',
-    templateBody: `(Pediatric consultation template. Only include information explicitly mentioned in the consultation.)
+    templateBody: `(Paediatric consultation template. Only include information explicitly mentioned in the consultation.)
 
-PATIENT DETAILS:
-- [Child's name and age] (only include if explicitly mentioned)
-- [Accompanied by] (only include if explicitly mentioned)
-- [Reason for visit] (only include if explicitly mentioned)
+**PATIENT**: [Child's name and age]
+**DATE**: [Date]
 
-PRESENTING COMPLAINT:
-- [Chief complaint as reported by parent/caregiver] (only include if explicitly mentioned)
-- [Duration and characteristics of symptoms] (only include if explicitly mentioned)
-- [Child's own description if age appropriate] (only include if explicitly mentioned)
+**PRESENTING CONCERN**
+[Chief complaint/reason for visit]
 
-HISTORY:
-- [History of presenting complaint] (only include if explicitly mentioned)
-- [Birth history] (only include if explicitly mentioned)
-- [Developmental milestones] (only include if explicitly mentioned)
-- [Immunization status] (only include if explicitly mentioned)
-- [Past medical history] (only include if explicitly mentioned)
-- [Family history] (only include if explicitly mentioned)
-- [Social history] (only include if explicitly mentioned)
+**HISTORY OF PRESENTING CONCERN**
+[Duration, onset, associated symptoms, progression]
 
-EXAMINATION:
-- [Growth parameters (height, weight, head circumference)] (only include if explicitly mentioned)
-- [Vital signs] (only include if explicitly mentioned)
-- [General appearance and behaviour] (only include if explicitly mentioned)
-- [System examination findings] (only include if explicitly mentioned and use as many bullet points as needed)
+**BIRTH HISTORY** (if relevant)
+[Gestation, birth weight, delivery details - only if mentioned]
 
-ASSESSMENT:
-- [Clinical impression] (only include if explicitly mentioned)
-- [Developmental assessment] (only include if explicitly mentioned)
+**GROWTH & DEVELOPMENT** (if discussed)
+- [Current weight/height if measured]
+- [Developmental milestones if discussed]
+- [Any growth concerns mentioned]
 
-PLAN:
-- [Investigations] (only include if explicitly mentioned)
-- [Treatment recommendations] (only include if explicitly mentioned)
-- [Parent education provided] (only include if explicitly mentioned)
-- [Safety advice] (only include if explicitly mentioned)
-- [Follow-up arrangements] (only include if explicitly mentioned)
+**FEEDING HISTORY** (for infants/young children, if relevant)
+[Breastfeeding/formula feeding details, weaning, current diet - only if discussed]
 
-(Use only information explicitly mentioned in the consultation data. Do not generate pediatric assessments or recommendations not stated in the transcript or notes.)`,
+**IMMUNISATION STATUS** (if discussed)
+[Current immunisation status, any due vaccines, concerns]
+
+**PAST MEDICAL HISTORY**
+[Previous illnesses, surgeries, hospital admissions]
+
+**MEDICATIONS**
+[Current medications and doses]
+
+**ALLERGIES**
+[Known allergies]
+
+**FAMILY HISTORY** (if relevant)
+[Relevant family medical history affecting the child]
+
+**SOCIAL HISTORY** (if relevant)
+[Childcare, school, family situation - only if mentioned]
+
+**EXAMINATION**
+**General**: [General appearance, vital signs if taken]
+**System-specific**: [Relevant examination findings as discussed]
+
+**ASSESSMENT**
+[Clinical impression/diagnosis]
+
+**PLAN**
+- [Treatment plan]
+- [Follow-up arrangements]
+- [Parent education/advice given]
+- [Safety netting advice]
+
+(Use only information explicitly mentioned in the consultation data. Do not generate paediatric assessments or recommendations not stated in the transcript or notes.)`,
   },
   {
     name: 'Emergency Department Note',

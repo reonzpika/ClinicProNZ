@@ -34,6 +34,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
     switchToPatientSession,
     consultationNotes,
     getEffectiveGuestToken,
+    structuredTranscript,
   } = useConsultation();
 
   // Local UI state
@@ -45,6 +46,17 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
 
   // Consent statement to append when consent was obtained
   const CONSENT_STATEMENT = '\n\nPatient informed and consented verbally to the use of digital documentation assistance during this consultation, in line with NZ Health Information Privacy Principles. The patient retains the right to pause or stop the recording at any time.';
+
+  // Dynamic placeholder text based on processing status
+  const getPlaceholderText = () => {
+    if (structuredTranscript.status === 'structuring') {
+      return 'Organising your consultation content...';
+    }
+    if (loading) {
+      return 'Generating clinical documentation...';
+    }
+    return 'Clinical documentation will appear here...';
+  };
 
   // Computed value: generated notes with consent statement appended if consent was obtained
   const displayNotes = React.useMemo(() => {
@@ -344,7 +356,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
           onChange={handleNotesChange}
           onBlur={handleNotesBlur}
           className="min-h-[200px] w-full flex-1 resize-none overflow-y-auto rounded border border-slate-200 bg-white p-3 text-sm leading-relaxed text-slate-700 focus:border-slate-400 focus:ring-2 focus:ring-slate-400"
-          placeholder="Clinical documentation will appear here..."
+          placeholder={getPlaceholderText()}
           disabled={loading}
           spellCheck={false}
         />

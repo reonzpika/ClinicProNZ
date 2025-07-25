@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     // Set token expiry based on user type
     let expiresAt: Date;
     if (userId) {
-      // Authenticated users: 24 hours (existing behavior)
+      // Authenticated users: 24 hours (existing behaviour)
       expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
     } else {
       // Anonymous users: 7 days for guest tokens
