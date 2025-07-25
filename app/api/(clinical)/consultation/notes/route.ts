@@ -127,8 +127,8 @@ export async function POST(req: Request) {
           { role: 'user', content: user },
         ],
         stream: true,
-        max_completion_tokens: 1200, // Reduced further for faster generation
-        temperature: 0.3, // Lower temperature for faster, more deterministic responses
+        max_completion_tokens: 2000, // Reduced further for faster generation
+        temperature: 0.1, // Lower temperature for faster, more deterministic responses
       }),
       openaiTimeout,
       'OpenAI API timeout',

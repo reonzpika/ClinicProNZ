@@ -5,6 +5,7 @@ import { Crown, Stethoscope } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { AdditionalNotes } from '@/src/features/clinical/main-ui/components/AdditionalNotes';
+import { AdminPreviewModal } from '@/src/features/clinical/main-ui/components/AdminPreviewModal';
 import { DocumentationSettingsBadge } from '@/src/features/clinical/main-ui/components/DocumentationSettingsBadge';
 import { GeneratedNotes } from '@/src/features/clinical/main-ui/components/GeneratedNotes';
 import { TranscriptionControls } from '@/src/features/clinical/main-ui/components/TranscriptionControls';
@@ -60,6 +61,15 @@ export default function ConsultationPage() {
   const [rateLimitError, setRateLimitError] = useState<{ limit: number; resetIn: number; message: string } | null>(null);
   const { isMobile, isTablet, isDesktop, isLargeDesktop } = useResponsive();
 
+  // Admin preview mode state
+  const [showAdminPreview, setShowAdminPreview] = useState(false);
+  const [previewData, setPreviewData] = useState<{
+    structuredContent: string;
+    originalContent: string;
+    templateId: string;
+    effectiveGuestToken: string;
+  } | null>(null);
+
   // Check for upgrade redirect
   const [showUpgradeNotification, setShowUpgradeNotification] = useState(false);
 
@@ -74,6 +84,93 @@ export default function ConsultationPage() {
       window.history.replaceState(null, '', newUrl);
     }
   }, []);
+
+  // Admin preview approval handler
+  const handleAdminApproval = async (approvedContent: string, wasEdited: boolean) => {
+    if (!previewData) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Call approval endpoint
+      const approvalRes = await fetch('/api/consultation/approve-structured', {
+        method: 'POST',
+        headers: createAuthHeadersWithGuest(userId, userTier, previewData.effectiveGuestToken),
+        body: JSON.stringify({
+          structuredContent: previewData.structuredContent,
+          approved: true,
+          editedContent: wasEdited ? approvedContent : undefined,
+        }),
+      });
+
+      if (!approvalRes.ok) {
+        throw new Error('Failed to approve content');
+      }
+
+      const approvalData = await approvalRes.json();
+
+      // Continue with note generation using approved content
+      const requestBody = {
+        structuredContent: approvalData.approvedContent,
+        templateId: previewData.templateId,
+        guestToken: previewData.effectiveGuestToken,
+      };
+
+      const res = await fetch('/api/consultation/notes', {
+        method: 'POST',
+        headers: createAuthHeadersWithGuest(userId, userTier, previewData.effectiveGuestToken),
+        body: JSON.stringify(requestBody),
+      });
+
+      // Check for rate limit error
+      if (res.status === 429) {
+        const errorData = await res.json();
+        setRateLimitError({
+          limit: errorData.limit,
+          resetIn: errorData.resetIn,
+          message: errorData.message,
+        });
+        setRateLimitModalOpen(true);
+        return;
+      }
+
+      if (!res.body) {
+        setError('No response body');
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let notes = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+
+        notes += decoder.decode(value, { stream: true });
+        setGeneratedNotes(notes);
+      }
+
+      // Track the original inputs for UI purposes
+      setLastGeneratedInput(
+        inputMode === 'audio' ? transcription.transcript : '',
+        inputMode === 'typed' ? typedInput : '',
+        getCompiledConsultationText(),
+        previewData.templateId,
+      );
+
+      // Close preview modal
+      setShowAdminPreview(false);
+      setPreviewData(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred during approval');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Usage dashboard refresh ref
   const usageDashboardRef = useRef<{ refresh: () => void } | null>(null);
@@ -170,11 +267,27 @@ export default function ConsultationPage() {
             body: JSON.stringify({
               transcription: contentToStructure,
               guestToken: effectiveGuestToken,
+              previewMode: userTier === 'admin', // Enable preview mode for admin users
             }),
           });
 
           if (structureRes.ok) {
             const structureData = await structureRes.json();
+
+            // Check if admin preview mode is enabled
+            if (structureData.requiresReview && structureData.isPreviewMode && userTier === 'admin') {
+              // Show admin preview modal
+              setPreviewData({
+                structuredContent: structureData.structuredTranscript,
+                originalContent: contentToStructure,
+                templateId,
+                effectiveGuestToken: effectiveGuestToken || '',
+              });
+              setShowAdminPreview(true);
+              setLoading(false);
+              return; // Exit early - notes generation will continue after approval
+            }
+
             structuredContent = structureData.structuredTranscript || contentToStructure;
             setStructuredTranscriptStatus('completed');
           } else {
@@ -605,6 +718,22 @@ export default function ConsultationPage() {
           isOpen={rateLimitModalOpen}
           onClose={() => setRateLimitModalOpen(false)}
           error={rateLimitError}
+        />
+      )}
+
+      {/* Admin Preview Modal */}
+      {previewData && (
+        <AdminPreviewModal
+          isOpen={showAdminPreview}
+          onClose={() => {
+            setShowAdminPreview(false);
+            setPreviewData(null);
+            setLoading(false);
+          }}
+          structuredContent={previewData.structuredContent}
+          originalContent={previewData.originalContent}
+          onApprove={handleAdminApproval}
+          isLoading={loading}
         />
       )}
     </div>

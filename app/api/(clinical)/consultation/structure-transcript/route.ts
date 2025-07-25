@@ -102,7 +102,7 @@ export async function POST(req: Request) {
       'Request parsing timeout',
     );
 
-    const { transcription: rawContent, guestToken: bodyGuestToken } = body;
+    const { transcription: rawContent, guestToken: bodyGuestToken, previewMode = false } = body;
     contentToStructure = rawContent; // Store for fallback use
 
     // Quick validation first
@@ -177,6 +177,24 @@ export async function POST(req: Request) {
       'Content structuring timeout',
     );
 
+    // Check if admin user has requested preview mode
+    const isAdminPreviewMode = context.tier === 'admin' && previewMode;
+
+    if (isAdminPreviewMode) {
+      // Return structured content for admin preview/editing
+      return NextResponse.json({
+        structuredTranscript,
+        requiresReview: true,
+        isPreviewMode: true,
+        originalTranscript: contentToStructure,
+        originalLength: contentToStructure.length,
+        structuredLength: structuredTranscript.length,
+        processingTimeMs: Date.now() - startTime,
+        userTier: context.tier,
+      });
+    }
+
+    // Standard response for non-preview mode
     return NextResponse.json({
       structuredTranscript,
       originalLength: contentToStructure.length,
