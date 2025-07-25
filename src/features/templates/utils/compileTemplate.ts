@@ -13,17 +13,11 @@ const MAX_CACHE_SIZE = 100; // Maximum number of cached templates
 // Helper function to generate cache key
 function generateCacheKey(
   templateBody: string,
-  transcription: string,
-  typedInput?: string,
-  inputMode: 'audio' | 'typed' = 'audio',
-  consultationNotes?: string,
+  structuredContent: string,
 ): string {
   const inputs = [
     templateBody.substring(0, 100), // First 100 chars of template for uniqueness
-    transcription.substring(0, 50),
-    typedInput?.substring(0, 50) || '',
-    inputMode,
-    consultationNotes?.substring(0, 50) || '',
+    structuredContent.substring(0, 100),
   ];
   return inputs.join('|');
 }
@@ -50,40 +44,15 @@ function cleanupCache() {
 // Optimised function to substitute placeholders in natural language templates
 function substitutePlaceholders(
   templateBody: string,
-  transcription: string,
-  typedInput?: string,
-  inputMode: 'audio' | 'typed' = 'audio',
-  consultationNotes?: string,
+  structuredContent: string,
 ): string {
   // Check cache first
-  const cacheKey = generateCacheKey(templateBody, transcription, typedInput, inputMode, consultationNotes);
+  const cacheKey = generateCacheKey(templateBody, structuredContent);
   const cached = templateCache.get(cacheKey);
 
   if (cached && Date.now() - cached.timestamp < TEMPLATE_CACHE_TTL) {
     return cached.compiled;
   }
-
-  // Prepare consultation data sections with optimised string building
-  const dataSections: string[] = [];
-
-  if (inputMode === 'audio') {
-    // Add transcription if available
-    if (transcription?.trim()) {
-      dataSections.push('--- TRANSCRIPTION ---', transcription.trim());
-    }
-  } else if (inputMode === 'typed') {
-    // Add typed input if available
-    if (typedInput?.trim()) {
-      dataSections.push('--- TYPED INPUT ---', typedInput.trim());
-    }
-  }
-
-  // Add additional notes if available
-  if (consultationNotes?.trim()) {
-    dataSections.push('--- ADDITIONAL NOTES ---', consultationNotes.trim());
-  }
-
-  const consultationData = dataSections.join('\n\n');
 
   // Create the complete prompt with optimised string concatenation
   const completePrompt = [
@@ -91,7 +60,7 @@ function substitutePlaceholders(
     templateBody,
     '',
     '--- CONSULTATION DATA ---',
-    consultationData,
+    structuredContent,
     '',
     '--- OUTPUT INSTRUCTIONS ---',
     'Fill only the placeholders in the template with facts from the data. Only include facts clearly stated in the consultation data.',
@@ -131,14 +100,15 @@ function getCachedSystemPrompt(): string {
 
 export function compileTemplate(
   templateBody: string,
-  transcription: string,
-  typedInput?: string,
-  inputMode: 'audio' | 'typed' = 'audio',
-  consultationNotes?: string,
+  structuredContent: string,
 ): { system: string; user: string } {
   // Input validation for performance
   if (!templateBody?.trim()) {
     throw new Error('Template body is required');
+  }
+
+  if (!structuredContent?.trim()) {
+    throw new Error('Structured content is required');
   }
 
   // Use cached system prompt
@@ -147,10 +117,7 @@ export function compileTemplate(
   // Create the user prompt with optimised substitution
   const userPrompt = substitutePlaceholders(
     templateBody,
-    transcription || '',
-    typedInput,
-    inputMode,
-    consultationNotes,
+    structuredContent,
   );
 
   return {

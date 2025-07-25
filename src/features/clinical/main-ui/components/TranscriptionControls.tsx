@@ -23,12 +23,10 @@ export function TranscriptionControls({
   collapsed,
   onExpand,
   isMinimized,
-  startMobileRecording,
 }: {
   collapsed?: boolean;
   onExpand?: () => void;
   isMinimized?: boolean;
-  startMobileRecording?: () => Promise<boolean>;
 }) {
   const { isSignedIn, userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
@@ -249,22 +247,6 @@ export function TranscriptionControls({
     );
   }
 
-  const handleStartMobileRecording = () => {
-    // Check session limits for public users
-    if (!isSignedIn && !canCreateSession) {
-      // Session limit reached - UI will show appropriate feedback
-      return;
-    }
-
-    if (!consentObtained) {
-      setShowConsentModal(true);
-    } else if (hasMobileDevices) {
-      startMobileRecording?.();
-    } else {
-      startRecording();
-    }
-  };
-
   return (
     <div className="space-y-3">
       <ConsultationInputHeader
@@ -353,13 +335,14 @@ export function TranscriptionControls({
                           ? (
                               <Button
                                 type="button"
-                                onClick={handleStartMobileRecording}
-                                disabled={!canCreateSession} // Removed canStartRecording check
-                                className="h-8 bg-green-600 px-3 text-xs text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                                variant="outline"
+                                onClick={handleMobileClick}
+                                disabled={!canCreateSession}
+                                className="h-8 px-3 text-xs disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
                                 title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
                               >
                                 <Smartphone className="mr-1 size-3" />
-                                Start Mobile
+                                Show QR
                               </Button>
                             )
                           : (

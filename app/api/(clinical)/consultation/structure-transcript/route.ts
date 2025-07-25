@@ -23,16 +23,16 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, errorMessage: st
   ]);
 }
 
-// System prompt for transcript structuring
+// System prompt for consultation content structuring
 function generateStructuringPrompt(): string {
-  return `You are a medical transcript organiser for New Zealand general practice.
+  return `You are a medical content organiser for New Zealand general practice.
 
-TASK: Organise this consultation transcript by presenting problems and topics while preserving ALL information exactly as discussed.
+TASK: Organise this consultation content by presenting problems and topics while preserving ALL information exactly as provided.
 
 RULES:
 1. Group related discussion together chronologically
 2. Preserve every medical fact, symptom, and detail mentioned
-3. Maintain the natural flow and context of the conversation
+3. Maintain the natural flow and context of the information
 4. Use clear problem-based organisation when multiple issues are discussed
 5. Keep all patient quotes and clinical observations intact
 6. Preserve timeline references (e.g., "2 weeks ago", "started yesterday")
@@ -57,16 +57,16 @@ If only one main problem is discussed:
 - Group by natural conversation flow (history → examination → discussion → plan)
 
 CRITICAL: 
-- Never add information not in the original transcript
+- Never add information not in the original content
 - Never omit any medical information mentioned
 - Preserve the GP's clinical observations and patient's exact descriptions
 - Maintain New Zealand medical context and terminology`;
 }
 
-// Structure a consultation transcript using AI
-async function structureTranscript(rawTranscript: string): Promise<string> {
-  if (!rawTranscript || rawTranscript.trim() === '') {
-    throw new Error('Empty transcript provided');
+// Structure consultation content using AI
+async function structureTranscript(rawContent: string): Promise<string> {
+  if (!rawContent || rawContent.trim() === '') {
+    throw new Error('Empty content provided');
   }
 
   const systemPrompt = generateStructuringPrompt();
@@ -75,7 +75,7 @@ async function structureTranscript(rawTranscript: string): Promise<string> {
     model: 'gpt-4o-mini',
     messages: [
       { role: 'system', content: systemPrompt },
-      { role: 'user', content: `Please organise this consultation transcript:\n\n${rawTranscript}` },
+      { role: 'user', content: `Please organise this consultation content:\n\n${rawContent}` },
     ],
     temperature: 0.1, // Low temperature for consistent structuring
     max_tokens: 2000, // Generous limit for structured output
@@ -92,7 +92,7 @@ async function structureTranscript(rawTranscript: string): Promise<string> {
 // Structure consultation transcript
 export async function POST(req: Request) {
   const startTime = Date.now();
-  let transcription = ''; // Declare here so it's available in catch block
+  let contentToStructure = ''; // Declare here so it's available in catch block
 
   try {
     // Parse request body early with timeout
@@ -102,14 +102,14 @@ export async function POST(req: Request) {
       'Request parsing timeout',
     );
 
-    const { transcription: rawTranscription, guestToken: bodyGuestToken } = body;
-    transcription = rawTranscription; // Store for fallback use
+    const { transcription: rawContent, guestToken: bodyGuestToken } = body;
+    contentToStructure = rawContent; // Store for fallback use
 
     // Quick validation first
-    if (!transcription || transcription.trim() === '') {
+    if (!contentToStructure || contentToStructure.trim() === '') {
       return NextResponse.json({
         code: 'BAD_REQUEST',
-        message: 'Missing or empty transcription',
+        message: 'Missing or empty content to structure',
       }, { status: 400 });
     }
 
@@ -153,7 +153,7 @@ export async function POST(req: Request) {
 
     // Start session tracking in background (don't await to prevent delays)
     if (guestToken) {
-      incrementGuestSessionUsage(guestToken, `Transcript structuring ${new Date().toLocaleString()}`, 'structure-transcript')
+      incrementGuestSessionUsage(guestToken, `Content structuring ${new Date().toLocaleString()}`, 'structure-transcript')
         .catch(error => console.error('Failed to increment guest session usage:', error));
     }
 
@@ -165,33 +165,33 @@ export async function POST(req: Request) {
       return NextResponse.json({
         code: 'TIMEOUT_ERROR',
         message: 'Request processing took too long. Please try again.',
-        fallbackTranscript: transcription, // Provide fallback
+        fallbackTranscript: contentToStructure, // Provide fallback
       }, { status: 408 });
     }
 
-    // Structure the transcript with dynamic timeout
+    // Structure the content with dynamic timeout
     const structuringTimeout = Math.min(remainingTime - 2000, 15000); // Max 15s for AI call
     const structuredTranscript = await withTimeout(
-      structureTranscript(transcription),
+      structureTranscript(contentToStructure),
       structuringTimeout,
-      'Transcript structuring timeout',
+      'Content structuring timeout',
     );
 
     return NextResponse.json({
       structuredTranscript,
-      originalLength: transcription.length,
+      originalLength: contentToStructure.length,
       structuredLength: structuredTranscript.length,
       processingTimeMs: Date.now() - startTime,
     });
   } catch (error) {
-    console.error('Transcript structuring error:', error);
+    console.error('Content structuring error:', error);
 
     // Handle timeout errors specifically
     if (error instanceof Error && (error.message.includes('timeout') || error.message.includes('TIMEOUT'))) {
       return NextResponse.json({
         code: 'TIMEOUT_ERROR',
-        message: 'Transcript structuring took too long. Using original transcript.',
-        fallbackTranscript: transcription,
+        message: 'Content structuring took too long. Using original content.',
+        fallbackTranscript: contentToStructure,
       }, { status: 408 });
     }
 
@@ -199,15 +199,15 @@ export async function POST(req: Request) {
     if (error instanceof Error && error.message.includes('OpenAI')) {
       return NextResponse.json({
         code: 'AI_SERVICE_ERROR',
-        message: 'AI service is currently busy. Using original transcript.',
-        fallbackTranscript: transcription,
+        message: 'AI service is currently busy. Using original content.',
+        fallbackTranscript: contentToStructure,
       }, { status: 503 });
     }
 
     return NextResponse.json({
       code: 'INTERNAL_ERROR',
-      message: error instanceof Error ? error.message : 'Failed to structure transcript',
-      fallbackTranscript: transcription,
+      message: error instanceof Error ? error.message : 'Failed to structure content',
+      fallbackTranscript: contentToStructure,
     }, { status: 500 });
   }
 }

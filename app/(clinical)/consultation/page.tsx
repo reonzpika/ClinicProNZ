@@ -46,9 +46,6 @@ export default function ConsultationPage() {
     getEffectiveGuestToken,
     setLastGeneratedInput,
     setStructuredTranscriptStatus,
-    setStructuredTranscript,
-    isStructuredTranscriptFresh,
-    getEffectiveTranscript,
     setMobileV2ConnectionStatus, // NEW: Connection status bridge
   } = useConsultation();
   const { isSignedIn: _isSignedIn, userId } = useAuth();
@@ -146,76 +143,65 @@ export default function ConsultationPage() {
     setLoading(true);
     setError(null);
 
-    // Get input based on current mode
-    const transcript = inputMode === 'typed' ? '' : transcription.transcript;
-    const currentTypedInput = inputMode === 'typed' ? typedInput : '';
-
     try {
       // Get effective guest token
       const effectiveGuestToken = getEffectiveGuestToken();
 
-      // Step 1: Structure transcript (if in audio mode and transcript exists)
-      let processedTranscript = transcript;
+      // Step 1: Always structure the content (no caching)
+      const mainContent = inputMode === 'audio' ? transcription.transcript : typedInput;
+      const additionalContent = getCompiledConsultationText();
 
-      if (inputMode === 'audio' && transcript?.trim()) {
-        // Check if we have a fresh structured transcript
-        if (isStructuredTranscriptFresh(transcript)) {
-          // Use existing structured transcript
-          processedTranscript = getEffectiveTranscript();
-        } else {
-          // Structure the transcript
-          setStatus('processing'); // Set status to show we're working
-          setStructuredTranscriptStatus('structuring');
+      // Combine main content with additional notes
+      const contentToStructure = additionalContent && additionalContent.trim()
+        ? `${mainContent}\n\nADDITIONAL NOTES:\n${additionalContent}`
+        : mainContent;
 
-          try {
-            const structureRes = await fetch('/api/consultation/structure-transcript', {
-              method: 'POST',
-              headers: createAuthHeadersWithGuest(userId, userTier, effectiveGuestToken),
-              body: JSON.stringify({
-                transcription: transcript,
-                guestToken: effectiveGuestToken,
-              }),
-            });
+      let structuredContent = '';
 
-            if (structureRes.ok) {
-              const structureData = await structureRes.json();
-              const structuredContent = structureData.structuredTranscript;
+      if (contentToStructure?.trim()) {
+        // Structure the content
+        setStatus('processing');
+        setStructuredTranscriptStatus('structuring');
 
-              if (structuredContent) {
-                // Cache the structured transcript
-                setStructuredTranscript(structuredContent, transcript);
-                processedTranscript = structuredContent;
-              } else {
-                console.warn('No structured content received, using original transcript');
-                setStructuredTranscriptStatus('failed');
-              }
-            } else {
-              // Handle structuring errors gracefully
-              const errorData = await structureRes.json();
-              console.warn('Transcript structuring failed:', errorData.message);
+        try {
+          const structureRes = await fetch('/api/consultation/structure-transcript', {
+            method: 'POST',
+            headers: createAuthHeadersWithGuest(userId, userTier, effectiveGuestToken),
+            body: JSON.stringify({
+              transcription: contentToStructure,
+              guestToken: effectiveGuestToken,
+            }),
+          });
 
-              // Use fallback transcript if provided
-              if (errorData.fallbackTranscript) {
-                processedTranscript = errorData.fallbackTranscript;
-              }
-
-              setStructuredTranscriptStatus('failed');
-            }
-          } catch (structureError) {
-            console.warn('Transcript structuring error:', structureError);
+          if (structureRes.ok) {
+            const structureData = await structureRes.json();
+            structuredContent = structureData.structuredTranscript || contentToStructure;
+            setStructuredTranscriptStatus('completed');
+          } else {
+            // Handle structuring errors gracefully
+            const errorData = await structureRes.json();
+            console.warn('Content structuring failed:', errorData.message);
+            structuredContent = errorData.fallbackTranscript || contentToStructure;
             setStructuredTranscriptStatus('failed');
-            // Continue with original transcript
           }
+        } catch (structureError) {
+          console.warn('Content structuring error:', structureError);
+          structuredContent = contentToStructure; // Use original content as fallback
+          setStructuredTranscriptStatus('failed');
         }
+      } else {
+        // No content to structure
+        structuredContent = mainContent;
       }
 
-      // Step 2: Generate notes using processed transcript
+      // Step 2: Generate notes using only structured content
       const requestBody = {
-        transcription: processedTranscript,
-        typedInput: currentTypedInput,
+        structuredContent, // New field with structured content
+        transcription: '', // Empty - not used in new system
+        typedInput: '', // Empty - not used in new system
         templateId,
         inputMode,
-        consultationNotes: getCompiledConsultationText(),
+        consultationNotes: '', // Empty - already included in structured content
         guestToken: effectiveGuestToken,
       };
 
@@ -256,8 +242,13 @@ export default function ConsultationPage() {
         setGeneratedNotes(notes);
       }
 
-      // Use the original transcript for tracking, not the processed one
-      setLastGeneratedInput(transcript, currentTypedInput, getCompiledConsultationText(), templateId);
+      // Track the original inputs for UI purposes
+      setLastGeneratedInput(
+        inputMode === 'audio' ? transcription.transcript : '',
+        inputMode === 'typed' ? typedInput : '',
+        getCompiledConsultationText(),
+        templateId,
+      );
 
       // Refresh usage dashboard after successful notes generation
       if (usageDashboardRef.current?.refresh) {
@@ -386,7 +377,6 @@ export default function ConsultationPage() {
                                       collapsed={false}
                                       onExpand={() => setIsNoteFocused(false)}
                                       isMinimized
-                                      startMobileRecording={async () => false}
                                     />
                                   )
                                 : (
@@ -450,7 +440,6 @@ export default function ConsultationPage() {
                                           collapsed={isNoteFocused}
                                           onExpand={() => setIsNoteFocused(false)}
                                           isMinimized={false}
-                                          startMobileRecording={async () => false}
                                         />
                                       )
                                     : (
@@ -530,7 +519,6 @@ export default function ConsultationPage() {
                                           collapsed={false}
                                           onExpand={() => setIsNoteFocused(false)}
                                           isMinimized
-                                          startMobileRecording={async () => false}
                                         />
                                       )
                                     : (
@@ -564,7 +552,6 @@ export default function ConsultationPage() {
                                         collapsed={isNoteFocused}
                                         onExpand={() => setIsNoteFocused(false)}
                                         isMinimized={false}
-                                        startMobileRecording={async () => false}
                                       />
                                     )
                                   : (
