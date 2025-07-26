@@ -19,6 +19,7 @@ import { WorkflowInstructions } from '@/src/features/clinical/right-sidebar/comp
 import { PatientSessionManager } from '@/src/features/clinical/session-management/components/PatientSessionManager';
 import { Container } from '@/src/shared/components/layout/Container';
 import { Stack } from '@/src/shared/components/layout/Stack';
+import { MobileBlockModal } from '@/src/shared/components/MobileBlockModal';
 import { RateLimitModal } from '@/src/shared/components/RateLimitModal';
 import { Button } from '@/src/shared/components/ui/button';
 import { useConsultation } from '@/src/shared/ConsultationContext';
@@ -60,6 +61,9 @@ export default function ConsultationPage() {
   const [rateLimitModalOpen, setRateLimitModalOpen] = useState(false);
   const [rateLimitError, setRateLimitError] = useState<{ limit: number; resetIn: number; message: string } | null>(null);
   const { isMobile, isTablet, isDesktop, isLargeDesktop } = useResponsive();
+
+  // Mobile block modal - prevent mobile access to consultation
+  const showMobileBlock = isMobile;
 
   // Admin preview mode state
   const [showAdminPreview, setShowAdminPreview] = useState(false);
@@ -759,6 +763,9 @@ export default function ConsultationPage() {
           isLoading={loading}
         />
       )}
+
+      {/* Mobile Block Modal */}
+      <MobileBlockModal isOpen={showMobileBlock} />
     </div>
   );
 }
