@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-import { PlanCard } from '@/src/shared/components/billing/PlanCard';
+import { BillingPageClient } from '@/src/shared/components/billing/BillingPageClient';
 import { UsageLimits } from '@/src/shared/components/billing/UsageLimits';
 import { getCurrentTier, hasTier } from '@/src/shared/utils/roles-server';
 
@@ -8,8 +8,8 @@ import { getCurrentTier, hasTier } from '@/src/shared/utils/roles-server';
 export const dynamic = 'force-dynamic';
 
 export default async function BillingPage() {
-  // Require at least standard tier to access billing
-  const hasAccess = await hasTier('standard');
+  // Require at least basic tier to access billing (allow basic users to upgrade)
+  const hasAccess = await hasTier('basic');
   if (!hasAccess) {
     redirect('/login');
   }
@@ -37,41 +37,8 @@ export default async function BillingPage() {
             <UsageLimits tier={currentTier} currentUsage={currentUsage} />
           </div>
 
-          {/* Plan Cards */}
-          <div className="mb-8">
-            <h2 className="mb-6 text-2xl font-semibold text-gray-900">
-              Available Plans
-            </h2>
-
-            <div className="grid gap-6 md:grid-cols-3">
-              <PlanCard
-                planTier="basic"
-                currentUserTier={currentTier}
-              />
-
-              <PlanCard
-                planTier="standard"
-                currentUserTier={currentTier}
-                onUpgrade={async (_planTier) => {
-                  'use server';
-                  // In real implementation, redirect to Stripe checkout
-                  // TODO: Implement Stripe checkout integration
-                  // redirect('/api/create-checkout-session?planTier=' + _planTier);
-                }}
-              />
-
-              <PlanCard
-                planTier="premium"
-                currentUserTier={currentTier}
-                onUpgrade={async (_planTier) => {
-                  'use server';
-                  // In real implementation, redirect to Stripe checkout
-                  // TODO: Implement Stripe checkout integration
-                  // redirect('/api/create-checkout-session?planTier=' + _planTier);
-                }}
-              />
-            </div>
-          </div>
+          {/* Plan Cards with Client-side functionality */}
+          <BillingPageClient currentTier={currentTier} />
 
           {/* Billing History */}
           <div className="rounded-lg bg-white p-6 shadow">

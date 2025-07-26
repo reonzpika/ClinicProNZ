@@ -43,7 +43,7 @@ export function RateLimitModal({ isOpen, onClose, error }: RateLimitModalProps) 
     setLoadingAction('signup');
     setIsLoading(true);
     // Redirect to Clerk sign up
-    window.location.href = '/register';
+    window.location.href = '/auth/register';
   };
 
   const handleUpgrade = async (userEmail?: string) => {
@@ -77,7 +77,7 @@ export function RateLimitModal({ isOpen, onClose, error }: RateLimitModalProps) 
 
   const handlePublicUpgrade = () => {
     // Redirect public users to sign up first
-    window.location.href = '/register?redirect=upgrade';
+    window.location.href = '/auth/register?redirect=upgrade';
   };
 
   return (

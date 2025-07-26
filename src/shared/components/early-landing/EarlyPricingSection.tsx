@@ -16,7 +16,6 @@ export const EarlyPricingSection = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          priceId: process.env.NEXT_PUBLIC_STRIPE_STANDARD_PRICE_ID,
           tier: 'standard',
         }),
       });
@@ -24,12 +23,19 @@ export const EarlyPricingSection = () => {
       if (response.ok) {
         const { url } = await response.json();
         window.location.href = url;
+      } else if (response.status === 401) {
+        // Public user needs to sign up first
+        window.location.href = '/auth/register?redirect=upgrade';
       } else {
         console.error('Failed to create checkout session');
+        // TODO: Replace with proper toast notification
+        console.error('Something went wrong. Please try again.');
         setIsLoading(false);
       }
     } catch (error) {
       console.error('Error:', error);
+      // TODO: Replace with proper toast notification
+      console.error('Something went wrong. Please try again.');
       setIsLoading(false);
     }
   };

@@ -17,21 +17,26 @@ export const EarlyHeroSection = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          tier: 'super_early',
-          successUrl: `${window.location.origin}/thank-you`,
-          cancelUrl: `${window.location.origin}/early`,
+          tier: 'standard',
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to create checkout session');
+      if (response.ok) {
+        const { url } = await response.json();
+        window.location.href = url;
+      } else if (response.status === 401) {
+        // Public user needs to sign up first
+        window.location.href = '/auth/register?redirect=upgrade';
+      } else {
+        console.error('Failed to create checkout session');
+        // TODO: Replace with proper toast notification
+        console.error('Something went wrong. Please try again.');
+        setIsLoading(false);
       }
-
-      const { url } = await response.json();
-      window.location.href = url;
     } catch (error) {
       console.error('Error:', error);
-    } finally {
+      // TODO: Replace with proper toast notification
+      console.error('Something went wrong. Please try again.');
       setIsLoading(false);
     }
   };

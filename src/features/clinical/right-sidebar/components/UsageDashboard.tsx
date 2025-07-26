@@ -336,7 +336,7 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
               onClick={async () => {
                 // For public users, redirect to sign up first
                 if (!isSignedIn) {
-                  window.location.href = '/register?redirect=upgrade';
+                  window.location.href = '/auth/register?redirect=upgrade';
                   return;
                 }
 
