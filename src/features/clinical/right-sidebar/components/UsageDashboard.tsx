@@ -23,6 +23,9 @@ type UsageData = {
 };
 
 const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref) => {
+  // Feature flag to hide premium actions UI
+  const SHOW_PREMIUM_ACTIONS = false;
+
   const { isSignedIn, userId } = useAuth();
   const { user } = useClerkMetadata();
   const { mobileV2: _mobileV2, getEffectiveGuestToken } = useConsultation();
@@ -228,47 +231,49 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
         </div>
 
         {/* Premium Actions */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Premium Actions</span>
-            <span className={`text-sm ${isPremiumAtLimit ? 'font-semibold text-red-600' : 'text-gray-500'}`}>
-              {usageData.premiumActionsLimit === -1
-                ? 'Unlimited'
-                : `${usageData.premiumActionsUsed}/${usageData.premiumActionsLimit}`}
-              {isPremiumAtLimit && ' - LIMIT REACHED'}
-            </span>
-          </div>
-          {usageData.premiumActionsLimit !== -1 && (
-            <Progress
-              value={premiumUsagePercentage}
-              className={isPremiumAtLimit ? 'bg-red-200' : isNearPremiumLimit ? 'bg-red-100' : 'bg-gray-100'}
-            />
-          )}
-          <p className="text-xs text-gray-500">
-            Clinical image analysis, DDx suggestions, checklists
-          </p>
+        {SHOW_PREMIUM_ACTIONS && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Premium Actions</span>
+              <span className={`text-sm ${isPremiumAtLimit ? 'font-semibold text-red-600' : 'text-gray-500'}`}>
+                {usageData.premiumActionsLimit === -1
+                  ? 'Unlimited'
+                  : `${usageData.premiumActionsUsed}/${usageData.premiumActionsLimit}`}
+                {isPremiumAtLimit && ' - LIMIT REACHED'}
+              </span>
+            </div>
+            {usageData.premiumActionsLimit !== -1 && (
+              <Progress
+                value={premiumUsagePercentage}
+                className={isPremiumAtLimit ? 'bg-red-200' : isNearPremiumLimit ? 'bg-red-100' : 'bg-gray-100'}
+              />
+            )}
+            <p className="text-xs text-gray-500">
+              Clinical image analysis, DDx suggestions, checklists
+            </p>
 
-          {/* Premium limit reached alert */}
-          {isPremiumAtLimit && (
-            <div className="rounded-lg border border-amber-300 bg-amber-50 p-3">
-              <div className="flex items-start gap-2">
-                <div className="text-amber-600">⚠️</div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-amber-900">
-                    Premium actions limit reached
-                  </p>
-                  <p className="mt-1 text-xs text-amber-700">
-                    Clinical images, DDx, and checklists reset at
-                    {' '}
-                    {usageData.resetTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    {' '}
-                    tomorrow.
-                  </p>
+            {/* Premium limit reached alert */}
+            {isPremiumAtLimit && (
+              <div className="rounded-lg border border-amber-300 bg-amber-50 p-3">
+                <div className="flex items-start gap-2">
+                  <div className="text-amber-600">⚠️</div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-amber-900">
+                      Premium actions limit reached
+                    </p>
+                    <p className="mt-1 text-xs text-amber-700">
+                      Clinical images, DDx, and checklists reset at
+                      {' '}
+                      {usageData.resetTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {' '}
+                      tomorrow.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* Reset Time */}
         <div className="text-xs text-gray-500">
@@ -323,8 +328,8 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
                     {isCoreAtLimit
                       ? `Features disabled until ${usageData.resetTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} tomorrow. Upgrade for unlimited sessions.`
                       : isNearCoreLimit
-                        ? 'Upgrade to Standard for unlimited core sessions and premium features.'
-                        : 'Get unlimited sessions, advanced features, and priority support.'}
+                        ? 'Upgrade to Standard for unlimited sessions and full access.'
+                        : 'Get unlimited sessions, full access, and priority support.'}
                   </p>
                 </div>
               </div>
@@ -377,7 +382,7 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
           </div>
         )}
 
-        {usageData.tier === 'standard' && (
+        {SHOW_PREMIUM_ACTIONS && usageData.tier === 'standard' && (
           <div className="space-y-3">
             {/* Single unified message for standard tier */}
             {(isPremiumAtLimit || isNearPremiumLimit) && (

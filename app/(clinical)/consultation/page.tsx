@@ -50,7 +50,7 @@ export default function ConsultationPage() {
     setMobileV2ConnectionStatus, // NEW: Connection status bridge
   } = useConsultation();
   const { isSignedIn: _isSignedIn, userId } = useAuth();
-  const { getUserTier } = useClerkMetadata();
+  const { getUserTier, user } = useClerkMetadata();
   const userTier = getUserTier();
   const [loading, setLoading] = useState(false);
   const [isNoteFocused, setIsNoteFocused] = useState(false);
@@ -72,6 +72,7 @@ export default function ConsultationPage() {
 
   // Check for upgrade redirect
   const [showUpgradeNotification, setShowUpgradeNotification] = useState(false);
+  const [upgradeLoading, setUpgradeLoading] = useState(false);
 
   useEffect(() => {
     // Check URL parameters for upgrade redirect
@@ -84,6 +85,34 @@ export default function ConsultationPage() {
       window.history.replaceState(null, '', newUrl);
     }
   }, []);
+
+  // Direct upgrade handler
+  const handleDirectUpgrade = async () => {
+    setUpgradeLoading(true);
+
+    try {
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: user?.primaryEmailAddress?.emailAddress,
+        }),
+      });
+
+      if (response.ok) {
+        const { url } = await response.json();
+        window.location.href = url;
+      } else {
+        console.error('Failed to create checkout session');
+        setUpgradeLoading(false);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setUpgradeLoading(false);
+    }
+  };
 
   // Admin preview approval handler
   const handleAdminApproval = async (approvedContent: string, wasEdited: boolean) => {
@@ -435,16 +464,10 @@ export default function ConsultationPage() {
                     <Button
                       size="sm"
                       className="bg-green-600 hover:bg-green-700"
-                      onClick={() => {
-                        // Scroll to usage dashboard
-                        const dashboard = document.querySelector('[data-component="usage-dashboard"]');
-                        if (dashboard) {
-                          dashboard.scrollIntoView({ behavior: 'smooth' });
-                        }
-                        setShowUpgradeNotification(false);
-                      }}
+                      onClick={handleDirectUpgrade}
+                      disabled={upgradeLoading}
                     >
-                      Upgrade Now
+                      {upgradeLoading ? 'Loading...' : 'Upgrade Now'}
                     </Button>
                   </div>
                 </div>
