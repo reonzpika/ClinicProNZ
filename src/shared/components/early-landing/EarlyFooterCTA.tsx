@@ -70,16 +70,30 @@ export const EarlyFooterCTA = () => {
 
           {/* CTA Button */}
           <div className="mb-8">
-            <div className="relative inline-block">
+            <div className="relative inline-block w-full max-w-4xl">
               <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-white/30 to-nz-green-300/30 blur-lg sm:-inset-2 sm:rounded-2xl"></div>
               <Button
                 size="lg"
                 onClick={handleJoinClick}
                 disabled={isLoading}
-                className="relative bg-white px-8 py-4 text-lg font-semibold text-nz-green-700 shadow-xl transition-all duration-300 hover:bg-nz-green-50 hover:shadow-2xl sm:px-10 sm:py-5 sm:text-xl"
+                className="relative w-full bg-white p-4 text-base font-semibold text-nz-green-700 shadow-xl transition-all duration-300 hover:bg-nz-green-50 hover:shadow-2xl sm:px-6 sm:py-4 sm:text-lg md:px-8 md:text-xl"
               >
-                {isLoading ? 'Loading...' : 'Join Super Early (NZ$30/mo) — Only 15 Spots Available'}
-                {!isLoading && <ArrowRight className="ml-2 size-5" />}
+                {isLoading
+                  ? 'Loading...'
+                  : (
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="block sm:hidden">
+                          Join Super Early (NZ$30/mo)
+                        </span>
+                        <span className="hidden sm:block md:hidden">
+                          Join Super Early (NZ$30/mo) — 15 Spots
+                        </span>
+                        <span className="hidden md:block">
+                          Join Super Early (NZ$30/mo) — Only 15 Spots Available
+                        </span>
+                        <ArrowRight className="size-4 sm:size-5" />
+                      </div>
+                    )}
               </Button>
             </div>
           </div>

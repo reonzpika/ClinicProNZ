@@ -149,19 +149,24 @@ export const EarlyHeroSection = () => {
           <Button
             onClick={handleSuperEarlyClick}
             disabled={isLoading}
-            className="hover:shadow-3xl bg-green-600 px-12 py-6 text-xl font-bold text-white shadow-2xl transition-all duration-300 hover:scale-105 hover:bg-green-700 lg:px-16 lg:py-8 lg:text-2xl"
+            className="hover:shadow-3xl w-full max-w-sm bg-green-600 px-4 py-3 text-sm font-bold text-white shadow-2xl transition-all duration-300 hover:scale-105 hover:bg-green-700 sm:max-w-lg sm:px-6 sm:py-4 sm:text-base lg:max-w-xl lg:px-8 lg:py-5 lg:text-lg"
           >
             {isLoading
               ? 'Loading...'
               : (
-                  <>
-                    Join Super Early — Only 15 Spots
-                    <div className="ml-3 text-base lg:text-lg">
-                      <span className="text-green-200 line-through">NZ$89</span>
-                      <span className="ml-1">→NZ$30/mo</span>
+                  <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
+                    <span className="whitespace-nowrap">
+                      Join Super Early{' '}
+                      <span className="hidden sm:inline">— Only</span> 
+                      <span className="sm:hidden">—</span> 15 Spots
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-green-200 line-through text-xs sm:text-sm">NZ$89</span>
+                      <span className="text-xs sm:text-sm">→</span>
+                      <span className="font-bold text-xs sm:text-sm">NZ$30/mo</span>
+                      <ArrowRight className="ml-1 size-3 sm:size-4" />
                     </div>
-                    <ArrowRight className="ml-3 size-6 lg:size-7" />
-                  </>
+                  </div>
                 )}
           </Button>
 
