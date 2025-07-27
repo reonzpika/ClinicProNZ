@@ -9,6 +9,7 @@ import { Badge } from '@/src/shared/components/ui/badge';
 import { Button } from '@/src/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
 import { ScrollArea } from '@/src/shared/components/ui/scroll-area';
+import { useConsultation } from '@/src/shared/ConsultationContext';
 
 import type { Template } from '../types';
 
@@ -31,13 +32,14 @@ export function TemplateSelectorModal({
 }: TemplateSelectorModalProps) {
   const { isSignedIn } = useAuth();
   const [deletingTemplateId, setDeletingTemplateId] = useState<string | null>(null);
+  const { setUserDefaultTemplateId } = useConsultation();
 
   const handleTemplateSelect = (template: Template) => {
     onTemplateSelect(template);
   };
 
   const handleSetDefault = (templateId: string) => {
-    localStorage.setItem('userDefaultTemplateId', templateId);
+    setUserDefaultTemplateId(templateId);
     // Force a re-render by updating the state or triggering a refresh
     window.location.reload();
   };

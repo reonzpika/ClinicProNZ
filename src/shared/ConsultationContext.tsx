@@ -117,7 +117,7 @@ export type ConsultationState = {
   };
 };
 
-export const MULTIPROBLEM_SOAP_UUID = '0ab5f900-7184-43d1-a262-c519ab9520dc';
+export const MULTIPROBLEM_SOAP_UUID = '5f24a1c7-05a4-4622-a25b-4a19a5572196';
 
 function getUserDefaultTemplateId() {
   if (typeof window !== 'undefined') {
@@ -564,16 +564,57 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
   const setGuestToken = useCallback((guestToken: string | null) =>
     setState(prev => ({ ...prev, guestToken })), []);
 
-  const setUserDefaultTemplateId = useCallback((id: string) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('userDefaultTemplateId', id);
-    }
+  const setUserDefaultTemplateId = useCallback(async (id: string) => {
+    // Update local state immediately for responsive UI
     setState(prev => ({
       ...prev,
       userDefaultTemplateId: id,
       templateId: id,
     }));
-  }, []);
+
+    // Save to database if user is signed in
+    if (isSignedIn && userId) {
+      try {
+        // First fetch existing settings to preserve templateOrder
+        const getResponse = await fetch('/api/user/settings', {
+          headers: createAuthHeadersWithGuest(userId, userTier, state.guestToken),
+        });
+
+        let existingSettings = { templateOrder: [], favouriteTemplateId: null };
+        if (getResponse.ok) {
+          const data = await getResponse.json();
+          existingSettings = data.settings || existingSettings;
+        }
+
+        // Update only the favouriteTemplateId while preserving other settings
+        const response = await fetch('/api/user/settings', {
+          method: 'POST',
+          headers: createAuthHeadersWithGuest(userId, userTier, state.guestToken),
+          body: JSON.stringify({
+            settings: {
+              ...existingSettings,
+              favouriteTemplateId: id,
+            },
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to save favourite template to database');
+        }
+      } catch (error) {
+        console.error('Error saving favourite template:', error);
+        // Keep localStorage as fallback for now
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('userDefaultTemplateId', id);
+        }
+      }
+    } else {
+      // Fallback to localStorage for non-signed in users
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('userDefaultTemplateId', id);
+      }
+    }
+  }, [isSignedIn, userId, userTier, state.guestToken]);
 
   const setLastGeneratedInput = useCallback((transcription: string, typedInput?: string, compiledConsultationText?: string, templateId?: string) =>
     setState(prev => ({

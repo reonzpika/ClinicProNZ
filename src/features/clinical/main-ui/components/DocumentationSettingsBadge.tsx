@@ -55,6 +55,7 @@ export const DocumentationSettingsBadge: React.FC = () => {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true); // Track if this is initial load
+  const [favouriteTemplateId, setFavouriteTemplateId] = useState<string | null>(null); // Database favourite
 
   // Fetch templates on component mount - replicating TemplateSelector logic
   useEffect(() => {
@@ -82,22 +83,30 @@ export const DocumentationSettingsBadge: React.FC = () => {
             ...customTemplates.map((t: Template) => ({ ...t, _templateType: 'Custom' })),
           ];
 
-          // Fetch user template order and reorder if available
+          // Fetch user settings including favourite template and template order
           const settingsRes = await fetch('/api/user/settings', {
             headers: createAuthHeadersWithGuest(userId, userTier, null),
           });
           if (settingsRes.ok) {
             const settingsData = await settingsRes.json();
-            if (settingsData.settings && Array.isArray(settingsData.settings.templateOrder)) {
-              const order = settingsData.settings.templateOrder;
-              const idToTemplate = Object.fromEntries(allTemplates.map((t: Template) => [t.id, t]));
-              allTemplates = order.map((id: string) => idToTemplate[id]).filter(Boolean);
-              // Add any templates not in the order (e.g., new ones)
-              const orderedIds = new Set(order);
-              allTemplates = [
-                ...allTemplates,
-                ...Object.values(idToTemplate).filter((t: Template) => !orderedIds.has(t.id)),
-              ];
+            if (settingsData.settings) {
+              // Store favourite template from database
+              if (settingsData.settings.favouriteTemplateId) {
+                setFavouriteTemplateId(settingsData.settings.favouriteTemplateId);
+              }
+
+              // Handle template ordering
+              if (Array.isArray(settingsData.settings.templateOrder)) {
+                const order = settingsData.settings.templateOrder;
+                const idToTemplate = Object.fromEntries(allTemplates.map((t: Template) => [t.id, t]));
+                allTemplates = order.map((id: string) => idToTemplate[id]).filter(Boolean);
+                // Add any templates not in the order (e.g., new ones)
+                const orderedIds = new Set(order);
+                allTemplates = [
+                  ...allTemplates,
+                  ...Object.values(idToTemplate).filter((t: Template) => !orderedIds.has(t.id)),
+                ];
+              }
             }
           }
         } else {
@@ -140,12 +149,18 @@ export const DocumentationSettingsBadge: React.FC = () => {
     }
 
     // Apply user preferences if we're on system default - ONLY on initial load
+    // Priority: Database favourite → Last used → localStorage default → System default
     const isSystemDefault = templateId === MULTIPROBLEM_SOAP_UUID && inputMode === 'audio';
     if (isSystemDefault) {
-      if (lastUsed?.templateId && templates.some(t => t.id === lastUsed.templateId)) {
+      // 1. Database favourite template (highest priority)
+      if (favouriteTemplateId && templates.some(t => t.id === favouriteTemplateId)) {
+        setTemplateId(favouriteTemplateId);
+      } else if (lastUsed?.templateId && templates.some(t => t.id === lastUsed.templateId)) {
+        // 2. Last used settings
         setTemplateId(lastUsed.templateId);
         setInputMode(lastUsed.inputMode);
       } else if (userDefault && templates.some(t => t.id === userDefault)) {
+        // 3. localStorage default (deprecated but kept for migration)
         setTemplateId(userDefault);
       }
     }
@@ -153,7 +168,7 @@ export const DocumentationSettingsBadge: React.FC = () => {
     // Mark initial load as complete
     setIsInitialLoad(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [templates, isInitialLoad]); // Intentionally excluding templateId, inputMode, setTemplateId, setInputMode to prevent infinite loops
+  }, [templates, isInitialLoad, favouriteTemplateId]); // Added favouriteTemplateId dependency
 
   // Save settings when they change
   useEffect(() => {

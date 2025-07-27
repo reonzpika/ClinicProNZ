@@ -15,18 +15,13 @@ export function TemplateSelector() {
   const { isSignedIn, userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
-  const { templateId, setTemplateId } = useConsultation();
+  const { templateId, setTemplateId, userDefaultTemplateId } = useConsultation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [_, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Get user default templateId from localStorage (for highlight)
-  let userDefaultTemplateId: string | null = null;
-  if (typeof window !== 'undefined') {
-    userDefaultTemplateId = localStorage.getItem('userDefaultTemplateId');
-  }
-
+  // Fetch templates on component mount
   useEffect(() => {
     async function fetchTemplates() {
       try {
