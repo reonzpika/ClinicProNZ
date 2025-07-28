@@ -10,7 +10,7 @@ if (!OPENAI_API_KEY) {
 
 const openai = new OpenAI({
   apiKey: OPENAI_API_KEY,
-  timeout: 20000, // 20s timeout for structuring
+  timeout: 45000, // Increased to match notes route
 });
 
 // Add a timeout wrapper for promises
