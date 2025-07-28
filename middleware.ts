@@ -69,16 +69,22 @@ export default clerkMiddleware(async (auth, req) => {
   // Protect /api/patient-sessions routes - different rules for different methods
   if (req.nextUrl.pathname.startsWith('/api/patient-sessions')) {
     const resolvedAuth = await auth();
-    if (!resolvedAuth.userId) {
+    
+    // Check if we have header-based auth (from mobile/API calls)
+    const hasHeaderAuth = req.headers.get('x-user-id') || req.headers.get('x-mobile-token') || req.headers.get('x-guest-token');
+    
+    if (!resolvedAuth.userId && !hasHeaderAuth) {
       return returnUnauthorized();
     }
 
-    // Check tier - session history (GET) requires standard+, but active session management (POST/PUT) allows basic
-    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
-    if (userTier === 'basic' && req.method === 'GET') {
-      return returnUnauthorized(); // Block session history for basic tier
+    // If we have Clerk auth, apply tier restrictions
+    if (resolvedAuth.userId) {
+      const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
+      if (userTier === 'basic' && req.method === 'GET') {
+        return returnUnauthorized(); // Block session history for basic tier
+      }
     }
-    // POST and PUT are allowed for basic tier (for active session management during consultation)
+    // POST and PUT with header auth are allowed - route handler will validate
   }
 
   // Allow anonymous access to /api/mobile routes (supports guest tokens)
