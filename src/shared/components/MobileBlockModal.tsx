@@ -12,17 +12,17 @@ import {
   DialogTitle,
 } from '@/src/shared/components/ui/dialog';
 
-interface MobileBlockModalProps {
+type MobileBlockModalProps = {
   isOpen: boolean;
-}
+};
 
 export const MobileBlockModal = ({ isOpen }: MobileBlockModalProps) => {
   return (
     <Dialog open={isOpen}>
-      <DialogContent 
-        className="max-w-md [&>button]:hidden" 
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
+      <DialogContent
+        className="max-w-md [&>button]:hidden"
+        onPointerDownOutside={e => e.preventDefault()}
+        onEscapeKeyDown={e => e.preventDefault()}
       >
         <DialogHeader className="text-center">
           <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-blue-100">
@@ -33,8 +33,11 @@ export const MobileBlockModal = ({ isOpen }: MobileBlockModalProps) => {
           </DialogTitle>
           <DialogDescription className="mt-4 space-y-4 text-left">
             <p className="text-gray-600">
-              ClinicPro's consultation features are optimised for desktop use to ensure the best clinical documentation experience. Please visit{' '}
-              <span className="font-medium text-blue-600">clinicpro.co.nz</span> on your desktop or laptop computer.
+              ClinicPro's consultation features are optimised for desktop use to ensure the best clinical documentation experience. Please visit
+              {' '}
+              <span className="font-medium text-blue-600">clinicpro.co.nz</span>
+              {' '}
+              on your desktop or laptop computer.
             </p>
             <div className="rounded-lg bg-blue-50 p-3">
               <div className="flex items-center gap-2">
@@ -46,12 +49,12 @@ export const MobileBlockModal = ({ isOpen }: MobileBlockModalProps) => {
             </div>
           </DialogDescription>
         </DialogHeader>
-        
+
         {/* Back link positioned at bottom left */}
         <div className="mt-6">
-          <Link 
-            href="/early" 
-            className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+          <Link
+            href="/early"
+            className="flex items-center gap-2 text-sm text-gray-500 transition-colors hover:text-gray-700"
           >
             <ArrowLeft className="size-4" />
             Back
@@ -60,4 +63,4 @@ export const MobileBlockModal = ({ isOpen }: MobileBlockModalProps) => {
       </DialogContent>
     </Dialog>
   );
-}; 
+};

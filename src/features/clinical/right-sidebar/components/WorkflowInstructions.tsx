@@ -8,11 +8,8 @@ import { useRBAC } from '@/src/shared/hooks/useRBAC';
 
 export const WorkflowInstructions: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { tier, hasFeatureAccess } = useRBAC();
+  const { tier } = useRBAC();
 
-  // Check if user has standard tier or higher features
-  const _hasSessionManagement = hasFeatureAccess('sessionManagement');
-  const _hasTemplateManagement = hasFeatureAccess('templateManagement');
   const isBasicTier = tier === 'basic';
 
   // Basic tier workflow (simplified 3-step process)

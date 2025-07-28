@@ -156,14 +156,17 @@ export const EarlyHeroSection = () => {
               : (
                   <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
                     <span className="whitespace-nowrap">
-                      Join Super Early{' '}
-                      <span className="hidden sm:inline">— Only</span> 
-                      <span className="sm:hidden">—</span> 15 Spots
+                      Join Super Early
+                      {' '}
+                      <span className="hidden sm:inline">— Only</span>
+                      <span className="sm:hidden">—</span>
+                      {' '}
+                      15 Spots
                     </span>
                     <div className="flex items-center gap-1">
-                      <span className="text-green-200 line-through text-xs sm:text-sm">NZ$89</span>
+                      <span className="text-xs text-green-200 line-through sm:text-sm">NZ$89</span>
                       <span className="text-xs sm:text-sm">→</span>
-                      <span className="font-bold text-xs sm:text-sm">NZ$30/mo</span>
+                      <span className="text-xs font-bold sm:text-sm">NZ$30/mo</span>
                       <ArrowRight className="ml-1 size-3 sm:size-4" />
                     </div>
                   </div>
