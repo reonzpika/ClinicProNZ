@@ -9,11 +9,30 @@ import { checkFeatureAccess, extractRBACContext } from '@/src/lib/rbac-enforcer'
 // GET - List patient sessions for a user
 export async function GET(req: NextRequest) {
   try {
+    console.log('[Patient Sessions API] GET request received');
+    
     // Extract RBAC context and check session history permissions
     const context = await extractRBACContext(req);
+    console.log('[Patient Sessions API] RBAC context extracted:', {
+      userId: context.userId ? `${context.userId.substring(0, 8)}...` : null,
+      tier: context.tier,
+      isAuthenticated: context.isAuthenticated,
+      hasGuestToken: !!context.guestToken,
+    });
+    
     const permissionCheck = await checkFeatureAccess(context, 'session-history');
+    console.log('[Patient Sessions API] Permission check result for session-history:', permissionCheck);
 
     if (!permissionCheck.allowed) {
+      console.log('[Patient Sessions API] Access denied for session-history:', {
+        reason: permissionCheck.reason,
+        upgradePrompt: permissionCheck.upgradePrompt,
+        context: {
+          tier: context.tier,
+          isAuthenticated: context.isAuthenticated,
+        }
+      });
+      
       return new Response(
         JSON.stringify({
           error: permissionCheck.reason || 'Access denied',
@@ -31,6 +50,7 @@ export async function GET(req: NextRequest) {
 
     // Either authenticated user or guest token required
     if (!userId && !guestToken) {
+      console.log('[Patient Sessions API] No authentication found');
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
@@ -116,11 +136,30 @@ export async function GET(req: NextRequest) {
 // POST - Create a new patient session
 export async function POST(req: NextRequest) {
   try {
+    console.log('[Patient Sessions API] POST request received');
+    
     // Extract RBAC context and check session management permissions
     const context = await extractRBACContext(req);
+    console.log('[Patient Sessions API] POST RBAC context:', {
+      userId: context.userId ? `${context.userId.substring(0, 8)}...` : null,
+      tier: context.tier,
+      isAuthenticated: context.isAuthenticated,
+      hasGuestToken: !!context.guestToken,
+    });
+    
     const permissionCheck = await checkFeatureAccess(context, 'sessions');
+    console.log('[Patient Sessions API] POST Permission check result for sessions:', permissionCheck);
 
     if (!permissionCheck.allowed) {
+      console.log('[Patient Sessions API] POST Access denied for sessions:', {
+        reason: permissionCheck.reason,
+        upgradePrompt: permissionCheck.upgradePrompt,
+        context: {
+          tier: context.tier,
+          isAuthenticated: context.isAuthenticated,
+        }
+      });
+      
       return new Response(
         JSON.stringify({
           error: permissionCheck.reason || 'Access denied',
