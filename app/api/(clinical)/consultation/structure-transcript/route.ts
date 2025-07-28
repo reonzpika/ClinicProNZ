@@ -185,9 +185,9 @@ export async function POST(req: Request) {
 
     // Check remaining time before starting OpenAI call
     const elapsedTime = Date.now() - startTime;
-    const remainingTime = 20000 - elapsedTime; // 20s total budget for structuring
+    const remainingTime = 55000 - elapsedTime; // Leave 5s buffer before Vercel timeout
 
-    if (remainingTime < 5000) {
+    if (remainingTime < 10000) {
       return NextResponse.json({
         code: 'TIMEOUT_ERROR',
         message: 'Request processing took too long. Please try again.',
@@ -196,7 +196,7 @@ export async function POST(req: Request) {
     }
 
     // Structure the content with dynamic timeout
-    const structuringTimeout = Math.min(remainingTime - 2000, 15000); // Max 15s for AI call
+    const structuringTimeout = Math.min(remainingTime - 5000, 40000); // Max 40s for AI call
     const structuredTranscript = await withTimeout(
       structureTranscript(contentToStructure),
       structuringTimeout,
