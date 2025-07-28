@@ -3,6 +3,7 @@
 import { useAuth } from '@clerk/nextjs';
 import { useEffect, useMemo, useState } from 'react';
 
+import { FeatureFeedbackButton } from '@/src/shared/components/FeatureFeedbackButton';
 import { Button } from '@/src/shared/components/ui/button';
 import { useConsultation } from '@/src/shared/ConsultationContext';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
@@ -106,6 +107,14 @@ export function TemplateSelector() {
         </div>
         <span className="text-xs">▼</span>
       </Button>
+      {selectedTemplate && selectedTemplate.id && (
+        <FeatureFeedbackButton
+          feature="templates"
+          context={`Template: ${selectedTemplate.name} (${selectedTemplate.id}), Type: ${selectedTemplate.type}`}
+          variant="minimal"
+          className="opacity-50 hover:opacity-100"
+        />
+      )}
 
       <TemplateSelectorModal
         isOpen={isModalOpen}

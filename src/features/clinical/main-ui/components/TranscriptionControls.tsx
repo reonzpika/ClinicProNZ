@@ -5,6 +5,7 @@ import { useAuth } from '@clerk/nextjs';
 import { ChevronDown, ChevronUp, Settings, Smartphone } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
+import { FeatureFeedbackButton } from '@/src/shared/components/FeatureFeedbackButton';
 import { Stack } from '@/src/shared/components/layout/Stack';
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
@@ -526,8 +527,16 @@ export function TranscriptionControls({
               </div>
             )}
             {!isRecording && transcript && (
-              <div className="text-xs font-medium text-slate-600">
-                Transcribed Text — Edit as needed
+              <div className="flex items-center justify-between">
+                <div className="text-xs font-medium text-slate-600">
+                  Transcribed Text — Edit as needed
+                </div>
+                <FeatureFeedbackButton
+                  feature="transcription"
+                  context={`Transcript length: ${transcript.length} chars, Recording time: ${recordingStartTime ? Math.round((Date.now() - recordingStartTime) / 1000) : 0}s`}
+                  variant="minimal"
+                  className="opacity-60 hover:opacity-100"
+                />
               </div>
             )}
 

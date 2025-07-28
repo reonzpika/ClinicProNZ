@@ -1,0 +1,138 @@
+import React, { useState } from 'react';
+
+import { FeedbackModal } from '@/src/features/marketing/roadmap/components/FeedbackModal';
+import { submitFeatureRequest } from '@/src/features/marketing/roadmap/roadmap-service';
+
+import { Button } from './ui/button';
+
+type FeatureFeedbackButtonProps = {
+  feature: 'transcription' | 'notes' | 'templates' | 'performance' | 'general';
+  context?: string;
+  variant?: 'minimal' | 'text';
+  className?: string;
+  disabled?: boolean;
+};
+
+export const FeatureFeedbackButton: React.FC<FeatureFeedbackButtonProps> = ({
+  feature,
+  context = '',
+  variant = 'minimal',
+  className = '',
+  disabled = false,
+}) => {
+  const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | undefined>();
+  const [success, setSuccess] = useState(false);
+
+  const config = {
+    transcription: {
+      icon: '🎤',
+      text: 'Speech feedback',
+      title: 'Quick feedback on speech recognition',
+      prompt: 'How\'s the transcription accuracy?',
+    },
+    notes: {
+      icon: '📝',
+      text: 'Notes feedback',
+      title: 'Feedback on AI-generated notes',
+      prompt: 'Were the AI notes helpful?',
+    },
+    templates: {
+      icon: '📋',
+      text: 'Template feedback',
+      title: 'Feedback on this template',
+      prompt: 'Does this template work for your workflow?',
+    },
+    performance: {
+      icon: '⚡',
+      text: 'Speed feedback',
+      title: 'Report performance issues',
+      prompt: 'Any speed or performance issues?',
+    },
+    general: {
+      icon: '💬',
+      text: 'Feedback',
+      title: 'General feedback',
+      prompt: 'Share your feedback',
+    },
+  }[feature];
+
+  const handleSubmit = async (data: { idea: string; details?: string; email?: string }) => {
+    setLoading(true);
+    setError(undefined);
+    setSuccess(false);
+
+    try {
+      // Add feature category and context to the submission
+      const enhancedData = {
+        ...data,
+        idea: `[${feature.toUpperCase()}] ${data.idea}`,
+        details: context ? `Context: ${context}\n\n${data.details || ''}` : data.details,
+      };
+
+      const result = await submitFeatureRequest(enhancedData);
+
+      if (result.success) {
+        setSuccess(true);
+        setTimeout(() => setShowModal(false), 1200);
+      } else {
+        setError(result.message || 'Something went wrong');
+      }
+    } catch {
+      setError('Failed to send feedback');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (variant === 'minimal') {
+    return (
+      <>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowModal(true)}
+          disabled={disabled}
+          className={`h-6 px-2 text-xs text-slate-400 hover:text-slate-600 ${className}`}
+          title={config.title}
+        >
+          {config.icon}
+        </Button>
+        <FeedbackModal
+          open={showModal}
+          onClose={() => setShowModal(false)}
+          onSubmit={handleSubmit}
+          loading={loading}
+          error={error}
+          success={success}
+        />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => setShowModal(true)}
+        disabled={disabled}
+        className={`text-xs text-slate-500 hover:text-slate-700 ${className}`}
+        title={config.title}
+      >
+        {config.icon}
+        {' '}
+        {config.text}
+      </Button>
+      <FeedbackModal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        onSubmit={handleSubmit}
+        loading={loading}
+        error={error}
+        success={success}
+      />
+    </>
+  );
+};

@@ -3,6 +3,7 @@
 import { useAuth } from '@clerk/nextjs';
 import React, { useEffect, useState } from 'react';
 
+import { FeatureFeedbackButton } from '@/src/shared/components/FeatureFeedbackButton';
 import { Button } from '@/src/shared/components/ui/button';
 import { useConsultation } from '@/src/shared/ConsultationContext';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
@@ -386,6 +387,14 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
           >
             {copySuccess ? 'Copied!' : 'Copy to Clipboard'}
           </Button>
+          {hasContent && !loading && (
+            <FeatureFeedbackButton
+              feature="notes"
+              context={`Template: ${templateId}, Notes length: ${displayNotes?.length || 0} chars`}
+              variant="minimal"
+              className="opacity-60 hover:opacity-100"
+            />
+          )}
           <Button
             type="button"
             variant="outline"
