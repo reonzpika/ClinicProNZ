@@ -40,17 +40,19 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
   const userTier = req.headers.get('x-user-tier') as UserTier || 'basic';
 
   // Debug logging for troubleshooting
-  console.log('[RBAC] Extracting context:', {
-    userId: userId ? `${userId.substring(0, 8)}...` : null,
-    userTier,
-    hasUserId: !!userId,
-    headers: {
-      'x-user-id': !!req.headers.get('x-user-id'),
-      'x-user-tier': !!req.headers.get('x-user-tier'),
-      'x-mobile-token': !!req.headers.get('x-mobile-token'),
-      'x-guest-token': !!req.headers.get('x-guest-token'),
-    }
-  });
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[RBAC] Extracting context:', {
+      userId: userId ? `${userId.substring(0, 8)}...` : null,
+      userTier,
+      hasUserId: !!userId,
+      headers: {
+        'x-user-id': !!req.headers.get('x-user-id'),
+        'x-user-tier': !!req.headers.get('x-user-tier'),
+        'x-mobile-token': !!req.headers.get('x-mobile-token'),
+        'x-guest-token': !!req.headers.get('x-guest-token'),
+      }
+    });
+  }
 
   // Check for mobile token first
   const mobileToken = req.headers.get('x-mobile-token') || url.searchParams.get('mobileToken');
@@ -67,7 +69,9 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
       const record = tokenRecord[0];
       if (!record) {
         // Invalid token record - treat as unauthenticated
-        console.log('[RBAC] Invalid mobile token record');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[RBAC] Invalid mobile token record');
+        }
         return {
           userId: null,
           guestToken: null,
@@ -79,7 +83,9 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
       const isExpired = record.expiresAt <= new Date();
       if (isExpired) {
         // Expired mobile token - treat as unauthenticated
-        console.log('[RBAC] Expired mobile token');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[RBAC] Expired mobile token');
+        }
         return {
           userId: null,
           guestToken: null,
@@ -93,7 +99,9 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
         // Mobile token linked to authenticated user
         // Note: We don't have tier info from mobile token, so we default to basic
         // The tier should be sent via x-user-tier header if needed
-        console.log('[RBAC] Valid mobile token for authenticated user');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[RBAC] Valid mobile token for authenticated user');
+        }
         return {
           userId: record.userId,
           guestToken: null,
@@ -103,7 +111,9 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
       } else {
         // Mobile token for guest user (userId is null)
         // Use mobile token as guest token for session tracking
-        console.log('[RBAC] Valid mobile token for guest user');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[RBAC] Valid mobile token for guest user');
+        }
         return {
           userId: null,
           guestToken: mobileToken,
@@ -113,7 +123,9 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
       }
     }
     // Invalid mobile token - fall through to other auth methods
-    console.log('[RBAC] Invalid mobile token, falling through');
+         if (process.env.NODE_ENV === 'development') {
+       console.log('[RBAC] Invalid mobile token, falling through');
+     }
   }
 
   // Also check for guest token
@@ -124,7 +136,9 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
 
   // Authenticated user takes priority
   if (userId) {
-    console.log('[RBAC] Authenticated user context:', { tier: userTier });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[RBAC] Authenticated user context:', { tier: userTier });
+    }
     return {
       userId,
       guestToken: null,
@@ -135,7 +149,9 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
 
   // No authenticated user, check for guest token
   if (guestToken) {
-    console.log('[RBAC] Guest user context');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[RBAC] Guest user context');
+    }
     return {
       userId: null,
       guestToken,
@@ -145,7 +161,9 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
   }
 
   // No authentication and no guest token - public user
-  console.log('[RBAC] Public/unauthenticated user context');
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[RBAC] Public/unauthenticated user context');
+  }
   return {
     userId: null,
     guestToken: null,
@@ -255,17 +273,19 @@ export async function checkPremiumActionLimit(context: RBACContext): Promise<RBA
 export async function checkFeatureAccess(context: RBACContext, feature: 'templates' | 'sessions' | 'session-history'): Promise<RBACResult> {
   const limits = TIER_LIMITS[context.tier];
 
-  console.log('[RBAC] Checking feature access:', {
-    feature,
-    tier: context.tier,
-    isAuthenticated: context.isAuthenticated,
-    userId: context.userId ? `${context.userId.substring(0, 8)}...` : null,
-    hasGuestToken: !!context.guestToken,
-    limits: {
-      sessionManagement: limits.sessionManagement,
-      templateManagement: limits.templateManagement,
-    }
-  });
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[RBAC] Checking feature access:', {
+      feature,
+      tier: context.tier,
+      isAuthenticated: context.isAuthenticated,
+      userId: context.userId ? `${context.userId.substring(0, 8)}...` : null,
+      hasGuestToken: !!context.guestToken,
+      limits: {
+        sessionManagement: limits.sessionManagement,
+        templateManagement: limits.templateManagement,
+      }
+    });
+  }
 
   let hasAccess: boolean;
 
@@ -283,11 +303,13 @@ export async function checkFeatureAccess(context: RBACContext, feature: 'templat
     hasAccess = false;
   }
 
-  console.log('[RBAC] Feature access result:', {
-    feature,
-    hasAccess,
-    reason: hasAccess ? 'Access granted' : `Feature ${feature} not available for tier ${context.tier}`,
-  });
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[RBAC] Feature access result:', {
+      feature,
+      hasAccess,
+      reason: hasAccess ? 'Access granted' : `Feature ${feature} not available for tier ${context.tier}`,
+    });
+  }
 
   if (!hasAccess) {
     const featureName = feature === 'session-history' ? 'session history' : `${feature} management`;
