@@ -70,8 +70,6 @@ export default clerkMiddleware(async (auth, req) => {
   if (req.nextUrl.pathname.startsWith('/api/patient-sessions')) {
     const resolvedAuth = await auth();
     
-    // TODO: Improve authentication architecture - currently mixing Clerk session auth with header-based auth
-    // This creates complexity and should be standardized to one approach for better security and maintainability
     // Check if we have header-based auth (from mobile/API calls)
     const hasHeaderAuth = req.headers.get('x-user-id') || req.headers.get('x-mobile-token') || req.headers.get('x-guest-token');
     
