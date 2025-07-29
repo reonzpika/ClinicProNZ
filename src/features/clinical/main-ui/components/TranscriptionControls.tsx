@@ -255,13 +255,20 @@ export function TranscriptionControls({
 
   return (
     <div className="space-y-3">
-      <ConsultationInputHeader
-        mode="audio"
-        isRecording={isRecording}
-        status={transcript && !isRecording ? 'Ready for review' : undefined}
-        onHelpToggle={() => setShowHelp(!showHelp)}
-        showHelp={showHelp}
-      />
+      <div className="flex items-center justify-between">
+        <ConsultationInputHeader
+          mode="audio"
+          isRecording={isRecording}
+          status={transcript && !isRecording ? 'Ready for review' : undefined}
+          onHelpToggle={() => setShowHelp(!showHelp)}
+          showHelp={showHelp}
+        />
+        <FeatureFeedbackButton
+          feature="transcription"
+          context={`Transcript length: ${transcript?.length || 0} chars, Recording time: ${recordingStartTime ? Math.round((Date.now() - recordingStartTime) / 1000) : 0}s, Recording state: ${isRecording ? 'active' : 'stopped'}`}
+          variant="minimal"
+        />
+      </div>
 
       <div>
         <Stack spacing="none" className="space-y-2">
@@ -536,11 +543,6 @@ export function TranscriptionControls({
                 <div className="text-xs font-medium text-slate-600">
                   Transcribed Text — Edit as needed
                 </div>
-                <FeatureFeedbackButton
-                  feature="transcription"
-                  context={`Transcript length: ${transcript.length} chars, Recording time: ${recordingStartTime ? Math.round((Date.now() - recordingStartTime) / 1000) : 0}s`}
-                  variant="minimal"
-                />
               </div>
             )}
 

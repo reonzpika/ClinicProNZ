@@ -387,7 +387,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
             <FeatureFeedbackButton
               feature="notes"
               context={`Template: ${templateId}, Notes length: ${displayNotes?.length || 0} chars`}
-              variant="minimal"
+              variant="text"
             />
           )}
           <Button

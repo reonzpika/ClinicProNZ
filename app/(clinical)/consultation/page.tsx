@@ -17,8 +17,9 @@ import RightPanelFeatures from '@/src/features/clinical/right-sidebar/components
 import UsageDashboard from '@/src/features/clinical/right-sidebar/components/UsageDashboard';
 import { WorkflowInstructions } from '@/src/features/clinical/right-sidebar/components/WorkflowInstructions';
 import { PatientSessionManager } from '@/src/features/clinical/session-management/components/PatientSessionManager';
-import { Container } from '@/src/shared/components/layout/Container';
+import { ContactLink } from '@/src/shared/components/ContactLink';
 import { FloatingFeedbackButton } from '@/src/shared/components/FloatingFeedbackButton';
+import { Container } from '@/src/shared/components/layout/Container';
 import { Stack } from '@/src/shared/components/layout/Stack';
 import { MobileBlockModal } from '@/src/shared/components/MobileBlockModal';
 import { RateLimitModal } from '@/src/shared/components/RateLimitModal';
@@ -501,6 +502,11 @@ export default function ConsultationPage() {
                         {/* Workflow Instructions - Only visible on large desktop */}
                         <WorkflowInstructions />
 
+                        {/* Contact Link - Fixed at bottom of left column */}
+                        <div className="mt-auto">
+                          <ContactLink />
+                        </div>
+
                         {/* Minimized Components in Documentation Mode */}
                         {isDocumentationMode && (
                           <div className="space-y-2">
@@ -768,14 +774,21 @@ export default function ConsultationPage() {
       {/* Mobile Block Modal */}
       <MobileBlockModal isOpen={showMobileBlock} />
 
+      {/* Contact Link - Fixed bottom for non-large desktop */}
+      {!isLargeDesktop && (
+        <div className="fixed bottom-4 left-4 z-20">
+          <ContactLink />
+        </div>
+      )}
+
       {/* Floating Feedback Button */}
       <FloatingFeedbackButton
         currentFeature={
-          generatedNotes && !loading 
-            ? 'notes' 
-            : (transcription.transcript || inputMode === 'audio') 
-              ? 'transcription' 
-              : 'general'
+          generatedNotes && !loading
+            ? 'notes'
+            : (transcription.transcript || inputMode === 'audio')
+                ? 'transcription'
+                : 'general'
         }
         context={`
           Page: Consultation, 

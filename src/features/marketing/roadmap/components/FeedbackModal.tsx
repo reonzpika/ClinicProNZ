@@ -37,13 +37,13 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ open, onClose, onS
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
-      <div className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
+      <div className="relative w-full max-w-xl rounded-lg bg-white p-6 shadow-lg">
         <button className="absolute right-2 top-2 text-gray-400 hover:text-gray-600" onClick={onClose}>&times;</button>
-        <h2 className="mb-2 text-lg font-semibold">Got an idea to make your life easier?</h2>
-        <p className="mb-4 text-sm text-gray-600">We'd love to hear from you.</p>
+        <h2 className="mb-2 text-lg font-semibold">Share your feedback</h2>
+        <p className="mb-4 text-sm text-gray-600">Whether it's a bug report, feature idea, or general feedback - we'd love to hear from you.</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <label htmlFor="idea-input" className="text-sm font-medium">
-            What's your idea?
+            What would you like to share?
             <span className="text-red-500">*</span>
           </label>
           <input
@@ -53,7 +53,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ open, onClose, onS
             onChange={e => setIdea(e.target.value)}
             required
             maxLength={256}
-            placeholder="Describe your idea in one sentence"
+            placeholder="Describe your feedback, bug report, or idea"
           />
           <label htmlFor="details-textarea" className="text-sm font-medium">Tell us more (optional)</label>
           <textarea
@@ -75,13 +75,13 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ open, onClose, onS
             placeholder="If you want updates"
           />
           {error && <div className="mt-1 text-xs text-red-500">{error}</div>}
-          {success && <div className="mt-1 text-xs text-green-600">Thank you for your suggestion!</div>}
+          {success && <div className="mt-1 text-xs text-green-600">Thank you for your feedback!</div>}
           <button
             type="submit"
             className="mt-2 rounded bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 disabled:bg-gray-300"
             disabled={loading || !idea.trim()}
           >
-            {loading ? 'Sending...' : 'Send suggestion'}
+            {loading ? 'Sending...' : 'Send feedback'}
           </button>
         </form>
       </div>

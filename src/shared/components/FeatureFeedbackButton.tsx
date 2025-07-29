@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
 import { MessageSquare } from 'lucide-react';
+import React, { useState } from 'react';
 
 import { FeedbackModal } from '@/src/features/marketing/roadmap/components/FeedbackModal';
 import { submitFeatureRequest } from '@/src/features/marketing/roadmap/roadmap-service';
@@ -85,7 +85,7 @@ export const FeatureFeedbackButton: React.FC<FeatureFeedbackButtonProps> = ({
           size="sm"
           onClick={() => setShowModal(true)}
           disabled={disabled}
-          className={`h-7 px-2 text-xs text-slate-500 hover:text-slate-700 hover:bg-slate-100 ${className}`}
+          className={`h-7 px-2 text-xs text-slate-500 hover:bg-slate-100 hover:text-slate-700 ${className}`}
           title={config.title}
         >
           <MessageSquare size={12} className="mr-1" />
@@ -106,11 +106,11 @@ export const FeatureFeedbackButton: React.FC<FeatureFeedbackButtonProps> = ({
   return (
     <>
       <Button
-        variant="ghost"
+        variant="outline"
         size="sm"
         onClick={() => setShowModal(true)}
         disabled={disabled}
-        className={`text-xs text-slate-500 hover:text-slate-700 hover:bg-slate-100 ${className}`}
+        className={`h-9 border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 ${className}`}
         title={config.title}
       >
         <MessageSquare size={14} className="mr-1.5" />
