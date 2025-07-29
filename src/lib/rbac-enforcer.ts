@@ -1,4 +1,5 @@
 import { eq } from 'drizzle-orm';
+import { createClerkClient } from '@clerk/nextjs/server';
 
 import { db } from '../../database/client';
 import { mobileTokens } from '../../database/schema';
@@ -28,6 +29,44 @@ export type RBACResult = {
   remaining?: number;
   resetTime?: Date;
 };
+
+// Simple in-memory cache for user tiers (5 minute TTL)
+const tierCache = new Map<string, { tier: UserTier; timestamp: number }>();
+const TIER_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Look up user tier from Clerk for authenticated users with caching
+ */
+async function getUserTierFromClerk(userId: string): Promise<UserTier> {
+  try {
+    // Check cache first
+    const cached = tierCache.get(userId);
+    if (cached && Date.now() - cached.timestamp < TIER_CACHE_TTL) {
+      return cached.tier;
+    }
+
+    if (!process.env.CLERK_SECRET_KEY) {
+      console.warn('CLERK_SECRET_KEY not found, defaulting to basic tier');
+      return 'basic';
+    }
+
+    const clerkClient = createClerkClient({
+      secretKey: process.env.CLERK_SECRET_KEY,
+    });
+
+    const user = await clerkClient.users.getUser(userId);
+    const tier = (user.publicMetadata?.tier as UserTier) || 'basic';
+    
+    // Cache the result
+    tierCache.set(userId, { tier, timestamp: Date.now() });
+    
+    return tier;
+  } catch (error) {
+    console.error('Error fetching user tier from Clerk:', error);
+    // Fallback to basic tier on error to prevent blocking requests
+    return 'basic';
+  }
+}
 
 /**
  * Extract RBAC context from request headers (client-side auth pattern)
@@ -76,12 +115,13 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
       // Valid mobile token
       if (record.userId) {
         // Mobile token linked to authenticated user
-        // Note: We don't have tier info from mobile token, so we default to basic
-        // The tier should be sent via x-user-tier header if needed
+        // FIXED: Look up actual user tier from Clerk instead of defaulting to basic
+        const actualUserTier = await getUserTierFromClerk(record.userId);
+        
         return {
           userId: record.userId,
           guestToken: null,
-          tier: userTier, // Use tier from header if provided
+          tier: actualUserTier, // Use actual user tier from Clerk
           isAuthenticated: true,
         };
       } else {
