@@ -104,6 +104,7 @@ export async function POST(req: NextRequest) {
       redact: ['name_given', 'name_family'],
       diarize: false, // Disable speaker diarization
       paragraphs: true, // Keep paragraphs for better formatting
+      utterances: true, // 🆕 REQUIRED: Enable word-level data with timestamps & confidence
       interim_results: true, // Enable interim results for better real-time processing
       endpointing: 500, // Time in ms to wait before considering utterance complete
     };
@@ -125,7 +126,12 @@ export async function POST(req: NextRequest) {
 
     // NEW: Extract confidence and word-level data for enhanced transcription
     const confidence = alt?.confidence || null;
-    const words = alt?.words || [];
+
+    // 🆕 UPDATED: Extract words from utterances (preferred) or alternatives fallback
+    const utterances = result?.results?.utterances || [];
+    const words = utterances.length > 0
+      ? utterances.flatMap((utterance: any) => utterance.words || [])
+      : (alt?.words || []);
 
     // ENHANCED: Return all data (existing + new fields for enhanced features)
     const apiResponse = {
