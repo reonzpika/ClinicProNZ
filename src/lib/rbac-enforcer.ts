@@ -33,6 +33,29 @@ export type RBACResult = {
 // Simple in-memory cache for user tiers (5 minute TTL)
 const tierCache = new Map<string, { tier: UserTier; timestamp: number }>();
 const TIER_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const MAX_CACHE_SIZE = 1000; // Prevent memory leaks
+
+/**
+ * Clean up expired cache entries to prevent memory leaks
+ */
+function cleanupTierCache() {
+  const now = Date.now();
+  for (const [userId, cached] of tierCache.entries()) {
+    if (now - cached.timestamp > TIER_CACHE_TTL) {
+      tierCache.delete(userId);
+    }
+  }
+  
+  // If cache is still too large, remove oldest entries
+  if (tierCache.size > MAX_CACHE_SIZE) {
+    const entries = Array.from(tierCache.entries());
+    entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
+    const toRemove = entries.slice(0, tierCache.size - MAX_CACHE_SIZE);
+    for (const [userId] of toRemove) {
+      tierCache.delete(userId);
+    }
+  }
+}
 
 /**
  * Look up user tier from Clerk for authenticated users with caching
@@ -54,16 +77,37 @@ async function getUserTierFromClerk(userId: string): Promise<UserTier> {
       secretKey: process.env.CLERK_SECRET_KEY,
     });
 
-    const user = await clerkClient.users.getUser(userId);
+    // Add timeout protection for Clerk API calls
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Clerk API timeout')), 5000) // 5 second timeout
+    );
+
+    const userPromise = clerkClient.users.getUser(userId);
+    const user = await Promise.race([userPromise, timeoutPromise]);
+    
     const tier = (user.publicMetadata?.tier as UserTier) || 'basic';
     
-    // Cache the result
+    // Cache the result and cleanup if needed
     tierCache.set(userId, { tier, timestamp: Date.now() });
+    
+    // Periodically clean up cache (every 100 lookups)
+    if (Math.random() < 0.01) {
+      cleanupTierCache();
+    }
     
     return tier;
   } catch (error) {
-    console.error('Error fetching user tier from Clerk:', error);
-    // Fallback to basic tier on error to prevent blocking requests
+    console.error('Error fetching user tier from Clerk for userId:', userId, error);
+    
+    // If we have a stale cached value, use it as fallback
+    const staleCache = tierCache.get(userId);
+    if (staleCache) {
+      console.warn('Using stale cached tier for userId:', userId, 'tier:', staleCache.tier);
+      return staleCache.tier;
+    }
+    
+    // Ultimate fallback to basic tier to prevent blocking requests
+    console.warn('Falling back to basic tier for userId:', userId);
     return 'basic';
   }
 }
