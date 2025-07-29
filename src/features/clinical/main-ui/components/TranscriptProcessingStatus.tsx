@@ -14,10 +14,9 @@ type TranscriptProcessingStatusProps = {
 export function TranscriptProcessingStatus({
   isLoading,
   structuredTranscriptStatus,
-  inputMode,
 }: TranscriptProcessingStatusProps) {
-  // Don't show anything if not loading or in typed mode
-  if (!isLoading || inputMode === 'typed') {
+  // Show processing status for both audio and typed modes when loading
+  if (!isLoading) {
     return null;
   }
 

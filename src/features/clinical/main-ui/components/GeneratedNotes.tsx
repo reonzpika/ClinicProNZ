@@ -35,7 +35,6 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
     switchToPatientSession,
     consultationNotes,
     getEffectiveGuestToken,
-    structuredTranscript,
   } = useConsultation();
 
   // Local UI state
@@ -50,11 +49,8 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
 
   // Dynamic placeholder text based on processing status
   const getPlaceholderText = () => {
-    if (structuredTranscript.status === 'structuring') {
-      return 'Organising your consultation content...';
-    }
     if (loading) {
-      return 'Generating clinical documentation...';
+      return 'Processing...';
     }
     return 'Clinical documentation will appear here...';
   };
