@@ -1,5 +1,5 @@
-import { eq } from 'drizzle-orm';
 import { createClerkClient } from '@clerk/nextjs/server';
+import { eq } from 'drizzle-orm';
 
 import { db } from '../../database/client';
 import { mobileTokens } from '../../database/schema';
@@ -45,7 +45,7 @@ function cleanupTierCache() {
       tierCache.delete(userId);
     }
   }
-  
+
   // If cache is still too large, remove oldest entries
   if (tierCache.size > MAX_CACHE_SIZE) {
     const entries = Array.from(tierCache.entries());
@@ -79,33 +79,33 @@ async function getUserTierFromClerk(userId: string): Promise<UserTier> {
 
     // Add timeout protection for Clerk API calls
     const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('Clerk API timeout')), 5000) // 5 second timeout
+      setTimeout(() => reject(new Error('Clerk API timeout')), 5000), // 5 second timeout
     );
 
     const userPromise = clerkClient.users.getUser(userId);
     const user = await Promise.race([userPromise, timeoutPromise]);
-    
+
     const tier = (user.publicMetadata?.tier as UserTier) || 'basic';
-    
+
     // Cache the result and cleanup if needed
     tierCache.set(userId, { tier, timestamp: Date.now() });
-    
+
     // Periodically clean up cache (every 100 lookups)
     if (Math.random() < 0.01) {
       cleanupTierCache();
     }
-    
+
     return tier;
   } catch (error) {
     console.error('Error fetching user tier from Clerk for userId:', userId, error);
-    
+
     // If we have a stale cached value, use it as fallback
     const staleCache = tierCache.get(userId);
     if (staleCache) {
       console.warn('Using stale cached tier for userId:', userId, 'tier:', staleCache.tier);
       return staleCache.tier;
     }
-    
+
     // Ultimate fallback to basic tier to prevent blocking requests
     console.warn('Falling back to basic tier for userId:', userId);
     return 'basic';
@@ -161,7 +161,7 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
         // Mobile token linked to authenticated user
         // FIXED: Look up actual user tier from Clerk instead of defaulting to basic
         const actualUserTier = await getUserTierFromClerk(record.userId);
-        
+
         return {
           userId: record.userId,
           guestToken: null,
