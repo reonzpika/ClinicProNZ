@@ -112,7 +112,6 @@ export function TemplateSelector() {
           feature="templates"
           context={`Template: ${selectedTemplate.name} (${selectedTemplate.id}), Type: ${selectedTemplate.type}`}
           variant="minimal"
-          className="opacity-50 hover:opacity-100"
         />
       )}
 

@@ -18,6 +18,7 @@ import UsageDashboard from '@/src/features/clinical/right-sidebar/components/Usa
 import { WorkflowInstructions } from '@/src/features/clinical/right-sidebar/components/WorkflowInstructions';
 import { PatientSessionManager } from '@/src/features/clinical/session-management/components/PatientSessionManager';
 import { Container } from '@/src/shared/components/layout/Container';
+import { FloatingFeedbackButton } from '@/src/shared/components/FloatingFeedbackButton';
 import { Stack } from '@/src/shared/components/layout/Stack';
 import { MobileBlockModal } from '@/src/shared/components/MobileBlockModal';
 import { RateLimitModal } from '@/src/shared/components/RateLimitModal';
@@ -766,6 +767,25 @@ export default function ConsultationPage() {
 
       {/* Mobile Block Modal */}
       <MobileBlockModal isOpen={showMobileBlock} />
+
+      {/* Floating Feedback Button */}
+      <FloatingFeedbackButton
+        currentFeature={
+          generatedNotes && !loading 
+            ? 'notes' 
+            : (transcription.transcript || inputMode === 'audio') 
+              ? 'transcription' 
+              : 'general'
+        }
+        context={`
+          Page: Consultation, 
+          Template: ${templateId || 'none'}, 
+          Input Mode: ${inputMode}, 
+          Has Notes: ${!!generatedNotes}, 
+          Has Transcript: ${!!transcription.transcript},
+          User Tier: ${userTier}
+        `.trim()}
+      />
     </div>
   );
 }

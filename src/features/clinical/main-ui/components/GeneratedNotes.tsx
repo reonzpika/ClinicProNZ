@@ -388,7 +388,6 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
               feature="notes"
               context={`Template: ${templateId}, Notes length: ${displayNotes?.length || 0} chars`}
               variant="minimal"
-              className="opacity-60 hover:opacity-100"
             />
           )}
           <Button

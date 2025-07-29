@@ -117,13 +117,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Transcription failed' }, { status: 500 });
     }
 
-    // Extract transcript, paragraphs, and metadata (no diarization data)
+    // Extract transcript, paragraphs, metadata AND enhanced data
     const alt = result?.results?.channels?.[0]?.alternatives?.[0];
     const transcript = alt?.transcript || '';
     const paragraphs = alt?.paragraphs || [];
     const metadata = result?.metadata || {};
 
-    const apiResponse = { transcript, paragraphs, metadata };
+    // NEW: Extract confidence and word-level data for enhanced transcription
+    const confidence = alt?.confidence || null;
+    const words = alt?.words || [];
+
+    // ENHANCED: Return all data (existing + new fields for enhanced features)
+    const apiResponse = {
+      transcript, // ✅ Existing consumers still work
+      paragraphs, // ✅ Existing consumers still work
+      metadata, // ✅ Existing consumers still work
+      confidence, // 🆕 New field (ignored by existing code)
+      words, // 🆕 New field (ignored by existing code)
+    };
     return NextResponse.json(apiResponse);
   } catch (err: any) {
     console.error('API error:', err);

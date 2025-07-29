@@ -24,6 +24,21 @@ export type ConsultationItem = {
 
 export type InputMode = 'audio' | 'typed';
 
+// 🆕 NEW: Enhanced transcription types for confidence and timestamp features
+export type TranscriptionWord = {
+  word: string;
+  start: number;
+  end: number;
+  confidence: number;
+  punctuated_word: string;
+};
+
+export type TranscriptionSentence = {
+  text: string;
+  start: number;
+  end: number;
+};
+
 export type TranscriptionEntry = {
   id: string;
   text: string;
@@ -62,10 +77,14 @@ export type ConsultationState = {
   status: 'idle' | 'recording' | 'processing' | 'completed';
   inputMode: InputMode;
   transcription: {
-    transcript: string;
-    diarizedTranscript?: string;
-    utterances?: any[];
-    isLive: boolean;
+    transcript: string; // ✅ Existing
+    diarizedTranscript?: string; // ✅ Existing
+    utterances?: any[]; // ✅ Existing
+    isLive: boolean; // ✅ Existing
+    // 🆕 NEW optional fields for enhanced transcription features
+    confidence?: number;
+    words?: TranscriptionWord[];
+    paragraphs?: any;
   };
   // Structured transcript for enhanced note generation
   structuredTranscript: {
@@ -191,7 +210,9 @@ const ConsultationContext = createContext<
     setTemplateId: (id: string) => void;
     setInputMode: (mode: InputMode) => void;
     setTranscription: (transcript: string, isLive: boolean, diarizedTranscript?: string, utterances?: any[]) => void;
+    setTranscriptionEnhanced: (transcript: string, isLive: boolean, diarizedTranscript?: string, utterances?: any[], confidence?: number, words?: TranscriptionWord[], paragraphs?: any) => void;
     appendTranscription: (newTranscript: string, isLive: boolean, source?: 'desktop' | 'mobile', deviceId?: string, diarizedTranscript?: string, utterances?: any[]) => Promise<void>;
+    appendTranscriptionEnhanced: (newTranscript: string, isLive: boolean, source?: 'desktop' | 'mobile', deviceId?: string, diarizedTranscript?: string, utterances?: any[], confidence?: number, words?: TranscriptionWord[], paragraphs?: any) => Promise<void>;
     setTypedInput: (input: string) => void;
     setGeneratedNotes: (notes: string | null) => void;
     setError: (error: string | null) => void;
@@ -488,6 +509,31 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     }));
   }, []);
 
+  // 🆕 NEW: Enhanced setTranscription with confidence and word-level data
+  const setTranscriptionEnhanced = useCallback((
+    transcript: string,
+    isLive: boolean,
+    diarizedTranscript?: string,
+    utterances?: any[],
+    confidence?: number,
+    words?: TranscriptionWord[],
+    paragraphs?: any,
+  ) => {
+    setState(prev => ({
+      ...prev,
+      transcription: {
+        transcript,
+        diarizedTranscript,
+        utterances: utterances || [],
+        isLive,
+        // Only add enhanced fields if provided
+        ...(confidence !== undefined && { confidence }),
+        ...(words && words.length > 0 && { words }),
+        ...(paragraphs && { paragraphs }),
+      },
+    }));
+  }, []);
+
   const appendTranscription = useCallback(async (newTranscript: string, isLive: boolean, source: 'desktop' | 'mobile' = 'desktop', deviceId?: string, diarizedTranscript?: string, utterances?: any[]) => {
     const sessionId = state.currentPatientSessionId;
 
@@ -510,6 +556,89 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     }));
 
     // Save to database if we have a session
+    if (sessionId && newTranscript.trim()) {
+      try {
+        const transcriptionEntry: TranscriptionEntry = {
+          id: Math.random().toString(36).substr(2, 9),
+          text: newTranscript.trim(),
+          timestamp: new Date().toISOString(),
+          source,
+          deviceId,
+        };
+
+        // Get current session's transcriptions
+        const currentSession = state.patientSessions.find(s => s.id === sessionId);
+        const updatedTranscriptions = [
+          ...(currentSession?.transcriptions || []),
+          transcriptionEntry,
+        ];
+
+        // Update session in database
+        await fetch('/api/patient-sessions', {
+          method: 'PUT',
+          headers: createAuthHeadersWithGuest(userId, userTier, state.guestToken),
+          body: JSON.stringify({
+            sessionId,
+            transcriptions: updatedTranscriptions,
+          }),
+        });
+
+        // Update local state
+        setState(prev => ({
+          ...prev,
+          patientSessions: prev.patientSessions.map(session =>
+            session.id === sessionId
+              ? { ...session, transcriptions: updatedTranscriptions }
+              : session,
+          ),
+        }));
+      } catch (error) {
+        console.error('Failed to save transcription:', error);
+      }
+    }
+  }, [state.currentPatientSessionId, state.patientSessions, userId, userTier, state.guestToken]);
+
+  // 🆕 NEW: Enhanced appendTranscription with confidence and word-level data
+  const appendTranscriptionEnhanced = useCallback(async (
+    newTranscript: string,
+    isLive: boolean,
+    source: 'desktop' | 'mobile' = 'desktop',
+    deviceId?: string,
+    diarizedTranscript?: string,
+    utterances?: any[],
+    confidence?: number,
+    words?: TranscriptionWord[],
+    paragraphs?: any,
+  ) => {
+    const sessionId = state.currentPatientSessionId;
+
+    setState(prev => ({
+      ...prev,
+      transcription: {
+        // ✅ Existing concatenation logic
+        transcript: prev.transcription.transcript
+          ? `${prev.transcription.transcript} ${newTranscript}`.trim()
+          : newTranscript.trim(),
+        diarizedTranscript: diarizedTranscript
+          ? (prev.transcription.diarizedTranscript
+              ? `${prev.transcription.diarizedTranscript}\n\n${diarizedTranscript}`.trim()
+              : diarizedTranscript.trim())
+          : prev.transcription.diarizedTranscript,
+        utterances: utterances !== undefined
+          ? [...(prev.transcription.utterances || []), ...utterances]
+          : (prev.transcription.utterances || []),
+        isLive,
+
+        // 🆕 Enhanced data handling
+        confidence: confidence !== undefined ? confidence : prev.transcription.confidence,
+        words: words && words.length > 0
+          ? [...(prev.transcription.words || []), ...words]
+          : prev.transcription.words,
+        paragraphs: paragraphs || prev.transcription.paragraphs,
+      },
+    }));
+
+    // ✅ Rest of database saving logic unchanged (call original implementation)
     if (sessionId && newTranscript.trim()) {
       try {
         const transcriptionEntry: TranscriptionEntry = {
@@ -1282,7 +1411,9 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setTemplateId,
     setInputMode,
     setTranscription,
+    setTranscriptionEnhanced,
     appendTranscription,
+    appendTranscriptionEnhanced,
     setTypedInput,
     setGeneratedNotes,
     setError,

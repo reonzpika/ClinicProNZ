@@ -1,6 +1,7 @@
 import './globals.css';
 
 import { ClerkProvider } from '@clerk/nextjs';
+import { Analytics } from '@vercel/analytics/next';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 
@@ -33,6 +34,7 @@ export default async function RootLayout({
             <body className={inter.className}>
               {/* <StagewiseToolbar /> */}
               <AppLayoutWrapper>{children}</AppLayoutWrapper>
+              <Analytics />
             </body>
           </html>
         </ConsultationProvider>

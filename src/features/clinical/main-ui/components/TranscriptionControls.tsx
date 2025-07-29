@@ -19,6 +19,7 @@ import { MobileRecordingQRV2 } from '../../mobile/components/MobileRecordingQRV2
 import { ConsentModal } from '../../session-management/components/ConsentModal';
 import { useTranscription } from '../hooks/useTranscription';
 import { ConsultationInputHeader } from './ConsultationInputHeader';
+import { EnhancedTranscriptionDisplay } from './EnhancedTranscriptionDisplay';
 
 export function TranscriptionControls({
   collapsed,
@@ -32,6 +33,10 @@ export function TranscriptionControls({
   const { isSignedIn, userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
+
+  // 🆕 FEATURE FLAG: Enhanced transcription for admin tier only
+  const showEnhancedTranscription = userTier === 'admin';
+
   const {
     error: contextError,
     consentObtained,
@@ -535,38 +540,56 @@ export function TranscriptionControls({
                   feature="transcription"
                   context={`Transcript length: ${transcript.length} chars, Recording time: ${recordingStartTime ? Math.round((Date.now() - recordingStartTime) / 1000) : 0}s`}
                   variant="minimal"
-                  className="opacity-60 hover:opacity-100"
                 />
               </div>
             )}
 
-            {/* Show text box only when there's transcription or currently recording */}
+            {/* 🆕 UPDATED: Transcription display with tier-based feature flag */}
             {(transcript || isRecording)
               ? (
-                  <div className="max-h-64 overflow-y-auto rounded-md border bg-white p-2">
-                    {!isRecording
-                      ? (
-                          <textarea
-                            value={transcript}
-                            onChange={(_e) => {
-                              // Allow editing after recording stops
-                              // This would need to be connected to a context method to update transcript
-                            }}
-                            className="w-full resize-none border-none text-sm leading-relaxed focus:outline-none"
-                            placeholder="Transcription will appear here..."
-                            rows={Math.min(Math.max(transcript.split('\n').length || 3, 3), 12)}
-                          />
-                        )
-                      : (
-                          <div>
-                            <p className="whitespace-pre-wrap text-sm leading-relaxed">{transcript || 'Listening for speech...'}</p>
-                            <span className="mt-1 inline-block h-3 w-1 animate-pulse bg-blue-500" />
-                          </div>
-                        )}
-                  </div>
+                  showEnhancedTranscription
+                    ? (
+                        <EnhancedTranscriptionDisplay
+                          transcript={transcript}
+                          confidence={contextTranscription.confidence}
+                          words={contextTranscription.words}
+                          paragraphs={contextTranscription.paragraphs}
+                          isRecording={isRecording}
+                          onEdit={(newText) => {
+                            // TODO: Implement transcript editing
+                            void newText;
+                          }}
+                        />
+                      )
+                    : (
+                        // ✅ EXACT EXISTING CODE - unchanged for non-admin users
+                        <div className="max-h-64 overflow-y-auto rounded-md border bg-white p-2">
+                          {!isRecording
+                            ? (
+                                <textarea
+                                  value={transcript}
+                                  onChange={(_e) => {
+                                    // Allow editing after recording stops
+                                    // This would need to be connected to a context method to update transcript
+                                  }}
+                                  className="w-full resize-none border-none text-sm leading-relaxed focus:outline-none"
+                                  placeholder="Transcription will appear here..."
+                                  rows={Math.min(Math.max(transcript.split('\n').length || 3, 3), 12)}
+                                />
+                              )
+                            : (
+                                <div>
+                                  <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                                    {transcript || 'Listening for speech...'}
+                                  </p>
+                                  <span className="mt-1 inline-block h-3 w-1 animate-pulse bg-blue-500" />
+                                </div>
+                              )}
+                        </div>
+                      )
                 )
               : (
-                /* Show message when no transcription and not recording */
+            // ✅ UNCHANGED: Empty state
                   <div className="rounded-md border border-slate-200 bg-slate-50 p-2">
                     <p className="text-sm text-slate-500">Transcription will appear here</p>
                   </div>

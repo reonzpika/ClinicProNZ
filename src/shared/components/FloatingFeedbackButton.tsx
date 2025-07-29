@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { MessageSquare } from 'lucide-react';
 
@@ -6,20 +8,16 @@ import { submitFeatureRequest } from '@/src/features/marketing/roadmap/roadmap-s
 
 import { Button } from './ui/button';
 
-type FeatureFeedbackButtonProps = {
-  feature: 'transcription' | 'notes' | 'templates' | 'performance' | 'general';
+type FloatingFeedbackButtonProps = {
+  currentFeature?: 'transcription' | 'notes' | 'templates' | 'performance' | 'general';
   context?: string;
-  variant?: 'minimal' | 'text';
   className?: string;
-  disabled?: boolean;
 };
 
-export const FeatureFeedbackButton: React.FC<FeatureFeedbackButtonProps> = ({
-  feature,
+export const FloatingFeedbackButton: React.FC<FloatingFeedbackButtonProps> = ({
+  currentFeature = 'general',
   context = '',
-  variant = 'minimal',
   className = '',
-  disabled = false,
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -45,9 +43,9 @@ export const FeatureFeedbackButton: React.FC<FeatureFeedbackButtonProps> = ({
     },
     general: {
       title: 'General feedback',
-      prompt: 'Share your feedback',
+      prompt: 'Share your feedback about ClinicPro',
     },
-  }[feature];
+  }[currentFeature];
 
   const handleSubmit = async (data: { idea: string; details?: string; email?: string }) => {
     setLoading(true);
@@ -58,7 +56,7 @@ export const FeatureFeedbackButton: React.FC<FeatureFeedbackButtonProps> = ({
       // Add feature category and context to the submission
       const enhancedData = {
         ...data,
-        idea: `[${feature.toUpperCase()}] ${data.idea}`,
+        idea: `[${currentFeature.toUpperCase()}] ${data.idea}`,
         details: context ? `Context: ${context}\n\n${data.details || ''}` : data.details,
       };
 
@@ -77,45 +75,17 @@ export const FeatureFeedbackButton: React.FC<FeatureFeedbackButtonProps> = ({
     }
   };
 
-  if (variant === 'minimal') {
-    return (
-      <>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowModal(true)}
-          disabled={disabled}
-          className={`h-7 px-2 text-xs text-slate-500 hover:text-slate-700 hover:bg-slate-100 ${className}`}
-          title={config.title}
-        >
-          <MessageSquare size={12} className="mr-1" />
-          Feedback
-        </Button>
-        <FeedbackModal
-          open={showModal}
-          onClose={() => setShowModal(false)}
-          onSubmit={handleSubmit}
-          loading={loading}
-          error={error}
-          success={success}
-        />
-      </>
-    );
-  }
-
   return (
     <>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => setShowModal(true)}
-        disabled={disabled}
-        className={`text-xs text-slate-500 hover:text-slate-700 hover:bg-slate-100 ${className}`}
-        title={config.title}
-      >
-        <MessageSquare size={14} className="mr-1.5" />
-        Feedback
-      </Button>
+      <div className={`fixed bottom-6 right-6 z-40 ${className}`}>
+        <Button
+          onClick={() => setShowModal(true)}
+          className="h-12 w-12 rounded-full bg-blue-600 p-0 text-white shadow-lg hover:bg-blue-700 hover:shadow-xl transition-all duration-200"
+          title={config.title}
+        >
+          <MessageSquare size={20} />
+        </Button>
+      </div>
       <FeedbackModal
         open={showModal}
         onClose={() => setShowModal(false)}
@@ -126,4 +96,4 @@ export const FeatureFeedbackButton: React.FC<FeatureFeedbackButtonProps> = ({
       />
     </>
   );
-};
+}; 

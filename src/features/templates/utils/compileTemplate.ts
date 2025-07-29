@@ -74,6 +74,7 @@ function substitutePlaceholders(
     '- Uncertain: <brief description>',
     '',
     'Use concise, clinical NZ-English phrasing.',
+    'Use plain text. No markdown, no bolding or italicising.',
     'Include social context if relevant to interpretation.',
     'Flag ambiguous statements with [uncertain].',
     '',
