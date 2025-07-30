@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
 import { MessageSquare } from 'lucide-react';
+import React, { useState } from 'react';
 
 import { FeedbackModal } from '@/src/features/marketing/roadmap/components/FeedbackModal';
 import { submitFeatureRequest } from '@/src/features/marketing/roadmap/roadmap-service';
@@ -80,7 +80,7 @@ export const FloatingFeedbackButton: React.FC<FloatingFeedbackButtonProps> = ({
       <div className={`fixed bottom-6 right-6 z-40 ${className}`}>
         <Button
           onClick={() => setShowModal(true)}
-          className="h-12 w-12 rounded-full bg-blue-600 p-0 text-white shadow-lg hover:bg-blue-700 hover:shadow-xl transition-all duration-200"
+          className="size-12 rounded-full bg-blue-600 p-0 text-white shadow-lg transition-all duration-200 hover:bg-blue-700 hover:shadow-xl"
           title={config.title}
         >
           <MessageSquare size={20} />
@@ -96,4 +96,4 @@ export const FloatingFeedbackButton: React.FC<FloatingFeedbackButtonProps> = ({
       />
     </>
   );
-}; 
+};

@@ -133,6 +133,23 @@ export async function POST(req: NextRequest) {
       ? utterances.flatMap((utterance: any) => utterance.words || [])
       : (alt?.words || []);
 
+    // 🐛 DEBUG: Log what we got from Deepgram
+    console.log('🔍 Deepgram API Debug:', {
+      transcriptLength: transcript.length,
+      confidence,
+      utterancesCount: utterances.length,
+      wordsCount: words.length,
+      paragraphsCount: Array.isArray(paragraphs) ? paragraphs.length : 0,
+      hasUtterances: utterances.length > 0,
+      sampleWords: words.slice(0, 3), // First 3 words for debugging
+      rawStructure: {
+        hasResults: !!result?.results,
+        hasChannels: !!result?.results?.channels?.[0],
+        hasAlternatives: !!alt,
+        hasUtterancesArray: !!result?.results?.utterances,
+      },
+    });
+
     // ENHANCED: Return all data (existing + new fields for enhanced features)
     const apiResponse = {
       transcript, // ✅ Existing consumers still work
@@ -141,6 +158,15 @@ export async function POST(req: NextRequest) {
       confidence, // 🆕 New field (ignored by existing code)
       words, // 🆕 New field (ignored by existing code)
     };
+
+    // 🐛 DEBUG: Log what we're returning
+    console.log('📤 API Response Debug:', {
+      hasTranscript: !!apiResponse.transcript,
+      hasConfidence: apiResponse.confidence !== null,
+      hasWords: apiResponse.words?.length > 0,
+      hasParagraphs: !!apiResponse.paragraphs,
+    });
+
     return NextResponse.json(apiResponse);
   } catch (err: any) {
     console.error('API error:', err);

@@ -76,6 +76,22 @@ export function TranscriptionControls({
   // Use regular transcript since diarization is disabled
   const transcript = contextTranscription.transcript;
 
+  // 🐛 DEBUG: Log tier and enhanced transcription status
+  void console.log('🔍 TranscriptionControls Debug:', {
+    userTier,
+    showEnhancedTranscription,
+    isSignedIn,
+    userId,
+    hasTranscript: !!transcript,
+    transcriptLength: transcript?.length || 0,
+    contextData: {
+      confidence: contextTranscription.confidence,
+      wordsCount: contextTranscription.words?.length || 0,
+      paragraphs: contextTranscription.paragraphs,
+      hasEnhancedData: (contextTranscription.words?.length || 0) > 0,
+    },
+  });
+
   // For MVP, simplify to just check connection status
   const hasMobileDevices = mobileV2.connectionStatus === 'connected';
 

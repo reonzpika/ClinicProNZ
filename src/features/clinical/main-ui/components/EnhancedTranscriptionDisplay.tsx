@@ -39,6 +39,23 @@ export function EnhancedTranscriptionDisplay({
   // Feature detection
   const hasEnhancedData = words.length > 0 && sentences.length > 0;
 
+  // 🐛 DEBUG: Log enhanced component decision
+  void console.log('✨ EnhancedTranscriptionDisplay Debug:', {
+    transcript: `${transcript?.slice(0, 50)}...`,
+    confidence,
+    wordsLength: words.length,
+    sentencesLength: sentences.length,
+    hasEnhancedData,
+    showEnhanced,
+    isRecording,
+    willShowEnhanced: hasEnhancedData && showEnhanced && !isRecording,
+    fallbackReason: !hasEnhancedData
+      ? 'No enhanced data'
+      : !showEnhanced
+          ? 'Enhanced disabled'
+          : isRecording ? 'Currently recording' : 'Should show enhanced',
+  });
+
   // Simple fallback (exactly like current implementation)
   if (!hasEnhancedData || !showEnhanced || isRecording) {
     return (
