@@ -97,7 +97,7 @@ function MobilePageContent() {
   }, []);
 
   // Simple Ably for real-time sync
-  const { isConnected, currentSessionId, sendTranscript, fetchCurrentSession } = useSimpleAbly({
+  const { isConnected, currentSessionId, sendTranscript, sendRecordingStatus, fetchCurrentSession } = useSimpleAbly({
     tokenId: tokenState.isValid ? tokenState.token : null,
     onTranscriptReceived: (_transcript: string, _sessionId: string) => {
       // Transcript received unexpectedly on mobile
@@ -261,17 +261,43 @@ function MobilePageContent() {
     }
   }, [isRecording, wakeLockSupported, requestWakeLock, releaseWakeLock]);
 
+  // 🛡️ PHASE 1 FIX: Retry mechanism for recording status
+  const sendRecordingStatusWithRetry = useCallback(async (isRecording: boolean) => {
+    const maxRetries = 2;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      const success = sendRecordingStatus(isRecording);
+      if (success) {
+        return true;
+      }
+
+      if (attempt < maxRetries) {
+        // Wait before retry (exponential backoff: 1s, 2s)
+        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+        void console.log(`📡 Retrying recording status send (attempt ${attempt + 2})`);
+      }
+    }
+
+    // Final fallback: log for debugging
+    void console.warn('📡 Failed to send recording status after retries:', { isRecording });
+    return false;
+  }, [sendRecordingStatus]);
+
   const handleStartRecording = useCallback(async () => {
     if (mobileState === 'connected') {
       await startRecording();
+      // 🛡️ Broadcast recording start to desktop with retry
+      await sendRecordingStatusWithRetry(true);
     }
-  }, [mobileState, startRecording]);
+  }, [mobileState, startRecording, sendRecordingStatusWithRetry]);
 
   const handleStopRecording = useCallback(async () => {
     if (isRecording) {
       await stopRecording();
+      // 🛡️ Broadcast recording stop to desktop with retry
+      await sendRecordingStatusWithRetry(false);
     }
-  }, [isRecording, stopRecording]);
+  }, [isRecording, stopRecording, sendRecordingStatusWithRetry]);
 
   const getStateInfo = () => {
     switch (mobileState) {

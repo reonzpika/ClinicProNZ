@@ -15,7 +15,7 @@ export type EnhancedTranscriptionData = {
 };
 
 type SimpleAblyMessage = {
-  type: 'transcription' | 'patient_updated';
+  type: 'transcription' | 'patient_updated' | 'recording_status';
   transcript?: string;
   sessionId?: string;
   patientName?: string;
@@ -25,12 +25,15 @@ type SimpleAblyMessage = {
   confidence?: number;
   words?: any[];
   paragraphs?: any;
+  // 🆕 Recording status fields
+  isRecording?: boolean;
 };
 
 export type UseSimpleAblyOptions = {
   tokenId: string | null;
   onTranscriptReceived?: (transcript: string, sessionId: string, enhancedData?: EnhancedTranscriptionData) => void;
   onSessionChanged?: (sessionId: string, patientName: string) => void;
+  onRecordingStatusChanged?: (isRecording: boolean, sessionId: string) => void; // 🆕 Recording status callback
   onError?: (error: string) => void;
   onConnectionStatusChanged?: (status: 'disconnected' | 'connecting' | 'connected' | 'error') => void; // NEW: Connection status bridge
   isMobile?: boolean; // NEW: Device type detection
@@ -40,6 +43,7 @@ export const useSimpleAbly = ({
   tokenId,
   onTranscriptReceived,
   onSessionChanged,
+  onRecordingStatusChanged,
   onError,
   onConnectionStatusChanged,
   isMobile = false, // Default to false (desktop)
@@ -55,6 +59,7 @@ export const useSimpleAbly = ({
   const callbacksRef = useRef({
     onTranscriptReceived,
     onSessionChanged,
+    onRecordingStatusChanged,
     onError,
   });
 
@@ -63,9 +68,10 @@ export const useSimpleAbly = ({
     callbacksRef.current = {
       onTranscriptReceived,
       onSessionChanged,
+      onRecordingStatusChanged,
       onError,
     };
-  }, [onTranscriptReceived, onSessionChanged, onError]);
+  }, [onTranscriptReceived, onSessionChanged, onRecordingStatusChanged, onError]);
 
   // Connect when tokenId is provided
   useEffect(() => {
@@ -156,6 +162,24 @@ export const useSimpleAbly = ({
                 // Desktop shouldn't process its own broadcasts
                 if (isMobile) {
                   callbacksRef.current.onSessionChanged?.(data.sessionId, data.patientName);
+                }
+              }
+              break;
+
+            case 'recording_status':
+              if (data.sessionId && data.isRecording !== undefined) {
+                // 🐛 DEBUG: Log recording status received
+                void console.log('📼 Recording Status Received:', {
+                  isRecording: data.isRecording,
+                  sessionId: data.sessionId,
+                  isMobile,
+                  timestamp: new Date().toISOString(),
+                });
+
+                // Only desktop should receive recording status updates
+                // Mobile shouldn't process its own broadcasts
+                if (!isMobile) {
+                  callbacksRef.current.onRecordingStatusChanged?.(data.isRecording, data.sessionId);
                 }
               }
               break;
@@ -271,6 +295,33 @@ export const useSimpleAbly = ({
     }
   }, [currentSessionId]);
 
+  // Send recording status (mobile to desktop)
+  const sendRecordingStatus = useCallback((isRecording: boolean) => {
+    if (!channelRef.current || !currentSessionId) {
+      return false;
+    }
+
+    try {
+      // 🐛 DEBUG: Log recording status being sent
+      void console.log('📡 Sending Recording Status:', {
+        isRecording,
+        sessionId: currentSessionId,
+        timestamp: new Date().toISOString(),
+      });
+
+      channelRef.current.publish('recording_status', {
+        type: 'recording_status',
+        isRecording,
+        sessionId: currentSessionId,
+        timestamp: Date.now(),
+      });
+      return true;
+    } catch (error: any) {
+      callbacksRef.current.onError?.(`Failed to send recording status: ${error.message}`);
+      return false;
+    }
+  }, [currentSessionId]);
+
   // Update session (desktop to mobile)
   const updateSession = useCallback((sessionId: string, patientName: string) => {
     if (!channelRef.current) {
@@ -352,6 +403,7 @@ export const useSimpleAbly = ({
     isConnected,
     currentSessionId,
     sendTranscript,
+    sendRecordingStatus, // 🆕 Export recording status function
     updateSession,
     fetchCurrentSession, // Expose for manual refresh
   };

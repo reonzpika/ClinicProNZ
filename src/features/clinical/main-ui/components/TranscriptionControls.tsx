@@ -25,10 +25,12 @@ export function TranscriptionControls({
   collapsed,
   onExpand,
   isMinimized,
+  mobileIsRecording = false,
 }: {
   collapsed?: boolean;
   onExpand?: () => void;
   isMinimized?: boolean;
+  mobileIsRecording?: boolean;
 }) {
   const { isSignedIn, userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
@@ -283,6 +285,12 @@ export function TranscriptionControls({
               <>
                 <span className="inline-block size-2 animate-pulse rounded-full bg-red-500" />
                 <span className="text-xs text-red-600">Recording...</span>
+              </>
+            )}
+            {mobileIsRecording && !isRecording && (
+              <>
+                <span className="inline-block size-2 animate-pulse rounded-full bg-blue-500" />
+                <span className="animate-pulse text-xs text-blue-600">Mobile device recording...</span>
               </>
             )}
             {transcript && !isRecording && (

@@ -12,7 +12,7 @@ export const Footer = () => {
               {' '}
               {new Date().getFullYear()}
               {' '}
-              ConsultAI NZ. All rights reserved.
+              ClinicPro. All rights reserved.
             </p>
           </div>
           <div className="flex space-x-4">

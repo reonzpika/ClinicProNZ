@@ -81,6 +81,9 @@ export default function ConsultationPage() {
   const [showUpgradeNotification, setShowUpgradeNotification] = useState(false);
   const [upgradeLoading, setUpgradeLoading] = useState(false);
 
+  // Mobile recording status
+  const [mobileIsRecording, setMobileIsRecording] = useState(false);
+
   useEffect(() => {
     // Check URL parameters for upgrade redirect
     const urlParams = new URLSearchParams(window.location.search);
@@ -261,11 +264,36 @@ export default function ConsultationPage() {
     setError(error);
   }, []);
 
+  // Handle mobile recording status updates
+  const handleRecordingStatusChanged = useCallback((isRecording: boolean, sessionId: string) => {
+    // 🐛 DEBUG: Log recording status change
+    void console.log('📼 Desktop Recording Status Changed:', {
+      isRecording,
+      sessionId,
+      currentSession: currentPatientSessionId,
+      willUpdate: sessionId === currentPatientSessionId,
+    });
+
+    // Only process for current session
+    if (sessionId === currentPatientSessionId) {
+      setMobileIsRecording(isRecording);
+    }
+  }, [currentPatientSessionId]);
+
+  // 🛡️ PHASE 1 FIX: Reset mobile recording status when connection drops
+  useEffect(() => {
+    if (mobileV2.connectionStatus === 'disconnected' && mobileIsRecording) {
+      setMobileIsRecording(false);
+      void console.log('📱 Mobile disconnected - clearing recording status');
+    }
+  }, [mobileV2.connectionStatus, mobileIsRecording]);
+
   // Simple Ably sync implementation using single channel approach
   // ALWAYS initialize to ensure updateSession availability, but only connect with valid token
   const { updateSession } = useSimpleAbly({
     tokenId: mobileV2?.isEnabled && mobileV2?.token ? mobileV2.token : null,
     onTranscriptReceived: handleTranscriptReceived,
+    onRecordingStatusChanged: handleRecordingStatusChanged, // 🆕 Recording status callback
     onError: handleError,
     onConnectionStatusChanged: setMobileV2ConnectionStatus, // NEW: Bridge connection status to context
     isMobile: false, // FIXED: Identify as desktop to prevent self-messaging
@@ -545,6 +573,7 @@ export default function ConsultationPage() {
                                       collapsed={false}
                                       onExpand={() => setIsNoteFocused(false)}
                                       isMinimized
+                                      mobileIsRecording={mobileIsRecording}
                                     />
                                   )
                                 : (
@@ -608,6 +637,7 @@ export default function ConsultationPage() {
                                           collapsed={isNoteFocused}
                                           onExpand={() => setIsNoteFocused(false)}
                                           isMinimized={false}
+                                          mobileIsRecording={mobileIsRecording}
                                         />
                                       )
                                     : (
@@ -687,6 +717,7 @@ export default function ConsultationPage() {
                                           collapsed={false}
                                           onExpand={() => setIsNoteFocused(false)}
                                           isMinimized
+                                          mobileIsRecording={mobileIsRecording}
                                         />
                                       )
                                     : (
@@ -720,6 +751,7 @@ export default function ConsultationPage() {
                                         collapsed={isNoteFocused}
                                         onExpand={() => setIsNoteFocused(false)}
                                         isMinimized={false}
+                                        mobileIsRecording={mobileIsRecording}
                                       />
                                     )
                                   : (
