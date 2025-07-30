@@ -64,7 +64,7 @@ You are given two sections:
 
   * Examples: assessments, clinical impressions, reasoning, plans, instructions, test arrangements.
 * **Do not label** if unsure who said it — better to leave it unlabelled than risk incorrect attribution.
-* For lines from ADDITIONAL NOTES, always assume they are written by the GP and label with `[GP]`.
+* For lines from ADDITIONAL NOTES, always assume they are written by the GP and label with \`[GP]\`.
 
 #### 🧠 Clinical Fidelity
 
