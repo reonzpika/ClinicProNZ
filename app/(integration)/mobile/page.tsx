@@ -142,11 +142,28 @@ function MobilePageContent() {
           return;
         }
 
-        const { transcript } = await response.json();
+        const data = await response.json();
+        const { transcript } = data;
 
-        // Send transcript via simple Ably
+        // 🆕 Extract enhanced data from Deepgram API response
+        const enhancedData = {
+          confidence: data.confidence,
+          words: data.words || [],
+          paragraphs: data.paragraphs,
+        };
+
+        // 🐛 DEBUG: Log mobile enhanced data extraction
+        void console.log('📱 Mobile Enhanced Data Extraction:', {
+          transcript: `${transcript?.slice(0, 50)}...`,
+          confidence: enhancedData.confidence,
+          wordsCount: enhancedData.words.length,
+          sampleWords: enhancedData.words.slice(0, 3),
+          hasEnhancedData: enhancedData.confidence !== undefined || enhancedData.words.length > 0,
+        });
+
+        // Send transcript with enhanced data via Ably
         if (transcript?.trim()) {
-          const success = sendTranscript(transcript.trim());
+          const success = sendTranscript(transcript.trim(), enhancedData);
           if (!success) {
             setTokenState(prev => ({ ...prev, error: 'Failed to send transcription to desktop' }));
           }

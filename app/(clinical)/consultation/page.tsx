@@ -39,6 +39,7 @@ export default function ConsultationPage() {
     typedInput,
     transcription,
     appendTranscription,
+    appendTranscriptionEnhanced,
     generatedNotes,
     setGeneratedNotes,
     consultationNotes,
@@ -225,12 +226,36 @@ export default function ConsultationPage() {
   }, [generatedNotes, loading, isDocumentationMode]);
 
   // Memoize callbacks to prevent re-renders
-  const handleTranscriptReceived = useCallback((transcript: string, sessionId: string) => {
+  const handleTranscriptReceived = useCallback((transcript: string, sessionId: string, enhancedData?: any) => {
     // Only process transcripts for the current session
     if (sessionId === currentPatientSessionId) {
-      appendTranscription(transcript, true, 'mobile');
+      // 🐛 DEBUG: Log enhanced data received in desktop callback
+      void console.log('🖥️ Desktop Callback Debug:', {
+        transcript: `${transcript?.slice(0, 50)}...`,
+        confidence: enhancedData?.confidence,
+        wordsCount: enhancedData?.words?.length || 0,
+        hasEnhancedData: !!enhancedData,
+      });
+
+      // 🆕 Use enhanced appendTranscription when enhanced data is available
+      if (enhancedData && (enhancedData.confidence !== undefined || (enhancedData.words?.length || 0) > 0)) {
+        appendTranscriptionEnhanced(
+          transcript,
+          true,
+          'mobile',
+          undefined, // deviceId
+          undefined, // diarizedTranscript
+          undefined, // utterances
+          enhancedData.confidence,
+          enhancedData.words,
+          enhancedData.paragraphs,
+        );
+      } else {
+        // Fallback to regular appendTranscription
+        appendTranscription(transcript, true, 'mobile');
+      }
     }
-  }, [currentPatientSessionId, appendTranscription]);
+  }, [currentPatientSessionId, appendTranscription, appendTranscriptionEnhanced]);
 
   const handleError = useCallback((error: string) => {
     setError(error);

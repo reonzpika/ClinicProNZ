@@ -1,3 +1,4 @@
+export * from './contact_messages';
 export * from './email_captures';
 export * from './feature_requests';
 export * from './features';

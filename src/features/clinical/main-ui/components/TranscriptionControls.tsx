@@ -2,7 +2,7 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { ChevronDown, ChevronUp, Settings, Smartphone } from 'lucide-react';
+import { ChevronDown, ChevronUp, Info, Mic, Settings, Smartphone } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import { FeatureFeedbackButton } from '@/src/shared/components/FeatureFeedbackButton';
@@ -43,7 +43,8 @@ export function TranscriptionControls({
     setConsentObtained,
     mobileV2 = { isEnabled: false, token: null, connectionStatus: 'disconnected' },
     transcription: contextTranscription,
-
+    inputMode,
+    setInputMode,
     getEffectiveGuestToken,
   } = useConsultation();
   const [showConsentModal, setShowConsentModal] = useState(false);
@@ -272,18 +273,50 @@ export function TranscriptionControls({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <ConsultationInputHeader
-          mode="audio"
-          isRecording={isRecording}
-          status={transcript && !isRecording ? 'Ready for review' : undefined}
-          onHelpToggle={() => setShowHelp(!showHelp)}
-          showHelp={showHelp}
-        />
-        <FeatureFeedbackButton
-          feature="transcription"
-          context={`Transcript length: ${transcript?.length || 0} chars, Recording time: ${recordingStartTime ? Math.round((Date.now() - recordingStartTime) / 1000) : 0}s, Recording state: ${isRecording ? 'active' : 'stopped'}`}
-          variant="minimal"
-        />
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <Mic size={16} className="text-slate-600" />
+            <h3 className="text-sm font-medium text-slate-700">Consultation Note</h3>
+          </div>
+          <div className="flex items-center gap-1">
+            {isRecording && (
+              <>
+                <span className="inline-block size-2 animate-pulse rounded-full bg-red-500" />
+                <span className="text-xs text-red-600">Recording...</span>
+              </>
+            )}
+            {transcript && !isRecording && (
+              <span className="text-xs text-slate-600">Ready for review</span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              const newInputMode = inputMode === 'audio' ? 'typed' : 'audio';
+              setInputMode(newInputMode);
+            }}
+            className="cursor-pointer text-xs font-medium text-green-600 hover:text-green-800 hover:underline"
+            title={`Click to switch to ${inputMode === 'audio' ? 'typed' : 'audio'} mode`}
+          >
+            {inputMode === 'audio' ? 'Audio' : 'Typed'}
+          </button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowHelp(!showHelp)}
+            className="size-6 p-0 text-slate-500 hover:text-slate-700"
+            title="Show help"
+          >
+            <Info size={14} />
+          </Button>
+          <FeatureFeedbackButton
+            feature="transcription"
+            context={`Transcript length: ${transcript?.length || 0} chars, Recording time: ${recordingStartTime ? Math.round((Date.now() - recordingStartTime) / 1000) : 0}s, Recording state: ${isRecording ? 'active' : 'stopped'}`}
+            variant="minimal"
+          />
+        </div>
       </div>
 
       <div>

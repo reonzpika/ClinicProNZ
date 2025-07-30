@@ -71,6 +71,13 @@
       "when": 1752128591520,
       "tag": "0009_calm_annihilus",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1753856714415,
+      "tag": "0010_regular_inertia",
+      "breakpoints": true
     }
   ]
 }

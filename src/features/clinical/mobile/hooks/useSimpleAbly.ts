@@ -1,6 +1,19 @@
 import * as Ably from 'ably';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+// 🆕 Enhanced transcription data structure
+export type EnhancedTranscriptionData = {
+  confidence?: number;
+  words?: Array<{
+    word: string;
+    start: number;
+    end: number;
+    confidence: number;
+    punctuated_word: string;
+  }>;
+  paragraphs?: any;
+};
+
 type SimpleAblyMessage = {
   type: 'transcription' | 'patient_updated';
   transcript?: string;
@@ -8,11 +21,15 @@ type SimpleAblyMessage = {
   patientName?: string;
   timestamp?: number;
   data?: any;
+  // 🆕 Enhanced transcription fields
+  confidence?: number;
+  words?: any[];
+  paragraphs?: any;
 };
 
 export type UseSimpleAblyOptions = {
   tokenId: string | null;
-  onTranscriptReceived?: (transcript: string, sessionId: string) => void;
+  onTranscriptReceived?: (transcript: string, sessionId: string, enhancedData?: EnhancedTranscriptionData) => void;
   onSessionChanged?: (sessionId: string, patientName: string) => void;
   onError?: (error: string) => void;
   onConnectionStatusChanged?: (status: 'disconnected' | 'connecting' | 'connected' | 'error') => void; // NEW: Connection status bridge
@@ -109,7 +126,26 @@ export const useSimpleAbly = ({
           switch (type) {
             case 'transcription':
               if (data.transcript && data.sessionId) {
-                callbacksRef.current.onTranscriptReceived?.(data.transcript, data.sessionId);
+                // 🆕 Extract enhanced data from Ably message
+                const enhancedData: EnhancedTranscriptionData | undefined
+                  = (data.confidence !== undefined || (data.words && data.words.length > 0))
+                    ? {
+                        confidence: data.confidence,
+                        words: data.words || [],
+                        paragraphs: data.paragraphs,
+                      }
+                    : undefined;
+
+                // 🐛 DEBUG: Log enhanced data received on desktop
+                void console.log('📨 Desktop Ably Receive Debug:', {
+                  transcript: `${data.transcript?.slice(0, 50)}...`,
+                  confidence: enhancedData?.confidence,
+                  wordsCount: enhancedData?.words?.length || 0,
+                  hasEnhancedData: !!enhancedData,
+                  sampleWords: enhancedData?.words?.slice(0, 3),
+                });
+
+                callbacksRef.current.onTranscriptReceived?.(data.transcript, data.sessionId, enhancedData);
               }
               break;
 
@@ -203,18 +239,30 @@ export const useSimpleAbly = ({
     };
   }, [tokenId, onConnectionStatusChanged, isMobile]); // Only tokenId in dependency array
 
-  // Send transcript (mobile to desktop)
-  const sendTranscript = useCallback((transcript: string) => {
+  // Send transcript with enhanced data (mobile to desktop)
+  const sendTranscript = useCallback((transcript: string, enhancedData?: EnhancedTranscriptionData) => {
     if (!channelRef.current || !currentSessionId || !transcript.trim()) {
       return false;
     }
 
     try {
+      // 🐛 DEBUG: Log what we're sending via Ably
+      void console.log('📡 Ably Send Debug:', {
+        transcript: `${transcript.slice(0, 50)}...`,
+        confidence: enhancedData?.confidence,
+        wordsCount: enhancedData?.words?.length || 0,
+        hasEnhancedData: enhancedData && (enhancedData.confidence !== undefined || (enhancedData.words?.length || 0) > 0),
+      });
+
       channelRef.current.publish('transcription', {
         type: 'transcription',
         transcript: transcript.trim(),
         sessionId: currentSessionId,
         timestamp: Date.now(),
+        // 🆕 Include enhanced data in Ably message
+        confidence: enhancedData?.confidence,
+        words: enhancedData?.words || [],
+        paragraphs: enhancedData?.paragraphs,
       });
       return true;
     } catch (error: any) {
