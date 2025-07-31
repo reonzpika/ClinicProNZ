@@ -47,7 +47,7 @@ You are given two sections:
 * **Keep the original order.** Do not group or rearrange content.
 * Write in **natural paragraphs** (not bullet points or short line-by-line output).
 * **Do not describe GP questions or prompts.** Just write the relevant facts or responses.
-* Prefix only **explicit GP actions or decisions** with `[GP]` (e.g. `[GP] will examine the knee`).
+* Prefix only **explicit GP actions or decisions** with [GP].
 * **Omit reporting verbs** like “reports”, “states”, “mentions”. Write facts directly.
 * **Preserve vague or uncertain phrasing** with quotes (e.g. “maybe”, “not really”).
 * Convert first-person to neutral third-person. Use “Patient” only when needed for clarity.
