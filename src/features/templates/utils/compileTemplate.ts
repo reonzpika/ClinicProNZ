@@ -13,11 +13,11 @@ const MAX_CACHE_SIZE = 100; // Maximum number of cached templates
 // Helper function to generate cache key
 function generateCacheKey(
   templateBody: string,
-  structuredContent: string,
+  rawConsultationData: string,
 ): string {
   const inputs = [
     templateBody.substring(0, 100), // First 100 chars of template for uniqueness
-    structuredContent.substring(0, 100),
+    rawConsultationData.substring(0, 100),
   ];
   return inputs.join('|');
 }
@@ -44,10 +44,10 @@ function cleanupCache() {
 // Optimised function to substitute placeholders in natural language templates
 function substitutePlaceholders(
   templateBody: string,
-  structuredContent: string,
+  rawConsultationData: string,
 ): string {
   // Check cache first
-  const cacheKey = generateCacheKey(templateBody, structuredContent);
+  const cacheKey = generateCacheKey(templateBody, rawConsultationData);
   const cached = templateCache.get(cacheKey);
 
   if (cached && Date.now() - cached.timestamp < TEMPLATE_CACHE_TTL) {
@@ -56,29 +56,12 @@ function substitutePlaceholders(
 
   // Create the complete prompt with optimised string concatenation
   const completePrompt = [
+    '--- CONSULTATION DATA ---',
+    rawConsultationData,
+    '',
     '--- TEMPLATE INSTRUCTIONS ---',
     templateBody,
     '',
-    '--- CONSULTATION DATA ---',
-    structuredContent,
-    '',
-    '--- OUTPUT INSTRUCTIONS ---',
-    'Populate each placeholder in the template using only facts from the consultation data',
-    'Use bullet points under each section. Keep each bullet under 60 words.',
-    'Omit any empty section.',
-    'Append a QA checklist if needed:',
-    '',
-    '**Items for review:**',
-    '- Omission: <brief description>',
-    '- Hallucination: <brief description>',
-    '- Uncertain: <brief description>',
-    '',
-    'Use concise, clinical NZ-English phrasing.',
-    'Use plain text. No markdown, no bolding or italicising.',
-    'Include social context if relevant to interpretation.',
-    'Flag ambiguous statements with [uncertain].',
-    '',
-    '[Begin output]',
   ].join('\n');
 
   // Cache the result
@@ -111,15 +94,15 @@ function getCachedSystemPrompt(): string {
 
 export function compileTemplate(
   templateBody: string,
-  structuredContent: string,
+  rawConsultationData: string,
 ): { system: string; user: string } {
   // Input validation for performance
   if (!templateBody?.trim()) {
     throw new Error('Template body is required');
   }
 
-  if (!structuredContent?.trim()) {
-    throw new Error('Structured content is required');
+  if (!rawConsultationData?.trim()) {
+    throw new Error('Raw consultation data is required');
   }
 
   // Use cached system prompt
@@ -128,7 +111,7 @@ export function compileTemplate(
   // Create the user prompt with optimised substitution
   const userPrompt = substitutePlaceholders(
     templateBody,
-    structuredContent,
+    rawConsultationData,
   );
 
   return {
