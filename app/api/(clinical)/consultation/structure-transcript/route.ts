@@ -76,7 +76,10 @@ You are given two sections:
 * Stay strictly true to the source wording — **do not infer, summarise, or reword**.
 * Preserve vague, speculative, or conversational language exactly as spoken.
 * Do **not collapse** or omit lines even if they seem low-value or repetitive.
-* Do **not group** unrelated topics or symptoms together.
+* Do **not group**
+   * Symptoms from **different body systems** (e.g. knee pain and insomnia).
+   * Separate concerns raised by different family members unless directly related.
+   * Anything just because it was mentioned in the same response.
 
 #### ❓ Ambiguity Handling
 
