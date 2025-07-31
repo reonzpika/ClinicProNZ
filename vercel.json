@@ -3,9 +3,6 @@
     "app/api/(clinical)/consultation/notes/route.ts": {
       "maxDuration": 60
     },
-    "app/api/(clinical)/consultation/structure-transcript/route.ts": {
-      "maxDuration": 60
-    },
     "app/api/(clinical)/clinical-images/analyze/route.ts": {
       "maxDuration": 60
     },

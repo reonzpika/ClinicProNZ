@@ -37,15 +37,15 @@ export async function POST(req: Request) {
       'Request parsing timeout',
     );
 
-    const { structuredContent, templateId, guestToken: bodyGuestToken } = body;
+    const { rawConsultationData, templateId, guestToken: bodyGuestToken } = body;
 
     // Quick validation first
     if (!templateId) {
       return NextResponse.json({ code: 'BAD_REQUEST', message: 'Missing templateId' }, { status: 400 });
     }
 
-    if (!structuredContent || structuredContent.trim() === '') {
-      return NextResponse.json({ code: 'BAD_REQUEST', message: 'Missing structuredContent' }, { status: 400 });
+    if (!rawConsultationData || rawConsultationData.trim() === '') {
+      return NextResponse.json({ code: 'BAD_REQUEST', message: 'Missing rawConsultationData' }, { status: 400 });
     }
 
     // Run RBAC and template fetch in parallel to save time
@@ -94,10 +94,10 @@ export async function POST(req: Request) {
     // Use guestToken from updated context
     const guestToken = context.guestToken;
 
-    // Compile template
+    // Compile template with raw consultation data
     const { system, user } = compileTemplate(
       template.templateBody,
-      structuredContent,
+      rawConsultationData,
     );
 
     // Start session tracking in background (don't await to prevent delays)

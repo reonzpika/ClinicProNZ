@@ -5,11 +5,10 @@ import { Crown, Stethoscope } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { AdditionalNotes } from '@/src/features/clinical/main-ui/components/AdditionalNotes';
-import { AdminPreviewModal } from '@/src/features/clinical/main-ui/components/AdminPreviewModal';
 import { DocumentationSettingsBadge } from '@/src/features/clinical/main-ui/components/DocumentationSettingsBadge';
 import { GeneratedNotes } from '@/src/features/clinical/main-ui/components/GeneratedNotes';
 import { TranscriptionControls } from '@/src/features/clinical/main-ui/components/TranscriptionControls';
-import { TranscriptProcessingStatus } from '@/src/features/clinical/main-ui/components/TranscriptProcessingStatus';
+// Removed TranscriptProcessingStatus import - no longer needed in single-pass architecture
 import { TypedInput } from '@/src/features/clinical/main-ui/components/TypedInput';
 import { MobileRightPanelOverlay } from '@/src/features/clinical/mobile/components/MobileRightPanelOverlay';
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
@@ -45,12 +44,10 @@ export default function ConsultationPage() {
     consultationNotes,
     setConsultationNotes,
     consultationItems,
-    structuredTranscript,
     getCompiledConsultationText,
     templateId,
     getEffectiveGuestToken,
     setLastGeneratedInput,
-    setStructuredTranscriptStatus,
     setMobileV2ConnectionStatus, // NEW: Connection status bridge
   } = useConsultation();
   const { isSignedIn: _isSignedIn, userId } = useAuth();
@@ -68,14 +65,7 @@ export default function ConsultationPage() {
   // Mobile block modal - prevent mobile access to consultation
   const showMobileBlock = isMobile;
 
-  // Admin preview mode state
-  const [showAdminPreview, setShowAdminPreview] = useState(false);
-  const [previewData, setPreviewData] = useState<{
-    structuredContent: string;
-    originalContent: string;
-    templateId: string;
-    effectiveGuestToken: string;
-  } | null>(null);
+  // Removed admin preview mode state - no longer needed in single-pass architecture
 
   // Check for upgrade redirect
   const [showUpgradeNotification, setShowUpgradeNotification] = useState(false);
@@ -125,91 +115,7 @@ export default function ConsultationPage() {
   };
 
   // Admin preview approval handler
-  const handleAdminApproval = async (approvedContent: string, wasEdited: boolean) => {
-    if (!previewData) {
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Call approval endpoint
-      const approvalRes = await fetch('/api/consultation/approve-structured', {
-        method: 'POST',
-        headers: createAuthHeadersWithGuest(userId, userTier, previewData.effectiveGuestToken),
-        body: JSON.stringify({
-          structuredContent: previewData.structuredContent,
-          approved: true,
-          editedContent: wasEdited ? approvedContent : undefined,
-        }),
-      });
-
-      if (!approvalRes.ok) {
-        throw new Error('Failed to approve content');
-      }
-
-      const approvalData = await approvalRes.json();
-
-      // Continue with note generation using approved content
-      const requestBody = {
-        structuredContent: approvalData.approvedContent,
-        templateId: previewData.templateId,
-        guestToken: previewData.effectiveGuestToken,
-      };
-
-      const res = await fetch('/api/consultation/notes', {
-        method: 'POST',
-        headers: createAuthHeadersWithGuest(userId, userTier, previewData.effectiveGuestToken),
-        body: JSON.stringify(requestBody),
-      });
-
-      // Check for rate limit error
-      if (res.status === 429) {
-        const errorData = await res.json();
-        setRateLimitError({
-          limit: errorData.limit,
-          resetIn: errorData.resetIn,
-          message: errorData.message,
-        });
-        setRateLimitModalOpen(true);
-        return;
-      }
-
-      if (!res.body) {
-        setError('No response body');
-        return;
-      }
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let notes = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          break;
-        }
-
-        notes += decoder.decode(value, { stream: true });
-        setGeneratedNotes(notes);
-      }
-
-      // Track the original inputs for UI purposes
-      setLastGeneratedInput(
-        inputMode === 'audio' ? transcription.transcript : '',
-        inputMode === 'typed' ? typedInput : '',
-        getCompiledConsultationText(),
-        previewData.templateId,
-      );
-
-      // Close preview modal
-      setShowAdminPreview(false);
-      setPreviewData(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred during approval');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Removed admin approval handler - no longer needed in single-pass architecture
 
   // Usage dashboard refresh ref
   const usageDashboardRef = useRef<{ refresh: () => void } | null>(null);
@@ -332,72 +238,20 @@ export default function ConsultationPage() {
       // Get effective guest token
       const effectiveGuestToken = getEffectiveGuestToken();
 
-      // Step 1: Always structure the content (no caching)
+      // Single-pass: Combine raw consultation data and send directly to notes API
       const mainContent = inputMode === 'audio' ? transcription.transcript : typedInput;
       const additionalContent = getCompiledConsultationText();
 
-      // Combine main content with additional notes
-      const contentToStructure = additionalContent && additionalContent.trim()
+      // Combine main content with additional notes as raw consultation data
+      const rawConsultationData = additionalContent && additionalContent.trim()
         ? `${mainContent}\n\nADDITIONAL NOTES:\n${additionalContent}`
         : mainContent;
 
-      let structuredContent = '';
+      // Direct single-pass note generation
+      setStatus('processing');
 
-      if (contentToStructure?.trim()) {
-        // Structure the content
-        setStatus('processing');
-        setStructuredTranscriptStatus('structuring');
-
-        try {
-          const structureRes = await fetch('/api/consultation/structure-transcript', {
-            method: 'POST',
-            headers: createAuthHeadersWithGuest(userId, userTier, effectiveGuestToken),
-            body: JSON.stringify({
-              transcription: contentToStructure,
-              guestToken: effectiveGuestToken,
-              previewMode: userTier === 'admin', // Enable preview mode for admin users
-            }),
-          });
-
-          if (structureRes.ok) {
-            const structureData = await structureRes.json();
-
-            // Check if admin preview mode is enabled
-            if (structureData.requiresReview && structureData.isPreviewMode && userTier === 'admin') {
-              // Show admin preview modal
-              setPreviewData({
-                structuredContent: structureData.structuredTranscript,
-                originalContent: contentToStructure,
-                templateId,
-                effectiveGuestToken: effectiveGuestToken || '',
-              });
-              setShowAdminPreview(true);
-              setLoading(false);
-              return; // Exit early - notes generation will continue after approval
-            }
-
-            structuredContent = structureData.structuredTranscript || contentToStructure;
-            setStructuredTranscriptStatus('completed');
-          } else {
-            // Handle structuring errors gracefully
-            const errorData = await structureRes.json();
-            console.warn('Content structuring failed:', errorData.message);
-            structuredContent = errorData.fallbackTranscript || contentToStructure;
-            setStructuredTranscriptStatus('failed');
-          }
-        } catch (structureError) {
-          console.warn('Content structuring error:', structureError);
-          structuredContent = contentToStructure; // Use original content as fallback
-          setStructuredTranscriptStatus('failed');
-        }
-      } else {
-        // No content to structure
-        structuredContent = mainContent;
-      }
-
-      // Step 2: Generate notes using only structured content
       const requestBody = {
-        structuredContent,
+        rawConsultationData,
         templateId,
         guestToken: effectiveGuestToken,
       };
@@ -612,11 +466,7 @@ export default function ConsultationPage() {
                               <>
                                 {/* Clinical Documentation - Top Priority */}
                                 <div className={`flex flex-col ${(generatedNotes && generatedNotes.trim()) || loading ? 'h-full' : ''}`}>
-                                  <TranscriptProcessingStatus
-                                    isLoading={loading}
-                                    structuredTranscriptStatus={structuredTranscript?.status || 'none'}
-                                    inputMode={inputMode}
-                                  />
+                                  {/* Removed TranscriptProcessingStatus - no longer needed in single-pass */}
                                   <GeneratedNotes
                                     onGenerate={handleGenerateNotes}
                                     onClearAll={handleClearAll}
@@ -661,11 +511,7 @@ export default function ConsultationPage() {
 
                                 {/* Clinical Documentation - Bottom */}
                                 <div className={`flex flex-col ${(generatedNotes && generatedNotes.trim()) || loading ? 'min-h-0 flex-1' : ''}`}>
-                                  <TranscriptProcessingStatus
-                                    isLoading={loading}
-                                    structuredTranscriptStatus={structuredTranscript?.status || 'none'}
-                                    inputMode={inputMode}
-                                  />
+                                  {/* Removed TranscriptProcessingStatus - no longer needed in single-pass */}
                                   <GeneratedNotes
                                     onGenerate={handleGenerateNotes}
                                     onClearAll={handleClearAll}
@@ -694,11 +540,7 @@ export default function ConsultationPage() {
                             <>
                               {/* Clinical Documentation - Top Priority */}
                               <div className={`flex flex-col ${(generatedNotes && generatedNotes.trim()) || loading ? 'flex-1' : ''}`}>
-                                <TranscriptProcessingStatus
-                                  isLoading={loading}
-                                  structuredTranscriptStatus={structuredTranscript?.status || 'none'}
-                                  inputMode={inputMode}
-                                />
+                                {/* Removed TranscriptProcessingStatus - no longer needed in single-pass */}
                                 <GeneratedNotes
                                   onGenerate={handleGenerateNotes}
                                   onClearAll={handleClearAll}
@@ -775,11 +617,7 @@ export default function ConsultationPage() {
 
                               {/* Clinical Documentation - Bottom */}
                               <div className={`flex flex-col ${(generatedNotes && generatedNotes.trim()) || loading ? 'min-h-0 flex-1' : ''}`}>
-                                <TranscriptProcessingStatus
-                                  isLoading={loading}
-                                  structuredTranscriptStatus={structuredTranscript?.status || 'none'}
-                                  inputMode={inputMode}
-                                />
+                                {/* Removed TranscriptProcessingStatus - no longer needed in single-pass */}
                                 <GeneratedNotes
                                   onGenerate={handleGenerateNotes}
                                   onClearAll={handleClearAll}
@@ -812,21 +650,7 @@ export default function ConsultationPage() {
         />
       )}
 
-      {/* Admin Preview Modal */}
-      {previewData && (
-        <AdminPreviewModal
-          isOpen={showAdminPreview}
-          onClose={() => {
-            setShowAdminPreview(false);
-            setPreviewData(null);
-            setLoading(false);
-          }}
-          structuredContent={previewData.structuredContent}
-          originalContent={previewData.originalContent}
-          onApprove={handleAdminApproval}
-          isLoading={loading}
-        />
-      )}
+      {/* Removed Admin Preview Modal - no longer needed in single-pass architecture */}
 
       {/* Mobile Block Modal */}
       <MobileBlockModal isOpen={showMobileBlock} />

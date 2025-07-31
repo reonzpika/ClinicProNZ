@@ -86,13 +86,7 @@ export type ConsultationState = {
     words?: TranscriptionWord[];
     paragraphs?: any;
   };
-  // Structured transcript for enhanced note generation
-  structuredTranscript: {
-    content: string | null;
-    originalTranscript: string | null;
-    generatedAt: number | null;
-    status: 'none' | 'structuring' | 'completed' | 'failed';
-  };
+  // Removed structured transcript state - no longer needed in single-pass architecture
   typedInput: string;
   generatedNotes: string | null;
   error: string | null;
@@ -159,12 +153,7 @@ const defaultState: ConsultationState = {
   inputMode: 'audio',
   transcription: { transcript: '', isLive: false, utterances: [] },
   // Structured transcript defaults
-  structuredTranscript: {
-    content: null,
-    originalTranscript: null,
-    generatedAt: null,
-    status: 'none',
-  },
+  // Removed structured transcript default - no longer needed
   typedInput: '',
   generatedNotes: null,
   error: null,
@@ -225,9 +214,7 @@ const ConsultationContext = createContext<
     getCurrentInput: () => string;
     setConsentObtained: (consent: boolean) => void;
     // Structured transcript functions
-    setStructuredTranscriptStatus: (status: 'none' | 'structuring' | 'completed' | 'failed') => void;
-    // REMOVED: setStructuredTranscript, clearStructuredTranscript - no longer needed since we removed caching
-    // REMOVED: isStructuredTranscriptFresh - no longer needed since we removed caching
+    // Removed structured transcript methods - no longer needed in single-pass architecture
     // Chatbot functions
     addChatMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => void;
     clearChatHistory: () => void;
@@ -775,13 +762,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       lastGeneratedCompiledConsultationText: '',
       lastGeneratedTemplateId: '',
       transcription: { transcript: '', isLive: false, utterances: [] },
-      // Reset structured transcript
-      structuredTranscript: {
-        content: null,
-        originalTranscript: null,
-        generatedAt: null,
-        status: 'none',
-      },
+      // Removed structured transcript reset - no longer needed
       typedInput: '',
       consentObtained: false,
       // Preserve patient session state
@@ -813,15 +794,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setState(prev => ({ ...prev, consentObtained: consent })), []);
 
   // Structured transcript functions
-  const setStructuredTranscriptStatus = useCallback((status: 'none' | 'structuring' | 'completed' | 'failed') => {
-    setState(prev => ({
-      ...prev,
-      structuredTranscript: {
-        ...prev.structuredTranscript,
-        status,
-      },
-    }));
-  }, []);
+  // Removed setStructuredTranscriptStatus - no longer needed in single-pass architecture
 
   // Get the best available transcript (structured if fresh, otherwise raw)
   // REMOVED: getEffectiveTranscript - no longer needed since we removed caching
@@ -1431,7 +1404,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     getCurrentTranscript,
     getCurrentInput,
     // Structured transcript functions
-    setStructuredTranscriptStatus,
+    // Removed setStructuredTranscriptStatus export
     // Chatbot functions
     addChatMessage,
     clearChatHistory,
@@ -1487,7 +1460,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setConsentObtained,
     getCurrentTranscript,
     getCurrentInput,
-    setStructuredTranscriptStatus,
+    // Removed setStructuredTranscriptStatus export
     addChatMessage,
     clearChatHistory,
     setChatContextEnabled,
