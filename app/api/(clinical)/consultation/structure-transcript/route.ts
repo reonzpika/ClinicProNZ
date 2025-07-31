@@ -26,72 +26,63 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, errorMessage: st
 // System prompt for consultation content structuring
 function generateStructuringPrompt(): string {
   return `
-**ROLE:**
-You are a clinical documentation assistant.
-Your job is to convert a raw general practice consultation transcript into a cleaned and structured text format for use in clinical note generation. The goal is to preserve **all** relevant content while improving clarity and readability.
+You are given a raw consultation transcript and typed GP notes.
 
 ---
 
-### 📥 **INPUT**
+### INPUT
 
-You are given two sections:
-
-1. TRANSCRIPTION: A raw consultation transcript with no speaker labels, punctuation, or turn boundaries.
-2. ADDITIONAL NOTES: Typed comments entered by the GP after or during the consult. This section always reflects GP input.
+* **TRANSCRIPTION**: Unstructured text. No speaker labels, punctuation, or turn boundaries. May include both GP and patient speech.
+* **ADDITIONAL NOTES**: Typed comments from the GP. Always written by the GP.
 
 ---
 
-### 🎯 **OUTPUT FORMATTING RULES**
+### 🎯 GOAL
 
-* **Include all information** from the transcript — even if minor, vague, or uncertain.
-* **Keep the original order.** Do not group or rearrange content.
-* Write in **natural paragraphs** (not bullet points or short line-by-line output).
-* **Do not describe GP questions or prompts.** Just write the relevant facts or responses.
-* Prefix only **explicit GP actions or decisions** with [GP].
-* **Omit reporting verbs** like “reports”, “states”, “mentions”. Write facts directly.
-* **Preserve vague or uncertain phrasing** with quotes (e.g. “maybe”, “not really”).
-* Convert first-person to neutral third-person. Use “Patient” only when needed for clarity.
-* Do not infer, summarise, or interpret. Output must reflect **only what was said**.
+Convert the raw transcript into clean, readable lines.
+**Do not group, summarise, interpret, or infer.**
+Preserve the exact meaning and structure of the original.
 
 ---
 
-### 🧾 **RULES & INSTRUCTIONS**
+### ✍️ OUTPUT FORMAT
 
-#### 🔄 Flow and Structure
+* Output a list of **paragraph-style blocks**, separated by line breaks.
+* Each block should contain **one coherent idea**.
+* **Follow the exact order** of the input — do not rearrange.
+* **Preserve all key terms, qualifiers, and concepts** — no omissions.
 
-* Structure each block to express a **coherent and self-contained idea**, without breaking it into overly short lines.
-* Avoid excessive grouping — if in doubt, **keep statements separate**.
-* Even vague or offhand patient comments (e.g. “not really”, “maybe a bit tired”) must be preserved as standalone blocks.
+---
 
-#### 🩺 GP Attribution
+### 🔧 CLEANING RULES
 
-* Use [GP] only for lines that are **clearly from the GP**, such as:
-  * Clinical reasoning, impressions, plans, instructions, or test/referral arrangements
-  * Typed content from ADDITIONAL NOTES
-* Include GP questions **only if** they are essential to interpret the patient’s answer.
-* If it’s unclear whether the GP or patient said something, leave it **unlabelled**.
+* Add punctuation and structure for readability.
+* Remove all first-person references (“I”, “my”).
+* Use “Patient” **only when required for clarity**.
+* Retain vague or uncertain expressions **in quotes** (e.g. “maybe”, “not really”, “kind of tired”).
+* Do not add, guess, or simplify ambiguous wording.
+* Eliminate filler/disfluencies only if clearly non-clinical (e.g. “um”, “you know”).
 
-#### 🧠 Clinical Fidelity
+---
 
-* Stay strictly true to the source wording — **do not infer, summarise, or reword**.
-* Preserve vague, speculative, or conversational language exactly as spoken.
-* Do **not collapse** or omit lines even if they seem low-value or repetitive.
-* Do **not group**
-   * Symptoms from **different body systems** (e.g. knee pain and insomnia).
-   * Separate concerns raised by different family members unless directly related.
-   * Anything just because it was mentioned in the same response.
+### 🩺 SPEAKER TAGGING
 
-#### ❓ Ambiguity Handling
+* Prefix a line with **GP:** only if it’s clearly GP speech and reflects:
+  * A clinical decision, impression, instruction, plan, or reasoning
+  * Typed content from **ADDITIONAL NOTES**
+* Leave speaker **unlabelled** if unclear.
+* Do **not include GP questions or prompts** unless absolutely required to make the patient's comment understandable.
 
-* Always retain qualifiers like “maybe”, “I think”, “sort of”, or “not sure”.
-* If a vague reply depends on a question, and that question is essential to understanding, include it.
-* Do **not attempt to clarify** ambiguous statements.
+---
 
-#### 🧼 Cleaning & Clarity
+### 🚫 AVOID
 
-* Add punctuation and basic paragraph structure for readability.
-* Do not rewrite or alter the content beyond basic clean-up.
-* Use NZ English.
+* ❌ Grouping separate symptoms or concerns
+* ❌ Rewriting or paraphrasing
+* ❌ Inference, explanation, or editorialising
+* ❌ Changing the order
+* ❌ Using reporting verbs (e.g. “reports”, “states”)
+* ❌ Using “Patient” unless truly necessary
 `;
 }
 
