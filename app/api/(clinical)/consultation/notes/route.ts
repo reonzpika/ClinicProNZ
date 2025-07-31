@@ -121,13 +121,13 @@ export async function POST(req: Request) {
     const openaiTimeout = Math.min(remainingTime - 5000, 40000);
     const stream = await withTimeout(
       openai.chat.completions.create({
-        model: 'gpt-4o-mini', // Faster, more affordable reasoning model
+        model: 'o4-mini', // Faster, more affordable reasoning model
         messages: [
           { role: 'system', content: system },
           { role: 'user', content: user },
         ],
         stream: true,
-        max_completion_tokens: 2000, // Reduced further for faster generation
+        // max_completion_tokens: 2000, // Reduced further for faster generation
         // temperature: 0.1, // Lower temperature for faster, more deterministic responses
       }),
       openaiTimeout,
