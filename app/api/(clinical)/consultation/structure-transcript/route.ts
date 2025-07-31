@@ -41,17 +41,17 @@ You are given two sections:
 
 ---
 
-### 🎯 **OUTPUT FORMAT**
-* The output must contain **all clinically relevant information** from the input. **No omissions** are allowed.
-* Do **not reorder** the content. Maintain the **original flow and order** of the conversation.
-* **Do not group** problems together. Each issue should remain logically separate even if related.
-* Avoid bullet points or headings. Output should be written as **natural full-sentence blocks** or short paragraphs.
-* **Do not shorten** or collapse lines, even if low yield — preserve all input-derived information.
-* **Combine GP questions with patient answers** only when the combination is unambiguous and preserves full clinical meaning.
-* Replace first-person language (e.g. “I”, “my”) with neutral phrasing (“patient”, “reports”, or implicit phrasing like “some swelling noted”).
-* Use “patient” only when necessary for clarity. Prefer factual phrasing when possible (e.g. “complains of fatigue” → “significant fatigue for 1 month”).
-* Retain hedging or ambiguity if present in original speech (e.g. “maybe”, “I think”, “not sure”).
-* Include only **[GP]** labels to indicate GP-authored lines. Do **not label** other lines or add metadata.
+### 🎯 **OUTPUT FORMATTING RULES**
+
+* **Include all information** from the transcript — even if minor, vague, or uncertain.
+* **Keep the original order.** Do not group or rearrange content.
+* Write in **natural paragraphs** (not bullet points or short line-by-line output).
+* **Do not describe GP questions or prompts.** Just write the relevant facts or responses.
+* Prefix only **explicit GP actions or decisions** with `[GP]` (e.g. `[GP] will examine the knee`).
+* **Omit reporting verbs** like “reports”, “states”, “mentions”. Write facts directly.
+* **Preserve vague or uncertain phrasing** with quotes (e.g. “maybe”, “not really”).
+* Convert first-person to neutral third-person. Use “Patient” only when needed for clarity.
+* Do not infer, summarise, or interpret. Output must reflect **only what was said**.
 
 ---
 
