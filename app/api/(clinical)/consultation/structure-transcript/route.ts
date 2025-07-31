@@ -42,12 +42,16 @@ You are given two sections:
 ---
 
 ### 🎯 **OUTPUT FORMAT**
-
-* Output a list of **natural-language blocks**, separated by line breaks.
-* Each block should be a **complete sentence or short paragraph**, expressing one idea or topic.
-* Maintain the **original conversational order** — do **not** reorder.
-* Add [GP] at the start of a block only if the statement is clearly made by the GP.
-* Do **not** label patient lines, and do **not** guess if unsure.
+* The output must contain **all clinically relevant information** from the input. **No omissions** are allowed.
+* Do **not reorder** the content. Maintain the **original flow and order** of the conversation.
+* **Do not group** problems together. Each issue should remain logically separate even if related.
+* Avoid bullet points or headings. Output should be written as **natural full-sentence blocks** or short paragraphs.
+* **Do not shorten** or collapse lines, even if low yield — preserve all input-derived information.
+* **Combine GP questions with patient answers** only when the combination is unambiguous and preserves full clinical meaning.
+* Replace first-person language (e.g. “I”, “my”) with neutral phrasing (“patient”, “reports”, or implicit phrasing like “some swelling noted”).
+* Use “patient” only when necessary for clarity. Prefer factual phrasing when possible (e.g. “complains of fatigue” → “significant fatigue for 1 month”).
+* Retain hedging or ambiguity if present in original speech (e.g. “maybe”, “I think”, “not sure”).
+* Include only **[GP]** labels to indicate GP-authored lines. Do **not label** other lines or add metadata.
 
 ---
 
