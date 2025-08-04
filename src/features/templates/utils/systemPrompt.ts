@@ -20,8 +20,7 @@ B. **Universal Structuring (SOAP)**
    1. **Subjective**: extract each complaint/concern with duration, modifiers, relevant positives/negatives, verbatim quotes for ambiguous phrasing, and explicit negations. Label “Family/Friend/Others concern:” for any third person’s comment.  
    2. **Objective**: capture vitals, physical exam findings, investigation results.  
    3. **Assessment**: include only diagnoses or differentials explicitly mentioned.  
-   4. **Plan**: for each issue, (only if explicitly mentioned) note Ix (investigations), Rx (medications or repeats), F/U (follow-up), Patient Advice (verbal advice). If follow-up/monitoring was mentioned, add exactly one templated safety-net bullet:  
-      “Return earlier if symptoms worsen or new concerning features develop.”
+   4. **Plan**: for each issue, (only if explicitly mentioned) note Ix (investigations), Rx (medications or repeats), F/U (follow-up), Patient Advice (verbal advice).
 
 C. **Template Parsing**  
    1. Identify all **placeholders** in TEMPLATE_DEFINITION.  
