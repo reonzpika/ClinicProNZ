@@ -8,6 +8,7 @@ import { Inter } from 'next/font/google';
 import { AppLayoutWrapper } from '@/src/shared/components/AppLayoutWrapper';
 import { ConsultationProvider } from '@/src/shared/ConsultationContext';
 import { TestUserProvider } from '@/src/shared/contexts/TestUserContext';
+import { QueryClientProvider } from '@/src/providers/QueryClientProvider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -28,17 +29,19 @@ export default async function RootLayout({
 }) {
   return (
     <ClerkProvider>
-      <TestUserProvider>
-        <ConsultationProvider>
-          <html lang="en">
-            <body className={inter.className}>
-              {/* <StagewiseToolbar /> */}
-              <AppLayoutWrapper>{children}</AppLayoutWrapper>
-              <Analytics />
-            </body>
-          </html>
-        </ConsultationProvider>
-      </TestUserProvider>
+      <QueryClientProvider>
+        <TestUserProvider>
+          <ConsultationProvider>
+            <html lang="en">
+              <body className={inter.className}>
+                {/* <StagewiseToolbar /> */}
+                <AppLayoutWrapper>{children}</AppLayoutWrapper>
+                <Analytics />
+              </body>
+            </html>
+          </ConsultationProvider>
+        </TestUserProvider>
+      </QueryClientProvider>
     </ClerkProvider>
   );
 }
