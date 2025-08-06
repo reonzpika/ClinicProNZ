@@ -44,6 +44,17 @@ export function EnhancedTranscriptionDisplay({
           : isRecording ? 'Currently recording' : 'Should show enhanced',
   });
 
+  // 🐛 DEBUG: Compare reconstructed text with original transcript
+  if (words.length > 0) {
+    const reconstructedText = words.map(w => w.punctuated_word).join(' ');
+    void console.log('🔍 Text Comparison:', {
+      originalTranscript: transcript,
+      reconstructedText,
+      textMatch: transcript === reconstructedText,
+      lengthDiff: transcript.length - reconstructedText.length,
+    });
+  }
+
   // Simple fallback (exactly like current implementation)
   if (!hasEnhancedData || !showEnhanced || isRecording) {
     return (
@@ -128,12 +139,6 @@ export function EnhancedTranscriptionDisplay({
 
       {/* Chronological word display with confidence highlighting */}
       <div className="text-sm leading-relaxed">
-        {/* 🐛 DEBUG: Compare reconstructed text with original transcript */}
-        {console.log('🔍 Text Comparison:', {
-          originalTranscript: transcript,
-          reconstructedText: words.map(w => w.punctuated_word).join(' '),
-          textMatch: transcript === words.map(w => w.punctuated_word).join(' ')
-        })}
         {words.map((word, wordIndex) => {
           const isLowConfidence = word.confidence < confidenceThreshold;
 
