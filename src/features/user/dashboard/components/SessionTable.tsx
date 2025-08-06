@@ -46,7 +46,8 @@ export function SessionTable({ sessions, filters, onSessionClick }: SessionTable
     }
     
     // Satisfaction filter
-    if (filters.satisfaction.length > 0 && session.satisfaction < filters.satisfaction[0]) {
+    if (filters.satisfaction.length > 0 && session.satisfaction !== undefined && 
+        filters.satisfaction[0] !== undefined && session.satisfaction < filters.satisfaction[0]) {
       return false;
     }
     

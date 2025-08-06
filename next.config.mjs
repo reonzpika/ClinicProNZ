@@ -14,6 +14,14 @@ const nextConfig = {
   // Temporarily disable strict mode in development to prevent double Ably connections
   reactStrictMode: process.env.NODE_ENV === 'production',
   serverExternalPackages: ['@electric-sql/pglite'],
+  output: 'standalone',
+  outputFileTracingExcludes: {
+    '*': [
+      'node_modules/@swc/core-linux-x64-gnu',
+      'node_modules/@swc/core-linux-x64-musl',
+      'node_modules/@esbuild/linux-x64',
+    ],
+  },
 };
 
 export default bundleAnalyzer(nextConfig);

@@ -1,7 +1,6 @@
 'use client';
 
 import { Search } from 'lucide-react';
-import { useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
 import { Input } from '@/src/shared/components/ui/input';
@@ -24,8 +23,6 @@ interface SessionFiltersProps {
 }
 
 export function SessionFilters({ filters, onFiltersChange }: SessionFiltersProps) {
-  const [dateRange, setDateRange] = useState<string>('');
-
   const handleTemplateChange = (value: string) => {
     onFiltersChange({
       ...filters,
