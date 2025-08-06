@@ -1,24 +1,25 @@
-import { auth } from '@clerk/nextjs/server';
 import { desc, eq, or } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 import { db } from '@/db/client';
 import { templates } from '@/db/schema/templates';
+import { extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 export async function GET(req: Request) {
   try {
-    const { userId } = await auth();
+    // Extract RBAC context from client headers
+    const context = await extractRBACContext(req);
     const { searchParams } = new URL(req.url);
     const type = searchParams.get('type');
 
     let whereClause;
     if (type === 'default') {
       whereClause = eq(templates.type, 'default');
-    } else if (type === 'custom' && userId) {
-      whereClause = eq(templates.ownerId, userId);
-    } else if (userId) {
+    } else if (type === 'custom' && context.userId) {
+      whereClause = eq(templates.ownerId, context.userId);
+    } else if (context.userId) {
       // Fetch both default and custom for signed-in user
-      whereClause = or(eq(templates.type, 'default'), eq(templates.ownerId, userId));
+      whereClause = or(eq(templates.type, 'default'), eq(templates.ownerId, context.userId));
     } else {
       // Guests: only default
       whereClause = eq(templates.type, 'default');
@@ -51,19 +52,18 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    // Use same auth pattern as middleware
-    const { userId, sessionClaims } = await auth();
+    // Extract RBAC context from client headers
+    const context = await extractRBACContext(req);
 
-    if (!userId) {
+    if (!context.isAuthenticated) {
       return NextResponse.json(
         { code: 'UNAUTHORIZED', message: 'You must be logged in to create a template' },
         { status: 401 },
       );
     }
 
-    // Check tier - templates require at least standard (same logic as middleware)
-    const userTier = (sessionClaims as any)?.metadata?.tier || 'basic';
-    if (userTier === 'basic') {
+    // Check tier - templates require at least standard
+    if (context.tier === 'basic') {
       return NextResponse.json(
         {
           error: 'Template management requires Standard tier or higher',
@@ -83,7 +83,7 @@ export async function POST(req: Request) {
       ...(shouldIncludeId ? { id } : {}),
       ...templateDataWithoutId,
       type: 'custom',
-      ownerId: userId,
+      ownerId: context.userId,
     };
 
     const template = await db.insert(templates).values(templateData).returning();

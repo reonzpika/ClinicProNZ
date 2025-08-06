@@ -492,6 +492,10 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
         diarizedTranscript,
         utterances: utterances || [],
         isLive,
+        // ✅ PRESERVE existing enhanced data when setting basic transcription
+        confidence: prev.transcription.confidence,
+        words: prev.transcription.words,
+        paragraphs: prev.transcription.paragraphs,
       },
     }));
   }, []);
@@ -539,6 +543,10 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
           ? [...(prev.transcription.utterances || []), ...utterances]
           : (prev.transcription.utterances || []),
         isLive,
+        // ✅ PRESERVE existing enhanced data instead of wiping it
+        confidence: prev.transcription.confidence,
+        words: prev.transcription.words,
+        paragraphs: prev.transcription.paragraphs,
       },
     }));
 
@@ -775,7 +783,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       microphoneGain: prev.microphoneGain, // Keep user's microphone settings
       volumeThreshold: prev.volumeThreshold, // Keep user's volume settings
       settings: prev.settings, // Keep user's general settings
-      chatHistory: prev.chatHistory, // Keep chat history (user-level context)
+      chatHistory: [], // Clear chat history to prevent memory leaks
     }));
   }, []);
 

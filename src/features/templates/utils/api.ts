@@ -46,10 +46,15 @@ export async function updateTemplate(
   return res.json();
 }
 
-export async function deleteTemplate(id: string): Promise<void> {
+export async function deleteTemplate(
+  id: string,
+  userId?: string | null,
+  userTier?: string,
+  guestToken?: string | null,
+): Promise<void> {
   const res = await fetch(`/api/templates/${id}`, {
     method: 'DELETE',
-    credentials: 'include',
+    headers: createAuthHeadersWithGuest(userId, userTier, guestToken),
   });
   if (!res.ok) {
     throw new Error('Failed to delete template');

@@ -109,7 +109,7 @@ export default function TemplatesPage() {
       return;
     }
     try {
-      await deleteTemplate(template.id);
+      await deleteTemplate(template.id, userId, userTier, null);
       setTemplates(prev => prev.filter(t => t.id !== template.id));
       if (selectedTemplate?.id === template.id) {
         setSelectedTemplate(null);

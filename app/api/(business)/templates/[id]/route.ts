@@ -1,8 +1,8 @@
-import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
 import { TemplateService } from '@/src/features/templates/template-service';
 import type { ApiError } from '@/src/features/templates/types';
+import { extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 // GET /api/templates/[id] - Get a specific template
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
@@ -30,19 +30,18 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   const params = await context.params;
   try {
-    // Use same auth pattern as middleware
-    const { userId, sessionClaims } = await auth();
+    // Extract RBAC context from client headers
+    const rbacContext = await extractRBACContext(request);
 
-    if (!userId) {
+    if (!rbacContext.isAuthenticated) {
       return NextResponse.json<ApiError>(
         { code: 'UNAUTHORIZED', message: 'You must be logged in to update a template' },
         { status: 401 },
       );
     }
 
-    // Check tier - templates require at least standard (same logic as middleware)
-    const userTier = (sessionClaims as any)?.metadata?.tier || 'basic';
-    if (userTier === 'basic') {
+    // Check tier - templates require at least standard
+    if (rbacContext.tier === 'basic') {
       return NextResponse.json(
         {
           error: 'Template management requires Standard tier or higher',
@@ -63,7 +62,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       );
     }
 
-    if (template.type === 'custom' && template.ownerId !== userId) {
+    if (template.type === 'custom' && template.ownerId !== rbacContext.userId) {
       return NextResponse.json<ApiError>(
         { code: 'FORBIDDEN', message: 'You do not have permission to update this template' },
         { status: 403 },
@@ -82,22 +81,21 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
 }
 
 // DELETE /api/templates/[id] - Delete a template
-export async function DELETE(_request: Request, context: { params: Promise<{ id: string }> }) {
+export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
   const params = await context.params;
   try {
-    // Use same auth pattern as middleware
-    const { userId, sessionClaims } = await auth();
+    // Extract RBAC context from client headers
+    const rbacContext = await extractRBACContext(request);
 
-    if (!userId) {
+    if (!rbacContext.isAuthenticated) {
       return NextResponse.json<ApiError>(
         { code: 'UNAUTHORIZED', message: 'You must be logged in to delete a template' },
         { status: 401 },
       );
     }
 
-    // Check tier - templates require at least standard (same logic as middleware)
-    const userTier = (sessionClaims as any)?.metadata?.tier || 'basic';
-    if (userTier === 'basic') {
+    // Check tier - templates require at least standard
+    if (rbacContext.tier === 'basic') {
       return NextResponse.json(
         {
           error: 'Template management requires Standard tier or higher',
@@ -115,7 +113,7 @@ export async function DELETE(_request: Request, context: { params: Promise<{ id:
       );
     }
 
-    if (template.type === 'custom' && template.ownerId !== userId) {
+    if (template.type === 'custom' && template.ownerId !== rbacContext.userId) {
       return NextResponse.json<ApiError>(
         { code: 'FORBIDDEN', message: 'You do not have permission to delete this template' },
         { status: 403 },
