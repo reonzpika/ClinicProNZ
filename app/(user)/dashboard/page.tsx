@@ -1,10 +1,8 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 
-import { QuickToolAccess } from '@/src/features/user/dashboard/components/QuickToolAccess';
-import { UpgradeCTA } from '@/src/features/user/dashboard/components/UpgradeCTA';
+import { AnalyticsDashboard } from '@/src/features/user/dashboard/components/AnalyticsDashboard';
 import UsageTracker from '@/src/features/user/dashboard/components/UsageTracker';
-import { DashboardHeader } from '@/src/shared/components/DashboardHeader';
 import { checkTierFromSessionClaims } from '@/src/shared/utils/roles';
 
 export default async function DashboardPage() {
@@ -20,23 +18,14 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <DashboardHeader />
+    <div className="space-y-8">
+      {/* GP Analytics Dashboard */}
+      <AnalyticsDashboard />
 
-      {/* Main Content */}
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="space-y-8">
-          {/* Quick Actions */}
-          <QuickToolAccess />
-
-          {/* Usage Tracking */}
-          <UsageTracker />
-
-          {/* Upgrade CTA */}
-          <UpgradeCTA />
-        </div>
-      </main>
+      {/* Usage Tracking - kept from original dashboard */}
+      <div className="mx-auto max-w-7xl px-6">
+        <UsageTracker />
+      </div>
     </div>
   );
 }

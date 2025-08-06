@@ -61,8 +61,8 @@ const tools: ToolLink[] = [
     description: 'Manage and customise clinical templates',
     href: '/templates',
     icon: FileText,
-    color: 'text-teal-600',
-  },
+    color: 'text-teal-600'
+  }
 ];
 
 export function QuickToolAccess() {
