@@ -1,12 +1,13 @@
 import { SignIn } from '@clerk/nextjs';
 
-export default function LoginPage({
+export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: { redirect_url?: string };
+  searchParams: Promise<{ redirect_url?: string }>;
 }) {
   // Get the redirect URL from query params, default to dashboard
-  const redirectUrl = searchParams.redirect_url || '/dashboard';
+  const resolvedSearchParams = await searchParams;
+  const redirectUrl = resolvedSearchParams.redirect_url || '/dashboard';
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
