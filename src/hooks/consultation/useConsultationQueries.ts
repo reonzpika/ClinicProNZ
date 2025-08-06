@@ -29,20 +29,13 @@ export function useConsultationChat() {
 export function useGenerateConsultationNotes() {
   const { userId } = useAuth()
   const { getUserTier } = useClerkMetadata()
-  const { getEffectiveGuestToken } = useConsultation()
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: (request: ConsultationNotesRequest) =>
-      consultationApi.generateNotes(request, userId, getUserTier(), getEffectiveGuestToken()),
-    onSuccess: (data, variables) => {
-      // Update the session with new notes
-      queryClient.setQueryData(
-        queryKeys.consultation.session(variables.sessionId),
-        (oldData: PatientSession | undefined) => 
-          oldData ? { ...oldData, consultationNotes: data.notes } : undefined
-      )
-      // Invalidate sessions list to reflect changes
+      consultationApi.generateNotes(request, userId, getUserTier()),
+    onSuccess: () => {
+      // Invalidate sessions list to reflect potential changes
       queryClient.invalidateQueries({ queryKey: queryKeys.consultation.sessions() })
     },
     onError: (error) => {

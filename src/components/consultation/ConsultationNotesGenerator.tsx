@@ -21,9 +21,9 @@ export function ConsultationNotesGenerator({
     typedInput,
     inputMode,
     templateId,
-    consultationItems,
     currentPatientSessionId,
     getCompiledConsultationText,
+    getEffectiveGuestToken,
     setGeneratedNotes,
   } = useConsultation()
 
@@ -50,16 +50,11 @@ export function ConsultationNotesGenerator({
         ? `${mainContent}\n\nADDITIONAL NOTES:\n${additionalContent}`
         : mainContent
 
-      // Prepare the request data
+      // Prepare the request data to match the actual API
       const requestData = {
-        sessionId: currentPatientSessionId,
-        transcription: combinedTranscription,
-        consultationItems: consultationItems || [],
-        selectedTemplate: templateId ? {
-          id: templateId,
-          name: '', // Template name would need to be fetched
-          body: '', // Template body would need to be fetched
-        } : undefined,
+        rawConsultationData: combinedTranscription,
+        templateId: templateId || '', // Use empty string if no template
+        guestToken: getEffectiveGuestToken(),
       }
 
       // Use React Query mutation to generate notes

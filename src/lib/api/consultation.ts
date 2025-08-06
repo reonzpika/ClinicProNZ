@@ -2,32 +2,30 @@ import { createAuthHeadersWithGuest } from '@/src/shared/utils'
 
 // Types for API requests and responses
 export interface ConsultationChatRequest {
-  message: string
-  sessionId?: string
+  messages: Array<{
+    role: 'user' | 'assistant'
+    content: string
+  }>
+  consultationNote?: string
+  useContext?: boolean
+  rawConsultationData?: {
+    transcription?: string
+    typedInput?: string
+  }
 }
 
 export interface ConsultationChatResponse {
   response: string
-  sessionId?: string
 }
 
 export interface ConsultationNotesRequest {
-  sessionId: string
-  transcription: string
-  consultationItems: Array<{
-    title: string
-    content: string
-  }>
-  selectedTemplate?: {
-    id: string
-    name: string
-    body: string
-  }
+  rawConsultationData: string
+  templateId: string
+  guestToken?: string | null
 }
 
 export interface ConsultationNotesResponse {
   notes: string
-  sessionId: string
 }
 
 export interface PatientSession {
@@ -71,12 +69,11 @@ export const consultationApi = {
   async generateNotes(
     request: ConsultationNotesRequest,
     userId?: string | null,
-    userTier?: string,
-    guestToken?: string | null
+    userTier?: string
   ): Promise<ConsultationNotesResponse> {
     const response = await fetch('/api/consultation/notes', {
       method: 'POST',
-      headers: createAuthHeadersWithGuest(userId, userTier, guestToken),
+      headers: createAuthHeadersWithGuest(userId, userTier, request.guestToken),
       body: JSON.stringify(request),
     })
 
