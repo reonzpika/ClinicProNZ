@@ -596,24 +596,15 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [state.currentPatientSessionId, state.patientSessions, userId, userTier, state.guestToken]);
 
-  // Helper function to merge paragraphs data structures
-  const mergeParagraphs = useCallback((prevParagraphs?: any, newParagraphs?: any): any => {
-    // If no previous paragraphs, return new paragraphs
-    if (!prevParagraphs || !prevParagraphs.paragraphs) {
+  // Helper function to handle paragraphs data - replace instead of accumulate
+  const handleParagraphs = useCallback((prevParagraphs?: any, newParagraphs?: any): any => {
+    // If we have new paragraphs, use them (they contain the complete structure for the current chunk)
+    if (newParagraphs) {
       return newParagraphs;
     }
-    // If no new paragraphs, return previous paragraphs
-    if (!newParagraphs || !newParagraphs.paragraphs) {
-      return prevParagraphs;
-    }
-    // Merge paragraphs arrays - accumulate all paragraphs from both chunks
-    return {
-      ...newParagraphs,
-      paragraphs: [
-        ...(prevParagraphs.paragraphs || []),
-        ...(newParagraphs.paragraphs || []),
-      ],
-    };
+
+    // Otherwise, keep previous paragraphs
+    return prevParagraphs;
   }, []);
 
   // 🆕 NEW: Enhanced appendTranscription with confidence and word-level data
@@ -652,7 +643,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
         words: words && words.length > 0
           ? [...(prev.transcription.words || []), ...words]
           : prev.transcription.words,
-        paragraphs: mergeParagraphs(prev.transcription.paragraphs, paragraphs),
+        paragraphs: handleParagraphs(prev.transcription.paragraphs, paragraphs),
       },
     }));
 
@@ -697,7 +688,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
         console.error('Failed to save transcription:', error);
       }
     }
-  }, [state.currentPatientSessionId, state.patientSessions, userId, userTier, state.guestToken, mergeParagraphs]);
+  }, [state.currentPatientSessionId, state.patientSessions, userId, userTier, state.guestToken, handleParagraphs]);
 
   const setTypedInput = useCallback((typedInput: string) =>
     setState(prev => ({ ...prev, typedInput })), []);

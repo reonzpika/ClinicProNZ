@@ -318,16 +318,18 @@ function MobilePageContent() {
       case 'connected':
         return {
           icon: <CheckCircle className="size-8 text-green-500" />,
-          title: 'Connected',
-          message: sessionState.patientName ? `Ready to record for ${sessionState.patientName}` : 'Ready to record',
-          canRecord: true,
+          title: currentSessionId ? 'Ready to Record' : 'Syncing Session...',
+          message: currentSessionId && sessionState.patientName
+            ? `Ready to record for ${sessionState.patientName}`
+            : 'Waiting for session info from desktop...',
+          canRecord: isConnected && !!currentSessionId, // 🆕 Both connection and session sync required
         };
       case 'recording':
         return {
           icon: <Mic className="size-8 text-red-500" />,
           title: 'Recording',
           message: sessionState.patientName ? `Recording for ${sessionState.patientName}` : 'Recording in progress',
-          canRecord: true,
+          canRecord: isConnected && !!currentSessionId, // 🆕 Consistent check during recording
         };
       case 'error':
         return {
