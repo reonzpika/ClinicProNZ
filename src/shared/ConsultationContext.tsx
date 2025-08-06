@@ -621,6 +621,14 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
   ) => {
     const sessionId = state.currentPatientSessionId;
 
+    // 🐛 DEBUG: Log words accumulation
+    console.log('📝 Words Accumulation Debug:', {
+      newTranscript: `${newTranscript.slice(0, 30)}...`,
+      newWordsCount: words?.length || 0,
+      existingWordsCount: state.transcription.words?.length || 0,
+      totalWordsAfter: (state.transcription.words?.length || 0) + (words?.length || 0),
+    });
+
     setState(prev => ({
       ...prev,
       transcription: {

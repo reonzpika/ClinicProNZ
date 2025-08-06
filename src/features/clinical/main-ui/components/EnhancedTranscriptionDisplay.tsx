@@ -26,11 +26,13 @@ export function EnhancedTranscriptionDisplay({
   // Feature detection - only need words for enhanced view
   const hasEnhancedData = words.length > 0;
 
-  // 🐛 DEBUG: Log enhanced component decision
+  // 🐛 DEBUG: Log enhanced component decision and words data
   void console.log('✨ EnhancedTranscriptionDisplay Debug:', {
     transcript: `${transcript?.slice(0, 50)}...`,
+    transcriptLength: transcript?.length || 0,
     confidence,
     wordsLength: words.length,
+    sampleWords: words.slice(0, 5).map(w => w.punctuated_word),
     hasEnhancedData,
     showEnhanced,
     isRecording,
@@ -126,6 +128,12 @@ export function EnhancedTranscriptionDisplay({
 
       {/* Chronological word display with confidence highlighting */}
       <div className="text-sm leading-relaxed">
+        {/* 🐛 DEBUG: Compare reconstructed text with original transcript */}
+        {console.log('🔍 Text Comparison:', {
+          originalTranscript: transcript,
+          reconstructedText: words.map(w => w.punctuated_word).join(' '),
+          textMatch: transcript === words.map(w => w.punctuated_word).join(' ')
+        })}
         {words.map((word, wordIndex) => {
           const isLowConfidence = word.confidence < confidenceThreshold;
 
