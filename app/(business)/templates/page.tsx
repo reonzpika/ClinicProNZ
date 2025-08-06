@@ -38,7 +38,7 @@ export default function TemplatesPage() {
 
   useEffect(() => {
     setLoading(true);
-    fetchTemplates()
+    fetchTemplates(userId, userTier, null)
       .then((data) => {
         setTemplates(data);
         setLoading(false);
@@ -48,7 +48,7 @@ export default function TemplatesPage() {
         setError(err.message);
         setLoading(false);
       });
-  }, []);
+  }, [userId, userTier]);
 
   useEffect(() => {
     if (!isSignedIn || loading || templates.length === 0 || hasReorderedRef.current || !userId) {
@@ -82,7 +82,7 @@ export default function TemplatesPage() {
         hasReorderedRef.current = true;
       });
     // Only run when templates are loaded and not yet reordered
-  }, [isSignedIn, loading, templates.length]);
+  }, [isSignedIn, loading, templates.length, userId, userTier]);
 
   const handleReorder = (from: number, to: number) => {
     setTemplates((prev) => {

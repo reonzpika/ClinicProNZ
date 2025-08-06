@@ -5,6 +5,7 @@ import { Edit3 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import type { Template } from '@/src/features/templates/types';
+import { fetchTemplates } from '@/src/features/templates/utils/api';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { MULTIPROBLEM_SOAP_UUID, useConsultation } from '@/src/shared/ConsultationContext';
@@ -57,33 +58,22 @@ export const DocumentationSettingsBadge: React.FC = () => {
   const [isInitialLoad, setIsInitialLoad] = useState(true); // Track if this is initial load
   const [favouriteTemplateId, setFavouriteTemplateId] = useState<string | null>(null); // Database favourite
 
-  // Fetch templates on component mount - replicating TemplateSelector logic
+  // Fetch templates on component mount using centralized function
   useEffect(() => {
-    async function fetchTemplates() {
+    async function loadTemplates() {
       try {
         setIsLoading(true);
-        // Fetch default templates
-        const defaultRes = await fetch('/api/templates?type=default');
-        if (!defaultRes.ok) {
-          throw new Error('Failed to fetch default templates');
-        }
-        const defaultData = await defaultRes.json();
-        let allTemplates = defaultData.templates || defaultData || [];
+        // Use centralized fetchTemplates function with auth headers
+        const allTemplates = await fetchTemplates(userId, userTier, null);
 
-        // If signed in, fetch custom templates
+        // Add template type labels
+        const templatesWithTypes = allTemplates.map((t: Template) => ({
+          ...t,
+          _templateType: t.type === 'default' ? 'Default' : 'Custom',
+        }));
+
+        // Fetch user settings including favourite template and template order
         if (isSignedIn && userId) {
-          const customRes = await fetch(`/api/templates?type=custom&userId=${userId}`);
-          if (!customRes.ok) {
-            throw new Error('Failed to fetch custom templates');
-          }
-          const customData = await customRes.json();
-          const customTemplates = customData.templates || customData || [];
-          allTemplates = [
-            ...allTemplates.map((t: Template) => ({ ...t, _templateType: 'Default' })),
-            ...customTemplates.map((t: Template) => ({ ...t, _templateType: 'Custom' })),
-          ];
-
-          // Fetch user settings including favourite template and template order
           const settingsRes = await fetch('/api/user/settings', {
             headers: createAuthHeadersWithGuest(userId, userTier, null),
           });
@@ -98,30 +88,30 @@ export const DocumentationSettingsBadge: React.FC = () => {
               // Handle template ordering
               if (Array.isArray(settingsData.settings.templateOrder)) {
                 const order = settingsData.settings.templateOrder;
-                const idToTemplate = Object.fromEntries(allTemplates.map((t: Template) => [t.id, t]));
-                allTemplates = order.map((id: string) => idToTemplate[id]).filter(Boolean);
+                const idToTemplate = Object.fromEntries(templatesWithTypes.map((t: Template) => [t.id, t]));
+                const reorderedTemplates = order.map((id: string) => idToTemplate[id]).filter(Boolean);
                 // Add any templates not in the order (e.g., new ones)
                 const orderedIds = new Set(order);
-                allTemplates = [
-                  ...allTemplates,
+                const finalTemplates = [
+                  ...reorderedTemplates,
                   ...Object.values(idToTemplate).filter((t: Template) => !orderedIds.has(t.id)),
                 ];
+                setTemplates(finalTemplates);
+                return;
               }
             }
           }
-        } else {
-          // Only default templates
-          allTemplates = allTemplates.map((t: Template) => ({ ...t, _templateType: 'Default' }));
         }
-        setTemplates(allTemplates);
+
+        setTemplates(templatesWithTypes);
       } catch (error) {
         console.error('Error fetching templates:', error);
       } finally {
         setIsLoading(false);
       }
     }
-    fetchTemplates();
-  }, [isSignedIn, userId]);
+    loadTemplates();
+  }, [isSignedIn, userId, userTier]);
 
   // Apply smart defaults on first load ONLY
   useEffect(() => {

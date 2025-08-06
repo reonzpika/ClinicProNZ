@@ -2,8 +2,14 @@ import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 
 import type { Template } from '../types';
 
-export async function fetchTemplates(): Promise<Template[]> {
-  const res = await fetch('/api/templates');
+export async function fetchTemplates(
+  userId?: string | null,
+  userTier?: string,
+  guestToken?: string | null,
+): Promise<Template[]> {
+  const res = await fetch('/api/templates', {
+    headers: createAuthHeadersWithGuest(userId, userTier, guestToken),
+  });
   if (!res.ok) {
     throw new Error('Failed to fetch templates');
   }

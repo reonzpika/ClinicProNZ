@@ -95,8 +95,8 @@ export function TranscriptionControls({
     },
   });
 
-  // For MVP, simplify to just check connection status
-  const hasMobileDevices = mobileV2.connectionStatus === 'connected';
+  // 🆕 IMPROVED: Check both connection and session sync status
+  const hasMobileDevices = mobileV2.connectionStatus === 'connected' && mobileV2.sessionSynced;
 
   // Track recording time and transcript warning
   useEffect(() => {

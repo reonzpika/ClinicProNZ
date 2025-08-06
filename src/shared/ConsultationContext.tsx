@@ -127,6 +127,7 @@ export type ConsultationState = {
     } | null;
 
     connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'error';
+    sessionSynced: boolean; // 🆕 Track if mobile has synced with desktop's active session
   };
 };
 
@@ -186,6 +187,7 @@ const defaultState: ConsultationState = {
     token: null,
     tokenData: null,
     connectionStatus: 'disconnected',
+    sessionSynced: false, // 🆕 Default to not synced
   },
 };
 
@@ -244,6 +246,7 @@ const ConsultationContext = createContext<
     setMobileV2Token: (token: string | null) => void;
     setMobileV2TokenData: (tokenData: { token: string; mobileUrl: string; expiresAt: string } | null) => void;
     setMobileV2ConnectionStatus: (status: 'disconnected' | 'connecting' | 'connected' | 'error') => void;
+    setMobileV2SessionSynced: (synced: boolean) => void; // 🆕 Track session sync status
 
     enableMobileV2: (enabled: boolean) => void;
     saveNotesToCurrentSession: (notes: string) => Promise<boolean>;
@@ -599,19 +602,17 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     if (!prevParagraphs || !prevParagraphs.paragraphs) {
       return newParagraphs;
     }
-    
     // If no new paragraphs, return previous paragraphs
     if (!newParagraphs || !newParagraphs.paragraphs) {
       return prevParagraphs;
     }
-    
     // Merge paragraphs arrays - accumulate all paragraphs from both chunks
     return {
       ...newParagraphs,
       paragraphs: [
         ...(prevParagraphs.paragraphs || []),
-        ...(newParagraphs.paragraphs || [])
-      ]
+        ...(newParagraphs.paragraphs || []),
+      ],
     };
   }, []);
 
@@ -1022,6 +1023,14 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [state.templateId, userId, userTier, state.guestToken, sendPatientUpdatedMessage, shouldBroadcastToMobile]);
 
+  // 🆕 Mobile V2 session sync setter - defined before usage
+  const setMobileV2SessionSynced = useCallback((synced: boolean) => {
+    setState(prev => ({
+      ...prev,
+      mobileV2: { ...prev.mobileV2, sessionSynced: synced },
+    }));
+  }, []);
+
   const switchToPatientSession = useCallback((sessionId: string, onSwitch?: (sessionId: string, patientName: string) => void) => {
     // Find the session and load its transcriptions
     const targetSession = state.patientSessions.find(session => session.id === sessionId);
@@ -1059,11 +1068,18 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
       typedInput: targetSession?.typedInput || '',
       consultationNotes: targetSession?.consultationNotes || '',
       consultationItems: targetSession?.consultationItems || [],
+      // 🆕 Reset session sync when switching sessions
+      mobileV2: {
+        ...prev.mobileV2,
+        sessionSynced: false,
+      },
     }));
 
     // Phase 2: Send patient_updated message to mobile devices (only if connected)
     if (shouldBroadcastToMobile()) {
       sendPatientUpdatedMessage(sessionId, targetSession.patientName);
+      // 🆕 Mark as synced after sending session info
+      setMobileV2SessionSynced(true);
     }
 
     // Notify about the switch
@@ -1073,7 +1089,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
 
     // FIXED: Return true to indicate successful switch
     return true;
-  }, [state.patientSessions, sendPatientUpdatedMessage, shouldBroadcastToMobile]);
+  }, [state.patientSessions, sendPatientUpdatedMessage, shouldBroadcastToMobile, setMobileV2SessionSynced]);
 
   const updatePatientSession = useCallback(async (sessionId: string, updates: Partial<PatientSession>) => {
     // Update local state immediately for optimistic UI updates
@@ -1356,14 +1372,17 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     // When mobile status changes to 'connected', send current session info
     if (state.mobileV2?.connectionStatus === 'connected'
-      && state.currentPatientSessionId) {
+      && state.currentPatientSessionId
+      && !state.mobileV2.sessionSynced) { // 🆕 Only sync if not already synced
       const currentSession = getCurrentPatientSession();
       if (currentSession?.patientName) {
         console.warn('📱 Mobile connected - sending catch-up session info');
         sendPatientUpdatedMessage(currentSession.id, currentSession.patientName);
+        // 🆕 Mark as synced after sending session info
+        setMobileV2SessionSynced(true);
       }
     }
-  }, [state.mobileV2?.connectionStatus, state.currentPatientSessionId, getCurrentPatientSession, sendPatientUpdatedMessage]);
+  }, [state.mobileV2?.connectionStatus, state.currentPatientSessionId, state.mobileV2.sessionSynced, getCurrentPatientSession, sendPatientUpdatedMessage, setMobileV2SessionSynced]);
 
   // Mobile V2 functions
   const setMobileV2Token = useCallback((token: string | null) => {
@@ -1392,7 +1411,12 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
   const setMobileV2ConnectionStatus = useCallback((status: 'disconnected' | 'connecting' | 'connected' | 'error') => {
     setState(prev => ({
       ...prev,
-      mobileV2: { ...prev.mobileV2, connectionStatus: status },
+      mobileV2: {
+        ...prev.mobileV2,
+        connectionStatus: status,
+        // 🆕 Reset session sync when connection drops or has errors
+        sessionSynced: (status === 'connected') ? prev.mobileV2.sessionSynced : false,
+      },
     }));
   }, []);
 
@@ -1462,6 +1486,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setMobileV2Token,
     setMobileV2TokenData,
     setMobileV2ConnectionStatus,
+    setMobileV2SessionSynced,
     enableMobileV2,
     // New function
     saveNotesToCurrentSession,
@@ -1514,6 +1539,7 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
     setMobileV2Token,
     setMobileV2TokenData,
     setMobileV2ConnectionStatus,
+    setMobileV2SessionSynced,
     enableMobileV2,
     saveNotesToCurrentSession,
     saveTypedInputToCurrentSession,

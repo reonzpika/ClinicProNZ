@@ -10,6 +10,7 @@ import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 
 import type { Template } from '../types';
+import { fetchTemplates } from '../utils/api';
 import { TemplateSelectorModal } from './TemplateSelectorModal';
 
 export function TemplateSelector() {
@@ -24,31 +25,20 @@ export function TemplateSelector() {
 
   // Fetch templates on component mount
   useEffect(() => {
-    async function fetchTemplates() {
+    async function loadTemplates() {
       try {
         setIsLoading(true);
-        // Fetch default templates
-        const defaultRes = await fetch('/api/templates?type=default');
-        if (!defaultRes.ok) {
-          throw new Error('Failed to fetch default templates');
-        }
-        const defaultData = await defaultRes.json();
-        let allTemplates = defaultData.templates || defaultData || [];
+        // Use centralized fetchTemplates function with auth headers
+        const allTemplates = await fetchTemplates(userId, userTier, null);
 
-        // If signed in, fetch custom templates
+        // Add template type labels
+        const templatesWithTypes = allTemplates.map((t: Template) => ({
+          ...t,
+          _templateType: t.type === 'default' ? 'Default' : 'Custom',
+        }));
+
+        // Fetch user template order and reorder if available
         if (isSignedIn && userId) {
-          const customRes = await fetch('/api/templates?type=custom');
-          if (!customRes.ok) {
-            throw new Error('Failed to fetch custom templates');
-          }
-          const customData = await customRes.json();
-          const customTemplates = customData.templates || customData || [];
-          allTemplates = [
-            ...allTemplates.map((t: Template) => ({ ...t, _templateType: 'Default' })),
-            ...customTemplates.map((t: Template) => ({ ...t, _templateType: 'Custom' })),
-          ];
-
-          // Fetch user template order and reorder if available
           const settingsRes = await fetch('/api/user/settings', {
             headers: createAuthHeadersWithGuest(userId, userTier, null),
           });
@@ -56,29 +46,29 @@ export function TemplateSelector() {
             const settingsData = await settingsRes.json();
             if (settingsData.settings && Array.isArray(settingsData.settings.templateOrder)) {
               const order = settingsData.settings.templateOrder;
-              const idToTemplate = Object.fromEntries(allTemplates.map((t: Template) => [t.id, t]));
-              allTemplates = order.map((id: string) => idToTemplate[id]).filter(Boolean);
+              const idToTemplate = Object.fromEntries(templatesWithTypes.map((t: Template) => [t.id, t]));
+              const reorderedTemplates = order.map((id: string) => idToTemplate[id]).filter(Boolean);
               // Add any templates not in the order (e.g., new ones)
               const orderedIds = new Set(order);
-              allTemplates = [
-                ...allTemplates,
+              const finalTemplates = [
+                ...reorderedTemplates,
                 ...Object.values(idToTemplate).filter((t: Template) => !orderedIds.has(t.id)),
               ];
+              setTemplates(finalTemplates);
+              return;
             }
           }
-        } else {
-          // Only default templates
-          allTemplates = allTemplates.map((t: Template) => ({ ...t, _templateType: 'Default' }));
         }
-        setTemplates(allTemplates);
+
+        setTemplates(templatesWithTypes);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch templates');
       } finally {
         setIsLoading(false);
       }
     }
-    fetchTemplates();
-  }, [isSignedIn, userId]);
+    loadTemplates();
+  }, [isSignedIn, userId, userTier]);
 
   // Find the selected template from the templates list
   const selectedTemplate = useMemo(() => templates.find(t => t.id === templateId) || templates[0], [templates, templateId]);
