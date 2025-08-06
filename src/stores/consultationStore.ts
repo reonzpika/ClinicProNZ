@@ -1,0 +1,266 @@
+import { create } from 'zustand'
+import { subscribeWithSelector } from 'zustand/middleware'
+import type { ChatMessage, ConsultationItem, ClinicalImage } from '@/src/shared/ConsultationContext'
+
+export const MULTIPROBLEM_SOAP_UUID = '5f24a1c7-05a4-4622-a25b-4a19a5572196'
+
+interface ConsultationState {
+  // Session info
+  sessionId: string
+  templateId: string
+  status: 'idle' | 'processing' | 'complete' | 'error'
+  
+  // Generated content
+  generatedNotes: string | null
+  error: string | null
+  
+  // Settings and preferences
+  userDefaultTemplateId: string | null
+  settings: {
+    autoSave: boolean
+    microphoneGain: number
+    volumeThreshold: number
+  }
+  
+  // Chat state
+  chatHistory: ChatMessage[]
+  isChatContextEnabled: boolean
+  isChatLoading: boolean
+  
+  // Consultation items and notes
+  consultationItems: ConsultationItem[]
+  consultationNotes: string
+  
+  // Clinical images
+  clinicalImages: ClinicalImage[]
+  
+  // Current patient session
+  currentPatientSessionId: string | null
+  
+  // Guest token for unauthenticated users
+  guestToken: string | null
+}
+
+interface ConsultationActions {
+  // Session actions
+  setSessionId: (id: string) => void
+  setTemplateId: (id: string) => void
+  setStatus: (status: ConsultationState['status']) => void
+  
+  // Generated content actions
+  setGeneratedNotes: (notes: string | null) => void
+  setError: (error: string | null) => void
+  
+  // Settings actions
+  setUserDefaultTemplateId: (id: string) => void
+  setAutoSave: (autoSave: boolean) => void
+  
+  // Chat actions
+  addChatMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => void
+  clearChatHistory: () => void
+  setChatContextEnabled: (enabled: boolean) => void
+  setChatLoading: (loading: boolean) => void
+  
+  // Consultation items actions
+  addConsultationItem: (item: Omit<ConsultationItem, 'id' | 'timestamp'>) => void
+  removeConsultationItem: (itemId: string) => void
+  setConsultationNotes: (notes: string) => void
+  getCompiledConsultationText: () => string
+  
+  // Clinical images actions
+  addClinicalImage: (image: ClinicalImage) => void
+  removeClinicalImage: (imageId: string) => void
+  updateImageDescription: (imageId: string, description: string) => void
+  
+  // Current patient session actions
+  setCurrentPatientSessionId: (sessionId: string | null) => void
+  
+  // Guest token actions
+  setGuestToken: (token: string | null) => void
+  getEffectiveGuestToken: () => string | null
+  
+  // Reset actions
+  resetConsultation: () => void
+}
+
+type ConsultationStore = ConsultationState & ConsultationActions
+
+function generateSessionId() {
+  return Math.random().toString(36).substr(2, 9)
+}
+
+// Generate or retrieve guest token for unauthenticated users
+// Currently unused but kept for potential future use
+// function ensureGuestToken(isAuthenticated: boolean): string | null {
+//   if (typeof window === 'undefined') return null
+//   
+//   // Skip guest token generation for authenticated users
+//   if (isAuthenticated) {
+//     return null
+//   }
+//   
+//   // Generate guest token for session tracking (unauthenticated users only)
+//   const existingToken = localStorage.getItem('guestToken')
+//   if (existingToken) {
+//     return existingToken
+//   }
+//   
+//   // Generate new guest token
+//   const newToken = crypto.randomUUID()
+//   localStorage.setItem('guestToken', newToken)
+//   return newToken
+// }
+
+function getUserDefaultTemplateId(): string | null {
+  if (typeof window === 'undefined') return null
+  
+  const stored = localStorage.getItem('userDefaultTemplateId')
+  // Migrate old default template ID to new one
+  if (stored === 'ef6b3139-69a0-4b4b-bf80-dcdabe0559ba') {
+    localStorage.setItem('userDefaultTemplateId', MULTIPROBLEM_SOAP_UUID)
+    return MULTIPROBLEM_SOAP_UUID
+  }
+  return stored
+}
+
+const initialState: ConsultationState = {
+  sessionId: generateSessionId(),
+  templateId: MULTIPROBLEM_SOAP_UUID,
+  status: 'idle',
+  generatedNotes: null,
+  error: null,
+  userDefaultTemplateId: getUserDefaultTemplateId(),
+  settings: {
+    autoSave: false,
+    microphoneGain: 7.0,
+    volumeThreshold: 0.1,
+  },
+  chatHistory: [],
+  isChatContextEnabled: false,
+  isChatLoading: false,
+  consultationItems: [],
+  consultationNotes: '',
+  clinicalImages: [],
+  currentPatientSessionId: null,
+  guestToken: null,
+}
+
+export const useConsultationStore = create<ConsultationStore>()(
+  subscribeWithSelector((set, get) => ({
+    ...initialState,
+    
+    // Session actions
+    setSessionId: (id) => set({ sessionId: id }),
+    setTemplateId: (id) => set({ templateId: id }),
+    setStatus: (status) => set({ status }),
+    
+    // Generated content actions
+    setGeneratedNotes: (notes) => set({ generatedNotes: notes }),
+    setError: (error) => set({ error }),
+    
+    // Settings actions
+    setUserDefaultTemplateId: (id) => {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('userDefaultTemplateId', id)
+      }
+      set({ userDefaultTemplateId: id })
+    },
+    setAutoSave: (autoSave) => set((state) => ({
+      settings: { ...state.settings, autoSave }
+    })),
+    
+    // Chat actions
+    addChatMessage: (message) => {
+      const newMessage: ChatMessage = {
+        ...message,
+        id: Date.now().toString(),
+        timestamp: Date.now(),
+      }
+      set((state) => ({
+        chatHistory: [...state.chatHistory, newMessage]
+      }))
+    },
+    clearChatHistory: () => set({ chatHistory: [] }),
+    setChatContextEnabled: (enabled) => set({ isChatContextEnabled: enabled }),
+    setChatLoading: (loading) => set({ isChatLoading: loading }),
+    
+    // Consultation items actions
+    addConsultationItem: (item) => {
+      const newItem: ConsultationItem = {
+        ...item,
+        id: Date.now().toString(),
+        timestamp: Date.now(),
+      }
+      set((state) => ({
+        consultationItems: [...state.consultationItems, newItem]
+      }))
+    },
+    removeConsultationItem: (itemId) =>
+      set((state) => ({
+        consultationItems: state.consultationItems.filter(item => item.id !== itemId)
+      })),
+    setConsultationNotes: (notes) => set({ consultationNotes: notes }),
+    getCompiledConsultationText: () => {
+      const { consultationItems, consultationNotes } = get()
+      const itemsText = consultationItems.map(item => `${item.title}: ${item.content}`).join('\n\n')
+      const manualNotes = consultationNotes.trim()
+      
+      if (itemsText && manualNotes) {
+        return `${itemsText}\n\n${manualNotes}`
+      } else if (itemsText) {
+        return itemsText
+      } else {
+        return manualNotes
+      }
+    },
+    
+    // Clinical images actions
+    addClinicalImage: (image) =>
+      set((state) => ({
+        clinicalImages: [...state.clinicalImages, image]
+      })),
+    removeClinicalImage: (imageId) =>
+      set((state) => ({
+        clinicalImages: state.clinicalImages.filter(img => img.id !== imageId)
+      })),
+    updateImageDescription: (imageId, description) =>
+      set((state) => ({
+        clinicalImages: state.clinicalImages.map(img =>
+          img.id === imageId ? { ...img, description } : img
+        )
+      })),
+    
+    // Current patient session actions
+    setCurrentPatientSessionId: (sessionId) => set({ currentPatientSessionId: sessionId }),
+    
+    // Guest token actions
+    setGuestToken: (token) => {
+      if (typeof window !== 'undefined' && token) {
+        localStorage.setItem('guestToken', token)
+      }
+      set({ guestToken: token })
+    },
+    getEffectiveGuestToken: () => {
+      const { guestToken } = get()
+      return guestToken
+    },
+    
+    // Reset actions
+    resetConsultation: () => {
+      const newSessionId = generateSessionId()
+      set({
+        sessionId: newSessionId,
+        status: 'idle',
+        generatedNotes: null,
+        error: null,
+        chatHistory: [],
+        isChatLoading: false,
+        consultationItems: [],
+        consultationNotes: '',
+        clinicalImages: [],
+        // Preserve settings and templates
+        templateId: get().userDefaultTemplateId || MULTIPROBLEM_SOAP_UUID,
+      })
+    },
+  }))
+)
