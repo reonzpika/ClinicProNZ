@@ -9,12 +9,14 @@ export default async function DashboardPage() {
   // Ensure user is authenticated and has at least basic tier
   const { userId, sessionClaims } = await auth();
   if (!userId) {
-    redirect('/login');
+    // Redirect to login with the current URL as return destination
+    redirect('/login?redirect_url=/dashboard');
   }
 
   const hasAccess = checkTierFromSessionClaims(sessionClaims, 'basic');
   if (!hasAccess) {
-    redirect('/login');
+    // User needs to upgrade their tier
+    redirect('/billing?upgrade=true');
   }
 
   return (

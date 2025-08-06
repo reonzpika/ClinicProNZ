@@ -1,6 +1,13 @@
 import { SignIn } from '@clerk/nextjs';
 
-export default function LoginPage() {
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams: { redirect_url?: string };
+}) {
+  // Get the redirect URL from query params, default to dashboard
+  const redirectUrl = searchParams.redirect_url || '/dashboard';
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
@@ -13,6 +20,7 @@ export default function LoginPage() {
           </p>
         </div>
         <SignIn
+          redirectUrl={redirectUrl}
           appearance={{
             elements: {
               formButtonPrimary: 'bg-blue-600 hover:bg-blue-700 text-sm normal-case',

@@ -3,10 +3,11 @@ import { SignUp } from '@clerk/nextjs';
 export default async function RegisterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirect?: string }>;
+  searchParams: Promise<{ redirect?: string; redirect_url?: string }>;
 }) {
   const resolvedSearchParams = await searchParams;
   const isUpgradeRedirect = resolvedSearchParams.redirect === 'upgrade';
+  const redirectUrl = resolvedSearchParams.redirect_url;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
@@ -22,7 +23,11 @@ export default async function RegisterPage({
           </p>
         </div>
         <SignUp
-          afterSignUpUrl={isUpgradeRedirect ? '/upgrade-checkout' : '/consultation'}
+          afterSignUpUrl={
+            isUpgradeRedirect 
+              ? '/upgrade-checkout' 
+              : redirectUrl || '/consultation'
+          }
           appearance={{
             elements: {
               formButtonPrimary: 'bg-blue-600 hover:bg-blue-700 text-sm normal-case',
