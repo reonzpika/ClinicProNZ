@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import type { TranscriptionSentence, TranscriptionWord } from '@/src/shared/ConsultationContext';
+import type { TranscriptionWord } from '@/src/shared/ConsultationContext';
 
 // Constant to avoid infinite render loops
 const EMPTY_WORDS_ARRAY: TranscriptionWord[] = [];
@@ -22,29 +22,17 @@ export function EnhancedTranscriptionDisplay({
   isRecording,
   onEdit,
 }: EnhancedTranscriptionDisplayProps) {
-  const [showTimestamps, setShowTimestamps] = useState(false);
   const [showEnhanced, setShowEnhanced] = useState(true);
   const confidenceThreshold = 0.85;
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  // Extract sentences from paragraphs
-  const sentences: TranscriptionSentence[]
-    = paragraphs?.paragraphs?.flatMap((p: any) => p.sentences) || [];
-
-  // Feature detection
-  const hasEnhancedData = words.length > 0 && sentences.length > 0;
+  // Feature detection - only need words for enhanced view
+  const hasEnhancedData = words.length > 0;
 
   // 🐛 DEBUG: Log enhanced component decision
   void console.log('✨ EnhancedTranscriptionDisplay Debug:', {
     transcript: `${transcript?.slice(0, 50)}...`,
     confidence,
     wordsLength: words.length,
-    sentencesLength: sentences.length,
     hasEnhancedData,
     showEnhanced,
     isRecording,
@@ -109,7 +97,7 @@ export function EnhancedTranscriptionDisplay({
     );
   }
 
-  // Enhanced view with sentence timestamps and word confidence
+  // Enhanced view with chronological word confidence (no timestamps)
   return (
     <div className="max-h-64 overflow-y-auto rounded-md border bg-white p-2">
       {/* Header with controls */}
@@ -121,14 +109,6 @@ export function EnhancedTranscriptionDisplay({
             className="rounded bg-gray-100 px-2 py-1 text-xs hover:bg-gray-200"
           >
             Simple View
-          </button>
-          <button
-            onClick={() => setShowTimestamps(!showTimestamps)}
-            className="rounded bg-blue-100 px-2 py-1 text-xs text-blue-700 hover:bg-blue-200"
-          >
-            {showTimestamps ? 'Hide' : 'Show'}
-            {' '}
-            Times
           </button>
           {confidence && (
             <span className={`rounded px-2 py-1 text-xs ${
@@ -146,67 +126,40 @@ export function EnhancedTranscriptionDisplay({
         </div>
       </div>
 
-      {/* Sentence-by-sentence display */}
-      <div className="space-y-2 text-sm leading-relaxed">
-        {sentences.map((sentence, sentenceIndex) => {
-          // Find words in this sentence
-          const sentenceWords = words.filter(w =>
-            w.start >= sentence.start && w.start <= sentence.end,
-          );
+      {/* Chronological word display with confidence highlighting */}
+      <div className="text-sm leading-relaxed">
+        {words.map((word, wordIndex) => {
+          const isLowConfidence = word.confidence < confidenceThreshold;
 
           return (
-            <div key={sentenceIndex} className="group">
-              {/* Timestamp for sentence */}
-              {showTimestamps && (
-                <div className="mb-1 text-xs text-blue-600">
-                  [
-                  {formatTime(sentence.start)}
-                  {' '}
-                  -
-                  {' '}
-                  {formatTime(sentence.end)}
-                  ]
+            <span key={wordIndex} className="group/word relative">
+              {/* Only highlight low-confidence words */}
+              <span
+                className={`${
+                  isLowConfidence
+                    ? 'cursor-help border-b border-yellow-400 bg-yellow-200'
+                    : ''
+                }`}
+                title={
+                  isLowConfidence
+                    ? `Low confidence: ${(word.confidence * 100).toFixed(1)}%`
+                    : undefined
+                }
+              >
+                {word.punctuated_word}
+              </span>
+
+              {/* Confidence tooltip for low-confidence words */}
+              {isLowConfidence && (
+                <div className="pointer-events-none absolute bottom-full left-0 z-10 mb-1 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover/word:opacity-100">
+                  {(word.confidence * 100).toFixed(1)}
+                  % confidence
                 </div>
               )}
 
-              {/* Sentence with word-level confidence highlighting */}
-              <div className="leading-relaxed">
-                {sentenceWords.map((word, wordIndex) => {
-                  const isLowConfidence = word.confidence < confidenceThreshold;
-
-                  return (
-                    <span key={wordIndex} className="group/word relative">
-                      {/* Only highlight low-confidence words */}
-                      <span
-                        className={`${
-                          isLowConfidence
-                            ? 'cursor-help border-b border-yellow-400 bg-yellow-200'
-                            : ''
-                        }`}
-                        title={
-                          isLowConfidence
-                            ? `Low confidence: ${(word.confidence * 100).toFixed(1)}%`
-                            : undefined
-                        }
-                      >
-                        {word.punctuated_word}
-                      </span>
-
-                      {/* Confidence tooltip for low-confidence words */}
-                      {isLowConfidence && (
-                        <div className="pointer-events-none absolute bottom-full left-0 z-10 mb-1 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover/word:opacity-100">
-                          {(word.confidence * 100).toFixed(1)}
-                          % confidence
-                        </div>
-                      )}
-
-                      {/* Add space between words */}
-                      {wordIndex < sentenceWords.length - 1 && ' '}
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
+              {/* Add space between words */}
+              {wordIndex < words.length - 1 && ' '}
+            </span>
           );
         })}
       </div>
