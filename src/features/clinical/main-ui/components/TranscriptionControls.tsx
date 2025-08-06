@@ -612,7 +612,6 @@ export function TranscriptionControls({
                           transcript={transcript}
                           confidence={contextTranscription.confidence}
                           words={contextTranscription.words}
-                          paragraphs={contextTranscription.paragraphs}
                           isRecording={isRecording}
                           onEdit={(newText) => {
                             // TODO: Implement transcript editing

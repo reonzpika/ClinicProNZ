@@ -9,7 +9,6 @@ type EnhancedTranscriptionDisplayProps = {
   transcript: string;
   confidence?: number;
   words?: TranscriptionWord[];
-  paragraphs?: any;
   isRecording: boolean;
   onEdit?: (newTranscript: string) => void;
 };
@@ -18,7 +17,6 @@ export function EnhancedTranscriptionDisplay({
   transcript,
   confidence,
   words = EMPTY_WORDS_ARRAY,
-  paragraphs,
   isRecording,
   onEdit,
 }: EnhancedTranscriptionDisplayProps) {
