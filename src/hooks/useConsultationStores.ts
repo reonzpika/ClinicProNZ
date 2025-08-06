@@ -140,6 +140,18 @@ export function useConsultationStores() {
     return saveNotesToCurrentSession(consultationNotes)
   }, [saveNotesToCurrentSession])
   
+  const saveClinicalImagesToCurrentSession = useCallback(async (clinicalImages: any[]): Promise<boolean> => {
+    const currentSessionId = consultationStore.currentPatientSessionId
+    if (!currentSessionId) return false
+    
+    try {
+      await updatePatientSession(currentSessionId, { clinicalImages })
+      return true
+    } catch (error) {
+      return false
+    }
+  }, [consultationStore.currentPatientSessionId, updatePatientSession])
+  
   // Return combined interface that matches the original ConsultationContext
   return {
     // Session and template state
@@ -191,7 +203,6 @@ export function useConsultationStores() {
     // Actions - Session and template
     setStatus: consultationStore.setStatus,
     setTemplateId: consultationStore.setTemplateId,
-    setCurrentPatientSessionId: consultationStore.setCurrentPatientSessionId,
     
     // Actions - Input and transcription
     setInputMode: transcriptionStore.setInputMode,
@@ -259,10 +270,11 @@ export function useConsultationStores() {
       mobileStore.resetMobileState()
     },
     
-    // Clinical images (if needed, would need to be added to consultation store)
+    // Clinical images
     addClinicalImage: consultationStore.addClinicalImage,
     removeClinicalImage: consultationStore.removeClinicalImage,
     updateImageDescription: consultationStore.updateImageDescription,
+    saveClinicalImagesToCurrentSession,
     
     // Placeholder functions that might be needed
     loadPatientSessions: async () => {

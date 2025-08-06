@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { ExaminationChecklistButton } from '@/src/features/clinical/examination-checklist/components/ExaminationChecklistButton';
 import { PlanSafetyNettingButton } from '@/src/features/clinical/plan-safety-netting';
 import { Textarea } from '@/src/shared/components/ui/textarea';
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 type ConsultationItem = {
   id: string;
@@ -34,7 +34,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   defaultExpanded = true,
   expandedSize = 'normal',
 }) => {
-  const { saveConsultationNotesToCurrentSession } = useConsultation();
+  const { saveConsultationNotesToCurrentSession } = useConsultationStores();
   // Track processed items to avoid duplicates
   const [processedItemIds] = useState(new Set<string>());
   const [isExpanded, setIsExpanded] = useState(isMinimized ? false : defaultExpanded);

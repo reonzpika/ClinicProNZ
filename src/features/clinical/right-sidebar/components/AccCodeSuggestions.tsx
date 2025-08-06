@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/src/shared/components/ui/card';
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 
@@ -12,7 +12,7 @@ export const AccCodeSuggestions: React.FC = () => {
   const { userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
-  const { generatedNotes, getEffectiveGuestToken } = useConsultation();
+  const { generatedNotes, getEffectiveGuestToken } = useConsultationStores();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [suggestion, setSuggestion] = useState<{

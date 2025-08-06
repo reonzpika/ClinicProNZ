@@ -66,7 +66,7 @@ export function ZustandConsultationDemo() {
     }
   }
 
-  const statusOptions = ['idle', 'processing', 'complete', 'error'] as const
+  const statusOptions = ['idle', 'recording', 'processing', 'completed'] as const
 
   return (
     <Card className="w-full max-w-4xl">

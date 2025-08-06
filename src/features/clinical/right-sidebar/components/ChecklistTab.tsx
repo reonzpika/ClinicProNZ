@@ -9,7 +9,7 @@ import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/src/shared/components/ui/card';
 import { Checkbox } from '@/src/shared/components/ui/checkbox';
 import { Input } from '@/src/shared/components/ui/input';
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 type ChecklistType = 'driving' | 'baby-6weeks' | 'adult-health' | 'mammography' | 'cervical-screening';
 type CategoryType = 'children' | 'adult' | 'screening';
@@ -133,7 +133,7 @@ const allChecklists: Checklist[] = [
 
 export const ChecklistTab: React.FC = () => {
   // Use ConsultationContext for adding items
-  const { addConsultationItem } = useConsultation();
+  const { addConsultationItem } = useConsultationStores();
 
   // Main state
   const [selectedChecklistIds, setSelectedChecklistIds] = useState<ChecklistType[]>([]);

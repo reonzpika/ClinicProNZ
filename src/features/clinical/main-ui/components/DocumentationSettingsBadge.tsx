@@ -8,7 +8,8 @@ import type { Template } from '@/src/features/templates/types';
 import { fetchTemplates } from '@/src/features/templates/utils/api';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
-import { MULTIPROBLEM_SOAP_UUID, useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
+import { MULTIPROBLEM_SOAP_UUID } from '@/src/stores/consultationStore';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { useResponsive } from '@/src/shared/hooks/useResponsive';
 import { createAuthHeadersWithGuest } from '@/src/shared/utils';
@@ -50,7 +51,7 @@ export const DocumentationSettingsBadge: React.FC = () => {
   const { isSignedIn, userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
-  const { templateId, inputMode, setTemplateId, setInputMode } = useConsultation();
+  const { templateId, inputMode, setTemplateId, setInputMode } = useConsultationStores();
   const { isLargeDesktop } = useResponsive();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [templates, setTemplates] = useState<Template[]>([]);

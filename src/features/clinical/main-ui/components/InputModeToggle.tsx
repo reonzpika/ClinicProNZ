@@ -2,10 +2,10 @@
 
 import React from 'react';
 
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 export function InputModeToggle() {
-  const { inputMode, setInputMode } = useConsultation();
+  const { inputMode, setInputMode } = useConsultationStores();
 
   return (
     <div className="flex items-center gap-1">

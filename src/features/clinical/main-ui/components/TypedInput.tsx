@@ -2,12 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 import { ConsultationInputHeader } from './ConsultationInputHeader';
 
 export function TypedInput({ collapsed, onExpand, isMinimized }: { collapsed?: boolean; onExpand?: () => void; isMinimized?: boolean }) {
-  const { typedInput, setTypedInput, saveTypedInputToCurrentSession } = useConsultation();
+  const { typedInput, setTypedInput, saveTypedInputToCurrentSession } = useConsultationStores();
   const [localInput, setLocalInput] = useState(typedInput);
   const [isExpanded, setIsExpanded] = useState(!isMinimized);
   const [lastSavedInput, setLastSavedInput] = useState('');

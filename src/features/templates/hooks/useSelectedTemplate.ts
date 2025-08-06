@@ -1,7 +1,7 @@
 import { useAuth } from '@clerk/nextjs';
 import { useEffect, useMemo, useState } from 'react';
 
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { createAuthHeaders } from '@/src/shared/utils';
 
@@ -11,7 +11,7 @@ import { fetchTemplates } from '../utils/api';
 export function useSelectedTemplate() {
   const { isSignedIn, userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
-  const { templateId } = useConsultation();
+  const { templateId } = useConsultationStores();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -32,6 +32,7 @@ export interface PatientSession {
   id: string
   patientName: string
   consultationNotes: string
+  clinicalImages?: any[]
   createdAt: string
   updatedAt: string
   userId: string

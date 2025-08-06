@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 
 import { FeatureFeedbackButton } from '@/src/shared/components/FeatureFeedbackButton';
 import { Button } from '@/src/shared/components/ui/button';
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 
@@ -35,7 +35,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
     switchToPatientSession,
     consultationNotes,
     getEffectiveGuestToken,
-  } = useConsultation();
+  } = useConsultationStores();
 
   // Local UI state
   const [copySuccess, setCopySuccess] = useState(false);

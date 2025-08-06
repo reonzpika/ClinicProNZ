@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { FeatureFeedbackButton } from '@/src/shared/components/FeatureFeedbackButton';
 import { Button } from '@/src/shared/components/ui/button';
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 
@@ -17,7 +17,7 @@ export function TemplateSelector() {
   const { isSignedIn, userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
-  const { templateId, setTemplateId, userDefaultTemplateId } = useConsultation();
+  const { templateId, setTemplateId, userDefaultTemplateId } = useConsultationStores();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [_, setIsLoading] = useState(true);

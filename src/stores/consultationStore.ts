@@ -8,7 +8,7 @@ interface ConsultationState {
   // Session info
   sessionId: string
   templateId: string
-  status: 'idle' | 'processing' | 'complete' | 'error'
+  status: 'idle' | 'recording' | 'processing' | 'completed'
   
   // Generated content
   generatedNotes: string | null
@@ -45,7 +45,7 @@ interface ConsultationActions {
   // Session actions
   setSessionId: (id: string) => void
   setTemplateId: (id: string) => void
-  setStatus: (status: ConsultationState['status']) => void
+  setStatus: (status: 'idle' | 'recording' | 'processing' | 'completed') => void
   
   // Generated content actions
   setGeneratedNotes: (notes: string | null) => void

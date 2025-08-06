@@ -6,7 +6,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 type AudioSettingsModalProps = {
   isOpen: boolean;
@@ -14,7 +14,7 @@ type AudioSettingsModalProps = {
 };
 
 export const AudioSettingsModal: React.FC<AudioSettingsModalProps> = ({ isOpen, onClose }) => {
-  const { microphoneGain, setMicrophoneGain, volumeThreshold, setVolumeThreshold } = useConsultation();
+  const { microphoneGain, setMicrophoneGain, volumeThreshold, setVolumeThreshold } = useConsultationStores();
   const [isTestingMic, setIsTestingMic] = useState(false);
   const [testVolumeLevel, setTestVolumeLevel] = useState(0);
 
