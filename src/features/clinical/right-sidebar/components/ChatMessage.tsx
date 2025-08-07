@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import { Button } from '@/src/shared/components/ui/button';
-import type { ChatMessage as ChatMessageType } from '@/src/shared/ConsultationContext';
+import type { ChatMessage as ChatMessageType } from '@/src/types/consultation';
 
 type ChatMessageProps = {
   message: ChatMessageType;

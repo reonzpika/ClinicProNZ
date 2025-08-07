@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import type { TranscriptionWord } from '@/src/shared/ConsultationContext';
+import type { TranscriptionWord } from '@/src/types/consultation';
 
 // Constant to avoid infinite render loops
 const EMPTY_WORDS_ARRAY: TranscriptionWord[] = [];

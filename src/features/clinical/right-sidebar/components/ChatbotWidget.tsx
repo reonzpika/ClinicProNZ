@@ -191,7 +191,7 @@ export const ChatbotWidget: React.FC = () => {
       <div className="flex-1 overflow-hidden">
         <ScrollArea ref={scrollAreaRef} className="h-full pr-2">
           <div className="space-y-1">
-            {(chatHistory || []).map(message => (
+            {(chatHistory || []).map((message: any) => (
               <ChatMessage key={message.id} message={message} onAddToConsultation={handleAddMessageToConsultation} />
             ))}
 
@@ -306,7 +306,7 @@ export const ChatbotWidget: React.FC = () => {
                   <div className="flex-1 overflow-hidden px-4">
                     <ScrollArea className="h-full pr-2">
                       <div className="space-y-2">
-                        {(chatHistory || []).map(message => (
+                        {(chatHistory || []).map((message: any) => (
                           <ChatMessage key={message.id} message={message} onAddToConsultation={handleAddMessageToConsultation} />
                         ))}
 

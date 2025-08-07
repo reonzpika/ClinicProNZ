@@ -125,7 +125,7 @@ export function SessionManager() {
             <div className="text-sm text-gray-500">No sessions found</div>
           ) : (
             <div className="space-y-2 max-h-60 overflow-y-auto">
-              {sessions.map((session) => (
+              {sessions.map((session: any) => (
                 <div
                   key={session.id}
                   className="flex justify-between items-center p-2 border rounded"

@@ -51,12 +51,12 @@ export const SessionModal: React.FC<SessionModalProps> = ({
   };
 
   // Filter sessions based on search
-  const filteredSessions = patientSessions.filter(session =>
+  const filteredSessions = patientSessions.filter((session: any) =>
     session.patientName.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   // Sort sessions: active sessions first (most recent first), then completed sessions (most recent first)
-  const sortedSessions = filteredSessions.sort((a, b) => {
+  const sortedSessions = filteredSessions.sort((a: any, b: any) => {
     // First, sort by status: active sessions come before completed sessions
     if (a.status !== b.status) {
       if (a.status === 'completed' && b.status !== 'completed') {
@@ -232,7 +232,7 @@ export const SessionModal: React.FC<SessionModalProps> = ({
                   </div>
                 )
               : (
-                  sortedSessions.map((session) => {
+                  sortedSessions.map((session: any) => {
                     const { date, time } = formatSessionDate(session.createdAt);
                     const isCurrentSession = session.id === currentPatientSessionId;
                     const isDeleteConfirm = deleteConfirmId === session.id;

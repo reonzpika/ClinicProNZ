@@ -1,4 +1,5 @@
 import { createAuthHeadersWithGuest } from '@/src/shared/utils'
+import type { PatientSession } from '@/src/types/consultation'
 
 // Types for API requests and responses
 export interface ConsultationChatRequest {
@@ -28,15 +29,7 @@ export interface ConsultationNotesResponse {
   notes: string
 }
 
-export interface PatientSession {
-  id: string
-  patientName: string
-  consultationNotes: string
-  clinicalImages?: any[]
-  createdAt: string
-  updatedAt: string
-  userId: string
-}
+// PatientSession type imported from types/consultation.ts
 
 // API functions for consultation endpoints
 export const consultationApi = {

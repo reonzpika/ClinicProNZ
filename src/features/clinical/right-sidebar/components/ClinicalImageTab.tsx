@@ -6,7 +6,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
-import type { ClinicalImage } from '@/src/shared/ConsultationContext';
+import type { ClinicalImage } from '@/src/types/consultation';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 export const ClinicalImageTab: React.FC = () => {
@@ -153,7 +153,7 @@ export const ClinicalImageTab: React.FC = () => {
   }, [handleFileUpload]);
 
   const handleRemoveImage = useCallback(async (imageId: string) => {
-    const updatedImages = clinicalImages.filter(img => img.id !== imageId);
+    const updatedImages = clinicalImages.filter((img: any) => img.id !== imageId);
     removeClinicalImage(imageId);
     await saveClinicalImagesToCurrentSession(updatedImages);
   }, [clinicalImages, removeClinicalImage, saveClinicalImagesToCurrentSession]);
@@ -245,7 +245,7 @@ export const ClinicalImageTab: React.FC = () => {
                   updateImageDescription(image.id, data.description);
 
                   // Save to session
-                  const updatedImages = clinicalImages.map(img =>
+                  const updatedImages = clinicalImages.map((img: any) =>
                     img.id === image.id
                       ? { ...img, aiDescription: data.description }
                       : img,
@@ -309,7 +309,7 @@ export const ClinicalImageTab: React.FC = () => {
       {/* Image Grid */}
       {clinicalImages.length > 0 && (
         <div className="space-y-3">
-          {clinicalImages.map((image) => {
+          {clinicalImages.map((image: any) => {
             const isAnalyzing = analyzingImages.has(image.id);
             const hasError = analysisErrors[image.id];
 

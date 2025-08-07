@@ -1,8 +1,6 @@
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import type { TranscriptionWord } from '@/src/shared/ConsultationContext'
-
-export type InputMode = 'audio' | 'typed'
+import type { TranscriptionWord, InputMode } from '@/src/types/consultation'
 
 export interface TranscriptionData {
   transcript: string

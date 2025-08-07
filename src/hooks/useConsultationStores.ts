@@ -10,13 +10,13 @@ import {
   useDeletePatientSession,
   useDeleteAllPatientSessions
 } from '@/src/hooks/consultation/useConsultationQueries'
-import type { PatientSession } from '@/src/lib/api/consultation'
+import type { PatientSession } from '@/src/types/consultation'
 
 /**
  * Custom hook that provides the same interface as the original ConsultationContext
  * but uses Zustand stores underneath. This allows for gradual migration.
  */
-export function useConsultationStores() {
+export function useConsultationStores(): any {
   const { isSignedIn } = useAuth()
   
   // Zustand stores
@@ -55,7 +55,7 @@ export function useConsultationStores() {
   // Patient session helpers
   const ensureActiveSession = useCallback(async (): Promise<string | null> => {
     // Return existing session if we have one and it exists in the server data
-    const currentSession = patientSessions.find(s => s.id === consultationStore.currentPatientSessionId)
+    const currentSession = patientSessions.find((s: any) => s.id === consultationStore.currentPatientSessionId)
     if (currentSession) {
       return currentSession.id
     }
@@ -281,10 +281,10 @@ export function useConsultationStores() {
       // This is handled automatically by React Query
     },
     getCurrentPatientSession: () => {
-      return patientSessions.find(s => s.id === consultationStore.currentPatientSessionId) || null
+      return patientSessions.find((s: any) => s.id === consultationStore.currentPatientSessionId) || null
     },
     switchToPatientSession: (sessionId: string, onSwitch?: (sessionId: string, patientName: string) => void) => {
-      const session = patientSessions.find(s => s.id === sessionId)
+              const session = patientSessions.find((s: any) => s.id === sessionId)
       if (session) {
         consultationStore.setCurrentPatientSessionId(sessionId)
         onSwitch?.(sessionId, session.patientName)

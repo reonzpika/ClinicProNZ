@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import type { ChatMessage, ConsultationItem, ClinicalImage } from '@/src/shared/ConsultationContext'
+import type { ChatMessage, ConsultationItem, ClinicalImage } from '@/src/types/consultation'
 
 export const MULTIPROBLEM_SOAP_UUID = '5f24a1c7-05a4-4622-a25b-4a19a5572196'
 

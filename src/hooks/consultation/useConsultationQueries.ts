@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@clerk/nextjs'
 import { queryKeys } from '@/src/lib/react-query'
-import { consultationApi, type ConsultationChatRequest, type ConsultationNotesRequest, type PatientSession } from '@/src/lib/api/consultation'
+import { consultationApi, type ConsultationChatRequest, type ConsultationNotesRequest } from '@/src/lib/api/consultation'
+import type { PatientSession } from '@/src/types/consultation'
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata'
 import { useConsultationStores } from '@/src/hooks/useConsultationStores'
 
@@ -45,7 +46,7 @@ export function useGenerateConsultationNotes() {
 }
 
 // Hook for patient sessions list
-export function usePatientSessions() {
+export function usePatientSessions(): any {
   const { userId } = useAuth()
   const { getUserTier } = useClerkMetadata()
   const { getEffectiveGuestToken } = useConsultationStores()
@@ -83,7 +84,7 @@ export function usePatientSession(sessionId: string | null) {
 }
 
 // Hook for creating a new patient session
-export function useCreatePatientSession() {
+export function useCreatePatientSession(): any {
   const { userId } = useAuth()
   const { getUserTier } = useClerkMetadata()
   const { getEffectiveGuestToken } = useConsultationStores()
@@ -108,7 +109,7 @@ export function useCreatePatientSession() {
 }
 
 // Hook for updating a patient session
-export function useUpdatePatientSession() {
+export function useUpdatePatientSession(): any {
   const { userId } = useAuth()
   const { getUserTier } = useClerkMetadata()
   const { getEffectiveGuestToken } = useConsultationStores()
@@ -142,7 +143,7 @@ export function useUpdatePatientSession() {
 }
 
 // Hook for deleting a patient session
-export function useDeletePatientSession() {
+export function useDeletePatientSession(): any {
   const { userId } = useAuth()
   const { getUserTier } = useClerkMetadata()
   const { getEffectiveGuestToken } = useConsultationStores()
@@ -167,7 +168,7 @@ export function useDeletePatientSession() {
 }
 
 // Hook for deleting all patient sessions
-export function useDeleteAllPatientSessions() {
+export function useDeleteAllPatientSessions(): any {
   const { userId } = useAuth()
   const { getUserTier } = useClerkMetadata()
   const { getEffectiveGuestToken } = useConsultationStores()
