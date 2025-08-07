@@ -97,7 +97,8 @@ export const consultationApi = {
       throw new Error(errorData.error || 'Failed to create new patient session')
     }
 
-    return response.json()
+    const data = await response.json()
+    return data.session // Extract the session from the wrapper
   },
 
   async updateSession(
@@ -136,7 +137,8 @@ export const consultationApi = {
       throw new Error(errorData.error || 'Failed to fetch patient sessions')
     }
 
-    return response.json()
+    const data = await response.json()
+    return data.sessions // Extract the sessions array from the wrapper
   },
 
   async deleteSession(

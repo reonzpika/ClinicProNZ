@@ -114,8 +114,8 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
     }, 500);
   }, [createPatientSession, switchToPatientSession, resetConsultation]);
 
-  const formatSessionDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatSessionDate = (dateString?: string) => {
+    const date = new Date(dateString || new Date());
     return {
       date: date.toLocaleDateString(),
       time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -212,7 +212,7 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
                                 tabIndex={0}
                                 title="Click to edit patient name"
                               >
-                                {currentSession.patientName}
+                                {currentSession.patientName || 'Untitled Session'}
                               </div>
                             )}
                       </>
