@@ -3,13 +3,14 @@ import { useAuth } from '@clerk/nextjs'
 import { useTranscriptionStore } from '@/src/stores/transcriptionStore'
 import { useConsultationStore } from '@/src/stores/consultationStore'
 import { useMobileStore } from '@/src/stores/mobileStore'
-import { 
+import {
   usePatientSessions,
   useCreatePatientSession,
   useUpdatePatientSession,
   useDeletePatientSession,
   useDeleteAllPatientSessions
 } from '@/src/hooks/consultation/useConsultationQueries'
+import { useSessionAccess } from '@/src/hooks/useSessionAccess'
 import type { PatientSession } from '@/src/types/consultation'
 
 /**
@@ -18,14 +19,15 @@ import type { PatientSession } from '@/src/types/consultation'
  */
 export function useConsultationStores(): any {
   const { isSignedIn } = useAuth()
+  const { hasSessionHistoryAccess } = useSessionAccess()
   
   // Zustand stores
   const transcriptionStore = useTranscriptionStore()
   const consultationStore = useConsultationStore()
   const mobileStore = useMobileStore()
   
-  // React Query hooks for server state - only fetch sessions when explicitly needed
-  const { data: patientSessions = [] } = usePatientSessions(false)
+  // React Query hooks for server state - fetch sessions for users with session history access
+  const { data: patientSessions = [] } = usePatientSessions(hasSessionHistoryAccess)
   const createSessionMutation = useCreatePatientSession()
   const updateSessionMutation = useUpdatePatientSession()
   const deleteSessionMutation = useDeletePatientSession()
@@ -147,10 +149,18 @@ export function useConsultationStores(): any {
     }
   }, [consultationStore.currentPatientSessionId, updatePatientSession])
   
-  const saveTypedInputToCurrentSession = useCallback(async (_typedInput: string): Promise<boolean> => {
-    // This could be extended to save typed input to session if needed
-    return true
-  }, [])
+  const saveTypedInputToCurrentSession = useCallback(async (typedInput: string): Promise<boolean> => {
+    const currentSessionId = consultationStore.currentPatientSessionId
+    if (!currentSessionId) return false
+    
+    try {
+      await updatePatientSession(currentSessionId, { typedInput })
+      return true
+    } catch (error) {
+      console.error('Failed to save typed input to session:', error)
+      return false
+    }
+  }, [consultationStore.currentPatientSessionId, updatePatientSession])
   
   const saveConsultationNotesToCurrentSession = useCallback(async (consultationNotes: string): Promise<boolean> => {
     return saveNotesToCurrentSession(consultationNotes)
@@ -167,6 +177,31 @@ export function useConsultationStores(): any {
       return false
     }
   }, [consultationStore.currentPatientSessionId, updatePatientSession])
+  
+  const saveTranscriptionsToCurrentSession = useCallback(async (): Promise<boolean> => {
+    const currentSessionId = consultationStore.currentPatientSessionId
+    if (!currentSessionId) return false
+    
+    try {
+      // Get current transcription data from store
+      const transcriptionData = transcriptionStore.transcription
+      
+      // Create transcription entries array (convert current state to session format)
+      const transcriptions = transcriptionData.transcript ? [{
+        id: Date.now().toString(),
+        text: transcriptionData.transcript,
+        timestamp: new Date().toISOString(),
+        source: 'desktop',
+        deviceId: 'browser'
+      }] : []
+      
+      await updatePatientSession(currentSessionId, { transcriptions })
+      return true
+    } catch (error) {
+      console.error('Failed to save transcriptions to session:', error)
+      return false
+    }
+  }, [consultationStore.currentPatientSessionId, transcriptionStore.transcription, updatePatientSession])
   
   // Return combined interface that matches the original ConsultationContext
   return {
@@ -291,6 +326,7 @@ export function useConsultationStores(): any {
     removeClinicalImage: consultationStore.removeClinicalImage,
     updateImageDescription: consultationStore.updateImageDescription,
     saveClinicalImagesToCurrentSession,
+    saveTranscriptionsToCurrentSession,
     
     // Placeholder functions that might be needed
     loadPatientSessions: async () => {

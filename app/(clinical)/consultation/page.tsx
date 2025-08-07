@@ -301,6 +301,9 @@ export default function ConsultationPage() {
         templateId,
       );
 
+      // Save the generated notes to the current session
+      await saveNotesToCurrentSession(notes);
+
       // Refresh usage dashboard after successful notes generation
       if (usageDashboardRef.current?.refresh) {
         usageDashboardRef.current.refresh();
