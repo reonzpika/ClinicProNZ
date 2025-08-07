@@ -476,7 +476,7 @@ export default function ConsultationPage() {
                           ? (
                               <>
                                 {/* Clinical Documentation - Top Priority */}
-                                <div className={`flex flex-col ${(generatedNotes && generatedNotes.trim()) || loading ? 'h-full' : ''}`}>
+                                <div className="flex h-full flex-col">
                                   {/* Removed TranscriptProcessingStatus - no longer needed in single-pass */}
                                   <GeneratedNotes
                                     onGenerate={handleGenerateNotes}
@@ -521,7 +521,7 @@ export default function ConsultationPage() {
                                 </div>
 
                                 {/* Clinical Documentation - Bottom */}
-                                <div className={`flex flex-col ${(generatedNotes && generatedNotes.trim()) || loading ? 'min-h-0 flex-1' : ''}`}>
+                                <div className="flex min-h-0 flex-1 flex-col">
                                   {/* Removed TranscriptProcessingStatus - no longer needed in single-pass */}
                                   <GeneratedNotes
                                     onGenerate={handleGenerateNotes}
@@ -550,7 +550,7 @@ export default function ConsultationPage() {
                         ? (
                             <>
                               {/* Clinical Documentation - Top Priority */}
-                              <div className={`flex flex-col ${(generatedNotes && generatedNotes.trim()) || loading ? 'flex-1' : ''}`}>
+                              <div className="flex flex-1 flex-col">
                                 {/* Removed TranscriptProcessingStatus - no longer needed in single-pass */}
                                 <GeneratedNotes
                                   onGenerate={handleGenerateNotes}
@@ -627,7 +627,7 @@ export default function ConsultationPage() {
                               </div>
 
                               {/* Clinical Documentation - Bottom */}
-                              <div className={`flex flex-col ${(generatedNotes && generatedNotes.trim()) || loading ? 'min-h-0 flex-1' : ''}`}>
+                              <div className="flex min-h-0 flex-1 flex-col">
                                 {/* Removed TranscriptProcessingStatus - no longer needed in single-pass */}
                                 <GeneratedNotes
                                   onGenerate={handleGenerateNotes}
