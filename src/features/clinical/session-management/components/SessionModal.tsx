@@ -140,13 +140,31 @@ export const SessionModal: React.FC<SessionModalProps> = ({
 
   const getSessionSummary = (session: any) => {
     // Create a brief summary from session data
-    if (session.notes && session.notes.length > 0) {
+    // Priority: generated notes > typed input > transcription > consultation notes
+    
+    // 1. Generated notes (primary content)
+    if (session.notes && session.notes.trim().length > 0) {
       return session.notes.substring(0, 80) + (session.notes.length > 80 ? '...' : '');
     }
+    
+    // 2. Typed input
+    if (session.typedInput && session.typedInput.trim().length > 0) {
+      return session.typedInput.substring(0, 80) + (session.typedInput.length > 80 ? '...' : '');
+    }
+    
+    // 3. Transcriptions (voice input)
     if (session.transcriptions && session.transcriptions.length > 0) {
       const transcriptText = session.transcriptions.map((t: any) => t.text).join(' ');
-      return transcriptText.substring(0, 80) + (transcriptText.length > 80 ? '...' : '');
+      if (transcriptText.trim().length > 0) {
+        return transcriptText.substring(0, 80) + (transcriptText.length > 80 ? '...' : '');
+      }
     }
+    
+    // 4. Additional consultation notes
+    if (session.consultationNotes && session.consultationNotes.trim().length > 0) {
+      return session.consultationNotes.substring(0, 80) + (session.consultationNotes.length > 80 ? '...' : '');
+    }
+    
     return 'No content yet';
   };
 

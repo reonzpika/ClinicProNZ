@@ -194,7 +194,7 @@ export function useConsultationStores(): any {
     if (!currentSessionId) return false
     
     try {
-      await updatePatientSession(currentSessionId, { consultationNotes: notes })
+      await updatePatientSession(currentSessionId, { notes: notes })
       return true
     } catch (error) {
       return false
