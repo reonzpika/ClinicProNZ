@@ -91,8 +91,8 @@ export function useCreatePatientSession(): any {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (patientName: string) =>
-      consultationApi.createSession(patientName, userId, getUserTier(), getEffectiveGuestToken()),
+    mutationFn: ({ patientName, templateId }: { patientName: string; templateId?: string }) =>
+      consultationApi.createSession(patientName, userId, getUserTier(), getEffectiveGuestToken(), templateId),
     onSuccess: (newSession) => {
       // Add to sessions cache
       queryClient.setQueryData<PatientSession[]>(

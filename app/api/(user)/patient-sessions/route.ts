@@ -295,6 +295,11 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({
       session: {
         ...session,
+        // Convert dates to ISO strings for client compatibility
+        createdAt: session?.createdAt?.toISOString() || new Date().toISOString(),
+        updatedAt: session?.updatedAt?.toISOString() || new Date().toISOString(),
+        completedAt: session?.completedAt?.toISOString() || null,
+        // Parse JSON fields
         transcriptions: session.transcriptions ? JSON.parse(session.transcriptions) : [],
         consultationItems: session.consultationItems ? JSON.parse(session.consultationItems) : [],
         clinicalImages: session.clinicalImages ? JSON.parse(session.clinicalImages) : [],

@@ -84,12 +84,16 @@ export const consultationApi = {
     patientName: string,
     userId?: string | null,
     userTier?: string,
-    guestToken?: string | null
+    guestToken?: string | null,
+    templateId?: string
   ): Promise<PatientSession> {
     const response = await fetch('/api/patient-sessions', {
       method: 'POST',
-      headers: createAuthHeadersWithGuest(userId, userTier, guestToken),
-      body: JSON.stringify({ patientName }),
+      headers: {
+        'Content-Type': 'application/json',
+        ...createAuthHeadersWithGuest(userId, userTier, guestToken),
+      },
+      body: JSON.stringify({ patientName, templateId }),
     })
 
     if (!response.ok) {
@@ -108,10 +112,13 @@ export const consultationApi = {
     userTier?: string,
     guestToken?: string | null
   ): Promise<PatientSession> {
-    const response = await fetch(`/api/patient-sessions/${sessionId}`, {
-      method: 'PATCH',
-      headers: createAuthHeadersWithGuest(userId, userTier, guestToken),
-      body: JSON.stringify(updates),
+    const response = await fetch('/api/patient-sessions', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...createAuthHeadersWithGuest(userId, userTier, guestToken),
+      },
+      body: JSON.stringify({ sessionId, ...updates }),
     })
 
     if (!response.ok) {
@@ -119,7 +126,8 @@ export const consultationApi = {
       throw new Error(errorData.error || 'Failed to update session')
     }
 
-    return response.json()
+    const data = await response.json()
+    return data.session // Extract the session from the wrapper
   },
 
   async getSessions(
@@ -147,9 +155,13 @@ export const consultationApi = {
     userTier?: string,
     guestToken?: string | null
   ): Promise<void> {
-    const response = await fetch(`/api/patient-sessions/${sessionId}`, {
+    const response = await fetch('/api/patient-sessions', {
       method: 'DELETE',
-      headers: createAuthHeadersWithGuest(userId, userTier, guestToken),
+      headers: {
+        'Content-Type': 'application/json',
+        ...createAuthHeadersWithGuest(userId, userTier, guestToken),
+      },
+      body: JSON.stringify({ sessionId }),
     })
 
     if (!response.ok) {
@@ -163,9 +175,13 @@ export const consultationApi = {
     userTier?: string,
     guestToken?: string | null
   ): Promise<void> {
-    const response = await fetch('/api/patient-sessions/delete-all', {
+    const response = await fetch('/api/patient-sessions', {
       method: 'DELETE',
-      headers: createAuthHeadersWithGuest(userId, userTier, guestToken),
+      headers: {
+        'Content-Type': 'application/json',
+        ...createAuthHeadersWithGuest(userId, userTier, guestToken),
+      },
+      body: JSON.stringify({ deleteAll: true }),
     })
 
     if (!response.ok) {

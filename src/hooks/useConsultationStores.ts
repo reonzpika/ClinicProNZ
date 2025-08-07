@@ -62,7 +62,7 @@ export function useConsultationStores(): any {
     
     // Create a new session
     try {
-      const result = await createSessionMutation.mutateAsync('Quick Consultation')
+      const result = await createSessionMutation.mutateAsync({ patientName: 'Quick Consultation' })
       return result.id
     } catch (error) {
       console.error('Failed to create session:', error)
@@ -75,8 +75,8 @@ export function useConsultationStores(): any {
     templateId?: string
   ): Promise<PatientSession | null> => {
     try {
-      const result = await createSessionMutation.mutateAsync(patientName)
-      // Update template if provided
+      const result = await createSessionMutation.mutateAsync({ patientName, templateId })
+      // Template is already set during creation
       if (templateId) {
         consultationStore.setTemplateId(templateId)
       }
