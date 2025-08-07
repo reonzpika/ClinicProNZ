@@ -46,7 +46,7 @@ export function useGenerateConsultationNotes() {
 }
 
 // Hook for patient sessions list
-export function usePatientSessions(): any {
+export function usePatientSessions(enabled: boolean = false): any {
   const { userId } = useAuth()
   const { getUserTier } = useClerkMetadata()
   const getEffectiveGuestToken = useConsultationStore(state => state.getEffectiveGuestToken)
@@ -54,7 +54,7 @@ export function usePatientSessions(): any {
   return useQuery({
     queryKey: queryKeys.consultation.sessions(),
     queryFn: () => consultationApi.getSessions(userId, getUserTier(), getEffectiveGuestToken()),
-    enabled: !!userId || !!getEffectiveGuestToken(), // Only fetch if we have auth
+    enabled: enabled && (!!userId || !!getEffectiveGuestToken()), // Only fetch when explicitly enabled AND we have auth
     staleTime: 2 * 60 * 1000, // 2 minutes - sessions don't change very often
   })
 }

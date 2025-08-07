@@ -24,8 +24,8 @@ export function useConsultationStores(): any {
   const consultationStore = useConsultationStore()
   const mobileStore = useMobileStore()
   
-  // React Query hooks for server state
-  const { data: patientSessions = [] } = usePatientSessions()
+  // React Query hooks for server state - only fetch sessions when explicitly needed
+  const { data: patientSessions = [] } = usePatientSessions(false)
   const createSessionMutation = useCreatePatientSession()
   const updateSessionMutation = useUpdatePatientSession()
   const deleteSessionMutation = useDeletePatientSession()
@@ -55,7 +55,7 @@ export function useConsultationStores(): any {
   // Patient session helpers
   const ensureActiveSession = useCallback(async (): Promise<string | null> => {
     // Return existing session if we have one and it exists in the server data
-    const currentSession = patientSessions.find((s: any) => s.id === consultationStore.currentPatientSessionId)
+    const currentSession = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === consultationStore.currentPatientSessionId) : null
     if (currentSession) {
       return currentSession.id
     }
@@ -281,10 +281,10 @@ export function useConsultationStores(): any {
       // This is handled automatically by React Query
     },
     getCurrentPatientSession: () => {
-      return patientSessions.find((s: any) => s.id === consultationStore.currentPatientSessionId) || null
+      return Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === consultationStore.currentPatientSessionId) || null : null
     },
     switchToPatientSession: (sessionId: string, onSwitch?: (sessionId: string, patientName: string) => void) => {
-              const session = patientSessions.find((s: any) => s.id === sessionId)
+      const session = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === sessionId) : null
       if (session) {
         consultationStore.setCurrentPatientSessionId(sessionId)
         onSwitch?.(sessionId, session.patientName)
