@@ -158,7 +158,7 @@ This document defines the complete authentication and authorization rules for th
 const { userId } = useAuth();
 const { getUserTier } = useClerkMetadata();
 const userTier = getUserTier();
-const { getEffectiveGuestToken } = useConsultation();
+const { getEffectiveGuestToken } = useConsultationStores();
 
 // 2. Create standardised headers
 const effectiveGuestToken = getEffectiveGuestToken();
@@ -387,13 +387,13 @@ export async function POST(req: Request) {
 import { useAuth } from '@clerk/nextjs';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { createAuthHeadersWithGuest } from '@/src/shared/utils';
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 export function MyComponent() {
   const { userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
-  const { getEffectiveGuestToken } = useConsultation();
+  const { getEffectiveGuestToken } = useConsultationStores();
   
   const handleApiCall = async () => {
     const effectiveGuestToken = getEffectiveGuestToken();

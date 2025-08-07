@@ -85,7 +85,7 @@ if (guestToken) {
 const { userId } = useAuth();
 const { getUserTier } = useClerkMetadata();
 const userTier = getUserTier();
-const { getEffectiveGuestToken } = useConsultation();
+const { getEffectiveGuestToken } = useConsultationStores();
 
 // Standardised header creation
 const effectiveGuestToken = getEffectiveGuestToken();

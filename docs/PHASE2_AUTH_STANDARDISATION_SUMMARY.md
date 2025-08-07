@@ -102,7 +102,7 @@ createTemplate(templateData, userId, userTier, guestToken);
 
 ### **Special Cases** (Token-Based Auth)
 - `app/(integration)/mobile/page.tsx` - Uses mobile QR token auth
-- `src/shared/ConsultationContext.tsx` - Mobile token validation
+- `src/hooks/useConsultationStores.ts` - Mobile token helpers exposed via stores
 - Mobile-specific flows that use QR code tokens
 
 ### **Lower Priority** (Marketing/Non-Critical)

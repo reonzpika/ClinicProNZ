@@ -85,7 +85,7 @@ Manages Ably connection with stable callbacks and automatic fallback:
 
 ### Desktop Integration
 
-- Integrates with consultation context via useConsultation hook
+- Integrates with consultation stores via `useConsultationStores()` hook
 - Session synchronization with mobile devices
 - Simple connection status indicators (no device counts)
 - All transcript processing functions properly imported
