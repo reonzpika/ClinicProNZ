@@ -320,8 +320,111 @@ export function useConsultationStores(): any {
     setInputMode: transcriptionStore.setInputMode,
     setTranscription: transcriptionStore.setTranscription,
     setTranscriptionEnhanced: transcriptionStore.setTranscriptionEnhanced,
-    appendTranscription: transcriptionStore.appendTranscription,
-    appendTranscriptionEnhanced: transcriptionStore.appendTranscriptionEnhanced,
+    appendTranscription: useCallback(async (
+      newTranscript: string,
+      isLive: boolean,
+      source: 'desktop' | 'mobile' = 'desktop',
+      deviceId?: string,
+      diarizedTranscript?: string,
+      utterances?: any[]
+    ) => {
+      // Update local store first
+      await transcriptionStore.appendTranscription(
+        newTranscript,
+        isLive,
+        source,
+        deviceId,
+        diarizedTranscript,
+        utterances
+      )
+      
+      // Save to database if we have a session and transcript content
+      const currentSessionId = consultationStore.currentPatientSessionId
+      if (currentSessionId && newTranscript.trim()) {
+        try {
+          // Create transcription entry (matching old system format)
+          const transcriptionEntry = {
+            id: Math.random().toString(36).substr(2, 9),
+            text: newTranscript.trim(),
+            timestamp: new Date().toISOString(),
+            source,
+            deviceId,
+          }
+          
+          // Get current session's transcriptions from React Query cache
+          const currentSessions = Array.isArray(patientSessions) ? patientSessions : []
+          const currentSession = currentSessions.find(s => s.id === currentSessionId)
+          const updatedTranscriptions = [
+            ...(currentSession?.transcriptions || []),
+            transcriptionEntry,
+          ]
+          
+          // Save to database
+          await updatePatientSession(currentSessionId, { transcriptions: updatedTranscriptions })
+          
+          console.log('✅ Transcription saved to database:', transcriptionEntry.text.substring(0, 50) + '...')
+        } catch (error) {
+          console.error('❌ Failed to save transcription to database:', error)
+        }
+      }
+    }, [transcriptionStore, consultationStore.currentPatientSessionId, patientSessions, updatePatientSession]),
+    
+    appendTranscriptionEnhanced: useCallback(async (
+      newTranscript: string,
+      isLive: boolean,
+      source: 'desktop' | 'mobile' = 'desktop',
+      deviceId?: string,
+      diarizedTranscript?: string,
+      utterances?: any[],
+      confidence?: number,
+      words?: any[],
+      paragraphs?: any
+    ) => {
+      // Update local store first (with enhanced data)
+      await transcriptionStore.appendTranscriptionEnhanced(
+        newTranscript,
+        isLive,
+        source,
+        deviceId,
+        diarizedTranscript,
+        utterances,
+        confidence,
+        words,
+        paragraphs
+      )
+      
+      // Save to database using same logic as basic appendTranscription
+      // Note: Enhanced data (confidence, words, paragraphs) stays in local store only
+      const currentSessionId = consultationStore.currentPatientSessionId
+      if (currentSessionId && newTranscript.trim()) {
+        try {
+          // Create basic transcription entry (enhanced data not persisted to DB)
+          const transcriptionEntry = {
+            id: Math.random().toString(36).substr(2, 9),
+            text: newTranscript.trim(),
+            timestamp: new Date().toISOString(),
+            source,
+            deviceId,
+          }
+          
+          // Get current session's transcriptions from React Query cache  
+          const currentSessions = Array.isArray(patientSessions) ? patientSessions : []
+          const currentSession = currentSessions.find(s => s.id === currentSessionId)
+          const updatedTranscriptions = [
+            ...(currentSession?.transcriptions || []),
+            transcriptionEntry,
+          ]
+          
+          // Save to database
+          await updatePatientSession(currentSessionId, { transcriptions: updatedTranscriptions })
+          
+          console.log('✅ Enhanced transcription saved to database:', transcriptionEntry.text.substring(0, 50) + '...')
+        } catch (error) {
+          console.error('❌ Failed to save enhanced transcription to database:', error)
+        }
+      }
+    }, [transcriptionStore, consultationStore.currentPatientSessionId, patientSessions, updatePatientSession]),
+    
     setTypedInput: transcriptionStore.setTypedInput,
     
     // Actions - Generated content
