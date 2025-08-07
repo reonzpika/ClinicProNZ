@@ -114,12 +114,29 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
 
   // Minimized view (in documentation mode)
   if (isMinimized) {
+    const hasNotes = notes && notes.trim().length > 0;
+    const hasItems = items && items.length > 0;
+    const itemsPreview = hasItems ? items.map(item => item.title).join(', ') : '';
+    const notesPreview = hasNotes ? notes.substring(0, 100) : '';
+    const needsNotesTruncation = hasNotes && notes.length > 100;
+    const needsItemsTruncation = itemsPreview.length > 60;
+    const displayItemsPreview = needsItemsTruncation ? itemsPreview.substring(0, 60) + '...' : itemsPreview;
+
     return (
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-slate-700">Additional Notes</span>
-            {renderCharacterCount()}
+            <div className="flex items-center gap-1">
+              <span className="text-sm">📝</span>
+              <span className="text-xs font-medium text-slate-700">Additional Notes</span>
+            </div>
+            {(hasNotes || hasItems) && (
+              <span className="text-xs text-slate-500">
+                {hasItems && `${items.length} item${items.length !== 1 ? 's' : ''}`}
+                {hasItems && hasNotes && ', '}
+                {hasNotes && `${notes.length} chars`}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-1">
             <ExaminationChecklistButton />
@@ -133,6 +150,48 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             </button>
           </div>
         </div>
+        
+        {/* Preview when collapsed */}
+        {!isExpanded && (hasItems || hasNotes) && (
+          <div className="rounded border border-slate-200 bg-slate-50 p-2 space-y-2">
+            {/* Consultation items summary */}
+            {hasItems && (
+              <div className="text-sm">
+                <span className="font-medium text-slate-700">Items: </span>
+                <span className="text-slate-600">{displayItemsPreview}</span>
+              </div>
+            )}
+            
+            {/* Notes preview */}
+            {hasNotes && (
+              <div className="text-sm text-slate-700 leading-relaxed">
+                <span className="font-medium">Notes: </span>
+                {notesPreview}
+                {needsNotesTruncation && (
+                  <span className="text-slate-500">
+                    ... <button 
+                      onClick={() => setIsExpanded(true)} 
+                      className="text-blue-600 hover:text-blue-800 underline"
+                    >
+                      (click to expand)
+                    </button>
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* No content state */}
+        {!isExpanded && !hasItems && !hasNotes && (
+          <div className="rounded border border-slate-200 bg-slate-50 p-2">
+            <div className="text-sm text-slate-500 italic">
+              No additional notes or items yet...
+            </div>
+          </div>
+        )}
+        
+        {/* Full editing interface when expanded */}
         {isExpanded && (
           <div className="space-y-3">
             <Textarea
@@ -145,7 +204,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               rows={4}
             />
             <p className="mt-1 text-xs text-slate-500">
-              Information from clinical tools appears here
+              Information from clinical tools appears here and can be edited as needed.
             </p>
           </div>
         )}

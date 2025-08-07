@@ -227,24 +227,73 @@ export function TranscriptionControls({
 
   // Handle minimized state (in documentation mode)
   if (isMinimized) {
+    const hasTranscript = transcript && transcript.trim().length > 0;
+    const wordCount = hasTranscript ? transcript.split(/\s+/).filter((word: string) => word.length > 0).length : 0;
+    const charCount = hasTranscript ? transcript.length : 0;
+    const previewText = hasTranscript ? transcript.substring(0, 150) : '';
+    const needsTruncation = hasTranscript && transcript.length > 150;
+
     return (
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-slate-700">Consultation Note</span>
+            <div className="flex items-center gap-1">
+              <Mic size={12} className="text-slate-600" />
+              <span className="text-xs font-medium text-slate-700">Audio Transcription</span>
+            </div>
+            {mobileV2.connectionStatus === 'connected' && (
+              <span className="text-xs text-green-600">📱 Mobile Synced</span>
+            )}
           </div>
-          <button
-            type="button"
-            className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            {isExpanded ? '−' : '+'}
-          </button>
+          <div className="flex items-center gap-2">
+            {hasTranscript && (
+              <span className="text-xs text-slate-500">
+                {wordCount} words, {charCount} chars
+              </span>
+            )}
+            <button
+              type="button"
+              className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              {isExpanded ? '−' : '+'}
+            </button>
+          </div>
         </div>
+        
+        {/* Preview when collapsed */}
+        {!isExpanded && hasTranscript && (
+          <div className="rounded border border-slate-200 bg-slate-50 p-2">
+            <div className="text-sm text-slate-700 leading-relaxed">
+              {previewText}
+              {needsTruncation && (
+                <span className="text-slate-500">
+                  ... <button 
+                    onClick={() => setIsExpanded(true)} 
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    (click to expand)
+                  </button>
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {/* No content state */}
+        {!isExpanded && !hasTranscript && (
+          <div className="rounded border border-slate-200 bg-slate-50 p-2">
+            <div className="text-sm text-slate-500 italic">
+              No audio transcription yet...
+            </div>
+          </div>
+        )}
+        
+        {/* Full content when expanded */}
         {isExpanded && (
           <div className="rounded border border-slate-200 bg-white p-3">
-            <div className="max-h-20 overflow-y-auto text-sm text-slate-700">
-              {transcript || 'No transcript available yet...'}
+            <div className="max-h-32 overflow-y-auto text-sm text-slate-700 leading-relaxed">
+              {hasTranscript ? transcript : 'No audio transcription available yet...'}
             </div>
           </div>
         )}

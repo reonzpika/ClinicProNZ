@@ -81,23 +81,72 @@ export function TypedInput({ collapsed, onExpand, isMinimized }: { collapsed?: b
 
   // Handle minimized state (in documentation mode)
   if (isMinimized) {
+    const hasContent = localInput && localInput.trim().length > 0;
+    const charCount = hasContent ? localInput.length : 0;
+    const wordCount = hasContent ? localInput.split(/\s+/).filter((word: string) => word.length > 0).length : 0;
+    const previewText = hasContent ? localInput.substring(0, 150) : '';
+    const needsTruncation = hasContent && localInput.length > 150;
+
     return (
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-slate-700">Consultation Note</span>
+            <div className="flex items-center gap-1">
+              <span className="text-sm">✏️</span>
+              <span className="text-xs font-medium text-slate-700">Typed Input</span>
+            </div>
             {saveStatus === 'saved' && (
-              <span className="text-xs text-slate-500">✓ Saved</span>
+              <span className="text-xs text-green-600">✓ Saved</span>
+            )}
+            {saveStatus === 'saving' && (
+              <span className="text-xs text-blue-600">💾 Saving...</span>
             )}
           </div>
-          <button
-            type="button"
-            className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            {isExpanded ? '−' : '+'}
-          </button>
+          <div className="flex items-center gap-2">
+            {hasContent && (
+              <span className="text-xs text-slate-500">
+                {wordCount} words, {charCount} chars
+              </span>
+            )}
+            <button
+              type="button"
+              className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              {isExpanded ? '−' : '+'}
+            </button>
+          </div>
         </div>
+        
+        {/* Preview when collapsed */}
+        {!isExpanded && hasContent && (
+          <div className="rounded border border-slate-200 bg-slate-50 p-2">
+            <div className="text-sm text-slate-700 leading-relaxed">
+              {previewText}
+              {needsTruncation && (
+                <span className="text-slate-500">
+                  ... <button 
+                    onClick={() => setIsExpanded(true)} 
+                    className="text-blue-600 hover:text-blue-800 underline"
+                  >
+                    (click to expand)
+                  </button>
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {/* No content state */}
+        {!isExpanded && !hasContent && (
+          <div className="rounded border border-slate-200 bg-slate-50 p-2">
+            <div className="text-sm text-slate-500 italic">
+              No typed input yet...
+            </div>
+          </div>
+        )}
+        
+        {/* Full editing interface when expanded */}
         {isExpanded && (
           <div className="rounded border border-slate-200 bg-white p-3">
             <textarea
@@ -112,9 +161,7 @@ export function TypedInput({ collapsed, onExpand, isMinimized }: { collapsed?: b
             />
             {hasContent && (
               <div className="mt-1 text-xs text-slate-500">
-                {localInput.length}
-                {' '}
-                characters
+                {localInput.length} characters
               </div>
             )}
           </div>
