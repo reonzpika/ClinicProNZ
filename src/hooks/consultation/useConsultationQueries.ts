@@ -172,6 +172,7 @@ export function useDeleteAllPatientSessions(): any {
   const { userId } = useAuth()
   const { getUserTier } = useClerkMetadata()
   const getEffectiveGuestToken = useConsultationStore(state => state.getEffectiveGuestToken)
+  const setCurrentPatientSessionId = useConsultationStore(state => state.setCurrentPatientSessionId)
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -180,6 +181,8 @@ export function useDeleteAllPatientSessions(): any {
     onSuccess: () => {
       // Clear all session-related caches
       queryClient.removeQueries({ queryKey: queryKeys.consultation.all })
+      // Clear the current session ID since all sessions are deleted
+      setCurrentPatientSessionId(null)
     },
     onError: (error) => {
       console.error('Delete all patient sessions error:', error)

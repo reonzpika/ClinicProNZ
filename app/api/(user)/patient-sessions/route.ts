@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 
 import { db } from '@/db/client';
 import { patientSessions } from '@/db/schema';
-import { checkFeatureAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
+import { checkFeatureAccess, checkCoreSessionLimit, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 // GET - List patient sessions for a user
 export async function GET(req: NextRequest) {
@@ -121,15 +121,17 @@ export async function GET(req: NextRequest) {
 // POST - Create a new patient session
 export async function POST(req: NextRequest) {
   try {
-    // Extract RBAC context and check session management permissions
+    // Extract RBAC context and check core session limits (allows guest users)
     const context = await extractRBACContext(req);
-    const permissionCheck = await checkFeatureAccess(context, 'sessions');
+    const permissionCheck = await checkCoreSessionLimit(context);
 
     if (!permissionCheck.allowed) {
       return new Response(
         JSON.stringify({
-          error: permissionCheck.reason || 'Access denied',
-          message: permissionCheck.upgradePrompt || 'Session management requires Standard tier or higher',
+          error: permissionCheck.reason || 'Session limit exceeded',
+          message: permissionCheck.upgradePrompt || 'Session limit reached',
+          remaining: permissionCheck.remaining || 0,
+          resetTime: permissionCheck.resetTime,
         }),
         {
           status: 403,

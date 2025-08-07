@@ -50,6 +50,7 @@ export default function ConsultationPage() {
     setLastGeneratedInput,
     setMobileV2ConnectionStatus, // NEW: Connection status bridge
     saveNotesToCurrentSession, // For saving generated notes
+    ensureActiveSession, // For ensuring session exists before note generation
   } = useConsultationStores();
   const { isSignedIn: _isSignedIn, userId } = useAuth();
   const { getUserTier, user } = useClerkMetadata();
@@ -236,6 +237,12 @@ export default function ConsultationPage() {
     setError(null);
 
     try {
+      // Ensure we have an active session before generating notes
+      const sessionId = await ensureActiveSession();
+      if (!sessionId) {
+        throw new Error('Failed to create or ensure active session');
+      }
+
       // Get effective guest token
       const effectiveGuestToken = getEffectiveGuestToken();
 
