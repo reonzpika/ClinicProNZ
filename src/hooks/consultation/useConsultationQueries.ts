@@ -3,13 +3,13 @@ import { useAuth } from '@clerk/nextjs'
 import { queryKeys } from '@/src/lib/react-query'
 import { consultationApi, type ConsultationChatRequest, type ConsultationNotesRequest, type PatientSession } from '@/src/lib/api/consultation'
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata'
-import { useConsultation } from '@/src/shared/ConsultationContext'
+import { useConsultationStores } from '@/src/hooks/useConsultationStores'
 
 // Hook for consultation chat
 export function useConsultationChat() {
   const { userId } = useAuth()
   const { getUserTier } = useClerkMetadata()
-  const { getEffectiveGuestToken } = useConsultation()
+  const { getEffectiveGuestToken } = useConsultationStores()
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -48,7 +48,7 @@ export function useGenerateConsultationNotes() {
 export function usePatientSessions() {
   const { userId } = useAuth()
   const { getUserTier } = useClerkMetadata()
-  const { getEffectiveGuestToken } = useConsultation()
+  const { getEffectiveGuestToken } = useConsultationStores()
 
   return useQuery({
     queryKey: queryKeys.consultation.sessions(),
@@ -62,7 +62,7 @@ export function usePatientSessions() {
 export function usePatientSession(sessionId: string | null) {
   const { userId } = useAuth()
   const { getUserTier } = useClerkMetadata()
-  const { getEffectiveGuestToken } = useConsultation()
+  const { getEffectiveGuestToken } = useConsultationStores()
   const queryClient = useQueryClient()
 
   return useQuery({
@@ -86,7 +86,7 @@ export function usePatientSession(sessionId: string | null) {
 export function useCreatePatientSession() {
   const { userId } = useAuth()
   const { getUserTier } = useClerkMetadata()
-  const { getEffectiveGuestToken } = useConsultation()
+  const { getEffectiveGuestToken } = useConsultationStores()
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -111,7 +111,7 @@ export function useCreatePatientSession() {
 export function useUpdatePatientSession() {
   const { userId } = useAuth()
   const { getUserTier } = useClerkMetadata()
-  const { getEffectiveGuestToken } = useConsultation()
+  const { getEffectiveGuestToken } = useConsultationStores()
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -145,7 +145,7 @@ export function useUpdatePatientSession() {
 export function useDeletePatientSession() {
   const { userId } = useAuth()
   const { getUserTier } = useClerkMetadata()
-  const { getEffectiveGuestToken } = useConsultation()
+  const { getEffectiveGuestToken } = useConsultationStores()
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -170,7 +170,7 @@ export function useDeletePatientSession() {
 export function useDeleteAllPatientSessions() {
   const { userId } = useAuth()
   const { getUserTier } = useClerkMetadata()
-  const { getEffectiveGuestToken } = useConsultation()
+  const { getEffectiveGuestToken } = useConsultationStores()
   const queryClient = useQueryClient()
 
   return useMutation({

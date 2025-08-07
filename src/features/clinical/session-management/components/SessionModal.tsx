@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/src/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
 import { Input } from '@/src/shared/components/ui/input';
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 type SessionModalProps = {
   isOpen: boolean;
@@ -29,7 +29,7 @@ export const SessionModal: React.FC<SessionModalProps> = ({
     deletePatientSession = async () => false,
     deleteAllPatientSessions = async () => false,
     loadPatientSessions = async () => {},
-  } = useConsultation();
+  } = useConsultationStores();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreating, setIsCreating] = useState(false);

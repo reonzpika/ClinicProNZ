@@ -7,7 +7,7 @@ import { useCallback, useRef, useState } from 'react';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useResponsive } from '@/src/shared/hooks/useResponsive';
 
 type CurrentSessionBarProps = {
@@ -27,7 +27,7 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
     resetConsultation = () => {},
     // Phase 4: Access mobile device state
     mobileV2 = { isEnabled: false, token: null, tokenData: null, connectionStatus: 'disconnected' },
-  } = useConsultation();
+  } = useConsultationStores();
 
   const { isLargeDesktop } = useResponsive();
 

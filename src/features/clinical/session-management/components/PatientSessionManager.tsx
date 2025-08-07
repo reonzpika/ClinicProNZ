@@ -3,7 +3,7 @@
 import { useAuth } from '@clerk/nextjs';
 import { useCallback, useEffect, useState } from 'react';
 
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useRBAC } from '@/src/shared/hooks/useRBAC';
 
 import { CurrentSessionBar } from './CurrentSessionBar';
@@ -16,7 +16,7 @@ export const PatientSessionManager: React.FC = () => {
     currentPatientSessionId,
     loadPatientSessions = async () => {},
     switchToPatientSession,
-  } = useConsultation();
+  } = useConsultationStores();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);

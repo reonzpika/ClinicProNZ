@@ -8,7 +8,7 @@ import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/src/shared/components/ui/card';
 import { Checkbox } from '@/src/shared/components/ui/checkbox';
 import { Textarea } from '@/src/shared/components/ui/textarea';
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 type DiagnosisItem = {
   id: string;
@@ -79,7 +79,7 @@ const mockProblems: Problem[] = [
 
 export const DifferentialDiagnosisTab: React.FC = () => {
   // Use ConsultationContext for adding items
-  const { addConsultationItem } = useConsultation();
+  const { addConsultationItem } = useConsultationStores();
 
   const [problems, setProblems] = useState<Problem[]>(mockProblems);
   const [expandedProblems, setExpandedProblems] = useState<string[]>(['problem-1', 'problem-2']);

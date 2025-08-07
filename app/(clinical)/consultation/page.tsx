@@ -23,7 +23,7 @@ import { Stack } from '@/src/shared/components/layout/Stack';
 import { MobileBlockModal } from '@/src/shared/components/MobileBlockModal';
 import { RateLimitModal } from '@/src/shared/components/RateLimitModal';
 import { Button } from '@/src/shared/components/ui/button';
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { useResponsive } from '@/src/shared/hooks/useResponsive';
 import { createAuthHeadersWithGuest } from '@/src/shared/utils';
@@ -49,7 +49,7 @@ export default function ConsultationPage() {
     getEffectiveGuestToken,
     setLastGeneratedInput,
     setMobileV2ConnectionStatus, // NEW: Connection status bridge
-  } = useConsultation();
+  } = useConsultationStores();
   const { isSignedIn: _isSignedIn, userId } = useAuth();
   const { getUserTier, user } = useClerkMetadata();
   const userTier = getUserTier();

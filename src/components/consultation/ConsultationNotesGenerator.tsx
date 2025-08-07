@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { Button } from '@/src/shared/components/ui/button'
-import { useConsultation } from '@/src/shared/ConsultationContext'
+import { useConsultationStores } from '@/src/hooks/useConsultationStores'
 import { useGenerateConsultationNotes } from '@/src/hooks/consultation/useConsultationQueries'
 
 interface ConsultationNotesGeneratorProps {
@@ -25,7 +25,7 @@ export function ConsultationNotesGenerator({
     getCompiledConsultationText,
     getEffectiveGuestToken,
     setGeneratedNotes,
-  } = useConsultation()
+  } = useConsultationStores()
 
   const [isGenerating, setIsGenerating] = useState(false)
 

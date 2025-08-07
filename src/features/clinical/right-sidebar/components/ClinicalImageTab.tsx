@@ -7,7 +7,7 @@ import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
 import type { ClinicalImage } from '@/src/shared/ConsultationContext';
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 export const ClinicalImageTab: React.FC = () => {
   const {
@@ -19,7 +19,7 @@ export const ClinicalImageTab: React.FC = () => {
     currentPatientSessionId,
     consultationNotes,
     setConsultationNotes,
-  } = useConsultation();
+  } = useConsultationStores();
 
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);

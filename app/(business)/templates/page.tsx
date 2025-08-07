@@ -13,7 +13,7 @@ import type { Template } from '@/src/features/templates/types';
 import { createTemplate, deleteTemplate, fetchTemplates, updateTemplate } from '@/src/features/templates/utils/api';
 import { Container } from '@/src/shared/components/layout/Container';
 import { Button } from '@/src/shared/components/ui/button';
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { useRBAC } from '@/src/shared/hooks/useRBAC';
 import { useResponsive } from '@/src/shared/hooks/useResponsive';
@@ -25,7 +25,7 @@ export default function TemplatesPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { setUserDefaultTemplateId, userDefaultTemplateId } = useConsultation();
+  const { setUserDefaultTemplateId, userDefaultTemplateId } = useConsultationStores();
   const { isSignedIn, userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();

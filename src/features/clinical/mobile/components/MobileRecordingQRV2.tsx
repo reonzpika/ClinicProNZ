@@ -8,7 +8,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 
@@ -37,7 +37,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
     ensureActiveSession,
     getEffectiveGuestToken,
     setGuestToken,
-  } = useConsultation();
+  } = useConsultationStores();
 
   // Simplified state for the new approach
   const [qrData, setQrData] = useState<QRTokenData | null>(null);

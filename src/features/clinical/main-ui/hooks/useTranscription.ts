@@ -1,7 +1,7 @@
 import { useAuth } from '@clerk/nextjs';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { createAuthHeadersForFormData } from '@/src/shared/utils';
 
@@ -48,7 +48,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     volumeThreshold,
     ensureActiveSession,
     getEffectiveGuestToken,
-  } = useConsultation();
+  } = useConsultationStores();
 
   const [state, setState] = useState<TranscriptionState>({
     isRecording: false,

@@ -6,7 +6,6 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 
 import { AppLayoutWrapper } from '@/src/shared/components/AppLayoutWrapper';
-import { ConsultationProvider } from '@/src/shared/ConsultationContext';
 import { TestUserProvider } from '@/src/shared/contexts/TestUserContext';
 import { QueryClientProvider } from '@/src/providers/QueryClientProvider';
 
@@ -22,7 +21,7 @@ export const metadata: Metadata = {
   description: 'Finish your consultation notes in under 1 minute. AI-powered medical scribing built specifically for New Zealand general practice.',
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -31,15 +30,13 @@ export default async function RootLayout({
     <ClerkProvider>
       <QueryClientProvider>
         <TestUserProvider>
-          <ConsultationProvider>
-            <html lang="en">
-              <body className={inter.className}>
-                {/* <StagewiseToolbar /> */}
-                <AppLayoutWrapper>{children}</AppLayoutWrapper>
-                <Analytics />
-              </body>
-            </html>
-          </ConsultationProvider>
+          <html lang="en">
+            <body className={inter.className}>
+              {/* <StagewiseToolbar /> */}
+              <AppLayoutWrapper>{children}</AppLayoutWrapper>
+              <Analytics />
+            </body>
+          </html>
         </TestUserProvider>
       </QueryClientProvider>
     </ClerkProvider>

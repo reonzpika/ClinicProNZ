@@ -9,7 +9,7 @@ import { Badge } from '@/src/shared/components/ui/badge';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { Progress } from '@/src/shared/components/ui/progress';
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { createAuthHeadersWithGuest } from '@/src/shared/utils';
 
@@ -28,7 +28,7 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
 
   const { isSignedIn, userId } = useAuth();
   const { user } = useClerkMetadata();
-  const { mobileV2: _mobileV2, getEffectiveGuestToken } = useConsultation();
+  const { mobileV2: _mobileV2, getEffectiveGuestToken } = useConsultationStores();
   const [usageData, setUsageData] = useState<UsageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);

@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ScrollArea } from '@/src/shared/components/ui/scroll-area';
 import { Switch } from '@/src/shared/components/ui/switch';
 import { Textarea } from '@/src/shared/components/ui/textarea';
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 import { ChatMessage } from './ChatMessage';
 
@@ -28,7 +28,7 @@ export const ChatbotWidget: React.FC = () => {
     inputMode,
     // Consultation notes functionality
     addConsultationItem,
-  } = useConsultation();
+  } = useConsultationStores();
 
   const [inputMessage, setInputMessage] = useState('');
   const [streamingMessage, setStreamingMessage] = useState('');

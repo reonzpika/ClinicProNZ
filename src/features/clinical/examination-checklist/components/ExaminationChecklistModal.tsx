@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 import { EXAMINATION_CHECKLISTS } from '../data/examinationData';
 import { useExaminationCart } from '../hooks/useExaminationCart';
@@ -24,7 +24,7 @@ export const ExaminationChecklistModal: React.FC<ExaminationChecklistModalProps>
   isOpen,
   onClose,
 }) => {
-  const { addConsultationItem } = useConsultation();
+  const { addConsultationItem } = useConsultationStores();
 
   // Local state
   const [searchQuery, setSearchQuery] = useState('');

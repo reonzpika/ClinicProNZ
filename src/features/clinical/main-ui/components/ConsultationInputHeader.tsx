@@ -4,7 +4,7 @@ import { Info, Keyboard, Mic } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
-import { useConsultation } from '@/src/shared/ConsultationContext';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 type ConsultationInputHeaderProps = {
   mode: 'audio' | 'typed';
@@ -21,7 +21,7 @@ export const ConsultationInputHeader: React.FC<ConsultationInputHeaderProps> = (
   onHelpToggle,
   showHelp = false,
 }) => {
-  const { inputMode, setInputMode } = useConsultation();
+  const { inputMode, setInputMode } = useConsultationStores();
   const [helpVisible, setHelpVisible] = useState(showHelp);
 
   const handleHelpClick = () => {
