@@ -54,21 +54,22 @@ export function useConsultationStores(): any {
   
   // Patient session helpers
   const ensureActiveSession = useCallback(async (): Promise<string | null> => {
-    // Return existing session if we have one and it exists in the server data
-    const currentSession = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === consultationStore.currentPatientSessionId) : null
-    if (currentSession) {
-      return currentSession.id
+    // Return existing session ID if we have one in the store
+    if (consultationStore.currentPatientSessionId) {
+      return consultationStore.currentPatientSessionId
     }
     
     // Create a new session
     try {
       const result = await createSessionMutation.mutateAsync({ patientName: 'Quick Consultation' })
+      // Set the current session ID in the store
+      consultationStore.setCurrentPatientSessionId(result.id)
       return result.id
     } catch (error) {
       console.error('Failed to create session:', error)
       return null
     }
-  }, [patientSessions, consultationStore.currentPatientSessionId, createSessionMutation])
+  }, [consultationStore.currentPatientSessionId, consultationStore.setCurrentPatientSessionId, createSessionMutation])
   
   const createPatientSession = useCallback(async (
     patientName: string,
@@ -281,14 +282,26 @@ export function useConsultationStores(): any {
       // This is handled automatically by React Query
     },
     getCurrentPatientSession: () => {
-      return Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === consultationStore.currentPatientSessionId) || null : null
+      // For users without session-history permission, just return a basic session object
+      if (!Array.isArray(patientSessions) || patientSessions.length === 0) {
+        return consultationStore.currentPatientSessionId ? {
+          id: consultationStore.currentPatientSessionId,
+          patientName: 'Current Session',
+          status: 'active',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } : null
+      }
+      return patientSessions.find((s: any) => s.id === consultationStore.currentPatientSessionId) || null
     },
     switchToPatientSession: (sessionId: string, onSwitch?: (sessionId: string, patientName: string) => void) => {
+      // Always allow switching to a session by ID, even if we don't have the full sessions list
+      consultationStore.setCurrentPatientSessionId(sessionId)
+      
+      // Try to find session details if available
       const session = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === sessionId) : null
-      if (session) {
-        consultationStore.setCurrentPatientSessionId(sessionId)
-        onSwitch?.(sessionId, session.patientName)
-      }
+      const patientName = session?.patientName || 'Current Session'
+      onSwitch?.(sessionId, patientName)
     },
     completePatientSession: async (_sessionId: string) => {
       // Implementation would depend on what "complete" means
