@@ -52,7 +52,7 @@ export const SessionModal: React.FC<SessionModalProps> = ({
 
   // Filter sessions based on search
   const filteredSessions = patientSessions.filter((session: any) =>
-    session.patientName.toLowerCase().includes(searchQuery.toLowerCase()),
+    (session.patientName || '').toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   // Sort sessions: active sessions first (most recent first), then completed sessions (most recent first)
@@ -130,8 +130,8 @@ export const SessionModal: React.FC<SessionModalProps> = ({
     }
   };
 
-  const formatSessionDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatSessionDate = (dateString?: string) => {
+    const date = new Date(dateString || new Date());
     return {
       date: date.toLocaleDateString(),
       time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -251,7 +251,7 @@ export const SessionModal: React.FC<SessionModalProps> = ({
                             {/* Session Header */}
                             <div className="mb-1 flex items-center gap-2">
                               <h3 className="truncate font-medium text-gray-900">
-                                {session.patientName}
+                                {session.patientName || 'Untitled Session'}
                               </h3>
                               {isCurrentSession && (
                                 <span className="rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-700">
