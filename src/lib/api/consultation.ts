@@ -59,11 +59,12 @@ export const consultationApi = {
     return responseData
   },
 
-  // Generate consultation notes
+  // Generate consultation notes (returns streaming response)
   async generateNotes(
     request: ConsultationNotesRequest,
     userId?: string | null,
-    userTier?: string
+    userTier?: string,
+    onProgress?: (chunk: string) => void
   ): Promise<ConsultationNotesResponse> {
     const response = await fetch('/api/consultation/notes', {
       method: 'POST',
@@ -76,6 +77,25 @@ export const consultationApi = {
       throw new Error(errorData.error || 'Failed to generate consultation notes')
     }
 
+    // Handle streaming response if callback provided
+    if (onProgress && response.body) {
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let notes = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        
+        const chunk = decoder.decode(value, { stream: true })
+        notes += chunk
+        onProgress(chunk)
+      }
+
+      return { notes }
+    }
+
+    // Fallback for non-streaming usage (though this won't work with current API)
     return response.json()
   },
 
