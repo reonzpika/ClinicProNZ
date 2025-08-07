@@ -64,6 +64,12 @@ export function useConsultationStores(): any {
       const result = await createSessionMutation.mutateAsync({ patientName: 'Quick Consultation' })
       // Set the current session ID in the store
       consultationStore.setCurrentPatientSessionId(result.id)
+      
+      // Broadcast session change to mobile devices via Ably
+      if (typeof window !== 'undefined' && (window as any).ablySyncHook?.updateSession) {
+        (window as any).ablySyncHook.updateSession(result.id, result.patientName)
+      }
+      
       return result.id
     } catch (error) {
       console.error('Failed to create session:', error)
@@ -81,6 +87,15 @@ export function useConsultationStores(): any {
       if (templateId) {
         consultationStore.setTemplateId(templateId)
       }
+      
+      // Set as current session and broadcast to mobile devices
+      consultationStore.setCurrentPatientSessionId(result.id)
+      
+      // Broadcast session change to mobile devices via Ably
+      if (typeof window !== 'undefined' && (window as any).ablySyncHook?.updateSession) {
+        (window as any).ablySyncHook.updateSession(result.id, result.patientName)
+      }
+      
       return result
     } catch (error) {
       console.error('Failed to create patient session:', error)
