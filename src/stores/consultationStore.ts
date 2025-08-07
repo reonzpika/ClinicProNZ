@@ -123,6 +123,11 @@ function getUserDefaultTemplateId(): string | null {
   return stored
 }
 
+function getCurrentPatientSessionId(): string | null {
+  if (typeof window === 'undefined') return null
+  return localStorage.getItem('currentPatientSessionId')
+}
+
 const initialState: ConsultationState = {
   sessionId: generateSessionId(),
   templateId: MULTIPROBLEM_SOAP_UUID,
@@ -141,7 +146,7 @@ const initialState: ConsultationState = {
   consultationItems: [],
   consultationNotes: '',
   clinicalImages: [],
-  currentPatientSessionId: null,
+  currentPatientSessionId: getCurrentPatientSessionId(),
   guestToken: null,
 }
 
@@ -231,7 +236,16 @@ export const useConsultationStore = create<ConsultationStore>()(
       })),
     
     // Current patient session actions
-    setCurrentPatientSessionId: (sessionId) => set({ currentPatientSessionId: sessionId }),
+    setCurrentPatientSessionId: (sessionId) => {
+      if (typeof window !== 'undefined') {
+        if (sessionId) {
+          localStorage.setItem('currentPatientSessionId', sessionId)
+        } else {
+          localStorage.removeItem('currentPatientSessionId')
+        }
+      }
+      set({ currentPatientSessionId: sessionId })
+    },
     
     // Guest token actions
     setGuestToken: (token) => {

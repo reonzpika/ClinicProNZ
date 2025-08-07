@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { useTranscriptionStore } from '@/src/stores/transcriptionStore'
 import { useConsultationStore } from '@/src/stores/consultationStore'
@@ -28,6 +28,58 @@ export function useConsultationStores(): any {
   
   // React Query hooks for server state - fetch sessions for users with session history access
   const { data: patientSessions = [] } = usePatientSessions(hasSessionHistoryAccess)
+  
+  // Auto-load session data when page loads with a persisted session ID
+  useEffect(() => {
+    const currentSessionId = consultationStore.currentPatientSessionId
+    
+    // Only auto-load if we have a session ID, sessions are loaded, and we haven't loaded data yet
+    if (currentSessionId && Array.isArray(patientSessions) && patientSessions.length > 0) {
+      const session = patientSessions.find((s: any) => s.id === currentSessionId)
+      
+      // Only auto-load if the session exists and we don't have transcription data yet
+      if (session && !transcriptionStore.transcription.transcript && !transcriptionStore.typedInput) {
+        console.log('Auto-loading session data for:', currentSessionId)
+        
+        // Use the same loading logic as switchToPatientSession but without calling onSwitch
+        if (session.transcriptions) {
+          try {
+            const transcriptions = typeof session.transcriptions === 'string' 
+              ? JSON.parse(session.transcriptions) 
+              : session.transcriptions
+            
+            if (Array.isArray(transcriptions) && transcriptions.length > 0) {
+              const latestTranscription = transcriptions[transcriptions.length - 1]
+              transcriptionStore.setTranscription(
+                latestTranscription.text || '',
+                false,
+                undefined,
+                undefined
+              )
+            }
+          } catch (error) {
+            console.error('Error auto-loading transcriptions:', error)
+          }
+        }
+        
+        if (session.typedInput) {
+          transcriptionStore.setTypedInput(session.typedInput)
+        }
+        
+        if (session.notes) {
+          consultationStore.setGeneratedNotes(session.notes)
+        }
+        
+        if (session.consultationNotes) {
+          consultationStore.setConsultationNotes(session.consultationNotes)
+        }
+        
+        if (session.templateId) {
+          consultationStore.setTemplateId(session.templateId)
+        }
+      }
+    }
+  }, [consultationStore.currentPatientSessionId, patientSessions, transcriptionStore.transcription.transcript, transcriptionStore.typedInput])
   const createSessionMutation = useCreatePatientSession()
   const updateSessionMutation = useUpdatePatientSession()
   const deleteSessionMutation = useDeletePatientSession()
@@ -352,6 +404,104 @@ export function useConsultationStores(): any {
       // Try to find session details if available
       const session = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === sessionId) : null
       const patientName = session?.patientName || 'Current Session'
+      
+      // Load session data into stores if session is found
+      if (session) {
+        // Load transcriptions into transcription store
+        if (session.transcriptions) {
+          try {
+            const transcriptions = typeof session.transcriptions === 'string' 
+              ? JSON.parse(session.transcriptions) 
+              : session.transcriptions
+            
+            if (Array.isArray(transcriptions) && transcriptions.length > 0) {
+              // Convert to the format expected by transcription store
+              const latestTranscription = transcriptions[transcriptions.length - 1]
+              transcriptionStore.setTranscription(
+                latestTranscription.text || '',
+                false, // isLive = false for loaded data
+                undefined, // diarizedTranscript
+                undefined // utterances
+              )
+            }
+          } catch (error) {
+            console.error('Error loading transcriptions:', error)
+          }
+        }
+        
+        // Load typed input into transcription store
+        if (session.typedInput) {
+          transcriptionStore.setTypedInput(session.typedInput)
+        }
+        
+        // Load generated notes into consultation store
+        if (session.notes) {
+          consultationStore.setGeneratedNotes(session.notes)
+        }
+        
+        // Load consultation notes into consultation store
+        if (session.consultationNotes) {
+          consultationStore.setConsultationNotes(session.consultationNotes)
+        }
+        
+        // Load template ID if available
+        if (session.templateId) {
+          consultationStore.setTemplateId(session.templateId)
+        }
+        
+        // Load consultation items if available
+        if (session.consultationItems) {
+          try {
+            const items = typeof session.consultationItems === 'string' 
+              ? JSON.parse(session.consultationItems) 
+              : session.consultationItems
+            
+            if (Array.isArray(items)) {
+              // Clear existing consultation items first
+              const currentItems = consultationStore.consultationItems
+              currentItems.forEach((item: any) => {
+                consultationStore.removeConsultationItem(item.id)
+              })
+              
+              // Load new consultation items
+              items.forEach((item: any) => {
+                consultationStore.addConsultationItem({
+                  type: item.type || 'other',
+                  title: item.title || '',
+                  content: item.content || ''
+                })
+              })
+            }
+          } catch (error) {
+            console.error('Error loading consultation items:', error)
+          }
+        }
+        
+        // Load clinical images if available
+        if (session.clinicalImages) {
+          try {
+            const images = typeof session.clinicalImages === 'string' 
+              ? JSON.parse(session.clinicalImages) 
+              : session.clinicalImages
+            
+            if (Array.isArray(images)) {
+              // Clear existing clinical images first
+              const currentImages = consultationStore.clinicalImages
+              currentImages.forEach((image: any) => {
+                consultationStore.removeClinicalImage(image.id)
+              })
+              
+              // Load new clinical images
+              images.forEach((image: any) => {
+                consultationStore.addClinicalImage(image)
+              })
+            }
+          } catch (error) {
+            console.error('Error loading clinical images:', error)
+          }
+        }
+      }
+      
       onSwitch?.(sessionId, patientName)
     },
     completePatientSession: async (_sessionId: string) => {
