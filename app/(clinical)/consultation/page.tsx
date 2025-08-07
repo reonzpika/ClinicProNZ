@@ -49,6 +49,7 @@ export default function ConsultationPage() {
     getEffectiveGuestToken,
     setLastGeneratedInput,
     setMobileV2ConnectionStatus, // NEW: Connection status bridge
+    saveNotesToCurrentSession, // For saving generated notes
   } = useConsultationStores();
   const { isSignedIn: _isSignedIn, userId } = useAuth();
   const { getUserTier, user } = useClerkMetadata();

@@ -191,7 +191,7 @@ export function useConsultationStores(): any {
         id: Date.now().toString(),
         text: transcriptionData.transcript,
         timestamp: new Date().toISOString(),
-        source: 'desktop',
+        source: 'desktop' as const,
         deviceId: 'browser'
       }] : []
       
