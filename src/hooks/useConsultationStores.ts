@@ -215,8 +215,17 @@ export function useConsultationStores(): any {
   }, [consultationStore.currentPatientSessionId, updatePatientSession])
   
   const saveConsultationNotesToCurrentSession = useCallback(async (consultationNotes: string): Promise<boolean> => {
-    return saveNotesToCurrentSession(consultationNotes)
-  }, [saveNotesToCurrentSession])
+    const currentSessionId = consultationStore.currentPatientSessionId
+    if (!currentSessionId) return false
+    
+    try {
+      await updatePatientSession(currentSessionId, { consultationNotes: consultationNotes })
+      return true
+    } catch (error) {
+      console.error('Failed to save consultation notes to session:', error)
+      return false
+    }
+  }, [consultationStore.currentPatientSessionId, updatePatientSession])
   
   const saveClinicalImagesToCurrentSession = useCallback(async (clinicalImages: any[]): Promise<boolean> => {
     const currentSessionId = consultationStore.currentPatientSessionId
