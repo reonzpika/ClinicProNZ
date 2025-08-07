@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react'
 import { Button } from '@/src/shared/components/ui/button'
-import { useConsultationStores } from '@/src/hooks/useConsultationStores'
+import { useConsultationStore } from '@/src/stores/consultationStore'
+import { useTranscriptionStore } from '@/src/stores/transcriptionStore'
 import { useGenerateConsultationNotes } from '@/src/hooks/consultation/useConsultationQueries'
 
 interface ConsultationNotesGeneratorProps {
@@ -16,16 +17,17 @@ export function ConsultationNotesGenerator({
 }: ConsultationNotesGeneratorProps) {
   // Note: userTier is handled automatically in the React Query hooks
   
-  const {
-    transcription,
-    typedInput,
-    inputMode,
-    templateId,
-    currentPatientSessionId,
-    getCompiledConsultationText,
-    getEffectiveGuestToken,
-    setGeneratedNotes,
-  } = useConsultationStores()
+  // From transcription store
+  const transcription = useTranscriptionStore(state => state.transcription)
+  const typedInput = useTranscriptionStore(state => state.typedInput)
+  const inputMode = useTranscriptionStore(state => state.inputMode)
+  
+  // From consultation store
+  const templateId = useConsultationStore(state => state.templateId)
+  const currentPatientSessionId = useConsultationStore(state => state.currentPatientSessionId)
+  const getCompiledConsultationText = useConsultationStore(state => state.getCompiledConsultationText)
+  const getEffectiveGuestToken = useConsultationStore(state => state.getEffectiveGuestToken)
+  const setGeneratedNotes = useConsultationStore(state => state.setGeneratedNotes)
 
   const [isGenerating, setIsGenerating] = useState(false)
 

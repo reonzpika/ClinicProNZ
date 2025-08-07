@@ -4,13 +4,13 @@ import { queryKeys } from '@/src/lib/react-query'
 import { consultationApi, type ConsultationChatRequest, type ConsultationNotesRequest } from '@/src/lib/api/consultation'
 import type { PatientSession } from '@/src/types/consultation'
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata'
-import { useConsultationStores } from '@/src/hooks/useConsultationStores'
+import { useConsultationStore } from '@/src/stores/consultationStore'
 
 // Hook for consultation chat
 export function useConsultationChat() {
   const { userId } = useAuth()
   const { getUserTier } = useClerkMetadata()
-  const { getEffectiveGuestToken } = useConsultationStores()
+  const getEffectiveGuestToken = useConsultationStore(state => state.getEffectiveGuestToken)
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -49,7 +49,7 @@ export function useGenerateConsultationNotes() {
 export function usePatientSessions(): any {
   const { userId } = useAuth()
   const { getUserTier } = useClerkMetadata()
-  const { getEffectiveGuestToken } = useConsultationStores()
+  const getEffectiveGuestToken = useConsultationStore(state => state.getEffectiveGuestToken)
 
   return useQuery({
     queryKey: queryKeys.consultation.sessions(),
@@ -63,7 +63,7 @@ export function usePatientSessions(): any {
 export function usePatientSession(sessionId: string | null) {
   const { userId } = useAuth()
   const { getUserTier } = useClerkMetadata()
-  const { getEffectiveGuestToken } = useConsultationStores()
+  const getEffectiveGuestToken = useConsultationStore(state => state.getEffectiveGuestToken)
   const queryClient = useQueryClient()
 
   return useQuery({
@@ -87,7 +87,7 @@ export function usePatientSession(sessionId: string | null) {
 export function useCreatePatientSession(): any {
   const { userId } = useAuth()
   const { getUserTier } = useClerkMetadata()
-  const { getEffectiveGuestToken } = useConsultationStores()
+  const getEffectiveGuestToken = useConsultationStore(state => state.getEffectiveGuestToken)
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -112,7 +112,7 @@ export function useCreatePatientSession(): any {
 export function useUpdatePatientSession(): any {
   const { userId } = useAuth()
   const { getUserTier } = useClerkMetadata()
-  const { getEffectiveGuestToken } = useConsultationStores()
+  const getEffectiveGuestToken = useConsultationStore(state => state.getEffectiveGuestToken)
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -146,7 +146,7 @@ export function useUpdatePatientSession(): any {
 export function useDeletePatientSession(): any {
   const { userId } = useAuth()
   const { getUserTier } = useClerkMetadata()
-  const { getEffectiveGuestToken } = useConsultationStores()
+  const getEffectiveGuestToken = useConsultationStore(state => state.getEffectiveGuestToken)
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -171,7 +171,7 @@ export function useDeletePatientSession(): any {
 export function useDeleteAllPatientSessions(): any {
   const { userId } = useAuth()
   const { getUserTier } = useClerkMetadata()
-  const { getEffectiveGuestToken } = useConsultationStores()
+  const getEffectiveGuestToken = useConsultationStore(state => state.getEffectiveGuestToken)
   const queryClient = useQueryClient()
 
   return useMutation({
