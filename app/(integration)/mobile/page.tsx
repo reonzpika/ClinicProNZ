@@ -152,14 +152,7 @@ function MobilePageContent() {
           paragraphs: data.paragraphs,
         };
 
-        // 🐛 DEBUG: Log mobile enhanced data extraction
-        void console.log('📱 Mobile Enhanced Data Extraction:', {
-          transcript: `${transcript?.slice(0, 50)}...`,
-          confidence: enhancedData.confidence,
-          wordsCount: enhancedData.words.length,
-          sampleWords: enhancedData.words.slice(0, 3),
-          hasEnhancedData: enhancedData.confidence !== undefined || enhancedData.words.length > 0,
-        });
+        
 
         // Send transcript with enhanced data via Ably
         if (transcript?.trim()) {
@@ -274,12 +267,10 @@ function MobilePageContent() {
       if (attempt < maxRetries) {
         // Wait before retry (exponential backoff: 1s, 2s)
         await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
-        void console.log(`📡 Retrying recording status send (attempt ${attempt + 2})`);
+        
       }
-    }
 
-    // Final fallback: log for debugging
-    void console.warn('📡 Failed to send recording status after retries:', { isRecording });
+    // Final fallback: no-op
     return false;
   }, [sendRecordingStatus]);
 

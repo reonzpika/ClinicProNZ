@@ -3,11 +3,11 @@
 import { CheckSquare, ClipboardList, RotateCcw } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
 import { Checkbox } from '@/src/shared/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
 import { Textarea } from '@/src/shared/components/ui/textarea';
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 import { PLAN_CATEGORIES } from '../data/planData';
 import { usePlanCart } from '../hooks/usePlanCart';

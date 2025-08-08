@@ -5,14 +5,14 @@ import { useAuth } from '@clerk/nextjs';
 import { ChevronDown, ChevronUp, Info, Mic, Settings, Smartphone } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { FeatureFeedbackButton } from '@/src/shared/components/FeatureFeedbackButton';
 import { Stack } from '@/src/shared/components/layout/Stack';
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardHeader } from '@/src/shared/components/ui/card';
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
-import { createAuthHeadersWithGuest } from '@/src/shared/utils';
+import { createAuthHeaders } from '@/src/shared/utils';
 
 import { AudioSettingsModal } from '../../mobile/components/AudioSettingsModal';
 import { MobileRecordingQRV2 } from '../../mobile/components/MobileRecordingQRV2';
@@ -80,20 +80,7 @@ export function TranscriptionControls({
   const transcript = contextTranscription.transcript;
 
   // 🐛 DEBUG: Log tier and enhanced transcription status
-  void console.log('🔍 TranscriptionControls Debug:', {
-    userTier,
-    showEnhancedTranscription,
-    isSignedIn,
-    userId,
-    hasTranscript: !!transcript,
-    transcriptLength: transcript?.length || 0,
-    contextData: {
-      confidence: contextTranscription.confidence,
-      wordsCount: contextTranscription.words?.length || 0,
-      paragraphs: contextTranscription.paragraphs,
-      hasEnhancedData: (contextTranscription.words?.length || 0) > 0,
-    },
-  });
+  // debug removed
 
   // 🆕 IMPROVED: Check both connection and session sync status
   const hasMobileDevices = mobileV2.connectionStatus === 'connected' && mobileV2.sessionSynced;
@@ -144,7 +131,7 @@ export function TranscriptionControls({
       try {
         const response = await fetch('/api/guest-sessions/status', {
           method: 'POST',
-          headers: createAuthHeadersWithGuest(userId, userTier, effectiveGuestToken),
+          headers: createAuthHeaders(userId, userTier),
           body: JSON.stringify({ guestToken: effectiveGuestToken }),
         });
 
@@ -248,7 +235,12 @@ export function TranscriptionControls({
           <div className="flex items-center gap-2">
             {hasTranscript && (
               <span className="text-xs text-slate-500">
-                {wordCount} words, {charCount} chars
+                {wordCount}
+                {' '}
+                words,
+                {charCount}
+                {' '}
+                chars
               </span>
             )}
             <button
@@ -260,17 +252,19 @@ export function TranscriptionControls({
             </button>
           </div>
         </div>
-        
+
         {/* Preview when collapsed */}
         {!isExpanded && hasTranscript && (
           <div className="rounded border border-slate-200 bg-slate-50 p-2">
-            <div className="text-sm text-slate-700 leading-relaxed">
+            <div className="text-sm leading-relaxed text-slate-700">
               {previewText}
               {needsTruncation && (
                 <span className="text-slate-500">
-                  ... <button 
-                    onClick={() => setIsExpanded(true)} 
-                    className="text-blue-600 hover:text-blue-800 underline"
+                  ...
+                  {' '}
+                  <button
+                    onClick={() => setIsExpanded(true)}
+                    className="text-blue-600 underline hover:text-blue-800"
                   >
                     (click to expand)
                   </button>
@@ -279,20 +273,20 @@ export function TranscriptionControls({
             </div>
           </div>
         )}
-        
+
         {/* No content state */}
         {!isExpanded && !hasTranscript && (
           <div className="rounded border border-slate-200 bg-slate-50 p-2">
-            <div className="text-sm text-slate-500 italic">
+            <div className="text-sm italic text-slate-500">
               No audio transcription yet...
             </div>
           </div>
         )}
-        
+
         {/* Full content when expanded */}
         {isExpanded && (
           <div className="rounded border border-slate-200 bg-white p-3">
-            <div className="max-h-32 overflow-y-auto text-sm text-slate-700 leading-relaxed">
+            <div className="max-h-32 overflow-y-auto text-sm leading-relaxed text-slate-700">
               {hasTranscript ? transcript : 'No audio transcription available yet...'}
             </div>
           </div>

@@ -3,11 +3,11 @@
 import { Brain, Download, Loader2, Trash2 } from 'lucide-react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
 import type { ClinicalImage } from '@/src/types/consultation';
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 export const ClinicalImageTab: React.FC = () => {
   const {

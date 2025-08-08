@@ -1,110 +1,108 @@
-import { create } from 'zustand'
-import { subscribeWithSelector } from 'zustand/middleware'
-import type { ChatMessage, ConsultationItem, ClinicalImage } from '@/src/types/consultation'
+import { create } from 'zustand';
+import { subscribeWithSelector } from 'zustand/middleware';
 
-export const MULTIPROBLEM_SOAP_UUID = '5f24a1c7-05a4-4622-a25b-4a19a5572196'
+import type { ChatMessage, ClinicalImage, ConsultationItem } from '@/src/types/consultation';
 
-interface ConsultationState {
+export const MULTIPROBLEM_SOAP_UUID = '5f24a1c7-05a4-4622-a25b-4a19a5572196';
+
+type ConsultationState = {
   // Session info
-  sessionId: string
-  templateId: string
-  status: 'idle' | 'recording' | 'processing' | 'completed'
-  
+  sessionId: string;
+  templateId: string;
+  status: 'idle' | 'recording' | 'processing' | 'completed';
+
   // Generated content
-  generatedNotes: string | null
-  error: string | null
-  
+  generatedNotes: string | null;
+  error: string | null;
+
   // Settings and preferences
-  userDefaultTemplateId: string | null
+  userDefaultTemplateId: string | null;
   settings: {
-    autoSave: boolean
-    microphoneGain: number
-    volumeThreshold: number
-  }
-  
+    autoSave: boolean;
+    microphoneGain: number;
+    volumeThreshold: number;
+  };
+
   // Chat state
-  chatHistory: ChatMessage[]
-  isChatContextEnabled: boolean
-  isChatLoading: boolean
-  
+  chatHistory: ChatMessage[];
+  isChatContextEnabled: boolean;
+  isChatLoading: boolean;
+
   // Consultation items and notes
-  consultationItems: ConsultationItem[]
-  consultationNotes: string
-  
+  consultationItems: ConsultationItem[];
+  consultationNotes: string;
+
   // Clinical images
-  clinicalImages: ClinicalImage[]
-  
+  clinicalImages: ClinicalImage[];
+
   // Current patient session
-  currentPatientSessionId: string | null
-  
-  // Guest token for unauthenticated users
-  guestToken: string | null
-}
+  currentPatientSessionId: string | null;
 
-interface ConsultationActions {
+  // Guest token removed - authentication required
+};
+
+type ConsultationActions = {
   // Session actions
-  setSessionId: (id: string) => void
-  setTemplateId: (id: string) => void
-  setStatus: (status: 'idle' | 'recording' | 'processing' | 'completed') => void
-  
-  // Generated content actions
-  setGeneratedNotes: (notes: string | null) => void
-  setError: (error: string | null) => void
-  
-  // Settings actions
-  setUserDefaultTemplateId: (id: string) => void
-  setAutoSave: (autoSave: boolean) => void
-  
-  // Chat actions
-  addChatMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => void
-  clearChatHistory: () => void
-  setChatContextEnabled: (enabled: boolean) => void
-  setChatLoading: (loading: boolean) => void
-  
-  // Consultation items actions
-  addConsultationItem: (item: Omit<ConsultationItem, 'id' | 'timestamp'>) => void
-  removeConsultationItem: (itemId: string) => void
-  setConsultationNotes: (notes: string) => void
-  getCompiledConsultationText: () => string
-  
-  // Clinical images actions
-  addClinicalImage: (image: ClinicalImage) => void
-  removeClinicalImage: (imageId: string) => void
-  updateImageDescription: (imageId: string, description: string) => void
-  
-  // Current patient session actions
-  setCurrentPatientSessionId: (sessionId: string | null) => void
-  
-  // Guest token actions
-  setGuestToken: (token: string | null) => void
-  getEffectiveGuestToken: () => string | null
-  
-  // Reset actions
-  resetConsultation: () => void
-}
+  setSessionId: (id: string) => void;
+  setTemplateId: (id: string) => void;
+  setStatus: (status: 'idle' | 'recording' | 'processing' | 'completed') => void;
 
-type ConsultationStore = ConsultationState & ConsultationActions
+  // Generated content actions
+  setGeneratedNotes: (notes: string | null) => void;
+  setError: (error: string | null) => void;
+
+  // Settings actions
+  setUserDefaultTemplateId: (id: string) => void;
+  setAutoSave: (autoSave: boolean) => void;
+
+  // Chat actions
+  addChatMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => void;
+  clearChatHistory: () => void;
+  setChatContextEnabled: (enabled: boolean) => void;
+  setChatLoading: (loading: boolean) => void;
+
+  // Consultation items actions
+  addConsultationItem: (item: Omit<ConsultationItem, 'id' | 'timestamp'>) => void;
+  removeConsultationItem: (itemId: string) => void;
+  setConsultationNotes: (notes: string) => void;
+  getCompiledConsultationText: () => string;
+
+  // Clinical images actions
+  addClinicalImage: (image: ClinicalImage) => void;
+  removeClinicalImage: (imageId: string) => void;
+  updateImageDescription: (imageId: string, description: string) => void;
+
+  // Current patient session actions
+  setCurrentPatientSessionId: (sessionId: string | null) => void;
+
+  // Guest token actions removed - authentication required
+
+  // Reset actions
+  resetConsultation: () => void;
+};
+
+type ConsultationStore = ConsultationState & ConsultationActions;
 
 function generateSessionId() {
-  return Math.random().toString(36).substr(2, 9)
+  return Math.random().toString(36).substr(2, 9);
 }
 
 // Generate or retrieve guest token for unauthenticated users
 // Currently unused but kept for potential future use
 // function ensureGuestToken(isAuthenticated: boolean): string | null {
 //   if (typeof window === 'undefined') return null
-//   
+//
 //   // Skip guest token generation for authenticated users
 //   if (isAuthenticated) {
 //     return null
 //   }
-//   
+//
 //   // Generate guest token for session tracking (unauthenticated users only)
 //   const existingToken = localStorage.getItem('guestToken')
 //   if (existingToken) {
 //     return existingToken
 //   }
-//   
+//
 //   // Generate new guest token
 //   const newToken = crypto.randomUUID()
 //   localStorage.setItem('guestToken', newToken)
@@ -112,20 +110,24 @@ function generateSessionId() {
 // }
 
 function getUserDefaultTemplateId(): string | null {
-  if (typeof window === 'undefined') return null
-  
-  const stored = localStorage.getItem('userDefaultTemplateId')
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const stored = localStorage.getItem('userDefaultTemplateId');
   // Migrate old default template ID to new one
   if (stored === 'ef6b3139-69a0-4b4b-bf80-dcdabe0559ba') {
-    localStorage.setItem('userDefaultTemplateId', MULTIPROBLEM_SOAP_UUID)
-    return MULTIPROBLEM_SOAP_UUID
+    localStorage.setItem('userDefaultTemplateId', MULTIPROBLEM_SOAP_UUID);
+    return MULTIPROBLEM_SOAP_UUID;
   }
-  return stored
+  return stored;
 }
 
 function getCurrentPatientSessionId(): string | null {
-  if (typeof window === 'undefined') return null
-  return localStorage.getItem('currentPatientSessionId')
+  if (typeof window === 'undefined') {
+    return null;
+  }
+  return localStorage.getItem('currentPatientSessionId');
 }
 
 const initialState: ConsultationState = {
@@ -147,121 +149,110 @@ const initialState: ConsultationState = {
   consultationNotes: '',
   clinicalImages: [],
   currentPatientSessionId: getCurrentPatientSessionId(),
-  guestToken: null,
-}
+};
 
 export const useConsultationStore = create<ConsultationStore>()(
   subscribeWithSelector((set, get) => ({
     ...initialState,
-    
+
     // Session actions
-    setSessionId: (id) => set({ sessionId: id }),
-    setTemplateId: (id) => set({ templateId: id }),
-    setStatus: (status) => set({ status }),
-    
+    setSessionId: id => set({ sessionId: id }),
+    setTemplateId: id => set({ templateId: id }),
+    setStatus: status => set({ status }),
+
     // Generated content actions
-    setGeneratedNotes: (notes) => set({ generatedNotes: notes }),
-    setError: (error) => set({ error }),
-    
+    setGeneratedNotes: notes => set({ generatedNotes: notes }),
+    setError: error => set({ error }),
+
     // Settings actions
     setUserDefaultTemplateId: (id) => {
       if (typeof window !== 'undefined') {
-        localStorage.setItem('userDefaultTemplateId', id)
+        localStorage.setItem('userDefaultTemplateId', id);
       }
-      set({ userDefaultTemplateId: id })
+      set({ userDefaultTemplateId: id });
     },
-    setAutoSave: (autoSave) => set((state) => ({
-      settings: { ...state.settings, autoSave }
+    setAutoSave: autoSave => set(state => ({
+      settings: { ...state.settings, autoSave },
     })),
-    
+
     // Chat actions
     addChatMessage: (message) => {
       const newMessage: ChatMessage = {
         ...message,
         id: Date.now().toString(),
         timestamp: Date.now(),
-      }
-      set((state) => ({
-        chatHistory: [...state.chatHistory, newMessage]
-      }))
+      };
+      set(state => ({
+        chatHistory: [...state.chatHistory, newMessage],
+      }));
     },
     clearChatHistory: () => set({ chatHistory: [] }),
-    setChatContextEnabled: (enabled) => set({ isChatContextEnabled: enabled }),
-    setChatLoading: (loading) => set({ isChatLoading: loading }),
-    
+    setChatContextEnabled: enabled => set({ isChatContextEnabled: enabled }),
+    setChatLoading: loading => set({ isChatLoading: loading }),
+
     // Consultation items actions
     addConsultationItem: (item) => {
       const newItem: ConsultationItem = {
         ...item,
         id: Date.now().toString(),
         timestamp: Date.now(),
-      }
-      set((state) => ({
-        consultationItems: [...state.consultationItems, newItem]
-      }))
+      };
+      set(state => ({
+        consultationItems: [...state.consultationItems, newItem],
+      }));
     },
-    removeConsultationItem: (itemId) =>
-      set((state) => ({
-        consultationItems: state.consultationItems.filter(item => item.id !== itemId)
+    removeConsultationItem: itemId =>
+      set(state => ({
+        consultationItems: state.consultationItems.filter(item => item.id !== itemId),
       })),
-    setConsultationNotes: (notes) => set({ consultationNotes: notes }),
+    setConsultationNotes: notes => set({ consultationNotes: notes }),
     getCompiledConsultationText: () => {
-      const { consultationItems, consultationNotes } = get()
-      const itemsText = consultationItems.map(item => `${item.title}: ${item.content}`).join('\n\n')
-      const manualNotes = consultationNotes.trim()
-      
+      const { consultationItems, consultationNotes } = get();
+      const itemsText = consultationItems.map(item => `${item.title}: ${item.content}`).join('\n\n');
+      const manualNotes = consultationNotes.trim();
+
       if (itemsText && manualNotes) {
-        return `${itemsText}\n\n${manualNotes}`
+        return `${itemsText}\n\n${manualNotes}`;
       } else if (itemsText) {
-        return itemsText
+        return itemsText;
       } else {
-        return manualNotes
+        return manualNotes;
       }
     },
-    
+
     // Clinical images actions
-    addClinicalImage: (image) =>
-      set((state) => ({
-        clinicalImages: [...state.clinicalImages, image]
+    addClinicalImage: image =>
+      set(state => ({
+        clinicalImages: [...state.clinicalImages, image],
       })),
-    removeClinicalImage: (imageId) =>
-      set((state) => ({
-        clinicalImages: state.clinicalImages.filter(img => img.id !== imageId)
+    removeClinicalImage: imageId =>
+      set(state => ({
+        clinicalImages: state.clinicalImages.filter(img => img.id !== imageId),
       })),
     updateImageDescription: (imageId, description) =>
-      set((state) => ({
+      set(state => ({
         clinicalImages: state.clinicalImages.map(img =>
-          img.id === imageId ? { ...img, description } : img
-        )
+          img.id === imageId ? { ...img, description } : img,
+        ),
       })),
-    
+
     // Current patient session actions
     setCurrentPatientSessionId: (sessionId) => {
       if (typeof window !== 'undefined') {
         if (sessionId) {
-          localStorage.setItem('currentPatientSessionId', sessionId)
+          localStorage.setItem('currentPatientSessionId', sessionId);
         } else {
-          localStorage.removeItem('currentPatientSessionId')
+          localStorage.removeItem('currentPatientSessionId');
         }
       }
-      set({ currentPatientSessionId: sessionId })
+      set({ currentPatientSessionId: sessionId });
     },
-    
-    // Guest token actions
-    setGuestToken: (token) => {
-      if (typeof window !== 'undefined' && token) {
-        localStorage.setItem('guestToken', token)
-      }
-      set({ guestToken: token })
-    },
-    getEffectiveGuestToken: () => {
-      const { guestToken } = get()
-      return guestToken
-    },
-    
+
+    // Guest token actions removed - authentication required
+
     // Reset actions
     resetConsultation: () => {
-      const newSessionId = generateSessionId()
+      const newSessionId = generateSessionId();
       set({
         sessionId: newSessionId,
         status: 'idle',
@@ -274,7 +265,7 @@ export const useConsultationStore = create<ConsultationStore>()(
         clinicalImages: [],
         // Preserve settings and templates
         templateId: get().userDefaultTemplateId || MULTIPROBLEM_SOAP_UUID,
-      })
+      });
     },
-  }))
-)
+  })),
+);

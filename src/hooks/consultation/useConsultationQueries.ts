@@ -1,191 +1,186 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useAuth } from '@clerk/nextjs'
-import { queryKeys } from '@/src/lib/react-query'
-import { consultationApi, type ConsultationChatRequest, type ConsultationNotesRequest } from '@/src/lib/api/consultation'
-import type { PatientSession } from '@/src/types/consultation'
-import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata'
-import { useConsultationStore } from '@/src/stores/consultationStore'
+import { useAuth } from '@clerk/nextjs';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+import { consultationApi, type ConsultationChatRequest, type ConsultationNotesRequest } from '@/src/lib/api/consultation';
+import { queryKeys } from '@/src/lib/react-query';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { useConsultationStore } from '@/src/stores/consultationStore';
+import type { PatientSession } from '@/src/types/consultation';
 
 // Hook for consultation chat
 export function useConsultationChat() {
-  const { userId } = useAuth()
-  const { getUserTier } = useClerkMetadata()
-  const getEffectiveGuestToken = useConsultationStore(state => state.getEffectiveGuestToken)
-  const queryClient = useQueryClient()
+  const { userId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (request: ConsultationChatRequest) =>
-      consultationApi.chat(request, userId, getUserTier(), getEffectiveGuestToken()),
+      consultationApi.chat(request, userId, getUserTier()),
     onSuccess: () => {
       // Invalidate any related queries if needed
-      queryClient.invalidateQueries({ queryKey: queryKeys.consultation.all })
+      queryClient.invalidateQueries({ queryKey: queryKeys.consultation.all });
     },
-    onError: (error) => {
-      console.error('Consultation chat error:', error)
+    onError: (_error: unknown) => {
+      // noop
     },
-  })
+  });
 }
 
 // Hook for generating consultation notes
 export function useGenerateConsultationNotes() {
-  const { userId } = useAuth()
-  const { getUserTier } = useClerkMetadata()
-  const queryClient = useQueryClient()
+  const { userId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (request: ConsultationNotesRequest) =>
       consultationApi.generateNotes(request, userId, getUserTier()),
     onSuccess: () => {
       // Invalidate sessions list to reflect potential changes
-      queryClient.invalidateQueries({ queryKey: queryKeys.consultation.sessions() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.consultation.sessions() });
     },
-    onError: (error) => {
-      console.error('Generate consultation notes error:', error)
+    onError: (_error: unknown) => {
+      // noop
     },
-  })
+  });
 }
 
 // Hook for patient sessions list
 export function usePatientSessions(enabled: boolean = false): any {
-  const { userId } = useAuth()
-  const { getUserTier } = useClerkMetadata()
-  const getEffectiveGuestToken = useConsultationStore(state => state.getEffectiveGuestToken)
+  const { userId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
 
   return useQuery({
     queryKey: queryKeys.consultation.sessions(),
-    queryFn: () => consultationApi.getSessions(userId, getUserTier(), getEffectiveGuestToken()),
-    enabled: enabled && (!!userId || !!getEffectiveGuestToken()), // Only fetch when explicitly enabled AND we have auth
+    queryFn: () => consultationApi.getSessions(userId, getUserTier()),
+    enabled: enabled && !!userId, // Only fetch when explicitly enabled AND user is authenticated
     staleTime: 2 * 60 * 1000, // 2 minutes - sessions don't change very often
-  })
+  });
 }
 
 // Hook for a specific patient session
 export function usePatientSession(sessionId: string | null) {
-  const { userId } = useAuth()
-  const { getUserTier } = useClerkMetadata()
-  const getEffectiveGuestToken = useConsultationStore(state => state.getEffectiveGuestToken)
-  const queryClient = useQueryClient()
+  const { userId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
+  const queryClient = useQueryClient();
 
   return useQuery({
     queryKey: queryKeys.consultation.session(sessionId || ''),
     queryFn: async () => {
       // Try to get from sessions list first
-      const sessions = queryClient.getQueryData<PatientSession[]>(queryKeys.consultation.sessions())
-      const session = sessions?.find(s => s.id === sessionId)
-      if (session) return session
+      const sessions = queryClient.getQueryData<PatientSession[]>(queryKeys.consultation.sessions());
+      const session = sessions?.find((s: PatientSession) => s.id === sessionId);
+      if (session) {
+        return session;
+      }
 
-      // If not in cache, we would need an API endpoint to fetch single session
-      // For now, refetch all sessions
-      const allSessions = await consultationApi.getSessions(userId, getUserTier(), getEffectiveGuestToken())
-      return allSessions.find(s => s.id === sessionId) || null
+      // If not in cache, refetch all sessions
+      const allSessions = await consultationApi.getSessions(userId, getUserTier());
+      return allSessions.find((s: PatientSession) => s.id === sessionId) || null;
     },
-    enabled: !!sessionId && (!!userId || !!getEffectiveGuestToken()),
-  })
+    enabled: !!sessionId && !!userId,
+  });
 }
 
 // Hook for creating a new patient session
 export function useCreatePatientSession(): any {
-  const { userId } = useAuth()
-  const { getUserTier } = useClerkMetadata()
-  const getEffectiveGuestToken = useConsultationStore(state => state.getEffectiveGuestToken)
-  const queryClient = useQueryClient()
+  const { userId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ patientName, templateId }: { patientName: string; templateId?: string }) =>
-      consultationApi.createSession(patientName, userId, getUserTier(), getEffectiveGuestToken(), templateId),
-    onSuccess: (newSession) => {
+      consultationApi.createSession(patientName, userId, getUserTier(), templateId),
+    onSuccess: (newSession: PatientSession) => {
       // Add to sessions cache
       queryClient.setQueryData<PatientSession[]>(
         queryKeys.consultation.sessions(),
-        (oldSessions = []) => [newSession, ...oldSessions]
-      )
+        (oldSessions?: PatientSession[]) => [newSession, ...(oldSessions ?? [])],
+      );
       // Set individual session cache
-      queryClient.setQueryData(queryKeys.consultation.session(newSession.id), newSession)
+      queryClient.setQueryData(queryKeys.consultation.session(newSession.id), newSession);
     },
-    onError: (error) => {
-      console.error('Create patient session error:', error)
+    onError: (_error: unknown) => {
+      // noop
     },
-  })
+  });
 }
 
 // Hook for updating a patient session
 export function useUpdatePatientSession(): any {
-  const { userId } = useAuth()
-  const { getUserTier } = useClerkMetadata()
-  const getEffectiveGuestToken = useConsultationStore(state => state.getEffectiveGuestToken)
-  const queryClient = useQueryClient()
+  const { userId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
+  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ 
-      sessionId, 
-      updates 
-    }: { 
-      sessionId: string
-      updates: Partial<Pick<PatientSession, 'patientName' | 'consultationNotes'>>
+    mutationFn: ({
+      sessionId,
+      updates,
+    }: {
+      sessionId: string;
+      updates: Partial<Pick<PatientSession, 'patientName' | 'consultationNotes'>>;
     }) =>
-      consultationApi.updateSession(sessionId, updates, userId, getUserTier(), getEffectiveGuestToken()),
-    onSuccess: (updatedSession) => {
+      consultationApi.updateSession(sessionId, updates, userId, getUserTier()),
+    onSuccess: (updatedSession: PatientSession) => {
       // Update sessions list cache
       queryClient.setQueryData<PatientSession[]>(
         queryKeys.consultation.sessions(),
-        (oldSessions = []) =>
-          oldSessions.map(session =>
-            session.id === updatedSession.id ? updatedSession : session
-          )
-      )
+        (oldSessions?: PatientSession[]) =>
+          (oldSessions ?? []).map((session: PatientSession) =>
+            session.id === updatedSession.id ? updatedSession : session,
+          ),
+      );
       // Update individual session cache
-      queryClient.setQueryData(queryKeys.consultation.session(updatedSession.id), updatedSession)
+      queryClient.setQueryData(queryKeys.consultation.session(updatedSession.id), updatedSession);
     },
-    onError: (error) => {
-      console.error('Update patient session error:', error)
+    onError: (_error: unknown) => {
+      // noop
     },
-  })
+  });
 }
 
 // Hook for deleting a patient session
 export function useDeletePatientSession(): any {
-  const { userId } = useAuth()
-  const { getUserTier } = useClerkMetadata()
-  const getEffectiveGuestToken = useConsultationStore(state => state.getEffectiveGuestToken)
-  const queryClient = useQueryClient()
+  const { userId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (sessionId: string) =>
-      consultationApi.deleteSession(sessionId, userId, getUserTier(), getEffectiveGuestToken()),
-    onSuccess: (_, sessionId) => {
+      consultationApi.deleteSession(sessionId, userId, getUserTier()),
+    onSuccess: (_: unknown, sessionId: string) => {
       // Remove from sessions list cache
       queryClient.setQueryData<PatientSession[]>(
         queryKeys.consultation.sessions(),
-        (oldSessions = []) => oldSessions.filter(session => session.id !== sessionId)
-      )
+        (oldSessions?: PatientSession[]) => (oldSessions ?? []).filter((session: PatientSession) => session.id !== sessionId),
+      );
       // Remove individual session cache
-      queryClient.removeQueries({ queryKey: queryKeys.consultation.session(sessionId) })
+      queryClient.removeQueries({ queryKey: queryKeys.consultation.session(sessionId) });
     },
-    onError: (error) => {
-      console.error('Delete patient session error:', error)
+    onError: (_error: unknown) => {
+      // noop
     },
-  })
+  });
 }
 
 // Hook for deleting all patient sessions
 export function useDeleteAllPatientSessions(): any {
-  const { userId } = useAuth()
-  const { getUserTier } = useClerkMetadata()
-  const getEffectiveGuestToken = useConsultationStore(state => state.getEffectiveGuestToken)
-  const setCurrentPatientSessionId = useConsultationStore(state => state.setCurrentPatientSessionId)
-  const queryClient = useQueryClient()
+  const { userId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
+  const setCurrentPatientSessionId = useConsultationStore(state => state.setCurrentPatientSessionId);
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: () =>
-      consultationApi.deleteAllSessions(userId, getUserTier(), getEffectiveGuestToken()),
+      consultationApi.deleteAllSessions(userId, getUserTier()),
     onSuccess: () => {
       // Clear all session-related caches
-      queryClient.removeQueries({ queryKey: queryKeys.consultation.all })
+      queryClient.removeQueries({ queryKey: queryKeys.consultation.all });
       // Clear the current session ID since all sessions are deleted
-      setCurrentPatientSessionId(null)
+      setCurrentPatientSessionId(null);
     },
-    onError: (error) => {
-      console.error('Delete all patient sessions error:', error)
+    onError: (_error: unknown) => {
+      // noop
     },
-  })
+  });
 }

@@ -139,27 +139,14 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
           paragraphs: data.paragraphs,
         };
 
-        // 🐛 DEBUG: Log what we received from API
-        void console.log('📥 Frontend API Response Debug:', {
-          transcript: `${transcript?.slice(0, 50)}...`,
-          confidence: enhancedData.confidence,
-          wordsCount: enhancedData.words.length,
-          sampleWords: enhancedData.words.slice(0, 3),
-          paragraphs: enhancedData.paragraphs,
-          hasEnhancedData: enhancedData.confidence !== undefined || enhancedData.words.length > 0,
-        });
+        
 
         // Use regular transcript since diarization is disabled
         if (transcript && transcript.trim()) {
           // 🆕 Use enhanced function if we have enhanced data
           const hasEnhancedData = enhancedData.confidence !== undefined || enhancedData.words.length > 0;
 
-          void console.log('🎯 Enhanced Data Decision:', {
-            hasEnhancedData,
-            willUseEnhanced: hasEnhancedData,
-            confidence: enhancedData.confidence,
-            wordsLength: enhancedData.words.length,
-          });
+          
 
           if (hasEnhancedData) {
             await appendTranscriptionEnhanced(

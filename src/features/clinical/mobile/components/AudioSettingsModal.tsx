@@ -4,9 +4,9 @@
 import { Mic, MicOff, Settings } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 type AudioSettingsModalProps = {
   isOpen: boolean;

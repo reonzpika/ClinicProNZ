@@ -6,13 +6,13 @@ import { useEffect, useMemo, useState } from 'react';
 
 import type { Template } from '@/src/features/templates/types';
 import { fetchTemplates } from '@/src/features/templates/utils/api';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
-import { MULTIPROBLEM_SOAP_UUID } from '@/src/stores/consultationStore';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { useResponsive } from '@/src/shared/hooks/useResponsive';
-import { createAuthHeadersWithGuest } from '@/src/shared/utils';
+import { createAuthHeaders } from '@/src/shared/utils';
+import { MULTIPROBLEM_SOAP_UUID } from '@/src/stores/consultationStore';
 
 import { DocumentationSettingsModal } from './DocumentationSettingsModal';
 
@@ -76,7 +76,7 @@ export const DocumentationSettingsBadge: React.FC = () => {
         // Fetch user settings including favourite template and template order
         if (isSignedIn && userId) {
           const settingsRes = await fetch('/api/user/settings', {
-            headers: createAuthHeadersWithGuest(userId, userTier, null),
+            headers: createAuthHeaders(userId, userTier),
           });
           if (settingsRes.ok) {
             const settingsData = await settingsRes.json();

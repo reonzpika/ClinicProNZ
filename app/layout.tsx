@@ -5,9 +5,9 @@ import { Analytics } from '@vercel/analytics/next';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 
+import { QueryClientProvider } from '@/src/providers/QueryClientProvider';
 import { AppLayoutWrapper } from '@/src/shared/components/AppLayoutWrapper';
 import { TestUserProvider } from '@/src/shared/contexts/TestUserContext';
-import { QueryClientProvider } from '@/src/providers/QueryClientProvider';
 
 const inter = Inter({
   subsets: ['latin'],

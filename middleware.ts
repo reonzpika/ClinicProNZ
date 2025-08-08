@@ -17,32 +17,31 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
   }
 
-  // Skip rate limiting for static assets, Next.js internals, auth routes, and admin reset
+  // Skip rate limiting for static assets, Next.js internals, auth routes, marketing pages, and admin reset
   if (
     req.nextUrl.pathname.startsWith('/_next')
     || req.nextUrl.pathname.startsWith('/favicon')
-    || req.nextUrl.pathname.startsWith('/login')
-    || req.nextUrl.pathname.startsWith('/register')
+    || req.nextUrl.pathname.startsWith('/auth/login')
+    || req.nextUrl.pathname.startsWith('/auth/register')
+    || req.nextUrl.pathname.startsWith('/about')
+    || req.nextUrl.pathname.startsWith('/ai-scribing')
+    || req.nextUrl.pathname.startsWith('/clinicpro')
+    || req.nextUrl.pathname.startsWith('/contact')
+    || req.nextUrl.pathname.startsWith('/early')
+    || req.nextUrl.pathname.startsWith('/landing-page')
+    || req.nextUrl.pathname.startsWith('/roadmap')
+    || req.nextUrl.pathname.startsWith('/thank-you')
     || req.nextUrl.pathname === '/api/admin/rate-limits/reset'
     || req.nextUrl.pathname.includes('.')
   ) {
     return NextResponse.next();
   }
 
-  // Allow GET requests to /api/templates and /api/templates/[id] for everyone
-  if (
-    req.method === 'GET'
-    && (
-      req.nextUrl.pathname === '/api/templates'
-      || /^\/api\/templates\/[^/]+$/.test(req.nextUrl.pathname)
-    )
-  ) {
-    return NextResponse.next();
-  }
+  // Remove public access to /api/templates (GET now requires auth; CRUD requires standard+)
 
   // Helper function to redirect to login with return URL for pages
   const redirectToLogin = (returnUrl: string) => {
-    const loginUrl = new URL('/login', req.url);
+    const loginUrl = new URL('/auth/login', req.url);
     loginUrl.searchParams.set('redirect_url', returnUrl);
     return NextResponse.redirect(loginUrl);
   };
@@ -52,17 +51,22 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   };
 
-  // Protect all other /api/templates routes (POST, PUT, DELETE) - require standard or higher
+  // Protect /api/templates routes
   if (req.nextUrl.pathname.startsWith('/api/templates')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
       return returnUnauthorized();
     }
 
-    // Check tier - templates require at least standard
-    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
-    if (userTier === 'basic') {
-      return returnUnauthorized();
+    // Allow GET for any signed-in user (basic can read defaults)
+    if (req.method === 'GET') {
+      // signed-in OK
+    } else {
+      // Non-GET (CRUD) requires standard+
+      const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
+      if (userTier === 'basic') {
+        return returnUnauthorized();
+      }
     }
   }
 
@@ -81,8 +85,48 @@ export default clerkMiddleware(async (auth, req) => {
     // POST and PUT are allowed for basic tier (for active session management during consultation)
   }
 
+  // Protect /api/consultation routes - require signed in (basic+)
+  if (req.nextUrl.pathname.startsWith('/api/consultation')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return returnUnauthorized();
+    }
+  }
+
+  // Protect /api/deepgram routes - require signed in (basic+)
+  if (req.nextUrl.pathname.startsWith('/api/deepgram')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return returnUnauthorized();
+    }
+  }
+
+  // Protect /api/tools routes - require signed in (basic+)
+  if (req.nextUrl.pathname.startsWith('/api/tools')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return returnUnauthorized();
+    }
+  }
+
   // Allow anonymous access to /api/mobile routes (supports guest tokens)
   // Authentication is handled within the individual route handlers
+
+  // Protect /api/user routes - require signed in (basic+)
+  if (req.nextUrl.pathname.startsWith('/api/user')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return returnUnauthorized();
+    }
+  }
+
+  // Protect /api/create-checkout-session - require signed in (basic+)
+  if (req.nextUrl.pathname === '/api/create-checkout-session') {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return returnUnauthorized();
+    }
+  }
 
   // Allow anonymous access to /api/ably routes (supports guest tokens)
   // Authentication is handled within the individual route handlers
@@ -142,7 +186,14 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // /consultation page is now open to everyone (CTAs handle auth prompts)
+  // Protect /consultation page - require basic or higher (signed in)
+  if (req.nextUrl.pathname.startsWith('/consultation')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return redirectToLogin(req.url);
+    }
+    // Basic tier and above can access consultation
+  }
 
   // Protect /billing page - require standard or higher
   if (req.nextUrl.pathname.startsWith('/billing')) {

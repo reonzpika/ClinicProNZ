@@ -5,12 +5,12 @@ import { AlertTriangle, CheckCircle, RefreshCw, Smartphone } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react';
 import { useCallback, useEffect, useState } from 'react';
 
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
-import { createAuthHeadersWithGuest } from '@/src/shared/utils';
+import { createAuthHeaders } from '@/src/shared/utils';
 
 type QRTokenData = {
   token: string;
@@ -35,8 +35,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
     setMobileV2TokenData,
     enableMobileV2,
     ensureActiveSession,
-    getEffectiveGuestToken,
-    setGuestToken,
+    // Guest tokens removed - authentication required
   } = useConsultationStores();
 
   // Simplified state for the new approach
@@ -98,10 +97,8 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
 
       const response = await fetch('/api/mobile/generate-token', {
         method: 'POST',
-        headers: createAuthHeadersWithGuest(userId, userTier, !isSignedIn ? getEffectiveGuestToken() : null),
-        body: JSON.stringify({
-          guestToken: !isSignedIn ? getEffectiveGuestToken() : undefined,
-        }),
+        headers: createAuthHeaders(userId, userTier),
+        body: JSON.stringify({}),
       });
 
       if (!response.ok) {
@@ -121,15 +118,10 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
         throw new Error(errorData.error || 'Failed to generate token');
       }
 
-      const { token, mobileUrl, expiresAt, isGuest, guestToken: newGuestToken } = await response.json();
+      const { token, mobileUrl, expiresAt } = await response.json();
 
       const tokenData = { token, mobileUrl, expiresAt };
       setQrData(tokenData);
-
-      // Store guest token for anonymous users
-      if (isGuest && newGuestToken && isClient) {
-        setGuestToken(newGuestToken);
-      }
 
       // Set token data in consultation context
       setMobileV2TokenData(tokenData);
@@ -141,7 +133,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
     } finally {
       setIsGenerating(false);
     }
-  }, [isSignedIn, userId, ensureActiveSession, setMobileV2TokenData, enableMobileV2, getEffectiveGuestToken, setGuestToken, isClient, userTier]);
+  }, [isSignedIn, userId, ensureActiveSession, setMobileV2TokenData, enableMobileV2, isClient, userTier]);
 
   const stopMobileRecording = useCallback(() => {
     setQrData(null);

@@ -4,11 +4,11 @@
 import { ChevronDown, ChevronRight, X } from 'lucide-react';
 import React, { useState } from 'react';
 
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/src/shared/components/ui/card';
 import { Checkbox } from '@/src/shared/components/ui/checkbox';
 import { Textarea } from '@/src/shared/components/ui/textarea';
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 type DiagnosisItem = {
   id: string;

@@ -105,7 +105,12 @@ export function TypedInput({ collapsed, onExpand, isMinimized }: { collapsed?: b
           <div className="flex items-center gap-2">
             {hasContent && (
               <span className="text-xs text-slate-500">
-                {wordCount} words, {charCount} chars
+                {wordCount}
+                {' '}
+                words,
+                {charCount}
+                {' '}
+                chars
               </span>
             )}
             <button
@@ -117,17 +122,19 @@ export function TypedInput({ collapsed, onExpand, isMinimized }: { collapsed?: b
             </button>
           </div>
         </div>
-        
+
         {/* Preview when collapsed */}
         {!isExpanded && hasContent && (
           <div className="rounded border border-slate-200 bg-slate-50 p-2">
-            <div className="text-sm text-slate-700 leading-relaxed">
+            <div className="text-sm leading-relaxed text-slate-700">
               {previewText}
               {needsTruncation && (
                 <span className="text-slate-500">
-                  ... <button 
-                    onClick={() => setIsExpanded(true)} 
-                    className="text-blue-600 hover:text-blue-800 underline"
+                  ...
+                  {' '}
+                  <button
+                    onClick={() => setIsExpanded(true)}
+                    className="text-blue-600 underline hover:text-blue-800"
                   >
                     (click to expand)
                   </button>
@@ -136,16 +143,16 @@ export function TypedInput({ collapsed, onExpand, isMinimized }: { collapsed?: b
             </div>
           </div>
         )}
-        
+
         {/* No content state */}
         {!isExpanded && !hasContent && (
           <div className="rounded border border-slate-200 bg-slate-50 p-2">
-            <div className="text-sm text-slate-500 italic">
+            <div className="text-sm italic text-slate-500">
               No typed input yet...
             </div>
           </div>
         )}
-        
+
         {/* Full editing interface when expanded */}
         {isExpanded && (
           <div className="rounded border border-slate-200 bg-white p-3">
@@ -161,7 +168,9 @@ export function TypedInput({ collapsed, onExpand, isMinimized }: { collapsed?: b
             />
             {hasContent && (
               <div className="mt-1 text-xs text-slate-500">
-                {localInput.length} characters
+                {localInput.length}
+                {' '}
+                characters
               </div>
             )}
           </div>

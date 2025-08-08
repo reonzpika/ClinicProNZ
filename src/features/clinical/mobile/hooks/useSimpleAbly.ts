@@ -142,14 +142,7 @@ export const useSimpleAbly = ({
                       }
                     : undefined;
 
-                // 🐛 DEBUG: Log enhanced data received on desktop
-                void console.log('📨 Desktop Ably Receive Debug:', {
-                  transcript: `${data.transcript?.slice(0, 50)}...`,
-                  confidence: enhancedData?.confidence,
-                  wordsCount: enhancedData?.words?.length || 0,
-                  hasEnhancedData: !!enhancedData,
-                  sampleWords: enhancedData?.words?.slice(0, 3),
-                });
+                
 
                 callbacksRef.current.onTranscriptReceived?.(data.transcript, data.sessionId, enhancedData);
               }
@@ -168,14 +161,7 @@ export const useSimpleAbly = ({
 
             case 'recording_status':
               if (data.sessionId && data.isRecording !== undefined) {
-                // 🐛 DEBUG: Log recording status received
-                void console.log('📼 Recording Status Received:', {
-                  isRecording: data.isRecording,
-                  sessionId: data.sessionId,
-                  isMobile,
-                  timestamp: new Date().toISOString(),
-                });
-
+                
                 // Only desktop should receive recording status updates
                 // Mobile shouldn't process its own broadcasts
                 if (!isMobile) {
@@ -270,14 +256,7 @@ export const useSimpleAbly = ({
     }
 
     try {
-      // 🐛 DEBUG: Log what we're sending via Ably
-      void console.log('📡 Ably Send Debug:', {
-        transcript: `${transcript.slice(0, 50)}...`,
-        confidence: enhancedData?.confidence,
-        wordsCount: enhancedData?.words?.length || 0,
-        hasEnhancedData: enhancedData && (enhancedData.confidence !== undefined || (enhancedData.words?.length || 0) > 0),
-      });
-
+      
       channelRef.current.publish('transcription', {
         type: 'transcription',
         transcript: transcript.trim(),
@@ -302,13 +281,7 @@ export const useSimpleAbly = ({
     }
 
     try {
-      // 🐛 DEBUG: Log recording status being sent
-      void console.log('📡 Sending Recording Status:', {
-        isRecording,
-        sessionId: currentSessionId,
-        timestamp: new Date().toISOString(),
-      });
-
+      
       channelRef.current.publish('recording_status', {
         type: 'recording_status',
         isRecording,
@@ -365,9 +338,9 @@ export const useSimpleAbly = ({
         if (response.status === 401) {
           callbacksRef.current.onError?.('Token expired or invalid');
         } else {
-          console.warn('Failed to fetch current session:', response.statusText);
+          
+          return;
         }
-        return;
       }
 
       const sessionData = await response.json();
@@ -380,7 +353,7 @@ export const useSimpleAbly = ({
         }
       }
     } catch (error) {
-      console.warn('Error fetching current session:', error);
+      
     }
   }, [tokenId, isConnected, lastSessionFetch, currentSessionId]);
 

@@ -2,13 +2,13 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/src/shared/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/src/shared/components/ui/dialog';
 import { ScrollArea } from '@/src/shared/components/ui/scroll-area';
 import { Switch } from '@/src/shared/components/ui/switch';
 import { Textarea } from '@/src/shared/components/ui/textarea';
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 import { ChatMessage } from './ChatMessage';
 

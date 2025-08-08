@@ -16,6 +16,7 @@ import RightPanelFeatures from '@/src/features/clinical/right-sidebar/components
 import UsageDashboard from '@/src/features/clinical/right-sidebar/components/UsageDashboard';
 import { WorkflowInstructions } from '@/src/features/clinical/right-sidebar/components/WorkflowInstructions';
 import { PatientSessionManager } from '@/src/features/clinical/session-management/components/PatientSessionManager';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { ContactLink } from '@/src/shared/components/ContactLink';
 import { FloatingFeedbackButton } from '@/src/shared/components/FloatingFeedbackButton';
 import { Container } from '@/src/shared/components/layout/Container';
@@ -23,10 +24,9 @@ import { Stack } from '@/src/shared/components/layout/Stack';
 import { MobileBlockModal } from '@/src/shared/components/MobileBlockModal';
 import { RateLimitModal } from '@/src/shared/components/RateLimitModal';
 import { Button } from '@/src/shared/components/ui/button';
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { useResponsive } from '@/src/shared/hooks/useResponsive';
-import { createAuthHeadersWithGuest } from '@/src/shared/utils';
+import { createAuthHeaders } from '@/src/shared/utils';
 
 export default function ConsultationPage() {
   const {
@@ -39,6 +39,8 @@ export default function ConsultationPage() {
     transcription,
     appendTranscription,
     appendTranscriptionEnhanced,
+    setTranscription,
+    setTypedInput,
     generatedNotes,
     setGeneratedNotes,
     consultationNotes,
@@ -46,7 +48,6 @@ export default function ConsultationPage() {
     consultationItems,
     getCompiledConsultationText,
     templateId,
-    getEffectiveGuestToken,
     setLastGeneratedInput,
     setMobileV2ConnectionStatus, // NEW: Connection status bridge
     saveNotesToCurrentSession, // For saving generated notes
@@ -140,14 +141,8 @@ export default function ConsultationPage() {
   const handleTranscriptReceived = useCallback((transcript: string, sessionId: string, enhancedData?: any) => {
     // Only process transcripts for the current session
     if (sessionId === currentPatientSessionId) {
-      // 🐛 DEBUG: Log enhanced data received in desktop callback
-      void console.log('🖥️ Desktop Callback Debug:', {
-        transcript: `${transcript?.slice(0, 50)}...`,
-        confidence: enhancedData?.confidence,
-        wordsCount: enhancedData?.words?.length || 0,
-        hasEnhancedData: !!enhancedData,
-      });
-
+      
+ 
       // 🆕 Use enhanced appendTranscription when enhanced data is available
       if (enhancedData && (enhancedData.confidence !== undefined || (enhancedData.words?.length || 0) > 0)) {
         appendTranscriptionEnhanced(
@@ -170,18 +165,12 @@ export default function ConsultationPage() {
 
   const handleError = useCallback((error: string) => {
     setError(error);
-  }, []);
+  }, [setError]);
 
   // Handle mobile recording status updates
   const handleRecordingStatusChanged = useCallback((isRecording: boolean, sessionId: string) => {
-    // 🐛 DEBUG: Log recording status change
-    void console.log('📼 Desktop Recording Status Changed:', {
-      isRecording,
-      sessionId,
-      currentSession: currentPatientSessionId,
-      willUpdate: sessionId === currentPatientSessionId,
-    });
-
+    
+ 
     // Only process for current session
     if (sessionId === currentPatientSessionId) {
       setMobileIsRecording(isRecording);
@@ -192,7 +181,7 @@ export default function ConsultationPage() {
   useEffect(() => {
     if (mobileV2.connectionStatus === 'disconnected' && mobileIsRecording) {
       setMobileIsRecording(false);
-      void console.log('📱 Mobile disconnected - clearing recording status');
+      
     }
   }, [mobileV2.connectionStatus, mobileIsRecording]);
 
@@ -228,6 +217,22 @@ export default function ConsultationPage() {
   const handleClearAll = () => {
     setIsNoteFocused(false);
     setIsDocumentationMode(false);
+    setGeneratedNotes('');
+    setStatus('idle');
+    setError(null);
+    // Clear consultation items and notes through the store
+    setConsultationNotes('');
+    // Also clear input/transcription and last-generated
+    if (typeof setTypedInput === 'function') {
+      setTypedInput('');
+    }
+    if (typeof setTranscription === 'function') {
+      setTranscription('', false);
+    }
+    if (typeof (useConsultationStores as any)?.resetLastGeneratedInput === 'function') {
+      // fallback if available from hook (not destructured)
+      (useConsultationStores as any).resetLastGeneratedInput();
+    }
   };
 
   const handleGenerateNotes = async () => {
@@ -242,9 +247,6 @@ export default function ConsultationPage() {
       if (!sessionId) {
         throw new Error('Failed to create or ensure active session');
       }
-
-      // Get effective guest token
-      const effectiveGuestToken = getEffectiveGuestToken();
 
       // Single-pass: Combine raw consultation data and send directly to notes API
       const mainContent = inputMode === 'audio' ? transcription.transcript : typedInput;
@@ -261,29 +263,40 @@ export default function ConsultationPage() {
       const requestBody = {
         rawConsultationData,
         templateId,
-        guestToken: effectiveGuestToken,
       };
 
       const res = await fetch('/api/consultation/notes', {
         method: 'POST',
-        headers: createAuthHeadersWithGuest(userId, userTier, effectiveGuestToken),
+        headers: createAuthHeaders(userId, userTier),
         body: JSON.stringify(requestBody),
       });
 
       // Check for rate limit error
       if (res.status === 429) {
         const errorData = await res.json();
+        // Map server response format to UI format
+        const resetTime = errorData.resetTime ? new Date(errorData.resetTime) : new Date();
+        const resetIn = Math.max(0, Math.floor((resetTime.getTime() - Date.now()) / 1000));
         setRateLimitError({
-          limit: errorData.limit,
-          resetIn: errorData.resetIn,
-          message: errorData.message,
+          limit: errorData.remaining || 0, // Use remaining count from server
+          resetIn,
+          message: errorData.message || 'Rate limit exceeded',
         });
         setRateLimitModalOpen(true);
+        setStatus('idle');
+        return;
+      }
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+        setError(errorData.error || errorData.message || 'Failed to generate notes');
+        setStatus('idle');
         return;
       }
 
       if (!res.body) {
         setError('No response body');
+        setStatus('idle');
         return;
       }
 
@@ -312,12 +325,16 @@ export default function ConsultationPage() {
       // Save the generated notes to the current session
       await saveNotesToCurrentSession(notes);
 
+      // Set status to completed
+      setStatus('completed');
+
       // Refresh usage dashboard after successful notes generation
       if (usageDashboardRef.current?.refresh) {
         usageDashboardRef.current.refresh();
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate notes');
+      setStatus('idle');
     } finally {
       setLoading(false);
     }
@@ -350,7 +367,7 @@ export default function ConsultationPage() {
         <Container size="fluid" className="h-full">
           <div className={`flex h-full flex-col ${(isMobile || isTablet) ? 'py-4' : 'py-6'}`}>
             {/* Mobile Tools Button */}
-            {(isMobile || isTablet) && (
+            {isTablet && (
               <div className="mb-4 flex justify-end">
                 <Button
                   variant="outline"
@@ -646,11 +663,13 @@ export default function ConsultationPage() {
         </Container>
       </div>
 
-      {/* Mobile Right Panel Overlay */}
-      <MobileRightPanelOverlay
-        isOpen={rightPanelOpen}
-        onClose={() => setRightPanelOpen(false)}
-      />
+      {/* Mobile Right Panel Overlay (hidden on phones) */}
+      {isTablet && (
+        <MobileRightPanelOverlay
+          isOpen={rightPanelOpen}
+          onClose={() => setRightPanelOpen(false)}
+        />
+      )}
 
       {/* Rate Limit Modal */}
       {rateLimitError && (

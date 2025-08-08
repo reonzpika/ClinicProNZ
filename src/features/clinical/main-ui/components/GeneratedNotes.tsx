@@ -3,11 +3,11 @@
 import { useAuth } from '@clerk/nextjs';
 import React, { useEffect, useState } from 'react';
 
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { FeatureFeedbackButton } from '@/src/shared/components/FeatureFeedbackButton';
 import { Button } from '@/src/shared/components/ui/button';
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
-import { createAuthHeadersWithGuest } from '@/src/shared/utils';
+import { createAuthHeaders } from '@/src/shared/utils';
 
 export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused: _isNoteFocused, isDocumentationMode: _isDocumentationMode }: { onGenerate?: () => void; onClearAll?: () => void; loading?: boolean; isNoteFocused?: boolean; isDocumentationMode?: boolean }) {
   const { isSignedIn, userId } = useAuth();
@@ -90,7 +90,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
       try {
         const response = await fetch('/api/guest-sessions/status', {
           method: 'POST',
-          headers: createAuthHeadersWithGuest(userId, userTier, effectiveGuestToken),
+          headers: createAuthHeaders(userId, userTier),
           body: JSON.stringify({ guestToken: effectiveGuestToken }),
         });
 

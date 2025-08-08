@@ -1,14 +1,13 @@
-import { createAuthHeadersWithGuest } from '@/src/shared/utils';
+import { createAuthHeaders } from '@/src/shared/utils';
 
 import type { Template } from '../types';
 
 export async function fetchTemplates(
   userId?: string | null,
   userTier?: string,
-  guestToken?: string | null,
 ): Promise<Template[]> {
   const res = await fetch('/api/templates', {
-    headers: createAuthHeadersWithGuest(userId, userTier, guestToken),
+    headers: createAuthHeaders(userId, userTier),
   });
   if (!res.ok) {
     throw new Error('Failed to fetch templates');
@@ -21,11 +20,10 @@ export async function createTemplate(
   template: Omit<Template, 'id'>,
   userId?: string | null,
   userTier?: string,
-  guestToken?: string | null,
 ): Promise<Template> {
   const res = await fetch('/api/templates', {
     method: 'POST',
-    headers: createAuthHeadersWithGuest(userId, userTier, guestToken),
+    headers: createAuthHeaders(userId, userTier),
     body: JSON.stringify(template),
   });
   if (!res.ok) {
@@ -39,11 +37,10 @@ export async function updateTemplate(
   template: Partial<Template>,
   userId?: string | null,
   userTier?: string,
-  guestToken?: string | null,
 ): Promise<Template> {
   const res = await fetch(`/api/templates/${id}`, {
     method: 'PATCH',
-    headers: createAuthHeadersWithGuest(userId, userTier, guestToken),
+    headers: createAuthHeaders(userId, userTier),
     body: JSON.stringify(template),
   });
   if (!res.ok) {
@@ -56,11 +53,10 @@ export async function deleteTemplate(
   id: string,
   userId?: string | null,
   userTier?: string,
-  guestToken?: string | null,
 ): Promise<void> {
   const res = await fetch(`/api/templates/${id}`, {
     method: 'DELETE',
-    headers: createAuthHeadersWithGuest(userId, userTier, guestToken),
+    headers: createAuthHeaders(userId, userTier),
   });
   if (!res.ok) {
     throw new Error('Failed to delete template');

@@ -4,14 +4,14 @@ import { useAuth } from '@clerk/nextjs';
 import { Crown, TrendingUp, Users, Zap } from 'lucide-react';
 import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import type { UserTier } from '@/src/lib/rbac-client';
 import { Badge } from '@/src/shared/components/ui/badge';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { Progress } from '@/src/shared/components/ui/progress';
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
-import { createAuthHeadersWithGuest } from '@/src/shared/utils';
+import { createAuthHeaders } from '@/src/shared/utils';
 
 type UsageData = {
   tier: UserTier;
@@ -28,7 +28,7 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
 
   const { isSignedIn, userId } = useAuth();
   const { user } = useClerkMetadata();
-  const { mobileV2: _mobileV2, getEffectiveGuestToken } = useConsultationStores();
+  const { mobileV2: _mobileV2 } = useConsultationStores();
   const [usageData, setUsageData] = useState<UsageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -73,27 +73,8 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
               });
             }
           } else {
-            // Guest user - fetch from guest session API
-            const effectiveGuestToken = getEffectiveGuestToken();
-            if (effectiveGuestToken) {
-              const response = await fetch('/api/guest-sessions/status', {
-                method: 'POST',
-                headers: createAuthHeadersWithGuest(userId, tier, effectiveGuestToken),
-                body: JSON.stringify({ guestToken: effectiveGuestToken }),
-              });
-
-              if (response.ok) {
-                const data = await response.json();
-                setUsageData({
-                  tier,
-                  coreSessionsUsed: data.sessionsUsed,
-                  coreSessionsLimit: 5,
-                  premiumActionsUsed: 0, // Not tracked for guests yet
-                  premiumActionsLimit: 5,
-                  resetTime: new Date(data.resetTime),
-                });
-              }
-            }
+            // User not signed in - authentication required
+            setUsageData(null);
           }
         } else {
           // Standard/Premium/Admin authenticated users - set tier-based limits (no API call needed)
@@ -123,7 +104,7 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
     if (isLoaded) {
       fetchUsageData();
     }
-  }, [isSignedIn, getEffectiveGuestToken, user, refreshKey, tier, isLoaded]);
+  }, [isSignedIn, user, refreshKey, tier, isLoaded]);
 
   if (loading || !isLoaded) {
     return (
@@ -348,7 +329,7 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
                 try {
                   const response = await fetch('/api/create-checkout-session', {
                     method: 'POST',
-                    headers: createAuthHeadersWithGuest(userId, tier, null),
+                    headers: createAuthHeaders(userId, tier),
                     body: JSON.stringify({
                       email: user?.primaryEmailAddress?.emailAddress,
                       userId: user?.id,
@@ -371,11 +352,9 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
               }}
             >
               <Crown className="mr-2 size-4" />
-              {!isSignedIn
-                ? 'Sign Up to Upgrade - $30/month (First 15 GPs!)'
-                : isCoreAtLimit
-                  ? 'Upgrade Now - Unlimited Access'
-                  : 'Upgrade to Standard - $30/month (First 15 GPs!)'}
+              {isCoreAtLimit
+                ? 'Upgrade Now - Unlimited Access'
+                : 'Upgrade to Standard - $30/month (First 15 GPs!)'}
             </Button>
 
             {/* Remove email input section for public users */}

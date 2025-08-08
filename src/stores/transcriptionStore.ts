@@ -1,50 +1,51 @@
-import { create } from 'zustand'
-import { subscribeWithSelector } from 'zustand/middleware'
-import type { TranscriptionWord, InputMode } from '@/src/types/consultation'
+import { create } from 'zustand';
+import { subscribeWithSelector } from 'zustand/middleware';
 
-export interface TranscriptionData {
-  transcript: string
-  isLive: boolean
-  utterances?: any[]
-  diarizedTranscript?: string
+import type { InputMode, TranscriptionWord } from '@/src/types/consultation';
+
+export type TranscriptionData = {
+  transcript: string;
+  isLive: boolean;
+  utterances?: any[];
+  diarizedTranscript?: string;
   // Enhanced transcription features
-  confidence?: number
-  words?: TranscriptionWord[]
-  paragraphs?: any
-}
+  confidence?: number;
+  words?: TranscriptionWord[];
+  paragraphs?: any;
+};
 
-interface TranscriptionState {
+type TranscriptionState = {
   // Input mode
-  inputMode: InputMode
-  
-  // Transcription state
-  transcription: TranscriptionData
-  typedInput: string
-  
-  // Consent and settings
-  consentObtained: boolean
-  microphoneGain: number
-  volumeThreshold: number
-  
-  // Last generated input tracking
-  lastGeneratedTranscription?: string
-  lastGeneratedTypedInput?: string
-  lastGeneratedCompiledConsultationText?: string
-  lastGeneratedTemplateId?: string
-}
+  inputMode: InputMode;
 
-interface TranscriptionActions {
+  // Transcription state
+  transcription: TranscriptionData;
+  typedInput: string;
+
+  // Consent and settings
+  consentObtained: boolean;
+  microphoneGain: number;
+  volumeThreshold: number;
+
+  // Last generated input tracking
+  lastGeneratedTranscription?: string;
+  lastGeneratedTypedInput?: string;
+  lastGeneratedCompiledConsultationText?: string;
+  lastGeneratedTemplateId?: string;
+};
+
+type TranscriptionActions = {
   // Input mode actions
-  setInputMode: (mode: InputMode) => void
-  
+  setInputMode: (mode: InputMode) => void;
+
   // Transcription actions
   setTranscription: (
-    transcript: string, 
-    isLive: boolean, 
-    diarizedTranscript?: string, 
+    transcript: string,
+    isLive: boolean,
+    diarizedTranscript?: string,
     utterances?: any[]
-  ) => void
-  
+  ) => void;
+
   setTranscriptionEnhanced: (
     transcript: string,
     isLive: boolean,
@@ -53,8 +54,8 @@ interface TranscriptionActions {
     confidence?: number,
     words?: TranscriptionWord[],
     paragraphs?: any
-  ) => void
-  
+  ) => void;
+
   appendTranscription: (
     newTranscript: string,
     isLive: boolean,
@@ -62,8 +63,8 @@ interface TranscriptionActions {
     deviceId?: string,
     diarizedTranscript?: string,
     utterances?: any[]
-  ) => Promise<void>
-  
+  ) => Promise<void>;
+
   appendTranscriptionEnhanced: (
     newTranscript: string,
     isLive: boolean,
@@ -74,54 +75,54 @@ interface TranscriptionActions {
     confidence?: number,
     words?: TranscriptionWord[],
     paragraphs?: any
-  ) => Promise<void>
-  
-  setTypedInput: (input: string) => void
-  
+  ) => Promise<void>;
+
+  setTypedInput: (input: string) => void;
+
   // Settings actions
-  setConsentObtained: (consent: boolean) => void
-  setMicrophoneGain: (gain: number) => void
-  setVolumeThreshold: (threshold: number) => void
-  
+  setConsentObtained: (consent: boolean) => void;
+  setMicrophoneGain: (gain: number) => void;
+  setVolumeThreshold: (threshold: number) => void;
+
   // Last generated tracking actions
   setLastGeneratedInput: (
     transcription: string,
     typedInput?: string,
     compiledConsultationText?: string,
     templateId?: string
-  ) => void
-  resetLastGeneratedInput: () => void
-  
-  // Utility getters
-  getCurrentTranscript: () => string
-  getCurrentInput: () => string
-  
-  // Reset function
-  resetTranscription: () => void
-}
+  ) => void;
+  resetLastGeneratedInput: () => void;
 
-type TranscriptionStore = TranscriptionState & TranscriptionActions
+  // Utility getters
+  getCurrentTranscript: () => string;
+  getCurrentInput: () => string;
+
+  // Reset function
+  resetTranscription: () => void;
+};
+
+type TranscriptionStore = TranscriptionState & TranscriptionActions;
 
 const initialState: TranscriptionState = {
   inputMode: 'audio',
-  transcription: { 
-    transcript: '', 
-    isLive: false, 
-    utterances: [] 
+  transcription: {
+    transcript: '',
+    isLive: false,
+    utterances: [],
   },
   typedInput: '',
   consentObtained: false,
   microphoneGain: 7.0,
   volumeThreshold: 0.1,
-}
+};
 
 export const useTranscriptionStore = create<TranscriptionStore>()(
   subscribeWithSelector((set, get) => ({
     ...initialState,
-    
+
     // Input mode actions
-    setInputMode: (mode) => set({ inputMode: mode }),
-    
+    setInputMode: mode => set({ inputMode: mode }),
+
     // Transcription actions
     setTranscription: (transcript, isLive, diarizedTranscript, utterances) =>
       set({
@@ -132,7 +133,7 @@ export const useTranscriptionStore = create<TranscriptionStore>()(
           utterances,
         },
       }),
-    
+
     setTranscriptionEnhanced: (
       transcript,
       isLive,
@@ -140,7 +141,7 @@ export const useTranscriptionStore = create<TranscriptionStore>()(
       utterances,
       confidence,
       words,
-      paragraphs
+      paragraphs,
     ) =>
       set({
         transcription: {
@@ -153,16 +154,16 @@ export const useTranscriptionStore = create<TranscriptionStore>()(
           paragraphs,
         },
       }),
-    
+
     appendTranscription: async (
       newTranscript,
       isLive,
       _source,
       _deviceId,
       diarizedTranscript,
-      utterances
+      utterances,
     ) => {
-      const current = get().transcription
+      const current = get().transcription;
       set({
         transcription: {
           transcript: current.transcript + newTranscript,
@@ -170,9 +171,9 @@ export const useTranscriptionStore = create<TranscriptionStore>()(
           diarizedTranscript: diarizedTranscript || current.diarizedTranscript,
           utterances: utterances || current.utterances,
         },
-      })
+      });
     },
-    
+
     appendTranscriptionEnhanced: async (
       newTranscript,
       isLive,
@@ -182,9 +183,9 @@ export const useTranscriptionStore = create<TranscriptionStore>()(
       utterances,
       confidence,
       words,
-      paragraphs
+      paragraphs,
     ) => {
-      const current = get().transcription
+      const current = get().transcription;
       set({
         transcription: {
           transcript: current.transcript + newTranscript,
@@ -195,16 +196,16 @@ export const useTranscriptionStore = create<TranscriptionStore>()(
           words: words || current.words,
           paragraphs: paragraphs || current.paragraphs,
         },
-      })
+      });
     },
-    
-    setTypedInput: (input) => set({ typedInput: input }),
-    
+
+    setTypedInput: input => set({ typedInput: input }),
+
     // Settings actions
-    setConsentObtained: (consent) => set({ consentObtained: consent }),
-    setMicrophoneGain: (gain) => set({ microphoneGain: gain }),
-    setVolumeThreshold: (threshold) => set({ volumeThreshold: threshold }),
-    
+    setConsentObtained: consent => set({ consentObtained: consent }),
+    setMicrophoneGain: gain => set({ microphoneGain: gain }),
+    setVolumeThreshold: threshold => set({ volumeThreshold: threshold }),
+
     // Last generated tracking
     setLastGeneratedInput: (transcription, typedInput, compiledConsultationText, templateId) =>
       set({
@@ -213,7 +214,7 @@ export const useTranscriptionStore = create<TranscriptionStore>()(
         lastGeneratedCompiledConsultationText: compiledConsultationText,
         lastGeneratedTemplateId: templateId,
       }),
-    
+
     resetLastGeneratedInput: () =>
       set({
         lastGeneratedTranscription: undefined,
@@ -221,14 +222,14 @@ export const useTranscriptionStore = create<TranscriptionStore>()(
         lastGeneratedCompiledConsultationText: undefined,
         lastGeneratedTemplateId: undefined,
       }),
-    
+
     // Utility getters
     getCurrentTranscript: () => get().transcription.transcript,
     getCurrentInput: () => {
-      const { inputMode, transcription, typedInput } = get()
-      return inputMode === 'audio' ? transcription.transcript : typedInput
+      const { inputMode, transcription, typedInput } = get();
+      return inputMode === 'audio' ? transcription.transcript : typedInput;
     },
-    
+
     // Reset function
     resetTranscription: () =>
       set({
@@ -237,5 +238,5 @@ export const useTranscriptionStore = create<TranscriptionStore>()(
         microphoneGain: get().microphoneGain,
         volumeThreshold: get().volumeThreshold,
       }),
-  }))
-)
+  })),
+);

@@ -4,10 +4,10 @@ import { useAuth } from '@clerk/nextjs';
 import { Calendar, ChevronDown, Smartphone, User, UserCheck } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useResponsive } from '@/src/shared/hooks/useResponsive';
 
 type CurrentSessionBarProps = {

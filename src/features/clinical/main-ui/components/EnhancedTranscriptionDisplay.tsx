@@ -26,34 +26,7 @@ export function EnhancedTranscriptionDisplay({
   // Feature detection - only need words for enhanced view
   const hasEnhancedData = words.length > 0;
 
-  // 🐛 DEBUG: Log enhanced component decision and words data
-  void console.log('✨ EnhancedTranscriptionDisplay Debug:', {
-    transcript: `${transcript?.slice(0, 50)}...`,
-    transcriptLength: transcript?.length || 0,
-    confidence,
-    wordsLength: words.length,
-    sampleWords: words.slice(0, 5).map(w => w.punctuated_word),
-    hasEnhancedData,
-    showEnhanced,
-    isRecording,
-    willShowEnhanced: hasEnhancedData && showEnhanced && !isRecording,
-    fallbackReason: !hasEnhancedData
-      ? 'No enhanced data'
-      : !showEnhanced
-          ? 'Enhanced disabled'
-          : isRecording ? 'Currently recording' : 'Should show enhanced',
-  });
-
-  // 🐛 DEBUG: Compare reconstructed text with original transcript
-  if (words.length > 0) {
-    const reconstructedText = words.map(w => w.punctuated_word).join(' ');
-    void console.log('🔍 Text Comparison:', {
-      originalTranscript: transcript,
-      reconstructedText,
-      textMatch: transcript === reconstructedText,
-      lengthDiff: transcript.length - reconstructedText.length,
-    });
-  }
+  
 
   // Simple fallback (exactly like current implementation)
   if (!hasEnhancedData || !showEnhanced || isRecording) {

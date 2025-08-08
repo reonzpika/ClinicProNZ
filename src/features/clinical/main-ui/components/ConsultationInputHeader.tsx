@@ -3,8 +3,8 @@
 import { Info, Keyboard, Mic } from 'lucide-react';
 import React, { useState } from 'react';
 
-import { Button } from '@/src/shared/components/ui/button';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
+import { Button } from '@/src/shared/components/ui/button';
 
 type ConsultationInputHeaderProps = {
   mode: 'audio' | 'typed';

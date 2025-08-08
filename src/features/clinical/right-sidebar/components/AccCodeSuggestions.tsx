@@ -1,18 +1,18 @@
 import { useAuth } from '@clerk/nextjs';
 import React, { useState } from 'react';
 
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/src/shared/components/ui/card';
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
-import { createAuthHeadersWithGuest } from '@/src/shared/utils';
+import { createAuthHeaders } from '@/src/shared/utils';
 
 export const AccCodeSuggestions: React.FC = () => {
   const { userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
-  const { generatedNotes, getEffectiveGuestToken } = useConsultationStores();
+  const { generatedNotes } = useConsultationStores();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [suggestion, setSuggestion] = useState<{
@@ -38,10 +38,9 @@ export const AccCodeSuggestions: React.FC = () => {
     setError(null);
     setSuggestion(null);
     try {
-      const effectiveGuestToken = getEffectiveGuestToken();
       const res = await fetch('/api/tools/acc_read_codes', {
         method: 'POST',
-        headers: createAuthHeadersWithGuest(userId, userTier, effectiveGuestToken),
+        headers: createAuthHeaders(userId, userTier),
         body: JSON.stringify({ note: generatedNotes }),
       });
       let data = await res.json();
@@ -72,10 +71,9 @@ export const AccCodeSuggestions: React.FC = () => {
     setSearchError(null);
     setSearchResults([]);
     try {
-      const effectiveGuestToken = getEffectiveGuestToken();
       const res = await fetch('/api/tools/acc_code_search', {
         method: 'POST',
-        headers: createAuthHeadersWithGuest(userId, userTier, effectiveGuestToken),
+        headers: createAuthHeaders(userId, userTier),
         body: JSON.stringify({ query: searchQuery }),
       });
       const data = await res.json();
@@ -93,7 +91,7 @@ export const AccCodeSuggestions: React.FC = () => {
   return (
     <Card>
       <CardHeader>
-        <h3 className="text-md font-semibold">ACC Code Suggestions</h3>
+        <h3 className="text-base font-semibold">ACC Code Suggestions</h3>
       </CardHeader>
       <CardContent>
         {/* Simple Search UI */}
@@ -113,8 +111,8 @@ export const AccCodeSuggestions: React.FC = () => {
         {searchError && <Alert variant="destructive" className="mb-2">{searchError}</Alert>}
         {searchResults.length > 0 && (
           <div className="mb-4 space-y-2">
-            {searchResults.map((s, i) => (
-              <div key={i} className="flex flex-col rounded border bg-gray-50 p-2">
+            {searchResults.map(s => (
+              <div key={`${s.read_code}-${s.read_term}`} className="flex flex-col rounded border bg-gray-50 p-2">
                 <span className="font-medium">{s.text}</span>
                 <span className="text-xs text-muted-foreground">
                   Read code:
@@ -154,11 +152,11 @@ export const AccCodeSuggestions: React.FC = () => {
                 )
               : (
                   <div className="mt-2">
-                    <span className="text-warning-foreground text-sm">Injury description missing.</span>
+                    <span className="text-sm text-amber-700">Injury description missing.</span>
                     {suggestion.missing_info && suggestion.missing_info.length > 0 && (
                       <ul className="mt-1 list-inside list-disc text-xs text-muted-foreground">
-                        {suggestion.missing_info.map((q, i) => (
-                          <li key={i}>{q}</li>
+                        {suggestion.missing_info.map(q => (
+                          <li key={q}>{q}</li>
                         ))}
                       </ul>
                     )}

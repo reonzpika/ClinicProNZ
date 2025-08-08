@@ -1,4 +1,4 @@
-import { QueryClient } from '@tanstack/react-query'
+import { QueryClient } from '@tanstack/react-query';
 
 // Create QueryClient with optimized defaults for consultation app
 export const queryClient = new QueryClient({
@@ -24,7 +24,7 @@ export const queryClient = new QueryClient({
       networkMode: 'online',
     },
   },
-})
+});
 
 // Query keys factory for consistent key management
 export const queryKeys = {
@@ -47,4 +47,4 @@ export const queryKeys = {
     all: ['usage'] as const,
     dashboard: () => [...queryKeys.usage.all, 'dashboard'] as const,
   },
-} as const
+} as const;

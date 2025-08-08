@@ -11,13 +11,13 @@ import { TemplatePerformanceMonitor } from '@/src/features/templates/components/
 import { TemplatePreview } from '@/src/features/templates/components/TemplatePreview';
 import type { Template } from '@/src/features/templates/types';
 import { createTemplate, deleteTemplate, fetchTemplates, updateTemplate } from '@/src/features/templates/utils/api';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Container } from '@/src/shared/components/layout/Container';
 import { Button } from '@/src/shared/components/ui/button';
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { useRBAC } from '@/src/shared/hooks/useRBAC';
 import { useResponsive } from '@/src/shared/hooks/useResponsive';
-import { createAuthHeadersWithGuest } from '@/src/shared/utils';
+import { createAuthHeaders } from '@/src/shared/utils';
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -38,7 +38,7 @@ export default function TemplatesPage() {
 
   useEffect(() => {
     setLoading(true);
-    fetchTemplates(userId, userTier, null)
+    fetchTemplates(userId, userTier)
       .then((data) => {
         setTemplates(data);
         setLoading(false);
@@ -55,7 +55,7 @@ export default function TemplatesPage() {
       return;
     }
     fetch('/api/user/settings', {
-      headers: createAuthHeadersWithGuest(userId, userTier, null),
+      headers: createAuthHeaders(userId, userTier),
     })
       .then((res) => {
         if (!res.ok) {
@@ -95,7 +95,7 @@ export default function TemplatesPage() {
       if (isSignedIn && userId) {
         fetch('/api/user/settings', {
           method: 'POST',
-          headers: createAuthHeadersWithGuest(userId, userTier, null),
+          headers: createAuthHeaders(userId, userTier),
           body: JSON.stringify({ settings: { templateOrder: arr.map(t => t.id) } }),
         });
       }
@@ -109,7 +109,7 @@ export default function TemplatesPage() {
       return;
     }
     try {
-      await deleteTemplate(template.id, userId, userTier, null);
+      await deleteTemplate(template.id, userId, userTier);
       setTemplates(prev => prev.filter(t => t.id !== template.id));
       if (selectedTemplate?.id === template.id) {
         setSelectedTemplate(null);
@@ -127,7 +127,7 @@ export default function TemplatesPage() {
       templateBody: template.templateBody,
     };
     try {
-      const newTemplate = await createTemplate(copy, userId, userTier, null);
+      const newTemplate = await createTemplate(copy, userId, userTier);
       setTemplates(prev => [...prev, newTemplate]);
       setSelectedTemplate(newTemplate);
       setIsEditing(true);
@@ -140,11 +140,11 @@ export default function TemplatesPage() {
     try {
       if (selectedTemplate && selectedTemplate.id && !selectedTemplate.id.startsWith('new-')) {
         // Editing existing template
-        await updateTemplate(selectedTemplate.id, template, userId, userTier, null);
+        await updateTemplate(selectedTemplate.id, template, userId, userTier);
         setTemplates(prev => prev.map(t => t.id === selectedTemplate.id ? { ...template, id: selectedTemplate.id } : t));
       } else {
         // Creating new template
-        const newTemplate = await createTemplate(template, userId, userTier, null);
+        const newTemplate = await createTemplate(template, userId, userTier);
         setTemplates(prev => [...prev, newTemplate]);
         setSelectedTemplate(newTemplate);
       }

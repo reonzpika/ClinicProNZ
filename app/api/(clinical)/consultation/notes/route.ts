@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 
 import { TemplateService } from '@/src/features/templates/template-service';
 import { compileTemplate } from '@/src/features/templates/utils/compileTemplate';
-import { checkCoreSessionLimit, extractRBACContext, incrementGuestSessionUsage } from '@/src/lib/rbac-enforcer';
+import { checkCoreSessionLimit, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 if (!OPENAI_API_KEY) {
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
       'Request parsing timeout',
     );
 
-    const { rawConsultationData, templateId, guestToken: bodyGuestToken } = body;
+    const { rawConsultationData, templateId } = body;
 
     // Quick validation first
     if (!templateId) {
@@ -51,13 +51,7 @@ export async function POST(req: Request) {
     // Run RBAC and template fetch in parallel to save time
     const [context, template] = await withTimeout(
       Promise.all([
-        extractRBACContext(req).then((ctx) => {
-          // Override guest token from request body if not found in headers
-          if (!ctx.guestToken && bodyGuestToken) {
-            return { ...ctx, guestToken: bodyGuestToken };
-          }
-          return ctx;
-        }),
+        extractRBACContext(req),
         TemplateService.getById(templateId),
       ]),
       10000,
@@ -91,20 +85,11 @@ export async function POST(req: Request) {
       );
     }
 
-    // Use guestToken from updated context
-    const guestToken = context.guestToken;
-
     // Compile template with raw consultation data
     const { system, user } = compileTemplate(
       template.templateBody,
       rawConsultationData,
     );
-
-    // Start session tracking in background (don't await to prevent delays)
-    if (guestToken) {
-      incrementGuestSessionUsage(guestToken, `Session ${new Date().toLocaleString()}`, templateId)
-        .catch(error => console.error('Failed to increment guest session usage:', error));
-    }
 
     // Check remaining time before starting OpenAI call
     const elapsedTime = Date.now() - startTime;

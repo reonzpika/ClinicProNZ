@@ -3,9 +3,9 @@
 import { Stethoscope } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 import { EXAMINATION_CHECKLISTS } from '../data/examinationData';
 import { useExaminationCart } from '../hooks/useExaminationCart';

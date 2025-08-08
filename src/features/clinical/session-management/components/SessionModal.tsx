@@ -3,10 +3,10 @@
 import { Calendar, Plus, Search, Trash2, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
 import { Input } from '@/src/shared/components/ui/input';
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 type SessionModalProps = {
   isOpen: boolean;
@@ -141,17 +141,17 @@ export const SessionModal: React.FC<SessionModalProps> = ({
   const getSessionSummary = (session: any) => {
     // Create a brief summary from session data
     // Priority: generated notes > typed input > transcription > consultation notes
-    
+
     // 1. Generated notes (primary content)
     if (session.notes && session.notes.trim().length > 0) {
       return session.notes.substring(0, 80) + (session.notes.length > 80 ? '...' : '');
     }
-    
+
     // 2. Typed input
     if (session.typedInput && session.typedInput.trim().length > 0) {
       return session.typedInput.substring(0, 80) + (session.typedInput.length > 80 ? '...' : '');
     }
-    
+
     // 3. Transcriptions (voice input)
     if (session.transcriptions && session.transcriptions.length > 0) {
       const transcriptText = session.transcriptions.map((t: any) => t.text).join(' ');
@@ -159,12 +159,12 @@ export const SessionModal: React.FC<SessionModalProps> = ({
         return transcriptText.substring(0, 80) + (transcriptText.length > 80 ? '...' : '');
       }
     }
-    
+
     // 4. Additional consultation notes
     if (session.consultationNotes && session.consultationNotes.trim().length > 0) {
       return session.consultationNotes.substring(0, 80) + (session.consultationNotes.length > 80 ? '...' : '');
     }
-    
+
     return 'No content yet';
   };
 

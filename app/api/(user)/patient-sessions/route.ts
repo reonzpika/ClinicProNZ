@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 
 import { db } from '@/db/client';
 import { patientSessions } from '@/db/schema';
-import { checkFeatureAccess, checkCoreSessionLimit, extractRBACContext } from '@/src/lib/rbac-enforcer';
+import { checkCoreSessionLimit, checkFeatureAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 // GET - List patient sessions for a user
 export async function GET(req: NextRequest) {
@@ -26,11 +26,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // FIXED: Use RBAC context instead of requiring x-user-id header
-    const { userId, guestToken } = context;
+    // Extract userId from context (middleware ensures user is authenticated)
+    const { userId } = context;
 
-    // Either authenticated user or guest token required
-    if (!userId && !guestToken) {
+    if (!userId) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
@@ -38,63 +37,32 @@ export async function GET(req: NextRequest) {
     const status = url.searchParams.get('status') as 'active' | 'completed' | 'archived' | null;
     const limit = Number.parseInt(url.searchParams.get('limit') || '50');
 
-    let query;
+    // Query authenticated user sessions
+    let query = db
+      .select()
+      .from(patientSessions)
+      .where(
+        and(
+          eq(patientSessions.userId, userId),
+          eq(patientSessions.isTemporary, false), // Only show persistent sessions
+        ),
+      )
+      .orderBy(desc(patientSessions.createdAt))
+      .limit(limit);
 
-    if (userId) {
-      // Authenticated user sessions
+    if (status) {
       query = db
         .select()
         .from(patientSessions)
         .where(
           and(
             eq(patientSessions.userId, userId),
+            eq(patientSessions.status, status),
             eq(patientSessions.isTemporary, false), // Only show persistent sessions
           ),
         )
         .orderBy(desc(patientSessions.createdAt))
         .limit(limit);
-
-      if (status) {
-        query = db
-          .select()
-          .from(patientSessions)
-          .where(
-            and(
-              eq(patientSessions.userId, userId),
-              eq(patientSessions.status, status),
-              eq(patientSessions.isTemporary, false), // Only show persistent sessions
-            ),
-          )
-          .orderBy(desc(patientSessions.createdAt))
-          .limit(limit);
-      }
-    } else if (guestToken) {
-      // Guest user sessions
-      query = db
-        .select()
-        .from(patientSessions)
-        .where(eq(patientSessions.guestToken, guestToken))
-        .orderBy(desc(patientSessions.createdAt))
-        .limit(limit);
-
-      if (status) {
-        query = db
-          .select()
-          .from(patientSessions)
-          .where(
-            and(
-              eq(patientSessions.guestToken, guestToken),
-              eq(patientSessions.status, status),
-            ),
-          )
-          .orderBy(desc(patientSessions.createdAt))
-          .limit(limit);
-      }
-    }
-
-    // FIXED: Ensure query is defined before executing
-    if (!query) {
-      return NextResponse.json({ error: 'Invalid query parameters' }, { status: 400 });
     }
 
     const sessions = await query;
@@ -140,8 +108,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // FIXED: Use RBAC context instead of requiring x-user-id header
-    const { userId, guestToken } = context;
+    // Extract userId from context (middleware ensures user is authenticated)
+    const { userId } = context;
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
 
     const { patientName, templateId } = await req.json();
 
@@ -150,27 +122,14 @@ export async function POST(req: NextRequest) {
     }
 
     // Create new patient session using service (handles tier-based temporary sessions)
-    const { createUserSession, createGuestSession } = await import('@/src/lib/services/guest-session-service');
+    const { createUserSession } = await import('@/src/lib/services/guest-session-service');
 
-    let session;
-    if (userId) {
-      // Authenticated user
-      session = await createUserSession(
-        userId,
-        patientName.trim(),
-        templateId,
-        context.tier,
-      );
-    } else if (guestToken) {
-      // Guest user
-      session = await createGuestSession(
-        guestToken,
-        patientName.trim(),
-        templateId,
-      );
-    } else {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-    }
+    const session = await createUserSession(
+      userId,
+      patientName.trim(),
+      templateId,
+      context.tier,
+    );
 
     // Note: Mobile devices will be notified via Ably when patient session changes
     return NextResponse.json({
@@ -212,8 +171,12 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    // FIXED: Use RBAC context instead of requiring x-user-id header
-    const { userId, guestToken } = context;
+    // Extract userId from context (middleware ensures user is authenticated)
+    const { userId } = context;
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
 
     const {
       sessionId,
@@ -267,20 +230,10 @@ export async function PUT(req: NextRequest) {
     }
 
     // Update session with proper ownership check
-    let whereClause;
-    if (userId) {
-      whereClause = and(
-        eq(patientSessions.id, sessionId),
-        eq(patientSessions.userId, userId),
-      );
-    } else if (guestToken) {
-      whereClause = and(
-        eq(patientSessions.id, sessionId),
-        eq(patientSessions.guestToken, guestToken),
-      );
-    } else {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-    }
+    const whereClause = and(
+      eq(patientSessions.id, sessionId),
+      eq(patientSessions.userId, userId),
+    );
 
     const updatedSession = await db
       .update(patientSessions)
@@ -333,21 +286,18 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    // FIXED: Use RBAC context instead of requiring x-user-id header
-    const { userId, guestToken } = context;
+    // Extract userId from context (middleware ensures user is authenticated)
+    const { userId } = context;
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
 
     const { sessionId, deleteAll } = await req.json();
 
     // Handle delete all sessions
     if (deleteAll === true) {
-      let deleteAllClause;
-      if (userId) {
-        deleteAllClause = eq(patientSessions.userId, userId);
-      } else if (guestToken) {
-        deleteAllClause = eq(patientSessions.guestToken, guestToken);
-      } else {
-        return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-      }
+      const deleteAllClause = eq(patientSessions.userId, userId);
 
       const deletedSessions = await db
         .delete(patientSessions)
@@ -367,20 +317,10 @@ export async function DELETE(req: NextRequest) {
     }
 
     // Delete session (only if it belongs to the user)
-    let whereClause;
-    if (userId) {
-      whereClause = and(
-        eq(patientSessions.id, sessionId),
-        eq(patientSessions.userId, userId),
-      );
-    } else if (guestToken) {
-      whereClause = and(
-        eq(patientSessions.id, sessionId),
-        eq(patientSessions.guestToken, guestToken),
-      );
-    } else {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-    }
+    const whereClause = and(
+      eq(patientSessions.id, sessionId),
+      eq(patientSessions.userId, userId),
+    );
 
     const deletedSession = await db
       .delete(patientSessions)

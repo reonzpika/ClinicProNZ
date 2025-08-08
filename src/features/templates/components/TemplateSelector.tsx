@@ -3,11 +3,11 @@
 import { useAuth } from '@clerk/nextjs';
 import { useEffect, useMemo, useState } from 'react';
 
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { FeatureFeedbackButton } from '@/src/shared/components/FeatureFeedbackButton';
 import { Button } from '@/src/shared/components/ui/button';
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
-import { createAuthHeadersWithGuest } from '@/src/shared/utils';
+import { createAuthHeaders } from '@/src/shared/utils';
 
 import type { Template } from '../types';
 import { fetchTemplates } from '../utils/api';
@@ -29,7 +29,7 @@ export function TemplateSelector() {
       try {
         setIsLoading(true);
         // Use centralized fetchTemplates function with auth headers
-        const allTemplates = await fetchTemplates(userId, userTier, null);
+        const allTemplates = await fetchTemplates(userId, userTier);
 
         // Add template type labels
         const templatesWithTypes = allTemplates.map((t: Template) => ({
@@ -40,7 +40,7 @@ export function TemplateSelector() {
         // Fetch user template order and reorder if available
         if (isSignedIn && userId) {
           const settingsRes = await fetch('/api/user/settings', {
-            headers: createAuthHeadersWithGuest(userId, userTier, null),
+            headers: createAuthHeaders(userId, userTier),
           });
           if (settingsRes.ok) {
             const settingsData = await settingsRes.json();
@@ -70,8 +70,33 @@ export function TemplateSelector() {
     loadTemplates();
   }, [isSignedIn, userId, userTier]);
 
-  // Find the selected template from the templates list
-  const selectedTemplate = useMemo(() => templates.find(t => t.id === templateId) || templates[0], [templates, templateId]);
+  // Find the selected template from the templates list with auto-select fallback
+  const selectedTemplate = useMemo(() => {
+    if (templates.length === 0) {
+      return undefined;
+    }
+    // If current templateId is present, use it
+    const current = templateId ? templates.find(t => t.id === templateId) : undefined;
+    if (current) {
+      return current;
+    }
+    // Else try user default template
+    const byDefault = userDefaultTemplateId ? templates.find(t => t.id === userDefaultTemplateId) : undefined;
+    if (byDefault) {
+      // Persist selection
+      setTemplateId(byDefault.id);
+      return byDefault;
+    }
+    // Else choose first default template if exists
+    const firstDefault = templates.find(t => t.type === 'default');
+    if (firstDefault) {
+      setTemplateId(firstDefault.id);
+      return firstDefault;
+    }
+    // Fallback to first template
+    setTemplateId(templates[0]!.id);
+    return templates[0];
+  }, [templates, templateId, userDefaultTemplateId, setTemplateId]);
   const fallbackTemplate: Template = {
     id: '',
     name: '',

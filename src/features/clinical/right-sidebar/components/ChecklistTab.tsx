@@ -5,11 +5,11 @@
 import { ChevronDown, ChevronRight, X } from 'lucide-react';
 import React, { useMemo, useRef, useState } from 'react';
 
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/src/shared/components/ui/card';
 import { Checkbox } from '@/src/shared/components/ui/checkbox';
 import { Input } from '@/src/shared/components/ui/input';
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 type ChecklistType = 'driving' | 'baby-6weeks' | 'adult-health' | 'mammography' | 'cervical-screening';
 type CategoryType = 'children' | 'adult' | 'screening';

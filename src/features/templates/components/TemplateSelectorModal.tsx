@@ -5,11 +5,11 @@ import { useAuth } from '@clerk/nextjs';
 import { Check, Heart, Star, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Badge } from '@/src/shared/components/ui/badge';
 import { Button } from '@/src/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
 import { ScrollArea } from '@/src/shared/components/ui/scroll-area';
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 import type { Template } from '../types';
 

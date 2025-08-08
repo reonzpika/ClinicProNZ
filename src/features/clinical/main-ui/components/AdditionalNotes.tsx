@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react';
 
 import { ExaminationChecklistButton } from '@/src/features/clinical/examination-checklist/components/ExaminationChecklistButton';
 import { PlanSafetyNettingButton } from '@/src/features/clinical/plan-safety-netting';
-import { Textarea } from '@/src/shared/components/ui/textarea';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
+import { Textarea } from '@/src/shared/components/ui/textarea';
 
 type ConsultationItem = {
   id: string;
@@ -120,7 +120,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     const notesPreview = hasNotes ? notes.substring(0, 100) : '';
     const needsNotesTruncation = hasNotes && notes.length > 100;
     const needsItemsTruncation = itemsPreview.length > 60;
-    const displayItemsPreview = needsItemsTruncation ? itemsPreview.substring(0, 60) + '...' : itemsPreview;
+    const displayItemsPreview = needsItemsTruncation ? `${itemsPreview.substring(0, 60)}...` : itemsPreview;
 
     return (
       <div className="space-y-2">
@@ -150,10 +150,10 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             </button>
           </div>
         </div>
-        
+
         {/* Preview when collapsed */}
         {!isExpanded && (hasItems || hasNotes) && (
-          <div className="rounded border border-slate-200 bg-slate-50 p-2 space-y-2">
+          <div className="space-y-2 rounded border border-slate-200 bg-slate-50 p-2">
             {/* Consultation items summary */}
             {hasItems && (
               <div className="text-sm">
@@ -161,17 +161,19 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 <span className="text-slate-600">{displayItemsPreview}</span>
               </div>
             )}
-            
+
             {/* Notes preview */}
             {hasNotes && (
-              <div className="text-sm text-slate-700 leading-relaxed">
+              <div className="text-sm leading-relaxed text-slate-700">
                 <span className="font-medium">Notes: </span>
                 {notesPreview}
                 {needsNotesTruncation && (
                   <span className="text-slate-500">
-                    ... <button 
-                      onClick={() => setIsExpanded(true)} 
-                      className="text-blue-600 hover:text-blue-800 underline"
+                    ...
+                    {' '}
+                    <button
+                      onClick={() => setIsExpanded(true)}
+                      className="text-blue-600 underline hover:text-blue-800"
                     >
                       (click to expand)
                     </button>
@@ -181,16 +183,16 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             )}
           </div>
         )}
-        
+
         {/* No content state */}
         {!isExpanded && !hasItems && !hasNotes && (
           <div className="rounded border border-slate-200 bg-slate-50 p-2">
-            <div className="text-sm text-slate-500 italic">
+            <div className="text-sm italic text-slate-500">
               No additional notes or items yet...
             </div>
           </div>
         )}
-        
+
         {/* Full editing interface when expanded */}
         {isExpanded && (
           <div className="space-y-3">
