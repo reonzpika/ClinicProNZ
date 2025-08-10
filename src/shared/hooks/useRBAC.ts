@@ -23,8 +23,8 @@ export function useRBAC() {
         // Only standard/premium/admin tiers have session management
         return tier === 'standard' || tier === 'premium' || tier === 'admin';
       case 'templateManagement':
-        // Only standard/premium/admin tiers have template management
-        return tier === 'standard' || tier === 'premium' || tier === 'admin';
+        // Basic and above have template management (must be signed in at UI usage sites)
+        return tier === 'basic' || tier === 'standard' || tier === 'premium' || tier === 'admin';
       case 'premiumActions':
         // All tiers have some premium actions (but limits vary)
         return true;

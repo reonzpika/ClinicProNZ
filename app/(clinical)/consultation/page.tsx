@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
+import { useQueryClient } from '@tanstack/react-query';
 import { Crown, Stethoscope } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -29,6 +30,7 @@ import { useResponsive } from '@/src/shared/hooks/useResponsive';
 import { createAuthHeaders } from '@/src/shared/utils';
 
 export default function ConsultationPage() {
+  const queryClient = useQueryClient();
   const {
     setError,
     setStatus,
@@ -50,8 +52,14 @@ export default function ConsultationPage() {
     templateId,
     setLastGeneratedInput,
     setMobileV2ConnectionStatus, // NEW: Connection status bridge
+    setMobileV2SessionSynced,
+    enableMobileV2,
+    setMobileV2TokenData,
     saveNotesToCurrentSession, // For saving generated notes
+    saveTypedInputToCurrentSession, // For clearing typed input
+    saveConsultationNotesToCurrentSession, // For clearing consultation notes
     ensureActiveSession, // For ensuring session exists before note generation
+    resetLastGeneratedInput, // For resetting generation tracking
   } = useConsultationStores();
   const { isSignedIn: _isSignedIn, userId } = useAuth();
   const { getUserTier, user } = useClerkMetadata();
@@ -64,6 +72,10 @@ export default function ConsultationPage() {
   const [rateLimitModalOpen, setRateLimitModalOpen] = useState(false);
   const [rateLimitError, setRateLimitError] = useState<{ limit: number; resetIn: number; message: string } | null>(null);
   const { isMobile, isTablet, isDesktop, isLargeDesktop } = useResponsive();
+  // Guard to prevent doc-mode auto-toggle during clear-all flow
+  const isClearingRef = useRef(false);
+  // Abort controller for in-flight note generation requests
+  const genAbortRef = useRef<AbortController | null>(null);
 
   // Mobile block modal - prevent mobile access to consultation
   const showMobileBlock = isMobile;
@@ -128,6 +140,14 @@ export default function ConsultationPage() {
 
   // Auto-enable/disable documentation mode based on generated notes or loading state
   useEffect(() => {
+    // Suppress doc-mode while clearing to ensure we return to default view immediately
+    if (isClearingRef.current) {
+      if (isDocumentationMode) {
+        setIsDocumentationMode(false);
+      }
+      return;
+    }
+
     if ((generatedNotes && generatedNotes.trim()) || loading) {
       if (!isDocumentationMode) {
         setIsDocumentationMode(true);
@@ -137,12 +157,17 @@ export default function ConsultationPage() {
     }
   }, [generatedNotes, loading, isDocumentationMode]);
 
+  // Ensure inputs are expanded by default when switching/creating a new session
+  // Fix: after generating notes then creating a new session, inputs were shown collapsed
+  // because isNoteFocused remained true from the previous session
+  useEffect(() => {
+    setIsNoteFocused(false);
+  }, [currentPatientSessionId]);
+
   // Memoize callbacks to prevent re-renders
   const handleTranscriptReceived = useCallback((transcript: string, sessionId: string, enhancedData?: any) => {
     // Only process transcripts for the current session
     if (sessionId === currentPatientSessionId) {
-      
- 
       // 🆕 Use enhanced appendTranscription when enhanced data is available
       if (enhancedData && (enhancedData.confidence !== undefined || (enhancedData.words?.length || 0) > 0)) {
         appendTranscriptionEnhanced(
@@ -164,35 +189,48 @@ export default function ConsultationPage() {
   }, [currentPatientSessionId, appendTranscription, appendTranscriptionEnhanced]);
 
   const handleError = useCallback((error: string) => {
+    // Suppress Ably connection/publish noise from UI, log instead
+    if (/Failed to publish|Connection closed|Authentication failed|Ably/i.test(error)) {
+      console.warn('[Ably]', error);
+      return;
+    }
     setError(error);
   }, [setError]);
 
   // Handle mobile recording status updates
   const handleRecordingStatusChanged = useCallback((isRecording: boolean, sessionId: string) => {
-    
- 
     // Only process for current session
     if (sessionId === currentPatientSessionId) {
       setMobileIsRecording(isRecording);
+      // Receiving a recording status from mobile implies session context is aligned
+      setMobileV2SessionSynced(true);
     }
-  }, [currentPatientSessionId]);
+  }, [currentPatientSessionId, setMobileV2SessionSynced]);
 
   // 🛡️ PHASE 1 FIX: Reset mobile recording status when connection drops
   useEffect(() => {
     if (mobileV2.connectionStatus === 'disconnected' && mobileIsRecording) {
       setMobileIsRecording(false);
-      
     }
-  }, [mobileV2.connectionStatus, mobileIsRecording]);
+    // Only clear sessionSynced when explicitly disconnected to avoid flicker during transient states
+    if (mobileV2.connectionStatus === 'disconnected') {
+      setMobileV2SessionSynced(false);
+    }
+  }, [mobileV2.connectionStatus, mobileIsRecording, setMobileV2SessionSynced]);
 
   // Simple Ably sync implementation using single channel approach
   // ALWAYS initialize to ensure updateSession availability, but only connect with valid token
-  const { updateSession } = useSimpleAbly({
+  const { updateSession, sendRecordingControl } = useSimpleAbly({
     tokenId: mobileV2?.isEnabled && mobileV2?.token ? mobileV2.token : null,
     onTranscriptReceived: handleTranscriptReceived,
     onRecordingStatusChanged: handleRecordingStatusChanged, // 🆕 Recording status callback
     onError: handleError,
     onConnectionStatusChanged: setMobileV2ConnectionStatus, // NEW: Bridge connection status to context
+    onSessionAcknowledged: (sessionId: string) => {
+      if (sessionId === currentPatientSessionId) {
+        setMobileV2SessionSynced(true);
+      }
+    },
     isMobile: false, // FIXED: Identify as desktop to prevent self-messaging
   });
 
@@ -201,6 +239,7 @@ export default function ConsultationPage() {
     if (typeof window !== 'undefined') {
       (window as any).ablySyncHook = {
         updateSession: updateSession || (() => false),
+        sendRecordingControl: (action: 'start' | 'stop') => (sendRecordingControl ? sendRecordingControl(action) : false),
       };
     }
 
@@ -209,29 +248,137 @@ export default function ConsultationPage() {
         delete (window as any).ablySyncHook;
       }
     };
-  }, [updateSession]);
+  }, [updateSession, sendRecordingControl]);
+
+  // Proactively broadcast current session once connected to Ably
+  useEffect(() => {
+    if (mobileV2?.connectionStatus === 'connected' && updateSession && currentPatientSessionId) {
+      const timer = setTimeout(() => {
+        try {
+          // Try to get patient name from Query Cache if available to enrich broadcast
+          const currentSessions = queryClient.getQueryData<any>(['consultation', 'sessions']);
+          const session = Array.isArray(currentSessions)
+            ? currentSessions.find((s: any) => s.id === currentPatientSessionId)
+            : null;
+          const patientName = session?.patientName || 'Current Session';
+          // Broadcast after a brief delay to ensure channel subscription is ready
+          const ok = updateSession(currentPatientSessionId, patientName);
+          if (ok) {
+            setMobileV2SessionSynced(true);
+          } else {
+            // Retry shortly if initial broadcast fails (F2 robustness)
+            setTimeout(() => {
+              try {
+                updateSession(currentPatientSessionId, patientName);
+              } catch {}
+            }, 400);
+          }
+        } catch {
+          // best-effort only
+        }
+      }, 200); // slight debounce after connect
+      return () => clearTimeout(timer);
+    }
+    // Explicitly return undefined when no timer is set to satisfy TypeScript
+    return undefined;
+  }, [mobileV2?.connectionStatus, updateSession, currentPatientSessionId, queryClient, setMobileV2SessionSynced]);
+
+  // Ensure desktop Ably connects without opening the QR modal by loading active token
+  useEffect(() => {
+    const loadActiveToken = async () => {
+      try {
+        if (!userId) return;
+        // If already enabled with a token, skip
+        if (mobileV2?.isEnabled && mobileV2?.token) return;
+        const res = await fetch('/api/mobile/active-token', {
+          method: 'GET',
+          headers: createAuthHeaders(userId, userTier),
+        });
+        if (!res.ok) return;
+        const tokenData = await res.json();
+        if (tokenData?.token && tokenData?.expiresAt) {
+          setMobileV2TokenData(tokenData);
+          enableMobileV2(true);
+        }
+      } catch {
+        // best-effort, ignore
+      }
+    };
+    loadActiveToken();
+  }, [userId, userTier, mobileV2?.isEnabled, mobileV2?.token, enableMobileV2, setMobileV2TokenData]);
 
   // REMOVED: Redundant session broadcasting - now handled by ConsultationContext only
   // This eliminates dual broadcasting sources and race conditions
 
-  const handleClearAll = () => {
+  const handleClearAll = async () => {
+    isClearingRef.current = true;
+    // Abort any in-flight note generation to prevent stream from repopulating notes
+    if (genAbortRef.current) {
+      try {
+ genAbortRef.current.abort();
+} catch { /* ignore */ }
+      genAbortRef.current = null;
+    }
+    // Clear UI state immediately
+    setLoading(false);
     setIsNoteFocused(false);
     setIsDocumentationMode(false);
     setGeneratedNotes('');
     setStatus('idle');
     setError(null);
-    // Clear consultation items and notes through the store
+
+    // Clear local store state
     setConsultationNotes('');
-    // Also clear input/transcription and last-generated
-    if (typeof setTypedInput === 'function') {
+    setTypedInput('');
+    setTranscription('', false);
+    resetLastGeneratedInput();
+
+    // Clear server-side session data to prevent auto-reload
+    try {
+      const clearPromises = [];
+
+      // Clear generated notes on server
+      clearPromises.push(saveNotesToCurrentSession(''));
+
+      // Clear typed input on server
+      clearPromises.push(saveTypedInputToCurrentSession(''));
+
+      // Clear consultation notes on server
+      clearPromises.push(saveConsultationNotesToCurrentSession(''));
+
+      // Wait for all clears to complete
+      await Promise.all(clearPromises);
+
+      // Optimistically update React Query caches for current session
+      if (currentPatientSessionId) {
+        // Update sessions list cache
+        queryClient.setQueryData<any>(['consultation', 'sessions'], (old: any) => {
+          if (!Array.isArray(old)) {
+ return old;
+}
+          return old.map((s: any) => s.id === currentPatientSessionId ? { ...s, notes: '', typedInput: '', consultationNotes: '' } : s);
+        });
+        // Update individual session cache
+        queryClient.setQueryData<any>(['consultation', 'session', currentPatientSessionId], (old: any) => {
+          if (!old) {
+ return old;
+}
+          return { ...old, notes: '', typedInput: '', consultationNotes: '' };
+        });
+      }
+
+      // Re-enforce local clears in case of any async rehydration
+      setGeneratedNotes('');
       setTypedInput('');
-    }
-    if (typeof setTranscription === 'function') {
-      setTranscription('', false);
-    }
-    if (typeof (useConsultationStores as any)?.resetLastGeneratedInput === 'function') {
-      // fallback if available from hook (not destructured)
-      (useConsultationStores as any).resetLastGeneratedInput();
+      setConsultationNotes('');
+    } catch (error) {
+      console.error('Error clearing server data:', error);
+      // Continue anyway - UI is already cleared
+    } finally {
+      // Release guard after state has settled and a tick has elapsed to avoid flash
+      requestAnimationFrame(() => {
+        isClearingRef.current = false;
+      });
     }
   };
 
@@ -264,11 +411,14 @@ export default function ConsultationPage() {
         rawConsultationData,
         templateId,
       };
-
+      // Create and store abort controller for this request
+      const controller = new AbortController();
+      genAbortRef.current = controller;
       const res = await fetch('/api/consultation/notes', {
         method: 'POST',
         headers: createAuthHeaders(userId, userTier),
         body: JSON.stringify(requestBody),
+        signal: controller.signal,
       });
 
       // Check for rate limit error
@@ -333,10 +483,17 @@ export default function ConsultationPage() {
         usageDashboardRef.current.refresh();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate notes');
+      // Swallow abort errors triggered by Clear All
+      if ((err as any)?.name !== 'AbortError') {
+        setError(err instanceof Error ? err.message : 'Failed to generate notes');
+      }
       setStatus('idle');
     } finally {
       setLoading(false);
+      // Clear abort ref if it belongs to this invocation
+      if (genAbortRef.current) {
+        genAbortRef.current = null;
+      }
     }
   };
 
@@ -449,25 +606,30 @@ export default function ConsultationPage() {
                               Input Sources
                             </div>
                             <div className="space-y-2">
-                              {inputMode === 'audio'
-                                ? (
-                                    <TranscriptionControls
-                                      collapsed={false}
-                                      onExpand={() => setIsNoteFocused(false)}
-                                      isMinimized
-                                      mobileIsRecording={mobileIsRecording}
-                                    />
-                                  )
-                                : (
-                                    <TypedInput
-                                      collapsed={false}
-                                      onExpand={() => setIsNoteFocused(false)}
-                                      isMinimized
-                                    />
-                                  )}
+                              {/* Show audio transcription if it has content */}
+                              {transcription.transcript && transcription.transcript.trim() !== '' && (
+                                <TranscriptionControls
+                                  collapsed={false}
+                                  onExpand={() => setIsNoteFocused(false)}
+                                  isMinimized
+                                  mobileIsRecording={mobileIsRecording}
+                                />
+                              )}
 
-                              {/* Separator */}
-                              <div className="border-t border-slate-200" />
+                              {/* Show typed input if it has content */}
+                              {typedInput && typedInput.trim() !== '' && (
+                                <TypedInput
+                                  collapsed={false}
+                                  onExpand={() => setIsNoteFocused(false)}
+                                  isMinimized
+                                />
+                              )}
+
+                              {/* Show separator only if we have input sources above */}
+                              {((transcription.transcript && transcription.transcript.trim() !== '')
+                                || (typedInput && typedInput.trim() !== '')) && (
+                                <div className="border-t border-slate-200" />
+                              )}
 
                               <AdditionalNotes
                                 items={consultationItems}
@@ -538,16 +700,18 @@ export default function ConsultationPage() {
                                 </div>
 
                                 {/* Clinical Documentation - Bottom */}
-                                <div className="flex min-h-0 flex-1 flex-col">
-                                  {/* Removed TranscriptProcessingStatus - no longer needed in single-pass */}
-                                  <GeneratedNotes
-                                    onGenerate={handleGenerateNotes}
-                                    onClearAll={handleClearAll}
-                                    loading={loading}
-                                    isNoteFocused={isNoteFocused}
-                                    isDocumentationMode={isDocumentationMode}
-                                  />
-                                </div>
+                                {!isClearingRef.current && (
+                                  <div className="flex min-h-0 flex-1 flex-col">
+                                    {/* Removed TranscriptProcessingStatus - no longer needed in single-pass */}
+                                    <GeneratedNotes
+                                      onGenerate={handleGenerateNotes}
+                                      onClearAll={handleClearAll}
+                                      loading={loading}
+                                      isNoteFocused={isNoteFocused}
+                                      isDocumentationMode={isDocumentationMode}
+                                    />
+                                  </div>
+                                )}
                               </div>
                             )}
                       </div>
@@ -643,17 +807,19 @@ export default function ConsultationPage() {
                                 />
                               </div>
 
-                              {/* Clinical Documentation - Bottom */}
-                              <div className="flex min-h-0 flex-1 flex-col">
-                                {/* Removed TranscriptProcessingStatus - no longer needed in single-pass */}
-                                <GeneratedNotes
-                                  onGenerate={handleGenerateNotes}
-                                  onClearAll={handleClearAll}
-                                  loading={loading}
-                                  isNoteFocused={isNoteFocused}
-                                  isDocumentationMode={isDocumentationMode}
-                                />
-                              </div>
+                               {/* Clinical Documentation - Bottom */}
+                               {!isClearingRef.current && (
+                                 <div className="flex min-h-0 flex-1 flex-col">
+                                   {/* Removed TranscriptProcessingStatus - no longer needed in single-pass */}
+                                   <GeneratedNotes
+                                     onGenerate={handleGenerateNotes}
+                                     onClearAll={handleClearAll}
+                                     loading={loading}
+                                     isNoteFocused={isNoteFocused}
+                                     isDocumentationMode={isDocumentationMode}
+                                   />
+                                 </div>
+                               )}
                             </div>
                           )}
                     </Stack>

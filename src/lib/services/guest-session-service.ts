@@ -1,19 +1,11 @@
-import { and, eq, gt } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 import { db } from '../../../database/client';
 import { patientSessions, users } from '../../../database/schema';
 
 // Session limits for basic tier users
-const GUEST_SESSION_LIMIT = 5;
-const USER_SESSION_LIMIT = 5; // Same limit for authenticated basic tier users
-const ROLLING_WINDOW_HOURS = 24;
-
-export type GuestSessionStatus = {
-  canCreateSession: boolean;
-  sessionsUsed: number;
-  sessionsRemaining: number;
-  resetTime: Date;
-};
+const USER_SESSION_LIMIT = 5;
+// const ROLLING_WINDOW_HOURS = 24; // not used in current implementation
 
 export type UserSessionStatus = {
   canCreateSession: boolean;
@@ -22,39 +14,7 @@ export type UserSessionStatus = {
   resetTime: Date;
 };
 
-/**
- * Check if a guest token can create a new session
- */
-export async function checkGuestSessionLimit(guestToken: string): Promise<GuestSessionStatus> {
-  const twentyFourHoursAgo = new Date(Date.now() - ROLLING_WINDOW_HOURS * 60 * 60 * 1000);
 
-  // Count sessions created in the last 24 hours for this guest token
-  const sessions = await db
-    .select()
-    .from(patientSessions)
-    .where(
-      and(
-        eq(patientSessions.guestToken, guestToken),
-        gt(patientSessions.createdAt, twentyFourHoursAgo),
-      ),
-    );
-
-  const sessionsUsed = sessions.length;
-  const sessionsRemaining = Math.max(0, GUEST_SESSION_LIMIT - sessionsUsed);
-  const canCreateSession = sessionsUsed < GUEST_SESSION_LIMIT;
-
-  // Calculate reset time (24 hours from the oldest session)
-  const resetTime = sessions.length > 0 && sessions[0]
-    ? new Date(sessions[0].createdAt.getTime() + ROLLING_WINDOW_HOURS * 60 * 60 * 1000)
-    : new Date(Date.now() + ROLLING_WINDOW_HOURS * 60 * 60 * 1000);
-
-  return {
-    canCreateSession,
-    sessionsUsed,
-    sessionsRemaining,
-    resetTime,
-  };
-}
 
 /**
  * Check if an authenticated user can create a new session (for basic tier users)
@@ -128,35 +88,7 @@ export async function checkUserSessionLimit(userId: string): Promise<UserSession
   };
 }
 
-/**
- * Create a new patient session for a guest token
- */
-export async function createGuestSession(guestToken: string, patientName: string, templateId?: string) {
-  const sessionStatus = await checkGuestSessionLimit(guestToken);
 
-  if (!sessionStatus.canCreateSession) {
-    throw new Error(`Guest session limit exceeded. You have used ${sessionStatus.sessionsUsed}/${GUEST_SESSION_LIMIT} sessions. Try again after ${sessionStatus.resetTime.toISOString()}`);
-  }
-
-  const newSession = await db
-    .insert(patientSessions)
-    .values({
-      userId: null,
-      guestToken,
-      patientName: patientName.trim(),
-      templateId,
-      status: 'active',
-      isTemporary: true, // Guest sessions are always temporary (basic tier)
-      transcriptions: JSON.stringify([]),
-      consultationItems: JSON.stringify([]),
-      clinicalImages: JSON.stringify([]),
-      typedInput: '',
-      consultationNotes: '',
-      notes: '',
-    })
-    .returning();
-  return newSession[0];
-}
 
 /**
  * Create a new patient session for an authenticated user
@@ -178,7 +110,6 @@ export async function createUserSession(userId: string, patientName: string, tem
     .insert(patientSessions)
     .values({
       userId,
-      guestToken: null,
       patientName: patientName.trim(),
       templateId,
       status: 'active',
@@ -205,9 +136,4 @@ export async function createUserSession(userId: string, patientName: string, tem
   return newSession[0];
 }
 
-/**
- * Get session usage statistics for a guest token
- */
-export async function getGuestSessionStats(guestToken: string): Promise<GuestSessionStatus> {
-  return await checkGuestSessionLimit(guestToken);
-}
+

@@ -10,14 +10,13 @@ import {
   TIER_LIMITS,
   type UserTier,
 } from './rbac-client';
-import { checkGuestSessionLimit, checkUserSessionLimit } from './services/guest-session-service';
+import { checkUserSessionLimit } from './services/guest-session-service';
 
 // Re-export client-safe utilities for backward compatibility
 export { canAccessTemplates, type SessionLimits, type UserTier };
 
 export type RBACContext = {
   userId: string | null;
-  guestToken: string | null;
   tier: UserTier;
   isAuthenticated: boolean;
 };
@@ -139,7 +138,6 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
         // Invalid token record - treat as unauthenticated
         return {
           userId: null,
-          guestToken: null,
           tier: 'basic',
           isAuthenticated: false,
         };
@@ -150,7 +148,6 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
         // Expired mobile token - treat as unauthenticated
         return {
           userId: null,
-          guestToken: null,
           tier: 'basic',
           isAuthenticated: false,
         };
@@ -164,16 +161,13 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
 
         return {
           userId: record.userId,
-          guestToken: null,
           tier: actualUserTier, // Use actual user tier from Clerk
           isAuthenticated: true,
         };
       } else {
-        // Mobile token for guest user (userId is null)
-        // Use mobile token as guest token for session tracking
+        // Mobile token for guest user (userId is null) - not supported anymore
         return {
           userId: null,
-          guestToken: mobileToken,
           tier: 'basic',
           isAuthenticated: false,
         };
@@ -182,69 +176,24 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
     // Invalid mobile token - fall through to other auth methods
   }
 
-  // Also check for guest token
-  const guestToken
-    = req.headers.get('x-guest-token')
-      || url.searchParams.get('guestToken')
-      || null;
-
-  // Authenticated user takes priority
+  // Authenticated user required
   if (userId) {
     return {
       userId,
-      guestToken: null,
       tier: userTier,
       isAuthenticated: true,
     };
   }
 
-  // No authenticated user, check for guest token
-  if (guestToken) {
-    return {
-      userId: null,
-      guestToken,
-      tier: 'basic', // All guests are Basic tier
-      isAuthenticated: false,
-    };
-  }
-
-  // No authentication and no guest token - public user
+  // No authentication - require sign in
   return {
     userId: null,
-    guestToken: null,
-    tier: 'basic', // Public users get basic tier limits
+    tier: 'basic',
     isAuthenticated: false,
   };
 }
 
-/**
- * Extract guest token from mobile token lookup
- */
-export async function extractGuestTokenFromMobile(mobileToken: string): Promise<string | null> {
-  const tokenRecord = await db
-    .select()
-    .from(mobileTokens)
-    .where(eq(mobileTokens.token, mobileToken))
-    .limit(1);
 
-  if (tokenRecord.length === 0) {
-    return null;
-  }
-
-  const record = tokenRecord[0];
-  if (!record) {
-    return null;
-  }
-
-  const isExpired = record.expiresAt <= new Date();
-
-  // For guest tokens (userId is null), return the mobile token as guest token
-  if (!record.userId && !isExpired) {
-    return mobileToken;
-  }
-
-  return null;
-}
 
 /**
  * Check if user can perform a core session action (transcription, note generation, mobile recording)
@@ -269,24 +218,13 @@ export async function checkCoreSessionLimit(context: RBACContext): Promise<RBACR
       remaining: sessionStatus.sessionsRemaining,
       resetTime: sessionStatus.resetTime,
     };
-  } else if (context.guestToken) {
-    // Guest user - use guest token session tracking
-    const sessionStatus = await checkGuestSessionLimit(context.guestToken);
-
-    return {
-      allowed: sessionStatus.canCreateSession,
-      reason: sessionStatus.canCreateSession ? undefined : 'Session limit exceeded',
-      upgradePrompt: sessionStatus.canCreateSession ? undefined : 'Sign up to get unlimited sessions',
-      remaining: sessionStatus.sessionsRemaining,
-      resetTime: sessionStatus.resetTime,
-    };
   }
 
-  // Basic tier user without proper tracking - deny access
+  // Unauthenticated user - require sign in
   return {
     allowed: false,
-    reason: 'Session tracking required',
-    upgradePrompt: 'Please refresh the page to enable session tracking',
+    reason: 'Authentication required',
+    upgradePrompt: 'Please sign in to use ClinicPro',
   };
 }
 
@@ -344,14 +282,6 @@ export async function checkFeatureAccess(context: RBACContext, feature: 'templat
   return { allowed: true };
 }
 
-/**
- * Increment session usage for guest tokens
- */
-export async function incrementGuestSessionUsage(guestToken: string, patientName: string, templateId?: string): Promise<void> {
-  // This will be handled by the existing guest session service
-  // when creating a new patient session
-  const { createGuestSession } = await import('./services/guest-session-service');
-  await createGuestSession(guestToken, patientName, templateId);
-}
+
 
 // withRBAC function removed - using direct pattern for better Clerk middleware compatibility

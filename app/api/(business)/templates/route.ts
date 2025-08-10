@@ -9,6 +9,14 @@ export async function GET(req: Request) {
   try {
     // Extract RBAC context from client headers
     const context = await extractRBACContext(req);
+
+    // Require authentication for all template access
+    if (!context.isAuthenticated) {
+      return NextResponse.json(
+        { code: 'UNAUTHORIZED', message: 'You must be logged in to access templates' },
+        { status: 401 },
+      );
+    }
     const { searchParams } = new URL(req.url);
     const type = searchParams.get('type');
 
@@ -17,12 +25,9 @@ export async function GET(req: Request) {
       whereClause = eq(templates.type, 'default');
     } else if (type === 'custom' && context.userId) {
       whereClause = eq(templates.ownerId, context.userId);
-    } else if (context.userId) {
-      // Fetch both default and custom for signed-in user
-      whereClause = or(eq(templates.type, 'default'), eq(templates.ownerId, context.userId));
     } else {
-      // Guests: only default
-      whereClause = eq(templates.type, 'default');
+      // Authenticated users: show both default and their custom templates
+      whereClause = or(eq(templates.type, 'default'), eq(templates.ownerId, context.userId!));
     }
 
     const allTemplates = await db
@@ -59,17 +64,6 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { code: 'UNAUTHORIZED', message: 'You must be logged in to create a template' },
         { status: 401 },
-      );
-    }
-
-    // Check tier - templates require at least standard
-    if (context.tier === 'basic') {
-      return NextResponse.json(
-        {
-          error: 'Template management requires Standard tier or higher',
-          message: 'Upgrade to Standard to create and manage custom templates',
-        },
-        { status: 403 },
       );
     }
 

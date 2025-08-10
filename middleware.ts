@@ -37,7 +37,7 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
   }
 
-  // Remove public access to /api/templates (GET now requires auth; CRUD requires standard+)
+  // All /api/templates routes require authentication (GET requires basic+; CRUD requires standard+)
 
   // Helper function to redirect to login with return URL for pages
   const redirectToLogin = (returnUrl: string) => {
@@ -109,8 +109,7 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // Allow anonymous access to /api/mobile routes (supports guest tokens)
-  // Authentication is handled within the individual route handlers
+  // Allow access to /api/mobile routes - authentication is handled within the individual route handlers
 
   // Protect /api/user routes - require signed in (basic+)
   if (req.nextUrl.pathname.startsWith('/api/user')) {
@@ -128,8 +127,7 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // Allow anonymous access to /api/ably routes (supports guest tokens)
-  // Authentication is handled within the individual route handlers
+  // Allow access to /api/ably routes - authentication is handled within the individual route handlers
 
   // Protect /api/uploads routes (clinical images)
   if (req.nextUrl.pathname.startsWith('/api/uploads')) {

@@ -12,5 +12,11 @@
     "app/api/(clinical)/rag/query/route.ts": {
       "maxDuration": 60
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/maintenance/cleanup-mobile-tokens",
+      "schedule": "0 13 * * *"
+    }
+  ]
 }

@@ -14,6 +14,11 @@ export function TypedInput({ collapsed, onExpand, isMinimized }: { collapsed?: b
   const [saveStatus, setSaveStatus] = useState<'saved' | 'editing' | 'saving'>('saved');
   const [showHelp, setShowHelp] = useState(false);
 
+  // Reset expansion state when isMinimized prop changes
+  useEffect(() => {
+    setIsExpanded(!isMinimized);
+  }, [isMinimized]);
+
   // Check if user has typed anything (not just empty lines)
   const hasContent = localInput.trim().length > 0;
 

@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { db } from '@/db/client';
-import { patientSessions } from '@/db/schema';
+import { patientSessions, users } from '@/db/schema';
 import { checkCoreSessionLimit, checkFeatureAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 // GET - List patient sessions for a user
@@ -89,7 +89,7 @@ export async function GET(req: NextRequest) {
 // POST - Create a new patient session
 export async function POST(req: NextRequest) {
   try {
-    // Extract RBAC context and check core session limits (allows guest users)
+    // Extract RBAC context and check core session limits
     const context = await extractRBACContext(req);
     const permissionCheck = await checkCoreSessionLimit(context);
 
@@ -132,6 +132,15 @@ export async function POST(req: NextRequest) {
     );
 
     // Note: Mobile devices will be notified via Ably when patient session changes
+    // Persist as current session for this user for mobile fallback
+    try {
+      if (session && session.id) {
+        await db.update(users).set({ currentSessionId: session.id }).where(eq(users.id, userId));
+      }
+    } catch {
+      // best effort
+    }
+
     return NextResponse.json({
       session: {
         ...session,

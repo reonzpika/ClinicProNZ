@@ -40,17 +40,6 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       );
     }
 
-    // Check tier - templates require at least standard
-    if (rbacContext.tier === 'basic') {
-      return NextResponse.json(
-        {
-          error: 'Template management requires Standard tier or higher',
-          message: 'Upgrade to Standard to create and manage custom templates',
-        },
-        { status: 403 },
-      );
-    }
-
     const body = await request.json();
 
     // Only allow update if user owns the template or it's a system template
@@ -91,17 +80,6 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
       return NextResponse.json<ApiError>(
         { code: 'UNAUTHORIZED', message: 'You must be logged in to delete a template' },
         { status: 401 },
-      );
-    }
-
-    // Check tier - templates require at least standard
-    if (rbacContext.tier === 'basic') {
-      return NextResponse.json(
-        {
-          error: 'Template management requires Standard tier or higher',
-          message: 'Upgrade to Standard to create and manage custom templates',
-        },
-        { status: 403 },
       );
     }
 

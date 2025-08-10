@@ -65,6 +65,8 @@ export default antfu(
   },
   {
     rules: {
+      // Disable problematic indent rule causing recursion/stack overflow in @stylistic
+      'style/indent': 'off',
       'import/order': 'off', // Avoid conflicts with `simple-import-sort` plugin
       'sort-imports': 'off', // Avoid conflicts with `simple-import-sort` plugin
       'style/brace-style': ['error', '1tbs'], // Use the default brace style

@@ -1,7 +1,7 @@
 import { and, eq, lt, or } from 'drizzle-orm';
 
 import { db } from '../../../database/client';
-import { patientSessions } from '../../../database/schema';
+import { mobileTokens, patientSessions } from '../../../database/schema';
 
 /**
  * Clean up temporary sessions that are completed or older than 24 hours
@@ -78,4 +78,53 @@ export async function completeTemporarySession(sessionId: string): Promise<boole
     console.error('Error completing temporary session:', error);
     return false;
   }
+}
+
+/**
+ * Clean up expired mobile tokens (older than now)
+ * Returns number of deleted rows
+ */
+export async function cleanupExpiredMobileTokens(): Promise<number> {
+  const deleted = await db
+    .delete(mobileTokens)
+    .where(lt(mobileTokens.expiresAt, new Date()))
+    .returning({ id: mobileTokens.id });
+
+  return deleted.length;
+}
+
+/**
+ * Clean up inactive mobile tokens (non-expiring permanent tokens)
+ * Returns number of deleted rows
+ */
+export async function cleanupInactiveMobileTokens(): Promise<number> {
+  const deleted = await db
+    .delete(mobileTokens)
+    .where(eq(mobileTokens.isActive, false))
+    .returning({ id: mobileTokens.id });
+
+  return deleted.length;
+}
+
+/**
+ * Delete a specific mobile token by value (unconditionally)
+ */
+export async function deleteMobileToken(token: string): Promise<boolean> {
+  const deleted = await db
+    .delete(mobileTokens)
+    .where(eq(mobileTokens.token, token))
+    .returning({ id: mobileTokens.id });
+  return deleted.length > 0;
+}
+
+/**
+ * Delete a specific mobile token only if it is expired
+ */
+export async function deleteExpiredMobileToken(token: string): Promise<number> {
+  const deleted = await db
+    .delete(mobileTokens)
+    .where(and(eq(mobileTokens.token, token), lt(mobileTokens.expiresAt, new Date())))
+    .returning({ id: mobileTokens.id });
+
+  return deleted.length;
 }

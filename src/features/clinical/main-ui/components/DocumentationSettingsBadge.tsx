@@ -64,8 +64,13 @@ export const DocumentationSettingsBadge: React.FC = () => {
     async function loadTemplates() {
       try {
         setIsLoading(true);
+        // Require sign-in before fetching templates
+        if (!isSignedIn || !userId) {
+          setTemplates([]);
+          return;
+        }
         // Use centralized fetchTemplates function with auth headers
-        const allTemplates = await fetchTemplates(userId, userTier, null);
+        const allTemplates = await fetchTemplates(userId, userTier);
 
         // Add template type labels
         const templatesWithTypes = allTemplates.map((t: Template) => ({

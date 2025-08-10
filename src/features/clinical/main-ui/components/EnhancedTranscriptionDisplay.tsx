@@ -26,8 +26,6 @@ export function EnhancedTranscriptionDisplay({
   // Feature detection - only need words for enhanced view
   const hasEnhancedData = words.length > 0;
 
-  
-
   // Simple fallback (exactly like current implementation)
   if (!hasEnhancedData || !showEnhanced || isRecording) {
     return (

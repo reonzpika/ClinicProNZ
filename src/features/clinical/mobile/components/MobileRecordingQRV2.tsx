@@ -42,7 +42,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
   const [qrData, setQrData] = useState<QRTokenData | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [timeRemaining, setTimeRemaining] = useState<number>(0);
+  // Expiry logic removed for permanent tokens
   const [isClient, setIsClient] = useState(false);
 
   // Client-side initialization
@@ -50,42 +50,57 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
     setIsClient(true);
   }, []);
 
-  // Restore QR data from context when component mounts
+  // Auto-restore QR data from localStorage and server when modal opens
   useEffect(() => {
-    if (isClient && mobileV2.tokenData && !qrData) {
-      setQrData(mobileV2.tokenData);
-    }
-  }, [isClient, mobileV2.tokenData, qrData]);
-
-  // Simple timer for token expiry
-  useEffect(() => {
-    if (!isClient || !qrData) {
-      return;
+    if (!isClient || !isOpen || qrData) {
+      return; // Skip if not client-side, modal closed, or already have QR data
     }
 
-    const updateTimer = () => {
-      const now = new Date().getTime();
-      const expiryTime = new Date(qrData.expiresAt).getTime();
-      const remaining = Math.max(0, Math.floor((expiryTime - now) / 1000));
+    const fetchActiveToken = async () => {
+      // If we already have token data in context that's not expired, use it
+      if (mobileV2.tokenData) {
+        const expiryTime = new Date(mobileV2.tokenData.expiresAt).getTime();
+        if (expiryTime > Date.now()) {
+          setQrData(mobileV2.tokenData);
+          return;
+        }
+      }
 
-      setTimeRemaining(remaining);
+      // Fetch from server to get authoritative active token
+      if (isSignedIn && userId) {
+        try {
+          const response = await fetch('/api/mobile/active-token', {
+            method: 'GET',
+            headers: createAuthHeaders(userId, userTier),
+          });
 
-      // Auto-refresh if expired
-      if (remaining <= 0 && qrData) {
-        setQrData(null);
-        setError('QR code has expired. Please generate a new one.');
-        setMobileV2TokenData(null);
-        enableMobileV2(false);
+          if (response.ok) {
+            const tokenData = await response.json();
+            setQrData(tokenData);
+            // Update context with server data
+            setMobileV2TokenData(tokenData);
+            enableMobileV2(true);
+          } else if (response.status === 404) {
+            // No active token exists - this is expected for new users
+            setQrData(null);
+          } else {
+            // Other errors (401, 500, etc.)
+            const errorData = await response.json().catch(() => ({ error: 'Failed to fetch token' }));
+            setError(errorData.error || 'Failed to check for existing token');
+          }
+        } catch (err) {
+          const errorMessage = err instanceof Error ? err.message : 'Failed to check for existing token';
+          setError(errorMessage);
+        }
       }
     };
 
-    updateTimer();
-    const interval = setInterval(updateTimer, 1000);
+    fetchActiveToken();
+  }, [isClient, isOpen, qrData, mobileV2.tokenData, isSignedIn, userId, userTier, setMobileV2TokenData, enableMobileV2]);
 
-    return () => clearInterval(interval);
-  }, [isClient, qrData, setMobileV2TokenData, enableMobileV2]);
+  // No expiry timer for permanent tokens
 
-  const generateToken = useCallback(async () => {
+  const generateToken = useCallback(async (forceRotate: boolean = false) => {
     setIsGenerating(true);
     setError(null);
 
@@ -98,7 +113,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
       const response = await fetch('/api/mobile/generate-token', {
         method: 'POST',
         headers: createAuthHeaders(userId, userTier),
-        body: JSON.stringify({}),
+        body: JSON.stringify(forceRotate ? { forceRotate: true } : {}),
       });
 
       if (!response.ok) {
@@ -135,31 +150,11 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
     }
   }, [isSignedIn, userId, ensureActiveSession, setMobileV2TokenData, enableMobileV2, isClient, userTier]);
 
-  const stopMobileRecording = useCallback(() => {
-    setQrData(null);
-    setError(null);
-    setMobileV2TokenData(null);
-    enableMobileV2(false);
-  }, [setMobileV2TokenData, enableMobileV2]);
+  // Disconnect button removed per UX update; token remains active until expiry
 
-  const formatTimeRemaining = (seconds: number) => {
-    if (seconds <= 0) {
-      return 'Expired';
-    }
+  // No countdown UI for permanent tokens
 
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-
-    if (hours > 0) {
-      return `${hours}h ${minutes}m remaining`;
-    } else if (minutes > 0) {
-      return `${minutes}m remaining`;
-    } else {
-      return `${seconds}s remaining`;
-    }
-  };
-
-  const isExpired = timeRemaining <= 0 && qrData;
+  const isExpired = false;
   const isConnected = mobileV2.connectionStatus === 'connected';
 
   return (
@@ -212,68 +207,34 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
                 <p className="text-sm text-gray-600">
                   Scan with your mobile device to connect
                 </p>
-                <div className="text-xs text-gray-500">
-                  <div>24-hour access token</div>
-                  <div className="font-medium text-gray-600">
-                    {formatTimeRemaining(timeRemaining)}
-                  </div>
-                </div>
+                {/* No countdown for permanent token */}
               </div>
             </div>
           )}
 
           {/* Control Buttons */}
           <div className="flex gap-2">
-            {!qrData
-              ? (
-                  <Button
-                    onClick={generateToken}
-                    disabled={isGenerating}
-                    className="flex-1"
-                  >
-                    {isGenerating
-                      ? (
-                          <>
-                            <RefreshCw className="mr-2 size-4 animate-spin" />
-                            Generating...
-                          </>
-                        )
-                      : (
-                          <>
-                            <Smartphone className="mr-2 size-4" />
-                            Generate QR Code
-                          </>
-                        )}
-                  </Button>
-                )
-              : (
-                  <>
-                    <Button
-                      onClick={generateToken}
-                      disabled={isGenerating}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      {isGenerating
-                        ? (
-                            <>
-                              <RefreshCw className="mr-2 size-4 animate-spin" />
-                              Generating...
-                            </>
-                          )
-                        : (
-                            <>
-                              <RefreshCw className="mr-2 size-4" />
-                              New QR Code
-                            </>
-                          )}
-                    </Button>
-
-                    <Button onClick={stopMobileRecording} variant="outline" className="flex-1">
-                      Disconnect
-                    </Button>
-                  </>
-                )}
+            {!qrData && (
+              <Button
+                onClick={() => generateToken(false)}
+                disabled={isGenerating}
+                className="flex-1"
+              >
+                {isGenerating
+                  ? (
+                      <>
+                        <RefreshCw className="mr-2 size-4 animate-spin" />
+                        Generating...
+                      </>
+                    )
+                  : (
+                      <>
+                        <Smartphone className="mr-2 size-4" />
+                        Generate QR Code
+                      </>
+                    )}
+              </Button>
+            )}
           </div>
 
           {/* Simple Instructions */}
@@ -287,8 +248,22 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
             </ul>
           </div>
 
-          {/* Close button */}
-          <div className="flex justify-end pt-2">
+          {/* Footer actions */}
+          <div className="flex items-center justify-between pt-2">
+            {/* Reset token: force rotate, deactivating old token */}
+            <Button
+              variant="outline"
+              onClick={() => generateToken(true)}
+              disabled={isGenerating}
+            >
+              {isGenerating ? (
+                <>
+                  <RefreshCw className="mr-2 size-4 animate-spin" />
+                  Rotating...
+                </>
+              ) : 'Reset token'}
+            </Button>
+
             <Button onClick={onClose} variant="outline">
               Close
             </Button>

@@ -47,7 +47,6 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     microphoneGain,
     volumeThreshold,
     ensureActiveSession,
-    getEffectiveGuestToken,
   } = useConsultationStores();
 
   const [state, setState] = useState<TranscriptionState>({
@@ -117,11 +116,11 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
         const formData = new FormData();
         formData.append('audio', audioBlob, `session-${currentSession}.webm`);
 
-        const guestToken = getEffectiveGuestToken();
+        // Authentication required via headers
 
         const response = await fetch('/api/deepgram/transcribe', {
           method: 'POST',
-          headers: createAuthHeadersForFormData(userId, userTier, guestToken),
+          headers: createAuthHeadersForFormData(userId, userTier),
           body: formData,
         });
 
@@ -139,14 +138,10 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
           paragraphs: data.paragraphs,
         };
 
-        
-
         // Use regular transcript since diarization is disabled
         if (transcript && transcript.trim()) {
           // 🆕 Use enhanced function if we have enhanced data
           const hasEnhancedData = enhancedData.confidence !== undefined || enhancedData.words.length > 0;
-
-          
 
           if (hasEnhancedData) {
             await appendTranscriptionEnhanced(
@@ -180,7 +175,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     } finally {
       setState(prev => ({ ...prev, isTranscribing: false }));
     }
-  }, [appendTranscription, state.isRecording, getEffectiveGuestToken, isMobile, onChunkComplete]);
+  }, [appendTranscription, state.isRecording, isMobile, onChunkComplete]);
 
   // Start a new recording session
   const startRecordingSession = useCallback(() => {

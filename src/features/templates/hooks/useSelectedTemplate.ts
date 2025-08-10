@@ -22,7 +22,11 @@ export function useSelectedTemplate() {
         setIsLoading(true);
         // Use centralized fetchTemplates function with auth headers
         const userTier = getUserTier();
-        const allTemplates = await fetchTemplates(userId, userTier, null);
+        if (!isSignedIn || !userId) {
+          setTemplates([]);
+          return;
+        }
+        const allTemplates = await fetchTemplates(userId, userTier);
 
         // Add template type labels
         const templatesWithTypes = allTemplates.map((t: Template) => ({

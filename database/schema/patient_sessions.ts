@@ -5,7 +5,7 @@ import { users } from './users';
 export const patientSessions = pgTable('patient_sessions', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: text('user_id').references(() => users.id),
-  guestToken: text('guest_token'), // For anonymous users
+  guestToken: text('guest_token'), // DEPRECATED: No longer used (anonymous access removed)
   patientName: text('patient_name'),
   patientId: text('patient_id'), // For future patient management system
   status: text('status', {

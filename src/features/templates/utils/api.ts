@@ -10,7 +10,14 @@ export async function fetchTemplates(
     headers: createAuthHeaders(userId, userTier),
   });
   if (!res.ok) {
-    throw new Error('Failed to fetch templates');
+    if (res.status === 401) {
+      throw new Error('Please sign in to access templates');
+    }
+    if (res.status === 403) {
+      throw new Error('Your current subscription tier does not grant access to templates');
+    }
+    const text = await res.text().catch(() => 'Failed to fetch templates');
+    throw new Error(text || 'Failed to fetch templates');
   }
   const data = await res.json();
   return data.templates;

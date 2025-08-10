@@ -1,4 +1,4 @@
-# Import Path Debugging Reference
+c# Import Path Debugging Reference
 
 ## Overview
 This document captures consistent error patterns found in ClinicPro's codebase during the RAG feature implementation and provides systematic debugging approaches.

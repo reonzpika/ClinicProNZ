@@ -5,9 +5,16 @@ import { NextResponse } from 'next/server';
 
 import { db } from '@/db/client';
 import { mobileTokens } from '@/db/schema';
+import { cleanupInactiveMobileTokens } from '@/src/lib/services/cleanup-service';
 
 export async function POST(request: NextRequest) {
   try {
+    // Opportunistic cleanup to remove old inactive tokens
+    try {
+      await cleanupInactiveMobileTokens();
+    } catch {
+      // ignore cleanup errors
+    }
     let tokenId: string | null = null;
 
     // Parse request body - handle both JSON and form data
@@ -49,7 +56,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate tokenId exists and is not expired
+    // Validate tokenId exists
     const tokenData = await db
       .select()
       .from(mobileTokens)
@@ -57,10 +64,7 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (!tokenData.length) {
-      return NextResponse.json(
-        { error: 'Invalid or expired token' },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
     const token = tokenData[0];
@@ -72,15 +76,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if token is expired (24 hours)
-    const expiryTime = new Date(token.expiresAt).getTime();
-    const now = Date.now();
-
-    if (now > expiryTime) {
-      return NextResponse.json(
-        { error: 'Token has expired' },
-        { status: 401 },
-      );
+    // Require active token (no expiry logic)
+    if (token.isActive === false) {
+      return NextResponse.json({ error: 'Inactive token' }, { status: 401 });
     }
 
     // FIXED: Create Ably client with proper constructor pattern

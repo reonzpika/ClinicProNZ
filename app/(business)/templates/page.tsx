@@ -2,9 +2,8 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { TemplateCreationWizard } from '@/src/features/templates/components/TemplateCreationWizard';
 import { TemplateEditor } from '@/src/features/templates/components/TemplateEditor';
 import { TemplateList } from '@/src/features/templates/components/TemplateList';
 import { TemplatePerformanceMonitor } from '@/src/features/templates/components/TemplatePerformanceMonitor';
@@ -36,7 +35,21 @@ export default function TemplatesPage() {
   // Check if user has template management access
   const hasTemplateAccess = hasFeatureAccess('templateManagement');
 
+  // Stable blank template for creating new templates (used instead of wizard)
+  const newBlankTemplate = useMemo<Template>(() => ({
+    id: `new-${Date.now()}`,
+    name: '',
+    type: 'custom',
+    description: '',
+    templateBody: '',
+  }), []);
+
   useEffect(() => {
+    if (!isSignedIn) {
+      setTemplates([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     fetchTemplates(userId, userTier)
       .then((data) => {
@@ -48,7 +61,7 @@ export default function TemplatesPage() {
         setError(err.message);
         setLoading(false);
       });
-  }, [userId, userTier]);
+  }, [isSignedIn, userId, userTier]);
 
   useEffect(() => {
     if (!isSignedIn || loading || templates.length === 0 || hasReorderedRef.current || !userId) {
@@ -187,12 +200,10 @@ export default function TemplatesPage() {
 
       <Container size="fluid" className="h-full">
         <div className="flex h-full flex-col">
-          {(!isSignedIn || !hasTemplateAccess) && (
+          {!isSignedIn && (
             <div className="p-4">
               <p className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-600">
-                {!isSignedIn
-                  ? 'Sign in to create and manage custom templates'
-                  : 'Upgrade to Standard to create and manage custom templates'}
+                {'Sign in to create and manage templates'}
               </p>
             </div>
           )}
@@ -209,7 +220,8 @@ export default function TemplatesPage() {
                     onCancel={handleCancel}
                   />
                 ) : (
-                  <TemplateCreationWizard
+                  <TemplateEditor
+                    template={newBlankTemplate}
                     onSave={handleSaveTemplate}
                     onCancel={handleCancel}
                   />

@@ -1,83 +1,93 @@
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
+import { and, desc, eq } from 'drizzle-orm';
 
 import { db } from '@/db/client';
 import { mobileTokens } from '@/db/schema';
-import { checkGuestSessionLimit } from '@/src/lib/services/guest-session-service';
+import { cleanupInactiveMobileTokens } from '@/src/lib/services/cleanup-service';
 
 export async function POST(req: Request) {
   try {
+    // Opportunistic cleanup to prevent bloat
+    try {
+      await cleanupInactiveMobileTokens();
+    } catch {
+      // ignore cleanup errors
+    }
     // Get userId from request headers (sent by client)
     const userId = req.headers.get('x-user-id');
 
-    const body = await req.json().catch(() => ({}));
-    const { guestToken: existingGuestToken } = body;
-
-    // Check session limits for guest tokens
-    if (!userId && existingGuestToken) {
-      const sessionStatus = await checkGuestSessionLimit(existingGuestToken);
-      if (!sessionStatus.canCreateSession) {
-        return NextResponse.json({
-          error: 'Session limit exceeded',
-          message: `You have used ${sessionStatus.sessionsUsed}/5 free sessions. Please sign in to continue.`,
-          sessionsUsed: sessionStatus.sessionsUsed,
-          sessionsRemaining: sessionStatus.sessionsRemaining,
-          resetTime: sessionStatus.resetTime.toISOString(),
-        }, { status: 429 });
-      }
+    // Authentication required for mobile token generation
+    if (!userId) {
+      return NextResponse.json({
+        error: 'Authentication required',
+        message: 'Please sign in to generate a mobile token',
+      }, { status: 401 });
     }
 
-    // Generate a unique token OR reuse existing guest token
-    const token = (!userId && existingGuestToken) ? existingGuestToken : uuidv4();
+    const now = new Date();
 
-    // Set token expiry based on user type
+    // Parse optional body for forceRotate flag
+    let forceRotate = false;
+    try {
+      const contentType = req.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const body = await req.json().catch(() => null);
+        if (body && typeof body.forceRotate === 'boolean') {
+          forceRotate = body.forceRotate === true;
+        }
+      }
+    } catch {
+      // ignore parse errors; default forceRotate false
+    }
+
+    // Check for existing active token (ignore expiry)
+    const existingTokens = forceRotate
+      ? []
+      : await db
+          .select()
+          .from(mobileTokens)
+          .where(
+            and(
+              eq(mobileTokens.userId, userId),
+              eq(mobileTokens.isActive, true),
+            ),
+          )
+          .orderBy(desc(mobileTokens.createdAt))
+          .limit(1);
+
+    let token: string;
     let expiresAt: Date;
-    if (userId) {
-      // Authenticated users: 24 hours (existing behaviour)
+
+    if (existingTokens.length > 0) {
+      // Return existing active token
+      const existingToken = existingTokens[0]!;
+      token = existingToken.token;
+      expiresAt = new Date(existingToken.expiresAt);
+
+      // Update lastUsedAt for the existing token
+      await db
+        .update(mobileTokens)
+        .set({ lastUsedAt: now })
+        .where(eq(mobileTokens.token, token));
+    } else {
+      // Deactivate any existing tokens for this user before creating new one
+      await db
+        .update(mobileTokens)
+        .set({ isActive: false })
+        .where(eq(mobileTokens.userId, userId));
+
+      // Generate a new unique token
+      token = uuidv4();
       expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    } else {
-      // Anonymous users: 7 days for guest tokens
-      expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-    }
 
-    // Store the token in database (userId can be null for guest tokens)
-    // For reused guest tokens, check if record already exists
-    if (!userId && existingGuestToken && token === existingGuestToken) {
-      // Check if guest token exists in database
-      const { eq } = await import('drizzle-orm');
-      const existingRecord = await db
-        .select()
-        .from(mobileTokens)
-        .where(eq(mobileTokens.token, token))
-        .limit(1);
-
-      if (existingRecord.length > 0) {
-        // Token exists, update it
-        await db.update(mobileTokens)
-          .set({
-            expiresAt,
-            isActive: true,
-            lastUsedAt: new Date(),
-          })
-          .where(eq(mobileTokens.token, token));
-      } else {
-        // Token doesn't exist, create it
-        await db.insert(mobileTokens).values({
-          token,
-          userId: null, // Guest token
-          expiresAt,
-          isActive: true,
-          lastUsedAt: new Date(),
-        });
-      }
-    } else {
-      // New token (authenticated user) or new guest token
+      // Store the new token in database
       await db.insert(mobileTokens).values({
         token,
-        userId: userId || null,
+        userId,
         expiresAt,
         isActive: true,
-        lastUsedAt: new Date(),
+        lastUsedAt: now,
       });
     }
 
@@ -97,8 +107,8 @@ export async function POST(req: Request) {
       token,
       mobileUrl,
       expiresAt: expiresAt.toISOString(),
-      isGuest: !userId, // Indicate if this is a guest session
-      guestToken: !userId ? token : undefined, // Return guest token for client storage
+      isGuest: false, // Guest tokens no longer supported
+      // Authentication required for mobile tokens
     });
   } catch (error) {
     console.error('Error generating mobile token:', error);

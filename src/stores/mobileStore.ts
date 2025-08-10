@@ -1,6 +1,48 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
+// Helper function to get token data from localStorage
+function getMobileTokenDataFromStorage(): {
+  token: string;
+  mobileUrl: string;
+  expiresAt: string;
+} | null {
+  if (typeof window === 'undefined') return null;
+  
+  try {
+    const stored = localStorage.getItem('mobileV2TokenData');
+    if (!stored) return null;
+    
+    const tokenData = JSON.parse(stored);
+    
+    // Check if token is expired
+    if (tokenData.expiresAt && new Date(tokenData.expiresAt) <= new Date()) {
+      localStorage.removeItem('mobileV2TokenData');
+      return null;
+    }
+    
+    return tokenData;
+  } catch {
+    localStorage.removeItem('mobileV2TokenData');
+    return null;
+  }
+}
+
+// Helper function to save token data to localStorage
+function saveMobileTokenDataToStorage(tokenData: {
+  token: string;
+  mobileUrl: string;
+  expiresAt: string;
+} | null): void {
+  if (typeof window === 'undefined') return;
+  
+  if (tokenData) {
+    localStorage.setItem('mobileV2TokenData', JSON.stringify(tokenData));
+  } else {
+    localStorage.removeItem('mobileV2TokenData');
+  }
+}
+
 type MobileState = {
   // Mobile V2 state
   mobileV2: {
@@ -34,11 +76,14 @@ type MobileActions = {
 
 type MobileStore = MobileState & MobileActions;
 
+// Get initial token data from localStorage
+const initialTokenData = getMobileTokenDataFromStorage();
+
 const initialState: MobileState = {
   mobileV2: {
-    isEnabled: false,
-    token: null,
-    tokenData: null,
+    isEnabled: !!initialTokenData,
+    token: initialTokenData?.token || null,
+    tokenData: initialTokenData,
     connectionStatus: 'disconnected',
     sessionSynced: false,
   },
@@ -59,10 +104,19 @@ export const useMobileStore = create<MobileStore>()(
         mobileV2: { ...state.mobileV2, token },
       })),
 
-    setMobileV2TokenData: tokenData =>
+    setMobileV2TokenData: tokenData => {
+      // Save to localStorage whenever token data changes
+      saveMobileTokenDataToStorage(tokenData);
+      
       set(state => ({
-        mobileV2: { ...state.mobileV2, tokenData },
-      })),
+        mobileV2: { 
+          ...state.mobileV2, 
+          tokenData,
+          // Update token field as well when tokenData changes
+          token: tokenData?.token || null,
+        },
+      }));
+    },
 
     setMobileV2ConnectionStatus: connectionStatus =>
       set(state => ({
@@ -75,6 +129,18 @@ export const useMobileStore = create<MobileStore>()(
       })),
 
     // Reset actions
-    resetMobileState: () => set(initialState),
+    resetMobileState: () => {
+      // Clear localStorage when resetting
+      saveMobileTokenDataToStorage(null);
+      set({
+        mobileV2: {
+          isEnabled: false,
+          token: null,
+          tokenData: null,
+          connectionStatus: 'disconnected',
+          sessionSynced: false,
+        },
+      });
+    },
   })),
 );

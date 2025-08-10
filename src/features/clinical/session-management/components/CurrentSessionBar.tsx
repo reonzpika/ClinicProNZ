@@ -31,8 +31,8 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
 
   const { isLargeDesktop } = useResponsive();
 
-  // Phase 2: Add debouncing for new patient creation
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Immediate disable approach for new patient creation (replaces debounce)
+  const [isCreatingNewPatient, setIsCreatingNewPatient] = useState<boolean>(false);
 
   const [editingSession, setEditingSession] = useState<{
     sessionId: string | null;
@@ -87,32 +87,33 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
   };
 
   const handleNewPatient = useCallback(async () => {
-    // Phase 2: Debounce rapid clicks (500ms)
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
+    if (isCreatingNewPatient) return; // Guard against re-entry
+    setIsCreatingNewPatient(true);
+    try {
+      // TODO: Add save logic here similar to GeneratedNotes component
+      // For now, this creates a new session without auto-saving the current one
+      // Users should manually save their work before creating a new session
 
-    debounceTimeoutRef.current = setTimeout(async () => {
-      try {
-        // Generate a new patient name with current timestamp
-        const now = new Date();
-        const patientName = `Patient ${now.toLocaleDateString()} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      // Generate a new patient name with current timestamp
+      const now = new Date();
+      const patientName = `Patient ${now.toLocaleDateString()} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 
-        // Create new patient session
-        const newSession = await createPatientSession(patientName);
-        if (!newSession) {
-          throw new Error('Failed to create new patient session');
-        }
-
-        // Switch to the new session
-        switchToPatientSession(newSession.id);
-        // Reset consultation data for the new patient
-        resetConsultation();
-      } catch (error) {
-        console.error('Error creating new patient:', error);
+      // Create new patient session
+      const newSession = await createPatientSession(patientName);
+      if (!newSession) {
+        throw new Error('Failed to create new patient session');
       }
-    }, 500);
-  }, [createPatientSession, switchToPatientSession, resetConsultation]);
+
+      // Switch to the new session
+      switchToPatientSession(newSession.id);
+      // Reset consultation data for the new patient (UI only)
+      resetConsultation();
+    } catch (error) {
+      console.error('Error creating new patient:', error);
+    } finally {
+      setIsCreatingNewPatient(false);
+    }
+  }, [createPatientSession, switchToPatientSession, resetConsultation, isCreatingNewPatient]);
 
   const formatSessionDate = (dateString?: string) => {
     const date = new Date(dateString || new Date());
@@ -147,7 +148,7 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
     );
   }
 
-  // Show info for public users
+  // Show authentication prompt for unauthenticated users
   if (!isSignedIn) {
     return (
       <Card className="border-blue-200 bg-blue-50 shadow-sm">
@@ -247,19 +248,24 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
                   <div className="flex items-center gap-1">
                     <span className="text-gray-400">•</span>
                     <Smartphone className="size-3" />
-                    <span className={`text-xs ${
-                      mobileV2.connectionStatus === 'connected'
-                        ? 'text-green-600'
-                        : mobileV2.connectionStatus === 'connecting'
-                          ? 'text-yellow-600'
-                          : 'text-gray-500'
-                    }`}
+                    <span
+                      className={`text-xs ${
+                        mobileV2.connectionStatus === 'connected'
+                          ? 'text-green-600'
+                          : mobileV2.connectionStatus === 'connecting'
+                            ? 'text-yellow-600'
+                            : mobileV2.connectionStatus === 'error'
+                              ? 'text-red-600'
+                              : 'text-gray-500'
+                      }`}
                     >
                       {mobileV2.connectionStatus === 'connected'
                         ? 'mobile connected'
                         : mobileV2.connectionStatus === 'connecting'
                           ? 'connecting mobile'
-                          : 'mobile ready'}
+                          : mobileV2.connectionStatus === 'error'
+                            ? 'mobile error'
+                            : 'mobile ready'}
                     </span>
                   </div>
                 )}
@@ -294,10 +300,12 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
               onClick={handleNewPatient}
               size="sm"
               variant="default"
-              className="h-7 bg-blue-600 px-3 text-xs text-white hover:bg-blue-700"
-              title="Create new patient session"
+              disabled={isCreatingNewPatient}
+              className="h-7 bg-blue-600 px-3 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
+              title={isCreatingNewPatient ? 'Creating…' : 'Create new patient session'}
+              aria-busy={isCreatingNewPatient}
             >
-              New Patient
+              {isCreatingNewPatient ? 'Creating…' : 'New Patient'}
             </Button>
           </div>
         </div>

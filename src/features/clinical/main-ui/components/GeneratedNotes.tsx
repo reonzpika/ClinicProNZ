@@ -6,35 +6,31 @@ import React, { useEffect, useState } from 'react';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { FeatureFeedbackButton } from '@/src/shared/components/FeatureFeedbackButton';
 import { Button } from '@/src/shared/components/ui/button';
-import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
-import { createAuthHeaders } from '@/src/shared/utils';
+// import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
 export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused: _isNoteFocused, isDocumentationMode: _isDocumentationMode }: { onGenerate?: () => void; onClearAll?: () => void; loading?: boolean; isNoteFocused?: boolean; isDocumentationMode?: boolean }) {
-  const { isSignedIn, userId } = useAuth();
-  const { getUserTier } = useClerkMetadata();
-  const userTier = getUserTier();
+  const { isSignedIn } = useAuth();
   const {
     generatedNotes,
     error,
     transcription,
     resetConsultation,
-    lastGeneratedTranscription,
-    lastGeneratedTypedInput,
-    lastGeneratedCompiledConsultationText,
-    lastGeneratedTemplateId,
+    lastGeneratedTranscription: _lastGeneratedTranscription,
+    lastGeneratedTypedInput: _lastGeneratedTypedInput,
+    lastGeneratedCompiledConsultationText: _lastGeneratedCompiledConsultationText,
+    lastGeneratedTemplateId: _lastGeneratedTemplateId,
     setGeneratedNotes,
     consentObtained,
     inputMode,
     typedInput,
     templateId,
-    getCompiledConsultationText,
+    getCompiledConsultationText: _getCompiledConsultationText,
     saveNotesToCurrentSession,
     saveTypedInputToCurrentSession,
     saveConsultationNotesToCurrentSession,
     createPatientSession,
     switchToPatientSession,
     consultationNotes,
-    getEffectiveGuestToken,
   } = useConsultationStores();
 
   // Local UI state
@@ -42,7 +38,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
   const [isExpanded, setIsExpanded] = useState(false);
   const [lastSavedNotes, setLastSavedNotes] = useState('');
   const [_saveStatus, setSaveStatus] = useState('idle');
-  const [canCreateSession, setCanCreateSession] = useState(true);
+  const [canCreateSession, setCanCreateSession] = useState<boolean>(true);
 
   // Consent statement to append when consent was obtained
   const CONSENT_STATEMENT = '\n\nPatient informed and consented verbally to the use of digital documentation assistance during this consultation, in line with NZ Health Information Privacy Principles. The patient retains the right to pause or stop the recording at any time.';
@@ -72,43 +68,13 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
     return generatedNotes + CONSENT_STATEMENT;
   }, [generatedNotes, consentObtained]);
 
-  // Check session limits for public users
+  // Check authentication status
   useEffect(() => {
-    const checkSessionLimits = async () => {
-      // Only check for public users
-      if (isSignedIn) {
-        setCanCreateSession(true);
-        return;
-      }
+    // Only authenticated users can create sessions
+    setCanCreateSession(!!isSignedIn);
+  }, [isSignedIn]);
 
-      const effectiveGuestToken = getEffectiveGuestToken();
-      if (!effectiveGuestToken) {
-        setCanCreateSession(true);
-        return;
-      }
-
-      try {
-        const response = await fetch('/api/guest-sessions/status', {
-          method: 'POST',
-          headers: createAuthHeaders(userId, userTier),
-          body: JSON.stringify({ guestToken: effectiveGuestToken }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setCanCreateSession(data.canCreateSession);
-        }
-      } catch (error) {
-        console.error('Error checking session limits:', error);
-        // Default to allowing session creation on error
-        setCanCreateSession(true);
-      }
-    };
-
-    checkSessionLimits();
-  }, [isSignedIn, getEffectiveGuestToken]);
-
-  // Button enable logic - check for changes in input, consultation text, template, and session limits
+  // Button enable logic - enable for any non-empty input
   const canGenerate = React.useMemo(() => {
     const hasInput = inputMode === 'typed'
       ? (typedInput && typedInput.trim() !== '')
@@ -118,30 +84,17 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
       return false;
     }
 
-    // For public users, also check session limits
+    // Authentication required
     if (!isSignedIn && !canCreateSession) {
       return false;
     }
 
-    const isInputChanged = inputMode === 'typed'
-      ? typedInput !== (lastGeneratedTypedInput || '')
-      : transcription.transcript !== (lastGeneratedTranscription || '');
-
-    const currentCompiledConsultationText = getCompiledConsultationText();
-    const isConsultationTextChanged = currentCompiledConsultationText !== (lastGeneratedCompiledConsultationText || '');
-    const isTemplateChanged = templateId !== (lastGeneratedTemplateId || '');
-
-    return isInputChanged || isConsultationTextChanged || isTemplateChanged;
+    // Enable for any non-empty input (removed "changed since last generation" requirement)
+    return true;
   }, [
     inputMode,
     typedInput,
     transcription.transcript,
-    lastGeneratedTypedInput,
-    lastGeneratedTranscription,
-    getCompiledConsultationText,
-    lastGeneratedCompiledConsultationText,
-    templateId,
-    lastGeneratedTemplateId,
     isSignedIn,
     canCreateSession,
   ]);
@@ -284,9 +237,8 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
       setLastSavedNotes('');
       setIsManualEdit(false); // Reset manual edit flag
 
-      if (onClearAll) {
-        onClearAll();
-      }
+      // Note: Don't call onClearAll here as it would clear the NEW session's data
+      // We already saved the previous session data and resetConsultation clears the UI
     } catch (error) {
       console.error('Error creating new patient session:', error);
       // You might want to show an error message to the user here

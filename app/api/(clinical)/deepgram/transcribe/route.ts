@@ -79,13 +79,7 @@ export async function POST(req: NextRequest) {
         }, { status: 403 });
       }
 
-      // Validate session ownership for guest users
-      if (context.guestToken && session.guestToken !== context.guestToken) {
-        return NextResponse.json({
-          error: 'Access denied',
-          message: 'Session does not belong to guest user',
-        }, { status: 403 });
-      }
+
     }
 
     // Convert file (Blob) to Buffer
@@ -132,7 +126,6 @@ export async function POST(req: NextRequest) {
       ? utterances.flatMap((utterance: any) => utterance.words || [])
       : (alt?.words || []);
 
-    
     // ENHANCED: Return all data (existing + new fields for enhanced features)
     const apiResponse = {
       transcript, // ✅ Existing consumers still work
@@ -141,8 +134,6 @@ export async function POST(req: NextRequest) {
       confidence, // 🆕 New field (ignored by existing code)
       words, // 🆕 New field (ignored by existing code)
     };
-
-    
 
     return NextResponse.json(apiResponse);
   } catch (err: any) {

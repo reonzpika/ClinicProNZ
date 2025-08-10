@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     }
 
     const stripe = new Stripe(stripeSecretKey, {
-      apiVersion: '2025-06-30.basil', // Use latest stable version
+      apiVersion: '2025-07-30.basil',
     });
 
     // Parse and validate request body

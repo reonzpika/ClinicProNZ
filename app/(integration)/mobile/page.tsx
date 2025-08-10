@@ -105,6 +105,21 @@ function MobilePageContent() {
     onSessionChanged: handleSessionChanged,
     onError: handleError,
     isMobile: true, // FIXED: Identify as mobile device
+    onControlCommand: async (action: 'start' | 'stop') => {
+      try {
+        if (action === 'start' && !isRecording) {
+          await startRecording();
+          // Broadcast status back (rely on existing sendRecordingStatusWithRetry)
+          await sendRecordingStatusWithRetry(true);
+        }
+        if (action === 'stop' && isRecording) {
+          await stopRecording();
+          await sendRecordingStatusWithRetry(false);
+        }
+      } catch (e) {
+        setTokenState(prev => ({ ...prev, error: `Control error: ${e instanceof Error ? e.message : 'Unknown error'}` }));
+      }
+    },
   });
 
   // Transcription hook with simple handling
@@ -151,9 +166,6 @@ function MobilePageContent() {
           words: data.words || [],
           paragraphs: data.paragraphs,
         };
-
-        
-
         // Send transcript with enhanced data via Ably
         if (transcript?.trim()) {
           const success = sendTranscript(transcript.trim(), enhancedData);
@@ -254,23 +266,27 @@ function MobilePageContent() {
     }
   }, [isRecording, wakeLockSupported, requestWakeLock, releaseWakeLock]);
 
+  // Ensure session sync on connect even if broadcast was missed
+  useEffect(() => {
+    if (isConnected && !sessionState.sessionId) {
+      fetchCurrentSession();
+    }
+  }, [isConnected, sessionState.sessionId, fetchCurrentSession]);
+
   // 🛡️ PHASE 1 FIX: Retry mechanism for recording status
   const sendRecordingStatusWithRetry = useCallback(async (isRecording: boolean) => {
     const maxRetries = 2;
-
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       const success = sendRecordingStatus(isRecording);
       if (success) {
         return true;
       }
-
       if (attempt < maxRetries) {
         // Wait before retry (exponential backoff: 1s, 2s)
         await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
-        
       }
-
-    // Final fallback: no-op
+    }
+    // Final fallback
     return false;
   }, [sendRecordingStatus]);
 
@@ -450,7 +466,8 @@ function MobilePageContent() {
             {!isConnected && tokenState.token && (
               <div className="text-center">
                 <button
-                  onClick={fetchCurrentSession}
+                  type="button"
+                  onClick={() => { void fetchCurrentSession(true); }}
                   className="text-xs text-blue-600 hover:text-blue-800"
                 >
                   Refresh session info

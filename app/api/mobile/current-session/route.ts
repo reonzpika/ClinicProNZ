@@ -3,7 +3,8 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { db } from '@/db/client';
-import { mobileTokens, patientSessions } from '@/db/schema';
+import { mobileTokens, patientSessions, users } from '@/db/schema';
+import { deleteExpiredMobileToken } from '@/src/lib/services/cleanup-service';
 
 export async function GET(request: NextRequest) {
   try {
@@ -34,6 +35,14 @@ export async function GET(request: NextRequest) {
       .limit(1);
 
     if (tokenResult.length === 0) {
+      // Opportunistic cleanup: attempt to delete if token exists but is expired
+      try {
+        if (tokenId) {
+          await deleteExpiredMobileToken(tokenId);
+        }
+      } catch {
+        // ignore cleanup errors
+      }
       return NextResponse.json(
         { error: 'Invalid or expired token' },
         { status: 401 },
@@ -54,17 +63,41 @@ export async function GET(request: NextRequest) {
     let sessionQuery;
 
     if (userId) {
-      // Authenticated user - look up sessions by userId
-      sessionQuery = db
+      // Authenticated user - prefer user's persisted current session if available
+      const userRow = await db
         .select({
-          id: patientSessions.id,
-          patientName: patientSessions.patientName,
-          createdAt: patientSessions.createdAt,
+          currentSessionId: users.currentSessionId,
         })
-        .from(patientSessions)
-        .where(eq(patientSessions.userId, userId))
-        .orderBy(desc(patientSessions.createdAt))
+        .from(users)
+        .where(eq(users.id, userId))
         .limit(1);
+
+      const preferredSessionId = userRow?.[0]?.currentSessionId || null;
+
+      if (preferredSessionId) {
+        // Return the explicitly selected current session
+        sessionQuery = db
+          .select({
+            id: patientSessions.id,
+            patientName: patientSessions.patientName,
+            createdAt: patientSessions.createdAt,
+          })
+          .from(patientSessions)
+          .where(eq(patientSessions.id, preferredSessionId))
+          .limit(1);
+      } else {
+        // Fallback: latest by createdAt
+        sessionQuery = db
+          .select({
+            id: patientSessions.id,
+            patientName: patientSessions.patientName,
+            createdAt: patientSessions.createdAt,
+          })
+          .from(patientSessions)
+          .where(eq(patientSessions.userId, userId))
+          .orderBy(desc(patientSessions.createdAt))
+          .limit(1);
+      }
     } else {
       // Guest user - look up sessions by guestToken
       // For mobile tokens used by guests, match the token with guest sessions

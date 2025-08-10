@@ -21,7 +21,7 @@ import { Container } from '@/src/shared/components/layout/Container';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
-import { createAuthHeadersWithGuest } from '@/src/shared/utils';
+import { createAuthHeaders } from '@/src/shared/utils';
 
 type UploadedImage = {
   id: string;
@@ -59,7 +59,7 @@ export default function ClinicalImagePage() {
       // Get presigned URL
       const presignResponse = await fetch('/api/uploads/presign', {
         method: 'POST',
-        headers: createAuthHeadersWithGuest(userId, userTier, null),
+        headers: createAuthHeaders(userId, userTier),
         body: JSON.stringify({
           fileName: file.name,
           fileType: file.type,
@@ -131,7 +131,7 @@ export default function ClinicalImagePage() {
 
       const response = await fetch('/api/clinical-images/analyze', {
         method: 'POST',
-        headers: createAuthHeadersWithGuest(userId, userTier, null),
+        headers: createAuthHeaders(userId, userTier),
         body: JSON.stringify({
           fileKey: image.fileKey,
           prompt: analysisPrompt || undefined,

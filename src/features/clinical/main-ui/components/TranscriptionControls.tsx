@@ -12,7 +12,7 @@ import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardHeader } from '@/src/shared/components/ui/card';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
-import { createAuthHeaders } from '@/src/shared/utils';
+// import { createAuthHeaders } from '@/src/shared/utils';
 
 import { AudioSettingsModal } from '../../mobile/components/AudioSettingsModal';
 import { MobileRecordingQRV2 } from '../../mobile/components/MobileRecordingQRV2';
@@ -32,7 +32,7 @@ export function TranscriptionControls({
   isMinimized?: boolean;
   mobileIsRecording?: boolean;
 }) {
-  const { isSignedIn, userId } = useAuth();
+  const { isSignedIn } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
 
@@ -43,11 +43,9 @@ export function TranscriptionControls({
     error: contextError,
     consentObtained,
     setConsentObtained,
-    mobileV2 = { isEnabled: false, token: null, connectionStatus: 'disconnected' },
     transcription: contextTranscription,
     inputMode,
     setInputMode,
-    getEffectiveGuestToken,
   } = useConsultationStores();
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [showAudioSettings, setShowAudioSettings] = useState(false);
@@ -57,7 +55,12 @@ export function TranscriptionControls({
   const [showHelp, setShowHelp] = useState(false);
   const [recordingStartTime, setRecordingStartTime] = useState<number | null>(null);
   const [showNoTranscriptWarning, setShowNoTranscriptWarning] = useState(false);
-  const [canCreateSession, setCanCreateSession] = useState(true);
+  const [canCreateSession, setCanCreateSession] = useState<boolean>(true);
+
+  // Reset expansion state when isMinimized prop changes
+  useEffect(() => {
+    setIsExpanded(!isMinimized);
+  }, [isMinimized]);
   const useMobileV2 = true; // Mobile V2 is now enabled by default
 
   const {
@@ -83,7 +86,13 @@ export function TranscriptionControls({
   // debug removed
 
   // 🆕 IMPROVED: Check both connection and session sync status
-  const hasMobileDevices = mobileV2.connectionStatus === 'connected' && mobileV2.sessionSynced;
+  const { mobileV2 = { isEnabled: false, token: null, connectionStatus: 'disconnected', sessionSynced: false } } = useConsultationStores();
+  const isMobileConnected = mobileV2.connectionStatus === 'connected';
+  const hasMobileDevices = isMobileConnected && mobileV2.sessionSynced;
+  const canRemoteControl = hasMobileDevices;
+  const [pendingControl, setPendingControl] = useState<null | 'start' | 'stop'>(null);
+  const [controlError, setControlError] = useState<string | null>(null);
+  const [controlAckTimer, setControlAckTimer] = useState<any>(null);
 
   // Track recording time and transcript warning
   useEffect(() => {
@@ -113,44 +122,62 @@ export function TranscriptionControls({
     return undefined;
   }, [isRecording, recordingStartTime, transcript]);
 
-  // Check session limits for public users
+  // Acknowledge timer cleanup
   useEffect(() => {
-    const checkSessionLimits = async () => {
-      // Only check for public users
-      if (isSignedIn) {
-        setCanCreateSession(true);
-        return;
-      }
-
-      const effectiveGuestToken = getEffectiveGuestToken();
-      if (!effectiveGuestToken) {
-        setCanCreateSession(true);
-        return;
-      }
-
-      try {
-        const response = await fetch('/api/guest-sessions/status', {
-          method: 'POST',
-          headers: createAuthHeaders(userId, userTier),
-          body: JSON.stringify({ guestToken: effectiveGuestToken }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setCanCreateSession(data.canCreateSession);
-        }
-      } catch {
-        // Session limit check errors are handled silently - default to allowing session creation
-        setCanCreateSession(true);
-      }
+    return () => {
+      if (controlAckTimer) clearTimeout(controlAckTimer);
     };
+  }, [controlAckTimer]);
 
-    checkSessionLimits();
-  }, [isSignedIn, getEffectiveGuestToken]);
+  // Observe recording status to acknowledge control
+  useEffect(() => {
+    if (pendingControl === 'start' && mobileIsRecording) {
+      setPendingControl(null);
+      setControlError(null);
+      if (controlAckTimer) clearTimeout(controlAckTimer);
+    }
+    if (pendingControl === 'stop' && !mobileIsRecording) {
+      setPendingControl(null);
+      setControlError(null);
+      if (controlAckTimer) clearTimeout(controlAckTimer);
+    }
+  }, [mobileIsRecording, pendingControl, controlAckTimer]);
+
+  // Remote control handlers (send via global Ably bridge exposed in ConsultationPage)
+  const sendMobileControl = async (action: 'start' | 'stop') => {
+    try {
+      setControlError(null);
+      setPendingControl(action);
+      // Send via global bridge (set in ConsultationPage)
+      const ok = typeof window !== 'undefined'
+        && (window as any).ablySyncHook
+        && (window as any).ablySyncHook.sendRecordingControl
+        && (window as any).ablySyncHook.sendRecordingControl(action);
+      if (!ok) {
+        setPendingControl(null);
+        setControlError('Mobile not connected. Please open the mobile page and unlock the screen.');
+        return;
+      }
+      // Start ack timeout (3s)
+      const t = setTimeout(() => {
+        setPendingControl(null);
+        setControlError('Mobile did not respond. Ensure the phone is unlocked and the mobile page is active.');
+      }, 3000);
+      setControlAckTimer(t);
+    } catch (e) {
+      setPendingControl(null);
+      setControlError(e instanceof Error ? e.message : 'Failed to send control command');
+    }
+  };
+
+  // Only authenticated users can create sessions
+  useEffect(() => {
+    setCanCreateSession(!!isSignedIn);
+  }, [isSignedIn]);
 
   // Handle start recording - show consent modal first if consent not obtained
   const handleStartRecording = () => {
-    // Check session limits for public users
+    // Check authentication status
     if (!isSignedIn && !canCreateSession) {
       // Session limit reached - UI will show appropriate feedback
       return;
@@ -165,7 +192,7 @@ export function TranscriptionControls({
 
   // Handle consent confirmation
   const handleConsentConfirm = () => {
-    // Check session limits for public users
+    // Check authentication status
     if (!isSignedIn && !canCreateSession) {
       console.warn('Cannot start recording: session limit reached');
       setShowConsentModal(false);
@@ -441,7 +468,7 @@ export function TranscriptionControls({
                             </div>
                           )}
 
-                      {/* Right side: Status indicator + Mobile button */}
+                      {/* Right side: Status indicator + Mobile buttons */}
                       <div className="flex items-center gap-2">
                         {/* Mobile Recording Button */}
                         {hasMobileDevices
@@ -470,6 +497,51 @@ export function TranscriptionControls({
                                 Connect Mobile
                               </Button>
                             )}
+                        {/* Remote control buttons when connected */}
+                        {isMobileConnected && !canRemoteControl && !mobileIsRecording && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled
+                            className="h-8 px-3 text-xs"
+                            title="Waiting for session sync on mobile"
+                          >
+                            Start on mobile
+                          </Button>
+                        )}
+                        {canRemoteControl && !mobileIsRecording && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => sendMobileControl('start')}
+                            disabled={!!pendingControl}
+                            className="h-8 px-3 text-xs"
+                          >
+                            Start on mobile
+                          </Button>
+                        )}
+                        {isMobileConnected && !canRemoteControl && mobileIsRecording && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled
+                            className="h-8 px-3 text-xs"
+                            title="Waiting for session sync on mobile"
+                          >
+                            Stop on mobile
+                          </Button>
+                        )}
+                        {canRemoteControl && mobileIsRecording && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => sendMobileControl('stop')}
+                            disabled={!!pendingControl}
+                            className="h-8 px-3 text-xs"
+                          >
+                            Stop on mobile
+                          </Button>
+                        )}
                       </div>
                     </div>
 
@@ -534,6 +606,28 @@ export function TranscriptionControls({
                       )}
                     </div>
                     <div className="flex gap-1">
+                      {canRemoteControl && !isRecording && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => sendMobileControl('start')}
+                          disabled={!!pendingControl}
+                          className="h-8 px-3 text-xs"
+                        >
+                          Start on mobile
+                        </Button>
+                      )}
+                      {canRemoteControl && isRecording && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => sendMobileControl('stop')}
+                          disabled={!!pendingControl}
+                          className="h-8 px-3 text-xs"
+                        >
+                          Stop on mobile
+                        </Button>
+                      )}
                       {isRecording && !isPaused && (
                         <Button
                           type="button"
@@ -578,6 +672,13 @@ export function TranscriptionControls({
                   </div>
                 )}
           </div>
+
+          {/* Remote control errors */}
+          {controlError && (
+            <Alert variant="destructive" className="p-2 text-xs">
+              {controlError}
+            </Alert>
+          )}
 
           {/* Audio input indicator */}
           {isRecording && <AudioIndicator />}

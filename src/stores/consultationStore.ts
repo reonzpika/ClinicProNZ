@@ -87,27 +87,7 @@ function generateSessionId() {
   return Math.random().toString(36).substr(2, 9);
 }
 
-// Generate or retrieve guest token for unauthenticated users
-// Currently unused but kept for potential future use
-// function ensureGuestToken(isAuthenticated: boolean): string | null {
-//   if (typeof window === 'undefined') return null
-//
-//   // Skip guest token generation for authenticated users
-//   if (isAuthenticated) {
-//     return null
-//   }
-//
-//   // Generate guest token for session tracking (unauthenticated users only)
-//   const existingToken = localStorage.getItem('guestToken')
-//   if (existingToken) {
-//     return existingToken
-//   }
-//
-//   // Generate new guest token
-//   const newToken = crypto.randomUUID()
-//   localStorage.setItem('guestToken', newToken)
-//   return newToken
-// }
+
 
 function getUserDefaultTemplateId(): string | null {
   if (typeof window === 'undefined') {

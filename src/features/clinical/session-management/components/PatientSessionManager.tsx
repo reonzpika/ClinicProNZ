@@ -48,7 +48,7 @@ export const PatientSessionManager: React.FC = () => {
         setHasInitialized(true);
       });
     } else if (isClient && isLoaded) {
-      // Mark as initialized for public users or basic tier users without session management
+      // Mark as initialized for users without session management access
       setHasInitialized(true);
     }
   }, [isClient, isLoaded, isSignedIn, canManageSessions, loadPatientSessions]);

@@ -18,7 +18,7 @@ import { Container } from '@/src/shared/components/layout/Container';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
-import { createAuthHeadersWithGuest } from '@/src/shared/utils';
+import { createAuthHeaders } from '@/src/shared/utils';
 
 type Message = {
   id: string;
@@ -71,7 +71,7 @@ export default function ClinicalReferencePage() {
     try {
       const response = await fetch('/api/consultation/chat', {
         method: 'POST',
-        headers: createAuthHeadersWithGuest(userId, userTier, null),
+        headers: createAuthHeaders(userId, userTier),
         body: JSON.stringify({
           messages: [...messages, newMessage].map(msg => ({
             role: msg.role,
