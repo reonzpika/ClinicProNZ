@@ -14,8 +14,6 @@ export type UserSessionStatus = {
   resetTime: Date;
 };
 
-
-
 /**
  * Check if an authenticated user can create a new session (for basic tier users)
  */
@@ -88,8 +86,6 @@ export async function checkUserSessionLimit(userId: string): Promise<UserSession
   };
 }
 
-
-
 /**
  * Create a new patient session for an authenticated user
  */
@@ -135,5 +131,3 @@ export async function createUserSession(userId: string, patientName: string, tem
 
   return newSession[0];
 }
-
-

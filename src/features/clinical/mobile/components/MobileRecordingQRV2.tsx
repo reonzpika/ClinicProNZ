@@ -50,53 +50,40 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
     setIsClient(true);
   }, []);
 
-  // Auto-restore QR data from localStorage and server when modal opens
+  // Always trust server: on modal open, fetch active token and override any cache
   useEffect(() => {
-    if (!isClient || !isOpen || qrData) {
-      return; // Skip if not client-side, modal closed, or already have QR data
-    }
+    if (!isClient || !isOpen) return;
 
     const fetchActiveToken = async () => {
-      // If we already have token data in context that's not expired, use it
-      if (mobileV2.tokenData) {
-        const expiryTime = new Date(mobileV2.tokenData.expiresAt).getTime();
-        if (expiryTime > Date.now()) {
-          setQrData(mobileV2.tokenData);
-          return;
-        }
-      }
+      if (!isSignedIn || !userId) return;
+      try {
+        const response = await fetch('/api/mobile/active-token', {
+          method: 'GET',
+          headers: createAuthHeaders(userId, userTier),
+        });
 
-      // Fetch from server to get authoritative active token
-      if (isSignedIn && userId) {
-        try {
-          const response = await fetch('/api/mobile/active-token', {
-            method: 'GET',
-            headers: createAuthHeaders(userId, userTier),
-          });
-
-          if (response.ok) {
-            const tokenData = await response.json();
-            setQrData(tokenData);
-            // Update context with server data
-            setMobileV2TokenData(tokenData);
-            enableMobileV2(true);
-          } else if (response.status === 404) {
-            // No active token exists - this is expected for new users
-            setQrData(null);
-          } else {
-            // Other errors (401, 500, etc.)
-            const errorData = await response.json().catch(() => ({ error: 'Failed to fetch token' }));
-            setError(errorData.error || 'Failed to check for existing token');
-          }
-        } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : 'Failed to check for existing token';
-          setError(errorMessage);
+        if (response.ok) {
+          const tokenData = await response.json();
+          setQrData(tokenData);
+          setMobileV2TokenData(tokenData);
+          enableMobileV2(true);
+        } else if (response.status === 404) {
+          // No active token - clear local cache/state
+          setQrData(null);
+          setMobileV2TokenData(null);
+          enableMobileV2(false);
+        } else {
+          const errorData = await response.json().catch(() => ({ error: 'Failed to fetch token' }));
+          setError(errorData.error || 'Failed to check for existing token');
         }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to check for existing token';
+        setError(errorMessage);
       }
     };
 
     fetchActiveToken();
-  }, [isClient, isOpen, qrData, mobileV2.tokenData, isSignedIn, userId, userTier, setMobileV2TokenData, enableMobileV2]);
+  }, [isClient, isOpen, isSignedIn, userId, userTier, setMobileV2TokenData, enableMobileV2]);
 
   // No expiry timer for permanent tokens
 
@@ -255,6 +242,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
               variant="outline"
               onClick={() => generateToken(true)}
               disabled={isGenerating}
+              title="Rotate token and show new QR immediately"
             >
               {isGenerating ? (
                 <>

@@ -103,7 +103,14 @@ function MobilePageContent() {
       // Transcript received unexpectedly on mobile
     },
     onSessionChanged: handleSessionChanged,
-    onError: handleError,
+    onError: (err: string) => {
+      // Treat auth errors as disconnect prompt; suppress noisy logs
+      if (/Authentication failed|Token expired or invalid/i.test(err)) {
+        setTokenState(prev => ({ ...prev, error: 'Token invalid or rotated. Please rescan QR.' }));
+        return;
+      }
+      handleError(err);
+    },
     isMobile: true, // FIXED: Identify as mobile device
     onControlCommand: async (action: 'start' | 'stop') => {
       try {
@@ -126,6 +133,7 @@ function MobilePageContent() {
   const { isRecording, startRecording, stopRecording } = useTranscription({
     isMobile: true,
     mobileChunkTimeout: 2, // 2s silence threshold for mobile
+    startImmediate: true, // ensure immediate recorder session for remote-stop path
     onChunkComplete: async (audioBlob: Blob) => {
       if (!currentSessionId) {
         setTokenState(prev => ({ ...prev, error: 'No session available for recording. Please check your connection.' }));

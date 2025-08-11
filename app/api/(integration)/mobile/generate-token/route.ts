@@ -5,6 +5,7 @@ import { and, desc, eq } from 'drizzle-orm';
 import { db } from '@/db/client';
 import { mobileTokens } from '@/db/schema';
 import { cleanupInactiveMobileTokens } from '@/src/lib/services/cleanup-service';
+import * as Ably from 'ably';
 
 export async function POST(req: Request) {
   try {
@@ -72,6 +73,11 @@ export async function POST(req: Request) {
         .where(eq(mobileTokens.token, token));
     } else {
       // Deactivate any existing tokens for this user before creating new one
+      const oldTokens = await db
+        .select()
+        .from(mobileTokens)
+        .where(eq(mobileTokens.userId, userId));
+
       await db
         .update(mobileTokens)
         .set({ isActive: false })
@@ -89,6 +95,24 @@ export async function POST(req: Request) {
         isActive: true,
         lastUsedAt: now,
       });
+
+      // Broadcast token_rotated on old channels so connected clients disconnect
+      try {
+        if (process.env.ABLY_API_KEY && oldTokens.length > 0) {
+          const ably = new Ably.Rest({ key: process.env.ABLY_API_KEY });
+          await Promise.all(
+            oldTokens.map(async (t) => {
+              if (!t?.token) return;
+              try {
+                const channel = ably.channels.get(`token:${t.token}`);
+                await channel.publish('token_rotated', { type: 'token_rotated', timestamp: Date.now() });
+              } catch {}
+            }),
+          );
+        }
+      } catch {
+        // best-effort only
+      }
     }
 
     // Check if Ably is configured

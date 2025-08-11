@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
       capability: {
         [`token:${tokenId}`]: ['publish', 'subscribe', 'presence'],
       },
-      ttl: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
+      ttl: 24 * 60 * 60 * 1000, // 24 hours in milliseconds (auto-refresh via authCallback)
     });
 
     // FIXED: Return TokenRequest object instead of raw token

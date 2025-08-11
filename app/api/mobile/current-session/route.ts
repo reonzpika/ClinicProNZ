@@ -99,18 +99,8 @@ export async function GET(request: NextRequest) {
           .limit(1);
       }
     } else {
-      // Guest user - look up sessions by guestToken
-      // For mobile tokens used by guests, match the token with guest sessions
-      sessionQuery = db
-        .select({
-          id: patientSessions.id,
-          patientName: patientSessions.patientName,
-          createdAt: patientSessions.createdAt,
-        })
-        .from(patientSessions)
-        .where(eq(patientSessions.guestToken, tokenId))
-        .orderBy(desc(patientSessions.createdAt))
-        .limit(1);
+      // Guests are no longer supported
+      return NextResponse.json({ sessionId: null, patientName: null, message: 'No active session found' });
     }
 
     const sessionResult = await sessionQuery;

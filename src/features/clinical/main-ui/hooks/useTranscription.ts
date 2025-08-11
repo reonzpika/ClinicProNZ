@@ -30,13 +30,14 @@ export type UseTranscriptionOptions = {
   isMobile?: boolean;
   onChunkComplete?: (audioBlob: Blob) => Promise<void>;
   mobileChunkTimeout?: number;
+  startImmediate?: boolean;
 };
 
 export const useTranscription = (options: UseTranscriptionOptions = {}) => {
   const { userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
-  const { isMobile = false, onChunkComplete } = options;
+  const { isMobile = false, onChunkComplete, startImmediate = false } = options;
   const {
     setStatus,
     setTranscription,
@@ -100,7 +101,11 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
 
   // Send completed recording to Deepgram
   const sendRecordingSession = useCallback(async (audioBlob: Blob) => {
-    if (!audioBlob || audioBlob.size <= 1000) {
+    if (!audioBlob) {
+      return;
+    }
+    // For mobile, always attempt upload even for small blobs (remote stop edge cases)
+    if (!isMobile && audioBlob.size <= 1000) {
       return;
     }
 
@@ -410,6 +415,12 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     }));
 
     startVADLoop();
+    // Optional: start recording session immediately to ensure remote stop always flushes
+    if (startImmediate) {
+      try {
+        startRecordingSession();
+      } catch { /* ignore */ }
+    }
     setStatus('recording');
   }, [ensureActiveSession, initializeAudio, startVADLoop, setStatus]);
 

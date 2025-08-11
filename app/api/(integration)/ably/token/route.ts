@@ -58,18 +58,10 @@ export async function POST(req: Request) {
     const ably = new Ably.Rest({ key: process.env.ABLY_API_KEY });
 
     // Phase 1: Updated capability-based authentication with new channel naming
-    const isGuestUser = clientId.startsWith('guest-');
+    const isGuestUser = false; // Guests not supported
 
-    // FIXED: Match exact channel patterns used in useAblySync
-    // Actual channels: user:${userId} and guest:${guestId} (no wildcards)
-    // Also need wildcard patterns for flexibility and transcript channels
-    const baseChannelExact = isGuestUser
-      ? `guest:${clientId.replace('guest-', '')}`
-      : `user:${clientId}`;
-
-    const baseChannelPattern = isGuestUser
-      ? `guest:${clientId.replace('guest-', '')}*`
-      : `user:${clientId}*`;
+    const baseChannelExact = `user:${clientId}`;
+    const baseChannelPattern = `user:${clientId}*`;
 
     // Generate a token for the client
     const tokenRequest = await ably.auth.createTokenRequest({

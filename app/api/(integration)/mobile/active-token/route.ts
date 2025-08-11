@@ -60,7 +60,7 @@ export async function GET(req: Request) {
       token: existingToken.token,
       mobileUrl,
       expiresAt: existingToken.expiresAt.toISOString(),
-      isGuest: false, // Guest tokens no longer supported
+      isGuest: false,
     });
   } catch (error) {
     console.error('Error fetching active mobile token:', error);

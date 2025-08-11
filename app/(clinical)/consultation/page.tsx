@@ -189,13 +189,25 @@ export default function ConsultationPage() {
   }, [currentPatientSessionId, appendTranscription, appendTranscriptionEnhanced]);
 
   const handleError = useCallback((error: string) => {
-    // Suppress Ably connection/publish noise from UI, log instead
-    if (/Failed to publish|Connection closed|Authentication failed|Ably/i.test(error)) {
+    // Suppress Ably/auth noise and clear mobile state on auth failures
+    const isAblyNoise = /Failed to publish|Connection closed|Ably/i.test(error);
+    const isAuthInvalid = /Authentication failed|Token expired or invalid/i.test(error);
+
+    if (isAblyNoise || isAuthInvalid) {
+      if (isAuthInvalid) {
+        try {
+          // Always trust server: clear local mobile state/cache and show disconnected UI
+          setMobileV2TokenData(null);
+          enableMobileV2(false);
+          setMobileV2SessionSynced(false);
+          setMobileV2ConnectionStatus('disconnected');
+        } catch {}
+      }
       console.warn('[Ably]', error);
       return;
     }
     setError(error);
-  }, [setError]);
+  }, [setError, setMobileV2TokenData, enableMobileV2, setMobileV2SessionSynced, setMobileV2ConnectionStatus]);
 
   // Handle mobile recording status updates
   const handleRecordingStatusChanged = useCallback((isRecording: boolean, sessionId: string) => {
@@ -252,60 +264,57 @@ export default function ConsultationPage() {
 
   // Proactively broadcast current session once connected to Ably
   useEffect(() => {
-    if (mobileV2?.connectionStatus === 'connected' && updateSession && currentPatientSessionId) {
-      const timer = setTimeout(() => {
-        try {
-          // Try to get patient name from Query Cache if available to enrich broadcast
-          const currentSessions = queryClient.getQueryData<any>(['consultation', 'sessions']);
-          const session = Array.isArray(currentSessions)
-            ? currentSessions.find((s: any) => s.id === currentPatientSessionId)
-            : null;
-          const patientName = session?.patientName || 'Current Session';
-          // Broadcast after a brief delay to ensure channel subscription is ready
-          const ok = updateSession(currentPatientSessionId, patientName);
-          if (ok) {
-            setMobileV2SessionSynced(true);
-          } else {
-            // Retry shortly if initial broadcast fails (F2 robustness)
-            setTimeout(() => {
-              try {
-                updateSession(currentPatientSessionId, patientName);
-              } catch {}
-            }, 400);
-          }
-        } catch {
-          // best-effort only
+    if (
+      mobileV2?.connectionStatus === 'connected'
+      && updateSession
+      && currentPatientSessionId
+      && mobileV2?.isEnabled
+    ) {
+      try {
+        const currentSessions = queryClient.getQueryData<any>(['consultation', 'sessions']);
+        const session = Array.isArray(currentSessions)
+          ? currentSessions.find((s: any) => s.id === currentPatientSessionId)
+          : null;
+        const patientName = session?.patientName || 'Current Session';
+        const ok = updateSession(currentPatientSessionId, patientName);
+        if (ok) {
+          setMobileV2SessionSynced(true);
         }
-      }, 200); // slight debounce after connect
-      return () => clearTimeout(timer);
+      } catch {
+        // best-effort only
+      }
     }
-    // Explicitly return undefined when no timer is set to satisfy TypeScript
     return undefined;
-  }, [mobileV2?.connectionStatus, updateSession, currentPatientSessionId, queryClient, setMobileV2SessionSynced]);
+  }, [mobileV2?.connectionStatus, mobileV2?.isEnabled, updateSession, currentPatientSessionId, queryClient, setMobileV2SessionSynced]);
 
   // Ensure desktop Ably connects without opening the QR modal by loading active token
   useEffect(() => {
     const loadActiveToken = async () => {
       try {
         if (!userId) return;
-        // If already enabled with a token, skip
-        if (mobileV2?.isEnabled && mobileV2?.token) return;
         const res = await fetch('/api/mobile/active-token', {
           method: 'GET',
           headers: createAuthHeaders(userId, userTier),
         });
-        if (!res.ok) return;
-        const tokenData = await res.json();
-        if (tokenData?.token && tokenData?.expiresAt) {
-          setMobileV2TokenData(tokenData);
-          enableMobileV2(true);
+        if (res.ok) {
+          const tokenData = await res.json();
+          if (tokenData?.token && tokenData?.expiresAt) {
+            setMobileV2TokenData(tokenData);
+            enableMobileV2(true);
+            return;
+          }
         }
+        // Always trust server: clear local cache/state if no active token
+        setMobileV2TokenData(null);
+        enableMobileV2(false);
+        setMobileV2SessionSynced(false);
+        setMobileV2ConnectionStatus('disconnected');
       } catch {
         // best-effort, ignore
       }
     };
     loadActiveToken();
-  }, [userId, userTier, mobileV2?.isEnabled, mobileV2?.token, enableMobileV2, setMobileV2TokenData]);
+  }, [userId, userTier, enableMobileV2, setMobileV2TokenData, setMobileV2SessionSynced, setMobileV2ConnectionStatus]);
 
   // REMOVED: Redundant session broadcasting - now handled by ConsultationContext only
   // This eliminates dual broadcasting sources and race conditions

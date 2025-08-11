@@ -15,7 +15,7 @@ export type EnhancedTranscriptionData = {
 };
 
 type SimpleAblyMessage = {
-  type: 'transcription' | 'patient_updated' | 'patient_ack' | 'recording_status' | 'recording_control' | 'mobile_visibility';
+  type: 'transcription' | 'patient_updated' | 'patient_ack' | 'recording_status' | 'recording_control' | 'mobile_visibility' | 'token_rotated';
   transcript?: string;
   sessionId?: string;
   patientName?: string;
@@ -273,7 +273,7 @@ export const useSimpleAbly = ({
               await channelRef.current.presence.leave();
             }
           } catch (error) {
-            console.warn('Failed to leave presence:', error);
+            // Suppress noisy console warnings
           }
           setHasMobilePeer(false);
           updateConnectionStatus(false, false);
@@ -287,7 +287,7 @@ export const useSimpleAbly = ({
               await channelRef.current.presence.leave();
             }
           } catch (error) {
-            console.warn('Failed to leave presence:', error);
+            // Suppress noisy console warnings
           }
           setHasMobilePeer(false);
         });
@@ -299,7 +299,7 @@ export const useSimpleAbly = ({
               await channelRef.current.presence.leave();
             }
           } catch (presenceError) {
-            console.warn('Failed to leave presence:', presenceError);
+            // Suppress noisy console warnings
           }
           setHasMobilePeer(false);
           updateConnectionStatus(false, false);
@@ -389,6 +389,17 @@ export const useSimpleAbly = ({
           const { type, ...data } = message.data as SimpleAblyMessage;
 
           switch (type) {
+            case 'token_rotated':
+              // Server indicates this token is rotated; disconnect gracefully
+              try {
+                channelRef.current?.presence.leave();
+              } catch {}
+              try {
+                ablyRef.current?.close();
+              } catch {}
+              updateConnectionStatus(false, false);
+              callbacksRef.current.onError?.('Authentication failed: Token expired or invalid');
+              break;
             case 'transcription':
               if (data.transcript && data.sessionId) {
                 // 🆕 Extract enhanced data from Ably message
@@ -410,15 +421,13 @@ export const useSimpleAbly = ({
                 setCurrentSessionId(data.sessionId);
                 // Always notify mobile client to sync UI
                 callbacksRef.current.onSessionChanged?.(data.sessionId, data.patientName);
-                if (isMobile) {
-                  // Send acknowledgement back to desktop
-                  publishSafe('patient_ack', {
-                    type: 'patient_ack',
-                    sessionId: data.sessionId,
-                    patientName: data.patientName,
-                    timestamp: Date.now(),
-                  });
-                }
+                // Always acknowledge to desktop when session changes
+                publishSafe('patient_ack', {
+                  type: 'patient_ack',
+                  sessionId: data.sessionId,
+                  patientName: data.patientName,
+                  timestamp: Date.now(),
+                });
               }
               break;
 
@@ -440,6 +449,7 @@ export const useSimpleAbly = ({
 
             case 'recording_control':
               if (isMobile && (data.action === 'start' || data.action === 'stop')) {
+                // Invoke control command; mobile page will handle start/stop and upload
                 callbacksRef.current.onControlCommand?.(data.action);
               }
               break;

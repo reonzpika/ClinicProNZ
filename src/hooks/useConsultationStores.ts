@@ -264,9 +264,9 @@ export function useConsultationStores(): any {
 
     // Reset
     resetConsultation: () => {
+      // UI-only reset: preserve mobile connection/token across session changes
       transcriptionStore.resetTranscription();
       consultationStore.resetConsultation();
-      mobileStore.resetMobileState();
     },
 
     // Clinical images
