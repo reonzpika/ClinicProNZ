@@ -58,7 +58,6 @@ export async function POST(req: Request) {
     const ably = new Ably.Rest({ key: process.env.ABLY_API_KEY });
 
     // Phase 1: Updated capability-based authentication with new channel naming
-    const isGuestUser = false; // Guests not supported
 
     const baseChannelExact = `user:${clientId}`;
     const baseChannelPattern = `user:${clientId}*`;
