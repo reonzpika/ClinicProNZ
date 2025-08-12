@@ -2,7 +2,7 @@
 
 import { useAuth } from '@clerk/nextjs';
 import { Calendar, ChevronDown, Smartphone, User, UserCheck } from 'lucide-react';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
