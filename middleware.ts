@@ -85,6 +85,17 @@ export default clerkMiddleware(async (auth, req) => {
     // POST and PUT are allowed for basic tier (for active session management during consultation)
   }
 
+  // Explicitly guard new recording/clear endpoints
+  if (
+    req.nextUrl.pathname.startsWith('/api/patient-sessions/recording')
+    || req.nextUrl.pathname.startsWith('/api/patient-sessions/clear')
+  ) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return returnUnauthorized();
+    }
+  }
+
   // Protect /api/consultation routes - require signed in (basic+)
   if (req.nextUrl.pathname.startsWith('/api/consultation')) {
     const resolvedAuth = await auth();

@@ -66,6 +66,8 @@ export const useSimpleAbly = ({
   const lastSessionInfoRef = useRef<{ sessionId: string | null; patientName: string | null }>({ sessionId: null, patientName: null });
   // Outbox queue for reliability of key control/session messages
   const outboxRef = useRef<Array<{ eventName: string; data: any }>>([]);
+  // Track last seen message timestamp to reconcile via History on reconnect
+  const lastSeenTsRef = useRef<number>(0);
 
   // Stable callback refs to prevent re-connections
   const callbacksRef = useRef({
@@ -386,6 +388,9 @@ export const useSimpleAbly = ({
 
         // Subscribe to all message types on single channel
         channel.subscribe((message) => {
+          if (typeof message.timestamp === 'number') {
+            lastSeenTsRef.current = Math.max(lastSeenTsRef.current, message.timestamp);
+          }
           const { type, ...data } = message.data as SimpleAblyMessage;
 
           switch (type) {
@@ -509,6 +514,54 @@ export const useSimpleAbly = ({
       setCurrentSessionId(null);
     };
   }, [tokenId, onConnectionStatusChanged, isMobile]);
+
+  // Reconcile missed messages using Ably History on connect and when coming back from suspended
+  useEffect(() => {
+    const reconcile = async () => {
+      if (!channelRef.current || !ablyRef.current) return;
+      try {
+        const start = lastSeenTsRef.current ? new Date(lastSeenTsRef.current + 1) : undefined;
+        // Fetch a reasonable window of missed messages
+        const history = await (channelRef.current as any).history({ start, direction: 'forwards', limit: 100 });
+        // history.items in reverse-chronological; process oldest-first
+        const items = (history.items || []).slice().reverse();
+        for (const item of items) {
+          const { type, ...data } = (item.data || {}) as SimpleAblyMessage;
+          if (typeof item.timestamp === 'number') {
+            lastSeenTsRef.current = Math.max(lastSeenTsRef.current, item.timestamp);
+          }
+          switch (type) {
+            case 'transcription':
+              if (data.transcript && data.sessionId) {
+                const enhancedData = (data.confidence !== undefined || (data.words && data.words.length > 0))
+                  ? { confidence: data.confidence, words: data.words || [], paragraphs: data.paragraphs }
+                  : undefined;
+                callbacksRef.current.onTranscriptReceived?.(data.transcript, data.sessionId, enhancedData);
+              }
+              break;
+            case 'patient_updated':
+              if (data.sessionId && data.patientName) {
+                setCurrentSessionId(data.sessionId);
+                callbacksRef.current.onSessionChanged?.(data.sessionId, data.patientName);
+              }
+              break;
+            case 'recording_status':
+              if (!isMobile && data.sessionId && data.isRecording !== undefined) {
+                callbacksRef.current.onRecordingStatusChanged?.(data.isRecording, data.sessionId);
+              }
+              break;
+          }
+        }
+      } catch {
+        // ignore history errors
+      }
+    };
+
+    // Run on connect
+    if (isConnected) {
+      void reconcile();
+    }
+  }, [isConnected, isMobile]);
 
   // Add visibility change handling for mobile devices
   useEffect(() => {

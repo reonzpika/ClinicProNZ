@@ -99,8 +99,8 @@ export async function POST(req: NextRequest) {
       diarize: false, // Disable speaker diarization
       paragraphs: true, // Keep paragraphs for better formatting
       utterances: true, // 🆕 REQUIRED: Enable word-level data with timestamps & confidence
-      interim_results: true, // Enable interim results for better real-time processing
-      endpointing: 500, // Time in ms to wait before considering utterance complete
+      interim_results: true,
+      endpointing: 500,
     };
     const { result, error } = await deepgram.listen.prerecorded.transcribeFile(
       audioBuffer,
@@ -125,6 +125,28 @@ export async function POST(req: NextRequest) {
     const words = utterances.length > 0
       ? utterances.flatMap((utterance: any) => utterance.words || [])
       : (alt?.words || []);
+
+    // Append transcript to Neon when a sessionId is provided and valid
+    try {
+      if (sessionId && transcript && transcript.trim()) {
+        const existingSession = await db
+          .select()
+          .from(patientSessions)
+          .where(eq(patientSessions.id, sessionId))
+          .limit(1);
+        if (existingSession.length > 0) {
+          const prev = existingSession[0]?.transcriptions ? JSON.parse(existingSession[0].transcriptions as any) : [];
+          const entry = { id: Date.now().toString(), text: transcript, timestamp: new Date().toISOString(), source: 'mobile', deviceId: 'phone' };
+          const updatedArr = Array.isArray(prev) ? [...prev, entry] : [entry];
+          await db
+            .update(patientSessions)
+            .set({ transcriptions: JSON.stringify(updatedArr), updatedAt: new Date() })
+            .where(eq(patientSessions.id, sessionId));
+        }
+      }
+    } catch {
+      // best-effort only; UI still receives transcript
+    }
 
     // ENHANCED: Return all data (existing + new fields for enhanced features)
     const apiResponse = {

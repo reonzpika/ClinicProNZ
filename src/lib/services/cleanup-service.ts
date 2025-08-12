@@ -84,14 +84,7 @@ export async function completeTemporarySession(sessionId: string): Promise<boole
  * Clean up expired mobile tokens (older than now)
  * Returns number of deleted rows
  */
-export async function cleanupExpiredMobileTokens(): Promise<number> {
-  const deleted = await db
-    .delete(mobileTokens)
-    .where(lt(mobileTokens.expiresAt, new Date()))
-    .returning({ id: mobileTokens.id });
-
-  return deleted.length;
-}
+// Expired tokens no longer used (permanent tokens). Keep only inactive cleanup.
 
 /**
  * Clean up inactive mobile tokens (non-expiring permanent tokens)
@@ -120,11 +113,4 @@ export async function deleteMobileToken(token: string): Promise<boolean> {
 /**
  * Delete a specific mobile token only if it is expired
  */
-export async function deleteExpiredMobileToken(token: string): Promise<number> {
-  const deleted = await db
-    .delete(mobileTokens)
-    .where(and(eq(mobileTokens.token, token), lt(mobileTokens.expiresAt, new Date())))
-    .returning({ id: mobileTokens.id });
-
-  return deleted.length;
-}
+// deleteExpiredMobileToken removed in Session v2

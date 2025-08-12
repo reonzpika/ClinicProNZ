@@ -58,13 +58,11 @@ export async function POST(req: Request) {
           .limit(1);
 
     let token: string;
-    let expiresAt: Date;
 
     if (existingTokens.length > 0) {
       // Return existing active token
       const existingToken = existingTokens[0]!;
       token = existingToken.token;
-      expiresAt = new Date(existingToken.expiresAt);
 
       // Update lastUsedAt for the existing token
       await db
@@ -85,14 +83,12 @@ export async function POST(req: Request) {
 
       // Generate a new unique token
       token = uuidv4();
-      expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
       // Store the new token in database
       await db.insert(mobileTokens).values({
         token,
         userId,
-        expiresAt,
         isActive: true,
+        isPermanent: true,
         lastUsedAt: now,
       });
 
@@ -130,9 +126,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       token,
       mobileUrl,
-      expiresAt: expiresAt.toISOString(),
-      isGuest: false, // Guest tokens no longer supported
-      // Authentication required for mobile tokens
+      isGuest: false,
     });
   } catch (error) {
     console.error('Error generating mobile token:', error);

@@ -15,7 +15,6 @@ import { createAuthHeaders } from '@/src/shared/utils';
 type QRTokenData = {
   token: string;
   mobileUrl: string;
-  expiresAt: string;
 };
 
 type MobileRecordingQRV2Props = {
@@ -42,7 +41,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
   const [qrData, setQrData] = useState<QRTokenData | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Expiry logic removed for permanent tokens
+  // Permanent tokens: no expiry
   const [isClient, setIsClient] = useState(false);
 
   // Client-side initialization
@@ -120,9 +119,9 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
         throw new Error(errorData.error || 'Failed to generate token');
       }
 
-      const { token, mobileUrl, expiresAt } = await response.json();
+          const { token, mobileUrl } = await response.json();
 
-      const tokenData = { token, mobileUrl, expiresAt };
+          const tokenData = { token, mobileUrl } as any;
       setQrData(tokenData);
 
       // Set token data in consultation context

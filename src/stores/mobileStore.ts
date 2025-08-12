@@ -5,7 +5,6 @@ import { subscribeWithSelector } from 'zustand/middleware';
 function getMobileTokenDataFromStorage(): {
   token: string;
   mobileUrl: string;
-  expiresAt: string;
 } | null {
   if (typeof window === 'undefined') return null;
   
@@ -14,12 +13,6 @@ function getMobileTokenDataFromStorage(): {
     if (!stored) return null;
     
     const tokenData = JSON.parse(stored);
-    
-    // Check if token is expired
-    if (tokenData.expiresAt && new Date(tokenData.expiresAt) <= new Date()) {
-      localStorage.removeItem('mobileV2TokenData');
-      return null;
-    }
     
     return tokenData;
   } catch {
@@ -32,7 +25,6 @@ function getMobileTokenDataFromStorage(): {
 function saveMobileTokenDataToStorage(tokenData: {
   token: string;
   mobileUrl: string;
-  expiresAt: string;
 } | null): void {
   if (typeof window === 'undefined') return;
   
@@ -51,7 +43,6 @@ type MobileState = {
     tokenData: {
       token: string;
       mobileUrl: string;
-      expiresAt: string;
     } | null;
     connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'error';
     sessionSynced: boolean;

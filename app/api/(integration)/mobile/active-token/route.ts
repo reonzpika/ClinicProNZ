@@ -24,7 +24,7 @@ export async function GET(req: Request) {
       }, { status: 401 });
     }
 
-    // Check for existing active token (no expiry constraint)
+    // Check for existing active token (permanent tokens)
     const existingTokens = await db
       .select()
       .from(mobileTokens)
@@ -49,7 +49,7 @@ export async function GET(req: Request) {
     // Update lastUsedAt for the existing token
     await db
       .update(mobileTokens)
-      .set({ lastUsedAt: new Date() })
+      .set({ lastUsedAt: new Date(), isPermanent: true })
       .where(eq(mobileTokens.token, existingToken.token));
 
     // Create mobile URL for QR code
@@ -59,7 +59,6 @@ export async function GET(req: Request) {
     return NextResponse.json({
       token: existingToken.token,
       mobileUrl,
-      expiresAt: existingToken.expiresAt.toISOString(),
       isGuest: false,
     });
   } catch (error) {

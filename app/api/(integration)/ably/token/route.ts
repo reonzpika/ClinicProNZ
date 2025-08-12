@@ -32,9 +32,7 @@ export async function POST(req: Request) {
 
         if (tokenRecord.length > 0) {
           const record = tokenRecord[0]!;
-          const isExpired = record.expiresAt <= new Date();
-
-          if (!isExpired && record.userId) {
+          if (record.isActive && record.userId) {
             userId = record.userId;
             clientId = userId;
           }

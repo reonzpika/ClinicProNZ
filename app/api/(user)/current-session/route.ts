@@ -30,4 +30,25 @@ export async function PUT(req: NextRequest) {
   }
 }
 
+// Allow desktop to fetch server-truth current session
+export async function GET(req: NextRequest) {
+  try {
+    const context = await extractRBACContext(req);
+    const { userId } = context;
+    if (!userId) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    const rows = await db
+      .select({ currentSessionId: users.currentSessionId })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+    const currentSessionId = rows?.[0]?.currentSessionId || null;
+    return NextResponse.json({ currentSessionId });
+  } catch (error) {
+    console.error('Error getting current session:', error);
+    return NextResponse.json({ error: 'Failed to get current session' }, { status: 500 });
+  }
+}
+
 

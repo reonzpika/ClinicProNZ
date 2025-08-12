@@ -11,6 +11,7 @@ export const patientSessions = pgTable('patient_sessions', {
   status: text('status', {
     enum: ['active', 'completed', 'archived'],
   }).notNull().default('active'),
+  isRecording: boolean('is_recording').default(false).notNull(), // Server-truth recording flag
   isTemporary: boolean('is_temporary').default(false).notNull(), // For basic tier temporary sessions
   transcriptions: text('transcriptions'), // JSON string of transcription array
   notes: text('notes'), // Generated consultation notes

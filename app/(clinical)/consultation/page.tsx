@@ -298,7 +298,7 @@ export default function ConsultationPage() {
         });
         if (res.ok) {
           const tokenData = await res.json();
-          if (tokenData?.token && tokenData?.expiresAt) {
+          if (tokenData?.token) {
             setMobileV2TokenData(tokenData);
             enableMobileV2(true);
             return;
@@ -315,6 +315,25 @@ export default function ConsultationPage() {
     };
     loadActiveToken();
   }, [userId, userTier, enableMobileV2, setMobileV2TokenData, setMobileV2SessionSynced, setMobileV2ConnectionStatus]);
+
+  // On mount, sync current session from server (server truth)
+  useEffect(() => {
+    const fetchCurrent = async () => {
+      try {
+        if (!userId) return;
+        const res = await fetch('/api/current-session', { method: 'GET', headers: createAuthHeaders(userId, userTier) });
+        if (res.ok) {
+          const data = await res.json();
+          const sessionId = data?.currentSessionId;
+          if (sessionId) {
+            // broadcast via server-event publisher on switch actions only; here just local hydration best-effort
+            // leave Ably broadcast to server on future switch
+          }
+        }
+      } catch {}
+    };
+    fetchCurrent();
+  }, [userId, userTier]);
 
   // REMOVED: Redundant session broadcasting - now handled by ConsultationContext only
   // This eliminates dual broadcasting sources and race conditions
@@ -342,21 +361,17 @@ export default function ConsultationPage() {
     setTranscription('', false);
     resetLastGeneratedInput();
 
-    // Clear server-side session data to prevent auto-reload
+    // Clear server-side session data atomically
     try {
-      const clearPromises = [];
-
-      // Clear generated notes on server
-      clearPromises.push(saveNotesToCurrentSession(''));
-
-      // Clear typed input on server
-      clearPromises.push(saveTypedInputToCurrentSession(''));
-
-      // Clear consultation notes on server
-      clearPromises.push(saveConsultationNotesToCurrentSession(''));
-
-      // Wait for all clears to complete
-      await Promise.all(clearPromises);
+      if (currentPatientSessionId) {
+        // Set a brief global suppression window to prevent hydration re-population
+        try { (window as any).__clinicproJustClearedUntil = Date.now() + 800; } catch {}
+        await fetch('/api/patient-sessions/clear', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...createAuthHeaders(userId, userTier) },
+          body: JSON.stringify({ sessionId: currentPatientSessionId }),
+        });
+      }
 
       // Optimistically update React Query caches for current session
       if (currentPatientSessionId) {
@@ -365,21 +380,26 @@ export default function ConsultationPage() {
           if (!Array.isArray(old)) {
  return old;
 }
-          return old.map((s: any) => s.id === currentPatientSessionId ? { ...s, notes: '', typedInput: '', consultationNotes: '' } : s);
+          return old.map((s: any) => s.id === currentPatientSessionId ? { ...s, notes: '', typedInput: '', consultationNotes: '', transcriptions: [] } : s);
         });
         // Update individual session cache
         queryClient.setQueryData<any>(['consultation', 'session', currentPatientSessionId], (old: any) => {
           if (!old) {
  return old;
 }
-          return { ...old, notes: '', typedInput: '', consultationNotes: '' };
+          return { ...old, notes: '', typedInput: '', consultationNotes: '', transcriptions: [] };
         });
+        // Pull fresh server state to remove any stale rehydration edge cases
+        try {
+          await queryClient.invalidateQueries({ queryKey: ['consultation', 'session', currentPatientSessionId] });
+        } catch {}
       }
 
       // Re-enforce local clears in case of any async rehydration
       setGeneratedNotes('');
       setTypedInput('');
       setConsultationNotes('');
+      setTranscription('', false);
     } catch (error) {
       console.error('Error clearing server data:', error);
       // Continue anyway - UI is already cleared
@@ -709,18 +729,15 @@ export default function ConsultationPage() {
                                 </div>
 
                                 {/* Clinical Documentation - Bottom */}
-                                {!isClearingRef.current && (
-                                  <div className="flex min-h-0 flex-1 flex-col">
-                                    {/* Removed TranscriptProcessingStatus - no longer needed in single-pass */}
-                                    <GeneratedNotes
-                                      onGenerate={handleGenerateNotes}
-                                      onClearAll={handleClearAll}
-                                      loading={loading}
-                                      isNoteFocused={isNoteFocused}
-                                      isDocumentationMode={isDocumentationMode}
-                                    />
-                                  </div>
-                                )}
+                                <div className="mt-auto flex flex-col">
+                                  <GeneratedNotes
+                                    onGenerate={handleGenerateNotes}
+                                    onClearAll={handleClearAll}
+                                    loading={loading}
+                                    isNoteFocused={isNoteFocused}
+                                    isDocumentationMode={isDocumentationMode}
+                                  />
+                                </div>
                               </div>
                             )}
                       </div>
@@ -816,19 +833,16 @@ export default function ConsultationPage() {
                                 />
                               </div>
 
-                               {/* Clinical Documentation - Bottom */}
-                               {!isClearingRef.current && (
-                                 <div className="flex min-h-0 flex-1 flex-col">
-                                   {/* Removed TranscriptProcessingStatus - no longer needed in single-pass */}
-                                   <GeneratedNotes
-                                     onGenerate={handleGenerateNotes}
-                                     onClearAll={handleClearAll}
-                                     loading={loading}
-                                     isNoteFocused={isNoteFocused}
-                                     isDocumentationMode={isDocumentationMode}
-                                   />
-                                 </div>
-                               )}
+                                {/* Clinical Documentation - Bottom */}
+                                <div className="mt-auto flex flex-col">
+                                 <GeneratedNotes
+                                   onGenerate={handleGenerateNotes}
+                                   onClearAll={handleClearAll}
+                                   loading={loading}
+                                   isNoteFocused={isNoteFocused}
+                                   isDocumentationMode={isDocumentationMode}
+                                 />
+                               </div>
                             </div>
                           )}
                     </Stack>

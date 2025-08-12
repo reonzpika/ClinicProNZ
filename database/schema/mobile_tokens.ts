@@ -9,7 +9,8 @@ export const mobileTokens = pgTable('mobile_tokens', {
   deviceId: text('device_id'), // To identify connected devices
   deviceName: text('device_name'), // User-friendly device name
   isActive: boolean('is_active').default(true).notNull(),
-  expiresAt: timestamp('expires_at').notNull(),
+  isPermanent: boolean('is_permanent').default(true).notNull(),
+  // expiresAt removed in Session v2. Use isPermanent + isActive.
   lastUsedAt: timestamp('last_used_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

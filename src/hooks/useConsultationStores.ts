@@ -37,17 +37,46 @@ export function useConsultationStores(): any {
     const session = patientSessions.find((s: any) => s.id === currentSessionId);
     if (!session) return;
 
-    const hasLocal = !!(transcriptionStore.transcription.transcript || transcriptionStore.typedInput);
-    const hasRemote = !!(session.transcriptions || session.typedInput || session.notes || session.consultationNotes);
-    if (hasLocal || !hasRemote) return;
+    // Suppress hydration for a brief window immediately after a Clear All
+    try {
+      if (typeof window !== 'undefined') {
+        const until = (window as any).__clinicproJustClearedUntil as number | undefined;
+        if (typeof until === 'number' && Date.now() < until) {
+          return;
+        }
+      }
+    } catch {}
 
+    const hasLocal = !!(transcriptionStore.transcription.transcript || transcriptionStore.typedInput);
+    // Only treat as remote content if non-empty values are present
+    let remoteTrans: any[] = [];
     try {
       if (session.transcriptions) {
-        const transcriptions = typeof session.transcriptions === 'string' ? JSON.parse(session.transcriptions) : session.transcriptions;
-        if (Array.isArray(transcriptions) && transcriptions.length > 0) {
-          const latest = transcriptions[transcriptions.length - 1];
-          transcriptionStore.setTranscription(latest.text || '', false, undefined, undefined);
-        }
+        remoteTrans = typeof session.transcriptions === 'string'
+          ? JSON.parse(session.transcriptions)
+          : session.transcriptions;
+      }
+    } catch {
+      remoteTrans = [];
+    }
+    const hasRemoteTrans = Array.isArray(remoteTrans) && remoteTrans.length > 0;
+    const hasRemoteTextFields = !!(session.typedInput && String(session.typedInput).trim())
+      || !!(session.notes && String(session.notes).trim())
+      || !!(session.consultationNotes && String(session.consultationNotes).trim());
+    const hasRemote = hasRemoteTrans || hasRemoteTextFields;
+
+    // If we already have local data or remote is empty, ensure local transcript is cleared and exit
+    if (hasLocal || !hasRemote) {
+      if (!hasRemote && transcriptionStore.transcription.transcript) {
+        transcriptionStore.setTranscription('', false);
+      }
+      return;
+    }
+
+    try {
+      if (hasRemoteTrans) {
+        const latest = remoteTrans[remoteTrans.length - 1];
+        transcriptionStore.setTranscription((latest?.text || '').trim(), false, undefined, undefined);
       }
     } catch {
       // ignore JSON errors
@@ -267,6 +296,11 @@ export function useConsultationStores(): any {
       // UI-only reset: preserve mobile connection/token across session changes
       transcriptionStore.resetTranscription();
       consultationStore.resetConsultation();
+    },
+
+    // Reset only transcription (do not touch consultation state)
+    resetTranscription: () => {
+      transcriptionStore.resetTranscription();
     },
 
     // Clinical images

@@ -1,4 +1,4 @@
-import { and, desc, eq, gt } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
@@ -18,18 +18,19 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // FIXED: Use mobileTokens.token instead of mobileTokens.id for lookup
+    // Use mobileTokens.token for lookup and ensure token is active
     const tokenResult = await db
       .select({
         userId: mobileTokens.userId,
-        expiresAt: mobileTokens.expiresAt,
+        isActive: mobileTokens.isActive,
+        isPermanent: mobileTokens.isPermanent,
         token: mobileTokens.token,
       })
       .from(mobileTokens)
       .where(
         and(
-          eq(mobileTokens.token, tokenId), // FIXED: was mobileTokens.id
-          gt(mobileTokens.expiresAt, new Date()),
+          eq(mobileTokens.token, tokenId),
+          eq(mobileTokens.isActive, true),
         ),
       )
       .limit(1);
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest) {
 
     const { userId } = tokenData;
 
-    // FIXED: Support guest tokens (userId can be null for guest users)
+    // Guests are not supported; require userId
     let sessionQuery;
 
     if (userId) {
@@ -99,8 +100,7 @@ export async function GET(request: NextRequest) {
           .limit(1);
       }
     } else {
-      // Guests are no longer supported
-      return NextResponse.json({ sessionId: null, patientName: null, message: 'No active session found' });
+      return NextResponse.json({ error: 'Invalid token data' }, { status: 401 });
     }
 
     const sessionResult = await sessionQuery;
