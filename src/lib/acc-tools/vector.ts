@@ -28,7 +28,7 @@ export async function embed(texts: string[]): Promise<number[][]> {
 }
 
 export async function upsertVectors(namespace: string, items: VectorItem[]): Promise<void> {
-	const index = pinecone.Index(PINECONE_INDEX_NAME).namespace(namespace);
+	const index = pinecone.index(PINECONE_INDEX_NAME).namespace(namespace);
 	const embeddings = await embed(items.map(i => i.text));
 	const vectors = items.map((item, i) => ({
 		id: item.id,
@@ -39,7 +39,7 @@ export async function upsertVectors(namespace: string, items: VectorItem[]): Pro
 }
 
 export async function queryTopK(namespace: string, query: string, topK: number): Promise<{ id: string; score: number; metadata: Record<string, any> }[]> {
-	const index = pinecone.Index(PINECONE_INDEX_NAME).namespace(namespace);
+	const index = pinecone.index(PINECONE_INDEX_NAME).namespace(namespace);
 	const [embedding] = await embed([query]);
 	const res = await index.query({
 		topK,
