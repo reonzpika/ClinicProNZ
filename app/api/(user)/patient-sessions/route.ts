@@ -329,7 +329,10 @@ export async function DELETE(req: NextRequest) {
       // No active session available → create a new one
       const { createUserSession } = await import('@/src/lib/services/guest-session-service');
       const newSession = await createUserSession(userId, generatePatientName(), undefined, context.tier);
-      return { id: newSession.id, createdNew: true };
+      if (!newSession || !newSession.id) {
+        throw new Error('Failed to create fallback session');
+      }
+      return { id: newSession.id as string, createdNew: true };
     };
 
     // Handle delete all sessions
