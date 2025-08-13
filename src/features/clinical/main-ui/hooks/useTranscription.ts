@@ -390,7 +390,9 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
 
   // Start recording
   const startRecording = useCallback(async () => {
-    await ensureActiveSession();
+    if (!isMobile) {
+      await ensureActiveSession();
+    }
 
     const audioInitialized = await initializeAudio();
     if (!audioInitialized) {

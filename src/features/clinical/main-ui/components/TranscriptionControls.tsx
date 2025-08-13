@@ -168,7 +168,7 @@ export function TranscriptionControls({
       const t = setTimeout(() => {
         setPendingControl(null);
         setControlError('Mobile did not respond. Ensure the phone is unlocked and the mobile page is active.');
-      }, 3000);
+      }, 6000);
       setControlAckTimer(t);
     } catch (e) {
       setPendingControl(null);

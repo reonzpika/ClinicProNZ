@@ -537,6 +537,17 @@ export const useSimpleAbly = ({
 
             case 'recording_control':
               if (isMobile && (data.action === 'start' || data.action === 'stop')) {
+                // Immediate ack: broadcast recording status so desktop UI responds quickly
+                try {
+                  if (currentSessionId) {
+                    publishSafe('recording_status', {
+                      type: 'recording_status',
+                      isRecording: data.action === 'start',
+                      sessionId: currentSessionId,
+                      timestamp: Date.now(),
+                    }, { queueIfNotReady: false });
+                  }
+                } catch {}
                 // Invoke control command; mobile page will handle start/stop and upload
                 callbacksRef.current.onControlCommand?.(data.action);
               }
