@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { cleanupExpiredMobileTokens } from '@/src/lib/services/cleanup-service';
+import { cleanupInactiveMobileTokens } from '@/src/lib/services/cleanup-service';
 
 // Simple cron-protected endpoint. Protect with env secret header to avoid public access
 export async function POST(req: NextRequest) {
@@ -20,14 +20,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const deleted = await cleanupExpiredMobileTokens();
+    const deleted = await cleanupInactiveMobileTokens();
     return NextResponse.json({ deleted });
   } catch (error) {
+    console.error('Error during token cleanup:', error);
     return NextResponse.json({ error: 'Failed to cleanup tokens' }, { status: 500 });
   }
 }
 
 // Allow GET to support simple schedulers
 export const GET = POST;
-
-

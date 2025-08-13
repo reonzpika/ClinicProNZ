@@ -56,30 +56,28 @@ export async function POST(req: NextRequest) {
         .where(eq(patientSessions.id, sessionId))
         .limit(1);
 
-      if (sessionRecords.length === 0) {
-        return NextResponse.json({
-          error: 'Invalid session',
-          message: 'Session not found',
-        }, { status: 400 });
-      }
+    if (sessionRecords.length === 0) {
+      return NextResponse.json({
+        error: 'Invalid session',
+        message: 'Session not found',
+      }, { status: 400 });
+    }
 
       const session = sessionRecords[0];
-      if (session?.status !== 'active') {
-        return NextResponse.json({
-          error: 'Invalid session',
-          message: 'Session is not active',
-        }, { status: 400 });
-      }
+    if (session?.status !== 'active') {
+      return NextResponse.json({
+        error: 'Invalid session',
+        message: 'Session is not active',
+      }, { status: 400 });
+    }
 
       // Validate session ownership for authenticated users
-      if (context.userId && session.userId !== context.userId) {
-        return NextResponse.json({
-          error: 'Access denied',
-          message: 'Session does not belong to user',
-        }, { status: 403 });
-      }
-
-
+    if (context.userId && session.userId !== context.userId) {
+      return NextResponse.json({
+        error: 'Access denied',
+        message: 'Session does not belong to user',
+      }, { status: 403 });
+    }
     }
 
     // Convert file (Blob) to Buffer

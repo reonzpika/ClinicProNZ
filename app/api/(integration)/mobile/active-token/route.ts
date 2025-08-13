@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { and, desc, eq } from 'drizzle-orm';
+import { NextResponse } from 'next/server';
 
 import { db } from '@/db/client';
 import { mobileTokens } from '@/db/schema';

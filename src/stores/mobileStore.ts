@@ -6,14 +6,18 @@ function getMobileTokenDataFromStorage(): {
   token: string;
   mobileUrl: string;
 } | null {
-  if (typeof window === 'undefined') return null;
-  
+  if (typeof window === 'undefined') {
+ return null;
+}
+
   try {
     const stored = localStorage.getItem('mobileV2TokenData');
-    if (!stored) return null;
-    
+    if (!stored) {
+ return null;
+}
+
     const tokenData = JSON.parse(stored);
-    
+
     return tokenData;
   } catch {
     localStorage.removeItem('mobileV2TokenData');
@@ -26,8 +30,10 @@ function saveMobileTokenDataToStorage(tokenData: {
   token: string;
   mobileUrl: string;
 } | null): void {
-  if (typeof window === 'undefined') return;
-  
+  if (typeof window === 'undefined') {
+ return;
+}
+
   if (tokenData) {
     localStorage.setItem('mobileV2TokenData', JSON.stringify(tokenData));
   } else {
@@ -95,13 +101,13 @@ export const useMobileStore = create<MobileStore>()(
         mobileV2: { ...state.mobileV2, token },
       })),
 
-    setMobileV2TokenData: tokenData => {
+    setMobileV2TokenData: (tokenData) => {
       // Save to localStorage whenever token data changes
       saveMobileTokenDataToStorage(tokenData);
-      
+
       set(state => ({
-        mobileV2: { 
-          ...state.mobileV2, 
+        mobileV2: {
+          ...state.mobileV2,
           tokenData,
           // Update token field as well when tokenData changes
           token: tokenData?.token || null,

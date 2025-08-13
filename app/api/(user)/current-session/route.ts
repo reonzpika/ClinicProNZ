@@ -50,5 +50,3 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to get current session' }, { status: 500 });
   }
 }
-
-

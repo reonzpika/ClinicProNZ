@@ -29,5 +29,3 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to update current session' }, { status: 500 });
   }
 }
-
-

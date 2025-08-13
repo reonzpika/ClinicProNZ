@@ -1,5 +1,5 @@
 import { createClerkClient } from '@clerk/nextjs/server';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 import { db } from '../../database/client';
 import { mobileTokens } from '../../database/schema';
@@ -125,11 +125,11 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
   const mobileToken = req.headers.get('x-mobile-token') || url.searchParams.get('mobileToken');
 
   if (mobileToken) {
-    // Validate mobile token and get associated user context
+    // Validate mobile token and get associated user context (only active tokens)
     const tokenRecord = await db
       .select()
       .from(mobileTokens)
-      .where(eq(mobileTokens.token, mobileToken))
+      .where(and(eq(mobileTokens.token, mobileToken), eq(mobileTokens.isActive, true)))
       .limit(1);
 
     if (tokenRecord.length > 0) {
@@ -143,17 +143,7 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
         };
       }
 
-      const isExpired = record.expiresAt <= new Date();
-      if (isExpired) {
-        // Expired mobile token - treat as unauthenticated
-        return {
-          userId: null,
-          tier: 'basic',
-          isAuthenticated: false,
-        };
-      }
-
-      // Valid mobile token
+      // Valid mobile token (already filtered for active tokens in query)
       if (record.userId) {
         // Mobile token linked to authenticated user
         // FIXED: Look up actual user tier from Clerk instead of defaulting to basic
@@ -192,8 +182,6 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
     isAuthenticated: false,
   };
 }
-
-
 
 /**
  * Check if user can perform a core session action (transcription, note generation, mobile recording)
@@ -281,7 +269,5 @@ export async function checkFeatureAccess(context: RBACContext, feature: 'templat
 
   return { allowed: true };
 }
-
-
 
 // withRBAC function removed - using direct pattern for better Clerk middleware compatibility

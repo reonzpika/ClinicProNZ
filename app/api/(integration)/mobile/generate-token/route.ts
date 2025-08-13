@@ -1,11 +1,11 @@
+import * as Ably from 'ably';
+import { and, desc, eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import { and, desc, eq } from 'drizzle-orm';
 
 import { db } from '@/db/client';
 import { mobileTokens } from '@/db/schema';
 import { cleanupInactiveMobileTokens } from '@/src/lib/services/cleanup-service';
-import * as Ably from 'ably';
 
 export async function POST(req: Request) {
   try {
@@ -98,7 +98,9 @@ export async function POST(req: Request) {
           const ably = new Ably.Rest({ key: process.env.ABLY_API_KEY });
           await Promise.all(
             oldTokens.map(async (t) => {
-              if (!t?.token) return;
+              if (!t?.token) {
+ return;
+}
               try {
                 const channel = ably.channels.get(`token:${t.token}`);
                 await channel.publish('token_rotated', { type: 'token_rotated', timestamp: Date.now() });

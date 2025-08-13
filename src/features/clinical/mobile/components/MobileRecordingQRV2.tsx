@@ -51,10 +51,14 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
 
   // Always trust server: on modal open, fetch active token and override any cache
   useEffect(() => {
-    if (!isClient || !isOpen) return;
+    if (!isClient || !isOpen) {
+ return;
+}
 
     const fetchActiveToken = async () => {
-      if (!isSignedIn || !userId) return;
+      if (!isSignedIn || !userId) {
+ return;
+}
       try {
         const response = await fetch('/api/mobile/active-token', {
           method: 'GET',
@@ -243,12 +247,14 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
               disabled={isGenerating}
               title="Rotate token and show new QR immediately"
             >
-              {isGenerating ? (
+              {isGenerating
+? (
                 <>
                   <RefreshCw className="mr-2 size-4 animate-spin" />
                   Rotating...
                 </>
-              ) : 'Reset token'}
+              )
+: 'Reset token'}
             </Button>
 
             <Button onClick={onClose} variant="outline">

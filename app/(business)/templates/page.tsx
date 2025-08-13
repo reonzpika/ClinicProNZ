@@ -203,7 +203,7 @@ export default function TemplatesPage() {
           {!isSignedIn && (
             <div className="p-4">
               <p className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-600">
-                {'Sign in to create and manage templates'}
+                Sign in to create and manage templates
               </p>
             </div>
           )}

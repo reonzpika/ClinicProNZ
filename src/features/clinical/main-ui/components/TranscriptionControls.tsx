@@ -12,8 +12,8 @@ import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardHeader } from '@/src/shared/components/ui/card';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
-// import { createAuthHeaders } from '@/src/shared/utils';
 
+// import { createAuthHeaders } from '@/src/shared/utils';
 import { AudioSettingsModal } from '../../mobile/components/AudioSettingsModal';
 import { MobileRecordingQRV2 } from '../../mobile/components/MobileRecordingQRV2';
 import { ConsentModal } from '../../session-management/components/ConsentModal';
@@ -125,7 +125,9 @@ export function TranscriptionControls({
   // Acknowledge timer cleanup
   useEffect(() => {
     return () => {
-      if (controlAckTimer) clearTimeout(controlAckTimer);
+      if (controlAckTimer) {
+ clearTimeout(controlAckTimer);
+}
     };
   }, [controlAckTimer]);
 
@@ -134,12 +136,16 @@ export function TranscriptionControls({
     if (pendingControl === 'start' && mobileIsRecording) {
       setPendingControl(null);
       setControlError(null);
-      if (controlAckTimer) clearTimeout(controlAckTimer);
+      if (controlAckTimer) {
+ clearTimeout(controlAckTimer);
+}
     }
     if (pendingControl === 'stop' && !mobileIsRecording) {
       setPendingControl(null);
       setControlError(null);
-      if (controlAckTimer) clearTimeout(controlAckTimer);
+      if (controlAckTimer) {
+ clearTimeout(controlAckTimer);
+}
     }
   }, [mobileIsRecording, pendingControl, controlAckTimer]);
 

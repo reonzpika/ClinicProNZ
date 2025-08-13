@@ -98,6 +98,75 @@ export const useSimpleAbly = ({
     onConnectionStatusChanged?.(connected ? 'connected' : 'disconnected');
   }, [onConnectionStatusChanged]);
 
+  // Internal helper to safely publish and handle both sync errors and async rejections
+  const publishSafe = useCallback((eventName: string, data: any, options?: { queueIfNotReady?: boolean }): boolean => {
+    const queueIfNotReady = options?.queueIfNotReady ?? true;
+    const ready = !!ablyRef.current && ablyRef.current.connection.state === 'connected' && !!channelRef.current;
+    if (!ready) {
+      if (queueIfNotReady) {
+        // Cap outbox length to avoid unbounded growth
+        if (outboxRef.current.length > 20) {
+          outboxRef.current.shift();
+        }
+        outboxRef.current.push({ eventName, data });
+        return true; // treat as accepted (will flush later)
+      }
+      return false;
+    }
+    try {
+      const result: any = channelRef.current!.publish(eventName, data);
+      if (result && typeof result.then === 'function') {
+        result.catch((err: any) => {
+          callbacksRef.current.onError?.(`Failed to publish ${eventName}: ${err?.message || 'Unknown error'}`);
+        });
+      }
+      return true;
+    } catch (err: any) {
+      callbacksRef.current.onError?.(`Failed to publish ${eventName}: ${err?.message || 'Unknown error'}`);
+      return false;
+    }
+  }, [callbacksRef]);
+
+  // Fallback session fetching when Ably is disconnected
+  const fetchCurrentSession = useCallback(async (force: boolean = false) => {
+    if (!tokenId || (isConnected && !force)) {
+      return; // Don't fetch if connected or no token
+    }
+
+    // Throttle requests - only fetch every 10 seconds
+    const now = Date.now();
+    if (now - lastSessionFetch < 10000) {
+      return;
+    }
+
+    try {
+      setLastSessionFetch(now);
+
+      const response = await fetch(`/api/mobile/current-session?token=${encodeURIComponent(tokenId)}`);
+
+      if (!response.ok) {
+        // FIXED: Better error handling for session fetch failures
+        if (response.status === 401) {
+          callbacksRef.current.onError?.('Token expired or invalid');
+        } else {
+          return;
+        }
+      }
+
+      const sessionData = await response.json();
+
+      if (sessionData.sessionId && sessionData.patientName) {
+        // Only update if session has changed
+        if (sessionData.sessionId !== currentSessionId) {
+          setCurrentSessionId(sessionData.sessionId);
+          callbacksRef.current.onSessionChanged?.(sessionData.sessionId, sessionData.patientName);
+        }
+      }
+    } catch {
+      // no-op
+    }
+  }, [tokenId, isConnected, lastSessionFetch, currentSessionId]);
+
   // Connect when tokenId is provided
   useEffect(() => {
     if (!tokenId) {
@@ -160,12 +229,16 @@ export const useSimpleAbly = ({
 
         // Wire connection handlers BEFORE connecting to avoid missing early events
         ably.connection.on('connecting', () => {
-          if (!isCurrentConnection) return;
+          if (!isCurrentConnection) {
+ return;
+}
           onConnectionStatusChanged?.('connecting');
         });
 
         ably.connection.on('connected', async () => {
-          if (!isCurrentConnection) return;
+          if (!isCurrentConnection) {
+ return;
+}
           try {
             // Ensure channel exists and is attached after connecting
             let channel: Ably.RealtimeChannel;
@@ -252,10 +325,10 @@ export const useSimpleAbly = ({
               if (outboxRef.current.length > 0) {
                 const pending = [...outboxRef.current];
                 outboxRef.current = [];
-                pending.forEach(item => {
+                pending.forEach((item) => {
                   try {
                     channelRef.current!.publish(item.eventName, item.data);
-                  } catch (e) {
+                  } catch {
                     // If publish fails, re-queue once
                     outboxRef.current.push(item);
                   }
@@ -269,12 +342,14 @@ export const useSimpleAbly = ({
         });
 
         ably.connection.on('disconnected', async () => {
-          if (!isCurrentConnection) return;
+          if (!isCurrentConnection) {
+ return;
+}
           try {
             if (channelRef.current) {
               await channelRef.current.presence.leave();
             }
-          } catch (error) {
+          } catch {
             // Suppress noisy console warnings
           }
           setHasMobilePeer(false);
@@ -282,25 +357,29 @@ export const useSimpleAbly = ({
         });
 
         ably.connection.on('suspended', async () => {
-          if (!isCurrentConnection) return;
+          if (!isCurrentConnection) {
+ return;
+}
           onConnectionStatusChanged?.('connecting');
           try {
             if (channelRef.current) {
               await channelRef.current.presence.leave();
             }
-          } catch (error) {
+          } catch {
             // Suppress noisy console warnings
           }
           setHasMobilePeer(false);
         });
 
         ably.connection.on('failed', async (error) => {
-          if (!isCurrentConnection) return;
+          if (!isCurrentConnection) {
+ return;
+}
           try {
             if (channelRef.current) {
               await channelRef.current.presence.leave();
             }
-          } catch (presenceError) {
+          } catch {
             // Suppress noisy console warnings
           }
           setHasMobilePeer(false);
@@ -310,13 +389,17 @@ export const useSimpleAbly = ({
         });
 
         ably.connection.on('closed', () => {
-          if (!isCurrentConnection) return;
+          if (!isCurrentConnection) {
+ return;
+}
           setHasMobilePeer(false);
           updateConnectionStatus(false, false);
         });
 
         ably.connection.on('update', (change) => {
-          if (!isCurrentConnection) return;
+          if (!isCurrentConnection) {
+ return;
+}
           if (change.reason?.code === 40142 || change.reason?.code === 40140) {
             onConnectionStatusChanged?.('error');
             callbacksRef.current.onError?.('Authentication failed: Token expired or invalid');
@@ -518,7 +601,9 @@ export const useSimpleAbly = ({
   // Reconcile missed messages using Ably History on connect and when coming back from suspended
   useEffect(() => {
     const reconcile = async () => {
-      if (!channelRef.current || !ablyRef.current) return;
+      if (!channelRef.current || !ablyRef.current) {
+ return;
+}
       try {
         const start = lastSeenTsRef.current ? new Date(lastSeenTsRef.current + 1) : undefined;
         // Fetch a reasonable window of missed messages
@@ -603,32 +688,7 @@ export const useSimpleAbly = ({
     };
   }, [isMobile, isConnected]);
 
-  // Internal helper to safely publish and handle both sync errors and async rejections
-  const publishSafe = useCallback((eventName: string, data: any, options?: { queueIfNotReady?: boolean }): boolean => {
-    const queueIfNotReady = options?.queueIfNotReady ?? true;
-    const ready = !!ablyRef.current && ablyRef.current.connection.state === 'connected' && !!channelRef.current;
-    if (!ready) {
-      if (queueIfNotReady) {
-        // Cap outbox length to avoid unbounded growth
-        if (outboxRef.current.length > 20) outboxRef.current.shift();
-        outboxRef.current.push({ eventName, data });
-        return true; // treat as accepted (will flush later)
-      }
-      return false;
-    }
-    try {
-      const result: any = channelRef.current!.publish(eventName, data);
-      if (result && typeof result.then === 'function') {
-        result.catch((err: any) => {
-          callbacksRef.current.onError?.(`Failed to publish ${eventName}: ${err?.message || 'Unknown error'}`);
-        });
-      }
-      return true;
-    } catch (err: any) {
-      callbacksRef.current.onError?.(`Failed to publish ${eventName}: ${err?.message || 'Unknown error'}`);
-      return false;
-    }
-  }, []);
+  // Removed duplicate publishSafe definition (moved earlier in file)
 
   // Send transcript with enhanced data (mobile to desktop)
   const sendTranscript = useCallback((transcript: string, enhancedData?: EnhancedTranscriptionData) => {
@@ -701,45 +761,7 @@ export const useSimpleAbly = ({
     });
   }, [currentSessionId, publishSafe]);
 
-  // Fallback session fetching when Ably is disconnected
-  const fetchCurrentSession = useCallback(async (force: boolean = false) => {
-    if (!tokenId || (isConnected && !force)) {
-      return; // Don't fetch if connected or no token
-    }
-
-    // Throttle requests - only fetch every 10 seconds
-    const now = Date.now();
-    if (now - lastSessionFetch < 10000) {
-      return;
-    }
-
-    try {
-      setLastSessionFetch(now);
-
-      const response = await fetch(`/api/mobile/current-session?token=${encodeURIComponent(tokenId)}`);
-
-      if (!response.ok) {
-        // FIXED: Better error handling for session fetch failures
-        if (response.status === 401) {
-          callbacksRef.current.onError?.('Token expired or invalid');
-        } else {
-          return;
-        }
-      }
-
-      const sessionData = await response.json();
-
-      if (sessionData.sessionId && sessionData.patientName) {
-        // Only update if session has changed
-        if (sessionData.sessionId !== currentSessionId) {
-          setCurrentSessionId(sessionData.sessionId);
-          callbacksRef.current.onSessionChanged?.(sessionData.sessionId, sessionData.patientName);
-        }
-      }
-    } catch {
-      // no-op
-    }
-  }, [tokenId, isConnected, lastSessionFetch, currentSessionId]);
+  // Removed duplicate fetchCurrentSession definition (moved earlier in file)
 
   // Poll for session updates when disconnected
   useEffect(() => {

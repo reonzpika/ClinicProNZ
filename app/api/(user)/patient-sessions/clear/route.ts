@@ -1,6 +1,6 @@
+import * as Ably from 'ably';
 import { and, eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
-import * as Ably from 'ably';
 
 import { db } from '@/db/client';
 import { patientSessions } from '@/db/schema';
@@ -9,10 +9,14 @@ import { extractRBACContext } from '@/src/lib/rbac-enforcer';
 export async function POST(req: Request) {
   try {
     const context = await extractRBACContext(req);
-    if (!context.userId) return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    if (!context.userId) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
 
     const { sessionId } = await req.json();
-    if (!sessionId) return NextResponse.json({ error: 'sessionId is required' }, { status: 400 });
+    if (!sessionId) {
+      return NextResponse.json({ error: 'sessionId is required' }, { status: 400 });
+    }
 
     // Neon HTTP driver doesn't support transactions; perform a single UPDATE
     const updated = await db
@@ -52,5 +56,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Failed to clear session' }, { status: 500 });
   }
 }
-
-

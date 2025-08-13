@@ -87,7 +87,9 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
   };
 
   const handleNewPatient = useCallback(async () => {
-    if (isCreatingNewPatient) return; // Guard against re-entry
+    if (isCreatingNewPatient) {
+ return;
+} // Guard against re-entry
     setIsCreatingNewPatient(true);
     try {
       // TODO: Add save logic here similar to GeneratedNotes component

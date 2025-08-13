@@ -9,12 +9,12 @@ import {
   useUpdatePatientSession,
 } from '@/src/hooks/consultation/useConsultationQueries';
 import { useSessionAccess } from '@/src/hooks/useSessionAccess';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { createAuthHeaders } from '@/src/shared/utils';
 import { useConsultationStore } from '@/src/stores/consultationStore';
 import { useMobileStore } from '@/src/stores/mobileStore';
 import { useTranscriptionStore } from '@/src/stores/transcriptionStore';
 import type { PatientSession } from '@/src/types/consultation';
-import { createAuthHeaders } from '@/src/shared/utils';
-import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
 // Facade hook used across the clinical UI. Provides a stable API over Zustand + TanStack state.
 export function useConsultationStores(): any {
@@ -33,9 +33,13 @@ export function useConsultationStores(): any {
   // Hydrate local state when a persisted session is present but local is empty
   useEffect(() => {
     const currentSessionId = consultationStore.currentPatientSessionId;
-    if (!currentSessionId || !Array.isArray(patientSessions) || patientSessions.length === 0) return;
+    if (!currentSessionId || !Array.isArray(patientSessions) || patientSessions.length === 0) {
+ return;
+}
     const session = patientSessions.find((s: any) => s.id === currentSessionId);
-    if (!session) return;
+    if (!session) {
+ return;
+}
 
     // Suppress hydration for a brief window immediately after a Clear All
     try {
@@ -81,10 +85,18 @@ export function useConsultationStores(): any {
     } catch {
       // ignore JSON errors
     }
-    if (session.typedInput) transcriptionStore.setTypedInput(session.typedInput);
-    if (session.notes) consultationStore.setGeneratedNotes(session.notes);
-    if (session.consultationNotes) consultationStore.setConsultationNotes(session.consultationNotes);
-    if (session.templateId) consultationStore.setTemplateId(session.templateId);
+    if (session.typedInput) {
+ transcriptionStore.setTypedInput(session.typedInput);
+}
+    if (session.notes) {
+ consultationStore.setGeneratedNotes(session.notes);
+}
+    if (session.consultationNotes) {
+ consultationStore.setConsultationNotes(session.consultationNotes);
+}
+    if (session.templateId) {
+ consultationStore.setTemplateId(session.templateId);
+}
   }, [consultationStore, consultationStore.currentPatientSessionId, patientSessions, transcriptionStore, transcriptionStore.transcription.transcript, transcriptionStore.typedInput]);
 
   // Mutations
@@ -94,7 +106,9 @@ export function useConsultationStores(): any {
   const deleteAllSessionsMutation = useDeleteAllPatientSessions();
 
   const ensureActiveSession = useCallback(async (): Promise<string | null> => {
-    if (consultationStore.currentPatientSessionId) return consultationStore.currentPatientSessionId;
+    if (consultationStore.currentPatientSessionId) {
+ return consultationStore.currentPatientSessionId;
+}
     try {
       const result = await createSessionMutation.mutateAsync({ patientName: 'Quick Consultation' });
       consultationStore.setCurrentPatientSessionId(result.id);
@@ -110,7 +124,9 @@ export function useConsultationStores(): any {
   const createPatientSession = useCallback(async (patientName: string, templateId?: string): Promise<PatientSession | null> => {
     try {
       const result = await createSessionMutation.mutateAsync({ patientName, templateId });
-      if (templateId) consultationStore.setTemplateId(templateId);
+      if (templateId) {
+ consultationStore.setTemplateId(templateId);
+}
       consultationStore.setCurrentPatientSessionId(result.id);
       if (typeof window !== 'undefined' && (window as any).ablySyncHook?.updateSession) {
         (window as any).ablySyncHook.updateSession(result.id, result.patientName);
@@ -144,32 +160,54 @@ export function useConsultationStores(): any {
   }, [deleteAllSessionsMutation]);
 
   const saveNotesToCurrentSession = useCallback(async (notes: string): Promise<boolean> => {
-    const id = consultationStore.currentPatientSessionId; if (!id) return false;
-    await updatePatientSession(id, { notes } as any); return true;
+    const id = consultationStore.currentPatientSessionId;
+    if (!id) {
+      return false;
+    }
+    await updatePatientSession(id, { notes } as any);
+    return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
   const saveTypedInputToCurrentSession = useCallback(async (typedInput: string): Promise<boolean> => {
-    const id = consultationStore.currentPatientSessionId; if (!id) return false;
-    await updatePatientSession(id, { typedInput } as any); return true;
+    const id = consultationStore.currentPatientSessionId;
+    if (!id) {
+      return false;
+    }
+    await updatePatientSession(id, { typedInput } as any);
+    return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
   const saveConsultationNotesToCurrentSession = useCallback(async (consultationNotes: string): Promise<boolean> => {
-    const id = consultationStore.currentPatientSessionId; if (!id) return false;
-    await updatePatientSession(id, { consultationNotes } as any); return true;
+    const id = consultationStore.currentPatientSessionId;
+    if (!id) {
+      return false;
+    }
+    await updatePatientSession(id, { consultationNotes } as any);
+    return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
   const saveClinicalImagesToCurrentSession = useCallback(async (clinicalImages: any[]): Promise<boolean> => {
-    const id = consultationStore.currentPatientSessionId; if (!id) return false;
-    await updatePatientSession(id, { clinicalImages } as any); return true;
+    const id = consultationStore.currentPatientSessionId;
+    if (!id) {
+      return false;
+    }
+    await updatePatientSession(id, { clinicalImages } as any);
+    return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
   const saveTranscriptionsToCurrentSession = useCallback(async (): Promise<boolean> => {
-    const id = consultationStore.currentPatientSessionId; if (!id) return false;
+    const id = consultationStore.currentPatientSessionId;
+    if (!id) {
+      return false;
+    }
     try {
       const t = transcriptionStore.transcription;
       const transcriptions = t.transcript ? [{ id: Date.now().toString(), text: t.transcript, timestamp: new Date().toISOString(), source: 'desktop' as const, deviceId: 'browser' }] : [];
-      await updatePatientSession(id, { transcriptions } as any); return true;
-    } catch { return false; }
+      await updatePatientSession(id, { transcriptions } as any);
+      return true;
+    } catch {
+      return false;
+    }
   }, [consultationStore.currentPatientSessionId, transcriptionStore.transcription, updatePatientSession]);
 
   return {
@@ -226,21 +264,27 @@ export function useConsultationStores(): any {
     setTranscriptionEnhanced: transcriptionStore.setTranscriptionEnhanced,
     appendTranscription: useCallback(async (newTranscript: string, isLive: boolean, source: 'desktop' | 'mobile' = 'desktop', deviceId?: string, diarizedTranscript?: string, utterances?: any[]) => {
       await transcriptionStore.appendTranscription(newTranscript, isLive, source, deviceId, diarizedTranscript, utterances);
-      const id = consultationStore.currentPatientSessionId; if (!id || !newTranscript.trim()) return;
+      const id = consultationStore.currentPatientSessionId;
+      if (!id || !newTranscript.trim()) {
+        return;
+      }
       try {
         const entry = { id: Math.random().toString(36).substr(2, 9), text: newTranscript.trim(), timestamp: new Date().toISOString(), source, deviceId };
         const current = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === id) : null;
-        const updated = [ ...(current?.transcriptions || []), entry ];
+        const updated = [...(current?.transcriptions || []), entry];
         await updatePatientSession(id, { transcriptions: updated } as any);
       } catch {}
     }, [transcriptionStore, consultationStore.currentPatientSessionId, patientSessions, updatePatientSession]),
     appendTranscriptionEnhanced: useCallback(async (newTranscript: string, isLive: boolean, source: 'desktop' | 'mobile' = 'desktop', deviceId?: string, diarizedTranscript?: string, utterances?: any[], confidence?: number, words?: any[], paragraphs?: any) => {
       await transcriptionStore.appendTranscriptionEnhanced(newTranscript, isLive, source, deviceId, diarizedTranscript, utterances, confidence, words, paragraphs);
-      const id = consultationStore.currentPatientSessionId; if (!id || !newTranscript.trim()) return;
+      const id = consultationStore.currentPatientSessionId;
+      if (!id || !newTranscript.trim()) {
+        return;
+      }
       try {
         const entry = { id: Math.random().toString(36).substr(2, 9), text: newTranscript.trim(), timestamp: new Date().toISOString(), source, deviceId };
         const current = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === id) : null;
-        const updated = [ ...(current?.transcriptions || []), entry ];
+        const updated = [...(current?.transcriptions || []), entry];
         await updatePatientSession(id, { transcriptions: updated } as any);
       } catch {}
     }, [transcriptionStore, consultationStore.currentPatientSessionId, patientSessions, updatePatientSession]),
@@ -330,8 +374,16 @@ export function useConsultationStores(): any {
         if (typeof window !== 'undefined' && (window as any).ablySyncHook?.updateSession) {
           const ok = (window as any).ablySyncHook.updateSession(sessionId, patientName);
           if (!ok) {
-            setTimeout(() => { try { (window as any).ablySyncHook?.updateSession?.(sessionId, patientName); } catch {} }, 300);
-            setTimeout(() => { try { (window as any).ablySyncHook?.updateSession?.(sessionId, patientName); } catch {} }, 1500);
+            setTimeout(() => {
+ try {
+ (window as any).ablySyncHook?.updateSession?.(sessionId, patientName);
+} catch {}
+}, 300);
+            setTimeout(() => {
+ try {
+ (window as any).ablySyncHook?.updateSession?.(sessionId, patientName);
+} catch {}
+}, 1500);
           }
         }
       } catch {}
@@ -353,10 +405,18 @@ export function useConsultationStores(): any {
             }
           }
         } catch { /* ignore */ }
-        if (session.typedInput) transcriptionStore.setTypedInput(session.typedInput);
-        if (session.notes) consultationStore.setGeneratedNotes(session.notes);
-        if (session.consultationNotes) consultationStore.setConsultationNotes(session.consultationNotes);
-        if (session.templateId) consultationStore.setTemplateId(session.templateId);
+        if (session.typedInput) {
+ transcriptionStore.setTypedInput(session.typedInput);
+}
+        if (session.notes) {
+ consultationStore.setGeneratedNotes(session.notes);
+}
+        if (session.consultationNotes) {
+ consultationStore.setConsultationNotes(session.consultationNotes);
+}
+        if (session.templateId) {
+ consultationStore.setTemplateId(session.templateId);
+}
         if (session.consultationItems) {
           try {
             const items = typeof session.consultationItems === 'string' ? JSON.parse(session.consultationItems) : session.consultationItems;
@@ -384,6 +444,3 @@ export function useConsultationStores(): any {
     completePatientSession: async (_sessionId: string) => {},
   };
 }
-
-
-

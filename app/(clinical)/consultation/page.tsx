@@ -56,8 +56,8 @@ export default function ConsultationPage() {
     enableMobileV2,
     setMobileV2TokenData,
     saveNotesToCurrentSession, // For saving generated notes
-    saveTypedInputToCurrentSession, // For clearing typed input
-    saveConsultationNotesToCurrentSession, // For clearing consultation notes
+    saveTypedInputToCurrentSession: _saveTypedInputToCurrentSession, // For clearing typed input (unused)
+    saveConsultationNotesToCurrentSession: _saveConsultationNotesToCurrentSession, // For clearing consultation notes (unused)
     ensureActiveSession, // For ensuring session exists before note generation
     resetLastGeneratedInput, // For resetting generation tracking
   } = useConsultationStores();
@@ -291,7 +291,9 @@ export default function ConsultationPage() {
   useEffect(() => {
     const loadActiveToken = async () => {
       try {
-        if (!userId) return;
+        if (!userId) {
+          return;
+        }
         const res = await fetch('/api/mobile/active-token', {
           method: 'GET',
           headers: createAuthHeaders(userId, userTier),
@@ -320,7 +322,9 @@ export default function ConsultationPage() {
   useEffect(() => {
     const fetchCurrent = async () => {
       try {
-        if (!userId) return;
+        if (!userId) {
+          return;
+        }
         const res = await fetch('/api/current-session', { method: 'GET', headers: createAuthHeaders(userId, userTier) });
         if (res.ok) {
           const data = await res.json();
@@ -365,7 +369,9 @@ export default function ConsultationPage() {
     try {
       if (currentPatientSessionId) {
         // Set a brief global suppression window to prevent hydration re-population
-        try { (window as any).__clinicproJustClearedUntil = Date.now() + 800; } catch {}
+        try {
+ (window as any).__clinicproJustClearedUntil = Date.now() + 800;
+} catch {}
         await fetch('/api/patient-sessions/clear', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...createAuthHeaders(userId, userTier) },
@@ -376,19 +382,27 @@ export default function ConsultationPage() {
       // Optimistically update React Query caches for current session
       if (currentPatientSessionId) {
         // Update sessions list cache
-        queryClient.setQueryData<any>(['consultation', 'sessions'], (old: any) => {
-          if (!Array.isArray(old)) {
- return old;
-}
-          return old.map((s: any) => s.id === currentPatientSessionId ? { ...s, notes: '', typedInput: '', consultationNotes: '', transcriptions: [] } : s);
-        });
+        queryClient.setQueryData<any>(
+          ['consultation', 'sessions'],
+          (old: any) => {
+            if (!Array.isArray(old)) {
+              return old;
+            }
+            return old.map((s: any) => (s.id === currentPatientSessionId
+              ? { ...s, notes: '', typedInput: '', consultationNotes: '', transcriptions: [] }
+              : s));
+          },
+        );
         // Update individual session cache
-        queryClient.setQueryData<any>(['consultation', 'session', currentPatientSessionId], (old: any) => {
-          if (!old) {
- return old;
-}
-          return { ...old, notes: '', typedInput: '', consultationNotes: '', transcriptions: [] };
-        });
+        queryClient.setQueryData<any>(
+          ['consultation', 'session', currentPatientSessionId],
+          (old: any) => {
+            if (!old) {
+              return old;
+            }
+            return { ...old, notes: '', typedInput: '', consultationNotes: '', transcriptions: [] };
+          },
+        );
         // Pull fresh server state to remove any stale rehydration edge cases
         try {
           await queryClient.invalidateQueries({ queryKey: ['consultation', 'session', currentPatientSessionId] });
@@ -842,7 +856,7 @@ export default function ConsultationPage() {
                                    isNoteFocused={isNoteFocused}
                                    isDocumentationMode={isDocumentationMode}
                                  />
-                               </div>
+                                </div>
                             </div>
                           )}
                     </Stack>

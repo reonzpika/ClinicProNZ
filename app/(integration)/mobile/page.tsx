@@ -2,7 +2,7 @@
 
 import { AlertTriangle, CheckCircle, Mic, MicOff, Smartphone, Wifi, WifiOff } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import React, { Suspense, useCallback, useEffect, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTranscription';
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
@@ -96,6 +96,11 @@ function MobilePageContent() {
     setMobileState('error');
   }, []);
 
+  // Refs to avoid use-before-define in callbacks
+  const isRecordingRef = useRef<boolean>(false);
+  const startRecordingRef = useRef<() => Promise<void> | void>(() => {});
+  const stopRecordingRef = useRef<() => Promise<void> | void>(() => {});
+
   // Simple Ably for real-time sync
   const { isConnected, currentSessionId, sendTranscript, sendRecordingStatus, fetchCurrentSession } = useSimpleAbly({
     tokenId: tokenState.isValid ? tokenState.token : null,
@@ -114,14 +119,11 @@ function MobilePageContent() {
     isMobile: true, // FIXED: Identify as mobile device
     onControlCommand: async (action: 'start' | 'stop') => {
       try {
-        if (action === 'start' && !isRecording) {
-          await startRecording();
-          // Broadcast status back (rely on existing sendRecordingStatusWithRetry)
-          await sendRecordingStatusWithRetry(true);
+        if (action === 'start' && !isRecordingRef.current) {
+          await startRecordingRef.current?.();
         }
-        if (action === 'stop' && isRecording) {
-          await stopRecording();
-          await sendRecordingStatusWithRetry(false);
+        if (action === 'stop' && isRecordingRef.current) {
+          await stopRecordingRef.current?.();
         }
       } catch (e) {
         setTokenState(prev => ({ ...prev, error: `Control error: ${e instanceof Error ? e.message : 'Unknown error'}` }));
@@ -186,6 +188,13 @@ function MobilePageContent() {
       }
     },
   });
+
+  // Keep refs updated with latest recording controls
+  useEffect(() => {
+    isRecordingRef.current = isRecording;
+    startRecordingRef.current = startRecording;
+    stopRecordingRef.current = stopRecording;
+  }, [isRecording, startRecording, stopRecording]);
 
   // Validate token from URL on mount
   useEffect(() => {
@@ -475,7 +484,9 @@ function MobilePageContent() {
               <div className="text-center">
                 <button
                   type="button"
-                  onClick={() => { void fetchCurrentSession(true); }}
+                  onClick={() => {
+                    void fetchCurrentSession(true);
+                  }}
                   className="text-xs text-blue-600 hover:text-blue-800"
                 >
                   Refresh session info
