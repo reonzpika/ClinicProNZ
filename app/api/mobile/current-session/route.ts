@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 
 import { db } from '@/db/client';
 import { mobileTokens, patientSessions, users } from '@/db/schema';
-import { deleteExpiredMobileToken } from '@/src/lib/services/cleanup-service';
+import { deleteMobileToken } from '@/src/lib/services/cleanup-service';
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,10 +36,10 @@ export async function GET(request: NextRequest) {
       .limit(1);
 
     if (tokenResult.length === 0) {
-      // Opportunistic cleanup: attempt to delete if token exists but is expired
+      // Opportunistic cleanup: attempt to delete token if it exists but is inactive/non-usable
       try {
         if (tokenId) {
-          await deleteExpiredMobileToken(tokenId);
+          await deleteMobileToken(tokenId);
         }
       } catch {
         // ignore cleanup errors
