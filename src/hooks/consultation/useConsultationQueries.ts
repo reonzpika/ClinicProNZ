@@ -169,6 +169,8 @@ export function useDeletePatientSession(): any {
           if (typeof window !== 'undefined' && (window as any).ablySyncHook?.updateSession) {
             (window as any).ablySyncHook.updateSession(res.currentSessionId, 'Current Session');
           }
+          // Ensure the sessions list refreshes immediately so modals/UI have the new session
+          queryClient.invalidateQueries({ queryKey: queryKeys.consultation.sessions() }).catch(() => {});
         } catch {}
       }
     },
@@ -200,6 +202,8 @@ export function useDeleteAllPatientSessions(): any {
           if (typeof window !== 'undefined' && (window as any).ablySyncHook?.updateSession) {
             (window as any).ablySyncHook.updateSession(res.currentSessionId, 'Current Session');
           }
+          // Refresh sessions immediately
+          queryClient.invalidateQueries({ queryKey: queryKeys.consultation.sessions() }).catch(() => {});
         } catch {}
       }
     },

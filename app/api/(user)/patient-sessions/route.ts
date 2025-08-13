@@ -392,12 +392,27 @@ export async function DELETE(req: NextRequest) {
         .limit(1);
       const currentId = currentRows?.[0]?.currentSessionId || null;
 
+      // If the deleted session was the current one → pick or create next
       if (currentId && currentId === sessionId) {
         const next = await selectOrCreateNextSession();
         await db.update(users).set({ currentSessionId: next.id }).where(eq(users.id, userId));
         response.currentSessionId = next.id;
         response.createdNew = next.createdNew;
         response.switchedToExisting = !next.createdNew;
+      } else {
+        // Even if current wasn't deleted, ensure at least one ACTIVE session exists for the user
+        const stillHasActive = await db
+          .select({ id: patientSessions.id })
+          .from(patientSessions)
+          .where(and(eq(patientSessions.userId, userId), eq(patientSessions.status, 'active'), eq(patientSessions.isTemporary, false)))
+          .limit(1);
+        if (stillHasActive.length === 0) {
+          const next = await selectOrCreateNextSession();
+          await db.update(users).set({ currentSessionId: next.id }).where(eq(users.id, userId));
+          response.currentSessionId = next.id;
+          response.createdNew = next.createdNew;
+          response.switchedToExisting = !next.createdNew;
+        }
       }
     } catch {}
 

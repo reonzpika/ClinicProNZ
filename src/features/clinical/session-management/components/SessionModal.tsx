@@ -99,11 +99,14 @@ export const SessionModal: React.FC<SessionModalProps> = ({
   const handleDeleteSession = async (sessionId: string) => {
     if (deleteConfirmId === sessionId) {
       try {
+        // If this was the only session before deletion, close the modal after delete
+        const wasLastSession = Array.isArray(patientSessions) && patientSessions.length <= 1;
         await deletePatientSession(sessionId);
         setDeleteConfirmId(null);
         // If we deleted the current session, modal should stay open for user to select another
-        if (sessionId === currentPatientSessionId) {
-          // Don't close modal, let user select another session
+        // Updated behavior: if it was the last session, server creates a new one and we auto-close
+        if (wasLastSession) {
+          onClose();
         }
       } catch (error) {
         console.error('Failed to delete patient session:', error);
@@ -120,6 +123,8 @@ export const SessionModal: React.FC<SessionModalProps> = ({
         await deleteAllPatientSessions();
         setShowDeleteAllConfirm(false);
         // Modal should stay open after deleting all sessions (empty state)
+        // Updated behavior: server creates a replacement session; close modal
+        onClose();
       } catch (error) {
         console.error('Failed to delete all patient sessions:', error);
       } finally {
