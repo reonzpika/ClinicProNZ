@@ -3,6 +3,10 @@
 ## Overview
 ClinicPro's RAG system provides contextual clinical information during consultations by searching through a curated knowledge base of medical resources.
 
+**Key Changes:**
+- Vector search uses Pinecone as the primary index
+- Postgres/pgvector is not required for this feature
+
 **Key Features:**
 - **Knowledge Base**: Curated medical content for clinical decision support
 - **Semantic Search**: Vector-based search for relevant clinical information
@@ -22,7 +26,7 @@ PINECONE_INDEX_NAME=clinicpro-rag
 
 ### 2. Pinecone Index Setup
 ```bash
-# Create index (1536 dimensions for OpenAI text-embedding-ada-002)
+# Create index (1536 dimensions for OpenAI text-embedding-3-small)
 curl -X POST "https://controller.${PINECONE_ENVIRONMENT}.pinecone.io/databases" \
   -H "Api-Key: ${PINECONE_API_KEY}" \
   -H "Content-Type: application/json" \
@@ -34,7 +38,7 @@ curl -X POST "https://controller.${PINECONE_ENVIRONMENT}.pinecone.io/databases" 
 ```
 
 ### 3. Database Schema
-Already included in main migrations - see `schema/rag.ts`
+No DB schema required for vector storage. Metadata may still be stored in Postgres if desired.
 
 ### 4. User Tier Setup
 Set admin tier in Clerk:
@@ -134,7 +138,7 @@ const response = await fetch('/api/rag/admin/ingest', {
 
 ### Data Pipeline
 1. **Ingestion**: Content → Embeddings → Pinecone
-2. **Storage**: Metadata stored in PostgreSQL
+2. **Storage**: Metadata stored optionally in PostgreSQL
 3. **Search**: Query → Embeddings → Vector Search
 4. **Retrieval**: Results + Metadata → Formatted Response
 
@@ -144,7 +148,7 @@ const response = await fetch('/api/rag/admin/ingest', {
 - **Manual Testing**: Use `/api/rag/sample` for test data
 
 ## Performance Considerations
-- **Caching**: Implement Redis for frequent queries
+- **Caching**: Consider semantic caching for frequent queries
 - **Batch Processing**: For large ingestion jobs
 - **Index Optimization**: Regular Pinecone index maintenance
 

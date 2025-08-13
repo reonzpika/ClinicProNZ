@@ -122,3 +122,13 @@ The application is now running on a modern, scalable state management architectu
 - **Provides** automatic server state synchronization and caching
 
 **The monolithic ConsultationContext problem has been completely solved! 🎉**
+
+## Pinecone Migration Note
+
+- Vector search for ACC and ANZSCO now uses Pinecone. Ensure the following envs are set in deployment:
+  - PINECONE_API_KEY
+  - PINECONE_ENVIRONMENT
+  - PINECONE_INDEX_NAME (default: clinicpro-acc-tools)
+- Run ingestion:
+  - npm run acc:ingest data/acc_codes.csv
+  - npm run anzsco:ingest data/anzsco.csv

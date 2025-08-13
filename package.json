@@ -17,6 +17,8 @@
     "db:studio": "drizzle-kit studio",
     "db:check": "drizzle-kit check",
     "db:seed-templates": "tsx database/seed-templates-new.ts",
+    "acc:ingest": "tsx scripts/ingest/acc-codes.ts",
+    "anzsco:ingest": "tsx scripts/ingest/anzsco.ts",
     "test": "vitest run",
     "clean": "rimraf .next out coverage",
     "commit": "cz",
@@ -85,6 +87,7 @@
     "utf-8-validate": "^6.0.5",
     "uuid": "^11.1.0",
     "ws": "^8.18.2",
+    "@pinecone-database/pinecone": "^3.1.0",
     "zod": "^3.23.8",
     "zustand": "^4.5.7"
   },
