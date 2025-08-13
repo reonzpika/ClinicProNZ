@@ -17,7 +17,7 @@ export function getAlgoliaIndex(indexNameEnv: string = 'ALGOLIA_INDEX_NAME_NZ_ME
   if (!indexName) {
     throw new Error(`Algolia index env var missing: ${indexNameEnv}`);
   }
-  // v5 client uses .index(name)
+  // Use initIndex (available on the full client). Cast to any to avoid TS type mismatch in v5 types.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (client as any).index(indexName);
+  return (client as any).initIndex(indexName);
 }
