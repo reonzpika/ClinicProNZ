@@ -164,11 +164,11 @@ export function TranscriptionControls({
         setControlError('Mobile not connected. Please open the mobile page and unlock the screen.');
         return;
       }
-      // Start ack timeout (3s)
+      // Start fast ack timeout (1.2s). Real start/stop may take longer; we’ll show a softer hint separately.
       const t = setTimeout(() => {
         setPendingControl(null);
         setControlError('Mobile did not respond. Ensure the phone is unlocked and the mobile page is active.');
-      }, 3000);
+      }, 1200);
       setControlAckTimer(t);
     } catch (e) {
       setPendingControl(null);

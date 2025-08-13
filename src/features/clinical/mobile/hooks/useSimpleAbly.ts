@@ -15,7 +15,7 @@ export type EnhancedTranscriptionData = {
 };
 
 type SimpleAblyMessage = {
-  type: 'transcription' | 'patient_updated' | 'patient_ack' | 'recording_status' | 'recording_control' | 'mobile_visibility' | 'token_rotated';
+  type: 'transcription' | 'patient_updated' | 'patient_ack' | 'recording_status' | 'recording_control' | 'mobile_visibility' | 'token_rotated' | 'control_ack';
   transcript?: string;
   sessionId?: string;
   patientName?: string;
@@ -476,18 +476,25 @@ export const useSimpleAbly = ({
           }
           const { type, ...data } = message.data as SimpleAblyMessage;
 
-          switch (type) {
-            case 'token_rotated':
-              // Server indicates this token is rotated; disconnect gracefully
-              try {
-                channelRef.current?.presence.leave();
-              } catch {}
-              try {
-                ablyRef.current?.close();
-              } catch {}
-              updateConnectionStatus(false, false);
-              callbacksRef.current.onError?.('Authentication failed: Token expired or invalid');
-              break;
+                switch (type) {
+        case 'token_rotated':
+          // Server indicates this token is rotated; disconnect gracefully
+          try {
+            channelRef.current?.presence.leave();
+          } catch {}
+          try {
+            ablyRef.current?.close();
+          } catch {}
+          updateConnectionStatus(false, false);
+          callbacksRef.current.onError?.('Authentication failed: Token expired or invalid');
+          break;
+        case 'control_ack':
+          // Desktop only: early acknowledgement that mobile received control command
+          if (!isMobile && data.sessionId && (data.action === 'start' || data.action === 'stop')) {
+            // Surface via recording status callback with no state change; consumer may clear pending UI
+            callbacksRef.current.onRecordingStatusChanged?.(data.action === 'start', data.sessionId);
+          }
+          break;
             case 'transcription':
               if (data.transcript && data.sessionId) {
                 // 🆕 Extract enhanced data from Ably message
@@ -537,6 +544,15 @@ export const useSimpleAbly = ({
 
             case 'recording_control':
               if (isMobile && (data.action === 'start' || data.action === 'stop')) {
+                // Immediate feedback to desktop: optimistic recording status
+                if (currentSessionId) {
+                  publishSafe('recording_status', {
+                    type: 'recording_status',
+                    isRecording: data.action === 'start',
+                    sessionId: currentSessionId,
+                    timestamp: Date.now(),
+                  }, { queueIfNotReady: false });
+                }
                 // Invoke control command; mobile page will handle start/stop and upload
                 callbacksRef.current.onControlCommand?.(data.action);
               }

@@ -390,7 +390,10 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
 
   // Start recording
   const startRecording = useCallback(async () => {
-    await ensureActiveSession();
+    // Desktop ensures session; mobile relies on desktop via Ably
+    if (!isMobile) {
+      await ensureActiveSession();
+    }
 
     const audioInitialized = await initializeAudio();
     if (!audioInitialized) {
