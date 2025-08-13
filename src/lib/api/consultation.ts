@@ -170,7 +170,7 @@ export const consultationApi = {
     sessionId: string,
     userId?: string | null,
     userTier?: string,
-  ): Promise<void> {
+  ): Promise<{ success: boolean; deletedSessionId: string; currentSessionId?: string; createdNew?: boolean; switchedToExisting?: boolean }> {
     const response = await fetch('/api/patient-sessions', {
       method: 'DELETE',
       headers: {
@@ -184,12 +184,14 @@ export const consultationApi = {
       const errorData = await response.json().catch(() => ({ error: 'Failed to delete session' }));
       throw new Error(errorData.error || 'Failed to delete session');
     }
+
+    return response.json();
   },
 
   async deleteAllSessions(
     userId?: string | null,
     userTier?: string,
-  ): Promise<void> {
+  ): Promise<{ success: boolean; deletedCount: number; currentSessionId: string; createdNew: boolean }> {
     const response = await fetch('/api/patient-sessions', {
       method: 'DELETE',
       headers: {
@@ -203,5 +205,7 @@ export const consultationApi = {
       const errorData = await response.json().catch(() => ({ error: 'Failed to delete sessions' }));
       throw new Error(errorData.error || 'Failed to delete all sessions');
     }
+
+    return response.json();
   },
 };

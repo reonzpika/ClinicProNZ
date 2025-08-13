@@ -2,6 +2,7 @@ import { useAuth } from '@clerk/nextjs';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { consultationApi, type ConsultationChatRequest, type ConsultationNotesRequest } from '@/src/lib/api/consultation';
+import { createAuthHeaders } from '@/src/shared/utils';
 import { queryKeys } from '@/src/lib/react-query';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { useConsultationStore } from '@/src/stores/consultationStore';
@@ -144,11 +145,12 @@ export function useDeletePatientSession(): any {
   const { userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const queryClient = useQueryClient();
+  const setCurrentPatientSessionId = useConsultationStore(state => state.setCurrentPatientSessionId);
 
   return useMutation({
     mutationFn: (sessionId: string) =>
       consultationApi.deleteSession(sessionId, userId, getUserTier()),
-    onSuccess: (_: unknown, sessionId: string) => {
+    onSuccess: (res: any, sessionId: string) => {
       // Remove from sessions list cache
       queryClient.setQueryData<PatientSession[]>(
         queryKeys.consultation.sessions(),
@@ -156,6 +158,19 @@ export function useDeletePatientSession(): any {
       );
       // Remove individual session cache
       queryClient.removeQueries({ queryKey: queryKeys.consultation.session(sessionId) });
+
+      // Update current session id if server decided a new one
+      if (res && res.currentSessionId) {
+        try {
+          setCurrentPatientSessionId(res.currentSessionId);
+          // Best-effort: persist to server (server already set it but OK to be redundant)
+          fetch('/api/current-session', { method: 'PUT', headers: { 'Content-Type': 'application/json', ...createAuthHeaders(userId, getUserTier()) }, body: JSON.stringify({ sessionId: res.currentSessionId }) }).catch(() => {});
+          // Best-effort: broadcast
+          if (typeof window !== 'undefined' && (window as any).ablySyncHook?.updateSession) {
+            (window as any).ablySyncHook.updateSession(res.currentSessionId, 'Current Session');
+          }
+        } catch {}
+      }
     },
     onError: (_error: unknown) => {
       // noop
@@ -173,11 +188,20 @@ export function useDeleteAllPatientSessions(): any {
   return useMutation({
     mutationFn: () =>
       consultationApi.deleteAllSessions(userId, getUserTier()),
-    onSuccess: () => {
+    onSuccess: (res: any) => {
       // Clear all session-related caches
       queryClient.removeQueries({ queryKey: queryKeys.consultation.all });
-      // Clear the current session ID since all sessions are deleted
-      setCurrentPatientSessionId(null);
+      // Server guarantees a new session; set it client-side
+      if (res && res.currentSessionId) {
+        setCurrentPatientSessionId(res.currentSessionId);
+        try {
+          // Best-effort broadcast and persist
+          fetch('/api/current-session', { method: 'PUT', headers: { 'Content-Type': 'application/json', ...createAuthHeaders(userId, getUserTier()) }, body: JSON.stringify({ sessionId: res.currentSessionId }) }).catch(() => {});
+          if (typeof window !== 'undefined' && (window as any).ablySyncHook?.updateSession) {
+            (window as any).ablySyncHook.updateSession(res.currentSessionId, 'Current Session');
+          }
+        } catch {}
+      }
     },
     onError: (_error: unknown) => {
       // noop

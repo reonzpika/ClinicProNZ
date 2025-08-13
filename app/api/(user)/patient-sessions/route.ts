@@ -304,6 +304,34 @@ export async function DELETE(req: NextRequest) {
 
     const { sessionId, deleteAll } = await req.json();
 
+    // Helper: generate default patient name (matches UI style)
+    const generatePatientName = () => {
+      const now = new Date();
+      const date = now.toLocaleDateString();
+      const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return `Patient ${date} ${time}`;
+    };
+
+    // Helper: choose next session (active first, latest by createdAt). If none active, create a new one.
+    const selectOrCreateNextSession = async (): Promise<{ id: string; createdNew: boolean }> => {
+      // Prefer most recent active, persistent session
+      const nextActive = await db
+        .select()
+        .from(patientSessions)
+        .where(and(eq(patientSessions.userId, userId), eq(patientSessions.status, 'active'), eq(patientSessions.isTemporary, false)))
+        .orderBy(desc(patientSessions.createdAt))
+        .limit(1);
+
+      if (nextActive.length > 0) {
+        return { id: nextActive[0]!.id, createdNew: false } as { id: string; createdNew: boolean };
+      }
+
+      // No active session available → create a new one
+      const { createUserSession } = await import('@/src/lib/services/guest-session-service');
+      const newSession = await createUserSession(userId, generatePatientName(), undefined, context.tier);
+      return { id: newSession.id, createdNew: true };
+    };
+
     // Handle delete all sessions
     if (deleteAll === true) {
       const deleteAllClause = eq(patientSessions.userId, userId);
@@ -313,10 +341,18 @@ export async function DELETE(req: NextRequest) {
         .where(deleteAllClause)
         .returning();
 
+      // Always create a fresh session and set as current
+      const next = await selectOrCreateNextSession();
+      try {
+        await db.update(users).set({ currentSessionId: next.id }).where(eq(users.id, userId));
+      } catch {}
+
       return NextResponse.json({
         success: true,
         message: `${deletedSessions.length} sessions deleted successfully`,
         deletedCount: deletedSessions.length,
+        currentSessionId: next.id,
+        createdNew: next.createdNew,
       });
     }
 
@@ -340,11 +376,32 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Session not found or unauthorized' }, { status: 404 });
     }
 
-    return NextResponse.json({
+    // If the deleted session was the current one, choose a replacement and update user
+    let response: any = {
       success: true,
       message: 'Session deleted successfully',
       deletedSessionId: sessionId,
-    });
+    };
+
+    try {
+      // Read currentSessionId from users
+      const currentRows = await db
+        .select({ currentSessionId: users.currentSessionId })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+      const currentId = currentRows?.[0]?.currentSessionId || null;
+
+      if (currentId && currentId === sessionId) {
+        const next = await selectOrCreateNextSession();
+        await db.update(users).set({ currentSessionId: next.id }).where(eq(users.id, userId));
+        response.currentSessionId = next.id;
+        response.createdNew = next.createdNew;
+        response.switchedToExisting = !next.createdNew;
+      }
+    } catch {}
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Error deleting patient session:', error);
     return NextResponse.json({ error: 'Failed to delete session' }, { status: 500 });
