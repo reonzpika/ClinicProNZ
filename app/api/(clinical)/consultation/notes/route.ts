@@ -4,6 +4,8 @@ import OpenAI from 'openai';
 import { TemplateService } from '@/src/features/templates/template-service';
 import { compileTemplate } from '@/src/features/templates/utils/compileTemplate';
 import { checkCoreSessionLimit, extractRBACContext } from '@/src/lib/rbac-enforcer';
+import { recordSessionMetrics } from '@/src/lib/services/session-metrics-service';
+import { calculateCostUsd } from '@/src/shared/utils/ai-pricing';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 if (!OPENAI_API_KEY) {
@@ -37,7 +39,7 @@ export async function POST(req: Request) {
       'Request parsing timeout',
     );
 
-    const { rawConsultationData, templateId } = body;
+    const { rawConsultationData, templateId, sessionId } = body;
 
     // Quick validation first
     if (!templateId) {
@@ -103,17 +105,18 @@ export async function POST(req: Request) {
     }
 
     // Call OpenAI with dynamic timeout based on remaining time
+    const model = 'gpt-4.1-mini';
     const openaiTimeout = Math.min(remainingTime - 5000, 40000);
     const stream = await withTimeout(
       openai.chat.completions.create({
-        model: 'gpt-4.1-mini', // Faster, more affordable reasoning model
+        model,
         messages: [
           { role: 'system', content: system },
           { role: 'user', content: user },
         ],
         stream: true,
-        max_completion_tokens: 2000, // Reduced further for faster generation
-        temperature: 0.1, // Lower temperature for faster, more deterministic responses
+        max_completion_tokens: 2000,
+        temperature: 0.1,
       }),
       openaiTimeout,
       'OpenAI API timeout',
@@ -122,6 +125,8 @@ export async function POST(req: Request) {
     // Stream the response to the client with dynamic timeout
     const encoder = new TextEncoder();
     const streamTimeout = Math.min(remainingTime - 2000, 35000);
+
+    let outputChars = 0;
 
     const readable = new ReadableStream({
       async start(controller) {
@@ -135,6 +140,7 @@ export async function POST(req: Request) {
           for await (const chunk of stream) {
             const content = chunk.choices?.[0]?.delta?.content;
             if (content) {
+              outputChars += content.length;
               controller.enqueue(encoder.encode(content));
             }
           }
@@ -152,6 +158,29 @@ export async function POST(req: Request) {
         }
       },
     });
+
+    // Fire-and-forget metrics record
+    (async () => {
+      try {
+        if (context.userId) {
+          const latencyMs = Date.now() - startTime;
+          const inputTokens = 0; // unknown
+          const outputTokens = Math.ceil(outputChars / 4);
+          const cost = calculateCostUsd(model, inputTokens, outputTokens) ?? null;
+          await recordSessionMetrics({
+            userId: context.userId,
+            sessionId: sessionId || null,
+            aiModel: model,
+            inputTokens,
+            outputTokens,
+            latencyMs,
+            tokenCostUsd: cost,
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to record notes metrics:', err);
+      }
+    })();
 
     return new Response(readable, {
       headers: {

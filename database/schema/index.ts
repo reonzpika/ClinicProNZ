@@ -9,3 +9,6 @@ export * from './templates';
 export * from './user_settings';
 export * from './users';
 export * from './votes';
+export * from './session_metrics';
+export * from './marketing_spend';
+export * from './churn_overrides';

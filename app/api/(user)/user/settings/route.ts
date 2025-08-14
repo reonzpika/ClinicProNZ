@@ -4,7 +4,7 @@ import { db } from '@/db/client';
 import { userSettings } from '@/db/schema/user_settings';
 
 // Default settings structure
-const DEFAULT_SETTINGS = { templateOrder: [], favouriteTemplateId: null };
+const DEFAULT_SETTINGS = { templateOrder: [], favouriteTemplateId: null, manualNoteDurationMinutes: 5, hourlyRate: 140 };
 
 export async function GET(req: Request) {
   try {
@@ -29,7 +29,7 @@ export async function GET(req: Request) {
       settingsRow = { userId, settings: DEFAULT_SETTINGS, updatedAt: new Date() };
     }
 
-    return NextResponse.json({ settings: settingsRow.settings });
+    return NextResponse.json({ settings: { ...DEFAULT_SETTINGS, ...(settingsRow.settings as any) } });
   } catch (error) {
     console.error('Error in user settings GET:', error);
     return NextResponse.json({
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const newSettings = body.settings;
+    const newSettings = { ...DEFAULT_SETTINGS, ...(body.settings || {}) };
 
     if (!newSettings || typeof newSettings !== 'object') {
       return NextResponse.json({

@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
+import { extractRBACContext } from '@/src/lib/rbac-enforcer';
+import { recordSessionMetrics } from '@/src/lib/services/session-metrics-service';
+import { calculateCostUsd } from '@/src/shared/utils/ai-pricing';
+
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 if (!OPENAI_API_KEY) {
   throw new Error('Missing OPENAI_API_KEY');
@@ -41,8 +45,10 @@ const CONSULTATION_CONTEXT_SUFFIX = `
 Please use this consultation context to provide relevant, specific guidance for this clinical scenario.`;
 
 export async function POST(req: Request) {
+  const start = Date.now();
   try {
-    const { messages, consultationNote, useContext, rawConsultationData } = await req.json();
+    const context = await extractRBACContext(req);
+    const { messages, consultationNote, useContext, rawConsultationData, sessionId } = await req.json();
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json(
@@ -56,20 +62,15 @@ export async function POST(req: Request) {
 
     if (useContext) {
       if (consultationNote && consultationNote.trim()) {
-        // Phase 2: Generated notes exist - use only the structured notes
         systemPrompt += CONSULTATION_CONTEXT_PREFIX + consultationNote + CONSULTATION_CONTEXT_SUFFIX;
       } else if (rawConsultationData) {
-        // Phase 1: No generated notes - use raw consultation data
         let rawContext = '';
-
         if (rawConsultationData.transcription && rawConsultationData.transcription.trim()) {
           rawContext += `TRANSCRIPTION:\n${rawConsultationData.transcription}\n\n`;
         }
-
         if (rawConsultationData.typedInput && rawConsultationData.typedInput.trim()) {
           rawContext += `TYPED INPUT:\n${rawConsultationData.typedInput}\n\n`;
         }
-
         if (rawContext.trim()) {
           systemPrompt += `
 
@@ -85,6 +86,8 @@ Please use this raw consultation data to provide relevant guidance. This is unst
       }
     }
 
+    const model = 'gpt-4';
+
     // Prepare messages for OpenAI API
     const openaiMessages = [
       { role: 'system' as const, content: systemPrompt },
@@ -96,12 +99,14 @@ Please use this raw consultation data to provide relevant guidance. This is unst
 
     // Call OpenAI with streaming
     const stream = await openai.chat.completions.create({
-      model: 'gpt-4', // Using GPT-4 for better clinical reasoning
+      model,
       messages: openaiMessages,
-      temperature: 0.3, // Lower temperature for more consistent medical advice
-      max_tokens: 300, // Reduced for shorter responses
+      temperature: 0.3,
+      max_tokens: 300,
       stream: true,
     });
+
+    let outputCharCount = 0;
 
     // Stream the response to the client
     const encoder = new TextEncoder();
@@ -111,6 +116,7 @@ Please use this raw consultation data to provide relevant guidance. This is unst
           for await (const chunk of stream) {
             const content = chunk.choices?.[0]?.delta?.content;
             if (content) {
+              outputCharCount += content.length;
               controller.enqueue(encoder.encode(content));
             }
           }
@@ -121,6 +127,29 @@ Please use this raw consultation data to provide relevant guidance. This is unst
         }
       },
     });
+
+    // After the stream is initiated, fire-and-forget metrics record
+    (async () => {
+      try {
+        const latencyMs = Date.now() - start;
+        const inputTokens = 0; // unknown; could estimate from prompt size later
+        const outputTokens = Math.ceil(outputCharCount / 4);
+        const cost = calculateCostUsd(model, inputTokens, outputTokens) ?? null;
+        if (context.userId) {
+          await recordSessionMetrics({
+            userId: context.userId,
+            sessionId: sessionId || null,
+            aiModel: model,
+            inputTokens,
+            outputTokens,
+            latencyMs,
+            tokenCostUsd: cost,
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to record chat metrics:', err);
+      }
+    })();
 
     return new Response(readable, {
       headers: {
