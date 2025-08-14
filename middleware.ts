@@ -110,10 +110,10 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // Protect /api/deepgram routes - require signed in (basic+) or allow mobile token
+  // Protect /api/deepgram routes - require signed in (basic+) or allow client auth headers
   if (req.nextUrl.pathname.startsWith('/api/deepgram')) {
-    // Allow mobile token authenticated requests (mobile devices)
-    if (!req.headers.get('x-mobile-token')) {
+    // Allow mobile token or client-sent user id headers
+    if (!req.headers.get('x-mobile-token') && !req.headers.get('x-user-id')) {
       const resolvedAuth = await auth();
       if (!resolvedAuth.userId) {
         return returnUnauthorized();
