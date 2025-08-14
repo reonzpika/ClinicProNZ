@@ -7,6 +7,8 @@ import { db } from '@/db/client';
 import { mobileTokens } from '@/db/schema';
 import { cleanupInactiveMobileTokens } from '@/src/lib/services/cleanup-service';
 
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
     // Opportunistic cleanup to remove old inactive tokens
