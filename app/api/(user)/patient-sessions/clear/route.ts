@@ -3,7 +3,7 @@ import { and, eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 import { db } from '@/db/client';
-import { patientSessions } from '@/db/schema';
+import { mobileTokens, patientSessions } from '@/db/schema';
 import { extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 export async function POST(req: Request) {
@@ -36,17 +36,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 });
     }
 
-    // Server emits recording stop (best-effort)
+    // Server emits recording stop (best-effort) to all active token channels for this user
     try {
       if (process.env.ABLY_API_KEY) {
-        const ably = new Ably.Rest({ key: process.env.ABLY_API_KEY });
-        const channel = ably.channels.get(`token:${context.userId}`);
-        await channel.publish('recording_status', {
-          type: 'recording_status',
-          sessionId,
-          isRecording: false,
-          timestamp: Date.now(),
-        });
+        const tokens = await db
+          .select({ token: mobileTokens.token })
+          .from(mobileTokens)
+          .where(and(eq(mobileTokens.userId, context.userId), eq(mobileTokens.isActive, true)));
+        if (tokens.length > 0) {
+          const ably = new Ably.Rest({ key: process.env.ABLY_API_KEY });
+          await Promise.all(tokens.map(async (t) => {
+            const channel = ably.channels.get(`token:${t.token}`);
+            await channel.publish('recording_status', {
+              type: 'recording_status',
+              sessionId,
+              isRecording: false,
+              timestamp: Date.now(),
+            });
+          }));
+        }
       }
     } catch {}
 

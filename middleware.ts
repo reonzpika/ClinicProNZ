@@ -104,7 +104,12 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // Protect /api/deepgram routes - require signed in (basic+)
+  // Allow Deepgram transcribe route to handle its own auth (supports x-mobile-token in handler)
+  if (req.nextUrl.pathname === '/api/deepgram/transcribe') {
+    return NextResponse.next();
+  }
+
+  // Protect other /api/deepgram routes - require signed in (basic+)
   if (req.nextUrl.pathname.startsWith('/api/deepgram')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {

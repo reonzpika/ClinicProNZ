@@ -34,12 +34,12 @@ export function useConsultationStores(): any {
   useEffect(() => {
     const currentSessionId = consultationStore.currentPatientSessionId;
     if (!currentSessionId || !Array.isArray(patientSessions) || patientSessions.length === 0) {
- return;
-}
+      return;
+    }
     const session = patientSessions.find((s: any) => s.id === currentSessionId);
     if (!session) {
- return;
-}
+      return;
+    }
 
     // Suppress hydration for a brief window immediately after a Clear All
     try {
@@ -86,17 +86,17 @@ export function useConsultationStores(): any {
       // ignore JSON errors
     }
     if (session.typedInput) {
- transcriptionStore.setTypedInput(session.typedInput);
-}
+      transcriptionStore.setTypedInput(session.typedInput);
+    }
     if (session.notes) {
- consultationStore.setGeneratedNotes(session.notes);
-}
+      consultationStore.setGeneratedNotes(session.notes);
+    }
     if (session.consultationNotes) {
- consultationStore.setConsultationNotes(session.consultationNotes);
-}
+      consultationStore.setConsultationNotes(session.consultationNotes);
+    }
     if (session.templateId) {
- consultationStore.setTemplateId(session.templateId);
-}
+      consultationStore.setTemplateId(session.templateId);
+    }
   }, [consultationStore, consultationStore.currentPatientSessionId, patientSessions, transcriptionStore, transcriptionStore.transcription.transcript, transcriptionStore.typedInput]);
 
   // Mutations
@@ -107,8 +107,8 @@ export function useConsultationStores(): any {
 
   const ensureActiveSession = useCallback(async (): Promise<string | null> => {
     if (consultationStore.currentPatientSessionId) {
- return consultationStore.currentPatientSessionId;
-}
+      return consultationStore.currentPatientSessionId;
+    }
     try {
       const result = await createSessionMutation.mutateAsync({ patientName: 'Quick Consultation' });
       consultationStore.setCurrentPatientSessionId(result.id);
@@ -125,8 +125,8 @@ export function useConsultationStores(): any {
     try {
       const result = await createSessionMutation.mutateAsync({ patientName, templateId });
       if (templateId) {
- consultationStore.setTemplateId(templateId);
-}
+        consultationStore.setTemplateId(templateId);
+      }
       consultationStore.setCurrentPatientSessionId(result.id);
       if (typeof window !== 'undefined' && (window as any).ablySyncHook?.updateSession) {
         (window as any).ablySyncHook.updateSession(result.id, result.patientName);
@@ -269,6 +269,10 @@ export function useConsultationStores(): any {
         return;
       }
       try {
+        // Avoid double-persisting mobile-origin transcripts; server already persists them
+        if (source === 'mobile') {
+          return;
+        }
         const entry = { id: Math.random().toString(36).substr(2, 9), text: newTranscript.trim(), timestamp: new Date().toISOString(), source, deviceId };
         const current = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === id) : null;
         const updated = [...(current?.transcriptions || []), entry];
@@ -282,6 +286,10 @@ export function useConsultationStores(): any {
         return;
       }
       try {
+        // Avoid double-persisting mobile-origin transcripts; server already persists them
+        if (source === 'mobile') {
+          return;
+        }
         const entry = { id: Math.random().toString(36).substr(2, 9), text: newTranscript.trim(), timestamp: new Date().toISOString(), source, deviceId };
         const current = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === id) : null;
         const updated = [...(current?.transcriptions || []), entry];
@@ -375,15 +383,15 @@ export function useConsultationStores(): any {
           const ok = (window as any).ablySyncHook.updateSession(sessionId, patientName);
           if (!ok) {
             setTimeout(() => {
- try {
- (window as any).ablySyncHook?.updateSession?.(sessionId, patientName);
-} catch {}
-}, 300);
+              try {
+                (window as any).ablySyncHook?.updateSession?.(sessionId, patientName);
+              } catch {}
+            }, 300);
             setTimeout(() => {
- try {
- (window as any).ablySyncHook?.updateSession?.(sessionId, patientName);
-} catch {}
-}, 1500);
+              try {
+                (window as any).ablySyncHook?.updateSession?.(sessionId, patientName);
+              } catch {}
+            }, 1500);
           }
         }
       } catch {}
@@ -406,17 +414,17 @@ export function useConsultationStores(): any {
           }
         } catch { /* ignore */ }
         if (session.typedInput) {
- transcriptionStore.setTypedInput(session.typedInput);
-}
+          transcriptionStore.setTypedInput(session.typedInput);
+        }
         if (session.notes) {
- consultationStore.setGeneratedNotes(session.notes);
-}
+          consultationStore.setGeneratedNotes(session.notes);
+        }
         if (session.consultationNotes) {
- consultationStore.setConsultationNotes(session.consultationNotes);
-}
+          consultationStore.setConsultationNotes(session.consultationNotes);
+        }
         if (session.templateId) {
- consultationStore.setTemplateId(session.templateId);
-}
+          consultationStore.setTemplateId(session.templateId);
+        }
         if (session.consultationItems) {
           try {
             const items = typeof session.consultationItems === 'string' ? JSON.parse(session.consultationItems) : session.consultationItems;
