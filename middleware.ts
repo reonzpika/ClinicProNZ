@@ -70,19 +70,22 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // Protect /api/patient-sessions routes - different rules for different methods
+  // Protect /api/patient-sessions routes - allow mobile token or require Clerk
   if (req.nextUrl.pathname.startsWith('/api/patient-sessions')) {
-    const resolvedAuth = await auth();
-    if (!resolvedAuth.userId) {
-      return returnUnauthorized();
-    }
+    // Allow mobile token authenticated requests (mobile devices)
+    if (!req.headers.get('x-mobile-token')) {
+      const resolvedAuth = await auth();
+      if (!resolvedAuth.userId) {
+        return returnUnauthorized();
+      }
 
-    // Check tier - session history (GET) requires standard+, but active session management (POST/PUT) allows basic
-    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
-    if (userTier === 'basic' && req.method === 'GET') {
-      return returnUnauthorized(); // Block session history for basic tier
+      // Check tier - session history (GET) requires standard+, but active session management (POST/PUT) allows basic
+      const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
+      if (userTier === 'basic' && req.method === 'GET') {
+        return returnUnauthorized(); // Block session history for basic tier
+      }
+      // POST and PUT are allowed for basic tier (for active session management during consultation)
     }
-    // POST and PUT are allowed for basic tier (for active session management during consultation)
   }
 
   // Explicitly guard new recording/clear endpoints
