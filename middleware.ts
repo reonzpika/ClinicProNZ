@@ -88,14 +88,17 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // Explicitly guard new recording/clear endpoints
+  // Explicitly guard recording/clear endpoints - allow mobile token or require Clerk
   if (
     req.nextUrl.pathname.startsWith('/api/patient-sessions/recording')
     || req.nextUrl.pathname.startsWith('/api/patient-sessions/clear')
   ) {
-    const resolvedAuth = await auth();
-    if (!resolvedAuth.userId) {
-      return returnUnauthorized();
+    // Allow mobile token authenticated requests
+    if (!req.headers.get('x-mobile-token')) {
+      const resolvedAuth = await auth();
+      if (!resolvedAuth.userId) {
+        return returnUnauthorized();
+      }
     }
   }
 
