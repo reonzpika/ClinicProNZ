@@ -243,6 +243,19 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
+  // Protect /investor page - require standard or higher (or admin)
+  if (req.nextUrl.pathname.startsWith('/investor')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return redirectToLogin(req.url);
+    }
+
+    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
+    if (userTier === 'basic') {
+      return redirectToLogin(req.url);
+    }
+  }
+
   // Create response and add rate limit headers if available
   const response = NextResponse.next();
 
@@ -281,5 +294,6 @@ export const config = {
     '/admin/:path*',
     '/dashboard/:path*',
     '/settings/:path*',
+    '/investor/:path*',
   ],
 };

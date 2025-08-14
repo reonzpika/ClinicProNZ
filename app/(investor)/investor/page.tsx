@@ -1,15 +1,6 @@
-import { auth } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
-import { checkTierFromSessionClaims } from '@/src/shared/utils/roles';
 
-export default async function InvestorDashboardPage() {
-	const { userId, sessionClaims } = await auth();
-	if (!userId) redirect('/login');
-	const isAdminOrStandard = checkTierFromSessionClaims(sessionClaims, 'standard') || checkTierFromSessionClaims(sessionClaims, 'admin');
-	if (!isAdminOrStandard) redirect('/dashboard');
-
+export default function InvestorDashboardPage() {
 	return (
 		<div className="min-h-screen bg-gray-50 py-8">
 			<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
