@@ -1,4 +1,3 @@
-import { createClerkClient } from '@clerk/nextjs/server';
 import { and, eq } from 'drizzle-orm';
 
 import { db } from '../../database/client';
@@ -29,88 +28,6 @@ export type RBACResult = {
   resetTime?: Date;
 };
 
-// Simple in-memory cache for user tiers (5 minute TTL)
-const tierCache = new Map<string, { tier: UserTier; timestamp: number }>();
-const TIER_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-const MAX_CACHE_SIZE = 1000; // Prevent memory leaks
-
-/**
- * Clean up expired cache entries to prevent memory leaks
- */
-function cleanupTierCache() {
-  const now = Date.now();
-  for (const [userId, cached] of tierCache.entries()) {
-    if (now - cached.timestamp > TIER_CACHE_TTL) {
-      tierCache.delete(userId);
-    }
-  }
-
-  // If cache is still too large, remove oldest entries
-  if (tierCache.size > MAX_CACHE_SIZE) {
-    const entries = Array.from(tierCache.entries());
-    entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
-    const toRemove = entries.slice(0, tierCache.size - MAX_CACHE_SIZE);
-    for (const [userId] of toRemove) {
-      tierCache.delete(userId);
-    }
-  }
-}
-
-/**
- * Look up user tier from Clerk for authenticated users with caching
- */
-async function getUserTierFromClerk(userId: string): Promise<UserTier> {
-  try {
-    // Check cache first
-    const cached = tierCache.get(userId);
-    if (cached && Date.now() - cached.timestamp < TIER_CACHE_TTL) {
-      return cached.tier;
-    }
-
-    if (!process.env.CLERK_SECRET_KEY) {
-      console.warn('CLERK_SECRET_KEY not found, defaulting to basic tier');
-      return 'basic';
-    }
-
-    const clerkClient = createClerkClient({
-      secretKey: process.env.CLERK_SECRET_KEY,
-    });
-
-    // Add timeout protection for Clerk API calls
-    const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('Clerk API timeout')), 5000), // 5 second timeout
-    );
-
-    const userPromise = clerkClient.users.getUser(userId);
-    const user = await Promise.race([userPromise, timeoutPromise]);
-
-    const tier = (user.publicMetadata?.tier as UserTier) || 'basic';
-
-    // Cache the result and cleanup if needed
-    tierCache.set(userId, { tier, timestamp: Date.now() });
-
-    // Periodically clean up cache (every 100 lookups)
-    if (Math.random() < 0.01) {
-      cleanupTierCache();
-    }
-
-    return tier;
-  } catch (error) {
-    console.error('Error fetching user tier from Clerk for userId:', userId, error);
-
-    // If we have a stale cached value, use it as fallback
-    const staleCache = tierCache.get(userId);
-    if (staleCache) {
-      console.warn('Using stale cached tier for userId:', userId, 'tier:', staleCache.tier);
-      return staleCache.tier;
-    }
-
-    // Ultimate fallback to basic tier to prevent blocking requests
-    console.warn('Falling back to basic tier for userId:', userId);
-    return 'basic';
-  }
-}
-
 /**
  * Extract RBAC context from request headers (client-side auth pattern)
  */
@@ -125,29 +42,18 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
   const mobileToken = req.headers.get('x-mobile-token') || url.searchParams.get('mobileToken');
 
   if (mobileToken) {
-    console.log('[RBAC DEBUG] Mobile token found:', `${mobileToken.substring(0, 8)}...`);
-
     try {
       // Validate mobile token and get associated user context (only active tokens)
-      console.log('[RBAC DEBUG] Querying database for mobile token...');
       const tokenRecord = await db
         .select()
         .from(mobileTokens)
         .where(and(eq(mobileTokens.token, mobileToken), eq(mobileTokens.isActive, true)))
         .limit(1);
 
-      console.log('[RBAC DEBUG] Database query result:', tokenRecord.length, 'records found');
-
       if (tokenRecord.length > 0) {
         const record = tokenRecord[0];
-        console.log('[RBAC DEBUG] Token record:', {
-          userId: record?.userId,
-          isActive: record?.isActive,
-          hasUserId: !!record?.userId,
-        });
 
         if (!record) {
-          console.log('[RBAC DEBUG] Invalid token record - treating as unauthenticated');
           // Invalid token record - treat as unauthenticated
           return {
             userId: null,
@@ -158,22 +64,17 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
 
         // Valid mobile token (already filtered for active tokens in query)
         if (record.userId) {
-          console.log('[RBAC DEBUG] Mobile token authenticated for userId:', record.userId);
-
           // MOBILE OPTIMIZATION: Mobile recording doesn't need tier restrictions since:
           // - No session creation (uses existing session)
           // - No premium features (just transcription)
           // - Works for all authenticated users
           // Using 'admin' tier to bypass all restrictions for mobile recording
-          console.log('[RBAC DEBUG] Using admin tier for mobile token (bypassing all restrictions)');
-
           return {
             userId: record.userId,
             tier: 'admin', // Bypass all restrictions for mobile recording
             isAuthenticated: true,
           };
         } else {
-          console.log('[RBAC DEBUG] Mobile token has no userId - not supported');
           // Mobile token for guest user (userId is null) - not supported anymore
           return {
             userId: null,
@@ -181,16 +82,11 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
             isAuthenticated: false,
           };
         }
-      } else {
-        console.log('[RBAC DEBUG] No active mobile token found in database');
       }
-    } catch (dbError) {
-      console.error('[RBAC DEBUG] Database query failed:', dbError);
+    } catch {
       // Fall through to other auth methods
     }
     // Invalid mobile token - fall through to other auth methods
-  } else {
-    console.log('[RBAC DEBUG] No mobile token in headers or URL params');
   }
 
   // Authenticated user required
