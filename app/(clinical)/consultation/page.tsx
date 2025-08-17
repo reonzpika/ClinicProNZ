@@ -164,30 +164,6 @@ export default function ConsultationPage() {
     setIsNoteFocused(false);
   }, [currentPatientSessionId]);
 
-  // Memoize callbacks to prevent re-renders
-  const _handleTranscriptReceived = useCallback((transcript: string, sessionId: string, enhancedData?: any) => {
-    // Only process transcripts for the current session
-    if (sessionId === currentPatientSessionId) {
-      // 🆕 Use enhanced appendTranscription when enhanced data is available
-      if (enhancedData && (enhancedData.confidence !== undefined || (enhancedData.words?.length || 0) > 0)) {
-        appendTranscriptionEnhanced(
-          transcript,
-          true,
-          'mobile',
-          undefined, // deviceId
-          undefined, // diarizedTranscript
-          undefined, // utterances
-          enhancedData.confidence,
-          enhancedData.words,
-          enhancedData.paragraphs,
-        );
-      } else {
-        // Fallback to regular appendTranscription
-        appendTranscription(transcript, true, 'mobile');
-      }
-    }
-  }, [currentPatientSessionId, appendTranscription, appendTranscriptionEnhanced]);
-
   const handleError = useCallback((error: string) => {
     // Suppress Ably/auth noise and clear mobile state on auth failures
     const isAblyNoise = /Failed to publish|Connection closed|Ably/i.test(error);
@@ -207,14 +183,6 @@ export default function ConsultationPage() {
     }
     setError(error);
   }, [setError, setMobileV2TokenData, enableMobileV2, setMobileV2IsConnected]);
-
-  // Handle mobile recording status updates
-  const _handleRecordingStatusChanged = useCallback((isRecording: boolean, sessionId: string) => {
-    // Only process for current session
-    if (sessionId === currentPatientSessionId) {
-      setMobileIsRecording(isRecording);
-    }
-  }, [currentPatientSessionId]);
 
   // 🛡️ PHASE 1 FIX: Reset mobile recording status when connection drops
   useEffect(() => {
