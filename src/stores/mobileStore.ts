@@ -50,8 +50,7 @@ type MobileState = {
       token: string;
       mobileUrl: string;
     } | null;
-    connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'error';
-    sessionSynced: boolean;
+    isConnected: boolean;
   };
 };
 
@@ -64,8 +63,7 @@ type MobileActions = {
     mobileUrl: string;
     expiresAt: string;
   } | null) => void;
-  setMobileV2ConnectionStatus: (status: 'disconnected' | 'connecting' | 'connected' | 'error') => void;
-  setMobileV2SessionSynced: (synced: boolean) => void;
+  setMobileV2IsConnected: (isConnected: boolean) => void;
 
   // Reset actions
   resetMobileState: () => void;
@@ -81,8 +79,7 @@ const initialState: MobileState = {
     isEnabled: !!initialTokenData,
     token: initialTokenData?.token || null,
     tokenData: initialTokenData,
-    connectionStatus: 'disconnected',
-    sessionSynced: false,
+    isConnected: false,
   },
 };
 
@@ -115,14 +112,9 @@ export const useMobileStore = create<MobileStore>()(
       }));
     },
 
-    setMobileV2ConnectionStatus: connectionStatus =>
+    setMobileV2IsConnected: isConnected =>
       set(state => ({
-        mobileV2: { ...state.mobileV2, connectionStatus },
-      })),
-
-    setMobileV2SessionSynced: sessionSynced =>
-      set(state => ({
-        mobileV2: { ...state.mobileV2, sessionSynced },
+        mobileV2: { ...state.mobileV2, isConnected },
       })),
 
     // Reset actions
@@ -134,8 +126,7 @@ export const useMobileStore = create<MobileStore>()(
           isEnabled: false,
           token: null,
           tokenData: null,
-          connectionStatus: 'disconnected',
-          sessionSynced: false,
+          isConnected: false,
         },
       });
     },

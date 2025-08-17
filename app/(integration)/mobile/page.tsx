@@ -58,6 +58,8 @@ function useWakeLock() {
 function MobilePageContent() {
   const searchParams = useSearchParams();
 
+  // Removed consultation stores - no session management needed
+
   // Token validation state
   const [tokenState, setTokenState] = useState<{
     token: string | null;
@@ -71,25 +73,11 @@ function MobilePageContent() {
     error: null,
   });
 
-  // Session state for patient info
-  const [sessionState, setSessionState] = useState<{
-    sessionId: string | null;
-    patientName: string | null;
-  }>({
-    sessionId: null,
-    patientName: null,
-  });
-
   // Mobile state for UI
   const [mobileState, setMobileState] = useState<'disconnected' | 'connecting' | 'connected' | 'recording' | 'error'>('disconnected');
 
   // Wake lock functionality
   const { isSupported: wakeLockSupported, requestWakeLock, releaseWakeLock } = useWakeLock();
-
-  const handleSessionChanged = useCallback((sessionId: string, patientName: string) => {
-    // Update session when desktop changes patient
-    setSessionState({ sessionId, patientName });
-  }, []);
 
   const handleError = useCallback((error: string) => {
     setTokenState(prev => ({ ...prev, error }));
@@ -101,13 +89,12 @@ function MobilePageContent() {
   const startRecordingRef = useRef<() => Promise<void> | void>(() => {});
   const stopRecordingRef = useRef<() => Promise<void> | void>(() => {});
 
-  // Simple Ably for real-time sync
-  const { isConnected, currentSessionId, sendTranscript, sendRecordingStatus, fetchCurrentSession } = useSimpleAbly({
+  // Simple Ably for real-time sync - no session sync needed
+  const { isConnected, sendTranscript, sendRecordingStatus } = useSimpleAbly({
     tokenId: tokenState.isValid ? tokenState.token : null,
-    onTranscriptReceived: (_transcript: string, _sessionId: string) => {
-      // Transcript received unexpectedly on mobile
+    onTranscriptReceived: (_transcript: string) => {
+      // Transcript received unexpectedly on mobile (shouldn't happen)
     },
-    onSessionChanged: handleSessionChanged,
     onError: (err: string) => {
       // Treat auth errors as disconnect prompt; suppress noisy logs
       if (/Authentication failed|Token expired or invalid/i.test(err)) {
@@ -116,14 +103,18 @@ function MobilePageContent() {
       }
       handleError(err);
     },
-    isMobile: true, // FIXED: Identify as mobile device
+    isMobile: true,
     onControlCommand: async (action: 'start' | 'stop') => {
       try {
         if (action === 'start' && !isRecordingRef.current) {
           await startRecordingRef.current?.();
+          // 🔧 FIX: Broadcast recording status to desktop for acknowledgment
+          sendRecordingStatus(true);
         }
         if (action === 'stop' && isRecordingRef.current) {
           await stopRecordingRef.current?.();
+          // 🔧 FIX: Broadcast recording status to desktop for acknowledgment
+          sendRecordingStatus(false);
         }
       } catch (e) {
         setTokenState(prev => ({ ...prev, error: `Control error: ${e instanceof Error ? e.message : 'Unknown error'}` }));
@@ -137,16 +128,11 @@ function MobilePageContent() {
     mobileChunkTimeout: 2, // 2s silence threshold for mobile
     startImmediate: true, // ensure immediate recorder session for remote-stop path
     onChunkComplete: async (audioBlob: Blob) => {
-      if (!currentSessionId) {
-        setTokenState(prev => ({ ...prev, error: 'No session available for recording. Please check your connection.' }));
-        return;
-      }
-
       try {
         // Send audio to Deepgram for transcription
         const formData = new FormData();
         formData.append('audio', audioBlob, 'audio.webm');
-        formData.append('sessionId', currentSessionId);
+        // No sessionId needed - desktop will append to current session
 
         // FIXED: Add auth headers using mobile token with null check
         if (!tokenState.token) {
@@ -283,12 +269,7 @@ function MobilePageContent() {
     }
   }, [isRecording, wakeLockSupported, requestWakeLock, releaseWakeLock]);
 
-  // Ensure session sync on connect even if broadcast was missed
-  useEffect(() => {
-    if (isConnected && !sessionState.sessionId) {
-      fetchCurrentSession();
-    }
-  }, [isConnected, sessionState.sessionId, fetchCurrentSession]);
+  // Removed session request logic - no longer needed
 
   // 🛡️ PHASE 1 FIX: Retry mechanism for recording status
   const sendRecordingStatusWithRetry = useCallback(async (isRecording: boolean) => {
@@ -310,7 +291,7 @@ function MobilePageContent() {
   const handleStartRecording = useCallback(async () => {
     if (mobileState === 'connected') {
       await startRecording();
-      // 🛡️ Broadcast recording start to desktop with retry
+      // Broadcast recording start to desktop
       await sendRecordingStatusWithRetry(true);
     }
   }, [mobileState, startRecording, sendRecordingStatusWithRetry]);
@@ -342,18 +323,16 @@ function MobilePageContent() {
       case 'connected':
         return {
           icon: <CheckCircle className="size-8 text-green-500" />,
-          title: currentSessionId ? 'Ready to Record' : 'Syncing Session...',
-          message: currentSessionId && sessionState.patientName
-            ? `Ready to record for ${sessionState.patientName}`
-            : 'Waiting for session info from desktop...',
-          canRecord: isConnected && !!currentSessionId, // 🆕 Both connection and session sync required
+          title: 'Ready to Record',
+          message: 'Connected to desktop - ready to record',
+          canRecord: isConnected,
         };
       case 'recording':
         return {
           icon: <Mic className="size-8 text-red-500" />,
           title: 'Recording',
-          message: sessionState.patientName ? `Recording for ${sessionState.patientName}` : 'Recording in progress',
-          canRecord: isConnected && !!currentSessionId, // 🆕 Consistent check during recording
+          message: 'Recording in progress - transcripts sent to desktop',
+          canRecord: isConnected,
         };
       case 'error':
         return {
@@ -447,23 +426,7 @@ function MobilePageContent() {
               </div>
             )}
 
-            {/* Session Info */}
-            {sessionState.sessionId && (
-              <div className="rounded-lg bg-blue-50 p-3">
-                <h4 className="text-sm font-medium text-blue-800">Session Info</h4>
-                <p className="text-xs text-blue-700">
-                  Patient:
-                  {' '}
-                  {sessionState.patientName || 'Unknown'}
-                </p>
-                <p className="text-xs text-blue-600">
-                  Session:
-                  {' '}
-                  {sessionState.sessionId.slice(0, 8)}
-                  ...
-                </p>
-              </div>
-            )}
+            {/* Removed session info display - not needed in simplified architecture */}
 
             {/* Instructions */}
             <div className="rounded-lg bg-gray-50 p-3">
@@ -473,26 +436,8 @@ function MobilePageContent() {
                 <li>2. Tap the red button to start recording</li>
                 <li>3. Speak clearly into your device microphone</li>
                 <li>4. Transcriptions will appear on desktop in real-time</li>
-                {!isConnected && sessionState.sessionId && (
-                  <li className="text-orange-600">• Using fallback mode - session sync via polling</li>
-                )}
               </ul>
             </div>
-
-            {/* Manual refresh for disconnected state */}
-            {!isConnected && tokenState.token && (
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    void fetchCurrentSession(true);
-                  }}
-                  className="text-xs text-blue-600 hover:text-blue-800"
-                >
-                  Refresh session info
-                </button>
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>

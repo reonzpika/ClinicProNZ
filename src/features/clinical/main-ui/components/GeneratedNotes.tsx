@@ -220,8 +220,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
       }
 
       // 2. Create new patient session with auto-generated name
-      const now = new Date();
-      const patientName = `Patient ${now.toLocaleDateString()} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      const patientName = 'Patient';
 
       const newSession = await createPatientSession(patientName);
       if (!newSession) {

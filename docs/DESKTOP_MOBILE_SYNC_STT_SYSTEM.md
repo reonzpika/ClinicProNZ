@@ -49,7 +49,7 @@ The Desktop-Mobile Sync STT (Speech-to-Text) system enables real-time transcript
 
 ### Fallback Flow (Ably Disconnected)
 1. Mobile detects Ably disconnection
-2. Mobile polls `/api/mobile/current-session?token={tokenId}` every 15 seconds
+2. Mobile sends `session_request` broadcast to desktop
 3. Mobile continues recording with last known session
 4. Mobile can manually refresh session info
 5. When Ably reconnects, real-time sync resumes
@@ -91,16 +91,23 @@ Manages Ably connection with stable callbacks and automatic fallback:
 - All transcript processing functions properly imported
 - Removed device management complexity for MVP focus
 
-### Session Fallback API
+### Session Fallback Broadcast
 
-**Endpoint**: `GET /api/mobile/current-session?token={tokenId}`
-
-**Response**:
+**Mobile Request**: `session_request` message
 ```json
 {
+  "type": "session_request",
+  "timestamp": 1640995200000
+}
+```
+
+**Desktop Response**: `patient_updated` message
+```json
+{
+  "type": "patient_updated",
   "sessionId": "session_123",
   "patientName": "John Doe",
-  "createdAt": "2024-01-01T12:00:00Z"
+  "timestamp": 1640995200000
 }
 ```
 

@@ -2,11 +2,6 @@ import { clerkMiddleware } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
 export default clerkMiddleware(async (auth, req) => {
-  // Allow /api/ably/token to handle its own authentication (mobile + desktop)
-  if (req.nextUrl.pathname === '/api/ably/token') {
-    return NextResponse.next();
-  }
-
   // Allow Stripe webhook (handles its own verification)
   if (req.nextUrl.pathname === '/api/webhooks/stripe') {
     return NextResponse.next();

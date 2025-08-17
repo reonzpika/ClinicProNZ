@@ -1,7 +1,6 @@
 'use client';
 
-import { useAuth } from '@clerk/nextjs';
-import { Calendar, ChevronDown, Smartphone, User, UserCheck } from 'lucide-react';
+import { Calendar, ChevronDown, RefreshCw, Smartphone, User, UserCheck } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
@@ -17,7 +16,6 @@ type CurrentSessionBarProps = {
 export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
   onSwitchSession,
 }) => {
-  const { isSignedIn, isLoaded } = useAuth();
   const {
     getCurrentPatientSession = () => null,
     completePatientSession = () => {},
@@ -26,13 +24,15 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
     switchToPatientSession = () => {},
     resetConsultation = () => {},
     // Phase 4: Access mobile device state
-    mobileV2 = { isEnabled: false, token: null, tokenData: null, connectionStatus: 'disconnected' },
+    mobileV2 = { isEnabled: false, token: null, tokenData: null, isConnected: false },
   } = useConsultationStores();
 
   const { isLargeDesktop } = useResponsive();
 
-  // Immediate disable approach for new patient creation (replaces debounce)
+  // Loading states for various operations
   const [isCreatingNewPatient, setIsCreatingNewPatient] = useState<boolean>(false);
+  const [isCompletingSession, setIsCompletingSession] = useState<boolean>(false);
+  const [isSavingEdit, setIsSavingEdit] = useState<boolean>(false);
 
   const [editingSession, setEditingSession] = useState<{
     sessionId: string | null;
@@ -55,6 +55,7 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
       return;
     }
 
+    setIsSavingEdit(true);
     try {
       await updatePatientSession(editingSession.sessionId, {
         patientName: editingSession.tempName.trim(),
@@ -62,6 +63,8 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
       closeEditDialog();
     } catch {
       // Failed to update patient name - silently handle error
+    } finally {
+      setIsSavingEdit(false);
     }
   };
 
@@ -79,10 +82,16 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
       return;
     }
 
+    setIsCompletingSession(true);
     try {
-      await completePatientSession(currentSession.id);
+      const success = await completePatientSession(currentSession.id);
+      if (!success) {
+        console.error('Failed to complete session');
+      }
     } catch (error) {
       console.error('Failed to complete session:', error);
+    } finally {
+      setIsCompletingSession(false);
     }
   };
 
@@ -96,9 +105,8 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
       // For now, this creates a new session without auto-saving the current one
       // Users should manually save their work before creating a new session
 
-      // Generate a new patient name with current timestamp
-      const now = new Date();
-      const patientName = `Patient ${now.toLocaleDateString()} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      // Simple patient name - date/time info stored in session table
+      const patientName = 'Patient';
 
       // Create new patient session
       const newSession = await createPatientSession(patientName);
@@ -120,60 +128,11 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
   const formatSessionDate = (dateString?: string) => {
     const date = new Date(dateString || new Date());
     return {
-      date: date.toLocaleDateString(),
+      date: date.toLocaleDateString('en-GB'),
       time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
   };
 
-  // Don't render on server side or while auth is loading
-  if (typeof window === 'undefined' || !isLoaded) {
-    return (
-      <Card className="border-blue-200 bg-blue-50 shadow-sm">
-        <CardContent className="p-3">
-          <div className={isLargeDesktop ? 'space-y-3' : 'flex items-center justify-between'}>
-            <div className={isLargeDesktop ? 'space-y-2' : 'flex min-w-0 flex-1 items-center space-x-3'}>
-              <div className={isLargeDesktop ? 'flex items-center gap-2' : 'flex min-w-0 flex-1 items-center space-x-3'}>
-                <div className="size-4 shrink-0 animate-pulse rounded bg-blue-300" />
-                <div className="min-w-0 flex-1">
-                  <div className="h-4 w-32 animate-pulse rounded bg-blue-300" />
-                  <div className="mt-1 h-3 w-24 animate-pulse rounded bg-blue-200" />
-                </div>
-              </div>
-            </div>
-            <div className={isLargeDesktop ? 'flex gap-2' : 'flex shrink-0 items-center gap-2'}>
-              <div className="h-7 w-16 animate-pulse rounded bg-blue-200" />
-              <div className="h-7 w-20 animate-pulse rounded bg-blue-200" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Show authentication prompt for unauthenticated users
-  if (!isSignedIn) {
-    return (
-      <Card className="border-blue-200 bg-blue-50 shadow-sm">
-        <CardContent className="p-3">
-          <div className={isLargeDesktop ? 'space-y-2' : 'flex items-center justify-between'}>
-            <div className={isLargeDesktop ? 'flex items-center gap-2' : 'flex min-w-0 flex-1 items-center space-x-3'}>
-              <User className="size-4 shrink-0 text-blue-600" />
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium text-blue-800">
-                  Single Session Mode
-                </div>
-                <div className="text-xs text-blue-600">
-                  Upgrade to save and manage multiple patient sessions
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Show session management for authenticated users
   return (
     <Card className="border-blue-200 bg-blue-50 shadow-sm">
       <CardContent className="p-3">
@@ -190,16 +149,22 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
                         {/* Patient Name - Editable */}
                         {editingSession.sessionId === currentSession.id
                           ? (
-                              <Input
-                                value={editingSession.tempName}
-                                onChange={e => setEditingSession(prev => ({
-                                  ...prev,
-                                  tempName: e.target.value,
-                                }))}
-                                onBlur={handleSaveEdit}
-                                onKeyDown={handleEditKeyDown}
-                                className="h-6 border-blue-300 bg-blue-50 text-sm font-medium text-blue-800 focus:border-blue-500"
-                              />
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  value={editingSession.tempName}
+                                  onChange={e => setEditingSession(prev => ({
+                                    ...prev,
+                                    tempName: e.target.value,
+                                  }))}
+                                  onBlur={handleSaveEdit}
+                                  onKeyDown={handleEditKeyDown}
+                                  disabled={isSavingEdit}
+                                  className="h-6 border-blue-300 bg-blue-50 text-sm font-medium text-blue-800 focus:border-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+                                />
+                                {isSavingEdit && (
+                                  <RefreshCw className="size-3 animate-spin text-blue-600" />
+                                )}
+                              </div>
                             )
                           : (
                               <div
@@ -245,29 +210,13 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
                   </span>
                 )}
 
-                {/* Phase 4: Mobile Device Status */}
-                {mobileV2.isEnabled && (
+                {/* Mobile Device Status - Only show when connected */}
+                {mobileV2.isEnabled && mobileV2.isConnected && (
                   <div className="flex items-center gap-1">
                     <span className="text-gray-400">•</span>
                     <Smartphone className="size-3" />
-                    <span
-                      className={`text-xs ${
-                        mobileV2.connectionStatus === 'connected'
-                          ? 'text-green-600'
-                          : mobileV2.connectionStatus === 'connecting'
-                            ? 'text-yellow-600'
-                            : mobileV2.connectionStatus === 'error'
-                              ? 'text-red-600'
-                              : 'text-gray-500'
-                      }`}
-                    >
-                      {mobileV2.connectionStatus === 'connected'
-                        ? 'mobile connected'
-                        : mobileV2.connectionStatus === 'connecting'
-                          ? 'connecting mobile'
-                          : mobileV2.connectionStatus === 'error'
-                            ? 'mobile error'
-                            : 'mobile ready'}
+                    <span className="text-xs text-green-600">
+                      mobile connected
                     </span>
                   </div>
                 )}
@@ -280,11 +229,21 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
             {currentSession && currentSession.status !== 'completed' && (
               <Button
                 onClick={handleCompleteSession}
+                disabled={isCompletingSession}
                 size="sm"
                 variant="outline"
-                className="h-7 border-blue-300 px-3 text-xs text-blue-700 hover:bg-blue-100"
+                className="h-7 border-blue-300 px-3 text-xs text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Complete
+                {isCompletingSession
+? (
+                  <>
+                    <RefreshCw className="mr-1 size-3 animate-spin" />
+                    Completing...
+                  </>
+                )
+: (
+                  'Complete'
+                )}
               </Button>
             )}
 
@@ -307,7 +266,16 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
               title={isCreatingNewPatient ? 'Creating…' : 'Create new patient session'}
               aria-busy={isCreatingNewPatient}
             >
-              {isCreatingNewPatient ? 'Creating…' : 'New Patient'}
+              {isCreatingNewPatient
+? (
+                <>
+                  <RefreshCw className="mr-1 size-3 animate-spin" />
+                  Creating...
+                </>
+              )
+: (
+                'New Patient'
+              )}
             </Button>
           </div>
         </div>

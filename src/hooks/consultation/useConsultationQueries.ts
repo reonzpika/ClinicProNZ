@@ -2,9 +2,9 @@ import { useAuth } from '@clerk/nextjs';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { consultationApi, type ConsultationChatRequest, type ConsultationNotesRequest } from '@/src/lib/api/consultation';
-import { createAuthHeaders } from '@/src/shared/utils';
 import { queryKeys } from '@/src/lib/react-query';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { createAuthHeaders } from '@/src/shared/utils';
 import { useConsultationStore } from '@/src/stores/consultationStore';
 import type { PatientSession } from '@/src/types/consultation';
 

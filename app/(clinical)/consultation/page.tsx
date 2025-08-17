@@ -34,7 +34,7 @@ export default function ConsultationPage() {
   const {
     setError,
     setStatus,
-    mobileV2 = { isEnabled: false, token: null, tokenData: null, connectionStatus: 'disconnected' },
+    mobileV2 = { isEnabled: false, token: null, tokenData: null, isConnected: false },
     currentPatientSessionId,
     inputMode,
     typedInput,
@@ -51,8 +51,8 @@ export default function ConsultationPage() {
     getCompiledConsultationText,
     templateId,
     setLastGeneratedInput,
-    setMobileV2ConnectionStatus, // NEW: Connection status bridge
-    setMobileV2SessionSynced,
+
+    setMobileV2IsConnected, // NEW: Connection status bridge
     enableMobileV2,
     setMobileV2TokenData,
     saveNotesToCurrentSession, // For saving generated notes
@@ -165,7 +165,7 @@ export default function ConsultationPage() {
   }, [currentPatientSessionId]);
 
   // Memoize callbacks to prevent re-renders
-  const handleTranscriptReceived = useCallback((transcript: string, sessionId: string, enhancedData?: any) => {
+  const _handleTranscriptReceived = useCallback((transcript: string, sessionId: string, enhancedData?: any) => {
     // Only process transcripts for the current session
     if (sessionId === currentPatientSessionId) {
       // 🆕 Use enhanced appendTranscription when enhanced data is available
@@ -196,61 +196,69 @@ export default function ConsultationPage() {
     if (isAblyNoise || isAuthInvalid) {
       if (isAuthInvalid) {
         try {
-          // Always trust server: clear local mobile state/cache and show disconnected UI
-          setMobileV2TokenData(null);
-          enableMobileV2(false);
-          setMobileV2SessionSynced(false);
-          setMobileV2ConnectionStatus('disconnected');
+                  // Always trust server: clear local mobile state/cache and show disconnected UI
+        setMobileV2TokenData(null);
+        enableMobileV2(false);
+        setMobileV2IsConnected(false);
         } catch {}
       }
       console.warn('[Ably]', error);
       return;
     }
     setError(error);
-  }, [setError, setMobileV2TokenData, enableMobileV2, setMobileV2SessionSynced, setMobileV2ConnectionStatus]);
+  }, [setError, setMobileV2TokenData, enableMobileV2, setMobileV2IsConnected]);
 
   // Handle mobile recording status updates
-  const handleRecordingStatusChanged = useCallback((isRecording: boolean, sessionId: string) => {
+  const _handleRecordingStatusChanged = useCallback((isRecording: boolean, sessionId: string) => {
     // Only process for current session
     if (sessionId === currentPatientSessionId) {
       setMobileIsRecording(isRecording);
-      // Receiving a recording status from mobile implies session context is aligned
-      setMobileV2SessionSynced(true);
     }
-  }, [currentPatientSessionId, setMobileV2SessionSynced]);
+  }, [currentPatientSessionId]);
 
   // 🛡️ PHASE 1 FIX: Reset mobile recording status when connection drops
   useEffect(() => {
-    if (mobileV2.connectionStatus === 'disconnected' && mobileIsRecording) {
+    if (!mobileV2.isConnected && mobileIsRecording) {
       setMobileIsRecording(false);
     }
-    // Only clear sessionSynced when explicitly disconnected to avoid flicker during transient states
-    if (mobileV2.connectionStatus === 'disconnected') {
-      setMobileV2SessionSynced(false);
-    }
-  }, [mobileV2.connectionStatus, mobileIsRecording, setMobileV2SessionSynced]);
+    // Removed sessionSynced logic - no longer needed in simplified architecture
+  }, [mobileV2.isConnected, mobileIsRecording]);
 
-  // Simple Ably sync implementation using single channel approach
-  // ALWAYS initialize to ensure updateSession availability, but only connect with valid token
-  const { updateSession, sendRecordingControl } = useSimpleAbly({
-    tokenId: mobileV2?.isEnabled && mobileV2?.token ? mobileV2.token : null,
-    onTranscriptReceived: handleTranscriptReceived,
-    onRecordingStatusChanged: handleRecordingStatusChanged, // 🆕 Recording status callback
-    onError: handleError,
-    onConnectionStatusChanged: setMobileV2ConnectionStatus, // NEW: Bridge connection status to context
-    onSessionAcknowledged: (sessionId: string) => {
-      if (sessionId === currentPatientSessionId) {
-        setMobileV2SessionSynced(true);
+  // Simple Ably sync implementation - always connected when token exists
+  const { sendRecordingControl } = useSimpleAbly({
+    tokenId: mobileV2?.token || null, // Always connect when token available
+    onTranscriptReceived: (transcript: string, enhancedData?: any) => {
+      // Always append to current session - no session matching needed
+      if (currentPatientSessionId) {
+        if (enhancedData && (enhancedData.confidence !== undefined || (enhancedData.words?.length || 0) > 0)) {
+          appendTranscriptionEnhanced(
+            transcript,
+            true,
+            'mobile',
+            undefined, // deviceId
+            undefined, // diarizedTranscript
+            undefined, // utterances
+            enhancedData.confidence,
+            enhancedData.words,
+            enhancedData.paragraphs,
+          );
+        } else {
+          appendTranscription(transcript, true, 'mobile');
+        }
       }
     },
-    isMobile: false, // FIXED: Identify as desktop to prevent self-messaging
+    onRecordingStatusChanged: (isRecording: boolean) => {
+      setMobileIsRecording(isRecording);
+    },
+    onError: handleError,
+    onConnectionStatusChanged: setMobileV2IsConnected,
+    isMobile: false,
   });
 
-  // Expose updateSession to global for ConsultationContext session broadcasting
+  // Expose sendRecordingControl to global for remote control
   useEffect(() => {
     if (typeof window !== 'undefined') {
       (window as any).ablySyncHook = {
-        updateSession: updateSession || (() => false),
         sendRecordingControl: (action: 'start' | 'stop') => (sendRecordingControl ? sendRecordingControl(action) : false),
       };
     }
@@ -260,32 +268,9 @@ export default function ConsultationPage() {
         delete (window as any).ablySyncHook;
       }
     };
-  }, [updateSession, sendRecordingControl]);
+  }, [sendRecordingControl]);
 
-  // Proactively broadcast current session once connected to Ably
-  useEffect(() => {
-    if (
-      mobileV2?.connectionStatus === 'connected'
-      && updateSession
-      && currentPatientSessionId
-      && mobileV2?.isEnabled
-    ) {
-      try {
-        const currentSessions = queryClient.getQueryData<any>(['consultation', 'sessions']);
-        const session = Array.isArray(currentSessions)
-          ? currentSessions.find((s: any) => s.id === currentPatientSessionId)
-          : null;
-        const patientName = session?.patientName || 'Current Session';
-        const ok = updateSession(currentPatientSessionId, patientName);
-        if (ok) {
-          setMobileV2SessionSynced(true);
-        }
-      } catch {
-        // best-effort only
-      }
-    }
-    return undefined;
-  }, [mobileV2?.connectionStatus, mobileV2?.isEnabled, updateSession, currentPatientSessionId, queryClient, setMobileV2SessionSynced]);
+  // Removed session sync logic - no longer needed in simplified architecture
 
   // Ensure desktop Ably connects without opening the QR modal by loading active token
   useEffect(() => {
@@ -309,14 +294,13 @@ export default function ConsultationPage() {
         // Always trust server: clear local cache/state if no active token
         setMobileV2TokenData(null);
         enableMobileV2(false);
-        setMobileV2SessionSynced(false);
-        setMobileV2ConnectionStatus('disconnected');
+        setMobileV2IsConnected(false);
       } catch {
         // best-effort, ignore
       }
     };
     loadActiveToken();
-  }, [userId, userTier, enableMobileV2, setMobileV2TokenData, setMobileV2SessionSynced, setMobileV2ConnectionStatus]);
+  }, [userId, userTier, enableMobileV2, setMobileV2TokenData, setMobileV2IsConnected]);
 
   // On mount, sync current session from server (server truth)
   useEffect(() => {

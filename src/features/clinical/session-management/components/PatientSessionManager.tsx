@@ -4,26 +4,20 @@ import { useAuth } from '@clerk/nextjs';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
-import { useRBAC } from '@/src/shared/hooks/useRBAC';
 
 import { CurrentSessionBar } from './CurrentSessionBar';
 import { SessionModal } from './SessionModal';
 
 export const PatientSessionManager: React.FC = () => {
   const { isSignedIn, isLoaded } = useAuth();
-  const { hasFeatureAccess } = useRBAC();
   const {
-    currentPatientSessionId,
     loadPatientSessions = async () => {},
     switchToPatientSession,
   } = useConsultationStores();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [hasInitialized, setHasInitialized] = useState(false);
-  const [isClient, setIsClient] = useState(false);
 
-  // Check if user has session management access
-  const canManageSessions = hasFeatureAccess('sessionManagement');
+  const [isClient, setIsClient] = useState(false);
 
   const handleSessionSelect = useCallback((sessionId: string) => {
     switchToPatientSession(sessionId);
@@ -38,27 +32,14 @@ export const PatientSessionManager: React.FC = () => {
     setIsClient(true);
   }, []);
 
-  // Load patient sessions on client mount - only for users with session management access
+  // Load patient sessions on client mount
   useEffect(() => {
-    if (isClient && isLoaded && isSignedIn && canManageSessions && loadPatientSessions) {
-      loadPatientSessions().then(() => {
-        setHasInitialized(true);
-      }).catch(() => {
-        // Silently handle errors and still mark as initialized
-        setHasInitialized(true);
+    if (isClient && isLoaded && isSignedIn && loadPatientSessions) {
+      loadPatientSessions().catch(() => {
+        // Silently handle errors
       });
-    } else if (isClient && isLoaded) {
-      // Mark as initialized for users without session management access
-      setHasInitialized(true);
     }
-  }, [isClient, isLoaded, isSignedIn, canManageSessions, loadPatientSessions]);
-
-  // Auto-open modal when no session is selected and component has initialized (only for users with session management)
-  useEffect(() => {
-    if (hasInitialized && isSignedIn && canManageSessions && !currentPatientSessionId) {
-      setIsModalOpen(true);
-    }
-  }, [hasInitialized, isSignedIn, canManageSessions, currentPatientSessionId]);
+  }, [isClient, isLoaded, isSignedIn, loadPatientSessions]);
 
   const handleSwitchSession = () => {
     setIsModalOpen(true);
@@ -70,13 +51,11 @@ export const PatientSessionManager: React.FC = () => {
 
   return (
     <>
-      {/* Show current session bar only for users with session management access */}
-      {canManageSessions && (
-        <CurrentSessionBar onSwitchSession={handleSwitchSession} />
-      )}
+      {/* Current session bar - always show for signed in users */}
+      <CurrentSessionBar onSwitchSession={handleSwitchSession} />
 
-      {/* Session management modal - only show for users with session management access */}
-      {isClient && isSignedIn && canManageSessions && (
+      {/* Session management modal */}
+      {isClient && isSignedIn && (
         <SessionModal
           isOpen={isModalOpen}
           onClose={handleModalClose}

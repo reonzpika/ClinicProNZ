@@ -46,8 +46,7 @@ export const SessionModal: React.FC<SessionModalProps> = ({
 
   // Auto-generated patient name
   const generatePatientName = () => {
-    const now = new Date();
-    return `Patient ${now.toLocaleDateString()} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    return 'Patient';
   };
 
   // Filter sessions based on search
@@ -138,7 +137,7 @@ export const SessionModal: React.FC<SessionModalProps> = ({
   const formatSessionDate = (dateString?: string) => {
     const date = new Date(dateString || new Date());
     return {
-      date: date.toLocaleDateString(),
+      date: date.toLocaleDateString('en-GB'),
       time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
   };

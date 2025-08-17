@@ -1,12 +1,9 @@
 import { Buffer } from 'node:buffer';
 
 import { createClient } from '@deepgram/sdk';
-import { eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { db } from '@/db/client';
-import { patientSessions } from '@/db/schema';
 import { checkCoreSessionLimit, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 export const runtime = 'nodejs'; // Ensure Node.js runtime for Buffer support
@@ -46,39 +43,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No audio file uploaded' }, { status: 400 });
     }
 
-    // Phase 3: Session validation for transcript chunks
-    const sessionId = formData.get('sessionId') as string;
-    if (sessionId) {
-      // Validate that the session exists and is active
-      const sessionRecords = await db
-        .select()
-        .from(patientSessions)
-        .where(eq(patientSessions.id, sessionId))
-        .limit(1);
-
-    if (sessionRecords.length === 0) {
-      return NextResponse.json({
-        error: 'Invalid session',
-        message: 'Session not found',
-      }, { status: 400 });
-    }
-
-      const session = sessionRecords[0];
-    if (session?.status !== 'active') {
-      return NextResponse.json({
-        error: 'Invalid session',
-        message: 'Session is not active',
-      }, { status: 400 });
-    }
-
-      // Validate session ownership for authenticated users
-    if (context.userId && session.userId !== context.userId) {
-      return NextResponse.json({
-        error: 'Access denied',
-        message: 'Session does not belong to user',
-      }, { status: 403 });
-    }
-    }
+    // Removed session validation - desktop handles session management in simplified architecture
 
     // Convert file (Blob) to Buffer
     const arrayBuffer = await file.arrayBuffer();
@@ -124,27 +89,7 @@ export async function POST(req: NextRequest) {
       ? utterances.flatMap((utterance: any) => utterance.words || [])
       : (alt?.words || []);
 
-    // Append transcript to Neon when a sessionId is provided and valid
-    try {
-      if (sessionId && transcript && transcript.trim()) {
-        const existingSession = await db
-          .select()
-          .from(patientSessions)
-          .where(eq(patientSessions.id, sessionId))
-          .limit(1);
-        if (existingSession.length > 0) {
-          const prev = existingSession[0]?.transcriptions ? JSON.parse(existingSession[0].transcriptions as any) : [];
-          const entry = { id: Date.now().toString(), text: transcript, timestamp: new Date().toISOString(), source: 'mobile', deviceId: 'phone' };
-          const updatedArr = Array.isArray(prev) ? [...prev, entry] : [entry];
-          await db
-            .update(patientSessions)
-            .set({ transcriptions: JSON.stringify(updatedArr), updatedAt: new Date() })
-            .where(eq(patientSessions.id, sessionId));
-        }
-      }
-    } catch {
-      // best-effort only; UI still receives transcript
-    }
+    // Removed database appending - desktop handles session management in simplified architecture
 
     // ENHANCED: Return all data (existing + new fields for enhanced features)
     const apiResponse = {

@@ -110,11 +110,11 @@ export function useConsultationStores(): any {
  return consultationStore.currentPatientSessionId;
 }
     try {
-      const result = await createSessionMutation.mutateAsync({ patientName: 'Quick Consultation' });
+      // Simple patient name - date/time info stored in session table
+      const patientName = 'Patient';
+
+      const result = await createSessionMutation.mutateAsync({ patientName });
       consultationStore.setCurrentPatientSessionId(result.id);
-      if (typeof window !== 'undefined' && (window as any).ablySyncHook?.updateSession) {
-        (window as any).ablySyncHook.updateSession(result.id, result.patientName);
-      }
       return result.id;
     } catch {
       return null;
@@ -128,9 +128,6 @@ export function useConsultationStores(): any {
  consultationStore.setTemplateId(templateId);
 }
       consultationStore.setCurrentPatientSessionId(result.id);
-      if (typeof window !== 'undefined' && (window as any).ablySyncHook?.updateSession) {
-        (window as any).ablySyncHook.updateSession(result.id, result.patientName);
-      }
       return result;
     } catch {
       return null;
@@ -314,8 +311,7 @@ export function useConsultationStores(): any {
     enableMobileV2: mobileStore.enableMobileV2,
     setMobileV2Token: mobileStore.setMobileV2Token,
     setMobileV2TokenData: mobileStore.setMobileV2TokenData,
-    setMobileV2ConnectionStatus: mobileStore.setMobileV2ConnectionStatus,
-    setMobileV2SessionSynced: mobileStore.setMobileV2SessionSynced,
+    setMobileV2IsConnected: mobileStore.setMobileV2IsConnected,
 
     // Actions - last generated tracking
     setLastGeneratedInput: transcriptionStore.setLastGeneratedInput,
@@ -369,24 +365,7 @@ export function useConsultationStores(): any {
       const session = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === sessionId) : null;
       const patientName = session?.patientName || 'Current Session';
 
-      // Explicit Ably broadcast on switch (with short retries)
-      try {
-        if (typeof window !== 'undefined' && (window as any).ablySyncHook?.updateSession) {
-          const ok = (window as any).ablySyncHook.updateSession(sessionId, patientName);
-          if (!ok) {
-            setTimeout(() => {
- try {
- (window as any).ablySyncHook?.updateSession?.(sessionId, patientName);
-} catch {}
-}, 300);
-            setTimeout(() => {
- try {
- (window as any).ablySyncHook?.updateSession?.(sessionId, patientName);
-} catch {}
-}, 1500);
-          }
-        }
-      } catch {}
+      // Removed Ably broadcast - no session sync needed in simplified architecture
 
       // Persist current session server-side for mobile fallback (best-effort)
       try {
@@ -441,6 +420,13 @@ export function useConsultationStores(): any {
 
       onSwitch?.(sessionId, patientName);
     },
-    completePatientSession: async (_sessionId: string) => {},
+    completePatientSession: async (sessionId: string): Promise<boolean> => {
+      try {
+        await updatePatientSession(sessionId, { status: 'completed' } as any);
+        return true;
+      } catch {
+        return false;
+      }
+    },
   };
 }

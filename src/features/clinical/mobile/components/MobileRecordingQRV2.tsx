@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { AlertTriangle, CheckCircle, RefreshCw, Smartphone } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Smartphone } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -30,7 +30,6 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
   const {
-    mobileV2 = { isEnabled: false, token: null, tokenData: null, connectionStatus: 'disconnected' },
     setMobileV2TokenData,
     enableMobileV2,
     ensureActiveSession,
@@ -40,6 +39,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
   // Simplified state for the new approach
   const [qrData, setQrData] = useState<QRTokenData | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isLoadingExisting, setIsLoadingExisting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Permanent tokens: no expiry
   const [isClient, setIsClient] = useState(false);
@@ -51,14 +51,18 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
 
   // Always trust server: on modal open, fetch active token and override any cache
   useEffect(() => {
-    if (!isClient || !isOpen) {
+    if (!isClient) {
  return;
 }
 
+    if (!isOpen) {
+      return;
+    }
+
     const fetchActiveToken = async () => {
-      if (!isSignedIn || !userId) {
- return;
-}
+      setIsLoadingExisting(true);
+      setError(null);
+
       try {
         const response = await fetch('/api/mobile/active-token', {
           method: 'GET',
@@ -82,6 +86,8 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to check for existing token';
         setError(errorMessage);
+      } finally {
+        setIsLoadingExisting(false);
       }
     };
 
@@ -95,11 +101,6 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
     setError(null);
 
     try {
-      // Ensure we have an active patient session for authenticated users
-      if (isSignedIn && userId) {
-        await ensureActiveSession();
-      }
-
       const response = await fetch('/api/mobile/generate-token', {
         method: 'POST',
         headers: createAuthHeaders(userId, userTier),
@@ -145,7 +146,6 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
   // No countdown UI for permanent tokens
 
   const isExpired = false;
-  const isConnected = mobileV2.connectionStatus === 'connected';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -158,20 +158,6 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Connection Status */}
-          {isConnected && (
-            <Alert className="border-green-200 bg-green-50">
-              <CheckCircle className="size-4 text-green-600" />
-              <div>
-                <div className="font-medium text-green-800">
-                  Mobile device connected
-                </div>
-                <div className="text-sm text-green-700">
-                  Ready to receive transcriptions
-                </div>
-              </div>
-            </Alert>
-          )}
 
           {/* Error Display */}
           {error && (
@@ -181,8 +167,16 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
             </Alert>
           )}
 
+          {/* Loading State for Initial Token Check */}
+          {isLoadingExisting && (
+            <div className="flex flex-col items-center space-y-3 py-8">
+              <RefreshCw className="size-8 animate-spin text-gray-400" />
+              <p className="text-sm text-gray-600">Checking for existing QR code...</p>
+            </div>
+          )}
+
           {/* QR Code Display */}
-          {isClient && qrData && !isExpired && (
+          {isClient && qrData && !isExpired && !isLoadingExisting && (
             <div className="flex flex-col items-center space-y-3">
               <div className="rounded-lg border-2 border-gray-200 bg-white p-3">
                 <QRCodeSVG
@@ -204,7 +198,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
 
           {/* Control Buttons */}
           <div className="flex gap-2">
-            {!qrData && (
+            {!qrData && !isLoadingExisting && (
               <Button
                 onClick={() => generateToken(false)}
                 disabled={isGenerating}
@@ -244,7 +238,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
             <Button
               variant="outline"
               onClick={() => generateToken(true)}
-              disabled={isGenerating}
+              disabled={isGenerating || isLoadingExisting}
               title="Rotate token and show new QR immediately"
             >
               {isGenerating

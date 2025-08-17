@@ -306,10 +306,7 @@ export async function DELETE(req: NextRequest) {
 
     // Helper: generate default patient name (matches UI style)
     const generatePatientName = () => {
-      const now = new Date();
-      const date = now.toLocaleDateString();
-      const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      return `Patient ${date} ${time}`;
+      return 'Patient';
     };
 
     // Helper: choose next session (active first, latest by createdAt). If none active, create a new one.
@@ -380,7 +377,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     // If the deleted session was the current one, choose a replacement and update user
-    let response: any = {
+    const response: any = {
       success: true,
       message: 'Session deleted successfully',
       deletedSessionId: sessionId,

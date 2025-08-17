@@ -85,11 +85,10 @@ export function TranscriptionControls({
   // 🐛 DEBUG: Log tier and enhanced transcription status
   // debug removed
 
-  // 🆕 IMPROVED: Check both connection and session sync status
-  const { mobileV2 = { isEnabled: false, token: null, connectionStatus: 'disconnected', sessionSynced: false } } = useConsultationStores();
-  const isMobileConnected = mobileV2.connectionStatus === 'connected';
-  const hasMobileDevices = isMobileConnected && mobileV2.sessionSynced;
-  const canRemoteControl = hasMobileDevices;
+  // Mobile connection status - simplified for new architecture
+  const { mobileV2 = { isEnabled: false, token: null, isConnected: false } } = useConsultationStores();
+  const isMobileConnected = mobileV2.isConnected;
+  const hasMobileDevices = isMobileConnected; // Simplified: just check connection
   const [pendingControl, setPendingControl] = useState<null | 'start' | 'stop'>(null);
   const [controlError, setControlError] = useState<string | null>(null);
   const [controlAckTimer, setControlAckTimer] = useState<any>(null);
@@ -261,7 +260,7 @@ export function TranscriptionControls({
               <Mic size={12} className="text-slate-600" />
               <span className="text-xs font-medium text-slate-700">Audio Transcription</span>
             </div>
-            {mobileV2.connectionStatus === 'connected' && (
+            {mobileV2.isConnected && (
               <span className="text-xs text-green-600">📱 Mobile Synced</span>
             )}
           </div>
@@ -504,18 +503,7 @@ export function TranscriptionControls({
                               </Button>
                             )}
                         {/* Remote control buttons when connected */}
-                        {isMobileConnected && !canRemoteControl && !mobileIsRecording && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            disabled
-                            className="h-8 px-3 text-xs"
-                            title="Waiting for session sync on mobile"
-                          >
-                            Start on mobile
-                          </Button>
-                        )}
-                        {canRemoteControl && !mobileIsRecording && (
+                        {isMobileConnected && !mobileIsRecording && (
                           <Button
                             type="button"
                             variant="outline"
@@ -526,18 +514,7 @@ export function TranscriptionControls({
                             Start on mobile
                           </Button>
                         )}
-                        {isMobileConnected && !canRemoteControl && mobileIsRecording && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            disabled
-                            className="h-8 px-3 text-xs"
-                            title="Waiting for session sync on mobile"
-                          >
-                            Stop on mobile
-                          </Button>
-                        )}
-                        {canRemoteControl && mobileIsRecording && (
+                        {isMobileConnected && mobileIsRecording && (
                           <Button
                             type="button"
                             variant="outline"
@@ -612,7 +589,7 @@ export function TranscriptionControls({
                       )}
                     </div>
                     <div className="flex gap-1">
-                      {canRemoteControl && !isRecording && (
+                      {isMobileConnected && !isRecording && (
                         <Button
                           type="button"
                           variant="outline"
@@ -623,7 +600,7 @@ export function TranscriptionControls({
                           Start on mobile
                         </Button>
                       )}
-                      {canRemoteControl && isRecording && (
+                      {isMobileConnected && isRecording && (
                         <Button
                           type="button"
                           variant="outline"
