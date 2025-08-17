@@ -13,11 +13,15 @@ export const PatientSessionManager: React.FC = () => {
   const {
     loadPatientSessions = async () => {},
     switchToPatientSession,
+    getCurrentPatientSession,
+    patientSessions = [],
+    currentPatientSessionId,
+    ensureActiveSession,
   } = useConsultationStores();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const [isClient, setIsClient] = useState(false);
+  const [isEnsuring, setIsEnsuring] = useState(false);
 
   const handleSessionSelect = useCallback((sessionId: string) => {
     switchToPatientSession(sessionId);
@@ -40,6 +44,64 @@ export const PatientSessionManager: React.FC = () => {
       });
     }
   }, [isClient, isLoaded, isSignedIn, loadPatientSessions]);
+
+  // 🆕 ENSURE ACTIVE SESSION: Auto-create or auto-select session when needed
+  useEffect(() => {
+    const ensureSession = async () => {
+      // Only run once per mount and when user is ready
+      if (!isClient || !isLoaded || !isSignedIn || isEnsuring) {
+        return;
+      }
+
+      // If we already have a current session, we're good
+      const currentSession = getCurrentPatientSession();
+      if (currentSession && currentPatientSessionId) {
+        return;
+      }
+
+      setIsEnsuring(true);
+      try {
+        // Check if we have any active sessions to auto-select
+        const activeSessions = patientSessions.filter((s: any) => s.status === 'active');
+
+        if (activeSessions.length > 0) {
+          // Auto-select the most recent active session
+          const mostRecent = activeSessions.sort((a: any, b: any) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+          )[0];
+
+          console.log('[SessionManager] Auto-selecting most recent active session:', mostRecent.id);
+          switchToPatientSession(mostRecent.id);
+        } else {
+          // No active sessions - create a new one
+          console.log('[SessionManager] No active sessions found, creating new session');
+          const newSessionId = await ensureActiveSession();
+          if (newSessionId) {
+            console.log('[SessionManager] Created new session:', newSessionId);
+          }
+        }
+      } catch (error) {
+        console.error('[SessionManager] Failed to ensure active session:', error);
+      } finally {
+        setIsEnsuring(false);
+      }
+    };
+
+    // Run after sessions are loaded
+    if (Array.isArray(patientSessions)) {
+      ensureSession();
+    }
+  }, [
+    isClient,
+    isLoaded,
+    isSignedIn,
+    getCurrentPatientSession,
+    currentPatientSessionId,
+    patientSessions,
+    switchToPatientSession,
+    ensureActiveSession,
+    isEnsuring,
+  ]);
 
   const handleSwitchSession = () => {
     setIsModalOpen(true);
