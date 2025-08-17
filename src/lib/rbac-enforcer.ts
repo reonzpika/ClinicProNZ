@@ -125,45 +125,80 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
   const mobileToken = req.headers.get('x-mobile-token') || url.searchParams.get('mobileToken');
 
   if (mobileToken) {
-    // Validate mobile token and get associated user context (only active tokens)
-    const tokenRecord = await db
-      .select()
-      .from(mobileTokens)
-      .where(and(eq(mobileTokens.token, mobileToken), eq(mobileTokens.isActive, true)))
-      .limit(1);
+    console.log('[RBAC DEBUG] Mobile token found:', mobileToken.substring(0, 8) + '...');
+    
+    try {
+      // Validate mobile token and get associated user context (only active tokens)
+      console.log('[RBAC DEBUG] Querying database for mobile token...');
+      const tokenRecord = await db
+        .select()
+        .from(mobileTokens)
+        .where(and(eq(mobileTokens.token, mobileToken), eq(mobileTokens.isActive, true)))
+        .limit(1);
+      
+      console.log('[RBAC DEBUG] Database query result:', tokenRecord.length, 'records found');
 
-    if (tokenRecord.length > 0) {
-      const record = tokenRecord[0];
-      if (!record) {
-        // Invalid token record - treat as unauthenticated
-        return {
-          userId: null,
-          tier: 'basic',
-          isAuthenticated: false,
-        };
-      }
+      if (tokenRecord.length > 0) {
+        const record = tokenRecord[0];
+        console.log('[RBAC DEBUG] Token record:', { 
+          userId: record?.userId, 
+          isActive: record?.isActive,
+          hasUserId: !!record?.userId 
+        });
+        
+        if (!record) {
+          console.log('[RBAC DEBUG] Invalid token record - treating as unauthenticated');
+          // Invalid token record - treat as unauthenticated
+          return {
+            userId: null,
+            tier: 'basic',
+            isAuthenticated: false,
+          };
+        }
 
-      // Valid mobile token (already filtered for active tokens in query)
-      if (record.userId) {
-        // Mobile token linked to authenticated user
-        // FIXED: Look up actual user tier from Clerk instead of defaulting to basic
-        const actualUserTier = await getUserTierFromClerk(record.userId);
+        // Valid mobile token (already filtered for active tokens in query)
+        if (record.userId) {
+          console.log('[RBAC DEBUG] Calling getUserTierFromClerk for userId:', record.userId);
+          
+          try {
+            // Mobile token linked to authenticated user
+            // FIXED: Look up actual user tier from Clerk instead of defaulting to basic
+            const actualUserTier = await getUserTierFromClerk(record.userId);
+            console.log('[RBAC DEBUG] Successfully got user tier:', actualUserTier);
 
-        return {
-          userId: record.userId,
-          tier: actualUserTier, // Use actual user tier from Clerk
-          isAuthenticated: true,
-        };
+            return {
+              userId: record.userId,
+              tier: actualUserTier, // Use actual user tier from Clerk
+              isAuthenticated: true,
+            };
+          } catch (tierError) {
+            console.error('[RBAC DEBUG] getUserTierFromClerk failed:', tierError);
+            // Return with basic tier instead of failing completely
+            return {
+              userId: record.userId,
+              tier: 'basic',
+              isAuthenticated: true,
+            };
+          }
+        } else {
+          console.log('[RBAC DEBUG] Mobile token has no userId - not supported');
+          // Mobile token for guest user (userId is null) - not supported anymore
+          return {
+            userId: null,
+            tier: 'basic',
+            isAuthenticated: false,
+          };
+        }
       } else {
-        // Mobile token for guest user (userId is null) - not supported anymore
-        return {
-          userId: null,
-          tier: 'basic',
-          isAuthenticated: false,
-        };
+        console.log('[RBAC DEBUG] No active mobile token found in database');
       }
+    } catch (dbError) {
+      console.error('[RBAC DEBUG] Database query failed:', dbError);
+      // Fall through to other auth methods
     }
     // Invalid mobile token - fall through to other auth methods
+  } else {
+    console.log('[RBAC DEBUG] No mobile token in headers or URL params');
   }
 
   // Authenticated user required
