@@ -46,52 +46,23 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   };
 
-  // Protect /api/templates routes
+  // Protect /api/templates routes - require sign-in only
   if (req.nextUrl.pathname.startsWith('/api/templates')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
       return returnUnauthorized();
     }
-
-    // Allow GET for any signed-in user (basic can read defaults)
-    if (req.method === 'GET') {
-      // signed-in OK
-    } else {
-      // Non-GET (CRUD) requires standard+
-      const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
-      if (userTier === 'basic') {
-        return returnUnauthorized();
-      }
-    }
   }
 
-  // Protect /api/patient-sessions routes - different rules for different methods
+  // Protect /api/patient-sessions routes - require sign-in only
   if (req.nextUrl.pathname.startsWith('/api/patient-sessions')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
       return returnUnauthorized();
     }
-
-    // Check tier - session history (GET) requires standard+, but active session management (POST/PUT) allows basic
-    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
-    if (userTier === 'basic' && req.method === 'GET') {
-      return returnUnauthorized(); // Block session history for basic tier
-    }
-    // POST and PUT are allowed for basic tier (for active session management during consultation)
   }
 
-  // Explicitly guard new recording/clear endpoints
-  if (
-    req.nextUrl.pathname.startsWith('/api/patient-sessions/recording')
-    || req.nextUrl.pathname.startsWith('/api/patient-sessions/clear')
-  ) {
-    const resolvedAuth = await auth();
-    if (!resolvedAuth.userId) {
-      return returnUnauthorized();
-    }
-  }
-
-  // Protect /api/consultation routes - require signed in (basic+)
+  // Protect /api/consultation routes - require sign-in only
   if (req.nextUrl.pathname.startsWith('/api/consultation')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
@@ -99,7 +70,7 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // Protect /api/deepgram routes - require signed in (basic+)
+  // Protect /api/deepgram routes - require sign-in only
   if (req.nextUrl.pathname.startsWith('/api/deepgram')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
@@ -107,7 +78,7 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // Protect /api/tools routes - require signed in (basic+)
+  // Protect /api/tools routes - require sign-in only
   if (req.nextUrl.pathname.startsWith('/api/tools')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
@@ -117,7 +88,7 @@ export default clerkMiddleware(async (auth, req) => {
 
   // Allow access to /api/mobile routes - authentication is handled within the individual route handlers
 
-  // Protect /api/user routes - require signed in (basic+)
+  // Protect /api/user routes - require sign-in only
   if (req.nextUrl.pathname.startsWith('/api/user')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
@@ -125,7 +96,7 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // Protect /api/create-checkout-session - require signed in (basic+)
+  // Protect /api/create-checkout-session - require sign-in only
   if (req.nextUrl.pathname === '/api/create-checkout-session') {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
@@ -135,7 +106,7 @@ export default clerkMiddleware(async (auth, req) => {
 
   // Allow access to /api/ably routes - authentication is handled within the individual route handlers
 
-  // Protect /api/uploads routes (clinical images)
+  // Protect /api/uploads routes - require sign-in only
   if (req.nextUrl.pathname.startsWith('/api/uploads')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
@@ -143,7 +114,7 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // Protect /api/clinical-images routes (AI analysis)
+  // Protect /api/clinical-images routes - require sign-in only
   if (req.nextUrl.pathname.startsWith('/api/clinical-images')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
@@ -164,76 +135,50 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // Protect /api/rag/query routes (standard or higher)
+  // Protect /api/rag/query routes - require sign-in only
   if (req.nextUrl.pathname.startsWith('/api/rag/query')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
       return returnUnauthorized();
     }
-
-    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
-    if (userTier === 'basic') {
-      return returnUnauthorized();
-    }
   }
 
-  // Protect /templates page - require standard or higher
+  // Protect /templates page - require sign-in only
   if (req.nextUrl.pathname.startsWith('/templates')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
       return redirectToLogin(req.url);
     }
-
-    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
-    if (userTier === 'basic') {
-      return redirectToLogin(req.url);
-    }
   }
 
-  // Protect /consultation page - require basic or higher (signed in)
+  // Protect /consultation page - require sign-in only
   if (req.nextUrl.pathname.startsWith('/consultation')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
       return redirectToLogin(req.url);
     }
-    // Basic tier and above can access consultation
   }
 
-  // Protect /billing page - require standard or higher
+  // Protect /billing page - require sign-in only
   if (req.nextUrl.pathname.startsWith('/billing')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
       return redirectToLogin(req.url);
     }
-
-    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
-    if (userTier === 'basic') {
-      return redirectToLogin(req.url);
-    }
   }
 
-  // Protect /dashboard page - require standard or higher
+  // Protect /dashboard page - require sign-in only
   if (req.nextUrl.pathname.startsWith('/dashboard')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
       return redirectToLogin(req.url);
     }
-
-    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
-    if (userTier === 'basic') {
-      return redirectToLogin(req.url);
-    }
   }
 
-  // Protect /settings page - require standard or higher
+  // Protect /settings page - require sign-in only
   if (req.nextUrl.pathname.startsWith('/settings')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
-      return redirectToLogin(req.url);
-    }
-
-    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
-    if (userTier === 'basic') {
       return redirectToLogin(req.url);
     }
   }
