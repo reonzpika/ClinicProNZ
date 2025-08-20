@@ -4,7 +4,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
-import { checkPremiumActionLimit, extractRBACContext } from '@/src/lib/rbac-enforcer';
+import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -22,15 +22,14 @@ const BUCKET_NAME = process.env.S3_BUCKET_NAME!;
 
 export async function POST(req: Request) {
   try {
-    // Extract RBAC context and check permissions
+    // Extract RBAC context and check authentication
     const context = await extractRBACContext(req);
-    const permissionCheck = await checkPremiumActionLimit(context);
+    const permissionCheck = await checkCoreAccess(context);
 
     if (!permissionCheck.allowed) {
       return new Response(
         JSON.stringify({
           error: permissionCheck.reason || 'Access denied',
-          message: permissionCheck.upgradePrompt || 'Insufficient permissions',
         }),
         {
           status: 403,

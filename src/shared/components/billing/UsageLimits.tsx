@@ -15,10 +15,11 @@ export function UsageLimits({ tier, currentUsage }: UsageLimitsProps) {
   const limits = TIER_LIMITS[tier];
 
   const coreSessionsUsed = currentUsage.requestsToday;
-  const coreSessionsLimit = limits.coreSessions;
-  const premiumActionsLimit = limits.premiumActions;
+  // Simplified: All authenticated users have unlimited access
+  const coreSessionsLimit = -1; // Unlimited
+  const premiumActionsLimit = -1; // Unlimited
 
-  const coreSessionsPercentage = coreSessionsLimit === -1 ? 0 : (coreSessionsUsed / coreSessionsLimit) * 100;
+  const coreSessionsPercentage = 0; // Always 0 for unlimited
 
   const getTierColor = (tier: UserTier) => {
     switch (tier) {

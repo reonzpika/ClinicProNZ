@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 
 import { TemplateService } from '@/src/features/templates/template-service';
 import { compileTemplate } from '@/src/features/templates/utils/compileTemplate';
-import { checkCoreSessionLimit, extractRBACContext } from '@/src/lib/rbac-enforcer';
+import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 if (!OPENAI_API_KEY) {
@@ -65,7 +65,7 @@ export async function POST(req: Request) {
 
     // Check permissions
     const permissionCheck = await withTimeout(
-      checkCoreSessionLimit(context),
+      checkCoreAccess(context),
       5000,
       'Permission check timeout',
     );
@@ -74,12 +74,9 @@ export async function POST(req: Request) {
       return new Response(
         JSON.stringify({
           error: permissionCheck.reason || 'Access denied',
-          message: permissionCheck.upgradePrompt || 'Insufficient permissions',
-          remaining: permissionCheck.remaining,
-          resetTime: permissionCheck.resetTime?.toISOString(),
         }),
         {
-          status: permissionCheck.reason?.includes('limit') ? 429 : 403,
+          status: 403,
           headers: { 'Content-Type': 'application/json' },
         },
       );
