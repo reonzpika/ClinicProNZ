@@ -4,7 +4,7 @@ import { createClient } from '@deepgram/sdk';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { checkCoreSessionLimit, extractRBACContext } from '@/src/lib/rbac-enforcer';
+import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 export const runtime = 'nodejs'; // Ensure Node.js runtime for Buffer support
 
@@ -17,20 +17,17 @@ export const config = {
 
 export async function POST(req: NextRequest) {
   try {
-    // Extract RBAC context and check permissions
+    // Extract RBAC context and check authentication
     const context = await extractRBACContext(req);
-    const permissionCheck = await checkCoreSessionLimit(context);
+    const permissionCheck = await checkCoreAccess(context);
 
     if (!permissionCheck.allowed) {
       return new Response(
         JSON.stringify({
           error: permissionCheck.reason || 'Access denied',
-          message: permissionCheck.upgradePrompt || 'Insufficient permissions',
-          remaining: permissionCheck.remaining,
-          resetTime: permissionCheck.resetTime?.toISOString(),
         }),
         {
-          status: permissionCheck.reason?.includes('limit') ? 429 : 403,
+          status: 403,
           headers: { 'Content-Type': 'application/json' },
         },
       );

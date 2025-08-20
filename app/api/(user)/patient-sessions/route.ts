@@ -4,20 +4,19 @@ import { NextResponse } from 'next/server';
 
 import { db } from '@/db/client';
 import { patientSessions, users } from '@/db/schema';
-import { checkCoreSessionLimit, checkFeatureAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
+import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 // GET - List patient sessions for a user
 export async function GET(req: NextRequest) {
   try {
-    // Extract RBAC context and check session history permissions
+    // Extract RBAC context and check authentication
     const context = await extractRBACContext(req);
-    const permissionCheck = await checkFeatureAccess(context, 'session-history');
+    const permissionCheck = await checkCoreAccess(context);
 
     if (!permissionCheck.allowed) {
       return new Response(
         JSON.stringify({
           error: permissionCheck.reason || 'Access denied',
-          message: permissionCheck.upgradePrompt || 'Session management requires Standard tier or higher',
         }),
         {
           status: 403,
@@ -89,17 +88,14 @@ export async function GET(req: NextRequest) {
 // POST - Create a new patient session
 export async function POST(req: NextRequest) {
   try {
-    // Extract RBAC context and check core session limits
+    // Extract RBAC context and check authentication
     const context = await extractRBACContext(req);
-    const permissionCheck = await checkCoreSessionLimit(context);
+    const permissionCheck = await checkCoreAccess(context);
 
     if (!permissionCheck.allowed) {
       return new Response(
         JSON.stringify({
-          error: permissionCheck.reason || 'Session limit exceeded',
-          message: permissionCheck.upgradePrompt || 'Session limit reached',
-          remaining: permissionCheck.remaining || 0,
-          resetTime: permissionCheck.resetTime,
+          error: permissionCheck.reason || 'Access denied',
         }),
         {
           status: 403,
@@ -163,15 +159,14 @@ export async function POST(req: NextRequest) {
 // PUT - Update patient session
 export async function PUT(req: NextRequest) {
   try {
-    // Extract RBAC context and check session management permissions
+    // Extract RBAC context and check authentication
     const context = await extractRBACContext(req);
-    const permissionCheck = await checkFeatureAccess(context, 'sessions');
+    const permissionCheck = await checkCoreAccess(context);
 
     if (!permissionCheck.allowed) {
       return new Response(
         JSON.stringify({
           error: permissionCheck.reason || 'Access denied',
-          message: permissionCheck.upgradePrompt || 'Session management requires Standard tier or higher',
         }),
         {
           status: 403,
@@ -278,15 +273,14 @@ export async function PUT(req: NextRequest) {
 // DELETE - Delete patient session
 export async function DELETE(req: NextRequest) {
   try {
-    // Extract RBAC context and check session management permissions
+    // Extract RBAC context and check authentication
     const context = await extractRBACContext(req);
-    const permissionCheck = await checkFeatureAccess(context, 'sessions');
+    const permissionCheck = await checkCoreAccess(context);
 
     if (!permissionCheck.allowed) {
       return new Response(
         JSON.stringify({
           error: permissionCheck.reason || 'Access denied',
-          message: permissionCheck.upgradePrompt || 'Session management requires Standard tier or higher',
         }),
         {
           status: 403,
