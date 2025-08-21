@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { consultationApi, type ConsultationChatRequest, type ConsultationNotesRequest } from '@/src/lib/api/consultation';
 import { queryKeys } from '@/src/lib/react-query';
-import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { createAuthHeaders } from '@/src/shared/utils';
 import { useConsultationStore } from '@/src/stores/consultationStore';
 import type { PatientSession } from '@/src/types/consultation';
@@ -11,12 +10,11 @@ import type { PatientSession } from '@/src/types/consultation';
 // Hook for consultation chat
 export function useConsultationChat() {
   const { userId } = useAuth();
-  const { getUserTier } = useClerkMetadata();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (request: ConsultationChatRequest) =>
-      consultationApi.chat(request, userId, getUserTier()),
+      consultationApi.chat(request, userId),
     onSuccess: () => {
       // Invalidate any related queries if needed
       queryClient.invalidateQueries({ queryKey: queryKeys.consultation.all });
@@ -30,12 +28,11 @@ export function useConsultationChat() {
 // Hook for generating consultation notes
 export function useGenerateConsultationNotes() {
   const { userId } = useAuth();
-  const { getUserTier } = useClerkMetadata();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (request: ConsultationNotesRequest) =>
-      consultationApi.generateNotes(request, userId, getUserTier()),
+      consultationApi.generateNotes(request, userId),
     onSuccess: () => {
       // Invalidate sessions list to reflect potential changes
       queryClient.invalidateQueries({ queryKey: queryKeys.consultation.sessions() });
@@ -49,11 +46,10 @@ export function useGenerateConsultationNotes() {
 // Hook for patient sessions list
 export function usePatientSessions(enabled: boolean = false): any {
   const { userId } = useAuth();
-  const { getUserTier } = useClerkMetadata();
 
   return useQuery({
     queryKey: queryKeys.consultation.sessions(),
-    queryFn: () => consultationApi.getSessions(userId, getUserTier()),
+    queryFn: () => consultationApi.getSessions(userId),
     enabled: enabled && !!userId, // Only fetch when explicitly enabled AND user is authenticated
     staleTime: 2 * 60 * 1000, // 2 minutes - sessions don't change very often
   });
@@ -62,7 +58,6 @@ export function usePatientSessions(enabled: boolean = false): any {
 // Hook for a specific patient session
 export function usePatientSession(sessionId: string | null) {
   const { userId } = useAuth();
-  const { getUserTier } = useClerkMetadata();
   const queryClient = useQueryClient();
 
   return useQuery({
@@ -76,7 +71,7 @@ export function usePatientSession(sessionId: string | null) {
       }
 
       // If not in cache, refetch all sessions
-      const allSessions = await consultationApi.getSessions(userId, getUserTier());
+      const allSessions = await consultationApi.getSessions(userId);
       return allSessions.find((s: PatientSession) => s.id === sessionId) || null;
     },
     enabled: !!sessionId && !!userId,
@@ -86,12 +81,11 @@ export function usePatientSession(sessionId: string | null) {
 // Hook for creating a new patient session
 export function useCreatePatientSession(): any {
   const { userId } = useAuth();
-  const { getUserTier } = useClerkMetadata();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ patientName, templateId }: { patientName: string; templateId?: string }) =>
-      consultationApi.createSession(patientName, userId, getUserTier(), templateId),
+      consultationApi.createSession(patientName, userId, templateId),
     onSuccess: (newSession: PatientSession) => {
       // Add to sessions cache
       queryClient.setQueryData<PatientSession[]>(
@@ -110,7 +104,6 @@ export function useCreatePatientSession(): any {
 // Hook for updating a patient session
 export function useUpdatePatientSession(): any {
   const { userId } = useAuth();
-  const { getUserTier } = useClerkMetadata();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -121,7 +114,7 @@ export function useUpdatePatientSession(): any {
       sessionId: string;
       updates: Partial<Pick<PatientSession, 'patientName' | 'consultationNotes'>>;
     }) =>
-      consultationApi.updateSession(sessionId, updates, userId, getUserTier()),
+      consultationApi.updateSession(sessionId, updates, userId),
     onSuccess: (updatedSession: PatientSession) => {
       // Update sessions list cache
       queryClient.setQueryData<PatientSession[]>(
@@ -143,13 +136,12 @@ export function useUpdatePatientSession(): any {
 // Hook for deleting a patient session
 export function useDeletePatientSession(): any {
   const { userId } = useAuth();
-  const { getUserTier } = useClerkMetadata();
   const queryClient = useQueryClient();
   const setCurrentPatientSessionId = useConsultationStore(state => state.setCurrentPatientSessionId);
 
   return useMutation({
     mutationFn: (sessionId: string) =>
-      consultationApi.deleteSession(sessionId, userId, getUserTier()),
+      consultationApi.deleteSession(sessionId, userId),
     onSuccess: (res: any, sessionId: string) => {
       // Remove from sessions list cache
       queryClient.setQueryData<PatientSession[]>(
@@ -164,7 +156,7 @@ export function useDeletePatientSession(): any {
         try {
           setCurrentPatientSessionId(res.currentSessionId);
           // Best-effort: persist to server (server already set it but OK to be redundant)
-          fetch('/api/current-session', { method: 'PUT', headers: { 'Content-Type': 'application/json', ...createAuthHeaders(userId, getUserTier()) }, body: JSON.stringify({ sessionId: res.currentSessionId }) }).catch(() => {});
+          fetch('/api/current-session', { method: 'PUT', headers: { 'Content-Type': 'application/json', ...createAuthHeaders(userId) }, body: JSON.stringify({ sessionId: res.currentSessionId }) }).catch(() => {});
           // Best-effort: broadcast
           if (typeof window !== 'undefined' && (window as any).ablySyncHook?.updateSession) {
             (window as any).ablySyncHook.updateSession(res.currentSessionId, 'Current Session');
@@ -183,13 +175,12 @@ export function useDeletePatientSession(): any {
 // Hook for deleting all patient sessions
 export function useDeleteAllPatientSessions(): any {
   const { userId } = useAuth();
-  const { getUserTier } = useClerkMetadata();
   const setCurrentPatientSessionId = useConsultationStore(state => state.setCurrentPatientSessionId);
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: () =>
-      consultationApi.deleteAllSessions(userId, getUserTier()),
+      consultationApi.deleteAllSessions(userId),
     onSuccess: (res: any) => {
       // Clear all session-related caches
       queryClient.removeQueries({ queryKey: queryKeys.consultation.all });
@@ -198,7 +189,7 @@ export function useDeleteAllPatientSessions(): any {
         setCurrentPatientSessionId(res.currentSessionId);
         try {
           // Best-effort broadcast and persist
-          fetch('/api/current-session', { method: 'PUT', headers: { 'Content-Type': 'application/json', ...createAuthHeaders(userId, getUserTier()) }, body: JSON.stringify({ sessionId: res.currentSessionId }) }).catch(() => {});
+          fetch('/api/current-session', { method: 'PUT', headers: { 'Content-Type': 'application/json', ...createAuthHeaders(userId) }, body: JSON.stringify({ sessionId: res.currentSessionId }) }).catch(() => {});
           if (typeof window !== 'undefined' && (window as any).ablySyncHook?.updateSession) {
             (window as any).ablySyncHook.updateSession(res.currentSessionId, 'Current Session');
           }

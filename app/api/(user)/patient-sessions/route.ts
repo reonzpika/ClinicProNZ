@@ -1,32 +1,16 @@
+import { auth } from '@clerk/nextjs/server';
 import { and, desc, eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { db } from '@/db/client';
 import { patientSessions, users } from '@/db/schema';
-import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 // GET - List patient sessions for a user
 export async function GET(req: NextRequest) {
   try {
-    // Extract RBAC context and check authentication
-    const context = await extractRBACContext(req);
-    const permissionCheck = await checkCoreAccess(context);
-
-    if (!permissionCheck.allowed) {
-      return new Response(
-        JSON.stringify({
-          error: permissionCheck.reason || 'Access denied',
-        }),
-        {
-          status: 403,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
-    }
-
-    // Extract userId from context (middleware ensures user is authenticated)
-    const { userId } = context;
+    // Get authenticated user (middleware ensures user is authenticated)
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
@@ -40,12 +24,7 @@ export async function GET(req: NextRequest) {
     let query = db
       .select()
       .from(patientSessions)
-      .where(
-        and(
-          eq(patientSessions.userId, userId),
-          eq(patientSessions.isTemporary, false), // Only show persistent sessions
-        ),
-      )
+      .where(eq(patientSessions.userId, userId))
       .orderBy(desc(patientSessions.createdAt))
       .limit(limit);
 
@@ -57,7 +36,6 @@ export async function GET(req: NextRequest) {
           and(
             eq(patientSessions.userId, userId),
             eq(patientSessions.status, status),
-            eq(patientSessions.isTemporary, false), // Only show persistent sessions
           ),
         )
         .orderBy(desc(patientSessions.createdAt))
@@ -88,24 +66,8 @@ export async function GET(req: NextRequest) {
 // POST - Create a new patient session
 export async function POST(req: NextRequest) {
   try {
-    // Extract RBAC context and check authentication
-    const context = await extractRBACContext(req);
-    const permissionCheck = await checkCoreAccess(context);
-
-    if (!permissionCheck.allowed) {
-      return new Response(
-        JSON.stringify({
-          error: permissionCheck.reason || 'Access denied',
-        }),
-        {
-          status: 403,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
-    }
-
-    // Extract userId from context (middleware ensures user is authenticated)
-    const { userId } = context;
+    // Get authenticated user (middleware ensures user is authenticated)
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
@@ -117,14 +79,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Patient name is required' }, { status: 400 });
     }
 
-    // Create new patient session using service (handles tier-based temporary sessions)
+    // Create new patient session
     const { createUserSession } = await import('@/src/lib/services/guest-session-service');
 
     const session = await createUserSession(
       userId,
       patientName.trim(),
       templateId,
-      context.tier,
     );
 
     // Note: Mobile devices will be notified via Ably when patient session changes
@@ -159,24 +120,8 @@ export async function POST(req: NextRequest) {
 // PUT - Update patient session
 export async function PUT(req: NextRequest) {
   try {
-    // Extract RBAC context and check authentication
-    const context = await extractRBACContext(req);
-    const permissionCheck = await checkCoreAccess(context);
-
-    if (!permissionCheck.allowed) {
-      return new Response(
-        JSON.stringify({
-          error: permissionCheck.reason || 'Access denied',
-        }),
-        {
-          status: 403,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
-    }
-
-    // Extract userId from context (middleware ensures user is authenticated)
-    const { userId } = context;
+    // Get authenticated user (middleware ensures user is authenticated)
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
@@ -273,24 +218,8 @@ export async function PUT(req: NextRequest) {
 // DELETE - Delete patient session
 export async function DELETE(req: NextRequest) {
   try {
-    // Extract RBAC context and check authentication
-    const context = await extractRBACContext(req);
-    const permissionCheck = await checkCoreAccess(context);
-
-    if (!permissionCheck.allowed) {
-      return new Response(
-        JSON.stringify({
-          error: permissionCheck.reason || 'Access denied',
-        }),
-        {
-          status: 403,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
-    }
-
-    // Extract userId from context (middleware ensures user is authenticated)
-    const { userId } = context;
+    // Get authenticated user (middleware ensures user is authenticated)
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
@@ -305,11 +234,11 @@ export async function DELETE(req: NextRequest) {
 
     // Helper: choose next session (active first, latest by createdAt). If none active, create a new one.
     const selectOrCreateNextSession = async (): Promise<{ id: string; createdNew: boolean }> => {
-      // Prefer most recent active, persistent session
+      // Prefer most recent active session
       const nextActive = await db
         .select()
         .from(patientSessions)
-        .where(and(eq(patientSessions.userId, userId), eq(patientSessions.status, 'active'), eq(patientSessions.isTemporary, false)))
+        .where(and(eq(patientSessions.userId, userId), eq(patientSessions.status, 'active')))
         .orderBy(desc(patientSessions.createdAt))
         .limit(1);
 
@@ -319,7 +248,7 @@ export async function DELETE(req: NextRequest) {
 
       // No active session available → create a new one
       const { createUserSession } = await import('@/src/lib/services/guest-session-service');
-      const newSession = await createUserSession(userId, generatePatientName(), undefined, context.tier);
+      const newSession = await createUserSession(userId, generatePatientName());
       if (!newSession || !newSession.id) {
         throw new Error('Failed to create fallback session');
       }
@@ -398,7 +327,7 @@ export async function DELETE(req: NextRequest) {
         const stillHasActive = await db
           .select({ id: patientSessions.id })
           .from(patientSessions)
-          .where(and(eq(patientSessions.userId, userId), eq(patientSessions.status, 'active'), eq(patientSessions.isTemporary, false)))
+          .where(and(eq(patientSessions.userId, userId), eq(patientSessions.status, 'active')))
           .limit(1);
         if (stillHasActive.length === 0) {
           const next = await selectOrCreateNextSession();

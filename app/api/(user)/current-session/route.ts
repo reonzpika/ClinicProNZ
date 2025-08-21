@@ -1,16 +1,15 @@
+import { auth } from '@clerk/nextjs/server';
 import { eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { db } from '@/db/client';
 import { users } from '@/db/schema';
-import { extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 // PUT - Persist the user's current session selection for mobile fallback
 export async function PUT(req: NextRequest) {
   try {
-    const context = await extractRBACContext(req);
-    const { userId } = context;
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
@@ -31,10 +30,9 @@ export async function PUT(req: NextRequest) {
 }
 
 // Allow desktop to fetch server-truth current session
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
-    const context = await extractRBACContext(req);
-    const { userId } = context;
+    const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }

@@ -36,11 +36,10 @@ export const consultationApi = {
   async chat(
     request: ConsultationChatRequest,
     userId?: string | null,
-    userTier?: string,
   ): Promise<ConsultationChatResponse> {
     const response = await fetch('/api/consultation/chat', {
       method: 'POST',
-      headers: createAuthHeaders(userId, userTier),
+      headers: createAuthHeaders(userId),
       body: JSON.stringify(request),
     });
 
@@ -61,12 +60,11 @@ export const consultationApi = {
   async generateNotes(
     request: ConsultationNotesRequest,
     userId?: string | null,
-    userTier?: string,
     onProgress?: (chunk: string) => void,
   ): Promise<ConsultationNotesResponse> {
     const response = await fetch('/api/consultation/notes', {
       method: 'POST',
-      headers: createAuthHeaders(userId, userTier),
+      headers: createAuthHeaders(userId),
       body: JSON.stringify(request),
     });
 
@@ -103,14 +101,13 @@ export const consultationApi = {
   async createSession(
     patientName: string,
     userId?: string | null,
-    userTier?: string,
     templateId?: string,
   ): Promise<PatientSession> {
     const response = await fetch('/api/patient-sessions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...createAuthHeaders(userId, userTier),
+        ...createAuthHeaders(userId),
       },
       body: JSON.stringify({ patientName, templateId }),
     });
@@ -128,13 +125,12 @@ export const consultationApi = {
     sessionId: string,
     updates: Partial<Pick<PatientSession, 'patientName' | 'consultationNotes'>>,
     userId?: string | null,
-    userTier?: string,
   ): Promise<PatientSession> {
     const response = await fetch('/api/patient-sessions', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        ...createAuthHeaders(userId, userTier),
+        ...createAuthHeaders(userId),
       },
       body: JSON.stringify({ sessionId, ...updates }),
     });
@@ -150,11 +146,10 @@ export const consultationApi = {
 
   async getSessions(
     userId?: string | null,
-    userTier?: string,
   ): Promise<PatientSession[]> {
     const response = await fetch('/api/patient-sessions', {
       method: 'GET',
-      headers: createAuthHeaders(userId, userTier),
+      headers: createAuthHeaders(userId),
     });
 
     if (!response.ok) {
@@ -169,13 +164,12 @@ export const consultationApi = {
   async deleteSession(
     sessionId: string,
     userId?: string | null,
-    userTier?: string,
   ): Promise<{ success: boolean; deletedSessionId: string; currentSessionId?: string; createdNew?: boolean; switchedToExisting?: boolean }> {
     const response = await fetch('/api/patient-sessions', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        ...createAuthHeaders(userId, userTier),
+        ...createAuthHeaders(userId),
       },
       body: JSON.stringify({ sessionId }),
     });
@@ -190,13 +184,12 @@ export const consultationApi = {
 
   async deleteAllSessions(
     userId?: string | null,
-    userTier?: string,
   ): Promise<{ success: boolean; deletedCount: number; currentSessionId: string; createdNew: boolean }> {
     const response = await fetch('/api/patient-sessions', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        ...createAuthHeaders(userId, userTier),
+        ...createAuthHeaders(userId),
       },
       body: JSON.stringify({ deleteAll: true }),
     });

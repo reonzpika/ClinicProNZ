@@ -43,7 +43,6 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     setTranscription,
     appendTranscription,
     appendTranscriptionEnhanced,
-
     transcription,
     microphoneGain,
     volumeThreshold,

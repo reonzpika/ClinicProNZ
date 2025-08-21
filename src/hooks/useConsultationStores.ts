@@ -1,4 +1,5 @@
 import { useAuth } from '@clerk/nextjs';
+import { usePathname } from 'next/navigation';
 import { useCallback, useEffect } from 'react';
 
 import {
@@ -9,7 +10,6 @@ import {
   useUpdatePatientSession,
 } from '@/src/hooks/consultation/useConsultationQueries';
 import { useSessionAccess } from '@/src/hooks/useSessionAccess';
-import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { createAuthHeaders } from '@/src/shared/utils';
 import { useConsultationStore } from '@/src/stores/consultationStore';
 import { useMobileStore } from '@/src/stores/mobileStore';
@@ -20,15 +20,17 @@ import type { PatientSession } from '@/src/types/consultation';
 export function useConsultationStores(): any {
   const { isSignedIn: _isSignedIn, userId } = useAuth();
   const { hasSessionHistoryAccess } = useSessionAccess();
-  const { getUserTier } = useClerkMetadata();
+
+  const pathname = usePathname();
 
   // Zustand stores
   const transcriptionStore = useTranscriptionStore();
   const consultationStore = useConsultationStore();
   const mobileStore = useMobileStore();
 
-  // Server state via React Query
-  const { data: patientSessions = [] } = usePatientSessions(hasSessionHistoryAccess);
+  // Server state via React Query - disable on mobile routes
+  const isMobileRoute = pathname === '/mobile';
+  const { data: patientSessions = [] } = usePatientSessions(hasSessionHistoryAccess && !isMobileRoute);
 
   // Hydrate local state when a persisted session is present but local is empty
   useEffect(() => {
@@ -359,62 +361,109 @@ export function useConsultationStores(): any {
           : null;
       }
       return patientSessions.find((s: any) => s.id === consultationStore.currentPatientSessionId) || null;
-    },
+        },
     switchToPatientSession: (sessionId: string, onSwitch?: (sessionId: string, patientName: string) => void) => {
+      // 🔧 STEP 1: CLEAR ALL LOCAL STATE FIRST (prevents state leakage between sessions)
+
+      // Clear generated content
+      consultationStore.setGeneratedNotes(null);
+      consultationStore.setError(null);
+
+      // Clear transcription state
+      transcriptionStore.setTranscription('', false);
+      transcriptionStore.setTypedInput('');
+
+      // Clear consultation notes
+      consultationStore.setConsultationNotes('');
+
+      // Clear chat history
+      consultationStore.clearChatHistory();
+
+      // Clear consultation items
+      const currentItems = [...consultationStore.consultationItems];
+      currentItems.forEach((item: any) => consultationStore.removeConsultationItem(item.id));
+
+      // Clear clinical images
+      const currentImages = [...consultationStore.clinicalImages];
+      currentImages.forEach((img: any) => consultationStore.removeClinicalImage(img.id));
+
+      // Clear last generated tracking
+      transcriptionStore.resetLastGeneratedInput();
+
+      // 🔧 STEP 2: UPDATE SESSION POINTER
       consultationStore.setCurrentPatientSessionId(sessionId);
       const session = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === sessionId) : null;
       const patientName = session?.patientName || 'Current Session';
 
-      // Removed Ably broadcast - no session sync needed in simplified architecture
-
-      // Persist current session server-side for mobile fallback (best-effort)
+      // 🔧 STEP 3: PERSIST CURRENT SESSION SERVER-SIDE (for mobile fallback)
       try {
-        const headers = { ...createAuthHeaders(userId, getUserTier()), 'Content-Type': 'application/json' } as HeadersInit;
+        const headers = { ...createAuthHeaders(userId), 'Content-Type': 'application/json' } as HeadersInit;
         fetch('/api/current-session', { method: 'PUT', headers, body: JSON.stringify({ sessionId }) }).catch(() => {});
       } catch {}
 
-      // Load session details into local stores (best-effort)
+      // 🔧 STEP 4: LOAD SESSION DATA INTO LOCAL STORES (complete hydration)
       if (session) {
+        // Load transcriptions (get the most recent one for display)
         try {
           if (session.transcriptions) {
             const trans = typeof session.transcriptions === 'string' ? JSON.parse(session.transcriptions) : session.transcriptions;
             if (Array.isArray(trans) && trans.length > 0) {
               const latest = trans[trans.length - 1];
-              transcriptionStore.setTranscription(latest.text || '', false, undefined, undefined);
+              transcriptionStore.setTranscription(latest?.text || '', false, undefined, undefined);
             }
           }
-        } catch { /* ignore */ }
+        } catch (error) {
+          console.warn('Failed to parse session transcriptions:', error);
+        }
+
+        // Load typed input
         if (session.typedInput) {
- transcriptionStore.setTypedInput(session.typedInput);
-}
+          transcriptionStore.setTypedInput(session.typedInput);
+        }
+
+        // Load generated notes
         if (session.notes) {
- consultationStore.setGeneratedNotes(session.notes);
-}
+          consultationStore.setGeneratedNotes(session.notes);
+        }
+
+        // Load consultation notes
         if (session.consultationNotes) {
- consultationStore.setConsultationNotes(session.consultationNotes);
-}
+          consultationStore.setConsultationNotes(session.consultationNotes);
+        }
+
+        // Load template ID
         if (session.templateId) {
- consultationStore.setTemplateId(session.templateId);
-}
+          consultationStore.setTemplateId(session.templateId);
+        }
+
+        // Load consultation items
         if (session.consultationItems) {
           try {
             const items = typeof session.consultationItems === 'string' ? JSON.parse(session.consultationItems) : session.consultationItems;
             if (Array.isArray(items)) {
-              const currentItems = consultationStore.consultationItems;
-              currentItems.forEach((i: any) => consultationStore.removeConsultationItem(i.id));
-              items.forEach((i: any) => consultationStore.addConsultationItem({ type: i.type || 'other', title: i.title || '', content: i.content || '' }));
+              items.forEach((item: any) => {
+                consultationStore.addConsultationItem({
+                  type: item.type || 'other',
+                  title: item.title || '',
+                  content: item.content || '',
+                });
+              });
             }
-          } catch { /* ignore */ }
+          } catch (error) {
+            console.warn('Failed to parse session consultation items:', error);
+          }
         }
+
+        // Load clinical images
         if (session.clinicalImages) {
           try {
             const imgs = typeof session.clinicalImages === 'string' ? JSON.parse(session.clinicalImages) : session.clinicalImages;
             if (Array.isArray(imgs)) {
-              const current = consultationStore.clinicalImages;
-              current.forEach((img: any) => consultationStore.removeClinicalImage(img.id));
               imgs.forEach((img: any) => consultationStore.addClinicalImage(img));
             }
-          } catch { /* ignore */ }
+          } catch (error) {
+            console.warn('Failed to parse session clinical images:', error);
+          }
         }
       }
 

@@ -70,14 +70,12 @@ export const PatientSessionManager: React.FC = () => {
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
           )[0];
 
-          console.log('[SessionManager] Auto-selecting most recent active session:', mostRecent.id);
           switchToPatientSession(mostRecent.id);
         } else {
           // No active sessions - create a new one
-          console.log('[SessionManager] No active sessions found, creating new session');
           const newSessionId = await ensureActiveSession();
           if (newSessionId) {
-            console.log('[SessionManager] Created new session:', newSessionId);
+            switchToPatientSession(newSessionId);
           }
         }
       } catch (error) {
