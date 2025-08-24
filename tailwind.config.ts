@@ -29,6 +29,11 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        'oswald': ['var(--font-oswald)', 'Oswald', 'sans-serif'],
+        'open-sans': ['var(--font-open-sans)', 'Open Sans', 'sans-serif'],
+        'inter': ['var(--font-inter)', 'Inter', 'sans-serif'],
+      },
       screens: {
         xs: '400px',
         // Add extra small breakpoint for screens under 400px

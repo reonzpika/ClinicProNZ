@@ -3,7 +3,7 @@
 import { useAuth } from '@clerk/nextjs';
 import { useQueryClient } from '@tanstack/react-query';
 import { Crown, Stethoscope } from 'lucide-react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { AdditionalNotes } from '@/src/features/clinical/main-ui/components/AdditionalNotes';
 import { DocumentationSettingsBadge } from '@/src/features/clinical/main-ui/components/DocumentationSettingsBadge';
@@ -11,6 +11,7 @@ import { GeneratedNotes } from '@/src/features/clinical/main-ui/components/Gener
 import { TranscriptionControls } from '@/src/features/clinical/main-ui/components/TranscriptionControls';
 // Removed TranscriptProcessingStatus import - no longer needed in single-pass architecture
 import { TypedInput } from '@/src/features/clinical/main-ui/components/TypedInput';
+import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTranscription';
 import { MobileRightPanelOverlay } from '@/src/features/clinical/mobile/components/MobileRightPanelOverlay';
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 import RightPanelFeatures from '@/src/features/clinical/right-sidebar/components/RightPanelFeatures';
@@ -18,6 +19,7 @@ import UsageDashboard from '@/src/features/clinical/right-sidebar/components/Usa
 import { WorkflowInstructions } from '@/src/features/clinical/right-sidebar/components/WorkflowInstructions';
 import { PatientSessionManager } from '@/src/features/clinical/session-management/components/PatientSessionManager';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
+import { RecordingAwareSessionContext } from '@/src/hooks/useRecordingAwareSession';
 import { ContactLink } from '@/src/shared/components/ContactLink';
 import { FloatingFeedbackButton } from '@/src/shared/components/FloatingFeedbackButton';
 import { Container } from '@/src/shared/components/layout/Container';
@@ -60,6 +62,7 @@ export default function ConsultationPage() {
     saveConsultationNotesToCurrentSession: _saveConsultationNotesToCurrentSession, // For clearing consultation notes (unused)
     ensureActiveSession, // For ensuring session exists before note generation
     resetLastGeneratedInput, // For resetting generation tracking
+    switchToPatientSession: originalSwitchToPatientSession, // Rename to create wrapper
   } = useConsultationStores();
   const { isSignedIn: _isSignedIn, userId } = useAuth();
   const { getUserTier, user } = useClerkMetadata();
@@ -88,6 +91,87 @@ export default function ConsultationPage() {
 
   // Mobile recording status
   const [mobileIsRecording, setMobileIsRecording] = useState(false);
+
+  // Desktop recording controls
+  const { stopRecording, isRecording } = useTranscription();
+
+  // Handle Ably errors (moved before useSimpleAbly)
+  const handleError = useCallback((error: string) => {
+    // Suppress Ably/auth noise and clear mobile state on auth failures
+    const isAblyNoise = /Failed to publish|Connection closed|Ably/i.test(error);
+    const isAuthInvalid = /Authentication failed|Token expired or invalid/i.test(error);
+
+    if (isAblyNoise || isAuthInvalid) {
+      if (isAuthInvalid) {
+        try {
+          // Always trust server: clear local mobile state/cache and show disconnected UI
+          setMobileV2TokenData(null);
+          enableMobileV2(false);
+          setMobileV2IsConnected(false);
+        } catch {}
+      }
+      console.warn('[Ably]', error);
+      return;
+    }
+    setError(error);
+  }, [setError, setMobileV2TokenData, enableMobileV2, setMobileV2IsConnected]);
+
+  // Simple Ably sync implementation - always connected when token exists (moved before switchToPatientSession)
+  const { sendRecordingControl } = useSimpleAbly({
+    tokenId: mobileV2?.token || null, // Always connect when token available
+    onTranscriptReceived: (transcript: string, enhancedData?: any) => {
+      // Always append to current session - no session matching needed
+      if (currentPatientSessionId) {
+        if (enhancedData && (enhancedData.confidence !== undefined || (enhancedData.words?.length || 0) > 0)) {
+          appendTranscriptionEnhanced(
+            transcript,
+            true,
+            'mobile',
+            undefined, // deviceId
+            undefined, // diarizedTranscript
+            undefined, // utterances
+            enhancedData.confidence,
+            enhancedData.words,
+            enhancedData.paragraphs,
+          );
+        } else {
+          appendTranscription(transcript, true, 'mobile');
+        }
+      }
+    },
+    onRecordingStatusChanged: (isRecording: boolean) => {
+      setMobileIsRecording(isRecording);
+    },
+    onError: handleError,
+    onConnectionStatusChanged: setMobileV2IsConnected,
+    isMobile: false,
+  });
+
+  // 🛡️ GP WORKFLOW: Wrapper to stop recording before session switching
+  const switchToPatientSession = useCallback(async (sessionId: string, onSwitch?: (sessionId: string, patientName: string) => void) => {
+    // Stop recording before switching sessions
+    if (isRecording || mobileIsRecording) {
+      try {
+        // Stop desktop recording
+        if (isRecording) {
+          stopRecording();
+        }
+
+        // Stop mobile recording
+        if (mobileIsRecording && sendRecordingControl) {
+          sendRecordingControl('stop');
+        }
+
+        // Brief delay to ensure recording stops and final chunks are saved
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (error) {
+        console.warn('Error stopping recording before session switch:', error);
+      }
+    }
+
+    // Now perform the actual session switch
+    originalSwitchToPatientSession(sessionId, onSwitch);
+  }, [isRecording, mobileIsRecording, stopRecording, sendRecordingControl, originalSwitchToPatientSession]);
 
   useEffect(() => {
     // Check URL parameters for upgrade redirect
@@ -164,26 +248,6 @@ export default function ConsultationPage() {
     setIsNoteFocused(false);
   }, [currentPatientSessionId]);
 
-  const handleError = useCallback((error: string) => {
-    // Suppress Ably/auth noise and clear mobile state on auth failures
-    const isAblyNoise = /Failed to publish|Connection closed|Ably/i.test(error);
-    const isAuthInvalid = /Authentication failed|Token expired or invalid/i.test(error);
-
-    if (isAblyNoise || isAuthInvalid) {
-      if (isAuthInvalid) {
-        try {
-                  // Always trust server: clear local mobile state/cache and show disconnected UI
-        setMobileV2TokenData(null);
-        enableMobileV2(false);
-        setMobileV2IsConnected(false);
-        } catch {}
-      }
-      console.warn('[Ably]', error);
-      return;
-    }
-    setError(error);
-  }, [setError, setMobileV2TokenData, enableMobileV2, setMobileV2IsConnected]);
-
   // 🛡️ PHASE 1 FIX: Reset mobile recording status when connection drops
   useEffect(() => {
     if (!mobileV2.isConnected && mobileIsRecording) {
@@ -191,37 +255,6 @@ export default function ConsultationPage() {
     }
     // Removed sessionSynced logic - no longer needed in simplified architecture
   }, [mobileV2.isConnected, mobileIsRecording]);
-
-  // Simple Ably sync implementation - always connected when token exists
-  const { sendRecordingControl } = useSimpleAbly({
-    tokenId: mobileV2?.token || null, // Always connect when token available
-    onTranscriptReceived: (transcript: string, enhancedData?: any) => {
-      // Always append to current session - no session matching needed
-      if (currentPatientSessionId) {
-        if (enhancedData && (enhancedData.confidence !== undefined || (enhancedData.words?.length || 0) > 0)) {
-          appendTranscriptionEnhanced(
-            transcript,
-            true,
-            'mobile',
-            undefined, // deviceId
-            undefined, // diarizedTranscript
-            undefined, // utterances
-            enhancedData.confidence,
-            enhancedData.words,
-            enhancedData.paragraphs,
-          );
-        } else {
-          appendTranscription(transcript, true, 'mobile');
-        }
-      }
-    },
-    onRecordingStatusChanged: (isRecording: boolean) => {
-      setMobileIsRecording(isRecording);
-    },
-    onError: handleError,
-    onConnectionStatusChanged: setMobileV2IsConnected,
-    isMobile: false,
-  });
 
   // Expose sendRecordingControl to global for remote control
   useEffect(() => {
@@ -378,6 +411,26 @@ export default function ConsultationPage() {
   };
 
   const handleGenerateNotes = async () => {
+    // 🛡️ GP WORKFLOW: Stop recording before generating notes
+    if (isRecording || mobileIsRecording) {
+      try {
+        // Stop desktop recording
+        if (isRecording) {
+          stopRecording();
+        }
+
+        // Stop mobile recording
+        if (mobileIsRecording && sendRecordingControl) {
+          sendRecordingControl('stop');
+        }
+
+        // Brief delay to ensure recording stops properly
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (error) {
+        console.warn('Error stopping recording before note generation:', error);
+      }
+    }
+
     setIsNoteFocused(true);
     setIsDocumentationMode(true);
     setLoading(true);
@@ -396,7 +449,7 @@ export default function ConsultationPage() {
 
       // Combine main content with additional notes as raw consultation data
       const rawConsultationData = additionalContent && additionalContent.trim()
-        ? `${mainContent}\n\nADDITIONAL NOTES:\n${additionalContent}`
+        ? `${mainContent}\n\nADDITIONAL GP OBJECTIVE FINDINGS:\n${additionalContent}`
         : mainContent;
 
       // Direct single-pass note generation
@@ -492,8 +545,12 @@ export default function ConsultationPage() {
     }
   };
 
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({ switchToPatientSession }), [switchToPatientSession]);
+
   return (
-    <div className="flex h-full flex-col">
+    <RecordingAwareSessionContext.Provider value={contextValue}>
+      <div className="flex h-full flex-col">
       {/* Right Panel Sidebar (Desktop Only) */}
       {isDesktop && (
         <div className={`
@@ -865,6 +922,7 @@ export default function ConsultationPage() {
           User Tier: ${userTier}
         `.trim()}
       />
-    </div>
+      </div>
+    </RecordingAwareSessionContext.Provider>
   );
 }

@@ -1,7 +1,6 @@
-description: "Global token cost reduction strategy"
-alwaysApply: true
 ---
-
+alwaysApply: false
+---
 # 1. Output Compression
 - Use telegraphic style unless explicitly asked otherwise.
 - Prefer bullets or numbered lists.

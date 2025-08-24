@@ -403,13 +403,14 @@ export function useConsultationStores(): any {
 
       // 🔧 STEP 4: LOAD SESSION DATA INTO LOCAL STORES (complete hydration)
       if (session) {
-        // Load transcriptions (get the most recent one for display)
+        // Load transcriptions (concatenate all chunks for full conversation)
         try {
           if (session.transcriptions) {
             const trans = typeof session.transcriptions === 'string' ? JSON.parse(session.transcriptions) : session.transcriptions;
             if (Array.isArray(trans) && trans.length > 0) {
-              const latest = trans[trans.length - 1];
-              transcriptionStore.setTranscription(latest?.text || '', false, undefined, undefined);
+              // ✅ FIX: Join all transcription chunks instead of showing only the last one
+              const fullTranscript = trans.map((t: any) => t.text).join(' ');
+              transcriptionStore.setTranscription(fullTranscript, false, undefined, undefined);
             }
           }
         } catch (error) {

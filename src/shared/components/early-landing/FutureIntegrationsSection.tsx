@@ -1,162 +1,297 @@
-import { BookOpen, Database, FileSearch, MessageCircle, Zap } from 'lucide-react';
+import { Brain, Camera, CheckCircle, Mic, Settings, Timer, Wrench, Zap } from 'lucide-react';
+
+import AnimatedContent from '@/src/shared/components/AnimatedContent';
 
 export const FutureIntegrationsSection = () => {
-  const integrations = [
+  const heroFeatures = [
     {
-      icon: FileSearch,
-      title: 'Patient Notes Summary',
-      description: 'Instantly summarise relevant patient notes from your PMS',
-      color: 'nz-green',
+      icon: Mic,
+      title: '1. Write perfect notes while talking to patients',
+      description: 'Real-time transcription and structured note generation',
+      items: [
+        'Transcribe and summarise consults automatically',
+        'Auto-generate structured notes into NZ-specific templates',
+        'Save ~45 minutes daily on documentation',
+      ],
+      color: 'green',
+      category: 'Core AI',
+      timeSaved: '45 min/day',
+      highlight: 'Most Popular',
     },
     {
-      icon: BookOpen,
-      title: 'Clinical Resource Search',
-      description: 'Search HealthPathways, BPAC, and NZ Formulary based on what you\'re seeing',
-      color: 'nz-blue',
-    },
-    {
-      icon: MessageCircle,
-      title: 'Patient Advice Generator',
-      description: 'Automatically find and send tailored patient advice',
-      color: 'nz-green',
-    },
-    {
-      icon: Database,
-      title: 'PMS Integration',
-      description: 'Seamless connection with your practice management system',
-      color: 'nz-blue',
+      icon: Settings,
+      title: '2. Never touch another ACC form',
+      description: 'Eliminate repetitive administrative tasks',
+      sections: [
+        {
+          subtitle: 'ACC Forms & Coding',
+          items: [
+            'Draft injury descriptions and suggest correct ACC Read codes',
+            'Instant employer lookup with correct names and addresses',
+          ],
+        },
+        {
+          subtitle: 'Referrals & Messaging',
+          items: [
+            'Generate specialist-ready referral letters from consult data',
+            'Auto-create patient-friendly result messages with lifestyle advice',
+          ],
+        },
+      ],
+      color: 'blue',
+      category: 'Automation',
+      timeSaved: '30 min/day',
+      highlight: 'Time Saver',
     },
   ];
 
+  const supportingFeatures = [
+    {
+      icon: Brain,
+      title: '3. Get guidelines in seconds, not minutes',
+      items: [
+        'Search NZ guidelines, PDFs, and HealthPathways simultaneously',
+        'Get referenced answers in ~10 seconds',
+        'Reduce cognitive load with instant clinical support',
+      ],
+      color: 'green',
+      category: 'Decision Support',
+      timeSaved: '15 min/day',
+    },
+    {
+      icon: Camera,
+      title: '4. Secure Clinical Photos',
+      items: [
+        'Capture via secure web interface — never on personal devices',
+        'Auto-resize, label, and attach directly to PMS',
+        'Maintain privacy while saving time',
+      ],
+      color: 'blue',
+      category: 'Documentation',
+      timeSaved: '10 min/day',
+    },
+    {
+      icon: Wrench,
+      title: '5. and more...',
+      items: [
+        'Custom SOAP note templates tailored to your practice style',
+        'Automated patient recall systems and follow-up workflows',
+        'Integration with your existing PMS and third-party tools',
+        'Bespoke admin automation - from idea to live tool in days',
+        'White-label solutions for your practice group or PHO',
+      ],
+      color: 'green',
+      category: 'Customisation',
+      timeSaved: 'Unlimited',
+    },
+  ];
+
+  const getColorClasses = (color: string) => {
+    return color === 'green'
+      ? {
+          gradient: 'from-white to-gray-50',
+          icon: 'bg-nz-green-100 border-nz-green-200',
+          iconColor: 'text-nz-green-600',
+          accent: 'bg-gradient-to-br from-nz-green-500 to-emerald-600',
+          border: 'border-nz-green-200',
+          highlight: 'bg-nz-green-100 text-nz-green-700 border-nz-green-200',
+          category: 'bg-nz-green-100 text-nz-green-700 border-nz-green-200',
+          timeBadge: 'bg-nz-green-500 text-white',
+        }
+      : {
+          gradient: 'from-white to-gray-50',
+          icon: 'bg-nz-blue-100 border-nz-blue-200',
+          iconColor: 'text-nz-blue-600',
+          accent: 'bg-gradient-to-br from-nz-blue-500 to-cyan-600',
+          border: 'border-nz-blue-200',
+          highlight: 'bg-nz-blue-100 text-nz-blue-700 border-nz-blue-200',
+          category: 'bg-nz-blue-100 text-nz-blue-700 border-nz-blue-200',
+          timeBadge: 'bg-nz-blue-500 text-white',
+        };
+  };
+
   return (
-    <section className="relative bg-gradient-to-br from-gray-50 via-white to-nz-blue-50/30 py-16 sm:py-24 lg:py-32">
-      {/* Background Elements */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="to-nz-blue-300/8 absolute -right-40 top-20 size-[500px] rounded-full bg-gradient-to-br from-nz-green-200/10 blur-3xl"></div>
-        <div className="from-nz-blue-200/8 absolute -left-60 bottom-32 size-[600px] rounded-full bg-gradient-to-tr to-nz-green-300/10 blur-3xl"></div>
-      </div>
+    <section className="relative bg-white py-16 sm:py-20 lg:py-24">
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="mb-16 text-center">
-          <div className="relative">
-            {/* Decorative accent behind title */}
-            <div className="absolute -left-4 top-4 h-16 w-1.5 bg-gradient-to-b from-nz-green-500 to-nz-blue-600 sm:h-20 lg:-left-8"></div>
-
-            <h2 className="relative text-3xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-4xl md:text-5xl lg:text-6xl">
-              <span className="block">Future Smart</span>
-              <span className="block text-nz-green-600">Integrations</span>
-            </h2>
-
-            {/* Stylish accent elements */}
-            <div className="absolute -right-8 top-4 size-3 rounded-full bg-nz-green-400/70 sm:size-4 lg:-right-12"></div>
-            <div className="absolute -left-6 top-16 size-2 rounded-full bg-nz-blue-400/60 sm:size-3 lg:-left-10"></div>
-          </div>
-        </div>
-
-        {/* Introduction */}
-        <div className="mx-auto mb-16 max-w-4xl text-center">
-          <p className="text-lg leading-relaxed text-gray-700 sm:text-xl lg:text-2xl">
-            <span className="font-semibold text-nz-green-700">I'm actively working towards partnerships</span>
-            {' '}
-            to deliver a truly seamless workflow for NZ GPs.
-          </p>
-
-          <div className="mt-8 rounded-2xl border-2 border-nz-green-200/50 bg-gradient-to-r from-nz-green-50/80 to-nz-blue-50/60 p-6 shadow-lg">
-            <p className="text-lg font-medium text-gray-800">
-              Some of the smart workflows I'm prototyping:
-            </p>
-          </div>
-        </div>
-
-        {/* Integration Cards */}
-        <div className="mb-16 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-          {integrations.map((integration, index) => {
-            const IconComponent = integration.icon;
-            const isGreen = integration.color === 'nz-green';
-
-            return (
-              <div
-                key={index}
-                className="group relative overflow-hidden rounded-2xl border border-gray-200/50 bg-white/95 p-6 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"
-              >
-                {/* Visual accent background */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${
-                  isGreen ? 'from-nz-green-50 via-nz-green-50/50 to-nz-blue-50/30' : 'from-nz-blue-50 via-nz-blue-50/50 to-nz-green-50/30'
-                } opacity-50`}
-                >
-                </div>
-
-                {/* Decorative corner accents */}
-                <div className={`absolute -right-6 -top-6 size-12 rounded-full ${
-                  isGreen ? 'bg-nz-green-100' : 'bg-nz-blue-100'
-                } opacity-30`}
-                >
-                </div>
-                <div className={`absolute -bottom-3 -left-3 size-8 rounded-full ${
-                  isGreen ? 'bg-nz-green-100' : 'bg-nz-blue-100'
-                } opacity-20`}
-                >
-                </div>
-
-                <div className="relative z-10 text-center">
-                  {/* Icon */}
-                  <div className="mb-4 flex justify-center">
-                    <div className={`rounded-xl p-3 shadow-lg transition-transform group-hover:scale-105 ${
-                      isGreen ? 'bg-nz-green-100' : 'bg-nz-blue-100'
-                    }`}
-                    >
-                      <IconComponent className={`size-8 ${
-                        isGreen ? 'text-nz-green-600' : 'text-nz-blue-600'
-                      }`}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="mb-3 text-lg font-bold leading-tight text-gray-900">
-                    {integration.title}
-                  </h3>
-
-                  {/* Description */}
-                  <p className="text-sm leading-relaxed text-gray-700">
-                    {integration.description}
-                  </p>
-                </div>
-
-                {/* Subtle side accent */}
-                <div className={`absolute inset-y-6 left-0 w-1 rounded-r-full ${
-                  isGreen ? 'bg-gradient-to-b from-nz-green-500 to-nz-green-600' : 'bg-gradient-to-b from-nz-blue-500 to-nz-blue-600'
-                }`}
-                >
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Vision Statement */}
-        <div className="text-center">
-          <div className="mx-auto max-w-4xl rounded-2xl border-2 border-nz-blue-200/50 bg-gradient-to-r from-nz-blue-50/80 to-nz-green-50/60 p-8 shadow-lg">
-            <p className="mb-4 text-lg font-medium text-gray-800">
-              These tools are early-stage — but the vision is clear:
-            </p>
-            <p className="text-2xl font-bold text-nz-green-700">
-              less admin, more clinical clarity.
-            </p>
-
-            <div className="mt-8 flex items-center justify-center gap-2">
-              <Zap className="size-6 text-nz-green-600" />
-              <p className="text-lg font-semibold text-gray-800">
-                New features added weekly. Your voice shapes every update.
-              </p>
+        {/* Modern Section Header */}
+        <AnimatedContent
+          distance={60}
+          direction="vertical"
+          duration={0.8}
+          ease="power3.out"
+          threshold={0.1}
+        >
+          <div className="mx-auto mb-16 max-w-5xl text-center">
+            <div className="mb-6 inline-flex items-center gap-3 rounded-full bg-nz-blue-50/50 px-5 py-2.5 text-sm font-semibold text-nz-green-700 ring-1 ring-nz-green-200/40 backdrop-blur-sm">
+              <Zap className="size-4 text-nz-green-600" />
+              Smart Technology Integration
             </div>
 
-            <p className="mt-4 text-base text-gray-600">
-              This isn't corporate healthcare tech — it's built by a GP who responds to messages personally.
-            </p>
+            <h2 className="mb-6 font-oswald text-3xl font-black leading-tight tracking-tight text-gray-900 sm:text-4xl lg:text-5xl xl:text-6xl">
+              HOW CLINICPRO MAKES
+              <span className="block text-nz-green-600">
+                IT POSSIBLE
+              </span>
+            </h2>
+
+          </div>
+        </AnimatedContent>
+
+        {/* Hero Features - Asymmetric 2-Column Layout */}
+        <div className="mb-16 space-y-8">
+          <div className="grid gap-8 lg:grid-cols-2">
+            {heroFeatures.map((feature, index) => {
+            const IconComponent = feature.icon;
+              const colors = getColorClasses(feature.color);
+
+            return (
+              <AnimatedContent
+                key={feature.title}
+                distance={80}
+                direction="horizontal"
+                reverse={index % 2 === 1}
+                duration={0.8}
+                ease="power3.out"
+                threshold={0.1}
+                delay={0.2 + index * 0.2}
+              >
+                <div
+                  className={`group relative overflow-hidden rounded-3xl border ${colors.border} bg-gradient-to-br ${colors.gradient} p-8 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:shadow-gray-900/10 sm:p-10`}
+                >
+                  {/* Modern accent elements */}
+                  <div className={`absolute left-0 top-0 h-28 w-2 rounded-r-full ${colors.accent}`}></div>
+                  <div className={`absolute -right-8 -top-8 size-32 rounded-full ${colors.accent} opacity-5`}></div>
+
+                  <div className="relative space-y-8">
+                    {/* Header with badges */}
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="flex items-center gap-4">
+                        <div className={`rounded-2xl border ${colors.icon} p-4 shadow-lg transition-transform group-hover:scale-105`}>
+                          <IconComponent className={`size-8 ${colors.iconColor}`} />
+                        </div>
+                        <div className="space-y-1">
+
+                        </div>
+                      </div>
+
+                      <div className={`flex items-center gap-2 rounded-full px-4 py-2 shadow-sm ${colors.timeBadge}`}>
+                        <Timer className="size-4" />
+                        <span className="text-sm font-bold">
+Saves
+{feature.timeSaved}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="space-y-4">
+                      <div>
+                                                <h3 className="mb-2 font-open-sans text-xl font-black leading-tight text-gray-900 sm:text-2xl">
+                          {feature.title}
+                                                </h3>
+                        <p className="text-sm font-medium leading-relaxed text-gray-700 sm:text-base">
+                          {feature.description}
+                        </p>
+                      </div>
+
+                      {/* Feature items */}
+                    {feature.items && (
+                      <ul className="space-y-3">
+                        {feature.items.map(item => (
+                          <li key={`${feature.title}-${item.substring(0, 20)}`} className="flex items-start gap-3">
+                              <CheckCircle className={`mt-0.5 size-5 shrink-0 ${colors.iconColor}`} />
+                              <span className="text-sm leading-relaxed text-gray-700 sm:text-base">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                      {/* Feature sections for complex features */}
+                    {feature.sections && (
+                        <div className="space-y-5">
+                        {feature.sections.map(section => (
+                            <div key={section.subtitle} className="rounded-2xl bg-white/60 p-4 backdrop-blur-sm">
+                              <h4 className={`mb-3 font-open-sans text-lg font-black ${colors.iconColor.replace('text-', 'text-').replace('-600', '-700')}`}>
+                              {section.subtitle}
+                              </h4>
+                            <ul className="space-y-2">
+                              {section.items.map(item => (
+                                <li key={`${section.subtitle}-${item.substring(0, 20)}`} className="flex items-start gap-3">
+                                    <div className={`mt-1.5 size-2 shrink-0 rounded-full ${colors.iconColor.replace('text-', 'bg-')}`}></div>
+                                    <span className="text-sm leading-relaxed text-gray-700">{item}</span>
+                                </li>
+                              ))}
+                            </ul>
+                            </div>
+                        ))}
+                        </div>
+                    )}
+                    </div>
+                  </div>
+                </div>
+              </AnimatedContent>
+            );
+          })}
           </div>
         </div>
+
+        {/* Supporting Features - 3-Column Grid */}
+        <div className="mb-16">
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {supportingFeatures.map((feature) => {
+              const IconComponent = feature.icon;
+              const colors = getColorClasses(feature.color);
+
+              return (
+                <div
+                  key={feature.title}
+                  className={`group relative overflow-hidden rounded-3xl border ${colors.border} bg-gradient-to-br ${colors.gradient} p-6 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:shadow-gray-900/10 sm:p-8`}
+                >
+                  {/* Modern accent */}
+                  <div className={`absolute left-0 top-0 h-20 w-1.5 rounded-r-full ${colors.accent}`}></div>
+
+                  <div className="relative space-y-6">
+                    {/* Header */}
+                    <div className="flex items-start justify-between">
+                      <div className={`rounded-xl border ${colors.icon} p-3 shadow-lg transition-transform group-hover:scale-105`}>
+                        <IconComponent className={`size-6 ${colors.iconColor}`} />
+                      </div>
+                      <div className="text-right">
+
+                        <div className={`mt-2 inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold ${colors.timeBadge}`}>
+                          <Timer className="size-3" />
+                          +
+{feature.timeSaved}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="space-y-4">
+                      <h4 className="font-open-sans text-lg font-black leading-tight text-gray-900 sm:text-xl">
+                        {feature.title}
+                      </h4>
+
+                      <ul className="space-y-3">
+                        {feature.items.map(item => (
+                          <li key={`${feature.title}-${item.substring(0, 20)}`} className="flex items-start gap-2">
+                            <CheckCircle className={`mt-0.5 size-4 shrink-0 ${colors.iconColor}`} />
+                            <span className="text-sm leading-relaxed text-gray-700">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Enhanced Summary Section */}
+
       </div>
     </section>
   );

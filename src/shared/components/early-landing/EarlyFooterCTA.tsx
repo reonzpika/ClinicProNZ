@@ -3,6 +3,7 @@
 import { ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 
+import AnimatedContent from '@/src/shared/components/AnimatedContent';
 import { Button } from '@/src/shared/components/ui/button';
 
 export const EarlyFooterCTA = () => {
@@ -41,94 +42,103 @@ export const EarlyFooterCTA = () => {
   };
 
   return (
-    <section className="relative bg-gradient-to-br from-nz-green-600 via-nz-green-700 to-nz-blue-700 py-16 sm:py-24 lg:py-32">
-      {/* Background Elements */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="to-nz-blue-300/8 absolute -right-40 top-20 size-[500px] rounded-full bg-gradient-to-br from-white/10 blur-3xl"></div>
-        <div className="from-nz-blue-200/8 absolute -left-60 bottom-32 size-[600px] rounded-full bg-gradient-to-tr to-white/10 blur-3xl"></div>
+    <section className="relative bg-gradient-to-br from-nz-green-500 via-nz-green-600 to-nz-blue-600 py-20 sm:py-24 lg:py-32">
+      {/* Background Elements - Simplified */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-30">
+        <div className="bg-nz-green-100/4 absolute -right-40 top-20 size-[400px] rounded-full blur-3xl"></div>
+        <div className="bg-nz-blue-100/4 absolute -left-60 bottom-32 size-[400px] rounded-full blur-3xl"></div>
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           {/* Main Headline */}
-          <div className="mb-8">
-            <h2 className="text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl md:text-5xl lg:text-6xl">
-              <span className="block">Spend less time on notes —</span>
-              <span className="block text-nz-green-100">and take back your day.</span>
-            </h2>
-          </div>
+          <AnimatedContent
+            distance={40}
+            direction="vertical"
+            duration={0.4}
+            ease="power3.out"
+            threshold={0.1}
+          >
+            <div className="mb-8">
+              <h2 className="font-oswald text-5xl font-extrabold leading-tight tracking-tight text-white sm:text-6xl lg:text-7xl xl:text-8xl">
+                <span className="text-white">ENOUGH IS</span>
+{' '}
+<span>ENOUGH</span>
+              </h2>
+            </div>
+          </AnimatedContent>
 
-          {/* Supporting Text */}
-          <div className="mx-auto mb-12 max-w-3xl">
-            <p className="text-xl text-nz-green-100 sm:text-2xl">
-              Join the first 15 NZ GPs who are transforming their practice with ClinicPro.
+          {/* Strong Message */}
+          <AnimatedContent
+            distance={30}
+            direction="vertical"
+            duration={0.3}
+            ease="power3.out"
+            threshold={0.1}
+            delay={0.1}
+          >
+            <div className="mx-auto mb-12 max-w-4xl">
+              <p className="text-xl leading-relaxed text-white/90 sm:text-2xl">
+                The 15-minute consult isn't stretching. The health system isn't fixing itself. Legacy tools won't suddenly work for us.
+              </p>
+              <p className="mt-4 text-xl font-bold text-white">
+                Technology is moving fast — but if we don't change how we work, nothing will change.
+              </p>
+            </div>
+          </AnimatedContent>
+
+          {/* Secondary Headline */}
+          <AnimatedContent
+            distance={30}
+            direction="vertical"
+            duration={0.3}
+            ease="power3.out"
+            threshold={0.1}
+            delay={0.2}
+          >
+            <div className="mb-12">
+            <h3 className="font-oswald text-2xl font-black text-white sm:text-3xl md:text-4xl">
+              GET MORE DONE IN 15 MINUTES
+            </h3>
+            <p className="mt-4 text-lg text-white/90 sm:text-xl">
+              Take back control of your time, your consults, and your sanity.
             </p>
-            <p className="mt-4 text-lg text-nz-green-200">
-              Your time with family and patients matters more than paperwork.
-            </p>
-          </div>
+            </div>
+          </AnimatedContent>
 
           {/* CTA Button */}
-          <div className="mb-8">
+          <AnimatedContent
+            distance={30}
+            direction="vertical"
+            duration={0.3}
+            ease="power3.out"
+            threshold={0.1}
+            delay={0.3}
+          >
+            <div className="mb-12">
             <div className="relative inline-block w-full max-w-4xl">
               <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-white/30 to-nz-green-300/30 blur-lg sm:-inset-2 sm:rounded-2xl"></div>
               <Button
                 size="lg"
                 onClick={handleJoinClick}
                 disabled={isLoading}
-                className="relative w-full bg-white p-4 text-base font-semibold text-nz-green-700 shadow-xl transition-all duration-300 hover:bg-nz-green-50 hover:shadow-2xl sm:px-6 sm:py-4 sm:text-lg md:px-8 md:text-xl"
+                className="group relative w-full rounded-xl bg-orange-600 px-6 py-4 text-base font-semibold text-white shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01] hover:bg-orange-700 hover:shadow-2xl hover:shadow-orange-500/20 active:translate-y-0 active:scale-100 motion-reduce:transform-none motion-reduce:transition-none sm:px-8 sm:py-5 sm:text-lg md:px-10 md:py-6 md:text-xl"
               >
                 {isLoading
                   ? 'Loading...'
                   : (
                       <div className="flex items-center justify-center gap-2">
-                        <span className="block sm:hidden">
-                          Join Super Early (NZ$30/mo)
+                        <span className="font-open-sans text-lg font-bold">
+                          Start Today
                         </span>
-                        <span className="hidden sm:block md:hidden">
-                          Join Super Early (NZ$30/mo) — 15 Spots
-                        </span>
-                        <span className="hidden md:block">
-                          Join Super Early (NZ$30/mo) — Only 15 Spots Available
-                        </span>
-                        <ArrowRight className="size-4 sm:size-5" />
+                        <ArrowRight className="size-5 transition-transform duration-300 group-hover:translate-x-1 sm:size-6" />
                       </div>
                     )}
               </Button>
             </div>
-          </div>
-
-          {/* Trust Elements */}
-          <div className="space-y-4">
-            <p className="text-sm text-nz-green-200">
-              No setup fees • Cancel anytime • Price locked for 12 months
-            </p>
-
-            <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-nz-green-200">
-              <div className="flex items-center gap-2">
-                <div className="size-2 rounded-full bg-nz-green-300"></div>
-                <span>Built by a practicing NZ GP</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="size-2 rounded-full bg-nz-green-300"></div>
-                <span>Privacy Act 2020 compliant</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="size-2 rounded-full bg-nz-green-300"></div>
-                <span>Direct founder support</span>
-              </div>
             </div>
-          </div>
+          </AnimatedContent>
 
-          {/* Secondary CTA */}
-          <div className="mt-12">
-            <a
-              href="/consultation"
-              className="inline-flex items-center rounded-lg border border-white/30 bg-white/10 px-6 py-3 text-base font-medium text-white shadow-sm backdrop-blur-sm transition-colors hover:bg-white/20"
-            >
-              See How It Works — Demo Version
-            </a>
-          </div>
         </div>
       </div>
     </section>

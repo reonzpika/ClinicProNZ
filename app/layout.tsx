@@ -3,7 +3,7 @@ import './globals.css';
 import { ClerkProvider } from '@clerk/nextjs';
 import { Analytics } from '@vercel/analytics/next';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Oswald, Open_Sans } from 'next/font/google';
 
 import { QueryClientProvider } from '@/src/providers/QueryClientProvider';
 import { AppLayoutWrapper } from '@/src/shared/components/AppLayoutWrapper';
@@ -14,6 +14,23 @@ const inter = Inter({
   display: 'swap',
   preload: true,
   fallback: ['system-ui', 'arial'],
+  variable: '--font-inter',
+});
+
+const oswald = Oswald({
+  subsets: ['latin'],
+  display: 'swap',
+  preload: true,
+  fallback: ['system-ui', 'arial'],
+  variable: '--font-oswald',
+});
+
+const openSans = Open_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  preload: true,
+  fallback: ['system-ui', 'arial'],
+  variable: '--font-open-sans',
 });
 
 export const metadata: Metadata = {
@@ -31,7 +48,7 @@ export default function RootLayout({
       <QueryClientProvider>
         <TestUserProvider>
           <html lang="en">
-            <body className={inter.className}>
+            <body className={`${inter.variable} ${oswald.variable} ${openSans.variable} ${inter.className}`}>
               {/* <StagewiseToolbar /> */}
               <AppLayoutWrapper>{children}</AppLayoutWrapper>
               <Analytics />
