@@ -10,7 +10,6 @@ import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { createAuthHeadersForMobile } from '@/src/shared/utils';
-import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
 // Simple mobile state types (now using inline types)
 
@@ -58,8 +57,6 @@ function useWakeLock() {
 // Main mobile page component
 function MobilePageContent() {
   const searchParams = useSearchParams();
-  const { getUserTier, isLoaded } = useClerkMetadata();
-  const isAdmin = isLoaded && getUserTier() === 'admin';
 
   // Removed consultation stores - no session management needed
 
@@ -159,16 +156,9 @@ function MobilePageContent() {
         const data = await response.json();
         const { transcript } = data;
 
-        // 🆕 Extract enhanced data from Deepgram API response
-        const enhancedData = {
-          confidence: data.confidence,
-          words: data.words || [],
-          paragraphs: data.paragraphs,
-        };
-        // Send transcript via Ably
-        // Strip heavy metadata for non-admin users to avoid Ably size limits
+        // Send transcript via Ably (no words/paragraphs to minimise message size)
         if (transcript?.trim()) {
-          const success = sendTranscript(transcript.trim(), isAdmin ? enhancedData : undefined);
+          const success = sendTranscript(transcript.trim());
           if (!success) {
             setTokenState(prev => ({ ...prev, error: 'Failed to send transcription to desktop' }));
           }
