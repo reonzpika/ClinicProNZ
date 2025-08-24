@@ -10,6 +10,7 @@ import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { createAuthHeadersForMobile } from '@/src/shared/utils';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
 // Simple mobile state types (now using inline types)
 
@@ -57,6 +58,8 @@ function useWakeLock() {
 // Main mobile page component
 function MobilePageContent() {
   const searchParams = useSearchParams();
+  const { getUserTier, isLoaded } = useClerkMetadata();
+  const isAdmin = isLoaded && getUserTier() === 'admin';
 
   // Removed consultation stores - no session management needed
 
@@ -162,9 +165,10 @@ function MobilePageContent() {
           words: data.words || [],
           paragraphs: data.paragraphs,
         };
-        // Send transcript with enhanced data via Ably
+        // Send transcript via Ably
+        // Strip heavy metadata for non-admin users to avoid Ably size limits
         if (transcript?.trim()) {
-          const success = sendTranscript(transcript.trim(), enhancedData);
+          const success = sendTranscript(transcript.trim(), isAdmin ? enhancedData : undefined);
           if (!success) {
             setTokenState(prev => ({ ...prev, error: 'Failed to send transcription to desktop' }));
           }
