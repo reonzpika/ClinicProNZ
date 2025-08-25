@@ -54,8 +54,8 @@ export async function POST(req: Request) {
       }, { status: 400 });
     }
 
-    // Validate that the key belongs to a consultation (security check)
-    if (!imageKey.startsWith('consultations/')) {
+    // Validate that the key belongs to a consultation or mobile upload (security check)
+    if (!imageKey.startsWith('consultations/') && !imageKey.startsWith('mobile-uploads/')) {
       return NextResponse.json({ error: 'Invalid image key' }, { status: 400 });
     }
 

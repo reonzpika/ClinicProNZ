@@ -39,9 +39,11 @@ export async function GET(req: NextRequest) {
     const filename = req.nextUrl.searchParams.get('filename') || 'image.jpg';
     const mimeType = req.nextUrl.searchParams.get('mimeType') || 'image/jpeg';
     const patientSessionId = req.nextUrl.searchParams.get('patientSessionId');
+    const mobileTokenId = req.nextUrl.searchParams.get('mobileTokenId');
 
-    if (!patientSessionId) {
-      return NextResponse.json({ error: 'Patient session ID is required' }, { status: 400 });
+    // Require either patient session ID or mobile token ID
+    if (!patientSessionId && !mobileTokenId) {
+      return NextResponse.json({ error: 'Either patientSessionId or mobileTokenId is required' }, { status: 400 });
     }
 
     // Validate file type
@@ -49,10 +51,19 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Only image files are allowed' }, { status: 400 });
     }
 
-    // Generate unique key for S3 object
+    // Generate unique key for S3 object based on upload type
     const timestamp = Date.now();
     const fileExtension = filename.split('.').pop() || 'jpg';
-    const key = `consultations/${patientSessionId}/${timestamp}-${uuidv4()}.${fileExtension}`;
+    const uniqueFilename = `${timestamp}-${uuidv4()}.${fileExtension}`;
+
+    let key: string;
+    if (patientSessionId) {
+      // Traditional consultation image path
+      key = `consultations/${patientSessionId}/${uniqueFilename}`;
+    } else {
+      // Mobile upload path using token ID
+      key = `mobile-uploads/${mobileTokenId}/${uniqueFilename}`;
+    }
 
     // Create presigned URL for PUT operation
     const command = new PutObjectCommand({
@@ -61,9 +72,12 @@ export async function GET(req: NextRequest) {
       ContentType: mimeType,
       ServerSideEncryption: 'AES256',
       Metadata: {
-        'patient-session-id': patientSessionId,
+        ...(patientSessionId && { 'patient-session-id': patientSessionId }),
+        ...(mobileTokenId && { 'mobile-token-id': mobileTokenId }),
+        'upload-type': patientSessionId ? 'consultation' : 'mobile',
         'uploaded-by': userId || 'mobile-session',
         'original-filename': filename,
+        'upload-timestamp': timestamp.toString(),
       },
     });
 

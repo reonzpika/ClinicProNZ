@@ -1,17 +1,32 @@
 'use client';
 
-import { AlertTriangle, CheckCircle, Mic, MicOff, Smartphone, Wifi, WifiOff } from 'lucide-react';
+import { AlertTriangle, Camera, CheckCircle, Mic, MicOff, Smartphone, Upload, Wifi, WifiOff } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTranscription';
+import { PhotoReview } from '@/src/features/clinical/mobile/components/PhotoReview';
+import { WebRTCCamera } from '@/src/features/clinical/mobile/components/WebRTCCamera';
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { createAuthHeadersForMobile } from '@/src/shared/utils';
 
-// Simple mobile state types (now using inline types)
+// Types for mobile image capture
+type CapturedPhoto = {
+  id: string;
+  blob: Blob;
+  timestamp: string;
+  filename: string;
+  status: 'captured' | 'uploading' | 'uploaded' | 'failed';
+};
+
+type UploadProgress = {
+  photoId: string;
+  progress: number;
+  error?: string;
+};
 
 // Custom hook for screen wake lock
 function useWakeLock() {
@@ -73,8 +88,13 @@ function MobilePageContent() {
     error: null,
   });
 
-  // Mobile state for UI
-  const [mobileState, setMobileState] = useState<'disconnected' | 'connecting' | 'connected' | 'recording' | 'error'>('disconnected');
+  // Mobile state for UI - extended for camera functionality
+  const [mobileState, setMobileState] = useState<'disconnected' | 'connecting' | 'connected' | 'recording' | 'camera' | 'reviewing' | 'uploading' | 'error'>('disconnected');
+
+  // Photo capture state management
+  const [capturedPhotos, setCapturedPhotos] = useState<CapturedPhoto[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress[]>([]);
+  const [isUploadingBatch, setIsUploadingBatch] = useState(false);
 
   // Wake lock functionality
   const { isSupported: wakeLockSupported, requestWakeLock, releaseWakeLock } = useWakeLock();
@@ -90,7 +110,7 @@ function MobilePageContent() {
   const stopRecordingRef = useRef<() => Promise<void> | void>(() => {});
 
   // Simple Ably for real-time sync - no session sync needed
-  const { isConnected, sendTranscript, sendRecordingStatus } = useSimpleAbly({
+  const { isConnected, sendTranscript, sendRecordingStatus, sendImageNotification } = useSimpleAbly({
     tokenId: tokenState.isValid ? tokenState.token : null,
     onTranscriptReceived: (_transcript: string) => {
       // Transcript received unexpectedly on mobile (shouldn't happen)
@@ -298,6 +318,170 @@ function MobilePageContent() {
     }
   }, [isRecording, stopRecording, sendRecordingStatusWithRetry]);
 
+  // Camera workflow handlers
+  const handleCameraMode = useCallback(async () => {
+    // Stop recording if active
+    if (isRecording) {
+      await stopRecording();
+      await sendRecordingStatusWithRetry(false);
+    }
+
+    setMobileState('camera');
+  }, [isRecording, stopRecording, sendRecordingStatusWithRetry]);
+
+  const handleCameraCapture = useCallback((photoBlob: Blob, filename: string) => {
+    const newPhoto: CapturedPhoto = {
+      id: Math.random().toString(36).substr(2, 9),
+      blob: photoBlob,
+      timestamp: new Date().toISOString(),
+      filename,
+      status: 'captured',
+    };
+
+    setCapturedPhotos(prev => [...prev, newPhoto]);
+  }, []);
+
+  const handleCameraClose = useCallback(() => {
+    if (capturedPhotos.length > 0) {
+      setMobileState('reviewing');
+    } else {
+      setMobileState('connected');
+    }
+  }, [capturedPhotos.length]);
+
+  const handleDeletePhoto = useCallback((photoId: string) => {
+    setCapturedPhotos(prev => prev.filter(photo => photo.id !== photoId));
+  }, []);
+
+  const handleRetakePhoto = useCallback(() => {
+    setMobileState('camera');
+  }, []);
+
+  const uploadSinglePhoto = useCallback(async (photo: CapturedPhoto): Promise<void> => {
+    if (!tokenState.token) {
+      throw new Error('No mobile token available');
+    }
+
+    // Update photo status to uploading
+    setCapturedPhotos(prev =>
+      prev.map(p => p.id === photo.id ? { ...p, status: 'uploading' } : p),
+    );
+
+    // Initialize progress
+    setUploadProgress(prev => [...prev, { photoId: photo.id, progress: 0 }]);
+
+    try {
+      // Get presigned URL for mobile upload
+      const presignParams = new URLSearchParams({
+        filename: photo.filename,
+        mimeType: photo.blob.type,
+        mobileTokenId: tokenState.token,
+      });
+
+      const presignResponse = await fetch(`/api/uploads/presign?${presignParams}`);
+      if (!presignResponse.ok) {
+        throw new Error('Failed to get upload URL');
+      }
+
+      const { uploadUrl } = await presignResponse.json();
+
+      // Update progress
+      setUploadProgress(prev =>
+        prev.map(p => p.photoId === photo.id ? { ...p, progress: 50 } : p),
+      );
+
+      // Upload to S3
+      const uploadResponse = await fetch(uploadUrl, {
+        method: 'PUT',
+        body: photo.blob,
+        headers: {
+          'Content-Type': photo.blob.type,
+          'X-Amz-Server-Side-Encryption': 'AES256',
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error(`Failed to upload image (${uploadResponse.status})`);
+      }
+
+      // Complete progress
+      setUploadProgress(prev =>
+        prev.map(p => p.photoId === photo.id ? { ...p, progress: 100 } : p),
+      );
+
+      // Update photo status to uploaded
+      setCapturedPhotos(prev =>
+        prev.map(p => p.id === photo.id ? { ...p, status: 'uploaded' } : p),
+      );
+    } catch (error) {
+      console.error('Photo upload failed:', error);
+
+      // Update photo status to failed
+      setCapturedPhotos(prev =>
+        prev.map(p => p.id === photo.id ? { ...p, status: 'failed' } : p),
+      );
+
+      // Update progress with error
+      setUploadProgress(prev =>
+        prev.map(p => p.photoId === photo.id
+          ? { ...p, progress: 0, error: error instanceof Error ? error.message : 'Upload failed' }
+          : p,
+        ),
+      );
+
+      throw error;
+    }
+  }, [tokenState.token]);
+
+  const handleUploadAll = useCallback(async () => {
+    const photosToUpload = capturedPhotos.filter(p => p.status === 'captured' || p.status === 'failed');
+    if (photosToUpload.length === 0) {
+ return;
+}
+
+    setIsUploadingBatch(true);
+    setMobileState('uploading');
+
+    try {
+      // Upload photos sequentially to avoid overwhelming the connection
+      for (const photo of photosToUpload) {
+        try {
+          await uploadSinglePhoto(photo);
+        } catch (error) {
+          // Continue with other photos even if one fails
+          console.error(`Failed to upload photo ${photo.id}:`, error);
+        }
+      }
+
+      // Send notification to desktop about new images
+      const uploadedPhotos = capturedPhotos.filter(p => p.status === 'uploaded');
+      if (uploadedPhotos.length > 0 && tokenState.token) {
+        sendImageNotification(tokenState.token, uploadedPhotos.length);
+      }
+    } finally {
+      setIsUploadingBatch(false);
+
+      // Check if all photos uploaded successfully
+      const allUploaded = capturedPhotos.every(p => p.status === 'uploaded');
+      if (allUploaded) {
+        // Clear photos and return to recording
+        setCapturedPhotos([]);
+        setUploadProgress([]);
+        setMobileState('connected');
+      } else {
+        // Some failed, stay in review mode
+        setMobileState('reviewing');
+      }
+    }
+  }, [capturedPhotos, uploadSinglePhoto, sendImageNotification, tokenState.token]);
+
+  const handleCancelPhotos = useCallback(() => {
+    // Clear all photos and return to connected state
+    setCapturedPhotos([]);
+    setUploadProgress([]);
+    setMobileState('connected');
+  }, []);
+
   const getStateInfo = () => {
     switch (mobileState) {
       case 'disconnected':
@@ -328,6 +512,27 @@ function MobilePageContent() {
           message: 'Recording in progress - transcripts sent to desktop',
           canRecord: isConnected,
         };
+      case 'camera':
+        return {
+          icon: <Camera className="size-8 text-blue-500" />,
+          title: 'Camera Active',
+          message: 'Capture clinical images',
+          canRecord: false,
+        };
+      case 'reviewing':
+        return {
+          icon: <Camera className="size-8 text-blue-500" />,
+          title: 'Review Photos',
+          message: `${capturedPhotos.length} photo${capturedPhotos.length === 1 ? '' : 's'} captured`,
+          canRecord: false,
+        };
+      case 'uploading':
+        return {
+          icon: <Upload className="size-8 text-blue-500" />,
+          title: 'Uploading',
+          message: 'Uploading photos to desktop...',
+          canRecord: false,
+        };
       case 'error':
         return {
           icon: <AlertTriangle className="size-8 text-red-500" />,
@@ -347,6 +552,32 @@ function MobilePageContent() {
 
   const stateInfo = getStateInfo();
 
+  // Render camera component if in camera mode
+  if (mobileState === 'camera') {
+    return (
+      <WebRTCCamera
+        onCapture={handleCameraCapture}
+        onClose={handleCameraClose}
+        maxImageSize={800}
+      />
+    );
+  }
+
+  // Render photo review component if in reviewing mode
+  if (mobileState === 'reviewing') {
+    return (
+      <PhotoReview
+        photos={capturedPhotos}
+        onDeletePhoto={handleDeletePhoto}
+        onRetakePhoto={handleRetakePhoto}
+        onUploadAll={handleUploadAll}
+        onCancel={handleCancelPhotos}
+        uploadProgress={uploadProgress}
+        isUploading={isUploadingBatch}
+      />
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
       <div className="flex-1 p-4">
@@ -359,6 +590,30 @@ function MobilePageContent() {
           </CardHeader>
 
           <CardContent className="space-y-6">
+            {/* Camera Button - Separate area at top */}
+            {(mobileState === 'connected' || mobileState === 'recording') && (
+              <div className="border-b pb-4">
+                <Button
+                  onClick={handleCameraMode}
+                  variant="outline"
+                  className="w-full"
+                  disabled={isUploadingBatch}
+                >
+                  <Camera className="mr-2 size-4" />
+                  Capture Clinical Images
+                </Button>
+                {capturedPhotos.length > 0 && (
+                  <p className="mt-2 text-center text-xs text-gray-500">
+                    {capturedPhotos.length}
+{' '}
+photo
+{capturedPhotos.length === 1 ? '' : 's'}
+{' '}
+pending upload
+                  </p>
+                )}
+              </div>
+            )}
             {/* Connection Status */}
             <div className="text-center">
               <div className="mx-auto mb-2 flex size-16 items-center justify-center">

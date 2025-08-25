@@ -3,6 +3,7 @@
 import { Brain, Download, Loader2, Trash2 } from 'lucide-react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 
+import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
@@ -25,6 +26,11 @@ export const ClinicalImageTab: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [analyzingImages, setAnalyzingImages] = useState<Set<string>>(new Set());
   const [analysisErrors, setAnalysisErrors] = useState<Record<string, string>>({});
+
+  // Mobile images state
+  const [mobileImages, setMobileImages] = useState<ClinicalImage[]>([]);
+  const [isFetchingMobileImages, setIsFetchingMobileImages] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentSession = getCurrentPatientSession();
@@ -32,6 +38,56 @@ export const ClinicalImageTab: React.FC = () => {
     const images = currentSession?.clinicalImages || [];
     return images;
   }, [currentSession?.clinicalImages]);
+
+  // Function to fetch mobile images from API
+  const fetchAndDisplayMobileImages = useCallback(async (mobileTokenId: string) => {
+    setIsFetchingMobileImages(true);
+
+    try {
+      const response = await fetch(`/api/mobile/images?tokenId=${encodeURIComponent(mobileTokenId)}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch mobile images: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const { images } = data;
+
+      if (images && images.length > 0) {
+        // Convert mobile images to ClinicalImage format
+        const mobileImagesFormatted: ClinicalImage[] = images.map((img: any) => ({
+          id: img.id || img.key.split('/').pop()?.split('.')[0] || Math.random().toString(36).substr(2, 9),
+          key: img.key,
+          filename: img.filename,
+          mimeType: img.mimeType,
+          uploadedAt: img.uploadedAt,
+          isMobileImage: true, // Flag to distinguish mobile images
+          mobileTokenId: img.mobileTokenId,
+        }));
+
+        // Add to mobile images state (avoid duplicates)
+        setMobileImages((prevImages) => {
+          const existingKeys = new Set(prevImages.map(img => img.key));
+          const newImages = mobileImagesFormatted.filter(img => !existingKeys.has(img.key));
+          return [...prevImages, ...newImages];
+        });
+      }
+    } catch (err) {
+      console.error('Failed to fetch mobile images:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch mobile images');
+    } finally {
+      setIsFetchingMobileImages(false);
+    }
+  }, []);
+
+  // Ably listener for mobile image notifications (desktop only)
+  useSimpleAbly({
+    tokenId: null, // Desktop doesn't need a token for receiving
+    isMobile: false,
+    onMobileImagesUploaded: fetchAndDisplayMobileImages,
+    onError: (err: string) => {
+      console.error('Ably error in ClinicalImageTab:', err);
+    },
+  });
 
   // Client-side image resizing
   const resizeImage = useCallback((file: File, maxSize: number = 1024): Promise<Blob> => {
@@ -387,6 +443,107 @@ export const ClinicalImageTab: React.FC = () => {
               </Card>
             );
           })}
+        </div>
+      )}
+
+      {/* Mobile Images Section */}
+      {mobileImages.length > 0 && (
+        <div className="border-l-2 border-blue-200 pl-3">
+          <div className="mb-3 flex items-center justify-between">
+            <h4 className="text-sm font-medium text-blue-600">Mobile Images</h4>
+            {isFetchingMobileImages && (
+              <Loader2 size={12} className="animate-spin text-blue-500" />
+            )}
+          </div>
+
+          <div className="space-y-3">
+            {mobileImages.map((image) => {
+              const isAnalyzing = analyzingImages.has(image.id);
+              const hasError = analysisErrors[image.id];
+
+              return (
+                <Card key={image.id} className="overflow-hidden border-blue-100">
+                  <CardContent className="p-3">
+                    <div className="mb-2 flex items-start justify-between">
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-medium text-slate-700">
+                          {image.filename}
+                          <span className="ml-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+                            Mobile
+                          </span>
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          {new Date(image.uploadedAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <div className="ml-2 flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleAnalyzeImage(image)}
+                          disabled={isAnalyzing}
+                          className="size-6 p-0"
+                          title={isAnalyzing ? 'Analysing...' : 'Analyse with AI'}
+                        >
+                          {isAnalyzing
+                            ? (
+                                <Loader2 size={12} className="animate-spin" />
+                              )
+                            : (
+                                <Brain size={12} />
+                              )}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDownloadImage(image)}
+                          className="size-6 p-0"
+                        >
+                          <Download size={12} />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            // Add to consultation and remove from mobile images
+                            addClinicalImage(image);
+                            setMobileImages(prev => prev.filter(img => img.id !== image.id));
+                          }}
+                          className="size-6 p-0 text-green-600 hover:text-green-700"
+                          title="Add to consultation"
+                        >
+                          <span className="text-xs">+</span>
+                        </Button>
+                      </div>
+                    </div>
+
+                    {image.aiDescription && (
+                      <div className="mt-2 rounded bg-green-50 p-2 text-xs text-green-600">
+                        <div className="font-medium">✓ Analysis completed</div>
+                        <div className="text-slate-600">Added to Additional Notes</div>
+                      </div>
+                    )}
+
+                    {hasError && (
+                      <div className="mt-2 rounded bg-red-50 p-2 text-xs text-red-600">
+                        <div className="mb-1 font-medium">Analysis Error:</div>
+                        {hasError}
+                      </div>
+                    )}
+
+                    {isAnalyzing && (
+                      <div className="mt-2 rounded bg-blue-50 p-2 text-xs text-blue-600">
+                        <div className="flex items-center gap-2">
+                          <Loader2 size={12} className="animate-spin" />
+                          <span>Analysing image...</span>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
       )}
 
