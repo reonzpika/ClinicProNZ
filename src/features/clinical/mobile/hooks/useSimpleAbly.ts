@@ -15,7 +15,7 @@ export type EnhancedTranscriptionData = {
 };
 
 type SimpleAblyMessage = {
-  type: 'transcription' | 'recording_status' | 'recording_control' | 'token_rotated';
+  type: 'transcription' | 'recording_status' | 'recording_control' | 'token_rotated' | 'images_uploaded';
   transcript?: string;
   timestamp?: number;
   // 🆕 Enhanced transcription fields
@@ -26,6 +26,10 @@ type SimpleAblyMessage = {
   isRecording?: boolean;
   // 🆕 Recording control fields
   action?: 'start' | 'stop';
+  // 🆕 Image upload notification fields
+  mobileTokenId?: string;
+  imageCount?: number;
+  uploadTimestamp?: string;
 };
 
 export type UseSimpleAblyOptions = {
@@ -36,6 +40,7 @@ export type UseSimpleAblyOptions = {
   onConnectionStatusChanged?: (isConnected: boolean) => void;
   isMobile?: boolean;
   onControlCommand?: (action: 'start' | 'stop') => void; // For mobile remote control
+  onMobileImagesUploaded?: (mobileTokenId: string, imageCount: number, timestamp: string) => void; // For desktop image notification
 };
 
 export const useSimpleAbly = ({
@@ -46,6 +51,7 @@ export const useSimpleAbly = ({
   onConnectionStatusChanged,
   isMobile = false, // Default to false (desktop)
   onControlCommand,
+  onMobileImagesUploaded,
 }: UseSimpleAblyOptions) => {
   const [isConnected, setIsConnected] = useState(false);
 
@@ -62,6 +68,7 @@ export const useSimpleAbly = ({
     onRecordingStatusChanged,
     onError,
     onControlCommand,
+    onMobileImagesUploaded,
   });
 
   // Update callbacks without triggering reconnection
@@ -71,8 +78,9 @@ export const useSimpleAbly = ({
       onRecordingStatusChanged,
       onError,
       onControlCommand,
+      onMobileImagesUploaded,
     };
-  }, [onTranscriptReceived, onRecordingStatusChanged, onError, onControlCommand]);
+  }, [onTranscriptReceived, onRecordingStatusChanged, onError, onControlCommand, onMobileImagesUploaded]);
 
   // Update connection status based on connection state
   const updateConnectionStatus = useCallback((connected: boolean) => {
@@ -339,6 +347,17 @@ export const useSimpleAbly = ({
                 callbacksRef.current.onControlCommand?.(data.action);
               }
               break;
+
+            case 'images_uploaded':
+              if (!isMobile && data.mobileTokenId && data.imageCount && data.uploadTimestamp) {
+                // Only desktop should receive image upload notifications
+                callbacksRef.current.onMobileImagesUploaded?.(
+                  data.mobileTokenId,
+                  data.imageCount,
+                  data.uploadTimestamp,
+                );
+              }
+              break;
           }
         });
         // Only set refs if this is still the current connection
@@ -463,6 +482,17 @@ export const useSimpleAbly = ({
     });
   }, [publishSafe]);
 
+  // Send image upload notification (mobile to desktop)
+  const sendImageNotification = useCallback((mobileTokenId: string, imageCount: number) => {
+    return publishSafe('images_uploaded', {
+      type: 'images_uploaded',
+      mobileTokenId,
+      imageCount,
+      uploadTimestamp: new Date().toISOString(),
+      timestamp: Date.now(),
+    }, { queueIfNotReady: true }); // Queue if not ready to ensure delivery
+  }, [publishSafe]);
+
   // Removed HTTP polling - using broadcast requests instead
 
   return {
@@ -470,5 +500,6 @@ export const useSimpleAbly = ({
     sendTranscript,
     sendRecordingStatus,
     sendRecordingControl,
+    sendImageNotification,
   };
 };
