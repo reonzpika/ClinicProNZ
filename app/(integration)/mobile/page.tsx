@@ -581,6 +581,18 @@ function MobilePageContent() {
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
       <div className="flex-1 p-4">
+        {/* Always-visible camera CTA */}
+        <div className="mx-auto mb-4 max-w-md">
+          <Button
+            onClick={handleCameraMode}
+            size="lg"
+            className="w-full"
+            type="button"
+          >
+            <Camera className="mr-2 size-5" />
+            Capture Clinical Images
+          </Button>
+        </div>
         <Card className="mx-auto max-w-md">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-gray-100">
@@ -590,24 +602,6 @@ function MobilePageContent() {
           </CardHeader>
 
           <CardContent className="space-y-6">
-            {/* Camera Button - Separate area at top */}
-            <div className="border-b pb-4">
-              <Button
-                onClick={handleCameraMode}
-                variant="outline"
-                className="w-full"
-                disabled={isUploadingBatch}
-                type="button"
-              >
-                <Camera className="mr-2 size-4" />
-                Capture Clinical Images
-              </Button>
-              {capturedPhotos.length > 0 && (
-                <p className="mt-2 text-center text-xs text-gray-500">
-                  {capturedPhotos.length} photo{capturedPhotos.length === 1 ? '' : 's'} pending upload
-                </p>
-              )}
-            </div>
             {/* Connection Status */}
             <div className="text-center">
               <div className="mx-auto mb-2 flex size-16 items-center justify-center">
