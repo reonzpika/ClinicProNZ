@@ -563,7 +563,9 @@ function MobilePageContent() {
                   {isRecording ? 'Tap to stop recording' : 'Tap to start recording'}
                 </div>
                 <div className="text-center text-xs text-gray-400">
-                  Screen lock: {wakeLockSupported ? 'Enabled' : 'Disabled'}
+                  Screen lock:
+                  {' '}
+                  {wakeLockSupported ? 'Enabled' : 'Disabled'}
                 </div>
               </div>
             )}

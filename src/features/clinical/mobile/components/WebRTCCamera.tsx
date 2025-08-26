@@ -176,7 +176,7 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
   return (
     <div className="fixed inset-0 z-50 bg-black">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 text-white z-20">
+      <div className="z-20 flex items-center justify-between p-4 text-white">
         <h2 className="text-lg font-semibold">Capture Clinical Image</h2>
         <Button
           onClick={handleClose}
@@ -190,30 +190,32 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
 
       {/* Camera View */}
       <div className="relative flex-1">
-        {error ? (
-          <div className="flex h-full items-center justify-center p-4">
-            <Alert variant="destructive" className="max-w-md">
-              <div className="text-sm">{error}</div>
-              <div className="mt-2 space-x-2">
-                <Button
-                  onClick={initializeCamera}
-                  size="sm"
-                  variant="outline"
-                >
-                  <RotateCcw className="mr-2 size-4" />
-                  Retry
-                </Button>
-                <Button
-                  onClick={handleClose}
-                  size="sm"
-                  variant="outline"
-                >
-                  Close
-                </Button>
-              </div>
-            </Alert>
-          </div>
-        ) : (
+        {error
+          ? (
+            <div className="flex h-full items-center justify-center p-4">
+              <Alert variant="destructive" className="max-w-md">
+                <div className="text-sm">{error}</div>
+                <div className="mt-2 space-x-2">
+                  <Button
+                    onClick={initializeCamera}
+                    size="sm"
+                    variant="outline"
+                  >
+                    <RotateCcw className="mr-2 size-4" />
+                    Retry
+                  </Button>
+                  <Button
+                    onClick={handleClose}
+                    size="sm"
+                    variant="outline"
+                  >
+                    Close
+                  </Button>
+                </div>
+              </Alert>
+            </div>
+          )
+          : (
           <>
             {/* Video Stream */}
             <video
@@ -221,13 +223,13 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
               autoPlay
               playsInline
               muted
-              className="size-full object-cover pointer-events-none"
+              className="pointer-events-none size-full object-cover"
               style={{ transform: 'scaleX(-1)' }} // Mirror for selfie-style preview
             />
 
             {/* Capture Overlay */}
             {isStreamActive && (
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-6 z-10">
+              <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/80 to-transparent p-6">
                 <div className="flex items-center justify-center">
                   <Button
                     onClick={capturePhoto}
@@ -236,12 +238,12 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
                     className="size-16 rounded-full bg-white text-black hover:bg-gray-100"
                   >
                     {isCapturing
-? (
-                      <div className="size-6 animate-spin rounded-full border-2 border-black border-t-transparent" />
-                    )
-: (
-                      <Camera className="size-8" />
-                    )}
+                      ? (
+                        <div className="size-6 animate-spin rounded-full border-2 border-black border-t-transparent" />
+                      )
+                      : (
+                        <Camera className="size-8" />
+                      )}
                   </Button>
                 </div>
 

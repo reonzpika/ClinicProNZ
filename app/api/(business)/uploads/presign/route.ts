@@ -1,9 +1,13 @@
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { auth } from '@clerk/nextjs/server';
+import { eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
+
+import { db } from '@/db/client';
+import { mobileTokens } from '@/db/schema';
 
 // Initialize S3 client for NZ region
 const s3Client = new S3Client({
@@ -18,18 +22,48 @@ const BUCKET_NAME = process.env.S3_BUCKET_NAME!;
 
 export async function GET(req: NextRequest) {
   try {
-    // Check authentication - support both Clerk JWT and mobile session token
+    // Check authentication - support both Clerk JWT and mobile tokens
     const { userId } = await auth();
     const sessionToken = req.nextUrl.searchParams.get('session');
+    const mobileTokenHeader = req.headers.get('x-mobile-token');
+    const mobileTokenId = req.nextUrl.searchParams.get('mobileTokenId');
+    const mobileToken = mobileTokenHeader || mobileTokenId;
 
-    if (!userId && !sessionToken) {
+    // Require either Clerk auth or valid mobile token
+    if (!userId && !sessionToken && !mobileToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // If using session token, validate it (simplified version)
-    if (sessionToken && !userId) {
-      // TODO: Add proper session token validation when mobile auth is implemented
-      // For now, accept any session token in development
+    let validatedUserId = userId;
+
+    // Validate mobile token against database if provided
+    if (mobileToken && !userId) {
+      const tokenData = await db
+        .select()
+        .from(mobileTokens)
+        .where(eq(mobileTokens.token, mobileToken))
+        .limit(1);
+
+      if (!tokenData.length) {
+        return NextResponse.json({ error: 'Invalid mobile token' }, { status: 401 });
+      }
+
+      const token = tokenData[0];
+      if (!token || !token.isActive) {
+        return NextResponse.json({ error: 'Inactive mobile token' }, { status: 401 });
+      }
+
+      // Update last used timestamp
+      await db
+        .update(mobileTokens)
+        .set({ lastUsedAt: new Date() })
+        .where(eq(mobileTokens.token, mobileToken));
+
+      validatedUserId = token.userId;
+    }
+
+    // Legacy session token validation (keep for backwards compatibility)
+    if (sessionToken && !userId && !mobileToken) {
       if (!sessionToken.match(/^[a-f0-9-]{36}$/)) {
         return NextResponse.json({ error: 'Invalid session token' }, { status: 401 });
       }
@@ -39,7 +73,6 @@ export async function GET(req: NextRequest) {
     const filename = req.nextUrl.searchParams.get('filename') || 'image.jpg';
     const mimeType = req.nextUrl.searchParams.get('mimeType') || 'image/jpeg';
     const patientSessionId = req.nextUrl.searchParams.get('patientSessionId');
-    const mobileTokenId = req.nextUrl.searchParams.get('mobileTokenId');
 
     // Require either patient session ID or mobile token ID
     if (!patientSessionId && !mobileTokenId) {
@@ -75,7 +108,7 @@ export async function GET(req: NextRequest) {
         ...(patientSessionId && { 'patient-session-id': patientSessionId }),
         ...(mobileTokenId && { 'mobile-token-id': mobileTokenId }),
         'upload-type': patientSessionId ? 'consultation' : 'mobile',
-        'uploaded-by': userId || 'mobile-session',
+        'uploaded-by': validatedUserId || 'mobile-session',
         'original-filename': filename,
         'upload-timestamp': timestamp.toString(),
       },
