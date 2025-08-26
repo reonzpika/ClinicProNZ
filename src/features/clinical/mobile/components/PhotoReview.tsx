@@ -1,7 +1,7 @@
 'use client';
 
 import { AlertTriangle, Camera, RotateCcw, Trash2, Upload, X } from 'lucide-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
@@ -40,34 +40,40 @@ export const PhotoReview: React.FC<PhotoReviewProps> = ({
   isUploading,
 }) => {
   const [previewUrls, setPreviewUrls] = useState<Map<string, string>>(new Map());
+  const previewUrlsRef = useRef<Map<string, string>>(new Map());
 
-  // Create preview URLs for photos
+  // Create and manage preview URLs for photos
   useEffect(() => {
-    const newPreviewUrls = new Map<string, string>();
+    const current = previewUrlsRef.current;
+    const next = new Map(current);
 
+    // Create URLs for new photos
     photos.forEach((photo) => {
-      if (!previewUrls.has(photo.id)) {
+      if (!next.has(photo.id)) {
         const url = URL.createObjectURL(photo.blob);
-        newPreviewUrls.set(photo.id, url);
-      } else {
-        newPreviewUrls.set(photo.id, previewUrls.get(photo.id)!);
+        next.set(photo.id, url);
       }
     });
 
-    // Clean up old URLs that are no longer needed
-    previewUrls.forEach((url, id) => {
-      if (!photos.find(p => p.id === id)) {
+    // Revoke and remove URLs for photos no longer present
+    for (const [id, url] of Array.from(next.entries())) {
+      if (!photos.some((p) => p.id === id)) {
         URL.revokeObjectURL(url);
+        next.delete(id);
       }
-    });
+    }
 
-    setPreviewUrls(newPreviewUrls);
+    previewUrlsRef.current = next;
+    setPreviewUrls(next);
+  }, [photos]);
 
-    // Cleanup on unmount
+  // Cleanup on unmount: revoke any remaining object URLs
+  useEffect(() => {
     return () => {
-      newPreviewUrls.forEach(url => URL.revokeObjectURL(url));
+      previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      previewUrlsRef.current.clear();
     };
-  }, [photos]); // Remove previewUrls from dependency to avoid infinite loop
+  }, []);
 
   const getPhotoProgress = useCallback((photoId: string): UploadProgress | undefined => {
     return uploadProgress.find(p => p.photoId === photoId);
