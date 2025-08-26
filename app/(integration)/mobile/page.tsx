@@ -591,30 +591,23 @@ function MobilePageContent() {
 
           <CardContent className="space-y-6">
             {/* Camera Button - Separate area at top */}
-            {(mobileState === 'connected' || mobileState === 'recording') && (
-              <div className="border-b pb-4">
-                <Button
-                  onClick={handleCameraMode}
-                  variant="outline"
-                  className="w-full"
-                  disabled={isUploadingBatch}
-                  type="button"
-                >
-                  <Camera className="mr-2 size-4" />
-                  Capture Clinical Images
-                </Button>
-                {capturedPhotos.length > 0 && (
-                  <p className="mt-2 text-center text-xs text-gray-500">
-                    {capturedPhotos.length}
-{' '}
-photo
-{capturedPhotos.length === 1 ? '' : 's'}
-{' '}
-pending upload
-                  </p>
-                )}
-              </div>
-            )}
+            <div className="border-b pb-4">
+              <Button
+                onClick={handleCameraMode}
+                variant="outline"
+                className="w-full"
+                disabled={isUploadingBatch}
+                type="button"
+              >
+                <Camera className="mr-2 size-4" />
+                Capture Clinical Images
+              </Button>
+              {capturedPhotos.length > 0 && (
+                <p className="mt-2 text-center text-xs text-gray-500">
+                  {capturedPhotos.length} photo{capturedPhotos.length === 1 ? '' : 's'} pending upload
+                </p>
+              )}
+            </div>
             {/* Connection Status */}
             <div className="text-center">
               <div className="mx-auto mb-2 flex size-16 items-center justify-center">
