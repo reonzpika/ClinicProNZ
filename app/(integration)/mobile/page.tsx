@@ -598,6 +598,7 @@ function MobilePageContent() {
                   variant="outline"
                   className="w-full"
                   disabled={isUploadingBatch}
+                  type="button"
                 >
                   <Camera className="mr-2 size-4" />
                   Capture Clinical Images
