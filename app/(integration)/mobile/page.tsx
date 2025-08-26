@@ -482,75 +482,7 @@ function MobilePageContent() {
     setMobileState('connected');
   }, []);
 
-  const getStateInfo = () => {
-    switch (mobileState) {
-      case 'disconnected':
-        return {
-          icon: <WifiOff className="size-8 text-red-500" />,
-          title: 'Disconnected',
-          message: 'No valid connection token',
-          canRecord: false,
-        };
-      case 'connecting':
-        return {
-          icon: <Wifi className="size-8 text-yellow-500" />,
-          title: 'Connecting...',
-          message: tokenState.isValidating ? 'Validating token...' : 'Establishing connection...',
-          canRecord: false,
-        };
-      case 'connected':
-        return {
-          icon: <CheckCircle className="size-8 text-green-500" />,
-          title: 'Ready to Record',
-          message: 'Connected to desktop - ready to record',
-          canRecord: isConnected,
-        };
-      case 'recording':
-        return {
-          icon: <Mic className="size-8 text-red-500" />,
-          title: 'Recording',
-          message: 'Recording in progress - transcripts sent to desktop',
-          canRecord: isConnected,
-        };
-      case 'camera':
-        return {
-          icon: <Camera className="size-8 text-blue-500" />,
-          title: 'Camera Active',
-          message: 'Capture clinical images',
-          canRecord: false,
-        };
-      case 'reviewing':
-        return {
-          icon: <Camera className="size-8 text-blue-500" />,
-          title: 'Review Photos',
-          message: `${capturedPhotos.length} photo${capturedPhotos.length === 1 ? '' : 's'} captured`,
-          canRecord: false,
-        };
-      case 'uploading':
-        return {
-          icon: <Upload className="size-8 text-blue-500" />,
-          title: 'Uploading',
-          message: 'Uploading photos to desktop...',
-          canRecord: false,
-        };
-      case 'error':
-        return {
-          icon: <AlertTriangle className="size-8 text-red-500" />,
-          title: 'Error',
-          message: tokenState.error || 'Connection error',
-          canRecord: false,
-        };
-      default:
-        return {
-          icon: <WifiOff className="size-8 text-gray-500" />,
-          title: 'Unknown',
-          message: 'Unknown state',
-          canRecord: false,
-        };
-    }
-  };
-
-  const stateInfo = getStateInfo();
+  // state info removed - simplified UI
 
   // Render camera component if in camera mode
   if (mobileState === 'camera') {
@@ -652,7 +584,6 @@ function MobilePageLoading() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <Smartphone className="mx-auto size-12 text-blue-600" />
           <CardTitle>Loading Mobile Recording</CardTitle>
         </CardHeader>
         <CardContent className="text-center">
