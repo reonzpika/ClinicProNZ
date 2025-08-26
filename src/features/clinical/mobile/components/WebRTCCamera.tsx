@@ -1,6 +1,6 @@
 'use client';
 
-import { Camera, RotateCcw, X } from 'lucide-react';
+import { Camera, RefreshCw, RotateCcw, X } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Alert } from '@/src/shared/components/ui/alert';
@@ -25,16 +25,58 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
   const [lastCapturedImage, setLastCapturedImage] = useState<string | null>(null);
+  const [availableCameras, setAvailableCameras] = useState<MediaDeviceInfo[]>([]);
+  const [currentCameraId, setCurrentCameraId] = useState<string | null>(null);
+  const [showCaptureFlash, setShowCaptureFlash] = useState(false);
+  const [showCapturedPreview, setShowCapturedPreview] = useState(false);
+
+  // Enumerate available cameras
+  const enumerateCameras = useCallback(async () => {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(device => device.kind === 'videoinput');
+      setAvailableCameras(videoDevices);
+
+      // Find the default back camera (usually has 'back' in label or is the main camera)
+      const backCameras = videoDevices.filter(device =>
+        device.label.toLowerCase().includes('back')
+        || device.label.toLowerCase().includes('main')
+        || device.label.toLowerCase().includes('wide')
+        || (!device.label.toLowerCase().includes('front')
+          && !device.label.toLowerCase().includes('selfie')
+          && !device.label.toLowerCase().includes('tele')),
+      );
+
+      if (backCameras.length > 0 && !currentCameraId) {
+        setCurrentCameraId(backCameras[0]!.deviceId);
+      } else if (videoDevices.length > 0 && !currentCameraId) {
+        setCurrentCameraId(videoDevices[0]!.deviceId);
+      }
+    } catch (err) {
+      console.error('Failed to enumerate cameras:', err);
+    }
+  }, [currentCameraId]);
+
+  // Clean up camera stream
+  const cleanupCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => {
+        track.stop();
+      });
+      streamRef.current = null;
+    }
+    setIsStreamActive(false);
+  }, []);
 
   // Initialize camera stream
-  const initializeCamera = useCallback(async () => {
+  const initializeCamera = useCallback(async (deviceId?: string) => {
     try {
       setError(null);
 
-      // Camera constraints with back camera preference
+      // Camera constraints - prefer specific device or default back camera
       const constraints: MediaStreamConstraints = {
         video: {
-          facingMode: { ideal: 'environment' }, // Back camera
+          ...(deviceId ? { deviceId: { exact: deviceId } } : { facingMode: { ideal: 'environment' } }),
           width: { ideal: 1920, max: 1920 },
           height: { ideal: 1080, max: 1080 },
         },
@@ -68,16 +110,21 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
     }
   }, []);
 
-  // Clean up camera stream
-  const cleanupCamera = useCallback(() => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => {
-        track.stop();
-      });
-      streamRef.current = null;
+  // Switch to next available camera
+  const switchCamera = useCallback(async () => {
+    if (availableCameras.length <= 1) {
+ return;
+}
+
+    const currentIndex = availableCameras.findIndex(cam => cam.deviceId === currentCameraId);
+    const nextIndex = (currentIndex + 1) % availableCameras.length;
+    const nextCamera = availableCameras[nextIndex];
+
+    if (nextCamera) {
+      cleanupCamera();
+      setCurrentCameraId(nextCamera.deviceId);
     }
-    setIsStreamActive(false);
-  }, []);
+  }, [availableCameras, currentCameraId, cleanupCamera]);
 
   // Resize image using canvas
   const resizeImage = useCallback((canvas: HTMLCanvasElement, maxSize: number): Promise<Blob> => {
@@ -128,6 +175,10 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
       const canvas = canvasRef.current;
       const ctx = canvas.getContext('2d')!;
 
+      // Show capture flash effect
+      setShowCaptureFlash(true);
+      setTimeout(() => setShowCaptureFlash(false), 200);
+
       // Set canvas dimensions to match video
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
@@ -146,6 +197,10 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
       const previewUrl = URL.createObjectURL(resizedBlob);
       setLastCapturedImage(previewUrl);
 
+      // Show captured image preview
+      setShowCapturedPreview(true);
+      setTimeout(() => setShowCapturedPreview(false), 2000);
+
       // Call parent callback with captured photo
       onCapture(resizedBlob, filename);
     } catch (err) {
@@ -158,11 +213,22 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
 
   // Initialize camera on component mount
   useEffect(() => {
-    initializeCamera();
+    const setup = async () => {
+      await enumerateCameras();
+    };
+
+    setup();
 
     // Cleanup on unmount
     return cleanupCamera;
-  }, [initializeCamera, cleanupCamera]);
+  }, [enumerateCameras, cleanupCamera]);
+
+  // Initialize camera when device is selected
+  useEffect(() => {
+    if (currentCameraId) {
+      initializeCamera(currentCameraId);
+    }
+  }, [currentCameraId, initializeCamera]);
 
   // Handle component unmount/close
   const handleClose = useCallback(() => {
@@ -178,14 +244,28 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
       {/* Header */}
       <div className="z-20 flex items-center justify-between p-4 text-white">
         <h2 className="text-lg font-semibold">Capture Clinical Image</h2>
-        <Button
-          onClick={handleClose}
-          variant="ghost"
-          size="sm"
-          className="text-white hover:bg-white/10"
-        >
-          <X className="size-5" />
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Camera Switch Button */}
+          {availableCameras.length > 1 && (
+            <Button
+              onClick={switchCamera}
+              variant="ghost"
+              size="sm"
+              className="text-white hover:bg-white/10"
+              title="Switch Camera"
+            >
+              <RefreshCw className="size-5" />
+            </Button>
+          )}
+          <Button
+            onClick={handleClose}
+            variant="ghost"
+            size="sm"
+            className="text-white hover:bg-white/10"
+          >
+            <X className="size-5" />
+          </Button>
+        </div>
       </div>
 
       {/* Camera View */}
@@ -197,7 +277,7 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
                 <div className="text-sm">{error}</div>
                 <div className="mt-2 space-x-2">
                   <Button
-                    onClick={initializeCamera}
+                    onClick={() => initializeCamera()}
                     size="sm"
                     variant="outline"
                   >
@@ -227,6 +307,27 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
               style={{ transform: 'scaleX(-1)' }} // Mirror for selfie-style preview
             />
 
+            {/* Capture Flash Effect */}
+            {showCaptureFlash && (
+              <div className="absolute inset-0 z-30 bg-white opacity-80" />
+            )}
+
+            {/* Captured Image Preview */}
+            {showCapturedPreview && lastCapturedImage && (
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/50">
+                <div className="rounded-lg bg-white p-2 shadow-lg">
+                  <img
+                    src={lastCapturedImage}
+                    alt="Captured preview"
+                    className="size-32 rounded object-cover"
+                  />
+                  <div className="mt-2 text-center text-sm font-medium text-green-600">
+                    ✓ Photo Captured
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Capture Overlay */}
             {isStreamActive && (
               <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/80 to-transparent p-6">
@@ -247,9 +348,16 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
                   </Button>
                 </div>
 
-                {/* Instructions */}
-                <div className="mt-4 text-center text-sm text-white/80">
-                  {isCapturing ? 'Capturing...' : 'Tap to capture clinical image'}
+                {/* Instructions and Camera Info */}
+                <div className="mt-4 text-center">
+                  <div className="text-sm text-white/80">
+                    {isCapturing ? 'Capturing...' : 'Tap to capture clinical image'}
+                  </div>
+                  {availableCameras.length > 1 && (
+                    <div className="mt-1 text-xs text-white/60">
+                      {availableCameras.find(cam => cam.deviceId === currentCameraId)?.label || 'Camera'}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
