@@ -176,7 +176,7 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
   return (
     <div className="fixed inset-0 z-50 bg-black">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 text-white">
+      <div className="flex items-center justify-between p-4 text-white z-20">
         <h2 className="text-lg font-semibold">Capture Clinical Image</h2>
         <Button
           onClick={handleClose}
@@ -221,13 +221,13 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
               autoPlay
               playsInline
               muted
-              className="size-full object-cover"
+              className="size-full object-cover pointer-events-none"
               style={{ transform: 'scaleX(-1)' }} // Mirror for selfie-style preview
             />
 
             {/* Capture Overlay */}
             {isStreamActive && (
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-6 z-10">
                 <div className="flex items-center justify-center">
                   <Button
                     onClick={capturePhoto}
