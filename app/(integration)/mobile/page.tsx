@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, Camera, CheckCircle, Mic, MicOff, Smartphone, Upload, Wifi, WifiOff } from 'lucide-react';
+import { AlertTriangle, Camera } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
@@ -595,20 +595,14 @@ function MobilePageContent() {
         </div>
         <Card className="mx-auto max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-gray-100">
-              <Smartphone className="size-8 text-gray-600" />
-            </div>
             <CardTitle>Mobile Recording</CardTitle>
           </CardHeader>
 
           <CardContent className="space-y-6">
-            {/* Connection Status */}
+            {/* Connection Status - simplified */}
             <div className="text-center">
-              <div className="mx-auto mb-2 flex size-16 items-center justify-center">
-                {stateInfo.icon}
-              </div>
-              <h3 className="text-lg font-semibold">{stateInfo.title}</h3>
-              <p className="text-sm text-gray-600">{stateInfo.message}</p>
+              <h3 className="text-lg font-semibold">{(tokenState.token && tokenState.isValid && isConnected) ? 'Ready to Record' : (tokenState.isValidating ? 'Connecting…' : (!tokenState.token || !tokenState.isValid ? 'Disconnected' : (isConnected ? 'Ready to Record' : 'Connecting…')))}</h3>
+              <p className="text-sm text-gray-600">{(tokenState.token && tokenState.isValid && isConnected) ? 'Connected to desktop - ready to record' : (tokenState.isValidating ? 'Validating token…' : 'Please ensure you are connected')}</p>
             </div>
 
             {/* Error Display */}
@@ -622,59 +616,29 @@ function MobilePageContent() {
               </Alert>
             )}
 
-            {/* Recording Controls */}
-            {stateInfo.canRecord && (
-              <div className="space-y-4">
-                <div className="flex justify-center">
-                  {!isRecording
-                    ? (
-                        <Button
-                          onClick={handleStartRecording}
-                          size="lg"
-                          className="size-16 rounded-full bg-red-500 hover:bg-red-600"
-                        >
-                          <Mic className="size-8 text-white" />
-                        </Button>
-                      )
-                    : (
-                        <Button
-                          onClick={handleStopRecording}
-                          size="lg"
-                          variant="outline"
-                          className="size-16 rounded-full border-red-500 text-red-500 hover:bg-red-50"
-                        >
-                          <MicOff className="size-8" />
-                        </Button>
-                      )}
-                </div>
-
+            {/* Recording Controls - simplified */}
+            {(tokenState.token && tokenState.isValid && isConnected) && (
+              <div className="space-y-3">
+                <Button
+                  onClick={isRecording ? handleStopRecording : handleStartRecording}
+                  size="lg"
+                  type="button"
+                  className={`w-full ${isRecording ? 'bg-red-700 hover:bg-red-800' : 'bg-red-600 hover:bg-red-700'} text-white`}
+                >
+                  {isRecording ? 'Stop Recording' : 'Start Recording'}
+                </Button>
                 <div className="text-center text-xs text-gray-500">
                   {isRecording ? 'Tap to stop recording' : 'Tap to start recording'}
                 </div>
-
-                {/* Wake Lock Status */}
-                {wakeLockSupported && (
-                  <div className="text-center text-xs text-gray-400">
-                    Screen lock:
-                    {' '}
-                    {wakeLockSupported ? 'Enabled' : 'Disabled'}
-                  </div>
-                )}
+                <div className="text-center text-xs text-gray-400">
+                  Screen lock: {wakeLockSupported ? 'Enabled' : 'Disabled'}
+                </div>
               </div>
             )}
 
             {/* Removed session info display - not needed in simplified architecture */}
 
-            {/* Instructions */}
-            <div className="rounded-lg bg-gray-50 p-3">
-              <h4 className="mb-2 text-sm font-medium text-gray-800">Instructions:</h4>
-              <ul className="space-y-1 text-xs text-gray-600">
-                <li>1. Ensure you're connected to the desktop</li>
-                <li>2. Tap the red button to start recording</li>
-                <li>3. Speak clearly into your device microphone</li>
-                <li>4. Transcriptions will appear on desktop in real-time</li>
-              </ul>
-            </div>
+            {/* Instructions removed for simplified UI */}
           </CardContent>
         </Card>
       </div>
