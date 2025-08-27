@@ -380,7 +380,7 @@ export function Survey() {
         <div>
           <h2 className="mb-2 text-lg font-semibold">If ClinicPro reliably solved your selected priorities, how likely would you be to pay for it?</h2>
           <div className="space-y-2">
-            {[1, 2, 3, 4, 5].map((n) => (
+            {[1, 2, 4, 5].map((n) => (
               <div key={n} className="flex items-center gap-2">
                 <input
                   id={`q5-${n}`}
@@ -398,7 +398,6 @@ export function Survey() {
                 <Label htmlFor={`q5-${n}`}>
                   {n === 1 && '1 — Definitely not pay'}
                   {n === 2 && '2 — Unlikely to pay'}
-                  {n === 3 && '3 — Might pay (depends on price)'}
                   {n === 4 && '4 — Likely to pay'}
                   {n === 5 && '5 — Would pay immediately (please contact me)'}
                 </Label>
