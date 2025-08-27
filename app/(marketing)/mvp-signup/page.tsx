@@ -1,5 +1,6 @@
-export default function MVPSignupPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
-  const fromSurvey = typeof searchParams.from_survey === 'string' ? searchParams.from_survey : undefined;
+export default async function MVPSignupPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+  const params = await searchParams;
+  const fromSurvey = typeof params.from_survey === 'string' ? params.from_survey : undefined;
   return (
     <main className="mx-auto max-w-2xl p-6">
       <h1 className="mb-2 text-2xl font-semibold">MVP Signup</h1>
