@@ -195,9 +195,14 @@ export const useSimpleAbly = ({
             // Ensure channel exists and is attached after connecting
             let channel: Ably.RealtimeChannel;
             try {
-              channel = ably.channels.get(`token:${tokenId}`, { params: { rewind: '1' } } as any);
+              // Disable replay on desktop (isMobile=false); keep minimal rewind for mobile publisher
+              channel = isMobile
+                ? (ably.channels.get(`token:${tokenId}`, { params: { rewind: '1' } } as any))
+                : (ably.channels.get(`token:${tokenId}` as any));
             } catch {
-              channel = ably.channels.get(`token:${tokenId}?rewind=1` as any);
+              channel = isMobile
+                ? (ably.channels.get(`token:${tokenId}?rewind=1` as any))
+                : (ably.channels.get(`token:${tokenId}` as any));
             }
             try {
               await channel.attach();
@@ -282,14 +287,18 @@ export const useSimpleAbly = ({
         // Now that handlers are wired, initiate the connection
         ably.connect();
 
-        // Single channel based on tokenId with rewind to avoid missed messages
+        // Single channel based on tokenId
         let channel: Ably.RealtimeChannel;
         try {
           // Preferred: params object (supported by recent Ably SDKs)
-          channel = ably.channels.get(`token:${tokenId}`, { params: { rewind: '1' } } as any);
+          channel = isMobile
+            ? (ably.channels.get(`token:${tokenId}`, { params: { rewind: '1' } } as any))
+            : (ably.channels.get(`token:${tokenId}` as any));
         } catch {
           // Fallback: embed query into channel name if params are not supported
-          channel = ably.channels.get(`token:${tokenId}?rewind=1` as any);
+          channel = isMobile
+            ? (ably.channels.get(`token:${tokenId}?rewind=1` as any))
+            : (ably.channels.get(`token:${tokenId}` as any));
         }
         try {
           await channel.attach();
