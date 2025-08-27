@@ -251,37 +251,37 @@ export function Survey() {
                   <h3 className="mb-2 text-base font-medium">{label}</h3>
                   <div className="space-y-2">
                     {options.map((opt) => (
-                      <div key={opt} className="flex items-center gap-2">
-                        <input
-                          id={`q3-${topic}-${opt}`}
-                          type="checkbox"
-                          name={`q3-${topic}`}
-                          value={opt}
-                          checked={Array.isArray(q3ByTopic[topic]?.selected) ? (q3ByTopic[topic]?.selected as string[]).includes(opt) : false}
-                          onChange={(e) => {
-                            setQ3ByTopic((prev) => {
-                              const current = Array.isArray(prev[topic]?.selected) ? (prev[topic]?.selected as string[]) : [];
-                              const next = e.target.checked ? Array.from(new Set([...current, opt])) : current.filter((x) => x !== opt);
-                              emitAnalytics({ type: 'survey_question_answered', questionId: `q3_${topic}`, answer: next, timestamp: Date.now() });
-                              return { ...prev, [topic]: { selected: next, free: prev[topic]?.free } };
-                            });
-                          }}
-                          className="h-4 w-4"
-                        />
-                        {opt.startsWith('Other') ? (
-                          <>
-                            <Label htmlFor={`q3-${topic}-other`} className="sr-only">Other — please specify</Label>
-                            <Input
-                              id={`q3-${topic}-other`}
-                              value={q3ByTopic[topic]?.free || ''}
-                              onChange={(e) => setQ3ByTopic((prev) => ({ ...prev, [topic]: { selected: Array.isArray(prev[topic]?.selected) ? (prev[topic]?.selected as string[]) : [], free: e.target.value } }))}
-                              placeholder="Other — please specify"
-                            />
-                          </>
-                        ) : (
+                      opt.startsWith('Other') ? (
+                        <div key={`${topic}-other`} className="flex items-center gap-2">
+                          <Label htmlFor={`q3-${topic}-other`} className="sr-only">Other — please specify</Label>
+                          <Input
+                            id={`q3-${topic}-other`}
+                            value={q3ByTopic[topic]?.free || ''}
+                            onChange={(e) => setQ3ByTopic((prev) => ({ ...prev, [topic]: { selected: Array.isArray(prev[topic]?.selected) ? (prev[topic]?.selected as string[]) : [], free: e.target.value } }))}
+                            placeholder="Other — please specify"
+                          />
+                        </div>
+                      ) : (
+                        <div key={opt} className="flex items-center gap-2">
+                          <input
+                            id={`q3-${topic}-${opt}`}
+                            type="checkbox"
+                            name={`q3-${topic}`}
+                            value={opt}
+                            checked={Array.isArray(q3ByTopic[topic]?.selected) ? (q3ByTopic[topic]?.selected as string[]).includes(opt) : false}
+                            onChange={(e) => {
+                              setQ3ByTopic((prev) => {
+                                const current = Array.isArray(prev[topic]?.selected) ? (prev[topic]?.selected as string[]) : [];
+                                const next = e.target.checked ? Array.from(new Set([...current, opt])) : current.filter((x) => x !== opt);
+                                emitAnalytics({ type: 'survey_question_answered', questionId: `q3_${topic}`, answer: next, timestamp: Date.now() });
+                                return { ...prev, [topic]: { selected: next, free: prev[topic]?.free } };
+                              });
+                            }}
+                            className="h-4 w-4"
+                          />
                           <Label htmlFor={`q3-${topic}-${opt}`}>{opt}</Label>
-                        )}
-                      </div>
+                        </div>
+                      )
                     ))}
                   </div>
                 </div>
