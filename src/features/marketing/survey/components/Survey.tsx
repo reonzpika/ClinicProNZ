@@ -131,10 +131,9 @@ export function Survey() {
   }
 
   async function submit() {
-    if (!email) return;
     setSubmitting(true);
     const payload: SurveyPayload = {
-      email,
+      email: null,
       q1: [...q1, ...(q1Other.trim() ? [q1Other.trim()] : [])],
       q2: null,
       q3: q1Topics.map(({ topic }) => ({
