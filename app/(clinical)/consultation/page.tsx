@@ -185,6 +185,15 @@ export default function ConsultationPage() {
     }
   }, []);
 
+  // Ensure there is always an active patient session as soon as the page loads
+  useEffect(() => {
+    (async () => {
+      try {
+        await ensureActiveSession();
+      } catch {}
+    })();
+  }, [ensureActiveSession]);
+
   // Direct upgrade handler
   const handleDirectUpgrade = async () => {
     setUpgradeLoading(true);
