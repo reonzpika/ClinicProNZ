@@ -169,7 +169,7 @@ export function Survey() {
       emitAnalytics({ type: 'survey_submitted', id: data.id, email_opted_in: optIn, gold_lead: false, timestamp: Date.now() });
       const firstToken = (q1[0] || '').toLowerCase().split(' ')[0] ?? '';
       const utm = new URLSearchParams([[ 'from_survey', firstToken ]]).toString();
-      router.push(`/mvp-signup?${utm}`);
+      router.push(`/landing-page/thank-you?${utm}`);
     } catch (e) {
       alert((e as Error).message);
     } finally {
