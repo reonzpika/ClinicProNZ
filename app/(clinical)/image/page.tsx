@@ -734,7 +734,7 @@ function ServerImageCard({
 : (
                 <ImageIcon className="size-6 text-slate-400" />
         )}
-        </div>
+      </div>
 
         {/* Top-right badges */}
         <div className="absolute right-2 top-2 z-10 flex gap-1">
@@ -792,7 +792,7 @@ function ServerImageCard({
           <div className="flex items-center justify-between text-xs text-slate-500">
             <span className="capitalize">{image.source}</span>
             <span>{formatFileSize(image.size)}</span>
-          </div>
+        </div>
         </div>
       </CardContent>
     </Card>
@@ -884,7 +884,7 @@ function AnalysisModal({
                     <div className="flex size-64 flex-col items-center justify-center rounded-lg bg-slate-100 text-slate-500">
                       <ImageIcon className="mb-2 size-8" />
                       <p className="text-sm">Failed to load image</p>
-                    </div>
+            </div>
           )}
           </div>
         </div>
@@ -989,7 +989,7 @@ function AnalysisModal({
                       <div className="flex items-center gap-1 text-green-600">
                         <Check className="size-3" />
                         <span>Auto-saved</span>
-                      </div>
+                </div>
                     )}
                     <span>
                       {modal.analysis?.split(' ').length || modal.image?.analysis?.result.split(' ').length}
@@ -1019,11 +1019,11 @@ function AnalysisModal({
                           <span className="font-medium">Clinical context used:</span>
                           {' '}
                           {modal.image.analysis.prompt}
-                        </div>
+              </div>
             )}
-                    </div>
+          </div>
                   )}
-                </div>
+        </div>
               </div>
             )}
           </div>
