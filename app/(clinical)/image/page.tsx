@@ -397,15 +397,15 @@ export default function ClinicalImagePage() {
     setMobileState('connected');
   };
 
-  // Mobile authentication check
-  if (isMobile && !isSignedIn) {
+  // Authentication check for all users
+  if (!isSignedIn) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle>Sign In Required</CardTitle>
             <CardDescription>
-              Please sign in to upload clinical images
+              Please sign in to access clinical image analysis
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">
@@ -1095,7 +1095,6 @@ function ImageEnlargeModal({
             src={imageUrl}
             alt={image.filename}
             className="max-h-[90vh] max-w-[90vw] object-contain shadow-2xl"
-            onClick={e => e.stopPropagation()}
           />
         )
 : (

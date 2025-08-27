@@ -12,6 +12,18 @@ type WebRTCCameraProps = {
   maxImageSize?: number;
 };
 
+/**
+ * Enhanced WebRTC Camera Component for Clinical Image Capture
+ *
+ * Key Features:
+ * - Back-facing cameras only (no front-facing for clinical accuracy)
+ * - Prioritizes wide-angle and standard lenses over telephoto
+ * - No video mirroring to preserve clinical orientation (left/right accuracy)
+ * - Video-only stream (no audio) for optimal performance
+ * - High resolution capture with mobile optimization
+ * - Enhanced error handling and camera selection
+ */
+
 export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
   onCapture,
   onClose,
@@ -35,22 +47,73 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(device => device.kind === 'videoinput');
-      setAvailableCameras(videoDevices);
 
-      // Find the default back camera (usually has 'back' in label or is the main camera)
-      const backCameras = videoDevices.filter(device =>
-        device.label.toLowerCase().includes('back')
-        || device.label.toLowerCase().includes('main')
-        || device.label.toLowerCase().includes('wide')
-        || (!device.label.toLowerCase().includes('front')
-          && !device.label.toLowerCase().includes('selfie')
-          && !device.label.toLowerCase().includes('tele')),
-      );
+      // Filter for back-facing cameras only, prioritizing wide/standard lenses
+      const backCameras = videoDevices.filter((device) => {
+        const label = device.label.toLowerCase();
+        // Exclude front-facing cameras
+        if (label.includes('front') || label.includes('selfie') || label.includes('user')) {
+          return false;
+        }
+        // Exclude telephoto/zoom lenses for clinical accuracy
+        if (label.includes('tele') || label.includes('zoom') || label.includes('3x') || label.includes('5x')) {
+          return false;
+        }
+        // Include back, main, wide, ultra-wide, or standard cameras
+        return label.includes('back')
+          || label.includes('main')
+          || label.includes('wide')
+          || label.includes('standard')
+          || label.includes('environment')
+          || (!label.includes('front') && !label.includes('tele'));
+      });
 
-      if (backCameras.length > 0 && !currentCameraId) {
-        setCurrentCameraId(backCameras[0]!.deviceId);
-      } else if (videoDevices.length > 0 && !currentCameraId) {
-        setCurrentCameraId(videoDevices[0]!.deviceId);
+      // Sort cameras by preference: wide > standard > main > others
+      const sortedBackCameras = backCameras.sort((a, b) => {
+        const aLabel = a.label.toLowerCase();
+        const bLabel = b.label.toLowerCase();
+
+        // Prefer wide-angle cameras for better clinical documentation
+        if (aLabel.includes('wide') && !bLabel.includes('wide')) {
+ return -1;
+}
+        if (!aLabel.includes('wide') && bLabel.includes('wide')) {
+ return 1;
+}
+
+        // Then prefer standard lenses
+        if (aLabel.includes('standard') && !bLabel.includes('standard')) {
+ return -1;
+}
+        if (!aLabel.includes('standard') && bLabel.includes('standard')) {
+ return 1;
+}
+
+        // Then prefer main cameras
+        if (aLabel.includes('main') && !bLabel.includes('main')) {
+ return -1;
+}
+        if (!aLabel.includes('main') && bLabel.includes('main')) {
+ return 1;
+}
+
+        return 0;
+      });
+
+      setAvailableCameras(sortedBackCameras);
+
+      if (sortedBackCameras.length > 0 && !currentCameraId) {
+        setCurrentCameraId(sortedBackCameras[0]!.deviceId);
+      } else if (sortedBackCameras.length === 0 && videoDevices.length > 0) {
+        // Fallback to any available camera if no back cameras found
+        const fallbackCameras = videoDevices.filter((device) => {
+          const label = device.label.toLowerCase();
+          return !label.includes('front') && !label.includes('selfie');
+        });
+        setAvailableCameras(fallbackCameras);
+        if (fallbackCameras.length > 0 && !currentCameraId) {
+          setCurrentCameraId(fallbackCameras[0]!.deviceId);
+        }
       }
     } catch (err) {
       console.error('Failed to enumerate cameras:', err);
@@ -73,13 +136,29 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
     try {
       setError(null);
 
-      // Camera constraints - prefer specific device or default back camera
+      // Enhanced camera constraints for clinical imaging
       const constraints: MediaStreamConstraints = {
         video: {
-          ...(deviceId ? { deviceId: { exact: deviceId } } : { facingMode: { ideal: 'environment' } }),
-          width: { ideal: 1920, max: 1920 },
-          height: { ideal: 1080, max: 1080 },
+          ...(deviceId
+            ? { deviceId: { exact: deviceId } }
+            : {
+                facingMode: { ideal: 'environment' },
+                // Prefer wide-angle lenses for better clinical documentation
+                advanced: [
+                  { facingMode: 'environment' },
+                  { width: { min: 1280 } },
+                  { height: { min: 720 } },
+                ],
+              }),
+          // High resolution for clinical detail
+          width: { ideal: 1920, max: 4096 },
+          height: { ideal: 1080, max: 2160 },
+          // Frame rate optimized for still photography
+          frameRate: { ideal: 30, max: 60 },
+          // Image quality settings
+          aspectRatio: { ideal: 16 / 9 },
         },
+        // Explicitly disable audio for clinical image capture
         audio: false,
       };
 
@@ -110,19 +189,35 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
     }
   }, []);
 
-  // Switch to next available camera
+  // Switch to next available camera (only cycles through filtered back cameras)
   const switchCamera = useCallback(async () => {
     if (availableCameras.length <= 1) {
  return;
 }
+
+    setError(null); // Clear any previous errors
 
     const currentIndex = availableCameras.findIndex(cam => cam.deviceId === currentCameraId);
     const nextIndex = (currentIndex + 1) % availableCameras.length;
     const nextCamera = availableCameras[nextIndex];
 
     if (nextCamera) {
-      cleanupCamera();
-      setCurrentCameraId(nextCamera.deviceId);
+      try {
+        cleanupCamera();
+        setCurrentCameraId(nextCamera.deviceId);
+
+        // Provide user feedback about camera type
+        const cameraType = nextCamera.label.toLowerCase().includes('wide')
+? 'Wide-angle'
+                          : nextCamera.label.toLowerCase().includes('standard')
+? 'Standard'
+                          : nextCamera.label.toLowerCase().includes('main') ? 'Main' : 'Back';
+
+        console.log(`Switched to ${cameraType} camera: ${nextCamera.label}`);
+      } catch (err) {
+        console.error('Failed to switch camera:', err);
+        setError('Failed to switch camera. Please try again.');
+      }
     }
   }, [availableCameras, currentCameraId, cleanupCamera]);
 
@@ -179,14 +274,18 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
       setShowCaptureFlash(true);
       setTimeout(() => setShowCaptureFlash(false), 200);
 
-      // Set canvas dimensions to match video
+      // Set canvas dimensions to match video for clinical accuracy
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
 
-      // Draw current video frame to canvas
+      // Clear canvas and draw current video frame
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw video frame directly without any transformation for clinical accuracy
+      // This ensures left/right orientation is preserved for medical documentation
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      // Resize image for mobile optimization
+      // Resize image for mobile optimization while maintaining quality
       const resizedBlob = await resizeImage(canvas, maxImageSize);
 
       // Generate filename with timestamp
@@ -304,7 +403,7 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
               playsInline
               muted
               className="pointer-events-none size-full object-cover"
-              style={{ transform: 'scaleX(-1)' }} // Mirror for selfie-style preview
+              // Removed mirroring for clinical accuracy - no transform applied
             />
 
             {/* Capture Flash Effect */}
@@ -353,9 +452,23 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
                   <div className="text-sm text-white/80">
                     {isCapturing ? 'Capturing...' : 'Tap to capture clinical image'}
                   </div>
-                  {availableCameras.length > 1 && (
+                  {availableCameras.length > 0 && (
                     <div className="mt-1 text-xs text-white/60">
-                      {availableCameras.find(cam => cam.deviceId === currentCameraId)?.label || 'Camera'}
+                      {(() => {
+                        const currentCamera = availableCameras.find(cam => cam.deviceId === currentCameraId);
+                        if (!currentCamera) {
+ return 'Camera';
+}
+
+                        const label = currentCamera.label.toLowerCase();
+                        const cameraType = label.includes('wide')
+? 'Wide-angle lens'
+                                          : label.includes('standard')
+? 'Standard lens'
+                                          : label.includes('main') ? 'Main camera' : 'Back camera';
+
+                        return `${cameraType}${availableCameras.length > 1 ? ' • Tap to switch' : ''}`;
+                      })()}
                     </div>
                   )}
                 </div>
