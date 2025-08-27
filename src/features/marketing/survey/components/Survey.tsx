@@ -23,16 +23,16 @@ const Q1_OPTIONS = [
 // Q2 removed from the flow
 
 const Q3A_OPTIONS = [
-  'Trouble remembering everything we discussed in the consult',
-  'Takes too long to type / finish after consult',
+  'Recall — hard to remember consult details',
+  'Time — too slow to type/finish notes',
   'Other — please specify:',
 ];
 
 const Q3B_OPTIONS = [
-  'Information overload – Most guidelines bury the key recommendation inside pages of unnecessary context.',
-  'Navigation friction – Clinical resources are clunky to search and slow to navigate under time pressure.',
-  'Device switching – Constantly flipping between PMS, browsers, and logins disrupts the workflow.',
-  'Time vs patient expectations – Looking up information mid-consult feels slow and awkward while the patient waits.',
+  'Info overload — key recommendations are buried',
+  'Navigation — slow/clunky under time pressure',
+  'Context switching — PMS/browsers/logins',
+  'Time pressure — patient waiting feels awkward',
   'Other — please specify:',
 ];
 
@@ -79,22 +79,22 @@ export function Survey() {
           if (v === 'Writing / finishing consultation notes') return { topic: 'notes', title: 'What specifically makes writing notes hard for you?', options: Q3A_OPTIONS } as const;
           if (v.toLowerCase().includes('clinical info') || v.toLowerCase().includes('healthpathways') || v.toLowerCase().includes('nzformulary') || v.toLowerCase().includes('dermnet') || v.toLowerCase().includes('guidance')) return { topic: 'guidance', title: 'What’s the main problem when searching during a consult?', options: Q3B_OPTIONS } as const;
           if (v.includes('ACC')) return { topic: 'acc', title: 'What’s the single biggest bottleneck with ACC paperwork?', options: [
-            'Duplication – Re-entering information already in my notes.',
-            'Employer details – Manually searching and typing addresses wastes time.',
-            'Occupation lookup – Finding and entering the “right” code is fiddly and slow.',
-            'ACC bounceing back asking for more detail.',
+            'Duplication — re-entering notes',
+            'Employer details — finding/typing addresses',
+            'Occupation codes — hard to find/enter',
+            'ACC bounce-backs — more detail needed',
             'Other — please specify:',
           ] as const };
           if (v.toLowerCase().includes('referral')) return { topic: 'referrals', title: 'What’s the biggest bottleneck drafting referrals?', options: [
-            'Hunting criteria – Each DHB or specialty has different referral rules, forms, and criteria that take time to track down.',
-            'Duplicating notes – I have to re-enter information already written in the PMS into a different referral structure.',
-            'Over-documenting – To avoid having referrals rejected, I add extra justification and detail “just in case.”',
+            'Criteria hunting — DHB/specialty rules vary',
+            'Duplication — re-enter notes into referral',
+            'Over-documenting — extra detail to avoid rejection',
             'Other — please specify:',
           ] as const };
           if (v.toLowerCase().includes('image')) return { topic: 'images', title: 'What’s the biggest bottleneck with clinical images?', options: [
-            'Personal device use – Using my phone feels insecure and unprofessional.',
-            'Admin handoff – Images must be sent to staff to upload into PMS.',
-            'File size issues – Photos are often too large to attach to referrals.',
+            'Personal device — feels insecure/unprofessional',
+            'Admin handoff — staff must upload',
+            'File size — photos too large to attach',
             'Other — please specify:',
           ] as const };
           return null;
