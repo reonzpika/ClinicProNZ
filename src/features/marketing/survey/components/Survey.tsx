@@ -13,9 +13,9 @@ import type { SurveyPayload } from '../types';
 
 const Q1_OPTIONS = [
   'Writing / finishing consultation notes',
-  'Completing ACC forms / insurance paperwork',
-  'Drafting referrals (time + re-entry)',
-  'Looking up clinical guidance or medication info (HealthPathways, doses, interactions) — combined',
+  'Completing ACC forms',
+  'Drafting referrals',
+  'looking up the right clinical info quickly (e.g. healthpathways, nzformulary, dermnet etc)',
   'Capturing & storing clinical images',
   'Other — please specify:',
 ];
@@ -80,7 +80,7 @@ export function Survey() {
       q1
         .map((v) => {
           if (v === 'Writing / finishing consultation notes') return { topic: 'notes', title: 'What specifically makes writing notes hard for you?', options: Q3A_OPTIONS } as const;
-          if (v.startsWith('Looking up clinical guidance')) return { topic: 'guidance', title: 'What’s the main problem when searching during a consult?', options: Q3B_OPTIONS } as const;
+          if (v.toLowerCase().includes('clinical info') || v.toLowerCase().includes('healthpathways') || v.toLowerCase().includes('nzformulary') || v.toLowerCase().includes('dermnet') || v.toLowerCase().includes('guidance')) return { topic: 'guidance', title: 'What’s the main problem when searching during a consult?', options: Q3B_OPTIONS } as const;
           if (v.includes('ACC')) return { topic: 'acc', title: 'What’s the single biggest bottleneck with ACC paperwork?', options: ['Takes too long to complete', 'Re-entry into PMS', 'Finding the correct code/info', 'Other — please specify:'] as const };
           if (v.toLowerCase().includes('referral')) return { topic: 'referrals', title: 'What’s the biggest bottleneck drafting referrals?', options: ['Collecting required details', 'Re-entering into PMS/specialist forms', 'Formatting / structure', 'Other — please specify:'] as const };
           if (v.toLowerCase().includes('image')) return { topic: 'images', title: 'What’s the biggest bottleneck with clinical images?', options: ['Capturing quickly in consult', 'Attaching to PMS record', 'Organisation / retrieval later', 'Other — please specify:'] as const };

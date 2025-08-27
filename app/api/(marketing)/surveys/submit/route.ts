@@ -77,7 +77,14 @@ function computeTags(q1: string[], q4: SurveyRequest['q4']): string[] {
   q1.forEach((pick) => {
     const normalized = pick.toLowerCase();
     if (normalized.includes('notes')) tags.add('notes');
-    if (normalized.includes('guidance') || normalized.includes('medication')) tags.add('guidelines');
+    if (
+      normalized.includes('guidance')
+      || normalized.includes('clinical info')
+      || normalized.includes('healthpathways')
+      || normalized.includes('nzformulary')
+      || normalized.includes('dermnet')
+      || normalized.includes('medication')
+    ) tags.add('guidelines');
     if (normalized.includes('acc')) tags.add('acc');
     if (normalized.includes('referral')) tags.add('referrals');
     if (normalized.includes('image')) tags.add('images');
