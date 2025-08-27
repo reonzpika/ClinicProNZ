@@ -67,8 +67,7 @@ export function Survey() {
   const [q4NoOther, setQ4NoOther] = useState('');
   const [q5, setQ5] = useState<number | null>(null);
   const [q5Band, setQ5Band] = useState<string | null>(null);
-  const [email, setEmail] = useState('');
-  const [optIn] = useState(false);
+  // Email capture removed; signup handled on thank-you page
   const [submitting, setSubmitting] = useState(false);
   const startedRef = useRef(false);
 
@@ -155,7 +154,6 @@ export function Survey() {
       },
       q5: q5 || 1,
       q5_price_band: q5 && q5 >= 4 ? (q5Band || null) : null,
-      opted_in: optIn,
     };
 
     try {
@@ -166,7 +164,7 @@ export function Survey() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Submit failed');
-      emitAnalytics({ type: 'survey_submitted', id: data.id, email_opted_in: optIn, gold_lead: false, timestamp: Date.now() });
+      emitAnalytics({ type: 'survey_submitted', id: data.id, email_opted_in: false, gold_lead: false, timestamp: Date.now() });
       const firstToken = (q1[0] || '').toLowerCase().split(' ')[0] ?? '';
       const utm = new URLSearchParams([[ 'from_survey', firstToken ]]).toString();
       router.push(`/landing-page/thank-you?${utm}`);
