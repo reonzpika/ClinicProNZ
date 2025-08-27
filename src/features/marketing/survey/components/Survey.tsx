@@ -145,7 +145,8 @@ export function Survey() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Submit failed');
       emitAnalytics({ type: 'survey_submitted', id: data.id, email_opted_in: optIn, gold_lead: false, timestamp: Date.now() });
-      const utm = new URLSearchParams({ from_survey: (q2 || '').toLowerCase().split(' ')[0] }).toString();
+      const firstToken = (q2 || '').toLowerCase().split(' ')[0] ?? '';
+      const utm = new URLSearchParams([[ 'from_survey', firstToken ]]).toString();
       router.push(`/mvp-signup?${utm}`);
     } catch (e) {
       alert((e as Error).message);
