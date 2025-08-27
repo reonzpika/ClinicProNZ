@@ -1,10 +1,5 @@
-'use client';
-
-import { useSearchParams } from 'next/navigation';
-
-export default function MVPSignupPage() {
-  const params = useSearchParams();
-  const fromSurvey = params.get('from_survey');
+export default function MVPSignupPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
+  const fromSurvey = typeof searchParams.from_survey === 'string' ? searchParams.from_survey : undefined;
   return (
     <main className="mx-auto max-w-2xl p-6">
       <h1 className="mb-2 text-2xl font-semibold">MVP Signup</h1>
