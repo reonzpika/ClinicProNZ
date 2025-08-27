@@ -76,22 +76,28 @@ export function Survey() {
     return (
       q1
         .map((v) => {
-          if (v === 'Writing / finishing consultation notes') return { topic: 'notes', title: 'What specifically makes writing notes hard for you?', options: Q3A_OPTIONS } as const;
-          if (v.toLowerCase().includes('clinical info') || v.toLowerCase().includes('healthpathways') || v.toLowerCase().includes('nzformulary') || v.toLowerCase().includes('dermnet') || v.toLowerCase().includes('guidance')) return { topic: 'guidance', title: 'What’s the main problem when searching during a consult?', options: Q3B_OPTIONS } as const;
-          if (v.includes('ACC')) return { topic: 'acc', title: 'What’s the single biggest bottleneck with ACC paperwork?', options: [
+          if (v === 'Writing / finishing consultation notes') return { topic: 'notes', label: 'Writing notes', options: Q3A_OPTIONS } as const;
+          if (
+            v.toLowerCase().includes('clinical info')
+            || v.toLowerCase().includes('healthpathways')
+            || v.toLowerCase().includes('nzformulary')
+            || v.toLowerCase().includes('dermnet')
+            || v.toLowerCase().includes('guidance')
+          ) return { topic: 'guidance', label: 'Clinical info', options: Q3B_OPTIONS } as const;
+          if (v.includes('ACC')) return { topic: 'acc', label: 'ACC', options: [
             'Duplication — re-entering notes',
             'Employer details — finding/typing addresses',
             'Occupation codes — hard to find/enter',
             'ACC bounce-backs — more detail needed',
             'Other — please specify:',
           ] as const };
-          if (v.toLowerCase().includes('referral')) return { topic: 'referrals', title: 'What’s the biggest bottleneck drafting referrals?', options: [
+          if (v.toLowerCase().includes('referral')) return { topic: 'referrals', label: 'Referrals', options: [
             'Criteria hunting — DHB/specialty rules vary',
             'Duplication — re-enter notes into referral',
             'Over-documenting — extra detail to avoid rejection',
             'Other — please specify:',
           ] as const };
-          if (v.toLowerCase().includes('image')) return { topic: 'images', title: 'What’s the biggest bottleneck with clinical images?', options: [
+          if (v.toLowerCase().includes('image')) return { topic: 'images', label: 'Clinical images', options: [
             'Personal device — feels insecure/unprofessional',
             'Admin handoff — staff must upload',
             'File size — photos too large to attach',
@@ -99,7 +105,7 @@ export function Survey() {
           ] as const };
           return null;
         })
-        .filter(Boolean) as Array<{ topic: string; title: string; options: readonly string[] }>
+        .filter(Boolean) as Array<{ topic: string; label: string; options: readonly string[] }>
     );
   }, [q1]);
 
@@ -235,14 +241,14 @@ export function Survey() {
 
       {step === 2 && (
         <div>
-          <h2 className="mb-2 text-lg font-semibold">Tell us more about your selected priorities</h2>
+          <h2 className="mb-2 text-lg font-semibold">What makes it hard for:</h2>
           {q1Topics.length === 0 ? (
             <p className="text-sm text-gray-600">No follow-up needed for your Q1 selections.</p>
           ) : (
             <div className="space-y-6">
-              {q1Topics.map(({ topic, title, options }) => (
+              {q1Topics.map(({ topic, label, options }) => (
                 <div key={topic} className="rounded-md border p-3">
-                  <h3 className="mb-2 text-base font-medium">{title}</h3>
+                  <h3 className="mb-2 text-base font-medium">{label}</h3>
                   <div className="space-y-2">
                     {options.map((opt) => (
                       <div key={opt} className="flex items-center gap-2">
