@@ -57,26 +57,6 @@ const Q4B_OPTIONS = [
 
 const Q5_BANDS = ['<$25', '$25–$50', '$50–$100', '$100+', 'Prefer not to say'];
 
-function getQ3Branch(q2: string | null) {
-  if (!q2) return { id: 'q3', title: '', options: [] as string[] };
-  if (q2 === 'Writing / finishing consultation notes') {
-    return { id: 'q3a', title: 'What specifically makes writing notes hard for you?', options: Q3A_OPTIONS };
-  }
-  if (q2.startsWith('Looking up clinical guidance')) {
-    return { id: 'q3b', title: 'What’s the main problem when searching during a consult?', options: Q3B_OPTIONS };
-  }
-  if (q2.includes('ACC')) {
-    return { id: 'q3c', title: 'What’s the single biggest bottleneck with ACC paperwork?', options: ['Takes too long to complete', 'Re-entry into PMS', 'Finding the correct code/info', 'Other — please specify:'] };
-  }
-  if (q2.toLowerCase().includes('referral')) {
-    return { id: 'q3d', title: 'What’s the biggest bottleneck drafting referrals?', options: ['Collecting required details', 'Re-entering into PMS/specialist forms', 'Formatting / structure', 'Other — please specify:'] };
-  }
-  if (q2.toLowerCase().includes('image')) {
-    return { id: 'q3e', title: 'What’s the biggest bottleneck with clinical images?', options: ['Capturing quickly in consult', 'Attaching to PMS record', 'Organisation / retrieval later', 'Other — please specify:'] };
-  }
-  return { id: 'q3', title: 'Tell us more about this priority', options: ['Other — please specify:'] };
-}
-
 export function Survey() {
   const router = useRouter();
   const [step, setStep] = useState<number>(0); // 0-intro, 1..6 questions
@@ -95,7 +75,6 @@ export function Survey() {
   const [submitting, setSubmitting] = useState(false);
   const startedRef = useRef(false);
 
-  const q3Branch = useMemo(() => getQ3Branch(q2), [q2]);
   const q1Topics = useMemo(() => {
     return (
       q1
