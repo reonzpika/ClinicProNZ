@@ -20,7 +20,7 @@ const Q1_OPTIONS = [
   'Other — please specify:',
 ];
 
-const Q2_OPTIONS = [...Q1_OPTIONS.slice(0, 5), 'Other (specify)'];
+// Q2 removed from the flow
 
 const Q3A_OPTIONS = [
   'Trouble remembering everything we discussed in the consult',
@@ -62,12 +62,12 @@ export function Survey() {
   const [step, setStep] = useState<number>(0); // 0-intro, 1..6 questions
   const [q1, setQ1] = useState<string[]>([]);
   const [q1Other, setQ1Other] = useState('');
-  const [q2, setQ2] = useState<string | null>(null);
-  const [q2Other, setQ2Other] = useState('');
-  const [q3ByTopic, setQ3ByTopic] = useState<Record<string, { selected: string; free?: string }>>({});
+  const [q3ByTopic, setQ3ByTopic] = useState<Record<string, { selected: string[]; free?: string }>>({});
   const [q4A, setQ4A] = useState<string | null>(null);
   const [q4BIssue, setQ4BIssue] = useState<string | null>(null);
   const [q4Vendor, setQ4Vendor] = useState('');
+  const [q4NoReasons, setQ4NoReasons] = useState<string[]>([]);
+  const [q4NoOther, setQ4NoOther] = useState('');
   const [q5, setQ5] = useState<number | null>(null);
   const [q5Band, setQ5Band] = useState<string | null>(null);
   const [email, setEmail] = useState('');
@@ -95,13 +95,13 @@ export function Survey() {
     startedRef.current = true;
     emitAnalytics({ type: 'survey_started', timestamp: Date.now() });
     window.addEventListener('beforeunload', () => {
-      const lastId = `step_${Math.min(step + 1, 6)}`;
+      const lastId = `step_${Math.min(step + 1, 5)}`;
       emitAnalytics({ type: 'survey_dropped_off', lastQuestionId: lastId, timestamp: Date.now() });
     });
   }
 
   function next() {
-    const nextStep = Math.min(step + 1, 6);
+    const nextStep = Math.min(step + 1, 5);
     setStep(nextStep);
     emitAnalytics({ type: 'survey_question_viewed', questionId: `step_${nextStep}`, timestamp: Date.now() });
   }
@@ -118,10 +118,10 @@ export function Survey() {
     const payload: SurveyPayload = {
       email,
       q1: [...q1, ...(q1Other.trim() ? [q1Other.trim()] : [])],
-      q2: q2 === 'Other (specify)' ? (q2Other.trim() || 'Other') : (q2 || ''),
+      q2: null,
       q3: q1Topics.map(({ topic }) => ({
         topic: topic as any,
-        selected: q3ByTopic[topic]?.selected || 'Other — please specify:',
+        selected: Array.isArray(q3ByTopic[topic]?.selected) ? q3ByTopic[topic]?.selected : (q3ByTopic[topic]?.selected ? [q3ByTopic[topic]?.selected] : []),
         free_text: q3ByTopic[topic]?.free?.trim() || undefined,
       })),
       q4: {
@@ -132,6 +132,7 @@ export function Survey() {
             : 'none',
         issue: q4BIssue || undefined,
         vendor: q4Vendor.trim() || undefined,
+        no_try_reason: q4A === 'No — never tried' ? [...q4NoReasons, ...(q4NoOther.trim() ? [q4NoOther.trim()] : [])] : undefined,
       },
       q5: q5 || 1,
       q5_price_band: q5 && q5 >= 4 ? (q5Band || null) : null,
@@ -147,7 +148,7 @@ export function Survey() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Submit failed');
       emitAnalytics({ type: 'survey_submitted', id: data.id, email_opted_in: optIn, gold_lead: false, timestamp: Date.now() });
-      const firstToken = (q2 || '').toLowerCase().split(' ')[0] ?? '';
+      const firstToken = (q1[0] || '').toLowerCase().split(' ')[0] ?? '';
       const utm = new URLSearchParams([[ 'from_survey', firstToken ]]).toString();
       router.push(`/mvp-signup?${utm}`);
     } catch (e) {
@@ -161,17 +162,16 @@ export function Survey() {
   const canContinue = (() => {
     if (step === 0) return true;
     if (step === 1) return q1.length > 0 || !!q1Other.trim();
-    if (step === 2) return !!q2 || !!q2Other.trim();
-    if (step === 3) return q1Topics.every(({ topic }) => !!q3ByTopic[topic]?.selected);
-    if (step === 4) return !!q4A && (q4A.startsWith('Yes — AI scribe') ? !!q4BIssue : true);
-    if (step === 5) return typeof q5 === 'number' && q5 >= 1 && q5 <= 5 && (q5 >= 4 ? !!q5Band : true);
-    if (step === 6) return !!email;
+    if (step === 2) return q1Topics.every(({ topic }) => Array.isArray(q3ByTopic[topic]?.selected) ? (q3ByTopic[topic]?.selected as string[]).length > 0 : !!q3ByTopic[topic]?.selected);
+    if (step === 3) return !!q4A && (q4A.startsWith('Yes — AI scribe') ? !!q4BIssue : true);
+    if (step === 4) return typeof q5 === 'number' && q5 >= 1 && q5 <= 5 && (q5 >= 4 ? !!q5Band : true);
+    if (step === 5) return !!email;
     return true;
   })();
 
   return (
     <div className="mx-auto max-w-2xl p-4">
-      <div className="mb-4 text-sm text-gray-600">Step {Math.min(step + 1, 6)} of 6</div>
+      <div className="mb-4 text-sm text-gray-600">Step {Math.min(step + 1, 5)} of 5</div>
       {step === 0 && (
         <div>
           <p className="mb-6 text-lg">
@@ -222,41 +222,7 @@ export function Survey() {
 
       {step === 2 && (
         <div>
-          <h2 className="mb-2 text-lg font-semibold">If we could fix one thing for you tomorrow, which would you choose?</h2>
-          <div className="space-y-2">
-            {Q2_OPTIONS.map((opt) => (
-              <div key={opt} className="flex items-center gap-2">
-                <input
-                  id={`q2-${opt}`}
-                  type="radio"
-                  name="q2"
-                  value={opt}
-                  checked={q2 === opt}
-                  onChange={(e) => {
-                    setQ2(e.target.value);
-                    emitAnalytics({ type: 'survey_question_answered', questionId: 'q2', answer: e.target.value, timestamp: Date.now() });
-                  }}
-                  className="h-4 w-4"
-                />
-                <Label htmlFor={`q2-${opt}`}>{opt}</Label>
-              </div>
-            ))}
-          </div>
-          {q2 === 'Other (specify)' && (
-            <div className="mt-3">
-              <Label htmlFor="q2-other" className="mb-1 block">Other — please specify</Label>
-              <Input id="q2-other" value={q2Other} onChange={(e) => setQ2Other(e.target.value)} />
-            </div>
-          )}
-          <div className="mt-6 flex items-center justify-between">
-            <Button variant="secondary" onClick={prev}>Back</Button>
-            <Button onClick={next} disabled={!canContinue}>Next</Button>
-          </div>
-        </div>
-      )}
-
-      {step === 3 && (
-        <div>
+          <h2 className="mb-2 text-lg font-semibold">Tell us more about your selected priorities</h2>
           {q1Topics.length === 0 ? (
             <p className="text-sm text-gray-600">No follow-up needed for your Q1 selections.</p>
           ) : (
@@ -269,13 +235,17 @@ export function Survey() {
                       <div key={opt} className="flex items-center gap-2">
                         <input
                           id={`q3-${topic}-${opt}`}
-                          type="radio"
+                          type="checkbox"
                           name={`q3-${topic}`}
                           value={opt}
-                          checked={q3ByTopic[topic]?.selected === opt}
+                          checked={Array.isArray(q3ByTopic[topic]?.selected) ? (q3ByTopic[topic]?.selected as string[]).includes(opt) : false}
                           onChange={(e) => {
-                            setQ3ByTopic((prev) => ({ ...prev, [topic]: { selected: e.target.value, free: prev[topic]?.free } }));
-                            emitAnalytics({ type: 'survey_question_answered', questionId: `q3_${topic}`, answer: e.target.value, timestamp: Date.now() });
+                            setQ3ByTopic((prev) => {
+                              const current = Array.isArray(prev[topic]?.selected) ? (prev[topic]?.selected as string[]) : [];
+                              const next = e.target.checked ? Array.from(new Set([...current, opt])) : current.filter((x) => x !== opt);
+                              emitAnalytics({ type: 'survey_question_answered', questionId: `q3_${topic}`, answer: next, timestamp: Date.now() });
+                              return { ...prev, [topic]: { selected: next, free: prev[topic]?.free } };
+                            });
                           }}
                           className="h-4 w-4"
                         />
@@ -285,7 +255,7 @@ export function Survey() {
                   </div>
                   <div className="mt-3">
                     <Label htmlFor={`q3-${topic}-free`} className="mb-1 block">Optional: one-line details</Label>
-                    <Input id={`q3-${topic}-free`} value={q3ByTopic[topic]?.free || ''} onChange={(e) => setQ3ByTopic((prev) => ({ ...prev, [topic]: { selected: prev[topic]?.selected || '', free: e.target.value } }))} placeholder="Add a brief detail (optional)" />
+                    <Input id={`q3-${topic}-free`} value={q3ByTopic[topic]?.free || ''} onChange={(e) => setQ3ByTopic((prev) => ({ ...prev, [topic]: { selected: Array.isArray(prev[topic]?.selected) ? (prev[topic]?.selected as string[]) : [], free: e.target.value } }))} placeholder="Add a brief detail (optional)" />
                   </div>
                 </div>
               ))}
@@ -298,7 +268,7 @@ export function Survey() {
         </div>
       )}
 
-      {step === 4 && (
+      {step === 3 && (
         <div>
           <h2 className="mb-2 text-lg font-semibold">Do you currently use an AI scribe, dictation tool, or neither?</h2>
           <div className="space-y-2">
@@ -348,6 +318,30 @@ export function Survey() {
               </div>
             </div>
           )}
+          {q4A === 'No — never tried' && (
+            <div className="mt-4">
+              <Label className="mb-2 block">Why haven’t you tried an AI scribe or dictation tool?</Label>
+              <div className="space-y-2">
+                {['Privacy concerns', 'Doesn’t need it', 'Too technical', 'Too hard to set up', 'Cost concerns', 'Other — please specify:'].map((opt) => (
+                  <div key={opt} className="flex items-center gap-2">
+                    <input
+                      id={`q4n-${opt}`}
+                      type="checkbox"
+                      value={opt}
+                      checked={q4NoReasons.includes(opt)}
+                      onChange={(e) => setQ4NoReasons((prev) => e.target.checked ? [...prev, opt] : prev.filter((x) => x !== opt))}
+                      className="h-4 w-4"
+                    />
+                    <Label htmlFor={`q4n-${opt}`}>{opt}</Label>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3">
+                <Label htmlFor="q4n-other" className="mb-1 block">If other, please specify</Label>
+                <Input id="q4n-other" value={q4NoOther} onChange={(e) => setQ4NoOther(e.target.value)} placeholder="Other reason (optional)" />
+              </div>
+            </div>
+          )}
           <div className="mt-6 flex items-center justify-between">
             <Button variant="secondary" onClick={prev}>Back</Button>
             <Button onClick={next} disabled={!canContinue}>Next</Button>
@@ -355,9 +349,9 @@ export function Survey() {
         </div>
       )}
 
-      {step === 5 && (
+      {step === 4 && (
         <div>
-          <h2 className="mb-2 text-lg font-semibold">If ClinicPro reliably solved your top priority (Q2), how likely would you be to pay for it?</h2>
+          <h2 className="mb-2 text-lg font-semibold">If ClinicPro reliably solved your selected priorities, how likely would you be to pay for it?</h2>
           <div className="space-y-2">
             {[1, 2, 3, 4, 5].map((n) => (
               <div key={n} className="flex items-center gap-2">
@@ -415,7 +409,7 @@ export function Survey() {
         </div>
       )}
 
-      {step === 6 && (
+      {step === 5 && (
         <div>
           <p className="mb-4">Thanks — that’s a huge help. ClinicPro’s AI scribe is <strong>free to use now</strong>, and we’re rolling out more features shortly. Sign up below to get access now</p>
           <div className="mb-3">

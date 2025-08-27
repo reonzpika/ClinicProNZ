@@ -4,8 +4,8 @@ export type Q3Topic = 'notes' | 'guidance' | 'acc' | 'referrals' | 'images';
 export type SurveyPayload = {
   email: string;
   q1: string[];
-  q2: string;
-  q3: Array<{ topic: Q3Topic; selected: string; free_text?: string }>;
+  q2?: string | null;
+  q3: Array<{ topic: Q3Topic; selected: string[]; free_text?: string }>;
   q4: { type: Q4Type; issue?: string; vendor?: string };
   q5: number; // 1-5
   q5_price_band?: string | null;

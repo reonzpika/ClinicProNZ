@@ -11,9 +11,9 @@ type Q4Type = 'ai_scribe' | 'dictation' | 'none';
 type SurveyRequest = {
   email: string;
   q1: string[];
-  q2: string;
-  q3: Array<{ topic: 'notes' | 'guidance' | 'acc' | 'referrals' | 'images'; selected: string; free_text?: string }>;
-  q4: { type: Q4Type; issue?: string; vendor?: string };
+  q2?: string | null;
+  q3: Array<{ topic: 'notes' | 'guidance' | 'acc' | 'referrals' | 'images'; selected: string[]; free_text?: string }>;
+  q4: { type: Q4Type; issue?: string; vendor?: string; no_try_reason?: string[] };
   q5: number; // 1-5
   q5_price_band?: string | null;
   opted_in: boolean;
@@ -54,14 +54,13 @@ function computeGoldLead(input: SurveyRequest): boolean {
     'Too wordy / poor structure — needs heavy editing',
     'Workflow friction (integration / copying into PMS)',
   ]);
-  const q3NotesSelected = input.q3.find((q) => q.topic === 'notes')?.selected;
+  const q3NotesSelected = input.q3.find((q) => q.topic === 'notes')?.selected || [];
 
   if (
     q2IsNotes
-    && !!q3NotesSelected
     && (
-      q3NotesSelected === 'Trouble remembering everything we discussed in the consult'
-      || q3NotesSelected === 'Must re-enter/copy info into PMS (workflow friction)'
+      q3NotesSelected.includes('Trouble remembering everything we discussed in the consult')
+      || q3NotesSelected.includes('Must re-enter/copy info into PMS (workflow friction)')
     )
     && input.q4.type === 'ai_scribe'
     && input.q4.issue
@@ -127,14 +126,18 @@ export async function POST(request: NextRequest) {
     if (!Array.isArray(body.q1) || body.q1.length === 0) {
       return NextResponse.json({ error: 'Q1 is required' }, { status: 400 });
     }
-    if (!body.q2) {
-      return NextResponse.json({ error: 'Q2 is required' }, { status: 400 });
-    }
-    if (!Array.isArray(body.q3) || body.q3.length === 0 || body.q3.some((q) => !q.topic || !q.selected)) {
+    // Q2 removed from flow
+    if (!Array.isArray(body.q3) || body.q3.length === 0 || body.q3.some((q) => !q.topic || !Array.isArray(q.selected) || q.selected.length === 0)) {
       return NextResponse.json({ error: 'Q3 is required' }, { status: 400 });
     }
     if (!body.q4 || !body.q4.type) {
       return NextResponse.json({ error: 'Q4 is required' }, { status: 400 });
+    }
+    if (body.q4.type === 'none') {
+      // Accept optional no_try_reason array
+      if (body.q4.no_try_reason && !Array.isArray(body.q4.no_try_reason)) {
+        return NextResponse.json({ error: 'Q4 reasons invalid' }, { status: 400 });
+      }
     }
     if (!Number.isInteger(body.q5) || body.q5 < 1 || body.q5 > 5) {
       return NextResponse.json({ error: 'Q5 must be 1-5' }, { status: 400 });
