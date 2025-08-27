@@ -84,8 +84,7 @@ export function Survey() {
   const [q1Other, setQ1Other] = useState('');
   const [q2, setQ2] = useState<string | null>(null);
   const [q2Other, setQ2Other] = useState('');
-  const [q3Selected, setQ3Selected] = useState<string | null>(null);
-  const [q3Free, setQ3Free] = useState('');
+  const [q3ByTopic, setQ3ByTopic] = useState<Record<string, { selected: string; free?: string }>>({});
   const [q4A, setQ4A] = useState<string | null>(null);
   const [q4BIssue, setQ4BIssue] = useState<string | null>(null);
   const [q4Vendor, setQ4Vendor] = useState('');
@@ -97,6 +96,20 @@ export function Survey() {
   const startedRef = useRef(false);
 
   const q3Branch = useMemo(() => getQ3Branch(q2), [q2]);
+  const q1Topics = useMemo(() => {
+    return (
+      q1
+        .map((v) => {
+          if (v === 'Writing / finishing consultation notes') return { topic: 'notes', title: 'What specifically makes writing notes hard for you?', options: Q3A_OPTIONS } as const;
+          if (v.startsWith('Looking up clinical guidance')) return { topic: 'guidance', title: 'What’s the main problem when searching during a consult?', options: Q3B_OPTIONS } as const;
+          if (v.includes('ACC')) return { topic: 'acc', title: 'What’s the single biggest bottleneck with ACC paperwork?', options: ['Takes too long to complete', 'Re-entry into PMS', 'Finding the correct code/info', 'Other — please specify:'] as const };
+          if (v.toLowerCase().includes('referral')) return { topic: 'referrals', title: 'What’s the biggest bottleneck drafting referrals?', options: ['Collecting required details', 'Re-entering into PMS/specialist forms', 'Formatting / structure', 'Other — please specify:'] as const };
+          if (v.toLowerCase().includes('image')) return { topic: 'images', title: 'What’s the biggest bottleneck with clinical images?', options: ['Capturing quickly in consult', 'Attaching to PMS record', 'Organisation / retrieval later', 'Other — please specify:'] as const };
+          return null;
+        })
+        .filter(Boolean) as Array<{ topic: string; title: string; options: readonly string[] }>
+    );
+  }, [q1]);
 
   // Analytics: survey_started on first interaction + drop-off on unload
   if (!startedRef.current && typeof window !== 'undefined') {
@@ -127,7 +140,11 @@ export function Survey() {
       email,
       q1: [...q1, ...(q1Other.trim() ? [q1Other.trim()] : [])],
       q2: q2 === 'Other (specify)' ? (q2Other.trim() || 'Other') : (q2 || ''),
-      q3: { selected: q3Selected || '', free_text: q3Free.trim() || undefined },
+      q3: q1Topics.map(({ topic }) => ({
+        topic: topic as any,
+        selected: q3ByTopic[topic]?.selected || 'Other — please specify:',
+        free_text: q3ByTopic[topic]?.free?.trim() || undefined,
+      })),
       q4: {
         type: q4A === 'Yes — AI scribe (e.g. Heidi, Nabla, Abridge — name it below)'
           ? 'ai_scribe'
@@ -166,7 +183,7 @@ export function Survey() {
     if (step === 0) return true;
     if (step === 1) return q1.length > 0 || !!q1Other.trim();
     if (step === 2) return !!q2 || !!q2Other.trim();
-    if (step === 3) return !!q3Selected;
+    if (step === 3) return q1Topics.every(({ topic }) => !!q3ByTopic[topic]?.selected);
     if (step === 4) return !!q4A && (q4A.startsWith('Yes — AI scribe') ? !!q4BIssue : true);
     if (step === 5) return typeof q5 === 'number' && q5 >= 1 && q5 <= 5 && (q5 >= 4 ? !!q5Band : true);
     if (step === 6) return !!email;
@@ -261,30 +278,40 @@ export function Survey() {
 
       {step === 3 && (
         <div>
-          <h2 className="mb-2 text-lg font-semibold">{q3Branch.title}</h2>
-          <div className="space-y-2">
-            {q3Branch.options.map((opt) => (
-              <div key={opt} className="flex items-center gap-2">
-                <input
-                  id={`q3-${opt}`}
-                  type="radio"
-                  name="q3"
-                  value={opt}
-                  checked={q3Selected === opt}
-                  onChange={(e) => {
-                    setQ3Selected(e.target.value);
-                    emitAnalytics({ type: 'survey_question_answered', questionId: q3Branch.id, answer: e.target.value, timestamp: Date.now() });
-                  }}
-                  className="h-4 w-4"
-                />
-                <Label htmlFor={`q3-${opt}`}>{opt}</Label>
-              </div>
-            ))}
-          </div>
-          <div className="mt-3">
-            <Label htmlFor="q3-free" className="mb-1 block">Optional: one-line details</Label>
-            <Input id="q3-free" value={q3Free} onChange={(e) => setQ3Free(e.target.value)} placeholder="Add a brief detail (optional)" />
-          </div>
+          {q1Topics.length === 0 ? (
+            <p className="text-sm text-gray-600">No follow-up needed for your Q1 selections.</p>
+          ) : (
+            <div className="space-y-6">
+              {q1Topics.map(({ topic, title, options }) => (
+                <div key={topic} className="rounded-md border p-3">
+                  <h3 className="mb-2 text-base font-medium">{title}</h3>
+                  <div className="space-y-2">
+                    {options.map((opt) => (
+                      <div key={opt} className="flex items-center gap-2">
+                        <input
+                          id={`q3-${topic}-${opt}`}
+                          type="radio"
+                          name={`q3-${topic}`}
+                          value={opt}
+                          checked={q3ByTopic[topic]?.selected === opt}
+                          onChange={(e) => {
+                            setQ3ByTopic((prev) => ({ ...prev, [topic]: { selected: e.target.value, free: prev[topic]?.free } }));
+                            emitAnalytics({ type: 'survey_question_answered', questionId: `q3_${topic}`, answer: e.target.value, timestamp: Date.now() });
+                          }}
+                          className="h-4 w-4"
+                        />
+                        <Label htmlFor={`q3-${topic}-${opt}`}>{opt}</Label>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3">
+                    <Label htmlFor={`q3-${topic}-free`} className="mb-1 block">Optional: one-line details</Label>
+                    <Input id={`q3-${topic}-free`} value={q3ByTopic[topic]?.free || ''} onChange={(e) => setQ3ByTopic((prev) => ({ ...prev, [topic]: { selected: prev[topic]?.selected || '', free: e.target.value } }))} placeholder="Add a brief detail (optional)" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="mt-6 flex items-center justify-between">
             <Button variant="secondary" onClick={prev}>Back</Button>
             <Button onClick={next} disabled={!canContinue}>Next</Button>

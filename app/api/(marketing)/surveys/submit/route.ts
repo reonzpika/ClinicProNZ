@@ -12,7 +12,7 @@ type SurveyRequest = {
   email: string;
   q1: string[];
   q2: string;
-  q3: { selected: string; free_text?: string };
+  q3: Array<{ topic: 'notes' | 'guidance' | 'acc' | 'referrals' | 'images'; selected: string; free_text?: string }>;
   q4: { type: Q4Type; issue?: string; vendor?: string };
   q5: number; // 1-5
   q5_price_band?: string | null;
@@ -54,14 +54,15 @@ function computeGoldLead(input: SurveyRequest): boolean {
     'Too wordy / poor structure — needs heavy editing',
     'Workflow friction (integration / copying into PMS)',
   ]);
-  const q3Signal = new Set([
-    'Trouble remembering everything we discussed in the consult',
-    'Must re-enter/copy info into PMS (workflow friction)',
-  ]);
+  const q3NotesSelected = input.q3.find((q) => q.topic === 'notes')?.selected;
 
   if (
     q2IsNotes
-    && q3Signal.has(input.q3.selected)
+    && !!q3NotesSelected
+    && (
+      q3NotesSelected === 'Trouble remembering everything we discussed in the consult'
+      || q3NotesSelected === 'Must re-enter/copy info into PMS (workflow friction)'
+    )
     && input.q4.type === 'ai_scribe'
     && input.q4.issue
     && unhappyIssues.has(input.q4.issue)
@@ -129,7 +130,7 @@ export async function POST(request: NextRequest) {
     if (!body.q2) {
       return NextResponse.json({ error: 'Q2 is required' }, { status: 400 });
     }
-    if (!body.q3 || !body.q3.selected) {
+    if (!Array.isArray(body.q3) || body.q3.length === 0 || body.q3.some((q) => !q.topic || !q.selected)) {
       return NextResponse.json({ error: 'Q3 is required' }, { status: 400 });
     }
     if (!body.q4 || !body.q4.type) {
