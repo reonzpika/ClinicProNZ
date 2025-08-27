@@ -114,6 +114,12 @@ export function Survey() {
     emitAnalytics({ type: 'survey_question_viewed', questionId: `step_${nextStep}`, timestamp: Date.now() });
   }
 
+  function prev() {
+    const prevStep = Math.max(step - 1, 0);
+    setStep(prevStep);
+    emitAnalytics({ type: 'survey_question_viewed', questionId: `step_${prevStep}`, timestamp: Date.now() });
+  }
+
   async function submit() {
     if (!email) return;
     setSubmitting(true);
@@ -211,7 +217,8 @@ export function Survey() {
               </div>
             ))}
           </div>
-          <div className="mt-6 flex justify-end">
+          <div className="mt-6 flex items-center justify-between">
+            <Button variant="secondary" onClick={prev}>Back</Button>
             <Button onClick={next} disabled={!canContinue}>Next</Button>
           </div>
         </div>
@@ -245,7 +252,8 @@ export function Survey() {
               <Input id="q2-other" value={q2Other} onChange={(e) => setQ2Other(e.target.value)} />
             </div>
           )}
-          <div className="mt-6 flex justify-end">
+          <div className="mt-6 flex items-center justify-between">
+            <Button variant="secondary" onClick={prev}>Back</Button>
             <Button onClick={next} disabled={!canContinue}>Next</Button>
           </div>
         </div>
@@ -277,7 +285,8 @@ export function Survey() {
             <Label htmlFor="q3-free" className="mb-1 block">Optional: one-line details</Label>
             <Input id="q3-free" value={q3Free} onChange={(e) => setQ3Free(e.target.value)} placeholder="Add a brief detail (optional)" />
           </div>
-          <div className="mt-6 flex justify-end">
+          <div className="mt-6 flex items-center justify-between">
+            <Button variant="secondary" onClick={prev}>Back</Button>
             <Button onClick={next} disabled={!canContinue}>Next</Button>
           </div>
         </div>
@@ -333,7 +342,8 @@ export function Survey() {
               </div>
             </div>
           )}
-          <div className="mt-6 flex justify-end">
+          <div className="mt-6 flex items-center justify-between">
+            <Button variant="secondary" onClick={prev}>Back</Button>
             <Button onClick={next} disabled={!canContinue}>Next</Button>
           </div>
         </div>
@@ -392,7 +402,8 @@ export function Survey() {
               </div>
             </div>
           )}
-          <div className="mt-6 flex justify-end">
+          <div className="mt-6 flex items-center justify-between">
+            <Button variant="secondary" onClick={prev}>Back</Button>
             <Button onClick={next} disabled={!canContinue}>Next</Button>
           </div>
         </div>
@@ -416,7 +427,10 @@ export function Survey() {
             }} />
             <Label htmlFor="optin">I agree ClinicPro may contact me about early access and product updates. <a className="underline" href="/privacy" target="_blank" rel="noreferrer">privacy</a></Label>
           </div>
-          <Button disabled={!canContinue || submitting} onClick={submit}>{submitting ? 'Submitting...' : 'sign up'}</Button>
+          <div className="mt-2 flex items-center justify-between">
+            <Button variant="secondary" onClick={prev}>Back</Button>
+            <Button disabled={!canContinue || submitting} onClick={submit}>{submitting ? 'Submitting...' : 'sign up'}</Button>
+          </div>
           <p className="mt-3 text-xs text-gray-600">We’ll only use your email for ClinicPro updates and early access. We won’t sell your data. Manage preferences any time.</p>
         </div>
       )}

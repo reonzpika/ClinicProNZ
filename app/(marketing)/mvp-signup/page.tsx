@@ -3,6 +3,7 @@ export default async function MVPSignupPage({ searchParams }: { searchParams: Pr
   const fromSurvey = typeof params.from_survey === 'string' ? params.from_survey : undefined;
   return (
     <main className="mx-auto max-w-2xl p-6">
+      <a href="/landing-page/survey" className="mb-4 inline-block text-sm text-blue-600 underline">← Back to survey</a>
       <h1 className="mb-2 text-2xl font-semibold">MVP Signup</h1>
       <p className="text-gray-700">
         Thanks — ClinicPro’s AI scribe is free to use now, and we’re rolling out more features shortly.
