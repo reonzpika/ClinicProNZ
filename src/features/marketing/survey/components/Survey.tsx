@@ -68,7 +68,7 @@ export function Survey() {
   const [q5, setQ5] = useState<number | null>(null);
   const [q5Band, setQ5Band] = useState<string | null>(null);
   const [email, setEmail] = useState('');
-  const [optIn, setOptIn] = useState(true);
+  const [optIn] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const startedRef = useRef(false);
 
@@ -184,7 +184,6 @@ export function Survey() {
     if (step === 2) return q1Topics.every(({ topic }) => Array.isArray(q3ByTopic[topic]?.selected) ? (q3ByTopic[topic]?.selected as string[]).length > 0 : !!q3ByTopic[topic]?.selected);
     if (step === 3) return !!q4A && (q4A.startsWith('Yes — AI scribe') ? !!q4BIssue : true);
     if (step === 4) return typeof q5 === 'number' && q5 >= 1 && q5 <= 5 && (q5 >= 4 ? !!q5Band : true);
-    if (step === 5) return !!email;
     return true;
   })();
 
@@ -430,34 +429,8 @@ export function Survey() {
           )}
           <div className="mt-6 flex items-center justify-between">
             <Button variant="secondary" onClick={prev}>Back</Button>
-            <Button onClick={next} disabled={!canContinue}>Next</Button>
+            <Button onClick={submit} disabled={!canContinue || submitting}>{submitting ? 'Submitting...' : 'Submit'}</Button>
           </div>
-        </div>
-      )}
-
-      {step === 5 && (
-        <div>
-          <p className="mb-4">Thanks — that’s a huge help. ClinicPro’s AI scribe is <strong>free to use now</strong>, and we’re rolling out more features shortly. Sign up below to get access now</p>
-          <div className="mb-3">
-            <Label htmlFor="email">Email (required)</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          </div>
-          <div className="mb-6 flex items-start gap-2">
-            <Checkbox id="optin" checked={optIn} onCheckedChange={(v) => {
-              const val = !!v;
-              setOptIn(val);
-              if (val) {
-                const domain = email.split('@')[1] || undefined;
-                emitAnalytics({ type: 'survey_opt_in', email_domain: domain, timestamp: Date.now() });
-              }
-            }} />
-            <Label htmlFor="optin">I agree ClinicPro may contact me about early access and product updates. <a className="underline" href="/privacy" target="_blank" rel="noreferrer">privacy</a></Label>
-          </div>
-          <div className="mt-2 flex items-center justify-between">
-            <Button variant="secondary" onClick={prev}>Back</Button>
-            <Button disabled={!canContinue || submitting} onClick={submit}>{submitting ? 'Submitting...' : 'sign up'}</Button>
-          </div>
-          <p className="mt-3 text-xs text-gray-600">We’ll only use your email for ClinicPro updates and early access. We won’t sell your data. Manage preferences any time.</p>
         </div>
       )}
     </div>

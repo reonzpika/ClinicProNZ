@@ -9,14 +9,14 @@ import { mailQueue, surveyResponses } from '@/db/schema';
 type Q4Type = 'ai_scribe' | 'dictation' | 'none';
 
 type SurveyRequest = {
-  email: string;
+  email?: string | null;
   q1: string[];
   q2?: string | null;
   q3: Array<{ topic: 'notes' | 'guidance' | 'acc' | 'referrals' | 'images'; selected: string[]; free_text?: string }>;
   q4: { type: Q4Type; issue?: string; vendor?: string; no_try_reason?: string[] };
   q5: number; // 1-5
   q5_price_band?: string | null;
-  opted_in: boolean;
+  opted_in?: boolean;
 };
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
@@ -127,8 +127,11 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as SurveyRequest;
 
     // Basic validation
-    if (!body.email || !EMAIL_REGEX.test(body.email) || isDisposable(body.email)) {
-      return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
+    if (body.email) {
+      const em = body.email.toLowerCase().trim();
+      if (!EMAIL_REGEX.test(em) || isDisposable(em)) {
+        return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
+      }
     }
     if (!Array.isArray(body.q1) || body.q1.length === 0) {
       return NextResponse.json({ error: 'Q1 is required' }, { status: 400 });
@@ -149,9 +152,7 @@ export async function POST(request: NextRequest) {
     if (!Number.isInteger(body.q5) || body.q5 < 1 || body.q5 > 5) {
       return NextResponse.json({ error: 'Q5 must be 1-5' }, { status: 400 });
     }
-    if (typeof body.opted_in !== 'boolean') {
-      return NextResponse.json({ error: 'Opt-in is required' }, { status: 400 });
-    }
+    // opted_in optional when no email capture
 
     const priorityWeight = computePriorityWeight();
     const urgencyScore = computeUrgencyScore(body.q5, priorityWeight);
@@ -163,14 +164,14 @@ export async function POST(request: NextRequest) {
     // Always create a new row; duplicates allowed. Behaviour documented here for simplicity.
     await db.insert(surveyResponses).values({
       id,
-      email: body.email.toLowerCase().trim(),
+      email: body.email ? body.email.toLowerCase().trim() : null,
       q1: body.q1,
       q2: body.q2,
       q3: body.q3,
       q4: body.q4,
       q5: body.q5,
       q5PriceBand: body.q5_price_band ?? null,
-      optedIn: body.opted_in,
+      optedIn: !!body.opted_in,
       callOptIn: body.q5 === 5,
       goldLead,
       priorityWeight,
@@ -181,18 +182,19 @@ export async function POST(request: NextRequest) {
     });
 
     // Queue welcome email (HTML + plain). If SES/SMTP not configured, leave TODO and store in queue.
-    const subject = 'Welcome — early access to ClinicPro';
-    const textBody = 'Thanks — ClinicPro’s AI scribe is free to use now, and we’re rolling out more features shortly. Sign up keeps you updated.';
-    const htmlBody = '<p>Thanks — ClinicPro’s AI scribe is <strong>free to use now</strong>, and we’re rolling out more features shortly. Sign up keeps you updated.</p>';
-
-    await db.insert(mailQueue).values({
-      id: nanoid(),
-      toEmail: body.email.toLowerCase().trim(),
-      subject,
-      htmlBody,
-      textBody,
-      status: 'queued',
-    });
+    if (body.email) {
+      const subject = 'Welcome — early access to ClinicPro';
+      const textBody = 'Thanks — ClinicPro’s AI scribe is free to use now, and we’re rolling out more features shortly. Sign up keeps you updated.';
+      const htmlBody = '<p>Thanks — ClinicPro’s AI scribe is <strong>free to use now</strong>, and we’re rolling out more features shortly. Sign up keeps you updated.</p>';
+      await db.insert(mailQueue).values({
+        id: nanoid(),
+        toEmail: body.email.toLowerCase().trim(),
+        subject,
+        htmlBody,
+        textBody,
+        status: 'queued',
+      });
+    }
 
     // Server-side analytics as fallback
     try {

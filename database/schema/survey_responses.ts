@@ -3,7 +3,7 @@ import { boolean, integer, jsonb, pgTable, text, timestamp } from 'drizzle-orm/p
 export const surveyResponses = pgTable('survey_responses', {
   id: text('id').primaryKey(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-  email: text('email').notNull(),
+  email: text('email'),
   q1: jsonb('q1').$type<string[]>().notNull(),
   q2: text('q2'),
   q3: jsonb('q3').$type<Array<{ topic: 'notes' | 'guidance' | 'acc' | 'referrals' | 'images'; selected: string[]; free_text?: string }>>().notNull(),
