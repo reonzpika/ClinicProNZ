@@ -1,4 +1,5 @@
-import { ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
+import { GetObjectCommand, ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { auth } from '@clerk/nextjs/server';
 import { desc, eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
@@ -47,6 +48,39 @@ async function getImageAnalyses(userId: string, imageKeys: string[]) {
   }
 
   return analysisMap;
+}
+
+// Helper function to generate presigned URLs for multiple images
+async function generatePresignedUrls(imageKeys: string[]): Promise<Record<string, string>> {
+  const urlPromises = imageKeys.map(async (key) => {
+    try {
+      const command = new GetObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: key,
+      });
+
+      const presignedUrl = await getSignedUrl(s3Client, command, {
+        expiresIn: 3600, // 1 hour expiration (same as individual calls)
+      });
+
+      return { key, url: presignedUrl };
+    } catch (error) {
+      console.error(`Failed to generate presigned URL for ${key}:`, error);
+      return { key, url: null };
+    }
+  });
+
+  const results = await Promise.all(urlPromises);
+
+  // Convert array to object map
+  const urlMap: Record<string, string> = {};
+  for (const result of results) {
+    if (result.url) {
+      urlMap[result.key] = result.url;
+    }
+  }
+
+  return urlMap;
 }
 
 export async function GET(req: NextRequest) {
@@ -172,8 +206,6 @@ export async function GET(req: NextRequest) {
       }
     }
 
-
-
     // Sort by newest first
     allImages.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
 
@@ -181,15 +213,19 @@ export async function GET(req: NextRequest) {
     const imageKeys = allImages.map(img => img.key);
     const analysisMap = await getImageAnalyses(userId, imageKeys);
 
-    // Add analysis data to images
-    const imagesWithAnalysis = allImages.map(image => ({
+    // Generate presigned URLs for all images (performance optimization)
+    const urlMap = await generatePresignedUrls(imageKeys);
+
+    // Add analysis data and thumbnail URLs to images
+    const imagesWithData = allImages.map(image => ({
       ...image,
       analysis: analysisMap[image.key] || undefined,
+      thumbnailUrl: urlMap[image.key] || undefined,
     }));
 
     return NextResponse.json({
-      images: imagesWithAnalysis,
-      count: imagesWithAnalysis.length,
+      images: imagesWithData,
+      count: imagesWithData.length,
     });
   } catch (error) {
     console.error('Error listing user images:', error);

@@ -112,7 +112,11 @@ export function useUploadImages() {
 
   return useMutation({
     mutationFn: async (files: File[]): Promise<void> => {
-      for (const file of files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (!file) {
+          throw new Error(`File at index ${i} is undefined`);
+        }
         await uploadImage.mutateAsync(file);
       }
     },
@@ -161,16 +165,52 @@ export function useAnalyzeImage() {
       imageId,
       prompt,
       sessionId = 'standalone',
+      thumbnailUrl, // Use existing thumbnailUrl if available
       onProgress,
     }: {
       imageKey: string;
       imageId: string;
       prompt?: string;
       sessionId?: string;
+      thumbnailUrl?: string; // Add thumbnailUrl parameter
       onProgress?: (analysis: string) => void;
     }): Promise<string> => {
       if (!userId) {
         throw new Error('User not authenticated');
+      }
+
+                  // Fetch image data from frontend to avoid S3 download in backend
+      let imageData: string | undefined;
+
+      try {
+        let downloadUrl = thumbnailUrl;
+
+        // If no thumbnailUrl provided, fallback to getting presigned URL
+        if (!downloadUrl) {
+          const urlResponse = await fetch(`/api/uploads/download?key=${encodeURIComponent(imageKey)}`, {
+            headers: createAuthHeaders(userId, userTier),
+          });
+
+          if (urlResponse.ok) {
+            const response = await urlResponse.json();
+            downloadUrl = response.downloadUrl;
+          } else {
+            throw new Error('Failed to get image URL');
+          }
+        }
+
+        // Fetch image as blob and convert to base64
+        if (downloadUrl) {
+          const imageResponse = await fetch(downloadUrl);
+          if (imageResponse.ok) {
+            const blob = await imageResponse.blob();
+            const arrayBuffer = await blob.arrayBuffer();
+            const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+            imageData = base64;
+          }
+        }
+      } catch {
+        // Continue without imageData - backend will fallback to S3
       }
 
       const requestHeaders = createAuthHeaders(userId, userTier);
@@ -179,6 +219,7 @@ export function useAnalyzeImage() {
         patientSessionId: sessionId,
         imageId,
         prompt: prompt || undefined,
+        imageData, // Send base64 image data if available
       };
 
       const response = await fetch('/api/clinical-images/analyze', {

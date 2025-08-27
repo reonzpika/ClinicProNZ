@@ -5,24 +5,25 @@ import {
   AlertCircle,
   Camera,
   Check,
+  Download,
+  Expand,
   FileText,
   Image as ImageIcon,
   Loader2,
   QrCode,
-  Save,
   Trash2,
   Upload,
+  X,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { PhotoReview } from '@/src/features/clinical/mobile/components/PhotoReview';
 import { WebRTCCamera } from '@/src/features/clinical/mobile/components/WebRTCCamera';
-import { useAnalyzeImage, useDeleteImage, useImageUrl, useSaveAnalysis, useServerImages, useUploadImages } from '@/src/hooks/useImageQueries';
+import { useAnalyzeImage, useDeleteImage, useSaveAnalysis, useServerImages, useUploadImages } from '@/src/hooks/useImageQueries';
 import { Container } from '@/src/shared/components/layout/Container';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/src/shared/components/ui/select';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { createAuthHeaders } from '@/src/shared/utils';
 import type { AnalysisModalState, CapturedPhoto, ServerImage } from '@/src/stores/imageStore';
@@ -37,6 +38,7 @@ export default function ClinicalImagePage() {
   const { data: serverImages = [], isLoading: isLoadingImages } = useServerImages();
   const uploadImages = useUploadImages();
   const analyzeImage = useAnalyzeImage();
+  const saveAnalysis = useSaveAnalysis();
   const deleteImage = useDeleteImage();
 
   // Store state and actions
@@ -72,6 +74,13 @@ export default function ClinicalImagePage() {
 
   // Track upload loading state
   const isUploading = uploadImages.isPending;
+  const [uploadingFileCount, setUploadingFileCount] = useState(0);
+
+  // Enlarge modal state
+  const [enlargeModal, setEnlargeModal] = useState<{
+  isOpen: boolean;
+  image: ServerImage | null;
+  }>({ isOpen: false, image: null });
 
   // QR code URL for mobile uploads (same page with mobile detection)
   const qrCodeUrl = typeof window !== 'undefined' ? `${window.location.origin}/clinical/image` : '';
@@ -105,13 +114,20 @@ export default function ClinicalImagePage() {
     }
 
     setError('');
+    const fileArray = Array.from(files);
+    setUploadingFileCount(fileArray.length);
 
     try {
-      const fileArray = Array.from(files);
       await uploadImages.mutateAsync(fileArray);
     } catch (err) {
       // Error handling is done via useEffect watching mutation errors
       console.error('Upload failed:', err);
+    } finally {
+      setUploadingFileCount(0);
+      // Reset file input to allow selecting the same files again
+      if (event.target) {
+        event.target.value = '';
+      }
     }
   };
 
@@ -138,27 +154,99 @@ export default function ClinicalImagePage() {
     }
   };
 
+  // Enlarge modal handlers
+  const handleOpenEnlarge = (image: ServerImage) => {
+    setEnlargeModal({ isOpen: true, image });
+  };
+
+  const handleCloseEnlarge = () => {
+    setEnlargeModal({ isOpen: false, image: null });
+  };
+
+  // Download image handler
+  const handleDownloadImage = useCallback(async (image: ServerImage) => {
+    try {
+      // Get the image URL (this will be a presigned S3 URL)
+      const urlResponse = await fetch(`/api/uploads/download?key=${encodeURIComponent(image.key)}`, {
+            headers: createAuthHeaders(userId, userTier),
+          });
+
+      if (!urlResponse.ok) {
+        throw new Error('Failed to get download URL');
+      }
+
+      const { downloadUrl } = await urlResponse.json();
+
+      // Fetch the image as blob to force download
+      const imageResponse = await fetch(downloadUrl);
+
+      if (!imageResponse.ok) {
+        throw new Error('Failed to fetch image for download');
+      }
+
+      const blob = await imageResponse.blob();
+
+      // Create blob URL and download link
+      const blobUrl = URL.createObjectURL(blob);
+      const filename = `clinical-image-${image.filename}`;
+
+      // Create a temporary anchor element to trigger download
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+
+      // Append to body, click, and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up the blob URL
+      URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Download error:', error);
+      setError(error instanceof Error ? error.message : 'Failed to download image');
+    }
+  }, [userId, userTier, setError]);
+
   // Analyze image with Claude (using mutation and store)
   const handleAnalyzeImage = async () => {
     if (!analysisModal.image) {
- return;
-}
+      return;
+    }
 
     try {
       setAnalysisLoading(true);
-      setError('');
+    setError('');
 
       const result = await analyzeImage.mutateAsync({
           imageKey: analysisModal.image.key,
           imageId: analysisModal.image.id,
           prompt: analysisModal.prompt || undefined,
         sessionId: analysisModal.image.sessionId || 'standalone',
+        thumbnailUrl: analysisModal.image.thumbnailUrl, // Use existing thumbnailUrl for performance
         onProgress: (analysis: string) => {
           setAnalysisResult(analysis);
         },
       });
 
       setAnalysisResult(result);
+
+      // Auto-save the analysis result
+      if (result && analysisModal.image) {
+        try {
+          await saveAnalysis.mutateAsync({
+            imageKey: analysisModal.image.key,
+            prompt: analysisModal.prompt || undefined,
+            result,
+            modelUsed: 'claude-3-5-sonnet-20241022',
+            sessionId: analysisModal.image.sessionId,
+          });
+        } catch (saveError) {
+          console.error('Failed to auto-save analysis:', saveError);
+          // Don't throw - analysis was successful, just save failed
+          setError('Analysis completed but failed to save automatically');
+        }
+      }
     } catch (err) {
       // Error handling is done via useEffect watching mutation errors
       console.error('Analysis error:', err);
@@ -271,8 +359,8 @@ export default function ClinicalImagePage() {
   const handleUploadAll = async () => {
     const photosToUpload = capturedPhotos.filter(p => p.status === 'captured' || p.status === 'failed');
     if (photosToUpload.length === 0) {
-      return;
-    }
+              return;
+            }
 
     setIsUploadingBatch(true);
 
@@ -439,7 +527,9 @@ ready to upload
                     ? (
                         <>
                           <Loader2 className="mr-2 size-4 animate-spin" />
-                          Uploading...
+                          {uploadingFileCount > 1
+                            ? `Uploading ${uploadingFileCount} images...`
+                            : 'Uploading...'}
                         </>
                       )
                     : (
@@ -482,6 +572,7 @@ ready to upload
             <CardContent>
               <p className="text-sm text-slate-600">
                 Upload images to get started with AI-powered clinical analysis.
+                You can select multiple images at once using Ctrl/Cmd+click.
                 Click on any image in the right panel to analyze it with Claude.
               </p>
             </CardContent>
@@ -519,7 +610,8 @@ ready to upload
                             No images found
                           </h3>
                           <p className="mb-4 text-slate-600">
-                            Upload clinical images to get started with AI analysis
+                            Upload clinical images to get started with AI analysis.
+                            Select multiple files at once for batch upload.
                           </p>
                           <Button
                             onClick={() => fileInputRef.current?.click()}
@@ -538,6 +630,8 @@ ready to upload
                             key={image.id}
                             image={image}
                             onAnalyze={() => handleOpenAnalysis(image)}
+                            onEnlarge={() => handleOpenEnlarge(image)}
+                            onDownload={() => handleDownloadImage(image)}
                             onDelete={handleDeleteImage}
                             formatFileSize={formatFileSize}
                           />
@@ -556,7 +650,17 @@ ready to upload
           onClose={handleCloseAnalysis}
           onSetPrompt={handleSetAnalysisPrompt}
           onAnalyze={handleAnalyzeImage}
+          onEnlarge={() => analysisModal.image && handleOpenEnlarge(analysisModal.image)}
+          onDownload={() => analysisModal.image && handleDownloadImage(analysisModal.image)}
           onDelete={handleDeleteImage}
+        />
+      )}
+
+      {/* Image Enlarge Modal */}
+      {enlargeModal.isOpen && enlargeModal.image && (
+        <ImageEnlargeModal
+          image={enlargeModal.image}
+          onClose={handleCloseEnlarge}
         />
       )}
 
@@ -577,21 +681,38 @@ ready to upload
 function ServerImageCard({
   image,
   onAnalyze,
+  onEnlarge,
+  onDownload,
   onDelete,
   formatFileSize,
 }: {
   image: ServerImage;
   onAnalyze: () => void;
+  onEnlarge: () => void;
+  onDownload: () => void;
   onDelete: (imageKey: string) => void;
   formatFileSize: (bytes: number) => string;
 }) {
-  // Use query hook for image URL
-  const { data: imageUrl, isLoading: isLoadingUrl } = useImageUrl(image.key);
+  // Use thumbnail URL directly from image object (performance optimization)
+  const imageUrl = image.thumbnailUrl;
+  const isLoadingUrl = !imageUrl; // Only loading if no URL provided
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation(); // Prevent opening modal
     onDelete(image.key);
+  };
+
+  const handleEnlarge = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation(); // Prevent opening analysis modal
+    onEnlarge();
+  };
+
+  const handleDownload = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation(); // Prevent opening analysis modal
+    onDownload();
   };
 
   return (
@@ -612,7 +733,7 @@ function ServerImageCard({
         )
 : (
                 <ImageIcon className="size-6 text-slate-400" />
-              )}
+        )}
         </div>
 
         {/* Top-right badges */}
@@ -623,6 +744,26 @@ function ServerImageCard({
               <FileText className="size-3 text-white" />
             </div>
           )}
+
+          {/* Enlarge Button */}
+          <button
+            type="button"
+            onClick={handleEnlarge}
+            className="rounded-full bg-blue-500 p-1 opacity-0 transition-opacity hover:bg-blue-600 group-hover:opacity-100"
+            title="Enlarge image"
+          >
+            <Expand className="size-3 text-white" />
+          </button>
+
+          {/* Download Button */}
+          <button
+            type="button"
+            onClick={handleDownload}
+            className="rounded-full bg-slate-500 p-1 opacity-0 transition-opacity hover:bg-slate-600 group-hover:opacity-100"
+            title="Download image"
+          >
+            <Download className="size-3 text-white" />
+          </button>
 
           {/* Delete Button */}
           <button
@@ -664,52 +805,21 @@ function AnalysisModal({
   onClose,
   onSetPrompt,
   onAnalyze,
+  onEnlarge,
+  onDownload,
   onDelete,
 }: {
   modal: AnalysisModalState;
   onClose: () => void;
   onSetPrompt: (prompt: string) => void;
   onAnalyze: () => void;
+  onEnlarge: () => void;
+  onDownload: () => void;
   onDelete: (imageKey: string) => void;
 }) {
-  // Use query hook for image URL
-  const { data: imageUrl, isLoading: isLoadingUrl } = useImageUrl(modal.image?.key || '');
-  const saveAnalysis = useSaveAnalysis();
-
-  const presetPrompts = [
-    { value: 'skin-lesions', label: 'Identify skin lesions or abnormalities' },
-    { value: 'wound-characteristics', label: 'Describe wound characteristics' },
-    { value: 'xray-findings', label: 'Analyze X-ray findings' },
-    { value: 'rash-patterns', label: 'Assess rash patterns' },
-    { value: 'surgical-sites', label: 'Document surgical sites' },
-    { value: 'general-assessment', label: 'General clinical assessment' },
-    { value: 'custom', label: 'Custom prompt...' },
-  ];
-
-  const handleSaveAnalysis = async () => {
-    if (!modal.image || !modal.analysis) {
-      return;
-    }
-
-    try {
-      await saveAnalysis.mutateAsync({
-        imageKey: modal.image.key,
-        prompt: modal.prompt || undefined,
-        result: modal.analysis,
-        modelUsed: 'claude-3-5-sonnet-20241022',
-        sessionId: modal.image.sessionId,
-      });
-        } catch (error) {
-      console.error('Failed to save analysis:', error);
-    }
-  };
-
-  const handlePresetPromptSelect = (value: string) => {
-    const selectedPrompt = presetPrompts.find(p => p.value === value);
-    if (selectedPrompt && selectedPrompt.value !== 'custom') {
-      onSetPrompt(selectedPrompt.label);
-    }
-  };
+  // Use thumbnail URL directly from image object (performance optimization)
+  const imageUrl = modal.image?.thumbnailUrl;
+  const isLoadingUrl = !imageUrl; // Only loading if no URL provided
 
   const handleDeleteFromModal = () => {
     if (!modal.image) {
@@ -720,10 +830,10 @@ function AnalysisModal({
     onClose(); // Close modal after initiating delete
   };
 
-  // Load existing analysis if available - run once per image
+  // Load existing analysis context if available - run once per image
   useEffect(() => {
     if (modal.image?.analysis && !modal.analysis && modal.image.analysis.prompt) {
-      // Pre-populate with existing analysis prompt if available
+      // Pre-populate with existing clinical context if available
       onSetPrompt(modal.image.analysis.prompt);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -734,7 +844,7 @@ function AnalysisModal({
       <div className="flex max-h-[90vh] w-full max-w-5xl overflow-hidden rounded-xl bg-white shadow-2xl">
         {/* Left Panel - Compact Image */}
         <div className="flex w-80 items-center justify-center bg-slate-50 p-4">
-          <div className="max-w-full">
+          <div className="group relative max-w-full">
           {isLoadingUrl
 ? (
                   <div className="flex size-64 items-center justify-center rounded-lg bg-slate-100">
@@ -743,11 +853,32 @@ function AnalysisModal({
           )
 : imageUrl
 ? (
+            <>
             <img
               src={imageUrl}
               alt={modal.image?.filename || 'Image'}
               className="max-h-80 max-w-full rounded-lg object-contain shadow-lg"
             />
+              {/* Action Buttons Overlay */}
+              <div className="absolute right-2 top-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={onEnlarge}
+                  className="rounded-full bg-blue-500 p-2 transition-colors hover:bg-blue-600"
+                  title="Enlarge image"
+                >
+                  <Expand className="size-4 text-white" />
+                </button>
+                <button
+                  type="button"
+                  onClick={onDownload}
+                  className="rounded-full bg-slate-500 p-2 transition-colors hover:bg-slate-600"
+                  title="Download image"
+                >
+                  <Download className="size-4 text-white" />
+                </button>
+              </div>
+            </>
           )
 : (
                     <div className="flex size-64 flex-col items-center justify-center rounded-lg bg-slate-100 text-slate-500">
@@ -773,9 +904,9 @@ function AnalysisModal({
                 >
                   <Trash2 className="size-4" />
                 </Button>
-                <Button variant="ghost" size="sm" onClick={onClose}>
-                  ✕
-                </Button>
+              <Button variant="ghost" size="sm" onClick={onClose}>
+                ✕
+              </Button>
               </div>
             </div>
             <div className="space-y-1">
@@ -805,38 +936,22 @@ function AnalysisModal({
 
           {/* Content */}
           <div className="flex flex-1 flex-col space-y-4 p-4">
-            {/* Prompt Section */}
+            {/* Clinical Context Input */}
             <div>
-              <h4 className="mb-2 block text-sm font-medium text-slate-700">
-                Analysis Type
-              </h4>
-              <Select onValueChange={handlePresetPromptSelect}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Choose analysis type..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {presetPrompts.map(preset => (
-                    <SelectItem key={preset.value} value={preset.value}>
-                      {preset.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Custom Prompt Input */}
-            <div>
-              <label htmlFor="analysis-prompt" className="mb-2 block text-sm font-medium text-slate-700">
-                Custom Prompt
+              <label htmlFor="clinical-context" className="mb-2 block text-sm font-medium text-slate-700">
+                Clinical Context
               </label>
               <textarea
-                id="analysis-prompt"
+                id="clinical-context"
                 value={modal.prompt}
                 onChange={e => onSetPrompt(e.target.value)}
-                placeholder="Describe what you want to analyze... (optional if using preset)"
+                placeholder="Add clinical context: anatomical site (e.g., left forearm), your observations, relevant history, or any specific details that may help with analysis..."
                 className="w-full resize-none rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                rows={2}
+                rows={3}
               />
+              <p className="mt-1 text-xs text-slate-500">
+                Optional: Provide additional context to help Claude analyze this image more accurately
+              </p>
             </div>
 
             {/* Action Buttons */}
@@ -860,19 +975,6 @@ function AnalysisModal({
                 </>
               )}
             </Button>
-
-              {modal.analysis && (
-                <Button
-                  variant="outline"
-                  onClick={handleSaveAnalysis}
-                  disabled={saveAnalysis.isPending}
-                >
-                  {saveAnalysis.isPending
-                    ? <Loader2 className="mr-2 size-4 animate-spin" />
-                    : <Save className="mr-2 size-4" />}
-                  Save
-                </Button>
-              )}
             </div>
 
             {/* Analysis Results */}
@@ -882,10 +984,18 @@ function AnalysisModal({
                   <h4 className="text-sm font-medium text-slate-700">
                   Analysis Results
                   </h4>
-                  <div className="text-xs text-slate-500">
-                    {modal.analysis?.split(' ').length || modal.image?.analysis?.result.split(' ').length}
-                    {' '}
-                    words
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    {modal.analysis && (
+                      <div className="flex items-center gap-1 text-green-600">
+                        <Check className="size-3" />
+                        <span>Auto-saved</span>
+                      </div>
+                    )}
+                    <span>
+                      {modal.analysis?.split(' ').length || modal.image?.analysis?.result.split(' ').length}
+                      {' '}
+                      words
+                    </span>
                   </div>
                 </div>
                 <div className="max-h-80 overflow-y-auto rounded-lg border bg-slate-50 p-4">
@@ -906,11 +1016,11 @@ function AnalysisModal({
                       </div>
                       {modal.image.analysis.prompt && (
                         <div className="mt-1">
-                          <span className="font-medium">Prompt used:</span>
+                          <span className="font-medium">Clinical context used:</span>
                           {' '}
                           {modal.image.analysis.prompt}
                         </div>
-                      )}
+            )}
                     </div>
                   )}
                 </div>
@@ -918,6 +1028,103 @@ function AnalysisModal({
             )}
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// Image Enlarge Modal Component
+function ImageEnlargeModal({
+  image,
+  onClose,
+}: {
+  image: ServerImage;
+  onClose: () => void;
+}) {
+  // Use thumbnail URL directly from image object (performance optimization)
+  const imageUrl = image.thumbnailUrl;
+  const isLoadingUrl = !imageUrl; // Only loading if no URL provided
+
+  // Handle ESC key press to close modal
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+      onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClose();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label="Close modal"
+    >
+      {/* Close Button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onClose}
+        className="fixed right-4 top-4 z-10 text-white hover:bg-white/20"
+      >
+        <X className="size-6" />
+      </Button>
+
+      {/* Image Container */}
+      <div className="max-h-full max-w-full">
+        {isLoadingUrl
+? (
+          <div className="flex items-center justify-center p-8">
+            <Loader2 className="size-12 animate-spin text-white" />
+          </div>
+        )
+: imageUrl
+? (
+          <img
+            src={imageUrl}
+            alt={image.filename}
+            className="max-h-[90vh] max-w-[90vw] object-contain shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          />
+        )
+: (
+          <div className="flex flex-col items-center justify-center p-8 text-white">
+            <ImageIcon className="mb-4 size-12" />
+            <p>Failed to load image</p>
+          </div>
+        )}
+      </div>
+
+      {/* Image Info */}
+      <div className="fixed bottom-4 left-4 rounded-lg bg-black/60 px-3 py-2 text-white">
+        <p className="text-sm font-medium">{image.filename}</p>
+        <p className="text-xs opacity-75">
+          {new Date(image.uploadedAt).toLocaleDateString()}
+{' '}
+•
+{' '}
+          {(() => {
+            const bytes = image.size;
+            if (bytes === 0) {
+ return '0 Bytes';
+}
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
+          })()}
+        </p>
       </div>
     </div>
   );

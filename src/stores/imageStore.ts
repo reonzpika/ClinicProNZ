@@ -17,10 +17,11 @@ export type ServerImage = {
   mimeType: string;
   size: number;
   uploadedAt: string;
-  source: 'consultation' | 'mobile';
+  source: 'consultation' | 'mobile' | 'clinical';
   sessionId?: string;
   tokenId?: string;
   analysis?: ImageAnalysis; // Latest analysis for this image
+  thumbnailUrl?: string; // Presigned URL for thumbnail (performance optimization)
 };
 
 export type AnalysisModalState = {
