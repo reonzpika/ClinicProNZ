@@ -109,7 +109,10 @@ async function isRateLimited(ipAddress: string | null): Promise<boolean> {
 
 export async function POST(request: NextRequest) {
   try {
-    const ip = (request.headers.get('x-forwarded-for') || request.ip || '').split(',')[0]?.trim() || null;
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const realIp = request.headers.get('x-real-ip');
+    const cfIp = request.headers.get('cf-connecting-ip');
+    const ip = (forwardedFor?.split(',')[0]?.trim() || realIp || cfIp || null);
     if (await isRateLimited(ip)) {
       return NextResponse.json({ error: 'Too many submissions. Please try again later.' }, { status: 429 });
     }
