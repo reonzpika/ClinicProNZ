@@ -1,11 +1,18 @@
-'use client';
+import { Suspense } from 'react';
 
-import { SignUp } from '@clerk/nextjs';
-import { useSearchParams } from 'next/navigation';
+function SignUpBox() {
+  'use client';
+  const { SignUp } = require('@clerk/nextjs');
+  return (
+    <div className="rounded border p-4">
+      <SignUp routing="hash" redirectUrl="/consultation" />
+    </div>
+  );
+}
 
-export default function SurveyThankYouPage() {
-  const params = useSearchParams();
-  const fromSurvey = params.get('from_survey') || undefined;
+export default async function SurveyThankYouPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+  const params = await searchParams;
+  const fromSurvey = typeof params.from_survey === 'string' ? params.from_survey : undefined;
   return (
     <main className="mx-auto max-w-2xl p-6">
       <h1 className="mb-2 text-2xl font-semibold">Thanks — that’s a huge help.</h1>
@@ -16,9 +23,9 @@ export default function SurveyThankYouPage() {
       {fromSurvey && (
         <p className="mb-4 text-sm text-gray-600">Personalised for: {fromSurvey}</p>
       )}
-      <div className="rounded border p-4">
-        <SignUp routing="hash" redirectUrl="/consultation" />
-      </div>
+      <Suspense>
+        <SignUpBox />
+      </Suspense>
     </main>
   );
 }
