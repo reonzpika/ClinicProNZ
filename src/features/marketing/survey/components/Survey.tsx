@@ -7,9 +7,8 @@ import { Button } from '@/src/shared/components/ui/button';
 import { Checkbox } from '@/src/shared/components/ui/checkbox';
 import { Input } from '@/src/shared/components/ui/input';
 import { Label } from '@/src/shared/components/ui/label';
-// no textarea needed for this flow
 
-import { emitAnalytics } from '../../analytics';
+import { emitAnalytics } from '../analytics';
 import type { SurveyPayload } from '../../types';
 
 const Q1_OPTIONS = [
@@ -138,7 +137,7 @@ export function Survey() {
     };
 
     try {
-      const res = await fetch('/api/(marketing)/surveys/submit', {
+      const res = await fetch('/api/surveys/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
