@@ -47,4 +47,12 @@ export const queryKeys = {
     all: ['usage'] as const,
     dashboard: () => [...queryKeys.usage.all, 'dashboard'] as const,
   },
+  // Clinical images
+  images: {
+    all: ['images'] as const,
+    lists: () => [...queryKeys.images.all, 'list'] as const,
+    list: (userId: string) => [...queryKeys.images.lists(), userId] as const,
+    downloads: () => [...queryKeys.images.all, 'downloads'] as const,
+    download: (key: string) => [...queryKeys.images.downloads(), key] as const,
+  },
 } as const;

@@ -1,8 +1,10 @@
+import { Buffer } from 'node:buffer';
+
 import Anthropic from '@anthropic-ai/sdk';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
+import sharp from 'sharp';
 
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
@@ -54,20 +56,100 @@ export async function POST(req: Request) {
       }, { status: 400 });
     }
 
-    // Validate that the key belongs to a consultation or mobile upload (security check)
-    if (!imageKey.startsWith('consultations/') && !imageKey.startsWith('mobile-uploads/')) {
+    // Validate that the key belongs to user's images (security check)
+    if (!imageKey.startsWith('consultations/') && !imageKey.startsWith('mobile-uploads/') && !imageKey.startsWith('clinical-images/')) {
       return NextResponse.json({ error: 'Invalid image key' }, { status: 400 });
     }
 
-    // Generate presigned URL for Claude to access the image
+    // Download image from S3
     const command = new GetObjectCommand({
       Bucket: BUCKET_NAME,
       Key: imageKey,
     });
 
-    const presignedUrl = await getSignedUrl(s3Client, command, {
-      expiresIn: 3600, // 1 hour - plenty of time for Claude to access
-    });
+    const response = await s3Client.send(command);
+    if (!response.Body) {
+      return NextResponse.json({ error: 'Failed to retrieve image' }, { status: 500 });
+    }
+
+    // Convert stream to buffer
+    const imageBuffer = await response.Body.transformToByteArray();
+    const buffer = Buffer.from(imageBuffer);
+
+    // Validate that we have image data
+    if (buffer.length === 0) {
+      return NextResponse.json({ error: 'Retrieved image is empty' }, { status: 400 });
+    }
+
+    // Get image metadata and resize if needed
+    let image, metadata;
+    try {
+      image = sharp(buffer);
+      metadata = await image.metadata();
+
+      if (!metadata.width || !metadata.height) {
+        throw new Error('Invalid image: missing dimensions');
+      }
+    } catch (imageError) {
+      console.error('Image processing error:', imageError);
+      return NextResponse.json({
+        error: 'Invalid image format or corrupted image file',
+        code: 'INVALID_IMAGE_FORMAT',
+      }, { status: 400 });
+    }
+
+    const MAX_DIMENSION = 8000; // Claude's maximum dimension
+    let processedImage = image;
+
+    console.log(`Image metadata: ${metadata.width}x${metadata.height}, format: ${metadata.format}`);
+
+    // Check if image needs resizing
+    if (metadata.width && metadata.height
+      && (metadata.width > MAX_DIMENSION || metadata.height > MAX_DIMENSION)) {
+      console.log(`Image exceeds maximum dimension (${MAX_DIMENSION}px), resizing...`);
+
+      // Calculate resize dimensions maintaining aspect ratio
+      const aspectRatio = metadata.width / metadata.height;
+      let newWidth, newHeight;
+
+      if (metadata.width > metadata.height) {
+        newWidth = Math.min(metadata.width, MAX_DIMENSION);
+        newHeight = Math.round(newWidth / aspectRatio);
+      } else {
+        newHeight = Math.min(metadata.height, MAX_DIMENSION);
+        newWidth = Math.round(newHeight * aspectRatio);
+      }
+
+      console.log(`Resizing to: ${newWidth}x${newHeight}`);
+
+      processedImage = image.resize(newWidth, newHeight, {
+        fit: 'inside',
+        withoutEnlargement: true,
+      });
+    } else {
+      console.log('Image dimensions are within limits, no resizing needed');
+    }
+
+    // Convert to base64 (always as JPEG for consistency)
+    let processedBuffer, base64Image;
+    try {
+      processedBuffer = await processedImage.jpeg({ quality: 90 }).toBuffer();
+      base64Image = processedBuffer.toString('base64');
+
+      const sizeKB = Math.round(base64Image.length / 1024);
+      console.log(`Processed image size: ${sizeKB}KB`);
+
+      // Claude has a ~20MB limit on base64 images, warn if approaching
+      if (sizeKB > 15000) { // 15MB warning threshold
+        console.warn(`Large image size: ${sizeKB}KB - may encounter API limits`);
+      }
+    } catch (processingError) {
+      console.error('Image conversion error:', processingError);
+      return NextResponse.json({
+        error: 'Failed to process image for analysis',
+        code: 'IMAGE_PROCESSING_ERROR',
+      }, { status: 500 });
+    }
 
     // Clinical prompt template
     const systemPrompt = `You are a clinical AI assistant analysing medical images for healthcare documentation.
@@ -104,8 +186,9 @@ Please analyse this clinical image and provide a comprehensive clinical descript
             {
               type: 'image',
               source: {
-                type: 'url',
-                url: presignedUrl,
+                type: 'base64',
+                media_type: 'image/jpeg',
+                data: base64Image,
               },
             },
             {
@@ -225,6 +308,22 @@ Please analyse this clinical image and provide a comprehensive clinical descript
         error: 'Too many requests. Please wait a moment and try again.',
         code: 'RATE_LIMIT_ERROR',
       }, { status: 429 });
+    }
+
+    // Handle image size errors specifically
+    if (error instanceof Error && error.message.includes('image dimensions exceed max allowed size')) {
+      return NextResponse.json({
+        error: 'Image is too large for analysis. Please try with a smaller image.',
+        code: 'IMAGE_TOO_LARGE',
+      }, { status: 400 });
+    }
+
+    // Handle invalid image format errors
+    if (error instanceof Error && error.message.includes('invalid_request_error')) {
+      return NextResponse.json({
+        error: 'Invalid image format. Please ensure the image is a supported format (JPEG, PNG, WebP, GIF).',
+        code: 'INVALID_IMAGE_FORMAT',
+      }, { status: 400 });
     }
 
     return NextResponse.json({

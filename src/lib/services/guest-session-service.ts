@@ -15,7 +15,7 @@ export async function createUserSession(userId: string, patientName: string, tem
       status: 'active',
       transcriptions: JSON.stringify([]),
       consultationItems: JSON.stringify([]),
-      clinicalImages: JSON.stringify([]),
+
       typedInput: '',
       consultationNotes: '',
       notes: '',

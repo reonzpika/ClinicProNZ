@@ -3,7 +3,7 @@ import './globals.css';
 import { ClerkProvider } from '@clerk/nextjs';
 import { Analytics } from '@vercel/analytics/next';
 import type { Metadata } from 'next';
-import { Inter, Oswald, Open_Sans } from 'next/font/google';
+import { Inter, Open_Sans, Oswald } from 'next/font/google';
 
 import { QueryClientProvider } from '@/src/providers/QueryClientProvider';
 import { AppLayoutWrapper } from '@/src/shared/components/AppLayoutWrapper';

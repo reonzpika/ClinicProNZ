@@ -185,15 +185,6 @@ export function useConsultationStores(): any {
     return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
-  const saveClinicalImagesToCurrentSession = useCallback(async (clinicalImages: any[]): Promise<boolean> => {
-    const id = consultationStore.currentPatientSessionId;
-    if (!id) {
-      return false;
-    }
-    await updatePatientSession(id, { clinicalImages } as any);
-    return true;
-  }, [consultationStore.currentPatientSessionId, updatePatientSession]);
-
   const saveTranscriptionsToCurrentSession = useCallback(async (): Promise<boolean> => {
     const id = consultationStore.currentPatientSessionId;
     if (!id) {
@@ -345,11 +336,6 @@ export function useConsultationStores(): any {
       transcriptionStore.resetTranscription();
     },
 
-    // Clinical images
-    addClinicalImage: consultationStore.addClinicalImage,
-    removeClinicalImage: consultationStore.removeClinicalImage,
-    updateImageDescription: consultationStore.updateImageDescription,
-    saveClinicalImagesToCurrentSession,
     saveTranscriptionsToCurrentSession,
 
     // Session accessors
@@ -382,10 +368,6 @@ export function useConsultationStores(): any {
       // Clear consultation items
       const currentItems = [...consultationStore.consultationItems];
       currentItems.forEach((item: any) => consultationStore.removeConsultationItem(item.id));
-
-      // Clear clinical images
-      const currentImages = [...consultationStore.clinicalImages];
-      currentImages.forEach((img: any) => consultationStore.removeClinicalImage(img.id));
 
       // Clear last generated tracking
       transcriptionStore.resetLastGeneratedInput();
@@ -452,18 +434,6 @@ export function useConsultationStores(): any {
             }
           } catch (error) {
             console.warn('Failed to parse session consultation items:', error);
-          }
-        }
-
-        // Load clinical images
-        if (session.clinicalImages) {
-          try {
-            const imgs = typeof session.clinicalImages === 'string' ? JSON.parse(session.clinicalImages) : session.clinicalImages;
-            if (Array.isArray(imgs)) {
-              imgs.forEach((img: any) => consultationStore.addClinicalImage(img));
-            }
-          } catch (error) {
-            console.warn('Failed to parse session clinical images:', error);
           }
         }
       }
