@@ -268,13 +268,21 @@ export function Survey() {
                           }}
                           className="h-4 w-4"
                         />
-                        <Label htmlFor={`q3-${topic}-${opt}`}>{opt}</Label>
+                        {opt.startsWith('Other') ? (
+                          <>
+                            <Label htmlFor={`q3-${topic}-other`} className="sr-only">Other — please specify</Label>
+                            <Input
+                              id={`q3-${topic}-other`}
+                              value={q3ByTopic[topic]?.free || ''}
+                              onChange={(e) => setQ3ByTopic((prev) => ({ ...prev, [topic]: { selected: Array.isArray(prev[topic]?.selected) ? (prev[topic]?.selected as string[]) : [], free: e.target.value } }))}
+                              placeholder="Other — please specify"
+                            />
+                          </>
+                        ) : (
+                          <Label htmlFor={`q3-${topic}-${opt}`}>{opt}</Label>
+                        )}
                       </div>
                     ))}
-                  </div>
-                  <div className="mt-3">
-                    <Label htmlFor={`q3-${topic}-free`} className="mb-1 block">Optional: one-line details</Label>
-                    <Input id={`q3-${topic}-free`} value={q3ByTopic[topic]?.free || ''} onChange={(e) => setQ3ByTopic((prev) => ({ ...prev, [topic]: { selected: Array.isArray(prev[topic]?.selected) ? (prev[topic]?.selected as string[]) : [], free: e.target.value } }))} placeholder="Add a brief detail (optional)" />
                   </div>
                 </div>
               ))}
