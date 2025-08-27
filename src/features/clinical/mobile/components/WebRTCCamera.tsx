@@ -17,16 +17,11 @@ type WebRTCCameraProps = {
  *
  * Key Features:
  * - Back-facing cameras only (no front-facing for clinical accuracy)
- * - Limited to 2 WIDEST lenses only (ultra-wide & wide-angle prioritized)
- * - CAPABILITY TESTING: Tests actual camera resolution/specs (not just labels)
- * - Huawei P30 Pro support: Special handling for multi-lens Huawei devices
- * - Advanced lens scoring with manufacturer-specific patterns
+ * - Prioritizes wide-angle and standard lenses over telephoto
  * - No video mirroring to preserve clinical orientation (left/right accuracy)
- * - Progressive constraint fallback for device compatibility
  * - Video-only stream (no audio) for optimal performance
  * - High resolution capture with mobile optimization
- * - Multilingual camera label detection (Chinese, German, Spanish, French)
- * - Enhanced debugging and intelligent camera selection
+ * - Enhanced error handling and camera selection
  */
 
 export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
@@ -42,541 +37,209 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
   const [lastCapturedImage, setLastCapturedImage] = useState<string | null>(null);
-  type CameraWithCapabilities = MediaDeviceInfo & {
-    capabilities?: {
-      resolution: { width: number; height: number };
-      aspectRatio: number;
-      estimatedFocalLength: 'ultra-wide' | 'wide' | 'standard' | 'telephoto' | 'unknown';
-    };
-    enhancedScore?: number;
-  };
-
-  const [availableCameras, setAvailableCameras] = useState<CameraWithCapabilities[]>([]);
+  const [availableCameras, setAvailableCameras] = useState<MediaDeviceInfo[]>([]);
   const [currentCameraId, setCurrentCameraId] = useState<string | null>(null);
   const [showCaptureFlash, setShowCaptureFlash] = useState(false);
   const [showCapturedPreview, setShowCapturedPreview] = useState(false);
+  const [cameraCapabilities, setCameraCapabilities] = useState<Record<string, any>>({});
 
-  // Camera capability testing for accurate lens identification
-  const testCameraCapabilities = async (
-    deviceId: string,
-    timeout = 3000,
-  ): Promise<{
-    resolution: { width: number; height: number };
-    aspectRatio: number;
-    estimatedFocalLength: 'ultra-wide' | 'wide' | 'standard' | 'telephoto' | 'unknown';
-  }> => {
-    return new Promise((resolve) => {
-      // Set timeout to prevent hanging
-      const timeoutId = setTimeout(() => {
-        console.warn(`⏰ Camera test timeout for ${deviceId}`);
-        resolve({
-          resolution: { width: 1920, height: 1080 },
-          aspectRatio: 1.78,
-          estimatedFocalLength: 'unknown',
-        });
-      }, timeout);
+  // Test camera capabilities to determine field of view and specifications
+  const testCameraCapabilities = useCallback(async (deviceId: string): Promise<any> => {
+    try {
+      // Get supported constraints for this specific camera
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          deviceId: { exact: deviceId },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+        },
+        audio: false,
+      });
 
-      (async () => {
-        try {
-          // Try multiple constraint approaches to get real capabilities
-          const testApproaches = [
-            // Approach 1: Maximum capability test
-            {
-              video: {
-                deviceId: { exact: deviceId },
-                width: { min: 640, ideal: 3840, max: 4096 },
-                height: { min: 480, ideal: 2160, max: 2160 },
-              },
-              audio: false,
-            },
-            // Approach 2: High resolution test
-            {
-              video: {
-                deviceId: { exact: deviceId },
-                width: { ideal: 2560 },
-                height: { ideal: 1440 },
-              },
-              audio: false,
-            },
-            // Approach 3: Standard resolution fallback
-            {
-              video: {
-                deviceId: { exact: deviceId },
-                width: { ideal: 1920 },
-                height: { ideal: 1080 },
-              },
-              audio: false,
-            },
-          ];
-
-        let bestResult: any = null;
-        let maxResolution = 0;
-
-        for (const constraints of testApproaches) {
-          try {
-            const stream = await navigator.mediaDevices.getUserMedia(constraints);
-            const track = stream.getVideoTracks()[0];
-
-            if (track) {
-              const settings = track.getSettings();
-              const width = settings.width || 1920;
-              const height = settings.height || 1080;
-              const resolution = width * height;
-
-              // Keep the highest resolution result
-              if (resolution > maxResolution) {
-                maxResolution = resolution;
-                bestResult = { width, height, settings };
-              }
-
-              // Clean up immediately
-              stream.getTracks().forEach(t => t.stop());
-            }
-          } catch {
-            // Try next constraint approach
-            continue;
-          }
-        }
-
-        if (!bestResult) {
-          throw new Error('All constraint approaches failed');
-        }
-
-        const { width, height } = bestResult;
-        const aspectRatio = width / height;
-
-        // Enhanced lens type estimation with device-specific patterns
-        let estimatedFocalLength: 'ultra-wide' | 'wide' | 'standard' | 'telephoto' | 'unknown' = 'unknown';
-
-        // Huawei P30 Pro specific patterns (based on known specs):
-        // - Main (40MP): Often supports 4K, high resolution capability
-        // - Ultra-wide (20MP): Medium resolution, specific aspect ratios
-        // - Telephoto (8MP): Lower resolution, limited to 1080p typically
-
-        if (width >= 3840 || height >= 2160) {
-          // 4K capability usually indicates main camera (40MP sensor)
-          estimatedFocalLength = 'wide';
-        } else if (width >= 2560 && height >= 1920) {
-          // High resolution but not 4K - could be ultra-wide (20MP)
-          estimatedFocalLength = 'ultra-wide';
-        } else if (width <= 1920 && height <= 1080) {
-          // Limited to 1080p - likely telephoto (8MP)
-          // But also check aspect ratio to differentiate from ultra-wide cropped
-          if (aspectRatio >= 1.7 && aspectRatio <= 1.8) {
-            estimatedFocalLength = 'telephoto';
-          } else {
-            estimatedFocalLength = 'ultra-wide'; // Ultra-wide cropped to 1080p
-          }
-        } else {
-          // Standard resolution range
-          estimatedFocalLength = 'standard';
-        }
-
-        // Additional heuristics based on common patterns:
-        // - Very wide aspect ratios (>1.9) often indicate ultra-wide
-        // - Square-ish ratios (<1.5) might indicate cropped sensors
-        if (aspectRatio > 1.9) {
-          estimatedFocalLength = 'ultra-wide';
-        } else if (aspectRatio < 1.5) {
-          estimatedFocalLength = 'standard'; // Possibly cropped main sensor
-        }
-
-        console.log(`🔍 Camera ${deviceId} test: ${width}x${height}, ratio: ${aspectRatio.toFixed(2)}, estimated: ${estimatedFocalLength}, maxRes: ${maxResolution}`);
-
-        clearTimeout(timeoutId);
-        resolve({
-          resolution: { width, height },
-          aspectRatio,
-          estimatedFocalLength,
-          });
-        } catch (error) {
-          console.warn(`⚠️ Failed to test camera ${deviceId}:`, error);
-          clearTimeout(timeoutId);
-          resolve({
-            resolution: { width: 1920, height: 1080 },
-            aspectRatio: 1.78,
-            estimatedFocalLength: 'unknown',
-          });
-        }
-      })();
-    });
-  };
-
-  // Calculate lens "wideness" score for prioritizing widest lenses
-  const getLensWidenessScore = (label: string): number => {
-    const lowerLabel = label.toLowerCase();
-
-    // Ultra-wide gets highest priority (100+)
-    if (lowerLabel.includes('ultra-wide') || lowerLabel.includes('ultrawide')) {
- return 100;
-}
-    if (lowerLabel.includes('ultra wide')) {
- return 100;
-}
-    if (lowerLabel.includes('超广角') || lowerLabel.includes('ultra')) {
- return 100;
-} // Chinese + generic ultra
-
-    // Explicit wide-angle lenses (80-95)
-    if (lowerLabel.includes('wide-angle') || lowerLabel.includes('wide angle')) {
- return 90;
-}
-    if (lowerLabel.includes('wide') && !lowerLabel.includes('ultra')) {
- return 80;
-}
-    if (lowerLabel.includes('广角')) {
- return 85;
-} // Chinese wide-angle
-
-    // Manufacturer-specific patterns (75-95)
-    if (lowerLabel.includes('environment facing')) {
- return 85;
-} // Samsung
-    if (lowerLabel.includes('rear ultra wide') || lowerLabel.includes('back ultra wide')) {
- return 95;
-}
-    if (lowerLabel.includes('weitwinkel') || lowerLabel.includes('gran angular')) {
- return 85;
-} // German/Spanish
-
-    // Huawei-specific patterns (critical for P30 Pro and similar devices)
-    if (lowerLabel.includes('huawei') || lowerLabel.includes('华为')) {
-      // Huawei devices often have confusing labels, use position heuristics
-      if (lowerLabel.includes('0') || lowerLabel.includes('first')) {
- return 60;
-} // Often main camera
-      if (lowerLabel.includes('1') || lowerLabel.includes('second')) {
- return 90;
-} // Often ultra-wide
-      if (lowerLabel.includes('2') || lowerLabel.includes('third')) {
- return 20;
-} // Often telephoto
-    }
-
-    // Generic multi-camera device patterns for unknown manufacturers
-    if (lowerLabel.includes('camera') && lowerLabel.match(/\d/)) {
-      const numbers = lowerLabel.match(/\d+/g);
-      if (numbers) {
-        const cameraNumber = Number.parseInt(numbers[0]);
-        // Common multi-camera patterns: 0=main, 1=ultra-wide, 2=telephoto
-        switch (cameraNumber) {
-          case 0: return 50; // Usually main camera
-          case 1: return 85; // Usually ultra-wide or wide
-          case 2: return 15; // Usually telephoto (avoid)
-          default: return 20;
-        }
+      const videoTrack = stream.getVideoTracks()[0];
+      if (!videoTrack) {
+        stream.getTracks().forEach(track => track.stop());
+        return null;
       }
+
+      const capabilities = videoTrack.getCapabilities ? videoTrack.getCapabilities() : {};
+      const settings = videoTrack.getSettings();
+
+      // Stop the test stream
+      stream.getTracks().forEach(track => track.stop());
+
+      return {
+        capabilities,
+        settings,
+        maxResolution: {
+          width: capabilities.width?.max || settings.width || 0,
+          height: capabilities.height?.max || settings.height || 0,
+        },
+        // Calculate approximate field of view indicator (wider = higher ratio)
+        aspectRatio: capabilities.width?.max && capabilities.height?.max
+          ? capabilities.width.max / capabilities.height.max
+          : settings.width && settings.height
+          ? settings.width / settings.height
+          : 1.77, // Default 16:9
+      };
+    } catch (error) {
+      console.warn(`Failed to test capabilities for camera ${deviceId}:`, error);
+      return null;
     }
+  }, []);
 
-    // Field of view indicators (80-95)
-    if (lowerLabel.includes('0.5x') || lowerLabel.includes('0.6x')) {
- return 95;
-} // Ultra-wide multiplier
-    if (lowerLabel.includes('13mm') || lowerLabel.includes('14mm') || lowerLabel.includes('15mm')) {
- return 90;
-} // Wide focal lengths
-    if (lowerLabel.includes('16mm') || lowerLabel.includes('17mm') || lowerLabel.includes('18mm')) {
- return 85;
-}
-    if (lowerLabel.includes('19mm') || lowerLabel.includes('20mm') || lowerLabel.includes('21mm')) {
- return 80;
-}
-
-    // Standard/main cameras (40-50)
-    if (lowerLabel.includes('standard') || lowerLabel.includes('标准')) {
- return 50;
-} // English + Chinese
-    if (lowerLabel.includes('main') && !lowerLabel.includes('tele')) {
- return 45;
-}
-    if (lowerLabel.includes('主摄') || lowerLabel.includes('主镜头')) {
- return 45;
-} // Chinese main camera
-
-    // Generic back cameras (25-35)
-    if (lowerLabel.includes('back') && !lowerLabel.includes('tele')) {
- return 30;
-}
-    if (lowerLabel.includes('rear') && !lowerLabel.includes('tele')) {
- return 30;
-}
-    if (lowerLabel.includes('后置') || lowerLabel.includes('环境')) {
- return 30;
-} // Chinese rear/environment
-
-    // Position-based heuristics for generic labels (15-25)
-    // First camera (camera 0) often main, second (camera 1) often wide
-    if (lowerLabel.includes('camera 1') || lowerLabel.includes('camera1')) {
- return 25;
-} // Often wide on multi-camera
-    if (lowerLabel.includes('camera 0') || lowerLabel.includes('camera0')) {
- return 20;
-} // Often main camera
-
-    // Default score for unspecified cameras (if not front-facing)
-    return 15;
-  };
-
-  // Enhanced scoring with capability testing for problematic devices
-  const getEnhancedLensScore = (label: string, capabilities?: {
-    estimatedFocalLength: 'ultra-wide' | 'wide' | 'standard' | 'telephoto' | 'unknown';
-    resolution: { width: number; height: number };
-  }): number => {
-    const baseScore = getLensWidenessScore(label);
-
-    // If we have capability data, prioritize it over label detection
-    if (capabilities) {
-      const { estimatedFocalLength, resolution } = capabilities;
-
-      switch (estimatedFocalLength) {
-        case 'ultra-wide':
-          return 100; // Highest priority for ultra-wide
-        case 'wide':
-          return 85; // High priority for main wide camera
-        case 'standard':
-          return 60; // Medium priority for standard
-        case 'telephoto':
-          return 10; // Very low priority - we want to avoid telephoto
-        case 'unknown':
-          // Fall back to label-based scoring but boost if high resolution
-          return resolution.width >= 3000 ? baseScore + 20 : baseScore;
-      }
-    }
-
-    return baseScore;
-  };
-
-  // Debug mode to bypass capability testing
-  const SKIP_CAPABILITY_TESTING = true; // TEMPORARILY ENABLED - Set to false once working
-
-  // Enumerate available cameras
+  // Enumerate available cameras and test their capabilities to find the 2 widest lenses
   const enumerateCameras = useCallback(async () => {
     try {
-      console.log('🚀 Starting camera enumeration...');
-
       const devices = await navigator.mediaDevices.enumerateDevices();
-      console.log(`📱 All devices found:`, devices.map(d => `${d.kind}: ${d.label || 'Unlabeled'}`));
-
       const videoDevices = devices.filter(device => device.kind === 'videoinput');
-      console.log(`📹 Video devices:`, videoDevices.map(d => d.label || 'Unlabeled'));
 
-      // Filter for back-facing cameras only, exclude telephoto/zoom
+      console.log('🔍 === CAMERA DEVICE ENUMERATION ===');
+      console.log(`Found ${videoDevices.length} video devices:`);
+
+      // Log all available cameras
+      videoDevices.forEach((device, index) => {
+        console.log(`${index + 1}. ${device.label || `Camera ${index + 1}`} (ID: ${device.deviceId.slice(0, 12)}...)`);
+      });
+
+      // Filter for back-facing cameras only (exclude front-facing)
       const backCameras = videoDevices.filter((device) => {
         const label = device.label.toLowerCase();
-
-        // Exclude front-facing cameras (multilingual)
-        if (label.includes('front') || label.includes('selfie') || label.includes('user')
-          || label.includes('前置') || label.includes('前面') // Chinese
-          || label.includes('frontal') || label.includes('vorder') // Spanish/German
-          || label.includes('avant') || label.includes('facial')) { // French/general
-          return false;
-        }
-
-        // Exclude telephoto/zoom lenses (anything that narrows field of view)
-        if (label.includes('tele') || label.includes('zoom')
-          || label.includes('3x') || label.includes('5x') || label.includes('10x')
-          || label.includes('telephoto') || label.includes('periscope')
-          || label.includes('长焦') || label.includes('远摄') // Chinese telephoto
-          || label.includes('macro') || label.includes('微距')) { // Macro too close-up
-          return false;
-        }
-
-        // Include back-facing cameras that could be wide
-        return true;
+        const isBackFacing = !label.includes('front')
+          && !label.includes('selfie')
+          && !label.includes('user')
+          && !label.includes('facetime'); // Exclude FaceTime camera on iOS
+        return isBackFacing;
       });
 
-      // Detect device type for specialized handling
-      const isHuaweiDevice = navigator.userAgent.includes('Huawei')
-        || navigator.userAgent.includes('HUAWEI')
-        || videoDevices.some(d => d.label.toLowerCase().includes('huawei'));
+      console.log(`\n📱 Back-facing cameras found: ${backCameras.length}`);
 
-      console.log('🎥 WebRTC Camera Analysis:');
-      console.log(`📱 Total video devices found: ${videoDevices.length}`);
-      console.log(`🔙 Back-facing cameras after filtering: ${backCameras.length}`);
-
-      if (isHuaweiDevice) {
-        console.log('🔍 HUAWEI device detected - using enhanced capability testing');
+      if (backCameras.length === 0) {
+        console.warn('No back-facing cameras found. Using all available cameras.');
+        setAvailableCameras(videoDevices.slice(0, 2)); // Limit to 2 even if all are front
+        if (videoDevices.length > 0 && !currentCameraId) {
+          setCurrentCameraId(videoDevices[0]!.deviceId);
+        }
+        return;
       }
 
-      // Test capabilities with timeout and fallback (or skip for debugging)
-      let camerasWithCapabilities: any[] = [];
+      // Test capabilities of each back camera
+      console.log('\n🧪 === TESTING CAMERA CAPABILITIES ===');
+      const cameraTests: Array<{
+        device: MediaDeviceInfo;
+        capabilities: any;
+        widthScore: number; // Higher = wider field of view
+      }> = [];
 
-      if (SKIP_CAPABILITY_TESTING) {
-        console.log('⚡ SKIPPING capability testing (debug mode)');
-        camerasWithCapabilities = backCameras.map((camera, index) => ({
-          ...camera,
-          capabilities: undefined,
-          enhancedScore: getLensWidenessScore(camera.label) + (index <= 1 ? 10 : 0),
-        }));
-      } else {
-        try {
-          console.log('🔍 Starting capability testing...');
+      for (const [index, device] of backCameras.entries()) {
+        console.log(`\nTesting ${index + 1}/${backCameras.length}: ${device.label || 'Unknown Camera'}`);
 
-          // Add overall timeout for capability testing (10 seconds max)
-          const capabilityPromise = Promise.all(
-            backCameras.map(async (camera, index) => {
-              console.log(`🔍 Testing capabilities for camera ${index + 1}/${backCameras.length}: ${camera.label}`);
+        const capabilities = await testCameraCapabilities(device.deviceId);
+        if (capabilities) {
+          // Calculate width score based on multiple factors
+          const label = device.label.toLowerCase();
+          let widthScore = 0;
 
-              try {
-                const capabilities = await testCameraCapabilities(camera.deviceId, 2000); // 2 second timeout per camera
-                const enhancedScore = getEnhancedLensScore(camera.label, capabilities);
+          // Base score on maximum resolution width (higher resolution often = wider field of view)
+          widthScore += capabilities.maxResolution.width * 0.001; // Scale down
 
-                return {
-                  ...camera,
-                  capabilities,
-                  enhancedScore,
-                };
-              } catch (capError) {
-                console.warn(`❌ Capability test failed for ${camera.label}:`, capError);
-                // Fallback to label-based scoring only
-                const baseScore = getLensWidenessScore(camera.label);
-                return {
-                  ...camera,
-                  capabilities: undefined,
-                  enhancedScore: baseScore,
-                };
-              }
-            }),
-          );
+          // Bonus points for lens type keywords (higher = wider)
+          if (label.includes('ultra-wide') || label.includes('ultrawide')) {
+ widthScore += 100;
+} else if (label.includes('wide')) {
+ widthScore += 50;
+} else if (label.includes('main') || label.includes('primary')) {
+ widthScore += 30;
+} else if (label.includes('standard')) {
+ widthScore += 20;
+}
 
-          // Race capability testing against overall timeout
-          const timeoutPromise = new Promise((resolve) => {
-            setTimeout(() => {
-              console.warn('⏰ Overall capability testing timeout - using fallback mode');
-              resolve(backCameras.map((camera, index) => ({
-                ...camera,
-                capabilities: undefined,
-                enhancedScore: getLensWidenessScore(camera.label) + (index === 0 ? 10 : 0), // Slight boost for first camera
-              })));
-            }, 6000); // Reduced to 6 second overall timeout
+          // Heavy penalty for telephoto/zoom (narrower field of view)
+          if (label.includes('tele') || label.includes('zoom') || label.includes('3x') || label.includes('5x')) {
+            widthScore -= 100;
+          }
+
+          // Bonus for higher aspect ratio (wider field)
+          widthScore += capabilities.aspectRatio * 10;
+
+          // Additional scoring based on typical mobile camera setups
+          if (label.includes('0.5x') || label.includes('0.6x')) {
+ widthScore += 80;
+} // Ultra-wide multipliers
+          if (label.includes('1x')) {
+ widthScore += 40;
+} // Standard wide
+          if (label.includes('2x') || label.includes('3x')) {
+ widthScore -= 30;
+} // Telephoto
+
+          cameraTests.push({
+            device,
+            capabilities,
+            widthScore,
           });
 
-          camerasWithCapabilities = await Promise.race([capabilityPromise, timeoutPromise]) as any[];
-          console.log('✅ Capability testing completed');
-        } catch (overallError) {
-          console.error('❌ Capability testing completely failed, using label-only fallback:', overallError);
-
-          // Complete fallback - just use label-based scoring
-          camerasWithCapabilities = backCameras.map((camera, index) => ({
-            ...camera,
-            capabilities: undefined,
-            enhancedScore: getLensWidenessScore(camera.label) + (index <= 1 ? 10 : 0), // Boost first 2 cameras
-          }));
+          console.log(`  • Max Resolution: ${capabilities.maxResolution.width}x${capabilities.maxResolution.height}`);
+          console.log(`  • Aspect Ratio: ${capabilities.aspectRatio.toFixed(2)}`);
+          console.log(`  • Width Score: ${widthScore.toFixed(1)}`);
+          console.log(`  • Lens Type: ${
+            label.includes('ultra-wide') || label.includes('ultrawide')
+? 'Ultra-Wide'
+            : label.includes('wide')
+? 'Wide'
+            : label.includes('main')
+? 'Main'
+            : label.includes('standard')
+? 'Standard'
+            : label.includes('tele') ? 'Telephoto' : 'Unknown'
+          }`);
+        } else {
+          console.log(`  ❌ Failed to test capabilities`);
         }
       }
 
-      // Sort by enhanced score (capability-tested + label-based)
-      const sortedByCapabilities = camerasWithCapabilities.sort((a, b) => {
-        return b.enhancedScore - a.enhancedScore; // Descending order (best first)
+      // Sort by width score (highest first = widest field of view)
+      cameraTests.sort((a, b) => b.widthScore - a.widthScore);
+
+      // Select only the TOP 2 widest cameras
+      const selectedCameras = cameraTests.slice(0, 2).map(test => test.device);
+
+      console.log('\n🎯 === SELECTED CAMERAS (2 WIDEST LENSES) ===');
+      selectedCameras.forEach((device, index) => {
+        const test = cameraTests.find(t => t.device.deviceId === device.deviceId);
+        console.log(`${index + 1}. ${device.label || `Camera ${index + 1}`}`);
+        console.log(`   Score: ${test?.widthScore.toFixed(1)} | Resolution: ${test?.capabilities.maxResolution.width}x${test?.capabilities.maxResolution.height}`);
       });
 
-      // Take only the 2 widest lenses based on actual testing
-      const twoWidestCameras = sortedByCapabilities.slice(0, 2);
-
-      console.log('📊 Camera Capability Analysis Results:');
-      sortedByCapabilities.forEach((camera, index) => {
-        const selected = index < 2 ? '✅ SELECTED' : '❌ filtered out';
-        const caps = camera.capabilities;
-        const type = caps ? caps.estimatedFocalLength.toUpperCase() : 'LABEL-BASED';
-        console.log(`${index + 1}. [${type}] ${camera.label}`);
-        if (caps) {
-          console.log(`   📏 Resolution: ${caps.resolution.width}x${caps.resolution.height}`);
-          console.log(`   📐 Aspect Ratio: ${caps.aspectRatio.toFixed(2)}`);
-        } else {
-          console.log(`   📏 No capability data (using label-based scoring)`);
+      if (selectedCameras.length === 0) {
+        console.warn('No cameras passed capability tests. Using first available back camera.');
+        setAvailableCameras(backCameras.slice(0, 1));
+        if (backCameras.length > 0 && !currentCameraId) {
+          setCurrentCameraId(backCameras[0]!.deviceId);
         }
-        console.log(`   ⭐ Enhanced Score: ${camera.enhancedScore} ${selected}`);
+        return;
+      }
+
+      // Store capabilities for UI display
+      const capabilitiesMap: Record<string, any> = {};
+      cameraTests.forEach((test) => {
+        capabilitiesMap[test.device.deviceId] = test.capabilities;
       });
+      setCameraCapabilities(capabilitiesMap);
 
-      // Enhanced fallback logic with capability awareness
-      let finalCameras: CameraWithCapabilities[] = twoWidestCameras;
+      // Set the selected cameras (only the 2 widest)
+      setAvailableCameras(selectedCameras);
 
-      if (twoWidestCameras.length === 0) {
-        console.warn('⚠️ No cameras passed capability testing. Attempting fallback...');
-
-        if (sortedByCapabilities.length > 0) {
-          // Use best available camera even if score is low
-          finalCameras = [sortedByCapabilities[0]!];
-          console.log(`🔄 Fallback: Using highest capability-scored camera: ${sortedByCapabilities[0]!.label}`);
-        } else if (backCameras.length > 0) {
-          // Last resort: use any back camera without capability testing
-          const fallbackCamera: CameraWithCapabilities = {
-            ...backCameras[0]!,
-            capabilities: undefined,
-            enhancedScore: undefined,
-          };
-          finalCameras = [fallbackCamera];
-          console.log(`🚨 Emergency fallback: Using first back camera: ${backCameras[0]!.label}`);
-        } else {
-          // Ultimate fallback: use any non-front camera
-          const nonFrontCameras = videoDevices.filter(device =>
-            !device.label.toLowerCase().includes('front')
-            && !device.label.toLowerCase().includes('user')
-            && !device.label.toLowerCase().includes('selfie'),
-          );
-          if (nonFrontCameras.length > 0) {
-            const fallbackCamera: CameraWithCapabilities = {
-              ...nonFrontCameras[0]!,
-              capabilities: undefined,
-              enhancedScore: undefined,
-            };
-            finalCameras = [fallbackCamera];
-            console.log(`🆘 Last resort: Using first non-front camera: ${nonFrontCameras[0]!.label}`);
-          }
-        }
-      } else if (twoWidestCameras.length === 1) {
-        const camera = twoWidestCameras[0]!;
-        const cameraType = camera.capabilities ? camera.capabilities.estimatedFocalLength.toUpperCase() : 'UNKNOWN';
-        console.log(`📷 Single camera mode: [${cameraType}] ${camera.label}`);
-      } else {
-        const cam1 = twoWidestCameras[0]!;
-        const cam2 = twoWidestCameras[1]!;
-        const cam1Type = cam1.capabilities ? cam1.capabilities.estimatedFocalLength.toUpperCase() : 'UNKNOWN';
-        const cam2Type = cam2.capabilities ? cam2.capabilities.estimatedFocalLength.toUpperCase() : 'UNKNOWN';
-        console.log(`🎯 Perfect! 2 cameras selected for optimal clinical imaging:`);
-        console.log(`   1️⃣ [${cam1Type}] ${cam1.label}`);
-        console.log(`   2️⃣ [${cam2Type}] ${cam2.label}`);
-      }
-
-      // Emergency fallback - ensure we have at least one camera
-      if (finalCameras.length === 0) {
-        console.error('🚨 NO CAMERAS AVAILABLE after all fallbacks!');
-        if (videoDevices.length > 0) {
-          console.log('🆘 Using ANY available video device as last resort');
-          const emergencyCamera: CameraWithCapabilities = {
-            ...videoDevices[0]!,
-            capabilities: undefined,
-            enhancedScore: 1,
-          };
-          finalCameras = [emergencyCamera];
-        }
-      }
-
-      setAvailableCameras(finalCameras);
-
-      // Set the best available camera as default
-      if (finalCameras.length > 0 && !currentCameraId) {
-        setCurrentCameraId(finalCameras[0]!.deviceId);
-        const defaultCamera = finalCameras[0]!;
-        const cameraInfo = defaultCamera.capabilities
-          ? `[${defaultCamera.capabilities.estimatedFocalLength.toUpperCase()}] ${defaultCamera.label}`
-          : defaultCamera.label;
-        console.log(`🔧 Default camera set: ${cameraInfo}`);
-        console.log(`📊 Final selection summary: ${finalCameras.length} camera(s) available`);
-        finalCameras.forEach((cam, idx) => {
-          const capInfo = cam.capabilities
-            ? `${cam.capabilities.resolution.width}x${cam.capabilities.resolution.height}, ${cam.capabilities.estimatedFocalLength}`
-            : 'No capability data';
-          console.log(`   ${idx + 1}. ${cam.label} - Score: ${cam.enhancedScore}, Info: ${capInfo}`);
-        });
-      } else if (finalCameras.length === 0) {
-        console.error('💥 CRITICAL: No cameras available at all!');
-        setError('No cameras available. Please check permissions and try again.');
+      // Set the first (widest) camera as default
+      if (selectedCameras.length > 0 && !currentCameraId) {
+        setCurrentCameraId(selectedCameras[0]!.deviceId);
+        console.log(`\n✅ Default camera selected: ${selectedCameras[0]!.label}`);
       }
     } catch (err) {
       console.error('Failed to enumerate cameras:', err);
+      setError('Failed to access camera devices. Please ensure camera permissions are granted.');
     }
-  }, [currentCameraId]);
+  }, [currentCameraId, testCameraCapabilities]);
 
   // Clean up camera stream
   const cleanupCamera = useCallback(() => {
@@ -594,14 +257,14 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
     try {
       setError(null);
 
-      // Try advanced constraints first, fallback to basic for older devices
-      const highQualityConstraints: MediaStreamConstraints = {
+      // Enhanced camera constraints for clinical imaging
+      const constraints: MediaStreamConstraints = {
         video: {
           ...(deviceId
             ? { deviceId: { exact: deviceId } }
             : {
                 facingMode: { ideal: 'environment' },
-                // Advanced constraints for modern devices
+                // Prefer wide-angle lenses for better clinical documentation
                 advanced: [
                   { facingMode: 'environment' },
                   { width: { min: 1280 } },
@@ -611,32 +274,16 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
           // High resolution for clinical detail
           width: { ideal: 1920, max: 4096 },
           height: { ideal: 1080, max: 2160 },
+          // Frame rate optimized for still photography
           frameRate: { ideal: 30, max: 60 },
+          // Image quality settings
           aspectRatio: { ideal: 16 / 9 },
         },
+        // Explicitly disable audio for clinical image capture
         audio: false,
       };
 
-      // Basic constraints for compatibility
-      const basicConstraints: MediaStreamConstraints = {
-        video: deviceId
-          ? { deviceId: { exact: deviceId } }
-          : { facingMode: { ideal: 'environment' } },
-        audio: false,
-      };
-
-      let stream: MediaStream;
-
-      try {
-        // Try high-quality constraints first
-        stream = await navigator.mediaDevices.getUserMedia(highQualityConstraints);
-        console.log('📹 Using high-quality camera constraints');
-      } catch (highQualityError) {
-        console.warn('⚠️ High-quality constraints failed, trying basic constraints:', highQualityError);
-        // Fallback to basic constraints
-        stream = await navigator.mediaDevices.getUserMedia(basicConstraints);
-        console.log('📱 Using basic camera constraints for compatibility');
-      }
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -663,7 +310,7 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
     }
   }, []);
 
-  // Switch between the 2 widest available cameras
+  // Switch to next available camera (only cycles through filtered back cameras)
   const switchCamera = useCallback(async () => {
     if (availableCameras.length <= 1) {
  return;
@@ -677,24 +324,26 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
 
     if (nextCamera) {
       try {
-      cleanupCamera();
-      setCurrentCameraId(nextCamera.deviceId);
+        cleanupCamera();
+        setCurrentCameraId(nextCamera.deviceId);
 
-        // Provide user feedback about camera type (use capability data if available)
-        const cameraType = nextCamera.capabilities
-          ? nextCamera.capabilities.estimatedFocalLength.replace('-', ' ')
-          : (() => {
-              const wideness = getLensWidenessScore(nextCamera.label);
-              return wideness >= 90
-? 'Ultra-wide'
-                   : wideness >= 80
-? 'Wide-angle'
-                   : wideness >= 50
+        // Provide user feedback about camera type with scoring
+        const nextCapabilities = cameraCapabilities[nextCamera.deviceId];
+        const nextLabel = nextCamera.label.toLowerCase();
+
+        const cameraType = nextLabel.includes('ultra-wide') || nextLabel.includes('ultrawide')
+? 'Ultra-Wide'
+                          : nextLabel.includes('wide')
+? 'Wide'
+                          : nextLabel.includes('standard')
 ? 'Standard'
-                   : wideness >= 40 ? 'Main' : 'Back';
-            })();
+                          : nextLabel.includes('main') ? 'Main' : 'Back';
 
-        console.log(`Switched to ${cameraType} camera: ${nextCamera.label}`);
+        const resolutionInfo = nextCapabilities?.maxResolution
+          ? ` (${nextCapabilities.maxResolution.width}×${nextCapabilities.maxResolution.height})`
+          : '';
+
+        console.log(`🔄 Switched to ${cameraType} lens${resolutionInfo}: ${nextCamera.label}`);
       } catch (err) {
         console.error('Failed to switch camera:', err);
         setError('Failed to switch camera. Please try again.');
@@ -941,20 +590,32 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
  return 'Camera';
 }
 
-                        const cameraType = currentCamera.capabilities
-                          ? `${currentCamera.capabilities.estimatedFocalLength.replace('-', ' ')} lens`
-                          : (() => {
-                              const wideness = getLensWidenessScore(currentCamera.label);
-                              return wideness >= 90
-? 'Ultra-wide lens'
-                                   : wideness >= 80
-? 'Wide-angle lens'
-                                   : wideness >= 50
-? 'Standard lens'
-                                   : wideness >= 40 ? 'Main camera' : 'Back camera';
-                            })();
+                        const label = currentCamera.label.toLowerCase();
+                        const capabilities = cameraCapabilities[currentCamera.deviceId];
 
-                        return `${cameraType}${availableCameras.length > 1 ? ' • Tap to switch' : ''}`;
+                        // Enhanced camera type detection
+                        let cameraType = 'Back camera';
+                        if (label.includes('ultra-wide') || label.includes('ultrawide')) {
+                          cameraType = 'Ultra-Wide lens';
+                        } else if (label.includes('wide')) {
+                          cameraType = 'Wide lens';
+                        } else if (label.includes('main') || label.includes('primary')) {
+                          cameraType = 'Main lens';
+                        } else if (label.includes('standard')) {
+                          cameraType = 'Standard lens';
+                        }
+
+                        // Add resolution info if available
+                        const resolutionInfo = capabilities?.maxResolution
+                          ? ` (${capabilities.maxResolution.width}×${capabilities.maxResolution.height})`
+                          : '';
+
+                        const currentIndex = availableCameras.findIndex(cam => cam.deviceId === currentCameraId);
+                        const switchInfo = availableCameras.length > 1
+                          ? ` • ${currentIndex + 1}/${availableCameras.length} • Tap ⟲`
+                          : '';
+
+                        return `${cameraType}${resolutionInfo}${switchInfo}`;
                       })()}
                     </div>
                   )}
