@@ -24,18 +24,15 @@ const Q1_OPTIONS = [
 
 const Q3A_OPTIONS = [
   'Trouble remembering everything we discussed in the consult',
-  'Notes are messy / require lots of editing for clinical structure',
   'Takes too long to type / finish after consult',
-  'Must re-enter/copy info into PMS (workflow friction)',
-  'Cannot quickly attach evidence (images, test results) to the note',
   'Other — please specify:',
 ];
 
 const Q3B_OPTIONS = [
-  'Takes too long to find the right page',
-  'Guidance not locally relevant / unclear',
-  'Hard to confirm doses / interactions quickly',
-  'Fragmented sources (too many places)',
+  'Information overload – Most guidelines bury the key recommendation inside pages of unnecessary context.',
+  'Navigation friction – Clinical resources are clunky to search and slow to navigate under time pressure.',
+  'Device switching – Constantly flipping between PMS, browsers, and logins disrupts the workflow.',
+  'Time vs patient expectations – Looking up information mid-consult feels slow and awkward while the patient waits.',
   'Other — please specify:',
 ];
 
@@ -81,9 +78,25 @@ export function Survey() {
         .map((v) => {
           if (v === 'Writing / finishing consultation notes') return { topic: 'notes', title: 'What specifically makes writing notes hard for you?', options: Q3A_OPTIONS } as const;
           if (v.toLowerCase().includes('clinical info') || v.toLowerCase().includes('healthpathways') || v.toLowerCase().includes('nzformulary') || v.toLowerCase().includes('dermnet') || v.toLowerCase().includes('guidance')) return { topic: 'guidance', title: 'What’s the main problem when searching during a consult?', options: Q3B_OPTIONS } as const;
-          if (v.includes('ACC')) return { topic: 'acc', title: 'What’s the single biggest bottleneck with ACC paperwork?', options: ['Takes too long to complete', 'Re-entry into PMS', 'Finding the correct code/info', 'Other — please specify:'] as const };
-          if (v.toLowerCase().includes('referral')) return { topic: 'referrals', title: 'What’s the biggest bottleneck drafting referrals?', options: ['Collecting required details', 'Re-entering into PMS/specialist forms', 'Formatting / structure', 'Other — please specify:'] as const };
-          if (v.toLowerCase().includes('image')) return { topic: 'images', title: 'What’s the biggest bottleneck with clinical images?', options: ['Capturing quickly in consult', 'Attaching to PMS record', 'Organisation / retrieval later', 'Other — please specify:'] as const };
+          if (v.includes('ACC')) return { topic: 'acc', title: 'What’s the single biggest bottleneck with ACC paperwork?', options: [
+            'Duplication – Re-entering information already in my notes.',
+            'Employer details – Manually searching and typing addresses wastes time.',
+            'Occupation lookup – Finding and entering the “right” code is fiddly and slow.',
+            'ACC bounceing back asking for more detail.',
+            'Other — please specify:',
+          ] as const };
+          if (v.toLowerCase().includes('referral')) return { topic: 'referrals', title: 'What’s the biggest bottleneck drafting referrals?', options: [
+            'Hunting criteria – Each DHB or specialty has different referral rules, forms, and criteria that take time to track down.',
+            'Duplicating notes – I have to re-enter information already written in the PMS into a different referral structure.',
+            'Over-documenting – To avoid having referrals rejected, I add extra justification and detail “just in case.”',
+            'Other — please specify:',
+          ] as const };
+          if (v.toLowerCase().includes('image')) return { topic: 'images', title: 'What’s the biggest bottleneck with clinical images?', options: [
+            'Personal device use – Using my phone feels insecure and unprofessional.',
+            'Admin handoff – Images must be sent to staff to upload into PMS.',
+            'File size issues – Photos are often too large to attach to referrals.',
+            'Other — please specify:',
+          ] as const };
           return null;
         })
         .filter(Boolean) as Array<{ topic: string; title: string; options: readonly string[] }>
