@@ -9,7 +9,7 @@ import { Input } from '@/src/shared/components/ui/input';
 import { Label } from '@/src/shared/components/ui/label';
 
 import { emitAnalytics } from '../analytics';
-import type { SurveyPayload } from '../../types';
+import type { SurveyPayload } from '../types';
 
 const Q1_OPTIONS = [
   'Writing / finishing consultation notes',
