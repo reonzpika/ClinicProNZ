@@ -185,14 +185,19 @@ export default function ConsultationPage() {
     }
   }, []);
 
-  // Ensure there is always an active patient session as soon as the page loads
+  // Ensure there is always an active patient session as soon as the page loads (run once)
+  const ensuredOnceRef = useRef(false);
   useEffect(() => {
+    if (ensuredOnceRef.current) {
+      return;
+    }
+    ensuredOnceRef.current = true;
     (async () => {
       try {
         await ensureActiveSession();
       } catch {}
     })();
-  }, [ensureActiveSession]);
+  }, []);
 
   // Direct upgrade handler
   const handleDirectUpgrade = async () => {
