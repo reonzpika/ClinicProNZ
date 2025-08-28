@@ -9,16 +9,20 @@ import { db } from '@/db/client';
 import { clinicalImageAnalyses, patientSessions } from '@/db/schema';
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
-// Initialize S3 client for NZ region
+// Initialize S3 client for NZ region (avoid passing undefined credentials)
 const s3Client = new S3Client({
   region: process.env.AWS_REGION || 'ap-southeast-2',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
+  ...(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
+    ? {
+        credentials: {
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        },
+      }
+    : {}),
 });
 
-const BUCKET_NAME = process.env.S3_BUCKET_NAME!;
+const BUCKET_NAME = process.env.S3_BUCKET_NAME;
 
 // Helper function to get latest analysis for multiple image keys
 async function getImageAnalyses(userId: string, imageKeys: string[]) {
@@ -51,11 +55,11 @@ async function getImageAnalyses(userId: string, imageKeys: string[]) {
 }
 
 // Helper function to generate presigned URLs for multiple images
-async function generatePresignedUrls(imageKeys: string[]): Promise<Record<string, string>> {
+async function generatePresignedUrls(imageKeys: string[], bucketName: string): Promise<Record<string, string>> {
   const urlPromises = imageKeys.map(async (key) => {
     try {
       const command = new GetObjectCommand({
-        Bucket: BUCKET_NAME,
+        Bucket: bucketName,
         Key: key,
       });
 
@@ -95,10 +99,20 @@ export async function GET(req: NextRequest) {
       }, { status: 403 });
     }
 
-    // Authentication
-    const { userId } = await auth();
+    // Authentication (prefer RBAC context to avoid hard dependency on Clerk during preview builds)
+    let userId = context.userId;
+    if (!userId) {
+      const fromClerk = await auth();
+      userId = fromClerk.userId;
+    }
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Validate S3 configuration early and degrade gracefully
+    if (!BUCKET_NAME) {
+      console.warn('S3_BUCKET_NAME is not set. Returning empty image list.');
+      return NextResponse.json({ images: [], count: 0 });
     }
 
     const allImages: any[] = [];
@@ -214,7 +228,7 @@ export async function GET(req: NextRequest) {
     const analysisMap = await getImageAnalyses(userId, imageKeys);
 
     // Generate presigned URLs for all images (performance optimization)
-    const urlMap = await generatePresignedUrls(imageKeys);
+    const urlMap = await generatePresignedUrls(imageKeys, BUCKET_NAME);
 
     // Add analysis data and thumbnail URLs to images
     const imagesWithData = allImages.map(image => ({
