@@ -2,9 +2,9 @@
 CREATE TABLE IF NOT EXISTS "survey_responses" (
   "id" text PRIMARY KEY,
   "created_at" timestamp with time zone DEFAULT now() NOT NULL,
-  "email" text NOT NULL,
+  "email" text,
   "q1" jsonb NOT NULL,
-  "q2" text NOT NULL,
+  "q2" text,
   "q3" jsonb NOT NULL,
   "q4" jsonb NOT NULL,
   "q5" integer NOT NULL,

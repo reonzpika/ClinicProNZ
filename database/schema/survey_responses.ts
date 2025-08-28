@@ -7,7 +7,7 @@ export const surveyResponses = pgTable('survey_responses', {
   q1: jsonb('q1').$type<string[]>().notNull(),
   q2: text('q2'),
   q3: jsonb('q3').$type<Array<{ topic: 'notes' | 'guidance' | 'acc' | 'referrals' | 'images'; selected: string[]; free_text?: string }>>().notNull(),
-  q4: jsonb('q4').$type<{ type: 'ai_scribe' | 'dictation' | 'none'; issue?: string; vendor?: string }>().notNull(),
+  q4: jsonb('q4').$type<{ type: 'ai_scribe' | 'dictation' | 'none'; issue?: string; vendor?: string; no_try_reason?: string[] }>().notNull(),
   q5: integer('q5').notNull(),
   q5PriceBand: text('q5_price_band'),
   optedIn: boolean('opted_in').notNull(),
