@@ -197,7 +197,7 @@ export function Survey() {
             <Button
               variant="secondary"
               onClick={() => {
-                emitAnalytics({ type: 'survey_dropped_off', lastQuestionId: `step_${Math.min(step + 1, 6)}` , timestamp: Date.now() });
+                emitAnalytics({ type: 'survey_dropped_off', lastQuestionId: `step_${Math.min(step + 1, 5)}` , timestamp: Date.now() });
                 history.back();
               }}
             >
