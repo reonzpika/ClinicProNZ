@@ -1,7 +1,5 @@
 import { Suspense } from 'react';
-import dynamic from 'next/dynamic';
-
-const SignUp = dynamic(() => import('@clerk/nextjs').then(m => m.SignUp), { ssr: false });
+import SignUpBox from './SignUpBox';
 
 export default async function SurveyThankYouPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const params = await searchParams;
@@ -17,9 +15,7 @@ export default async function SurveyThankYouPage({ searchParams }: { searchParam
         <p className="mb-4 text-sm text-gray-600">Personalised for: {fromSurvey}</p>
       )}
       <Suspense>
-        <div className="rounded border p-4">
-          <SignUp routing="hash" redirectUrl="/consultation" />
-        </div>
+        <SignUpBox />
       </Suspense>
     </main>
   );
