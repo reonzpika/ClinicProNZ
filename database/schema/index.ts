@@ -9,3 +9,5 @@ export * from './templates';
 export * from './user_settings';
 export * from './users';
 export * from './votes';
+export * from './survey_responses';
+export * from './mail_queue';
