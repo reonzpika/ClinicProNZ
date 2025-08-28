@@ -83,7 +83,7 @@ export default function ClinicalImagePage() {
   }>({ isOpen: false, image: null });
 
   // QR code URL for mobile uploads (same page with mobile detection)
-  const qrCodeUrl = typeof window !== 'undefined' ? `${window.location.origin}/clinical/image` : '';
+  const qrCodeUrl = typeof window !== 'undefined' ? `${window.location.origin}/image` : '';
 
   // Detect mobile on mount
   useEffect(() => {
