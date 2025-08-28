@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     }
 
     const stripe = new Stripe(stripeSecretKey, {
-      apiVersion: '2025-08-27.basil',
+      apiVersion: '2025-07-30.basil',
     });
 
     const body = await req.text();
