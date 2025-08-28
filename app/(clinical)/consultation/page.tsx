@@ -185,6 +185,7 @@ export default function ConsultationPage() {
     }
   }, []);
 
+
   // Ensure there is always an active patient session as soon as the page loads (run once)
   const ensuredOnceRef = useRef(false);
   useEffect(() => {
@@ -192,11 +193,13 @@ export default function ConsultationPage() {
       return;
     }
     ensuredOnceRef.current = true;
+    
     (async () => {
       try {
         await ensureActiveSession();
       } catch {}
     })();
+
   }, []);
 
   // Direct upgrade handler
