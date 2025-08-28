@@ -26,6 +26,7 @@ import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { createAuthHeaders } from '@/src/shared/utils';
+import { isFeatureEnabled } from '@/src/shared/utils/launch-config';
 import type { AnalysisModalState, CapturedPhoto, ServerImage } from '@/src/stores/imageStore';
 import { useImageStore } from '@/src/stores/imageStore';
 
@@ -71,6 +72,7 @@ export default function ClinicalImagePage() {
   } = useImageStore();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryFileInputRef = useRef<HTMLInputElement>(null);
 
   // Track upload loading state
   const isUploading = uploadImages.isPending;
@@ -468,6 +470,19 @@ export default function ClinicalImagePage() {
             Capture Clinical Images
           </Button>
 
+          {isFeatureEnabled('MOBILE_GALLERY_UPLOADS') && (
+            <Button
+              onClick={() => galleryFileInputRef.current?.click()}
+              size="lg"
+              variant="outline"
+              className="w-full"
+              type="button"
+            >
+              <Upload className="mr-2 size-5" />
+              Upload from gallery
+            </Button>
+          )}
+
           {capturedPhotos.length > 0 && (
             <Card>
               <CardContent className="p-4">
@@ -490,6 +505,18 @@ ready to upload
             </Card>
           )}
         </div>
+
+        {/* Hidden File Input for Mobile Gallery */}
+        {isFeatureEnabled('MOBILE_GALLERY_UPLOADS') && (
+          <input
+            type="file"
+            ref={galleryFileInputRef}
+            onChange={handleFileSelect}
+            multiple
+            accept="image/*"
+            className="hidden"
+          />
+        )}
       </div>
     );
   }

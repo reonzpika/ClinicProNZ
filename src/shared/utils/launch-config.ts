@@ -23,6 +23,7 @@ export const LAUNCH_CONFIG = {
   // Mobile Features
   MOBILE_RECORDING: true,
   QR_CODE_SESSIONS: true,
+  MOBILE_GALLERY_UPLOADS: true,
 
   // Business Features
   BILLING_SYSTEM: true,

@@ -55,7 +55,7 @@
       }
     ]
   },
-  "exclude": ["./out/**/*", "./node_modules/**/*", "**/*.spec.ts", "**/*.e2e.ts"],
+  "exclude": ["./out/**/*", "./node_modules/**/*", "**/*.spec.ts", "**/*.e2e.ts", "commitlint.config.ts"],
   "include": [
     "next-env.d.ts",
     "**/*.ts",
