@@ -12,6 +12,7 @@ type AppLayoutWrapperProps = {
 const EXCLUDED_ROUTES = [
   '/', // Root welcome page for unauthenticated users
   '/landing-page', // Landing page should not have sidebar
+  '/landing-page/thank-you', // Marketing thank-you page should not have sidebar
   '/clinicpro', // ClinicPro landing page should not have sidebar
   '/early', // Early access landing page should not have sidebar
   '/about', // About page should not have sidebar
