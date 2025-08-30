@@ -73,34 +73,14 @@ export default function ClinicalImagePage() {
 
   // Mobile native capture multi-step state
   const [mobileStep, setMobileStep] = useState<'collect' | 'review'>('collect');
-  const [queuedFiles, setQueuedFiles] = useState<File[]>([]);
-  const [selectedIndexes, setSelectedIndexes] = useState<Set<number>>(new Set());
-  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  type QueuedItem = { id: string; file: File; previewUrl: string };
+  const [queuedItems, setQueuedItems] = useState<QueuedItem[]>([]);
 
   // Maintain preview URLs for queued files
-  useEffect(() => {
-    setPreviewUrls(prev => {
-      const next = [...prev];
-      // Create URLs for new files
-      for (let i = 0; i < queuedFiles.length; i++) {
-        if (!next[i]) {
-          next[i] = URL.createObjectURL(queuedFiles[i]!);
-        }
-      }
-      // Revoke URLs for removed files
-      for (let i = queuedFiles.length; i < next.length; i++) {
-        if (next[i]) {
-          URL.revokeObjectURL(next[i]!);
-        }
-      }
-      return next.slice(0, queuedFiles.length);
-    });
-  }, [queuedFiles]);
-
   // Cleanup previews on unmount
   useEffect(() => () => {
-    previewUrls.forEach(url => url && URL.revokeObjectURL(url));
-  }, [previewUrls]);
+    queuedItems.forEach(item => item.previewUrl && URL.revokeObjectURL(item.previewUrl));
+  }, [queuedItems]);
 
   // QR code URL for mobile uploads (same page with mobile detection)
   const qrCodeUrl = typeof window !== 'undefined' ? `${window.location.origin}/image` : '';
@@ -138,15 +118,14 @@ export default function ClinicalImagePage() {
 
     // Mobile: queue files for review; Desktop: upload immediately
     if (isMobile) {
-      setQueuedFiles(prev => [...prev, ...fileArray]);
-      setSelectedIndexes(prev => {
-        const next = new Set(prev);
-        const offset = queuedFiles.length;
-        for (let i = 0; i < fileArray.length; i++) {
-          next.add(offset + i);
-        }
-        return next;
-      });
+      setQueuedItems(prev => [
+        ...prev,
+        ...fileArray.map(f => ({
+          id: Math.random().toString(36).slice(2),
+          file: f,
+          previewUrl: URL.createObjectURL(f),
+        })),
+      ]);
       setMobileStep('review');
       if (event.target) event.target.value = '';
       return;
@@ -361,11 +340,11 @@ export default function ClinicalImagePage() {
               </Button>
             )}
 
-            {queuedFiles.length > 0 && (
+            {queuedItems.length > 0 && (
               <Card>
                 <CardContent className="p-4">
                   <p className="text-sm text-slate-600">
-                    {queuedFiles.length} photo{queuedFiles.length === 1 ? '' : 's'} selected
+                    {queuedItems.length} photo{queuedItems.length === 1 ? '' : 's'} selected
                   </p>
                   <Button
                     onClick={() => setMobileStep('review')}
@@ -383,55 +362,43 @@ export default function ClinicalImagePage() {
         {mobileStep === 'review' && (
           <div className="flex-1 space-y-4">
             <div className="grid grid-cols-3 gap-3">
-              {queuedFiles.map((file, index) => (
-                <div key={index} className="relative aspect-square overflow-hidden rounded-lg border">
-                  {previewUrls[index]
-                    ? <img src={previewUrls[index]!} alt={file.name} className="size-full object-cover" />
+              {queuedItems.map((item) => (
+                <div key={item.id} className="relative aspect-square overflow-hidden rounded-lg border">
+                  {item.previewUrl
+                    ? <img src={item.previewUrl} alt={item.file.name} className="size-full object-cover" />
                     : <div className="flex size-full items-center justify-center text-xs text-slate-500">Loading...</div>}
                   <button
                     onClick={() => {
-                      setSelectedIndexes(prev => {
-                        const next = new Set(prev);
-                        if (next.has(index)) next.delete(index); else next.add(index);
-                        return next;
-                      });
-                    }}
-                    className={`absolute left-2 top-2 rounded bg-white/80 px-2 py-1 text-xs ${selectedIndexes.has(index) ? 'border border-green-500 text-green-700' : 'border border-slate-300 text-slate-700'}`}
-                  >
-                    {selectedIndexes.has(index) ? 'Keep' : 'Skip'}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setQueuedFiles(prev => prev.filter((_, i) => i !== index));
-                      setSelectedIndexes(prev => {
-                        const next = new Set<number>();
-                        Array.from(prev).forEach(i => {
-                          if (i < index) next.add(i);
-                          else if (i > index) next.add(i - 1);
-                        });
-                        return next;
-                      });
+                      URL.revokeObjectURL(item.previewUrl);
+                      setQueuedItems(prev => prev.filter(it => it.id !== item.id));
                     }}
                     className="absolute right-2 top-2 rounded bg-white/80 px-2 py-1 text-xs text-red-600"
                   >
-                    Remove
+                    Delete
                   </button>
                 </div>
               ))}
             </div>
 
             <div className="flex gap-3">
-              <Button onClick={() => setMobileStep('collect')} variant="outline" className="flex-1">Add more</Button>
+              <Button onClick={() => cameraFileInputRef.current?.click()} variant="outline" className="flex-1">Add more</Button>
+              <Button onClick={() => {
+                // Cancel: clear queue and return to collect
+                queuedItems.forEach(it => it.previewUrl && URL.revokeObjectURL(it.previewUrl));
+                setQueuedItems([]);
+                setMobileStep('collect');
+              }} variant="ghost" className="flex-1">Cancel</Button>
               <Button
                 className="flex-1"
-                disabled={queuedFiles.length === 0 || selectedIndexes.size === 0 || isUploading}
+                disabled={queuedItems.length === 0 || isUploading}
                 onClick={async () => {
-                  const filesToUpload = queuedFiles.filter((_, i) => selectedIndexes.has(i));
+                  const filesToUpload = queuedItems.map(it => it.file);
                   setUploadingFileCount(filesToUpload.length);
                   try {
                     await uploadImages.mutateAsync(filesToUpload);
-                    setQueuedFiles([]);
-                    setSelectedIndexes(new Set());
+                    // Clear queue and return
+                    queuedItems.forEach(it => it.previewUrl && URL.revokeObjectURL(it.previewUrl));
+                    setQueuedItems([]);
                     setMobileStep('collect');
                   } catch (err) {
                     console.error('Upload failed:', err);
@@ -440,7 +407,7 @@ export default function ClinicalImagePage() {
                   }
                 }}
               >
-                {isUploading ? 'Uploading...' : `Upload selected (${selectedIndexes.size})`}
+                {isUploading ? 'Uploading...' : `Upload ${queuedItems.length} photo${queuedItems.length === 1 ? '' : 's'}`}
               </Button>
             </div>
           </div>
