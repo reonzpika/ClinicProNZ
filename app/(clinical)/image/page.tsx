@@ -71,6 +71,37 @@ export default function ClinicalImagePage() {
   image: ServerImage | null;
   }>({ isOpen: false, image: null });
 
+  // Mobile native capture multi-step state
+  const [mobileStep, setMobileStep] = useState<'collect' | 'review'>('collect');
+  const [queuedFiles, setQueuedFiles] = useState<File[]>([]);
+  const [selectedIndexes, setSelectedIndexes] = useState<Set<number>>(new Set());
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+
+  // Maintain preview URLs for queued files
+  useEffect(() => {
+    setPreviewUrls(prev => {
+      const next = [...prev];
+      // Create URLs for new files
+      for (let i = 0; i < queuedFiles.length; i++) {
+        if (!next[i]) {
+          next[i] = URL.createObjectURL(queuedFiles[i]!);
+        }
+      }
+      // Revoke URLs for removed files
+      for (let i = queuedFiles.length; i < next.length; i++) {
+        if (next[i]) {
+          URL.revokeObjectURL(next[i]!);
+        }
+      }
+      return next.slice(0, queuedFiles.length);
+    });
+  }, [queuedFiles]);
+
+  // Cleanup previews on unmount
+  useEffect(() => () => {
+    previewUrls.forEach(url => url && URL.revokeObjectURL(url));
+  }, [previewUrls]);
+
   // QR code URL for mobile uploads (same page with mobile detection)
   const qrCodeUrl = typeof window !== 'undefined' ? `${window.location.origin}/image` : '';
 
@@ -104,19 +135,32 @@ export default function ClinicalImagePage() {
 
     setError('');
     const fileArray = Array.from(files);
-    setUploadingFileCount(fileArray.length);
 
+    // Mobile: queue files for review; Desktop: upload immediately
+    if (isMobile) {
+      setQueuedFiles(prev => [...prev, ...fileArray]);
+      setSelectedIndexes(prev => {
+        const next = new Set(prev);
+        const offset = queuedFiles.length;
+        for (let i = 0; i < fileArray.length; i++) {
+          next.add(offset + i);
+        }
+        return next;
+      });
+      setMobileStep('review');
+      if (event.target) event.target.value = '';
+      return;
+    }
+
+    // Desktop immediate upload
+    setUploadingFileCount(fileArray.length);
     try {
       await uploadImages.mutateAsync(fileArray);
     } catch (err) {
-      // Error handling is done via useEffect watching mutation errors
       console.error('Upload failed:', err);
     } finally {
       setUploadingFileCount(0);
-      // Reset file input to allow selecting the same files again
-      if (event.target) {
-        event.target.value = '';
-      }
+      if (event.target) event.target.value = '';
     }
   };
 
@@ -292,32 +336,115 @@ export default function ClinicalImagePage() {
           <p className="text-slate-600">Capture and upload clinical images</p>
         </div>
 
-        <div className="flex-1 space-y-4">
-          <Button
-            onClick={() => cameraFileInputRef.current?.click()}
-            size="lg"
-            className="w-full"
-            type="button"
-          >
-            <Camera className="mr-2 size-5" />
-            Capture with camera
-          </Button>
-
-          {isFeatureEnabled('MOBILE_GALLERY_UPLOADS') && (
+        {mobileStep === 'collect' && (
+          <div className="flex-1 space-y-4">
             <Button
-              onClick={() => galleryFileInputRef.current?.click()}
+              onClick={() => cameraFileInputRef.current?.click()}
               size="lg"
-              variant="outline"
               className="w-full"
               type="button"
             >
-              <Upload className="mr-2 size-5" />
-              Upload from gallery
+              <Camera className="mr-2 size-5" />
+              Capture with camera
             </Button>
-          )}
 
-          {/* Selection summary removed in native capture flow */}
-        </div>
+            {isFeatureEnabled('MOBILE_GALLERY_UPLOADS') && (
+              <Button
+                onClick={() => galleryFileInputRef.current?.click()}
+                size="lg"
+                variant="outline"
+                className="w-full"
+                type="button"
+              >
+                <Upload className="mr-2 size-5" />
+                Upload from gallery
+              </Button>
+            )}
+
+            {queuedFiles.length > 0 && (
+              <Card>
+                <CardContent className="p-4">
+                  <p className="text-sm text-slate-600">
+                    {queuedFiles.length} photo{queuedFiles.length === 1 ? '' : 's'} selected
+                  </p>
+                  <Button
+                    onClick={() => setMobileStep('review')}
+                    variant="outline"
+                    className="mt-2 w-full"
+                  >
+                    Review & upload
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
+
+        {mobileStep === 'review' && (
+          <div className="flex-1 space-y-4">
+            <div className="grid grid-cols-3 gap-3">
+              {queuedFiles.map((file, index) => (
+                <div key={index} className="relative aspect-square overflow-hidden rounded-lg border">
+                  {previewUrls[index]
+                    ? <img src={previewUrls[index]!} alt={file.name} className="size-full object-cover" />
+                    : <div className="flex size-full items-center justify-center text-xs text-slate-500">Loading...</div>}
+                  <button
+                    onClick={() => {
+                      setSelectedIndexes(prev => {
+                        const next = new Set(prev);
+                        if (next.has(index)) next.delete(index); else next.add(index);
+                        return next;
+                      });
+                    }}
+                    className={`absolute left-2 top-2 rounded bg-white/80 px-2 py-1 text-xs ${selectedIndexes.has(index) ? 'border border-green-500 text-green-700' : 'border border-slate-300 text-slate-700'}`}
+                  >
+                    {selectedIndexes.has(index) ? 'Keep' : 'Skip'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setQueuedFiles(prev => prev.filter((_, i) => i !== index));
+                      setSelectedIndexes(prev => {
+                        const next = new Set<number>();
+                        Array.from(prev).forEach(i => {
+                          if (i < index) next.add(i);
+                          else if (i > index) next.add(i - 1);
+                        });
+                        return next;
+                      });
+                    }}
+                    className="absolute right-2 top-2 rounded bg-white/80 px-2 py-1 text-xs text-red-600"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-3">
+              <Button onClick={() => setMobileStep('collect')} variant="outline" className="flex-1">Add more</Button>
+              <Button
+                className="flex-1"
+                disabled={queuedFiles.length === 0 || selectedIndexes.size === 0 || isUploading}
+                onClick={async () => {
+                  const filesToUpload = queuedFiles.filter((_, i) => selectedIndexes.has(i));
+                  setUploadingFileCount(filesToUpload.length);
+                  try {
+                    await uploadImages.mutateAsync(filesToUpload);
+                    setQueuedFiles([]);
+                    setSelectedIndexes(new Set());
+                    setMobileStep('collect');
+                  } catch (err) {
+                    console.error('Upload failed:', err);
+                  } finally {
+                    setUploadingFileCount(0);
+                  }
+                }}
+              >
+                {isUploading ? 'Uploading...' : `Upload selected (${selectedIndexes.size})`}
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Hidden File Inputs for Mobile */}
         <input
