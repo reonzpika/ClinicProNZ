@@ -259,7 +259,7 @@ export function TranscriptionControls({
               <Mic size={12} className="text-slate-600" />
               <span className="text-xs font-medium text-slate-700">Audio Transcription</span>
             </div>
-            {mobileV2.isConnected && (
+            {isMobileConnected && (
               <span className="text-xs text-green-600">📱 Mobile Synced</span>
             )}
           </div>
