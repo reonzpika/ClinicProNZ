@@ -15,7 +15,6 @@ import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTrans
 import { MobileRightPanelOverlay } from '@/src/features/clinical/mobile/components/MobileRightPanelOverlay';
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 import RightPanelFeatures from '@/src/features/clinical/right-sidebar/components/RightPanelFeatures';
-import UsageDashboard from '@/src/features/clinical/right-sidebar/components/UsageDashboard';
 import { WorkflowInstructions } from '@/src/features/clinical/right-sidebar/components/WorkflowInstructions';
 import { PatientSessionManager } from '@/src/features/clinical/session-management/components/PatientSessionManager';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
@@ -185,7 +184,6 @@ export default function ConsultationPage() {
     }
   }, []);
 
-
   // Ensure there is always an active patient session; retry on relevant changes
   const hasEnsuredSessionRef = useRef(false);
   const isEnsuringSessionRef = useRef(false);
@@ -247,9 +245,6 @@ export default function ConsultationPage() {
 
   // Admin preview approval handler
   // Removed admin approval handler - no longer needed in single-pass architecture
-
-  // Usage dashboard refresh ref
-  const usageDashboardRef = useRef<{ refresh: () => void } | null>(null);
 
   // Session limits are now handled contextually when users try to perform actions
   // The UsageDashboard will show the current status and the modal will appear on 429 errors
@@ -557,11 +552,6 @@ export default function ConsultationPage() {
 
       // Set status to completed
       setStatus('completed');
-
-      // Refresh usage dashboard after successful notes generation
-      if (usageDashboardRef.current?.refresh) {
-        usageDashboardRef.current.refresh();
-      }
     } catch (err) {
       // Swallow abort errors triggered by Clear All
       if ((err as any)?.name !== 'AbortError') {
@@ -669,11 +659,6 @@ export default function ConsultationPage() {
 
                         {/* Documentation Settings Badge - Always visible below session bar */}
                         <DocumentationSettingsBadge />
-
-                        {/* Usage Dashboard - Shows tier limits and usage */}
-                        <div data-component="usage-dashboard">
-                          <UsageDashboard ref={usageDashboardRef} />
-                        </div>
 
                         {/* Workflow Instructions - Only visible on large desktop */}
                         <WorkflowInstructions />
