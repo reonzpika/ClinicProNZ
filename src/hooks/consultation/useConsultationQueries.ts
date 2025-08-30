@@ -75,6 +75,7 @@ export function usePatientSession(sessionId: string | null) {
       return allSessions.find((s: PatientSession) => s.id === sessionId) || null;
     },
     enabled: !!sessionId && !!userId,
+    refetchInterval: 15000,
   });
 }
 

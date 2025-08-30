@@ -15,7 +15,7 @@ export type EnhancedTranscriptionData = {
 };
 
 type SimpleAblyMessage = {
-  type: 'transcription' | 'recording_status' | 'recording_control' | 'token_rotated' | 'images_uploaded';
+  type: 'transcriptions_updated' | 'recording_status' | 'recording_control' | 'images_uploaded';
   transcript?: string;
   timestamp?: number;
   // 🆕 Enhanced transcription fields
@@ -33,25 +33,25 @@ type SimpleAblyMessage = {
 };
 
 export type UseSimpleAblyOptions = {
-  tokenId: string | null;
-  onTranscriptReceived?: (transcript: string, enhancedData?: EnhancedTranscriptionData) => void; // Simplified: no sessionId needed
+  userId: string | null;
   onRecordingStatusChanged?: (isRecording: boolean) => void; // Simplified: no sessionId needed
   onError?: (error: string) => void;
   onConnectionStatusChanged?: (isConnected: boolean) => void;
   isMobile?: boolean;
   onControlCommand?: (action: 'start' | 'stop') => void; // For mobile remote control
   onMobileImagesUploaded?: (mobileTokenId: string, imageCount: number, timestamp: string) => void; // For desktop image notification
+  onTranscriptionsUpdated?: (sessionId?: string, chunkId?: string) => void;
 };
 
 export const useSimpleAbly = ({
-  tokenId,
-  onTranscriptReceived,
+  userId,
   onRecordingStatusChanged,
   onError,
   onConnectionStatusChanged,
   isMobile = false, // Default to false (desktop)
   onControlCommand,
   onMobileImagesUploaded,
+  onTranscriptionsUpdated,
 }: UseSimpleAblyOptions) => {
   const [isConnected, setIsConnected] = useState(false);
 
@@ -64,23 +64,23 @@ export const useSimpleAbly = ({
 
   // Stable callback refs to prevent re-connections
   const callbacksRef = useRef({
-    onTranscriptReceived,
     onRecordingStatusChanged,
     onError,
     onControlCommand,
     onMobileImagesUploaded,
+    onTranscriptionsUpdated,
   });
 
   // Update callbacks without triggering reconnection
   useEffect(() => {
     callbacksRef.current = {
-      onTranscriptReceived,
       onRecordingStatusChanged,
       onError,
       onControlCommand,
       onMobileImagesUploaded,
-    };
-  }, [onTranscriptReceived, onRecordingStatusChanged, onError, onControlCommand, onMobileImagesUploaded]);
+      onTranscriptionsUpdated,
+    } as any;
+  }, [onRecordingStatusChanged, onError, onControlCommand, onMobileImagesUploaded, onTranscriptionsUpdated]);
 
   // Update connection status based on connection state
   const updateConnectionStatus = useCallback((connected: boolean) => {
@@ -119,9 +119,9 @@ export const useSimpleAbly = ({
 
   // Removed session request - no longer needed in simplified architecture
 
-  // Connect when tokenId is provided
+  // Connect when userId is provided
   useEffect(() => {
-    if (!tokenId) {
+    if (!userId) {
       // Clean up if no token
       if (ablyRef.current) {
         try {
@@ -148,16 +148,10 @@ export const useSimpleAbly = ({
         const ably = new Ably.Realtime({
           authCallback: async (_tokenParams, callback) => {
             try {
-              const response = await fetch('/api/ably/simple-token', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ tokenId }),
-              });
-
+              const response = await fetch('/api/ably/user-token', { method: 'POST' });
               if (!response.ok) {
                 throw new Error(`Failed to get Ably token: ${response.statusText}`);
               }
-
               const tokenRequest = await response.json();
               callback(null, tokenRequest);
             } catch (error) {
@@ -195,14 +189,13 @@ export const useSimpleAbly = ({
             // Ensure channel exists and is attached after connecting
             let channel: Ably.RealtimeChannel;
             try {
-              // Disable replay on desktop (isMobile=false); keep minimal rewind for mobile publisher
               channel = isMobile
-                ? (ably.channels.get(`token:${tokenId}`, { params: { rewind: '1' } } as any))
-                : (ably.channels.get(`token:${tokenId}` as any));
+                ? (ably.channels.get(`user:${userId}`, { params: { rewind: '1' } } as any))
+                : (ably.channels.get(`user:${userId}` as any));
             } catch {
               channel = isMobile
-                ? (ably.channels.get(`token:${tokenId}?rewind=1` as any))
-                : (ably.channels.get(`token:${tokenId}` as any));
+                ? (ably.channels.get(`user:${userId}?rewind=1` as any))
+                : (ably.channels.get(`user:${userId}` as any));
             }
             try {
               await channel.attach();
@@ -224,7 +217,7 @@ export const useSimpleAbly = ({
             // Set refs only after successful connect/attach
             if (isCurrentConnection) {
               ablyRef.current = ably;
-              channelRef.current = ably.channels.get(`token:${tokenId}` as any);
+              channelRef.current = ably.channels.get(`user:${userId}` as any);
               // Flush outbox
               if (outboxRef.current.length > 0) {
                 const pending = [...outboxRef.current];
@@ -287,18 +280,16 @@ export const useSimpleAbly = ({
         // Now that handlers are wired, initiate the connection
         ably.connect();
 
-        // Single channel based on tokenId
+        // Single channel based on userId
         let channel: Ably.RealtimeChannel;
         try {
-          // Preferred: params object (supported by recent Ably SDKs)
           channel = isMobile
-            ? (ably.channels.get(`token:${tokenId}`, { params: { rewind: '1' } } as any))
-            : (ably.channels.get(`token:${tokenId}` as any));
+            ? (ably.channels.get(`user:${userId}`, { params: { rewind: '1' } } as any))
+            : (ably.channels.get(`user:${userId}` as any));
         } catch {
-          // Fallback: embed query into channel name if params are not supported
           channel = isMobile
-            ? (ably.channels.get(`token:${tokenId}?rewind=1` as any))
-            : (ably.channels.get(`token:${tokenId}` as any));
+            ? (ably.channels.get(`user:${userId}?rewind=1` as any))
+            : (ably.channels.get(`user:${userId}` as any));
         }
         try {
           await channel.attach();
@@ -316,29 +307,8 @@ export const useSimpleAbly = ({
           const { type, ...data } = message.data as SimpleAblyMessage;
 
           switch (type) {
-            case 'token_rotated':
-              // Server indicates this token is rotated; disconnect gracefully
-              try {
-                ablyRef.current?.close();
-              } catch {}
-              updateConnectionStatus(false);
-              callbacksRef.current.onError?.('Authentication failed: Token expired or invalid');
-              break;
-
-            case 'transcription':
-              if (data.transcript) {
-                // Extract enhanced data from Ably message
-                const enhancedData: EnhancedTranscriptionData | undefined
-                  = (data.confidence !== undefined || (data.words && data.words.length > 0))
-                    ? {
-                        confidence: data.confidence,
-                        words: data.words || [],
-                        paragraphs: data.paragraphs,
-                      }
-                    : undefined;
-
-                callbacksRef.current.onTranscriptReceived?.(data.transcript, enhancedData);
-              }
+            case 'transcriptions_updated':
+              callbacksRef.current.onTranscriptionsUpdated?.((data as any).sessionId, (data as any).chunkId);
               break;
 
             case 'recording_status':
@@ -406,28 +376,13 @@ export const useSimpleAbly = ({
       }
       setIsConnected(false);
     };
-  }, [tokenId, onConnectionStatusChanged, isMobile, publishSafe, updateConnectionStatus]);
+  }, [userId, onConnectionStatusChanged, isMobile, publishSafe, updateConnectionStatus]);
 
   // Removed history reconciliation to avoid duplicate replays after hydration
 
   // Removed visibility handling - not needed in simplified architecture
 
   // Removed duplicate publishSafe definition (moved earlier in file)
-
-  // Send transcript with enhanced data (mobile to desktop)
-  const sendTranscript = useCallback((transcript: string, enhancedData?: EnhancedTranscriptionData) => {
-    if (!transcript.trim()) {
-      return false;
-    }
-    return publishSafe('transcription', {
-      type: 'transcription',
-      transcript: transcript.trim(),
-      timestamp: Date.now(),
-      confidence: enhancedData?.confidence,
-      words: enhancedData?.words || [],
-      paragraphs: enhancedData?.paragraphs,
-    }, { queueIfNotReady: false });
-  }, [publishSafe]);
 
   // Send recording status (mobile to desktop)
   const sendRecordingStatus = useCallback((isRecording: boolean) => {
@@ -464,7 +419,6 @@ export const useSimpleAbly = ({
 
   return {
     isConnected,
-    sendTranscript,
     sendRecordingStatus,
     sendRecordingControl,
     sendImageNotification,

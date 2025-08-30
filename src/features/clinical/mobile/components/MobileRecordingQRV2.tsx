@@ -1,21 +1,13 @@
 'use client';
 
-import { useAuth } from '@clerk/nextjs';
-import { AlertTriangle, RefreshCw, Smartphone } from 'lucide-react';
+import { AlertTriangle, Smartphone } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useCallback, useEffect, useState } from 'react';
 
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
-import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
-import { createAuthHeaders } from '@/src/shared/utils';
-
-type QRTokenData = {
-  token: string;
-  mobileUrl: string;
-};
+ 
 
 type MobileRecordingQRV2Props = {
   isOpen: boolean;
