@@ -3,7 +3,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { createAuthHeaders } from '@/src/shared/utils';
+import { resizeImageFile } from '@/src/shared/utils/image';
 import type { ImageAnalysis, ServerImage } from '@/src/stores/imageStore';
+
+// resizeImageFile imported from shared utils
 
 // Query Keys
 export const imageQueryKeys = {
@@ -60,6 +63,9 @@ export function useUploadImage() {
         throw new Error('User not authenticated');
       }
 
+      // Resize on client before uploading (keeps original MIME type)
+      const resizedBlob = await resizeImageFile(file, 1024);
+
       // Get presigned URL
       const presignParams = new URLSearchParams({
         filename: file.name,
@@ -81,7 +87,7 @@ export function useUploadImage() {
       // Upload to S3
       const uploadResponse = await fetch(uploadUrl, {
         method: 'PUT',
-        body: file,
+        body: resizedBlob,
         headers: {
           'Content-Type': file.type,
         },

@@ -27,7 +27,7 @@ type WebRTCCameraProps = {
 export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
   onCapture,
   onClose,
-  maxImageSize = 800, // 800px max for mobile bandwidth optimization
+  maxImageSize = 1024, // match desktop resize
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
