@@ -100,7 +100,7 @@ export default function ConsultationPage() {
   // Simple Ably sync implementation - always connected when token exists (moved before switchToPatientSession)
   const queryClientRef = useRef(queryClient);
   const { sendRecordingControl } = useSimpleAbly({
-    userId,
+    userId: userId ?? null,
     onRecordingStatusChanged: (isRecording: boolean) => setMobileIsRecording(isRecording),
     onError: handleError,
     onConnectionStatusChanged: () => {},
