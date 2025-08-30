@@ -1,5 +1,4 @@
 import { pgTable, unique, text, timestamp, integer, date, jsonb, boolean, foreignKey, serial, varchar, uuid, vector, pgEnum } from "drizzle-orm/pg-core"
-import { sql } from "drizzle-orm"
 
 export const featureStatus = pgEnum("feature_status", ['planned', 'in_progress', 'completed'])
 export const mailStatus = pgEnum("mail_status", ['queued', 'sent', 'failed'])
