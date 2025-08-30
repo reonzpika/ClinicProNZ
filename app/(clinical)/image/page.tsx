@@ -430,7 +430,7 @@ export default function ClinicalImagePage() {
       <WebRTCCamera
         onCapture={handleCameraCapture}
         onClose={handleCameraClose}
-        maxImageSize={800}
+        maxImageSize={1024}
       />
     );
   }

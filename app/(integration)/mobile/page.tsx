@@ -490,7 +490,7 @@ function MobilePageContent() {
       <WebRTCCamera
         onCapture={handleCameraCapture}
         onClose={handleCameraClose}
-        maxImageSize={800}
+        maxImageSize={1024}
       />
     );
   }
