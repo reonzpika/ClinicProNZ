@@ -48,6 +48,19 @@ export default function RootLayout({
       <QueryClientProvider>
         <TestUserProvider>
           <html lang="en">
+            <head>
+              {/* DNS prefetch for Google OAuth and reCAPTCHA domains */}
+              <link rel="dns-prefetch" href="//accounts.google.com" />
+              <link rel="dns-prefetch" href="//www.google.com" />
+              <link rel="dns-prefetch" href="//www.gstatic.com" />
+              <link rel="dns-prefetch" href="//apis.google.com" />
+              <link rel="dns-prefetch" href="//ssl.gstatic.com" />
+
+              {/* Preconnect to speed up OAuth flow */}
+              <link rel="preconnect" href="https://accounts.google.com" />
+              <link rel="preconnect" href="https://www.google.com" />
+              <link rel="preconnect" href="https://www.gstatic.com" crossOrigin="anonymous" />
+            </head>
             <body className={`${inter.variable} ${oswald.variable} ${openSans.variable} ${inter.className}`}>
               {/* <StagewiseToolbar /> */}
               <AppLayoutWrapper>{children}</AppLayoutWrapper>

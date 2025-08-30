@@ -185,6 +185,38 @@ export default function ConsultationPage() {
     }
   }, []);
 
+
+  // Ensure there is always an active patient session; retry on relevant changes
+  const hasEnsuredSessionRef = useRef(false);
+  const isEnsuringSessionRef = useRef(false);
+  useEffect(() => {
+    if (hasEnsuredSessionRef.current || isEnsuringSessionRef.current) {
+      return;
+    }
+
+    let isMounted = true;
+    isEnsuringSessionRef.current = true;
+
+    (async () => {
+      try {
+        const sessionId = await ensureActiveSession();
+        if (isMounted && sessionId) {
+          hasEnsuredSessionRef.current = true;
+        }
+      } finally {
+        if (isMounted) {
+          isEnsuringSessionRef.current = false;
+        } else {
+          isEnsuringSessionRef.current = false;
+        }
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [ensureActiveSession, userId]);
+
   // Direct upgrade handler
   const handleDirectUpgrade = async () => {
     setUpgradeLoading(true);

@@ -71,18 +71,18 @@ export function useConsultationStores(): any {
       || !!(session.consultationNotes && String(session.consultationNotes).trim());
     const hasRemote = hasRemoteTrans || hasRemoteTextFields;
 
-    // If we already have local data or remote is empty, ensure local transcript is cleared and exit
-    if (hasLocal || !hasRemote) {
-      if (!hasRemote && transcriptionStore.transcription.transcript) {
-        transcriptionStore.setTranscription('', false);
-      }
+    // Guard: avoid overwriting or clearing local when not needed
+    if (hasLocal) {
+      return;
+    }
+    if (!hasRemote) {
       return;
     }
 
     try {
       if (hasRemoteTrans) {
-        const latest = remoteTrans[remoteTrans.length - 1];
-        transcriptionStore.setTranscription((latest?.text || '').trim(), false, undefined, undefined);
+        const fullTranscript = remoteTrans.map((t: any) => (t?.text || '').trim()).join(' ');
+        transcriptionStore.setTranscription(fullTranscript, false, undefined, undefined);
       }
     } catch {
       // ignore JSON errors

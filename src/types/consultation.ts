@@ -48,6 +48,9 @@ export type ClinicalImage = {
   mimeType: string;
   uploadedAt: string;
   aiDescription?: string;
+  // Mobile image specific fields
+  isMobileImage?: boolean;
+  mobileTokenId?: string;
 };
 
 export type PatientSession = {
