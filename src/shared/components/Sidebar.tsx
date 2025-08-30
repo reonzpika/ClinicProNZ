@@ -2,15 +2,11 @@
 
 import { SignInButton, SignUpButton, useAuth, UserButton } from '@clerk/nextjs';
 import {
-  Book,
-  Brain,
   Camera,
   ChevronLeft,
   ChevronRight,
-  CreditCard,
   FileText,
   MessageSquare,
-  Settings,
   ShieldCheck,
   Stethoscope,
 } from 'lucide-react';
@@ -42,15 +38,10 @@ type NavItem = {
 const mainNavItems: NavItem[] = [
   { href: '/consultation', label: 'Clinical Notes', icon: Stethoscope },
   { href: '/templates', label: 'Note Templates', icon: FileText, requiresAuth: true },
-  { href: '/clinical-reference', label: 'Clinical Reference', icon: Book, adminOnly: true },
-  { href: '/differential-diagnosis', label: 'Differential Diagnosis', icon: Brain, adminOnly: true },
-  { href: '/clinical-image', label: 'Clinical Images', icon: Camera, adminOnly: true },
+  { href: '/image', label: 'Clinical Images', icon: Camera, adminOnly: true },
 ];
 
-const accountNavItems: NavItem[] = [
-  { href: '/settings', label: 'Settings', icon: Settings, requiresAuth: true },
-  { href: '/billing', label: 'Billing', icon: CreditCard, requiresAuth: true },
-];
+
 
 const adminNavItems: NavItem[] = [
   { href: '/admin', label: 'Admin Panel', icon: ShieldCheck, requiresAuth: true },
@@ -198,21 +189,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Spacer */}
           <div className="flex-1" />
 
-          {/* Account Section (for authenticated users) */}
-          {isSignedIn && (
-            <div className="flex-none p-3">
-              {!isCollapsed && (
-                <h3 className="mb-2 px-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Account
-                </h3>
-              )}
-              <div className="space-y-1">
-                {accountNavItems.map(item => (
-                  <NavButton key={item.href} item={item} />
-                ))}
-              </div>
-            </div>
-          )}
+
 
           {/* Admin Section (for admin users only) */}
           {isSignedIn && isAdmin && (

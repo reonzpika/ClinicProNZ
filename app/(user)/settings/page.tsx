@@ -1,21 +1,34 @@
-import { auth } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
+'use client';
+
+import { useUser } from '@clerk/nextjs';
 
 import { DashboardHeader } from '@/src/shared/components/DashboardHeader';
-import { Badge } from '@/src/shared/components/ui/badge';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
-import { checkTierFromSessionClaims } from '@/src/shared/utils/roles';
 
-export default async function SettingsPage() {
-  const { userId, sessionClaims } = await auth();
-  if (!userId) {
-    redirect('/login');
+export default function SettingsPage() {
+  const { isSignedIn, user, isLoaded } = useUser();
+
+  if (!isLoaded) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="mx-auto size-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
-  const hasAccess = checkTierFromSessionClaims(sessionClaims, 'basic');
-  if (!hasAccess) {
-    redirect('/login');
+  if (!isSignedIn) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <h2 className="mb-4 text-2xl font-bold text-gray-900">Not signed in</h2>
+          <p className="text-gray-600">Please sign in to access settings.</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -43,87 +56,34 @@ export default async function SettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">User ID:</span>
-                  <code className="rounded bg-gray-100 px-2 py-1 text-sm">
-                    {userId}
-                  </code>
+              <div className="space-y-6">
+                {/* User Profile Section */}
+                <div className="flex items-center space-x-4">
+                  <img
+                    src={user.imageUrl}
+                    alt="Profile"
+                    className="size-16 rounded-full object-cover"
+                  />
+                  <div>
+                    <h3 className="text-lg font-semibold">
+                      {user.firstName}
+{' '}
+{user.lastName}
+                    </h3>
+                    <p className="text-gray-600">
+                      {user.emailAddresses[0]?.emailAddress}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">Current Tier:</span>
-                  <Badge variant="secondary">
-                    {(sessionClaims as any)?.metadata?.tier || 'basic'}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">Account Status:</span>
-                  <Badge variant="default">Active</Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
-          {/* Subscription Management */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Subscription</CardTitle>
-              <CardDescription>
-                Manage your subscription and billing
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">Current Plan:</span>
-                  <span className="capitalize">
-                    {(sessionClaims as any)?.metadata?.tier || 'basic'}
-                    {' '}
-                    tier
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">Billing Status:</span>
-                  <Badge variant="default">
-                    {(sessionClaims as any)?.metadata?.subscriptionStatus || 'Active'}
-                  </Badge>
-                </div>
-                <div className="pt-4">
-                  <Button>
-                    Manage Subscription
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Preferences */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Preferences</CardTitle>
-              <CardDescription>
-                Customize your ClinicPro experience
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">Email Notifications:</span>
-                  <Button variant="outline" size="sm">
-                    Configure
-                  </Button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">Data Export:</span>
-                  <Button variant="outline" size="sm">
-                    Export Data
-                  </Button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">Account Privacy:</span>
-                  <Button variant="outline" size="sm">
-                    Privacy Settings
-                  </Button>
+                {/* Account Details */}
+                <div className="space-y-4 border-t pt-4">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">Member Since:</span>
+                    <span className="text-sm text-gray-600">
+                      {new Date(user.createdAt || '').toLocaleDateString()}
+                    </span>
+                  </div>
                 </div>
               </div>
             </CardContent>
