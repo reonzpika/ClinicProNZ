@@ -18,8 +18,7 @@ import {
 import { QRCodeSVG } from 'qrcode.react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { PhotoReview } from '@/src/features/clinical/mobile/components/PhotoReview';
-import { WebRTCCamera } from '@/src/features/clinical/mobile/components/WebRTCCamera';
+// Removed in-page WebRTC camera in favour of native camera capture
 import { useAnalyzeImage, useDeleteImage, useSaveAnalysis, useServerImages, useUploadImages } from '@/src/hooks/useImageQueries';
 import { Container } from '@/src/shared/components/layout/Container';
 import { Button } from '@/src/shared/components/ui/button';
@@ -27,7 +26,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { createAuthHeaders } from '@/src/shared/utils';
 import { isFeatureEnabled } from '@/src/shared/utils/launch-config';
-import type { AnalysisModalState, CapturedPhoto, ServerImage } from '@/src/stores/imageStore';
+import type { AnalysisModalState, ServerImage } from '@/src/stores/imageStore';
 import { useImageStore } from '@/src/stores/imageStore';
 
 export default function ClinicalImagePage() {
@@ -48,10 +47,6 @@ export default function ClinicalImagePage() {
     showQR,
     error,
     analysisModal,
-    mobileState,
-    capturedPhotos,
-    uploadProgress,
-    isUploadingBatch,
     setIsMobile,
     setShowQR,
     setError,
@@ -60,19 +55,11 @@ export default function ClinicalImagePage() {
     setAnalysisPrompt,
     setAnalysisResult,
     setAnalysisLoading,
-    setMobileState,
-    addCapturedPhoto,
-    updateCapturedPhoto,
-    removeCapturedPhoto,
-    clearCapturedPhotos,
-    addUploadProgress,
-    updateUploadProgress,
-    clearUploadProgress,
-    setIsUploadingBatch,
   } = useImageStore();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
+  const cameraFileInputRef = useRef<HTMLInputElement>(null);
 
   // Track upload loading state
   const isUploading = uploadImages.isPending;
@@ -267,137 +254,7 @@ export default function ClinicalImagePage() {
     return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
-  // Mobile handlers (using store actions)
-  const handleCameraCapture = (photoBlob: Blob, filename: string) => {
-    const newPhoto: CapturedPhoto = {
-      id: Math.random().toString(36).substr(2, 9),
-      blob: photoBlob,
-      timestamp: new Date().toISOString(),
-      filename,
-      status: 'captured',
-    };
-
-    addCapturedPhoto(newPhoto);
-    setMobileState('reviewing');
-  };
-
-  const handleCameraClose = () => {
-    if (capturedPhotos.length > 0) {
-      setMobileState('reviewing');
-    } else {
-      setMobileState('connected');
-    }
-  };
-
-  const handleDeletePhoto = (photoId: string) => {
-    removeCapturedPhoto(photoId);
-  };
-
-  const handleRetakePhoto = () => {
-    setMobileState('camera');
-  };
-
-  const uploadSinglePhoto = async (photo: CapturedPhoto): Promise<void> => {
-    // Update photo status to uploading
-    updateCapturedPhoto(photo.id, { status: 'uploading' });
-
-    // Initialize progress
-    addUploadProgress({ photoId: photo.id, progress: 0 });
-
-    try {
-      // Get presigned URL for upload (no session required)
-      const presignParams = new URLSearchParams({
-        filename: photo.filename,
-        mimeType: photo.blob.type,
-      });
-
-      const presignResponse = await fetch(`/api/uploads/presign?${presignParams}`, {
-        headers: createAuthHeaders(userId, userTier),
-      });
-
-      if (!presignResponse.ok) {
-        throw new Error('Failed to get upload URL');
-      }
-
-      const { uploadUrl } = await presignResponse.json();
-
-      // Update progress
-      updateUploadProgress(photo.id, { progress: 50 });
-
-      // Upload to S3
-      const uploadResponse = await fetch(uploadUrl, {
-        method: 'PUT',
-        body: photo.blob,
-        headers: {
-          'Content-Type': photo.blob.type,
-        },
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error(`Failed to upload image (${uploadResponse.status})`);
-      }
-
-      // Complete progress
-      updateUploadProgress(photo.id, { progress: 100 });
-
-      // Update photo status to uploaded
-      updateCapturedPhoto(photo.id, { status: 'uploaded' });
-    } catch (error) {
-      console.error('Photo upload failed:', error);
-
-      // Update photo status to failed
-      updateCapturedPhoto(photo.id, { status: 'failed' });
-
-      // Update progress with error
-      updateUploadProgress(photo.id, {
-        progress: 0,
-        error: error instanceof Error ? error.message : 'Upload failed',
-      });
-
-      throw error;
-    }
-  };
-
-  const handleUploadAll = async () => {
-    const photosToUpload = capturedPhotos.filter(p => p.status === 'captured' || p.status === 'failed');
-    if (photosToUpload.length === 0) {
-              return;
-            }
-
-    setIsUploadingBatch(true);
-
-    try {
-      // Upload photos sequentially to avoid overwhelming the connection
-      for (const photo of photosToUpload) {
-        try {
-          await uploadSinglePhoto(photo);
-    } catch (error) {
-          // Continue with other photos even if one fails
-          console.error(`Failed to upload photo ${photo.id}:`, error);
-        }
-      }
-
-      // Server images are automatically refreshed via query invalidation
-    } finally {
-      setIsUploadingBatch(false);
-
-      // Check if all photos uploaded successfully
-      const allUploaded = capturedPhotos.every(p => p.status === 'uploaded');
-      if (allUploaded) {
-        // Clear photos and return to connected state
-        clearCapturedPhotos();
-        clearUploadProgress();
-        setMobileState('connected');
-      }
-    }
-  };
-
-  const handleCancelPhotos = () => {
-    // Clear all photos and return to connected state
-    clearCapturedPhotos();
-    clearUploadProgress();
-    setMobileState('connected');
-  };
+  // Native camera capture is handled via file inputs on mobile
 
   // Authentication check for all users
   if (!isSignedIn) {
@@ -424,31 +281,7 @@ export default function ClinicalImagePage() {
     );
   }
 
-  // Mobile camera interface
-  if (isMobile && mobileState === 'camera') {
-    return (
-      <WebRTCCamera
-        onCapture={handleCameraCapture}
-        onClose={handleCameraClose}
-        maxImageSize={1024}
-      />
-    );
-  }
-
-  // Mobile photo review interface
-  if (isMobile && mobileState === 'reviewing') {
-    return (
-      <PhotoReview
-        photos={capturedPhotos}
-        onDeletePhoto={handleDeletePhoto}
-        onRetakePhoto={handleRetakePhoto}
-        onUploadAll={handleUploadAll}
-        onCancel={handleCancelPhotos}
-        uploadProgress={uploadProgress}
-        isUploading={isUploadingBatch}
-      />
-    );
-  }
+  // Removed WebRTC camera/review interfaces
 
   // Mobile main interface
   if (isMobile) {
@@ -461,13 +294,13 @@ export default function ClinicalImagePage() {
 
         <div className="flex-1 space-y-4">
           <Button
-            onClick={() => setMobileState('camera')}
+            onClick={() => cameraFileInputRef.current?.click()}
             size="lg"
             className="w-full"
             type="button"
           >
             <Camera className="mr-2 size-5" />
-            Capture Clinical Images
+            Capture with camera
           </Button>
 
           {isFeatureEnabled('MOBILE_GALLERY_UPLOADS') && (
@@ -483,30 +316,19 @@ export default function ClinicalImagePage() {
             </Button>
           )}
 
-          {capturedPhotos.length > 0 && (
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm text-slate-600">
-                  {capturedPhotos.length}
-{' '}
-photo
-{capturedPhotos.length === 1 ? '' : 's'}
-{' '}
-ready to upload
-                </p>
-                <Button
-                  onClick={() => setMobileState('reviewing')}
-                  variant="outline"
-                  className="mt-2 w-full"
-                >
-                  Review Photos
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+          {/* Selection summary removed in native capture flow */}
         </div>
 
-        {/* Hidden File Input for Mobile Gallery */}
+        {/* Hidden File Inputs for Mobile */}
+        <input
+          type="file"
+          ref={cameraFileInputRef}
+          onChange={handleFileSelect}
+          accept="image/*"
+          capture="environment"
+          multiple
+          className="hidden"
+        />
         {isFeatureEnabled('MOBILE_GALLERY_UPLOADS') && (
           <input
             type="file"
