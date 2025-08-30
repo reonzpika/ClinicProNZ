@@ -336,7 +336,7 @@ function MobilePageContent() {
 
       throw error;
     }
-  }, [tokenState.token]);
+  }, [userId]);
 
   const handleUploadAll = useCallback(async () => {
     const photosToUpload = capturedPhotos.filter(p => p.status === 'captured' || p.status === 'failed');
@@ -378,7 +378,7 @@ function MobilePageContent() {
         setMobileState('reviewing');
       }
     }
-  }, [capturedPhotos, uploadSinglePhoto, sendImageNotification, tokenState.token]);
+  }, [capturedPhotos, uploadSinglePhoto, sendImageNotification, userId]);
 
   const handleCancelPhotos = useCallback(() => {
     // Clear all photos and return to connected state
