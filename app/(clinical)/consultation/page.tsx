@@ -40,8 +40,6 @@ export default function ConsultationPage() {
     inputMode,
     typedInput,
     transcription,
-    appendTranscription,
-    appendTranscriptionEnhanced,
     setTranscription,
     setTypedInput,
     generatedNotes,
