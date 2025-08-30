@@ -8,6 +8,7 @@ import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
 import type { ClinicalImage } from '@/src/types/consultation';
+import { resizeImageFile } from '@/src/shared/utils/image';
 
 export const ClinicalImageTab: React.FC = () => {
   const {
@@ -33,41 +34,6 @@ export const ClinicalImageTab: React.FC = () => {
     return images;
   }, [currentSession?.clinicalImages]);
 
-  // Client-side image resizing
-  const resizeImage = useCallback((file: File, maxSize: number = 1024): Promise<Blob> => {
-    return new Promise((resolve) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d')!;
-      const img = new Image();
-
-      img.onload = () => {
-        // Calculate new dimensions
-        let { width, height } = img;
-        if (width > height) {
-          if (width > maxSize) {
-            height = (height * maxSize) / width;
-            width = maxSize;
-          }
-        } else if (height > maxSize) {
-          width = (width * maxSize) / height;
-          height = maxSize;
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-
-        // Draw and resize
-        ctx.drawImage(img, 0, 0, width, height);
-
-        canvas.toBlob((blob) => {
-          resolve(blob!);
-        }, file.type, 0.8); // 80% quality
-      };
-
-      img.src = URL.createObjectURL(file);
-    });
-  }, []);
-
   const handleFileUpload = useCallback(async (file: File) => {
     if (!currentPatientSessionId) {
       setError('No active patient session');
@@ -79,7 +45,7 @@ export const ClinicalImageTab: React.FC = () => {
 
     try {
       // Client-side resize
-      const resizedBlob = await resizeImage(file);
+      const resizedBlob = await resizeImageFile(file, 1024);
 
       // Get presigned URL
       const presignParams = new URLSearchParams({
@@ -139,7 +105,6 @@ export const ClinicalImageTab: React.FC = () => {
     }
   }, [
     currentPatientSessionId,
-    resizeImage,
     addClinicalImage,
     saveClinicalImagesToCurrentSession,
     clinicalImages,
