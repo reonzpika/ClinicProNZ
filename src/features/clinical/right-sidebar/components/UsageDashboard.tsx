@@ -28,7 +28,7 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
 
   const { isSignedIn, userId } = useAuth();
   const { user } = useClerkMetadata();
-  const { mobileV2: _mobileV2 } = useConsultationStores();
+  const {} = useConsultationStores();
   const [usageData, setUsageData] = useState<UsageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);

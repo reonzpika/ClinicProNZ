@@ -23,8 +23,7 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
     createPatientSession = () => null,
     switchToPatientSession = () => {},
     resetConsultation = () => {},
-    // Phase 4: Access mobile device state
-    mobileV2 = { isEnabled: false, token: null, tokenData: null, isConnected: false },
+    // Mobile device state removed in simplified architecture
   } = useConsultationStores();
 
   const { isLargeDesktop } = useResponsive();

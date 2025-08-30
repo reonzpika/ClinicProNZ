@@ -86,8 +86,7 @@ export function TranscriptionControls({
   // debug removed
 
   // Mobile connection status - simplified for new architecture
-  const { mobileV2 = { isEnabled: false, token: null, isConnected: false } } = useConsultationStores();
-  const isMobileConnected = mobileV2.isConnected;
+  const isMobileConnected = false; // Simplified: show QR; connection status handled in consultation page
   const hasMobileDevices = isMobileConnected; // Simplified: just check connection
   const [pendingControl, setPendingControl] = useState<null | 'start' | 'stop'>(null);
   const [controlError, setControlError] = useState<string | null>(null);
