@@ -1,8 +1,9 @@
+'use client';
+
+import { SignUp } from '@clerk/nextjs';
 import { Suspense } from 'react';
 
 function SignUpBox() {
-  'use client';
-  const { SignUp } = require('@clerk/nextjs');
   return (
     <div className="rounded border p-4">
       <SignUp routing="hash" redirectUrl="/consultation" />
