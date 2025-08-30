@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       const authResult = await auth();
       userId = authResult.userId || null;
       userTier = (authResult.sessionClaims as any)?.metadata?.tier || null;
-    } catch (error) {
+    } catch {
       // Auth failed - user is anonymous, which is fine for contact form
     }
 
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Message sent successfully',
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Failed to send message. Please try again.' },
       { status: 500 },
