@@ -380,8 +380,11 @@ export default function ClinicalImagePage() {
               ))}
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <Button onClick={() => cameraFileInputRef.current?.click()} variant="outline" className="flex-1">Add more</Button>
+              {isFeatureEnabled('MOBILE_GALLERY_UPLOADS') && (
+                <Button onClick={() => galleryFileInputRef.current?.click()} variant="outline" className="flex-1">Select from gallery</Button>
+              )}
               <Button onClick={() => {
                 // Cancel: clear queue and return to collect
                 queuedItems.forEach(it => it.previewUrl && URL.revokeObjectURL(it.previewUrl));
