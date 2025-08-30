@@ -1,7 +1,7 @@
 'use client';
 
 import { AlertTriangle, Camera } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
+import { useAuth } from '@clerk/nextjs';
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTranscription';
@@ -11,7 +11,7 @@ import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbl
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
-import { createAuthHeadersForMobile } from '@/src/shared/utils';
+import { createAuthHeadersForFormData } from '@/src/shared/utils';
 
 // Types for mobile image capture
 type CapturedPhoto = {
@@ -71,22 +71,12 @@ function useWakeLock() {
 
 // Main mobile page component
 function MobilePageContent() {
-  const searchParams = useSearchParams();
+  const { userId, isSignedIn } = useAuth();
 
   // Removed consultation stores - no session management needed
 
-  // Token validation state
-  const [tokenState, setTokenState] = useState<{
-    token: string | null;
-    isValidating: boolean;
-    isValid: boolean; // FIXED: Add isValid flag for proper validation tracking
-    error: string | null;
-  }>({
-    token: null,
-    isValidating: false,
-    isValid: false, // FIXED: Add isValid flag
-    error: null,
-  });
+  // Auth-required state
+  const [authError, setAuthError] = useState<string | null>(null);
 
   // Mobile state for UI - extended for camera functionality
   const [mobileState, setMobileState] = useState<'disconnected' | 'connecting' | 'connected' | 'recording' | 'camera' | 'reviewing' | 'uploading' | 'error'>('disconnected');
@@ -110,17 +100,9 @@ function MobilePageContent() {
   const stopRecordingRef = useRef<() => Promise<void> | void>(() => {});
 
   // Simple Ably for real-time sync - no session sync needed
-  const { isConnected, sendTranscript, sendRecordingStatus, sendImageNotification } = useSimpleAbly({
-    tokenId: tokenState.isValid ? tokenState.token : null,
-    onTranscriptReceived: (_transcript: string) => {
-      // Transcript received unexpectedly on mobile (shouldn't happen)
-    },
+  const { isConnected, sendRecordingStatus, sendImageNotification } = useSimpleAbly({
+    userId: isSignedIn ? userId : null,
     onError: (err: string) => {
-      // Treat auth errors as disconnect prompt; suppress noisy logs
-      if (/Authentication failed|Token expired or invalid/i.test(err)) {
-        setTokenState(prev => ({ ...prev, error: 'Token invalid or rotated. Please rescan QR.' }));
-        return;
-      }
       handleError(err);
     },
     isMobile: true,
@@ -149,42 +131,26 @@ function MobilePageContent() {
     startImmediate: true, // ensure immediate recorder session for remote-stop path
     onChunkComplete: async (audioBlob: Blob) => {
       try {
-        // Send audio to Deepgram for transcription
         const formData = new FormData();
         formData.append('audio', audioBlob, 'audio.webm');
-        // No sessionId needed - desktop will append to current session
 
-        // FIXED: Add auth headers using mobile token with null check
-        if (!tokenState.token) {
-          setTokenState(prev => ({ ...prev, error: 'No mobile token available for authentication' }));
+        if (!isSignedIn || !userId) {
+          setAuthError('Not signed in');
           return;
         }
 
-        const authHeaders = createAuthHeadersForMobile(tokenState.token, 'basic');
-
-        const response = await fetch('/api/deepgram/transcribe', {
+        const response = await fetch('/api/deepgram/transcribe?persist=true', {
           method: 'POST',
-          headers: authHeaders,
+          headers: createAuthHeadersForFormData(userId),
           body: formData,
         });
 
         if (!response.ok) {
-          setTokenState(prev => ({ ...prev, error: `Transcription failed: ${response.statusText}` }));
+          setAuthError(`Transcription failed: ${response.statusText}`);
           return;
         }
-
-        const data = await response.json();
-        const { transcript } = data;
-
-        // Send transcript via Ably (no words/paragraphs to minimise message size)
-        if (transcript?.trim()) {
-          const success = sendTranscript(transcript.trim());
-          if (!success) {
-            setTokenState(prev => ({ ...prev, error: 'Failed to send transcription to desktop' }));
-          }
-        }
       } catch (error) {
-        setTokenState(prev => ({ ...prev, error: `Recording error: ${error instanceof Error ? error.message : 'Unknown error'}` }));
+        setAuthError(`Recording error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     },
   });
@@ -196,74 +162,13 @@ function MobilePageContent() {
     stopRecordingRef.current = stopRecording;
   }, [isRecording, startRecording, stopRecording]);
 
-  // Validate token from URL on mount
-  useEffect(() => {
-    const token = searchParams.get('token');
-    if (token) {
-      setTokenState({
-        token,
-        isValidating: true,
-        isValid: false, // FIXED: Start with false until validated
-        error: null,
-      });
-
-      // FIXED: Proper server-side token validation instead of setTimeout
-      const validateToken = async () => {
-        try {
-          // Validate token by calling the simple-token API
-          const response = await fetch('/api/ably/simple-token', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tokenId: token }),
-          });
-
-          if (response.ok) {
-            // Token is valid
-            setTokenState(prev => ({
-              ...prev,
-              isValidating: false,
-              isValid: true,
-              error: null,
-            }));
-          } else {
-            // Token is invalid or expired
-            const errorData = await response.json().catch(() => ({ error: 'Token validation failed' }));
-            setTokenState(prev => ({
-              ...prev,
-              isValidating: false,
-              isValid: false,
-              error: errorData.error || 'Invalid or expired token',
-            }));
-          }
-        } catch (error) {
-          // Network or other error
-          setTokenState(prev => ({
-            ...prev,
-            isValidating: false,
-            isValid: false,
-            error: error instanceof Error ? error.message : 'Token validation failed',
-          }));
-        }
-      };
-
-      validateToken();
-    } else {
-      setTokenState({
-        token: null,
-        isValidating: false,
-        isValid: false, // FIXED: Add isValid flag
-        error: 'No token provided in URL',
-      });
-    }
-  }, [searchParams]);
+  // No token validation; require login
 
   // Update mobile state based on connection and session
   useEffect(() => {
-    if (tokenState.error) {
+    if (authError) {
       setMobileState('error');
-    } else if (tokenState.isValidating) {
-      setMobileState('connecting');
-    } else if (!tokenState.token || !tokenState.isValid) { // FIXED: Check both token and isValid
+    } else if (!isSignedIn || !userId) {
       setMobileState('disconnected');
     } else if (!isConnected) {
       setMobileState('connecting');
@@ -272,7 +177,7 @@ function MobilePageContent() {
     } else {
       setMobileState('connected');
     }
-  }, [tokenState, isConnected, isRecording]); // FIXED: Include all tokenState changes
+  }, [authError, isConnected, isRecording, isSignedIn, userId]);
 
   // Manage wake lock based on recording state
   useEffect(() => {
@@ -484,6 +389,23 @@ function MobilePageContent() {
 
   // state info removed - simplified UI
 
+  // Sign-in required
+  if (!isSignedIn) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle>Sign In Required</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p className="mb-4 text-gray-600">Please sign in to use mobile recording</p>
+            <Button onClick={() => (window.location.href = '/auth/login')} size="lg" className="w-full">Sign In</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   // Render camera component if in camera mode
   if (mobileState === 'camera') {
     return (
@@ -533,8 +455,8 @@ function MobilePageContent() {
           <CardContent className="space-y-6">
             {/* Connection Status - simplified */}
             <div className="text-center">
-              <h3 className="text-lg font-semibold">{(tokenState.token && tokenState.isValid && isConnected) ? 'Ready to Record' : (tokenState.isValidating ? 'Connecting…' : (!tokenState.token || !tokenState.isValid ? 'Disconnected' : (isConnected ? 'Ready to Record' : 'Connecting…')))}</h3>
-              <p className="text-sm text-gray-600">{(tokenState.token && tokenState.isValid && isConnected) ? 'Connected to desktop - ready to record' : (tokenState.isValidating ? 'Validating token…' : 'Please ensure you are connected')}</p>
+              <h3 className="text-lg font-semibold">{isConnected ? 'Ready to Record' : 'Connecting…'}</h3>
+              <p className="text-sm text-gray-600">{isConnected ? 'Connected to desktop - ready to record' : 'Please ensure you are connected'}</p>
             </div>
 
             {/* Error Display */}
@@ -543,13 +465,13 @@ function MobilePageContent() {
                 <AlertTriangle className="size-4" />
                 <div>
                   <div className="font-medium">Connection Error</div>
-                  <div className="text-sm">{tokenState.error}</div>
+                  <div className="text-sm">{authError}</div>
                 </div>
               </Alert>
             )}
 
             {/* Recording Controls - simplified */}
-            {(tokenState.token && tokenState.isValid && isConnected) && (
+            {isConnected && (
               <div className="space-y-3">
                 <Button
                   onClick={isRecording ? handleStopRecording : handleStartRecording}
