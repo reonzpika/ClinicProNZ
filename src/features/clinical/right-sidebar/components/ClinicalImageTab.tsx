@@ -39,44 +39,10 @@ export const ClinicalImageTab: React.FC = () => {
     return images;
   }, [currentSession?.clinicalImages]);
 
-  // Function to fetch mobile images from API
-  const fetchAndDisplayMobileImages = useCallback(async (mobileTokenId: string) => {
-    setIsFetchingMobileImages(true);
-
-    try {
-      const response = await fetch(`/api/mobile/images?tokenId=${encodeURIComponent(mobileTokenId)}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch mobile images: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      const { images } = data;
-
-      if (images && images.length > 0) {
-        // Convert mobile images to ClinicalImage format
-        const mobileImagesFormatted: ClinicalImage[] = images.map((img: any) => ({
-          id: img.id || img.key.split('/').pop()?.split('.')[0] || Math.random().toString(36).substr(2, 9),
-          key: img.key,
-          filename: img.filename,
-          mimeType: img.mimeType,
-          uploadedAt: img.uploadedAt,
-          isMobileImage: true, // Flag to distinguish mobile images
-          mobileTokenId: img.mobileTokenId,
-        }));
-
-        // Add to mobile images state (avoid duplicates)
-        setMobileImages((prevImages) => {
-          const existingKeys = new Set(prevImages.map(img => img.key));
-          const newImages = mobileImagesFormatted.filter(img => !existingKeys.has(img.key));
-          return [...prevImages, ...newImages];
-        });
-      }
-    } catch (err) {
-      console.error('Failed to fetch mobile images:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch mobile images');
-    } finally {
-      setIsFetchingMobileImages(false);
-    }
+  // Fetch mobile images disabled in simplified architecture (handled via direct uploads)
+  const fetchAndDisplayMobileImages = useCallback(async (_mobileTokenId: string) => {
+    setIsFetchingMobileImages(false);
+    return;
   }, []);
 
   // Ably listener for mobile image notifications (desktop only)
