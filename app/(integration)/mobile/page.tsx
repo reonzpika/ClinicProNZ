@@ -90,7 +90,7 @@ function MobilePageContent() {
   const { isSupported: wakeLockSupported, requestWakeLock, releaseWakeLock } = useWakeLock();
 
   const handleError = useCallback((error: string) => {
-    setTokenState(prev => ({ ...prev, error }));
+    setAuthError(error);
     setMobileState('error');
   }, []);
 
@@ -119,7 +119,7 @@ function MobilePageContent() {
           sendRecordingStatus(false);
         }
       } catch (e) {
-        setTokenState(prev => ({ ...prev, error: `Control error: ${e instanceof Error ? e.message : 'Unknown error'}` }));
+        setAuthError(`Control error: ${e instanceof Error ? e.message : 'Unknown error'}`);
       }
     },
   });
@@ -263,8 +263,8 @@ function MobilePageContent() {
   }, []);
 
   const uploadSinglePhoto = useCallback(async (photo: CapturedPhoto): Promise<void> => {
-    if (!tokenState.token) {
-      throw new Error('No mobile token available');
+    if (!userId) {
+      throw new Error('Not signed in');
     }
 
     // Update photo status to uploading
@@ -280,7 +280,7 @@ function MobilePageContent() {
       const presignParams = new URLSearchParams({
         filename: photo.filename,
         mimeType: photo.blob.type,
-        mobileTokenId: tokenState.token,
+        // Optionally include patientSessionId if available from server
       });
 
       const presignResponse = await fetch(`/api/uploads/presign?${presignParams}`);
@@ -360,8 +360,8 @@ function MobilePageContent() {
 
       // Send notification to desktop about new images
       const uploadedPhotos = capturedPhotos.filter(p => p.status === 'uploaded');
-      if (uploadedPhotos.length > 0 && tokenState.token) {
-        sendImageNotification(tokenState.token, uploadedPhotos.length);
+      if (uploadedPhotos.length > 0 && userId) {
+        // Best-effort: can signal desktop images updated using Ably if needed later
       }
     } finally {
       setIsUploadingBatch(false);
