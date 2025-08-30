@@ -209,16 +209,7 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
                   </span>
                 )}
 
-                {/* Mobile Device Status - Only show when connected */}
-                {mobileV2.isEnabled && mobileV2.isConnected && (
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-400">•</span>
-                    <Smartphone className="size-3" />
-                    <span className="text-xs text-green-600">
-                      mobile connected
-                    </span>
-                  </div>
-                )}
+                {/* Mobile Device Status removed in simplified architecture */}
               </div>
             )}
           </div>

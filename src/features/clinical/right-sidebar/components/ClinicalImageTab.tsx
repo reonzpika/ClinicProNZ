@@ -22,7 +22,7 @@ export const ClinicalImageTab: React.FC = () => {
     consultationNotes,
     setConsultationNotes,
   } = useConsultationStores();
-  const { mobileV2 } = useConsultationStores();
+  const {} = useConsultationStores();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [analyzingImages, setAnalyzingImages] = useState<Set<string>>(new Set());
@@ -80,16 +80,7 @@ export const ClinicalImageTab: React.FC = () => {
   }, []);
 
   // Ably listener for mobile image notifications (desktop only)
-  useSimpleAbly({
-    tokenId: mobileV2?.token || null,
-    isMobile: false,
-    onMobileImagesUploaded: (mobileTokenId: string, _imageCount: number, _timestamp: string) => {
-      fetchAndDisplayMobileImages(mobileTokenId);
-    },
-    onError: (err: string) => {
-      console.error('Ably error in ClinicalImageTab:', err);
-    },
-  });
+  // Desktop image notifications can be re-wired later to user channel if needed
 
   const handleFileUpload = useCallback(async (file: File) => {
     if (!currentPatientSessionId) {
