@@ -1,7 +1,7 @@
 'use client';
 
 import { AlertTriangle, Camera, RotateCcw, Trash2, Upload, X } from 'lucide-react';
-import React, { useCallback, useEffect, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
@@ -57,7 +57,7 @@ export const PhotoReview: React.FC<PhotoReviewProps> = ({
 
     // Revoke and remove URLs for photos no longer present
     for (const [id, url] of Array.from(next.entries())) {
-      if (!photos.some((p) => p.id === id)) {
+      if (!photos.some(p => p.id === id)) {
         URL.revokeObjectURL(url);
         next.delete(id);
       }
@@ -70,7 +70,7 @@ export const PhotoReview: React.FC<PhotoReviewProps> = ({
   // Cleanup on unmount: revoke any remaining object URLs
   useEffect(() => {
     return () => {
-      previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      previewUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
       previewUrlsRef.current.clear();
     };
   }, []);

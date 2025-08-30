@@ -13,4 +13,3 @@ export const mailQueue = pgTable('mail_queue', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   sentAt: timestamp('sent_at', { withTimezone: true }),
 });
-
