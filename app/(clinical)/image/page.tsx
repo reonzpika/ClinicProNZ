@@ -140,68 +140,8 @@ export default function ClinicalImagePage() {
       ]);
       setMobileStep('review');
       if (event.target) {
- event.target.value = '';
-}
-
-// Grouped sections by sessionId for clinical-images and legacy consultations
-export function ImageSectionsGrid({
-  images,
-  onAnalyze,
-  onEnlarge,
-  onDownload,
-  onDelete,
-  formatFileSize,
-}: {
-  images: ServerImage[];
-  onAnalyze: (img: ServerImage) => void;
-  onEnlarge: (img: ServerImage) => void;
-  onDownload: (img: ServerImage) => void;
-  onDelete: (imageKey: string) => void;
-  formatFileSize: (bytes: number) => string;
-}) {
-  // Partition images
-  const clinical = images.filter(i => i.source === 'clinical');
-  const noSession = clinical.filter(i => !i.sessionId);
-  const bySession = clinical.filter(i => i.sessionId).reduce<Record<string, ServerImage[]>>((acc, img) => {
-    const key = img.sessionId as string;
-    if (!acc[key]) { acc[key] = []; }
-    acc[key].push(img);
-    return acc;
-  }, {});
-  const legacyConsultations = images.filter(i => i.source === 'consultation');
-
-  const Section = ({ title, items }: { title: string; items: ServerImage[] }) => (
-    items.length === 0 ? null : (
-      <div className="mb-6">
-        <div className="mb-2 text-sm font-semibold text-slate-700">{title}</div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-          {items.map(image => (
-            <ServerImageCard
-              key={image.id}
-              image={image}
-              onAnalyze={() => onAnalyze(image)}
-              onEnlarge={() => onEnlarge(image)}
-              onDownload={() => onDownload(image)}
-              onDelete={onDelete}
-              formatFileSize={formatFileSize}
-            />
-          ))}
-        </div>
-      </div>
-    )
-  );
-
-  return (
-    <div className="space-y-6">
-      <Section title="This session" items={bySession[Object.keys(bySession)[0]] || []} />
-      {Object.entries(bySession).slice(1).map(([sid, items]) => (
-        <Section key={sid} title={`Other session ${sid}`} items={items} />
-      ))}
-      <Section title="No session" items={noSession} />
-      <Section title="Legacy consultations" items={legacyConsultations} />
-    </div>
-  );
-}
+        event.target.value = '';
+      }
       return;
     }
 
@@ -214,8 +154,8 @@ export function ImageSectionsGrid({
     } finally {
       setUploadingFileCount(0);
       if (event.target) {
- event.target.value = '';
-}
+        event.target.value = '';
+      }
     }
   };
 
@@ -1153,6 +1093,66 @@ function ImageEnlargeModal({
           })()}
         </p>
       </div>
+    </div>
+  );
+}
+
+// Grouped sections by sessionId for clinical-images and legacy consultations
+function ImageSectionsGrid({
+  images,
+  onAnalyze,
+  onEnlarge,
+  onDownload,
+  onDelete,
+  formatFileSize,
+}: {
+  images: ServerImage[];
+  onAnalyze: (img: ServerImage) => void;
+  onEnlarge: (img: ServerImage) => void;
+  onDownload: (img: ServerImage) => void;
+  onDelete: (imageKey: string) => void;
+  formatFileSize: (bytes: number) => string;
+}) {
+  // Partition images
+  const clinical = images.filter(i => i.source === 'clinical');
+  const noSession = clinical.filter(i => !i.sessionId);
+  const bySession = clinical.filter(i => i.sessionId).reduce<Record<string, ServerImage[]>>((acc, img) => {
+    const key = img.sessionId as string;
+    if (!acc[key]) { acc[key] = []; }
+    acc[key].push(img);
+    return acc;
+  }, {});
+  const legacyConsultations = images.filter(i => i.source === 'consultation');
+
+  const Section = ({ title, items }: { title: string; items: ServerImage[] }) => (
+    items.length === 0 ? null : (
+      <div className="mb-6">
+        <div className="mb-2 text-sm font-semibold text-slate-700">{title}</div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          {items.map(image => (
+            <ServerImageCard
+              key={image.id}
+              image={image}
+              onAnalyze={() => onAnalyze(image)}
+              onEnlarge={() => onEnlarge(image)}
+              onDownload={() => onDownload(image)}
+              onDelete={onDelete}
+              formatFileSize={formatFileSize}
+            />
+          ))}
+        </div>
+      </div>
+    )
+  );
+
+  return (
+    <div className="space-y-6">
+      <Section title="This session" items={bySession[Object.keys(bySession)[0]] || []} />
+      {Object.entries(bySession).slice(1).map(([sid, items]) => (
+        <Section key={sid} title={`Other session ${sid}`} items={items} />
+      ))}
+      <Section title="No session" items={noSession} />
+      <Section title="Legacy consultations" items={legacyConsultations} />
     </div>
   );
 }
