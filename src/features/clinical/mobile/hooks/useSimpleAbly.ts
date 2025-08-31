@@ -148,23 +148,13 @@ export const useSimpleAbly = ({
       try {
         // Use authCallback and connect explicitly after wiring listeners to avoid races
         const ably = new Ably.Realtime({
-          authCallback: async (_tokenParams, callback) => {
-            try {
-              const response = await fetch('/api/ably/user-token', { method: 'POST' });
-              if (!response.ok) {
-                throw new Error(`Failed to get Ably token: ${response.statusText}`);
-              }
-              const tokenRequest = await response.json();
-              callback(null, tokenRequest);
-            } catch (error) {
-              callback(error as string, null);
-            }
-          },
+          clientId: userId,
+          authUrl: '/api/ably/user-token',
           autoConnect: false,
-          // Add proper error handling and retry configuration
-          disconnectedRetryTimeout: 15000,
-          suspendedRetryTimeout: 30000,
-        });
+          transports: ['web_socket', 'xhr_streaming', 'xhr_polling'] as any,
+          disconnectedRetryTimeout: 10000,
+          suspendedRetryTimeout: 20000,
+        } as any);
 
         // Check if this connection is still current
         if (!isCurrentConnection) {

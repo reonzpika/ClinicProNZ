@@ -14,6 +14,7 @@ export async function POST() {
     }
 
     const ably = new Ably.Rest({ key: process.env.ABLY_API_KEY });
+    // Return token request for authUrl; Ably accepts either JSON of TokenRequest or a signed token
     const tokenRequest = await ably.auth.createTokenRequest({
       clientId: userId,
       capability: {
