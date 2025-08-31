@@ -114,18 +114,23 @@ export default function ConsultationPage() {
       }
     },
     isMobile: false,
-    onTranscriptionsUpdated: (signalledSessionId?: string) => {
+    onTranscriptionsUpdated: async (signalledSessionId?: string) => {
       const activeSessionId = signalledSessionId || currentPatientSessionId;
       if (!activeSessionId) { return; }
-      // Immediate invalidate and hydrate: no debounce
       try {
-        queryClientRef.current.invalidateQueries({ queryKey: ['consultation', 'sessions'] });
-        queryClientRef.current.invalidateQueries({ queryKey: ['consultation', 'session', activeSessionId] });
+        await Promise.all([
+          queryClientRef.current.refetchQueries({ queryKey: ['consultation', 'sessions'] }),
+          queryClientRef.current.refetchQueries({ queryKey: ['consultation', 'session', activeSessionId] }),
+        ]);
       } catch {}
 
       try {
-        const sessions: any[] | undefined = queryClientRef.current.getQueryData(['consultation', 'sessions']) as any;
-        const session = Array.isArray(sessions) ? sessions.find((s: any) => s.id === activeSessionId) : null;
+        // Prefer the specific session cache; fallback to list
+        let session: any = queryClientRef.current.getQueryData(['consultation', 'session', activeSessionId]);
+        if (!session) {
+          const sessions: any[] | undefined = queryClientRef.current.getQueryData(['consultation', 'sessions']) as any;
+          session = Array.isArray(sessions) ? sessions.find((s: any) => s.id === activeSessionId) : null;
+        }
         if (session) {
           let chunks: any[] = [];
           try {
@@ -133,14 +138,12 @@ export default function ConsultationPage() {
           } catch { chunks = []; }
           if (Array.isArray(chunks) && chunks.length > 0) {
             const full = chunks.map((t: any) => (t?.text || '').trim()).join(' ').trim();
-            if (full) {
-              setTranscription(full, false, undefined, undefined);
-            }
+            setTranscription(full || '', false, undefined, undefined);
           }
         }
       } catch {}
 
-      try { console.info('[Ably] transcriptions_updated -> immediate invalidate + hydrate'); } catch {}
+      try { console.info('[Ably] transcriptions_updated -> refetch + hydrate'); } catch {}
     },
   });
 
