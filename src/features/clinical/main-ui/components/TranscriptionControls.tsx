@@ -258,9 +258,7 @@ export function TranscriptionControls({
               <Mic size={12} className="text-slate-600" />
               <span className="text-xs font-medium text-slate-700">Audio Transcription</span>
             </div>
-            {isMobileConnected && (
-              <span className="text-xs text-green-600">📱 Mobile Synced</span>
-            )}
+            {/* Simplified UI: no connected badge */}
           </div>
           <div className="flex items-center gap-2">
             {hasTranscript && (
