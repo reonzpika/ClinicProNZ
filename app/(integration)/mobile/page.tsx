@@ -76,7 +76,7 @@ function MobilePageContent() {
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
   const uploadImages = useUploadImages();
   const isUploading = uploadImages.isPending;
-  const [uploadingFileCount, setUploadingFileCount] = useState(0);
+  // removed uploadingFileCount (unused)
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
   // Wake lock functionality
@@ -480,7 +480,6 @@ function MobilePageContent() {
                   disabled={queuedItems.length === 0 || isUploading}
                   onClick={async () => {
                     const filesToUpload = queuedItems.map(it => it.file);
-                    setUploadingFileCount(filesToUpload.length);
                     try {
                       await uploadImages.mutateAsync({ files: filesToUpload, patientSessionId: currentSessionId || undefined });
                       // Ably notify desktop to refresh
@@ -492,7 +491,6 @@ function MobilePageContent() {
                     } catch (err) {
                       console.error('Upload failed:', err);
                     } finally {
-                      setUploadingFileCount(0);
                     }
                   }}
                   type="button"
