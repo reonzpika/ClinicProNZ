@@ -15,5 +15,27 @@ export type DocumentToIngest = {
   title: string;
   content: string;
   source: string;
-  sourceType: 'bpac' | 'moh' | 'manual';
+  sourceType: 'bpac' | 'moh' | 'manual' | 'healthify';
+
+  // Enhancement tracking
+  enhancementStatus?: 'basic' | 'enhanced' | 'failed';
+  basicContent?: string;
+  lastEnhanced?: Date;
+
+  // Optional structured fields
+  sections?: Record<string, string>; // { "symptoms": "...", "treatment": "..." }
+  overallSummary?: string;
+  sectionSummaries?: Record<string, string[]>; // { "symptoms": ["point1", "point2"] }
+
+  // Optional metadata
+  author?: string;
+  lastUpdated?: Date;
+  categories?: string[];
+  contentType?: string;
+  medicalSpecialty?: string;
+  targetAudience?: string;
+
+  // Optional links
+  internalLinks?: Array<{ text: string; url: string }>;
+  externalCitations?: string[];
 };

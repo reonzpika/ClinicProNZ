@@ -185,7 +185,6 @@ export default function ConsultationPage() {
     }
   }, []);
 
-
   // Ensure there is always an active patient session; retry on relevant changes
   const hasEnsuredSessionRef = useRef(false);
   const isEnsuringSessionRef = useRef(false);

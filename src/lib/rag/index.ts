@@ -65,7 +65,9 @@ export async function searchSimilarDocuments(
  * Ingest a document into the RAG system
  */
 export async function ingestDocument(document: DocumentToIngest): Promise<void> {
-  const embedding = await createEmbedding(document.content);
+  // Use overall summary for embedding if available, otherwise basic content or full content
+  const textToEmbed = document.overallSummary || document.basicContent || document.content;
+  const embedding = await createEmbedding(textToEmbed);
 
   await db.insert(ragDocuments).values({
     title: document.title,
@@ -73,6 +75,28 @@ export async function ingestDocument(document: DocumentToIngest): Promise<void> 
     source: document.source,
     sourceType: document.sourceType,
     embedding,
+
+    // Enhancement tracking
+    enhancementStatus: document.enhancementStatus || 'basic',
+    basicContent: document.basicContent || null,
+    lastEnhanced: document.lastEnhanced || null,
+
+    // Structured content
+    sections: document.sections ? JSON.stringify(document.sections) : null,
+    overallSummary: document.overallSummary || null,
+    sectionSummaries: document.sectionSummaries ? JSON.stringify(document.sectionSummaries) : null,
+
+    // Metadata
+    author: document.author || null,
+    lastUpdated: document.lastUpdated || null,
+    categories: document.categories ? JSON.stringify(document.categories) : null,
+    contentType: document.contentType || null,
+    medicalSpecialty: document.medicalSpecialty || null,
+    targetAudience: document.targetAudience || null,
+
+    // Links
+    internalLinks: document.internalLinks ? JSON.stringify(document.internalLinks) : null,
+    externalCitations: document.externalCitations ? JSON.stringify(document.externalCitations) : null,
   });
 }
 

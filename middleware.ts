@@ -86,6 +86,14 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
+  // Protect /api/search routes - require sign-in only
+  if (req.nextUrl.pathname.startsWith('/api/search')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return returnUnauthorized();
+    }
+  }
+
   // Allow access to /api/mobile routes - authentication is handled within the individual route handlers
 
   // Protect /api/user routes - require sign-in only
@@ -227,6 +235,7 @@ export const config = {
     '/api/deepgram/:path*',
     '/api/consultation/:path*',
     '/api/tools/:path*',
+    '/api/search/:path*',
     '/templates/:path*',
     '/consultation/:path*',
     '/billing/:path*',
@@ -234,5 +243,6 @@ export const config = {
     '/dashboard/:path*',
     '/settings/:path*',
     '/mobile/:path*',
+    '/search/:path*',
   ],
 };

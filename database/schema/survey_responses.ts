@@ -13,4 +13,5 @@ export const surveyResponses = pgTable('survey_responses', {
   goldLead: boolean('gold_lead').default(false).notNull(),
   rawPayload: jsonb('raw_payload').notNull(),
   ipAddress: text('ip_address'),
+  status: text('status').default('unread'), // Missing column from database
 });
