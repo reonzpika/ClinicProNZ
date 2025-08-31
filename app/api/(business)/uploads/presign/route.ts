@@ -29,12 +29,10 @@ export async function GET(req: NextRequest) {
     const filename = req.nextUrl.searchParams.get('filename') || 'image.jpg';
     const mimeType = req.nextUrl.searchParams.get('mimeType') || 'image/jpeg';
     const patientSessionId = req.nextUrl.searchParams.get('patientSessionId');
-    const mobileTokenId = req.nextUrl.searchParams.get('mobileTokenId');
+    const mobileTokenId = null; // deprecated
 
     // Require either patient session ID or mobile token ID
-    if (!patientSessionId && !mobileTokenId) {
-      return NextResponse.json({ error: 'Either patientSessionId or mobileTokenId is required' }, { status: 400 });
-    }
+    // Patient session ID preferred; mobile token deprecated
 
     // Validate file type
     if (!mimeType.startsWith('image/')) {
@@ -47,13 +45,7 @@ export async function GET(req: NextRequest) {
     const uniqueFilename = `${timestamp}-${uuidv4()}.${fileExtension}`;
 
     let key: string;
-    if (patientSessionId) {
-      // Traditional consultation image path
-      key = `consultations/${patientSessionId}/${uniqueFilename}`;
-    } else {
-      // Mobile upload path using token ID
-      key = `mobile-uploads/${mobileTokenId}/${uniqueFilename}`;
-    }
+    key = `consultations/${patientSessionId || 'standalone'}/${uniqueFilename}`;
 
     // Create presigned URL for PUT operation
     const command = new PutObjectCommand({
@@ -63,9 +55,8 @@ export async function GET(req: NextRequest) {
       // Temporarily remove ServerSideEncryption to test
       Metadata: {
         ...(patientSessionId && { 'patient-session-id': patientSessionId }),
-        ...(mobileTokenId && { 'mobile-token-id': mobileTokenId }),
-        'upload-type': patientSessionId ? 'consultation' : 'mobile',
-        'uploaded-by': userId || 'mobile-session',
+        'upload-type': 'consultation',
+        'uploaded-by': userId,
         'original-filename': filename,
         'upload-timestamp': timestamp.toString(),
       },

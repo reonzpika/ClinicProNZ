@@ -39,10 +39,6 @@ export const ClinicalImageTab: React.FC = () => {
   }, [currentSession?.clinicalImages]);
 
   // Fetch mobile images disabled in simplified architecture (handled via direct uploads)
-  const fetchAndDisplayMobileImages = useCallback(async (_mobileTokenId: string) => {
-    setIsFetchingMobileImages(false);
-    return;
-  }, []);
 
   // Ably listener for mobile image notifications (desktop only)
   // Desktop image notifications can be re-wired later to user channel if needed
