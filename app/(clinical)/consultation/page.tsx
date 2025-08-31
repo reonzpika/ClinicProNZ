@@ -98,7 +98,7 @@ export default function ConsultationPage() {
 
   // Simple Ably sync implementation - always connected when token exists (moved before switchToPatientSession)
   const queryClientRef = useRef(queryClient);
-  const { sendRecordingControl } = useSimpleAbly({
+  const { sendRecordingControl, sendSessionContext } = useSimpleAbly({
     userId: userId ?? null,
     onRecordingStatusChanged: (isRecording: boolean) => setMobileIsRecording(isRecording),
     onError: handleError,
@@ -169,6 +169,8 @@ export default function ConsultationPage() {
 
     // Now perform the actual session switch
     originalSwitchToPatientSession(sessionId, onSwitch);
+    // Publish session context to mobile for session-aware image uploads
+    try { sendSessionContext?.(sessionId || null); } catch {}
   }, [isRecording, mobileIsRecording, stopRecording, sendRecordingControl, originalSwitchToPatientSession]);
 
   useEffect(() => {

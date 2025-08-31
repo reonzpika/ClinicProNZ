@@ -5,28 +5,16 @@ import { useAuth } from '@clerk/nextjs';
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTranscription';
-import { PhotoReview } from '@/src/features/clinical/mobile/components/PhotoReview';
-import { WebRTCCamera } from '@/src/features/clinical/mobile/components/WebRTCCamera';
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { createAuthHeadersForFormData } from '@/src/shared/utils';
+import { useUploadImages } from '@/src/hooks/useImageQueries';
+import { isFeatureEnabled } from '@/src/shared/utils/launch-config';
 
-// Types for mobile image capture
-type CapturedPhoto = {
-  id: string;
-  blob: Blob;
-  timestamp: string;
-  filename: string;
-  status: 'captured' | 'uploading' | 'uploaded' | 'failed';
-};
-
-type UploadProgress = {
-  photoId: string;
-  progress: number;
-  error?: string;
-};
+// Types for native mobile capture queue
+type QueuedItem = { id: string; file: File; previewUrl: string };
 
 // Custom hook for screen wake lock
 function useWakeLock() {
@@ -81,10 +69,15 @@ function MobilePageContent() {
   // Mobile state for UI - extended for camera functionality
   const [mobileState, setMobileState] = useState<'disconnected' | 'connecting' | 'connected' | 'recording' | 'camera' | 'reviewing' | 'uploading' | 'error'>('disconnected');
 
-  // Photo capture state management
-  const [capturedPhotos, setCapturedPhotos] = useState<CapturedPhoto[]>([]);
-  const [uploadProgress, setUploadProgress] = useState<UploadProgress[]>([]);
-  const [isUploadingBatch, setIsUploadingBatch] = useState(false);
+  // Native capture state (parity with /image)
+  const [mobileStep, setMobileStep] = useState<'collect' | 'review'>('collect');
+  const [queuedItems, setQueuedItems] = useState<QueuedItem[]>([]);
+  const cameraFileInputRef = useRef<HTMLInputElement>(null);
+  const galleryFileInputRef = useRef<HTMLInputElement>(null);
+  const uploadImages = useUploadImages();
+  const isUploading = uploadImages.isPending;
+  const [uploadingFileCount, setUploadingFileCount] = useState(0);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
   // Wake lock functionality
   const { isSupported: wakeLockSupported, requestWakeLock, releaseWakeLock } = useWakeLock();
@@ -106,6 +99,9 @@ function MobilePageContent() {
       handleError(err);
     },
     isMobile: true,
+    onSessionContextChanged: (sessionId: string | null) => {
+      setCurrentSessionId(sessionId);
+    },
     onControlCommand: async (action: 'start' | 'stop') => {
       try {
         if (action === 'start' && !isRecordingRef.current) {
@@ -411,47 +407,107 @@ function MobilePageContent() {
     );
   }
 
-  // Render camera component if in camera mode
-  if (mobileState === 'camera') {
-    return (
-      <WebRTCCamera
-        onCapture={handleCameraCapture}
-        onClose={handleCameraClose}
-        maxImageSize={1024}
-      />
-    );
-  }
-
-  // Render photo review component if in reviewing mode
-  if (mobileState === 'reviewing') {
-    return (
-      <PhotoReview
-        photos={capturedPhotos}
-        onDeletePhoto={handleDeletePhoto}
-        onRetakePhoto={handleRetakePhoto}
-        onUploadAll={handleUploadAll}
-        onCancel={handleCancelPhotos}
-        uploadProgress={uploadProgress}
-        isUploading={isUploadingBatch}
-      />
-    );
-  }
+  // Removed WebRTC camera/review components in favour of native capture flow
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
       <div className="flex-1 p-4">
-        {/* Always-visible camera CTA */}
-        <div className="mx-auto mb-4 max-w-md">
-          <Button
-            onClick={handleCameraMode}
-            size="lg"
-            className="w-full"
-            type="button"
-          >
-            <Camera className="mr-2 size-5" />
-            Capture Clinical Images
-          </Button>
+        {/* Native capture controls (parity with /image) */}
+        <div className="mx-auto mb-4 max-w-md space-y-3">
+          {mobileStep === 'collect' && (
+            <>
+              <Button onClick={() => cameraFileInputRef.current?.click()} size="lg" className="w-full" type="button">
+                <Camera className="mr-2 size-5" />
+                Capture with camera
+              </Button>
+              {isFeatureEnabled('MOBILE_GALLERY_UPLOADS') && (
+                <Button onClick={() => galleryFileInputRef.current?.click()} size="lg" variant="outline" className="w-full" type="button">
+                  Upload from gallery
+                </Button>
+              )}
+              {queuedItems.length > 0 && (
+                <Card>
+                  <CardContent className="p-4">
+                    <p className="text-sm text-gray-600">{queuedItems.length} photo{queuedItems.length === 1 ? '' : 's'} selected</p>
+                    <Button onClick={() => setMobileStep('review')} variant="outline" className="mt-2 w-full">Review & upload</Button>
+                  </CardContent>
+                </Card>
+              )}
+            </>
+          )}
+
+          {mobileStep === 'review' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-3">
+                {queuedItems.map(item => (
+                  <div key={item.id} className="relative aspect-square overflow-hidden rounded-lg border">
+                    {item.previewUrl
+                      ? <img src={item.previewUrl} alt={item.file.name} className="size-full object-cover" />
+                      : <div className="flex size-full items-center justify-center text-xs text-gray-500">Loading...</div>}
+                    <button
+                      onClick={() => {
+                        URL.revokeObjectURL(item.previewUrl);
+                        setQueuedItems(prev => prev.filter(it => it.id !== item.id));
+                      }}
+                      className="absolute right-2 top-2 rounded bg-white/80 px-2 py-1 text-xs text-red-600"
+                      type="button"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <Button onClick={() => cameraFileInputRef.current?.click()} variant="outline" className="flex-1" type="button">Take more</Button>
+                {isFeatureEnabled('MOBILE_GALLERY_UPLOADS') && (
+                  <Button onClick={() => galleryFileInputRef.current?.click()} variant="outline" className="flex-1" type="button">From gallery</Button>
+                )}
+                <Button
+                  onClick={() => {
+                    queuedItems.forEach(it => it.previewUrl && URL.revokeObjectURL(it.previewUrl));
+                    setQueuedItems([]);
+                    setMobileStep('collect');
+                  }}
+                  variant="ghost"
+                  className="flex-1"
+                  type="button"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1"
+                  disabled={queuedItems.length === 0 || isUploading}
+                  onClick={async () => {
+                    const filesToUpload = queuedItems.map(it => it.file);
+                    setUploadingFileCount(filesToUpload.length);
+                    try {
+                      await uploadImages.mutateAsync({ files: filesToUpload, patientSessionId: currentSessionId || undefined });
+                      // Ably notify desktop to refresh
+                      try { sendImageNotification(undefined, filesToUpload.length, currentSessionId || undefined); } catch {}
+                      // Clear queue and return
+                      queuedItems.forEach(it => it.previewUrl && URL.revokeObjectURL(it.previewUrl));
+                      setQueuedItems([]);
+                      setMobileStep('collect');
+                    } catch (err) {
+                      console.error('Upload failed:', err);
+                    } finally {
+                      setUploadingFileCount(0);
+                    }
+                  }}
+                  type="button"
+                >
+                  {isUploading ? 'Uploading...' : `Upload ${queuedItems.length} photo${queuedItems.length === 1 ? '' : 's'}`}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
+        {/* Hidden File Inputs for Mobile */}
+        <input type="file" ref={cameraFileInputRef} onChange={handleFileSelect} accept="image/*" capture="environment" multiple className="hidden" />
+        {isFeatureEnabled('MOBILE_GALLERY_UPLOADS') && (
+          <input type="file" ref={galleryFileInputRef} onChange={handleFileSelect} multiple accept="image/*" className="hidden" />
+        )}
         <Card className="mx-auto max-w-md">
           <CardHeader className="text-center">
             <CardTitle>Mobile Recording</CardTitle>

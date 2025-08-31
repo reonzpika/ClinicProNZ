@@ -58,10 +58,13 @@ export function useUploadImage() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (file: File): Promise<void> => {
+    mutationFn: async (input: File | { file: File; patientSessionId?: string }): Promise<void> => {
       if (!userId) {
         throw new Error('User not authenticated');
       }
+
+      const file = (input instanceof File) ? input : input.file;
+      const patientSessionId = (input instanceof File) ? undefined : input.patientSessionId;
 
       // Resize on client before uploading (keeps original MIME type)
       const resizedBlob = await resizeImageFile(file, 1024);
@@ -70,6 +73,7 @@ export function useUploadImage() {
       const presignParams = new URLSearchParams({
         filename: file.name,
         mimeType: file.type,
+        ...(patientSessionId ? { patientSessionId } : {}),
       });
 
       const presignResponse = await fetch(`/api/uploads/presign?${presignParams}`, {
@@ -117,13 +121,15 @@ export function useUploadImages() {
   const uploadImage = useUploadImage();
 
   return useMutation({
-    mutationFn: async (files: File[]): Promise<void> => {
+    mutationFn: async (input: { files: File[]; patientSessionId?: string } | File[]): Promise<void> => {
+      const files = Array.isArray(input) ? input : input.files;
+      const patientSessionId = Array.isArray(input) ? undefined : input.patientSessionId;
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         if (!file) {
           throw new Error(`File at index ${i} is undefined`);
         }
-        await uploadImage.mutateAsync(file);
+        await uploadImage.mutateAsync(patientSessionId ? { file, patientSessionId } : file);
       }
     },
   });

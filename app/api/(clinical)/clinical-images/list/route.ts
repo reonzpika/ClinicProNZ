@@ -135,6 +135,9 @@ export async function GET(req: NextRequest) {
           .map((obj) => {
             const filename = obj.Key!.split('/').pop() || 'unknown';
             const fileExtension = filename.split('.').pop()?.toLowerCase() || '';
+            const segments = obj.Key!.split('/');
+            // Path pattern: clinical-images/{userId}/{optionalSessionId}/{file}
+            const sessionId = (segments.length >= 4) ? segments[2] : undefined;
 
             // Determine MIME type from extension
             let mimeType = 'image/jpeg';
@@ -154,6 +157,7 @@ export async function GET(req: NextRequest) {
               size: obj.Size!,
               uploadedAt: obj.LastModified?.toISOString() || new Date().toISOString(),
               source: 'clinical',
+              ...(sessionId ? { sessionId } : {}),
             };
           });
 
