@@ -171,17 +171,19 @@ export async function POST(req: NextRequest) {
       .set({ transcriptions: JSON.stringify(updatedTranscriptions), updatedAt: new Date() })
       .where(and(eq(patientSessions.id, currentSessionId), eq(patientSessions.userId, userId)));
 
-    // Signal desktop via Ably (best-effort)
+    // Signal desktop via Ably (best-effort). Ensure single publish per chunk with helpful logs.
     try {
       if (process.env.ABLY_API_KEY) {
         const ably = new Ably.Rest({ key: process.env.ABLY_API_KEY });
         const channel = ably.channels.get(`user:${userId}`);
-        await channel.publish('transcriptions_updated', {
+        const payload = {
           type: 'transcriptions_updated',
           sessionId: currentSessionId,
           chunkId,
           timestamp: Date.now(),
-        });
+        } as any;
+        await channel.publish('transcriptions_updated', payload);
+        try { console.info('[Transcribe] Published transcriptions_updated', { sessionId: currentSessionId, chunkId }); } catch {}
       }
     } catch {}
 

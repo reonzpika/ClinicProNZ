@@ -106,13 +106,26 @@ export default function ConsultationPage() {
     onConnectionStatusChanged: () => {},
     isMobile: false,
     onTranscriptionsUpdated: () => {
-      if (currentPatientSessionId) {
-        // Invalidate individual session (if used anywhere)
-        queryClientRef.current.invalidateQueries({ queryKey: ['consultation', 'session', currentPatientSessionId] }).catch(() => {});
-        // Invalidate the sessions list to trigger hydration effect
-        queryClientRef.current.invalidateQueries({ queryKey: ['consultation', 'sessions'] }).catch(() => {});
-        try { console.info('[Ably] transcriptions_updated -> invalidated sessions & session'); } catch {}
-      }
+      if (!currentPatientSessionId) { return; }
+      // Debounce 1200ms to allow Deepgram/DB write settle; then single retry if first fails
+      const sessionId = currentPatientSessionId;
+      const runInvalidate = async () => {
+        let ok = true;
+        try {
+          await queryClientRef.current.invalidateQueries({ queryKey: ['consultation', 'session', sessionId] });
+          await queryClientRef.current.invalidateQueries({ queryKey: ['consultation', 'sessions'] });
+        } catch { ok = false; }
+        if (!ok) {
+          setTimeout(async () => {
+            try {
+              await queryClientRef.current.invalidateQueries({ queryKey: ['consultation', 'session', sessionId] });
+              await queryClientRef.current.invalidateQueries({ queryKey: ['consultation', 'sessions'] });
+            } catch {}
+          }, 2000);
+        }
+        try { console.info('[Ably] transcriptions_updated -> debounced invalidate'); } catch {}
+      };
+      setTimeout(runInvalidate, 1200);
     },
   });
 
