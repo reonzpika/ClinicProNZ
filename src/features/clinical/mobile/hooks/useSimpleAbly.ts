@@ -55,6 +55,7 @@ export const useSimpleAbly = ({
   onControlCommand,
   onMobileImagesUploaded,
   onTranscriptionsUpdated,
+  onSessionContextChanged,
 }: UseSimpleAblyOptions) => {
   const [isConnected, setIsConnected] = useState(false);
 
