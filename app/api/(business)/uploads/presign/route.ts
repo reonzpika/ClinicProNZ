@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
     const filename = req.nextUrl.searchParams.get('filename') || 'image.jpg';
     const mimeType = req.nextUrl.searchParams.get('mimeType') || 'image/jpeg';
     const patientSessionId = req.nextUrl.searchParams.get('patientSessionId');
-    const mobileTokenId = null; // deprecated
+    // mobileTokenId deprecated
 
     // Require either patient session ID or mobile token ID
     // Patient session ID preferred; mobile token deprecated
