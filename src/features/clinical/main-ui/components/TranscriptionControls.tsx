@@ -26,11 +26,13 @@ export function TranscriptionControls({
   onExpand,
   isMinimized,
   mobileIsRecording = false,
+  isMobileConnected = false,
 }: {
   collapsed?: boolean;
   onExpand?: () => void;
   isMinimized?: boolean;
   mobileIsRecording?: boolean;
+  isMobileConnected?: boolean;
 }) {
   const { isSignedIn } = useAuth();
   const { getUserTier } = useClerkMetadata();
@@ -85,9 +87,8 @@ export function TranscriptionControls({
   // 🐛 DEBUG: Log tier and enhanced transcription status
   // debug removed
 
-  // Mobile connection status - simplified for new architecture
-  const isMobileConnected = false; // Simplified: show QR; connection status handled in consultation page
-  const hasMobileDevices = isMobileConnected; // Simplified: just check connection
+  // Mobile connection status from parent (consultation page)
+  const hasMobileDevices = isMobileConnected;
   const [pendingControl, setPendingControl] = useState<null | 'start' | 'stop'>(null);
   const [controlError, setControlError] = useState<string | null>(null);
   const [controlAckTimer, setControlAckTimer] = useState<any>(null);
