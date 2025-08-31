@@ -66,6 +66,7 @@ export const useSimpleAbly = ({
   const callbacksRef = useRef({
     onRecordingStatusChanged,
     onError,
+    onConnectionStatusChanged,
     onControlCommand,
     onMobileImagesUploaded,
     onTranscriptionsUpdated,
@@ -76,11 +77,12 @@ export const useSimpleAbly = ({
     callbacksRef.current = {
       onRecordingStatusChanged,
       onError,
+      onConnectionStatusChanged,
       onControlCommand,
       onMobileImagesUploaded,
       onTranscriptionsUpdated,
     } as any;
-  }, [onRecordingStatusChanged, onError, onControlCommand, onMobileImagesUploaded, onTranscriptionsUpdated]);
+  }, [onRecordingStatusChanged, onError, onConnectionStatusChanged, onControlCommand, onMobileImagesUploaded, onTranscriptionsUpdated]);
 
   // Connection status is updated directly to avoid unstable deps
 
