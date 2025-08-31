@@ -425,20 +425,14 @@ export function useDeleteImage() {
         queryKey: imageQueryKeys.list(userId),
       });
 
-      // Snapshot the previous value for rollback
-      const previousImages = queryClient.getQueryData<{ images: ServerImage[]; count: number }>(
-        imageQueryKeys.list(userId),
-      );
+      // Snapshot previous list (it's an array in this app)
+      const previousImages = queryClient.getQueryData<ServerImage[]>(imageQueryKeys.list(userId));
 
       // Optimistically update the cache - remove the image
-      if (previousImages && previousImages.images) {
-        queryClient.setQueryData(
+      if (previousImages) {
+        queryClient.setQueryData<ServerImage[]>(
           imageQueryKeys.list(userId),
-          {
-            ...previousImages,
-            images: previousImages.images.filter(img => img.key !== imageKey),
-            count: Math.max((previousImages.count || 0) - 1, 0),
-          },
+          previousImages.filter(img => img.key !== imageKey),
         );
       }
 

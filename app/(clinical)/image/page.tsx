@@ -663,6 +663,7 @@ function ServerImageCard({
   onDelete: (imageKey: string) => void;
   formatFileSize: (bytes: number) => string;
 }) {
+  const [isDeleting, setIsDeleting] = React.useState(false);
   // Use thumbnail URL directly from image object (performance optimization)
   const imageUrl = image.thumbnailUrl;
   const isLoadingUrl = !imageUrl; // Only loading if no URL provided
@@ -670,6 +671,8 @@ function ServerImageCard({
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation(); // Prevent opening modal
+    if (isDeleting) { return; }
+    setIsDeleting(true);
     onDelete(image.key);
   };
 
@@ -686,7 +689,7 @@ function ServerImageCard({
   };
 
   return (
-    <Card className="group cursor-pointer overflow-hidden transition-all hover:scale-105 hover:shadow-lg" onClick={onAnalyze}>
+    <Card className={`group cursor-pointer overflow-hidden transition-all hover:scale-105 hover:shadow-lg ${isDeleting ? 'opacity-50' : ''}`} onClick={onAnalyze}>
       <div className="relative aspect-square">
         <div className="flex size-full items-center justify-center bg-slate-100">
         {isLoadingUrl
@@ -704,6 +707,11 @@ function ServerImageCard({
 : (
                 <ImageIcon className="size-6 text-slate-400" />
         )}
+          {isDeleting && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/70">
+              <Loader2 className="size-6 animate-spin text-slate-500" />
+            </div>
+          )}
         </div>
 
         {/* Top-right badges */}
