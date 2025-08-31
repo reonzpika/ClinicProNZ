@@ -82,11 +82,7 @@ export const useSimpleAbly = ({
     } as any;
   }, [onRecordingStatusChanged, onError, onControlCommand, onMobileImagesUploaded, onTranscriptionsUpdated]);
 
-  // Update connection status based on connection state
-  const updateConnectionStatus = useCallback((connected: boolean) => {
-    setIsConnected(connected);
-    onConnectionStatusChanged?.(connected);
-  }, [onConnectionStatusChanged]);
+  // Connection status is updated directly to avoid unstable deps
 
   // Internal helper to safely publish and handle both sync errors and async rejections
   const publishSafe = useCallback((eventName: string, data: any, options?: { queueIfNotReady?: boolean }): boolean => {
