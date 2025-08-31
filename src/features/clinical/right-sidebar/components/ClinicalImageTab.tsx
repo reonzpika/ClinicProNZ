@@ -3,7 +3,6 @@
 import { Brain, Download, Loader2, Trash2 } from 'lucide-react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 
-import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
