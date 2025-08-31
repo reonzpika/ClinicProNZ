@@ -131,13 +131,15 @@ Review Photos (
       <div className="flex h-full flex-col">
         {/* Photos Grid */}
         <div className="flex-1 overflow-y-auto p-4">
-          {photos.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center text-gray-500">
-              <Camera className="mb-4 size-12 text-gray-300" />
-              <p className="text-lg font-medium">No photos captured</p>
-              <p className="text-sm">Take some clinical images to get started</p>
-            </div>
-          ) : (
+          {photos.length === 0
+            ? (
+                <div className="flex h-full flex-col items-center justify-center text-gray-500">
+                  <Camera className="mb-4 size-12 text-gray-300" />
+                  <p className="text-lg font-medium">No photos captured</p>
+                  <p className="text-sm">Take some clinical images to get started</p>
+                </div>
+              )
+            : (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {photos.map((photo) => {
                 const previewUrl = previewUrls.get(photo.id);
@@ -147,13 +149,15 @@ Review Photos (
                   <div key={photo.id} className="relative aspect-square">
                     {/* Photo Thumbnail */}
                     <div className="relative size-full overflow-hidden rounded-lg bg-gray-100">
-                      {previewUrl ? (
-                        <img
-                          src={previewUrl}
-                          alt={`Captured photo ${photo.timestamp}`}
-                          className="size-full object-cover"
-                        />
-                      ) : (
+                      {previewUrl
+                        ? (
+                            <img
+                              src={previewUrl}
+                              alt={`Captured at ${photo.timestamp}`}
+                              className="size-full object-cover"
+                            />
+                          )
+                        : (
                         <div className="flex size-full items-center justify-center">
                           <div className="size-6 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
                         </div>

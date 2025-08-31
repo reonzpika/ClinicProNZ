@@ -70,4 +70,3 @@ export async function resizeImageFile(file: File, maxSize: number = 1024): Promi
     }
   });
 }
-

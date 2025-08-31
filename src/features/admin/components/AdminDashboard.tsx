@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 
+import { AnalyticsView } from './AnalyticsView';
 import { MessagesView } from './MessagesView';
 
 type AdminView = 'overview' | 'messages' | 'analytics';
@@ -9,22 +10,31 @@ type AdminView = 'overview' | 'messages' | 'analytics';
 export const AdminDashboard: React.FC = () => {
   const [currentView, setCurrentView] = useState<AdminView>('overview');
 
+  const navItems: { id: AdminView; label: string; icon: string }[] = [
+    { id: 'messages', label: 'Messages', icon: '📧' },
+    { id: 'analytics', label: 'Analytics', icon: '📊' },
+  ];
+
   const renderCurrentView = () => {
     switch (currentView) {
       case 'messages':
         return <MessagesView />;
       case 'analytics':
-        return (
-          <div className="rounded-lg border border-gray-200 bg-white p-6">
-            <h2 className="mb-4 text-xl font-semibold text-gray-900">Analytics</h2>
-            <p className="text-gray-600">Analytics dashboard coming soon...</p>
-          </div>
-        );
+        return <AnalyticsView />;
+      case 'overview':
       default:
         return (
-          <div className="rounded-lg border border-gray-200 bg-white p-6">
-            <h2 className="mb-4 text-xl font-semibold text-gray-900">Dashboard Overview</h2>
-            <p className="text-gray-600">Select an option from the sidebar to get started.</p>
+          <div className="space-y-6">
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
+              <p className="mt-2 text-gray-600">
+                Welcome to the admin dashboard
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-gray-200 bg-white p-6">
+              <p className="text-gray-600">Select an option from the sidebar to get started.</p>
+            </div>
           </div>
         );
     }
@@ -40,36 +50,23 @@ export const AdminDashboard: React.FC = () => {
           </div>
           <nav className="p-4">
             <ul className="space-y-2">
-              <li>
-                <button
-                  onClick={() => setCurrentView('messages')}
-                  className={`w-full rounded-lg px-4 py-2 text-left transition-colors ${
-                    currentView === 'messages'
-                      ? 'border border-blue-200 bg-blue-50 text-blue-700'
-                      : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <span>📧</span>
-                    <span>Messages</span>
-                  </div>
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => setCurrentView('analytics')}
-                  className={`w-full rounded-lg px-4 py-2 text-left transition-colors ${
-                    currentView === 'analytics'
-                      ? 'border border-blue-200 bg-blue-50 text-blue-700'
-                      : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <span>📊</span>
-                    <span>Analytics</span>
-                  </div>
-                </button>
-              </li>
+              {navItems.map(item => (
+                <li key={item.id}>
+                  <button
+                    onClick={() => setCurrentView(item.id)}
+                    className={`w-full rounded-lg px-4 py-2 text-left transition-colors ${
+                      currentView === item.id
+                        ? 'bg-blue-100 font-medium text-blue-900'
+                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <span>{item.icon}</span>
+                      <span>{item.label}</span>
+                    </div>
+                  </button>
+                </li>
+              ))}
             </ul>
           </nav>
         </div>

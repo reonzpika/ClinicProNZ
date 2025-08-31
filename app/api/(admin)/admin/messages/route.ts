@@ -49,7 +49,7 @@ export async function GET() {
         userTier: sql<string>`null`.as('userTier'),
         userId: sql<string>`null`.as('userId'),
         source: sql<string>`'feedback'`.as('source'),
-        status: sql<string>`'new'`.as('status'),
+        status: featureRequests.status,
         createdAt: featureRequests.created_at,
       }).from(featureRequests).orderBy(desc(featureRequests.created_at)),
 
@@ -64,7 +64,7 @@ export async function GET() {
         userTier: sql<string>`null`.as('userTier'),
         userId: sql<string>`null`.as('userId'),
         source: sql<string>`'survey'`.as('source'),
-        status: sql<string>`'new'`.as('status'),
+        status: surveyResponses.status,
         createdAt: surveyResponses.createdAt,
       }).from(surveyResponses).orderBy(desc(surveyResponses.createdAt)),
     ]);
@@ -81,7 +81,7 @@ export async function GET() {
         contact: contacts.length,
         feedback: feedback.length,
         survey: surveys.length,
-        new: allMessages.filter(m => m.status === 'new').length,
+        new: allMessages.filter(m => m.status === 'unread').length,
       },
     });
   } catch (error) {
@@ -110,17 +110,33 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Only contact messages support status updates for now
+    // Valid status values
+    const validStatuses = ['unread', 'read', 'actioned'];
+    if (!validStatuses.includes(status)) {
+      return NextResponse.json({ error: 'Invalid status value' }, { status: 400 });
+    }
+
+    // Update based on message type
     if (type === 'contact') {
       await db
         .update(contactMessages)
         .set({ status })
         .where(sql`${contactMessages.id} = ${messageId}`);
-
-      return NextResponse.json({ success: true });
+    } else if (type === 'feedback') {
+      await db
+        .update(featureRequests)
+        .set({ status })
+        .where(sql`${featureRequests.id}::text = ${messageId}`);
+    } else if (type === 'survey') {
+      await db
+        .update(surveyResponses)
+        .set({ status })
+        .where(sql`${surveyResponses.id} = ${messageId}`);
+    } else {
+      return NextResponse.json({ error: 'Invalid message type' }, { status: 400 });
     }
 
-    return NextResponse.json({ error: 'Status updates not supported for this message type' }, { status: 400 });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error updating message status:', error);
     return NextResponse.json({ error: 'Failed to update message status' }, { status: 500 });

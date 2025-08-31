@@ -7,7 +7,7 @@ import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 
 type MessageType = 'contact' | 'feedback' | 'survey';
-type MessageStatus = 'new' | 'read' | 'replied';
+type MessageStatus = 'unread' | 'read' | 'actioned';
 
 type Message = {
   id: string;
@@ -28,7 +28,7 @@ type MessagesStats = {
   contact: number;
   feedback: number;
   survey: number;
-  new: number;
+  new: number; // This will be "unread" count from API
 };
 
 export const MessagesView: React.FC = () => {
@@ -57,6 +57,17 @@ export const MessagesView: React.FC = () => {
     }
   };
 
+  const updateStatsFromMessages = (msgs: Message[]) => {
+    const newStats: MessagesStats = {
+      total: msgs.length,
+      contact: msgs.filter(m => m.type === 'contact').length,
+      feedback: msgs.filter(m => m.type === 'feedback').length,
+      survey: msgs.filter(m => m.type === 'survey').length,
+      new: msgs.filter(m => m.status === 'unread').length,
+    };
+    setStats(newStats);
+  };
+
   const updateMessageStatus = async (messageId: string, type: MessageType, newStatus: MessageStatus) => {
     try {
       const response = await fetch('/api/admin/messages', {
@@ -70,12 +81,13 @@ export const MessagesView: React.FC = () => {
       }
 
       // Update local state
-      setMessages(prev => prev.map(msg =>
+      const updatedMessages = messages.map(msg =>
         msg.id === messageId ? { ...msg, status: newStatus } : msg,
-      ));
+      );
+      setMessages(updatedMessages);
 
-      // Refresh stats
-      fetchMessages();
+      // Update stats locally (no refetch needed)
+      updateStatsFromMessages(updatedMessages);
     } catch (err) {
       console.error('Failed to update message status:', err);
     }
@@ -102,9 +114,9 @@ export const MessagesView: React.FC = () => {
 
   const getStatusColor = (status: MessageStatus) => {
     switch (status) {
-      case 'new': return 'bg-red-100 text-red-800';
+      case 'unread': return 'bg-red-100 text-red-800';
       case 'read': return 'bg-yellow-100 text-yellow-800';
-      case 'replied': return 'bg-green-100 text-green-800';
+      case 'actioned': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -209,9 +221,9 @@ Error:
             className="rounded-md border border-gray-300 px-3 py-1 text-sm"
           >
             <option value="all">All Status</option>
-            <option value="new">New</option>
+            <option value="unread">Unread</option>
             <option value="read">Read</option>
-            <option value="replied">Replied</option>
+            <option value="actioned">Actioned</option>
           </select>
         </div>
 
@@ -231,7 +243,7 @@ messages
       {/* Messages List */}
       <div className="space-y-4">
         {filteredMessages.map(message => (
-          <Card key={message.id} className={`transition-shadow hover:shadow-md ${message.status === 'new' ? 'border-l-4 border-l-red-500' : ''}`}>
+          <Card key={message.id} className={`transition-shadow hover:shadow-md ${message.status === 'unread' ? 'border-l-4 border-l-red-500' : ''}`}>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
@@ -301,7 +313,7 @@ messages
                     View Details
                   </Button>
 
-                  {message.type === 'contact' && message.status === 'new' && (
+                  {message.status === 'unread' && (
                     <Button
                       onClick={() => updateMessageStatus(message.id, message.type, 'read')}
                       variant="outline"
@@ -311,13 +323,32 @@ messages
                     </Button>
                   )}
 
-                  {message.type === 'contact' && message.status === 'read' && (
+                  {message.status === 'read' && (
+                    <>
+                      <Button
+                        onClick={() => updateMessageStatus(message.id, message.type, 'actioned')}
+                        variant="outline"
+                        size="sm"
+                      >
+                        Mark Actioned
+                      </Button>
+                      <Button
+                        onClick={() => updateMessageStatus(message.id, message.type, 'unread')}
+                        variant="outline"
+                        size="sm"
+                      >
+                        Mark Unread
+                      </Button>
+                    </>
+                  )}
+
+                  {message.status === 'actioned' && (
                     <Button
-                      onClick={() => updateMessageStatus(message.id, message.type, 'replied')}
+                      onClick={() => updateMessageStatus(message.id, message.type, 'unread')}
                       variant="outline"
                       size="sm"
                     >
-                      Mark Replied
+                      Mark Unread
                     </Button>
                   )}
                 </div>
@@ -414,32 +445,54 @@ User ID:
 )}
                 </div>
 
-                {selectedMessage.type === 'contact' && (
-                  <div className="flex space-x-2 border-t pt-4">
-                    {selectedMessage.status === 'new' && (
+                <div className="flex space-x-2 border-t pt-4">
+                  {selectedMessage.status === 'unread' && (
+                    <Button
+                      onClick={() => {
+                        updateMessageStatus(selectedMessage.id, selectedMessage.type, 'read');
+                        setSelectedMessage(prev => prev ? { ...prev, status: 'read' } : null);
+                      }}
+                      size="sm"
+                    >
+                      Mark as Read
+                    </Button>
+                  )}
+                  {selectedMessage.status === 'read' && (
+                    <>
                       <Button
                         onClick={() => {
-                          updateMessageStatus(selectedMessage.id, selectedMessage.type, 'read');
-                          setSelectedMessage(prev => prev ? { ...prev, status: 'read' } : null);
+                          updateMessageStatus(selectedMessage.id, selectedMessage.type, 'actioned');
+                          setSelectedMessage(prev => prev ? { ...prev, status: 'actioned' } : null);
                         }}
                         size="sm"
                       >
-                        Mark as Read
+                        Mark as Actioned
                       </Button>
-                    )}
-                    {selectedMessage.status === 'read' && (
                       <Button
                         onClick={() => {
-                          updateMessageStatus(selectedMessage.id, selectedMessage.type, 'replied');
-                          setSelectedMessage(prev => prev ? { ...prev, status: 'replied' } : null);
+                          updateMessageStatus(selectedMessage.id, selectedMessage.type, 'unread');
+                          setSelectedMessage(prev => prev ? { ...prev, status: 'unread' } : null);
                         }}
+                        variant="outline"
                         size="sm"
                       >
-                        Mark as Replied
+                        Mark as Unread
                       </Button>
-                    )}
-                  </div>
-                )}
+                    </>
+                  )}
+                  {selectedMessage.status === 'actioned' && (
+                    <Button
+                      onClick={() => {
+                        updateMessageStatus(selectedMessage.id, selectedMessage.type, 'unread');
+                        setSelectedMessage(prev => prev ? { ...prev, status: 'unread' } : null);
+                      }}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Mark as Unread
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </div>

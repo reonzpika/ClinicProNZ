@@ -127,7 +127,9 @@ export default function ClinicalImagePage() {
         })),
       ]);
       setMobileStep('review');
-      if (event.target) event.target.value = '';
+      if (event.target) {
+ event.target.value = '';
+}
       return;
     }
 
@@ -139,7 +141,9 @@ export default function ClinicalImagePage() {
       console.error('Upload failed:', err);
     } finally {
       setUploadingFileCount(0);
-      if (event.target) event.target.value = '';
+      if (event.target) {
+ event.target.value = '';
+}
     }
   };
 
@@ -344,7 +348,12 @@ export default function ClinicalImagePage() {
               <Card>
                 <CardContent className="p-4">
                   <p className="text-sm text-slate-600">
-                    {queuedItems.length} photo{queuedItems.length === 1 ? '' : 's'} selected
+                    {queuedItems.length}
+{' '}
+photo
+{queuedItems.length === 1 ? '' : 's'}
+{' '}
+selected
                   </p>
                   <Button
                     onClick={() => setMobileStep('review')}
@@ -362,7 +371,7 @@ export default function ClinicalImagePage() {
         {mobileStep === 'review' && (
           <div className="flex-1 space-y-4">
             <div className="grid grid-cols-3 gap-3">
-              {queuedItems.map((item) => (
+              {queuedItems.map(item => (
                 <div key={item.id} className="relative aspect-square overflow-hidden rounded-lg border">
                   {item.previewUrl
                     ? <img src={item.previewUrl} alt={item.file.name} className="size-full object-cover" />
@@ -385,12 +394,18 @@ export default function ClinicalImagePage() {
               {isFeatureEnabled('MOBILE_GALLERY_UPLOADS') && (
                 <Button onClick={() => galleryFileInputRef.current?.click()} variant="outline" className="flex-1">From gallery</Button>
               )}
-              <Button onClick={() => {
+              <Button
+                onClick={() => {
                 // Cancel: clear queue and return to collect
                 queuedItems.forEach(it => it.previewUrl && URL.revokeObjectURL(it.previewUrl));
                 setQueuedItems([]);
                 setMobileStep('collect');
-              }} variant="ghost" className="flex-1">Cancel</Button>
+              }}
+                variant="ghost"
+                className="flex-1"
+              >
+Cancel
+              </Button>
               <Button
                 className="flex-1"
                 disabled={queuedItems.length === 0 || isUploading}
@@ -680,7 +695,7 @@ function ServerImageCard({
 : (
                 <ImageIcon className="size-6 text-slate-400" />
         )}
-      </div>
+        </div>
 
         {/* Top-right badges */}
         <div className="absolute right-2 top-2 z-10 flex gap-1">
@@ -738,7 +753,7 @@ function ServerImageCard({
           <div className="flex items-center justify-between text-xs text-slate-500">
             <span className="capitalize">{image.source}</span>
             <span>{formatFileSize(image.size)}</span>
-        </div>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -830,7 +845,7 @@ function AnalysisModal({
                     <div className="flex size-64 flex-col items-center justify-center rounded-lg bg-slate-100 text-slate-500">
                       <ImageIcon className="mb-2 size-8" />
                       <p className="text-sm">Failed to load image</p>
-            </div>
+                    </div>
           )}
           </div>
         </div>
@@ -935,7 +950,7 @@ function AnalysisModal({
                       <div className="flex items-center gap-1 text-green-600">
                         <Check className="size-3" />
                         <span>Auto-saved</span>
-                </div>
+                      </div>
                     )}
                     <span>
                       {modal.analysis?.split(' ').length || modal.image?.analysis?.result.split(' ').length}
@@ -965,11 +980,11 @@ function AnalysisModal({
                           <span className="font-medium">Clinical context used:</span>
                           {' '}
                           {modal.image.analysis.prompt}
-              </div>
+                        </div>
             )}
-          </div>
+                    </div>
                   )}
-        </div>
+                </div>
               </div>
             )}
           </div>

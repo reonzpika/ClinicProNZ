@@ -237,11 +237,9 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
                     size="lg"
                     className="size-16 rounded-full bg-white text-black hover:bg-gray-100"
                   >
-                    {isCapturing ? (
-                      <div className="size-6 animate-spin rounded-full border-2 border-black border-t-transparent" />
-                    ) : (
-                      <Camera className="size-8" />
-                    )}
+                    {isCapturing
+                      ? <div className="size-6 animate-spin rounded-full border-2 border-black border-t-transparent" />
+                      : <Camera className="size-8" />}
                   </Button>
                 </div>
 
