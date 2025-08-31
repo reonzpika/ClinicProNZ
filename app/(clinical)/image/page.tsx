@@ -1152,10 +1152,10 @@ function ImageSectionsGrid({
   return (
     <div className="space-y-6">
       {firstSessionId && (
-        <Section title="This session" items={bySession[firstSessionId]} />
+        <Section title="This session" items={bySession[firstSessionId] ?? []} />
       )}
       {restSessionIds.map((sid) => (
-        <Section key={sid} title={`Other session ${sid}`} items={bySession[sid]} />
+        <Section key={sid} title={`Other session ${sid}`} items={bySession[sid] ?? []} />
       ))}
       <Section title="No session" items={noSession} />
       <Section title="Legacy consultations" items={legacyConsultations} />
