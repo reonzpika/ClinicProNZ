@@ -1,6 +1,5 @@
 export { useConsultationStore } from './consultationStore';
 export { useImageStore } from './imageStore';
-export { useMobileStore } from './mobileStore';
 export { useTranscriptionStore } from './transcriptionStore';
 
 // Re-export types for convenience

@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, ChevronDown, RefreshCw, Smartphone, User, UserCheck } from 'lucide-react';
+import { Calendar, ChevronDown, RefreshCw, User, UserCheck } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
@@ -23,8 +23,7 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
     createPatientSession = () => null,
     switchToPatientSession = () => {},
     resetConsultation = () => {},
-    // Phase 4: Access mobile device state
-    mobileV2 = { isEnabled: false, token: null, tokenData: null, isConnected: false },
+    // Mobile device state removed in simplified architecture
   } = useConsultationStores();
 
   const { isLargeDesktop } = useResponsive();
@@ -210,16 +209,7 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
                   </span>
                 )}
 
-                {/* Mobile Device Status - Only show when connected */}
-                {mobileV2.isEnabled && mobileV2.isConnected && (
-                  <div className="flex items-center gap-1">
-                    <span className="text-gray-400">•</span>
-                    <Smartphone className="size-3" />
-                    <span className="text-xs text-green-600">
-                      mobile connected
-                    </span>
-                  </div>
-                )}
+                {/* Mobile Device Status removed in simplified architecture */}
               </div>
             )}
           </div>

@@ -12,7 +12,6 @@ import {
 import { useSessionAccess } from '@/src/hooks/useSessionAccess';
 import { createAuthHeaders } from '@/src/shared/utils';
 import { useConsultationStore } from '@/src/stores/consultationStore';
-import { useMobileStore } from '@/src/stores/mobileStore';
 import { useTranscriptionStore } from '@/src/stores/transcriptionStore';
 import type { PatientSession } from '@/src/types/consultation';
 
@@ -26,7 +25,7 @@ export function useConsultationStores(): any {
   // Zustand stores
   const transcriptionStore = useTranscriptionStore();
   const consultationStore = useConsultationStore();
-  const mobileStore = useMobileStore();
+  // Mobile token store removed
 
   // Server state via React Query - disable on mobile routes
   const isMobileRoute = pathname === '/mobile';
@@ -235,8 +234,7 @@ export function useConsultationStores(): any {
     // Sessions list
     patientSessions,
 
-    // Mobile state
-    mobileV2: mobileStore.mobileV2,
+    // Mobile state removed
 
     // Last generated tracking
     lastGeneratedTranscription: transcriptionStore.lastGeneratedTranscription,
@@ -300,11 +298,7 @@ export function useConsultationStores(): any {
     setConsultationNotes: consultationStore.setConsultationNotes,
     getCompiledConsultationText: consultationStore.getCompiledConsultationText,
 
-    // Actions - mobile
-    enableMobileV2: mobileStore.enableMobileV2,
-    setMobileV2Token: mobileStore.setMobileV2Token,
-    setMobileV2TokenData: mobileStore.setMobileV2TokenData,
-    setMobileV2IsConnected: mobileStore.setMobileV2IsConnected,
+    // Actions - mobile removed
 
     // Actions - last generated tracking
     setLastGeneratedInput: transcriptionStore.setLastGeneratedInput,

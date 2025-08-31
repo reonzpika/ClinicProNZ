@@ -2,7 +2,8 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { ChevronDown, ChevronUp, Info, Mic, Settings, Smartphone } from 'lucide-react';
+import { ChevronDown, ChevronUp, Info, Mic, RefreshCw, Settings, Smartphone } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
@@ -46,6 +47,8 @@ export function TranscriptionControls({
     transcription: contextTranscription,
     inputMode,
     setInputMode,
+    setTranscription,
+    currentPatientSessionId,
   } = useConsultationStores();
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [showAudioSettings, setShowAudioSettings] = useState(false);
@@ -85,13 +88,44 @@ export function TranscriptionControls({
   // 🐛 DEBUG: Log tier and enhanced transcription status
   // debug removed
 
-  // Mobile connection status - simplified for new architecture
-  const { mobileV2 = { isEnabled: false, token: null, isConnected: false } } = useConsultationStores();
-  const isMobileConnected = mobileV2.isConnected;
-  const hasMobileDevices = isMobileConnected; // Simplified: just check connection
+  // Simplified: always show mobile controls and QR
+  const hasMobileDevices = true;
   const [pendingControl, setPendingControl] = useState<null | 'start' | 'stop'>(null);
   const [controlError, setControlError] = useState<string | null>(null);
   const [controlAckTimer, setControlAckTimer] = useState<any>(null);
+  const [isRefreshingTranscript, setIsRefreshingTranscript] = useState<boolean>(false);
+  const queryClient = useQueryClient();
+
+  const handleManualRefresh = async () => {
+    try {
+      setIsRefreshingTranscript(true);
+      const activeSessionId = currentPatientSessionId || '';
+      // Invalidate both sessions list and active session
+      await Promise.allSettled([
+        queryClient.invalidateQueries({ queryKey: ['consultation', 'sessions'] }),
+        queryClient.invalidateQueries({ queryKey: ['consultation', 'session', activeSessionId] }),
+      ]);
+      // Hydrate from cache
+      const sessions: any[] | undefined = queryClient.getQueryData(['consultation', 'sessions']) as any;
+      const session = Array.isArray(sessions) ? sessions.find((s: any) => s.id === activeSessionId) : null;
+      if (session) {
+        let chunks: any[] = [];
+        try {
+          chunks = typeof session.transcriptions === 'string' ? JSON.parse(session.transcriptions) : (session.transcriptions || []);
+        } catch {
+          chunks = [];
+        }
+        if (Array.isArray(chunks) && chunks.length > 0) {
+          const full = chunks.map((t: any) => (t?.text || '').trim()).join(' ').trim();
+          if (full) {
+            setTranscription(full, false, undefined, undefined);
+          }
+        }
+      }
+    } finally {
+      setIsRefreshingTranscript(false);
+    }
+  };
 
   // Track recording time and transcript warning
   useEffect(() => {
@@ -260,9 +294,7 @@ export function TranscriptionControls({
               <Mic size={12} className="text-slate-600" />
               <span className="text-xs font-medium text-slate-700">Audio Transcription</span>
             </div>
-            {mobileV2.isConnected && (
-              <span className="text-xs text-green-600">📱 Mobile Synced</span>
-            )}
+            {/* Simplified UI: no connected badge */}
           </div>
           <div className="flex items-center gap-2">
             {hasTranscript && (
@@ -455,55 +487,25 @@ export function TranscriptionControls({
                   <div className="space-y-2">
                     {/* Description and Mobile Recording Button - Same Line */}
                     <div className="flex items-center justify-between">
-                      {!hasMobileDevices
-                        ? (
-                            <div className="rounded border border-blue-200 bg-blue-50 px-2 py-1 text-xs text-blue-700">
-                              Better audio with mobile recording - 30 second setup
-                            </div>
-                          )
-                        : (
-                            <div className="flex items-center gap-2 text-xs text-slate-500">
-                              {/* Connected mobile status - simplified for MVP */}
-                              {hasMobileDevices && (
-                                <div className="flex items-center gap-1 rounded bg-green-100 px-2 py-1 text-green-700">
-                                  <Smartphone className="size-3" />
-                                  <span>Mobile connected</span>
-                                </div>
-                              )}
-                            </div>
-                          )}
+                      <div className="rounded border border-blue-200 bg-blue-50 px-2 py-1 text-xs text-blue-700">
+                        Better audio with mobile recording - 30 second setup
+                      </div>
 
                       {/* Right side: Status indicator + Mobile buttons */}
                       <div className="flex items-center gap-2">
                         {/* Mobile Recording Button */}
-                        {hasMobileDevices
-                          ? (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                onClick={handleMobileClick}
-                                disabled={!canCreateSession}
-                                className="h-8 px-3 text-xs disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
-                                title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
-                              >
-                                <Smartphone className="mr-1 size-3" />
-                                Show QR
-                              </Button>
-                            )
-                          : (
-                              <Button
-                                type="button"
-                                onClick={handleMobileClick}
-                                disabled={(!isSignedIn && !canCreateSession)}
-                                className="h-8 bg-blue-600 px-3 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-                                title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
-                              >
-                                <Smartphone className="mr-1 size-3" />
-                                Connect Mobile
-                              </Button>
-                            )}
+                        <Button
+                          type="button"
+                          onClick={handleMobileClick}
+                          disabled={(!isSignedIn && !canCreateSession)}
+                          className="h-8 bg-blue-600 px-3 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                          title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
+                        >
+                          <Smartphone className="mr-1 size-3" />
+                          Connect Mobile
+                        </Button>
                         {/* Remote control buttons when connected */}
-                        {isMobileConnected && !mobileIsRecording && (
+                        {!mobileIsRecording && (
                           <Button
                             type="button"
                             variant="outline"
@@ -514,7 +516,7 @@ export function TranscriptionControls({
                             Start on mobile
                           </Button>
                         )}
-                        {isMobileConnected && mobileIsRecording && (
+                        {mobileIsRecording && (
                           <Button
                             type="button"
                             variant="outline"
@@ -589,7 +591,7 @@ export function TranscriptionControls({
                       )}
                     </div>
                     <div className="flex gap-1">
-                      {isMobileConnected && !isRecording && (
+                      {!isRecording && (
                         <Button
                           type="button"
                           variant="outline"
@@ -600,7 +602,7 @@ export function TranscriptionControls({
                           Start on mobile
                         </Button>
                       )}
-                      {isMobileConnected && isRecording && (
+                      {isRecording && (
                         <Button
                           type="button"
                           variant="outline"
@@ -727,6 +729,17 @@ export function TranscriptionControls({
                 <div className="text-xs font-medium text-slate-600">
                   Transcribed Text — Edit as needed
                 </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleManualRefresh}
+                  disabled={isRefreshingTranscript}
+                  className="h-5 px-2 text-xs text-slate-500 hover:text-slate-700"
+                  title="Refresh transcript from server"
+                >
+                  <RefreshCw className="mr-1 size-3" />
+                  {isRefreshingTranscript ? 'Refreshing…' : 'Refresh'}
+                </Button>
               </div>
             )}
 

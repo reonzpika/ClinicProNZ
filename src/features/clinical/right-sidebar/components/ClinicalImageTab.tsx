@@ -3,7 +3,6 @@
 import { Brain, Download, Loader2, Trash2 } from 'lucide-react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 
-import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
@@ -22,7 +21,7 @@ export const ClinicalImageTab: React.FC = () => {
     consultationNotes,
     setConsultationNotes,
   } = useConsultationStores();
-  const { mobileV2 } = useConsultationStores();
+  const {} = useConsultationStores();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [analyzingImages, setAnalyzingImages] = useState<Set<string>>(new Set());
@@ -30,7 +29,7 @@ export const ClinicalImageTab: React.FC = () => {
 
   // Mobile images state
   const [mobileImages, setMobileImages] = useState<ClinicalImage[]>([]);
-  const [isFetchingMobileImages, setIsFetchingMobileImages] = useState(false);
+  const [isFetchingMobileImages] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentSession = getCurrentPatientSession();
@@ -39,57 +38,10 @@ export const ClinicalImageTab: React.FC = () => {
     return images;
   }, [currentSession?.clinicalImages]);
 
-  // Function to fetch mobile images from API
-  const fetchAndDisplayMobileImages = useCallback(async (mobileTokenId: string) => {
-    setIsFetchingMobileImages(true);
-
-    try {
-      const response = await fetch(`/api/mobile/images?tokenId=${encodeURIComponent(mobileTokenId)}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch mobile images: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      const { images } = data;
-
-      if (images && images.length > 0) {
-        // Convert mobile images to ClinicalImage format
-        const mobileImagesFormatted: ClinicalImage[] = images.map((img: any) => ({
-          id: img.id || img.key.split('/').pop()?.split('.')[0] || Math.random().toString(36).substr(2, 9),
-          key: img.key,
-          filename: img.filename,
-          mimeType: img.mimeType,
-          uploadedAt: img.uploadedAt,
-          isMobileImage: true, // Flag to distinguish mobile images
-          mobileTokenId: img.mobileTokenId,
-        }));
-
-        // Add to mobile images state (avoid duplicates)
-        setMobileImages((prevImages) => {
-          const existingKeys = new Set(prevImages.map(img => img.key));
-          const newImages = mobileImagesFormatted.filter(img => !existingKeys.has(img.key));
-          return [...prevImages, ...newImages];
-        });
-      }
-    } catch (err) {
-      console.error('Failed to fetch mobile images:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch mobile images');
-    } finally {
-      setIsFetchingMobileImages(false);
-    }
-  }, []);
+  // Fetch mobile images disabled in simplified architecture (handled via direct uploads)
 
   // Ably listener for mobile image notifications (desktop only)
-  useSimpleAbly({
-    tokenId: mobileV2?.token || null,
-    isMobile: false,
-    onMobileImagesUploaded: (mobileTokenId: string, _imageCount: number, _timestamp: string) => {
-      fetchAndDisplayMobileImages(mobileTokenId);
-    },
-    onError: (err: string) => {
-      console.error('Ably error in ClinicalImageTab:', err);
-    },
-  });
+  // Desktop image notifications can be re-wired later to user channel if needed
 
   const handleFileUpload = useCallback(async (file: File) => {
     if (!currentPatientSessionId) {
