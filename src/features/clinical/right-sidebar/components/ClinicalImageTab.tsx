@@ -2,6 +2,10 @@
 
 import { Brain, Download, Loader2, Trash2 } from 'lucide-react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useAuth } from '@clerk/nextjs';
+import { useQueryClient } from '@tanstack/react-query';
+import { imageQueryKeys, useServerImages } from '@/src/hooks/useImageQueries';
+import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
@@ -27,9 +31,20 @@ export const ClinicalImageTab: React.FC = () => {
   const [analyzingImages, setAnalyzingImages] = useState<Set<string>>(new Set());
   const [analysisErrors, setAnalysisErrors] = useState<Record<string, string>>({});
 
-  // Mobile images state
-  const [mobileImages, setMobileImages] = useState<ClinicalImage[]>([]);
-  const [isFetchingMobileImages] = useState(false);
+  // Server images (user scope) for session grouping
+  const { userId } = useAuth();
+  const { data: serverImages = [], isLoading: isLoadingServerImages } = useServerImages();
+  const sessionServerImages = useMemo(() => {
+    return (serverImages || []).filter((img: any) => img.source === 'clinical' && img.sessionId && img.sessionId === currentPatientSessionId);
+  }, [serverImages, currentPatientSessionId]);
+  const queryClientRef = useRef(useQueryClient());
+  useSimpleAbly({
+    userId: userId ?? null,
+    isMobile: false,
+    onMobileImagesUploaded: () => {
+      try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') }); } catch {}
+    },
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentSession = getCurrentPatientSession();
@@ -364,18 +379,16 @@ export const ClinicalImageTab: React.FC = () => {
         </div>
       )}
 
-      {/* Mobile Images Section */}
-      {mobileImages.length > 0 && (
+      {/* Session Images (from server under clinical-images/{userId}/{sessionId}/) */}
+      {sessionServerImages.length > 0 && (
         <div className="border-l-2 border-blue-200 pl-3">
           <div className="mb-3 flex items-center justify-between">
-            <h4 className="text-sm font-medium text-blue-600">Mobile Images</h4>
-            {isFetchingMobileImages && (
-              <Loader2 size={12} className="animate-spin text-blue-500" />
-            )}
+            <h4 className="text-sm font-medium text-blue-600">Session Images</h4>
+            {isLoadingServerImages && <Loader2 size={12} className="animate-spin text-blue-500" />}
           </div>
 
           <div className="space-y-3">
-            {mobileImages.map((image) => {
+            {sessionServerImages.map((image: any) => {
               const isAnalyzing = analyzingImages.has(image.id);
               const hasError = analysisErrors[image.id];
 
@@ -387,7 +400,7 @@ export const ClinicalImageTab: React.FC = () => {
                         <div className="truncate text-sm font-medium text-slate-700">
                           {image.filename}
                           <span className="ml-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
-                            Mobile
+                            Session
                           </span>
                         </div>
                         <div className="text-xs text-slate-500">
@@ -398,7 +411,7 @@ export const ClinicalImageTab: React.FC = () => {
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => handleAnalyzeImage(image)}
+                          onClick={() => handleAnalyzeImage(image as any)}
                           disabled={isAnalyzing}
                           className="size-6 p-0"
                           title={isAnalyzing ? 'Analysing...' : 'Analyse with AI'}
@@ -414,23 +427,10 @@ export const ClinicalImageTab: React.FC = () => {
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => handleDownloadImage(image)}
+                          onClick={() => handleDownloadImage(image as any)}
                           className="size-6 p-0"
                         >
                           <Download size={12} />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => {
-                            // Add to consultation and remove from mobile images
-                            addClinicalImage(image);
-                            setMobileImages(prev => prev.filter(img => img.id !== image.id));
-                          }}
-                          className="size-6 p-0 text-green-600 hover:text-green-700"
-                          title="Add to consultation"
-                        >
-                          <span className="text-xs">+</span>
                         </Button>
                       </div>
                     </div>
