@@ -200,7 +200,8 @@ export const useSimpleAbly = ({
             // Simplified connection for mobile-as-microphone architecture
 
             // Mark as connected - ready to send/receive transcripts
-            updateConnectionStatus(true);
+            setIsConnected(true);
+            try { callbacksRef.current.onConnectionStatusChanged?.(true); } catch {}
 
             // Flush any queued messages now that we are connected and channel is attached
             try {
@@ -229,7 +230,8 @@ export const useSimpleAbly = ({
             }
           } catch (e) {
             console.warn('Post-connect setup error:', e);
-            updateConnectionStatus(true);
+            setIsConnected(true);
+            try { callbacksRef.current.onConnectionStatusChanged?.(true); } catch {}
           }
         });
 
@@ -237,7 +239,8 @@ export const useSimpleAbly = ({
           if (!isCurrentConnection) {
  return;
 }
-          updateConnectionStatus(false);
+          setIsConnected(false);
+          try { callbacksRef.current.onConnectionStatusChanged?.(false); } catch {}
           try { if (!isMobile) console.info('[Ably] disconnected'); } catch {}
         });
 
@@ -245,7 +248,7 @@ export const useSimpleAbly = ({
           if (!isCurrentConnection) {
  return;
 }
-          onConnectionStatusChanged?.(false);
+          try { callbacksRef.current.onConnectionStatusChanged?.(false); } catch {}
           try { if (!isMobile) console.info('[Ably] suspended'); } catch {}
         });
 
@@ -253,7 +256,8 @@ export const useSimpleAbly = ({
           if (!isCurrentConnection) {
  return;
 }
-          updateConnectionStatus(false);
+          setIsConnected(false);
+          try { callbacksRef.current.onConnectionStatusChanged?.(false); } catch {}
           callbacksRef.current.onError?.(`Connection failed: ${error?.reason || 'Unknown error'}`);
           try { if (!isMobile) console.warn('[Ably] failed', error); } catch {}
         });
@@ -262,7 +266,8 @@ export const useSimpleAbly = ({
           if (!isCurrentConnection) {
  return;
 }
-          updateConnectionStatus(false);
+          setIsConnected(false);
+          try { callbacksRef.current.onConnectionStatusChanged?.(false); } catch {}
           try { if (!isMobile) console.info('[Ably] closed'); } catch {}
         });
 
@@ -350,7 +355,7 @@ export const useSimpleAbly = ({
         }
       } catch (error: any) {
         if (isCurrentConnection) {
-          onConnectionStatusChanged?.(false);
+          try { callbacksRef.current.onConnectionStatusChanged?.(false); } catch {}
           callbacksRef.current.onError?.(`Failed to connect: ${error.message}`);
         }
       }
@@ -377,7 +382,7 @@ export const useSimpleAbly = ({
       }
       setIsConnected(false);
     };
-  }, [userId, onConnectionStatusChanged, isMobile, publishSafe, updateConnectionStatus]);
+  }, [userId, isMobile]);
 
   // Removed history reconciliation to avoid duplicate replays after hydration
 
