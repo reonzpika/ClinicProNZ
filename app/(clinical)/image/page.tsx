@@ -1145,11 +1145,17 @@ function ImageSectionsGrid({
     )
   );
 
+  const sessionKeys = Object.keys(bySession);
+  const firstSessionId = sessionKeys.length > 0 ? sessionKeys[0] : null;
+  const restSessionIds = sessionKeys.slice(1);
+
   return (
     <div className="space-y-6">
-      <Section title="This session" items={bySession[Object.keys(bySession)[0]] || []} />
-      {Object.entries(bySession).slice(1).map(([sid, items]) => (
-        <Section key={sid} title={`Other session ${sid}`} items={items} />
+      {firstSessionId && (
+        <Section title="This session" items={bySession[firstSessionId]} />
+      )}
+      {restSessionIds.map((sid) => (
+        <Section key={sid} title={`Other session ${sid}`} items={bySession[sid]} />
       ))}
       <Section title="No session" items={noSession} />
       <Section title="Legacy consultations" items={legacyConsultations} />
