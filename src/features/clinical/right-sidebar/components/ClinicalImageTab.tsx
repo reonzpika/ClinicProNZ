@@ -387,78 +387,42 @@ export const ClinicalImageTab: React.FC = () => {
             {isLoadingServerImages && <Loader2 size={12} className="animate-spin text-blue-500" />}
           </div>
 
-          <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
             {sessionServerImages.map((image: any) => {
               const isAnalyzing = analyzingImages.has(image.id);
-              const hasError = analysisErrors[image.id];
-
+              const imageUrl = image.thumbnailUrl as string | undefined;
               return (
-                <Card key={image.id} className="overflow-hidden border-blue-100">
-                  <CardContent className="p-3">
-                    <div className="mb-2 flex items-start justify-between">
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-medium text-slate-700">
-                          {image.filename}
-                          <span className="ml-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
-                            Session
-                          </span>
-                        </div>
-                        <div className="text-xs text-slate-500">
-                          {new Date(image.uploadedAt).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <div className="ml-2 flex gap-1">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleAnalyzeImage(image as any)}
-                          disabled={isAnalyzing}
-                          className="size-6 p-0"
-                          title={isAnalyzing ? 'Analysing...' : 'Analyse with AI'}
-                        >
-                          {isAnalyzing
-                            ? (
-                                <Loader2 size={12} className="animate-spin" />
-                              )
-                            : (
-                                <Brain size={12} />
-                              )}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleDownloadImage(image as any)}
-                          className="size-6 p-0"
-                        >
-                          <Download size={12} />
-                        </Button>
-                      </div>
-                    </div>
-
-                    {image.aiDescription && (
-                      <div className="mt-2 rounded bg-green-50 p-2 text-xs text-green-600">
-                        <div className="font-medium">✓ Analysis completed</div>
-                        <div className="text-slate-600">Added to Additional Notes</div>
-                      </div>
-                    )}
-
-                    {hasError && (
-                      <div className="mt-2 rounded bg-red-50 p-2 text-xs text-red-600">
-                        <div className="mb-1 font-medium">Analysis Error:</div>
-                        {hasError}
-                      </div>
-                    )}
-
-                    {isAnalyzing && (
-                      <div className="mt-2 rounded bg-blue-50 p-2 text-xs text-blue-600">
-                        <div className="flex items-center gap-2">
-                          <Loader2 size={12} className="animate-spin" />
-                          <span>Analysing image...</span>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                <div key={image.id} className="flex flex-col">
+                  <div className="aspect-square overflow-hidden rounded-lg bg-slate-100">
+                    {imageUrl
+                      ? (
+                        <img src={imageUrl} alt="" className="size-full object-cover" />
+                      ) : (
+                        <div className="flex size-full items-center justify-center text-xs text-slate-400">No preview</div>
+                      )}
+                  </div>
+                  <div className="mt-2 flex items-center justify-center gap-2">
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={() => handleAnalyzeImage(image as any)}
+                      disabled={isAnalyzing}
+                      className="h-7 w-7"
+                      title={isAnalyzing ? 'Analysing...' : 'Analyse'}
+                    >
+                      {isAnalyzing ? <Loader2 size={12} className="animate-spin" /> : <Brain size={12} />}
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={() => handleDownloadImage(image as any)}
+                      className="h-7 w-7"
+                      title="Download"
+                    >
+                      <Download size={12} />
+                    </Button>
+                  </div>
+                </div>
               );
             })}
           </div>
