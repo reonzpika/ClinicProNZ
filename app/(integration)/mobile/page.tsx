@@ -120,6 +120,39 @@ function MobilePageContent() {
     },
   });
 
+  // Fallback: fetch current session on mount (and when becoming connected) if missing
+  useEffect(() => {
+    const prefetch = async () => {
+      try {
+        if (!isSignedIn || !userId) { return; }
+        if (currentSessionId) { return; }
+        const res = await fetch('/api/current-session', { method: 'GET' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.currentSessionId) {
+            setCurrentSessionId(data.currentSessionId);
+          }
+        }
+      } catch {}
+    };
+    prefetch();
+  }, [isSignedIn, userId]);
+  useEffect(() => {
+    if (isConnected && !currentSessionId) {
+      (async () => {
+        try {
+          const res = await fetch('/api/current-session', { method: 'GET' });
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.currentSessionId) {
+              setCurrentSessionId(data.currentSessionId);
+            }
+          }
+        } catch {}
+      })();
+    }
+  }, [isConnected, currentSessionId]);
+
   // Transcription hook with simple handling
   const { isRecording, startRecording, stopRecording } = useTranscription({
     isMobile: true,
@@ -334,6 +367,20 @@ function MobilePageContent() {
                   onClick={async () => {
                     const filesToUpload = queuedItems.map(it => it.file);
                     try {
+                      // Ensure we have a sessionId before presign; fallback with brief wait
+                      if (!currentSessionId) {
+                        try {
+                          const res = await fetch('/api/current-session', { method: 'GET' });
+                          if (res.ok) {
+                            const data = await res.json();
+                            if (data?.currentSessionId) {
+                              setCurrentSessionId(data.currentSessionId);
+                            }
+                          }
+                        } catch {}
+                        // tiny delay to allow Ably session_context to arrive
+                        await new Promise(r => setTimeout(r, 400));
+                      }
                       await uploadImages.mutateAsync({ files: filesToUpload, patientSessionId: currentSessionId || undefined });
                       // Ably notify desktop to refresh
                       try { sendImageNotification(undefined, filesToUpload.length, currentSessionId || undefined); } catch {}

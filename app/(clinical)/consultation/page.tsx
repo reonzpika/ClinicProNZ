@@ -98,11 +98,21 @@ export default function ConsultationPage() {
 
   // Simple Ably sync implementation - always connected when token exists (moved before switchToPatientSession)
   const queryClientRef = useRef(queryClient);
+  const currentSessionIdRef = useRef<string | null>(null);
+  useEffect(() => { currentSessionIdRef.current = currentPatientSessionId || null; }, [currentPatientSessionId]);
+
   const { sendRecordingControl, sendSessionContext } = useSimpleAbly({
     userId: userId ?? null,
     onRecordingStatusChanged: (isRecording: boolean) => setMobileIsRecording(isRecording),
     onError: handleError,
-    onConnectionStatusChanged: () => {},
+    onConnectionStatusChanged: (connected: boolean) => {
+      if (connected) {
+        const sid = currentSessionIdRef.current;
+        if (sid) {
+          try { sendSessionContext?.(sid); } catch {}
+        }
+      }
+    },
     isMobile: false,
     onTranscriptionsUpdated: (signalledSessionId?: string) => {
       const activeSessionId = signalledSessionId || currentPatientSessionId;
@@ -201,6 +211,8 @@ export default function ConsultationPage() {
         const sessionId = await ensureActiveSession();
         if (isMounted && sessionId) {
           hasEnsuredSessionRef.current = true;
+          // Immediately broadcast the ensured session to mobile
+          try { sendSessionContext?.(sessionId); } catch {}
         }
       } finally {
         if (isMounted) {
