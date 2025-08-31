@@ -108,57 +108,30 @@ export default function ConsultationPage() {
     onTranscriptionsUpdated: (signalledSessionId?: string) => {
       const activeSessionId = signalledSessionId || currentPatientSessionId;
       if (!activeSessionId) { return; }
-      // Debounce ~1.2s for DB write completion, then invalidate and hydrate local transcript
-      const run = async () => {
-        try {
-          await queryClientRef.current.invalidateQueries({ queryKey: ['consultation', 'sessions'] });
-          await queryClientRef.current.invalidateQueries({ queryKey: ['consultation', 'session', activeSessionId] });
-        } catch {}
+      // Immediate invalidate and hydrate: no debounce
+      try {
+        queryClientRef.current.invalidateQueries({ queryKey: ['consultation', 'sessions'] });
+        queryClientRef.current.invalidateQueries({ queryKey: ['consultation', 'session', activeSessionId] });
+      } catch {}
 
-        // After a short settle, read sessions cache and update local transcript
-        setTimeout(() => {
+      try {
+        const sessions: any[] | undefined = queryClientRef.current.getQueryData(['consultation', 'sessions']) as any;
+        const session = Array.isArray(sessions) ? sessions.find((s: any) => s.id === activeSessionId) : null;
+        if (session) {
+          let chunks: any[] = [];
           try {
-            const sessions: any[] | undefined = queryClientRef.current.getQueryData(['consultation', 'sessions']) as any;
-            const session = Array.isArray(sessions) ? sessions.find((s: any) => s.id === activeSessionId) : null;
-            if (session) {
-              let chunks: any[] = [];
-              try {
-                chunks = typeof session.transcriptions === 'string' ? JSON.parse(session.transcriptions) : (session.transcriptions || []);
-              } catch { chunks = []; }
-              if (Array.isArray(chunks) && chunks.length > 0) {
-                const full = chunks.map((t: any) => (t?.text || '').trim()).join(' ').trim();
-                if (full) {
-                  setTranscription(full, false, undefined, undefined);
-                }
-              }
-            }
-          } catch {}
-        }, 800);
-
-        try { console.info('[Ably] transcriptions_updated -> debounced invalidate + local hydrate'); } catch {}
-      };
-
-      setTimeout(run, 1200);
-
-      // Second-chance hydration in case the first settle missed the fetch window
-      setTimeout(() => {
-        try {
-          const sessions: any[] | undefined = queryClientRef.current.getQueryData(['consultation', 'sessions']) as any;
-          const session = Array.isArray(sessions) ? sessions.find((s: any) => s.id === activeSessionId) : null;
-          if (session) {
-            let chunks: any[] = [];
-            try {
-              chunks = typeof session.transcriptions === 'string' ? JSON.parse(session.transcriptions) : (session.transcriptions || []);
-            } catch { chunks = []; }
-            if (Array.isArray(chunks) && chunks.length > 0) {
-              const full = chunks.map((t: any) => (t?.text || '').trim()).join(' ').trim();
-              if (full) {
-                setTranscription(full, false, undefined, undefined);
-              }
+            chunks = typeof session.transcriptions === 'string' ? JSON.parse(session.transcriptions) : (session.transcriptions || []);
+          } catch { chunks = []; }
+          if (Array.isArray(chunks) && chunks.length > 0) {
+            const full = chunks.map((t: any) => (t?.text || '').trim()).join(' ').trim();
+            if (full) {
+              setTranscription(full, false, undefined, undefined);
             }
           }
-        } catch {}
-      }, 3000);
+        }
+      } catch {}
+
+      try { console.info('[Ably] transcriptions_updated -> immediate invalidate + hydrate'); } catch {}
     },
   });
 
