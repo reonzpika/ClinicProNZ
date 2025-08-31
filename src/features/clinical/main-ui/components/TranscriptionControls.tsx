@@ -26,13 +26,11 @@ export function TranscriptionControls({
   onExpand,
   isMinimized,
   mobileIsRecording = false,
-  isMobileConnected = false,
 }: {
   collapsed?: boolean;
   onExpand?: () => void;
   isMinimized?: boolean;
   mobileIsRecording?: boolean;
-  isMobileConnected?: boolean;
 }) {
   const { isSignedIn } = useAuth();
   const { getUserTier } = useClerkMetadata();
@@ -87,8 +85,8 @@ export function TranscriptionControls({
   // 🐛 DEBUG: Log tier and enhanced transcription status
   // debug removed
 
-  // Mobile connection status from parent (consultation page)
-  const hasMobileDevices = isMobileConnected;
+  // Simplified: always show mobile controls and QR
+  const hasMobileDevices = true;
   const [pendingControl, setPendingControl] = useState<null | 'start' | 'stop'>(null);
   const [controlError, setControlError] = useState<string | null>(null);
   const [controlAckTimer, setControlAckTimer] = useState<any>(null);
@@ -455,55 +453,25 @@ export function TranscriptionControls({
                   <div className="space-y-2">
                     {/* Description and Mobile Recording Button - Same Line */}
                     <div className="flex items-center justify-between">
-                      {!hasMobileDevices
-                        ? (
-                            <div className="rounded border border-blue-200 bg-blue-50 px-2 py-1 text-xs text-blue-700">
-                              Better audio with mobile recording - 30 second setup
-                            </div>
-                          )
-                        : (
-                            <div className="flex items-center gap-2 text-xs text-slate-500">
-                              {/* Connected mobile status - simplified for MVP */}
-                              {hasMobileDevices && (
-                                <div className="flex items-center gap-1 rounded bg-green-100 px-2 py-1 text-green-700">
-                                  <Smartphone className="size-3" />
-                                  <span>Mobile connected</span>
-                                </div>
-                              )}
-                            </div>
-                          )}
+                      <div className="rounded border border-blue-200 bg-blue-50 px-2 py-1 text-xs text-blue-700">
+                        Better audio with mobile recording - 30 second setup
+                      </div>
 
                       {/* Right side: Status indicator + Mobile buttons */}
                       <div className="flex items-center gap-2">
                         {/* Mobile Recording Button */}
-                        {hasMobileDevices
-                          ? (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                onClick={handleMobileClick}
-                                disabled={!canCreateSession}
-                                className="h-8 px-3 text-xs disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
-                                title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
-                              >
-                                <Smartphone className="mr-1 size-3" />
-                                Show QR
-                              </Button>
-                            )
-                          : (
-                              <Button
-                                type="button"
-                                onClick={handleMobileClick}
-                                disabled={(!isSignedIn && !canCreateSession)}
-                                className="h-8 bg-blue-600 px-3 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-                                title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
-                              >
-                                <Smartphone className="mr-1 size-3" />
-                                Connect Mobile
-                              </Button>
-                            )}
+                        <Button
+                          type="button"
+                          onClick={handleMobileClick}
+                          disabled={(!isSignedIn && !canCreateSession)}
+                          className="h-8 bg-blue-600 px-3 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                          title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
+                        >
+                          <Smartphone className="mr-1 size-3" />
+                          Connect Mobile
+                        </Button>
                         {/* Remote control buttons when connected */}
-                        {isMobileConnected && !mobileIsRecording && (
+                        {!mobileIsRecording && (
                           <Button
                             type="button"
                             variant="outline"
@@ -514,7 +482,7 @@ export function TranscriptionControls({
                             Start on mobile
                           </Button>
                         )}
-                        {isMobileConnected && mobileIsRecording && (
+                        {mobileIsRecording && (
                           <Button
                             type="button"
                             variant="outline"
@@ -589,7 +557,7 @@ export function TranscriptionControls({
                       )}
                     </div>
                     <div className="flex gap-1">
-                      {isMobileConnected && !isRecording && (
+                      {!isRecording && (
                         <Button
                           type="button"
                           variant="outline"
@@ -600,7 +568,7 @@ export function TranscriptionControls({
                           Start on mobile
                         </Button>
                       )}
-                      {isMobileConnected && isRecording && (
+                      {isRecording && (
                         <Button
                           type="button"
                           variant="outline"
