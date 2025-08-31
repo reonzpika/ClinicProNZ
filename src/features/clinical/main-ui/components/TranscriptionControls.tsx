@@ -2,7 +2,8 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { ChevronDown, ChevronUp, Info, Mic, Settings, Smartphone } from 'lucide-react';
+import { ChevronDown, ChevronUp, Info, Mic, RefreshCw, Settings, Smartphone } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import React, { useEffect, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
@@ -46,6 +47,8 @@ export function TranscriptionControls({
     transcription: contextTranscription,
     inputMode,
     setInputMode,
+    setTranscription,
+    currentPatientSessionId,
   } = useConsultationStores();
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [showAudioSettings, setShowAudioSettings] = useState(false);
@@ -90,6 +93,39 @@ export function TranscriptionControls({
   const [pendingControl, setPendingControl] = useState<null | 'start' | 'stop'>(null);
   const [controlError, setControlError] = useState<string | null>(null);
   const [controlAckTimer, setControlAckTimer] = useState<any>(null);
+  const [isRefreshingTranscript, setIsRefreshingTranscript] = useState<boolean>(false);
+  const queryClient = useQueryClient();
+
+  const handleManualRefresh = async () => {
+    try {
+      setIsRefreshingTranscript(true);
+      const activeSessionId = currentPatientSessionId || '';
+      // Invalidate both sessions list and active session
+      await Promise.allSettled([
+        queryClient.invalidateQueries({ queryKey: ['consultation', 'sessions'] }),
+        queryClient.invalidateQueries({ queryKey: ['consultation', 'session', activeSessionId] }),
+      ]);
+      // Hydrate from cache
+      const sessions: any[] | undefined = queryClient.getQueryData(['consultation', 'sessions']) as any;
+      const session = Array.isArray(sessions) ? sessions.find((s: any) => s.id === activeSessionId) : null;
+      if (session) {
+        let chunks: any[] = [];
+        try {
+          chunks = typeof session.transcriptions === 'string' ? JSON.parse(session.transcriptions) : (session.transcriptions || []);
+        } catch {
+          chunks = [];
+        }
+        if (Array.isArray(chunks) && chunks.length > 0) {
+          const full = chunks.map((t: any) => (t?.text || '').trim()).join(' ').trim();
+          if (full) {
+            setTranscription(full, false, undefined, undefined);
+          }
+        }
+      }
+    } finally {
+      setIsRefreshingTranscript(false);
+    }
+  };
 
   // Track recording time and transcript warning
   useEffect(() => {
@@ -693,6 +729,17 @@ export function TranscriptionControls({
                 <div className="text-xs font-medium text-slate-600">
                   Transcribed Text — Edit as needed
                 </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleManualRefresh}
+                  disabled={isRefreshingTranscript}
+                  className="h-5 px-2 text-xs text-slate-500 hover:text-slate-700"
+                  title="Refresh transcript from server"
+                >
+                  <RefreshCw className="mr-1 size-3" />
+                  {isRefreshingTranscript ? 'Refreshing…' : 'Refresh'}
+                </Button>
               </div>
             )}
 
