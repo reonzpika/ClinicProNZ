@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, ChevronDown, RefreshCw, Smartphone, User, UserCheck } from 'lucide-react';
+import { Calendar, ChevronDown, RefreshCw, User, UserCheck } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
