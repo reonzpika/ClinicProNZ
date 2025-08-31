@@ -131,26 +131,31 @@ function MobilePageContent() {
     startImmediate: true, // ensure immediate recorder session for remote-stop path
     onChunkComplete: async (audioBlob: Blob) => {
       try {
+        try { console.info('[Mobile] onChunkComplete auth', { isSignedIn, userId, size: audioBlob?.size }); } catch {}
         const formData = new FormData();
         formData.append('audio', audioBlob, 'audio.webm');
 
         if (!isSignedIn || !userId) {
           setAuthError('Not signed in');
+          try { console.warn('[Mobile] Aborting upload: not signed in'); } catch {}
           return;
         }
 
+        try { console.info('[Mobile] POST /api/deepgram/transcribe?persist=true starting'); } catch {}
         const response = await fetch('/api/deepgram/transcribe?persist=true', {
           method: 'POST',
           headers: createAuthHeadersForFormData(userId),
           body: formData,
         });
 
+        try { console.info('[Mobile] POST /api/deepgram/transcribe?persist=true status', response.status); } catch {}
         if (!response.ok) {
           setAuthError(`Transcription failed: ${response.statusText}`);
           return;
         }
       } catch (error) {
         setAuthError(`Recording error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        try { console.error('[Mobile] onChunkComplete error', error); } catch {}
       }
     },
   });
