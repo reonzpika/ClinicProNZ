@@ -144,7 +144,7 @@ export default function ClinicalImagePage() {
 }
 
 // Grouped sections by sessionId for clinical-images and legacy consultations
-function ImageSectionsGrid({
+export function ImageSectionsGrid({
   images,
   onAnalyze,
   onEnlarge,
