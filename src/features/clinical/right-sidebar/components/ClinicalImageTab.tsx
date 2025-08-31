@@ -29,7 +29,7 @@ export const ClinicalImageTab: React.FC = () => {
 
   // Mobile images state
   const [mobileImages, setMobileImages] = useState<ClinicalImage[]>([]);
-  const [isFetchingMobileImages, setIsFetchingMobileImages] = useState(false);
+  const [isFetchingMobileImages] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentSession = getCurrentPatientSession();
