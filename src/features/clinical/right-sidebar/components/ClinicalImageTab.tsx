@@ -1,6 +1,6 @@
 'use client';
 
-import { Brain, Download, Loader2, Trash2 } from 'lucide-react';
+import { Brain, Download, Loader2, Trash2, Expand } from 'lucide-react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { useQueryClient } from '@tanstack/react-query';
@@ -30,6 +30,7 @@ export const ClinicalImageTab: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [analyzingImages, setAnalyzingImages] = useState<Set<string>>(new Set());
   const [analysisErrors, setAnalysisErrors] = useState<Record<string, string>>({});
+  const [enlargeImage, setEnlargeImage] = useState<any | null>(null);
 
   // Server images (user scope) for session grouping
   const { userId } = useAuth();
@@ -147,7 +148,7 @@ export const ClinicalImageTab: React.FC = () => {
     await saveClinicalImagesToCurrentSession(updatedImages);
   }, [clinicalImages, removeClinicalImage, saveClinicalImagesToCurrentSession]);
 
-  const handleDownloadImage = useCallback(async (image: ClinicalImage) => {
+  const handleDownloadImage = useCallback(async (image: any) => {
     try {
       const response = await fetch(`/api/uploads/download?key=${encodeURIComponent(image.key)}`);
       if (!response.ok) {
@@ -156,8 +157,20 @@ export const ClinicalImageTab: React.FC = () => {
 
       const { downloadUrl } = await response.json();
 
-      // Open in new tab for download
-      window.open(downloadUrl, '_blank');
+      // Fetch blob and force download via anchor
+      const fileResp = await fetch(downloadUrl);
+      if (!fileResp.ok) {
+        throw new Error('Failed to fetch image for download');
+      }
+      const blob = await fileResp.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = image.filename || 'clinical-image';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
     } catch (err) {
       console.error('Download error:', err);
       setError('Failed to download image');
@@ -415,6 +428,15 @@ export const ClinicalImageTab: React.FC = () => {
                     <Button
                       size="icon"
                       variant="outline"
+                      onClick={() => setEnlargeImage(image)}
+                      className="h-7 w-7"
+                      title="Enlarge"
+                    >
+                      <Expand size={12} />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="outline"
                       onClick={() => handleDownloadImage(image as any)}
                       className="h-7 w-7"
                       title="Download"
@@ -425,6 +447,17 @@ export const ClinicalImageTab: React.FC = () => {
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox for enlarged view */}
+      {enlargeImage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setEnlargeImage(null)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setEnlargeImage(null); }}>
+          <div className="max-h-[90vh] max-w-[90vw]">
+            {enlargeImage.thumbnailUrl
+              ? <img src={enlargeImage.thumbnailUrl} alt="" className="max-h-[90vh] max-w-[90vw] object-contain" />
+              : <div className="flex items-center justify-center p-8 text-white">No preview</div>}
           </div>
         </div>
       )}
