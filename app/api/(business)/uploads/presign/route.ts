@@ -44,8 +44,12 @@ export async function GET(req: NextRequest) {
     const fileExtension = filename.split('.').pop() || 'jpg';
     const uniqueFilename = `${timestamp}-${uuidv4()}.${fileExtension}`;
 
+    // Build key under clinical-images/{userId}/ with optional session folder
     let key: string;
-    key = `consultations/${patientSessionId || 'standalone'}/${uniqueFilename}`;
+    const basePrefix = `clinical-images/${userId}/`;
+    key = patientSessionId
+      ? `${basePrefix}${patientSessionId}/${uniqueFilename}`
+      : `${basePrefix}${uniqueFilename}`;
 
     // Create presigned URL for PUT operation
     const command = new PutObjectCommand({
@@ -55,7 +59,7 @@ export async function GET(req: NextRequest) {
       // Temporarily remove ServerSideEncryption to test
       Metadata: {
         ...(patientSessionId && { 'patient-session-id': patientSessionId }),
-        'upload-type': 'consultation',
+        'upload-type': 'clinical',
         'uploaded-by': userId,
         'original-filename': filename,
         'upload-timestamp': timestamp.toString(),

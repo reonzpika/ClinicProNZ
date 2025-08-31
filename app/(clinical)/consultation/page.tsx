@@ -98,24 +98,39 @@ export default function ConsultationPage() {
 
   // Simple Ably sync implementation - always connected when token exists (moved before switchToPatientSession)
   const queryClientRef = useRef(queryClient);
-  const { sendRecordingControl } = useSimpleAbly({
+  const currentSessionIdRef = useRef<string | null>(null);
+  useEffect(() => { currentSessionIdRef.current = currentPatientSessionId || null; }, [currentPatientSessionId]);
+
+  const { sendRecordingControl, sendSessionContext } = useSimpleAbly({
     userId: userId ?? null,
     onRecordingStatusChanged: (isRecording: boolean) => setMobileIsRecording(isRecording),
     onError: handleError,
-    onConnectionStatusChanged: () => {},
+    onConnectionStatusChanged: (connected: boolean) => {
+      if (connected) {
+        const sid = currentSessionIdRef.current;
+        if (sid) {
+          try { sendSessionContext?.(sid); } catch {}
+        }
+      }
+    },
     isMobile: false,
-    onTranscriptionsUpdated: (signalledSessionId?: string) => {
+    onTranscriptionsUpdated: async (signalledSessionId?: string) => {
       const activeSessionId = signalledSessionId || currentPatientSessionId;
       if (!activeSessionId) { return; }
-      // Immediate invalidate and hydrate: no debounce
       try {
-        queryClientRef.current.invalidateQueries({ queryKey: ['consultation', 'sessions'] });
-        queryClientRef.current.invalidateQueries({ queryKey: ['consultation', 'session', activeSessionId] });
+        await Promise.all([
+          queryClientRef.current.refetchQueries({ queryKey: ['consultation', 'sessions'] }),
+          queryClientRef.current.refetchQueries({ queryKey: ['consultation', 'session', activeSessionId] }),
+        ]);
       } catch {}
 
       try {
-        const sessions: any[] | undefined = queryClientRef.current.getQueryData(['consultation', 'sessions']) as any;
-        const session = Array.isArray(sessions) ? sessions.find((s: any) => s.id === activeSessionId) : null;
+        // Prefer the specific session cache; fallback to list
+        let session: any = queryClientRef.current.getQueryData(['consultation', 'session', activeSessionId]);
+        if (!session) {
+          const sessions: any[] | undefined = queryClientRef.current.getQueryData(['consultation', 'sessions']) as any;
+          session = Array.isArray(sessions) ? sessions.find((s: any) => s.id === activeSessionId) : null;
+        }
         if (session) {
           let chunks: any[] = [];
           try {
@@ -123,14 +138,12 @@ export default function ConsultationPage() {
           } catch { chunks = []; }
           if (Array.isArray(chunks) && chunks.length > 0) {
             const full = chunks.map((t: any) => (t?.text || '').trim()).join(' ').trim();
-            if (full) {
-              setTranscription(full, false, undefined, undefined);
-            }
+            setTranscription(full || '', false, undefined, undefined);
           }
         }
       } catch {}
 
-      try { console.info('[Ably] transcriptions_updated -> immediate invalidate + hydrate'); } catch {}
+      try { console.info('[Ably] transcriptions_updated -> refetch + hydrate'); } catch {}
     },
   });
 
@@ -169,6 +182,8 @@ export default function ConsultationPage() {
 
     // Now perform the actual session switch
     originalSwitchToPatientSession(sessionId, onSwitch);
+    // Publish session context to mobile for session-aware image uploads
+    try { sendSessionContext?.(sessionId || null); } catch {}
   }, [isRecording, mobileIsRecording, stopRecording, sendRecordingControl, originalSwitchToPatientSession]);
 
   useEffect(() => {
@@ -199,6 +214,8 @@ export default function ConsultationPage() {
         const sessionId = await ensureActiveSession();
         if (isMounted && sessionId) {
           hasEnsuredSessionRef.current = true;
+          // Immediately broadcast the ensured session to mobile
+          try { sendSessionContext?.(sessionId); } catch {}
         }
       } finally {
         if (isMounted) {

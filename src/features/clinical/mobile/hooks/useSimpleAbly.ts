@@ -15,7 +15,7 @@ export type EnhancedTranscriptionData = {
 };
 
 type SimpleAblyMessage = {
-  type: 'transcriptions_updated' | 'recording_status' | 'recording_control' | 'images_uploaded';
+  type: 'transcriptions_updated' | 'recording_status' | 'recording_control' | 'images_uploaded' | 'session_context';
   transcript?: string;
   timestamp?: number;
   // 🆕 Enhanced transcription fields
@@ -30,6 +30,8 @@ type SimpleAblyMessage = {
   mobileTokenId?: string;
   imageCount?: number;
   uploadTimestamp?: string;
+  // 🆕 Session context fields
+  sessionId?: string | null;
 };
 
 export type UseSimpleAblyOptions = {
@@ -39,8 +41,9 @@ export type UseSimpleAblyOptions = {
   onConnectionStatusChanged?: (isConnected: boolean) => void;
   isMobile?: boolean;
   onControlCommand?: (action: 'start' | 'stop') => void; // For mobile remote control
-  onMobileImagesUploaded?: (mobileTokenId: string, imageCount: number, timestamp: string) => void; // For desktop image notification
+  onMobileImagesUploaded?: (mobileTokenId: string | undefined, imageCount: number, timestamp: string, sessionId?: string | null) => void; // For desktop image notification
   onTranscriptionsUpdated?: (sessionId?: string, chunkId?: string) => void;
+  onSessionContextChanged?: (sessionId: string | null) => void; // For mobile to receive session context
 };
 
 export const useSimpleAbly = ({
@@ -52,6 +55,7 @@ export const useSimpleAbly = ({
   onControlCommand,
   onMobileImagesUploaded,
   onTranscriptionsUpdated,
+  onSessionContextChanged,
 }: UseSimpleAblyOptions) => {
   const [isConnected, setIsConnected] = useState(false);
 
@@ -70,6 +74,7 @@ export const useSimpleAbly = ({
     onControlCommand,
     onMobileImagesUploaded,
     onTranscriptionsUpdated,
+    onSessionContextChanged,
   });
 
   // Update callbacks without triggering reconnection
@@ -81,8 +86,9 @@ export const useSimpleAbly = ({
       onControlCommand,
       onMobileImagesUploaded,
       onTranscriptionsUpdated,
+      onSessionContextChanged,
     } as any;
-  }, [onRecordingStatusChanged, onError, onConnectionStatusChanged, onControlCommand, onMobileImagesUploaded, onTranscriptionsUpdated]);
+  }, [onRecordingStatusChanged, onError, onConnectionStatusChanged, onControlCommand, onMobileImagesUploaded, onTranscriptionsUpdated, onSessionContextChanged]);
 
   // Connection status is updated directly to avoid unstable deps
 
@@ -332,13 +338,20 @@ export const useSimpleAbly = ({
               break;
 
             case 'images_uploaded':
-              if (!isMobile && data.mobileTokenId && data.imageCount && data.uploadTimestamp) {
+              if (!isMobile && data.imageCount && data.uploadTimestamp) {
                 // Only desktop should receive image upload notifications
                 callbacksRef.current.onMobileImagesUploaded?.(
                   data.mobileTokenId,
                   data.imageCount,
                   data.uploadTimestamp,
+                  data.sessionId,
                 );
+              }
+              break;
+
+            case 'session_context':
+              if (isMobile) {
+                callbacksRef.current.onSessionContextChanged?.(data.sessionId ?? null);
               }
               break;
           }
@@ -409,14 +422,24 @@ export const useSimpleAbly = ({
   }, [publishSafe]);
 
   // Send image upload notification (mobile to desktop)
-  const sendImageNotification = useCallback((mobileTokenId: string, imageCount: number) => {
+  const sendImageNotification = useCallback((mobileTokenId: string | undefined, imageCount: number, sessionId?: string | null) => {
     return publishSafe('images_uploaded', {
       type: 'images_uploaded',
       mobileTokenId,
       imageCount,
+      sessionId: sessionId ?? undefined,
       uploadTimestamp: new Date().toISOString(),
       timestamp: Date.now(),
     }, { queueIfNotReady: true }); // Queue if not ready to ensure delivery
+  }, [publishSafe]);
+
+  // Send session context (desktop to mobile)
+  const sendSessionContext = useCallback((sessionId: string | null) => {
+    return publishSafe('session_context', {
+      type: 'session_context',
+      sessionId,
+      timestamp: Date.now(),
+    }, { queueIfNotReady: true });
   }, [publishSafe]);
 
   // Removed HTTP polling - using broadcast requests instead
@@ -426,5 +449,6 @@ export const useSimpleAbly = ({
     sendRecordingStatus,
     sendRecordingControl,
     sendImageNotification,
+    sendSessionContext,
   };
 };

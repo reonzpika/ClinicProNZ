@@ -58,10 +58,13 @@ export function useUploadImage() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (file: File): Promise<void> => {
+    mutationFn: async (input: File | { file: File; patientSessionId?: string }): Promise<void> => {
       if (!userId) {
         throw new Error('User not authenticated');
       }
+
+      const file = (input instanceof File) ? input : input.file;
+      const patientSessionId = (input instanceof File) ? undefined : input.patientSessionId;
 
       // Resize on client before uploading (keeps original MIME type)
       const resizedBlob = await resizeImageFile(file, 1024);
@@ -70,6 +73,7 @@ export function useUploadImage() {
       const presignParams = new URLSearchParams({
         filename: file.name,
         mimeType: file.type,
+        ...(patientSessionId ? { patientSessionId } : {}),
       });
 
       const presignResponse = await fetch(`/api/uploads/presign?${presignParams}`, {
@@ -117,13 +121,15 @@ export function useUploadImages() {
   const uploadImage = useUploadImage();
 
   return useMutation({
-    mutationFn: async (files: File[]): Promise<void> => {
+    mutationFn: async (input: { files: File[]; patientSessionId?: string } | File[]): Promise<void> => {
+      const files = Array.isArray(input) ? input : input.files;
+      const patientSessionId = Array.isArray(input) ? undefined : input.patientSessionId;
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         if (!file) {
           throw new Error(`File at index ${i} is undefined`);
         }
-        await uploadImage.mutateAsync(file);
+        await uploadImage.mutateAsync(patientSessionId ? { file, patientSessionId } : file);
       }
     },
   });
@@ -419,20 +425,14 @@ export function useDeleteImage() {
         queryKey: imageQueryKeys.list(userId),
       });
 
-      // Snapshot the previous value for rollback
-      const previousImages = queryClient.getQueryData<{ images: ServerImage[]; count: number }>(
-        imageQueryKeys.list(userId),
-      );
+      // Snapshot previous list (it's an array in this app)
+      const previousImages = queryClient.getQueryData<ServerImage[]>(imageQueryKeys.list(userId));
 
       // Optimistically update the cache - remove the image
-      if (previousImages && previousImages.images) {
-        queryClient.setQueryData(
+      if (previousImages) {
+        queryClient.setQueryData<ServerImage[]>(
           imageQueryKeys.list(userId),
-          {
-            ...previousImages,
-            images: previousImages.images.filter(img => img.key !== imageKey),
-            count: Math.max((previousImages.count || 0) - 1, 0),
-          },
+          previousImages.filter(img => img.key !== imageKey),
         );
       }
 

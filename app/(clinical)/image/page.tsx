@@ -17,9 +17,10 @@ import {
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 // Removed in-page WebRTC camera in favour of native camera capture
-import { useAnalyzeImage, useDeleteImage, useSaveAnalysis, useServerImages, useUploadImages } from '@/src/hooks/useImageQueries';
+import { imageQueryKeys, useAnalyzeImage, useDeleteImage, useSaveAnalysis, useServerImages, useUploadImages } from '@/src/hooks/useImageQueries';
 import { Container } from '@/src/shared/components/layout/Container';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
@@ -28,6 +29,7 @@ import { createAuthHeaders } from '@/src/shared/utils';
 import { isFeatureEnabled } from '@/src/shared/utils/launch-config';
 import type { AnalysisModalState, ServerImage } from '@/src/stores/imageStore';
 import { useImageStore } from '@/src/stores/imageStore';
+import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 
 export default function ClinicalImagePage() {
   const { userId, isSignedIn } = useAuth();
@@ -85,6 +87,16 @@ export default function ClinicalImagePage() {
   // QR code URL for mobile uploads (same page with mobile detection)
   const qrCodeUrl = typeof window !== 'undefined' ? `${window.location.origin}/image` : '';
 
+  // Live refresh via Ably images_uploaded
+  const queryClientRef = useRef(useQueryClient());
+  useSimpleAbly({
+    userId: userId ?? null,
+    isMobile: false,
+    onMobileImagesUploaded: () => {
+      try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') }); } catch {}
+    },
+  });
+
   // Detect mobile on mount
   useEffect(() => {
     const detectMobile = () => {
@@ -128,8 +140,8 @@ export default function ClinicalImagePage() {
       ]);
       setMobileStep('review');
       if (event.target) {
- event.target.value = '';
-}
+        event.target.value = '';
+      }
       return;
     }
 
@@ -142,8 +154,8 @@ export default function ClinicalImagePage() {
     } finally {
       setUploadingFileCount(0);
       if (event.target) {
- event.target.value = '';
-}
+        event.target.value = '';
+      }
     }
   };
 
@@ -553,11 +565,13 @@ Cancel
 
               {isLoadingImages
                 ? (
-                    <div className="flex h-full items-center justify-center">
-                      <div className="text-center">
-                        <Loader2 className="mb-4 size-8 animate-spin text-slate-400" />
-                        <p className="text-slate-600">Loading images...</p>
-                      </div>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+                      {Array.from({ length: 12 }).map((_, idx) => (
+                        <div key={idx} className="animate-pulse">
+                          <div className="aspect-square rounded-lg bg-slate-200" />
+                          <div className="mt-2 h-3 w-3/4 rounded bg-slate-200" />
+                        </div>
+                      ))}
                     </div>
                   )
                 : serverImages.length === 0
@@ -585,19 +599,14 @@ Cancel
                       </div>
                     )
                   : (
-                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-                        {serverImages.map(image => (
-                          <ServerImageCard
-                            key={image.id}
-                            image={image}
-                            onAnalyze={() => handleOpenAnalysis(image)}
-                            onEnlarge={() => handleOpenEnlarge(image)}
-                            onDownload={() => handleDownloadImage(image)}
-                            onDelete={handleDeleteImage}
-                            formatFileSize={formatFileSize}
-                          />
-                        ))}
-                      </div>
+                      <ImageSectionsGrid
+                        images={serverImages}
+                        onAnalyze={handleOpenAnalysis}
+                        onEnlarge={handleOpenEnlarge}
+                        onDownload={handleDownloadImage}
+                        onDelete={handleDeleteImage}
+                        formatFileSize={formatFileSize}
+                      />
                     )}
             </CardContent>
           </Card>
@@ -654,6 +663,7 @@ function ServerImageCard({
   onDelete: (imageKey: string) => void;
   formatFileSize: (bytes: number) => string;
 }) {
+  const [isDeleting, setIsDeleting] = React.useState(false);
   // Use thumbnail URL directly from image object (performance optimization)
   const imageUrl = image.thumbnailUrl;
   const isLoadingUrl = !imageUrl; // Only loading if no URL provided
@@ -661,6 +671,8 @@ function ServerImageCard({
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation(); // Prevent opening modal
+    if (isDeleting) { return; }
+    setIsDeleting(true);
     onDelete(image.key);
   };
 
@@ -677,7 +689,7 @@ function ServerImageCard({
   };
 
   return (
-    <Card className="group cursor-pointer overflow-hidden transition-all hover:scale-105 hover:shadow-lg" onClick={onAnalyze}>
+    <Card className={`group cursor-pointer overflow-hidden transition-all hover:scale-105 hover:shadow-lg ${isDeleting ? 'opacity-50' : ''}`} onClick={onAnalyze}>
       <div className="relative aspect-square">
         <div className="flex size-full items-center justify-center bg-slate-100">
         {isLoadingUrl
@@ -695,6 +707,11 @@ function ServerImageCard({
 : (
                 <ImageIcon className="size-6 text-slate-400" />
         )}
+          {isDeleting && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/70">
+              <Loader2 className="size-6 animate-spin text-slate-500" />
+            </div>
+          )}
         </div>
 
         {/* Top-right badges */}
@@ -1086,6 +1103,72 @@ function ImageEnlargeModal({
           })()}
         </p>
       </div>
+    </div>
+  );
+}
+
+// Grouped sections by sessionId for clinical-images and legacy consultations
+function ImageSectionsGrid({
+  images,
+  onAnalyze,
+  onEnlarge,
+  onDownload,
+  onDelete,
+  formatFileSize,
+}: {
+  images: ServerImage[];
+  onAnalyze: (img: ServerImage) => void;
+  onEnlarge: (img: ServerImage) => void;
+  onDownload: (img: ServerImage) => void;
+  onDelete: (imageKey: string) => void;
+  formatFileSize: (bytes: number) => string;
+}) {
+  // Partition images
+  const clinical = images.filter(i => i.source === 'clinical');
+  const noSession = clinical.filter(i => !i.sessionId);
+  const bySession = clinical.filter(i => i.sessionId).reduce<Record<string, ServerImage[]>>((acc, img) => {
+    const key = img.sessionId as string;
+    if (!acc[key]) { acc[key] = []; }
+    acc[key].push(img);
+    return acc;
+  }, {});
+  const legacyConsultations = images.filter(i => i.source === 'consultation');
+
+  const Section = ({ title, items }: { title: string; items: ServerImage[] }) => (
+    items.length === 0 ? null : (
+      <div className="mb-6">
+        <div className="mb-2 text-sm font-semibold text-slate-700">{title}</div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          {items.map(image => (
+            <ServerImageCard
+              key={image.id}
+              image={image}
+              onAnalyze={() => onAnalyze(image)}
+              onEnlarge={() => onEnlarge(image)}
+              onDownload={() => onDownload(image)}
+              onDelete={onDelete}
+              formatFileSize={formatFileSize}
+            />
+          ))}
+        </div>
+      </div>
+    )
+  );
+
+  const sessionKeys = Object.keys(bySession);
+  const firstSessionId = sessionKeys.length > 0 ? sessionKeys[0] : null;
+  const restSessionIds = sessionKeys.slice(1);
+
+  return (
+    <div className="space-y-6">
+      {firstSessionId && (
+        <Section title="This session" items={bySession[firstSessionId] ?? []} />
+      )}
+      {restSessionIds.map((sid) => (
+        <Section key={sid} title={`Other session ${sid}`} items={bySession[sid] ?? []} />
+      ))}
+      <Section title="No session" items={noSession} />
+      <Section title="Legacy consultations" items={legacyConsultations} />
     </div>
   );
 }
