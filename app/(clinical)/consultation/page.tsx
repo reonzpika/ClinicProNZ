@@ -107,7 +107,11 @@ export default function ConsultationPage() {
     isMobile: false,
     onTranscriptionsUpdated: () => {
       if (currentPatientSessionId) {
+        // Invalidate individual session (if used anywhere)
         queryClientRef.current.invalidateQueries({ queryKey: ['consultation', 'session', currentPatientSessionId] }).catch(() => {});
+        // Invalidate the sessions list to trigger hydration effect
+        queryClientRef.current.invalidateQueries({ queryKey: ['consultation', 'sessions'] }).catch(() => {});
+        try { console.info('[Ably] transcriptions_updated -> invalidated sessions & session'); } catch {}
       }
     },
   });

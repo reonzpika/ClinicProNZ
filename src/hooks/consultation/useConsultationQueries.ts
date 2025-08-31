@@ -52,6 +52,7 @@ export function usePatientSessions(enabled: boolean = false): any {
     queryFn: () => consultationApi.getSessions(userId),
     enabled: enabled && !!userId, // Only fetch when explicitly enabled AND user is authenticated
     staleTime: 2 * 60 * 1000, // 2 minutes - sessions don't change very often
+    refetchInterval: 15000, // Backstop polling for new mobile chunks
   });
 }
 
