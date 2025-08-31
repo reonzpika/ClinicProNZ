@@ -116,6 +116,17 @@ export default function ConsultationPage() {
     },
   });
 
+  // Ensure global hook proxy exists as early as possible to aid diagnostics
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (typeof (window as any).ablySyncHook !== 'object') {
+        (window as any).ablySyncHook = {
+          sendRecordingControl: () => false,
+        };
+      }
+    }
+  }, []);
+
   // 🛡️ GP WORKFLOW: Wrapper to stop recording before session switching
   const switchToPatientSession = useCallback(async (sessionId: string, onSwitch?: (sessionId: string, patientName: string) => void) => {
     // Stop recording before switching sessions

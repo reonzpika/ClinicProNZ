@@ -119,25 +119,27 @@ export const useSimpleAbly = ({
 
   // Removed session request - no longer needed in simplified architecture
 
-  // Connect when userId is provided
+  // Connect when userId is provided. Re-initialise if userId changes from null->value or value->different value.
   useEffect(() => {
     if (!userId) {
-      // Clean up if no token
-      if (ablyRef.current) {
-        try {
-          const state = ablyRef.current.connection?.state;
-          if (state !== 'closing' && state !== 'closed') {
-            ablyRef.current.close();
+      // Defer cleanup slightly to avoid thrashing during rapid auth transitions
+      const timer = setTimeout(() => {
+        if (ablyRef.current) {
+          try {
+            const state = ablyRef.current.connection?.state;
+            if (state !== 'closing' && state !== 'closed') {
+              ablyRef.current.close();
+            }
+          } catch {
+            // ignore close errors
+          } finally {
+            ablyRef.current = null;
+            channelRef.current = null;
+            setIsConnected(false);
           }
-        } catch {
-          // ignore close errors
-        } finally {
-          ablyRef.current = null;
-          channelRef.current = null;
-          setIsConnected(false);
         }
-      }
-      return;
+      }, 50);
+      return () => clearTimeout(timer);
     }
 
     let isCurrentConnection = true; // Prevent race conditions
