@@ -565,11 +565,13 @@ Cancel
 
               {isLoadingImages
                 ? (
-                    <div className="flex h-full items-center justify-center">
-                      <div className="text-center">
-                        <Loader2 className="mb-4 size-8 animate-spin text-slate-400" />
-                        <p className="text-slate-600">Loading images...</p>
-                      </div>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+                      {Array.from({ length: 12 }).map((_, idx) => (
+                        <div key={idx} className="animate-pulse">
+                          <div className="aspect-square rounded-lg bg-slate-200" />
+                          <div className="mt-2 h-3 w-3/4 rounded bg-slate-200" />
+                        </div>
+                      ))}
                     </div>
                   )
                 : serverImages.length === 0
