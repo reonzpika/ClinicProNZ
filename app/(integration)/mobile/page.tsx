@@ -225,6 +225,21 @@ function MobilePageContent() {
   }, [isRecording, stopRecording, sendRecordingStatusWithRetry]);
 
   // Removed legacy WebRTC camera handlers in favour of native capture
+  const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) { return; }
+    const fileArray = Array.from(files);
+    setQueuedItems(prev => ([
+      ...prev,
+      ...fileArray.map(f => ({ id: Math.random().toString(36).slice(2), file: f, previewUrl: URL.createObjectURL(f) })),
+    ]));
+    setMobileStep('review');
+    if (event.target) { event.target.value = ''; }
+  }, []);
+
+  useEffect(() => () => {
+    queuedItems.forEach(item => item.previewUrl && URL.revokeObjectURL(item.previewUrl));
+  }, [queuedItems]);
 
   // state info removed - simplified UI
 
