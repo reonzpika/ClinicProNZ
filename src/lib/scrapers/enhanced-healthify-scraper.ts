@@ -84,16 +84,9 @@ export class EnhancedHealthifyScraper {
       const sections = this.extractSections(contentElement);
 
       // Extract metadata
-      const author = this.extractAuthor(document);
-      const lastUpdated = this.extractLastUpdated(document);
-      [SITE CRAWLER] Crawl complete!
-      [SITE CRAWLER] Total articles: 1165
-      [SITE CRAWLER] Successful: 1165
-      [SITE CRAWLER] Failed: 0
-      
-      ✅ Site crawl completed successfully!
-      📊 Check the database for newly indexed articles.
-      🔍 Users can now search and articles will be enhanced on-demand.      const categories = await this.extractCategories(document, url, cleanedContent);
+              const author = this.extractAuthor(document);
+        const lastUpdated = this.extractLastUpdated(document);
+        const categories = await this.extractCategories(document, url, cleanedContent);
       const contentType = this.inferContentType(title, sections);
       const internalLinks = this.extractInternalLinks(contentElement);
 
