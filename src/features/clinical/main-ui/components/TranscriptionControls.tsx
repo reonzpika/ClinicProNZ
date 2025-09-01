@@ -136,7 +136,7 @@ export function TranscriptionControls({
     } else if (!isRecording && recordingStartTime) {
       setRecordingStartTime(null);
       setShowNoTranscriptWarning(false);
-      setTranscriptExpanded(true); // Auto-expand after recording for review
+      setTranscriptExpanded(false); // Keep collapsed after recording
     }
   }, [isRecording, recordingStartTime]);
 
@@ -342,7 +342,7 @@ export function TranscriptionControls({
         {!isExpanded && !hasTranscript && (
           <div className="rounded border border-slate-200 bg-slate-50 p-2">
             <div className="text-sm italic text-slate-500">
-              No audio transcription yet...
+              No transcription
             </div>
           </div>
         )}
@@ -351,7 +351,7 @@ export function TranscriptionControls({
         {isExpanded && (
           <div className="rounded border border-slate-200 bg-white p-3">
             <div className="max-h-32 overflow-y-auto text-sm leading-relaxed text-slate-700">
-              {hasTranscript ? transcript : 'No audio transcription available yet...'}
+              {hasTranscript ? transcript : 'No transcription'}
             </div>
           </div>
         )}
@@ -485,12 +485,8 @@ export function TranscriptionControls({
             {!isRecording && !isTranscribing
               ? (
                   <div className="space-y-2">
-                    {/* Description and Mobile Recording Button - Same Line */}
+                    {/* Mobile Recording Button */}
                     <div className="flex items-center justify-between">
-                      <div className="rounded border border-blue-200 bg-blue-50 px-2 py-1 text-xs text-blue-700">
-                        Better audio with mobile recording - 30 second setup
-                      </div>
-
                       {/* Right side: Status indicator + Mobile buttons */}
                       <div className="flex items-center gap-2">
                         {/* Mobile Recording Button */}
@@ -724,27 +720,39 @@ export function TranscriptionControls({
                 </Button>
               </div>
             )}
-            {!isRecording && transcript && (
+            {!isRecording && transcript && transcriptExpanded && (
               <div className="flex items-center justify-between">
                 <div className="text-xs font-medium text-slate-600">
                   Transcribed Text — Edit as needed
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleManualRefresh}
-                  disabled={isRefreshingTranscript}
-                  className="h-5 px-2 text-xs text-slate-500 hover:text-slate-700"
-                  title="Refresh transcript from server"
-                >
-                  <RefreshCw className="mr-1 size-3" />
-                  {isRefreshingTranscript ? 'Refreshing…' : 'Refresh'}
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleManualRefresh}
+                    disabled={isRefreshingTranscript}
+                    className="h-5 px-2 text-xs text-slate-500 hover:text-slate-700"
+                    title="Refresh transcript from server"
+                  >
+                    <RefreshCw className="mr-1 size-3" />
+                    {isRefreshingTranscript ? 'Refreshing…' : 'Refresh'}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setTranscriptExpanded(false)}
+                    className="h-5 px-1 text-xs text-slate-500 hover:text-slate-700"
+                  >
+                    Minimize
+                    {' '}
+                    <ChevronUp size={12} className="ml-1" />
+                  </Button>
+                </div>
               </div>
             )}
 
             {/* 🆕 UPDATED: Transcription display with tier-based feature flag */}
-            {(transcript || isRecording)
+            {(isRecording || (transcript && transcriptExpanded))
               ? (
                   showEnhancedTranscription
                     ? (
@@ -786,12 +794,44 @@ export function TranscriptionControls({
                         </div>
                       )
                 )
-              : (
-            // ✅ UNCHANGED: Empty state
-                  <div className="rounded-md border border-slate-200 bg-slate-50 p-2">
-                    <p className="text-sm text-slate-500">Transcription will appear here</p>
+              : null}
+
+            {/* Collapsed transcript state when transcript exists but not expanded */}
+            {!isRecording && transcript && !transcriptExpanded && (
+              <div 
+                className="cursor-pointer rounded-md border border-slate-200 bg-slate-50 p-2 transition-colors hover:bg-slate-100"
+                onClick={() => setTranscriptExpanded(true)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setTranscriptExpanded(true);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label="Show transcript"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-slate-700">Transcript available</span>
+                    <span className="text-xs text-slate-500">
+                      ({transcript.split(/\s+/).filter((word: string) => word.length > 0).length} words)
+                    </span>
                   </div>
-                )}
+                  <div className="flex items-center gap-1 text-xs text-slate-500">
+                    <span>Click to expand</span>
+                    <ChevronDown size={14} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Empty state - No transcription message */}
+            {!transcript && !isRecording && (
+              <div className="rounded-md border border-slate-200 bg-slate-50 p-2">
+                <p className="text-sm text-slate-500">No transcription</p>
+              </div>
+            )}
           </div>
 
           {/* Help section (hidden by default) */}

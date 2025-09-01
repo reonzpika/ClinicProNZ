@@ -106,20 +106,12 @@ export default function ConsultationPage() {
     currentSessionIdRef.current = currentPatientSessionId || null;
   }, [currentPatientSessionId]);
 
-  const { sendRecordingControl, sendSessionContext } = useSimpleAbly({
+  const { sendRecordingControl } = useSimpleAbly({
     userId: userId ?? null,
     onRecordingStatusChanged: (isRecording: boolean) => setMobileIsRecording(isRecording),
     onError: handleError,
-    onConnectionStatusChanged: (connected: boolean) => {
-      if (connected) {
-        const sid = currentSessionIdRef.current;
-        if (sid) {
-          try {
-            sendSessionContext?.(sid);
-          } catch {}
-        }
-      }
-    },
+    // 🆕 SESSION CONTEXT REMOVED: Server-side session resolution eliminates need for session broadcasting
+    // 🆕 CONNECTION HANDLER REMOVED: No session broadcasting needed with server-side resolution
     isMobile: false,
     onTranscriptionsUpdated: async (signalledSessionId?: string) => {
       const activeSessionId = signalledSessionId || currentPatientSessionId;
@@ -158,14 +150,8 @@ export default function ConsultationPage() {
         } catch {
           chunks = [];
 }
-        console.info('[Debug] Transcription update:', {
-          sessionId: activeSessionId,
-          chunkCount: chunks.length,
-          chunkTexts: chunks.map(c => `${c.text?.substring(0, 30)}...`),
-        });
-        if (Array.isArray(chunks) && chunks.length > 0) {
+                if (Array.isArray(chunks) && chunks.length > 0) {
           const full = chunks.map((t: any) => (t?.text || '').trim()).join(' ').trim();
-          console.info('[Debug] Setting transcription:', { fullLength: full.length, preview: `${full.substring(0, 50)}...` });
           setTranscription(full || '', false, undefined, undefined);
         }
       }
@@ -207,11 +193,8 @@ export default function ConsultationPage() {
 
     // Now perform the actual session switch
     originalSwitchToPatientSession(sessionId, onSwitch);
-    // Publish session context to mobile for session-aware image uploads
-    try {
-      sendSessionContext?.(sessionId || null);
-    } catch {}
-  }, [isRecording, mobileIsRecording, stopRecording, sendRecordingControl, originalSwitchToPatientSession, sendSessionContext]);
+    // 🆕 SESSION BROADCASTING REMOVED: Server-side session resolution eliminates need for mobile session sync
+  }, [isRecording, mobileIsRecording, stopRecording, sendRecordingControl, originalSwitchToPatientSession]);
 
   useEffect(() => {
     // Check URL parameters for upgrade redirect
@@ -241,10 +224,7 @@ export default function ConsultationPage() {
         const sessionId = await ensureActiveSession();
         if (isMounted && sessionId) {
           hasEnsuredSessionRef.current = true;
-          // Immediately broadcast the ensured session to mobile
-          try {
-            sendSessionContext?.(sessionId);
-          } catch {}
+          // 🆕 SESSION BROADCASTING REMOVED: Server-side session resolution eliminates need for mobile session sync
         }
       } finally {
         if (isMounted) {
@@ -258,7 +238,7 @@ export default function ConsultationPage() {
     return () => {
       isMounted = false;
     };
-  }, [ensureActiveSession, userId, sendSessionContext]);
+  }, [ensureActiveSession, userId]);
 
   // Direct upgrade handler
   const handleDirectUpgrade = async () => {

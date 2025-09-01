@@ -61,24 +61,19 @@ function useWakeLock() {
 function MobilePageContent() {
   const { userId, isSignedIn } = useAuth();
 
-  // Removed consultation stores - no session management needed
-
   // Auth-required state
   const [authError, setAuthError] = useState<string | null>(null);
 
-  // Mobile state for UI - extended for camera functionality
-  const [mobileState, setMobileState] = useState<'disconnected' | 'connecting' | 'connected' | 'recording' | 'camera' | 'reviewing' | 'uploading' | 'error'>('disconnected');
+  // Mobile state for UI
+  const [mobileState, setMobileState] = useState<'disconnected' | 'connecting' | 'connected' | 'recording' | 'error'>('disconnected');
 
-  // Native capture state (parity with /image)
+  // Native capture state
   const [mobileStep, setMobileStep] = useState<'collect' | 'review'>('collect');
   const [queuedItems, setQueuedItems] = useState<QueuedItem[]>([]);
   const cameraFileInputRef = useRef<HTMLInputElement>(null);
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
   const uploadImages = useUploadImages();
   const isUploading = uploadImages.isPending;
-  // removed uploadingFileCount (unused)
-  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
-
   // Wake lock functionality
   const { isSupported: wakeLockSupported, requestWakeLock, releaseWakeLock } = useWakeLock();
 
@@ -92,26 +87,22 @@ function MobilePageContent() {
   const startRecordingRef = useRef<() => Promise<void> | void>(() => {});
   const stopRecordingRef = useRef<() => Promise<void> | void>(() => {});
 
-  // Simple Ably for real-time sync - no session sync needed
+  // Simple Ably for real-time sync
   const { isConnected, sendRecordingStatus, sendImageNotification } = useSimpleAbly({
     userId: isSignedIn ? userId : null,
     onError: (err: string) => {
       handleError(err);
     },
     isMobile: true,
-    onSessionContextChanged: (sessionId: string | null) => {
-      setCurrentSessionId(sessionId);
-    },
+
     onControlCommand: async (action: 'start' | 'stop') => {
       try {
         if (action === 'start' && !isRecordingRef.current) {
           await startRecordingRef.current?.();
-          // 🔧 FIX: Broadcast recording status to desktop for acknowledgment
           sendRecordingStatus(true);
         }
         if (action === 'stop' && isRecordingRef.current) {
           await stopRecordingRef.current?.();
-          // 🔧 FIX: Broadcast recording status to desktop for acknowledgment
           sendRecordingStatus(false);
         }
       } catch (e) {
@@ -120,39 +111,6 @@ function MobilePageContent() {
     },
   });
 
-  // Fallback: fetch current session on mount (and when becoming connected) if missing
-  useEffect(() => {
-    const prefetch = async () => {
-      try {
-        if (!isSignedIn || !userId) { return; }
-        if (currentSessionId) { return; }
-        const res = await fetch('/api/current-session', { method: 'GET' });
-        if (res.ok) {
-          const data = await res.json();
-          if (data?.currentSessionId) {
-            setCurrentSessionId(data.currentSessionId);
-          }
-        }
-      } catch {}
-    };
-    prefetch();
-  }, [isSignedIn, userId]);
-  useEffect(() => {
-    if (isConnected && !currentSessionId) {
-      (async () => {
-        try {
-          const res = await fetch('/api/current-session', { method: 'GET' });
-          if (res.ok) {
-            const data = await res.json();
-            if (data?.currentSessionId) {
-              setCurrentSessionId(data.currentSessionId);
-            }
-          }
-        } catch {}
-      })();
-    }
-  }, [isConnected, currentSessionId]);
-
   // Transcription hook with simple handling
   const { isRecording, startRecording, stopRecording } = useTranscription({
     isMobile: true,
@@ -160,31 +118,25 @@ function MobilePageContent() {
     startImmediate: true, // ensure immediate recorder session for remote-stop path
     onChunkComplete: async (audioBlob: Blob) => {
       try {
-        try { console.info('[Mobile] onChunkComplete auth', { isSignedIn, userId, size: audioBlob?.size }); } catch {}
         const formData = new FormData();
         formData.append('audio', audioBlob, 'audio.webm');
 
         if (!isSignedIn || !userId) {
           setAuthError('Not signed in');
-          try { console.warn('[Mobile] Aborting upload: not signed in'); } catch {}
           return;
         }
 
-        try { console.info('[Mobile] POST /api/deepgram/transcribe?persist=true starting'); } catch {}
         const response = await fetch('/api/deepgram/transcribe?persist=true', {
           method: 'POST',
           headers: createAuthHeadersForFormData(userId),
           body: formData,
         });
-
-        try { console.info('[Mobile] POST /api/deepgram/transcribe?persist=true status', response.status); } catch {}
         if (!response.ok) {
           setAuthError(`Transcription failed: ${response.statusText}`);
           return;
         }
       } catch (error) {
         setAuthError(`Recording error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        try { console.error('[Mobile] onChunkComplete error', error); } catch {}
       }
     },
   });
@@ -196,9 +148,7 @@ function MobilePageContent() {
     stopRecordingRef.current = stopRecording;
   }, [isRecording, startRecording, stopRecording]);
 
-  // No token validation; require login
-
-  // Update mobile state based on connection and session
+  // Update mobile state based on connection and auth
   useEffect(() => {
     if (authError) {
       setMobileState('error');
@@ -222,9 +172,7 @@ function MobilePageContent() {
     }
   }, [isRecording, wakeLockSupported, requestWakeLock, releaseWakeLock]);
 
-  // Removed session request logic - no longer needed
-
-  // 🛡️ PHASE 1 FIX: Retry mechanism for recording status
+  // Retry mechanism for recording status
   const sendRecordingStatusWithRetry = useCallback(async (isRecording: boolean) => {
     const maxRetries = 2;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -252,12 +200,11 @@ function MobilePageContent() {
   const handleStopRecording = useCallback(async () => {
     if (isRecording) {
       await stopRecording();
-      // 🛡️ Broadcast recording stop to desktop with retry
+      // Broadcast recording stop to desktop with retry
       await sendRecordingStatusWithRetry(false);
     }
   }, [isRecording, stopRecording, sendRecordingStatusWithRetry]);
 
-  // Removed legacy WebRTC camera handlers in favour of native capture
   const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || files.length === 0) { return; }
@@ -273,8 +220,6 @@ function MobilePageContent() {
   useEffect(() => () => {
     queuedItems.forEach(item => item.previewUrl && URL.revokeObjectURL(item.previewUrl));
   }, [queuedItems]);
-
-  // state info removed - simplified UI
 
   // Sign-in required
   if (!isSignedIn) {
@@ -293,12 +238,10 @@ function MobilePageContent() {
     );
   }
 
-  // Removed WebRTC camera/review components in favour of native capture flow
-
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
       <div className="flex-1 p-4">
-        {/* Native capture controls (parity with /image) */}
+        {/* Native capture controls */}
         <div className="mx-auto mb-4 max-w-md space-y-3">
           {mobileStep === 'collect' && (
             <>
@@ -367,30 +310,15 @@ function MobilePageContent() {
                   onClick={async () => {
                     const filesToUpload = queuedItems.map(it => it.file);
                     try {
-                      // Ensure we have a sessionId before presign; fallback with brief wait
-                      if (!currentSessionId) {
-                        try {
-                          const res = await fetch('/api/current-session', { method: 'GET' });
-                          if (res.ok) {
-                            const data = await res.json();
-                            if (data?.currentSessionId) {
-                              setCurrentSessionId(data.currentSessionId);
-                            }
-                          }
-                        } catch {}
-                        // tiny delay to allow Ably session_context to arrive
-                        await new Promise(r => setTimeout(r, 400));
-                      }
-                      await uploadImages.mutateAsync({ files: filesToUpload, patientSessionId: currentSessionId || undefined });
-                      // Ably notify desktop to refresh
-                      try { sendImageNotification(undefined, filesToUpload.length, currentSessionId || undefined); } catch {}
+                      await uploadImages.mutateAsync({ files: filesToUpload });
+                      // Notify desktop to refresh image list
+                      try { sendImageNotification(undefined, filesToUpload.length, undefined); } catch {}
                       // Clear queue and return
                       queuedItems.forEach(it => it.previewUrl && URL.revokeObjectURL(it.previewUrl));
                       setQueuedItems([]);
                       setMobileStep('collect');
                     } catch (err) {
                       console.error('Upload failed:', err);
-                    } finally {
                     }
                   }}
                   type="button"
@@ -401,7 +329,7 @@ function MobilePageContent() {
             </div>
           )}
         </div>
-        {/* Hidden File Inputs for Mobile */}
+        {/* Hidden File Inputs */}
         <input type="file" ref={cameraFileInputRef} onChange={handleFileSelect} accept="image/*" capture="environment" multiple className="hidden" />
         {isFeatureEnabled('MOBILE_GALLERY_UPLOADS') && (
           <input type="file" ref={galleryFileInputRef} onChange={handleFileSelect} multiple accept="image/*" className="hidden" />
@@ -412,7 +340,7 @@ function MobilePageContent() {
           </CardHeader>
 
           <CardContent className="space-y-6">
-            {/* Connection Status - simplified */}
+            {/* Connection Status */}
             <div className="text-center">
               <h3 className="text-lg font-semibold">{isConnected ? 'Ready to Record' : 'Connecting…'}</h3>
               <p className="text-sm text-gray-600">{isConnected ? 'Connected to desktop - ready to record' : 'Please ensure you are connected'}</p>
@@ -429,7 +357,7 @@ function MobilePageContent() {
               </Alert>
             )}
 
-            {/* Recording Controls - simplified */}
+            {/* Recording Controls */}
             {isConnected && (
               <div className="space-y-3">
                 <Button
@@ -450,10 +378,6 @@ function MobilePageContent() {
                 </div>
               </div>
             )}
-
-            {/* Removed session info display - not needed in simplified architecture */}
-
-            {/* Instructions removed for simplified UI */}
           </CardContent>
         </Card>
       </div>

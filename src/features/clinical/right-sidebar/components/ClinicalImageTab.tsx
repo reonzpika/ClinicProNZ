@@ -72,11 +72,10 @@ export const ClinicalImageTab: React.FC = () => {
       // Client-side resize
       const resizedBlob = await resizeImageFile(file, 1024);
 
-      // Get presigned URL
+      // 🆕 SERVER-SIDE SESSION RESOLUTION: No need to pass session ID, server auto-lookups from users.currentSessionId
       const presignParams = new URLSearchParams({
         filename: file.name,
         mimeType: file.type,
-        patientSessionId: currentPatientSessionId,
       });
 
       const presignResponse = await fetch(`/api/uploads/presign?${presignParams}`);
@@ -129,7 +128,7 @@ export const ClinicalImageTab: React.FC = () => {
       setUploading(false);
     }
   }, [
-    currentPatientSessionId,
+    // 🆕 SESSION DEPENDENCY REMOVED: Server-side session resolution eliminates need for currentPatientSessionId
     addClinicalImage,
     saveClinicalImagesToCurrentSession,
     clinicalImages,

@@ -1,9 +1,13 @@
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { auth } from '@clerk/nextjs/server';
+import { eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
+
+import { db } from '@/db/client';
+import { users } from '@/db/schema';
 
 // Initialize S3 client for NZ region
 const s3Client = new S3Client({
@@ -28,11 +32,21 @@ export async function GET(req: NextRequest) {
     // Get file metadata from query params
     const filename = req.nextUrl.searchParams.get('filename') || 'image.jpg';
     const mimeType = req.nextUrl.searchParams.get('mimeType') || 'image/jpeg';
-    const patientSessionId = req.nextUrl.searchParams.get('patientSessionId');
-    // mobileTokenId deprecated
-
-    // Require either patient session ID or mobile token ID
-    // Patient session ID preferred; mobile token deprecated
+    
+    // 🆕 SERVER-SIDE SESSION RESOLUTION: Auto-lookup current session from database
+    let patientSessionId: string | null = null;
+    try {
+      const userRows = await db
+        .select({ currentSessionId: users.currentSessionId })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+      
+      patientSessionId = userRows?.[0]?.currentSessionId || null;
+    } catch (error) {
+      console.error('Failed to lookup current session:', error);
+      // Continue without session - images will be saved to user folder root
+    }
 
     // Validate file type
     if (!mimeType.startsWith('image/')) {

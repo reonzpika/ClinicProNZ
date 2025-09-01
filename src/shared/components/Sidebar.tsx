@@ -38,7 +38,7 @@ type NavItem = {
 const mainNavItems: NavItem[] = [
   { href: '/consultation', label: 'Clinical Notes', icon: Stethoscope },
   { href: '/templates', label: 'Note Templates', icon: FileText, requiresAuth: true },
-  { href: '/image', label: 'Clinical Images', icon: Camera, adminOnly: true },
+  { href: '/image', label: 'Clinical Images', icon: Camera, requiresAuth: true },
 ];
 
 

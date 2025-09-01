@@ -58,22 +58,18 @@ export function useUploadImage() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: File | { file: File; patientSessionId?: string }): Promise<void> => {
+    mutationFn: async (file: File): Promise<void> => {
       if (!userId) {
         throw new Error('User not authenticated');
       }
 
-      const file = (input instanceof File) ? input : input.file;
-      const patientSessionId = (input instanceof File) ? undefined : input.patientSessionId;
-
       // Resize on client before uploading (keeps original MIME type)
       const resizedBlob = await resizeImageFile(file, 1024);
 
-      // Get presigned URL
+      // 🆕 SERVER-SIDE SESSION RESOLUTION: No need to pass session ID, server auto-lookups from users.currentSessionId
       const presignParams = new URLSearchParams({
         filename: file.name,
         mimeType: file.type,
-        ...(patientSessionId ? { patientSessionId } : {}),
       });
 
       const presignResponse = await fetch(`/api/uploads/presign?${presignParams}`, {
@@ -121,15 +117,14 @@ export function useUploadImages() {
   const uploadImage = useUploadImage();
 
   return useMutation({
-    mutationFn: async (input: { files: File[]; patientSessionId?: string } | File[]): Promise<void> => {
+    mutationFn: async (input: { files: File[] } | File[]): Promise<void> => {
       const files = Array.isArray(input) ? input : input.files;
-      const patientSessionId = Array.isArray(input) ? undefined : input.patientSessionId;
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         if (!file) {
           throw new Error(`File at index ${i} is undefined`);
         }
-        await uploadImage.mutateAsync(patientSessionId ? { file, patientSessionId } : file);
+        await uploadImage.mutateAsync(file);
       }
     },
   });
