@@ -1,13 +1,13 @@
 'use client';
 
-import { Brain, Download, Loader2, Trash2, Expand } from 'lucide-react';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { useQueryClient } from '@tanstack/react-query';
-import { imageQueryKeys, useServerImages } from '@/src/hooks/useImageQueries';
-import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
+import { Brain, Download, Expand, Loader2, Trash2 } from 'lucide-react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 
+import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
+import { imageQueryKeys, useServerImages } from '@/src/hooks/useImageQueries';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
@@ -25,7 +25,6 @@ export const ClinicalImageTab: React.FC = () => {
     consultationNotes,
     setConsultationNotes,
   } = useConsultationStores();
-  const {} = useConsultationStores();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [analyzingImages, setAnalyzingImages] = useState<Set<string>>(new Set());
@@ -43,7 +42,9 @@ export const ClinicalImageTab: React.FC = () => {
     userId: userId ?? null,
     isMobile: false,
     onMobileImagesUploaded: () => {
-      try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') }); } catch {}
+      try {
+ queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') });
+} catch {}
     },
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -406,9 +407,9 @@ export const ClinicalImageTab: React.FC = () => {
                     <div key={idx} className="flex flex-col">
                       <div className="aspect-square animate-pulse rounded-lg bg-slate-200" />
                       <div className="mt-2 flex items-center justify-center gap-2">
-                        <div className="h-7 w-7 rounded border border-slate-200 bg-slate-100" />
-                        <div className="h-7 w-7 rounded border border-slate-200 bg-slate-100" />
-                        <div className="h-7 w-7 rounded border border-slate-200 bg-slate-100" />
+                        <div className="size-7 rounded border border-slate-200 bg-slate-100" />
+                        <div className="size-7 rounded border border-slate-200 bg-slate-100" />
+                        <div className="size-7 rounded border border-slate-200 bg-slate-100" />
                       </div>
                     </div>
                   ))}
@@ -425,7 +426,8 @@ export const ClinicalImageTab: React.FC = () => {
                           {imageUrl
                             ? (
                               <img src={imageUrl} alt="" className="size-full object-cover" />
-                            ) : (
+                            )
+: (
                               <div className="flex size-full items-center justify-center text-xs text-slate-400">No preview</div>
                             )}
                         </div>
@@ -435,7 +437,7 @@ export const ClinicalImageTab: React.FC = () => {
                             variant="outline"
                             onClick={() => handleAnalyzeImage(image as any)}
                             disabled={isAnalyzing}
-                            className="h-7 w-7"
+                            className="size-7"
                             title={isAnalyzing ? 'Analysing...' : 'Analyse'}
                           >
                             {isAnalyzing ? <Loader2 size={12} className="animate-spin" /> : <Brain size={12} />}
@@ -444,7 +446,7 @@ export const ClinicalImageTab: React.FC = () => {
                             size="icon"
                             variant="outline"
                             onClick={() => setEnlargeImage(image)}
-                            className="h-7 w-7"
+                            className="size-7"
                             title="Enlarge"
                           >
                             <Expand size={12} />
@@ -453,7 +455,7 @@ export const ClinicalImageTab: React.FC = () => {
                             size="icon"
                             variant="outline"
                             onClick={() => handleDownloadImage(image as any)}
-                            className="h-7 w-7"
+                            className="size-7"
                             title="Download"
                           >
                             <Download size={12} />
@@ -469,7 +471,17 @@ export const ClinicalImageTab: React.FC = () => {
 
       {/* Lightbox for enlarged view */}
       {enlargeImage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setEnlargeImage(null)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setEnlargeImage(null); }}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setEnlargeImage(null)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+ if (e.key === 'Escape') {
+ setEnlargeImage(null);
+}
+}}
+        >
           <div className="max-h-[90vh] max-w-[90vw]">
             {enlargeImage.thumbnailUrl
               ? <img src={enlargeImage.thumbnailUrl} alt="" className="max-h-[90vh] max-w-[90vw] object-contain" />

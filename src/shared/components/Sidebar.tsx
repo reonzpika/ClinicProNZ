@@ -41,8 +41,6 @@ const mainNavItems: NavItem[] = [
   { href: '/image', label: 'Clinical Images', icon: Camera, requiresAuth: true },
 ];
 
-
-
 const adminNavItems: NavItem[] = [
   { href: '/admin', label: 'Admin Panel', icon: ShieldCheck, requiresAuth: true },
 ];
@@ -188,8 +186,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           {/* Spacer */}
           <div className="flex-1" />
-
-
 
           {/* Admin Section (for admin users only) */}
           {isSignedIn && isAdmin && (

@@ -4,7 +4,6 @@ import { Camera, CheckSquare, MessageCircle, Search, Stethoscope } from 'lucide-
 import React, { useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
-import { useRBAC } from '@/src/shared/hooks/useRBAC';
 
 import { ChatbotWidget } from './ChatbotWidget';
 import { ClinicalImageTab } from './ClinicalImageTab';
@@ -68,7 +67,6 @@ const RightPanelFeatures: React.FC<RightPanelFeaturesProps> = ({
   onToggle,
 }) => {
   const [activeSection, setActiveSection] = useState<SectionId>('images');
-  const { isAdmin } = useRBAC();
 
   // Update sections with conditional components based on user tier
   const sectionsWithConditionalFeatures: AccordionSection[] = sections.map((section) => {

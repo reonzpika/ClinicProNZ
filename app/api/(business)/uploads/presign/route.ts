@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
     // Get file metadata from query params
     const filename = req.nextUrl.searchParams.get('filename') || 'image.jpg';
     const mimeType = req.nextUrl.searchParams.get('mimeType') || 'image/jpeg';
-    
+
     // 🆕 SERVER-SIDE SESSION RESOLUTION: Auto-lookup current session from database
     let patientSessionId: string | null = null;
     try {
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
         .from(users)
         .where(eq(users.id, userId))
         .limit(1);
-      
+
       patientSessionId = userRows?.[0]?.currentSessionId || null;
     } catch (error) {
       console.error('Failed to lookup current session:', error);
@@ -59,9 +59,8 @@ export async function GET(req: NextRequest) {
     const uniqueFilename = `${timestamp}-${uuidv4()}.${fileExtension}`;
 
     // Build key under clinical-images/{userId}/ with optional session folder
-    let key: string;
     const basePrefix = `clinical-images/${userId}/`;
-    key = patientSessionId
+    const key = patientSessionId
       ? `${basePrefix}${patientSessionId}/${uniqueFilename}`
       : `${basePrefix}${uniqueFilename}`;
 

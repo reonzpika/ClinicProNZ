@@ -2,8 +2,8 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { ChevronDown, ChevronUp, Info, Mic, RefreshCw, Settings, Smartphone } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { ChevronDown, ChevronUp, Info, Mic, RefreshCw, Settings, Smartphone } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
@@ -798,7 +798,7 @@ export function TranscriptionControls({
 
             {/* Collapsed transcript state when transcript exists but not expanded */}
             {!isRecording && transcript && !transcriptExpanded && (
-              <div 
+              <div
                 className="cursor-pointer rounded-md border border-slate-200 bg-slate-50 p-2 transition-colors hover:bg-slate-100"
                 onClick={() => setTranscriptExpanded(true)}
                 onKeyDown={(e) => {
@@ -815,7 +815,10 @@ export function TranscriptionControls({
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-slate-700">Transcript available</span>
                     <span className="text-xs text-slate-500">
-                      ({transcript.split(/\s+/).filter((word: string) => word.length > 0).length} words)
+                      (
+{transcript.split(/\s+/).filter((word: string) => word.length > 0).length}
+{' '}
+words)
                     </span>
                   </div>
                   <div className="flex items-center gap-1 text-xs text-slate-500">

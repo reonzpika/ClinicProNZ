@@ -109,14 +109,12 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     }
 
     try {
-      try { console.info('[Transcription] sendRecordingSession start', { isMobile, size: audioBlob.size }); } catch {}
       setState(prev => ({ ...prev, isTranscribing: true }));
 
       sessionCountRef.current += 1;
       const currentSession = sessionCountRef.current;
 
       if (isMobile && onChunkComplete) {
-        try { console.info('[Transcription] mobile onChunkComplete about to run'); } catch {}
         await onChunkComplete(audioBlob);
       } else {
         const formData = new FormData();
@@ -130,7 +128,6 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
           body: formData,
         });
 
-        try { console.info('[Transcription] desktop transcribe response', { status: response.status }); } catch {}
         if (!response.ok) {
           throw new Error(`Transcription failed: ${response.statusText}`);
         }
@@ -175,7 +172,9 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
         }
       }
     } catch (error: any) {
-      try { console.error('[Transcription] sendRecordingSession error', error?.message || error); } catch {}
+      try {
+ console.error('[Transcription] sendRecordingSession error', error?.message || error);
+} catch {}
       setState(prev => ({
         ...prev,
         error: `Transcription failed: ${error.message}`,
@@ -193,13 +192,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
 
     try {
       // Debug supported types
-      try {
-        const supportsOpus = (typeof (window as any).MediaRecorder !== 'undefined')
-          && (MediaRecorder as any).isTypeSupported?.('audio/webm;codecs=opus');
-        const supportsWebm = (typeof (window as any).MediaRecorder !== 'undefined')
-          && (MediaRecorder as any).isTypeSupported?.('audio/webm');
-        console.info('[Transcription] starting MediaRecorder', { supportsOpus, supportsWebm });
-      } catch {}
+
       const mediaRecorder = new MediaRecorder(audioStreamRef.current, {
         mimeType: 'audio/webm;codecs=opus',
       });
@@ -211,16 +204,11 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
           currentAudioChunksRef.current.push(event.data);
-          try { console.info('[Transcription] ondataavailable', { size: event.data.size, chunks: currentAudioChunksRef.current.length }); } catch {}
         }
       };
 
       mediaRecorder.onstop = async () => {
         isSessionActiveRef.current = false;
-        try {
-          const totalSize = currentAudioChunksRef.current.reduce((s, b) => s + b.size, 0);
-          console.info('[Transcription] mediaRecorder.onstop', { chunks: currentAudioChunksRef.current.length, totalSize });
-        } catch {}
 
         // Create complete audio blob from all chunks
         const audioBlob = new Blob(currentAudioChunksRef.current, {
@@ -237,15 +225,18 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
           ...prev,
           error: 'Recording session error occurred',
         }));
-        try { console.error('[Transcription] mediaRecorder.onerror'); } catch {}
+        try {
+ console.error('[Transcription] mediaRecorder.onerror');
+} catch {}
       };
 
       currentRecorderRef.current = mediaRecorder;
       mediaRecorder.start(); // Record everything in one session
-      try { console.info('[Transcription] MediaRecorder started'); } catch {}
     } catch {
       isSessionActiveRef.current = false;
-      try { console.error('[Transcription] MediaRecorder failed to start'); } catch {}
+      try {
+ console.error('[Transcription] MediaRecorder failed to start');
+} catch {}
     }
   }, [sendRecordingSession]);
 
@@ -409,12 +400,10 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
 
   // Start recording
   const startRecording = useCallback(async () => {
-    try { console.info('[Transcription] startRecording'); } catch {}
     await ensureActiveSession();
 
     const audioInitialized = await initializeAudio();
     if (!audioInitialized) {
-      try { console.error('[Transcription] initializeAudio failed'); } catch {}
       return;
     }
 
@@ -440,7 +429,6 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     if (startImmediate) {
       try {
         startRecordingSession();
-        try { console.info('[Transcription] startImmediate: startRecordingSession called'); } catch {}
       } catch { /* ignore */ }
     }
     setStatus('recording');
@@ -448,7 +436,6 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
 
   // Stop recording
   const stopRecording = useCallback(() => {
-    try { console.info('[Transcription] stopRecording'); } catch {}
     isRecordingRef.current = false;
     isPausedRef.current = false;
 

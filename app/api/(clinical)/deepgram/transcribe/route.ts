@@ -2,13 +2,13 @@ import { Buffer } from 'node:buffer';
 
 import { createClient } from '@deepgram/sdk';
 import * as Ably from 'ably';
+import { and, eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 import { db } from '@/db/client';
 import { patientSessions, users } from '@/db/schema';
-import { and, eq } from 'drizzle-orm';
+import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 import { createUserSession } from '@/src/lib/services/guest-session-service';
 
 export const runtime = 'nodejs'; // Ensure Node.js runtime for Buffer support
@@ -183,13 +183,10 @@ export async function POST(req: NextRequest) {
           timestamp: Date.now(),
         } as any;
         await channel.publish('transcriptions_updated', payload);
-        try { console.info('[Transcribe] Published transcriptions_updated', { sessionId: currentSessionId, chunkId }); } catch {}
       }
     } catch {}
 
     return NextResponse.json({ persisted: true, chunkId, sessionId: currentSessionId });
-
-    
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
   }
