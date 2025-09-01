@@ -75,23 +75,13 @@ const RightPanelFeatures: React.FC<RightPanelFeaturesProps> = ({
     if (section.id === 'chat') {
       return {
         ...section,
-        component: () => {
-          if (isAdmin()) {
-            return <ChatbotWidget />;
-          }
-          return <ComingSoonPlaceholder title="Clinical Reference" description="Ask questions about clinical guidelines, medications, and best practices" icon={MessageCircle} />;
-        },
+        component: () => <ChatbotWidget />, // RBAC legacy removed - all users have access
       };
     }
     if (section.id === 'images') {
       return {
         ...section,
-        component: () => {
-          if (isAdmin()) {
-            return <ClinicalImageTab />;
-          }
-          return <ComingSoonPlaceholder title="Clinical Images" description="Upload and analyze medical images with AI-powered insights and diagnostic assistance" icon={Camera} />;
-        },
+        component: () => <ClinicalImageTab />, // RBAC legacy removed - all users have access
       };
     }
     return section;
