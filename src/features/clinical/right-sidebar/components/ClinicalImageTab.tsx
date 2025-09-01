@@ -1,13 +1,17 @@
 'use client';
 
-import { Brain, Download, Loader2, Trash2 } from 'lucide-react';
+import { Brain, Download, Loader2, Trash2, Expand } from 'lucide-react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-
+import { useAuth } from '@clerk/nextjs';
+import { useQueryClient } from '@tanstack/react-query';
+import { imageQueryKeys, useServerImages } from '@/src/hooks/useImageQueries';
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
+
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
+import { resizeImageFile } from '@/src/shared/utils/image';
 import type { ClinicalImage } from '@/src/types/consultation';
 
 export const ClinicalImageTab: React.FC = () => {
@@ -21,17 +25,27 @@ export const ClinicalImageTab: React.FC = () => {
     consultationNotes,
     setConsultationNotes,
   } = useConsultationStores();
-  const { mobileV2 } = useConsultationStores();
-
+  const {} = useConsultationStores();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [analyzingImages, setAnalyzingImages] = useState<Set<string>>(new Set());
   const [analysisErrors, setAnalysisErrors] = useState<Record<string, string>>({});
+  const [enlargeImage, setEnlargeImage] = useState<any | null>(null);
 
-  // Mobile images state
-  const [mobileImages, setMobileImages] = useState<ClinicalImage[]>([]);
-  const [isFetchingMobileImages, setIsFetchingMobileImages] = useState(false);
-
+  // Server images (user scope) for session grouping
+  const { userId } = useAuth();
+  const { data: serverImages = [], isLoading: isLoadingServerImages } = useServerImages();
+  const sessionServerImages = useMemo(() => {
+    return (serverImages || []).filter((img: any) => img.source === 'clinical' && img.sessionId && img.sessionId === currentPatientSessionId);
+  }, [serverImages, currentPatientSessionId]);
+  const queryClientRef = useRef(useQueryClient());
+  useSimpleAbly({
+    userId: userId ?? null,
+    isMobile: false,
+    onMobileImagesUploaded: () => {
+      try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') }); } catch {}
+    },
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentSession = getCurrentPatientSession();
@@ -40,92 +54,10 @@ export const ClinicalImageTab: React.FC = () => {
     return images;
   }, [currentSession?.clinicalImages]);
 
-  // Function to fetch mobile images from API
-  const fetchAndDisplayMobileImages = useCallback(async (mobileTokenId: string) => {
-    setIsFetchingMobileImages(true);
-
-    try {
-      const response = await fetch(`/api/mobile/images?tokenId=${encodeURIComponent(mobileTokenId)}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch mobile images: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      const { images } = data;
-
-      if (images && images.length > 0) {
-        // Convert mobile images to ClinicalImage format
-        const mobileImagesFormatted: ClinicalImage[] = images.map((img: any) => ({
-          id: img.id || img.key.split('/').pop()?.split('.')[0] || Math.random().toString(36).substr(2, 9),
-          key: img.key,
-          filename: img.filename,
-          mimeType: img.mimeType,
-          uploadedAt: img.uploadedAt,
-          isMobileImage: true, // Flag to distinguish mobile images
-          mobileTokenId: img.mobileTokenId,
-        }));
-
-        // Add to mobile images state (avoid duplicates)
-        setMobileImages((prevImages) => {
-          const existingKeys = new Set(prevImages.map(img => img.key));
-          const newImages = mobileImagesFormatted.filter(img => !existingKeys.has(img.key));
-          return [...prevImages, ...newImages];
-        });
-      }
-    } catch (err) {
-      console.error('Failed to fetch mobile images:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch mobile images');
-    } finally {
-      setIsFetchingMobileImages(false);
-    }
-  }, []);
+  // Fetch mobile images disabled in simplified architecture (handled via direct uploads)
 
   // Ably listener for mobile image notifications (desktop only)
-  useSimpleAbly({
-    tokenId: mobileV2?.token || null,
-    isMobile: false,
-    onMobileImagesUploaded: (mobileTokenId: string, _imageCount: number, _timestamp: string) => {
-      fetchAndDisplayMobileImages(mobileTokenId);
-    },
-    onError: (err: string) => {
-      console.error('Ably error in ClinicalImageTab:', err);
-    },
-  });
-
-  // Client-side image resizing
-  const resizeImage = useCallback((file: File, maxSize: number = 1024): Promise<Blob> => {
-    return new Promise((resolve) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d')!;
-      const img = new Image();
-
-      img.onload = () => {
-        // Calculate new dimensions
-        let { width, height } = img;
-        if (width > height) {
-          if (width > maxSize) {
-            height = (height * maxSize) / width;
-            width = maxSize;
-          }
-        } else if (height > maxSize) {
-          width = (width * maxSize) / height;
-          height = maxSize;
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-
-        // Draw and resize
-        ctx.drawImage(img, 0, 0, width, height);
-
-        canvas.toBlob((blob) => {
-          resolve(blob!);
-        }, file.type, 0.8); // 80% quality
-      };
-
-      img.src = URL.createObjectURL(file);
-    });
-  }, []);
+  // Desktop image notifications can be re-wired later to user channel if needed
 
   const handleFileUpload = useCallback(async (file: File) => {
     if (!currentPatientSessionId) {
@@ -138,7 +70,7 @@ export const ClinicalImageTab: React.FC = () => {
 
     try {
       // Client-side resize
-      const resizedBlob = await resizeImage(file);
+      const resizedBlob = await resizeImageFile(file, 1024);
 
       // Get presigned URL
       const presignParams = new URLSearchParams({
@@ -198,7 +130,6 @@ export const ClinicalImageTab: React.FC = () => {
     }
   }, [
     currentPatientSessionId,
-    resizeImage,
     addClinicalImage,
     saveClinicalImagesToCurrentSession,
     clinicalImages,
@@ -217,7 +148,7 @@ export const ClinicalImageTab: React.FC = () => {
     await saveClinicalImagesToCurrentSession(updatedImages);
   }, [clinicalImages, removeClinicalImage, saveClinicalImagesToCurrentSession]);
 
-  const handleDownloadImage = useCallback(async (image: ClinicalImage) => {
+  const handleDownloadImage = useCallback(async (image: any) => {
     try {
       const response = await fetch(`/api/uploads/download?key=${encodeURIComponent(image.key)}`);
       if (!response.ok) {
@@ -226,8 +157,20 @@ export const ClinicalImageTab: React.FC = () => {
 
       const { downloadUrl } = await response.json();
 
-      // Open in new tab for download
-      window.open(downloadUrl, '_blank');
+      // Fetch blob and force download via anchor
+      const fileResp = await fetch(downloadUrl);
+      if (!fileResp.ok) {
+        throw new Error('Failed to fetch image for download');
+      }
+      const blob = await fileResp.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = image.filename || 'clinical-image';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
     } catch (err) {
       console.error('Download error:', err);
       setError('Failed to download image');
@@ -449,103 +392,89 @@ export const ClinicalImageTab: React.FC = () => {
         </div>
       )}
 
-      {/* Mobile Images Section */}
-      {mobileImages.length > 0 && (
+      {/* Session Images (from server under clinical-images/{userId}/{sessionId}/) */}
+      {(isLoadingServerImages || sessionServerImages.length > 0) && (
         <div className="border-l-2 border-blue-200 pl-3">
           <div className="mb-3 flex items-center justify-between">
-            <h4 className="text-sm font-medium text-blue-600">Mobile Images</h4>
-            {isFetchingMobileImages && (
-              <Loader2 size={12} className="animate-spin text-blue-500" />
-            )}
+            <h4 className="text-sm font-medium text-blue-600">Session Images</h4>
+            {isLoadingServerImages && <Loader2 size={12} className="animate-spin text-blue-500" />}
           </div>
 
-          <div className="space-y-3">
-            {mobileImages.map((image) => {
-              const isAnalyzing = analyzingImages.has(image.id);
-              const hasError = analysisErrors[image.id];
-
-              return (
-                <Card key={image.id} className="overflow-hidden border-blue-100">
-                  <CardContent className="p-3">
-                    <div className="mb-2 flex items-start justify-between">
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-medium text-slate-700">
-                          {image.filename}
-                          <span className="ml-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
-                            Mobile
-                          </span>
-                        </div>
-                        <div className="text-xs text-slate-500">
-                          {new Date(image.uploadedAt).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <div className="ml-2 flex gap-1">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleAnalyzeImage(image)}
-                          disabled={isAnalyzing}
-                          className="size-6 p-0"
-                          title={isAnalyzing ? 'Analysing...' : 'Analyse with AI'}
-                        >
-                          {isAnalyzing
-                            ? (
-                                <Loader2 size={12} className="animate-spin" />
-                              )
-                            : (
-                                <Brain size={12} />
-                              )}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleDownloadImage(image)}
-                          className="size-6 p-0"
-                        >
-                          <Download size={12} />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => {
-                            // Add to consultation and remove from mobile images
-                            addClinicalImage(image);
-                            setMobileImages(prev => prev.filter(img => img.id !== image.id));
-                          }}
-                          className="size-6 p-0 text-green-600 hover:text-green-700"
-                          title="Add to consultation"
-                        >
-                          <span className="text-xs">+</span>
-                        </Button>
+          {isLoadingServerImages
+            ? (
+                <div className="grid grid-cols-2 gap-3">
+                  {Array.from({ length: 6 }).map((_, idx) => (
+                    <div key={idx} className="flex flex-col">
+                      <div className="aspect-square animate-pulse rounded-lg bg-slate-200" />
+                      <div className="mt-2 flex items-center justify-center gap-2">
+                        <div className="h-7 w-7 rounded border border-slate-200 bg-slate-100" />
+                        <div className="h-7 w-7 rounded border border-slate-200 bg-slate-100" />
+                        <div className="h-7 w-7 rounded border border-slate-200 bg-slate-100" />
                       </div>
                     </div>
-
-                    {image.aiDescription && (
-                      <div className="mt-2 rounded bg-green-50 p-2 text-xs text-green-600">
-                        <div className="font-medium">✓ Analysis completed</div>
-                        <div className="text-slate-600">Added to Additional Notes</div>
-                      </div>
-                    )}
-
-                    {hasError && (
-                      <div className="mt-2 rounded bg-red-50 p-2 text-xs text-red-600">
-                        <div className="mb-1 font-medium">Analysis Error:</div>
-                        {hasError}
-                      </div>
-                    )}
-
-                    {isAnalyzing && (
-                      <div className="mt-2 rounded bg-blue-50 p-2 text-xs text-blue-600">
-                        <div className="flex items-center gap-2">
-                          <Loader2 size={12} className="animate-spin" />
-                          <span>Analysing image...</span>
+                  ))}
+                </div>
+              )
+            : (
+                <div className="grid grid-cols-2 gap-3">
+                  {sessionServerImages.map((image: any) => {
+                    const isAnalyzing = analyzingImages.has(image.id);
+                    const imageUrl = image.thumbnailUrl as string | undefined;
+                    return (
+                      <div key={image.id} className="flex flex-col">
+                        <div className="aspect-square overflow-hidden rounded-lg bg-slate-100">
+                          {imageUrl
+                            ? (
+                              <img src={imageUrl} alt="" className="size-full object-cover" />
+                            ) : (
+                              <div className="flex size-full items-center justify-center text-xs text-slate-400">No preview</div>
+                            )}
+                        </div>
+                        <div className="mt-2 flex items-center justify-center gap-2">
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            onClick={() => handleAnalyzeImage(image as any)}
+                            disabled={isAnalyzing}
+                            className="h-7 w-7"
+                            title={isAnalyzing ? 'Analysing...' : 'Analyse'}
+                          >
+                            {isAnalyzing ? <Loader2 size={12} className="animate-spin" /> : <Brain size={12} />}
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            onClick={() => setEnlargeImage(image)}
+                            className="h-7 w-7"
+                            title="Enlarge"
+                          >
+                            <Expand size={12} />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            onClick={() => handleDownloadImage(image as any)}
+                            className="h-7 w-7"
+                            title="Download"
+                          >
+                            <Download size={12} />
+                          </Button>
                         </div>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
+                    );
+                  })}
+                </div>
+              )}
+        </div>
+      )}
+
+      {/* Lightbox for enlarged view */}
+      {enlargeImage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setEnlargeImage(null)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') setEnlargeImage(null); }}>
+          <div className="max-h-[90vh] max-w-[90vw]">
+            {enlargeImage.thumbnailUrl
+              ? <img src={enlargeImage.thumbnailUrl} alt="" className="max-h-[90vh] max-w-[90vw] object-contain" />
+              : <div className="flex items-center justify-center p-8 text-white">No preview</div>}
           </div>
         </div>
       )}

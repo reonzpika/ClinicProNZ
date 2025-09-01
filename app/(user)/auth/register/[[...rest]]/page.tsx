@@ -22,7 +22,7 @@ export default async function RegisterPage({
           </p>
         </div>
         <SignUp
-          afterSignUpUrl={isUpgradeRedirect ? '/upgrade-checkout' : '/consultation'}
+          afterSignUpUrl={isUpgradeRedirect ? '/upgrade-checkout' : '/'}
           appearance={{
             elements: {
               formButtonPrimary: 'bg-blue-600 hover:bg-blue-700 text-sm normal-case',

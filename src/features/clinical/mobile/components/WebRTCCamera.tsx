@@ -15,7 +15,7 @@ type WebRTCCameraProps = {
 export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
   onCapture,
   onClose,
-  maxImageSize = 800, // 800px max for mobile bandwidth optimization
+  maxImageSize = 1024, // Use 1024 as requested
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -238,12 +238,8 @@ export const WebRTCCamera: React.FC<WebRTCCameraProps> = ({
                     className="size-16 rounded-full bg-white text-black hover:bg-gray-100"
                   >
                     {isCapturing
-? (
-                      <div className="size-6 animate-spin rounded-full border-2 border-black border-t-transparent" />
-                    )
-: (
-                      <Camera className="size-8" />
-                    )}
+                      ? <div className="size-6 animate-spin rounded-full border-2 border-black border-t-transparent" />
+                      : <Camera className="size-8" />}
                   </Button>
                 </div>
 

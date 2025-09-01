@@ -78,6 +78,20 @@
       "when": 1753856714415,
       "tag": "0010_regular_inertia",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1756601311693,
+      "tag": "0011_groovy_absorbing_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1756601764503,
+      "tag": "0012_tranquil_venom",
+      "breakpoints": true
     }
   ]
 }

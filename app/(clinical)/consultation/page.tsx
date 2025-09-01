@@ -15,7 +15,6 @@ import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTrans
 import { MobileRightPanelOverlay } from '@/src/features/clinical/mobile/components/MobileRightPanelOverlay';
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 import RightPanelFeatures from '@/src/features/clinical/right-sidebar/components/RightPanelFeatures';
-import UsageDashboard from '@/src/features/clinical/right-sidebar/components/UsageDashboard';
 import { WorkflowInstructions } from '@/src/features/clinical/right-sidebar/components/WorkflowInstructions';
 import { PatientSessionManager } from '@/src/features/clinical/session-management/components/PatientSessionManager';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
@@ -36,13 +35,10 @@ export default function ConsultationPage() {
   const {
     setError,
     setStatus,
-    mobileV2 = { isEnabled: false, token: null, tokenData: null, isConnected: false },
     currentPatientSessionId,
     inputMode,
     typedInput,
     transcription,
-    appendTranscription,
-    appendTranscriptionEnhanced,
     setTranscription,
     setTypedInput,
     generatedNotes,
@@ -54,9 +50,6 @@ export default function ConsultationPage() {
     templateId,
     setLastGeneratedInput,
 
-    setMobileV2IsConnected, // NEW: Connection status bridge
-    enableMobileV2,
-    setMobileV2TokenData,
     saveNotesToCurrentSession, // For saving generated notes
     saveTypedInputToCurrentSession: _saveTypedInputToCurrentSession, // For clearing typed input (unused)
     saveConsultationNotesToCurrentSession: _saveConsultationNotesToCurrentSession, // For clearing consultation notes (unused)
@@ -99,53 +92,96 @@ export default function ConsultationPage() {
   const handleError = useCallback((error: string) => {
     // Suppress Ably/auth noise and clear mobile state on auth failures
     const isAblyNoise = /Failed to publish|Connection closed|Ably/i.test(error);
-    const isAuthInvalid = /Authentication failed|Token expired or invalid/i.test(error);
-
-    if (isAblyNoise || isAuthInvalid) {
-      if (isAuthInvalid) {
-        try {
-          // Always trust server: clear local mobile state/cache and show disconnected UI
-          setMobileV2TokenData(null);
-          enableMobileV2(false);
-          setMobileV2IsConnected(false);
-        } catch {}
-      }
+    if (isAblyNoise) {
       console.warn('[Ably]', error);
       return;
     }
     setError(error);
-  }, [setError, setMobileV2TokenData, enableMobileV2, setMobileV2IsConnected]);
+  }, [setError]);
 
   // Simple Ably sync implementation - always connected when token exists (moved before switchToPatientSession)
-  const { sendRecordingControl } = useSimpleAbly({
-    tokenId: mobileV2?.token || null, // Always connect when token available
-    onTranscriptReceived: (transcript: string, enhancedData?: any) => {
-      // Always append to current session - no session matching needed
-      if (currentPatientSessionId) {
-        if (enhancedData && (enhancedData.confidence !== undefined || (enhancedData.words?.length || 0) > 0)) {
-          appendTranscriptionEnhanced(
-            transcript,
-            true,
-            'mobile',
-            undefined, // deviceId
-            undefined, // diarizedTranscript
-            undefined, // utterances
-            enhancedData.confidence,
-            enhancedData.words,
-            enhancedData.paragraphs,
-          );
-        } else {
-          appendTranscription(transcript, true, 'mobile');
+  const queryClientRef = useRef(queryClient);
+  const currentSessionIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    currentSessionIdRef.current = currentPatientSessionId || null;
+  }, [currentPatientSessionId]);
+
+  const { sendRecordingControl, sendSessionContext } = useSimpleAbly({
+    userId: userId ?? null,
+    onRecordingStatusChanged: (isRecording: boolean) => setMobileIsRecording(isRecording),
+    onError: handleError,
+    onConnectionStatusChanged: (connected: boolean) => {
+      if (connected) {
+        const sid = currentSessionIdRef.current;
+        if (sid) {
+          try {
+            sendSessionContext?.(sid);
+          } catch {}
         }
       }
     },
-    onRecordingStatusChanged: (isRecording: boolean) => {
-      setMobileIsRecording(isRecording);
-    },
-    onError: handleError,
-    onConnectionStatusChanged: setMobileV2IsConnected,
     isMobile: false,
+    onTranscriptionsUpdated: async (signalledSessionId?: string) => {
+      const activeSessionId = signalledSessionId || currentPatientSessionId;
+      if (!activeSessionId) {
+ return;
+}
+      let session: any = null;
+      try {
+        // 🔧 FIX: Use fetchQuery with staleTime: 0 to force fresh data on every transcription update
+        session = await queryClientRef.current.fetchQuery({
+          queryKey: ['consultation', 'session', activeSessionId],
+          queryFn: async () => {
+            // Direct API call for reliable fresh data
+            const response = await fetch('/api/patient-sessions', {
+              method: 'GET',
+              headers: createAuthHeaders(userId, userTier),
+            });
+            if (!response.ok) {
+              throw new Error('Failed to fetch sessions');
+            }
+            const data = await response.json();
+            const sessions = data.sessions || [];
+            return sessions.find((s: any) => s.id === activeSessionId) || null;
+          },
+          staleTime: 0, // Force fresh data for transcription updates
+        });
+      } catch (error) {
+        console.warn('Failed to fetch fresh session data:', error);
+        // Fallback to cache if fetch fails
+        session = queryClientRef.current.getQueryData(['consultation', 'session', activeSessionId]);
+      }
+      if (session) {
+        let chunks: any[] = [];
+        try {
+          chunks = typeof session.transcriptions === 'string' ? JSON.parse(session.transcriptions) : (session.transcriptions || []);
+        } catch {
+          chunks = [];
+}
+        console.info('[Debug] Transcription update:', {
+          sessionId: activeSessionId,
+          chunkCount: chunks.length,
+          chunkTexts: chunks.map(c => `${c.text?.substring(0, 30)}...`),
+        });
+        if (Array.isArray(chunks) && chunks.length > 0) {
+          const full = chunks.map((t: any) => (t?.text || '').trim()).join(' ').trim();
+          console.info('[Debug] Setting transcription:', { fullLength: full.length, preview: `${full.substring(0, 50)}...` });
+          setTranscription(full || '', false, undefined, undefined);
+        }
+      }
+    },
   });
+
+  // Ensure global hook proxy exists as early as possible to aid diagnostics
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (typeof (window as any).ablySyncHook !== 'object') {
+        (window as any).ablySyncHook = {
+          sendRecordingControl: () => false,
+        };
+      }
+    }
+  }, []);
 
   // 🛡️ GP WORKFLOW: Wrapper to stop recording before session switching
   const switchToPatientSession = useCallback(async (sessionId: string, onSwitch?: (sessionId: string, patientName: string) => void) => {
@@ -171,7 +207,11 @@ export default function ConsultationPage() {
 
     // Now perform the actual session switch
     originalSwitchToPatientSession(sessionId, onSwitch);
-  }, [isRecording, mobileIsRecording, stopRecording, sendRecordingControl, originalSwitchToPatientSession]);
+    // Publish session context to mobile for session-aware image uploads
+    try {
+      sendSessionContext?.(sessionId || null);
+    } catch {}
+  }, [isRecording, mobileIsRecording, stopRecording, sendRecordingControl, originalSwitchToPatientSession, sendSessionContext]);
 
   useEffect(() => {
     // Check URL parameters for upgrade redirect
@@ -184,7 +224,6 @@ export default function ConsultationPage() {
       window.history.replaceState(null, '', newUrl);
     }
   }, []);
-
 
   // Ensure there is always an active patient session; retry on relevant changes
   const hasEnsuredSessionRef = useRef(false);
@@ -202,6 +241,10 @@ export default function ConsultationPage() {
         const sessionId = await ensureActiveSession();
         if (isMounted && sessionId) {
           hasEnsuredSessionRef.current = true;
+          // Immediately broadcast the ensured session to mobile
+          try {
+            sendSessionContext?.(sessionId);
+          } catch {}
         }
       } finally {
         if (isMounted) {
@@ -215,7 +258,7 @@ export default function ConsultationPage() {
     return () => {
       isMounted = false;
     };
-  }, [ensureActiveSession, userId]);
+  }, [ensureActiveSession, userId, sendSessionContext]);
 
   // Direct upgrade handler
   const handleDirectUpgrade = async () => {
@@ -248,9 +291,6 @@ export default function ConsultationPage() {
   // Admin preview approval handler
   // Removed admin approval handler - no longer needed in single-pass architecture
 
-  // Usage dashboard refresh ref
-  const usageDashboardRef = useRef<{ refresh: () => void } | null>(null);
-
   // Session limits are now handled contextually when users try to perform actions
   // The UsageDashboard will show the current status and the modal will appear on 429 errors
 
@@ -282,11 +322,10 @@ export default function ConsultationPage() {
 
   // 🛡️ PHASE 1 FIX: Reset mobile recording status when connection drops
   useEffect(() => {
-    if (!mobileV2.isConnected && mobileIsRecording) {
-      setMobileIsRecording(false);
+    if (mobileIsRecording) {
+      // no-op: will be updated via signals
     }
-    // Removed sessionSynced logic - no longer needed in simplified architecture
-  }, [mobileV2.isConnected, mobileIsRecording]);
+  }, [mobileIsRecording]);
 
   // Expose sendRecordingControl to global for remote control
   useEffect(() => {
@@ -305,35 +344,7 @@ export default function ConsultationPage() {
 
   // Removed session sync logic - no longer needed in simplified architecture
 
-  // Ensure desktop Ably connects without opening the QR modal by loading active token
-  useEffect(() => {
-    const loadActiveToken = async () => {
-      try {
-        if (!userId) {
-          return;
-        }
-        const res = await fetch('/api/mobile/active-token', {
-          method: 'GET',
-          headers: createAuthHeaders(userId, userTier),
-        });
-        if (res.ok) {
-          const tokenData = await res.json();
-          if (tokenData?.token) {
-            setMobileV2TokenData(tokenData);
-            enableMobileV2(true);
-            return;
-          }
-        }
-        // Always trust server: clear local cache/state if no active token
-        setMobileV2TokenData(null);
-        enableMobileV2(false);
-        setMobileV2IsConnected(false);
-      } catch {
-        // best-effort, ignore
-      }
-    };
-    loadActiveToken();
-  }, [userId, userTier, enableMobileV2, setMobileV2TokenData, setMobileV2IsConnected]);
+  // Removed mobile token bootstrap; Ably connects via user token
 
   // On mount, sync current session from server (server truth)
   useEffect(() => {
@@ -557,11 +568,6 @@ export default function ConsultationPage() {
 
       // Set status to completed
       setStatus('completed');
-
-      // Refresh usage dashboard after successful notes generation
-      if (usageDashboardRef.current?.refresh) {
-        usageDashboardRef.current.refresh();
-      }
     } catch (err) {
       // Swallow abort errors triggered by Clear All
       if ((err as any)?.name !== 'AbortError') {
@@ -669,11 +675,6 @@ export default function ConsultationPage() {
 
                         {/* Documentation Settings Badge - Always visible below session bar */}
                         <DocumentationSettingsBadge />
-
-                        {/* Usage Dashboard - Shows tier limits and usage */}
-                        <div data-component="usage-dashboard">
-                          <UsageDashboard ref={usageDashboardRef} />
-                        </div>
 
                         {/* Workflow Instructions - Only visible on large desktop */}
                         <WorkflowInstructions />

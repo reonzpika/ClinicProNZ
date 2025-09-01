@@ -18,33 +18,21 @@ const BUCKET_NAME = process.env.S3_BUCKET_NAME!;
 
 export async function GET(req: NextRequest) {
   try {
-    // Check authentication - support both Clerk JWT and mobile session token
+    // Simplified authentication - Clerk only
     const { userId } = await auth();
-    const sessionToken = req.nextUrl.searchParams.get('session');
 
-    if (!userId && !sessionToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // If using session token, validate it (simplified version)
-    if (sessionToken && !userId) {
-      // TODO: Add proper session token validation when mobile auth is implemented
-      // For now, accept any session token in development
-      if (!sessionToken.match(/^[a-f0-9-]{36}$/)) {
-        return NextResponse.json({ error: 'Invalid session token' }, { status: 401 });
-      }
+    if (!userId) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
     // Get file metadata from query params
     const filename = req.nextUrl.searchParams.get('filename') || 'image.jpg';
     const mimeType = req.nextUrl.searchParams.get('mimeType') || 'image/jpeg';
     const patientSessionId = req.nextUrl.searchParams.get('patientSessionId');
-    const mobileTokenId = req.nextUrl.searchParams.get('mobileTokenId');
+    // mobileTokenId deprecated
 
     // Require either patient session ID or mobile token ID
-    if (!patientSessionId && !mobileTokenId) {
-      return NextResponse.json({ error: 'Either patientSessionId or mobileTokenId is required' }, { status: 400 });
-    }
+    // Patient session ID preferred; mobile token deprecated
 
     // Validate file type
     if (!mimeType.startsWith('image/')) {
@@ -56,26 +44,23 @@ export async function GET(req: NextRequest) {
     const fileExtension = filename.split('.').pop() || 'jpg';
     const uniqueFilename = `${timestamp}-${uuidv4()}.${fileExtension}`;
 
+    // Build key under clinical-images/{userId}/ with optional session folder
     let key: string;
-    if (patientSessionId) {
-      // Traditional consultation image path
-      key = `consultations/${patientSessionId}/${uniqueFilename}`;
-    } else {
-      // Mobile upload path using token ID
-      key = `mobile-uploads/${mobileTokenId}/${uniqueFilename}`;
-    }
+    const basePrefix = `clinical-images/${userId}/`;
+    key = patientSessionId
+      ? `${basePrefix}${patientSessionId}/${uniqueFilename}`
+      : `${basePrefix}${uniqueFilename}`;
 
     // Create presigned URL for PUT operation
     const command = new PutObjectCommand({
       Bucket: BUCKET_NAME,
       Key: key,
       ContentType: mimeType,
-      ServerSideEncryption: 'AES256',
+      // Temporarily remove ServerSideEncryption to test
       Metadata: {
         ...(patientSessionId && { 'patient-session-id': patientSessionId }),
-        ...(mobileTokenId && { 'mobile-token-id': mobileTokenId }),
-        'upload-type': patientSessionId ? 'consultation' : 'mobile',
-        'uploaded-by': userId || 'mobile-session',
+        'upload-type': 'clinical',
+        'uploaded-by': userId,
         'original-filename': filename,
         'upload-timestamp': timestamp.toString(),
       },

@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     try {
       if (process.env.ABLY_API_KEY) {
         const ably = new Ably.Rest({ key: process.env.ABLY_API_KEY });
-        const channel = ably.channels.get(`token:${context.userId}`);
+        const channel = ably.channels.get(`user:${context.userId}`);
         await channel.publish('recording_status', {
           type: 'recording_status',
           sessionId,

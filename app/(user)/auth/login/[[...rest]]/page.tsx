@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { SignIn } from '@clerk/nextjs';
 import { useSearchParams } from 'next/navigation';
@@ -21,6 +21,7 @@ export default function LoginPage() {
         <SignIn
           afterSignInUrl={redirectUrl}
           afterSignUpUrl={redirectUrl}
+          signUpUrl="/auth/register"
           appearance={{
             elements: {
               formButtonPrimary: 'bg-blue-600 hover:bg-blue-700 text-sm normal-case',

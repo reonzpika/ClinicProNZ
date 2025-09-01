@@ -54,7 +54,6 @@ export async function GET(req: NextRequest) {
         // Parse JSON fields
         transcriptions: session.transcriptions ? JSON.parse(session.transcriptions) : [],
         consultationItems: session.consultationItems ? JSON.parse(session.consultationItems) : [],
-        clinicalImages: session.clinicalImages ? JSON.parse(session.clinicalImages) : [],
       })),
     });
   } catch (error) {
@@ -108,7 +107,6 @@ export async function POST(req: NextRequest) {
         // Override with empty arrays for client
         transcriptions: [],
         consultationItems: [],
-        clinicalImages: [],
       },
     });
   } catch (error) {
@@ -136,7 +134,6 @@ export async function PUT(req: NextRequest) {
       typedInput,
       consultationNotes,
       consultationItems,
-      clinicalImages,
     } = await req.json();
 
     if (!sessionId) {
@@ -168,9 +165,6 @@ export async function PUT(req: NextRequest) {
     }
     if (consultationItems !== undefined) {
       updateData.consultationItems = JSON.stringify(consultationItems);
-    }
-    if (clinicalImages !== undefined) {
-      updateData.clinicalImages = JSON.stringify(clinicalImages);
     }
 
     // Set completedAt when status changes to completed
@@ -206,7 +200,6 @@ export async function PUT(req: NextRequest) {
         // Parse JSON fields
         transcriptions: session.transcriptions ? JSON.parse(session.transcriptions) : [],
         consultationItems: session.consultationItems ? JSON.parse(session.consultationItems) : [],
-        clinicalImages: session.clinicalImages ? JSON.parse(session.clinicalImages) : [],
       },
     });
   } catch (error) {

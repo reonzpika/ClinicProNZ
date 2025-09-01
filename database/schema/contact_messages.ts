@@ -9,6 +9,6 @@ export const contactMessages = pgTable('contact_messages', {
   userTier: text('user_tier'), // if logged in user
   userId: text('user_id'), // if logged in user
   source: text('source').default('contact_page'),
-  status: text('status').default('new'), // new, read, replied
+  status: text('status').default('unread'), // unread, read, actioned
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });

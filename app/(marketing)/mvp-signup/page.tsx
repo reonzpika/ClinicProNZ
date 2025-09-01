@@ -10,10 +10,12 @@ export default async function MVPSignupPage({ searchParams }: { searchParams: Pr
         Sign up keeps you updated.
       </p>
       {fromSurvey && (
-        <p className="mt-3 text-sm text-gray-600">Personalised for: {fromSurvey}</p>
+        <p className="mt-3 text-sm text-gray-600">
+Personalised for:
+{fromSurvey}
+        </p>
       )}
       {/* TODO: Integrate actual signup form or redirect to Clerk sign up */}
     </main>
   );
 }
-

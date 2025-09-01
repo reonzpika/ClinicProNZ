@@ -16,26 +16,15 @@ export function useRBAC() {
   // Get user tier directly from Clerk metadata
   const tier = getUserTier();
 
-  // Check if user has access to specific features
-  const hasFeatureAccess = (feature: FeaturePermission): boolean => {
-    switch (feature) {
-      case 'sessionManagement':
-        // Only standard/premium/admin tiers have session management
-        return tier === 'standard' || tier === 'premium' || tier === 'admin';
-      case 'templateManagement':
-        // Basic and above have template management (must be signed in at UI usage sites)
-        return tier === 'basic' || tier === 'standard' || tier === 'premium' || tier === 'admin';
-      case 'premiumActions':
-        // All tiers have some premium actions (but limits vary)
-        return true;
-      default:
-        return false;
-    }
+  // Check if user has access to specific features (RBAC legacy removed - all authenticated users have access)
+  const hasFeatureAccess = (_feature: FeaturePermission): boolean => {
+    // All authenticated users have access to all features
+    return !!isSignedIn;
   };
 
-  // Check if user has unlimited access to core features
+  // Check if user has unlimited access to core features (RBAC legacy removed)
   const hasUnlimitedAccess = (): boolean => {
-    return tier === 'standard' || tier === 'premium' || tier === 'admin';
+    return !!isSignedIn;
   };
 
   // Check if user should see upgrade prompts

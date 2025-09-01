@@ -1,8 +1,10 @@
+import { Buffer } from 'node:buffer';
+
 import Anthropic from '@anthropic-ai/sdk';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
+import sharp from 'sharp';
 
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
@@ -45,7 +47,7 @@ export async function POST(req: Request) {
     }
 
     // Parse request body
-    const { imageKey, patientSessionId, imageId } = await req.json();
+    const { imageKey, patientSessionId, imageId, prompt, imageData } = await req.json();
 
     // Validate required fields
     if (!imageKey || !patientSessionId || !imageId) {
@@ -54,47 +56,151 @@ export async function POST(req: Request) {
       }, { status: 400 });
     }
 
-    // Validate that the key belongs to a consultation or mobile upload (security check)
-    if (!imageKey.startsWith('consultations/') && !imageKey.startsWith('mobile-uploads/')) {
+    // Validate that the key belongs to an allowed prefix (security check)
+    if (!imageKey.startsWith('consultations/') && !imageKey.startsWith('mobile-uploads/') && !imageKey.startsWith('clinical-images/')) {
       return NextResponse.json({ error: 'Invalid image key' }, { status: 400 });
     }
 
-    // Generate presigned URL for Claude to access the image
-    const command = new GetObjectCommand({
-      Bucket: BUCKET_NAME,
-      Key: imageKey,
-    });
+    // Get image buffer - use provided imageData or download from S3
+    let buffer: Buffer;
 
-    const presignedUrl = await getSignedUrl(s3Client, command, {
-      expiresIn: 3600, // 1 hour - plenty of time for Claude to access
-    });
+    if (imageData) {
+      // Use provided base64 image data (performance optimization)
+
+      try {
+        buffer = Buffer.from(imageData, 'base64');
+
+        if (buffer.length === 0) {
+          throw new Error('Provided image data is empty');
+        }
+      } catch (error) {
+        console.error('Failed to process provided image data:', error);
+        return NextResponse.json({
+          error: 'Invalid image data provided',
+          code: 'INVALID_IMAGE_DATA',
+        }, { status: 400 });
+      }
+    } else {
+      // Fallback: Download image from S3
+
+      const command = new GetObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: imageKey,
+      });
+
+      const response = await s3Client.send(command);
+      if (!response.Body) {
+        return NextResponse.json({ error: 'Failed to retrieve image' }, { status: 500 });
+      }
+
+      // Convert stream to buffer
+      const imageBuffer = await response.Body.transformToByteArray();
+      buffer = Buffer.from(imageBuffer);
+
+      // Validate that we have image data
+      if (buffer.length === 0) {
+        return NextResponse.json({ error: 'Retrieved image is empty' }, { status: 400 });
+      }
+    }
+
+    // Get image metadata and resize if needed
+    let image, metadata;
+    try {
+      image = sharp(buffer);
+      metadata = await image.metadata();
+
+      if (!metadata.width || !metadata.height) {
+        throw new Error('Invalid image: missing dimensions');
+      }
+    } catch (imageError) {
+      console.error('Image processing error:', imageError);
+      return NextResponse.json({
+        error: 'Invalid image format or corrupted image file',
+        code: 'INVALID_IMAGE_FORMAT',
+      }, { status: 400 });
+    }
+
+    const MAX_DIMENSION = 8000; // Claude's maximum dimension
+    let processedImage = image;
+
+    // Check if image needs resizing
+    if (metadata.width && metadata.height
+      && (metadata.width > MAX_DIMENSION || metadata.height > MAX_DIMENSION)) {
+      // Calculate resize dimensions maintaining aspect ratio
+      const aspectRatio = metadata.width / metadata.height;
+      let newWidth, newHeight;
+
+      if (metadata.width > metadata.height) {
+        newWidth = Math.min(metadata.width, MAX_DIMENSION);
+        newHeight = Math.round(newWidth / aspectRatio);
+      } else {
+        newHeight = Math.min(metadata.height, MAX_DIMENSION);
+        newWidth = Math.round(newHeight * aspectRatio);
+      }
+
+      processedImage = image.resize(newWidth, newHeight, {
+        fit: 'inside',
+        withoutEnlargement: true,
+      });
+    }
+
+    // Convert to base64 (always as JPEG for consistency)
+    let processedBuffer, base64Image;
+    try {
+      processedBuffer = await processedImage.jpeg({ quality: 90 }).toBuffer();
+      base64Image = processedBuffer.toString('base64');
+
+      const sizeKB = Math.round(base64Image.length / 1024);
+
+      // Claude has a ~20MB limit on base64 images, warn if approaching
+      if (sizeKB > 15000) { // 15MB warning threshold
+        console.warn(`Large image size: ${sizeKB}KB - may encounter API limits`);
+      }
+    } catch (processingError) {
+      console.error('Image conversion error:', processingError);
+      return NextResponse.json({
+        error: 'Failed to process image for analysis',
+        code: 'IMAGE_PROCESSING_ERROR',
+      }, { status: 500 });
+    }
 
     // Clinical prompt template
-    const systemPrompt = `You are a clinical AI assistant analysing medical images for healthcare documentation.
+    const systemPrompt = `You are a clinical AI assistant analysing medical images for NZ GPs.
 
 IMPORTANT GUIDELINES:
 - This is a clinical documentation aid, not a diagnostic tool
-- All observations should be verified by qualified healthcare professionals
-- Focus on objective visual findings, not diagnostic conclusions
-- Use professional medical terminology
-- Be specific about anatomical locations and characteristics
-- Include measurements or scale references when visible
-- Flag any image quality issues that might affect interpretation
+- Focus on objective visual findings only
+- Use professional medical terminology appropriate for NZ healthcare
+- Keep output brief and concise
+- DO NOT include differential diagnoses, "Notable findings", "Recommendations", or "Documentation" sections
+- If clinical context is provided by the GP, incorporate this information into your analysis
+- DO NOT estimate or mention sizes, measurements, or dimensions unless:
+  1. A visual reference (ruler, coin, measuring device) is clearly visible in the image, OR
+  2. The GP explicitly provides measurements in their clinical context
+- Use descriptive terms like "small", "large", "extensive" without specific measurements when no reference is available
 
 INSTRUCTIONS:
-1. Provide a clear, clinical description of what you observe
-2. Note any concerning findings that may require attention
-3. Use professional medical terminology
-4. Be specific about anatomical locations and characteristics
-5. Include measurements or scale references when visible
-6. Flag any image quality issues that might affect interpretation
+1. State anatomical position (use provided context if available)
+2. Provide essential clinical description of what you observe
+3. Reference any clinical context provided by the GP in your analysis
+4. Describe lesions/findings without speculating about size unless proper references are present
+5. Keep to objective bullet points only
+6. Always include clinical judgment disclaimer
 
-Please analyse this clinical image and provide a comprehensive clinical description:`;
+EXAMPLE OUTPUT FORMAT:
+Location: Left forearm
+- Small superficial abrasion/excoriation
+- Dark brown to purple-coloured debris/crusting present within the wound bed
+- Surrounding skin shows mild erythema
+- Wound edges are irregular but superficial
+- Consistent with GP's observation of recent trauma
+
+IMPORTANT: This analysis is for documentation purposes only. Clinical correlation and professional judgment are required for definitive diagnosis and treatment decisions.`;
 
     // Call Claude Vision API with streaming
     const stream = await anthropic.messages.create({
       model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 1000,
+      max_tokens: 200,
       temperature: 0.1, // Low temperature for consistent clinical observations
       system: systemPrompt,
       messages: [
@@ -104,13 +210,16 @@ Please analyse this clinical image and provide a comprehensive clinical descript
             {
               type: 'image',
               source: {
-                type: 'url',
-                url: presignedUrl,
+                type: 'base64',
+                media_type: 'image/jpeg',
+                data: base64Image,
               },
             },
             {
               type: 'text',
-              text: 'Please provide a detailed clinical analysis of this image.',
+              text: prompt
+                ? `Please provide a concise clinical analysis of this image with objective observations only.\n\nClinical context provided by GP: ${prompt}`
+                : 'Please provide a concise clinical analysis of this image with objective observations only.',
             },
           ],
         },
@@ -225,6 +334,22 @@ Please analyse this clinical image and provide a comprehensive clinical descript
         error: 'Too many requests. Please wait a moment and try again.',
         code: 'RATE_LIMIT_ERROR',
       }, { status: 429 });
+    }
+
+    // Handle image size errors specifically
+    if (error instanceof Error && error.message.includes('image dimensions exceed max allowed size')) {
+      return NextResponse.json({
+        error: 'Image is too large for analysis. Please try with a smaller image.',
+        code: 'IMAGE_TOO_LARGE',
+      }, { status: 400 });
+    }
+
+    // Handle invalid image format errors
+    if (error instanceof Error && error.message.includes('invalid_request_error')) {
+      return NextResponse.json({
+        error: 'Invalid image format. Please ensure the image is a supported format (JPEG, PNG, WebP, GIF).',
+        code: 'INVALID_IMAGE_FORMAT',
+      }, { status: 400 });
     }
 
     return NextResponse.json({
