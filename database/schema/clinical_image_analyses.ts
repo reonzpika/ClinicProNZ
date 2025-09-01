@@ -15,3 +15,6 @@ export const clinicalImageAnalyses = pgTable('clinical_image_analyses', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
+
+export type ClinicalImageAnalysis = typeof clinicalImageAnalyses.$inferSelect;
+export type NewClinicalImageAnalysis = typeof clinicalImageAnalyses.$inferInsert;

@@ -11,8 +11,8 @@ export function useSessionAccess() {
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
 
-  // Session history requires Standard tier or higher (not available for basic/guest users)
-  const hasSessionHistoryAccess = isSignedIn && (userTier === 'standard' || userTier === 'premium' || userTier === 'admin');
+  // Session history available for all authenticated users (RBAC legacy removed)
+  const hasSessionHistoryAccess = isSignedIn;
 
   // Active session management (creating sessions during consultation) is available for all authenticated users
   const hasActiveSessionAccess = isSignedIn;

@@ -91,7 +91,7 @@ export async function checkCoreAccess(context: RBACContext): Promise<RBACResult>
 }
 
 /**
- * Check if user can access any feature (simplified - all authenticated users have access)
+ * Check if user can access any feature (RBAC legacy removed - all authenticated users have access)
  */
 export async function checkFeatureAccess(context: RBACContext, _feature: 'templates' | 'sessions' | 'session-history'): Promise<RBACResult> {
   if (!context.isAuthenticated) {
@@ -101,7 +101,7 @@ export async function checkFeatureAccess(context: RBACContext, _feature: 'templa
     };
   }
 
-  // All authenticated users have access to all features now
+  // RBAC legacy removed - all authenticated users have access to all features
   return { allowed: true };
 }
 

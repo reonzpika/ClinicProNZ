@@ -12,7 +12,6 @@ import {
 import { useSessionAccess } from '@/src/hooks/useSessionAccess';
 import { createAuthHeaders } from '@/src/shared/utils';
 import { useConsultationStore } from '@/src/stores/consultationStore';
-import { useMobileStore } from '@/src/stores/mobileStore';
 import { useTranscriptionStore } from '@/src/stores/transcriptionStore';
 import type { PatientSession } from '@/src/types/consultation';
 
@@ -26,7 +25,7 @@ export function useConsultationStores(): any {
   // Zustand stores
   const transcriptionStore = useTranscriptionStore();
   const consultationStore = useConsultationStore();
-  const mobileStore = useMobileStore();
+  // Mobile token store removed
 
   // Server state via React Query - disable on mobile routes
   const isMobileRoute = pathname === '/mobile';
@@ -185,15 +184,6 @@ export function useConsultationStores(): any {
     return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
-  const saveClinicalImagesToCurrentSession = useCallback(async (clinicalImages: any[]): Promise<boolean> => {
-    const id = consultationStore.currentPatientSessionId;
-    if (!id) {
-      return false;
-    }
-    await updatePatientSession(id, { clinicalImages } as any);
-    return true;
-  }, [consultationStore.currentPatientSessionId, updatePatientSession]);
-
   const saveTranscriptionsToCurrentSession = useCallback(async (): Promise<boolean> => {
     const id = consultationStore.currentPatientSessionId;
     if (!id) {
@@ -244,8 +234,7 @@ export function useConsultationStores(): any {
     // Sessions list
     patientSessions,
 
-    // Mobile state
-    mobileV2: mobileStore.mobileV2,
+    // Mobile state removed
 
     // Last generated tracking
     lastGeneratedTranscription: transcriptionStore.lastGeneratedTranscription,
@@ -309,11 +298,7 @@ export function useConsultationStores(): any {
     setConsultationNotes: consultationStore.setConsultationNotes,
     getCompiledConsultationText: consultationStore.getCompiledConsultationText,
 
-    // Actions - mobile
-    enableMobileV2: mobileStore.enableMobileV2,
-    setMobileV2Token: mobileStore.setMobileV2Token,
-    setMobileV2TokenData: mobileStore.setMobileV2TokenData,
-    setMobileV2IsConnected: mobileStore.setMobileV2IsConnected,
+    // Actions - mobile removed
 
     // Actions - last generated tracking
     setLastGeneratedInput: transcriptionStore.setLastGeneratedInput,
@@ -345,11 +330,6 @@ export function useConsultationStores(): any {
       transcriptionStore.resetTranscription();
     },
 
-    // Clinical images
-    addClinicalImage: consultationStore.addClinicalImage,
-    removeClinicalImage: consultationStore.removeClinicalImage,
-    updateImageDescription: consultationStore.updateImageDescription,
-    saveClinicalImagesToCurrentSession,
     saveTranscriptionsToCurrentSession,
 
     // Session accessors
@@ -382,10 +362,6 @@ export function useConsultationStores(): any {
       // Clear consultation items
       const currentItems = [...consultationStore.consultationItems];
       currentItems.forEach((item: any) => consultationStore.removeConsultationItem(item.id));
-
-      // Clear clinical images
-      const currentImages = [...consultationStore.clinicalImages];
-      currentImages.forEach((img: any) => consultationStore.removeClinicalImage(img.id));
 
       // Clear last generated tracking
       transcriptionStore.resetLastGeneratedInput();
@@ -452,18 +428,6 @@ export function useConsultationStores(): any {
             }
           } catch (error) {
             console.warn('Failed to parse session consultation items:', error);
-          }
-        }
-
-        // Load clinical images
-        if (session.clinicalImages) {
-          try {
-            const imgs = typeof session.clinicalImages === 'string' ? JSON.parse(session.clinicalImages) : session.clinicalImages;
-            if (Array.isArray(imgs)) {
-              imgs.forEach((img: any) => consultationStore.addClinicalImage(img));
-            }
-          } catch (error) {
-            console.warn('Failed to parse session clinical images:', error);
           }
         }
       }

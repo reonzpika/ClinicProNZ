@@ -19,7 +19,7 @@ export const patientSessions = pgTable('patient_sessions', {
   consultationNotes: text('consultation_notes'), // Additional notes from consultation
   templateId: text('template_id'), // Link to template used
   consultationItems: text('consultation_items'), // JSON string of checklist/acc items
-  clinicalImages: text('clinical_images'), // JSON string of clinical images array
+  clinicalImages: text('clinical_images'), // JSON string of clinical images
   createdAt: timestamp('created_at').defaultNow().notNull(),
   completedAt: timestamp('completed_at'),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

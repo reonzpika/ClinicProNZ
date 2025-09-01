@@ -49,9 +49,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const stripe = new Stripe(stripeSecretKey, {
-      apiVersion: '2025-07-30.basil',
-    });
+    const stripe = new Stripe(stripeSecretKey);
 
     const body = await req.text();
     const signature = req.headers.get('stripe-signature');

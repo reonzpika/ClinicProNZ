@@ -59,21 +59,7 @@ export function createAuthHeadersForFormData(
  * @param userTier - Optional user tier if known (defaults to 'basic')
  * @returns Headers object with mobile token authentication
  */
-export function createAuthHeadersForMobile(
-  mobileToken: string,
-  userTier?: string,
-): HeadersInit {
-  const headers: HeadersInit = {};
-
-  (headers as Record<string, string>)['x-mobile-token'] = mobileToken;
-
-  if (userTier) {
-    (headers as Record<string, string>)['x-user-tier'] = userTier;
-  }
-
-  // No Content-Type header for FormData compatibility
-  return headers;
-}
+// createAuthHeadersForMobile removed - mobile tokens deprecated
 
 // Tier-based access control utilities
 export type { UserTier } from './roles';

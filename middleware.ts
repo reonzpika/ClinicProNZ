@@ -104,6 +104,14 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
+  // Protect /api/current-session route - require sign-in only
+  if (req.nextUrl.pathname === '/api/current-session') {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return returnUnauthorized();
+    }
+  }
+
   // Protect /api/create-checkout-session - require sign-in only
   if (req.nextUrl.pathname === '/api/create-checkout-session') {
     const resolvedAuth = await auth();
@@ -222,6 +230,7 @@ export const config = {
   matcher: [
     '/api/templates/:path*',
     '/api/user/:path*',
+    '/api/current-session', // Add missing current-session route
     '/api/uploads/:path*',
     '/api/patient-sessions/:path*',
     '/api/mobile/:path*',

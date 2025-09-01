@@ -29,8 +29,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Image key is required' }, { status: 400 });
     }
 
-    // Validate that the key belongs to a consultation (security check)
-    if (!key.startsWith('consultations/')) {
+    // Validate that the key belongs to user's images (security check)
+    if (!key.startsWith('consultations/') && !key.startsWith('clinical-images/') && !key.startsWith('mobile-uploads/')) {
       return NextResponse.json({ error: 'Invalid image key' }, { status: 400 });
     }
 

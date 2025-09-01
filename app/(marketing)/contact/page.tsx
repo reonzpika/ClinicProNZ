@@ -21,7 +21,6 @@ export default function ContactPage() {
     email: '',
     subject: '',
     message: '',
-    subscribeToUpdates: false,
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -62,7 +61,6 @@ export default function ContactPage() {
           email: prev.email,
           subject: '',
           message: '',
-          subscribeToUpdates: false,
         }));
       } else {
         const errorData = await response.json();
@@ -140,7 +138,7 @@ export default function ContactPage() {
                         <span className="font-medium text-green-800">Message sent successfully!</span>
                       </div>
                       <p className="mt-1 text-sm text-green-700">
-                        We'll get back to you within 24 hours during business days.
+                        We'll get back to you within 48 hours during business days.
                       </p>
                     </div>
                   )}
@@ -214,20 +212,6 @@ export default function ContactPage() {
                         className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                       />
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                      <input
-                        type="checkbox"
-                        id="subscribeToUpdates"
-                        name="subscribeToUpdates"
-                        checked={formData.subscribeToUpdates}
-                        onChange={handleInputChange}
-                        className="mt-1 size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <label htmlFor="subscribeToUpdates" className="text-sm text-gray-700">
-                        Subscribe to ClinicPro updates and early access announcements
-                      </label>
                     </div>
 
                     <Button

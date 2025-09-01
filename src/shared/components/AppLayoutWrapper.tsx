@@ -23,8 +23,8 @@ const EXCLUDED_ROUTES = [
 ];
 
 const EXCLUDED_ROUTE_PATTERNS = [
-  /^\/login/, // Auth pages
-  /^\/register/, // Auth pages
+  /^\/auth\/login/, // Auth pages
+  /^\/auth\/register/, // Auth pages
 ];
 
 export const AppLayoutWrapper: React.FC<AppLayoutWrapperProps> = ({ children }) => {

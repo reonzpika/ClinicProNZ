@@ -1,15 +1,14 @@
 import { auth } from '@clerk/nextjs/server';
+import { db } from 'database/client';
+import { contactMessages } from 'database/schema/contact_messages';
 import { nanoid } from 'nanoid';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { db } from '@/db/client';
-import { contactMessages, emailCaptures } from '@/db/schema';
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, subject, message, subscribeToUpdates } = body;
+    const { name, email, subject, message } = body;
 
     // Validate required fields
     if (!name || !email || !subject || !message) {
@@ -19,9 +18,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user info if logged in
-    const { userId, sessionClaims } = await auth();
-    const userTier = (sessionClaims as any)?.metadata?.tier || null;
+    // Get user info if logged in (optional for contact form)
+    let userId = null;
+    let userTier = null;
+    try {
+      const authResult = await auth();
+      userId = authResult.userId || null;
+      userTier = (authResult.sessionClaims as any)?.metadata?.tier || null;
+    } catch {
+      // Auth failed - user is anonymous, which is fine for contact form
+    }
 
     // Insert contact message
     await db.insert(contactMessages).values({
@@ -36,34 +42,11 @@ export async function POST(request: NextRequest) {
       status: 'new',
     });
 
-    // Handle newsletter subscription if requested
-    if (subscribeToUpdates) {
-      try {
-        // Check if email already exists in email_captures
-        const existing = await db.query.emailCaptures.findFirst({
-          where: (emailCaptures, { eq }) => eq(emailCaptures.email, email.toLowerCase().trim()),
-        });
-
-        if (!existing) {
-          await db.insert(emailCaptures).values({
-            id: nanoid(),
-            email: email.toLowerCase().trim(),
-            name: name.trim(),
-            source: 'contact_page_newsletter',
-          });
-        }
-      } catch (newsletterError) {
-        // Don't fail the main contact submission if newsletter signup fails
-        console.warn('Newsletter signup failed:', newsletterError);
-      }
-    }
-
     return NextResponse.json({
       success: true,
       message: 'Message sent successfully',
     });
-  } catch (error) {
-    console.error('Contact message error:', error);
+  } catch {
     return NextResponse.json(
       { error: 'Failed to send message. Please try again.' },
       { status: 500 },
