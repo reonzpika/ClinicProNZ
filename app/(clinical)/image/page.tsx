@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   AlertCircle,
   Camera,
@@ -17,8 +18,8 @@ import {
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 
+import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 // Removed in-page WebRTC camera in favour of native camera capture
 import { imageQueryKeys, useAnalyzeImage, useDeleteImage, useSaveAnalysis, useServerImages, useUploadImages } from '@/src/hooks/useImageQueries';
 import { Container } from '@/src/shared/components/layout/Container';
@@ -29,7 +30,6 @@ import { createAuthHeaders } from '@/src/shared/utils';
 import { isFeatureEnabled } from '@/src/shared/utils/launch-config';
 import type { AnalysisModalState, ServerImage } from '@/src/stores/imageStore';
 import { useImageStore } from '@/src/stores/imageStore';
-import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 
 export default function ClinicalImagePage() {
   const { userId, isSignedIn } = useAuth();
@@ -93,7 +93,9 @@ export default function ClinicalImagePage() {
     userId: userId ?? null,
     isMobile: false,
     onMobileImagesUploaded: () => {
-      try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') }); } catch {}
+      try {
+ queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') });
+} catch {}
     },
   });
 
@@ -671,7 +673,9 @@ function ServerImageCard({
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation(); // Prevent opening modal
-    if (isDeleting) { return; }
+    if (isDeleting) {
+ return;
+}
     setIsDeleting(true);
     onDelete(image.key);
   };
@@ -1128,14 +1132,18 @@ function ImageSectionsGrid({
   const noSession = clinical.filter(i => !i.sessionId);
   const bySession = clinical.filter(i => i.sessionId).reduce<Record<string, ServerImage[]>>((acc, img) => {
     const key = img.sessionId as string;
-    if (!acc[key]) { acc[key] = []; }
+    if (!acc[key]) {
+ acc[key] = [];
+}
     acc[key].push(img);
     return acc;
   }, {});
   const legacyConsultations = images.filter(i => i.source === 'consultation');
 
   const Section = ({ title, items }: { title: string; items: ServerImage[] }) => (
-    items.length === 0 ? null : (
+    items.length === 0
+? null
+: (
       <div className="mb-6">
         <div className="mb-2 text-sm font-semibold text-slate-700">{title}</div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
@@ -1164,7 +1172,7 @@ function ImageSectionsGrid({
       {firstSessionId && (
         <Section title="This session" items={bySession[firstSessionId] ?? []} />
       )}
-      {restSessionIds.map((sid) => (
+      {restSessionIds.map(sid => (
         <Section key={sid} title={`Other session ${sid}`} items={bySession[sid] ?? []} />
       ))}
       <Section title="No session" items={noSession} />

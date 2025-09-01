@@ -1,16 +1,16 @@
 'use client';
 
-import { AlertTriangle, Camera } from 'lucide-react';
 import { useAuth } from '@clerk/nextjs';
+import { AlertTriangle, Camera } from 'lucide-react';
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTranscription';
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
+import { useUploadImages } from '@/src/hooks/useImageQueries';
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { createAuthHeadersForFormData } from '@/src/shared/utils';
-import { useUploadImages } from '@/src/hooks/useImageQueries';
 import { isFeatureEnabled } from '@/src/shared/utils/launch-config';
 
 // Types for native mobile capture queue
@@ -133,7 +133,6 @@ function MobilePageContent() {
         });
         if (!response.ok) {
           setAuthError(`Transcription failed: ${response.statusText}`);
-          return;
         }
       } catch (error) {
         setAuthError(`Recording error: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -207,14 +206,18 @@ function MobilePageContent() {
 
   const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (!files || files.length === 0) { return; }
+    if (!files || files.length === 0) {
+ return;
+}
     const fileArray = Array.from(files);
     setQueuedItems(prev => ([
       ...prev,
       ...fileArray.map(f => ({ id: Math.random().toString(36).slice(2), file: f, previewUrl: URL.createObjectURL(f) })),
     ]));
     setMobileStep('review');
-    if (event.target) { event.target.value = ''; }
+    if (event.target) {
+ event.target.value = '';
+}
   }, []);
 
   useEffect(() => () => {
@@ -257,7 +260,14 @@ function MobilePageContent() {
               {queuedItems.length > 0 && (
                 <Card>
                   <CardContent className="p-4">
-                    <p className="text-sm text-gray-600">{queuedItems.length} photo{queuedItems.length === 1 ? '' : 's'} selected</p>
+                    <p className="text-sm text-gray-600">
+{queuedItems.length}
+{' '}
+photo
+{queuedItems.length === 1 ? '' : 's'}
+{' '}
+selected
+                    </p>
                     <Button onClick={() => setMobileStep('review')} variant="outline" className="mt-2 w-full">Review & upload</Button>
                   </CardContent>
                 </Card>
@@ -312,7 +322,9 @@ function MobilePageContent() {
                     try {
                       await uploadImages.mutateAsync({ files: filesToUpload });
                       // Notify desktop to refresh image list
-                      try { sendImageNotification(undefined, filesToUpload.length, undefined); } catch {}
+                      try {
+ sendImageNotification(undefined, filesToUpload.length, undefined);
+} catch {}
                       // Clear queue and return
                       queuedItems.forEach(it => it.previewUrl && URL.revokeObjectURL(it.previewUrl));
                       setQueuedItems([]);

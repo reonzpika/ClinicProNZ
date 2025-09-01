@@ -1,5 +1,5 @@
-import * as Ably from 'ably';
 import { auth } from '@clerk/nextjs/server';
+import * as Ably from 'ably';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
@@ -23,7 +23,7 @@ export async function GET() {
     } as any);
 
     return NextResponse.json(tokenRequest);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to create Ably token' }, { status: 500 });
   }
 }
@@ -50,7 +50,7 @@ export async function POST() {
     } as any);
 
     return NextResponse.json(tokenRequest);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to create Ably token' }, { status: 500 });
   }
 }

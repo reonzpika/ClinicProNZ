@@ -175,7 +175,6 @@ export const useSimpleAbly = ({
  return;
 }
           onConnectionStatusChanged?.(false);
-          try { if (!isMobile) console.info('[Ably] connecting'); } catch {}
         });
 
         ably.connection.on('connected', async () => {
@@ -199,13 +198,14 @@ export const useSimpleAbly = ({
             } catch {
               // ignore attach errors; subscribe will attach implicitly
             }
-            try { if (!isMobile) console.info('[Ably] connected; channel attached'); } catch {}
 
             // Simplified connection for mobile-as-microphone architecture
 
             // Mark as connected - ready to send/receive transcripts
             setIsConnected(true);
-            try { callbacksRef.current.onConnectionStatusChanged?.(true); } catch {}
+            try {
+ callbacksRef.current.onConnectionStatusChanged?.(true);
+} catch {}
 
             // Flush any queued messages now that we are connected and channel is attached
             try {
@@ -217,7 +217,7 @@ export const useSimpleAbly = ({
             if (isCurrentConnection) {
               ablyRef.current = ably;
               channelRef.current = ably.channels.get(`user:${userId}` as any);
-              try { if (!isMobile) console.info('[Ably] connection ready on channel user:' + userId); } catch {}
+
               // Flush outbox
               if (outboxRef.current.length > 0) {
                 const pending = [...outboxRef.current];
@@ -235,7 +235,9 @@ export const useSimpleAbly = ({
           } catch (e) {
             console.warn('Post-connect setup error:', e);
             setIsConnected(true);
-            try { callbacksRef.current.onConnectionStatusChanged?.(true); } catch {}
+            try {
+ callbacksRef.current.onConnectionStatusChanged?.(true);
+} catch {}
           }
         });
 
@@ -244,16 +246,18 @@ export const useSimpleAbly = ({
  return;
 }
           setIsConnected(false);
-          try { callbacksRef.current.onConnectionStatusChanged?.(false); } catch {}
-          try { if (!isMobile) console.info('[Ably] disconnected'); } catch {}
+          try {
+ callbacksRef.current.onConnectionStatusChanged?.(false);
+} catch {}
         });
 
         ably.connection.on('suspended', () => {
           if (!isCurrentConnection) {
  return;
 }
-          try { callbacksRef.current.onConnectionStatusChanged?.(false); } catch {}
-          try { if (!isMobile) console.info('[Ably] suspended'); } catch {}
+          try {
+ callbacksRef.current.onConnectionStatusChanged?.(false);
+} catch {}
         });
 
         ably.connection.on('failed', (error) => {
@@ -261,9 +265,15 @@ export const useSimpleAbly = ({
  return;
 }
           setIsConnected(false);
-          try { callbacksRef.current.onConnectionStatusChanged?.(false); } catch {}
+          try {
+ callbacksRef.current.onConnectionStatusChanged?.(false);
+} catch {}
           callbacksRef.current.onError?.(`Connection failed: ${error?.reason || 'Unknown error'}`);
-          try { if (!isMobile) console.warn('[Ably] failed', error); } catch {}
+          try {
+ if (!isMobile) {
+ console.warn('[Ably] failed', error);
+}
+} catch {}
         });
 
         ably.connection.on('closed', () => {
@@ -271,8 +281,9 @@ export const useSimpleAbly = ({
  return;
 }
           setIsConnected(false);
-          try { callbacksRef.current.onConnectionStatusChanged?.(false); } catch {}
-          try { if (!isMobile) console.info('[Ably] closed'); } catch {}
+          try {
+ callbacksRef.current.onConnectionStatusChanged?.(false);
+} catch {}
         });
 
         ably.connection.on('update', (change) => {
@@ -308,7 +319,7 @@ export const useSimpleAbly = ({
         // Direct message subscription - no presence tracking needed
 
         // Subscribe to all message types on single channel
-        try { if (!isMobile) console.info('[Ably] subscribing to channel user:' + userId); } catch {}
+
         channel.subscribe((message) => {
           if (typeof message.timestamp === 'number') {
             lastSeenTsRef.current = Math.max(lastSeenTsRef.current, message.timestamp);
@@ -317,7 +328,7 @@ export const useSimpleAbly = ({
 
           switch (type) {
             case 'transcriptions_updated':
-              try { if (!isMobile) console.info('[Ably] message: transcriptions_updated'); } catch {}
+
               callbacksRef.current.onTranscriptionsUpdated?.((data as any).sessionId, (data as any).chunkId);
               break;
 
@@ -366,7 +377,9 @@ export const useSimpleAbly = ({
         }
       } catch (error: any) {
         if (isCurrentConnection) {
-          try { callbacksRef.current.onConnectionStatusChanged?.(false); } catch {}
+          try {
+ callbacksRef.current.onConnectionStatusChanged?.(false);
+} catch {}
           callbacksRef.current.onError?.(`Failed to connect: ${error.message}`);
         }
       }

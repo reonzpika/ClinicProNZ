@@ -4,7 +4,6 @@ import { useAuth } from '@clerk/nextjs';
 import { Crown, TrendingUp, Users, Zap } from 'lucide-react';
 import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import type { UserTier } from '@/src/lib/rbac-client';
 import { Badge } from '@/src/shared/components/ui/badge';
 import { Button } from '@/src/shared/components/ui/button';
@@ -28,7 +27,6 @@ const UsageDashboard = forwardRef<{ refresh: () => void }, object>((_props, ref)
 
   const { isSignedIn, userId } = useAuth();
   const { user } = useClerkMetadata();
-  const {} = useConsultationStores();
   const [usageData, setUsageData] = useState<UsageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);

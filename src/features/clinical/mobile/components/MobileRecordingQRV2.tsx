@@ -32,7 +32,7 @@ export const MobileRecordingQRV2: React.FC<MobileRecordingQRV2Props> = ({
     try {
       const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
       setQrUrl(`${baseUrl}/mobile`);
-    } catch (e) {
+    } catch {
       setError('Failed to prepare QR');
     }
   }, [isClient, isOpen]);
