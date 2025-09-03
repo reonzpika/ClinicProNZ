@@ -11,56 +11,102 @@ const openai = new OpenAI({
 });
 
 type SearchResponse = {
-  paragraph?: string;
-  sources: Array<{ title: string; url: string; index: number }>;
+  paragraph?: string; // For summary mode
+  sources: Array<{ title: string; url: string; index: number }>; // For summary mode
+  titles?: Array<{ title: string; url: string }>; // For list mode
   message?: string;
   error?: string;
 };
 
 /**
- * Enhance search query using LLM for better semantic matching
+ * Intelligently select most relevant sources using GPT-5 nano
  */
-async function enhanceSearchQuery(query: string): Promise<string> {
+async function selectRelevantSources(
+  query: string,
+  healthifyResults: any[],
+): Promise<number[]> {
   try {
+    // Take top 5 candidates for selection (matching our database limit)
+    const candidates = healthifyResults.slice(0, 5);
+
+    // Create summaries for selection - only overallSummary content
+    const sourceSummaries = candidates
+      .map((result, index) => {
+        const summary = result.overallSummary || result.content?.substring(0, 200) || 'No summary available';
+        return `[${index}] ${summary}`;
+      })
+      .join('\n\n');
+
+    console.log(`[SEARCH DEBUG] Selection stage: Reviewing ${candidates.length} candidates for "${query}"`);
+    console.log(`[SEARCH DEBUG] LLM input format per article: [index] overallSummary_content`);
+    console.log(`[SEARCH DEBUG] Total LLM input size: ~${sourceSummaries.length} characters`);
+
+    const llmSelectionStart = performance.now();
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-5-nano', // Ultra-fast selection
       messages: [{
         role: 'user',
-        content: `Improve this medical search query to find more relevant information. Add related medical terms, symptoms, conditions, and treatments. Keep it concise but comprehensive for semantic search.
+        content: `Select 1-5 most relevant articles for medical query: "${query}"
 
-Original query: "${query}"
+Review these article summaries and select the most relevant ones that:
+- Directly address the query topic
+- Provide complementary information (avoid redundant content)  
+- Cover different aspects (causes, symptoms, treatments, management)
 
-Return only the enhanced search terms, separated by spaces. Focus on medical terminology and related concepts.`,
+Article summaries to review:
+${sourceSummaries}
+
+Return only a JSON object with selected indices:
+{"selected": [0, 2, 4]}`,
       }],
-      temperature: 0.1,
+      // Note: GPT-5 models only support default temperature (1)
+      response_format: { type: 'json_object' },
     });
 
-    const enhancedQuery = completion.choices[0]?.message?.content?.trim();
-    return enhancedQuery || query; // Fallback to original if enhancement fails
+    const llmSelectionEnd = performance.now();
+    console.log(`[SEARCH TIMING] LLM selection call: ${Math.round(llmSelectionEnd - llmSelectionStart)}ms`);
+
+    const response = completion.choices[0]?.message?.content?.trim();
+    if (!response) {
+ throw new Error('Empty response from selection model');
+}
+
+    const parsed = JSON.parse(response);
+    const selectedIndices = parsed.selected || [];
+
+    // Validate selection (ensure indices are within range and reasonable count)
+    const validIndices = selectedIndices
+      .filter((idx: number) => typeof idx === 'number' && idx >= 0 && idx < candidates.length)
+      .slice(0, 5); // Cap at 5 sources max
+
+    if (validIndices.length === 0) {
+ throw new Error('No valid selections returned');
+}
+
+    console.log(`[SEARCH DEBUG] Selection complete: Selected ${validIndices.length} sources from ${candidates.length} candidates`);
+    console.log(`[SEARCH DEBUG] Selected indices: [${validIndices.join(', ')}]`);
+
+    return validIndices;
   } catch (error) {
-    console.error('[SEARCH] Query enhancement failed:', error);
-    return query; // Fallback to original query
+    console.error('[SEARCH] Source selection failed:', error);
+    // Fallback: return top 3 indices
+    console.log('[SEARCH DEBUG] Fallback: Using top 3 sources');
+    return [0, 1, 2].slice(0, Math.min(3, healthifyResults.length));
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId, sessionClaims } = await auth();
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if user has standard tier or higher (basic users can't use search)
-    const userTier = (sessionClaims as any)?.metadata?.tier || 'basic';
-    if (userTier === 'basic') {
-      return NextResponse.json({
-        error: 'Standard tier or higher required for clinical search',
-      }, { status: 403 });
-    }
+    // Note: Tier restrictions removed per legacy RBAC policy - all authenticated users have access
 
     // Parse request body
-    const { query } = await request.json();
+    const { query, mode = 'list' } = await request.json();
 
     if (!query || typeof query !== 'string') {
       return NextResponse.json(
@@ -69,33 +115,85 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Start overall timing
+    const overallStart = performance.now();
+
     // Apply typo correction to improve search results
     const correctedQuery = correctMedicalTypos(query.trim());
     console.log(`[SEARCH DEBUG] Original query: "${query}", Corrected: "${correctedQuery}"`);
 
-    // Enhance query with LLM for better semantic search
-    const enhancedQuery = await enhanceSearchQuery(correctedQuery);
-    console.log(`[SEARCH DEBUG] Enhanced query: "${enhancedQuery}"`);
+    // Step 1: Database search
+    console.log(`[SEARCH DEBUG] === STEP 1: DATABASE SEARCH ===`);
+    console.log(`[SEARCH DEBUG] Input query for vector search: "${correctedQuery}"`);
+    console.log(`[SEARCH DEBUG] Search parameters: limit=5, threshold=0.4, embedding_model=text-embedding-3-small`);
 
-    // Search existing database for relevant articles using enhanced query
-    const allResults = await searchSimilarDocuments(enhancedQuery, 10, 0.5); // More targeted search
+    const searchStart = performance.now();
+    const allResults = await searchSimilarDocuments(correctedQuery, 5, 0.4);
     const healthifyResults = allResults.filter(result => result.sourceType === 'healthify');
-    console.log(`[SEARCH DEBUG] Found ${allResults.length} total results, ${healthifyResults.length} from healthify`);
+    const searchEnd = performance.now();
+
+    console.log(`[SEARCH TIMING] Database search: ${Math.round(searchEnd - searchStart)}ms`);
+    console.log(`[SEARCH DEBUG] Database query results: ${allResults.length} total, ${healthifyResults.length} from healthify`);
+    console.log(`[SEARCH DEBUG] Database fields retrieved: id, title, content, source, sourceType, score, sectionSummaries, overallSummary, sections, enhancementStatus`);
+    console.log(`[SEARCH DEBUG] Top 3 scores: [${healthifyResults.slice(0, 3).map(r => r.score?.toFixed(3)).join(', ')}]`);
 
     if (healthifyResults.length === 0) {
+      const overallEnd = performance.now();
+      console.log(`[SEARCH TIMING] TOTAL: ${Math.round(overallEnd - overallStart)}ms`);
       return NextResponse.json({
         paragraph: '',
         sources: [],
+        titles: [],
         message: 'No relevant information found. Try a different search term.',
       });
     }
 
-    // Use top 5 results for paragraph synthesis (all articles are pre-enhanced)
-    const searchResults = healthifyResults.slice(0, 5);
-    console.log(`[SEARCH DEBUG] Using ${searchResults.length} pre-enhanced results for synthesis`);
+    // Branch based on mode
+    if (mode === 'list') {
+      // LIST MODE: Return top 5 titles only (no LLM processing)
+      console.log(`[SEARCH DEBUG] === LIST MODE: Returning top 5 titles only ===`);
+
+      const titles = healthifyResults.slice(0, 5).map(result => ({
+        title: result.title,
+        url: result.source,
+      }));
+
+      const overallEnd = performance.now();
+      console.log(`[SEARCH TIMING] ===== PERFORMANCE SUMMARY (LIST MODE) =====`);
+      console.log(`[SEARCH TIMING] Database search: ${Math.round(searchEnd - searchStart)}ms (100%)`);
+      console.log(`[SEARCH TIMING] TOTAL: ${Math.round(overallEnd - overallStart)}ms`);
+      console.log(`[SEARCH TIMING] DATABASE ACCESSES: 1 (vector similarity search only)`);
+      console.log(`[SEARCH TIMING] LLM API CALLS: 0 (list mode - no LLM processing)`);
+
+      return NextResponse.json({
+        titles,
+        sources: [],
+      });
+    }
+
+    // SUMMARY MODE: Full LLM processing pipeline
+    console.log(`[SEARCH DEBUG] === SUMMARY MODE: Full LLM processing pipeline ===`);
+
+    // Step 2: Intelligent source selection using GPT-5 nano
+    console.log(`[SEARCH DEBUG] === STEP 2: SOURCE SELECTION (NO DATABASE) ===`);
+    console.log(`[SEARCH DEBUG] Input: ${healthifyResults.length} database results from Step 1`);
+    console.log(`[SEARCH DEBUG] LLM input data: Article titles + overallSummary (first 150 chars each)`);
+    console.log(`[SEARCH DEBUG] LLM model: GPT-5 nano, task: Select 1-8 most relevant articles`);
+    console.log(`[SEARCH DEBUG] LLM will review: [${healthifyResults.slice(0, 3).map(r => `"${r.title?.substring(0, 30)}..."`).join(', ')}]`);
+
+    const selectionStart = performance.now();
+    const selectedIndices = await selectRelevantSources(query, healthifyResults);
+    const searchResults = selectedIndices
+      .map(index => healthifyResults[index])
+      .filter((result): result is NonNullable<typeof result> => result !== undefined);
+    const selectionEnd = performance.now();
+
+    console.log(`[SEARCH TIMING] Source selection: ${Math.round(selectionEnd - selectionStart)}ms`);
+    console.log(`[SEARCH DEBUG] LLM selection result: Selected ${searchResults.length} sources from ${healthifyResults.length} candidates`);
+    console.log(`[SEARCH DEBUG] Selected articles: [${searchResults.map(r => `"${r.title?.substring(0, 25)}..."`).join(', ')}]`);
 
     if (searchResults.length === 0) {
-      console.log(`[SEARCH DEBUG] No results found for "${enhancedQuery}"`);
+      console.log(`[SEARCH DEBUG] No results found for "${correctedQuery}"`);
       return NextResponse.json({
         paragraph: '',
         sources: [],
@@ -103,36 +201,84 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    console.log(`[SEARCH DEBUG] Processing ${searchResults.length} results with OpenAI for paragraph synthesis`);
+    console.log(`[SEARCH DEBUG] === STEP 3: CONTENT SYNTHESIS (NO DATABASE) ===`);
+    console.log(`[SEARCH DEBUG] Input: ${searchResults.length} selected articles from Step 2`);
+    console.log(`[SEARCH DEBUG] Content types used: sectionSummaries (≥0.5 score), overallSummary (<0.5), fallback (missing summaries)`);
+    console.log(`[SEARCH DEBUG] LLM model: GPT-5 nano, task: Generate 4-6 bullet points with citations`);
 
-    // Format results for OpenAI processing
+    // Helper function to format section summaries into readable text
+    const formatSectionSummaries = (sectionSummaries: any): string => {
+      if (!sectionSummaries || typeof sectionSummaries !== 'object') {
+ return '';
+}
+
+      return Object.entries(sectionSummaries)
+        .map(([sectionName, summaries]) => {
+          if (!Array.isArray(summaries)) {
+ return '';
+}
+          const capitalizedSection = sectionName.charAt(0).toUpperCase() + sectionName.slice(1).replace('_', ' ');
+          const bulletPoints = summaries.map(summary => `• ${summary}`).join('\n');
+          return `${capitalizedSection}:\n${bulletPoints}`;
+        })
+        .filter(Boolean)
+        .join('\n\n');
+    };
+
+    // Format results with smart medical content selection (Option A)
     const contextData = searchResults
       .map((result, index) => {
-        return `[${index + 1}] ${result.title}\n${result.content}\n`;
+        let content: string;
+
+        if (result.score >= 0.5 && result.sectionSummaries) {
+          // High + Medium: Use structured medical summaries
+          content = formatSectionSummaries(result.sectionSummaries);
+          console.log(`[SEARCH DEBUG] Article ${index + 1}: Using SECTION SUMMARIES (score: ${result.score?.toFixed(3)}, enhanced: ${result.enhancementStatus})`);
+        } else if (result.overallSummary) {
+          // Low: Use brief overview
+          content = result.overallSummary;
+          console.log(`[SEARCH DEBUG] Article ${index + 1}: Using OVERALL SUMMARY (score: ${result.score?.toFixed(3)}, enhanced: ${result.enhancementStatus})`);
+        } else {
+          // Fallback: Use truncated full content
+          content = result.content.substring(0, 400) + (result.content.length > 400 ? '...' : '');
+          console.log(`[SEARCH DEBUG] Article ${index + 1}: Using FALLBACK CONTENT (score: ${result.score?.toFixed(3)}, enhanced: ${result.enhancementStatus}) - sectionSummaries: ${result.sectionSummaries ? 'exists' : 'null'}, overallSummary: ${result.overallSummary ? 'exists' : 'null'}`);
+        }
+
+        return `[${index + 1}] ${result.title}\n${content}`;
       })
-      .join('\n---\n');
+      .join('\n\n');
 
-    // Create system prompt for paragraph synthesis
-    const systemPrompt = `You are a clinical information assistant. Your task is to synthesise medical information into a single coherent paragraph.
+    // Log total context size for performance monitoring
+    const totalContextChars = contextData.length;
+    const summaryCount = searchResults.filter(r => r && r.score >= 0.5 && r.sectionSummaries).length;
+    const overallCount = searchResults.filter(r => r && r.overallSummary && (!r.sectionSummaries || r.score < 0.5)).length;
+    const fallbackCount = searchResults.length - summaryCount - overallCount;
 
-Instructions:
-- Write approximately 150 words in a single paragraph
-- Focus on content most relevant to the user's query: "${query}"
-- Use inline numbered citations [1][2] at the end of sentences
-- Each citation number corresponds to the source document number
-- Use NZ English spelling (e.g., recognise, colour, centre)
-- Be factual and evidence-based
-- Write in professional but accessible language suitable for healthcare providers
-- Prioritise clinically relevant information (symptoms, causes, treatments, management)
+    console.log(`[SEARCH DEBUG] Final LLM input composition: ${summaryCount} section summaries, ${overallCount} overall summaries, ${fallbackCount} fallback`);
+    console.log(`[SEARCH DEBUG] Final LLM input size: ${totalContextChars} characters (~${Math.round(totalContextChars / 4)} tokens)`);
+    console.log(`[SEARCH DEBUG] LLM synthesis prompt: "Create very concise medical summary in 3-4 bullet points about '${query}'"`);
+    console.log(`[SEARCH DEBUG] Expected LLM output: 3-4 bullet points with ALL sources [1] through [${searchResults.length}] cited`);
 
-Return only the paragraph text with inline citations. Do not include any JSON formatting or additional structure.
+    // Create system prompt for concise synthesis with comprehensive citations
+    const systemPrompt = `Create a very concise medical summary about "${query}" in 3-4 bullet points for a busy GP.
 
-Available sources:
+CRITICAL: You MUST cite ALL ${searchResults.length} sources provided. Every source [1] through [${searchResults.length}] must appear at least once in your response.
+
+Rules:
+• Use bullet points (•) not numbered lists
+• Each bullet point should be concise but clinically accurate
+• Add inline citations [1][2][3]etc throughout each point
+• Use NZ English spelling
+• Focus on the most essential medical information
+• Ensure ALL provided sources are referenced
+
+Sources:
 ${contextData}`;
 
-    // Get synthesised paragraph from OpenAI
+    // Step 3: Get concise synthesised bullet points from GPT-5 nano
+    const synthesisStart = performance.now();
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-5-nano', // Ultra-fast synthesis for speed
       messages: [
         {
           role: 'system',
@@ -140,14 +286,16 @@ ${contextData}`;
         },
         {
           role: 'user',
-          content: `Synthesise the medical information above into a coherent paragraph about "${query}". Use inline citations [1][2] to reference the sources.`,
+          content: `Create 3-4 concise bullet points about "${query}" ensuring ALL sources [1] through [${searchResults.length}] are cited.`,
         },
       ],
-      temperature: 0.2,
+      // Note: GPT-5 models only support default temperature (1)
     });
+    const synthesisEnd = performance.now();
+    console.log(`[SEARCH TIMING] Content synthesis: ${Math.round(synthesisEnd - synthesisStart)}ms`);
 
-    const paragraph = completion.choices[0]?.message?.content?.trim();
-    if (!paragraph) {
+    const bulletPoints = completion.choices[0]?.message?.content?.trim();
+    if (!bulletPoints) {
       return NextResponse.json({
         paragraph: '',
         sources: [],
@@ -156,17 +304,35 @@ ${contextData}`;
     }
 
     // Create sources array with citation indices
-    const sources = searchResults.map((result, index) => ({
-      title: result.title,
-      url: result.source,
-      index: index + 1,
-    }));
+    const sources = searchResults
+      .filter(result => result !== undefined)
+      .map((result, index) => ({
+        title: result.title,
+        url: result.source,
+        index: index + 1,
+      }));
 
-    console.log(`[SEARCH DEBUG] Generated paragraph with ${sources.length} sources`);
+    console.log(`[SEARCH DEBUG] Stage 2 complete: Generated bullet points with ${sources.length} selected sources`);
+    console.log(`[SEARCH DEBUG] Two-stage search complete: Selection + Synthesis`);
+
+    // Overall timing summary
+    const totalTime = Math.round(synthesisEnd - overallStart);
+    const searchTime = Math.round(searchEnd - searchStart);
+    const selectionTime = Math.round(selectionEnd - selectionStart);
+    const synthesisTime = Math.round(synthesisEnd - synthesisStart);
+    console.log(`[SEARCH TIMING] ===== PERFORMANCE SUMMARY =====`);
+    console.log(`[SEARCH TIMING] Database search: ${searchTime}ms (${Math.round(searchTime / totalTime * 100)}%) - ONLY DB ACCESS`);
+    console.log(`[SEARCH TIMING] Source selection: ${selectionTime}ms (${Math.round(selectionTime / totalTime * 100)}%) - GPT-5 nano LLM call`);
+    console.log(`[SEARCH TIMING] Content synthesis: ${synthesisTime}ms (${Math.round(synthesisTime / totalTime * 100)}%) - GPT-5 nano LLM call`);
+    console.log(`[SEARCH TIMING] TOTAL: ${totalTime}ms`);
+    console.log(`[SEARCH TIMING] DATABASE ACCESSES: 1 (vector similarity search only)`);
+    console.log(`[SEARCH TIMING] LLM API CALLS: 2 (selection + synthesis)`);
+    console.log(`[SEARCH TIMING] ================================`);
 
     const searchResponse: SearchResponse = {
-      paragraph,
+      paragraph: bulletPoints, // Keep same field name for frontend compatibility
       sources,
+      titles: [], // Empty for summary mode
     };
 
     return NextResponse.json(searchResponse);
@@ -177,6 +343,7 @@ ${contextData}`;
       return NextResponse.json({
         paragraph: '',
         sources: [],
+        titles: [],
         error: error.message,
       }, { status: 500 });
     }
@@ -184,6 +351,7 @@ ${contextData}`;
     return NextResponse.json({
       paragraph: '',
       sources: [],
+      titles: [],
       error: 'An unexpected error occurred during search',
     }, { status: 500 });
   }

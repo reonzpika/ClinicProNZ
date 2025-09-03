@@ -95,7 +95,7 @@ export class HealthifySiteCrawler {
 
         const html = await response.text();
         return this.extractArticleUrls(html);
-      } catch (error) {
+      } catch {
         if (attempt === this.maxRetries) {
           console.error(`[SITE CRAWLER] Failed to fetch ${letterPageUrl} after ${this.maxRetries} attempts`);
           return [];

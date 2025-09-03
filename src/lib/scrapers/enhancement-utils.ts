@@ -7,7 +7,7 @@ export async function checkEnhancementStatus(articles: RagQueryResult[]): Promis
   try {
     const { db } = await import('../../../database/client');
     const { ragDocuments } = await import('../../../database/schema/rag');
-    const { eq, inArray } = await import('drizzle-orm');
+    const { inArray } = await import('drizzle-orm');
 
     // Get current enhancement status for all articles
     const sources = articles.map(article => article.source);

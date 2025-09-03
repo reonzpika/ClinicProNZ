@@ -46,6 +46,11 @@ export async function searchSimilarDocuments(
       source: ragDocuments.source,
       sourceType: ragDocuments.sourceType,
       score: similarity,
+      // Add missing summary fields for smart content selection
+      sectionSummaries: ragDocuments.sectionSummaries,
+      overallSummary: ragDocuments.overallSummary,
+      sections: ragDocuments.sections,
+      enhancementStatus: ragDocuments.enhancementStatus,
     })
     .from(ragDocuments)
     .where(sql`${similarity} > ${threshold}`)
@@ -58,6 +63,11 @@ export async function searchSimilarDocuments(
     source: row.source,
     sourceType: row.sourceType,
     score: row.score,
+    // Include summary fields for smart content selection
+    sectionSummaries: row.sectionSummaries,
+    overallSummary: row.overallSummary,
+    sections: row.sections,
+    enhancementStatus: row.enhancementStatus,
   }));
 }
 

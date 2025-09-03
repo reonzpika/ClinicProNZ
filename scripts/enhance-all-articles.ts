@@ -42,7 +42,7 @@ class ComprehensiveEnhancer {
   /**
    * Get all articles that need enhancement
    */
-  async getArticlesToEnhance(): Promise<Array<{ id: number; source: string; title: string; enhancementStatus: string | null }>> {
+  async getArticlesToEnhance(): Promise<Array<{ id: string; source: string; title: string; enhancementStatus: string | null }>> {
     const articles = await db
       .select({
         id: ragDocuments.id,
@@ -66,7 +66,7 @@ class ComprehensiveEnhancer {
   /**
    * Process a single article
    */
-  async enhanceArticle(article: { id: number; source: string; title: string }): Promise<'enhanced' | 'failed' | 'skipped'> {
+  async enhanceArticle(article: { id: string; source: string; title: string }): Promise<'enhanced' | 'failed' | 'skipped'> {
     try {
       // Check if it's a valid Healthify URL
       if (!article.source.includes('healthify.nz')) {
@@ -130,7 +130,7 @@ class ComprehensiveEnhancer {
       );
 
       // Update progress
-      results.forEach((result, index) => {
+      results.forEach((result, _index) => {
         this.progress.processed++;
 
         if (result.status === 'fulfilled') {

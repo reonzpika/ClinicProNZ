@@ -4,6 +4,11 @@ export type RagQueryResult = {
   source: string;
   sourceType: string;
   score: number;
+  // Summary fields for smart content selection (JSONB fields are auto-parsed by Drizzle)
+  sectionSummaries?: Record<string, string[]> | null;
+  overallSummary?: string | null;
+  sections?: Record<string, string> | null;
+  enhancementStatus?: string | null;
 };
 
 export type RagResponse = {

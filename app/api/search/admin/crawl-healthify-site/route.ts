@@ -6,18 +6,15 @@ import { crawlHealthifySite } from '@/src/lib/scrapers/healthify-site-crawler';
 
 export async function POST(_request: NextRequest) {
   try {
-    const { userId, sessionClaims } = await auth();
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if user is admin
-    const userTier = (sessionClaims as any)?.metadata?.tier || 'basic';
-    if (userTier !== 'admin') {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
-    }
+    // Note: RBAC is legacy - all authenticated users have access
 
+    // eslint-disable-next-line no-console
     console.log('[ADMIN CRAWLER] Starting comprehensive Healthify site crawl');
 
     // Start the crawl (this will take a long time)
@@ -45,23 +42,19 @@ export async function POST(_request: NextRequest) {
 }
 
 // GET endpoint to check crawl status
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const { userId, sessionClaims } = await auth();
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if user is admin
-    const userTier = (sessionClaims as any)?.metadata?.tier || 'basic';
-    if (userTier !== 'admin') {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
-    }
+    // Note: RBAC is legacy - all authenticated users have access
 
     // Get crawl statistics
-    const { db } = await import('@/database/client');
-    const { ragDocuments } = await import('@/database/schema/rag');
+    const { db } = await import('@/db/client');
+    const { ragDocuments } = await import('@/db/schema/rag');
     const { eq, count } = await import('drizzle-orm');
 
     const [basicCount] = await db
