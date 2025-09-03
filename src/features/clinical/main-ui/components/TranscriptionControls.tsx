@@ -3,7 +3,7 @@
 
 import { useAuth } from '@clerk/nextjs';
 import { useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, ChevronUp, Info, Mic, RefreshCw, Settings, Smartphone } from 'lucide-react';
+import { ChevronDown, ChevronUp, Info, Mic, RefreshCw, Smartphone } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
