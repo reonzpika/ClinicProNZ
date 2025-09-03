@@ -503,8 +503,21 @@ export function TranscriptionControls({
             {!(isRecording || mobileIsRecording) && !isTranscribing
               ? (
                   <div className="space-y-2">
-                    {/* Toggle + Connect Mobile + Record Button */}
+                    {/* Record button on left; toggle + Connect on right */}
                     <div className="flex items-center justify-between">
+                      {/* Single Record button */}
+                      <div>
+                        <Button
+                          type="button"
+                          onClick={handleStartRecording}
+                          disabled={!canCreateSession}
+                          className="h-8 bg-green-600 px-4 text-xs text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                          title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
+                        >
+                          Record
+                        </Button>
+                      </div>
+
                       <div className="flex items-center gap-2">
                         {/* Recording method toggle */}
                         <div className="inline-flex rounded-md border border-slate-300 bg-white p-1 text-xs">
@@ -538,19 +551,6 @@ export function TranscriptionControls({
                         >
                           <Smartphone className="mr-1 size-3" />
                           Connect
-                        </Button>
-                      </div>
-
-                      {/* Single Record button */}
-                      <div>
-                        <Button
-                          type="button"
-                          onClick={handleStartRecording}
-                          disabled={!canCreateSession}
-                          className="h-8 bg-green-600 px-4 text-xs text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-                          title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
-                        >
-                          Record
                         </Button>
                       </div>
                     </div>

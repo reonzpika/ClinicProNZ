@@ -26,6 +26,7 @@ export function DefaultSettings() {
   const favouriteTemplateId = settings?.favouriteTemplateId || DEFAULT_TEMPLATE_ID;
   const defaultInputMode: DefaultInputMode = (settings?.defaultInputMode as DefaultInputMode) || 'audio';
   const defaultRecordingMethod: RecordingMethod = (settings?.defaultRecordingMethod as RecordingMethod) || 'desktop';
+  const [collapsed, setCollapsed] = useState(true);
 
   useEffect(() => {
     if (!isSignedIn) {
@@ -75,8 +76,21 @@ export function DefaultSettings() {
 
   return (
     <Card className="space-y-3 p-3">
-      <div className="text-sm font-medium text-slate-700">Default settings</div>
+      <div className="flex items-center justify-between">
+        <div className="text-sm font-medium text-slate-700">Default settings</div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-7 px-2 text-xs text-slate-600 hover:text-slate-800"
+          onClick={() => setCollapsed(!collapsed)}
+        >
+          {collapsed ? 'Show' : 'Hide'}
+        </Button>
+      </div>
 
+      {!collapsed && (
+        <>
       <div className="space-y-1">
         <div className="text-xs text-slate-500">Default template</div>
         <select
@@ -133,6 +147,8 @@ export function DefaultSettings() {
           </Button>
         </div>
       </div>
+        </>
+      )}
     </Card>
   );
 }
