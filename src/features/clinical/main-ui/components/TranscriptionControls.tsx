@@ -1,11 +1,9 @@
 /* eslint-disable react/no-nested-components */
 'use client';
-
 import { useAuth } from '@clerk/nextjs';
 import { useQueryClient } from '@tanstack/react-query';
 import { ChevronDown, ChevronUp, Info, Mic, RefreshCw, Smartphone } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { FeatureFeedbackButton } from '@/src/shared/components/FeatureFeedbackButton';
 import { Stack } from '@/src/shared/components/layout/Stack';
@@ -13,7 +11,6 @@ import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardHeader } from '@/src/shared/components/ui/card';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
-
 // import { createAuthHeaders } from '@/src/shared/utils';
 import { AudioSettingsModal } from '../../mobile/components/AudioSettingsModal';
 import { MobileRecordingQRV2 } from '../../mobile/components/MobileRecordingQRV2';
@@ -38,7 +35,6 @@ export function TranscriptionControls({
   const { isSignedIn } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
-
   // 🆕 FEATURE FLAG: Enhanced transcription for admin tier only
   const showEnhancedTranscription = userTier === 'admin';
 
@@ -52,6 +48,7 @@ export function TranscriptionControls({
     setTranscription,
     currentPatientSessionId,
   } = useConsultationStores();
+
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [showAudioSettings, setShowAudioSettings] = useState(false);
   const [showMobileRecordingV2, setShowMobileRecordingV2] = useState(false);
@@ -66,8 +63,10 @@ export function TranscriptionControls({
   useEffect(() => {
     setIsExpanded(!isMinimized);
   }, [isMinimized]);
+
   const useMobileV2 = true; // Mobile V2 is now enabled by default
   const [recordingMethod, setRecordingMethod] = useState<'desktop' | 'mobile'>(defaultRecordingMethod);
+
   useEffect(() => {
     setRecordingMethod(defaultRecordingMethod);
   }, [defaultRecordingMethod]);
@@ -82,7 +81,6 @@ export function TranscriptionControls({
     pauseRecording,
     resumeRecording,
     clearTranscription,
-
     volumeLevel,
     noInputWarning,
     totalChunks,
@@ -106,14 +104,17 @@ export function TranscriptionControls({
     try {
       setIsRefreshingTranscript(true);
       const activeSessionId = currentPatientSessionId || '';
+      
       // Invalidate both sessions list and active session
       await Promise.allSettled([
         queryClient.invalidateQueries({ queryKey: ['consultation', 'sessions'] }),
         queryClient.invalidateQueries({ queryKey: ['consultation', 'session', activeSessionId] }),
       ]);
+
       // Hydrate from cache
       const sessions: any[] | undefined = queryClient.getQueryData(['consultation', 'sessions']) as any;
       const session = Array.isArray(sessions) ? sessions.find((s: any) => s.id === activeSessionId) : null;
+
       if (session) {
         let chunks: any[] = [];
         try {
@@ -121,6 +122,7 @@ export function TranscriptionControls({
         } catch {
           chunks = [];
         }
+
         if (Array.isArray(chunks) && chunks.length > 0) {
           const full = chunks.map((t: any) => (t?.text || '').trim()).join(' ').trim();
           if (full) {
@@ -152,12 +154,10 @@ export function TranscriptionControls({
       const timer = setTimeout(() => {
         setShowNoTranscriptWarning(true);
       }, 40000); // 40 seconds
-
       return () => clearTimeout(timer);
     } else if (transcript.trim()) {
       setShowNoTranscriptWarning(false);
     }
-
     return undefined;
   }, [isRecording, recordingStartTime, transcript]);
 
@@ -165,8 +165,8 @@ export function TranscriptionControls({
   useEffect(() => {
     return () => {
       if (controlAckTimer) {
- clearTimeout(controlAckTimer);
-}
+        clearTimeout(controlAckTimer);
+      }
     };
   }, [controlAckTimer]);
 
@@ -176,15 +176,15 @@ export function TranscriptionControls({
       setPendingControl(null);
       setControlError(null);
       if (controlAckTimer) {
- clearTimeout(controlAckTimer);
-}
+        clearTimeout(controlAckTimer);
+      }
     }
     if (pendingControl === 'stop' && !mobileIsRecording) {
       setPendingControl(null);
       setControlError(null);
       if (controlAckTimer) {
- clearTimeout(controlAckTimer);
-}
+        clearTimeout(controlAckTimer);
+      }
     }
   }, [mobileIsRecording, pendingControl, controlAckTimer]);
 
@@ -193,16 +193,19 @@ export function TranscriptionControls({
     try {
       setControlError(null);
       setPendingControl(action);
+      
       // Send via global bridge (set in ConsultationPage)
       const ok = typeof window !== 'undefined'
         && (window as any).ablySyncHook
         && (window as any).ablySyncHook.sendRecordingControl
         && (window as any).ablySyncHook.sendRecordingControl(action);
+
       if (!ok) {
         setPendingControl(null);
         setControlError('Mobile not connected. Please open the mobile page and unlock the screen.');
         return;
       }
+
       // Start ack timeout (3s)
       const t = setTimeout(() => {
         setPendingControl(null);
@@ -233,10 +236,12 @@ export function TranscriptionControls({
       const canSend = typeof window !== 'undefined'
         && (window as any).ablySyncHook
         && typeof (window as any).ablySyncHook.sendRecordingControl === 'function';
+
       if (!canSend) {
         setShowMobileRecordingV2(true);
         return;
       }
+
       sendMobileControl('start');
       return;
     }
@@ -246,6 +251,7 @@ export function TranscriptionControls({
       setShowConsentModal(true);
       return;
     }
+
     startRecording();
   };
 
@@ -260,18 +266,22 @@ export function TranscriptionControls({
 
     setConsentObtained(true);
     setShowConsentModal(false);
+
     // Respect current toggle
     if (recordingMethod === 'mobile') {
       const canSend = typeof window !== 'undefined'
         && (window as any).ablySyncHook
         && typeof (window as any).ablySyncHook.sendRecordingControl === 'function';
+
       if (!canSend) {
         setShowMobileRecordingV2(true);
         return;
       }
+
       sendMobileControl('start');
       return;
     }
+
     startRecording();
   };
 
@@ -437,7 +447,6 @@ export function TranscriptionControls({
             )}
           </div>
         </div>
-
         <div className="flex items-center gap-2">
           <button
             onClick={() => {
@@ -648,6 +657,7 @@ export function TranscriptionControls({
                   </Button>
                 </div>
               )}
+
               {!isRecording && transcript && transcriptExpanded && (
                 <div className="flex items-center justify-between">
                   <div className="text-xs font-medium text-slate-600">
@@ -736,9 +746,9 @@ export function TranscriptionControls({
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-slate-700">Transcript available</span>
                       <span className="text-xs text-slate-500">
-                      {'('}
-                      {transcript.split(/\s+/).filter((w: string) => w.length > 0).length}
-                      {' words)'}
+                        {'('}
+                        {transcript.split(/\s+/).filter((w: string) => w.length > 0).length}
+                        {' words)'}
                       </span>
                     </div>
                     <div className="flex items-center gap-1 text-xs text-slate-500">
@@ -790,27 +800,28 @@ export function TranscriptionControls({
                 </div>
               </div>
             )}
-          </Stack>
-        </div>
-
-        {/* Consent Modal */}
-        <ConsentModal
-          isOpen={showConsentModal}
-          onConfirm={handleConsentConfirm}
-          onCancel={handleConsentCancel}
-        />
-
-        {/* Audio Settings Modal */}
-        <AudioSettingsModal
-          isOpen={showAudioSettings}
-          onClose={() => setShowAudioSettings(false)}
-        />
-
-        {/* Mobile Recording Modal - V2 */}
-        <MobileRecordingQRV2
-          isOpen={showMobileRecordingV2}
-          onClose={() => setShowMobileRecordingV2(false)}
-        />
+          </div>
+        </Stack>
       </div>
-    );
-  }
+
+      {/* Consent Modal */}
+      <ConsentModal
+        isOpen={showConsentModal}
+        onConfirm={handleConsentConfirm}
+        onCancel={handleConsentCancel}
+      />
+
+      {/* Audio Settings Modal */}
+      <AudioSettingsModal
+        isOpen={showAudioSettings}
+        onClose={() => setShowAudioSettings(false)}
+      />
+
+      {/* Mobile Recording Modal - V2 */}
+      <MobileRecordingQRV2
+        isOpen={showMobileRecordingV2}
+        onClose={() => setShowMobileRecordingV2(false)}
+      />
+    </div>
+  );
+}
