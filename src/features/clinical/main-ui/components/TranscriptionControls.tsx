@@ -362,7 +362,7 @@ export function TranscriptionControls({
                     onClick={() => setIsExpanded(true)}
                     className="text-blue-600 underline hover:text-blue-800"
                   >
-                    [click to expand]
+                    {'(click to expand)'}
                   </button>
                 </span>
               )}
@@ -634,7 +634,7 @@ export function TranscriptionControls({
                   <div className="text-xs font-medium text-slate-600">
                     Live Transcript
                     {' '}
-                    {(useMobileV2 && hasMobileDevices) && '[mobile]'}
+                    {(useMobileV2 && hasMobileDevices) && '(mobile)'}
                   </div>
                   <Button
                     variant="ghost"
@@ -736,7 +736,9 @@ export function TranscriptionControls({
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-slate-700">Transcript available</span>
                       <span className="text-xs text-slate-500">
-                        {`(${transcript.split(/\s+/).filter((word: string) => word.length > 0).length} words)`}
+                        {'('}
+                        {transcript.split(/\s+/).filter((word: string) => word.length > 0).length}
+                        {' words)'}
                       </span>
                     </div>
                     <div className="flex items-center gap-1 text-xs text-slate-500">
