@@ -220,7 +220,7 @@ export function TranscriptionControls({
     setCanCreateSession(!!isSignedIn);
   }, [isSignedIn]);
 
-  // Handle start recording - show consent modal first if consent not obtained
+  // Handle start recording - desktop respects consent; mobile bypasses consent
   const handleStartRecording = () => {
     // Check authentication status
     if (!isSignedIn && !canCreateSession) {
@@ -228,23 +228,25 @@ export function TranscriptionControls({
       return;
     }
 
-    if (!consentObtained) {
-      setShowConsentModal(true);
-    } else {
-      // If mobile selected, try remote start; if not connected, open connect modal
-      if (recordingMethod === 'mobile') {
-        const canSend = typeof window !== 'undefined'
-          && (window as any).ablySyncHook
-          && typeof (window as any).ablySyncHook.sendRecordingControl === 'function';
-        if (!canSend) {
-          setShowMobileRecordingV2(true);
-          return;
-        }
-        sendMobileControl('start');
+    // Mobile: bypass consent and send remote start (or open connect)
+    if (recordingMethod === 'mobile') {
+      const canSend = typeof window !== 'undefined'
+        && (window as any).ablySyncHook
+        && typeof (window as any).ablySyncHook.sendRecordingControl === 'function';
+      if (!canSend) {
+        setShowMobileRecordingV2(true);
         return;
       }
-      startRecording();
+      sendMobileControl('start');
+      return;
     }
+
+    // Desktop: use consent flow
+    if (!consentObtained) {
+      setShowConsentModal(true);
+      return;
+    }
+    startRecording();
   };
 
   // Handle consent confirmation
@@ -258,6 +260,18 @@ export function TranscriptionControls({
 
     setConsentObtained(true);
     setShowConsentModal(false);
+    // Respect current toggle
+    if (recordingMethod === 'mobile') {
+      const canSend = typeof window !== 'undefined'
+        && (window as any).ablySyncHook
+        && typeof (window as any).ablySyncHook.sendRecordingControl === 'function';
+      if (!canSend) {
+        setShowMobileRecordingV2(true);
+        return;
+      }
+      sendMobileControl('start');
+      return;
+    }
     startRecording();
   };
 
@@ -541,17 +555,19 @@ export function TranscriptionControls({
                           </Button>
                         </div>
 
-                        {/* Connect Mobile small button */}
-                        <Button
-                          type="button"
-                          onClick={handleMobileClick}
-                          disabled={(!isSignedIn && !canCreateSession) || isRecording || mobileIsRecording}
-                          className="h-7 bg-blue-600 px-2 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-                          title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
-                        >
-                          <Smartphone className="mr-1 size-3" />
-                          Connect
-                        </Button>
+                        {/* Connect Mobile small button - only when mobile selected */}
+                        {recordingMethod === 'mobile' && (
+                          <Button
+                            type="button"
+                            onClick={handleMobileClick}
+                            disabled={(!isSignedIn && !canCreateSession) || isRecording || mobileIsRecording}
+                            className="h-7 bg-blue-600 px-2 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                            title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
+                          >
+                            <Smartphone className="mr-1 size-3" />
+                            Connect
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>
