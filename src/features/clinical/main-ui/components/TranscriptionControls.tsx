@@ -634,7 +634,7 @@ export function TranscriptionControls({
                   <div className="text-xs font-medium text-slate-600">
                     Live Transcript
                     {' '}
-                    {(useMobileV2 && hasMobileDevices) && '(mobile)'}
+                    {(useMobileV2 && hasMobileDevices) && '[mobile]'}
                   </div>
                   <Button
                     variant="ghost"
@@ -761,7 +761,7 @@ export function TranscriptionControls({
                 <p className="font-medium">Audio Recording Guide:</p>
                 <div className="mt-2 space-y-2">
                   <div>
-                    <p className="font-medium text-green-700">Mobile Recording (Recommended):</p>
+                    <p className="font-medium text-green-700">Mobile Recording – Recommended:</p>
                     <ul className="ml-3 mt-1 list-disc space-y-0.5">
                       <li>Scan QR code with your phone - takes 30 seconds</li>
                       <li>Use your phone's microphone for recording</li>
