@@ -76,8 +76,6 @@ export function TranscriptionControls({
     error,
     startRecording,
     stopRecording,
-    pauseRecording,
-    resumeRecording,
     clearTranscription,
     volumeLevel,
     noInputWarning,
