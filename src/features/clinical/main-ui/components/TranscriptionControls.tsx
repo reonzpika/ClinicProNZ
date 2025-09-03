@@ -27,11 +27,13 @@ export function TranscriptionControls({
   onExpand,
   isMinimized,
   mobileIsRecording = false,
+  defaultRecordingMethod = 'desktop',
 }: {
   collapsed?: boolean;
   onExpand?: () => void;
   isMinimized?: boolean;
   mobileIsRecording?: boolean;
+  defaultRecordingMethod?: 'desktop' | 'mobile';
 }) {
   const { isSignedIn } = useAuth();
   const { getUserTier } = useClerkMetadata();
@@ -65,6 +67,10 @@ export function TranscriptionControls({
     setIsExpanded(!isMinimized);
   }, [isMinimized]);
   const useMobileV2 = true; // Mobile V2 is now enabled by default
+  const [recordingMethod, setRecordingMethod] = useState<'desktop' | 'mobile'>(defaultRecordingMethod);
+  useEffect(() => {
+    setRecordingMethod(defaultRecordingMethod);
+  }, [defaultRecordingMethod]);
 
   const {
     isRecording,
@@ -225,6 +231,18 @@ export function TranscriptionControls({
     if (!consentObtained) {
       setShowConsentModal(true);
     } else {
+      // If mobile selected, try remote start; if not connected, open connect modal
+      if (recordingMethod === 'mobile') {
+        const canSend = typeof window !== 'undefined'
+          && (window as any).ablySyncHook
+          && typeof (window as any).ablySyncHook.sendRecordingControl === 'function';
+        if (!canSend) {
+          setShowMobileRecordingV2(true);
+          return;
+        }
+        sendMobileControl('start');
+        return;
+      }
       startRecording();
     }
   };
@@ -482,89 +500,58 @@ export function TranscriptionControls({
             )}
 
             {/* Primary Recording Options */}
-            {!isRecording && !isTranscribing
+            {!(isRecording || mobileIsRecording) && !isTranscribing
               ? (
                   <div className="space-y-2">
-                    {/* Mobile Recording Button */}
+                    {/* Toggle + Connect Mobile + Record Button */}
                     <div className="flex items-center justify-between">
-                      {/* Right side: Status indicator + Mobile buttons */}
                       <div className="flex items-center gap-2">
-                        {/* Mobile Recording Button */}
+                        {/* Recording method toggle */}
+                        <div className="inline-flex rounded-md border border-slate-300 bg-white p-1 text-xs">
+                          <Button
+                            type="button"
+                            variant={recordingMethod === 'desktop' ? 'default' : 'ghost'}
+                            className={`h-7 px-2 ${recordingMethod === 'desktop' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-700'}`}
+                            onClick={() => setRecordingMethod('desktop')}
+                            disabled={isRecording || mobileIsRecording}
+                          >
+                            Desktop
+                          </Button>
+                          <Button
+                            type="button"
+                            variant={recordingMethod === 'mobile' ? 'default' : 'ghost'}
+                            className={`h-7 px-2 ${recordingMethod === 'mobile' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-700'}`}
+                            onClick={() => setRecordingMethod('mobile')}
+                            disabled={isRecording || mobileIsRecording}
+                          >
+                            Mobile
+                          </Button>
+                        </div>
+
+                        {/* Connect Mobile small button */}
                         <Button
                           type="button"
                           onClick={handleMobileClick}
-                          disabled={(!isSignedIn && !canCreateSession)}
-                          className="h-8 bg-blue-600 px-3 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                          disabled={(!isSignedIn && !canCreateSession) || isRecording || mobileIsRecording}
+                          className="h-7 bg-blue-600 px-2 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
                           title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
                         >
                           <Smartphone className="mr-1 size-3" />
-                          Connect Mobile
+                          Connect
                         </Button>
-                        {/* Remote control buttons when connected */}
-                        {!mobileIsRecording && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => sendMobileControl('start')}
-                            disabled={!!pendingControl}
-                            className="h-8 px-3 text-xs"
-                          >
-                            Start on mobile
-                          </Button>
-                        )}
-                        {mobileIsRecording && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => sendMobileControl('stop')}
-                            disabled={!!pendingControl}
-                            className="h-8 px-3 text-xs"
-                          >
-                            Stop on mobile
-                          </Button>
-                        )}
                       </div>
-                    </div>
 
-                    {/* Desktop Recording Option */}
-                    <div className="flex justify-end">
-                      <div className="relative">
-                        <details className="group">
-                          <summary className="flex cursor-pointer items-center gap-1 text-xs text-slate-500 hover:text-slate-700">
-                            <span>Or use desktop recording</span>
-                            <ChevronDown className="size-3 transition-transform group-open:rotate-180" />
-                          </summary>
-                          <div className="absolute right-0 z-10 mt-1 min-w-[200px] rounded-md border bg-white p-2 shadow-lg">
-                            <div className="space-y-1">
-                              <div className="mb-1 flex items-center justify-between">
-                                <span className="text-xs text-slate-600">Desktop Recording</span>
-                                <Button
-                                  onClick={() => setShowAudioSettings(true)}
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-5 px-1 text-xs text-slate-500 hover:text-slate-700"
-                                  title="Audio Settings"
-                                >
-                                  <Settings className="mr-1 size-3" />
-                                  Settings
-                                </Button>
-                              </div>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                onClick={handleStartRecording}
-                                disabled={!canCreateSession} // Removed canStartRecording check
-                                className="h-7 w-full border-slate-300 text-xs disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
-                                title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
-                              >
-                                Start Desktop Recording
-                              </Button>
-                              <p className="text-center text-xs text-slate-500">
-                                Backup option - stay near computer
-                              </p>
-                            </div>
-                          </div>
-                        </details>
+                      {/* Single Record button */}
+                      <div>
+                        <Button
+                          type="button"
+                          onClick={handleStartRecording}
+                          disabled={!canCreateSession}
+                          className="h-8 bg-green-600 px-4 text-xs text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                          title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
+                        >
+                          Record
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -598,15 +585,14 @@ export function TranscriptionControls({
                           Start on mobile
                         </Button>
                       )}
-                      {isRecording && (
+                      {(isRecording || mobileIsRecording) && (
                         <Button
                           type="button"
-                          variant="outline"
-                          onClick={() => sendMobileControl('stop')}
-                          disabled={!!pendingControl}
-                          className="h-8 px-3 text-xs"
+                          variant="destructive"
+                          onClick={() => { if (mobileIsRecording) { sendMobileControl('stop'); } else { stopRecording(); } }}
+                          className="h-8 bg-red-600 px-3 text-xs text-white hover:bg-red-700"
                         >
-                          Stop on mobile
+                          Stop
                         </Button>
                       )}
                       {isRecording && !isPaused && (

@@ -4,7 +4,12 @@ import { db } from '@/db/client';
 import { userSettings } from '@/db/schema/user_settings';
 
 // Default settings structure
-const DEFAULT_SETTINGS = { templateOrder: [], favouriteTemplateId: null };
+const DEFAULT_SETTINGS = {
+  templateOrder: [],
+  favouriteTemplateId: '20dc1526-62cc-4ff4-a370-ffc1ded52aef',
+  defaultInputMode: 'audio', // 'audio' | 'typed'
+  defaultRecordingMethod: 'desktop', // 'desktop' | 'mobile'
+};
 
 export async function GET(req: Request) {
   try {

@@ -9,6 +9,7 @@ import { AdditionalNotes } from '@/src/features/clinical/main-ui/components/Addi
 import { DocumentationSettingsBadge } from '@/src/features/clinical/main-ui/components/DocumentationSettingsBadge';
 import { GeneratedNotes } from '@/src/features/clinical/main-ui/components/GeneratedNotes';
 import { TranscriptionControls } from '@/src/features/clinical/main-ui/components/TranscriptionControls';
+import { DefaultSettings } from '@/src/features/clinical/main-ui/components/DefaultSettings';
 // Removed TranscriptProcessingStatus import - no longer needed in single-pass architecture
 import { TypedInput } from '@/src/features/clinical/main-ui/components/TypedInput';
 import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTranscription';
@@ -29,6 +30,7 @@ import { Button } from '@/src/shared/components/ui/button';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { useResponsive } from '@/src/shared/hooks/useResponsive';
 import { createAuthHeaders } from '@/src/shared/utils';
+import { useUserSettingsStore } from '@/src/stores/userSettingsStore';
 
 export default function ConsultationPage() {
   const queryClient = useQueryClient();
@@ -49,6 +51,8 @@ export default function ConsultationPage() {
     getCompiledConsultationText,
     templateId,
     setLastGeneratedInput,
+    setTemplateId,
+    setInputMode,
 
     saveNotesToCurrentSession, // For saving generated notes
     saveTypedInputToCurrentSession: _saveTypedInputToCurrentSession, // For clearing typed input (unused)
@@ -84,9 +88,42 @@ export default function ConsultationPage() {
 
   // Mobile recording status
   const [mobileIsRecording, setMobileIsRecording] = useState(false);
+  const [defaultRecordingMethod, setDefaultRecordingMethod] = useState<'desktop' | 'mobile'>('desktop');
 
   // Desktop recording controls
   const { stopRecording, isRecording } = useTranscription();
+
+  // Load user settings and apply defaults
+  const { settings, loadSettings } = useUserSettingsStore();
+  useEffect(() => {
+    if (!userId) {
+      return;
+    }
+    loadSettings(userId, userTier);
+  }, [loadSettings, userId, userTier]);
+
+  useEffect(() => {
+    if (!settings) {
+      return;
+    }
+    // Apply input mode default instantly
+    if (settings.defaultInputMode === 'typed') {
+      if (inputMode !== 'typed') {
+        setInputMode('typed');
+      }
+    } else if (inputMode !== 'audio') {
+      setInputMode('audio');
+    }
+
+    // Apply template default instantly
+    const fav = settings.favouriteTemplateId || '20dc1526-62cc-4ff4-a370-ffc1ded52aef';
+    if (templateId !== fav) {
+      setTemplateId(fav);
+    }
+
+    // Set default recording method for controls
+    setDefaultRecordingMethod((settings.defaultRecordingMethod as any) || 'desktop');
+  }, [settings, inputMode, templateId, setInputMode, setTemplateId]);
 
   // Handle Ably errors (moved before useSimpleAbly)
   const handleError = useCallback((error: string) => {
@@ -659,6 +696,9 @@ export default function ConsultationPage() {
                         {/* Workflow Instructions - Only visible on large desktop */}
                         <WorkflowInstructions />
 
+                        {/* Default Settings - between guide and contact */}
+                        <DefaultSettings />
+
                         {/* Contact Link - Fixed at bottom of left column */}
                         <div className="mt-auto">
                           <ContactLink />
@@ -743,6 +783,7 @@ export default function ConsultationPage() {
                                           onExpand={() => setIsNoteFocused(false)}
                                           isMinimized={false}
                                           mobileIsRecording={mobileIsRecording}
+                                          defaultRecordingMethod={defaultRecordingMethod}
                                         />
                                       )
                                     : (
@@ -814,6 +855,7 @@ export default function ConsultationPage() {
                                           onExpand={() => setIsNoteFocused(false)}
                                           isMinimized
                                           mobileIsRecording={mobileIsRecording}
+                                          defaultRecordingMethod={defaultRecordingMethod}
                                         />
                                       )
                                     : (
@@ -848,6 +890,7 @@ export default function ConsultationPage() {
                                         onExpand={() => setIsNoteFocused(false)}
                                         isMinimized={false}
                                         mobileIsRecording={mobileIsRecording}
+                                        defaultRecordingMethod={defaultRecordingMethod}
                                       />
                                     )
                                   : (
