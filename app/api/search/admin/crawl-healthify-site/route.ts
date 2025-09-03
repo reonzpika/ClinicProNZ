@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 
 import { crawlHealthifySite } from '@/src/lib/scrapers/healthify-site-crawler';
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const { userId, sessionClaims } = await auth();
 
@@ -23,11 +23,10 @@ export async function POST(request: NextRequest) {
     // Start the crawl (this will take a long time)
     await crawlHealthifySite();
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Site crawl completed successfully' 
+    return NextResponse.json({
+      success: true,
+      message: 'Site crawl completed successfully',
     });
-
   } catch (error) {
     console.error('[ADMIN CRAWLER] Crawl failed:', error);
 
@@ -72,7 +71,7 @@ export async function GET(request: NextRequest) {
 
     const [enhancedCount] = await db
       .select({ count: count() })
-      .from(ragDocuments)  
+      .from(ragDocuments)
       .where(eq(ragDocuments.enhancementStatus, 'enhanced'));
 
     const [totalCount] = await db
@@ -85,7 +84,6 @@ export async function GET(request: NextRequest) {
       basicArticles: basicCount?.count || 0,
       enhancedArticles: enhancedCount?.count || 0,
     });
-
   } catch (error) {
     console.error('[ADMIN CRAWLER] Status check failed:', error);
     return NextResponse.json(

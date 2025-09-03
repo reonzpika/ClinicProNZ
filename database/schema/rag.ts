@@ -4,7 +4,7 @@ export const ragDocuments = pgTable('rag_documents', {
   id: uuid('id').primaryKey().defaultRandom(),
   title: text('title').notNull(),
   content: text('content').notNull(), // Original full content (or basic content for light scrapes)
-  source: text('source').notNull(), // URL or filename
+  source: text('source').notNull().unique(), // URL or filename
   sourceType: text('source_type').notNull(), // 'bpac', 'moh', 'manual', 'healthify'
 
   // Enhancement tracking

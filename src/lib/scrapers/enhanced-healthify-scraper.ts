@@ -3,6 +3,7 @@ import OpenAI from 'openai';
 
 import { ingestDocument } from '../rag';
 import type { DocumentToIngest } from '../rag/types';
+import { classifyHeadingsHybrid } from './llm-heading-classifier';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -42,7 +43,7 @@ export class EnhancedHealthifyScraper {
         }
 
         const html = await response.text();
-        return this.parseHealthifyArticle(html, url);
+        return await this.parseHealthifyArticle(html, url);
       } catch (error) {
         if (attempt === this.maxRetries) {
           throw error;
@@ -56,7 +57,7 @@ export class EnhancedHealthifyScraper {
   /**
    * Parse healthify.nz article into structured content
    */
-  private parseHealthifyArticle(html: string, url: string): StructuredHealthifyContent | null {
+  private async parseHealthifyArticle(html: string, url: string): Promise<StructuredHealthifyContent | null> {
     try {
       const dom = new JSDOM(html);
       const document = dom.window.document;
@@ -80,22 +81,22 @@ export class EnhancedHealthifyScraper {
 
       console.log(`[ENHANCED SCRAPER] Found content element: ${contentElement.tagName}.${contentElement.className || 'no-class'}`);
 
-      // Extract sections based on healthify.nz structure
-      const sections = this.extractSections(contentElement);
+      // Extract sections based on healthify.nz structure using hybrid AI classification
+      const sections = await this.extractSections(contentElement);
 
-      // Extract metadata
-              const author = this.extractAuthor(document);
-        const lastUpdated = this.extractLastUpdated(document);
-        const categories = await this.extractCategories(document, url, cleanedContent);
-      const contentType = this.inferContentType(title, sections);
-      const internalLinks = this.extractInternalLinks(contentElement);
-
-      // Get full content as fallback
+      // Get full content for analysis
       const fullContent = this.cleanTextContent(contentElement);
 
       if (fullContent.length < 100) {
         return null; // Skip pages with too little content
       }
+
+      // Extract metadata
+      const author = this.extractAuthor(document);
+      const lastUpdated = this.extractLastUpdated(document);
+      const categories = await this.extractCategories(document, url, fullContent);
+      const contentType = this.inferContentType(title, sections);
+      const internalLinks = this.extractInternalLinks(contentElement);
 
       return {
         title,
@@ -115,39 +116,57 @@ export class EnhancedHealthifyScraper {
   }
 
   /**
-   * Extract structured sections from healthify content
+   * Extract structured sections from healthify content using hybrid AI classification
    */
-  private extractSections(contentElement: Element): Record<string, string> {
+  private async extractSections(contentElement: Element): Promise<Record<string, string>> {
     const sections: Record<string, string> = {};
 
     // Common healthify section headings to look for
     const sectionMappings = {
       symptoms: ['symptoms', 'signs and symptoms', 'what are the symptoms'],
       causes: ['causes', 'what causes', 'risk factors'],
-      treatment: ['treatment', 'treatments', 'how is it treated', 'management', 'self-care'],
+      treatment: ['treatment', 'treatments', 'how is it treated', 'how are', 'treated', 'management', 'self-care'],
+      diagnosis: ['diagnosis', 'how is it diagnosed', 'how are', 'diagnosed', 'tests'],
       when_to_see_doctor: ['when to see', 'seek medical', 'see your doctor', 'get medical help'],
       prevention: ['prevention', 'preventing', 'how to prevent'],
-      diagnosis: ['diagnosis', 'how is it diagnosed', 'tests'],
-      overview: ['overview', 'what is', 'about'],
+      overview: ['overview', 'what is', 'what are', 'about', 'key points'],
     };
 
     // Try to find sections by headings (h2, h3, etc.)
-    const headings = contentElement.querySelectorAll('h2, h3, h4');
-    console.log(`[ENHANCED SCRAPER] Found ${headings.length} headings in content`);
+    const headingElements = contentElement.querySelectorAll('h2, h3, h4');
+    console.log(`[ENHANCED SCRAPER] Found ${headingElements.length} headings in content`);
 
-    for (const heading of headings) {
-      const headingText = heading.textContent?.toLowerCase().trim() || '';
-      console.log(`[ENHANCED SCRAPER] Processing heading: "${headingText}"`);
-      const sectionName = this.matchSectionName(headingText, sectionMappings);
+    if (headingElements.length > 0) {
+      // Extract heading texts
+      const headingTexts = Array.from(headingElements).map(h => h.textContent?.trim() || '').filter(t => t);
 
-      if (sectionName) {
-        const sectionContent = this.extractContentAfterHeading(heading);
-        console.log(`[ENHANCED SCRAPER] Mapped "${headingText}" to section "${sectionName}" with ${sectionContent.length} chars`);
-        if (sectionContent.trim()) {
-          sections[sectionName] = sectionContent;
+      // Use hybrid classification (pattern matching + LLM)
+      console.log(`[ENHANCED SCRAPER] Classifying ${headingTexts.length} headings with hybrid AI approach`);
+      const headingClassifications = await classifyHeadingsHybrid(headingTexts, sectionMappings);
+
+      // Extract content for each classified heading
+      for (let i = 0; i < headingElements.length; i++) {
+        const heading = headingElements[i];
+        const headingText = headingTexts[i];
+        const sectionName = headingClassifications[headingText];
+
+        console.log(`[ENHANCED SCRAPER] Processing heading: "${headingText}"`);
+
+        if (sectionName) {
+          const sectionContent = this.extractContentAfterHeading(heading);
+          console.log(`[ENHANCED SCRAPER] Mapped "${headingText}" to section "${sectionName}" with ${sectionContent.length} chars`);
+
+          if (sectionContent.trim()) {
+            // Combine content if section already exists
+            if (sections[sectionName]) {
+              sections[sectionName] += `\n\n${sectionContent}`;
+            } else {
+              sections[sectionName] = sectionContent;
+            }
+          }
+        } else {
+          console.log(`[ENHANCED SCRAPER] No mapping found for heading: "${headingText}"`);
         }
-      } else {
-        console.log(`[ENHANCED SCRAPER] No mapping found for heading: "${headingText}"`);
       }
     }
 
@@ -163,18 +182,6 @@ export class EnhancedHealthifyScraper {
 
     console.log(`[ENHANCED SCRAPER] Final sections extracted: ${Object.keys(sections).join(', ')}`);
     return sections;
-  }
-
-  /**
-   * Match heading text to section names
-   */
-  private matchSectionName(headingText: string, mappings: Record<string, string[]>): string | null {
-    for (const [sectionName, keywords] of Object.entries(mappings)) {
-      if (keywords.some(keyword => headingText.includes(keyword))) {
-        return sectionName;
-      }
-    }
-    return null;
   }
 
   /**
@@ -298,16 +305,25 @@ Generate comprehensive medical categories covering:
 Return as JSON array of relevant categories. Be specific and medically accurate.
 Format: ["category1", "category2", "category3"]`;
 
-      const completion = await this.openai.chat.completions.create({
+      const completion = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.1,
+        response_format: { type: 'json_object' },
       });
 
       const response = completion.choices[0]?.message?.content?.trim();
       if (response) {
         try {
-          const categories = JSON.parse(response);
+          // Handle potential markdown wrapping
+          let jsonString = response;
+          if (jsonString.startsWith('```json')) {
+            jsonString = jsonString.replace(/^```json\n?/, '').replace(/\n?```$/, '');
+          } else if (jsonString.startsWith('```')) {
+            jsonString = jsonString.replace(/^```\n?/, '').replace(/\n?```$/, '');
+          }
+
+          const categories = JSON.parse(jsonString);
           return Array.isArray(categories) ? categories.slice(0, 10) : []; // Limit to 10 categories
         } catch (parseError) {
           console.error('[ENHANCED SCRAPER] Failed to parse categories JSON:', parseError);
@@ -342,13 +358,34 @@ Format: ["category1", "category2", "category3"]`;
     const links: Array<{ text: string; url: string }> = [];
     const linkElements = contentElement.querySelectorAll('a[href*="healthify.nz"], a[href^="/"]');
 
+    // Social sharing patterns to exclude
+    const socialPatterns = [
+      /facebook\.com/,
+      /linkedin\.com/,
+      /twitter\.com/,
+      /email-protection/,
+      /share/i,
+      /social/i,
+    ];
+
     linkElements.forEach((link) => {
       const href = link.getAttribute('href');
       const text = link.textContent?.trim();
 
       if (href && text && text.length > 2) {
         const fullUrl = href.startsWith('http') ? href : `https://healthify.nz${href}`;
-        links.push({ text, url: fullUrl });
+
+        // Skip social sharing links
+        const isSocialLink = socialPatterns.some(pattern => pattern.test(fullUrl) || pattern.test(text.toLowerCase()));
+
+        // Skip navigation links
+        const isNavLink = text.toLowerCase().includes('home')
+          || text.toLowerCase().includes('health a-z')
+          || text.toLowerCase().includes('menu');
+
+        if (!isSocialLink && !isNavLink) {
+          links.push({ text, url: fullUrl });
+        }
       }
     });
 
@@ -362,22 +399,38 @@ Format: ["category1", "category2", "category3"]`;
     // Remove unwanted elements
     const unwantedSelectors = [
       'script',
-'style',
-'nav',
-'header',
-'footer',
+      'style',
+      'nav',
+      'header',
+      'footer',
       '.ad',
-'.advertisement',
-'.social-share',
+      '.advertisement',
+      '.social-share',
       '.breadcrumb',
-'.sidebar',
+      '.sidebar',
+      // Healthify-specific unwanted elements
+      '.alert',
+      '.notification',
+      '.banner',
+      '.strike-notice',
+      '[role="alert"]',
+      '.social-links',
+      '.share-buttons',
+      '.qr-code',
+      '.print-button',
     ];
 
     unwantedSelectors.forEach((selector) => {
       element.querySelectorAll(selector).forEach(el => el.remove());
     });
 
-    const textContent = element.textContent || '';
+    let textContent = element.textContent || '';
+
+    // Remove strike/notification patterns (starts with "Nurses at Health NZ")
+    textContent = textContent.replace(/^[^.]*strike[^.]*\.\s*/i, '');
+    textContent = textContent.replace(/^[^.]*Emergency departments[^.]*\.\s*/i, '');
+    textContent = textContent.replace(/^×\s*/, ''); // Remove close button text
+
     return textContent.replace(/\s+/g, ' ').trim();
   }
 

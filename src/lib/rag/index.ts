@@ -97,6 +97,28 @@ export async function ingestDocument(document: DocumentToIngest): Promise<void> 
     // Links
     internalLinks: document.internalLinks ? JSON.stringify(document.internalLinks) : null,
     externalCitations: document.externalCitations ? JSON.stringify(document.externalCitations) : null,
+  })
+  .onConflictDoUpdate({
+    target: ragDocuments.source,
+    set: {
+      title: document.title,
+      content: document.content,
+      enhancementStatus: document.enhancementStatus || 'enhanced',
+      lastEnhanced: new Date(),
+      sections: document.sections ? JSON.stringify(document.sections) : null,
+      overallSummary: document.overallSummary || null,
+      sectionSummaries: document.sectionSummaries ? JSON.stringify(document.sectionSummaries) : null,
+      author: document.author || null,
+      lastUpdated: document.lastUpdated || null,
+      categories: document.categories ? JSON.stringify(document.categories) : null,
+      contentType: document.contentType || null,
+      medicalSpecialty: document.medicalSpecialty || null,
+      targetAudience: document.targetAudience || null,
+      internalLinks: document.internalLinks ? JSON.stringify(document.internalLinks) : null,
+      externalCitations: document.externalCitations ? JSON.stringify(document.externalCitations) : null,
+      embedding,
+      updatedAt: new Date(),
+    },
   });
 }
 
