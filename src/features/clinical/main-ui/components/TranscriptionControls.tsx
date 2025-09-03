@@ -736,7 +736,7 @@ export function TranscriptionControls({
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-slate-700">Transcript available</span>
                       <span className="text-xs text-slate-500">
-                        ({transcript.split(/\s+/).filter((word: string) => word.length > 0).length} words)
+                        {`(${transcript.split(/\s+/).filter((word: string) => word.length > 0).length} words)`}
                       </span>
                     </div>
                     <div className="flex items-center gap-1 text-xs text-slate-500">
