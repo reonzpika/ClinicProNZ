@@ -680,48 +680,42 @@ export function TranscriptionControls({
               )}
 
               {/* 🆕 UPDATED: Transcription display with tier-based feature flag */}
-              {(isRecording || (transcript && transcriptExpanded))
-                ? (
-                    showEnhancedTranscription
-                      ? (
-                          <EnhancedTranscriptionDisplay
-                            transcript={transcript}
-                            confidence={contextTranscription.confidence}
-                            words={contextTranscription.words}
-                            isRecording={isRecording}
-                            onEdit={(newText) => {
-                              // TODO: Implement transcript editing
-                              void newText;
-                            }}
-                          />
-                        )
-                      : (
-                          <div className="max-h-64 overflow-y-auto rounded-md border bg-white p-2">
-                            {!isRecording
-                              ? (
-                                  <textarea
-                                    value={transcript}
-                                    onChange={(_e) => {
-                                      // Allow editing after recording stops
-                                      // This would need to be connected to a context method to update transcript
-                                    }}
-                                    className="w-full resize-none border-none text-sm leading-relaxed focus:outline-none"
-                                    placeholder="Transcription will appear here..."
-                                    rows={Math.min(Math.max(transcript.split('\n').length || 3, 3), 12)}
-                                  />
-                                )
-                              : (
-                                  <div>
-                                    <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                                      {transcript || 'Listening for speech...'}
-                                    </p>
-                                    <span className="mt-1 inline-block h-3 w-1 animate-pulse bg-blue-500" />
-                                  </div>
-                                )}
-                          </div>
-                        )
+              {(isRecording || (transcript && transcriptExpanded)) && (
+                showEnhancedTranscription ? (
+                  <EnhancedTranscriptionDisplay
+                    transcript={transcript}
+                    confidence={contextTranscription.confidence}
+                    words={contextTranscription.words}
+                    isRecording={isRecording}
+                    onEdit={(newText) => {
+                      // TODO: Implement transcript editing
+                      void newText;
+                    }}
+                  />
+                ) : (
+                  <div className="max-h-64 overflow-y-auto rounded-md border bg-white p-2">
+                    {!isRecording ? (
+                      <textarea
+                        value={transcript}
+                        onChange={(_e) => {
+                          // Allow editing after recording stops
+                          // This would need to be connected to a context method to update transcript
+                        }}
+                        className="w-full resize-none border-none text-sm leading-relaxed focus:outline-none"
+                        placeholder="Transcription will appear here..."
+                        rows={Math.min(Math.max(transcript.split('\n').length || 3, 3), 12)}
+                      />
+                    ) : (
+                      <div>
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                          {transcript || 'Listening for speech...'}
+                        </p>
+                        <span className="mt-1 inline-block h-3 w-1 animate-pulse bg-blue-500" />
+                      </div>
+                    )}
+                  </div>
                 )
-                : null}
+              )}
 
               {/* Collapsed transcript state when transcript exists but not expanded */}
               {!isRecording && transcript && !transcriptExpanded && (
