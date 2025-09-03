@@ -696,7 +696,7 @@ export function TranscriptionControls({
                           />
                         )
                       : (
-                          // ✅ EXACT EXISTING CODE - unchanged for non-admin users
+                          {/* ✅ EXACT EXISTING CODE - unchanged for non-admin users */}
                           <div className="max-h-64 overflow-y-auto rounded-md border bg-white p-2">
                             {!isRecording
                               ? (
