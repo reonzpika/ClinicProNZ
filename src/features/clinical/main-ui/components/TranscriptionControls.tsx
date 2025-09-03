@@ -513,14 +513,22 @@ export function TranscriptionControls({
               <div className="text-xs text-red-500">No audio detected—check your mic</div>
             )}
 
-            {/* Primary Recording Options */}
-            {!(isRecording || mobileIsRecording) && !isTranscribing
-              ? (
-                  <div className="space-y-2">
-                    {/* Record button on left; toggle + Connect on right */}
-                    <div className="flex items-center justify-between">
-                      {/* Single Record button */}
-                      <div>
+            {/* Primary Recording Options - single row, toggles Record/Stop */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                {/* Left: Record/Stop button */}
+                <div>
+                  {isRecording || mobileIsRecording
+                    ? (
+                        <Button
+                          type="button"
+                          onClick={() => { if (mobileIsRecording) { sendMobileControl('stop'); } else { stopRecording(); } }}
+                          className="h-8 bg-red-600 px-4 text-xs text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                        >
+                          Stop
+                        </Button>
+                      )
+                    : (
                         <Button
                           type="button"
                           onClick={handleStartRecording}
@@ -530,215 +538,104 @@ export function TranscriptionControls({
                         >
                           Record
                         </Button>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {/* Recording method toggle */}
-                        <div className="inline-flex rounded-md border border-slate-300 bg-white p-1 text-xs">
-                          <Button
-                            type="button"
-                            variant={recordingMethod === 'desktop' ? 'default' : 'ghost'}
-                            className={`h-7 px-2 ${recordingMethod === 'desktop' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-700'}`}
-                            onClick={() => setRecordingMethod('desktop')}
-                            disabled={isRecording || mobileIsRecording}
-                          >
-                            Desktop
-                          </Button>
-                          <Button
-                            type="button"
-                            variant={recordingMethod === 'mobile' ? 'default' : 'ghost'}
-                            className={`h-7 px-2 ${recordingMethod === 'mobile' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-700'}`}
-                            onClick={() => setRecordingMethod('mobile')}
-                            disabled={isRecording || mobileIsRecording}
-                          >
-                            Mobile
-                          </Button>
-                        </div>
-
-                        {/* Connect Mobile small button - only when mobile selected */}
-                        {recordingMethod === 'mobile' && (
-                          <Button
-                            type="button"
-                            onClick={handleMobileClick}
-                            disabled={(!isSignedIn && !canCreateSession) || isRecording || mobileIsRecording}
-                            className="h-7 bg-blue-600 px-2 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-                            title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
-                          >
-                            <Smartphone className="mr-1 size-3" />
-                            Connect
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )
-              : (
-            /* Recording Controls (Active State) */
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      {hasMobileDevices && isRecording && (
-                        <div className="flex items-center gap-1 text-xs text-green-600">
-                          <div className="size-2 animate-pulse rounded-full bg-green-500" />
-                          Recording from mobile
-                        </div>
                       )}
-                      {!hasMobileDevices && isRecording && (
-                        <div className="flex items-center gap-1 text-xs text-blue-600">
-                          <div className="size-2 animate-pulse rounded-full bg-blue-500" />
-                          Recording from desktop
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex gap-1">
-                      {!isRecording && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => sendMobileControl('start')}
-                          disabled={!!pendingControl}
-                          className="h-8 px-3 text-xs"
-                        >
-                          Start on mobile
-                        </Button>
-                      )}
-                      {(isRecording || mobileIsRecording) && (
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          onClick={() => { if (mobileIsRecording) { sendMobileControl('stop'); } else { stopRecording(); } }}
-                          className="h-8 bg-red-600 px-3 text-xs text-white hover:bg-red-700"
-                        >
-                          Stop
-                        </Button>
-                      )}
-                      {isRecording && !isPaused && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={pauseRecording}
-                          className="h-8 px-3 text-xs"
-                        >
-                          Pause
-                        </Button>
-                      )}
-                      {isRecording && isPaused && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={resumeRecording}
-                          className="h-8 px-3 text-xs"
-                        >
-                          Resume
-                        </Button>
-                      )}
-                      {isRecording && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={stopRecording}
-                          className="h-8 px-3 text-xs"
-                        >
-                          Stop Recording
-                        </Button>
-                      )}
-                      {transcript && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={clearTranscription}
-                          className="h-8 px-3 text-xs"
-                        >
-                          Re-record
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                )}
-          </div>
-
-          {/* Remote control errors */}
-          {controlError && (
-            <Alert variant="destructive" className="p-2 text-xs">
-              {controlError}
-            </Alert>
-          )}
-
-          {/* Audio input indicator */}
-          {isRecording && <AudioIndicator />}
-
-          {/* Minimized transcript bar while recording */}
-          {isRecording && !transcriptExpanded && (
-            <div
-              className={`cursor-pointer rounded-md border p-2 transition-colors hover:bg-slate-50 ${
-                showNoTranscriptWarning ? 'border-orange-300 bg-orange-50' : 'border-slate-200 bg-slate-50'
-              }`}
-              onClick={() => setTranscriptExpanded(true)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  setTranscriptExpanded(true);
-                }
-              }}
-              role="button"
-              tabIndex={0}
-              aria-label="Show live transcript"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="inline-block size-2 animate-pulse rounded-full bg-blue-500" />
-                  <span className="text-sm text-slate-700">
-                    {transcript.trim() ? 'Transcribing...' : 'Listening...'}
-                  </span>
-                  {showNoTranscriptWarning && (
-                    <span className="text-xs text-orange-600">No transcript</span>
-                  )}
                 </div>
-                <div className="flex items-center gap-1 text-xs text-slate-500">
-                  <span>Show transcript</span>
-                  <ChevronDown size={14} />
+
+                {/* Right: toggle + (conditional) Connect */}
+                <div className="flex items-center gap-2">
+                  {/* Recording method toggle */}
+                  <div className="inline-flex rounded-md border border-slate-300 bg-white p-1 text-xs">
+                    <Button
+                      type="button"
+                      variant={recordingMethod === 'desktop' ? 'default' : 'ghost'}
+                      className={`h-7 px-2 ${recordingMethod === 'desktop' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-700'}`}
+                      onClick={() => setRecordingMethod('desktop')}
+                      disabled={isRecording || mobileIsRecording}
+                    >
+                      Desktop
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={recordingMethod === 'mobile' ? 'default' : 'ghost'}
+                      className={`h-7 px-2 ${recordingMethod === 'mobile' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-700'}`}
+                      onClick={() => setRecordingMethod('mobile')}
+                      disabled={isRecording || mobileIsRecording}
+                    >
+                      Mobile
+                    </Button>
+                  </div>
+
+                  {/* Connect Mobile small button - only when mobile selected */}
+                  {recordingMethod === 'mobile' && (
+                    <Button
+                      type="button"
+                      onClick={handleMobileClick}
+                      disabled={(!isSignedIn && !canCreateSession) || isRecording || mobileIsRecording}
+                      className="h-7 bg-blue-600 px-2 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                      title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
+                    >
+                      <Smartphone className="mr-1 size-3" />
+                      Connect
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
-          )}
 
-          {/* Transcript area - conditionally visible */}
-          <div className="space-y-1">
-            {isRecording && transcriptExpanded && (
-              <div className="flex items-center justify-between">
-                <div className="text-xs font-medium text-slate-600">
-                  Live Transcript
-                  {' '}
-                  {(useMobileV2 && hasMobileDevices) && '(mobile)'}
+            {/* Remote control errors */}
+            {controlError && (
+              <Alert variant="destructive" className="p-2 text-xs">
+                {controlError}
+              </Alert>
+            )}
+
+            {/* Audio input indicator */}
+            {isRecording && <AudioIndicator />}
+
+            {/* Minimized transcript bar while recording */}
+            {isRecording && !transcriptExpanded && (
+              <div
+                className={`cursor-pointer rounded-md border p-2 transition-colors hover:bg-slate-50 ${
+                  showNoTranscriptWarning ? 'border-orange-300 bg-orange-50' : 'border-slate-200 bg-slate-50'
+                }`}
+                onClick={() => setTranscriptExpanded(true)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setTranscriptExpanded(true);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label="Show live transcript"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-block size-2 animate-pulse rounded-full bg-blue-500" />
+                    <span className="text-sm text-slate-700">
+                      {transcript.trim() ? 'Transcribing...' : 'Listening...'}
+                    </span>
+                    {showNoTranscriptWarning && (
+                      <span className="text-xs text-orange-600">No transcript</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-slate-500">
+                    <span>Show transcript</span>
+                    <ChevronDown size={14} />
+                  </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setTranscriptExpanded(false)}
-                  className="h-5 px-1 text-xs text-slate-500 hover:text-slate-700"
-                >
-                  Minimize
-                  {' '}
-                  <ChevronUp size={12} className="ml-1" />
-                </Button>
               </div>
             )}
-            {!isRecording && transcript && transcriptExpanded && (
-              <div className="flex items-center justify-between">
-                <div className="text-xs font-medium text-slate-600">
-                  Transcribed Text — Edit as needed
-                </div>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleManualRefresh}
-                    disabled={isRefreshingTranscript}
-                    className="h-5 px-2 text-xs text-slate-500 hover:text-slate-700"
-                    title="Refresh transcript from server"
-                  >
-                    <RefreshCw className="mr-1 size-3" />
-                    {isRefreshingTranscript ? 'Refreshing…' : 'Refresh'}
-                  </Button>
+
+            {/* Transcript area - conditionally visible */}
+            <div className="space-y-1">
+              {isRecording && transcriptExpanded && (
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-medium text-slate-600">
+                    Live Transcript
+                    {' '}
+                    {(useMobileV2 && hasMobileDevices) && '(mobile)'}
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -750,149 +647,178 @@ export function TranscriptionControls({
                     <ChevronUp size={12} className="ml-1" />
                   </Button>
                 </div>
-              </div>
-            )}
-
-            {/* 🆕 UPDATED: Transcription display with tier-based feature flag */}
-            {(isRecording || (transcript && transcriptExpanded))
-              ? (
-                  showEnhancedTranscription
-                    ? (
-                        <EnhancedTranscriptionDisplay
-                          transcript={transcript}
-                          confidence={contextTranscription.confidence}
-                          words={contextTranscription.words}
-                          isRecording={isRecording}
-                          onEdit={(newText) => {
-                            // TODO: Implement transcript editing
-                            void newText;
-                          }}
-                        />
-                      )
-                    : (
-                        // ✅ EXACT EXISTING CODE - unchanged for non-admin users
-                        <div className="max-h-64 overflow-y-auto rounded-md border bg-white p-2">
-                          {!isRecording
-                            ? (
-                                <textarea
-                                  value={transcript}
-                                  onChange={(_e) => {
-                                    // Allow editing after recording stops
-                                    // This would need to be connected to a context method to update transcript
-                                  }}
-                                  className="w-full resize-none border-none text-sm leading-relaxed focus:outline-none"
-                                  placeholder="Transcription will appear here..."
-                                  rows={Math.min(Math.max(transcript.split('\n').length || 3, 3), 12)}
-                                />
-                              )
-                            : (
-                                <div>
-                                  <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                                    {transcript || 'Listening for speech...'}
-                                  </p>
-                                  <span className="mt-1 inline-block h-3 w-1 animate-pulse bg-blue-500" />
-                                </div>
-                              )}
-                        </div>
-                      )
-                )
-              : null}
-
-            {/* Collapsed transcript state when transcript exists but not expanded */}
-            {!isRecording && transcript && !transcriptExpanded && (
-              <div
-                className="cursor-pointer rounded-md border border-slate-200 bg-slate-50 p-2 transition-colors hover:bg-slate-100"
-                onClick={() => setTranscriptExpanded(true)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setTranscriptExpanded(true);
-                  }
-                }}
-                role="button"
-                tabIndex={0}
-                aria-label="Show transcript"
-              >
+              )}
+              {!isRecording && transcript && transcriptExpanded && (
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-slate-700">Transcript available</span>
-                    <span className="text-xs text-slate-500">
-                      (
+                  <div className="text-xs font-medium text-slate-600">
+                    Transcribed Text — Edit as needed
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleManualRefresh}
+                      disabled={isRefreshingTranscript}
+                      className="h-5 px-2 text-xs text-slate-500 hover:text-slate-700"
+                      title="Refresh transcript from server"
+                    >
+                      <RefreshCw className="mr-1 size-3" />
+                      {isRefreshingTranscript ? 'Refreshing…' : 'Refresh'}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setTranscriptExpanded(false)}
+                      className="h-5 px-1 text-xs text-slate-500 hover:text-slate-700"
+                    >
+                      Minimize
+                      {' '}
+                      <ChevronUp size={12} className="ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* 🆕 UPDATED: Transcription display with tier-based feature flag */}
+              {(isRecording || (transcript && transcriptExpanded))
+                ? (
+                    showEnhancedTranscription
+                      ? (
+                          <EnhancedTranscriptionDisplay
+                            transcript={transcript}
+                            confidence={contextTranscription.confidence}
+                            words={contextTranscription.words}
+                            isRecording={isRecording}
+                            onEdit={(newText) => {
+                              // TODO: Implement transcript editing
+                              void newText;
+                            }}
+                          />
+                        )
+                      : (
+                          // ✅ EXACT EXISTING CODE - unchanged for non-admin users
+                          <div className="max-h-64 overflow-y-auto rounded-md border bg-white p-2">
+                            {!isRecording
+                              ? (
+                                  <textarea
+                                    value={transcript}
+                                    onChange={(_e) => {
+                                      // Allow editing after recording stops
+                                      // This would need to be connected to a context method to update transcript
+                                    }}
+                                    className="w-full resize-none border-none text-sm leading-relaxed focus:outline-none"
+                                    placeholder="Transcription will appear here..."
+                                    rows={Math.min(Math.max(transcript.split('\n').length || 3, 3), 12)}
+                                  />
+                                )
+                              : (
+                                  <div>
+                                    <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                                      {transcript || 'Listening for speech...'}
+                                    </p>
+                                    <span className="mt-1 inline-block h-3 w-1 animate-pulse bg-blue-500" />
+                                  </div>
+                                )}
+                          </div>
+                        )
+                )
+                : null}
+
+              {/* Collapsed transcript state when transcript exists but not expanded */}
+              {!isRecording && transcript && !transcriptExpanded && (
+                <div
+                  className="cursor-pointer rounded-md border border-slate-200 bg-slate-50 p-2 transition-colors hover:bg-slate-100"
+                  onClick={() => setTranscriptExpanded(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setTranscriptExpanded(true);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Show transcript"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-slate-700">Transcript available</span>
+                      <span className="text-xs text-slate-500">
+                        (
 {transcript.split(/\s+/).filter((word: string) => word.length > 0).length}
 {' '}
 words)
-                    </span>
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-slate-500">
+                      <span>Click to expand</span>
+                      <ChevronDown size={14} />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-slate-500">
-                    <span>Click to expand</span>
-                    <ChevronDown size={14} />
-                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Empty state - No transcription message */}
-            {!transcript && !isRecording && (
-              <div className="rounded-md border border-slate-200 bg-slate-50 p-2">
-                <p className="text-sm text-slate-500">No transcription</p>
-              </div>
-            )}
-          </div>
-
-          {/* Help section (hidden by default) */}
-          {showHelp && (
-            <div className="rounded-md bg-blue-50 p-3 text-xs text-blue-800">
-              <p className="font-medium">Audio Recording Guide:</p>
-              <div className="mt-2 space-y-2">
-                <div>
-                  <p className="font-medium text-green-700">Mobile Recording (Recommended):</p>
-                  <ul className="ml-3 mt-1 list-disc space-y-0.5">
-                    <li>Scan QR code with your phone - takes 30 seconds</li>
-                    <li>Use your phone's microphone for recording</li>
-                    <li>No need to stay near the computer</li>
-                    <li>Start/stop recording from your phone</li>
-                  </ul>
+              {/* Empty state - No transcription message */}
+              {!transcript && !isRecording && (
+                <div className="rounded-md border border-slate-200 bg-slate-50 p-2">
+                  <p className="text-sm text-slate-500">No transcription</p>
                 </div>
-                <div>
-                  <p className="font-medium">Desktop Recording:</p>
-                  <ul className="ml-3 mt-1 list-disc space-y-0.5">
-                    <li>Good backup option if mobile setup fails</li>
-                    <li>Must stay near computer during consultation</li>
-                    <li>Audio quality depends on your computer's microphone</li>
-                  </ul>
-                </div>
-                <div className="border-t border-blue-200 pt-2">
-                  <p className="font-medium">General Tips:</p>
-                  <ul className="ml-3 mt-1 list-disc space-y-0.5">
-                    <li>Speak naturally - transcript builds in real-time</li>
-                    <li>Use "Additional Info" below for vitals, observations, assessments</li>
-                    <li>Click "Generate Notes" when complete for your final consultation note</li>
-                  </ul>
-                </div>
-              </div>
+              )}
             </div>
-          )}
-        </Stack>
+
+            {/* Help section (hidden by default) */}
+            {showHelp && (
+              <div className="rounded-md bg-blue-50 p-3 text-xs text-blue-800">
+                <p className="font-medium">Audio Recording Guide:</p>
+                <div className="mt-2 space-y-2">
+                  <div>
+                    <p className="font-medium text-green-700">Mobile Recording (Recommended):</p>
+                    <ul className="ml-3 mt-1 list-disc space-y-0.5">
+                      <li>Scan QR code with your phone - takes 30 seconds</li>
+                      <li>Use your phone's microphone for recording</li>
+                      <li>No need to stay near the computer</li>
+                      <li>Start/stop recording from your phone</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="font-medium">Desktop Recording:</p>
+                    <ul className="ml-3 mt-1 list-disc space-y-0.5">
+                      <li>Good backup option if mobile setup fails</li>
+                      <li>Must stay near computer during consultation</li>
+                      <li>Audio quality depends on your computer's microphone</li>
+                    </ul>
+                  </div>
+                  <div className="border-t border-blue-200 pt-2">
+                    <p className="font-medium">General Tips:</p>
+                    <ul className="ml-3 mt-1 list-disc space-y-0.5">
+                      <li>Speak naturally - transcript builds in real-time</li>
+                      <li>Use "Additional Info" below for vitals, observations, assessments</li>
+                      <li>Click "Generate Notes" when complete for your final consultation note</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+          </Stack>
+        </div>
+
+        {/* Consent Modal */}
+        <ConsentModal
+          isOpen={showConsentModal}
+          onConfirm={handleConsentConfirm}
+          onCancel={handleConsentCancel}
+        />
+
+        {/* Audio Settings Modal */}
+        <AudioSettingsModal
+          isOpen={showAudioSettings}
+          onClose={() => setShowAudioSettings(false)}
+        />
+
+        {/* Mobile Recording Modal - V2 */}
+        <MobileRecordingQRV2
+          isOpen={showMobileRecordingV2}
+          onClose={() => setShowMobileRecordingV2(false)}
+        />
       </div>
-
-      {/* Consent Modal */}
-      <ConsentModal
-        isOpen={showConsentModal}
-        onConfirm={handleConsentConfirm}
-        onCancel={handleConsentCancel}
-      />
-
-      {/* Audio Settings Modal */}
-      <AudioSettingsModal
-        isOpen={showAudioSettings}
-        onClose={() => setShowAudioSettings(false)}
-      />
-
-      {/* Mobile Recording Modal - V2 */}
-      <MobileRecordingQRV2
-        isOpen={showMobileRecordingV2}
-        onClose={() => setShowMobileRecordingV2(false)}
-      />
-    </div>
-  );
-}
+    );
+  }
