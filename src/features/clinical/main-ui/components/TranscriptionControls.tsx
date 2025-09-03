@@ -362,7 +362,7 @@ export function TranscriptionControls({
                     onClick={() => setIsExpanded(true)}
                     className="text-blue-600 underline hover:text-blue-800"
                   >
-                    (click to expand)
+                    [click to expand]
                   </button>
                 </span>
               )}
