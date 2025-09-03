@@ -73,7 +73,6 @@ export function TranscriptionControls({
 
   const {
     isRecording,
-    isTranscribing,
     error,
     startRecording,
     stopRecording,
