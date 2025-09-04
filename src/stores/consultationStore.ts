@@ -4,6 +4,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import type { ChatMessage, ClinicalImage, ConsultationItem } from '@/src/types/consultation';
 
 export const MULTIPROBLEM_SOAP_UUID = '5f24a1c7-05a4-4622-a25b-4a19a5572196';
+export const DEFAULT_TEMPLATE_ID = '20dc1526-62cc-4ff4-a370-ffc1ded52aef';
 
 type ConsultationState = {
   // Session info
@@ -110,7 +111,7 @@ function getCurrentPatientSessionId(): string | null {
 
 const initialState: ConsultationState = {
   sessionId: generateSessionId(),
-  templateId: MULTIPROBLEM_SOAP_UUID,
+  templateId: DEFAULT_TEMPLATE_ID,
   status: 'idle',
   generatedNotes: null,
   error: null,
@@ -242,7 +243,7 @@ export const useConsultationStore = create<ConsultationStore>()(
         consultationNotes: '',
         clinicalImages: [],
         // Preserve settings and templates
-        templateId: get().userDefaultTemplateId || MULTIPROBLEM_SOAP_UUID,
+        templateId: get().userDefaultTemplateId || DEFAULT_TEMPLATE_ID,
       });
     },
   })),

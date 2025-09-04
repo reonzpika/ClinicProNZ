@@ -1,11 +1,9 @@
 /* eslint-disable react/no-nested-components */
 'use client';
-
 import { useAuth } from '@clerk/nextjs';
 import { useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, ChevronUp, Info, Mic, RefreshCw, Settings, Smartphone } from 'lucide-react';
+import { ChevronDown, ChevronUp, Info, Mic, RefreshCw, Smartphone } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { FeatureFeedbackButton } from '@/src/shared/components/FeatureFeedbackButton';
 import { Stack } from '@/src/shared/components/layout/Stack';
@@ -13,7 +11,6 @@ import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardHeader } from '@/src/shared/components/ui/card';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
-
 // import { createAuthHeaders } from '@/src/shared/utils';
 import { AudioSettingsModal } from '../../mobile/components/AudioSettingsModal';
 import { MobileRecordingQRV2 } from '../../mobile/components/MobileRecordingQRV2';
@@ -27,16 +24,17 @@ export function TranscriptionControls({
   onExpand,
   isMinimized,
   mobileIsRecording = false,
+  defaultRecordingMethod = 'desktop',
 }: {
   collapsed?: boolean;
   onExpand?: () => void;
   isMinimized?: boolean;
   mobileIsRecording?: boolean;
+  defaultRecordingMethod?: 'desktop' | 'mobile';
 }) {
   const { isSignedIn } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
-
   // 🆕 FEATURE FLAG: Enhanced transcription for admin tier only
   const showEnhancedTranscription = userTier === 'admin';
 
@@ -50,6 +48,7 @@ export function TranscriptionControls({
     setTranscription,
     currentPatientSessionId,
   } = useConsultationStores();
+
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [showAudioSettings, setShowAudioSettings] = useState(false);
   const [showMobileRecordingV2, setShowMobileRecordingV2] = useState(false);
@@ -64,19 +63,20 @@ export function TranscriptionControls({
   useEffect(() => {
     setIsExpanded(!isMinimized);
   }, [isMinimized]);
+
   const useMobileV2 = true; // Mobile V2 is now enabled by default
+  const [recordingMethod, setRecordingMethod] = useState<'desktop' | 'mobile'>(defaultRecordingMethod);
+
+  useEffect(() => {
+    setRecordingMethod(defaultRecordingMethod);
+  }, [defaultRecordingMethod]);
 
   const {
     isRecording,
-    isPaused,
-    isTranscribing,
     error,
     startRecording,
     stopRecording,
-    pauseRecording,
-    resumeRecording,
     clearTranscription,
-
     volumeLevel,
     noInputWarning,
     totalChunks,
@@ -100,14 +100,17 @@ export function TranscriptionControls({
     try {
       setIsRefreshingTranscript(true);
       const activeSessionId = currentPatientSessionId || '';
+      
       // Invalidate both sessions list and active session
       await Promise.allSettled([
         queryClient.invalidateQueries({ queryKey: ['consultation', 'sessions'] }),
         queryClient.invalidateQueries({ queryKey: ['consultation', 'session', activeSessionId] }),
       ]);
+
       // Hydrate from cache
       const sessions: any[] | undefined = queryClient.getQueryData(['consultation', 'sessions']) as any;
       const session = Array.isArray(sessions) ? sessions.find((s: any) => s.id === activeSessionId) : null;
+
       if (session) {
         let chunks: any[] = [];
         try {
@@ -115,6 +118,7 @@ export function TranscriptionControls({
         } catch {
           chunks = [];
         }
+
         if (Array.isArray(chunks) && chunks.length > 0) {
           const full = chunks.map((t: any) => (t?.text || '').trim()).join(' ').trim();
           if (full) {
@@ -146,12 +150,10 @@ export function TranscriptionControls({
       const timer = setTimeout(() => {
         setShowNoTranscriptWarning(true);
       }, 40000); // 40 seconds
-
       return () => clearTimeout(timer);
     } else if (transcript.trim()) {
       setShowNoTranscriptWarning(false);
     }
-
     return undefined;
   }, [isRecording, recordingStartTime, transcript]);
 
@@ -159,8 +161,8 @@ export function TranscriptionControls({
   useEffect(() => {
     return () => {
       if (controlAckTimer) {
- clearTimeout(controlAckTimer);
-}
+        clearTimeout(controlAckTimer);
+      }
     };
   }, [controlAckTimer]);
 
@@ -170,15 +172,15 @@ export function TranscriptionControls({
       setPendingControl(null);
       setControlError(null);
       if (controlAckTimer) {
- clearTimeout(controlAckTimer);
-}
+        clearTimeout(controlAckTimer);
+      }
     }
     if (pendingControl === 'stop' && !mobileIsRecording) {
       setPendingControl(null);
       setControlError(null);
       if (controlAckTimer) {
- clearTimeout(controlAckTimer);
-}
+        clearTimeout(controlAckTimer);
+      }
     }
   }, [mobileIsRecording, pendingControl, controlAckTimer]);
 
@@ -187,16 +189,19 @@ export function TranscriptionControls({
     try {
       setControlError(null);
       setPendingControl(action);
+      
       // Send via global bridge (set in ConsultationPage)
       const ok = typeof window !== 'undefined'
         && (window as any).ablySyncHook
         && (window as any).ablySyncHook.sendRecordingControl
         && (window as any).ablySyncHook.sendRecordingControl(action);
+
       if (!ok) {
         setPendingControl(null);
         setControlError('Mobile not connected. Please open the mobile page and unlock the screen.');
         return;
       }
+
       // Start ack timeout (3s)
       const t = setTimeout(() => {
         setPendingControl(null);
@@ -214,7 +219,7 @@ export function TranscriptionControls({
     setCanCreateSession(!!isSignedIn);
   }, [isSignedIn]);
 
-  // Handle start recording - show consent modal first if consent not obtained
+  // Handle start recording - desktop respects consent; mobile bypasses consent
   const handleStartRecording = () => {
     // Check authentication status
     if (!isSignedIn && !canCreateSession) {
@@ -222,11 +227,28 @@ export function TranscriptionControls({
       return;
     }
 
+    // Mobile: bypass consent and send remote start (or open connect)
+    if (recordingMethod === 'mobile') {
+      const canSend = typeof window !== 'undefined'
+        && (window as any).ablySyncHook
+        && typeof (window as any).ablySyncHook.sendRecordingControl === 'function';
+
+      if (!canSend) {
+        setShowMobileRecordingV2(true);
+        return;
+      }
+
+      sendMobileControl('start');
+      return;
+    }
+
+    // Desktop: use consent flow
     if (!consentObtained) {
       setShowConsentModal(true);
-    } else {
-      startRecording();
+      return;
     }
+
+    startRecording();
   };
 
   // Handle consent confirmation
@@ -240,6 +262,22 @@ export function TranscriptionControls({
 
     setConsentObtained(true);
     setShowConsentModal(false);
+
+    // Respect current toggle
+    if (recordingMethod === 'mobile') {
+      const canSend = typeof window !== 'undefined'
+        && (window as any).ablySyncHook
+        && typeof (window as any).ablySyncHook.sendRecordingControl === 'function';
+
+      if (!canSend) {
+        setShowMobileRecordingV2(true);
+        return;
+      }
+
+      sendMobileControl('start');
+      return;
+    }
+
     startRecording();
   };
 
@@ -330,7 +368,7 @@ export function TranscriptionControls({
                     onClick={() => setIsExpanded(true)}
                     className="text-blue-600 underline hover:text-blue-800"
                   >
-                    (click to expand)
+                    {'(click to expand)'}
                   </button>
                 </span>
               )}
@@ -405,7 +443,6 @@ export function TranscriptionControls({
             )}
           </div>
         </div>
-
         <div className="flex items-center gap-2">
           <button
             onClick={() => {
@@ -481,262 +518,129 @@ export function TranscriptionControls({
               <div className="text-xs text-red-500">No audio detected—check your mic</div>
             )}
 
-            {/* Primary Recording Options */}
-            {!isRecording && !isTranscribing
-              ? (
-                  <div className="space-y-2">
-                    {/* Mobile Recording Button */}
-                    <div className="flex items-center justify-between">
-                      {/* Right side: Status indicator + Mobile buttons */}
-                      <div className="flex items-center gap-2">
-                        {/* Mobile Recording Button */}
+            {/* Primary Recording Options - single row, toggles Record/Stop */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                {/* Left: Record/Stop button */}
+                <div>
+                  {isRecording || mobileIsRecording
+                    ? (
                         <Button
                           type="button"
-                          onClick={handleMobileClick}
-                          disabled={(!isSignedIn && !canCreateSession)}
-                          className="h-8 bg-blue-600 px-3 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                          onClick={() => { if (mobileIsRecording) { sendMobileControl('stop'); } else { stopRecording(); } }}
+                          className="h-8 bg-red-600 px-4 text-xs text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                        >
+                          Stop
+                        </Button>
+                      )
+                    : (
+                        <Button
+                          type="button"
+                          onClick={handleStartRecording}
+                          disabled={!canCreateSession}
+                          className="h-8 bg-green-600 px-4 text-xs text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
                           title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
                         >
-                          <Smartphone className="mr-1 size-3" />
-                          Connect Mobile
-                        </Button>
-                        {/* Remote control buttons when connected */}
-                        {!mobileIsRecording && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => sendMobileControl('start')}
-                            disabled={!!pendingControl}
-                            className="h-8 px-3 text-xs"
-                          >
-                            Start on mobile
-                          </Button>
-                        )}
-                        {mobileIsRecording && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => sendMobileControl('stop')}
-                            disabled={!!pendingControl}
-                            className="h-8 px-3 text-xs"
-                          >
-                            Stop on mobile
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Desktop Recording Option */}
-                    <div className="flex justify-end">
-                      <div className="relative">
-                        <details className="group">
-                          <summary className="flex cursor-pointer items-center gap-1 text-xs text-slate-500 hover:text-slate-700">
-                            <span>Or use desktop recording</span>
-                            <ChevronDown className="size-3 transition-transform group-open:rotate-180" />
-                          </summary>
-                          <div className="absolute right-0 z-10 mt-1 min-w-[200px] rounded-md border bg-white p-2 shadow-lg">
-                            <div className="space-y-1">
-                              <div className="mb-1 flex items-center justify-between">
-                                <span className="text-xs text-slate-600">Desktop Recording</span>
-                                <Button
-                                  onClick={() => setShowAudioSettings(true)}
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-5 px-1 text-xs text-slate-500 hover:text-slate-700"
-                                  title="Audio Settings"
-                                >
-                                  <Settings className="mr-1 size-3" />
-                                  Settings
-                                </Button>
-                              </div>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                onClick={handleStartRecording}
-                                disabled={!canCreateSession} // Removed canStartRecording check
-                                className="h-7 w-full border-slate-300 text-xs disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
-                                title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
-                              >
-                                Start Desktop Recording
-                              </Button>
-                              <p className="text-center text-xs text-slate-500">
-                                Backup option - stay near computer
-                              </p>
-                            </div>
-                          </div>
-                        </details>
-                      </div>
-                    </div>
-                  </div>
-                )
-              : (
-            /* Recording Controls (Active State) */
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      {hasMobileDevices && isRecording && (
-                        <div className="flex items-center gap-1 text-xs text-green-600">
-                          <div className="size-2 animate-pulse rounded-full bg-green-500" />
-                          Recording from mobile
-                        </div>
-                      )}
-                      {!hasMobileDevices && isRecording && (
-                        <div className="flex items-center gap-1 text-xs text-blue-600">
-                          <div className="size-2 animate-pulse rounded-full bg-blue-500" />
-                          Recording from desktop
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex gap-1">
-                      {!isRecording && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => sendMobileControl('start')}
-                          disabled={!!pendingControl}
-                          className="h-8 px-3 text-xs"
-                        >
-                          Start on mobile
+                          Record
                         </Button>
                       )}
-                      {isRecording && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => sendMobileControl('stop')}
-                          disabled={!!pendingControl}
-                          className="h-8 px-3 text-xs"
-                        >
-                          Stop on mobile
-                        </Button>
-                      )}
-                      {isRecording && !isPaused && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={pauseRecording}
-                          className="h-8 px-3 text-xs"
-                        >
-                          Pause
-                        </Button>
-                      )}
-                      {isRecording && isPaused && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={resumeRecording}
-                          className="h-8 px-3 text-xs"
-                        >
-                          Resume
-                        </Button>
-                      )}
-                      {isRecording && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={stopRecording}
-                          className="h-8 px-3 text-xs"
-                        >
-                          Stop Recording
-                        </Button>
-                      )}
-                      {transcript && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={clearTranscription}
-                          className="h-8 px-3 text-xs"
-                        >
-                          Re-record
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                )}
-          </div>
-
-          {/* Remote control errors */}
-          {controlError && (
-            <Alert variant="destructive" className="p-2 text-xs">
-              {controlError}
-            </Alert>
-          )}
-
-          {/* Audio input indicator */}
-          {isRecording && <AudioIndicator />}
-
-          {/* Minimized transcript bar while recording */}
-          {isRecording && !transcriptExpanded && (
-            <div
-              className={`cursor-pointer rounded-md border p-2 transition-colors hover:bg-slate-50 ${
-                showNoTranscriptWarning ? 'border-orange-300 bg-orange-50' : 'border-slate-200 bg-slate-50'
-              }`}
-              onClick={() => setTranscriptExpanded(true)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  setTranscriptExpanded(true);
-                }
-              }}
-              role="button"
-              tabIndex={0}
-              aria-label="Show live transcript"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="inline-block size-2 animate-pulse rounded-full bg-blue-500" />
-                  <span className="text-sm text-slate-700">
-                    {transcript.trim() ? 'Transcribing...' : 'Listening...'}
-                  </span>
-                  {showNoTranscriptWarning && (
-                    <span className="text-xs text-orange-600">No transcript</span>
-                  )}
                 </div>
-                <div className="flex items-center gap-1 text-xs text-slate-500">
-                  <span>Show transcript</span>
-                  <ChevronDown size={14} />
+
+                {/* Right: toggle + (conditional) Connect */}
+                <div className="flex items-center gap-2">
+                  {/* Recording method toggle */}
+                  <div className="inline-flex rounded-md border border-slate-300 bg-white p-1 text-xs">
+                    <Button
+                      type="button"
+                      variant={recordingMethod === 'desktop' ? 'default' : 'ghost'}
+                      className={`h-7 px-2 ${recordingMethod === 'desktop' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-700'}`}
+                      onClick={() => setRecordingMethod('desktop')}
+                      disabled={isRecording || mobileIsRecording}
+                    >
+                      Desktop
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={recordingMethod === 'mobile' ? 'default' : 'ghost'}
+                      className={`h-7 px-2 ${recordingMethod === 'mobile' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-700'}`}
+                      onClick={() => setRecordingMethod('mobile')}
+                      disabled={isRecording || mobileIsRecording}
+                    >
+                      Mobile
+                    </Button>
+                  </div>
+
+                  {/* Connect Mobile small button - only when mobile selected */}
+                  {recordingMethod === 'mobile' && (
+                    <Button
+                      type="button"
+                      onClick={handleMobileClick}
+                      disabled={(!isSignedIn && !canCreateSession) || isRecording || mobileIsRecording}
+                      className="h-7 bg-blue-600 px-2 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                      title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
+                    >
+                      <Smartphone className="mr-1 size-3" />
+                      Connect
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
-          )}
 
-          {/* Transcript area - conditionally visible */}
-          <div className="space-y-1">
-            {isRecording && transcriptExpanded && (
-              <div className="flex items-center justify-between">
-                <div className="text-xs font-medium text-slate-600">
-                  Live Transcript
-                  {' '}
-                  {(useMobileV2 && hasMobileDevices) && '(mobile)'}
+            {/* Remote control errors */}
+            {controlError && (
+              <Alert variant="destructive" className="p-2 text-xs">
+                {controlError}
+              </Alert>
+            )}
+
+            {/* Audio input indicator */}
+            {isRecording && <AudioIndicator />}
+
+            {/* Minimized transcript bar while recording */}
+            {isRecording && !transcriptExpanded && (
+              <div
+                className={`cursor-pointer rounded-md border p-2 transition-colors hover:bg-slate-50 ${
+                  showNoTranscriptWarning ? 'border-orange-300 bg-orange-50' : 'border-slate-200 bg-slate-50'
+                }`}
+                onClick={() => setTranscriptExpanded(true)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setTranscriptExpanded(true);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label="Show live transcript"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-block size-2 animate-pulse rounded-full bg-blue-500" />
+                    <span className="text-sm text-slate-700">
+                      {transcript.trim() ? 'Transcribing...' : 'Listening...'}
+                    </span>
+                    {showNoTranscriptWarning && (
+                      <span className="text-xs text-orange-600">No transcript</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-slate-500">
+                    <span>Show transcript</span>
+                    <ChevronDown size={14} />
+                  </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setTranscriptExpanded(false)}
-                  className="h-5 px-1 text-xs text-slate-500 hover:text-slate-700"
-                >
-                  Minimize
-                  {' '}
-                  <ChevronUp size={12} className="ml-1" />
-                </Button>
               </div>
             )}
-            {!isRecording && transcript && transcriptExpanded && (
-              <div className="flex items-center justify-between">
-                <div className="text-xs font-medium text-slate-600">
-                  Transcribed Text — Edit as needed
-                </div>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleManualRefresh}
-                    disabled={isRefreshingTranscript}
-                    className="h-5 px-2 text-xs text-slate-500 hover:text-slate-700"
-                    title="Refresh transcript from server"
-                  >
-                    <RefreshCw className="mr-1 size-3" />
-                    {isRefreshingTranscript ? 'Refreshing…' : 'Refresh'}
-                  </Button>
+
+            {/* Transcript area - conditionally visible */}
+            <div className="space-y-1">
+              {isRecording && transcriptExpanded && (
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-medium text-slate-600">
+                    Live Transcript
+                    {' '}
+                    {(useMobileV2 && hasMobileDevices) && '(mobile)'}
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -748,128 +652,151 @@ export function TranscriptionControls({
                     <ChevronUp size={12} className="ml-1" />
                   </Button>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* 🆕 UPDATED: Transcription display with tier-based feature flag */}
-            {(isRecording || (transcript && transcriptExpanded))
-              ? (
-                  showEnhancedTranscription
-                    ? (
-                        <EnhancedTranscriptionDisplay
-                          transcript={transcript}
-                          confidence={contextTranscription.confidence}
-                          words={contextTranscription.words}
-                          isRecording={isRecording}
-                          onEdit={(newText) => {
-                            // TODO: Implement transcript editing
-                            void newText;
-                          }}
-                        />
-                      )
-                    : (
-                        // ✅ EXACT EXISTING CODE - unchanged for non-admin users
-                        <div className="max-h-64 overflow-y-auto rounded-md border bg-white p-2">
-                          {!isRecording
-                            ? (
-                                <textarea
-                                  value={transcript}
-                                  onChange={(_e) => {
-                                    // Allow editing after recording stops
-                                    // This would need to be connected to a context method to update transcript
-                                  }}
-                                  className="w-full resize-none border-none text-sm leading-relaxed focus:outline-none"
-                                  placeholder="Transcription will appear here..."
-                                  rows={Math.min(Math.max(transcript.split('\n').length || 3, 3), 12)}
-                                />
-                              )
-                            : (
-                                <div>
-                                  <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                                    {transcript || 'Listening for speech...'}
-                                  </p>
-                                  <span className="mt-1 inline-block h-3 w-1 animate-pulse bg-blue-500" />
-                                </div>
-                              )}
-                        </div>
-                      )
-                )
-              : null}
-
-            {/* Collapsed transcript state when transcript exists but not expanded */}
-            {!isRecording && transcript && !transcriptExpanded && (
-              <div
-                className="cursor-pointer rounded-md border border-slate-200 bg-slate-50 p-2 transition-colors hover:bg-slate-100"
-                onClick={() => setTranscriptExpanded(true)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setTranscriptExpanded(true);
-                  }
-                }}
-                role="button"
-                tabIndex={0}
-                aria-label="Show transcript"
-              >
+              {!isRecording && transcript && transcriptExpanded && (
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-slate-700">Transcript available</span>
-                    <span className="text-xs text-slate-500">
-                      (
-{transcript.split(/\s+/).filter((word: string) => word.length > 0).length}
-{' '}
-words)
-                    </span>
+                  <div className="text-xs font-medium text-slate-600">
+                    Transcribed Text — Edit as needed
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-slate-500">
-                    <span>Click to expand</span>
-                    <ChevronDown size={14} />
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleManualRefresh}
+                      disabled={isRefreshingTranscript}
+                      className="h-5 px-2 text-xs text-slate-500 hover:text-slate-700"
+                      title="Refresh transcript from server"
+                    >
+                      <RefreshCw className="mr-1 size-3" />
+                      {isRefreshingTranscript ? 'Refreshing…' : 'Refresh'}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setTranscriptExpanded(false)}
+                      className="h-5 px-1 text-xs text-slate-500 hover:text-slate-700"
+                    >
+                      Minimize
+                      {' '}
+                      <ChevronUp size={12} className="ml-1" />
+                    </Button>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Empty state - No transcription message */}
-            {!transcript && !isRecording && (
-              <div className="rounded-md border border-slate-200 bg-slate-50 p-2">
-                <p className="text-sm text-slate-500">No transcription</p>
+              {/* 🆕 UPDATED: Transcription display with tier-based feature flag */}
+              {(isRecording || (transcript && transcriptExpanded)) && (
+                showEnhancedTranscription ? (
+                  <EnhancedTranscriptionDisplay
+                    transcript={transcript}
+                    confidence={contextTranscription.confidence}
+                    words={contextTranscription.words}
+                    isRecording={isRecording}
+                    onEdit={(newText) => {
+                      // TODO: Implement transcript editing
+                      void newText;
+                    }}
+                  />
+                ) : (
+                  <div className="max-h-64 overflow-y-auto rounded-md border bg-white p-2">
+                    {!isRecording ? (
+                      <textarea
+                        value={transcript}
+                        onChange={(_e) => {
+                          // Allow editing after recording stops
+                          // This would need to be connected to a context method to update transcript
+                        }}
+                        className="w-full resize-none border-none text-sm leading-relaxed focus:outline-none"
+                        placeholder="Transcription will appear here..."
+                        rows={Math.min(Math.max(transcript.split('\n').length || 3, 3), 12)}
+                      />
+                    ) : (
+                      <div>
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                          {transcript || 'Listening for speech...'}
+                        </p>
+                        <span className="mt-1 inline-block h-3 w-1 animate-pulse bg-blue-500" />
+                      </div>
+                    )}
+                  </div>
+                )
+              )}
+
+              {/* Collapsed transcript state when transcript exists but not expanded */}
+              {!isRecording && transcript && !transcriptExpanded && (
+                <div
+                  className="cursor-pointer rounded-md border border-slate-200 bg-slate-50 p-2 transition-colors hover:bg-slate-100"
+                  onClick={() => setTranscriptExpanded(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setTranscriptExpanded(true);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Show transcript"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-slate-700">Transcript available</span>
+                      <span className="text-xs text-slate-500">
+                        {'('}
+                        {transcript.split(/\s+/).filter((w: string) => w.length > 0).length}
+                        {' words)'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-slate-500">
+                      <span>Click to expand</span>
+                      <ChevronDown size={14} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Empty state - No transcription message */}
+              {!transcript && !isRecording && (
+                <div className="rounded-md border border-slate-200 bg-slate-50 p-2">
+                  <p className="text-sm text-slate-500">No transcription</p>
+                </div>
+              )}
+            </div>
+
+            {/* Help section (hidden by default) */}
+            {showHelp && (
+              <div className="rounded-md bg-blue-50 p-3 text-xs text-blue-800">
+                <p className="font-medium">Audio Recording Guide:</p>
+                <div className="mt-2 space-y-2">
+                  <div>
+                    <p className="font-medium text-green-700">Mobile Recording – Recommended:</p>
+                    <ul className="ml-3 mt-1 list-disc space-y-0.5">
+                      <li>Scan QR code with your phone - takes 30 seconds</li>
+                      <li>Use your phone's microphone for recording</li>
+                      <li>No need to stay near the computer</li>
+                      <li>Start/stop recording from your phone</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="font-medium">Desktop Recording:</p>
+                    <ul className="ml-3 mt-1 list-disc space-y-0.5">
+                      <li>Good backup option if mobile setup fails</li>
+                      <li>Must stay near computer during consultation</li>
+                      <li>Audio quality depends on your computer's microphone</li>
+                    </ul>
+                  </div>
+                  <div className="border-t border-blue-200 pt-2">
+                    <p className="font-medium">General Tips:</p>
+                    <ul className="ml-3 mt-1 list-disc space-y-0.5">
+                      <li>Speak naturally - transcript builds in real-time</li>
+                      <li>Use "Additional Info" below for vitals, observations, assessments</li>
+                      <li>Click "Generate Notes" when complete for your final consultation note</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             )}
           </div>
-
-          {/* Help section (hidden by default) */}
-          {showHelp && (
-            <div className="rounded-md bg-blue-50 p-3 text-xs text-blue-800">
-              <p className="font-medium">Audio Recording Guide:</p>
-              <div className="mt-2 space-y-2">
-                <div>
-                  <p className="font-medium text-green-700">Mobile Recording (Recommended):</p>
-                  <ul className="ml-3 mt-1 list-disc space-y-0.5">
-                    <li>Scan QR code with your phone - takes 30 seconds</li>
-                    <li>Use your phone's microphone for recording</li>
-                    <li>No need to stay near the computer</li>
-                    <li>Start/stop recording from your phone</li>
-                  </ul>
-                </div>
-                <div>
-                  <p className="font-medium">Desktop Recording:</p>
-                  <ul className="ml-3 mt-1 list-disc space-y-0.5">
-                    <li>Good backup option if mobile setup fails</li>
-                    <li>Must stay near computer during consultation</li>
-                    <li>Audio quality depends on your computer's microphone</li>
-                  </ul>
-                </div>
-                <div className="border-t border-blue-200 pt-2">
-                  <p className="font-medium">General Tips:</p>
-                  <ul className="ml-3 mt-1 list-disc space-y-0.5">
-                    <li>Speak naturally - transcript builds in real-time</li>
-                    <li>Use "Additional Info" below for vitals, observations, assessments</li>
-                    <li>Click "Generate Notes" when complete for your final consultation note</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
         </Stack>
       </div>
 
