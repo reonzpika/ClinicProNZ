@@ -145,7 +145,7 @@ export class DynamicHealthifySearch {
     try {
       const pathname = new URL(url).pathname;
       const segments = pathname.split('/');
-      const articleSlug = segments[segments.length - 1];
+      const articleSlug = segments[segments.length - 1] || 'Healthify Article';
       return articleSlug
         .replace(/-/g, ' ')
         .replace(/\b\w/g, l => l.toUpperCase());
