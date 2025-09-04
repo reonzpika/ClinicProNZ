@@ -9,6 +9,22 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+// Helper: safely coerce JSONB/unknown values into typed objects
+function coerceJsonb<T>(value: unknown): T | null {
+  if (value == null) return null;
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value) as T;
+    } catch {
+      return null;
+    }
+  }
+  if (typeof value === 'object') {
+    return value as T;
+  }
+  return null;
+}
+
 /**
  * Create embedding for text using OpenAI
  */
@@ -57,18 +73,22 @@ export async function searchSimilarDocuments(
     .orderBy(sql`${similarity} DESC`)
     .limit(limit);
 
-  return results.map(row => ({
-    content: row.content,
-    title: row.title,
-    source: row.source,
-    sourceType: row.sourceType,
-    score: row.score,
-    // Include summary fields for smart content selection
-    sectionSummaries: row.sectionSummaries,
-    overallSummary: row.overallSummary,
-    sections: row.sections,
-    enhancementStatus: row.enhancementStatus,
-  }));
+  return results.map(row => {
+    const sectionSummaries = coerceJsonb<Record<string, string[]>>(row.sectionSummaries);
+    const sections = coerceJsonb<Record<string, string>>(row.sections);
+    return {
+      content: row.content,
+      title: row.title,
+      source: row.source,
+      sourceType: row.sourceType,
+      score: row.score,
+      // Include summary fields for smart content selection
+      sectionSummaries,
+      overallSummary: row.overallSummary,
+      sections,
+      enhancementStatus: row.enhancementStatus,
+    } as RagQueryResult;
+  });
 }
 
 /**
