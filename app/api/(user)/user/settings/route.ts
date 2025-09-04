@@ -25,7 +25,8 @@ export async function GET(req: Request) {
 
     // Try to fetch settings
     let settingsRow = await db.query.userSettings.findFirst({
-      where: (u, { eq }) => eq(u.userId, userId),
+      // Explicitly type params to satisfy TS
+      where: (u: typeof userSettings, ops: any) => ops.eq(u.userId, userId),
     });
 
     if (!settingsRow) {

@@ -2,11 +2,7 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-if (!OPENAI_API_KEY) {
-  throw new Error('Missing OPENAI_API_KEY');
-}
-
-const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+let openai: OpenAI | null = null;
 
 // System prompt for NZ GP clinical assistant
 const CHATBOT_SYSTEM_PROMPT = `You are a clinical AI assistant specifically designed to support New Zealand General Practitioners (GPs) in their post-consultation workflow. Your role is to provide evidence-based, accurate clinical guidance that aligns with New Zealand healthcare guidelines and best practices.
@@ -93,6 +89,17 @@ Please use this raw consultation data to provide relevant guidance. This is unst
         content: msg.content,
       })),
     ];
+
+    if (!OPENAI_API_KEY) {
+      return NextResponse.json(
+        { code: 'CONFIG_ERROR', message: 'OPENAI_API_KEY not configured' },
+        { status: 500 },
+      );
+    }
+
+    if (!openai) {
+      openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+    }
 
     // Call OpenAI with streaming
     const stream = await openai.chat.completions.create({

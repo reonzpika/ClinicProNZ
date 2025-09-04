@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
     const sessions = await query;
 
     return NextResponse.json({
-      sessions: sessions.map(session => ({
+      sessions: sessions.map((session: any) => ({
         ...session,
         // Convert dates to ISO strings for client compatibility
         createdAt: session.createdAt?.toISOString() || new Date().toISOString(),

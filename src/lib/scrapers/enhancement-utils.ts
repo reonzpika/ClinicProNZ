@@ -22,7 +22,7 @@ export async function checkEnhancementStatus(articles: RagQueryResult[]): Promis
 
     // Create status map
     const statusMap = new Map(
-      enhancementStatuses.map(row => [row.source, row.enhancementStatus]),
+      enhancementStatuses.map((row: { source: string; enhancementStatus: string | null }) => [row.source, row.enhancementStatus]),
     );
 
     // Filter articles that need enhancement

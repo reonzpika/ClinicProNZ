@@ -5,9 +5,13 @@ import { ingestDocument } from '../rag';
 import type { DocumentToIngest } from '../rag/types';
 import { classifyHeadingsHybrid } from './llm-heading-classifier';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let openai: OpenAI | null = null;
+function getOpenAI(): OpenAI | null {
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) return null;
+  if (!openai) openai = new OpenAI({ apiKey: key });
+  return openai;
+}
 
 type StructuredHealthifyContent = {
   title: string;
@@ -137,17 +141,19 @@ export class EnhancedHealthifyScraper {
     console.log(`[ENHANCED SCRAPER] Found ${headingElements.length} headings in content`);
 
     if (headingElements.length > 0) {
-      // Extract heading texts
-      const headingTexts = Array.from(headingElements).map(h => h.textContent?.trim() || '').filter(t => t);
+      // Pair headings with their texts and filter out empty ones to keep indices aligned
+      const headingPairs = Array.from(headingElements)
+        .map(h => ({ element: h, text: h.textContent?.trim() || '' }))
+        .filter(p => p.text);
+
+      const headingTexts = headingPairs.map(p => p.text);
 
       // Use hybrid classification (pattern matching + LLM)
       console.log(`[ENHANCED SCRAPER] Classifying ${headingTexts.length} headings with hybrid AI approach`);
       const headingClassifications = await classifyHeadingsHybrid(headingTexts, sectionMappings);
 
       // Extract content for each classified heading
-      for (let i = 0; i < headingElements.length; i++) {
-        const heading = headingElements[i];
-        const headingText = headingTexts[i];
+      for (const { element: heading, text: headingText } of headingPairs) {
         const sectionName = headingClassifications[headingText];
 
         console.log(`[ENHANCED SCRAPER] Processing heading: "${headingText}"`);
@@ -271,7 +277,7 @@ export class EnhancedHealthifyScraper {
   /**
    * Extract categories using AI analysis for comprehensive medical categorization
    */
-  private async extractCategories(document: Document, url: string, fullContent: string): Promise<string[]> {
+  private async extractCategories(_document: Document, url: string, fullContent: string): Promise<string[]> {
     // For enhanced articles, use AI to generate comprehensive medical categories
     if (fullContent && fullContent.length > 100) {
       return await this.generateMedicalCategories(fullContent);
@@ -305,7 +311,11 @@ Generate comprehensive medical categories covering:
 Return as JSON array of relevant categories. Be specific and medically accurate.
 Format: ["category1", "category2", "category3"]`;
 
-      const completion = await openai.chat.completions.create({
+      const client = getOpenAI();
+      if (!client) {
+        return [];
+      }
+      const completion = await client.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.1,
@@ -478,7 +488,9 @@ Generate a professional summary that:
 
 Format as bullet points with • at the start of each point.`;
 
-    const completion = await openai.chat.completions.create({
+    const client = getOpenAI();
+    if (!client) return '';
+    const completion = await client.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.1,
@@ -502,7 +514,9 @@ Return only the key points as a JSON array of strings. Each point should be:
 
 Example format: ["Point 1", "Point 2", "Point 3"]`;
 
-    const completion = await openai.chat.completions.create({
+    const client = getOpenAI();
+    if (!client) return [];
+    const completion = await client.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.1,

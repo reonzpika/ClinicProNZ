@@ -5,11 +5,8 @@ import type { TemplateGenerationResponse } from '@/src/features/templates/types'
 import { getAuth } from '@/src/shared/services/auth/clerk';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-if (!OPENAI_API_KEY) {
-  throw new Error('Missing OPENAI_API_KEY');
-}
-
-const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+// Lazy initialise client inside handler to avoid build-time env errors
+let openai: OpenAI | null = null;
 
 const GENERATE_FROM_PROMPT_PROMPT = `You are an expert medical documentation assistant. Your task is to create natural language clinical note templates based on user descriptions.
 
@@ -66,6 +63,18 @@ export async function POST(req: Request) {
 
     // Build user prompt
     const userPrompt = `Create a clinical note template for: ${description}${templateType ? `\n\nTemplate type: ${templateType}` : ''}`;
+
+    if (!OPENAI_API_KEY) {
+      return NextResponse.json(
+        { code: 'CONFIG_ERROR', message: 'OPENAI_API_KEY not configured' },
+        { status: 500 },
+      );
+    }
+
+    // Init client lazily
+    if (!openai) {
+      openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+    }
 
     // Call OpenAI to generate template structure
     const completion = await openai.chat.completions.create({

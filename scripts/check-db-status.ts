@@ -28,7 +28,7 @@ async function checkDatabaseStatus() {
       .groupBy(ragDocuments.enhancementStatus);
 
     console.log('\n=== ENHANCEMENT STATUS BREAKDOWN ===');
-    statusCounts.forEach(({ status, count }) => {
+    statusCounts.forEach(({ status, count }: { status: string | null; count: number }) => {
       console.log(`${status || 'null'}: ${count} articles`);
     });
 
@@ -44,7 +44,7 @@ async function checkDatabaseStatus() {
       .limit(5);
 
     console.log('\n=== SAMPLE ARTICLES ===');
-    sampleArticles.forEach((article, index) => {
+    sampleArticles.forEach((article: { title: string; source: string; enhancementStatus: string | null; sectionsExist: boolean }, index: number) => {
       console.log(`${index + 1}. ${article.title}`);
       console.log(`   Status: ${article.enhancementStatus || 'null'}`);
       console.log(`   Has Sections: ${article.sectionsExist ? 'Yes' : 'No'}`);

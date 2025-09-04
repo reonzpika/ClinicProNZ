@@ -76,7 +76,7 @@ export class DynamicHealthifySearch {
   /**
    * Direct search on healthify.nz
    */
-  private async searchHealthifyDirect(query: string, maxResults: number): Promise<HealthifySearchResult[]> {
+  async searchHealthifyDirect(query: string, maxResults: number): Promise<HealthifySearchResult[]> {
     const searchUrl = `${this.baseUrl}/search?q=${encodeURIComponent(query)}`;
     console.log(`[HEALTHIFY SEARCH] Searching: ${searchUrl}`);
 
@@ -176,7 +176,7 @@ export class DynamicHealthifySearch {
     try {
       const pathname = new URL(url).pathname;
       const segments = pathname.split('/');
-      const articleSlug = segments[segments.length - 1];
+      const articleSlug = segments[segments.length - 1] || segments[segments.length - 2] || '';
       return articleSlug
         .replace(/-/g, ' ')
         .replace(/\b\w/g, l => l.toUpperCase());
