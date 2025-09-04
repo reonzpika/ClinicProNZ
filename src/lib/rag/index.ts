@@ -9,6 +9,22 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+// Coerce JSONB fields that may come back as unknown or stringified JSON
+function coerceJson<T>(value: unknown): T | null | undefined {
+  if (value === null || value === undefined) return value as null | undefined;
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value) as T;
+    } catch {
+      return null;
+    }
+  }
+  if (typeof value === 'object') {
+    return value as T;
+  }
+  return null;
+}
+
 /**
  * Create embedding for text using OpenAI
  */
@@ -64,9 +80,9 @@ export async function searchSimilarDocuments(
     sourceType: row.sourceType,
     score: row.score,
     // Include summary fields for smart content selection
-    sectionSummaries: row.sectionSummaries,
+    sectionSummaries: coerceJson<Record<string, string[]>>(row.sectionSummaries),
     overallSummary: row.overallSummary,
-    sections: row.sections,
+    sections: coerceJson<Record<string, string>>(row.sections),
     enhancementStatus: row.enhancementStatus,
   }));
 }
