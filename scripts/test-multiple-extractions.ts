@@ -114,11 +114,16 @@ async function testMultipleExtractions() {
 
       // Brief pause between tests
       await new Promise(resolve => setTimeout(resolve, 1000));
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(`❌ Test failed for ${test.name}:`, error);
+      const errorMessage = error instanceof Error
+        ? error.message
+        : typeof error === 'string'
+          ? error
+          : JSON.stringify(error);
       results.push({
         name: test.name,
-        error: error.message,
+        error: errorMessage,
       });
     }
   }
