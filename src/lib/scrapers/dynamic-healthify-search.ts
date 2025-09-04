@@ -119,6 +119,9 @@ export class DynamicHealthifySearch {
 
         if (response.ok) {
           console.log(`[HEALTHIFY PATTERNS] Found valid page: ${url}`);
+          if (!this.isValidHealthifyURL(url)) {
+            continue;
+          }
           results.push({
             title: this.generateTitleFromUrl(url),
             url,
