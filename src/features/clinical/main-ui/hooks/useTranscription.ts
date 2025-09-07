@@ -18,12 +18,12 @@ type TranscriptionState = {
   recordingEnd: number | null;
 };
 
-// Smart timing constants
-const SILENCE_THRESHOLD = 10; // seconds of silence to trigger sending recording
-const SMART_BOUNDARY_THRESHOLD = 250; // seconds - when to start looking for word boundaries (was 25)
-const WORD_BOUNDARY_PAUSE = 2; // seconds - micro-pause indicating word boundary (was 1)
-const FORCE_STOP_DURATION = 360; // seconds - absolute maximum before force-stopping (was 35)
-const SPEECH_CONFIRMATION_FRAMES = 5; // Number of consecutive frames above threshold to confirm speech (was 3)
+// Optimized timing constants based on VAD best practices
+const SILENCE_THRESHOLD = 1.5; // seconds of silence to trigger sending recording (was 10)
+const SMART_BOUNDARY_THRESHOLD = 30; // seconds - when to start looking for word boundaries (was 250)
+const WORD_BOUNDARY_PAUSE = 1.0; // seconds - micro-pause indicating word boundary (was 2)
+const FORCE_STOP_DURATION = 90; // seconds - absolute maximum before force-stopping (was 360)
+const SPEECH_CONFIRMATION_FRAMES = 5; // Number of consecutive frames above threshold to confirm speech
 
 // Add options for mobile support
 export type UseTranscriptionOptions = {
@@ -79,6 +79,18 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
   const isPausedRef = useRef<boolean>(false);
   const sessionCountRef = useRef<number>(0);
   const isSessionActiveRef = useRef<boolean>(false);
+
+  // Lightweight debug guard: enable by setting localStorage key 'debug:transcription' = '1'
+  const debugLog = (...args: any[]) => {
+    try {
+      if (typeof window !== 'undefined' && localStorage.getItem('debug:transcription') === '1') {
+        // eslint-disable-next-line no-console
+        console.debug('[Transcription]', ...args);
+      }
+    } catch {
+      // ignore
+    }
+  };
 
   // Volume measurement for VAD
   const measureVolume = useCallback((): number => {
@@ -192,7 +204,6 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
 
     try {
       // Debug supported types
-
       const mediaRecorder = new MediaRecorder(audioStreamRef.current, {
         mimeType: 'audio/webm;codecs=opus',
       });
@@ -200,6 +211,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
       currentAudioChunksRef.current = [];
       recordingSessionStartRef.current = Date.now();
       isSessionActiveRef.current = true;
+      debugLog('startRecordingSession', { at: new Date().toISOString() });
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -209,11 +221,15 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
 
       mediaRecorder.onstop = async () => {
         isSessionActiveRef.current = false;
+        const durationSec = recordingSessionStartRef.current
+          ? Math.round((Date.now() - recordingSessionStartRef.current) / 1000)
+          : 0;
 
         // Create complete audio blob from all chunks
         const audioBlob = new Blob(currentAudioChunksRef.current, {
           type: 'audio/webm;codecs=opus',
         });
+        debugLog('mediaRecorder.onstop', { durationSec, blobSize: audioBlob.size });
 
         // Send to Deepgram
         await sendRecordingSession(audioBlob);
@@ -243,6 +259,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
   // Stop current recording session
   const stopRecordingSession = useCallback(() => {
     if (currentRecorderRef.current && isSessionActiveRef.current) {
+      debugLog('stopRecordingSession');
       currentRecorderRef.current.stop();
       currentRecorderRef.current = null;
     }
@@ -286,6 +303,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     if (isSessionActiveRef.current) {
       // Force stop if recording too long
       if (recordingDuration > FORCE_STOP_DURATION) {
+        debugLog('VAD force stop', { recordingDuration, silenceDuration });
         stopRecordingSession();
         return;
       }
@@ -293,6 +311,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
       // Smart boundary detection
       if (recordingDuration > SMART_BOUNDARY_THRESHOLD) {
         if (silenceDuration > WORD_BOUNDARY_PAUSE) {
+          debugLog('VAD boundary stop', { recordingDuration, silenceDuration });
           stopRecordingSession();
           return;
         }
@@ -300,12 +319,14 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
 
       // Standard silence threshold
       if (silenceDuration > SILENCE_THRESHOLD) {
+        debugLog('VAD silence stop', { silenceDuration, recordingDuration });
         stopRecordingSession();
         return;
       }
     } else {
       // Start new session if speaking
       if (isSpeaking && speechFrameCountRef.current >= SPEECH_CONFIRMATION_FRAMES) {
+        debugLog('VAD start session', { volume: adjustedVolume, speechFrames: speechFrameCountRef.current });
         startRecordingSession();
       }
     }

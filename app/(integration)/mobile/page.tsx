@@ -132,9 +132,23 @@ function MobilePageContent() {
           body: formData,
         });
         if (!response.ok) {
+          let bodyText = '';
+          try {
+ bodyText = await response.text();
+} catch {}
+          try {
+ console.warn('[Mobile] persist transcription non-OK', response.status, bodyText);
+} catch {}
           setAuthError(`Transcription failed: ${response.statusText}`);
+        } else {
+          try {
+ console.debug('[Mobile] persist transcription OK', response.status);
+} catch {}
         }
       } catch (error) {
+        try {
+ console.error('[Mobile] persist transcription error', error);
+} catch {}
         setAuthError(`Recording error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     },

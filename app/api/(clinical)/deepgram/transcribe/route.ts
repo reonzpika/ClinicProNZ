@@ -41,6 +41,9 @@ export async function POST(req: NextRequest) {
     // Parse query for persist mode
     const url = new URL(req.url);
     const persist = url.searchParams.get('persist') === 'true';
+    try {
+ console.log('[Transcribe] persist=', persist);
+} catch {}
 
     // Parse multipart form data using Web API
     const formData = await req.formData();
@@ -58,25 +61,31 @@ export async function POST(req: NextRequest) {
     // Initialize Deepgram client
     const deepgram = createClient(process.env.DEEPGRAM_API_KEY!);
 
-    // Transcribe the audio file
+    // Transcribe the audio file - optimized for pre-recorded processing
     const deepgramConfig = {
-      model: 'nova-3',
+      model: 'nova-3-medical', // Latest medical model with 54.2% better WER than competitors
       punctuate: true,
-      language: 'en-NZ',
+      language: 'en-NZ', // NZ English is supported by nova-3-medical
       smart_format: true,
       redact: ['name_given', 'name_family'],
       diarize: false, // Disable speaker diarization
       paragraphs: true, // Keep paragraphs for better formatting
-      utterances: true, // 🆕 REQUIRED: Enable word-level data with timestamps & confidence
-      interim_results: true,
-      endpointing: 500,
+      utterances: true, // Enable word-level data with timestamps & confidence
+      profanity_filter: false, // Medical context may include profanity in symptoms/conditions
+      filler_words: false, // Remove "um", "uh", etc. for cleaner clinical notes
     };
+    try {
+ console.log('[Transcribe] model=', deepgramConfig.model, 'language=', deepgramConfig.language);
+} catch {}
     const { result, error } = await deepgram.listen.prerecorded.transcribeFile(
       audioBuffer,
       deepgramConfig,
     );
 
     if (error) {
+      try {
+ console.error('[Transcribe] Deepgram error', error);
+} catch {}
       return NextResponse.json({ error: 'Transcription failed' }, { status: 500 });
     }
 
@@ -105,6 +114,9 @@ export async function POST(req: NextRequest) {
         confidence,
         words,
       } as any;
+      try {
+ console.log('[Transcribe] non-persist response', { transcriptLen: (transcript || '').length });
+} catch {}
       return NextResponse.json(apiResponse);
     }
 
@@ -132,6 +144,9 @@ export async function POST(req: NextRequest) {
       try {
         await db.update(users).set({ currentSessionId }).where(eq(users.id, userId));
       } catch {}
+      try {
+ console.log('[Transcribe] created new session', currentSessionId);
+} catch {}
     }
 
     // Load existing transcriptions for the session
@@ -142,6 +157,9 @@ export async function POST(req: NextRequest) {
       .limit(1);
 
     if (!existing.length) {
+      try {
+ console.warn('[Transcribe] session not found for user', userId, 'session', currentSessionId);
+} catch {}
       return NextResponse.json({ error: 'Session not found' }, { status: 404 });
     }
 
@@ -170,6 +188,9 @@ export async function POST(req: NextRequest) {
       .update(patientSessions)
       .set({ transcriptions: JSON.stringify(updatedTranscriptions), updatedAt: new Date() })
       .where(and(eq(patientSessions.id, currentSessionId), eq(patientSessions.userId, userId)));
+    try {
+ console.log('[Transcribe] persisted chunk', { sessionId: currentSessionId, chunkId, textLen: newEntry.text.length });
+} catch {}
 
     // Signal desktop via Ably (best-effort). Ensure single publish per chunk with helpful logs.
     try {
