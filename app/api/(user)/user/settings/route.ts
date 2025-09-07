@@ -2,6 +2,7 @@ import { getDb } from 'database/client';
 import { NextResponse } from 'next/server';
 
 import { userSettings } from '@/db/schema/user_settings';
+import { eq } from 'drizzle-orm';
 
 // Default settings structure
 const DEFAULT_SETTINGS = {
@@ -25,10 +26,12 @@ export async function GET(req: Request) {
     }
 
     // Try to fetch settings
-    let settingsRow = await db.query.userSettings.findFirst({
-      // Explicitly type params to satisfy TS
-      where: (u: typeof userSettings, ops: any) => ops.eq(u.userId, userId),
-    });
+    const existing = await db
+      .select()
+      .from(userSettings)
+      .where(eq(userSettings.userId, userId))
+      .limit(1);
+    let settingsRow = existing[0];
 
     if (!settingsRow) {
       // Create with defaults if not found
