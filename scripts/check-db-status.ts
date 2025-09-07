@@ -5,13 +5,14 @@
 
 import { count, sql } from 'drizzle-orm';
 
-import { db } from '../database/client';
+import { getDb } from '../database/client';
 import { ragDocuments } from '../database/schema/rag';
 
 async function checkDatabaseStatus() {
   console.log('📊 Checking current database status...\n');
 
   try {
+    const db = getDb();
     // Count total articles
     const totalResult = await db.select({ count: count() }).from(ragDocuments);
     const total = totalResult[0]?.count || 0;

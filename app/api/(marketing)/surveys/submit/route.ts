@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { db } from '@/db/client';
+import { getDb } from 'database/client';
 import { mailQueue, surveyResponses } from '@/db/schema';
 
 type Q4Type = 'ai_scribe' | 'dictation' | 'none';
@@ -66,6 +66,7 @@ async function isRateLimited(ipAddress: string | null): Promise<boolean> {
  return false;
 }
   const oneHourAgo = sql`now() - interval '1 hour'`;
+  const db = getDb();
   const result = await db
     .select({ c: count() })
     .from(surveyResponses)
@@ -76,6 +77,7 @@ async function isRateLimited(ipAddress: string | null): Promise<boolean> {
 
 export async function POST(request: NextRequest) {
   try {
+    const db = getDb();
     const forwardedFor = request.headers.get('x-forwarded-for');
     const realIp = request.headers.get('x-real-ip');
     const cfIp = request.headers.get('cf-connecting-ip');

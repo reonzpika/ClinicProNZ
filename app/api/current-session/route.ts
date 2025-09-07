@@ -3,11 +3,12 @@ import { and, eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { db } from '@/db/client';
+import { getDb } from 'database/client';
 import { patientSessions, users } from '@/db/schema';
 
 export async function GET(_req: NextRequest) {
   try {
+    const db = getDb();
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
@@ -29,6 +30,7 @@ export async function GET(_req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
+    const db = getDb();
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });

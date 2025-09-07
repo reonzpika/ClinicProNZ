@@ -1,4 +1,4 @@
-import { db } from 'database/client';
+import { getDb } from 'database/client';
 import { features } from 'database/schema/features';
 import { votes } from 'database/schema/votes';
 import { and, eq, sql } from 'drizzle-orm';
@@ -6,6 +6,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
+  const db = getDb();
   const { feature_id } = await req.json();
   const ip = req.headers.get('x-forwarded-for') ?? 'unknown';
 

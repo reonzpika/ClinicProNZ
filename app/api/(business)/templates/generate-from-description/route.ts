@@ -4,12 +4,13 @@ import OpenAI from 'openai';
 import type { TemplateGenerationResponse } from '@/src/features/templates/types';
 import { getAuth } from '@/src/shared/services/auth/clerk';
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-if (!OPENAI_API_KEY) {
-  throw new Error('Missing OPENAI_API_KEY');
+function getOpenAI(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error('Missing OPENAI_API_KEY');
+  }
+  return new OpenAI({ apiKey });
 }
-
-const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
 const GENERATE_FROM_PROMPT_PROMPT = `You are an expert medical documentation assistant. Your task is to create natural language clinical note templates based on user descriptions.
 
@@ -68,6 +69,7 @@ export async function POST(req: Request) {
     const userPrompt = `Create a clinical note template for: ${description}${templateType ? `\n\nTemplate type: ${templateType}` : ''}`;
 
     // Call OpenAI to generate template structure
+    const openai = getOpenAI();
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [

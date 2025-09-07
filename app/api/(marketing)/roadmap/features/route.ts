@@ -1,9 +1,10 @@
-import { db } from 'database/client';
+import { getDb } from 'database/client';
 import { features } from 'database/schema/features';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 export async function GET(_req: NextRequest) {
+  const db = getDb();
   // Fetch all features
   const allFeatures = await db.select().from(features);
 

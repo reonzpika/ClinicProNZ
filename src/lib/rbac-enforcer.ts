@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 
-import { db } from '../../database/client';
+import { getDb } from '../../database/client';
 import { mobileTokens } from '../../database/schema';
 
 // Simplified tier system - authentication-based only
@@ -29,6 +29,7 @@ export async function validateMobileToken(req: Request): Promise<string | null> 
 }
 
   try {
+    const db = getDb();
     const tokenRecord = await db
       .select()
       .from(mobileTokens)

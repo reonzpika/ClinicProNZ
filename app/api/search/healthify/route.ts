@@ -6,9 +6,13 @@ import OpenAI from 'openai';
 import { searchSimilarDocuments } from '@/src/lib/rag';
 import { correctMedicalTypos } from '@/src/lib/utils/typo-correction';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+function getOpenAI(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error('Missing OPENAI_API_KEY');
+  }
+  return new OpenAI({ apiKey });
+}
 
 type SearchResponse = {
   paragraph?: string; // For summary mode
@@ -42,6 +46,7 @@ async function selectRelevantSources(
     console.log(`[SEARCH DEBUG] Total LLM input size: ~${sourceSummaries.length} characters`);
 
     const llmSelectionStart = performance.now();
+    const openai = getOpenAI();
     const completion = await openai.chat.completions.create({
       model: 'gpt-5-nano', // Ultra-fast selection
       messages: [{
@@ -277,6 +282,7 @@ ${contextData}`;
 
     // Step 3: Get concise synthesised bullet points from GPT-5 nano
     const synthesisStart = performance.now();
+    const openai = getOpenAI();
     const completion = await openai.chat.completions.create({
       model: 'gpt-5-nano', // Ultra-fast synthesis for speed
       messages: [

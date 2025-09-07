@@ -5,9 +5,13 @@ import OpenAI from 'openai';
 
 import { formatContextForRag, searchSimilarDocuments } from '@/src/lib/rag';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+function getOpenAI(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error('Missing OPENAI_API_KEY');
+  }
+  return new OpenAI({ apiKey });
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,6 +53,7 @@ Context Information:
 ${context}`;
 
     // Create AI response
+    const openai = getOpenAI();
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [

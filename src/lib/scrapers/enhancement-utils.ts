@@ -5,13 +5,14 @@ import type { RagQueryResult } from '../rag/types';
  */
 export async function checkEnhancementStatus(articles: RagQueryResult[]): Promise<RagQueryResult[]> {
   try {
-    const { db } = await import('../../../database/client');
+    const { getDb } = await import('../../../database/client');
     const { ragDocuments } = await import('../../../database/schema/rag');
     const { inArray } = await import('drizzle-orm');
 
     // Get current enhancement status for all articles
     const sources = articles.map(article => article.source);
 
+    const db = getDb();
     const enhancementStatuses = await db
       .select({
         source: ragDocuments.source,
@@ -45,10 +46,11 @@ export async function updateEnhancementStatus(
   status: 'basic' | 'enhanced' | 'failed',
 ): Promise<void> {
   try {
-    const { db } = await import('../../../database/client');
+    const { getDb } = await import('../../../database/client');
     const { ragDocuments } = await import('../../../database/schema/rag');
     const { eq } = await import('drizzle-orm');
 
+    const db = getDb();
     await db
       .update(ragDocuments)
       .set({

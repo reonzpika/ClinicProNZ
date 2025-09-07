@@ -1,12 +1,13 @@
 import { desc, eq, or } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
-import { db } from '@/db/client';
+import { getDb } from 'database/client';
 import { templates } from '@/db/schema/templates';
 import { extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 export async function GET(req: Request) {
   try {
+    const db = getDb();
     // Extract RBAC context from client headers
     const context = await extractRBACContext(req);
 
@@ -57,6 +58,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const db = getDb();
     // Extract RBAC context from client headers
     const context = await extractRBACContext(req);
 

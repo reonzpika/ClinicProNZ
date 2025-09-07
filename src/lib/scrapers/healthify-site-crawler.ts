@@ -261,10 +261,11 @@ export class HealthifySiteCrawler {
    */
   private async checkIfArticleExists(url: string): Promise<boolean> {
     try {
-      const { db } = await import('../../../database/client');
+      const { getDb } = await import('../../../database/client');
       const { ragDocuments } = await import('../../../database/schema/rag');
       const { eq } = await import('drizzle-orm');
 
+      const db = getDb();
       const existing = await db
         .select({ id: ragDocuments.id })
         .from(ragDocuments)

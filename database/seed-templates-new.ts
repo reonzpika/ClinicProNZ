@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import type { Template } from '../src/features/templates/types';
-import { sql } from './client';
+import { getDb } from './client';
+import { sql } from 'drizzle-orm';
 
 const newTemplates: Omit<Template, 'id'>[] = [
   {
@@ -342,7 +343,8 @@ export async function seedNewTemplates() {
 
   // First, clear existing default templates
   try {
-    await sql`DELETE FROM templates WHERE type = 'default'`;
+    const db = getDb();
+    await db.execute(sql`DELETE FROM templates WHERE type = 'default'`);
     console.log('✓ Cleared existing default templates');
   } catch (error) {
     console.error('✗ Failed to clear existing templates:', error);
@@ -355,16 +357,17 @@ export async function seedNewTemplates() {
         ? '0ab5f900-7184-43d1-a262-c519ab9520dc'
         : null;
 
+      const db = getDb();
       if (templateId) {
-        await sql`
+        await db.execute(sql`
           INSERT INTO templates (id, name, description, type, template_body)
           VALUES (${templateId}, ${template.name}, ${template.description}, ${template.type}, ${template.templateBody})
-        `;
+        `);
       } else {
-        await sql`
+        await db.execute(sql`
           INSERT INTO templates (name, description, type, template_body)
           VALUES (${template.name}, ${template.description}, ${template.type}, ${template.templateBody})
-        `;
+        `);
       }
       console.log(`✓ Seeded template: ${template.name}`);
     } catch (error) {

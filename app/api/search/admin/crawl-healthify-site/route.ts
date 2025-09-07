@@ -53,9 +53,10 @@ export async function GET(_request: NextRequest) {
     // Note: RBAC is legacy - all authenticated users have access
 
     // Get crawl statistics
-    const { db } = await import('@/db/client');
+    const { getDb } = await import('database/client');
     const { ragDocuments } = await import('@/db/schema/rag');
     const { eq, count } = await import('drizzle-orm');
+    const db = getDb();
 
     const [basicCount] = await db
       .select({ count: count() })

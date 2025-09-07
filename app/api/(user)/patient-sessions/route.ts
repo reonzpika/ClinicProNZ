@@ -3,12 +3,13 @@ import { and, desc, eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { db } from '@/db/client';
+import { getDb } from 'database/client';
 import { patientSessions, users } from '@/db/schema';
 
 // GET - List patient sessions for a user
 export async function GET(req: NextRequest) {
   try {
+    const db = getDb();
     // Get authenticated user (middleware ensures user is authenticated)
     const { userId } = await auth();
 
@@ -65,6 +66,7 @@ export async function GET(req: NextRequest) {
 // POST - Create a new patient session
 export async function POST(req: NextRequest) {
   try {
+    const db = getDb();
     // Get authenticated user (middleware ensures user is authenticated)
     const { userId } = await auth();
 
@@ -118,6 +120,7 @@ export async function POST(req: NextRequest) {
 // PUT - Update patient session
 export async function PUT(req: NextRequest) {
   try {
+    const db = getDb();
     // Get authenticated user (middleware ensures user is authenticated)
     const { userId } = await auth();
 
@@ -211,6 +214,7 @@ export async function PUT(req: NextRequest) {
 // DELETE - Delete patient session
 export async function DELETE(req: NextRequest) {
   try {
+    const db = getDb();
     // Get authenticated user (middleware ensures user is authenticated)
     const { userId } = await auth();
 

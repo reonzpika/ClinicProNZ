@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { db } from '@/db/client';
+import { getDb } from 'database/client';
 import { userSettings } from '@/db/schema/user_settings';
 
 // Default settings structure
@@ -8,6 +8,7 @@ const DEFAULT_SETTINGS = { templateOrder: [], favouriteTemplateId: null };
 
 export async function GET(req: Request) {
   try {
+    const db = getDb();
     // Get userId from request headers (sent by client)
     const userId = req.headers.get('x-user-id');
 
@@ -19,9 +20,11 @@ export async function GET(req: Request) {
     }
 
     // Try to fetch settings
-    let settingsRow = await db.query.userSettings.findFirst({
-      where: (u, { eq }) => eq(u.userId, userId),
-    });
+    const rows = await db
+      .select()
+      .from(userSettings)
+      .where((userSettings.userId as any).equals(userId as any));
+    let settingsRow = rows[0] || null;
 
     if (!settingsRow) {
       // Create with defaults if not found
@@ -41,6 +44,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const db = getDb();
     // Get userId from request headers (sent by client)
     const userId = req.headers.get('x-user-id');
 
