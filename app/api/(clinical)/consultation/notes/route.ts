@@ -6,14 +6,7 @@ import { compileTemplate } from '@/src/features/templates/utils/compileTemplate'
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-if (!OPENAI_API_KEY) {
-  throw new Error('Missing OPENAI_API_KEY');
-}
-
-const openai = new OpenAI({
-  apiKey: OPENAI_API_KEY,
-  timeout: 45000, // Increased timeout since Vercel now allows 60s
-});
+let openai: OpenAI | null = null;
 
 // Add a timeout wrapper for promises
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number, errorMessage: string): Promise<T> {
@@ -97,6 +90,17 @@ export async function POST(req: Request) {
         code: 'TIMEOUT_ERROR',
         message: 'Request processing took too long. Please try again.',
       }, { status: 408 });
+    }
+
+    if (!OPENAI_API_KEY) {
+      return NextResponse.json(
+        { code: 'CONFIG_ERROR', message: 'OPENAI_API_KEY not configured' },
+        { status: 500 },
+      );
+    }
+
+    if (!openai) {
+      openai = new OpenAI({ apiKey: OPENAI_API_KEY, timeout: 45000 });
     }
 
     // Call OpenAI with dynamic timeout based on remaining time

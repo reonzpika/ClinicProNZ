@@ -5,15 +5,38 @@ import { db } from '../../../database/client';
 import { ragDocuments } from '../../../database/schema/rag';
 import type { DocumentToIngest, RagQueryResult } from './types';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let openai: OpenAI | null = null;
+function getOpenAI(): OpenAI {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY not configured');
+  }
+  if (!openai) {
+    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openai;
+}
+
+// Coerce JSONB fields that may come back as unknown or stringified JSON
+function coerceJson<T>(value: unknown): T | null | undefined {
+  if (value === null || value === undefined) return value as null | undefined;
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value) as T;
+    } catch {
+      return null;
+    }
+  }
+  if (typeof value === 'object') {
+    return value as T;
+  }
+  return null;
+}
 
 /**
  * Create embedding for text using OpenAI
  */
 export async function createEmbedding(text: string): Promise<number[]> {
-  const response = await openai.embeddings.create({
+  const response = await getOpenAI().embeddings.create({
     model: 'text-embedding-3-small',
     input: text,
   });
@@ -57,16 +80,26 @@ export async function searchSimilarDocuments(
     .orderBy(sql`${similarity} DESC`)
     .limit(limit);
 
-  return results.map(row => ({
+  return results.map((row: {
+    content: string;
+    title: string;
+    source: string;
+    sourceType: string;
+    score: number;
+    sectionSummaries: unknown;
+    overallSummary: string | null;
+    sections: unknown;
+    enhancementStatus: string;
+  }) => ({
     content: row.content,
     title: row.title,
     source: row.source,
     sourceType: row.sourceType,
     score: row.score,
     // Include summary fields for smart content selection
-    sectionSummaries: row.sectionSummaries,
+    sectionSummaries: coerceJson<Record<string, string[]>>(row.sectionSummaries),
     overallSummary: row.overallSummary,
-    sections: row.sections,
+    sections: coerceJson<Record<string, string>>(row.sections),
     enhancementStatus: row.enhancementStatus,
   }));
 }

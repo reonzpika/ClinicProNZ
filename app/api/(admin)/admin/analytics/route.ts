@@ -178,7 +178,7 @@ export async function GET(request: Request) {
 
     // Combine and sort activities
     const combinedActivities = [
-      ...recentSessions.map(session => ({
+      ...recentSessions.map((session: any) => ({
         id: session.id,
         type: session.type,
         createdAt: session.createdAt?.toISOString() || new Date().toISOString(),
@@ -188,7 +188,7 @@ export async function GET(request: Request) {
           status: session.status,
         },
       })),
-      ...recentTemplates.map(template => ({
+      ...recentTemplates.map((template: any) => ({
         id: template.id,
         type: template.type,
         createdAt: template.createdAt?.toISOString() || new Date().toISOString(),

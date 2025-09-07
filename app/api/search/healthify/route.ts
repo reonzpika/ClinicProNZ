@@ -6,9 +6,13 @@ import OpenAI from 'openai';
 import { searchSimilarDocuments } from '@/src/lib/rag';
 import { correctMedicalTypos } from '@/src/lib/utils/typo-correction';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let openai: OpenAI | null = null;
+function getOpenAI(): OpenAI | null {
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) return null;
+  if (!openai) openai = new OpenAI({ apiKey: key });
+  return openai;
+}
 
 type SearchResponse = {
   paragraph?: string; // For summary mode
@@ -42,7 +46,12 @@ async function selectRelevantSources(
     console.log(`[SEARCH DEBUG] Total LLM input size: ~${sourceSummaries.length} characters`);
 
     const llmSelectionStart = performance.now();
-    const completion = await openai.chat.completions.create({
+    const client = getOpenAI();
+    if (!client) {
+      // Fallback: select first 3
+      return [0, 1, 2].slice(0, Math.min(3, healthifyResults.length));
+    }
+    const completion = await client.chat.completions.create({
       model: 'gpt-5-nano', // Ultra-fast selection
       messages: [{
         role: 'user',
@@ -277,7 +286,16 @@ ${contextData}`;
 
     // Step 3: Get concise synthesised bullet points from GPT-5 nano
     const synthesisStart = performance.now();
-    const completion = await openai.chat.completions.create({
+    const client2 = getOpenAI();
+    if (!client2) {
+      // Fallback: return brief message and sources list only
+      return NextResponse.json({
+        paragraph: 'AI not configured. Showing relevant sources only.',
+        sources: healthifyResults.slice(0, 5).map((r, i) => ({ title: r.title, url: r.source, index: i + 1 })),
+        titles: [],
+      });
+    }
+    const completion = await client2.chat.completions.create({
       model: 'gpt-5-nano', // Ultra-fast synthesis for speed
       messages: [
         {
