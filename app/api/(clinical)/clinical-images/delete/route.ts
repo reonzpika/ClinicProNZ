@@ -1,10 +1,10 @@
 import { DeleteObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { auth } from '@clerk/nextjs/server';
+import { getDb } from 'database/client';
 import { eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { db } from '@/db/client';
 import { clinicalImageAnalyses } from '@/db/schema';
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
@@ -22,6 +22,7 @@ const BUCKET_NAME = process.env.S3_BUCKET_NAME!;
 // DELETE /api/clinical-images/delete - Delete image from S3 and analysis records
 export async function DELETE(req: NextRequest) {
   try {
+    const db = getDb();
     // Extract RBAC context and check authentication
     const context = await extractRBACContext(req);
     const permissionCheck = await checkCoreAccess(context);

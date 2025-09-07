@@ -6,10 +6,10 @@ import { Crown, Stethoscope } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { AdditionalNotes } from '@/src/features/clinical/main-ui/components/AdditionalNotes';
+import { DefaultSettings } from '@/src/features/clinical/main-ui/components/DefaultSettings';
 import { DocumentationSettingsBadge } from '@/src/features/clinical/main-ui/components/DocumentationSettingsBadge';
 import { GeneratedNotes } from '@/src/features/clinical/main-ui/components/GeneratedNotes';
 import { TranscriptionControls } from '@/src/features/clinical/main-ui/components/TranscriptionControls';
-import { DefaultSettings } from '@/src/features/clinical/main-ui/components/DefaultSettings';
 // Removed TranscriptProcessingStatus import - no longer needed in single-pass architecture
 import { TypedInput } from '@/src/features/clinical/main-ui/components/TypedInput';
 import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTranscription';

@@ -5,12 +5,12 @@ import OpenAI from 'openai';
 
 import { formatContextForRag, searchSimilarDocuments } from '@/src/lib/rag';
 
-let openai: OpenAI | null = null;
-function getOpenAI(): OpenAI | null {
-  const key = process.env.OPENAI_API_KEY;
-  if (!key) return null;
-  if (!openai) openai = new OpenAI({ apiKey: key });
-  return openai;
+function getOpenAI(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error('Missing OPENAI_API_KEY');
+  }
+  return new OpenAI({ apiKey });
 }
 
 export async function POST(request: NextRequest) {
@@ -53,11 +53,8 @@ Context Information:
 ${context}`;
 
     // Create AI response
-    const client = getOpenAI();
-    if (!client) {
-      return new Response('AI not configured', { status: 500 });
-    }
-    const completion = await client.chat.completions.create({
+    const openai = getOpenAI();
+    const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         {

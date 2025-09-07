@@ -1,6 +1,6 @@
 import { eq, or } from 'drizzle-orm';
 
-import { db } from '../../../database/client';
+import { getDb } from '../../../database/client';
 import { templates } from '../../../database/schema/templates';
 import type { Template } from './types';
 
@@ -19,6 +19,7 @@ function mapDbTemplateToTemplate(dbTemplate: any): Template {
 
 export class TemplateService {
   static async create(template: Omit<Template, 'id'>): Promise<Template> {
+    const db = getDb();
     if (!template.templateBody || template.templateBody.trim() === '') {
       throw new Error('Template body is required');
     }
@@ -38,11 +39,13 @@ export class TemplateService {
   }
 
   static async getById(id: string): Promise<Template | null> {
+    const db = getDb();
     const [template] = await db.select().from(templates).where(eq(templates.id, id));
     return template ? mapDbTemplateToTemplate(template) : null;
   }
 
   static async update(id: string, template: Partial<Template>): Promise<Template> {
+    const db = getDb();
     // Basic validation
     const [existing] = await db.select().from(templates).where(eq(templates.id, id));
     if (!existing) {
@@ -73,10 +76,12 @@ export class TemplateService {
   }
 
   static async delete(id: string): Promise<void> {
+    const db = getDb();
     await db.delete(templates).where(eq(templates.id, id));
   }
 
   static async list(userId?: string, type?: 'default' | 'custom'): Promise<Template[]> {
+    const db = getDb();
     let dbTemplates;
 
     if (type === 'default') {

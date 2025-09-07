@@ -10,27 +10,22 @@ import * as schema from './schema';
 dotenv.config({ path: resolve(process.cwd(), '.env.local') });
 dotenv.config();
 
-// Initialize database client lazily; avoid throwing during import-time (e.g., Next build)
-// Keep `sql` callable for type-checkers by providing a throwing function when unset.
-let db: ReturnType<typeof drizzle> | any;
-const sql: any = process.env.DATABASE_URL
-  ? neon(process.env.DATABASE_URL)
-  : ((..._args: any[]) => {
-      throw new Error('DATABASE_URL not set. Database access attempted during build/runtime without configuration.');
-    });
+// Lazy-initialised database client to avoid build-time env access
+let dbInstance: ReturnType<typeof drizzle> | null = null;
 
-if (process.env.DATABASE_URL) {
-  db = drizzle(sql, { schema });
-} else {
-  // Safe proxy: throws only if DB is actually used without env configured
-  db = new Proxy({}, {
-    get() {
-      throw new Error('DATABASE_URL not set. Database access attempted during build/runtime without configuration.');
-    },
-  });
+export function getDb() {
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    throw new Error('Missing DATABASE_URL');
+  }
+
+  if (!dbInstance) {
+    const sql = neon(databaseUrl);
+    dbInstance = drizzle(sql, { schema });
+  }
+
+  return dbInstance;
 }
-
-export { sql, db };
 
 // Export schema for use in other files
 export { schema };

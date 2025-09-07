@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
+import React, { useEffect, useMemo, useState } from 'react';
 
-import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import type { Template } from '@/src/features/templates/types';
+import { fetchTemplates } from '@/src/features/templates/utils/api';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card } from '@/src/shared/components/ui/card';
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
-import { fetchTemplates } from '@/src/features/templates/utils/api';
-import type { Template } from '@/src/features/templates/types';
-import { useUserSettingsStore, type DefaultInputMode, type RecordingMethod } from '@/src/stores/userSettingsStore';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { type DefaultInputMode, type RecordingMethod, useUserSettingsStore } from '@/src/stores/userSettingsStore';
 
 const DEFAULT_TEMPLATE_ID = '20dc1526-62cc-4ff4-a370-ffc1ded52aef';
 
@@ -96,7 +96,7 @@ export function DefaultSettings() {
         <select
           className="w-full rounded-md border border-slate-300 bg-white p-2 text-sm"
           value={favouriteTemplateId}
-          onChange={(e) => onTemplateChange(e.target.value)}
+          onChange={e => onTemplateChange(e.target.value)}
         >
           {orderedTemplates.map(t => (
             <option key={t.id} value={t.id}>{t.name}</option>
@@ -152,4 +152,3 @@ export function DefaultSettings() {
     </Card>
   );
 }
-

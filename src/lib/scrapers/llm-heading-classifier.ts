@@ -1,11 +1,11 @@
 import OpenAI from 'openai';
 
-let openai: OpenAI | null = null;
-function getOpenAI(): OpenAI | null {
-  const key = process.env.OPENAI_API_KEY;
-  if (!key) return null;
-  if (!openai) openai = new OpenAI({ apiKey: key });
-  return openai;
+function getOpenAI(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error('Missing OPENAI_API_KEY');
+  }
+  return new OpenAI({ apiKey });
 }
 
 /**
@@ -35,11 +35,8 @@ Return as JSON mapping heading number to section name. If a heading doesn't fit 
 
 Example: {"1": "overview", "2": "symptoms", "3": "treatment"}`;
 
-    const client = getOpenAI();
-    if (!client) {
-      return {};
-    }
-    const completion = await client.chat.completions.create({
+    const openai = getOpenAI();
+    const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.1,
@@ -55,9 +52,15 @@ Example: {"1": "overview", "2": "symptoms", "3": "treatment"}`;
         const result: Record<string, string> = {};
         Object.entries(classifications).forEach(([index, section]) => {
           const headingIndex = Number.parseInt(index) - 1;
-          const heading = headings[headingIndex];
-          if (heading && headingIndex >= 0 && headingIndex < headings.length && section !== 'other') {
-            result[heading] = String(section);
+          if (
+            headingIndex >= 0
+            && headingIndex < headings.length
+            && section !== 'other'
+          ) {
+            const headingText = headings[headingIndex];
+            if (typeof headingText === 'string' && headingText.length > 0) {
+              result[headingText] = String(section);
+            }
           }
         });
 

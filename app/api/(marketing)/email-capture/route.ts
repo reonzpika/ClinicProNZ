@@ -1,12 +1,13 @@
+import { getDb } from 'database/client';
 import { nanoid } from 'nanoid';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { db } from '@/db/client';
 import { emailCaptures } from '@/db/schema';
 
 export async function POST(request: NextRequest) {
   try {
+    const db = getDb();
     const body = await request.json();
 
     const { email, name, practiceName, practiceSize, biggestChallenge } = body;

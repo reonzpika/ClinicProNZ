@@ -4,6 +4,7 @@ import { useAuth } from '@clerk/nextjs';
 import { useQueryClient } from '@tanstack/react-query';
 import { ChevronDown, ChevronUp, Info, Mic, RefreshCw, Smartphone } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { FeatureFeedbackButton } from '@/src/shared/components/FeatureFeedbackButton';
 import { Stack } from '@/src/shared/components/layout/Stack';
@@ -11,6 +12,7 @@ import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardHeader } from '@/src/shared/components/ui/card';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+
 // import { createAuthHeaders } from '@/src/shared/utils';
 import { AudioSettingsModal } from '../../mobile/components/AudioSettingsModal';
 import { MobileRecordingQRV2 } from '../../mobile/components/MobileRecordingQRV2';
@@ -100,7 +102,7 @@ export function TranscriptionControls({
     try {
       setIsRefreshingTranscript(true);
       const activeSessionId = currentPatientSessionId || '';
-      
+
       // Invalidate both sessions list and active session
       await Promise.allSettled([
         queryClient.invalidateQueries({ queryKey: ['consultation', 'sessions'] }),
@@ -189,7 +191,7 @@ export function TranscriptionControls({
     try {
       setControlError(null);
       setPendingControl(action);
-      
+
       // Send via global bridge (set in ConsultationPage)
       const ok = typeof window !== 'undefined'
         && (window as any).ablySyncHook
@@ -365,10 +367,11 @@ export function TranscriptionControls({
                   ...
                   {' '}
                   <button
+                    type="button"
                     onClick={() => setIsExpanded(true)}
                     className="text-blue-600 underline hover:text-blue-800"
                   >
-                    {'(click to expand)'}
+                    (click to expand)
                   </button>
                 </span>
               )}
@@ -445,6 +448,7 @@ export function TranscriptionControls({
         </div>
         <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={() => {
               const newInputMode = inputMode === 'audio' ? 'typed' : 'audio';
               setInputMode(newInputMode);
@@ -527,7 +531,13 @@ export function TranscriptionControls({
                     ? (
                         <Button
                           type="button"
-                          onClick={() => { if (mobileIsRecording) { sendMobileControl('stop'); } else { stopRecording(); } }}
+                          onClick={() => {
+ if (mobileIsRecording) {
+ sendMobileControl('stop');
+} else {
+ stopRecording();
+}
+}}
                           className="h-8 bg-red-600 px-4 text-xs text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-400"
                         >
                           Stop
@@ -687,40 +697,44 @@ export function TranscriptionControls({
 
               {/* 🆕 UPDATED: Transcription display with tier-based feature flag */}
               {(isRecording || (transcript && transcriptExpanded)) && (
-                showEnhancedTranscription ? (
-                  <EnhancedTranscriptionDisplay
-                    transcript={transcript}
-                    confidence={contextTranscription.confidence}
-                    words={contextTranscription.words}
-                    isRecording={isRecording}
-                    onEdit={(newText) => {
-                      // TODO: Implement transcript editing
-                      void newText;
-                    }}
-                  />
-                ) : (
-                  <div className="max-h-64 overflow-y-auto rounded-md border bg-white p-2">
-                    {!isRecording ? (
-                      <textarea
-                        value={transcript}
-                        onChange={(_e) => {
-                          // Allow editing after recording stops
-                          // This would need to be connected to a context method to update transcript
-                        }}
-                        className="w-full resize-none border-none text-sm leading-relaxed focus:outline-none"
-                        placeholder="Transcription will appear here..."
-                        rows={Math.min(Math.max(transcript.split('\n').length || 3, 3), 12)}
-                      />
-                    ) : (
-                      <div>
-                        <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                          {transcript || 'Listening for speech...'}
-                        </p>
-                        <span className="mt-1 inline-block h-3 w-1 animate-pulse bg-blue-500" />
-                      </div>
-                    )}
-                  </div>
-                )
+                showEnhancedTranscription
+                  ? (
+                    <EnhancedTranscriptionDisplay
+                      transcript={transcript}
+                      confidence={contextTranscription.confidence}
+                      words={contextTranscription.words}
+                      isRecording={isRecording}
+                      onEdit={(newText) => {
+                        // TODO: Implement transcript editing
+                        void newText;
+                      }}
+                    />
+                  )
+                  : (
+                    <div className="max-h-64 overflow-y-auto rounded-md border bg-white p-2">
+                      {!isRecording
+                        ? (
+                          <textarea
+                            value={transcript}
+                            onChange={(_e) => {
+                              // Allow editing after recording stops
+                              // This would need to be connected to a context method to update transcript
+                            }}
+                            className="w-full resize-none border-none text-sm leading-relaxed focus:outline-none"
+                            placeholder="Transcription will appear here..."
+                            rows={Math.min(Math.max(transcript.split('\n').length || 3, 3), 12)}
+                          />
+                        )
+                        : (
+                          <div>
+                            <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                              {transcript || 'Listening for speech...'}
+                            </p>
+                            <span className="mt-1 inline-block h-3 w-1 animate-pulse bg-blue-500" />
+                          </div>
+                        )}
+                    </div>
+                  )
               )}
 
               {/* Collapsed transcript state when transcript exists but not expanded */}
@@ -742,7 +756,7 @@ export function TranscriptionControls({
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-slate-700">Transcript available</span>
                       <span className="text-xs text-slate-500">
-                        {'('}
+                        (
                         {transcript.split(/\s+/).filter((w: string) => w.length > 0).length}
                         {' words)'}
                       </span>

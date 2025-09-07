@@ -1,11 +1,11 @@
 import { GetObjectCommand, ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { auth } from '@clerk/nextjs/server';
+import { getDb } from 'database/client';
 import { desc, eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { db } from '@/db/client';
 import { clinicalImageAnalyses, patientSessions } from '@/db/schema';
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
@@ -30,6 +30,7 @@ async function getImageAnalyses(userId: string, imageKeys: string[]) {
  return {};
 }
 
+  const db = getDb();
   const analyses = await db
     .select()
     .from(clinicalImageAnalyses)
@@ -89,6 +90,7 @@ async function generatePresignedUrls(imageKeys: string[], bucketName: string): P
 
 export async function GET(req: NextRequest) {
   try {
+    const db = getDb();
     // Extract RBAC context and check authentication
     const context = await extractRBACContext(req);
     const permissionCheck = await checkCoreAccess(context);

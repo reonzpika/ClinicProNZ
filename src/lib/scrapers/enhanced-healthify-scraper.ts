@@ -5,12 +5,12 @@ import { ingestDocument } from '../rag';
 import type { DocumentToIngest } from '../rag/types';
 import { classifyHeadingsHybrid } from './llm-heading-classifier';
 
-let openai: OpenAI | null = null;
-function getOpenAI(): OpenAI | null {
-  const key = process.env.OPENAI_API_KEY;
-  if (!key) return null;
-  if (!openai) openai = new OpenAI({ apiKey: key });
-  return openai;
+function getOpenAI(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error('Missing OPENAI_API_KEY');
+  }
+  return new OpenAI({ apiKey });
 }
 
 type StructuredHealthifyContent = {
@@ -79,11 +79,11 @@ export class EnhancedHealthifyScraper {
         || document.querySelector('article');
 
       if (!contentElement) {
-        console.log(`[ENHANCED SCRAPER] No content element found for ${url}`);
+        // No content element found - skip this URL
         return null;
       }
 
-      console.log(`[ENHANCED SCRAPER] Found content element: ${contentElement.tagName}.${contentElement.className || 'no-class'}`);
+      // Found content element for processing
 
       // Extract sections based on healthify.nz structure using hybrid AI classification
       const sections = await this.extractSections(contentElement);
@@ -98,7 +98,7 @@ export class EnhancedHealthifyScraper {
       // Extract metadata
       const author = this.extractAuthor(document);
       const lastUpdated = this.extractLastUpdated(document);
-      const categories = await this.extractCategories(document, url, fullContent);
+      const categories = await this.extractCategories(url, fullContent);
       const contentType = this.inferContentType(title, sections);
       const internalLinks = this.extractInternalLinks(contentElement);
 
@@ -138,29 +138,25 @@ export class EnhancedHealthifyScraper {
 
     // Try to find sections by headings (h2, h3, etc.)
     const headingElements = contentElement.querySelectorAll('h2, h3, h4');
-    console.log(`[ENHANCED SCRAPER] Found ${headingElements.length} headings in content`);
+    // Process headings found in content
 
     if (headingElements.length > 0) {
-      // Pair headings with their texts and filter out empty ones to keep indices aligned
+      // Build pairs of heading element and cleaned text, skipping empty texts to keep indices aligned
       const headingPairs = Array.from(headingElements)
-        .map(h => ({ element: h, text: h.textContent?.trim() || '' }))
-        .filter(p => p.text);
+        .map(el => ({ element: el, text: el.textContent?.trim() ?? '' }))
+        .filter(p => p.text.length > 0);
 
       const headingTexts = headingPairs.map(p => p.text);
 
       // Use hybrid classification (pattern matching + LLM)
-      console.log(`[ENHANCED SCRAPER] Classifying ${headingTexts.length} headings with hybrid AI approach`);
       const headingClassifications = await classifyHeadingsHybrid(headingTexts, sectionMappings);
 
       // Extract content for each classified heading
       for (const { element: heading, text: headingText } of headingPairs) {
         const sectionName = headingClassifications[headingText];
 
-        console.log(`[ENHANCED SCRAPER] Processing heading: "${headingText}"`);
-
         if (sectionName) {
           const sectionContent = this.extractContentAfterHeading(heading);
-          console.log(`[ENHANCED SCRAPER] Mapped "${headingText}" to section "${sectionName}" with ${sectionContent.length} chars`);
 
           if (sectionContent.trim()) {
             // Combine content if section already exists
@@ -170,23 +166,18 @@ export class EnhancedHealthifyScraper {
               sections[sectionName] = sectionContent;
             }
           }
-        } else {
-          console.log(`[ENHANCED SCRAPER] No mapping found for heading: "${headingText}"`);
         }
       }
     }
 
     // If no clear sections found, try to extract key points or summary
     if (Object.keys(sections).length === 0) {
-      console.log('[ENHANCED SCRAPER] No sections found, trying fallback selectors');
       const keyPoints = contentElement.querySelector('.key-points, .summary, .highlights');
       if (keyPoints) {
         sections.overview = this.cleanTextContent(keyPoints);
-        console.log(`[ENHANCED SCRAPER] Found fallback content: ${sections.overview.length} chars`);
       }
     }
 
-    console.log(`[ENHANCED SCRAPER] Final sections extracted: ${Object.keys(sections).join(', ')}`);
     return sections;
   }
 
@@ -277,7 +268,7 @@ export class EnhancedHealthifyScraper {
   /**
    * Extract categories using AI analysis for comprehensive medical categorization
    */
-  private async extractCategories(_document: Document, url: string, fullContent: string): Promise<string[]> {
+  private async extractCategories(url: string, fullContent: string): Promise<string[]> {
     // For enhanced articles, use AI to generate comprehensive medical categories
     if (fullContent && fullContent.length > 100) {
       return await this.generateMedicalCategories(fullContent);
@@ -311,11 +302,8 @@ Generate comprehensive medical categories covering:
 Return as JSON array of relevant categories. Be specific and medically accurate.
 Format: ["category1", "category2", "category3"]`;
 
-      const client = getOpenAI();
-      if (!client) {
-        return [];
-      }
-      const completion = await client.chat.completions.create({
+      const openai = getOpenAI();
+      const completion = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.1,
@@ -335,12 +323,12 @@ Format: ["category1", "category2", "category3"]`;
 
           const categories = JSON.parse(jsonString);
           return Array.isArray(categories) ? categories.slice(0, 10) : []; // Limit to 10 categories
-        } catch (parseError) {
-          console.error('[ENHANCED SCRAPER] Failed to parse categories JSON:', parseError);
+        } catch {
+          // Failed to parse categories JSON - continue with fallback
         }
       }
-    } catch (error) {
-      console.error('[ENHANCED SCRAPER] Failed to generate categories:', error);
+    } catch {
+      // Failed to generate categories - return empty array
     }
 
     return []; // Return empty array on failure
@@ -488,9 +476,8 @@ Generate a professional summary that:
 
 Format as bullet points with • at the start of each point.`;
 
-    const client = getOpenAI();
-    if (!client) return '';
-    const completion = await client.chat.completions.create({
+    const openai = getOpenAI();
+    const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.1,
@@ -514,9 +501,8 @@ Return only the key points as a JSON array of strings. Each point should be:
 
 Example format: ["Point 1", "Point 2", "Point 3"]`;
 
-    const client = getOpenAI();
-    if (!client) return [];
-    const completion = await client.chat.completions.create({
+    const openai = getOpenAI();
+    const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.1,
@@ -537,15 +523,12 @@ Example format: ["Point 1", "Point 2", "Point 3"]`;
    * Complete workflow: scrape, summarize, and ingest
    */
   async scrapeAndIngest(url: string): Promise<void> {
-    console.log(`[ENHANCED SCRAPER] Starting scrape for: ${url}`);
     const content = await this.scrapeArticle(url);
     if (!content) {
       throw new Error('Failed to scrape content from URL');
     }
 
-    console.log(`[ENHANCED SCRAPER] Scraped content - sections: ${Object.keys(content.sections).length}, content length: ${content.fullContent.length}`);
     const { overallSummary, sectionSummaries } = await this.generateSummaries(content);
-    console.log(`[ENHANCED SCRAPER] Generated summaries - overall: ${overallSummary.length} chars, sections: ${Object.keys(sectionSummaries).length}`);
 
     const document: DocumentToIngest = {
       title: content.title,

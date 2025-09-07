@@ -2,11 +2,11 @@ import { Buffer } from 'node:buffer';
 
 import { createClient } from '@deepgram/sdk';
 import * as Ably from 'ably';
+import { getDb } from 'database/client';
 import { and, eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { db } from '@/db/client';
 import { patientSessions, users } from '@/db/schema';
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 import { createUserSession } from '@/src/lib/services/guest-session-service';
@@ -22,6 +22,7 @@ export const config = {
 
 export async function POST(req: NextRequest) {
   try {
+    const db = getDb();
     // Extract RBAC context and check authentication
     const context = await extractRBACContext(req);
     const permissionCheck = await checkCoreAccess(context);

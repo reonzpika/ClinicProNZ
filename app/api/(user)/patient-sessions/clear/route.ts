@@ -1,13 +1,14 @@
 import * as Ably from 'ably';
+import { getDb } from 'database/client';
 import { and, eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
-import { db } from '@/db/client';
 import { patientSessions } from '@/db/schema';
 import { extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 export async function POST(req: Request) {
   try {
+    const db = getDb();
     const context = await extractRBACContext(req);
     if (!context.userId) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });

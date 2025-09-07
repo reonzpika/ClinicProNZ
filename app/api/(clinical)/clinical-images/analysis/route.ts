@@ -1,15 +1,16 @@
 import { auth } from '@clerk/nextjs/server';
+import { getDb } from 'database/client';
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { db } from '@/db/client';
 import { clinicalImageAnalyses } from '@/db/schema';
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 // GET /api/clinical-images/analysis?imageKey={key} - Get latest analysis for an image
 export async function GET(req: NextRequest) {
   try {
+    const db = getDb();
     // Extract RBAC context and check authentication
     const context = await extractRBACContext(req);
     const permissionCheck = await checkCoreAccess(context);
@@ -61,6 +62,7 @@ export async function GET(req: NextRequest) {
 // POST /api/clinical-images/analysis - Save analysis result
 export async function POST(req: NextRequest) {
   try {
+    const db = getDb();
     // Extract RBAC context and check authentication
     const context = await extractRBACContext(req);
     const permissionCheck = await checkCoreAccess(context);

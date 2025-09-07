@@ -1,5 +1,3 @@
-import { JSDOM } from 'jsdom';
-
 import { EnhancedHealthifyScraper } from './enhanced-healthify-scraper';
 
 type HealthifySearchResult = {
@@ -73,35 +71,7 @@ export class DynamicHealthifySearch {
     return [];
   }
 
-  /**
-   * Direct search on healthify.nz
-   */
-  async searchHealthifyDirect(query: string, maxResults: number): Promise<HealthifySearchResult[]> {
-    const searchUrl = `${this.baseUrl}/search?q=${encodeURIComponent(query)}`;
-    console.log(`[HEALTHIFY SEARCH] Searching: ${searchUrl}`);
-
-    try {
-      const response = await fetch(searchUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        },
-      });
-
-      if (!response.ok) {
-        console.error(`[HEALTHIFY SEARCH] Request failed with status: ${response.status}`);
-        throw new Error(`Search request failed: ${response.status}`);
-      }
-
-      const html = await response.text();
-      console.log(`[HEALTHIFY SEARCH] Received ${html.length} chars of HTML`);
-      const results = this.parseSearchResults(html, maxResults);
-      console.log(`[HEALTHIFY SEARCH] Found ${results.length} results`);
-      return results;
-    } catch (error) {
-      console.error('Healthify direct search failed:', error);
-      return [];
-    }
-  }
+  // (Direct search removed; Healthify uses client-side Swiftype)
 
     /**
      * Try known URL patterns for common medical topics
@@ -150,6 +120,9 @@ export class DynamicHealthifySearch {
 
         if (response.ok) {
           console.log(`[HEALTHIFY PATTERNS] Found valid page: ${url}`);
+          if (!this.isValidHealthifyURL(url)) {
+            continue;
+          }
           results.push({
             title: this.generateTitleFromUrl(url),
             url,
@@ -160,7 +133,7 @@ export class DynamicHealthifySearch {
  break;
 }
         }
-      } catch (error) {
+      } catch {
         // Continue with next pattern
         continue;
       }
@@ -186,113 +159,6 @@ export class DynamicHealthifySearch {
   }
 
   /**
-   * Parse healthify search results page
-   */
-  private parseSearchResults(html: string, maxResults: number): HealthifySearchResult[] {
-    try {
-      const dom = new JSDOM(html);
-      const document = dom.window.document;
-      const results: HealthifySearchResult[] = [];
-
-      // Common selectors for search result links
-      const resultSelectors = [
-        '.search-result',
-        '.search-item',
-        '.result-item',
-        'article',
-        '.content-item',
-      ];
-
-      let resultElements: Element[] = [];
-
-      // Try different selectors until we find results
-      for (const selector of resultSelectors) {
-        resultElements = Array.from(document.querySelectorAll(selector));
-        console.log(`[HEALTHIFY PARSE] Selector '${selector}' found ${resultElements.length} elements`);
-        if (resultElements.length > 0) {
- break;
-}
-      }
-
-      // Fallback: look for any links to health-a-z pages
-      if (resultElements.length === 0) {
-        console.log('[HEALTHIFY PARSE] No structured results, looking for health-a-z links');
-        const links = document.querySelectorAll('a[href*="/health-a-z/"]');
-        console.log(`[HEALTHIFY PARSE] Found ${links.length} health-a-z links`);
-        resultElements = Array.from(links).map((link: Element) => link.closest('div, article, li') || link);
-      }
-
-      console.log(`[HEALTHIFY PARSE] Processing ${resultElements.length} elements (max ${maxResults})`);
-
-      for (const element of resultElements.slice(0, maxResults)) {
-        const result = this.extractSearchResult(element);
-        if (result && this.isValidHealthifyURL(result.url)) {
-          console.log(`[HEALTHIFY PARSE] Valid result: ${result.title} - ${result.url}`);
-          results.push(result);
-        } else if (result) {
-          console.log(`[HEALTHIFY PARSE] Invalid URL skipped: ${result.url}`);
-        }
-      }
-
-      return results;
-    } catch (error) {
-      console.error('Failed to parse search results:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Extract individual search result
-   */
-  private extractSearchResult(element: Element): HealthifySearchResult | null {
-    try {
-      // Find the main link
-      const linkElement = element.querySelector('a[href*="/health-a-z/"]')
-        || element.querySelector('a[href*="healthify.nz"]')
-        || (element.tagName === 'A' ? element : null);
-
-      if (!linkElement) {
- return null;
-}
-
-      const href = linkElement.getAttribute('href');
-      if (!href) {
- return null;
-}
-
-      // Convert relative URLs to absolute
-      const url = href.startsWith('http') ? href : `${this.baseUrl}${href}`;
-
-      // Extract title
-      const titleElement = element.querySelector('h1, h2, h3, h4, .title') || linkElement;
-      const title = titleElement?.textContent?.trim() || 'Untitled';
-
-      // Extract snippet/description
-      const snippetElement = element.querySelector('p, .description, .excerpt, .summary');
-      const snippet = snippetElement?.textContent?.trim() || '';
-
-      return {
-        title: this.cleanTitle(title),
-        url,
-        snippet: snippet.slice(0, 200), // Limit snippet length
-      };
-    } catch (error) {
-      console.error('Failed to extract search result:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Clean up title text
-   */
-  private cleanTitle(title: string): string {
-    return title
-      .replace(/\s+/g, ' ')
-      .replace(/^\W+|\W+$/g, '')
-      .trim();
-  }
-
-  /**
    * Validate if URL is a proper healthify article
    */
   private isValidHealthifyURL(url: string): boolean {
@@ -313,10 +179,11 @@ export class DynamicHealthifySearch {
   private async checkIfArticleExists(url: string): Promise<boolean> {
     try {
       // Import here to avoid circular dependencies
-      const { db } = await import('../../../database/client');
+      const { getDb } = await import('../../../database/client');
       const { ragDocuments } = await import('../../../database/schema/rag');
       const { eq } = await import('drizzle-orm');
 
+      const db = getDb();
       const existing = await db
         .select({ id: ragDocuments.id })
         .from(ragDocuments)

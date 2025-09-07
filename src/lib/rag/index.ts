@@ -1,24 +1,23 @@
 import { cosineDistance, sql } from 'drizzle-orm';
 import OpenAI from 'openai';
 
-import { db } from '../../../database/client';
+import { getDb } from '../../../database/client';
 import { ragDocuments } from '../../../database/schema/rag';
 import type { DocumentToIngest, RagQueryResult } from './types';
 
-let openai: OpenAI | null = null;
 function getOpenAI(): OpenAI {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY not configured');
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error('Missing OPENAI_API_KEY');
   }
-  if (!openai) {
-    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  }
-  return openai;
+  return new OpenAI({ apiKey });
 }
 
-// Coerce JSONB fields that may come back as unknown or stringified JSON
-function coerceJson<T>(value: unknown): T | null | undefined {
-  if (value === null || value === undefined) return value as null | undefined;
+// Helper: safely coerce JSONB/unknown values into typed objects
+function coerceJsonb<T>(value: unknown): T | null {
+  if (value == null) {
+    return null;
+  }
   if (typeof value === 'string') {
     try {
       return JSON.parse(value) as T;
@@ -36,7 +35,8 @@ function coerceJson<T>(value: unknown): T | null | undefined {
  * Create embedding for text using OpenAI
  */
 export async function createEmbedding(text: string): Promise<number[]> {
-  const response = await getOpenAI().embeddings.create({
+  const openai = getOpenAI();
+  const response = await openai.embeddings.create({
     model: 'text-embedding-3-small',
     input: text,
   });
@@ -61,6 +61,7 @@ export async function searchSimilarDocuments(
   // Calculate similarity score
   const similarity = sql<number>`1 - (${cosineDistance(ragDocuments.embedding, queryEmbedding)})`;
 
+  const db = getDb();
   const results = await db
     .select({
       id: ragDocuments.id,
@@ -80,28 +81,22 @@ export async function searchSimilarDocuments(
     .orderBy(sql`${similarity} DESC`)
     .limit(limit);
 
-  return results.map((row: {
-    content: string;
-    title: string;
-    source: string;
-    sourceType: string;
-    score: number;
-    sectionSummaries: unknown;
-    overallSummary: string | null;
-    sections: unknown;
-    enhancementStatus: string;
-  }) => ({
-    content: row.content,
-    title: row.title,
-    source: row.source,
-    sourceType: row.sourceType,
-    score: row.score,
-    // Include summary fields for smart content selection
-    sectionSummaries: coerceJson<Record<string, string[]>>(row.sectionSummaries),
-    overallSummary: row.overallSummary,
-    sections: coerceJson<Record<string, string>>(row.sections),
-    enhancementStatus: row.enhancementStatus,
-  }));
+  return results.map((row) => {
+    const sectionSummaries = coerceJsonb<Record<string, string[]>>(row.sectionSummaries);
+    const sections = coerceJsonb<Record<string, string>>(row.sections);
+    return {
+      content: row.content,
+      title: row.title,
+      source: row.source,
+      sourceType: row.sourceType,
+      score: row.score,
+      // Include summary fields for smart content selection
+      sectionSummaries,
+      overallSummary: row.overallSummary,
+      sections,
+      enhancementStatus: row.enhancementStatus,
+    } as RagQueryResult;
+  });
 }
 
 /**
@@ -112,6 +107,7 @@ export async function ingestDocument(document: DocumentToIngest): Promise<void> 
   const textToEmbed = document.overallSummary || document.basicContent || document.content;
   const embedding = await createEmbedding(textToEmbed);
 
+  const db = getDb();
   await db.insert(ragDocuments).values({
     title: document.title,
     content: document.content,

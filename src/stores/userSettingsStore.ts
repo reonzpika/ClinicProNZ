@@ -70,4 +70,3 @@ export const useUserSettingsStore = create<Store>()(
     },
   })),
 );
-

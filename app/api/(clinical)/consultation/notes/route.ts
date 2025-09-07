@@ -5,8 +5,13 @@ import { TemplateService } from '@/src/features/templates/template-service';
 import { compileTemplate } from '@/src/features/templates/utils/compileTemplate';
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-let openai: OpenAI | null = null;
+function getOpenAI(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error('Missing OPENAI_API_KEY');
+  }
+  return new OpenAI({ apiKey, timeout: 45000 });
+}
 
 // Add a timeout wrapper for promises
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number, errorMessage: string): Promise<T> {
@@ -92,19 +97,9 @@ export async function POST(req: Request) {
       }, { status: 408 });
     }
 
-    if (!OPENAI_API_KEY) {
-      return NextResponse.json(
-        { code: 'CONFIG_ERROR', message: 'OPENAI_API_KEY not configured' },
-        { status: 500 },
-      );
-    }
-
-    if (!openai) {
-      openai = new OpenAI({ apiKey: OPENAI_API_KEY, timeout: 45000 });
-    }
-
     // Call OpenAI with dynamic timeout based on remaining time
     const openaiTimeout = Math.min(remainingTime - 5000, 40000);
+    const openai = getOpenAI();
     const stream = await withTimeout(
       openai.chat.completions.create({
         model: 'gpt-4.1-mini', // Faster, more affordable reasoning model

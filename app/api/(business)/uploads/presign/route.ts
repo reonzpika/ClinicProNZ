@@ -1,12 +1,12 @@
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { auth } from '@clerk/nextjs/server';
+import { getDb } from 'database/client';
 import { eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
-import { db } from '@/db/client';
 import { users } from '@/db/schema';
 
 // Initialize S3 client for NZ region
@@ -22,6 +22,7 @@ const BUCKET_NAME = process.env.S3_BUCKET_NAME!;
 
 export async function GET(req: NextRequest) {
   try {
+    const db = getDb();
     // Simplified authentication - Clerk only
     const { userId } = await auth();
 

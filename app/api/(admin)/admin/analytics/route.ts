@@ -1,5 +1,5 @@
 import { auth } from '@clerk/nextjs/server';
-import { db } from 'database/client';
+import { getDb } from 'database/client';
 import { patientSessions } from 'database/schema/patient_sessions';
 import { templates } from 'database/schema/templates';
 import { users } from 'database/schema/users';
@@ -10,6 +10,7 @@ import { checkTierFromSessionClaims } from '@/src/shared/utils/roles';
 
 export async function GET(request: Request) {
   try {
+    const db = getDb();
     const { userId, sessionClaims } = await auth();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorised' }, { status: 401 });

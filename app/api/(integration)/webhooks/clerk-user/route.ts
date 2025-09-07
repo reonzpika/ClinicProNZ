@@ -1,12 +1,13 @@
 import { clerkClient } from '@clerk/nextjs/server';
+import { getDb } from 'database/client';
 import { NextResponse } from 'next/server';
 import { Webhook } from 'svix';
 
-import { db } from '@/db/client';
 import { users } from '@/db/schema/users';
 
 export async function POST(req: Request) {
   try {
+    const db = getDb();
     // Get headers and body for verification
     const signature = req.headers.get('svix-signature');
     const timestamp = req.headers.get('svix-timestamp');
