@@ -19,10 +19,10 @@ type TranscriptionState = {
 };
 
 // Optimized timing constants based on VAD best practices
-const SILENCE_THRESHOLD = 1.5; // seconds of silence to trigger sending recording (was 10)
-const SMART_BOUNDARY_THRESHOLD = 30; // seconds - when to start looking for word boundaries (was 250)
-const WORD_BOUNDARY_PAUSE = 1.0; // seconds - micro-pause indicating word boundary (was 2)
-const FORCE_STOP_DURATION = 90; // seconds - absolute maximum before force-stopping (was 360)
+const SILENCE_THRESHOLD = 2.5; // seconds of silence to trigger sending recording (was 1.5)
+const SMART_BOUNDARY_THRESHOLD = 60; // seconds - when to start looking for word boundaries (was 30)
+const WORD_BOUNDARY_PAUSE = 2; // seconds - micro-pause indicating word boundary (was 1.0)
+const FORCE_STOP_DURATION = 90; // seconds - absolute maximum before force-stopping (unchanged)
 const SPEECH_CONFIRMATION_FRAMES = 5; // Number of consecutive frames above threshold to confirm speech
 
 // Add options for mobile support

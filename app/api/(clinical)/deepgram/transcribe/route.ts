@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
 
     // Transcribe the audio file - optimized for pre-recorded processing
     const deepgramConfig = {
-      model: 'nova-3-medical', // Latest medical model with 54.2% better WER than competitors
+      model: 'nova-3', // Default to general nova-3 for broad access
       punctuate: true,
       language: 'en-NZ', // NZ English is supported by nova-3-medical
       smart_format: true,
