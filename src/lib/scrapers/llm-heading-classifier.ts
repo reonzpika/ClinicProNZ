@@ -1,8 +1,12 @@
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+function getOpenAI(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error('Missing OPENAI_API_KEY');
+  }
+  return new OpenAI({ apiKey });
+}
 
 /**
  * Classify headings into medical content sections using LLM
@@ -31,6 +35,7 @@ Return as JSON mapping heading number to section name. If a heading doesn't fit 
 
 Example: {"1": "overview", "2": "symptoms", "3": "treatment"}`;
 
+    const openai = getOpenAI();
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
@@ -47,8 +52,15 @@ Example: {"1": "overview", "2": "symptoms", "3": "treatment"}`;
         const result: Record<string, string> = {};
         Object.entries(classifications).forEach(([index, section]) => {
           const headingIndex = Number.parseInt(index) - 1;
-          if (headingIndex >= 0 && headingIndex < headings.length && section !== 'other') {
-            result[headings[headingIndex]] = section as string;
+          if (
+            headingIndex >= 0 &&
+            headingIndex < headings.length &&
+            section !== 'other'
+          ) {
+            const headingText = headings[headingIndex];
+            if (typeof headingText === 'string' && headingText.length > 0) {
+              result[headingText] = String(section);
+            }
           }
         });
 

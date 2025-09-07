@@ -6,7 +6,7 @@
 
 import { eq, isNull, or } from 'drizzle-orm';
 
-import { db } from '../database/client';
+import { getDb } from '../database/client';
 import { ragDocuments } from '../database/schema/rag';
 import { EnhancedHealthifyScraper } from '../src/lib/scrapers/enhanced-healthify-scraper';
 
@@ -43,6 +43,7 @@ class ComprehensiveEnhancer {
    * Get all articles that need enhancement
    */
   async getArticlesToEnhance(): Promise<Array<{ id: string; source: string; title: string; enhancementStatus: string | null }>> {
+    const db = getDb();
     const articles = await db
       .select({
         id: ragDocuments.id,
@@ -78,6 +79,7 @@ class ComprehensiveEnhancer {
       await this.scraper.scrapeAndIngest(article.source);
 
       // Update status to enhanced
+      const db = getDb();
       await db
         .update(ragDocuments)
         .set({
@@ -92,6 +94,7 @@ class ComprehensiveEnhancer {
       console.error(`[ENHANCER] ❌ Failed to enhance "${article.title}":`, error);
 
       // Mark as failed
+      const db = getDb();
       await db
         .update(ragDocuments)
         .set({ enhancementStatus: 'failed' })

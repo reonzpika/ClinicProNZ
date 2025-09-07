@@ -1,5 +1,5 @@
 import { auth } from '@clerk/nextjs/server';
-import { db } from 'database/client';
+import { getDb } from 'database/client';
 import { contactMessages } from 'database/schema/contact_messages';
 import { nanoid } from 'nanoid';
 import type { NextRequest } from 'next/server';
@@ -7,6 +7,7 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
+    const db = getDb();
     const body = await request.json();
     const { name, email, subject, message } = body;
 
