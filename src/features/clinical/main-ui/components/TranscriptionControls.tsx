@@ -82,7 +82,7 @@ export function TranscriptionControls({
     volumeLevel,
     noInputWarning,
     totalChunks,
-  } = useTranscription();
+  } = useTranscription({ startImmediate: true });
 
   // Use regular transcript since diarization is disabled
   const transcript = contextTranscription.transcript;
@@ -122,9 +122,57 @@ export function TranscriptionControls({
         }
 
         if (Array.isArray(chunks) && chunks.length > 0) {
-          const full = chunks.map((t: any) => (t?.text || '').trim()).join(' ').trim();
-          if (full) {
-            setTranscription(full, false, undefined, undefined);
+          // Overlap-aware join to reduce duplicate/missed words at chunk boundaries
+          const normalizeToken = (w: string) => w.toLowerCase().replace(/[^a-z0-9']+/g, '');
+          const splitTokens = (text: string) => (text.match(/\S+/g) || []);
+          const findOverlap = (prevText: string, newText: string) => {
+            const K = 20;
+            const N = 20;
+            const prevTokensRaw = splitTokens(prevText);
+            const newTokensRaw = splitTokens(newText);
+            const prevTokens = prevTokensRaw.map(normalizeToken);
+            const newTokens = newTokensRaw.map(normalizeToken);
+            const prevWindow = prevTokens.slice(Math.max(0, prevTokens.length - K));
+            const newWindow = newTokens.slice(0, Math.min(N, newTokens.length));
+            const maxL = Math.min(prevWindow.length, newWindow.length);
+            for (let L = maxL; L >= 3; L -= 1) {
+              let match = true;
+              for (let i = 0; i < L; i += 1) {
+                if (prevWindow[prevWindow.length - L + i] !== newWindow[i]) {
+                  match = false;
+                  break;
+                }
+              }
+              if (match) {
+                return L;
+              }
+            }
+            return 0;
+          };
+          const dropFirstTokens = (text: string, tokenCount: number) => {
+            if (tokenCount <= 0) return text;
+            const re = /\S+/g;
+            let match: RegExpExecArray | null;
+            let endIdx = 0;
+            let count = 0;
+            while ((match = re.exec(text)) !== null) {
+              count += 1;
+              endIdx = match.index + match[0].length;
+              if (count >= tokenCount) break;
+            }
+            while (endIdx < text.length && /\s/.test(text[endIdx])) endIdx += 1;
+            return text.slice(endIdx);
+          };
+          let acc = '';
+          for (const t of chunks) {
+            const nextText = (t?.text || '').trim();
+            if (!nextText) continue;
+            const overlap = findOverlap(acc, nextText);
+            const deduped = overlap > 0 ? dropFirstTokens(nextText, overlap) : nextText;
+            acc = (acc + (acc ? ' ' : '') + deduped).trim();
+          }
+          if (acc) {
+            setTranscription(acc, false, undefined, undefined);
           }
         }
       }

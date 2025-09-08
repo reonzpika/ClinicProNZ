@@ -208,7 +208,15 @@ export async function POST(req: NextRequest) {
       }
     } catch {}
 
-    return NextResponse.json({ persisted: true, chunkId, sessionId: currentSessionId });
+    return NextResponse.json({
+      persisted: true,
+      chunkId,
+      sessionId: currentSessionId,
+      transcript,
+      words,
+      confidence,
+      paragraphs,
+    });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
   }

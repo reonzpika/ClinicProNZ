@@ -186,9 +186,49 @@ export const useTranscriptionStore = create<TranscriptionStore>()(
       paragraphs,
     ) => {
       const current = get().transcription;
+      const normalizeToken = (w: string) => w.toLowerCase().replace(/[^a-z0-9']+/g, '');
+      const splitTokens = (text: string) => (text.match(/\S+/g) || []);
+      const findOverlapByTokens = (prevText: string, newTokens: string[]) => {
+        const K = 20;
+        const prevTokensRaw = splitTokens(prevText);
+        const prevTokens = prevTokensRaw.map(normalizeToken);
+        const prevWindow = prevTokens.slice(Math.max(0, prevTokens.length - K));
+        const maxL = Math.min(prevWindow.length, newTokens.length);
+        for (let L = maxL; L >= 3; L -= 1) {
+          let match = true;
+          for (let i = 0; i < L; i += 1) {
+            if (prevWindow[prevWindow.length - L + i] !== newTokens[i]) {
+              match = false;
+              break;
+            }
+          }
+          if (match) return L;
+        }
+        return 0;
+      };
+      const dropFirstTokens = (text: string, tokenCount: number) => {
+        if (tokenCount <= 0) return text;
+        const re = /\S+/g;
+        let match: RegExpExecArray | null;
+        let endIdx = 0;
+        let count = 0;
+        while ((match = re.exec(text)) !== null) {
+          count += 1;
+          endIdx = match.index + match[0].length;
+          if (count >= tokenCount) break;
+        }
+        while (endIdx < text.length && /\s/.test(text[endIdx])) endIdx += 1;
+        return text.slice(endIdx);
+      };
+      const newTokensFromWords = Array.isArray(words) && words.length > 0
+        ? (words as any[]).map((w) => normalizeToken(String((w && (w as any).word) || ''))).filter(Boolean)
+        : splitTokens(newTranscript).map(normalizeToken);
+      const overlap = findOverlapByTokens(current.transcript, newTokensFromWords);
+      const dedupedText = overlap > 0 ? dropFirstTokens(newTranscript, overlap) : newTranscript;
+      const mergedText = (current.transcript + (current.transcript ? ' ' : '') + dedupedText).trim();
       set({
         transcription: {
-          transcript: current.transcript + newTranscript,
+          transcript: mergedText,
           isLive,
           diarizedTranscript: diarizedTranscript || current.diarizedTranscript,
           utterances: utterances || current.utterances,
