@@ -155,45 +155,23 @@ export default function ConsultationPage() {
     // 🆕 CONNECTION HANDLER REMOVED: No session broadcasting needed with server-side resolution
     isMobile: false,
     onTranscriptionsUpdated: async (signalledSessionId?: string) => {
-      // Skip when tab not visible
       if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
         return;
       }
-      // Debounce to at most once per ~900ms
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
       }
       debounceTimerRef.current = setTimeout(async () => {
-        const __dbgEnabled = (() => { try { return typeof window !== 'undefined' && localStorage.getItem('debug:ably') === '1'; } catch { return false; } })();
-        const __dbgLog = (...args: any[]) => { if (__dbgEnabled) { try { console.debug('[CONSULT][onTranscriptionsUpdated]', ...args); } catch {} } };
-        const __t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 0;
-        let __fetchMs = 0;
-        let __parseMs = 0;
-        let __joinMs = 0;
-        let __chunksCount = 0;
-        let __finalLen = 0;
-        const __now = Date.now();
-        try {
-          if (__dbgEnabled) {
-            const w: any = typeof window !== 'undefined' ? window : {};
-            if (!w.__cp_onTxUp_windowStart || (__now - w.__cp_onTxUp_windowStart) > 5000) {
-              w.__cp_onTxUp_windowStart = __now;
-              w.__cp_onTxUp_count = 0;
-            }
-            w.__cp_onTxUp_count = (w.__cp_onTxUp_count || 0) + 1;
-          }
-        } catch {}
         const activeSessionId = signalledSessionId || currentPatientSessionId;
         if (!activeSessionId) {
           return;
         }
+
         let session: any = null;
         try {
-          const __tFetchStart = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 0;
           session = await queryClientRef.current.fetchQuery({
             queryKey: ['consultation', 'session', activeSessionId],
             queryFn: async () => {
-              // Session-scoped fetch to reduce payload
               const response = await fetch(`/api/patient-sessions?sessionId=${encodeURIComponent(activeSessionId)}`, {
                 method: 'GET',
                 headers: createAuthHeaders(userId, userTier),
@@ -207,24 +185,17 @@ export default function ConsultationPage() {
             },
             staleTime: 0,
           });
-          __fetchMs = ((typeof performance !== 'undefined' && performance.now) ? performance.now() : __tFetchStart) - __tFetchStart;
-        } catch (error) {
-          console.warn('Failed to fetch fresh session data:', error);
-          // Fallback to cache if fetch fails
+        } catch {
           session = queryClientRef.current.getQueryData(['consultation', 'session', activeSessionId]);
         }
         if (session) {
           let chunks: any[] = [];
           try {
-            const __tParseStart = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 0;
             chunks = typeof session.transcriptions === 'string' ? JSON.parse(session.transcriptions) : (session.transcriptions || []);
-            __parseMs = ((typeof performance !== 'undefined' && performance.now) ? performance.now() : __tParseStart) - __tParseStart;
           } catch {
             chunks = [];
           }
           if (Array.isArray(chunks) && chunks.length > 0) {
-            __chunksCount = chunks.length;
-            // Incremental append since last applied chunk id; skip empty
             let startIndex = 0;
             if (lastAppliedChunkIdRef.current) {
               const idx = chunks.findIndex((c: any) => c.id === lastAppliedChunkIdRef.current);
@@ -232,12 +203,9 @@ export default function ConsultationPage() {
             }
             const newChunks = chunks.slice(startIndex).filter((c: any) => (c?.text || '').trim().length > 0);
             if (newChunks.length > 0) {
-              const __tJoinStart = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 0;
               const delta = newChunks.map((t: any) => (t?.text || '').trim()).join(' ').trim();
-              __joinMs = ((typeof performance !== 'undefined' && performance.now) ? performance.now() : __tJoinStart) - __tJoinStart;
               const prev = typeof transcription?.transcript === 'string' ? transcription.transcript : '';
               const next = prev ? `${prev} ${delta}`.trim() : delta;
-              __finalLen = next.length;
               setTranscription(next, false, undefined, undefined);
               lastAppliedChunkIdRef.current = chunks[chunks.length - 1]?.id || lastAppliedChunkIdRef.current;
             } else {
@@ -245,12 +213,6 @@ export default function ConsultationPage() {
             }
           }
         }
-        try {
-          if (__dbgEnabled) {
-            const w: any = typeof window !== 'undefined' ? window : {};
-            __dbgLog({ sessionId: activeSessionId, eventsInWindow: (w && w.__cp_onTxUp_count) || 0, fetchMs: __fetchMs, parseMs: __parseMs, joinMs: __joinMs, chunksCount: __chunksCount, transcriptLen: __finalLen, totalMs: ((typeof performance !== 'undefined' && performance.now) ? performance.now() : __t0) - __t0 });
-          }
-        } catch {}
       }, 900);
     },
   });

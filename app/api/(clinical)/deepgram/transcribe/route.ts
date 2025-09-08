@@ -177,9 +177,6 @@ export async function POST(req: NextRequest) {
 
     // Skip empty chunks to avoid noisy updates
     if (!transcript || !transcript.trim()) {
-      try {
- console.log('[Transcribe] skipped empty chunk', { sessionId: currentSessionId });
-} catch {}
       return NextResponse.json({ persisted: false, chunkId: null, sessionId: currentSessionId });
     }
 
