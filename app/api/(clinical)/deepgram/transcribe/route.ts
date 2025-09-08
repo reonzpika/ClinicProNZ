@@ -175,6 +175,14 @@ export async function POST(req: NextRequest) {
       existingTranscriptions = [];
     }
 
+    // Skip empty chunks to avoid noisy updates
+    if (!transcript || !transcript.trim()) {
+      try {
+ console.log('[Transcribe] skipped empty chunk', { sessionId: currentSessionId });
+} catch {}
+      return NextResponse.json({ persisted: false, chunkId: null, sessionId: currentSessionId });
+    }
+
     // Append new chunk (drop enhanced fields per spec)
     const chunkId = Math.random().toString(36).substr(2, 9);
     const newEntry = {

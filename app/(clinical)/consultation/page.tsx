@@ -143,6 +143,10 @@ export default function ConsultationPage() {
     currentSessionIdRef.current = currentPatientSessionId || null;
   }, [currentPatientSessionId]);
 
+  // Incremental append + debounce helpers
+  const lastAppliedChunkIdRef = useRef<string | null>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const { sendRecordingControl } = useSimpleAbly({
     userId: userId ?? null,
     onRecordingStatusChanged: (isRecording: boolean) => setMobileIsRecording(isRecording),
@@ -151,80 +155,103 @@ export default function ConsultationPage() {
     // 🆕 CONNECTION HANDLER REMOVED: No session broadcasting needed with server-side resolution
     isMobile: false,
     onTranscriptionsUpdated: async (signalledSessionId?: string) => {
-      const __dbgEnabled = (() => { try { return typeof window !== 'undefined' && localStorage.getItem('debug:ably') === '1'; } catch { return false; } })();
-      const __dbgLog = (...args: any[]) => { if (__dbgEnabled) { try { console.debug('[CONSULT][onTranscriptionsUpdated]', ...args); } catch {} } };
-      const __t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 0;
-      let __fetchMs = 0;
-      let __parseMs = 0;
-      let __joinMs = 0;
-      let __chunksCount = 0;
-      let __finalLen = 0;
-      const __now = Date.now();
-      try {
-        if (__dbgEnabled) {
-          const w: any = typeof window !== 'undefined' ? window : {};
-          if (!w.__cp_onTxUp_windowStart || (__now - w.__cp_onTxUp_windowStart) > 5000) {
-            w.__cp_onTxUp_windowStart = __now;
-            w.__cp_onTxUp_count = 0;
-          }
-          w.__cp_onTxUp_count = (w.__cp_onTxUp_count || 0) + 1;
-        }
-      } catch {}
-      const activeSessionId = signalledSessionId || currentPatientSessionId;
-      if (!activeSessionId) {
- return;
-}
-      let session: any = null;
-      try {
-        // 🔧 FIX: Use fetchQuery with staleTime: 0 to force fresh data on every transcription update
-        const __tFetchStart = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 0;
-        session = await queryClientRef.current.fetchQuery({
-          queryKey: ['consultation', 'session', activeSessionId],
-          queryFn: async () => {
-            // Direct API call for reliable fresh data
-            const response = await fetch('/api/patient-sessions', {
-              method: 'GET',
-              headers: createAuthHeaders(userId, userTier),
-            });
-            if (!response.ok) {
-              throw new Error('Failed to fetch sessions');
-            }
-            const data = await response.json();
-            const sessions = data.sessions || [];
-            return sessions.find((s: any) => s.id === activeSessionId) || null;
-          },
-          staleTime: 0, // Force fresh data for transcription updates
-        });
-        __fetchMs = ((typeof performance !== 'undefined' && performance.now) ? performance.now() : __tFetchStart) - __tFetchStart;
-      } catch (error) {
-        console.warn('Failed to fetch fresh session data:', error);
-        // Fallback to cache if fetch fails
-        session = queryClientRef.current.getQueryData(['consultation', 'session', activeSessionId]);
+      // Skip when tab not visible
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+        return;
       }
-      if (session) {
-        let chunks: any[] = [];
+      // Debounce to at most once per ~900ms
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+      debounceTimerRef.current = setTimeout(async () => {
+        const __dbgEnabled = (() => { try { return typeof window !== 'undefined' && localStorage.getItem('debug:ably') === '1'; } catch { return false; } })();
+        const __dbgLog = (...args: any[]) => { if (__dbgEnabled) { try { console.debug('[CONSULT][onTranscriptionsUpdated]', ...args); } catch {} } };
+        const __t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 0;
+        let __fetchMs = 0;
+        let __parseMs = 0;
+        let __joinMs = 0;
+        let __chunksCount = 0;
+        let __finalLen = 0;
+        const __now = Date.now();
         try {
-          const __tParseStart = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 0;
-          chunks = typeof session.transcriptions === 'string' ? JSON.parse(session.transcriptions) : (session.transcriptions || []);
-          __parseMs = ((typeof performance !== 'undefined' && performance.now) ? performance.now() : __tParseStart) - __tParseStart;
-        } catch {
-          chunks = [];
-}
-                if (Array.isArray(chunks) && chunks.length > 0) {
-          const __tJoinStart = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 0;
-          const full = chunks.map((t: any) => (t?.text || '').trim()).join(' ').trim();
-          __joinMs = ((typeof performance !== 'undefined' && performance.now) ? performance.now() : __tJoinStart) - __tJoinStart;
-          __chunksCount = chunks.length;
-          __finalLen = full.length;
-          setTranscription(full || '', false, undefined, undefined);
+          if (__dbgEnabled) {
+            const w: any = typeof window !== 'undefined' ? window : {};
+            if (!w.__cp_onTxUp_windowStart || (__now - w.__cp_onTxUp_windowStart) > 5000) {
+              w.__cp_onTxUp_windowStart = __now;
+              w.__cp_onTxUp_count = 0;
+            }
+            w.__cp_onTxUp_count = (w.__cp_onTxUp_count || 0) + 1;
+          }
+        } catch {}
+        const activeSessionId = signalledSessionId || currentPatientSessionId;
+        if (!activeSessionId) {
+          return;
         }
-      }
-      try {
-        if (__dbgEnabled) {
-          const w: any = typeof window !== 'undefined' ? window : {};
-          __dbgLog({ sessionId: activeSessionId, eventsInWindow: (w && w.__cp_onTxUp_count) || 0, fetchMs: __fetchMs, parseMs: __parseMs, joinMs: __joinMs, chunksCount: __chunksCount, transcriptLen: __finalLen, totalMs: ((typeof performance !== 'undefined' && performance.now) ? performance.now() : __t0) - __t0 });
+        let session: any = null;
+        try {
+          const __tFetchStart = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 0;
+          session = await queryClientRef.current.fetchQuery({
+            queryKey: ['consultation', 'session', activeSessionId],
+            queryFn: async () => {
+              // Session-scoped fetch to reduce payload
+              const response = await fetch(`/api/patient-sessions?sessionId=${encodeURIComponent(activeSessionId)}`, {
+                method: 'GET',
+                headers: createAuthHeaders(userId, userTier),
+              });
+              if (!response.ok) {
+                throw new Error('Failed to fetch session');
+              }
+              const data = await response.json();
+              const sessions = data.sessions || [];
+              return sessions[0] || null;
+            },
+            staleTime: 0,
+          });
+          __fetchMs = ((typeof performance !== 'undefined' && performance.now) ? performance.now() : __tFetchStart) - __tFetchStart;
+        } catch (error) {
+          console.warn('Failed to fetch fresh session data:', error);
+          // Fallback to cache if fetch fails
+          session = queryClientRef.current.getQueryData(['consultation', 'session', activeSessionId]);
         }
-      } catch {}
+        if (session) {
+          let chunks: any[] = [];
+          try {
+            const __tParseStart = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 0;
+            chunks = typeof session.transcriptions === 'string' ? JSON.parse(session.transcriptions) : (session.transcriptions || []);
+            __parseMs = ((typeof performance !== 'undefined' && performance.now) ? performance.now() : __tParseStart) - __tParseStart;
+          } catch {
+            chunks = [];
+          }
+          if (Array.isArray(chunks) && chunks.length > 0) {
+            __chunksCount = chunks.length;
+            // Incremental append since last applied chunk id; skip empty
+            let startIndex = 0;
+            if (lastAppliedChunkIdRef.current) {
+              const idx = chunks.findIndex((c: any) => c.id === lastAppliedChunkIdRef.current);
+              startIndex = idx >= 0 ? idx + 1 : 0;
+            }
+            const newChunks = chunks.slice(startIndex).filter((c: any) => (c?.text || '').trim().length > 0);
+            if (newChunks.length > 0) {
+              const __tJoinStart = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 0;
+              const delta = newChunks.map((t: any) => (t?.text || '').trim()).join(' ').trim();
+              __joinMs = ((typeof performance !== 'undefined' && performance.now) ? performance.now() : __tJoinStart) - __tJoinStart;
+              const prev = typeof transcription?.transcript === 'string' ? transcription.transcript : '';
+              const next = prev ? `${prev} ${delta}`.trim() : delta;
+              __finalLen = next.length;
+              setTranscription(next, false, undefined, undefined);
+              lastAppliedChunkIdRef.current = chunks[chunks.length - 1]?.id || lastAppliedChunkIdRef.current;
+            } else {
+              lastAppliedChunkIdRef.current = chunks[chunks.length - 1]?.id || lastAppliedChunkIdRef.current;
+            }
+          }
+        }
+        try {
+          if (__dbgEnabled) {
+            const w: any = typeof window !== 'undefined' ? window : {};
+            __dbgLog({ sessionId: activeSessionId, eventsInWindow: (w && w.__cp_onTxUp_count) || 0, fetchMs: __fetchMs, parseMs: __parseMs, joinMs: __joinMs, chunksCount: __chunksCount, transcriptLen: __finalLen, totalMs: ((typeof performance !== 'undefined' && performance.now) ? performance.now() : __t0) - __t0 });
+          }
+        } catch {}
+      }, 900);
     },
   });
 
