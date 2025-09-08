@@ -101,13 +101,19 @@ export function TranscriptionControls({
   const handleManualRefresh = async () => {
     try {
       setIsRefreshingTranscript(true);
+      const dbg = (() => { try { return typeof window !== 'undefined' && localStorage.getItem('debug:ably') === '1'; } catch { return false; } })();
+      const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 0;
+      if (dbg) { try { console.debug('[CONSULT][ManualRefresh] start', { sessionId: currentPatientSessionId }); } catch {} }
       const activeSessionId = currentPatientSessionId || '';
 
       // Invalidate both sessions list and active session
-      await Promise.allSettled([
+      const tInv0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 0;
+      const results = await Promise.allSettled([
         queryClient.invalidateQueries({ queryKey: ['consultation', 'sessions'] }),
         queryClient.invalidateQueries({ queryKey: ['consultation', 'session', activeSessionId] }),
       ]);
+      const tInv = ((typeof performance !== 'undefined' && performance.now) ? performance.now() : tInv0) - tInv0;
+      if (dbg) { try { console.debug('[CONSULT][ManualRefresh] invalidated', { durationMs: tInv, results }); } catch {} }
 
       // Hydrate from cache
       const sessions: any[] | undefined = queryClient.getQueryData(['consultation', 'sessions']) as any;
@@ -125,6 +131,7 @@ export function TranscriptionControls({
           const full = chunks.map((t: any) => (t?.text || '').trim()).join(' ').trim();
           if (full) {
             setTranscription(full, false, undefined, undefined);
+            if (dbg) { try { console.debug('[CONSULT][ManualRefresh] applied', { chunks: chunks.length, transcriptLen: full.length, totalMs: ((typeof performance !== 'undefined' && performance.now) ? performance.now() : t0) - t0 }); } catch {} }
           }
         }
       }

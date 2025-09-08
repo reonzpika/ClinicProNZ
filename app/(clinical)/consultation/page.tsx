@@ -143,6 +143,10 @@ export default function ConsultationPage() {
     currentSessionIdRef.current = currentPatientSessionId || null;
   }, [currentPatientSessionId]);
 
+  // Incremental append + debounce helpers
+  const lastAppliedChunkIdRef = useRef<string | null>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const { sendRecordingControl } = useSimpleAbly({
     userId: userId ?? null,
     onRecordingStatusChanged: (isRecording: boolean) => setMobileIsRecording(isRecording),
@@ -151,47 +155,65 @@ export default function ConsultationPage() {
     // 🆕 CONNECTION HANDLER REMOVED: No session broadcasting needed with server-side resolution
     isMobile: false,
     onTranscriptionsUpdated: async (signalledSessionId?: string) => {
-      const activeSessionId = signalledSessionId || currentPatientSessionId;
-      if (!activeSessionId) {
- return;
-}
-      let session: any = null;
-      try {
-        // 🔧 FIX: Use fetchQuery with staleTime: 0 to force fresh data on every transcription update
-        session = await queryClientRef.current.fetchQuery({
-          queryKey: ['consultation', 'session', activeSessionId],
-          queryFn: async () => {
-            // Direct API call for reliable fresh data
-            const response = await fetch('/api/patient-sessions', {
-              method: 'GET',
-              headers: createAuthHeaders(userId, userTier),
-            });
-            if (!response.ok) {
-              throw new Error('Failed to fetch sessions');
-            }
-            const data = await response.json();
-            const sessions = data.sessions || [];
-            return sessions.find((s: any) => s.id === activeSessionId) || null;
-          },
-          staleTime: 0, // Force fresh data for transcription updates
-        });
-      } catch (error) {
-        console.warn('Failed to fetch fresh session data:', error);
-        // Fallback to cache if fetch fails
-        session = queryClientRef.current.getQueryData(['consultation', 'session', activeSessionId]);
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+        return;
       }
-      if (session) {
-        let chunks: any[] = [];
-        try {
-          chunks = typeof session.transcriptions === 'string' ? JSON.parse(session.transcriptions) : (session.transcriptions || []);
-        } catch {
-          chunks = [];
-}
-                if (Array.isArray(chunks) && chunks.length > 0) {
-          const full = chunks.map((t: any) => (t?.text || '').trim()).join(' ').trim();
-          setTranscription(full || '', false, undefined, undefined);
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+      debounceTimerRef.current = setTimeout(async () => {
+        const activeSessionId = signalledSessionId || currentPatientSessionId;
+        if (!activeSessionId) {
+          return;
         }
-      }
+
+        let session: any = null;
+        try {
+          session = await queryClientRef.current.fetchQuery({
+            queryKey: ['consultation', 'session', activeSessionId],
+            queryFn: async () => {
+              const response = await fetch(`/api/patient-sessions?sessionId=${encodeURIComponent(activeSessionId)}`, {
+                method: 'GET',
+                headers: createAuthHeaders(userId, userTier),
+              });
+              if (!response.ok) {
+                throw new Error('Failed to fetch session');
+              }
+              const data = await response.json();
+              const sessions = data.sessions || [];
+              return sessions[0] || null;
+            },
+            staleTime: 0,
+          });
+        } catch {
+          session = queryClientRef.current.getQueryData(['consultation', 'session', activeSessionId]);
+        }
+        if (session) {
+          let chunks: any[] = [];
+          try {
+            chunks = typeof session.transcriptions === 'string' ? JSON.parse(session.transcriptions) : (session.transcriptions || []);
+          } catch {
+            chunks = [];
+          }
+          if (Array.isArray(chunks) && chunks.length > 0) {
+            let startIndex = 0;
+            if (lastAppliedChunkIdRef.current) {
+              const idx = chunks.findIndex((c: any) => c.id === lastAppliedChunkIdRef.current);
+              startIndex = idx >= 0 ? idx + 1 : 0;
+            }
+            const newChunks = chunks.slice(startIndex).filter((c: any) => (c?.text || '').trim().length > 0);
+            if (newChunks.length > 0) {
+              const delta = newChunks.map((t: any) => (t?.text || '').trim()).join(' ').trim();
+              const prev = typeof transcription?.transcript === 'string' ? transcription.transcript : '';
+              const next = prev ? `${prev} ${delta}`.trim() : delta;
+              setTranscription(next, false, undefined, undefined);
+              lastAppliedChunkIdRef.current = chunks[chunks.length - 1]?.id || lastAppliedChunkIdRef.current;
+            } else {
+              lastAppliedChunkIdRef.current = chunks[chunks.length - 1]?.id || lastAppliedChunkIdRef.current;
+            }
+          }
+        }
+      }, 900);
     },
   });
 

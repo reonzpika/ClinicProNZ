@@ -19,15 +19,36 @@ export async function GET(req: NextRequest) {
 
     const url = new URL(req.url);
     const status = url.searchParams.get('status') as 'active' | 'completed' | 'archived' | null;
+    const singleId = url.searchParams.get('sessionId');
     const limit = Number.parseInt(url.searchParams.get('limit') || '50');
 
-    // Query authenticated user sessions
+    // Query authenticated user sessions (optionally scoped to a single session)
     let query = db
       .select()
       .from(patientSessions)
       .where(eq(patientSessions.userId, userId))
       .orderBy(desc(patientSessions.createdAt))
       .limit(limit);
+
+    if (singleId) {
+      // Return a single session owned by the user
+      const one = await db
+        .select()
+        .from(patientSessions)
+        .where(and(eq(patientSessions.userId, userId), eq(patientSessions.id, singleId)))
+        .limit(1);
+
+      const sessions = one.map((session: any) => ({
+        ...session,
+        createdAt: session.createdAt?.toISOString() || new Date().toISOString(),
+        updatedAt: session.updatedAt?.toISOString() || new Date().toISOString(),
+        completedAt: session.completedAt?.toISOString() || null,
+        transcriptions: session.transcriptions ? JSON.parse(session.transcriptions) : [],
+        consultationItems: session.consultationItems ? JSON.parse(session.consultationItems) : [],
+      }));
+
+      return NextResponse.json({ sessions });
+    }
 
     if (status) {
       query = db
