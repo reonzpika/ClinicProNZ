@@ -23,7 +23,10 @@ const SILENCE_THRESHOLD = 2.5; // seconds of silence to trigger sending recordin
 const SMART_BOUNDARY_THRESHOLD = 60; // seconds - when to start looking for word boundaries (was 30)
 const WORD_BOUNDARY_PAUSE = 2; // seconds - micro-pause indicating word boundary (was 1.0)
 const FORCE_STOP_DURATION = 90; // seconds - absolute maximum before force-stopping (unchanged)
-const SPEECH_CONFIRMATION_FRAMES = 5; // Number of consecutive frames above threshold to confirm speech
+const SPEECH_CONFIRMATION_FRAMES = 2; // Reduced to cut start latency
+const STOP_VOLUME_THRESHOLD = 0.05; // Hysteresis stop threshold (start uses volumeThreshold ~0.10)
+const POST_ROLL_MS = 200; // Delay before actually stopping to catch trailing phonemes
+const RESTART_GRACE_MS = 1500; // Window allowing quicker restart after a stop
 
 // Add options for mobile support
 export type UseTranscriptionOptions = {
@@ -68,6 +71,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
   const analyserRef = useRef<AnalyserNode | null>(null);
   const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const vadLoopRef = useRef<NodeJS.Timeout | null>(null);
+  const postRollTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Recording session management
   const currentRecorderRef = useRef<MediaRecorder | null>(null);
@@ -79,6 +83,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
   const isPausedRef = useRef<boolean>(false);
   const sessionCountRef = useRef<number>(0);
   const isSessionActiveRef = useRef<boolean>(false);
+  const restartGraceUntilRef = useRef<number>(0);
 
   // Lightweight debug guard: enable by setting localStorage key 'debug:transcription' = '1'
   const debugLog = (...args: any[]) => {
@@ -98,8 +103,20 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
       return 0;
     }
 
-    const dataArray = new Uint8Array(analyserRef.current.fftSize);
-    analyserRef.current.getByteTimeDomainData(dataArray);
+    const analyser = analyserRef.current;
+    // Prefer float time domain data when available (better precision, Safari-compatible)
+    if (typeof (analyser as any).getFloatTimeDomainData === 'function') {
+      const floatArray = new Float32Array(analyser.fftSize);
+      (analyser as any).getFloatTimeDomainData(floatArray);
+      let sum = 0;
+      for (const sample of floatArray) {
+        sum += sample * sample;
+      }
+      return Math.sqrt(sum / floatArray.length);
+    }
+
+    const dataArray = new Uint8Array(analyser.fftSize);
+    analyser.getByteTimeDomainData(dataArray);
 
     // Compute RMS normalized between 0-1
     let sum = 0;
@@ -283,14 +300,23 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     // Update volume level for UI
     setState(prev => ({ ...prev, volumeLevel: adjustedVolume }));
 
-    // Speech detection
-    const isSpeaking = adjustedVolume > (volumeThreshold || 0.01);
+    // Speech detection with hysteresis
+    const startThreshold = volumeThreshold || 0.01;
+    const isSpeakingStart = adjustedVolume > startThreshold;
+    const isSpeakingKeep = adjustedVolume > (STOP_VOLUME_THRESHOLD || 0.01);
 
-    if (isSpeaking) {
+    if (isSpeakingStart) {
       speechFrameCountRef.current++;
-      if (speechFrameCountRef.current >= SPEECH_CONFIRMATION_FRAMES) {
+      const withinGrace = currentTime < restartGraceUntilRef.current;
+      const requiredFrames = withinGrace ? 1 : SPEECH_CONFIRMATION_FRAMES;
+      if (speechFrameCountRef.current >= requiredFrames) {
         lastSpokeAtRef.current = currentTime;
         setState(prev => ({ ...prev, noInputWarning: false }));
+        // Cancel any pending post-roll stop if speech resumed
+        if (postRollTimerRef.current) {
+          clearTimeout(postRollTimerRef.current);
+          postRollTimerRef.current = null;
+        }
       }
     } else {
       speechFrameCountRef.current = 0;
@@ -305,6 +331,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
       if (recordingDuration > FORCE_STOP_DURATION) {
         debugLog('VAD force stop', { recordingDuration, silenceDuration });
         stopRecordingSession();
+        restartGraceUntilRef.current = Date.now() + RESTART_GRACE_MS;
         return;
       }
 
@@ -312,22 +339,37 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
       if (recordingDuration > SMART_BOUNDARY_THRESHOLD) {
         if (silenceDuration > WORD_BOUNDARY_PAUSE) {
           debugLog('VAD boundary stop', { recordingDuration, silenceDuration });
-          stopRecordingSession();
+          if (!postRollTimerRef.current) {
+            postRollTimerRef.current = setTimeout(() => {
+              stopRecordingSession();
+              postRollTimerRef.current = null;
+              restartGraceUntilRef.current = Date.now() + RESTART_GRACE_MS;
+            }, POST_ROLL_MS);
+          }
           return;
         }
       }
 
       // Standard silence threshold
-      if (silenceDuration > SILENCE_THRESHOLD) {
+      if (!isSpeakingKeep && silenceDuration > SILENCE_THRESHOLD) {
         debugLog('VAD silence stop', { silenceDuration, recordingDuration });
-        stopRecordingSession();
+        if (!postRollTimerRef.current) {
+          postRollTimerRef.current = setTimeout(() => {
+            stopRecordingSession();
+            postRollTimerRef.current = null;
+            restartGraceUntilRef.current = Date.now() + RESTART_GRACE_MS;
+          }, POST_ROLL_MS);
+        }
         return;
       }
     } else {
       // Start new session if speaking
-      if (isSpeaking && speechFrameCountRef.current >= SPEECH_CONFIRMATION_FRAMES) {
+      const withinGrace = currentTime < restartGraceUntilRef.current;
+      const requiredFrames = withinGrace ? 1 : SPEECH_CONFIRMATION_FRAMES;
+      if (isSpeakingStart && speechFrameCountRef.current >= requiredFrames) {
         debugLog('VAD start session', { volume: adjustedVolume, speechFrames: speechFrameCountRef.current });
         startRecordingSession();
+        restartGraceUntilRef.current = 0; // clear grace once started
       }
     }
 
@@ -343,7 +385,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
       clearInterval(vadLoopRef.current);
     }
 
-    vadLoopRef.current = setInterval(vadLoop, 100); // 100ms intervals
+    vadLoopRef.current = setInterval(vadLoop, 40); // faster loop for lower latency
   }, [vadLoop]);
 
   // Stop VAD loop
@@ -375,7 +417,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
       if (!analyserRef.current) {
         analyserRef.current = audioContextRef.current.createAnalyser();
         analyserRef.current.fftSize = 2048;
-        analyserRef.current.smoothingTimeConstant = 0.8;
+        analyserRef.current.smoothingTimeConstant = 0.4; // lower smoothing for quicker response
       }
 
       if (!sourceNodeRef.current) {
