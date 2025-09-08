@@ -217,7 +217,11 @@ export const useTranscriptionStore = create<TranscriptionStore>()(
           endIdx = match.index + match[0].length;
           if (count >= tokenCount) break;
         }
-        while (endIdx < text.length && /\s/.test(text[endIdx])) endIdx += 1;
+        while (endIdx < text.length) {
+          const ch = text.charAt(endIdx);
+          if (!/\s/.test(ch)) break;
+          endIdx += 1;
+        }
         return text.slice(endIdx);
       };
       const newTokensFromWords = Array.isArray(words) && words.length > 0
