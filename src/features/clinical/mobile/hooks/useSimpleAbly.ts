@@ -255,6 +255,7 @@ export const useSimpleAbly = ({
           if (!isCurrentConnection) {
  return;
 }
+          setIsConnected(false);
           try {
  callbacksRef.current.onConnectionStatusChanged?.(false);
 } catch {}
@@ -413,6 +414,91 @@ export const useSimpleAbly = ({
   // Removed visibility handling - not needed in simplified architecture
 
   // Removed duplicate publishSafe definition (moved earlier in file)
+
+  // Attempt to reconnect and reattach channel when app returns to foreground or network returns
+  const attemptReconnect = useCallback(async () => {
+    const ably = ablyRef.current;
+    if (!ably) {
+      return;
+    }
+
+    const state = ably.connection.state as any;
+    if (state === 'suspended' || state === 'disconnected' || state === 'closing' || state === 'closed') {
+      try {
+        ably.connect();
+      } catch {
+        // ignore connect errors; Ably will retry
+      }
+    }
+
+    // Ensure channel is attached
+    const ch = channelRef.current;
+    if (ch) {
+      try {
+        const channelState = (ch as any).state as string | undefined;
+        if (channelState !== 'attached' && channelState !== 'attaching') {
+          try {
+            await ch.attach();
+          } catch {
+            // attach may fail if connection not ready yet; next resume will retry
+          }
+        }
+      } catch {
+        // ignore state access errors
+      }
+    }
+
+    // Try to flush any queued messages if ready
+    if (channelRef.current && outboxRef.current.length > 0 && ably.connection.state === 'connected') {
+      const pending = [...outboxRef.current];
+      outboxRef.current = [];
+      for (const item of pending) {
+        try {
+          channelRef.current.publish(item.eventName, item.data);
+        } catch {
+          // If publish fails, re-queue once
+          outboxRef.current.push(item);
+        }
+      }
+    }
+  }, []);
+
+  // Reconnect on visibility/pageshow/online events
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      try {
+        if (document.visibilityState === 'visible') {
+          attemptReconnect();
+        }
+      } catch {
+        // ignore
+      }
+    };
+    const onPageShow = () => {
+      attemptReconnect();
+    };
+    const onOnline = () => {
+      attemptReconnect();
+    };
+
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', onVisibilityChange);
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('pageshow', onPageShow);
+      window.addEventListener('online', onOnline);
+    }
+
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', onVisibilityChange);
+      }
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('pageshow', onPageShow);
+        window.removeEventListener('online', onOnline);
+      }
+    };
+  }, [attemptReconnect]);
 
   // Send recording status (mobile to desktop)
   const sendRecordingStatus = useCallback((isRecording: boolean) => {
