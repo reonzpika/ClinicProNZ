@@ -76,6 +76,8 @@ export default function ConsultationPage() {
   const isClearingRef = useRef(false);
   // Abort controller for in-flight note generation requests
   const genAbortRef = useRef<AbortController | null>(null);
+  // Apply user defaults only once on initial settings load
+  const hasAppliedDefaultsRef = useRef(false);
 
   // Mobile block modal - prevent mobile access to consultation
   const showMobileBlock = isMobile;
@@ -102,28 +104,32 @@ export default function ConsultationPage() {
     loadSettings(userId, userTier);
   }, [loadSettings, userId, userTier]);
 
+  // Apply default input mode and template only once after settings load
+  useEffect(() => {
+    if (!settings || hasAppliedDefaultsRef.current) {
+      return;
+    }
+    // Apply input mode default once
+    if (settings.defaultInputMode === 'typed') {
+      setInputMode('typed');
+    } else {
+      setInputMode('audio');
+    }
+
+    // Apply template default once
+    const fav = settings.favouriteTemplateId || '20dc1526-62cc-4ff4-a370-ffc1ded52aef';
+    setTemplateId(fav);
+
+    hasAppliedDefaultsRef.current = true;
+  }, [settings, setInputMode, setTemplateId]);
+
+  // Always reflect default recording method changes from settings
   useEffect(() => {
     if (!settings) {
       return;
     }
-    // Apply input mode default instantly
-    if (settings.defaultInputMode === 'typed') {
-      if (inputMode !== 'typed') {
-        setInputMode('typed');
-      }
-    } else if (inputMode !== 'audio') {
-      setInputMode('audio');
-    }
-
-    // Apply template default instantly
-    const fav = settings.favouriteTemplateId || '20dc1526-62cc-4ff4-a370-ffc1ded52aef';
-    if (templateId !== fav) {
-      setTemplateId(fav);
-    }
-
-    // Set default recording method for controls
     setDefaultRecordingMethod((settings.defaultRecordingMethod as any) || 'desktop');
-  }, [settings, inputMode, templateId, setInputMode, setTemplateId]);
+  }, [settings]);
 
   // Handle Ably errors (moved before useSimpleAbly)
   const handleError = useCallback((error: string) => {
