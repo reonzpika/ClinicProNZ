@@ -101,13 +101,19 @@ export function TranscriptionControls({
   const handleManualRefresh = async () => {
     try {
       setIsRefreshingTranscript(true);
+      const dbg = (() => { try { return typeof window !== 'undefined' && localStorage.getItem('debug:ably') === '1'; } catch { return false; } })();
+      const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 0;
+      if (dbg) { try { console.debug('[CONSULT][ManualRefresh] start', { sessionId: currentPatientSessionId }); } catch {} }
       const activeSessionId = currentPatientSessionId || '';
 
       // Invalidate both sessions list and active session
-      await Promise.allSettled([
+      const tInv0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 0;
+      const results = await Promise.allSettled([
         queryClient.invalidateQueries({ queryKey: ['consultation', 'sessions'] }),
         queryClient.invalidateQueries({ queryKey: ['consultation', 'session', activeSessionId] }),
       ]);
+      const tInv = ((typeof performance !== 'undefined' && performance.now) ? performance.now() : tInv0) - tInv0;
+      if (dbg) { try { console.debug('[CONSULT][ManualRefresh] invalidated', { durationMs: tInv, results }); } catch {} }
 
       // Hydrate from cache
       const sessions: any[] | undefined = queryClient.getQueryData(['consultation', 'sessions']) as any;
@@ -122,6 +128,7 @@ export function TranscriptionControls({
         }
 
         if (Array.isArray(chunks) && chunks.length > 0) {
+
           // Overlap-aware join to reduce duplicate/missed words at chunk boundaries
           const normalizeToken = (w: string) => w.toLowerCase().replace(/[^a-z0-9']+/g, '');
           const splitTokens = (text: string) => (text.match(/\S+/g) || []);
