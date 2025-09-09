@@ -102,7 +102,6 @@ export function TranscriptionControls({
     try {
       setIsRefreshingTranscript(true);
       const dbg = (() => { try { return typeof window !== 'undefined' && localStorage.getItem('debug:ably') === '1'; } catch { return false; } })();
-      const t0 = (typeof performance !== 'undefined' && performance.now) ? performance.now() : 0;
       if (dbg) { try { console.debug('[CONSULT][ManualRefresh] start', { sessionId: currentPatientSessionId }); } catch {} }
       const activeSessionId = currentPatientSessionId || '';
 
