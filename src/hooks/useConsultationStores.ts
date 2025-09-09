@@ -11,9 +11,10 @@ import {
 } from '@/src/hooks/consultation/useConsultationQueries';
 import { useSessionAccess } from '@/src/hooks/useSessionAccess';
 import { createAuthHeaders } from '@/src/shared/utils';
-import { useConsultationStore } from '@/src/stores/consultationStore';
+import { useConsultationStore, DEFAULT_TEMPLATE_ID } from '@/src/stores/consultationStore';
 import { useTranscriptionStore } from '@/src/stores/transcriptionStore';
 import type { PatientSession } from '@/src/types/consultation';
+import { useUserSettingsStore } from '@/src/stores/userSettingsStore';
 
 // Facade hook used across the clinical UI. Provides a stable API over Zustand + TanStack state.
 export function useConsultationStores(): any {
@@ -25,6 +26,7 @@ export function useConsultationStores(): any {
   // Zustand stores
   const transcriptionStore = useTranscriptionStore();
   const consultationStore = useConsultationStore();
+  const { settings } = useUserSettingsStore();
   // Mobile token store removed
 
   // Server state via React Query - disable on mobile routes
@@ -108,32 +110,35 @@ export function useConsultationStores(): any {
 
   const ensureActiveSession = useCallback(async (): Promise<string | null> => {
     if (consultationStore.currentPatientSessionId) {
- return consultationStore.currentPatientSessionId;
-}
+      return consultationStore.currentPatientSessionId;
+    }
     try {
       // Simple patient name - date/time info stored in session table
       const patientName = 'Patient';
+      // Use user's favourite template or system default for brand-new sessions
+      const templateForNewSession = (settings?.favouriteTemplateId as string | undefined) || DEFAULT_TEMPLATE_ID;
 
-      const result = await createSessionMutation.mutateAsync({ patientName });
+      const result = await createSessionMutation.mutateAsync({ patientName, templateId: templateForNewSession });
+      // Point local state to the new session and reset template to default for fresh start
       consultationStore.setCurrentPatientSessionId(result.id);
+      consultationStore.setTemplateId(templateForNewSession);
       return result.id;
     } catch {
       return null;
     }
-  }, [consultationStore, createSessionMutation]);
+  }, [consultationStore, createSessionMutation, settings?.favouriteTemplateId]);
 
   const createPatientSession = useCallback(async (patientName: string, templateId?: string): Promise<PatientSession | null> => {
     try {
-      const result = await createSessionMutation.mutateAsync({ patientName, templateId });
-      if (templateId) {
- consultationStore.setTemplateId(templateId);
-}
+      const chosenTemplateId = templateId || (settings?.favouriteTemplateId as string | undefined) || DEFAULT_TEMPLATE_ID;
+      const result = await createSessionMutation.mutateAsync({ patientName, templateId: chosenTemplateId });
+      consultationStore.setTemplateId(chosenTemplateId);
       consultationStore.setCurrentPatientSessionId(result.id);
       return result;
     } catch {
       return null;
     }
-  }, [createSessionMutation, consultationStore]);
+  }, [createSessionMutation, consultationStore, settings?.favouriteTemplateId]);
 
   const updatePatientSession = useCallback(async (sessionId: string, updates: Partial<PatientSession>): Promise<void> => {
     await updateSessionMutation.mutateAsync({ sessionId, updates });
