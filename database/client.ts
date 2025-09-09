@@ -10,13 +10,13 @@ import * as schema from './schema';
 dotenv.config({ path: resolve(process.cwd(), '.env.local') });
 dotenv.config();
 
-if (!process.env.DATABASE_URL) {
-  throw new Error('Missing DATABASE_URL');
-}
+const databaseUrl = process.env.DATABASE_URL;
 
-// Initialize database client
-export const sql = neon(process.env.DATABASE_URL);
-export const db = drizzle(sql, { schema });
+// Initialize database client lazily-safe for build time (no throw on import)
+export const sql = databaseUrl ? neon(databaseUrl) : (null as unknown as ReturnType<typeof neon>);
+export const db = databaseUrl
+  ? drizzle(sql, { schema })
+  : ({} as unknown as ReturnType<typeof drizzle<typeof schema>>);
 
 // Export schema for use in other files
 export { schema };

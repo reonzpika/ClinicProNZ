@@ -21,24 +21,37 @@ export const metadata: Metadata = {
   description: 'Finish your consultation notes in under 1 minute. AI-powered medical scribing built specifically for New Zealand general practice.',
 };
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+  const AppTree = (
+    <QueryClientProvider>
+      <TestUserProvider>
+        <html lang="en">
+          <body className={inter.className}>
+            {/* <StagewiseToolbar /> */}
+            <AppLayoutWrapper>{children}</AppLayoutWrapper>
+            <Analytics />
+          </body>
+        </html>
+      </TestUserProvider>
+    </QueryClientProvider>
+  );
+
   return (
-    <ClerkProvider>
-      <QueryClientProvider>
-        <TestUserProvider>
-          <html lang="en">
-            <body className={inter.className}>
-              {/* <StagewiseToolbar /> */}
-              <AppLayoutWrapper>{children}</AppLayoutWrapper>
-              <Analytics />
-            </body>
-          </html>
-        </TestUserProvider>
-      </QueryClientProvider>
-    </ClerkProvider>
+    publishableKey ? (
+      <ClerkProvider publishableKey={publishableKey}>
+        {AppTree}
+      </ClerkProvider>
+    ) : (
+      AppTree
+    )
   );
 }

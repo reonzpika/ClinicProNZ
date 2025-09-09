@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-if (!OPENAI_API_KEY) {
-  throw new Error('Missing OPENAI_API_KEY');
+function getOpenAI() {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) throw new Error('Missing OPENAI_API_KEY');
+  return new OpenAI({ apiKey });
 }
-
-const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
 // System prompt for NZ GP clinical assistant
 const CHATBOT_SYSTEM_PROMPT = `You are a clinical AI assistant specifically designed to support New Zealand General Practitioners (GPs) in their post-consultation workflow. Your role is to provide evidence-based, accurate clinical guidance that aligns with New Zealand healthcare guidelines and best practices.
@@ -42,6 +41,12 @@ Please use this consultation context to provide relevant, specific guidance for 
 
 export async function POST(req: Request) {
   try {
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json(
+        { code: 'CONFIG_ERROR', message: 'Missing OPENAI_API_KEY' },
+        { status: 500 },
+      );
+    }
     const { messages, consultationNote, useContext, rawConsultationData } = await req.json();
 
     if (!messages || !Array.isArray(messages)) {
@@ -95,7 +100,7 @@ Please use this raw consultation data to provide relevant guidance. This is unst
     ];
 
     // Call OpenAI with streaming
-    const stream = await openai.chat.completions.create({
+    const stream = await getOpenAI().chat.completions.create({
       model: 'gpt-4', // Using GPT-4 for better clinical reasoning
       messages: openaiMessages,
       temperature: 0.3, // Lower temperature for more consistent medical advice
