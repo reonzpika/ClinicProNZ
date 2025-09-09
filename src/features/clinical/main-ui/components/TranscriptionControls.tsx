@@ -244,6 +244,13 @@ export function TranscriptionControls({
     }
   }, [mobileIsRecording, pendingControl, controlAckTimer]);
 
+  // Clear any outstanding remote control error when mobile recording begins (late ACK)
+  useEffect(() => {
+    if (mobileIsRecording) {
+      setControlError(null);
+    }
+  }, [mobileIsRecording]);
+
   // Remote control handlers (send via global Ably bridge exposed in ConsultationPage)
   const sendMobileControl = async (action: 'start' | 'stop') => {
     try {
