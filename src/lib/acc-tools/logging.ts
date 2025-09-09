@@ -1,5 +1,6 @@
 import { db } from '../../../database/client';
 import { llmAuditLogs } from '../../../database/schema/llm_audit';
+import { eq } from 'drizzle-orm';
 
 export async function logLlmOutput(params: {
 	sessionId: string;
@@ -25,5 +26,5 @@ export async function logUserEdits(params: {
 }): Promise<void> {
 	await db.update(llmAuditLogs)
 		.set({ editsJson: params.editsJson })
-		.where(llmAuditLogs.id.eq(params.id as any));
+		.where(eq(llmAuditLogs.id, params.id));
 }

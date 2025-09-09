@@ -1,4 +1,6 @@
 'use client';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 import { useAuth, useUser } from '@clerk/nextjs';
 import { AlertCircle, CheckCircle, Mail } from 'lucide-react';

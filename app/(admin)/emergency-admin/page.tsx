@@ -1,6 +1,8 @@
 'use client';
 
 import { useUser } from '@clerk/nextjs';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 import { useState } from 'react';
 
 import { Alert, AlertDescription } from '@/src/shared/components/ui/alert';

@@ -5,15 +5,17 @@ import { db } from '../../../database/client';
 import { ragDocuments } from '../../../database/schema/rag';
 import type { DocumentToIngest, RagQueryResult } from './types';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+function getOpenAI() {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) throw new Error('Missing OPENAI_API_KEY');
+  return new OpenAI({ apiKey });
+}
 
 /**
  * Create embedding for text using OpenAI
  */
 export async function createEmbedding(text: string): Promise<number[]> {
-  const response = await openai.embeddings.create({
+  const response = await getOpenAI().embeddings.create({
     model: 'text-embedding-3-small',
     input: text,
   });

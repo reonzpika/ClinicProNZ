@@ -5,15 +5,11 @@ import { TemplateService } from '@/src/features/templates/template-service';
 import { compileTemplate } from '@/src/features/templates/utils/compileTemplate';
 import { checkCoreSessionLimit, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-if (!OPENAI_API_KEY) {
-  throw new Error('Missing OPENAI_API_KEY');
+function getOpenAI() {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) throw new Error('Missing OPENAI_API_KEY');
+  return new OpenAI({ apiKey, timeout: 45000 });
 }
-
-const openai = new OpenAI({
-  apiKey: OPENAI_API_KEY,
-  timeout: 45000, // Increased timeout since Vercel now allows 60s
-});
 
 // Add a timeout wrapper for promises
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number, errorMessage: string): Promise<T> {
@@ -30,6 +26,12 @@ export async function POST(req: Request) {
   const startTime = Date.now();
 
   try {
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json(
+        { code: 'CONFIG_ERROR', message: 'Missing OPENAI_API_KEY' },
+        { status: 500 },
+      );
+    }
     // Parse request body early with timeout
     const body = await withTimeout(
       req.json(),
@@ -105,7 +107,7 @@ export async function POST(req: Request) {
     // Call OpenAI with dynamic timeout based on remaining time
     const openaiTimeout = Math.min(remainingTime - 5000, 40000);
     const stream = await withTimeout(
-      openai.chat.completions.create({
+      getOpenAI().chat.completions.create({
         model: 'gpt-4.1-mini', // Faster, more affordable reasoning model
         messages: [
           { role: 'system', content: system },

@@ -1,5 +1,7 @@
 /* eslint-disable style/multiline-ternary */
 'use client';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 import { useAuth } from '@clerk/nextjs';
 import { useEffect, useMemo, useRef, useState } from 'react';

@@ -7,20 +7,22 @@ export type VectorItem = {
 	metadata?: Record<string, any>;
 };
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const PINECONE_API_KEY = process.env.PINECONE_API_KEY;
-const PINECONE_ENVIRONMENT = process.env.PINECONE_ENVIRONMENT;
 const PINECONE_INDEX_NAME = process.env.PINECONE_INDEX_NAME || 'clinicpro-acc-tools';
 
-if (!OPENAI_API_KEY) throw new Error('Missing OPENAI_API_KEY');
-if (!PINECONE_API_KEY) throw new Error('Missing PINECONE_API_KEY');
-if (!PINECONE_ENVIRONMENT) throw new Error('Missing PINECONE_ENVIRONMENT');
+function getOpenAI(): OpenAI {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) throw new Error('Missing OPENAI_API_KEY');
+    return new OpenAI({ apiKey });
+}
 
-const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
-const pinecone = new Pinecone({ apiKey: PINECONE_API_KEY, environment: PINECONE_ENVIRONMENT });
+function getPinecone(): Pinecone {
+    const apiKey = process.env.PINECONE_API_KEY;
+    if (!apiKey) throw new Error('Missing PINECONE_API_KEY');
+    return new Pinecone({ apiKey });
+}
 
 export async function embed(texts: string[]): Promise<number[][]> {
-	const res = await openai.embeddings.create({
+	const res = await getOpenAI().embeddings.create({
 		model: 'text-embedding-3-small',
 		input: texts,
 	});
@@ -28,19 +30,19 @@ export async function embed(texts: string[]): Promise<number[][]> {
 }
 
 export async function upsertVectors(namespace: string, items: VectorItem[]): Promise<void> {
-	const index = pinecone.index(PINECONE_INDEX_NAME).namespace(namespace);
-	const embeddings = await embed(items.map(i => i.text));
+	const index = getPinecone().index(PINECONE_INDEX_NAME).namespace(namespace);
+	const embeddings: number[][] = await embed(items.map(i => i.text));
 	const vectors = items.map((item, i) => ({
 		id: item.id,
-		values: embeddings[i],
+		values: embeddings[i]!,
 		metadata: item.metadata || {},
 	}));
 	await index.upsert(vectors);
 }
 
 export async function queryTopK(namespace: string, query: string, topK: number): Promise<{ id: string; score: number; metadata: Record<string, any> }[]> {
-	const index = pinecone.index(PINECONE_INDEX_NAME).namespace(namespace);
-	const [embedding] = await embed([query]);
+	const index = getPinecone().index(PINECONE_INDEX_NAME).namespace(namespace);
+	const embedding = (await embed([query]))[0]!;
 	const res = await index.query({
 		topK,
 		vector: embedding,
