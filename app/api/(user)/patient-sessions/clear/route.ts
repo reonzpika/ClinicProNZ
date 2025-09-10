@@ -27,6 +27,10 @@ export async function POST(req: Request) {
         transcriptions: JSON.stringify([]),
         typedInput: '',
         consultationNotes: '',
+        problemsText: '',
+        objectiveText: '',
+        assessmentText: '',
+        planText: '',
         notes: '',
         updatedAt: new Date(),
       })
