@@ -40,6 +40,38 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   const [isExpanded, setIsExpanded] = useState(isMinimized ? false : defaultExpanded);
   const [lastSavedNotes, setLastSavedNotes] = useState('');
 
+  // Refs for keyboard focus management
+  const problemsRef = React.useRef<HTMLTextAreaElement | null>(null);
+  const objectiveRef = React.useRef<HTMLTextAreaElement | null>(null);
+  const assessmentRef = React.useRef<HTMLTextAreaElement | null>(null);
+  const planRef = React.useRef<HTMLTextAreaElement | null>(null);
+
+  const handleKeyDownCycle = (e: React.KeyboardEvent) => {
+    if (e.key !== 'Tab') {
+      return;
+    }
+    const order = [problemsRef.current, objectiveRef.current, assessmentRef.current, planRef.current];
+    const active = (typeof document !== 'undefined') ? (document.activeElement as HTMLElement | null) : null;
+    const idx = order.findIndex(el => el && active === el);
+
+    e.preventDefault();
+
+    if (idx === -1) {
+      // Focus Problems first when tabbing into the group
+      if (order[0]) {
+        order[0].focus();
+      }
+      return;
+    }
+
+    const dir = e.shiftKey ? -1 : 1;
+    const nextIdx = (idx + dir + order.length) % order.length;
+    const nextEl = order[nextIdx];
+    if (nextEl) {
+      nextEl.focus();
+    }
+  };
+
   // Section state is maintained in the store now
   const {
     problemsText,
@@ -254,7 +286,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
 
         {/* Full editing interface when expanded */}
         {isExpanded && (
-          <div className="space-y-3">
+          <div className="space-y-3" onKeyDown={handleKeyDownCycle}>
             <div className="space-y-3">
               <div>
                 <label className="mb-1 block text-xs font-medium text-slate-600">Problems</label>
@@ -266,6 +298,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                   placeholder="List problems..."
                   className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   rows={2}
+                  ref={problemsRef}
                 />
               </div>
               <div>
@@ -278,6 +311,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                   placeholder={placeholder}
                   className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   rows={3}
+                  ref={objectiveRef}
                 />
               </div>
               <div>
@@ -290,6 +324,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                   placeholder="Assessment..."
                   className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   rows={2}
+                  ref={assessmentRef}
                 />
               </div>
               <div>
@@ -302,6 +337,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                   placeholder="Plan..."
                   className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   rows={2}
+                  ref={planRef}
                 />
               </div>
             </div>
@@ -359,7 +395,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             </button>
           </div>
         </div>
-        <div className="flex flex-1 flex-col space-y-3">
+        <div className="flex flex-1 flex-col space-y-3" onKeyDown={handleKeyDownCycle}>
           <div className="grid grid-cols-1 gap-3">
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700">Problems</label>
@@ -370,6 +406,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 onBlur={handleNotesBlur}
                 placeholder="List problems..."
                 className="min-h-[60px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                ref={problemsRef}
               />
             </div>
             <div>
@@ -381,6 +418,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 onBlur={handleNotesBlur}
                 placeholder={placeholder}
                 className="min-h-[120px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                ref={objectiveRef}
               />
             </div>
             <div>
@@ -392,6 +430,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 onBlur={handleNotesBlur}
                 placeholder="Assessment..."
                 className="min-h-[80px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                ref={assessmentRef}
               />
             </div>
             <div>
@@ -403,6 +442,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 onBlur={handleNotesBlur}
                 placeholder="Plan..."
                 className="min-h-[80px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                ref={planRef}
               />
             </div>
           </div>
@@ -433,7 +473,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
           </button>
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-3">
+      <div className="grid grid-cols-1 gap-3" onKeyDown={handleKeyDownCycle}>
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">Problems</label>
           <Textarea
@@ -444,6 +484,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             placeholder="List problems..."
             className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             rows={3}
+            ref={problemsRef}
           />
         </div>
         <div>
@@ -456,6 +497,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             placeholder={placeholder}
             className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             rows={5}
+            ref={objectiveRef}
           />
         </div>
         <div>
@@ -468,6 +510,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             placeholder="Assessment..."
             className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             rows={4}
+            ref={assessmentRef}
           />
         </div>
         <div>
@@ -480,6 +523,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             placeholder="Plan..."
             className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             rows={4}
+            ref={planRef}
           />
         </div>
       </div>
