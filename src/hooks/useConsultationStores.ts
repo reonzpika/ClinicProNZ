@@ -69,7 +69,11 @@ export function useConsultationStores(): any {
     const hasRemoteTrans = Array.isArray(remoteTrans) && remoteTrans.length > 0;
     const hasRemoteTextFields = !!(session.typedInput && String(session.typedInput).trim())
       || !!(session.notes && String(session.notes).trim())
-      || !!(session.consultationNotes && String(session.consultationNotes).trim());
+      || !!(session.consultationNotes && String(session.consultationNotes).trim())
+      || !!(session.problemsText && String(session.problemsText).trim())
+      || !!(session.objectiveText && String(session.objectiveText).trim())
+      || !!(session.assessmentText && String(session.assessmentText).trim())
+      || !!(session.planText && String(session.planText).trim());
     const hasRemote = hasRemoteTrans || hasRemoteTextFields;
 
     // Guard: avoid overwriting or clearing local when not needed
@@ -97,6 +101,14 @@ export function useConsultationStores(): any {
     if (session.consultationNotes) {
  consultationStore.setConsultationNotes(session.consultationNotes);
 }
+    // One-time migration: legacy consultationNotes -> objective if new fields empty
+    try {
+      const hasNewFields = !!(session.problemsText || session.objectiveText || session.assessmentText || session.planText);
+      if (!hasNewFields && session.consultationNotes && String(session.consultationNotes).trim().length > 0) {
+        // Save legacy into objectiveText server-side and clear legacy field
+        updatePatientSession(session.id, { objectiveText: String(session.consultationNotes), consultationNotes: '' } as any).catch(() => {});
+      }
+    } catch {}
     if (session.templateId) {
  consultationStore.setTemplateId(session.templateId);
 }
