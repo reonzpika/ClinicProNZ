@@ -233,7 +233,7 @@ export function useConsultationStores(): any {
         consultationStore.setConsultationNotes('');
       }
     } catch {}
-    if (session.templateId) {
+    if (session.templateId && session.templateId !== consultationStore.templateId) {
       consultationStore.setTemplateId(session.templateId);
     }
   }, [

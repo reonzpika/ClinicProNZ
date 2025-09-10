@@ -75,33 +75,31 @@ export function TemplateSelector() {
     loadTemplates();
   }, [isSignedIn, userId, userTier]);
 
-  // Find the selected template from the templates list with auto-select fallback
+  // Initial template selection: run once when templates load and no templateId is set or invalid
+  useEffect(() => {
+    if (templates.length === 0) {
+      return;
+    }
+    const current = templateId ? templates.find(t => t.id === templateId) : undefined;
+    if (current) {
+      return; // already valid
+    }
+    const byDefault = userDefaultTemplateId ? templates.find(t => t.id === userDefaultTemplateId) : undefined;
+    const firstDefault = templates.find(t => t.type === 'default');
+    const fallback = templates[0];
+    const next = byDefault || firstDefault || fallback;
+    if (next && next.id && next.id !== templateId) {
+      setTemplateId(next.id);
+    }
+  }, [templates, templateId, userDefaultTemplateId, setTemplateId]);
+
+  // Compute selected template for display only (no side effects)
   const selectedTemplate = useMemo(() => {
     if (templates.length === 0) {
       return undefined;
     }
-    // If current templateId is present, use it
-    const current = templateId ? templates.find(t => t.id === templateId) : undefined;
-    if (current) {
-      return current;
-    }
-    // Else try user default template
-    const byDefault = userDefaultTemplateId ? templates.find(t => t.id === userDefaultTemplateId) : undefined;
-    if (byDefault) {
-      // Persist selection
-      setTemplateId(byDefault.id);
-      return byDefault;
-    }
-    // Else choose first default template if exists
-    const firstDefault = templates.find(t => t.type === 'default');
-    if (firstDefault) {
-      setTemplateId(firstDefault.id);
-      return firstDefault;
-    }
-    // Fallback to first template
-    setTemplateId(templates[0]!.id);
-    return templates[0];
-  }, [templates, templateId, userDefaultTemplateId, setTemplateId]);
+    return templateId ? templates.find(t => t.id === templateId) : undefined;
+  }, [templates, templateId]);
   const fallbackTemplate: Template = {
     id: '',
     name: '',
