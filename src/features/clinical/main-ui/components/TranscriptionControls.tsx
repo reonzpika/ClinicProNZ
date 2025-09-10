@@ -417,13 +417,7 @@ export function TranscriptionControls({
             {/* removed ready-for-review label */}
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <FeatureFeedbackButton
-            feature="transcription"
-            context={`Transcript length: ${transcript?.length || 0} chars, Recording time: ${recordingStartTime ? Math.round((Date.now() - recordingStartTime) / 1000) : 0}s, Recording state: ${isRecording ? 'active' : 'stopped'}`}
-            variant="minimal"
-          />
-        </div>
+        <div className="flex items-center gap-2" />
       </div>
 
       <div>
@@ -553,7 +547,7 @@ export function TranscriptionControls({
               <Alert className="p-2 text-xs border-blue-200 bg-blue-50 text-blue-700">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <RefreshCw className="size-3 animate-spin" />
+                    <span className="inline-block size-3 animate-spin rounded-full border-2 border-blue-300 border-t-transparent" />
                     <span className="font-medium">Waiting for mobile…</span>
                   </div>
                   <div className="text-[10px] text-blue-600">Ensure phone is unlocked</div>
