@@ -45,7 +45,6 @@ export function TranscriptionControls({
     setConsentObtained,
     transcription: contextTranscription,
     setTranscription,
-    currentPatientSessionId,
   } = useConsultationStores();
 
   const [showConsentModal, setShowConsentModal] = useState(false);
