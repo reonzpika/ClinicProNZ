@@ -39,6 +39,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   const [processedItemIds] = useState(new Set<string>());
   const [isExpanded, setIsExpanded] = useState(isMinimized ? false : defaultExpanded);
   const [lastSavedNotes, setLastSavedNotes] = useState('');
+  const [activeSection, setActiveSection] = useState<'problems' | 'objective' | 'assessment' | 'plan'>('problems');
 
   // Refs for keyboard focus management
   const problemsRef = React.useRef<HTMLTextAreaElement | null>(null);
@@ -46,32 +47,26 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   const assessmentRef = React.useRef<HTMLTextAreaElement | null>(null);
   const planRef = React.useRef<HTMLTextAreaElement | null>(null);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
-  const lastTabInfoRef = React.useRef<{ isTab: boolean; shift: boolean }>({ isTab: false, shift: false });
 
-  const handleKeyDownCycle = (e: React.KeyboardEvent) => {
-    if (e.key !== 'Tab') {
-      return;
-    }
-    const order = [problemsRef.current, objectiveRef.current, assessmentRef.current, planRef.current];
-    const active = (typeof document !== 'undefined') ? (document.activeElement as HTMLElement | null) : null;
-    const idx = order.findIndex(el => el && active === el);
+  const focusSection = (section: 'problems' | 'objective' | 'assessment' | 'plan') => {
+    setActiveSection(section);
+    const map: Record<string, HTMLTextAreaElement | null> = {
+      problems: problemsRef.current,
+      objective: objectiveRef.current,
+      assessment: assessmentRef.current,
+      plan: planRef.current,
+    } as any;
+    map[section]?.focus();
+  };
 
+  const handleRovingKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key !== 'Tab') return;
     e.preventDefault();
-
-    if (idx === -1) {
-      // Focus Problems first when tabbing into the group
-      if (order[0]) {
-        order[0].focus();
-      }
-      return;
-    }
-
+    const order: Array<'problems' | 'objective' | 'assessment' | 'plan'> = ['problems', 'objective', 'assessment', 'plan'];
+    const idx = order.indexOf(activeSection);
     const dir = e.shiftKey ? -1 : 1;
     const nextIdx = (idx + dir + order.length) % order.length;
-    const nextEl = order[nextIdx];
-    if (nextEl) {
-      nextEl.focus();
-    }
+    focusSection(order[nextIdx]);
   };
 
   // Auto-focus Problems when expanding the section
@@ -83,44 +78,29 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     }
   }, [isExpanded]);
 
-  // Record last Tab key press
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      lastTabInfoRef.current = { isTab: e.key === 'Tab', shift: e.shiftKey };
-    };
-    document.addEventListener('keydown', onKeyDown, true);
-    return () => document.removeEventListener('keydown', onKeyDown, true);
-  }, []);
-
-  // Redirect first Tab into the editor when visible
-  useEffect(() => {
-    const onFocusIn = (e: FocusEvent) => {
-      if (!isExpanded) return;
-      const container = containerRef.current;
-      if (!container) return;
-      const target = e.target as HTMLElement | null;
-      const isInside = !!(target && container.contains(target));
-      if (isInside) return;
-      if (!lastTabInfoRef.current.isTab) return;
-
-      try {
-        if (lastTabInfoRef.current.shift) {
-          (planRef.current
-            || (container.querySelector('#additional-notes-plan') as HTMLTextAreaElement | null)
-            || (container.querySelector('#additional-notes-minimized-plan') as HTMLTextAreaElement | null))?.focus();
-        } else {
-          (problemsRef.current
-            || (container.querySelector('#additional-notes') as HTMLTextAreaElement | null)
-            || (container.querySelector('#additional-notes-problems') as HTMLTextAreaElement | null)
-            || (container.querySelector('#additional-notes-minimized-problems') as HTMLTextAreaElement | null))?.focus();
-        }
-      } catch {}
-      // Reset to avoid repeated overrides
-      lastTabInfoRef.current = { isTab: false, shift: false };
-    };
-    document.addEventListener('focusin', onFocusIn, true);
-    return () => document.removeEventListener('focusin', onFocusIn, true);
-  }, [isExpanded]);
+  // Focus guards: leading and trailing sentinels
+  const LeadingGuard = () => (
+    <span
+      tabIndex={0}
+      className="sr-only"
+      onFocus={() => {
+        if (!isExpanded) setIsExpanded(true);
+        focusSection('problems');
+      }}
+      aria-hidden="true"
+    />
+  );
+  const TrailingGuard = () => (
+    <span
+      tabIndex={0}
+      className="sr-only"
+      onFocus={() => {
+        if (!isExpanded) setIsExpanded(true);
+        focusSection('plan');
+      }}
+      aria-hidden="true"
+    />
+  );
 
   // Document-level Tab trap: when editor is visible and focus is outside, Tab focuses Problems (or Plan with Shift)
   useEffect(() => {
@@ -365,7 +345,8 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
 
         {/* Full editing interface when expanded */}
         {isExpanded && (
-          <div className="space-y-3" onKeyDown={handleKeyDownCycle} tabIndex={0} role="group" aria-label="Additional notes editor">
+          <div className="space-y-3" ref={containerRef} onKeyDown={handleRovingKeyDown} tabIndex={0} role="group" aria-label="Additional notes editor">
+            <LeadingGuard />
             <div className="space-y-3">
               <div>
                 <label className="mb-1 block text-xs font-medium text-slate-600">Problems</label>
@@ -420,6 +401,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 />
               </div>
             </div>
+            <TrailingGuard />
             <p className="mt-1 text-xs text-slate-500">
               Information from clinical tools appears here and can be edited as needed.
             </p>
@@ -474,7 +456,8 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             </button>
           </div>
         </div>
-        <div className="flex flex-1 flex-col space-y-3" onKeyDown={handleKeyDownCycle} tabIndex={0} role="group" aria-label="Additional notes editor">
+        <div className="flex flex-1 flex-col space-y-3" ref={containerRef} onKeyDown={handleRovingKeyDown} tabIndex={0} role="group" aria-label="Additional notes editor">
+          <LeadingGuard />
           <div className="grid grid-cols-1 gap-3">
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700">Problems</label>
@@ -525,6 +508,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               />
             </div>
           </div>
+          <TrailingGuard />
           <p className="text-xs text-slate-500">
             Information added from clinical tools will appear in Objective/Assessment/Plan and can be edited.
           </p>
@@ -552,7 +536,8 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
           </button>
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-3" onKeyDown={handleKeyDownCycle} tabIndex={0} role="group" aria-label="Additional notes editor">
+      <div className="grid grid-cols-1 gap-3" ref={containerRef} onKeyDown={handleRovingKeyDown} tabIndex={0} role="group" aria-label="Additional notes editor">
+        <LeadingGuard />
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">Problems</label>
           <Textarea
@@ -605,6 +590,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             ref={planRef}
           />
         </div>
+        <TrailingGuard />
       </div>
       <p className="text-xs text-slate-500">
         Information added from clinical tools will appear in Objective/Assessment/Plan and can be edited.
