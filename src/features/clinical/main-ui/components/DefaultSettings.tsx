@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 
 import type { Template } from '@/src/features/templates/types';
@@ -75,19 +76,30 @@ export function DefaultSettings() {
   };
 
   return (
-    <Card className="space-y-3 p-3">
-      <div className="flex items-center justify-between">
+    <Card
+      className="space-y-3 p-3"
+      onClick={() => {
+        if (collapsed) setCollapsed(false);
+      }}
+      role="region"
+      aria-label="Default settings"
+    >
+      <button
+        type="button"
+        className="flex w-full items-center justify-between text-left"
+        onClick={(e) => {
+          e.stopPropagation();
+          setCollapsed(!collapsed);
+        }}
+        aria-expanded={!collapsed}
+      >
         <div className="text-sm font-medium text-slate-700">Default settings</div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-7 px-2 text-xs text-slate-600 hover:text-slate-800"
-          onClick={() => setCollapsed(!collapsed)}
-        >
-          {collapsed ? 'Show' : 'Hide'}
-        </Button>
-      </div>
+        {collapsed ? (
+          <ChevronDown className="size-4 text-slate-600" />
+        ) : (
+          <ChevronUp className="size-4 text-slate-600" />
+        )}
+      </button>
 
       {!collapsed && (
         <>

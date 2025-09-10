@@ -746,16 +746,21 @@ export default function ConsultationPage() {
                         {/* Default Settings - between guide and contact */}
                         <DefaultSettings />
 
-                        {/* Contact Link - Fixed at bottom of left column */}
+                        {/* Contact & Feedback - side by side 50/50 */}
                         <div className="mt-auto">
-                          <div className="mb-2">
-                            <FeatureFeedbackButton
-                              feature="general"
-                              context={`Page: Consultation; Template: ${templateId || 'none'}; Input Mode: ${inputMode}`}
-                              variant="text"
-                            />
+                          <div className="flex gap-2">
+                            <div className="w-1/2">
+                              <FeatureFeedbackButton
+                                feature="general"
+                                context={`Page: Consultation; Template: ${templateId || 'none'}; Input Mode: ${inputMode}`}
+                                variant="text"
+                                className="w-full justify-center"
+                              />
+                            </div>
+                            <div className="w-1/2">
+                              <ContactLink className="w-full justify-center" />
+                            </div>
                           </div>
-                          <ContactLink />
                         </div>
 
                         {/* Minimized Components in Documentation Mode */}
@@ -1007,15 +1012,22 @@ export default function ConsultationPage() {
       {/* Mobile Block Modal */}
       <MobileBlockModal isOpen={showMobileBlock} />
 
-      {/* Contact & Feedback - Fixed bottom for non-large desktop */}
+      {/* Contact & Feedback - Fixed bottom row for non-large desktop */}
       {!isLargeDesktop && (
-        <div className="fixed bottom-4 left-4 z-20 space-y-2">
-          <ContactLink />
-          <FeatureFeedbackButton
-            feature="general"
-            context={`Page: Consultation; Template: ${templateId || 'none'}; Input Mode: ${inputMode}`}
-            variant="text"
-          />
+        <div className="fixed bottom-4 left-4 right-4 z-20">
+          <div className="flex gap-2">
+            <div className="w-1/2">
+              <FeatureFeedbackButton
+                feature="general"
+                context={`Page: Consultation; Template: ${templateId || 'none'}; Input Mode: ${inputMode}`}
+                variant="text"
+                className="w-full justify-center"
+              />
+            </div>
+            <div className="w-1/2">
+              <ContactLink className="w-full justify-center" />
+            </div>
+          </div>
         </div>
       )}
       </div>

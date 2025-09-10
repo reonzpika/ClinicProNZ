@@ -561,24 +561,60 @@ export function TranscriptionControls({
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{controlError}</span>
                   <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-6 px-2 text-xs"
-                      onClick={openMobileInline}
-                    >
-                      Open mobile
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 px-2 text-xs"
-                      onClick={() => setShowMobileRecordingV2(true)}
-                    >
-                      Show QR
-                    </Button>
+                    {controlError.includes('Mobile did not respond') ? (
+                      <>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="h-6 px-2 text-xs bg-green-600 text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                          disabled={(!isSignedIn && !canCreateSession) || isRecording || mobileIsRecording}
+                          onClick={() => {
+                            setControlError(null);
+                            setRecordingMethod('desktop');
+                            if (!consentObtained) {
+                              setShowConsentModal(true);
+                            } else {
+                              startRecording();
+                            }
+                          }}
+                        >
+                          Record on desktop
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="h-6 px-2 text-xs bg-blue-600 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                          disabled={(!isSignedIn && !canCreateSession) || isRecording || mobileIsRecording}
+                          onClick={() => {
+                            setControlError(null);
+                            setShowMobileRecordingV2(true);
+                          }}
+                        >
+                          Connect mobile
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-6 px-2 text-xs"
+                          onClick={openMobileInline}
+                        >
+                          Open mobile
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs"
+                          onClick={() => setShowMobileRecordingV2(true)}
+                        >
+                          Show QR
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
               </Alert>
