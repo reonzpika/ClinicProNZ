@@ -112,7 +112,7 @@ export const PatientSessionManager: React.FC = () => {
   return (
     <>
       {/* Current session bar - always show for signed in users */}
-      <CurrentSessionBar onSwitchSession={handleSwitchSession} />
+      <CurrentSessionBar onSwitchSession={handleSwitchSession} isLoading={isEnsuring} />
 
       {/* Session management modal */}
       {isClient && isSignedIn && (
