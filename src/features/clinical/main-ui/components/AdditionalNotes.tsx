@@ -46,6 +46,8 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   const assessmentRef = React.useRef<HTMLTextAreaElement | null>(null);
   const planRef = React.useRef<HTMLTextAreaElement | null>(null);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const lastTabInfoRef = React.useRef<{ isTab: boolean; shift: boolean }>({ isTab: false, shift: false });
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
 
   const handleKeyDownCycle = (e: React.KeyboardEvent) => {
     if (e.key !== 'Tab') {
@@ -80,6 +82,45 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
         problemsRef.current.focus();
       } catch {}
     }
+  }, [isExpanded]);
+
+  // Record last Tab key press
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      lastTabInfoRef.current = { isTab: e.key === 'Tab', shift: e.shiftKey };
+    };
+    document.addEventListener('keydown', onKeyDown, true);
+    return () => document.removeEventListener('keydown', onKeyDown, true);
+  }, []);
+
+  // Redirect first Tab into the editor when visible
+  useEffect(() => {
+    const onFocusIn = (e: FocusEvent) => {
+      if (!isExpanded) return;
+      const container = containerRef.current;
+      if (!container) return;
+      const target = e.target as HTMLElement | null;
+      const isInside = !!(target && container.contains(target));
+      if (isInside) return;
+      if (!lastTabInfoRef.current.isTab) return;
+
+      try {
+        if (lastTabInfoRef.current.shift) {
+          (planRef.current
+            || (container.querySelector('#additional-notes-plan') as HTMLTextAreaElement | null)
+            || (container.querySelector('#additional-notes-minimized-plan') as HTMLTextAreaElement | null))?.focus();
+        } else {
+          (problemsRef.current
+            || (container.querySelector('#additional-notes') as HTMLTextAreaElement | null)
+            || (container.querySelector('#additional-notes-problems') as HTMLTextAreaElement | null)
+            || (container.querySelector('#additional-notes-minimized-problems') as HTMLTextAreaElement | null))?.focus();
+        }
+      } catch {}
+      // Reset to avoid repeated overrides
+      lastTabInfoRef.current = { isTab: false, shift: false };
+    };
+    document.addEventListener('focusin', onFocusIn, true);
+    return () => document.removeEventListener('focusin', onFocusIn, true);
   }, [isExpanded]);
 
   // Document-level Tab trap: when editor is visible and focus is outside, Tab focuses Problems (or Plan with Shift)
