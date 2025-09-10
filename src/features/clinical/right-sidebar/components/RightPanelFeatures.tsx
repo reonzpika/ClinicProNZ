@@ -1,7 +1,7 @@
 'use client';
 
 import { Camera, CheckSquare, MessageCircle, Search, Stethoscope } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
 
@@ -66,7 +66,27 @@ const RightPanelFeatures: React.FC<RightPanelFeaturesProps> = ({
   isCollapsed = true,
   onToggle,
 }) => {
-  const [activeSection, setActiveSection] = useState<SectionId>('images');
+  const [activeSection, setActiveSection] = useState<SectionId>(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const stored = localStorage.getItem('rightPanelActiveSection');
+        const valid: SectionId[] = ['images', 'checklist', 'ddx', 'chat', 'acc'];
+        if (stored && (valid as string[]).includes(stored)) {
+          return stored as SectionId;
+        }
+      }
+    } catch {}
+    return 'chat';
+  });
+
+  // Persist active section selection
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('rightPanelActiveSection', activeSection);
+      }
+    } catch {}
+  }, [activeSection]);
 
   // Update sections with conditional components based on user tier
   const sectionsWithConditionalFeatures: AccordionSection[] = sections.map((section) => {
@@ -103,7 +123,10 @@ const RightPanelFeatures: React.FC<RightPanelFeaturesProps> = ({
           {sectionsWithConditionalFeatures.map(section => (
             <button
               key={section.id}
-              onClick={onToggle}
+              onClick={() => {
+                setActiveSection(section.id);
+                onToggle?.();
+              }}
               className="flex size-8 items-center justify-center rounded text-slate-600 hover:bg-slate-100"
               title={section.title}
             >
