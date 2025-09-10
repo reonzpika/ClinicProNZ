@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import { formatNotesForPrompt, parseSectionedNotes } from '@/src/features/clinical/main-ui/utils/consultationNotesSerializer';
 
 import type { ChatMessage, ClinicalImage, ConsultationItem } from '@/src/types/consultation';
 
@@ -33,6 +32,11 @@ type ConsultationState = {
   // Consultation items and notes
   consultationItems: ConsultationItem[];
   consultationNotes: string;
+  // New per-section fields (persisted in DB columns)
+  problemsText: string;
+  objectiveText: string;
+  assessmentText: string;
+  planText: string;
 
   // Clinical images
   clinicalImages: ClinicalImage[];
@@ -127,6 +131,10 @@ const initialState: ConsultationState = {
   isChatLoading: false,
   consultationItems: [],
   consultationNotes: '',
+  problemsText: '',
+  objectiveText: '',
+  assessmentText: '',
+  planText: '',
   clinicalImages: [],
   currentPatientSessionId: getCurrentPatientSessionId(),
 };
@@ -186,11 +194,26 @@ export const useConsultationStore = create<ConsultationStore>()(
         consultationItems: state.consultationItems.filter(item => item.id !== itemId),
       })),
     setConsultationNotes: notes => set({ consultationNotes: notes }),
+    // New per-section setters
+    setProblemsText: (text: string) => set({ problemsText: text }),
+    setObjectiveText: (text: string) => set({ objectiveText: text }),
+    setAssessmentText: (text: string) => set({ assessmentText: text }),
+    setPlanText: (text: string) => set({ planText: text }),
     getCompiledConsultationText: () => {
-      // Compile labelled blocks for the prompt from sectioned notes only
-      const { consultationNotes } = get();
-      const sections = parseSectionedNotes(consultationNotes);
-      return formatNotesForPrompt(sections);
+      const { problemsText, objectiveText, assessmentText, planText } = get();
+      const blocks: string[] = [];
+      blocks.push('additional note:');
+      const pushSection = (label: string, value: string) => {
+        const v = (value || '').trim();
+        if (!v) return;
+        blocks.push(`\n${label}:`);
+        blocks.push(v);
+      };
+      pushSection('Problems', problemsText);
+      pushSection('Objective', objectiveText);
+      pushSection('Assessment', assessmentText);
+      pushSection('Plan', planText);
+      return blocks.join('\n');
     },
 
     // Clinical images actions
@@ -235,6 +258,10 @@ export const useConsultationStore = create<ConsultationStore>()(
         isChatLoading: false,
         consultationItems: [],
         consultationNotes: '',
+        problemsText: '',
+        objectiveText: '',
+        assessmentText: '',
+        planText: '',
         clinicalImages: [],
         // Preserve settings and templates
         templateId: get().userDefaultTemplateId || DEFAULT_TEMPLATE_ID,

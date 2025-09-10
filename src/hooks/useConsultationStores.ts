@@ -101,12 +101,18 @@ export function useConsultationStores(): any {
     if (session.consultationNotes) {
  consultationStore.setConsultationNotes(session.consultationNotes);
 }
+    // Hydrate per-section fields
+    consultationStore.setProblemsText(session.problemsText || '');
+    consultationStore.setObjectiveText(session.objectiveText || '');
+    consultationStore.setAssessmentText(session.assessmentText || '');
+    consultationStore.setPlanText(session.planText || '');
     // One-time migration: legacy consultationNotes -> objective if new fields empty
     try {
       const hasNewFields = !!(session.problemsText || session.objectiveText || session.assessmentText || session.planText);
       if (!hasNewFields && session.consultationNotes && String(session.consultationNotes).trim().length > 0) {
-        // Save legacy into objectiveText server-side and clear legacy field
         updatePatientSession(session.id, { objectiveText: String(session.consultationNotes), consultationNotes: '' } as any).catch(() => {});
+        consultationStore.setObjectiveText(String(session.consultationNotes));
+        consultationStore.setConsultationNotes('');
       }
     } catch {}
     if (session.templateId) {
@@ -198,6 +204,35 @@ export function useConsultationStores(): any {
       return false;
     }
     await updatePatientSession(id, { consultationNotes } as any);
+    return true;
+  }, [consultationStore.currentPatientSessionId, updatePatientSession]);
+
+  // New per-section save helpers
+  const saveProblemsToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
+    const id = consultationStore.currentPatientSessionId;
+    if (!id) return false;
+    await updatePatientSession(id, { problemsText: text } as any);
+    return true;
+  }, [consultationStore.currentPatientSessionId, updatePatientSession]);
+
+  const saveObjectiveToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
+    const id = consultationStore.currentPatientSessionId;
+    if (!id) return false;
+    await updatePatientSession(id, { objectiveText: text } as any);
+    return true;
+  }, [consultationStore.currentPatientSessionId, updatePatientSession]);
+
+  const saveAssessmentToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
+    const id = consultationStore.currentPatientSessionId;
+    if (!id) return false;
+    await updatePatientSession(id, { assessmentText: text } as any);
+    return true;
+  }, [consultationStore.currentPatientSessionId, updatePatientSession]);
+
+  const savePlanToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
+    const id = consultationStore.currentPatientSessionId;
+    if (!id) return false;
+    await updatePatientSession(id, { planText: text } as any);
     return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
@@ -314,6 +349,15 @@ export function useConsultationStores(): any {
     removeConsultationItem: consultationStore.removeConsultationItem,
     setConsultationNotes: consultationStore.setConsultationNotes,
     getCompiledConsultationText: consultationStore.getCompiledConsultationText,
+    // Per-section fields and setters
+    problemsText: consultationStore.problemsText,
+    objectiveText: consultationStore.objectiveText,
+    assessmentText: consultationStore.assessmentText,
+    planText: consultationStore.planText,
+    setProblemsText: consultationStore.setProblemsText,
+    setObjectiveText: consultationStore.setObjectiveText,
+    setAssessmentText: consultationStore.setAssessmentText,
+    setPlanText: consultationStore.setPlanText,
 
     // Actions - mobile removed
 
@@ -334,6 +378,10 @@ export function useConsultationStores(): any {
     saveNotesToCurrentSession,
     saveTypedInputToCurrentSession,
     saveConsultationNotesToCurrentSession,
+    saveProblemsToCurrentSession,
+    saveObjectiveToCurrentSession,
+    saveAssessmentToCurrentSession,
+    savePlanToCurrentSession,
 
     // Reset
     resetConsultation: () => {

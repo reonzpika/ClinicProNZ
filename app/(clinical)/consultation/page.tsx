@@ -45,6 +45,7 @@ export default function ConsultationPage() {
     setTypedInput,
     generatedNotes,
     setGeneratedNotes,
+    // Deprecated legacy notes
     consultationNotes,
     setConsultationNotes,
     consultationItems,
@@ -53,6 +54,11 @@ export default function ConsultationPage() {
     setLastGeneratedInput,
     setTemplateId,
     setInputMode,
+    // Per-section fields
+    problemsText,
+    objectiveText,
+    assessmentText,
+    planText,
 
     saveNotesToCurrentSession, // For saving generated notes
     saveTypedInputToCurrentSession: _saveTypedInputToCurrentSession, // For clearing typed input (unused)

@@ -123,7 +123,7 @@ export const consultationApi = {
 
   async updateSession(
     sessionId: string,
-    updates: Partial<Pick<PatientSession, 'patientName' | 'consultationNotes'>>,
+    updates: Partial<PatientSession>,
     userId?: string | null,
   ): Promise<PatientSession> {
     const response = await fetch('/api/patient-sessions', {
