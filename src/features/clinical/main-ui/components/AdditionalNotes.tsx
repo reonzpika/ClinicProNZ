@@ -47,7 +47,6 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   const planRef = React.useRef<HTMLTextAreaElement | null>(null);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const lastTabInfoRef = React.useRef<{ isTab: boolean; shift: boolean }>({ isTab: false, shift: false });
-  const containerRef = React.useRef<HTMLDivElement | null>(null);
 
   const handleKeyDownCycle = (e: React.KeyboardEvent) => {
     if (e.key !== 'Tab') {
