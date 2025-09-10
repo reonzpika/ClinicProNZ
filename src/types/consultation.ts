@@ -61,6 +61,11 @@ export type PatientSession = {
   notes: string;
   typedInput: string;
   consultationNotes: string;
+  // New per-section fields
+  problemsText?: string;
+  objectiveText?: string;
+  assessmentText?: string;
+  planText?: string;
   templateId: string;
   consultationItems: ConsultationItem[];
   clinicalImages: ClinicalImage[];

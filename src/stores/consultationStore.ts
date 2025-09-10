@@ -32,6 +32,11 @@ type ConsultationState = {
   // Consultation items and notes
   consultationItems: ConsultationItem[];
   consultationNotes: string;
+  // New per-section fields (persisted in DB columns)
+  problemsText: string;
+  objectiveText: string;
+  assessmentText: string;
+  planText: string;
 
   // Clinical images
   clinicalImages: ClinicalImage[];
@@ -67,6 +72,11 @@ type ConsultationActions = {
   removeConsultationItem: (itemId: string) => void;
   setConsultationNotes: (notes: string) => void;
   getCompiledConsultationText: () => string;
+  // New per-section setters
+  setProblemsText: (text: string) => void;
+  setObjectiveText: (text: string) => void;
+  setAssessmentText: (text: string) => void;
+  setPlanText: (text: string) => void;
 
   // Clinical images actions
   addClinicalImage: (image: ClinicalImage) => void;
@@ -126,6 +136,10 @@ const initialState: ConsultationState = {
   isChatLoading: false,
   consultationItems: [],
   consultationNotes: '',
+  problemsText: '',
+  objectiveText: '',
+  assessmentText: '',
+  planText: '',
   clinicalImages: [],
   currentPatientSessionId: getCurrentPatientSessionId(),
 };
@@ -185,18 +199,26 @@ export const useConsultationStore = create<ConsultationStore>()(
         consultationItems: state.consultationItems.filter(item => item.id !== itemId),
       })),
     setConsultationNotes: notes => set({ consultationNotes: notes }),
+    // New per-section setters
+    setProblemsText: (text: string) => set({ problemsText: text }),
+    setObjectiveText: (text: string) => set({ objectiveText: text }),
+    setAssessmentText: (text: string) => set({ assessmentText: text }),
+    setPlanText: (text: string) => set({ planText: text }),
     getCompiledConsultationText: () => {
-      const { consultationItems, consultationNotes } = get();
-      const itemsText = consultationItems.map(item => `${item.title}: ${item.content}`).join('\n\n');
-      const manualNotes = consultationNotes.trim();
-
-      if (itemsText && manualNotes) {
-        return `${itemsText}\n\n${manualNotes}`;
-      } else if (itemsText) {
-        return itemsText;
-      } else {
-        return manualNotes;
-      }
+      const { problemsText, objectiveText, assessmentText, planText } = get();
+      const blocks: string[] = [];
+      blocks.push('additional note:');
+      const pushSection = (label: string, value: string) => {
+        const v = (value || '').trim();
+        if (!v) return;
+        blocks.push(`\n${label}:`);
+        blocks.push(v);
+      };
+      pushSection('Problems', problemsText);
+      pushSection('Objective', objectiveText);
+      pushSection('Assessment', assessmentText);
+      pushSection('Plan', planText);
+      return blocks.join('\n');
     },
 
     // Clinical images actions
@@ -241,6 +263,10 @@ export const useConsultationStore = create<ConsultationStore>()(
         isChatLoading: false,
         consultationItems: [],
         consultationNotes: '',
+        problemsText: '',
+        objectiveText: '',
+        assessmentText: '',
+        planText: '',
         clinicalImages: [],
         // Preserve settings and templates
         templateId: get().userDefaultTemplateId || DEFAULT_TEMPLATE_ID,

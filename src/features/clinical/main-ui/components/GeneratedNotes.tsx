@@ -25,10 +25,13 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
     getCompiledConsultationText: _getCompiledConsultationText,
     saveNotesToCurrentSession,
     saveTypedInputToCurrentSession,
-    saveConsultationNotesToCurrentSession,
     createPatientSession,
     switchToPatientSession,
-    consultationNotes,
+    // Per-section fields
+    problemsText,
+    objectiveText,
+    assessmentText,
+    planText,
   } = useConsultationStores();
 
   // Local UI state
@@ -102,7 +105,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
   const hasAnyState = hasContent
     || (inputMode === 'typed' && typedInput && typedInput.trim() !== '')
     || (inputMode === 'audio' && (transcription.transcript && transcription.transcript.trim() !== ''))
-    || (consultationNotes && consultationNotes.trim() !== '');
+    || [problemsText, objectiveText, assessmentText, planText].some(s => s && s.trim() !== '');
 
   // Determine if we should show minimal or expanded view
   const shouldShowMinimal = !isExpanded && !hasContent && !loading;
@@ -204,9 +207,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
         savePromises.push(saveTypedInputToCurrentSession(typedInput));
       }
 
-      if (consultationNotes && consultationNotes.trim() !== '') {
-        savePromises.push(saveConsultationNotesToCurrentSession(consultationNotes));
-      }
+      // Additional note sections are saved from their own UI; no JSON saves here
 
       // Wait for all saves to complete
       if (savePromises.length > 0) {

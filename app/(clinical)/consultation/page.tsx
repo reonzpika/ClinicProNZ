@@ -45,6 +45,7 @@ export default function ConsultationPage() {
     setTypedInput,
     generatedNotes,
     setGeneratedNotes,
+    // Deprecated legacy notes
     consultationNotes,
     setConsultationNotes,
     consultationItems,
@@ -558,12 +559,24 @@ export default function ConsultationPage() {
       }
 
       // Single-pass: Combine raw consultation data and send directly to notes API
-      const mainContent = inputMode === 'audio' ? transcription.transcript : typedInput;
+      // Include both inputs if present and label transcription as GP–patient conversation
+      const hasTranscript = typeof transcription?.transcript === 'string' && transcription.transcript.trim().length > 0;
+      const hasTyped = typeof typedInput === 'string' && typedInput.trim().length > 0;
+      const inputBlocks: string[] = [];
+      if (hasTranscript) {
+        inputBlocks.push('TRANSCRIPTION (GP–patient conversation, unlabelled):');
+        inputBlocks.push(transcription.transcript.trim());
+      }
+      if (hasTyped) {
+        inputBlocks.push('TYPED INPUT:');
+        inputBlocks.push(typedInput.trim());
+      }
+      const mainContent = inputBlocks.join('\n\n');
       const additionalContent = getCompiledConsultationText();
 
       // Combine main content with additional notes as raw consultation data
       const rawConsultationData = additionalContent && additionalContent.trim()
-        ? `${mainContent}\n\nADDITIONAL GP OBJECTIVE FINDINGS:\n${additionalContent}`
+        ? `${mainContent}\n\n${additionalContent}`
         : mainContent;
 
       // Direct single-pass note generation

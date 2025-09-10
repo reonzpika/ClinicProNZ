@@ -159,7 +159,7 @@ export const DifferentialDiagnosisTab: React.FC = () => {
       }
 
       if (allDiagnoses.length > 0) {
-        // Add to consultation context
+        // Add to consultation context (Assessment section via type)
         addConsultationItem({
           type: 'differential-diagnosis',
           title: `Differential Diagnosis: ${problem.title}`,

@@ -164,11 +164,6 @@ export const SessionModal: React.FC<SessionModalProps> = ({
       }
     }
 
-    // 4. Additional consultation notes
-    if (session.consultationNotes && session.consultationNotes.trim().length > 0) {
-      return session.consultationNotes.substring(0, 80) + (session.consultationNotes.length > 80 ? '...' : '');
-    }
-
     return 'No content yet';
   };
 

@@ -22,8 +22,9 @@ export const ClinicalImageTab: React.FC = () => {
     saveClinicalImagesToCurrentSession,
     updateImageDescription,
     currentPatientSessionId,
-    consultationNotes,
-    setConsultationNotes,
+    objectiveText,
+    setObjectiveText,
+    saveObjectiveToCurrentSession,
   } = useConsultationStores();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -255,11 +256,10 @@ export const ClinicalImageTab: React.FC = () => {
                   await saveClinicalImagesToCurrentSession(updatedImages);
 
                   // Add analysis to consultation notes
-                  const analysisText = `\n\n--- AI Analysis of ${image.filename} ---\n${data.description}`;
-                  const updatedNotes = consultationNotes.trim()
-                    ? `${consultationNotes}${analysisText}`
-                    : analysisText.trim();
-                  setConsultationNotes(updatedNotes);
+                  const analysisText = `AI Analysis of ${image.filename}:\n${data.description}`.trim();
+                  const nextObjective = [String(objectiveText || '').trim(), analysisText].filter(Boolean).join('\n\n');
+                  setObjectiveText(nextObjective);
+                  await saveObjectiveToCurrentSession(nextObjective);
                 } else if (data.status === 'error') {
                   console.error('❌ AI Analysis error:', data.error);
                   throw new Error(data.error || 'Analysis failed');
@@ -296,8 +296,9 @@ export const ClinicalImageTab: React.FC = () => {
     updateImageDescription,
     clinicalImages,
     saveClinicalImagesToCurrentSession,
-    consultationNotes,
-    setConsultationNotes,
+    objectiveText,
+    setObjectiveText,
+    saveObjectiveToCurrentSession,
   ]);
 
   return (
