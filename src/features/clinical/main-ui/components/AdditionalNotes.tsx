@@ -45,6 +45,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   const objectiveRef = React.useRef<HTMLTextAreaElement | null>(null);
   const assessmentRef = React.useRef<HTMLTextAreaElement | null>(null);
   const planRef = React.useRef<HTMLTextAreaElement | null>(null);
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
 
   const handleKeyDownCycle = (e: React.KeyboardEvent) => {
     if (e.key !== 'Tab') {
@@ -79,6 +80,35 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
         problemsRef.current.focus();
       } catch {}
     }
+  }, [isExpanded]);
+
+  // Document-level Tab trap: when editor is visible and focus is outside, Tab focuses Problems (or Plan with Shift)
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (!isExpanded || e.key !== 'Tab') return;
+      const container = containerRef.current;
+      if (!container) return;
+      const active = document.activeElement as HTMLElement | null;
+      const isInside = !!(active && container.contains(active));
+      if (isInside) return; // let internal handler manage cycling
+      e.preventDefault();
+      try {
+        if (e.shiftKey) {
+          (planRef.current
+            || (container.querySelector('#additional-notes-plan') as HTMLTextAreaElement | null)
+            || (container.querySelector('#additional-notes-minimized-plan') as HTMLTextAreaElement | null)
+          )?.focus();
+        } else {
+          (problemsRef.current
+            || (container.querySelector('#additional-notes') as HTMLTextAreaElement | null)
+            || (container.querySelector('#additional-notes-problems') as HTMLTextAreaElement | null)
+            || (container.querySelector('#additional-notes-minimized-problems') as HTMLTextAreaElement | null)
+          )?.focus();
+        }
+      } catch {}
+    };
+    document.addEventListener('keydown', handler, true);
+    return () => document.removeEventListener('keydown', handler, true);
   }, [isExpanded]);
 
   // Section state is maintained in the store now
