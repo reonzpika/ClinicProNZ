@@ -6,7 +6,6 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
-  MessageSquare,
   ShieldCheck,
   Stethoscope,
 } from 'lucide-react';
@@ -14,8 +13,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
-import { FeedbackModal } from '@/src/features/marketing/roadmap/components/FeedbackModal';
-import { submitFeatureRequest } from '@/src/features/marketing/roadmap/roadmap-service';
+ 
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { useRBAC } from '@/src/shared/hooks/useRBAC';
 
@@ -60,30 +58,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const router = useRouter();
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  // Feedback modal state
-  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
-  const [feedbackLoading, setFeedbackLoading] = useState(false);
-  const [feedbackError, setFeedbackError] = useState<string | undefined>();
-  const [feedbackSuccess, setFeedbackSuccess] = useState(false);
+  
 
   // Use production tier detection for real features (not testing)
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
   const isAdmin = userTier === 'admin';
 
-  const handleFeedback = async (data: { idea: string; details?: string; email?: string }) => {
-    setFeedbackLoading(true);
-    setFeedbackError(undefined);
-    setFeedbackSuccess(false);
-    const res = await submitFeatureRequest(data);
-    if (res.success) {
-      setFeedbackSuccess(true);
-      setTimeout(() => setFeedbackModalOpen(false), 1200);
-    } else {
-      setFeedbackError(res.message || 'Something went wrong');
-    }
-    setFeedbackLoading(false);
-  };
+  
 
   const handleNavClick = (item: NavItem, e: React.MouseEvent) => {
     if (item.requiresAuth && !isSignedIn) {
@@ -225,24 +207,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </h3>
             )}
             <div className="space-y-1">
-              {/* Feedback Button */}
-              <button
-                type="button"
-                onClick={() => {
-                  setFeedbackModalOpen(true);
-                  setFeedbackSuccess(false);
-                  setFeedbackError(undefined);
-                }}
-                className={`
-                  flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-800
-                  ${isCollapsed ? 'justify-center' : ''}
-                `}
-                title={isCollapsed ? 'Feedback' : undefined}
-              >
-                <MessageSquare size={18} className="shrink-0" />
-                {!isCollapsed && <span>Feedback</span>}
-              </button>
-
               {/* Auth Section */}
               {isSignedIn
                 ? (
@@ -321,15 +285,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       )}
 
-      {/* Feedback Modal */}
-      <FeedbackModal
-        open={feedbackModalOpen}
-        onClose={() => setFeedbackModalOpen(false)}
-        onSubmit={handleFeedback}
-        loading={feedbackLoading}
-        error={feedbackError}
-        success={feedbackSuccess}
-      />
+      
     </>
   );
 };

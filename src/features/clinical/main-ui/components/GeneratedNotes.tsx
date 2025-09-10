@@ -4,7 +4,6 @@ import { useAuth } from '@clerk/nextjs';
 import React, { useEffect, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
-import { FeatureFeedbackButton } from '@/src/shared/components/FeatureFeedbackButton';
 import { Button } from '@/src/shared/components/ui/button';
 // import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
@@ -23,7 +22,6 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
     consentObtained,
     inputMode,
     typedInput,
-    templateId,
     getCompiledConsultationText: _getCompiledConsultationText,
     saveNotesToCurrentSession,
     saveTypedInputToCurrentSession,
@@ -334,13 +332,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
           >
             {copySuccess ? 'Copied!' : 'Copy to Clipboard'}
           </Button>
-          {hasContent && !loading && (
-            <FeatureFeedbackButton
-              feature="notes"
-              context={`Template: ${templateId}, Notes length: ${displayNotes?.length || 0} chars`}
-              variant="text"
-            />
-          )}
+          
           <Button
             type="button"
             variant="outline"

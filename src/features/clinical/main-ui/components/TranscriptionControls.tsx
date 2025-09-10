@@ -5,7 +5,6 @@ import { ChevronDown, ChevronUp, Mic, Smartphone } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
-import { FeatureFeedbackButton } from '@/src/shared/components/FeatureFeedbackButton';
 import { Stack } from '@/src/shared/components/layout/Stack';
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
@@ -145,6 +144,12 @@ export function TranscriptionControls({
     }
   }, [mobileIsRecording, pendingControl, controlAckTimer]);
 
+  // Clear any outstanding remote control error when mobile recording begins (late ACK)
+  useEffect(() => {
+    // Clear any remote-control error when recording status changes (start or stop)
+    setControlError(null);
+  }, [mobileIsRecording]);
+
   // Remote control handlers (send via global Ably bridge exposed in ConsultationPage)
   const sendMobileControl = async (action: 'start' | 'stop') => {
     try {
@@ -173,6 +178,16 @@ export function TranscriptionControls({
       setPendingControl(null);
       setControlError(e instanceof Error ? e.message : 'Failed to send control command');
     }
+  };
+
+  // Helper: open mobile page in a new tab
+  const openMobileInline = () => {
+    try {
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+      if (baseUrl) {
+        window.open(`${baseUrl}/mobile`, '_blank');
+      }
+    } catch {}
   };
 
   // Only authenticated users can create sessions
@@ -533,10 +548,45 @@ export function TranscriptionControls({
               </div>
             </div>
 
-            {/* Remote control errors */}
+            {/* Remote control pending status */}
+            {pendingControl && (
+              <Alert className="p-2 text-xs border-blue-200 bg-blue-50 text-blue-700">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <RefreshCw className="size-3 animate-spin" />
+                    <span className="font-medium">Waiting for mobile…</span>
+                  </div>
+                  <div className="text-[10px] text-blue-600">Ensure phone is unlocked</div>
+                </div>
+              </Alert>
+            )}
+
+            {/* Remote control warnings with CTAs */}
             {controlError && (
-              <Alert variant="destructive" className="p-2 text-xs">
-                {controlError}
+              <Alert className="p-2 text-xs border-yellow-200 bg-yellow-50 text-yellow-800">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{controlError}</span>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-6 px-2 text-xs"
+                      onClick={openMobileInline}
+                    >
+                      Open mobile
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-xs"
+                      onClick={() => setShowMobileRecordingV2(true)}
+                    >
+                      Show QR
+                    </Button>
+                  </div>
+                </div>
               </Alert>
             )}
 

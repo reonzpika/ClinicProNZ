@@ -21,7 +21,7 @@ import { PatientSessionManager } from '@/src/features/clinical/session-managemen
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { RecordingAwareSessionContext } from '@/src/hooks/useRecordingAwareSession';
 import { ContactLink } from '@/src/shared/components/ContactLink';
-import { FloatingFeedbackButton } from '@/src/shared/components/FloatingFeedbackButton';
+import { FeatureFeedbackButton } from '@/src/shared/components/FeatureFeedbackButton';
 import { Container } from '@/src/shared/components/layout/Container';
 import { Stack } from '@/src/shared/components/layout/Stack';
 import { MobileBlockModal } from '@/src/shared/components/MobileBlockModal';
@@ -729,6 +729,13 @@ export default function ConsultationPage() {
 
                         {/* Contact Link - Fixed at bottom of left column */}
                         <div className="mt-auto">
+                          <div className="mb-2">
+                            <FeatureFeedbackButton
+                              feature="general"
+                              context={`Page: Consultation; Template: ${templateId || 'none'}; Input Mode: ${inputMode}`}
+                              variant="text"
+                            />
+                          </div>
                           <ContactLink />
                         </div>
 
@@ -981,31 +988,17 @@ export default function ConsultationPage() {
       {/* Mobile Block Modal */}
       <MobileBlockModal isOpen={showMobileBlock} />
 
-      {/* Contact Link - Fixed bottom for non-large desktop */}
+      {/* Contact & Feedback - Fixed bottom for non-large desktop */}
       {!isLargeDesktop && (
-        <div className="fixed bottom-4 left-4 z-20">
+        <div className="fixed bottom-4 left-4 z-20 space-y-2">
           <ContactLink />
+          <FeatureFeedbackButton
+            feature="general"
+            context={`Page: Consultation; Template: ${templateId || 'none'}; Input Mode: ${inputMode}`}
+            variant="text"
+          />
         </div>
       )}
-
-      {/* Floating Feedback Button */}
-      <FloatingFeedbackButton
-        currentFeature={
-          generatedNotes && !loading
-            ? 'notes'
-            : (transcription.transcript || inputMode === 'audio')
-                ? 'transcription'
-                : 'general'
-        }
-        context={`
-          Page: Consultation, 
-          Template: ${templateId || 'none'}, 
-          Input Mode: ${inputMode}, 
-          Has Notes: ${!!generatedNotes}, 
-          Has Transcript: ${!!transcription.transcript},
-          User Tier: ${userTier}
-        `.trim()}
-      />
       </div>
     </RecordingAwareSessionContext.Provider>
   );
