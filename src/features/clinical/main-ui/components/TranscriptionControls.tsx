@@ -6,7 +6,6 @@ import { ChevronDown, ChevronUp, Info, Mic, RefreshCw, Smartphone } from 'lucide
 import React, { useEffect, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
-import { FeatureFeedbackButton } from '@/src/shared/components/FeatureFeedbackButton';
 import { Stack } from '@/src/shared/components/layout/Stack';
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
@@ -525,11 +524,7 @@ export function TranscriptionControls({
           >
             <Info size={14} />
           </Button>
-          <FeatureFeedbackButton
-            feature="transcription"
-            context={`Transcript length: ${transcript?.length || 0} chars, Recording time: ${recordingStartTime ? Math.round((Date.now() - recordingStartTime) / 1000) : 0}s, Recording state: ${isRecording ? 'active' : 'stopped'}`}
-            variant="minimal"
-          />
+          
         </div>
       </div>
 
