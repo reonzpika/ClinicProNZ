@@ -270,7 +270,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                   value={objectiveText}
                   onChange={e => handleSectionChange('objective', e.target.value)}
                   onBlur={handleNotesBlur}
-                  placeholder="Objective findings..."
+                  placeholder={placeholder}
                   className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   rows={3}
                 />
@@ -374,7 +374,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 value={objectiveText}
                 onChange={e => handleSectionChange('objective', e.target.value)}
                 onBlur={handleNotesBlur}
-                placeholder="Objective findings..."
+                placeholder={placeholder}
                 className="min-h-[120px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
@@ -448,7 +448,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             value={objectiveText}
             onChange={e => handleSectionChange('objective', e.target.value)}
             onBlur={handleNotesBlur}
-            placeholder="Objective findings..."
+            placeholder={placeholder}
             className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             rows={5}
           />
