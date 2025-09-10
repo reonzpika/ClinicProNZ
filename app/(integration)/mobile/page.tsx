@@ -161,6 +161,55 @@ function MobilePageContent() {
     stopRecordingRef.current = stopRecording;
   }, [isRecording, startRecording, stopRecording]);
 
+  // Heartbeat while recording to keep desktop in sync
+  useEffect(() => {
+    if (!isRecording) {
+      return;
+    }
+    const interval = setInterval(() => {
+      try {
+        sendRecordingStatus(true);
+      } catch {}
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [isRecording, sendRecordingStatus]);
+
+  // Best-effort immediate stop when page is closing or hidden
+  useEffect(() => {
+    const stopOnUnload = () => {
+      try {
+        if (isRecordingRef.current) {
+          // Fire-and-forget; cannot await during unload
+          stopRecordingRef.current?.();
+          sendRecordingStatus(false);
+        }
+      } catch {}
+    };
+    const onVisibilityChange = () => {
+      try {
+        if (document.visibilityState === 'hidden') {
+          stopOnUnload();
+        }
+      } catch {}
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('pagehide', stopOnUnload);
+      window.addEventListener('beforeunload', stopOnUnload);
+    }
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', onVisibilityChange);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('pagehide', stopOnUnload);
+        window.removeEventListener('beforeunload', stopOnUnload);
+      }
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', onVisibilityChange);
+      }
+    };
+  }, [sendRecordingStatus]);
+
   // Update mobile state based on connection and auth
   useEffect(() => {
     if (authError) {
