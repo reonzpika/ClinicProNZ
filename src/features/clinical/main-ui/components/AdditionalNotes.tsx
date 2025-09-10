@@ -21,6 +21,7 @@ type AdditionalNotesProps = {
   items: ConsultationItem[];
   onNotesChange: (notes: string) => void;
   notes: string;
+  placeholder?: string;
   isMinimized?: boolean;
   defaultExpanded?: boolean;
   expandedSize?: 'normal' | 'large';
@@ -30,6 +31,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   items,
   onNotesChange: _onNotesChange,
   notes: _notes,
+  placeholder: _placeholder,
   isMinimized = false,
   defaultExpanded = true,
   expandedSize = 'normal',
