@@ -35,7 +35,6 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   defaultExpanded = true,
   expandedSize = 'normal',
 }) => {
-  const { saveConsultationNotesToCurrentSession } = useConsultationStores();
   // Track processed items to avoid duplicates
   const [processedItemIds] = useState(new Set<string>());
   const [isExpanded, setIsExpanded] = useState(isMinimized ? false : defaultExpanded);
