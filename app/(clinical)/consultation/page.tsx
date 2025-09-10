@@ -90,6 +90,7 @@ export default function ConsultationPage() {
 
   // Mobile recording status
   const [mobileIsRecording, setMobileIsRecording] = useState(false);
+  const lastMobileStatusAtRef = useRef<number>(0);
   const [defaultRecordingMethod, setDefaultRecordingMethod] = useState<'desktop' | 'mobile'>('desktop');
 
   // Desktop recording controls
@@ -155,7 +156,10 @@ export default function ConsultationPage() {
 
   const { sendRecordingControl } = useSimpleAbly({
     userId: userId ?? null,
-    onRecordingStatusChanged: (isRecording: boolean) => setMobileIsRecording(isRecording),
+    onRecordingStatusChanged: (isRecording: boolean) => {
+      setMobileIsRecording(isRecording);
+      lastMobileStatusAtRef.current = Date.now();
+    },
     onError: handleError,
     // 🆕 SESSION CONTEXT REMOVED: Server-side session resolution eliminates need for session broadcasting
     // 🆕 CONNECTION HANDLER REMOVED: No session broadcasting needed with server-side resolution
@@ -222,6 +226,21 @@ export default function ConsultationPage() {
       }, 900);
     },
   });
+
+  // Auto-clear stale mobile recording state if no heartbeat/status received recently
+  useEffect(() => {
+    const interval = setInterval(() => {
+      try {
+        if (mobileIsRecording) {
+          const last = lastMobileStatusAtRef.current || 0;
+          if (Date.now() - last > 15000) {
+            setMobileIsRecording(false);
+          }
+        }
+      } catch {}
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [mobileIsRecording]);
 
   // Ensure global hook proxy exists as early as possible to aid diagnostics
   useEffect(() => {
