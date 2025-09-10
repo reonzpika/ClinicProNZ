@@ -100,7 +100,7 @@ const RightPanelFeatures: React.FC<RightPanelFeaturesProps> = ({
   // Ensure active section is allowed for current role
   useEffect(() => {
     if (!allowedSections.includes(activeSection)) {
-      setActiveSection(allowedSections.includes('chat') ? 'chat' : allowedSections[0]);
+      setActiveSection(allowedSections.includes('chat') ? 'chat' : (allowedSections[0] ?? 'chat'));
     }
   }, [allowedSections, activeSection]);
 
