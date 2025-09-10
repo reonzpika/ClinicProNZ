@@ -198,14 +198,10 @@ export function useConsultationStores(): any {
     return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
-  const saveConsultationNotesToCurrentSession = useCallback(async (consultationNotes: string): Promise<boolean> => {
-    const id = consultationStore.currentPatientSessionId;
-    if (!id) {
-      return false;
-    }
-    await updatePatientSession(id, { consultationNotes } as any);
+  // Deprecated: legacy notes not used for additional note persistence anymore
+  const saveConsultationNotesToCurrentSession = useCallback(async (_consultationNotes: string): Promise<boolean> => {
     return true;
-  }, [consultationStore.currentPatientSessionId, updatePatientSession]);
+  }, []);
 
   // New per-section save helpers
   const saveProblemsToCurrentSession = useCallback(async (text: string): Promise<boolean> => {

@@ -6,7 +6,7 @@ import { ExaminationChecklistButton } from '@/src/features/clinical/examination-
 import { PlanSafetyNettingButton } from '@/src/features/clinical/plan-safety-netting';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Textarea } from '@/src/shared/components/ui/textarea';
-import { parseSectionedNotes, serializeSectionedNotes } from '@/src/features/clinical/main-ui/utils/consultationNotesSerializer';
+// Removed JSON serializer (we persist per-section fields only)
 
 type ConsultationItem = {
   id: string;
@@ -41,12 +41,21 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   const [isExpanded, setIsExpanded] = useState(isMinimized ? false : defaultExpanded);
   const [lastSavedNotes, setLastSavedNotes] = useState('');
 
-  // Local section states derived from notes string
-  const initialSections = useMemo(() => parseSectionedNotes(notes), [notes]);
-  const [problemsText, setProblemsText] = useState<string>(initialSections.problems);
-  const [objectiveText, setObjectiveText] = useState<string>(initialSections.objective);
-  const [assessmentText, setAssessmentText] = useState<string>(initialSections.assessment);
-  const [planText, setPlanText] = useState<string>(initialSections.plan);
+  // Section state is maintained in the store now
+  const {
+    problemsText,
+    objectiveText,
+    assessmentText,
+    planText,
+    setProblemsText,
+    setObjectiveText,
+    setAssessmentText,
+    setPlanText,
+    saveProblemsToCurrentSession,
+    saveObjectiveToCurrentSession,
+    saveAssessmentToCurrentSession,
+    savePlanToCurrentSession,
+  } = useConsultationStores();
 
   // Sync expansion state with defaultExpanded prop changes (input mode changes)
   useEffect(() => {
@@ -60,35 +69,24 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     setLastSavedNotes(notes);
   }, []);
 
-  // Update local sections and lastSavedNotes when notes are loaded from session switching
+  // Update lastSavedNotes when notes are loaded from session switching (legacy only)
   useEffect(() => {
     if (notes !== lastSavedNotes) {
-      const s = parseSectionedNotes(notes);
-      setProblemsText(s.problems);
-      setObjectiveText(s.objective);
-      setAssessmentText(s.assessment);
-      setPlanText(s.plan);
       setLastSavedNotes(notes);
     }
   }, [notes, lastSavedNotes]);
 
-  // Save consultation notes on blur (when user finishes editing)
+  // Save per-section fields on blur
   const handleNotesBlur = async () => {
-    const serialized = serializeSectionedNotes({
-      problems: problemsText,
-      objective: objectiveText,
-      assessment: assessmentText,
-      plan: planText,
-    });
-    if (serialized !== lastSavedNotes && serialized.trim() !== '') {
-      try {
-        const success = await saveConsultationNotesToCurrentSession(serialized);
-        if (success) {
-          setLastSavedNotes(serialized);
-        }
-      } catch (error) {
-        console.error('Failed to save consultation notes:', error);
-      }
+    try {
+      await Promise.all([
+        saveProblemsToCurrentSession(problemsText || ''),
+        saveObjectiveToCurrentSession(objectiveText || ''),
+        saveAssessmentToCurrentSession(assessmentText || ''),
+        savePlanToCurrentSession(planText || ''),
+      ]);
+    } catch (error) {
+      console.error('Failed to save sectioned notes:', error);
     }
   };
 
@@ -137,15 +135,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     setObjectiveText(nextObjective);
     setAssessmentText(nextAssessment);
     setPlanText(nextPlan);
-    const serialized = serializeSectionedNotes({
-      problems: problemsText,
-      objective: nextObjective,
-      assessment: nextAssessment,
-      plan: nextPlan,
-    });
-    if (serialized !== lastSavedNotes) {
-      onNotesChange(serialized);
-    }
+    // No longer writing JSON back through onNotesChange
   }, [items, objectiveText, assessmentText, planText, problemsText, lastSavedNotes, onNotesChange, processedItemIds]);
 
   // Handle text changes per section
@@ -154,13 +144,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     if (section === 'objective') setObjectiveText(newText);
     if (section === 'assessment') setAssessmentText(newText);
     if (section === 'plan') setPlanText(newText);
-    const serialized = serializeSectionedNotes({
-      problems: section === 'problems' ? newText : problemsText,
-      objective: section === 'objective' ? newText : objectiveText,
-      assessment: section === 'assessment' ? newText : assessmentText,
-      plan: section === 'plan' ? newText : planText,
-    });
-    onNotesChange(serialized);
+    // No longer writing JSON back through onNotesChange
   };
 
   // Character count display helper
@@ -172,7 +156,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     return (
       <span className="text-xs text-slate-500">
         (
-        {serializeSectionedNotes({ problems: problemsText, objective: objectiveText, assessment: assessmentText, plan: planText }).trim().length}
+        {(problemsText + objectiveText + assessmentText + planText).trim().length}
         {' '}
         chars)
       </span>
@@ -181,12 +165,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
 
   // Minimized view (in documentation mode)
   if (isMinimized) {
-    const serialized = serializeSectionedNotes({ problems: problemsText, objective: objectiveText, assessment: assessmentText, plan: planText });
-    const hasNotes = serialized && serialized.trim().length > 0;
+    const hasNotes = [problemsText, objectiveText, assessmentText, planText].some(s => s && s.trim().length > 0);
     const hasItems = items && items.length > 0;
     const itemsPreview = hasItems ? items.map(item => item.title).join(', ') : '';
-    const notesPreview = hasNotes ? serialized.substring(0, 100) : '';
-    const needsNotesTruncation = hasNotes && serialized.length > 100;
+    const combined = [problemsText, objectiveText, assessmentText, planText].filter(Boolean).join(' ').trim();
+    const notesPreview = hasNotes ? combined.substring(0, 100) : '';
+    const needsNotesTruncation = hasNotes && combined.length > 100;
     const needsItemsTruncation = itemsPreview.length > 60;
     const displayItemsPreview = needsItemsTruncation ? `${itemsPreview.substring(0, 60)}...` : itemsPreview;
 
@@ -202,7 +186,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               <span className="text-xs text-slate-500">
                 {hasItems && `${items.length} item${items.length !== 1 ? 's' : ''}`}
                 {hasItems && hasNotes && ', '}
-                {hasNotes && `${notes.length} chars`}
+                {hasNotes && `${combined.length} chars`}
               </span>
             )}
           </div>
