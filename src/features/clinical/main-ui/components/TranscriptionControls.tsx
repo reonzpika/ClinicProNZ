@@ -737,8 +737,7 @@ export function TranscriptionControls({
                       words={contextTranscription.words}
                       isRecording={isRecording}
                       onEdit={(newText) => {
-                        // TODO: Implement transcript editing
-                        void newText;
+                        setTranscription(newText, false, undefined, undefined);
                       }}
                     />
                   )
@@ -748,9 +747,8 @@ export function TranscriptionControls({
                         ? (
                           <textarea
                             value={transcript}
-                            onChange={(_e) => {
-                              // Allow editing after recording stops
-                              // This would need to be connected to a context method to update transcript
+                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                              setTranscription(e.target.value, false, undefined, undefined);
                             }}
                             className="w-full resize-none border-none text-sm leading-relaxed focus:outline-none"
                             placeholder="Transcription will appear here..."
