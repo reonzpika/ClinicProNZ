@@ -39,7 +39,8 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   const [processedItemIds] = useState(new Set<string>());
   const [isExpanded, setIsExpanded] = useState(isMinimized ? false : defaultExpanded);
   const [lastSavedNotes, setLastSavedNotes] = useState('');
-  const [activeSection, setActiveSection] = useState<'problems' | 'objective' | 'assessment' | 'plan'>('problems');
+  type Section = 'problems' | 'objective' | 'assessment' | 'plan';
+  const [activeSection, setActiveSection] = useState<Section>('problems');
 
   // Refs for keyboard focus management
   const problemsRef = React.useRef<HTMLTextAreaElement | null>(null);
@@ -48,25 +49,25 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   const planRef = React.useRef<HTMLTextAreaElement | null>(null);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
 
-  const focusSection = (section: 'problems' | 'objective' | 'assessment' | 'plan') => {
+  const focusSection = (section: Section) => {
     setActiveSection(section);
-    const map: Record<string, HTMLTextAreaElement | null> = {
+    const map: Record<Section, HTMLTextAreaElement | null> = {
       problems: problemsRef.current,
       objective: objectiveRef.current,
       assessment: assessmentRef.current,
       plan: planRef.current,
-    } as any;
+    };
     map[section]?.focus();
   };
 
   const handleRovingKeyDown = (e: React.KeyboardEvent) => {
     if (e.key !== 'Tab') return;
     e.preventDefault();
-    const order: Array<'problems' | 'objective' | 'assessment' | 'plan'> = ['problems', 'objective', 'assessment', 'plan'];
+    const order: ReadonlyArray<Section> = ['problems', 'objective', 'assessment', 'plan'] as const;
     const idx = order.indexOf(activeSection);
     const dir = e.shiftKey ? -1 : 1;
     const nextIdx = (idx + dir + order.length) % order.length;
-    focusSection(order[nextIdx]);
+    focusSection(order[nextIdx] as Section);
   };
 
   // Auto-focus Problems when expanding the section
