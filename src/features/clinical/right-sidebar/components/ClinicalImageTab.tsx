@@ -6,6 +6,7 @@ import { Brain, Download, Expand, Loader2, Trash2 } from 'lucide-react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
+import { parseSectionedNotes, serializeSectionedNotes } from '@/src/features/clinical/main-ui/utils/consultationNotesSerializer';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { imageQueryKeys, useServerImages } from '@/src/hooks/useImageQueries';
 import { Button } from '@/src/shared/components/ui/button';
@@ -255,11 +256,16 @@ export const ClinicalImageTab: React.FC = () => {
                   await saveClinicalImagesToCurrentSession(updatedImages);
 
                   // Add analysis to consultation notes
-                  const analysisText = `\n\n--- AI Analysis of ${image.filename} ---\n${data.description}`;
-                  const updatedNotes = consultationNotes.trim()
-                    ? `${consultationNotes}${analysisText}`
-                    : analysisText.trim();
-                  setConsultationNotes(updatedNotes);
+                  const sections = parseSectionedNotes(consultationNotes);
+                  const analysisText = `AI Analysis of ${image.filename}:\n${data.description}`.trim();
+                  const nextObjective = [sections.objective.trim(), analysisText].filter(Boolean).join('\n\n');
+                  const serialized = serializeSectionedNotes({
+                    problems: sections.problems,
+                    objective: nextObjective,
+                    assessment: sections.assessment,
+                    plan: sections.plan,
+                  });
+                  setConsultationNotes(serialized);
                 } else if (data.status === 'error') {
                   console.error('❌ AI Analysis error:', data.error);
                   throw new Error(data.error || 'Analysis failed');

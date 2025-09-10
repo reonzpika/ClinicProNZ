@@ -95,44 +95,58 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   // Auto-append new items to appropriate sections
   useEffect(() => {
     const newItems = items.filter(item => !processedItemIds.has(item.id));
-    if (newItems.length > 0) {
-      // Route items by type/title
-      const isPlanItem = (title: string) => /plan|safety[- ]?net/i.test(title);
-      const objectiveItems = newItems
-        .filter(i => (i.type === 'checklist' || i.type === 'other' || i.type === 'acc-code') && !isPlanItem(i.title))
-        .map(i => `${i.title}: ${i.content}`);
-      const assessmentItems = newItems
-        .filter(i => i.type === 'differential-diagnosis')
-        .map(i => `${i.title}: ${i.content}`);
-      const planItems = newItems
-        .filter(i => isPlanItem(i.title))
-        .map(i => `${i.title}: ${i.content}`);
+    if (newItems.length === 0) {
+      return;
+    }
+    // Route items by type/title and avoid adding duplicates already present in sections
+    const isPlanItem = (title: string) => /plan|safety[- ]?net/i.test(title);
+    const toLine = (i: any) => `${i.title}: ${i.content}`;
 
-      const nextObjective = objectiveItems.length > 0
-        ? [objectiveText.trim(), objectiveItems.join('\n\n')].filter(Boolean).join('\n\n')
-        : objectiveText;
-      const nextAssessment = assessmentItems.length > 0
-        ? [assessmentText.trim(), assessmentItems.join('\n\n')].filter(Boolean).join('\n\n')
-        : assessmentText;
-      const nextPlan = planItems.length > 0
-        ? [planText.trim(), planItems.join('\n\n')].filter(Boolean).join('\n\n')
-        : planText;
+    const objAdds = newItems
+      .filter(i => (i.type === 'checklist' || i.type === 'other' || i.type === 'acc-code') && !isPlanItem(i.title))
+      .map(toLine)
+      .filter(line => !objectiveText.includes(line));
+    const asmtAdds = newItems
+      .filter(i => i.type === 'differential-diagnosis')
+      .map(toLine)
+      .filter(line => !assessmentText.includes(line));
+    const planAdds = newItems
+      .filter(i => isPlanItem(i.title))
+      .map(toLine)
+      .filter(line => !planText.includes(line));
 
-      // Mark items as processed
+    if (objAdds.length === 0 && asmtAdds.length === 0 && planAdds.length === 0) {
+      // still mark processed to avoid future work
       newItems.forEach(item => processedItemIds.add(item.id));
+      return;
+    }
 
-      setObjectiveText(nextObjective);
-      setAssessmentText(nextAssessment);
-      setPlanText(nextPlan);
-      const serialized = serializeSectionedNotes({
-        problems: problemsText,
-        objective: nextObjective,
-        assessment: nextAssessment,
-        plan: nextPlan,
-      });
+    const nextObjective = objAdds.length > 0
+      ? [objectiveText.trim(), objAdds.join('\n\n')].filter(Boolean).join('\n\n')
+      : objectiveText;
+    const nextAssessment = asmtAdds.length > 0
+      ? [assessmentText.trim(), asmtAdds.join('\n\n')].filter(Boolean).join('\n\n')
+      : assessmentText;
+    const nextPlan = planAdds.length > 0
+      ? [planText.trim(), planAdds.join('\n\n')].filter(Boolean).join('\n\n')
+      : planText;
+
+    // Mark items as processed
+    newItems.forEach(item => processedItemIds.add(item.id));
+
+    setObjectiveText(nextObjective);
+    setAssessmentText(nextAssessment);
+    setPlanText(nextPlan);
+    const serialized = serializeSectionedNotes({
+      problems: problemsText,
+      objective: nextObjective,
+      assessment: nextAssessment,
+      plan: nextPlan,
+    });
+    if (serialized !== lastSavedNotes) {
       onNotesChange(serialized);
     }
-  }, [items, objectiveText, assessmentText, planText, problemsText, onNotesChange, processedItemIds]);
+  }, [items, objectiveText, assessmentText, planText, problemsText, lastSavedNotes, onNotesChange, processedItemIds]);
 
   // Handle text changes per section
   const handleSectionChange = (section: 'problems' | 'objective' | 'assessment' | 'plan', newText: string) => {
