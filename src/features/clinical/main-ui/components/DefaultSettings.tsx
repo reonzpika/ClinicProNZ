@@ -86,7 +86,7 @@ export function DefaultSettings() {
     >
       <button
         type="button"
-        className="flex w-full items-center justify-between text-left"
+        className="flex w-full items-center justify-between text-left min-h-10"
         onClick={(e) => {
           e.stopPropagation();
           setCollapsed(!collapsed);

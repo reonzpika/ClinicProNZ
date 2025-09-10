@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
@@ -22,6 +22,10 @@ export const PatientSessionManager: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [isEnsuring, setIsEnsuring] = useState(false);
+  const [isLoadingUi, setIsLoadingUi] = useState(false);
+  const loadingStartAtRef = useRef<number | null>(null);
+  const showDelayRef = useRef<NodeJS.Timeout | null>(null);
+  const hideDelayRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleSessionSelect = useCallback((sessionId: string) => {
     switchToPatientSession(sessionId);
@@ -101,6 +105,55 @@ export const PatientSessionManager: React.FC = () => {
     isEnsuring,
   ]);
 
+  // Smooth loading indicator: delay show and ensure minimum visible duration
+  useEffect(() => {
+    const SHOW_DELAY_MS = 200;
+    const MIN_VISIBLE_MS = 400;
+
+    // Clear pending timers
+    if (showDelayRef.current) {
+      clearTimeout(showDelayRef.current);
+      showDelayRef.current = null;
+    }
+    if (hideDelayRef.current) {
+      clearTimeout(hideDelayRef.current);
+      hideDelayRef.current = null;
+    }
+
+    if (isEnsuring) {
+      // Delay showing to avoid flicker on very fast operations
+      showDelayRef.current = setTimeout(() => {
+        loadingStartAtRef.current = Date.now();
+        setIsLoadingUi(true);
+      }, SHOW_DELAY_MS);
+    } else {
+      // If currently visible, keep for a minimum duration
+      if (isLoadingUi) {
+        const startedAt = loadingStartAtRef.current || 0;
+        const elapsed = Date.now() - startedAt;
+        const remaining = Math.max(0, MIN_VISIBLE_MS - elapsed);
+        hideDelayRef.current = setTimeout(() => {
+          setIsLoadingUi(false);
+          loadingStartAtRef.current = null;
+        }, remaining);
+      } else {
+        setIsLoadingUi(false);
+        loadingStartAtRef.current = null;
+      }
+    }
+
+    return () => {
+      if (showDelayRef.current) {
+        clearTimeout(showDelayRef.current);
+        showDelayRef.current = null;
+      }
+      if (hideDelayRef.current) {
+        clearTimeout(hideDelayRef.current);
+        hideDelayRef.current = null;
+      }
+    };
+  }, [isEnsuring, isLoadingUi]);
+
   const handleSwitchSession = () => {
     setIsModalOpen(true);
   };
@@ -112,7 +165,7 @@ export const PatientSessionManager: React.FC = () => {
   return (
     <>
       {/* Current session bar - always show for signed in users */}
-      <CurrentSessionBar onSwitchSession={handleSwitchSession} />
+      <CurrentSessionBar onSwitchSession={handleSwitchSession} isLoading={isLoadingUi} />
 
       {/* Session management modal */}
       {isClient && isSignedIn && (

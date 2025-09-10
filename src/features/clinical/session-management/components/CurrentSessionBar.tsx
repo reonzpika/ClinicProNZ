@@ -11,10 +11,12 @@ import { useResponsive } from '@/src/shared/hooks/useResponsive';
 
 type CurrentSessionBarProps = {
   onSwitchSession: () => void;
+  isLoading?: boolean;
 };
 
 export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
   onSwitchSession,
+  isLoading = false,
 }) => {
   const {
     getCurrentPatientSession = () => null,
@@ -142,7 +144,14 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
               <UserCheck className="size-4 shrink-0 text-blue-600" />
 
               <div className={isLargeDesktop ? 'min-w-0 flex-1' : 'min-w-0 flex-1'}>
-                {currentSession
+                {isLoading
+                  ? (
+                      <div className="flex items-center gap-2 text-sm font-medium text-blue-800">
+                        <RefreshCw className="size-3 animate-spin text-blue-600" />
+                        Loading...
+                      </div>
+                    )
+                  : currentSession
                   ? (
                       <>
                         {/* Patient Name - Editable */}
@@ -219,7 +228,7 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
             {currentSession && currentSession.status !== 'completed' && (
               <Button
                 onClick={handleCompleteSession}
-                disabled={isCompletingSession}
+                disabled={isCompletingSession || isLoading}
                 size="sm"
                 variant="outline"
                 className="h-7 border-blue-300 px-3 text-xs text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
@@ -241,7 +250,8 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
               onClick={onSwitchSession}
               size="sm"
               variant="outline"
-              className="h-7 border-blue-300 px-3 text-xs text-blue-700 hover:bg-blue-100"
+              disabled={isLoading}
+              className="h-7 border-blue-300 px-3 text-xs text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <span className="mr-1">Switch Session</span>
               <ChevronDown className="size-3" />
@@ -251,7 +261,7 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
               onClick={handleNewPatient}
               size="sm"
               variant="default"
-              disabled={isCreatingNewPatient}
+              disabled={isCreatingNewPatient || isLoading}
               className="h-7 bg-blue-600 px-3 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
               title={isCreatingNewPatient ? 'Creating…' : 'Create new patient session'}
               aria-busy={isCreatingNewPatient}
