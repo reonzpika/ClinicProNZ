@@ -464,7 +464,6 @@ export function TranscriptionControls({
             <ConsultationInputHeader
               mode="audio"
               isRecording={isRecording}
-              status={transcript ? 'Ready for review' : undefined}
             />
             <Button type="button" size="sm" className="text-xs" onClick={onExpand}>
               Expand
@@ -496,9 +495,7 @@ export function TranscriptionControls({
                 <span className="animate-pulse text-xs text-blue-600">Mobile device recording...</span>
               </>
             )}
-            {transcript && !isRecording && (
-              <span className="text-xs text-slate-600">Ready for review</span>
-            )}
+            {/* removed ready-for-review label */}
           </div>
         </div>
         <div className="flex items-center gap-2">
