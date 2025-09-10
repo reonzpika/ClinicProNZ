@@ -36,13 +36,26 @@ export function useConsultationStores(): any {
   // Hydrate local state when a persisted session is present but local is empty
   useEffect(() => {
     const currentSessionId = consultationStore.currentPatientSessionId;
-    if (!currentSessionId || !Array.isArray(patientSessions) || patientSessions.length === 0) {
- return;
-}
+    if (!Array.isArray(patientSessions)) {
+      return;
+    }
+    // If local points to a missing session, clear it so ensureActiveSession can create a fresh one
+    if (currentSessionId && patientSessions.length > 0) {
+      const sessionExists = patientSessions.some((s: any) => s.id === currentSessionId);
+      if (!sessionExists) {
+        consultationStore.setCurrentPatientSessionId(null);
+        // Best-effort: immediately ensure a valid active session
+        try { (async () => { await ensureActiveSession(); })(); } catch {}
+        return;
+      }
+    }
+    if (!currentSessionId || patientSessions.length === 0) {
+      return;
+    }
     const session = patientSessions.find((s: any) => s.id === currentSessionId);
     if (!session) {
- return;
-}
+      return;
+    }
 
     // Suppress hydration for a brief window immediately after a Clear All
     try {
@@ -109,24 +122,52 @@ export function useConsultationStores(): any {
   const deleteAllSessionsMutation = useDeleteAllPatientSessions();
 
   const ensureActiveSession = useCallback(async (): Promise<string | null> => {
-    if (consultationStore.currentPatientSessionId) {
-      return consultationStore.currentPatientSessionId;
-    }
     try {
-      // Simple patient name - date/time info stored in session table
-      const patientName = 'Patient';
-      // Use user's favourite template or system default for brand-new sessions
-      const templateForNewSession = (settings?.favouriteTemplateId as string | undefined) || DEFAULT_TEMPLATE_ID;
+      const localId = consultationStore.currentPatientSessionId;
+      // If we have a local ID, validate it against fetched sessions (or best-effort fetch by ID)
+      if (localId) {
+        const hasLoadedList = Array.isArray(patientSessions) && patientSessions.length > 0;
+        if (hasLoadedList) {
+          const existsLocally = patientSessions.some((s: any) => s.id === localId);
+          if (existsLocally) {
+            return localId;
+          }
+        } else {
+          // Validate by fetching the specific session from the server
+          try {
+            const res = await fetch(`/api/patient-sessions?sessionId=${encodeURIComponent(localId)}`, {
+              method: 'GET',
+              headers: createAuthHeaders(userId),
+            });
+            if (res.ok) {
+              const data = await res.json();
+              const sessions = Array.isArray(data?.sessions) ? data.sessions : [];
+              if (sessions.length > 0) {
+                return localId;
+              }
+            }
+          } catch {}
+        }
+        // Local ID is stale → clear it so we can create a new one
+        consultationStore.setCurrentPatientSessionId(null);
+      }
 
+      // Create a brand-new session
+      const patientName = 'Patient';
+      const templateForNewSession = (settings?.favouriteTemplateId as string | undefined) || DEFAULT_TEMPLATE_ID;
       const result = await createSessionMutation.mutateAsync({ patientName, templateId: templateForNewSession });
-      // Point local state to the new session and reset template to default for fresh start
       consultationStore.setCurrentPatientSessionId(result.id);
       consultationStore.setTemplateId(templateForNewSession);
+      // Persist current session server-side (best-effort)
+      try {
+        const headers = { ...createAuthHeaders(userId), 'Content-Type': 'application/json' } as HeadersInit;
+        fetch('/api/current-session', { method: 'PUT', headers, body: JSON.stringify({ sessionId: result.id }) }).catch(() => {});
+      } catch {}
       return result.id;
     } catch {
       return null;
     }
-  }, [consultationStore, createSessionMutation, settings?.favouriteTemplateId]);
+  }, [consultationStore, createSessionMutation, patientSessions, settings?.favouriteTemplateId, userId]);
 
   const createPatientSession = useCallback(async (patientName: string, templateId?: string): Promise<PatientSession | null> => {
     try {

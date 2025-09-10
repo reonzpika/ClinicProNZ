@@ -410,7 +410,7 @@ export default function ConsultationPage() {
 
   // Removed mobile token bootstrap; Ably connects via user token
 
-  // On mount, sync current session from server (server truth)
+  // On mount, sync current session from server (server truth); create one if missing
   useEffect(() => {
     const fetchCurrent = async () => {
       try {
@@ -420,15 +420,22 @@ export default function ConsultationPage() {
         const res = await fetch('/api/current-session', { method: 'GET', headers: createAuthHeaders(userId, userTier) });
         if (res.ok) {
           const data = await res.json();
-          const sessionId = data?.currentSessionId;
-          if (sessionId) {
-            // broadcast via server-event publisher on switch actions only; here just local hydration best-effort
-            // leave Ably broadcast to server on future switch
+          const serverId = data?.currentSessionId as string | null;
+          if (serverId) {
+            if (serverId !== currentPatientSessionId) {
+              originalSwitchToPatientSession(serverId);
+            }
+          } else {
+            // No server-side current session → ensure one exists
+            try {
+              await ensureActiveSession();
+            } catch {}
           }
         }
       } catch {}
     };
     fetchCurrent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, userTier]);
 
   // REMOVED: Redundant session broadcasting - now handled by ConsultationContext only
