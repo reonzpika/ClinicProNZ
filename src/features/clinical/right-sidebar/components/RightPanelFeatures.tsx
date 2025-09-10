@@ -1,9 +1,10 @@
 'use client';
 
 import { Camera, CheckSquare, MessageCircle, Search, Stethoscope } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
 import { ChatbotWidget } from './ChatbotWidget';
 import { ClinicalImageTab } from './ClinicalImageTab';
@@ -66,6 +67,14 @@ const RightPanelFeatures: React.FC<RightPanelFeaturesProps> = ({
   isCollapsed = true,
   onToggle,
 }) => {
+  const { getUserTier } = useClerkMetadata();
+  const tier = getUserTier();
+  const isAdmin = tier === 'admin';
+
+  const allowedSections: SectionId[] = useMemo(() => (
+    isAdmin ? ['images', 'checklist', 'ddx', 'chat', 'acc'] : ['images', 'chat']
+  ), [isAdmin]);
+
   const [activeSection, setActiveSection] = useState<SectionId>(() => {
     try {
       if (typeof window !== 'undefined') {
@@ -88,8 +97,17 @@ const RightPanelFeatures: React.FC<RightPanelFeaturesProps> = ({
     } catch {}
   }, [activeSection]);
 
+  // Ensure active section is allowed for current role
+  useEffect(() => {
+    if (!allowedSections.includes(activeSection)) {
+      setActiveSection(allowedSections.includes('chat') ? 'chat' : allowedSections[0]);
+    }
+  }, [allowedSections, activeSection]);
+
   // Update sections with conditional components based on user tier
-  const sectionsWithConditionalFeatures: AccordionSection[] = sections.map((section) => {
+  const sectionsWithConditionalFeatures: AccordionSection[] = sections
+    .filter((section) => allowedSections.includes(section.id))
+    .map((section) => {
     if (section.id === 'chat') {
       return {
         ...section,
