@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
+import { formatNotesForPrompt, parseSectionedNotes } from '@/src/features/clinical/main-ui/utils/consultationNotesSerializer';
 
 import type { ChatMessage, ClinicalImage, ConsultationItem } from '@/src/types/consultation';
 
@@ -186,17 +187,10 @@ export const useConsultationStore = create<ConsultationStore>()(
       })),
     setConsultationNotes: notes => set({ consultationNotes: notes }),
     getCompiledConsultationText: () => {
-      const { consultationItems, consultationNotes } = get();
-      const itemsText = consultationItems.map(item => `${item.title}: ${item.content}`).join('\n\n');
-      const manualNotes = consultationNotes.trim();
-
-      if (itemsText && manualNotes) {
-        return `${itemsText}\n\n${manualNotes}`;
-      } else if (itemsText) {
-        return itemsText;
-      } else {
-        return manualNotes;
-      }
+      // Compile labelled blocks for the prompt from sectioned notes only
+      const { consultationNotes } = get();
+      const sections = parseSectionedNotes(consultationNotes);
+      return formatNotesForPrompt(sections);
     },
 
     // Clinical images actions

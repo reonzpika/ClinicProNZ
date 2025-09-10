@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { ExaminationChecklistButton } from '@/src/features/clinical/examination-checklist/components/ExaminationChecklistButton';
 import { PlanSafetyNettingButton } from '@/src/features/clinical/plan-safety-netting';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Textarea } from '@/src/shared/components/ui/textarea';
+import { parseSectionedNotes, serializeSectionedNotes } from '@/src/features/clinical/main-ui/utils/consultationNotesSerializer';
 
 type ConsultationItem = {
   id: string;
@@ -40,6 +41,13 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   const [isExpanded, setIsExpanded] = useState(isMinimized ? false : defaultExpanded);
   const [lastSavedNotes, setLastSavedNotes] = useState('');
 
+  // Local section states derived from notes string
+  const initialSections = useMemo(() => parseSectionedNotes(notes), [notes]);
+  const [problemsText, setProblemsText] = useState<string>(initialSections.problems);
+  const [objectiveText, setObjectiveText] = useState<string>(initialSections.objective);
+  const [assessmentText, setAssessmentText] = useState<string>(initialSections.assessment);
+  const [planText, setPlanText] = useState<string>(initialSections.plan);
+
   // Sync expansion state with defaultExpanded prop changes (input mode changes)
   useEffect(() => {
     if (!isMinimized) {
@@ -47,25 +55,36 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     }
   }, [defaultExpanded, isMinimized]);
 
-  // Initialize lastSavedNotes when component mounts
+  // Initialize lastSavedNotes and local sections when component mounts
   useEffect(() => {
     setLastSavedNotes(notes);
   }, []);
 
-  // Update lastSavedNotes when notes are loaded from session switching
+  // Update local sections and lastSavedNotes when notes are loaded from session switching
   useEffect(() => {
     if (notes !== lastSavedNotes) {
+      const s = parseSectionedNotes(notes);
+      setProblemsText(s.problems);
+      setObjectiveText(s.objective);
+      setAssessmentText(s.assessment);
+      setPlanText(s.plan);
       setLastSavedNotes(notes);
     }
   }, [notes, lastSavedNotes]);
 
   // Save consultation notes on blur (when user finishes editing)
   const handleNotesBlur = async () => {
-    if (notes !== lastSavedNotes && notes.trim() !== '') {
+    const serialized = serializeSectionedNotes({
+      problems: problemsText,
+      objective: objectiveText,
+      assessment: assessmentText,
+      plan: planText,
+    });
+    if (serialized !== lastSavedNotes && serialized.trim() !== '') {
       try {
-        const success = await saveConsultationNotesToCurrentSession(notes);
+        const success = await saveConsultationNotesToCurrentSession(serialized);
         if (success) {
-          setLastSavedNotes(notes);
+          setLastSavedNotes(serialized);
         }
       } catch (error) {
         console.error('Failed to save consultation notes:', error);
@@ -73,39 +92,73 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     }
   };
 
-  // Auto-append new items to notes
+  // Auto-append new items to appropriate sections
   useEffect(() => {
     const newItems = items.filter(item => !processedItemIds.has(item.id));
-
     if (newItems.length > 0) {
-      const newItemsText = newItems.map(item => `${item.title}: ${item.content}`).join('\n\n');
-      const currentNotes = notes.trim();
+      // Route items by type/title
+      const isPlanItem = (title: string) => /plan|safety[- ]?net/i.test(title);
+      const objectiveItems = newItems
+        .filter(i => (i.type === 'checklist' || i.type === 'other' || i.type === 'acc-code') && !isPlanItem(i.title))
+        .map(i => `${i.title}: ${i.content}`);
+      const assessmentItems = newItems
+        .filter(i => i.type === 'differential-diagnosis')
+        .map(i => `${i.title}: ${i.content}`);
+      const planItems = newItems
+        .filter(i => isPlanItem(i.title))
+        .map(i => `${i.title}: ${i.content}`);
 
-      const updatedNotes = currentNotes
-        ? `${currentNotes}\n\n${newItemsText}`
-        : newItemsText;
+      const nextObjective = objectiveItems.length > 0
+        ? [objectiveText.trim(), objectiveItems.join('\n\n')].filter(Boolean).join('\n\n')
+        : objectiveText;
+      const nextAssessment = assessmentItems.length > 0
+        ? [assessmentText.trim(), assessmentItems.join('\n\n')].filter(Boolean).join('\n\n')
+        : assessmentText;
+      const nextPlan = planItems.length > 0
+        ? [planText.trim(), planItems.join('\n\n')].filter(Boolean).join('\n\n')
+        : planText;
 
       // Mark items as processed
       newItems.forEach(item => processedItemIds.add(item.id));
 
-      onNotesChange(updatedNotes);
+      setObjectiveText(nextObjective);
+      setAssessmentText(nextAssessment);
+      setPlanText(nextPlan);
+      const serialized = serializeSectionedNotes({
+        problems: problemsText,
+        objective: nextObjective,
+        assessment: nextAssessment,
+        plan: nextPlan,
+      });
+      onNotesChange(serialized);
     }
-  }, [items, notes, onNotesChange, processedItemIds]);
+  }, [items, objectiveText, assessmentText, planText, problemsText, onNotesChange, processedItemIds]);
 
-  // Handle text changes
-  const handleTextChange = (newText: string) => {
-    onNotesChange(newText);
+  // Handle text changes per section
+  const handleSectionChange = (section: 'problems' | 'objective' | 'assessment' | 'plan', newText: string) => {
+    if (section === 'problems') setProblemsText(newText);
+    if (section === 'objective') setObjectiveText(newText);
+    if (section === 'assessment') setAssessmentText(newText);
+    if (section === 'plan') setPlanText(newText);
+    const serialized = serializeSectionedNotes({
+      problems: section === 'problems' ? newText : problemsText,
+      objective: section === 'objective' ? newText : objectiveText,
+      assessment: section === 'assessment' ? newText : assessmentText,
+      plan: section === 'plan' ? newText : planText,
+    });
+    onNotesChange(serialized);
   };
 
   // Character count display helper
   const renderCharacterCount = () => {
-    if (!notes.trim()) {
+    const anyContent = [problemsText, objectiveText, assessmentText, planText].some(s => s && s.trim());
+    if (!anyContent) {
       return null;
     }
     return (
       <span className="text-xs text-slate-500">
         (
-        {notes.trim().length}
+        {serializeSectionedNotes({ problems: problemsText, objective: objectiveText, assessment: assessmentText, plan: planText }).trim().length}
         {' '}
         chars)
       </span>
@@ -114,11 +167,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
 
   // Minimized view (in documentation mode)
   if (isMinimized) {
-    const hasNotes = notes && notes.trim().length > 0;
+    const serialized = serializeSectionedNotes({ problems: problemsText, objective: objectiveText, assessment: assessmentText, plan: planText });
+    const hasNotes = serialized && serialized.trim().length > 0;
     const hasItems = items && items.length > 0;
     const itemsPreview = hasItems ? items.map(item => item.title).join(', ') : '';
-    const notesPreview = hasNotes ? notes.substring(0, 100) : '';
-    const needsNotesTruncation = hasNotes && notes.length > 100;
+    const notesPreview = hasNotes ? serialized.substring(0, 100) : '';
+    const needsNotesTruncation = hasNotes && serialized.length > 100;
     const needsItemsTruncation = itemsPreview.length > 60;
     const displayItemsPreview = needsItemsTruncation ? `${itemsPreview.substring(0, 60)}...` : itemsPreview;
 
@@ -196,15 +250,56 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
         {/* Full editing interface when expanded */}
         {isExpanded && (
           <div className="space-y-3">
-            <Textarea
-              id="additional-notes-minimized"
-              value={notes}
-              onChange={e => handleTextChange(e.target.value)}
-              onBlur={handleNotesBlur}
-              placeholder={placeholder}
-              className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-              rows={4}
-            />
+            <div className="space-y-3">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-600">Problems</label>
+                <Textarea
+                  id="additional-notes-minimized-problems"
+                  value={problemsText}
+                  onChange={e => handleSectionChange('problems', e.target.value)}
+                  onBlur={handleNotesBlur}
+                  placeholder="List problems..."
+                  className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  rows={2}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-600">Objective</label>
+                <Textarea
+                  id="additional-notes-minimized-objective"
+                  value={objectiveText}
+                  onChange={e => handleSectionChange('objective', e.target.value)}
+                  onBlur={handleNotesBlur}
+                  placeholder="Objective findings..."
+                  className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  rows={3}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-600">Assessment</label>
+                <Textarea
+                  id="additional-notes-minimized-assessment"
+                  value={assessmentText}
+                  onChange={e => handleSectionChange('assessment', e.target.value)}
+                  onBlur={handleNotesBlur}
+                  placeholder="Assessment..."
+                  className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  rows={2}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-600">Plan</label>
+                <Textarea
+                  id="additional-notes-minimized-plan"
+                  value={planText}
+                  onChange={e => handleSectionChange('plan', e.target.value)}
+                  onBlur={handleNotesBlur}
+                  placeholder="Plan..."
+                  className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  rows={2}
+                />
+              </div>
+            </div>
             <p className="mt-1 text-xs text-slate-500">
               Information from clinical tools appears here and can be edited as needed.
             </p>
@@ -260,16 +355,54 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
           </div>
         </div>
         <div className="flex flex-1 flex-col space-y-3">
-          <Textarea
-            id="additional-notes"
-            value={notes}
-            onChange={e => handleTextChange(e.target.value)}
-            onBlur={handleNotesBlur}
-            placeholder={placeholder}
-            className="min-h-[200px] w-full flex-1 resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          />
+          <div className="grid grid-cols-1 gap-3">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Problems</label>
+              <Textarea
+                id="additional-notes-problems"
+                value={problemsText}
+                onChange={e => handleSectionChange('problems', e.target.value)}
+                onBlur={handleNotesBlur}
+                placeholder="List problems..."
+                className="min-h-[60px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Objective</label>
+              <Textarea
+                id="additional-notes-objective"
+                value={objectiveText}
+                onChange={e => handleSectionChange('objective', e.target.value)}
+                onBlur={handleNotesBlur}
+                placeholder="Objective findings..."
+                className="min-h-[120px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Assessment</label>
+              <Textarea
+                id="additional-notes-assessment"
+                value={assessmentText}
+                onChange={e => handleSectionChange('assessment', e.target.value)}
+                onBlur={handleNotesBlur}
+                placeholder="Assessment..."
+                className="min-h-[80px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Plan</label>
+              <Textarea
+                id="additional-notes-plan"
+                value={planText}
+                onChange={e => handleSectionChange('plan', e.target.value)}
+                onBlur={handleNotesBlur}
+                placeholder="Plan..."
+                className="min-h-[80px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              />
+            </div>
+          </div>
           <p className="text-xs text-slate-500">
-            Information added from clinical tools will appear here and can be edited as needed.
+            Information added from clinical tools will appear in Objective/Assessment/Plan and can be edited.
           </p>
         </div>
       </div>
@@ -295,17 +428,58 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
           </button>
         </div>
       </div>
-      <Textarea
-        id="additional-notes"
-        value={notes}
-        onChange={e => handleTextChange(e.target.value)}
-        onBlur={handleNotesBlur}
-        placeholder={placeholder}
-        className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-        rows={8}
-      />
+      <div className="grid grid-cols-1 gap-3">
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700">Problems</label>
+          <Textarea
+            id="additional-notes"
+            value={problemsText}
+            onChange={e => handleSectionChange('problems', e.target.value)}
+            onBlur={handleNotesBlur}
+            placeholder="List problems..."
+            className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            rows={3}
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700">Objective</label>
+          <Textarea
+            id="additional-notes-objective"
+            value={objectiveText}
+            onChange={e => handleSectionChange('objective', e.target.value)}
+            onBlur={handleNotesBlur}
+            placeholder="Objective findings..."
+            className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            rows={5}
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700">Assessment</label>
+          <Textarea
+            id="additional-notes-assessment"
+            value={assessmentText}
+            onChange={e => handleSectionChange('assessment', e.target.value)}
+            onBlur={handleNotesBlur}
+            placeholder="Assessment..."
+            className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            rows={4}
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700">Plan</label>
+          <Textarea
+            id="additional-notes-plan"
+            value={planText}
+            onChange={e => handleSectionChange('plan', e.target.value)}
+            onBlur={handleNotesBlur}
+            placeholder="Plan..."
+            className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            rows={4}
+          />
+        </div>
+      </div>
       <p className="text-xs text-slate-500">
-        Information added from clinical tools will appear here and can be edited as needed.
+        Information added from clinical tools will appear in Objective/Assessment/Plan and can be edited.
       </p>
     </div>
   );
