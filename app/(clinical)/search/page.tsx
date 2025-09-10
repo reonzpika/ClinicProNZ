@@ -1,3 +1,5 @@
+'use client';
+
 import { AlertCircle, Loader2, Search } from 'lucide-react';
 import { useState } from 'react';
 
@@ -5,8 +7,6 @@ import { Alert, AlertDescription } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
-
-'use client';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,11 +26,11 @@ function parseBulletPointsWithCitations(
   const citationProcessingStart = performance.now();
   const lines = text.split('\n').filter(line => line.trim());
 
-  const result = lines.map((line, lineIndex) => {
+  const result = lines.map((line) => {
     const trimmedLine = line.trim();
     if (!trimmedLine) {
- return null;
-}
+      return null;
+    }
 
     // Remove bullet point if present and parse citations
     const cleanLine = trimmedLine.replace(/^[•\-*]\s*/, '');
@@ -39,8 +39,8 @@ function parseBulletPointsWithCitations(
     const parts = cleanLine.split(/(\[\d+\])/g);
 
     return (
-      <li key={lineIndex} className="mb-2">
-        {parts.map((part, partIndex) => {
+      <li key={`bullet-${cleanLine.slice(0, 30).replace(/\W/g, '-')}-${Math.random().toString(36).substr(2, 9)}`} className="mb-2">
+        {parts.map((part) => {
           const citationMatch = part.match(/^\[(\d+)\]$/);
           if (citationMatch?.[1]) {
             const citationNumber = Number.parseInt(citationMatch[1], 10);
@@ -48,7 +48,7 @@ function parseBulletPointsWithCitations(
             if (source) {
               return (
                 <a
-                  key={partIndex}
+                  key={`citation-${citationNumber}-${source.url.split('/').pop() || 'unknown'}`}
                   href={source.url}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -217,7 +217,7 @@ export default function SearchPage() {
                 <CardContent className="pt-6">
                   <ol className="space-y-3">
                     {data.titles.map((title, index) => (
-                      <li key={index} className="flex items-start gap-3">
+                      <li key={`search-result-${title.url}`} className="flex items-start gap-3">
                         <span className="mt-0.5 shrink-0 text-sm font-medium text-muted-foreground">
                           {index + 1}
 .

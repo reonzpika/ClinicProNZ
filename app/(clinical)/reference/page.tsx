@@ -1,3 +1,5 @@
+'use client';
+
 import { useAuth } from '@clerk/nextjs';
 import {
   AlertCircle,
@@ -17,8 +19,6 @@ import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { createAuthHeaders } from '@/src/shared/utils';
-
-'use client';
 
 export const dynamic = 'force-dynamic';
 
@@ -230,9 +230,10 @@ export default function ClinicalReferencePage() {
                             I can help with NZ guidelines, medications, and clinical protocols
                           </p>
                           <div className="mx-auto grid max-w-2xl grid-cols-1 gap-2 md:grid-cols-2">
-                            {suggestedQueries.map((query, index) => (
+                            {suggestedQueries.map(query => (
                               <button
-                                key={index}
+                                key={query}
+                                type="button"
                                 onClick={() => setInputMessage(query)}
                                 className="rounded-lg bg-slate-50 p-2 text-left text-sm transition-colors hover:bg-slate-100"
                               >
@@ -383,6 +384,7 @@ export default function ClinicalReferencePage() {
                     ].map(topic => (
                       <button
                         key={topic}
+                        type="button"
                         onClick={() => setInputMessage(`Tell me about ${topic.toLowerCase()}`)}
                         className="block w-full rounded-lg bg-slate-50 px-3 py-2 text-left text-sm transition-colors hover:bg-slate-100"
                       >

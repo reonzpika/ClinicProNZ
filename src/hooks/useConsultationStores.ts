@@ -38,115 +38,15 @@ export function useConsultationStores(): any {
   const isMobileRoute = pathname === '/mobile';
   const { data: patientSessions = [] } = usePatientSessions(hasSessionHistoryAccess && !isMobileRoute);
 
-  // Hydrate local state when a persisted session is present but local is empty
-  useEffect(() => {
-    const currentSessionId = consultationStore.currentPatientSessionId;
-    if (!Array.isArray(patientSessions)) {
-      return;
-    }
-    // If local points to a missing session, clear it so ensureActiveSession can create a fresh one
-    if (currentSessionId && patientSessions.length > 0) {
-      const sessionExists = patientSessions.some((s: any) => s.id === currentSessionId);
-      if (!sessionExists) {
-        consultationStore.setCurrentPatientSessionId(null);
-        // Best-effort: immediately ensure a valid active session
-        try {
- (async () => {
- await ensureActiveSession();
-})();
-} catch {}
-        return;
-      }
-    }
-    if (!currentSessionId || patientSessions.length === 0) {
-      return;
-    }
-    const session = patientSessions.find((s: any) => s.id === currentSessionId);
-    if (!session) {
-      return;
-    }
-
-    // Suppress hydration for a brief window immediately after a Clear All
-    try {
-      if (typeof window !== 'undefined') {
-        const until = (window as any).__clinicproJustClearedUntil as number | undefined;
-        if (typeof until === 'number' && Date.now() < until) {
-          return;
-        }
-      }
-    } catch {}
-
-    const hasLocal = !!(transcriptionStore.transcription.transcript || transcriptionStore.typedInput);
-    // Only treat as remote content if non-empty values are present
-    let remoteTrans: any[] = [];
-    try {
-      if (session.transcriptions) {
-        remoteTrans = typeof session.transcriptions === 'string'
-          ? JSON.parse(session.transcriptions)
-          : session.transcriptions;
-      }
-    } catch {
-      remoteTrans = [];
-    }
-    const hasRemoteTrans = Array.isArray(remoteTrans) && remoteTrans.length > 0;
-    const hasRemoteTextFields = !!(session.typedInput && String(session.typedInput).trim())
-      || !!(session.notes && String(session.notes).trim())
-      || !!(session.consultationNotes && String(session.consultationNotes).trim())
-      || !!(session.problemsText && String(session.problemsText).trim())
-      || !!(session.objectiveText && String(session.objectiveText).trim())
-      || !!(session.assessmentText && String(session.assessmentText).trim())
-      || !!(session.planText && String(session.planText).trim());
-    const hasRemote = hasRemoteTrans || hasRemoteTextFields;
-
-    // Guard: avoid overwriting or clearing local when not needed
-    if (hasLocal) {
-      return;
-    }
-    if (!hasRemote) {
-      return;
-    }
-
-    try {
-      if (hasRemoteTrans) {
-        const fullTranscript = remoteTrans.map((t: any) => (t?.text || '').trim()).join(' ');
-        transcriptionStore.setTranscription(fullTranscript, false, undefined, undefined);
-      }
-    } catch {
-      // ignore JSON errors
-    }
-    if (session.typedInput) {
- transcriptionStore.setTypedInput(session.typedInput);
-}
-    if (session.notes) {
- consultationStore.setGeneratedNotes(session.notes);
-}
-    if (session.consultationNotes) {
- consultationStore.setConsultationNotes(session.consultationNotes);
-}
-    // Hydrate per-section fields
-    consultationStore.setProblemsText(session.problemsText || '');
-    consultationStore.setObjectiveText(session.objectiveText || '');
-    consultationStore.setAssessmentText(session.assessmentText || '');
-    consultationStore.setPlanText(session.planText || '');
-    // One-time migration: legacy consultationNotes -> objective if new fields empty
-    try {
-      const hasNewFields = !!(session.problemsText || session.objectiveText || session.assessmentText || session.planText);
-      if (!hasNewFields && session.consultationNotes && String(session.consultationNotes).trim().length > 0) {
-        updatePatientSession(session.id, { objectiveText: String(session.consultationNotes), consultationNotes: '' } as any).catch(() => {});
-        consultationStore.setObjectiveText(String(session.consultationNotes));
-        consultationStore.setConsultationNotes('');
-      }
-    } catch {}
-    if (session.templateId) {
- consultationStore.setTemplateId(session.templateId);
-}
-  }, [consultationStore, consultationStore.currentPatientSessionId, patientSessions, transcriptionStore, transcriptionStore.transcription.transcript, transcriptionStore.typedInput]);
-
   // Mutations
   const createSessionMutation = useCreatePatientSession();
   const updateSessionMutation = useUpdatePatientSession();
   const deleteSessionMutation = useDeletePatientSession();
   const deleteAllSessionsMutation = useDeleteAllPatientSessions();
+
+  const updatePatientSession = useCallback(async (sessionId: string, updates: Partial<PatientSession>): Promise<void> => {
+    await updateSessionMutation.mutateAsync({ sessionId, updates });
+  }, [updateSessionMutation]);
 
   const ensureActiveSession = useCallback(async (): Promise<string | null> => {
     // If a previous ensure is in progress, await it
@@ -221,6 +121,110 @@ export function useConsultationStores(): any {
     }
   }, [consultationStore, createSessionMutation, patientSessions, settings?.favouriteTemplateId, userId]);
 
+  // Hydrate local state when a persisted session is present but local is empty
+  useEffect(() => {
+    const currentSessionId = consultationStore.currentPatientSessionId;
+    if (!Array.isArray(patientSessions)) {
+      return;
+    }
+    // If local points to a missing session, clear it so ensureActiveSession can create a fresh one
+    if (currentSessionId && patientSessions.length > 0) {
+      const sessionExists = patientSessions.some((s: any) => s.id === currentSessionId);
+      if (!sessionExists) {
+        consultationStore.setCurrentPatientSessionId(null);
+        // Best-effort: immediately ensure a valid active session
+        try {
+          (async () => {
+            await ensureActiveSession();
+          })();
+        } catch {}
+        return;
+      }
+    }
+    if (!currentSessionId || patientSessions.length === 0) {
+      return;
+    }
+    const session = patientSessions.find((s: any) => s.id === currentSessionId);
+    if (!session) {
+      return;
+    }
+
+    // Suppress hydration for a brief window immediately after a Clear All
+    try {
+      if (typeof window !== 'undefined') {
+        const until = (window as any).__clinicproJustClearedUntil as number | undefined;
+        if (typeof until === 'number' && Date.now() < until) {
+          return;
+        }
+      }
+    } catch {}
+
+    const hasLocal = !!(transcriptionStore.transcription.transcript || transcriptionStore.typedInput);
+    // Only treat as remote content if non-empty values are present
+    let remoteTrans: any[] = [];
+    try {
+      if (session.transcriptions) {
+        remoteTrans = typeof session.transcriptions === 'string'
+          ? JSON.parse(session.transcriptions)
+          : session.transcriptions;
+      }
+    } catch {
+      remoteTrans = [];
+    }
+    const hasRemoteTrans = Array.isArray(remoteTrans) && remoteTrans.length > 0;
+    const hasRemoteTextFields = !!(session.typedInput && String(session.typedInput).trim())
+      || !!(session.notes && String(session.notes).trim())
+      || !!(session.consultationNotes && String(session.consultationNotes).trim())
+      || !!(session.problemsText && String(session.problemsText).trim())
+      || !!(session.objectiveText && String(session.objectiveText).trim())
+      || !!(session.assessmentText && String(session.assessmentText).trim())
+      || !!(session.planText && String(session.planText).trim());
+    const hasRemote = hasRemoteTrans || hasRemoteTextFields;
+
+    // Guard: avoid overwriting or clearing local when not needed
+    if (hasLocal) {
+      return;
+    }
+    if (!hasRemote) {
+      return;
+    }
+
+    try {
+      if (hasRemoteTrans) {
+        const fullTranscript = remoteTrans.map((t: any) => (t?.text || '').trim()).join(' ');
+        transcriptionStore.setTranscription(fullTranscript, false, undefined, undefined);
+      }
+    } catch {
+      // ignore JSON errors
+    }
+    if (session.typedInput) {
+      transcriptionStore.setTypedInput(session.typedInput);
+    }
+    if (session.notes) {
+      consultationStore.setGeneratedNotes(session.notes);
+    }
+    if (session.consultationNotes) {
+      consultationStore.setConsultationNotes(session.consultationNotes);
+    }
+    // Hydrate per-section fields
+    consultationStore.setProblemsText(session.problemsText || '');
+    consultationStore.setObjectiveText(session.objectiveText || '');
+    consultationStore.setAssessmentText(session.assessmentText || '');
+    consultationStore.setPlanText(session.planText || '');
+    // One-time migration: legacy consultationNotes -> objective if new fields empty
+    try {
+      const hasNewFields = !!(session.problemsText || session.objectiveText || session.assessmentText || session.planText);
+      if (!hasNewFields && session.consultationNotes && String(session.consultationNotes).trim().length > 0) {
+        updatePatientSession(session.id, { objectiveText: String(session.consultationNotes), consultationNotes: '' } as any).catch(() => {});
+        consultationStore.setObjectiveText(String(session.consultationNotes));
+        consultationStore.setConsultationNotes('');
+      }
+    } catch {}
+    if (session.templateId) {
+      consultationStore.setTemplateId(session.templateId);
+    }
+  }, [consultationStore, consultationStore.currentPatientSessionId, patientSessions, transcriptionStore, transcriptionStore.transcription.transcript, transcriptionStore.typedInput, ensureActiveSession, updatePatientSession]);
+
   const createPatientSession = useCallback(async (patientName: string, templateId?: string): Promise<PatientSession | null> => {
     try {
       const chosenTemplateId = templateId || (settings?.favouriteTemplateId as string | undefined) || DEFAULT_TEMPLATE_ID;
@@ -232,10 +236,6 @@ export function useConsultationStores(): any {
       return null;
     }
   }, [createSessionMutation, consultationStore, settings?.favouriteTemplateId]);
-
-  const updatePatientSession = useCallback(async (sessionId: string, updates: Partial<PatientSession>): Promise<void> => {
-    await updateSessionMutation.mutateAsync({ sessionId, updates });
-  }, [updateSessionMutation]);
 
   const deletePatientSession = useCallback(async (sessionId: string): Promise<boolean> => {
     try {

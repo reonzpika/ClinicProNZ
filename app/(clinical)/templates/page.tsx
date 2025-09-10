@@ -1,3 +1,5 @@
+'use client';
+
 /* eslint-disable style/multiline-ternary */
 import { useAuth } from '@clerk/nextjs';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -15,8 +17,6 @@ import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { useRBAC } from '@/src/shared/hooks/useRBAC';
 import { useResponsive } from '@/src/shared/hooks/useResponsive';
 import { createAuthHeaders } from '@/src/shared/utils';
-
-'use client';
 
 export const dynamic = 'force-dynamic';
 
@@ -97,7 +97,7 @@ export default function TemplatesPage() {
         hasReorderedRef.current = true;
       });
     // Only run when templates are loaded and not yet reordered
-  }, [isSignedIn, loading, templates.length, userId, userTier]);
+  }, [isSignedIn, loading, templates, userId, userTier]);
 
   const handleReorder = (from: number, to: number) => {
     setTemplates((prev) => {
@@ -251,8 +251,8 @@ export default function TemplatesPage() {
                         <div className="flex-1 overflow-y-auto p-4">
                           {loading ? (
                             <div className="space-y-2">
-                              {[...Array(3)].map((_, i) => (
-                                <div key={i} className="h-12 animate-pulse rounded bg-slate-100" />
+                              {Array.from({ length: 3 }, (_, index) => (
+                                <div key={`skeleton-loading-${index}`} className="h-12 animate-pulse rounded bg-slate-100" />
                               ))}
                             </div>
                           ) : error ? (
@@ -330,8 +330,8 @@ export default function TemplatesPage() {
                       <div className="max-h-60 overflow-y-auto p-4">
                         {loading ? (
                           <div className="space-y-2">
-                            {[...Array(3)].map((_, i) => (
-                              <div key={i} className="h-12 animate-pulse rounded bg-slate-100" />
+                            {Array.from({ length: 3 }, (_, index) => (
+                              <div key={`mobile-skeleton-loading-${index}`} className="h-12 animate-pulse rounded bg-slate-100" />
                             ))}
                           </div>
                         ) : error ? (
