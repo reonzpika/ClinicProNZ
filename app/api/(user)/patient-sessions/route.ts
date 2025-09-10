@@ -185,11 +185,21 @@ export async function PUT(req: NextRequest) {
     if (typedInput !== undefined) {
       updateData.typedInput = typedInput;
     }
-    if (consultationNotes !== undefined) updateData.consultationNotes = consultationNotes;
-    if (problemsText !== undefined) updateData.problemsText = problemsText;
-    if (objectiveText !== undefined) updateData.objectiveText = objectiveText;
-    if (assessmentText !== undefined) updateData.assessmentText = assessmentText;
-    if (planText !== undefined) updateData.planText = planText;
+    if (consultationNotes !== undefined) {
+ updateData.consultationNotes = consultationNotes;
+}
+    if (problemsText !== undefined) {
+ updateData.problemsText = problemsText;
+}
+    if (objectiveText !== undefined) {
+ updateData.objectiveText = objectiveText;
+}
+    if (assessmentText !== undefined) {
+ updateData.assessmentText = assessmentText;
+}
+    if (planText !== undefined) {
+ updateData.planText = planText;
+}
     if (transcriptions !== undefined) {
       updateData.transcriptions = JSON.stringify(transcriptions);
     }

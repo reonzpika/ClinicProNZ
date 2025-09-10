@@ -1,8 +1,8 @@
 import { getDb } from 'database/client';
+import { eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 import { userSettings } from '@/db/schema/user_settings';
-import { eq } from 'drizzle-orm';
 
 // Default settings structure
 const DEFAULT_SETTINGS = {

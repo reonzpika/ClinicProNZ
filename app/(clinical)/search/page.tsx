@@ -1,7 +1,3 @@
-'use client';
-
-export const dynamic = 'force-dynamic';
-
 import { AlertCircle, Loader2, Search } from 'lucide-react';
 import { useState } from 'react';
 
@@ -9,6 +5,10 @@ import { Alert, AlertDescription } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
+
+'use client';
+
+export const dynamic = 'force-dynamic';
 
 type SearchResponse = {
   paragraph?: string; // For summary mode

@@ -1034,7 +1034,7 @@ export default function ConsultationPage() {
 
       {/* Contact & Feedback - Fixed bottom row for non-large desktop */}
       {!isLargeDesktop && (
-        <div className="fixed bottom-4 left-4 right-4 z-20">
+        <div className="fixed inset-x-4 bottom-4 z-20">
           <div className="flex gap-2">
             <div className="w-1/2">
               <FeatureFeedbackButton

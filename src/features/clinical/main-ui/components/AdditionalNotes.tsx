@@ -1,5 +1,6 @@
 'use client';
 
+import { FileText } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import { ExaminationChecklistButton } from '@/src/features/clinical/examination-checklist/components/ExaminationChecklistButton';
@@ -20,7 +21,6 @@ type AdditionalNotesProps = {
   items: ConsultationItem[];
   onNotesChange: (notes: string) => void;
   notes: string;
-  placeholder?: string;
   isMinimized?: boolean;
   defaultExpanded?: boolean;
   expandedSize?: 'normal' | 'large';
@@ -28,19 +28,15 @@ type AdditionalNotesProps = {
 
 export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   items,
-  onNotesChange,
-  notes,
-  placeholder = 'Additional information gathered during consultation...',
+  onNotesChange: _onNotesChange,
+  notes: _notes,
   isMinimized = false,
   defaultExpanded = true,
   expandedSize = 'normal',
 }) => {
   // Track processed items to avoid duplicates
-  const [processedItemIds] = useState(new Set<string>());
+  const processedItemIds = React.useRef(new Set<string>());
   const [isExpanded, setIsExpanded] = useState(isMinimized ? false : defaultExpanded);
-  const [lastSavedNotes, setLastSavedNotes] = useState('');
-  type Section = 'problems' | 'objective' | 'assessment' | 'plan';
-  const [activeSection, setActiveSection] = useState<Section>('problems');
 
   // Refs for keyboard focus management
   const problemsRef = React.useRef<HTMLTextAreaElement | null>(null);
@@ -48,27 +44,6 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   const assessmentRef = React.useRef<HTMLTextAreaElement | null>(null);
   const planRef = React.useRef<HTMLTextAreaElement | null>(null);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
-
-  const focusSection = (section: Section) => {
-    setActiveSection(section);
-    const map: Record<Section, HTMLTextAreaElement | null> = {
-      problems: problemsRef.current,
-      objective: objectiveRef.current,
-      assessment: assessmentRef.current,
-      plan: planRef.current,
-    };
-    map[section]?.focus();
-  };
-
-  const handleRovingKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key !== 'Tab') return;
-    e.preventDefault();
-    const order: ReadonlyArray<Section> = ['problems', 'objective', 'assessment', 'plan'] as const;
-    const idx = order.indexOf(activeSection);
-    const dir = e.shiftKey ? -1 : 1;
-    const nextIdx = (idx + dir + order.length) % order.length;
-    focusSection(order[nextIdx] as Section);
-  };
 
   // Auto-focus Problems when expanding the section
   useEffect(() => {
@@ -79,39 +54,21 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     }
   }, [isExpanded]);
 
-  // Focus guards: leading and trailing sentinels
-  const LeadingGuard = () => (
-    <span
-      tabIndex={0}
-      className="sr-only"
-      onFocus={() => {
-        if (!isExpanded) setIsExpanded(true);
-        focusSection('problems');
-      }}
-      aria-hidden="true"
-    />
-  );
-  const TrailingGuard = () => (
-    <span
-      tabIndex={0}
-      className="sr-only"
-      onFocus={() => {
-        if (!isExpanded) setIsExpanded(true);
-        focusSection('plan');
-      }}
-      aria-hidden="true"
-    />
-  );
-
   // Document-level Tab trap: when editor is visible and focus is outside, Tab focuses Problems (or Plan with Shift)
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (!isExpanded || e.key !== 'Tab') return;
+      if (!isExpanded || e.key !== 'Tab') {
+ return;
+}
       const container = containerRef.current;
-      if (!container) return;
+      if (!container) {
+ return;
+}
       const active = document.activeElement as HTMLElement | null;
       const isInside = !!(active && container.contains(active));
-      if (isInside) return; // let internal handler manage cycling
+      if (isInside) {
+ return;
+} // let internal handler manage cycling
       e.preventDefault();
       try {
         if (e.shiftKey) {
@@ -155,43 +112,38 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     }
   }, [defaultExpanded, isMinimized]);
 
-  // Initialize lastSavedNotes and local sections when component mounts
-  useEffect(() => {
-    setLastSavedNotes(notes);
-  }, []);
-
-  // Update lastSavedNotes when notes are loaded from session switching (legacy only)
-  useEffect(() => {
-    if (notes !== lastSavedNotes) {
-      setLastSavedNotes(notes);
-    }
-  }, [notes, lastSavedNotes]);
-
-  // Save per-section fields on blur
-  const handleNotesBlur = async () => {
+  // Save individual section on blur
+  const handleSectionBlur = async (section: 'problems' | 'objective' | 'assessment' | 'plan') => {
     let ok = true;
     try {
-      const results = await Promise.all([
-        saveProblemsToCurrentSession(problemsText || ''),
-        saveObjectiveToCurrentSession(objectiveText || ''),
-        saveAssessmentToCurrentSession(assessmentText || ''),
-        savePlanToCurrentSession(planText || ''),
-      ]);
-      ok = results.every(Boolean);
+      switch (section) {
+        case 'problems':
+          ok = await saveProblemsToCurrentSession(problemsText || '');
+          break;
+        case 'objective':
+          ok = await saveObjectiveToCurrentSession(objectiveText || '');
+          break;
+        case 'assessment':
+          ok = await saveAssessmentToCurrentSession(assessmentText || '');
+          break;
+        case 'plan':
+          ok = await savePlanToCurrentSession(planText || '');
+          break;
+      }
     } catch (error) {
       ok = false;
-      console.error('Failed to save sectioned notes:', error);
+      console.error(`Failed to save ${section} section:`, error);
     }
     try {
       if (typeof window !== 'undefined' && (window as any).toast) {
-        (window as any).toast[ok ? 'success' : 'error'](ok ? 'Additional note saved' : 'Failed to save additional note');
+        (window as any).toast[ok ? 'success' : 'error'](ok ? `${section} saved` : `Failed to save ${section}`);
       }
     } catch {}
   };
 
   // Auto-append new items to appropriate sections
   useEffect(() => {
-    const newItems = items.filter(item => !processedItemIds.has(item.id));
+    const newItems = items.filter(item => !processedItemIds.current.has(item.id));
     if (newItems.length === 0) {
       return;
     }
@@ -214,7 +166,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
 
     if (objAdds.length === 0 && asmtAdds.length === 0 && planAdds.length === 0) {
       // still mark processed to avoid future work
-      newItems.forEach(item => processedItemIds.add(item.id));
+      newItems.forEach(item => processedItemIds.current.add(item.id));
       return;
     }
 
@@ -229,20 +181,28 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
       : planText;
 
     // Mark items as processed
-    newItems.forEach(item => processedItemIds.add(item.id));
+    newItems.forEach(item => processedItemIds.current.add(item.id));
 
     setObjectiveText(nextObjective);
     setAssessmentText(nextAssessment);
     setPlanText(nextPlan);
     // No longer writing JSON back through onNotesChange
-  }, [items, objectiveText, assessmentText, planText, problemsText, lastSavedNotes, onNotesChange, processedItemIds]);
+  }, [items]);
 
   // Handle text changes per section
   const handleSectionChange = (section: 'problems' | 'objective' | 'assessment' | 'plan', newText: string) => {
-    if (section === 'problems') setProblemsText(newText);
-    if (section === 'objective') setObjectiveText(newText);
-    if (section === 'assessment') setAssessmentText(newText);
-    if (section === 'plan') setPlanText(newText);
+    if (section === 'problems') {
+ setProblemsText(newText);
+}
+    if (section === 'objective') {
+ setObjectiveText(newText);
+}
+    if (section === 'assessment') {
+ setAssessmentText(newText);
+}
+    if (section === 'plan') {
+ setPlanText(newText);
+}
     // No longer writing JSON back through onNotesChange
   };
 
@@ -321,6 +281,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                     ...
                     {' '}
                     <button
+                      type="button"
                       onClick={() => setIsExpanded(true)}
                       className="text-blue-600 underline hover:text-blue-800"
                     >
@@ -344,17 +305,15 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
 
         {/* Full editing interface when expanded */}
         {isExpanded && (
-          <div className="space-y-3" ref={containerRef} onKeyDown={handleRovingKeyDown} tabIndex={0} role="group" aria-label="Additional notes editor">
-            <LeadingGuard />
+          <div className="space-y-3" ref={containerRef} role="group" aria-label="Additional notes editor">
             <div className="space-y-3">
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-600">Problems</label>
+                <label htmlFor="additional-notes-minimized-problems" className="mb-1 block text-xs font-medium text-slate-500">Problems</label>
                 <Textarea
                   id="additional-notes-minimized-problems"
                   value={problemsText}
                   onChange={e => handleSectionChange('problems', e.target.value)}
-                  onBlur={handleNotesBlur}
-                  placeholder="List problems..."
+                  onBlur={() => handleSectionBlur('problems')}
                   className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   rows={2}
                   ref={problemsRef}
@@ -362,28 +321,26 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               </div>
               <div>
                 <div className="mb-1 flex items-center justify-between">
-                  <label className="block text-xs font-medium text-slate-600">Objective</label>
+                  <label htmlFor="additional-notes-minimized-objective" className="block text-xs font-medium text-slate-500">Objective</label>
                   <ExaminationChecklistButton />
                 </div>
                 <Textarea
                   id="additional-notes-minimized-objective"
                   value={objectiveText}
                   onChange={e => handleSectionChange('objective', e.target.value)}
-                  onBlur={handleNotesBlur}
-                  placeholder={placeholder}
+                  onBlur={() => handleSectionBlur('objective')}
                   className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   rows={2}
                   ref={objectiveRef}
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-600">Assessment</label>
+                <label htmlFor="additional-notes-minimized-assessment" className="mb-1 block text-xs font-medium text-slate-500">Assessment</label>
                 <Textarea
                   id="additional-notes-minimized-assessment"
                   value={assessmentText}
                   onChange={e => handleSectionChange('assessment', e.target.value)}
-                  onBlur={handleNotesBlur}
-                  placeholder="Assessment..."
+                  onBlur={() => handleSectionBlur('assessment')}
                   className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   rows={2}
                   ref={assessmentRef}
@@ -391,22 +348,20 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               </div>
               <div>
                 <div className="mb-1 flex items-center justify-between">
-                  <label className="block text-xs font-medium text-slate-600">Plan</label>
+                  <label htmlFor="additional-notes-minimized-plan" className="block text-xs font-medium text-slate-500">Plan</label>
                   <PlanSafetyNettingButton />
                 </div>
                 <Textarea
                   id="additional-notes-minimized-plan"
                   value={planText}
                   onChange={e => handleSectionChange('plan', e.target.value)}
-                  onBlur={handleNotesBlur}
-                  placeholder="Plan..."
+                  onBlur={() => handleSectionBlur('plan')}
                   className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   rows={2}
                   ref={planRef}
                 />
               </div>
             </div>
-            <TrailingGuard />
             <p className="mt-1 text-xs text-slate-500">
               Information from clinical tools appears here and can be edited as needed.
             </p>
@@ -422,7 +377,10 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-slate-700">Additional Notes (optional)</span>
+            <div className="flex items-center gap-1">
+              <FileText size={16} className="text-slate-600" />
+              <span className="text-sm font-medium text-slate-700">Additional Notes (optional)</span>
+            </div>
             <span className="text-xs text-slate-500">Tip: Use Tab to move through sections; Shift+Tab to go back</span>
             {renderCharacterCount()}
           </div>
@@ -446,11 +404,14 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   if (expandedSize === 'large') {
     return (
       <div className="flex h-full flex-col">
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <label htmlFor="additional-notes" className="text-sm font-medium text-slate-700">
-              Additional Notes (optional)
-            </label>
+            <div className="flex items-center gap-1">
+              <FileText size={16} className="text-slate-600" />
+              <label htmlFor="additional-notes" className="text-sm font-medium text-slate-700">
+                Additional Notes (optional)
+              </label>
+            </div>
             <span className="text-xs text-slate-500">Tip: Tab moves Problems → Objective → Assessment → Plan; Shift+Tab goes back</span>
           </div>
           <div className="flex items-center gap-1">
@@ -463,68 +424,59 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             </button>
           </div>
         </div>
-        <div className="flex flex-1 flex-col space-y-3" ref={containerRef} onKeyDown={handleRovingKeyDown} tabIndex={0} role="group" aria-label="Additional notes editor">
-          <LeadingGuard />
+        <div className="flex flex-1 flex-col space-y-2" ref={containerRef} role="group" aria-label="Additional notes editor">
           <div className="grid grid-cols-1 gap-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Problems</label>
+              <label htmlFor="additional-notes-problems" className="mb-1 block text-xs font-medium text-slate-500">Main Problems Discussed</label>
               <Textarea
                 id="additional-notes-problems"
                 value={problemsText}
                 onChange={e => handleSectionChange('problems', e.target.value)}
-                onBlur={handleNotesBlur}
-                placeholder="List problems..."
+                onBlur={() => handleSectionBlur('problems')}
                 className="min-h-[100px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 ref={problemsRef}
               />
             </div>
             <div>
               <div className="mb-1 flex items-center justify-between">
-                <label className="block text-sm font-medium text-slate-700">Objective</label>
+                <label htmlFor="additional-notes-objective" className="block text-xs font-medium text-slate-500">Objective</label>
                 <ExaminationChecklistButton />
               </div>
               <Textarea
                 id="additional-notes-objective"
                 value={objectiveText}
                 onChange={e => handleSectionChange('objective', e.target.value)}
-                onBlur={handleNotesBlur}
-                placeholder={placeholder}
+                onBlur={() => handleSectionBlur('objective')}
                 className="min-h-[100px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 ref={objectiveRef}
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Assessment</label>
+              <label htmlFor="additional-notes-assessment" className="mb-1 block text-xs font-medium text-slate-500">Assessment</label>
               <Textarea
                 id="additional-notes-assessment"
                 value={assessmentText}
                 onChange={e => handleSectionChange('assessment', e.target.value)}
-                onBlur={handleNotesBlur}
-                placeholder="Assessment..."
+                onBlur={() => handleSectionBlur('assessment')}
                 className="min-h-[100px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 ref={assessmentRef}
               />
             </div>
             <div>
               <div className="mb-1 flex items-center justify-between">
-                <label className="block text-sm font-medium text-slate-700">Plan</label>
+                <label htmlFor="additional-notes-plan" className="block text-xs font-medium text-slate-500">Plan</label>
                 <PlanSafetyNettingButton />
               </div>
               <Textarea
                 id="additional-notes-plan"
                 value={planText}
                 onChange={e => handleSectionChange('plan', e.target.value)}
-                onBlur={handleNotesBlur}
-                placeholder="Plan..."
+                onBlur={() => handleSectionBlur('plan')}
                 className="min-h-[100px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 ref={planRef}
               />
             </div>
           </div>
-          <TrailingGuard />
-          <p className="text-xs text-slate-500">
-            Information added from clinical tools will appear in Objective/Assessment/Plan and can be edited.
-          </p>
         </div>
       </div>
     );
@@ -532,12 +484,15 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
 
   // Normal sized view
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <label htmlFor="additional-notes" className="text-sm font-medium text-slate-700">
-            Additional Notes (optional)
-          </label>
+          <div className="flex items-center gap-1">
+            <FileText size={16} className="text-slate-600" />
+            <label htmlFor="additional-notes" className="text-sm font-medium text-slate-700">
+              Additional Notes (optional)
+            </label>
+          </div>
           <span className="text-xs text-slate-500">Tip: Use Tab to cycle sections; Shift+Tab to reverse</span>
         </div>
         <div className="flex items-center gap-1">
@@ -550,16 +505,14 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
           </button>
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-3" ref={containerRef} onKeyDown={handleRovingKeyDown} tabIndex={0} role="group" aria-label="Additional notes editor">
-        <LeadingGuard />
+      <div className="grid grid-cols-1 gap-3" ref={containerRef} role="group" aria-label="Additional notes editor">
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Problems</label>
+          <label htmlFor="additional-notes" className="mb-1 block text-xs font-medium text-slate-500">Problems</label>
           <Textarea
             id="additional-notes"
             value={problemsText}
             onChange={e => handleSectionChange('problems', e.target.value)}
-            onBlur={handleNotesBlur}
-            placeholder="List problems..."
+            onBlur={() => handleSectionBlur('problems')}
             className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             rows={4}
             ref={problemsRef}
@@ -567,28 +520,26 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
         </div>
         <div>
           <div className="mb-1 flex items-center justify-between">
-            <label className="block text-sm font-medium text-slate-700">Objective</label>
+            <label htmlFor="additional-notes-objective" className="block text-xs font-medium text-slate-500">Objective</label>
             <ExaminationChecklistButton />
           </div>
           <Textarea
             id="additional-notes-objective"
             value={objectiveText}
             onChange={e => handleSectionChange('objective', e.target.value)}
-            onBlur={handleNotesBlur}
-            placeholder={placeholder}
+            onBlur={() => handleSectionBlur('objective')}
             className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             rows={4}
             ref={objectiveRef}
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Assessment</label>
+          <label htmlFor="additional-notes-assessment" className="mb-1 block text-xs font-medium text-slate-500">Assessment</label>
           <Textarea
             id="additional-notes-assessment"
             value={assessmentText}
             onChange={e => handleSectionChange('assessment', e.target.value)}
-            onBlur={handleNotesBlur}
-            placeholder="Assessment..."
+            onBlur={() => handleSectionBlur('assessment')}
             className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             rows={4}
             ref={assessmentRef}
@@ -596,25 +547,20 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
         </div>
         <div>
           <div className="mb-1 flex items-center justify-between">
-            <label className="block text-sm font-medium text-slate-700">Plan</label>
+            <label htmlFor="additional-notes-plan" className="block text-xs font-medium text-slate-500">Plan</label>
             <PlanSafetyNettingButton />
           </div>
           <Textarea
             id="additional-notes-plan"
             value={planText}
             onChange={e => handleSectionChange('plan', e.target.value)}
-            onBlur={handleNotesBlur}
-            placeholder="Plan..."
+            onBlur={() => handleSectionBlur('plan')}
             className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             rows={4}
             ref={planRef}
           />
         </div>
-        <TrailingGuard />
       </div>
-      <p className="text-xs text-slate-500">
-        Information added from clinical tools will appear in Objective/Assessment/Plan and can be edited.
-      </p>
     </div>
   );
 };

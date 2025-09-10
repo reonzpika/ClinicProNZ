@@ -89,7 +89,6 @@ export function TranscriptionControls({
   const [pendingControl, setPendingControl] = useState<null | 'start' | 'stop'>(null);
   const [controlError, setControlError] = useState<string | null>(null);
   const [controlAckTimer, setControlAckTimer] = useState<any>(null);
-  
 
   // Track recording time and transcript warning
   useEffect(() => {
@@ -544,7 +543,7 @@ export function TranscriptionControls({
 
             {/* Remote control pending status */}
             {pendingControl && (
-              <Alert className="p-2 text-xs border-blue-200 bg-blue-50 text-blue-700">
+              <Alert className="border-blue-200 bg-blue-50 p-2 text-xs text-blue-700">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="inline-block size-3 animate-spin rounded-full border-2 border-blue-300 border-t-transparent" />
@@ -557,16 +556,17 @@ export function TranscriptionControls({
 
             {/* Remote control warnings with CTAs */}
             {controlError && (
-              <Alert className="p-2 text-xs border-yellow-200 bg-yellow-50 text-yellow-800">
+              <Alert className="border-yellow-200 bg-yellow-50 p-2 text-xs text-yellow-800">
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{controlError}</span>
                   <div className="flex items-center gap-2">
-                    {controlError.includes('Mobile did not respond') ? (
+                    {controlError.includes('Mobile did not respond')
+? (
                       <>
                         <Button
                           type="button"
                           size="sm"
-                          className="h-6 px-2 text-xs bg-green-600 text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                          className="h-6 bg-green-600 px-2 text-xs text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
                           disabled={(!isSignedIn && !canCreateSession) || isRecording || mobileIsRecording}
                           onClick={() => {
                             setControlError(null);
@@ -583,7 +583,7 @@ export function TranscriptionControls({
                         <Button
                           type="button"
                           size="sm"
-                          className="h-6 px-2 text-xs bg-blue-600 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                          className="h-6 bg-blue-600 px-2 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
                           disabled={(!isSignedIn && !canCreateSession) || isRecording || mobileIsRecording}
                           onClick={() => {
                             setControlError(null);
@@ -593,7 +593,8 @@ export function TranscriptionControls({
                           Connect mobile
                         </Button>
                       </>
-                    ) : (
+                    )
+: (
                       <>
                         <Button
                           type="button"
@@ -780,7 +781,6 @@ export function TranscriptionControls({
               )}
             </div>
 
-            
           </div>
         </Stack>
       </div>

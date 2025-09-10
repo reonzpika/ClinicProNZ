@@ -202,12 +202,16 @@ export const useTranscriptionStore = create<TranscriptionStore>()(
               break;
             }
           }
-          if (match) return L;
+          if (match) {
+ return L;
+}
         }
         return 0;
       };
       const dropFirstTokens = (text: string, tokenCount: number) => {
-        if (tokenCount <= 0) return text;
+        if (tokenCount <= 0) {
+ return text;
+}
         const re = /\S+/g;
         let match: RegExpExecArray | null;
         let endIdx = 0;
@@ -215,17 +219,21 @@ export const useTranscriptionStore = create<TranscriptionStore>()(
         while ((match = re.exec(text)) !== null) {
           count += 1;
           endIdx = match.index + match[0].length;
-          if (count >= tokenCount) break;
+          if (count >= tokenCount) {
+ break;
+}
         }
         while (endIdx < text.length) {
           const ch = text.charAt(endIdx);
-          if (!/\s/.test(ch)) break;
+          if (!/\s/.test(ch)) {
+ break;
+}
           endIdx += 1;
         }
         return text.slice(endIdx);
       };
       const newTokensFromWords = Array.isArray(words) && words.length > 0
-        ? (words as any[]).map((w) => normalizeToken(String((w && (w as any).word) || ''))).filter(Boolean)
+        ? (words as any[]).map(w => normalizeToken(String((w && (w as any).word) || ''))).filter(Boolean)
         : splitTokens(newTranscript).map(normalizeToken);
       const overlap = findOverlapByTokens(current.transcript, newTokensFromWords);
       const dedupedText = overlap > 0 ? dropFirstTokens(newTranscript, overlap) : newTranscript;

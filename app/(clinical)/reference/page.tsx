@@ -1,7 +1,3 @@
-'use client';
-
-export const dynamic = 'force-dynamic';
-
 import { useAuth } from '@clerk/nextjs';
 import {
   AlertCircle,
@@ -21,6 +17,10 @@ import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { createAuthHeaders } from '@/src/shared/utils';
+
+'use client';
+
+export const dynamic = 'force-dynamic';
 
 type Message = {
   id: string;

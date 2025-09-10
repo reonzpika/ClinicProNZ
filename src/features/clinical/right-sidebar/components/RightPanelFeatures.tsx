@@ -106,7 +106,7 @@ const RightPanelFeatures: React.FC<RightPanelFeaturesProps> = ({
 
   // Update sections with conditional components based on user tier
   const sectionsWithConditionalFeatures: AccordionSection[] = sections
-    .filter((section) => allowedSections.includes(section.id))
+    .filter(section => allowedSections.includes(section.id))
     .map((section) => {
     if (section.id === 'chat') {
       return {

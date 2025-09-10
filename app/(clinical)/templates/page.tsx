@@ -1,8 +1,4 @@
 /* eslint-disable style/multiline-ternary */
-'use client';
-
-export const dynamic = 'force-dynamic';
-
 import { useAuth } from '@clerk/nextjs';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -19,6 +15,10 @@ import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { useRBAC } from '@/src/shared/hooks/useRBAC';
 import { useResponsive } from '@/src/shared/hooks/useResponsive';
 import { createAuthHeaders } from '@/src/shared/utils';
+
+'use client';
+
+export const dynamic = 'force-dynamic';
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<Template[]>([]);

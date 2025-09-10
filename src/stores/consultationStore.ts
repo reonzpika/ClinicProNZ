@@ -210,7 +210,9 @@ export const useConsultationStore = create<ConsultationStore>()(
       blocks.push('additional note:');
       const pushSection = (label: string, value: string) => {
         const v = (value || '').trim();
-        if (!v) return;
+        if (!v) {
+ return;
+}
         blocks.push(`\n${label}:`);
         blocks.push(v);
       };

@@ -333,7 +333,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
           >
             {copySuccess ? 'Copied!' : 'Copy to Clipboard'}
           </Button>
-          
+
           <Button
             type="button"
             variant="outline"

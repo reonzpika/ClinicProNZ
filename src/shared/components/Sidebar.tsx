@@ -13,7 +13,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
- 
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { useRBAC } from '@/src/shared/hooks/useRBAC';
 
@@ -58,14 +57,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const router = useRouter();
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  
-
   // Use production tier detection for real features (not testing)
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
   const isAdmin = userTier === 'admin';
-
-  
 
   const handleNavClick = (item: NavItem, e: React.MouseEvent) => {
     if (item.requiresAuth && !isSignedIn) {
@@ -285,7 +280,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       )}
 
-      
     </>
   );
 };

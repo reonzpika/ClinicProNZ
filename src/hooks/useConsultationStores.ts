@@ -11,10 +11,10 @@ import {
 } from '@/src/hooks/consultation/useConsultationQueries';
 import { useSessionAccess } from '@/src/hooks/useSessionAccess';
 import { createAuthHeaders } from '@/src/shared/utils';
-import { useConsultationStore, DEFAULT_TEMPLATE_ID } from '@/src/stores/consultationStore';
+import { DEFAULT_TEMPLATE_ID, useConsultationStore } from '@/src/stores/consultationStore';
 import { useTranscriptionStore } from '@/src/stores/transcriptionStore';
-import type { PatientSession } from '@/src/types/consultation';
 import { useUserSettingsStore } from '@/src/stores/userSettingsStore';
+import type { PatientSession } from '@/src/types/consultation';
 
 // Guard against duplicate session creations in slow networks
 let __ensureSessionInFlight = false;
@@ -50,7 +50,11 @@ export function useConsultationStores(): any {
       if (!sessionExists) {
         consultationStore.setCurrentPatientSessionId(null);
         // Best-effort: immediately ensure a valid active session
-        try { (async () => { await ensureActiveSession(); })(); } catch {}
+        try {
+ (async () => {
+ await ensureActiveSession();
+})();
+} catch {}
         return;
       }
     }
@@ -277,28 +281,36 @@ export function useConsultationStores(): any {
   // New per-section save helpers
   const saveProblemsToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
     const id = consultationStore.currentPatientSessionId;
-    if (!id) return false;
+    if (!id) {
+ return false;
+}
     await updatePatientSession(id, { problemsText: text } as any);
     return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
   const saveObjectiveToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
     const id = consultationStore.currentPatientSessionId;
-    if (!id) return false;
+    if (!id) {
+ return false;
+}
     await updatePatientSession(id, { objectiveText: text } as any);
     return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
   const saveAssessmentToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
     const id = consultationStore.currentPatientSessionId;
-    if (!id) return false;
+    if (!id) {
+ return false;
+}
     await updatePatientSession(id, { assessmentText: text } as any);
     return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
   const savePlanToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
     const id = consultationStore.currentPatientSessionId;
-    if (!id) return false;
+    if (!id) {
+ return false;
+}
     await updatePatientSession(id, { planText: text } as any);
     return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);

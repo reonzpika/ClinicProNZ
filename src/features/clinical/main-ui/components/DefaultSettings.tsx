@@ -79,14 +79,16 @@ export function DefaultSettings() {
     <Card
       className="space-y-3 p-3"
       onClick={() => {
-        if (collapsed) setCollapsed(false);
+        if (collapsed) {
+ setCollapsed(false);
+}
       }}
       role="region"
       aria-label="Default settings"
     >
       <button
         type="button"
-        className="flex w-full items-center justify-between text-left min-h-10"
+        className="flex min-h-10 w-full items-center justify-between text-left"
         onClick={(e) => {
           e.stopPropagation();
           setCollapsed(!collapsed);
@@ -94,9 +96,11 @@ export function DefaultSettings() {
         aria-expanded={!collapsed}
       >
         <div className="text-sm font-medium text-slate-700">Default settings</div>
-        {collapsed ? (
+        {collapsed
+? (
           <ChevronDown className="size-4 text-slate-600" />
-        ) : (
+        )
+: (
           <ChevronUp className="size-4 text-slate-600" />
         )}
       </button>
