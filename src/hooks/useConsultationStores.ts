@@ -197,20 +197,33 @@ export function useConsultationStores(): any {
     } catch {
       // ignore JSON errors
     }
-    if (session.typedInput) {
+    // Only update local state when values actually differ to avoid update loops
+    if (session.typedInput && session.typedInput !== transcriptionStore.typedInput) {
       transcriptionStore.setTypedInput(session.typedInput);
     }
-    if (session.notes) {
+    if (session.notes && session.notes !== consultationStore.generatedNotes) {
       consultationStore.setGeneratedNotes(session.notes);
     }
-    if (session.consultationNotes) {
+    if (session.consultationNotes && session.consultationNotes !== consultationStore.consultationNotes) {
       consultationStore.setConsultationNotes(session.consultationNotes);
     }
-    // Hydrate per-section fields
-    consultationStore.setProblemsText(session.problemsText || '');
-    consultationStore.setObjectiveText(session.objectiveText || '');
-    consultationStore.setAssessmentText(session.assessmentText || '');
-    consultationStore.setPlanText(session.planText || '');
+    // Hydrate per-section fields with equality guards
+    const nextProblems = session.problemsText || '';
+    const nextObjective = session.objectiveText || '';
+    const nextAssessment = session.assessmentText || '';
+    const nextPlan = session.planText || '';
+    if (nextProblems !== consultationStore.problemsText) {
+      consultationStore.setProblemsText(nextProblems);
+    }
+    if (nextObjective !== consultationStore.objectiveText) {
+      consultationStore.setObjectiveText(nextObjective);
+    }
+    if (nextAssessment !== consultationStore.assessmentText) {
+      consultationStore.setAssessmentText(nextAssessment);
+    }
+    if (nextPlan !== consultationStore.planText) {
+      consultationStore.setPlanText(nextPlan);
+    }
     // One-time migration: legacy consultationNotes -> objective if new fields empty
     try {
       const hasNewFields = !!(session.problemsText || session.objectiveText || session.assessmentText || session.planText);
@@ -223,7 +236,21 @@ export function useConsultationStores(): any {
     if (session.templateId) {
       consultationStore.setTemplateId(session.templateId);
     }
-  }, [consultationStore, consultationStore.currentPatientSessionId, patientSessions, transcriptionStore, transcriptionStore.transcription.transcript, transcriptionStore.typedInput, ensureActiveSession, updatePatientSession]);
+  }, [
+    // Only depend on primitives/arrays we actually read in the effect
+    consultationStore.currentPatientSessionId,
+    patientSessions,
+    transcriptionStore.transcription.transcript,
+    transcriptionStore.typedInput,
+    consultationStore.generatedNotes,
+    consultationStore.consultationNotes,
+    consultationStore.problemsText,
+    consultationStore.objectiveText,
+    consultationStore.assessmentText,
+    consultationStore.planText,
+    ensureActiveSession,
+    updatePatientSession,
+  ]);
 
   const createPatientSession = useCallback(async (patientName: string, templateId?: string): Promise<PatientSession | null> => {
     try {
