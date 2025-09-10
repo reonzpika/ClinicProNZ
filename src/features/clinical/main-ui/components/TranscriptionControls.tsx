@@ -2,7 +2,7 @@
 'use client';
 import { useAuth } from '@clerk/nextjs';
 import { useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, ChevronUp, Info, Mic, RefreshCw, Smartphone } from 'lucide-react';
+import { ChevronDown, ChevronUp, Mic, RefreshCw, Smartphone } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
@@ -45,8 +45,6 @@ export function TranscriptionControls({
     consentObtained,
     setConsentObtained,
     transcription: contextTranscription,
-    inputMode,
-    setInputMode,
     setTranscription,
     currentPatientSessionId,
   } = useConsultationStores();
@@ -56,7 +54,6 @@ export function TranscriptionControls({
   const [showMobileRecordingV2, setShowMobileRecordingV2] = useState(false);
   const [isExpanded, setIsExpanded] = useState(!isMinimized);
   const [transcriptExpanded, setTranscriptExpanded] = useState(false);
-  const [showHelp, setShowHelp] = useState(false);
   const [recordingStartTime, setRecordingStartTime] = useState<number | null>(null);
   const [showNoTranscriptWarning, setShowNoTranscriptWarning] = useState(false);
   const [canCreateSession, setCanCreateSession] = useState<boolean>(true);
@@ -505,26 +502,6 @@ export function TranscriptionControls({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              const newInputMode = inputMode === 'audio' ? 'typed' : 'audio';
-              setInputMode(newInputMode);
-            }}
-            className="cursor-pointer text-xs font-medium text-green-600 hover:text-green-800 hover:underline"
-            title={`Click to switch to ${inputMode === 'audio' ? 'typed' : 'audio'} mode`}
-          >
-            {inputMode === 'audio' ? 'Audio' : 'Typed'}
-          </button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowHelp(!showHelp)}
-            className="size-6 p-0 text-slate-500 hover:text-slate-700"
-            title="Show help"
-          >
-            <Info size={14} />
-          </Button>
           <FeatureFeedbackButton
             feature="transcription"
             context={`Transcript length: ${transcript?.length || 0} chars, Recording time: ${recordingStartTime ? Math.round((Date.now() - recordingStartTime) / 1000) : 0}s, Recording state: ${isRecording ? 'active' : 'stopped'}`}
@@ -835,39 +812,7 @@ export function TranscriptionControls({
               )}
             </div>
 
-            {/* Help section (hidden by default) */}
-            {showHelp && (
-              <div className="rounded-md bg-blue-50 p-3 text-xs text-blue-800">
-                <p className="font-medium">Audio Recording Guide:</p>
-                <div className="mt-2 space-y-2">
-                  <div>
-                    <p className="font-medium text-green-700">Mobile Recording – Recommended:</p>
-                    <ul className="ml-3 mt-1 list-disc space-y-0.5">
-                      <li>Scan QR code with your phone - takes 30 seconds</li>
-                      <li>Use your phone's microphone for recording</li>
-                      <li>No need to stay near the computer</li>
-                      <li>Start/stop recording from your phone</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <p className="font-medium">Desktop Recording:</p>
-                    <ul className="ml-3 mt-1 list-disc space-y-0.5">
-                      <li>Good backup option if mobile setup fails</li>
-                      <li>Must stay near computer during consultation</li>
-                      <li>Audio quality depends on your computer's microphone</li>
-                    </ul>
-                  </div>
-                  <div className="border-t border-blue-200 pt-2">
-                    <p className="font-medium">General Tips:</p>
-                    <ul className="ml-3 mt-1 list-disc space-y-0.5">
-                      <li>Speak naturally - transcript builds in real-time</li>
-                      <li>Use "Additional Info" below for vitals, observations, assessments</li>
-                      <li>Click "Generate Notes" when complete for your final consultation note</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            )}
+            
           </div>
         </Stack>
       </div>
