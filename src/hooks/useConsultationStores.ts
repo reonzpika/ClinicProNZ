@@ -207,22 +207,28 @@ export function useConsultationStores(): any {
     if (session.consultationNotes && session.consultationNotes !== consultationStore.consultationNotes) {
       consultationStore.setConsultationNotes(session.consultationNotes);
     }
-    // Hydrate per-section fields with equality guards
+    // Hydrate per-section fields with dirty/time guards
     const nextProblems = session.problemsText || '';
     const nextObjective = session.objectiveText || '';
     const nextAssessment = session.assessmentText || '';
     const nextPlan = session.planText || '';
-    if (nextProblems !== consultationStore.problemsText) {
-      consultationStore.setProblemsText(nextProblems);
+    const now = Date.now();
+    const recentMs = 800;
+    const problemsRecentlyEdited = !!(consultationStore.problemsDirty && consultationStore.problemsEditedAt && (now - consultationStore.problemsEditedAt) < recentMs);
+    const objectiveRecentlyEdited = !!(consultationStore.objectiveDirty && consultationStore.objectiveEditedAt && (now - consultationStore.objectiveEditedAt) < recentMs);
+    const assessmentRecentlyEdited = !!(consultationStore.assessmentDirty && consultationStore.assessmentEditedAt && (now - consultationStore.assessmentEditedAt) < recentMs);
+    const planRecentlyEdited = !!(consultationStore.planDirty && consultationStore.planEditedAt && (now - consultationStore.planEditedAt) < recentMs);
+    if (!consultationStore.problemsDirty && !problemsRecentlyEdited && nextProblems !== consultationStore.problemsText) {
+      (consultationStore as any).hydrateProblemsText(nextProblems);
     }
-    if (nextObjective !== consultationStore.objectiveText) {
-      consultationStore.setObjectiveText(nextObjective);
+    if (!consultationStore.objectiveDirty && !objectiveRecentlyEdited && nextObjective !== consultationStore.objectiveText) {
+      (consultationStore as any).hydrateObjectiveText(nextObjective);
     }
-    if (nextAssessment !== consultationStore.assessmentText) {
-      consultationStore.setAssessmentText(nextAssessment);
+    if (!consultationStore.assessmentDirty && !assessmentRecentlyEdited && nextAssessment !== consultationStore.assessmentText) {
+      (consultationStore as any).hydrateAssessmentText(nextAssessment);
     }
-    if (nextPlan !== consultationStore.planText) {
-      consultationStore.setPlanText(nextPlan);
+    if (!consultationStore.planDirty && !planRecentlyEdited && nextPlan !== consultationStore.planText) {
+      (consultationStore as any).hydratePlanText(nextPlan);
     }
     // One-time migration: legacy consultationNotes -> objective if new fields empty
     try {
@@ -237,17 +243,9 @@ export function useConsultationStores(): any {
       consultationStore.setTemplateId(session.templateId);
     }
   }, [
-    // Only depend on primitives/arrays we actually read in the effect
+    // Scope hydration primarily to session/data changes, not keystrokes
     consultationStore.currentPatientSessionId,
     patientSessions,
-    transcriptionStore.transcription.transcript,
-    transcriptionStore.typedInput,
-    consultationStore.generatedNotes,
-    consultationStore.consultationNotes,
-    consultationStore.problemsText,
-    consultationStore.objectiveText,
-    consultationStore.assessmentText,
-    consultationStore.planText,
     ensureActiveSession,
     updatePatientSession,
   ]);
@@ -312,6 +310,9 @@ export function useConsultationStores(): any {
  return false;
 }
     await updatePatientSession(id, { problemsText: text } as any);
+    try {
+      consultationStore.clearProblemsDirty?.();
+    } catch {}
     return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
@@ -321,6 +322,9 @@ export function useConsultationStores(): any {
  return false;
 }
     await updatePatientSession(id, { objectiveText: text } as any);
+    try {
+      consultationStore.clearObjectiveDirty?.();
+    } catch {}
     return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
@@ -330,6 +334,9 @@ export function useConsultationStores(): any {
  return false;
 }
     await updatePatientSession(id, { assessmentText: text } as any);
+    try {
+      consultationStore.clearAssessmentDirty?.();
+    } catch {}
     return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
@@ -339,6 +346,9 @@ export function useConsultationStores(): any {
  return false;
 }
     await updatePatientSession(id, { planText: text } as any);
+    try {
+      consultationStore.clearPlanDirty?.();
+    } catch {}
     return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
@@ -402,7 +412,18 @@ export function useConsultationStores(): any {
 
     // Actions - session/template
     setStatus: consultationStore.setStatus,
-    setTemplateId: consultationStore.setTemplateId,
+    setTemplateId: useCallback(async (id: string) => {
+      if (consultationStore.templateId === id) {
+        return;
+      }
+      consultationStore.setTemplateId(id);
+      const sid = consultationStore.currentPatientSessionId;
+      if (sid) {
+        try {
+          await updatePatientSession(sid, { templateId: id } as any);
+        } catch {}
+      }
+    }, [consultationStore.templateId, consultationStore.currentPatientSessionId, updatePatientSession, consultationStore.setTemplateId]),
 
     // Actions - input/transcription
     setInputMode: transcriptionStore.setInputMode,

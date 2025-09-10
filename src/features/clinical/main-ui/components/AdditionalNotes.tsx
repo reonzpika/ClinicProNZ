@@ -1,7 +1,7 @@
 'use client';
 
 import { FileText } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { ExaminationChecklistButton } from '@/src/features/clinical/examination-checklist/components/ExaminationChecklistButton';
 import { PlanSafetyNettingButton } from '@/src/features/clinical/plan-safety-netting';
@@ -191,6 +191,35 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     // No longer writing JSON back through onNotesChange
   }, [items]);
 
+  // Debounced autosave per section
+  const debounceTimers = useRef<Record<string, any>>({});
+  const debounceMs = 800;
+
+  const enqueueSave = (section: 'problems' | 'objective' | 'assessment' | 'plan') => {
+    const key = `save-${section}`;
+    if (debounceTimers.current[key]) {
+      clearTimeout(debounceTimers.current[key]);
+    }
+    debounceTimers.current[key] = setTimeout(async () => {
+      try {
+        switch (section) {
+          case 'problems':
+            await saveProblemsToCurrentSession(problemsText || '');
+            break;
+          case 'objective':
+            await saveObjectiveToCurrentSession(objectiveText || '');
+            break;
+          case 'assessment':
+            await saveAssessmentToCurrentSession(assessmentText || '');
+            break;
+          case 'plan':
+            await savePlanToCurrentSession(planText || '');
+            break;
+        }
+      } catch {}
+    }, debounceMs);
+  };
+
   // Handle text changes per section
   const handleSectionChange = (section: 'problems' | 'objective' | 'assessment' | 'plan', newText: string) => {
     if (section === 'problems') {
@@ -205,6 +234,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     if (section === 'plan') {
  setPlanText(newText);
 }
+    enqueueSave(section);
     // No longer writing JSON back through onNotesChange
   };
 
