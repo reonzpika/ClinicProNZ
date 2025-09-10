@@ -64,7 +64,7 @@ export const WorkflowInstructions: React.FC = () => {
 
   return (
     <Card className="border-blue-200 bg-blue-50 shadow-sm">
-      <CardHeader className="p-3">
+      <CardHeader className="p-3 min-h-10 flex items-center">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="flex w-full items-center justify-between text-left"
