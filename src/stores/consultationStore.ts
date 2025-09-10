@@ -72,6 +72,11 @@ type ConsultationActions = {
   removeConsultationItem: (itemId: string) => void;
   setConsultationNotes: (notes: string) => void;
   getCompiledConsultationText: () => string;
+  // New per-section setters
+  setProblemsText: (text: string) => void;
+  setObjectiveText: (text: string) => void;
+  setAssessmentText: (text: string) => void;
+  setPlanText: (text: string) => void;
 
   // Clinical images actions
   addClinicalImage: (image: ClinicalImage) => void;
