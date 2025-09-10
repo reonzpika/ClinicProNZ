@@ -6,7 +6,6 @@ import { Brain, Download, Expand, Loader2, Trash2 } from 'lucide-react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
-import { parseSectionedNotes, serializeSectionedNotes } from '@/src/features/clinical/main-ui/utils/consultationNotesSerializer';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { imageQueryKeys, useServerImages } from '@/src/hooks/useImageQueries';
 import { Button } from '@/src/shared/components/ui/button';
