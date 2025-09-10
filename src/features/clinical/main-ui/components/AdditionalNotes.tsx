@@ -290,8 +290,6 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             )}
           </div>
           <div className="flex items-center gap-1">
-            <ExaminationChecklistButton />
-            <PlanSafetyNettingButton />
             <button
               type="button"
               className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
@@ -363,7 +361,10 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-600">Objective</label>
+                <div className="mb-1 flex items-center justify-between">
+                  <label className="block text-xs font-medium text-slate-600">Objective</label>
+                  <ExaminationChecklistButton />
+                </div>
                 <Textarea
                   id="additional-notes-minimized-objective"
                   value={objectiveText}
@@ -371,7 +372,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                   onBlur={handleNotesBlur}
                   placeholder={placeholder}
                   className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                  rows={3}
+                  rows={2}
                   ref={objectiveRef}
                 />
               </div>
@@ -389,7 +390,10 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-600">Plan</label>
+                <div className="mb-1 flex items-center justify-between">
+                  <label className="block text-xs font-medium text-slate-600">Plan</label>
+                  <PlanSafetyNettingButton />
+                </div>
                 <Textarea
                   id="additional-notes-minimized-plan"
                   value={planText}
@@ -450,8 +454,6 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             <span className="text-xs text-slate-500">Tip: Tab moves Problems → Objective → Assessment → Plan; Shift+Tab goes back</span>
           </div>
           <div className="flex items-center gap-1">
-            <ExaminationChecklistButton />
-            <PlanSafetyNettingButton />
             <button
               type="button"
               className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
@@ -472,19 +474,22 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 onChange={e => handleSectionChange('problems', e.target.value)}
                 onBlur={handleNotesBlur}
                 placeholder="List problems..."
-                className="min-h-[60px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="min-h-[100px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 ref={problemsRef}
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Objective</label>
+              <div className="mb-1 flex items-center justify-between">
+                <label className="block text-sm font-medium text-slate-700">Objective</label>
+                <ExaminationChecklistButton />
+              </div>
               <Textarea
                 id="additional-notes-objective"
                 value={objectiveText}
                 onChange={e => handleSectionChange('objective', e.target.value)}
                 onBlur={handleNotesBlur}
                 placeholder={placeholder}
-                className="min-h-[120px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="min-h-[100px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 ref={objectiveRef}
               />
             </div>
@@ -496,19 +501,22 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 onChange={e => handleSectionChange('assessment', e.target.value)}
                 onBlur={handleNotesBlur}
                 placeholder="Assessment..."
-                className="min-h-[80px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="min-h-[100px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 ref={assessmentRef}
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Plan</label>
+              <div className="mb-1 flex items-center justify-between">
+                <label className="block text-sm font-medium text-slate-700">Plan</label>
+                <PlanSafetyNettingButton />
+              </div>
               <Textarea
                 id="additional-notes-plan"
                 value={planText}
                 onChange={e => handleSectionChange('plan', e.target.value)}
                 onBlur={handleNotesBlur}
                 placeholder="Plan..."
-                className="min-h-[80px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="min-h-[100px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 ref={planRef}
               />
             </div>
@@ -533,8 +541,6 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
           <span className="text-xs text-slate-500">Tip: Use Tab to cycle sections; Shift+Tab to reverse</span>
         </div>
         <div className="flex items-center gap-1">
-          <ExaminationChecklistButton />
-          <PlanSafetyNettingButton />
           <button
             type="button"
             className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
@@ -555,12 +561,15 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             onBlur={handleNotesBlur}
             placeholder="List problems..."
             className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-            rows={3}
+            rows={4}
             ref={problemsRef}
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Objective</label>
+          <div className="mb-1 flex items-center justify-between">
+            <label className="block text-sm font-medium text-slate-700">Objective</label>
+            <ExaminationChecklistButton />
+          </div>
           <Textarea
             id="additional-notes-objective"
             value={objectiveText}
@@ -568,7 +577,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             onBlur={handleNotesBlur}
             placeholder={placeholder}
             className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-            rows={5}
+            rows={4}
             ref={objectiveRef}
           />
         </div>
@@ -586,7 +595,10 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Plan</label>
+          <div className="mb-1 flex items-center justify-between">
+            <label className="block text-sm font-medium text-slate-700">Plan</label>
+            <PlanSafetyNettingButton />
+          </div>
           <Textarea
             id="additional-notes-plan"
             value={planText}
