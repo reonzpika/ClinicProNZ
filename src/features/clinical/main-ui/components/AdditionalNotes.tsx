@@ -72,6 +72,15 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     }
   };
 
+  // Auto-focus Problems when expanding the section
+  useEffect(() => {
+    if (isExpanded && problemsRef.current) {
+      try {
+        problemsRef.current.focus();
+      } catch {}
+    }
+  }, [isExpanded]);
+
   // Section state is maintained in the store now
   const {
     problemsText,
@@ -286,7 +295,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
 
         {/* Full editing interface when expanded */}
         {isExpanded && (
-          <div className="space-y-3" onKeyDown={handleKeyDownCycle}>
+          <div className="space-y-3" onKeyDown={handleKeyDownCycle} tabIndex={0} role="group" aria-label="Additional notes editor">
             <div className="space-y-3">
               <div>
                 <label className="mb-1 block text-xs font-medium text-slate-600">Problems</label>
@@ -395,7 +404,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             </button>
           </div>
         </div>
-        <div className="flex flex-1 flex-col space-y-3" onKeyDown={handleKeyDownCycle}>
+        <div className="flex flex-1 flex-col space-y-3" onKeyDown={handleKeyDownCycle} tabIndex={0} role="group" aria-label="Additional notes editor">
           <div className="grid grid-cols-1 gap-3">
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700">Problems</label>
@@ -473,7 +482,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
           </button>
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-3" onKeyDown={handleKeyDownCycle}>
+      <div className="grid grid-cols-1 gap-3" onKeyDown={handleKeyDownCycle} tabIndex={0} role="group" aria-label="Additional notes editor">
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">Problems</label>
           <Textarea
