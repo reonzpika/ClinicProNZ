@@ -78,16 +78,24 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
 
   // Save per-section fields on blur
   const handleNotesBlur = async () => {
+    let ok = true;
     try {
-      await Promise.all([
+      const results = await Promise.all([
         saveProblemsToCurrentSession(problemsText || ''),
         saveObjectiveToCurrentSession(objectiveText || ''),
         saveAssessmentToCurrentSession(assessmentText || ''),
         savePlanToCurrentSession(planText || ''),
       ]);
+      ok = results.every(Boolean);
     } catch (error) {
+      ok = false;
       console.error('Failed to save sectioned notes:', error);
     }
+    try {
+      if (typeof window !== 'undefined' && (window as any).toast) {
+        (window as any).toast[ok ? 'success' : 'error'](ok ? 'Additional note saved' : 'Failed to save additional note');
+      }
+    } catch {}
   };
 
   // Auto-append new items to appropriate sections
