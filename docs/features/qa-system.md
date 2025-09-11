@@ -29,7 +29,10 @@ This document defines the end-to-end Quality Assurance (QA) signals, tracking, a
   - `notes`: AI-generated consultation notes (string)
   - `typedInput`: free text entered by user
   - `templateId`: template used for generation
-  - `consultationItems`: JSON string array of structured items
+  - `problems_text`: structured Additional Notes – Problems (string)
+  - `objective_text`: structured Additional Notes – Objective (string)
+  - `assessment_text`: structured Additional Notes – Assessment (string)
+  - `plan_text`: structured Additional Notes – Plan (string)
   - `clinicalImages`: JSON string array of uploaded images
 
 - `src/types/consultation.ts`
@@ -37,7 +40,7 @@ This document defines the end-to-end Quality Assurance (QA) signals, tracking, a
 
 ---
 
-## Consultation Additional Notes – Structured Tracking (Updated, no `consultationNotes`)
+## Consultation Additional Notes – Structured Tracking (Updated: field-based)
 
 Additional Notes now include a structured set of fields aligned with SOAP:
 
@@ -48,8 +51,8 @@ Additional Notes now include a structured set of fields aligned with SOAP:
 
 ### UI and Behaviour
 
-- The `AdditionalNotes` experience is retained, but we no longer persist a `consultationNotes` string field.
-- Structured Additional Notes are persisted using `consultationItems` entries (with stable titles/markers) and compiled at generation time into a single text block.
+- The `AdditionalNotes` experience is retained, persisted in four dedicated columns: `problems_text`, `objective_text`, `assessment_text`, `plan_text`.
+- For generation/export, these are compiled into a single text block (see Canonical Markers) to provide consistent downstream behaviour.
 
 ### Canonical Section Markers
 
@@ -75,13 +78,13 @@ Notes:
 
 ### API/Generation Integration
 
-- `app/(clinical)/consultation/page.tsx` composes `rawConsultationData` by combining main input (audio transcript or typed input) with the compiled Additional Notes derived from `consultationItems`.
+- `app/(clinical)/consultation/page.tsx` composes `rawConsultationData` by combining main input (audio transcript or typed input) with a concatenation of `problems_text`, `objective_text`, `assessment_text`, `plan_text` (when present), using the canonical headers.
 - `app/api/(clinical)/consultation/notes/route.ts` consumes the combined `rawConsultationData` and templates map SOAP (see `systemPrompt.ts`).
-- No API shape change is required; structured Additional Notes are sourced from `consultationItems` (not `consultationNotes`).
+- No API shape change is required; structured Additional Notes are sourced from the four dedicated fields.
 
 ### Validation Rules
 
-At save time (item change) or generation time, apply lightweight validation:
+At save time or generation time, apply lightweight validation:
 - Allow empty sections; trim trailing whitespace.
 - Enforce the section header tokens exactly as above if any SOAP-aligned content is detected.
 - Total concatenated length should remain within UI limits to avoid streaming truncation.
@@ -95,15 +98,15 @@ At save time (item change) or generation time, apply lightweight validation:
 - QA: After Ably signal, desktop refetch joins chunks to reconstruct full transcript; compare against UI transcript buffer.
 
 ### 2) Additional Notes Persistence (Updated)
-- Edits in `AdditionalNotes` update `consultationItems` and are saved via `PUT /api/patient-sessions` with `consultationItems`.
-- QA: Switch sessions then return; compiled Additional Notes from `consultationItems` must rehydrate identically with section markers intact.
+- Edits in `AdditionalNotes` save directly to `problems_text`, `objective_text`, `assessment_text`, `plan_text` via `PUT /api/patient-sessions`.
+- QA: Switch sessions then return; fields rehydrate identically and concatenated view preserves section order and content.
 
 ### 3) Generated Notes
 - `POST /api/consultation/notes` streams AI output.
 - QA: Ensure `notes` saved to `patient_sessions.notes`. Reopen session: generated notes display matches last saved.
 
 ### 4) Session Clearing
-- `POST /api/patient-sessions/clear` clears `notes`, `typedInput`, `transcriptions`, and any legacy `consultationNotes` if present.
+- `POST /api/patient-sessions/clear` clears `notes`, `typedInput`, `transcriptions`, and all Additional Notes fields (`problems_text`, `objective_text`, `assessment_text`, `plan_text`).
 - QA: After clear, UI shows empty sources, and refetch confirms server-side cleared state.
 
 ### 5) Mobile Images
@@ -164,12 +167,12 @@ Migration Risk:
 
 ## API Contracts (No Schema Change Required)
 
-- `PUT /api/patient-sessions` accepts `consultationItems` (structured Additional Notes) and other session fields.
-- `GET /api/patient-sessions` returns parsed `transcriptions` and `consultationItems`, and raw strings for `notes`, `typedInput`.
-- `POST /api/consultation/notes` expects `rawConsultationData` that may include structured Additional Notes sections.
+- `PUT /api/patient-sessions` accepts `problems_text`, `objective_text`, `assessment_text`, `plan_text`, plus other session fields as applicable.
+- `GET /api/patient-sessions` returns these four fields (strings), along with `notes`, `typedInput`, and parsed `transcriptions`.
+- `POST /api/consultation/notes` expects `rawConsultationData` that may include structured Additional Notes sections (concatenated from the four fields).
 
-Legacy Note:
-- The `consultationNotes` column may still exist in the schema for backward compatibility but is no longer used by current workflows.
+Legacy Notes:
+- Any legacy `consultationNotes` or `consultationItems` usage is deprecated and should not be written in new flows.
 
 ---
 
@@ -195,6 +198,6 @@ Legacy Note:
 
 ## Future Enhancements
 
-- Optional server-side typed fields for each section (`additionalNotesProblems`, etc.) while continuing to support concatenated text for backward compatibility.
+- Export helpers to render/parse the four Additional Notes fields with canonical headers for interoperable exports.
 - Export helpers to parse structured Additional Notes back into sections.
 
