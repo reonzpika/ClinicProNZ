@@ -1,249 +1,202 @@
-# Minimal Notes Tracking & Quality Assessment (Design)
+# ClinicPro QA Systems
 
-## 1. Purpose and Scope
+## Purpose
 
-**Goal:** Track and assess LLM-generated clinical notes with minimal overhead.
+This document defines the end-to-end Quality Assurance (QA) signals, tracking, and verification flows across ClinicPro, with emphasis on consultation workflows, transcription, generated notes, and structured Additional Notes.
 
-**Scope:** Notes only (not chat). Preview branch. No external observability tools. No per-template tokens. No LLM-judge.
+## Scope
 
-## 2. Outcomes
+- Desktop and mobile recording QA checkpoints
+- Transcription persistence and reconstruction checks
+- Consultation note generation QA
+- Additional Notes structure and persistence (updated)
+- API/DB invariants and monitoring hooks
 
-- **Auditability:** Full chain from inputs → model → output → edits
-- **Safety signal:** Hallucination/omission flags on content
-- **Medication safety (NZ):** Detect medication mentions in transcription; validate against NZ list
-- **User feedback:** Rating + comment on draft quality
+---
 
-## 3. High-Level Flow
+## Key Concepts
 
-1. GP clicks Generate → create trace (pending)
-2. Call LLM → store output → create revision v0
-3. Run heuristics → store hallucination/omission
-4. Run NZ med checks on transcription → store metrics and suspects
-5. Capture user rating/comment (before first edit)
-6. On edit → append revision v1+ with diffs; compute edit distance
+- "QA Signal": an observable state change or persisted artefact we can validate.
+- "Authoritative Store": server database (`patient_sessions`) is source of truth.
+- "Client Store": Zustand stores reflect UI state and must rehydrate from server accurately.
 
-## 4. Data Model (DB)
+---
 
-### `note_traces`
-- `id` (uuid)
-- `session_id` (uuid)
-- `user_id` (text)
-- `trace_id` (text, idempotency)
-- `created_at` (ts)
-- `model` (text)
-- `status` ('success'|'failed'|'partial')
-- `latency_ms` (int, nullable)
-- `tokens_used` (int, nullable)
-- `system_prompt` (text)
-- `user_prompt` (text)
-- `template_id` (text, nullable)
-- `output_text` (text)
-- `output_hash` (text)
-- `user_rating` (smallint 0–5, nullable)
-- `user_feedback` (text, nullable)
-- `user_feedback_at` (ts, nullable)
+## Data Model References
 
-### `note_revisions`
-- `id` (uuid)
-- `trace_id` (uuid, nullable)
-- `session_id` (uuid)
-- `user_id` (text)
-- `version_index` (int; 0=draft, 1+ edits)
-- `source` ('generated'|'manual')
-- `note_text` (text)
-- `diff` (text)
-- `created_at` (ts)
+- `database/schema/patient_sessions.ts`
+  - `transcriptions`: JSON string array of `{ id, text, timestamp, source, deviceId? }`
+  - `notes`: AI-generated consultation notes (string)
+  - `typedInput`: free text entered by user
+  - `templateId`: template used for generation
+  - `problems_text`: structured Additional Notes – Problems (string)
+  - `objective_text`: structured Additional Notes – Objective (string)
+  - `assessment_text`: structured Additional Notes – Assessment (string)
+  - `plan_text`: structured Additional Notes – Plan (string)
+  - `clinicalImages`: JSON string array of uploaded images
 
-### `trace_evals`
-- `id` (uuid)
-- `trace_id` (uuid)
-- `created_at` (ts)
-- `evaluator` ('heuristic')
-- `hallucination_flag` (bool)
-- `omission_flag` (bool)
-- `notes` (text, nullable)
-- `nz_meds_total` (int)
-- `nz_meds_matched` (int)
-- `nz_meds_unknown_count` (int)
-- `nz_meds_unknown_list` (jsonb array of strings)
-- `stt_meds_total` (int)
-- `stt_meds_matched_nz` (int)
-- `stt_meds_unknown_count` (int)
-- `stt_meds_suspects` (jsonb array of { heard, suggested, confidence })
-- `nz_meds_data_version` (text; e.g., "NZULM 2025-03")
+- `src/types/consultation.ts`
+  - `PatientSession` mirrors above for client usage
 
-## 5. API/Service Behaviour
+---
 
-### Notes Generation (Server)
-- **On request:** create note_traces row (pending), save system/user prompts, model, template_id, timestamps
-- **After LLM:** update row with output_text, output_hash, status, latency_ms, tokens_used (if available)
-- Create note_revisions v0 (source='generated', diff='')
-- Run heuristics + NZ meds checks → write one trace_evals row
+## Consultation Additional Notes – Structured Tracking (Updated: field-based)
 
-### User Feedback (Server)
-Accept rating/comment for the trace_id until first manual edit exists; afterwards return 409.
+Additional Notes now include a structured set of fields aligned with SOAP:
 
-### Manual Edits (Client → Server)
-**On blur:** create note_revisions v1+ with diff vs previous; compute draft→final edit distance (stored in memory or added later to traces if needed).
+- Problems: free-form list or bullets of active problems/issues
+- Objective: vitals, exam findings, investigations
+- Assessment: working diagnoses/differentials
+- Plan: management plan including Rx, Ix, f/u, advice
 
-## 6. Heuristics (Content-First)
+### UI and Behaviour
 
-### Hallucination (Yes/No)
-- Extract entities/claims from note: medications (also captured by NZ scan), conditions/diagnoses, procedures/investigations, numbers/dates
-- Normalise and fuzzy-match against input text (transcription + typed input). If novel entity/claim lacks support in inputs → flag = true
-- **Examples:** "CT shows pneumonia" when transcript has no CT; "started warfarin" with no med initiation mentioned
+- The `AdditionalNotes` experience is retained, persisted in four dedicated columns: `problems_text`, `objective_text`, `assessment_text`, `plan_text`.
+- For generation/export, these are compiled into a single text block (see Canonical Markers) to provide consistent downstream behaviour.
 
-### Omission (Yes/No)
-- From input, extract salient items: explicit requests/tasks (e.g., "sick note", "repeat script"), top N noun phrases/symptoms, obvious constraints
-- Check coverage: each salient item appears (or clear paraphrase) in note; compute coverage ratio; below threshold (e.g., <0.6) → flag = true
+### Canonical Section Markers
 
-### Notes
-Simple, deterministic patterns; fast (<50 ms target). No section parsing required.
+Implementers MUST use the exact markers when composing the concatenated text so that other subsystems (e.g., AI prompts, exports) can parse reliably:
 
-## 7. NZ Medication Checks (Transcription)
+```
+PROBLEMS:
+<free text>
 
-### Dictionary
-NZULM generics + NZ brands; monthly refresh. Brand→generic map.
+OBJECTIVE:
+<free text>
 
-### Extraction
-- Normalise transcription; Aho–Corasick/trie exact scan for speed
-- Windowed n-grams (1–5) around cue words ("on", "taking", "prescribe", "mg", "tablet")
+ASSESSMENT:
+<free text>
 
-### Matching
-- **Exact match** → NZ-valid
-- **Fuzzy/phonetic** for near-miss (Levenshtein + Double-Metaphone); keep top 1–2 suggestions with confidence
-- Suspects recorded as { heard, suggested, confidence }; advisory only
-
-### Outputs (stored on trace_evals)
-- `nz_meds_total`, `nz_meds_matched`, `nz_meds_unknown_count`, `nz_meds_unknown_list`
-- `stt_meds_total`, `stt_meds_matched_nz`, `stt_meds_unknown_count`, `stt_meds_suspects`
-- `nz_meds_data_version`
-
-## 8. Idempotency and Retries
-
-`trace_id` uniquely identifies a generation attempt.
-
-**Re-submit with same trace_id:**
-- If existing success → return existing record
-- If pending/failed → update in place
-
-## 9. Feature Flags and Config
-
-- **`NOTES_EVALS_ENABLED`:** enable heuristics and NZ meds checks (on in preview)
-
-### Thresholds (env or config)
-- Omission coverage threshold (default 0.6)
-- Fuzzy match threshold for meds (e.g., distance score ≥ 0.8)
-- Max suspects per trace (e.g., 5)
-
-## 10. Security, Privacy, Retention
-
-- Store raw prompts/outputs (approved)
-- Restrict access to staff/admin roles; tag environment (preview/prod)
-- **NZULM data:** store version/date; refresh monthly
-- **PHI:** all on your infra; no third-party submission in this design
-
-## 11. Performance Targets
-
-- Heuristics + meds checks add <50 ms p95 per generation
-- NZ meds scan: tens of ms on 2k-word transcripts (Aho–Corasick + limited fuzzy)
-
-## 12. Acceptance Tests
-
-### Tracing/Idempotency
-Same trace_id → one note_traces row, one v0 note_revisions.
-
-### Heuristics
-- **Hallucination:** crafted examples trigger true/false as expected
-- **Omission:** explicit request in input missing in note → true; covered → false
-
-### NZ Meds
-- "paracetamol", "ibuprofen", "escitalopram", "metformin" → matched
-- "acetaminophen", "Tylenol" → unknown
-- "Augmentin", "Panadol" → matched via brand map
-- **Suspect example:** heard "amoxycillin" → suggested "amoxicillin" (confidence high)
-
-### Feedback
-Rating/comment saved before first edit; blocked after first manual edit (409).
-
-### Revisions
-v0 draft present; v1+ edits with diffs; edit distance computed.
-
-## 13. Rollout Plan (Preview)
-
-- **Phase A:** DB migration + minimal tracing + v0 revision
-- **Phase B:** Heuristics + NZ meds checks
-- **Phase C:** Manual edit revisions + feedback capture
-
-Observe metrics; tune thresholds; promote.
-
-## 14. Risks and Mitigations
-
-### False Positives on Hallucination/Omission
-Keep thresholds conservative; allow manual override later (not in scope).
-
-### NZ List Coverage
-Start with NZULM + common brands; monitor unknown list to patch aliases.
-
-### Tokens_used Availability
-If provider doesn't return tokens on stream, approximate via tokenizer (optional later).
-
-## 15. Open Items / Uncertainties
-
-### Input Scope for Checks
-**Assumption:** compare against both transcription and typed input. [Confirm]
-
-### NZULM Licensing/Source
-**Assumption:** permissible to host a local copy for matching. [Confirm]
-
-### Fuzzy Thresholds
-**Defaults proposed:** (coverage 0.6; med match 0.8). Adjust after preview telemetry. [Tunable]
-
-### Edit Distance Storage
-**Assumption:** compute and store later as needed (not required in v1 schema). [Optional]
-
-### Feedback UX
-**Assumption:** 0–5 stars + optional short comment, shown after generation, dismissible. [Confirm]
-
-## 16. Example Trace Payload
-
-```json
-{
-  "trace_id": "gen_1234",
-  "session_id": "sess_abc",
-  "user_id": "user_gp1",
-  "created_at": "2025-09-02T21:10:00Z",
-  "model": "gpt-4.1-mini",
-  "system_prompt": "You are a medical scribe...",
-  "user_prompt": "TEMPLATE: ...\\nTRANSCRIPTION: ...",
-  "template_id": "tpl_default_gp",
-  "output_text": "S: ...\\nO: ...\\nA+P: ...",
-  "status": "success",
-  "latency_ms": 1100,
-  "tokens_used": 900,
-  "user_rating": 5
-}
+PLAN:
+<free text>
 ```
 
-## 17. Example Eval Record (Heuristics + NZ Meds)
+Notes:
+- Sections may be omitted if empty; preserve order when present.
+- Do not invent content; only include explicitly captured data.
 
-```json
-{
-  "trace_id": "gen_1234",
-  "evaluator": "heuristic",
-  "created_at": "2025-09-02T21:10:02Z",
-  "hallucination_flag": false,
-  "omission_flag": true,
-  "nz_meds_total": 3,
-  "nz_meds_matched": 2,
-  "nz_meds_unknown_count": 1,
-  "nz_meds_unknown_list": ["acetaminophen"],
-  "stt_meds_total": 4,
-  "stt_meds_matched_nz": 3,
-  "stt_meds_unknown_count": 1,
-  "stt_meds_suspects": [
-    { "heard": "amoxycillin", "suggested": "amoxicillin", "confidence": 0.93 }
-  ],
-  "nz_meds_data_version": "NZULM 2025-03"
-}
-```
+### API/Generation Integration
+
+- `app/(clinical)/consultation/page.tsx` composes `rawConsultationData` by combining main input (audio transcript or typed input) with a concatenation of `problems_text`, `objective_text`, `assessment_text`, `plan_text` (when present), using the canonical headers.
+- `app/api/(clinical)/consultation/notes/route.ts` consumes the combined `rawConsultationData` and templates map SOAP (see `systemPrompt.ts`).
+- No API shape change is required; structured Additional Notes are sourced from the four dedicated fields.
+
+### Validation Rules
+
+At save time or generation time, apply lightweight validation:
+- Allow empty sections; trim trailing whitespace.
+- Enforce the section header tokens exactly as above if any SOAP-aligned content is detected.
+- Total concatenated length should remain within UI limits to avoid streaming truncation.
+
+---
+
+## QA Checkpoints
+
+### 1) Transcription Persistence
+- Each pause-triggered chunk is appended to `patient_sessions.transcriptions`.
+- QA: After Ably signal, desktop refetch joins chunks to reconstruct full transcript; compare against UI transcript buffer.
+
+### 2) Additional Notes Persistence (Updated)
+- Edits in `AdditionalNotes` save directly to `problems_text`, `objective_text`, `assessment_text`, `plan_text` via `PUT /api/patient-sessions`.
+- QA: Switch sessions then return; fields rehydrate identically and concatenated view preserves section order and content.
+
+### 3) Generated Notes
+- `POST /api/consultation/notes` streams AI output.
+- QA: Ensure `notes` saved to `patient_sessions.notes`. Reopen session: generated notes display matches last saved.
+
+### 4) Session Clearing
+- `POST /api/patient-sessions/clear` clears `notes`, `typedInput`, `transcriptions`, and all Additional Notes fields (`problems_text`, `objective_text`, `assessment_text`, `plan_text`).
+- QA: After clear, UI shows empty sources, and refetch confirms server-side cleared state.
+
+### 5) Mobile Images
+- Upload via presigned URLs; Ably signals desktop to refetch.
+- QA: `clinicalImages` JSON parses and images appear in session context.
+
+---
+
+## Change Tracking & NLP Extraction (Technical Updates)
+
+### Replace Custom Diff Implementation → diff-match-patch
+
+Current:
+- Manual diff computation and edit distance calculations described for note changes.
+
+Change:
+- Use a well-established diff library such as `diff-match-patch` for text change tracking.
+
+Reasons:
+- Improved reliability and performance on large texts
+- Robust handling of complex edits and Unicode edge cases
+- Built-in semantic cleanup (`diff_cleanupSemantic`) for human-friendly diffs
+
+Implementation Notes:
+- Frontend/Node: `diff-match-patch` npm package
+- Apply `diff_main(oldText, newText)` → `diff_cleanupSemantic(diff)` for readable QA diffs
+- Persist minimal delta if needed, or store full before/after with rendered diff for audits
+
+Migration Risk:
+- None to data model; replace call sites where custom diff was referenced in QA workflows.
+
+### Upgrade Entity Extraction → spaCy clinical model (medspaCy)
+
+Current:
+- Simple, deterministic patterns and regex-based entity extraction.
+
+Change:
+- Use spaCy with a clinical/biomedical pipeline. Recommended: `medspaCy` for clinical text; alternatively `scispaCy` for biomedical literature or `Med7` for medication-centric use cases.
+
+Recommendation for ClinicPro QA:
+- Adopt `medspaCy` as default clinical NER/sectionizer for consultation notes. It aligns with clinical narratives and supports section detection (useful alongside SOAP).
+
+Reasons:
+- Higher recall/precision on clinical entities than regex heuristics
+- Domain-adapted tokenisation and section detection
+- Extensible with rules for NZ-specific terminology
+
+Implementation Notes:
+- Service layer (Python) with spaCy + medspaCy
+- Expose HTTP endpoint for entity extraction if app layer is Node/TS
+- Start with core medspaCy components: `TargetMatcher`, `Sectionizer`; add rules for SOAP headers and NZ abbreviations
+
+Migration Risk:
+- Operational: add Python service/runtime. Mitigate with containerised microservice and health checks.
+- Model choice: evaluate medspaCy vs scispaCy on sample datasets; retain fallback regex for edge conditions initially.
+
+---
+
+## API Contracts (No Schema Change Required)
+
+- `PUT /api/patient-sessions` accepts `problems_text`, `objective_text`, `assessment_text`, `plan_text`, plus other session fields as applicable.
+- `GET /api/patient-sessions` returns these four fields (strings), along with `notes`, `typedInput`, and parsed `transcriptions`.
+- `POST /api/consultation/notes` expects `rawConsultationData` that may include structured Additional Notes sections (concatenated from the four fields).
+
+Legacy Notes:
+- Any legacy `consultationNotes` or `consultationItems` usage is deprecated and should not be written in new flows.
+
+---
+
+## Risks & Mitigations
+
+- Risk: Free-text Additional Notes without markers → not parsable into SOAP.
+  - Mitigation: Encourage UI affordances to insert section headers; gentle validation on save.
+- Risk: Over-long Additional Notes causing model truncation.
+  - Mitigation: Soft limits and character counters; advise summarising Problems.
+- Risk: Divergence of section labels.
+  - Mitigation: Enforce exact tokens: PROBLEMS, OBJECTIVE, ASSESSMENT, PLAN.
+
+---
+
+## Test Plan (Smoke)
+
+1. Enter audio transcript, add structured Additional Notes (all four sections), generate notes → AI includes content appropriately.
+2. Switch sessions and return → structured Additional Notes persist and render intact.
+3. Clear all → Additional Notes emptied; server confirms clear.
+4. Type-only flow → structured Additional Notes still used in generation.
+
+---
+
+## Future Enhancements
+
+- Export helpers to render/parse the four Additional Notes fields with canonical headers for interoperable exports.
+- Export helpers to parse structured Additional Notes back into sections.
