@@ -9,10 +9,12 @@ import { ExaminationChecklistModal } from './ExaminationChecklistModal';
 
 type ExaminationChecklistButtonProps = {
   className?: string;
+  tabIndex?: number;
 };
 
 export const ExaminationChecklistButton: React.FC<ExaminationChecklistButtonProps> = ({
   className,
+  tabIndex,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -36,6 +38,7 @@ export const ExaminationChecklistButton: React.FC<ExaminationChecklistButtonProp
         size="sm"
         variant="ghost"
         className={`size-6 p-0 text-slate-500 hover:text-slate-700 ${className || ''}`}
+        tabIndex={tabIndex}
         title="Examination Checklist (Alt+C)"
       >
         <Stethoscope size={14} />
