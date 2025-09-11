@@ -113,6 +113,56 @@ At save time (blur) or generation time, apply lightweight validation:
 
 ---
 
+## Change Tracking & NLP Extraction (Technical Updates)
+
+### Replace Custom Diff Implementation → diff-match-patch
+
+Current:
+- Manual diff computation and edit distance calculations described for note changes.
+
+Change:
+- Use a well-established diff library such as `diff-match-patch` for text change tracking.
+
+Reasons:
+- Improved reliability and performance on large texts
+- Robust handling of complex edits and Unicode edge cases
+- Built-in semantic cleanup (`diff_cleanupSemantic`) for human-friendly diffs
+
+Implementation Notes:
+- Frontend/Node: `diff-match-patch` npm package
+- Apply `diff_main(oldText, newText)` → `diff_cleanupSemantic(diff)` for readable QA diffs
+- Persist minimal delta if needed, or store full before/after with rendered diff for audits
+
+Migration Risk:
+- None to data model; replace call sites where custom diff was referenced in QA workflows.
+
+### Upgrade Entity Extraction → spaCy clinical model (medspaCy)
+
+Current:
+- Simple, deterministic patterns and regex-based entity extraction.
+
+Change:
+- Use spaCy with a clinical/biomedical pipeline. Recommended: `medspaCy` for clinical text; alternatively `scispaCy` for biomedical literature or `Med7` for medication-centric use cases.
+
+Recommendation for ClinicPro QA:
+- Adopt `medspaCy` as default clinical NER/sectionizer for consultation notes. It aligns with clinical narratives and supports section detection (useful alongside SOAP).
+
+Reasons:
+- Higher recall/precision on clinical entities than regex heuristics
+- Domain-adapted tokenisation and section detection
+- Extensible with rules for NZ-specific terminology
+
+Implementation Notes:
+- Service layer (Python) with spaCy + medspaCy
+- Expose HTTP endpoint for entity extraction if app layer is Node/TS
+- Start with core medspaCy components: `TargetMatcher`, `Sectionizer`; add rules for SOAP headers and NZ abbreviations
+
+Migration Risk:
+- Operational: add Python service/runtime. Mitigate with containerised microservice and health checks.
+- Model choice: evaluate medspaCy vs scispaCy on sample datasets; retain fallback regex for edge conditions initially.
+
+---
+
 ## API Contracts (No Schema Change Required)
 
 - `PUT /api/patient-sessions` accepts `consultationNotes: string` (contains concatenated structured sections when used).
