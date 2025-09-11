@@ -1,0 +1,148 @@
+# ClinicPro QA Systems
+
+## Purpose
+
+This document defines the end-to-end Quality Assurance (QA) signals, tracking, and verification flows across ClinicPro, with emphasis on consultation workflows, transcription, generated notes, and structured Additional Notes.
+
+## Scope
+
+- Desktop and mobile recording QA checkpoints
+- Transcription persistence and reconstruction checks
+- Consultation note generation QA
+- Additional Notes structure and persistence (updated)
+- API/DB invariants and monitoring hooks
+
+---
+
+## Key Concepts
+
+- "QA Signal": an observable state change or persisted artefact we can validate.
+- "Authoritative Store": server database (`patient_sessions`) is source of truth.
+- "Client Store": Zustand stores reflect UI state and must rehydrate from server accurately.
+
+---
+
+## Data Model References
+
+- `database/schema/patient_sessions.ts`
+  - `transcriptions`: JSON string array of `{ id, text, timestamp, source, deviceId? }`
+  - `notes`: AI-generated consultation notes (string)
+  - `typedInput`: free text entered by user
+  - `consultationNotes`: Additional Notes captured in UI
+  - `templateId`: template used for generation
+  - `consultationItems`: JSON string array of structured items
+  - `clinicalImages`: JSON string array of uploaded images
+
+- `src/types/consultation.ts`
+  - `PatientSession` mirrors above for client usage
+
+---
+
+## Consultation Additional Notes – Structured Tracking (Updated)
+
+Additional Notes now include a structured set of fields aligned with SOAP:
+
+- Problems: free-form list or bullets of active problems/issues
+- Objective: vitals, exam findings, investigations
+- Assessment: working diagnoses/differentials
+- Plan: management plan including Rx, Ix, f/u, advice
+
+### UI and Behaviour
+
+- The `AdditionalNotes` component continues to accept and persist a single `consultationNotes` text field.
+- When present, structured note subsections are concatenated into `consultationNotes` using clear section headers, enabling round-trip persistence without schema changes.
+
+### Canonical Section Markers
+
+Implementers MUST use the exact markers when composing the concatenated text so that other subsystems (e.g., AI prompts, exports) can parse reliably:
+
+```
+PROBLEMS:
+<free text>
+
+OBJECTIVE:
+<free text>
+
+ASSESSMENT:
+<free text>
+
+PLAN:
+<free text>
+```
+
+Notes:
+- Sections may be omitted if empty; preserve order when present.
+- Do not invent content; only include explicitly captured data.
+
+### API/Generation Integration
+
+- `app/(clinical)/consultation/page.tsx` composes `rawConsultationData` by combining main input (audio transcript or typed input) with the entire `consultationNotes` block.
+- `app/api/(clinical)/consultation/notes/route.ts` consumes the combined `rawConsultationData` and templates map SOAP (see `systemPrompt.ts`).
+- No API shape change is required; the structured Additional Notes ride within `consultationNotes`.
+
+### Validation Rules
+
+At save time (blur) or generation time, apply lightweight validation:
+- Allow empty sections; trim trailing whitespace.
+- Enforce the section header tokens exactly as above if any SOAP-aligned content is detected.
+- Total concatenated length should remain within UI limits to avoid streaming truncation.
+
+---
+
+## QA Checkpoints
+
+### 1) Transcription Persistence
+- Each pause-triggered chunk is appended to `patient_sessions.transcriptions`.
+- QA: After Ably signal, desktop refetch joins chunks to reconstruct full transcript; compare against UI transcript buffer.
+
+### 2) Additional Notes Persistence (Updated)
+- On blur in `AdditionalNotes`, text is saved via `PUT /api/patient-sessions` with `consultationNotes`.
+- QA: Switch sessions then return; `consultationNotes` must rehydrate identically with section markers intact.
+
+### 3) Generated Notes
+- `POST /api/consultation/notes` streams AI output.
+- QA: Ensure `notes` saved to `patient_sessions.notes`. Reopen session: generated notes display matches last saved.
+
+### 4) Session Clearing
+- `POST /api/patient-sessions/clear` clears `notes`, `typedInput`, `consultationNotes`, `transcriptions`.
+- QA: After clear, UI shows empty sources, and refetch confirms server-side cleared state.
+
+### 5) Mobile Images
+- Upload via presigned URLs; Ably signals desktop to refetch.
+- QA: `clinicalImages` JSON parses and images appear in session context.
+
+---
+
+## API Contracts (No Schema Change Required)
+
+- `PUT /api/patient-sessions` accepts `consultationNotes: string` (contains concatenated structured sections when used).
+- `GET /api/patient-sessions` returns parsed `transcriptions` and `consultationItems`, and raw strings for `notes`, `typedInput`, `consultationNotes`.
+- `POST /api/consultation/notes` expects `rawConsultationData` that may include structured Additional Notes sections.
+
+---
+
+## Risks & Mitigations
+
+- Risk: Free-text Additional Notes without markers → not parsable into SOAP.
+  - Mitigation: Encourage UI affordances to insert section headers; gentle validation on save.
+- Risk: Over-long Additional Notes causing model truncation.
+  - Mitigation: Soft limits and character counters; advise summarising Problems.
+- Risk: Divergence of section labels.
+  - Mitigation: Enforce exact tokens: PROBLEMS, OBJECTIVE, ASSESSMENT, PLAN.
+
+---
+
+## Test Plan (Smoke)
+
+1. Enter audio transcript, add structured Additional Notes (all four sections), generate notes → AI includes content appropriately.
+2. Switch sessions and return → structured Additional Notes persist and render intact.
+3. Clear all → Additional Notes emptied; server confirms clear.
+4. Type-only flow → structured Additional Notes still used in generation.
+
+---
+
+## Future Enhancements
+
+- Optional server-side typed fields for each section (`consultationNotesProblems`, etc.) while continuing to support concatenated text for backward compatibility.
+- Export helpers to parse structured Additional Notes back into sections.
+
