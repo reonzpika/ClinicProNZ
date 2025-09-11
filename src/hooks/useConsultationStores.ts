@@ -32,7 +32,7 @@ export function useConsultationStores(): any {
   const transcriptionStore = useTranscriptionStore();
   const consultationStore = useConsultationStore();
   const { settings } = useUserSettingsStore();
-  // Mobile token store removed
+  
 
   // Server state via React Query - disable on mobile routes
   const isMobileRoute = pathname === '/mobile';
@@ -197,21 +197,40 @@ export function useConsultationStores(): any {
     } catch {
       // ignore JSON errors
     }
-    if (session.typedInput) {
+    // Only update local state when values actually differ to avoid update loops
+    if (session.typedInput && session.typedInput !== transcriptionStore.typedInput) {
       transcriptionStore.setTypedInput(session.typedInput);
     }
-    if (session.notes) {
+    if (session.notes && session.notes !== consultationStore.generatedNotes) {
       consultationStore.setGeneratedNotes(session.notes);
     }
-    if (session.consultationNotes) {
+    if (session.consultationNotes && session.consultationNotes !== consultationStore.consultationNotes) {
       consultationStore.setConsultationNotes(session.consultationNotes);
     }
-    // Hydrate per-section fields
-    consultationStore.setProblemsText(session.problemsText || '');
-    consultationStore.setObjectiveText(session.objectiveText || '');
-    consultationStore.setAssessmentText(session.assessmentText || '');
-    consultationStore.setPlanText(session.planText || '');
-    // One-time migration: legacy consultationNotes -> objective if new fields empty
+    // Hydrate per-section fields with dirty/time guards
+    const nextProblems = session.problemsText || '';
+    const nextObjective = session.objectiveText || '';
+    const nextAssessment = session.assessmentText || '';
+    const nextPlan = session.planText || '';
+    const now = Date.now();
+    const recentMs = 800;
+    const problemsRecentlyEdited = !!(consultationStore.problemsDirty && consultationStore.problemsEditedAt && (now - consultationStore.problemsEditedAt) < recentMs);
+    const objectiveRecentlyEdited = !!(consultationStore.objectiveDirty && consultationStore.objectiveEditedAt && (now - consultationStore.objectiveEditedAt) < recentMs);
+    const assessmentRecentlyEdited = !!(consultationStore.assessmentDirty && consultationStore.assessmentEditedAt && (now - consultationStore.assessmentEditedAt) < recentMs);
+    const planRecentlyEdited = !!(consultationStore.planDirty && consultationStore.planEditedAt && (now - consultationStore.planEditedAt) < recentMs);
+    if (!consultationStore.problemsDirty && !problemsRecentlyEdited && nextProblems !== consultationStore.problemsText) {
+      (consultationStore as any).hydrateProblemsText(nextProblems);
+    }
+    if (!consultationStore.objectiveDirty && !objectiveRecentlyEdited && nextObjective !== consultationStore.objectiveText) {
+      (consultationStore as any).hydrateObjectiveText(nextObjective);
+    }
+    if (!consultationStore.assessmentDirty && !assessmentRecentlyEdited && nextAssessment !== consultationStore.assessmentText) {
+      (consultationStore as any).hydrateAssessmentText(nextAssessment);
+    }
+    if (!consultationStore.planDirty && !planRecentlyEdited && nextPlan !== consultationStore.planText) {
+      (consultationStore as any).hydratePlanText(nextPlan);
+    }
+    // One-time migration: consultationNotes -> objective if new fields empty
     try {
       const hasNewFields = !!(session.problemsText || session.objectiveText || session.assessmentText || session.planText);
       if (!hasNewFields && session.consultationNotes && String(session.consultationNotes).trim().length > 0) {
@@ -220,13 +239,28 @@ export function useConsultationStores(): any {
         consultationStore.setConsultationNotes('');
       }
     } catch {}
-    if (session.templateId) {
+    if (session.templateId && session.templateId !== consultationStore.templateId) {
       consultationStore.setTemplateId(session.templateId);
     }
-  }, [consultationStore, consultationStore.currentPatientSessionId, patientSessions, transcriptionStore, transcriptionStore.transcription.transcript, transcriptionStore.typedInput, ensureActiveSession, updatePatientSession]);
+  }, [
+    // Scope hydration primarily to session/data changes, not keystrokes
+    consultationStore.currentPatientSessionId,
+    patientSessions,
+    ensureActiveSession,
+    updatePatientSession,
+  ]);
 
   const createPatientSession = useCallback(async (patientName: string, templateId?: string): Promise<PatientSession | null> => {
     try {
+      // Autosave current per-section fields before creating a new session
+      const currentId = consultationStore.currentPatientSessionId;
+      if (currentId) {
+        const { problemsText, objectiveText, assessmentText, planText } = consultationStore as any;
+        try {
+          await updatePatientSession(currentId, { problemsText, objectiveText, assessmentText, planText } as any);
+        } catch {}
+      }
+
       const chosenTemplateId = templateId || (settings?.favouriteTemplateId as string | undefined) || DEFAULT_TEMPLATE_ID;
       const result = await createSessionMutation.mutateAsync({ patientName, templateId: chosenTemplateId });
       consultationStore.setTemplateId(chosenTemplateId);
@@ -235,7 +269,7 @@ export function useConsultationStores(): any {
     } catch {
       return null;
     }
-  }, [createSessionMutation, consultationStore, settings?.favouriteTemplateId]);
+  }, [createSessionMutation, consultationStore, settings?.favouriteTemplateId, updatePatientSession]);
 
   const deletePatientSession = useCallback(async (sessionId: string): Promise<boolean> => {
     try {
@@ -273,10 +307,7 @@ export function useConsultationStores(): any {
     return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
-  // Deprecated: legacy notes not used for additional note persistence anymore
-  const saveConsultationNotesToCurrentSession = useCallback(async (_consultationNotes: string): Promise<boolean> => {
-    return true;
-  }, []);
+  
 
   // New per-section save helpers
   const saveProblemsToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
@@ -285,6 +316,9 @@ export function useConsultationStores(): any {
  return false;
 }
     await updatePatientSession(id, { problemsText: text } as any);
+    try {
+      consultationStore.clearProblemsDirty?.();
+    } catch {}
     return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
@@ -294,6 +328,9 @@ export function useConsultationStores(): any {
  return false;
 }
     await updatePatientSession(id, { objectiveText: text } as any);
+    try {
+      consultationStore.clearObjectiveDirty?.();
+    } catch {}
     return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
@@ -303,6 +340,9 @@ export function useConsultationStores(): any {
  return false;
 }
     await updatePatientSession(id, { assessmentText: text } as any);
+    try {
+      consultationStore.clearAssessmentDirty?.();
+    } catch {}
     return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
@@ -312,6 +352,9 @@ export function useConsultationStores(): any {
  return false;
 }
     await updatePatientSession(id, { planText: text } as any);
+    try {
+      consultationStore.clearPlanDirty?.();
+    } catch {}
     return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
@@ -365,7 +408,7 @@ export function useConsultationStores(): any {
     // Sessions list
     patientSessions,
 
-    // Mobile state removed
+    
 
     // Last generated tracking
     lastGeneratedTranscription: transcriptionStore.lastGeneratedTranscription,
@@ -375,7 +418,18 @@ export function useConsultationStores(): any {
 
     // Actions - session/template
     setStatus: consultationStore.setStatus,
-    setTemplateId: consultationStore.setTemplateId,
+    setTemplateId: useCallback(async (id: string) => {
+      if (consultationStore.templateId === id) {
+        return;
+      }
+      consultationStore.setTemplateId(id);
+      const sid = consultationStore.currentPatientSessionId;
+      if (sid) {
+        try {
+          await updatePatientSession(sid, { templateId: id } as any);
+        } catch {}
+      }
+    }, [consultationStore.templateId, consultationStore.currentPatientSessionId, updatePatientSession, consultationStore.setTemplateId]),
 
     // Actions - input/transcription
     setInputMode: transcriptionStore.setInputMode,
@@ -438,7 +492,7 @@ export function useConsultationStores(): any {
     setAssessmentText: consultationStore.setAssessmentText,
     setPlanText: consultationStore.setPlanText,
 
-    // Actions - mobile removed
+    
 
     // Actions - last generated tracking
     setLastGeneratedInput: transcriptionStore.setLastGeneratedInput,
@@ -456,7 +510,6 @@ export function useConsultationStores(): any {
     deleteAllPatientSessions,
     saveNotesToCurrentSession,
     saveTypedInputToCurrentSession,
-    saveConsultationNotesToCurrentSession,
     saveProblemsToCurrentSession,
     saveObjectiveToCurrentSession,
     saveAssessmentToCurrentSession,
@@ -484,8 +537,16 @@ export function useConsultationStores(): any {
       }
       return patientSessions.find((s: any) => s.id === consultationStore.currentPatientSessionId) || null;
         },
-    switchToPatientSession: (sessionId: string, onSwitch?: (sessionId: string, patientName: string) => void) => {
+    switchToPatientSession: async (sessionId: string, onSwitch?: (sessionId: string, patientName: string) => void) => {
       // 🔧 STEP 1: CLEAR ALL LOCAL STATE FIRST (prevents state leakage between sessions)
+      // Autosave current per-section fields before switching
+      try {
+        const currentId = consultationStore.currentPatientSessionId;
+        if (currentId) {
+          const { problemsText, objectiveText, assessmentText, planText } = consultationStore as any;
+          await updatePatientSession(currentId, { problemsText, objectiveText, assessmentText, planText } as any);
+        }
+      } catch {}
 
       // Clear generated content
       consultationStore.setGeneratedNotes(null);
@@ -549,6 +610,18 @@ export function useConsultationStores(): any {
         if (session.consultationNotes) {
           consultationStore.setConsultationNotes(session.consultationNotes);
         }
+
+        // Load per-section fields from DB (authoritative)
+        try {
+          (consultationStore as any).hydrateProblemsText?.(session.problemsText || '');
+          (consultationStore as any).hydrateObjectiveText?.(session.objectiveText || '');
+          (consultationStore as any).hydrateAssessmentText?.(session.assessmentText || '');
+          (consultationStore as any).hydratePlanText?.(session.planText || '');
+          consultationStore.clearProblemsDirty?.();
+          consultationStore.clearObjectiveDirty?.();
+          consultationStore.clearAssessmentDirty?.();
+          consultationStore.clearPlanDirty?.();
+        } catch {}
 
         // Load template ID
         if (session.templateId) {

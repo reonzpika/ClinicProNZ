@@ -48,11 +48,11 @@ export const LAUNCH_CONFIG = {
 } as const;
 
 /**
- * @deprecated Use tier-based checks from billing-config.ts instead
+ * Use tier-based checks from billing-config.ts instead
  * Feature access is now determined by user tiers, not global flags
  */
 export const LEGACY_FEATURE_FLAGS = {
-  // Legacy feature flags - use tier-based access control instead
+  // Feature flags - prefer tier-based access control
   PREMIUM_FEATURES: true, // Now controlled by tier (premium/admin)
   STANDARD_FEATURES: true, // Now controlled by tier (standard+)
   BASIC_FEATURES: true, // Now controlled by tier (basic+)

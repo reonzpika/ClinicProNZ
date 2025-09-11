@@ -114,7 +114,8 @@ export function useUpdatePatientSession(): any {
       updates,
     }: {
       sessionId: string;
-      updates: Partial<Pick<PatientSession, 'patientName' | 'consultationNotes'>>;
+      // Allow updating templateId and per-section fields too
+      updates: Partial<Pick<PatientSession, 'patientName' | 'consultationNotes' | 'templateId' | 'problemsText' | 'objectiveText' | 'assessmentText' | 'planText' | 'typedInput' | 'notes'>>;
     }) =>
       consultationApi.updateSession(sessionId, updates, userId),
     onSuccess: (updatedSession: PatientSession) => {

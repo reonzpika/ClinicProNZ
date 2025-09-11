@@ -37,6 +37,15 @@ type ConsultationState = {
   objectiveText: string;
   assessmentText: string;
   planText: string;
+  // Dirty flags and edit timestamps for per-section fields
+  problemsDirty?: boolean;
+  objectiveDirty?: boolean;
+  assessmentDirty?: boolean;
+  planDirty?: boolean;
+  problemsEditedAt?: number | null;
+  objectiveEditedAt?: number | null;
+  assessmentEditedAt?: number | null;
+  planEditedAt?: number | null;
 
   // Clinical images
   clinicalImages: ClinicalImage[];
@@ -44,7 +53,7 @@ type ConsultationState = {
   // Current patient session
   currentPatientSessionId: string | null;
 
-  // Guest token removed - authentication required
+  
 };
 
 type ConsultationActions = {
@@ -77,6 +86,16 @@ type ConsultationActions = {
   setObjectiveText: (text: string) => void;
   setAssessmentText: (text: string) => void;
   setPlanText: (text: string) => void;
+  // Hydration setters (do not mark dirty)
+  hydrateProblemsText: (text: string) => void;
+  hydrateObjectiveText: (text: string) => void;
+  hydrateAssessmentText: (text: string) => void;
+  hydratePlanText: (text: string) => void;
+  // Clear dirty flags after successful save
+  clearProblemsDirty: () => void;
+  clearObjectiveDirty: () => void;
+  clearAssessmentDirty: () => void;
+  clearPlanDirty: () => void;
 
   // Clinical images actions
   addClinicalImage: (image: ClinicalImage) => void;
@@ -86,7 +105,7 @@ type ConsultationActions = {
   // Current patient session actions
   setCurrentPatientSessionId: (sessionId: string | null) => void;
 
-  // Guest token actions removed - authentication required
+  
 
   // Reset actions
   resetConsultation: () => void;
@@ -140,6 +159,14 @@ const initialState: ConsultationState = {
   objectiveText: '',
   assessmentText: '',
   planText: '',
+  problemsDirty: false,
+  objectiveDirty: false,
+  assessmentDirty: false,
+  planDirty: false,
+  problemsEditedAt: null,
+  objectiveEditedAt: null,
+  assessmentEditedAt: null,
+  planEditedAt: null,
   clinicalImages: [],
   currentPatientSessionId: getCurrentPatientSessionId(),
 };
@@ -199,11 +226,21 @@ export const useConsultationStore = create<ConsultationStore>()(
         consultationItems: state.consultationItems.filter(item => item.id !== itemId),
       })),
     setConsultationNotes: notes => set({ consultationNotes: notes }),
-    // New per-section setters
-    setProblemsText: (text: string) => set({ problemsText: text }),
-    setObjectiveText: (text: string) => set({ objectiveText: text }),
-    setAssessmentText: (text: string) => set({ assessmentText: text }),
-    setPlanText: (text: string) => set({ planText: text }),
+    // New per-section setters (mark dirty for user edits)
+    setProblemsText: (text: string) => set({ problemsText: text, problemsDirty: true, problemsEditedAt: Date.now() }),
+    setObjectiveText: (text: string) => set({ objectiveText: text, objectiveDirty: true, objectiveEditedAt: Date.now() }),
+    setAssessmentText: (text: string) => set({ assessmentText: text, assessmentDirty: true, assessmentEditedAt: Date.now() }),
+    setPlanText: (text: string) => set({ planText: text, planDirty: true, planEditedAt: Date.now() }),
+    // Hydration setters (no dirty flags)
+    hydrateProblemsText: (text: string) => set({ problemsText: text }),
+    hydrateObjectiveText: (text: string) => set({ objectiveText: text }),
+    hydrateAssessmentText: (text: string) => set({ assessmentText: text }),
+    hydratePlanText: (text: string) => set({ planText: text }),
+    // Clear dirty flags (after save)
+    clearProblemsDirty: () => set({ problemsDirty: false }),
+    clearObjectiveDirty: () => set({ objectiveDirty: false }),
+    clearAssessmentDirty: () => set({ assessmentDirty: false }),
+    clearPlanDirty: () => set({ planDirty: false }),
     getCompiledConsultationText: () => {
       const { problemsText, objectiveText, assessmentText, planText } = get();
       const blocks: string[] = [];
@@ -251,7 +288,7 @@ export const useConsultationStore = create<ConsultationStore>()(
       set({ currentPatientSessionId: sessionId });
     },
 
-    // Guest token actions removed - authentication required
+    
 
     // Reset actions
     resetConsultation: () => {
@@ -269,6 +306,14 @@ export const useConsultationStore = create<ConsultationStore>()(
         objectiveText: '',
         assessmentText: '',
         planText: '',
+        problemsDirty: false,
+        objectiveDirty: false,
+        assessmentDirty: false,
+        planDirty: false,
+        problemsEditedAt: null,
+        objectiveEditedAt: null,
+        assessmentEditedAt: null,
+        planEditedAt: null,
         clinicalImages: [],
         // Preserve settings and templates
         templateId: get().userDefaultTemplateId || DEFAULT_TEMPLATE_ID,

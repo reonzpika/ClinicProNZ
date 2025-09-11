@@ -10,7 +10,6 @@ import { DefaultSettings } from '@/src/features/clinical/main-ui/components/Defa
 import { DocumentationSettingsBadge } from '@/src/features/clinical/main-ui/components/DocumentationSettingsBadge';
 import { GeneratedNotes } from '@/src/features/clinical/main-ui/components/GeneratedNotes';
 import { TranscriptionControls } from '@/src/features/clinical/main-ui/components/TranscriptionControls';
-// Removed TranscriptProcessingStatus import - no longer needed in single-pass architecture
 import { TypedInput } from '@/src/features/clinical/main-ui/components/TypedInput';
 import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTranscription';
 import { MobileRightPanelOverlay } from '@/src/features/clinical/mobile/components/MobileRightPanelOverlay';
@@ -56,8 +55,7 @@ export default function ConsultationPage() {
     setInputMode,
 
     saveNotesToCurrentSession, // For saving generated notes
-    saveTypedInputToCurrentSession: _saveTypedInputToCurrentSession, // For clearing typed input (unused)
-    saveConsultationNotesToCurrentSession: _saveConsultationNotesToCurrentSession, // For clearing consultation notes (unused)
+    // Removed unused legacy save functions
     ensureActiveSession, // For ensuring session exists before note generation
     resetLastGeneratedInput, // For resetting generation tracking
     switchToPatientSession: originalSwitchToPatientSession, // Rename to create wrapper
@@ -83,7 +81,7 @@ export default function ConsultationPage() {
   // Mobile block modal - prevent mobile access to consultation
   const showMobileBlock = isMobile;
 
-  // Removed admin preview mode state - no longer needed in single-pass architecture
+  
 
   // Check for upgrade redirect
   const [showUpgradeNotification, setShowUpgradeNotification] = useState(false);
@@ -162,8 +160,7 @@ export default function ConsultationPage() {
       lastMobileStatusAtRef.current = Date.now();
     },
     onError: handleError,
-    // 🆕 SESSION CONTEXT REMOVED: Server-side session resolution eliminates need for session broadcasting
-    // 🆕 CONNECTION HANDLER REMOVED: No session broadcasting needed with server-side resolution
+    
     isMobile: false,
     onTranscriptionsUpdated: async (signalledSessionId?: string) => {
       if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
@@ -278,7 +275,7 @@ export default function ConsultationPage() {
 
     // Now perform the actual session switch
     originalSwitchToPatientSession(sessionId, onSwitch);
-    // 🆕 SESSION BROADCASTING REMOVED: Server-side session resolution eliminates need for mobile session sync
+    
   }, [isRecording, mobileIsRecording, stopRecording, sendRecordingControl, originalSwitchToPatientSession]);
 
   useEffect(() => {
@@ -309,7 +306,7 @@ export default function ConsultationPage() {
         const sessionId = await ensureActiveSession();
         if (isMounted && sessionId) {
           hasEnsuredSessionRef.current = true;
-          // 🆕 SESSION BROADCASTING REMOVED: Server-side session resolution eliminates need for mobile session sync
+          
         }
       } finally {
         if (isMounted) {
@@ -354,7 +351,7 @@ export default function ConsultationPage() {
   };
 
   // Admin preview approval handler
-  // Removed admin approval handler - no longer needed in single-pass architecture
+  
 
   // Session limits are now handled contextually when users try to perform actions
   // The UsageDashboard will show the current status and the modal will appear on 429 errors
@@ -385,7 +382,7 @@ export default function ConsultationPage() {
     setIsNoteFocused(false);
   }, [currentPatientSessionId]);
 
-  // 🛡️ PHASE 1 FIX: Reset mobile recording status when connection drops
+  // Reset mobile recording status when connection drops
   useEffect(() => {
     if (mobileIsRecording) {
       // no-op: will be updated via signals
@@ -407,9 +404,9 @@ export default function ConsultationPage() {
     };
   }, [sendRecordingControl]);
 
-  // Removed session sync logic - no longer needed in simplified architecture
+  
 
-  // Removed mobile token bootstrap; Ably connects via user token
+  
 
   // On mount, sync current session from server (server truth); create one if missing
   useEffect(() => {
@@ -439,7 +436,7 @@ export default function ConsultationPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, userTier]);
 
-  // REMOVED: Redundant session broadcasting - now handled by ConsultationContext only
+  
   // This eliminates dual broadcasting sources and race conditions
 
   const handleClearAll = async () => {
@@ -840,7 +837,7 @@ export default function ConsultationPage() {
                               <>
                                 {/* Clinical Documentation - Top Priority */}
                                 <div className="flex h-full flex-col">
-                                  {/* Removed TranscriptProcessingStatus - no longer needed in single-pass */}
+                                  
                                   <GeneratedNotes
                                     onGenerate={handleGenerateNotes}
                                     onClearAll={handleClearAll}
@@ -914,7 +911,7 @@ export default function ConsultationPage() {
                             <>
                               {/* Clinical Documentation - Top Priority */}
                               <div className="flex flex-1 flex-col">
-                                {/* Removed TranscriptProcessingStatus - no longer needed in single-pass */}
+                                
                                 <GeneratedNotes
                                   onGenerate={handleGenerateNotes}
                                   onClearAll={handleClearAll}
@@ -1027,7 +1024,7 @@ export default function ConsultationPage() {
         />
       )}
 
-      {/* Removed Admin Preview Modal - no longer needed in single-pass architecture */}
+      
 
       {/* Mobile Block Modal */}
       <MobileBlockModal isOpen={showMobileBlock} />
