@@ -111,13 +111,13 @@ const RightPanelFeatures: React.FC<RightPanelFeaturesProps> = ({
     if (section.id === 'chat') {
       return {
         ...section,
-        component: () => <ChatbotWidget />, // RBAC legacy removed - all users have access
+        component: () => <ChatbotWidget />,
       };
     }
     if (section.id === 'images') {
       return {
         ...section,
-        component: () => <ClinicalImageTab />, // RBAC legacy removed - all users have access
+        component: () => <ClinicalImageTab />,
       };
     }
     return section;

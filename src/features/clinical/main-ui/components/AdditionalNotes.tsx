@@ -7,7 +7,7 @@ import { ExaminationChecklistButton } from '@/src/features/clinical/examination-
 import { PlanSafetyNettingButton } from '@/src/features/clinical/plan-safety-netting';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Textarea } from '@/src/shared/components/ui/textarea';
-// Removed JSON serializer (we persist per-section fields only)
+// Persist per-section fields only
 
 type ConsultationItem = {
   id: string;

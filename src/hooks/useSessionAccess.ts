@@ -11,7 +11,7 @@ export function useSessionAccess() {
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
 
-  // Session history available for all authenticated users (RBAC legacy removed)
+  // Session history available for all authenticated users
   const hasSessionHistoryAccess = isSignedIn;
 
   // Active session management (creating sessions during consultation) is available for all authenticated users

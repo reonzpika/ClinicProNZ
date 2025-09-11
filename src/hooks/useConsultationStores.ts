@@ -32,7 +32,7 @@ export function useConsultationStores(): any {
   const transcriptionStore = useTranscriptionStore();
   const consultationStore = useConsultationStore();
   const { settings } = useUserSettingsStore();
-  // Mobile token store removed
+  
 
   // Server state via React Query - disable on mobile routes
   const isMobileRoute = pathname === '/mobile';
@@ -230,7 +230,7 @@ export function useConsultationStores(): any {
     if (!consultationStore.planDirty && !planRecentlyEdited && nextPlan !== consultationStore.planText) {
       (consultationStore as any).hydratePlanText(nextPlan);
     }
-    // One-time migration: legacy consultationNotes -> objective if new fields empty
+    // One-time migration: consultationNotes -> objective if new fields empty
     try {
       const hasNewFields = !!(session.problemsText || session.objectiveText || session.assessmentText || session.planText);
       if (!hasNewFields && session.consultationNotes && String(session.consultationNotes).trim().length > 0) {
@@ -307,7 +307,7 @@ export function useConsultationStores(): any {
     return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
-  // Removed legacy saveConsultationNotesToCurrentSession
+  
 
   // New per-section save helpers
   const saveProblemsToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
@@ -408,7 +408,7 @@ export function useConsultationStores(): any {
     // Sessions list
     patientSessions,
 
-    // Mobile state removed
+    
 
     // Last generated tracking
     lastGeneratedTranscription: transcriptionStore.lastGeneratedTranscription,
@@ -492,7 +492,7 @@ export function useConsultationStores(): any {
     setAssessmentText: consultationStore.setAssessmentText,
     setPlanText: consultationStore.setPlanText,
 
-    // Actions - mobile removed
+    
 
     // Actions - last generated tracking
     setLastGeneratedInput: transcriptionStore.setLastGeneratedInput,

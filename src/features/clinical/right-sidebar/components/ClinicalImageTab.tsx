@@ -130,7 +130,7 @@ export const ClinicalImageTab: React.FC = () => {
       setUploading(false);
     }
   }, [
-    // 🆕 SESSION DEPENDENCY REMOVED: Server-side session resolution eliminates need for currentPatientSessionId
+    
     addClinicalImage,
     saveClinicalImagesToCurrentSession,
     clinicalImages,

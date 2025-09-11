@@ -53,7 +53,7 @@ type ConsultationState = {
   // Current patient session
   currentPatientSessionId: string | null;
 
-  // Guest token removed - authentication required
+  
 };
 
 type ConsultationActions = {
@@ -105,7 +105,7 @@ type ConsultationActions = {
   // Current patient session actions
   setCurrentPatientSessionId: (sessionId: string | null) => void;
 
-  // Guest token actions removed - authentication required
+  
 
   // Reset actions
   resetConsultation: () => void;
@@ -288,7 +288,7 @@ export const useConsultationStore = create<ConsultationStore>()(
       set({ currentPatientSessionId: sessionId });
     },
 
-    // Guest token actions removed - authentication required
+    
 
     // Reset actions
     resetConsultation: () => {
