@@ -73,8 +73,6 @@ export const WorkflowInstructions: React.FC = () => {
             <HelpCircle className="size-4 text-blue-600" />
             <span className="text-sm font-medium text-blue-800">
               Quick Start Guide
-              {' '}
-              {isBasicTier && '(Basic)'}
             </span>
           </div>
           {isExpanded
@@ -109,6 +107,7 @@ export const WorkflowInstructions: React.FC = () => {
             <div className="border-t border-blue-200 pt-2">
               <div className="font-medium text-blue-800">⚠️ Important Notes:</div>
               <ul className="mt-1 space-y-1 text-blue-700">
+                <li>• Obtain patient consent before recording or using AI features</li>
                 <li>• Always review and edit the generated notes before copying to your PMS</li>
                 {isBasicTier && (
                   <></>
