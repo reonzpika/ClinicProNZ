@@ -17,17 +17,17 @@ export const WorkflowInstructions: React.FC = () => {
     {
       step: 1,
       title: 'Input Mode & Template',
-      description: 'Choose Audio or Typed input. Uses default Multi-Problem SOAP template (5 consultations/day limit)',
+      description: 'Choose Audio or Typed input. For most consultations, the default SOAP template is suitable.',
     },
     {
       step: 2,
       title: 'Capture Consultation',
-      description: 'Record voice during consultation or type notes directly. Add examination findings in Additional Notes section',
+      description: 'Record during consult (mobile or desktop) or type directly. Add additional info in corresponding sections (Problems, Objectives, Assessment, Plan; optional)',
     },
     {
       step: 3,
       title: 'Generate & Review',
-      description: 'Process to create structured clinical note, then review and copy to your system',
+      description: 'Generate structured clinical note. Review and edit carefully, then copy to your PMS',
     },
   ];
 
@@ -41,12 +41,12 @@ export const WorkflowInstructions: React.FC = () => {
     {
       step: 2,
       title: 'Documentation Setup',
-      description: 'Choose template (GP Standard, Specialist, Custom, etc.) and input mode (Audio/Typed)',
+      description: 'Choose template (GP Standard, Specialist, Custom, etc.) and input mode (Audio/Typed). For most consultations, the default SOAP template is suitable.',
     },
     {
       step: 3,
       title: 'Capture Consultation',
-      description: 'Record voice during consultation or type notes directly',
+      description: 'Record during consult (mobile or desktop) or type directly. Add additional info in corresponding sections (Problems, Objectives, Assessment, Plan; optional)',
     },
     {
       step: 4,
@@ -56,7 +56,7 @@ export const WorkflowInstructions: React.FC = () => {
     {
       step: 5,
       title: 'Generate & Review',
-      description: 'Process to create structured clinical note, then review and copy to your system',
+      description: 'Generate structured clinical note. Review and edit carefully, then copy to your PMS',
     },
   ];
 
@@ -109,13 +109,9 @@ export const WorkflowInstructions: React.FC = () => {
             <div className="border-t border-blue-200 pt-2">
               <div className="font-medium text-blue-800">⚠️ Important Notes:</div>
               <ul className="mt-1 space-y-1 text-blue-700">
-                <li>• Use mobile for best transcription quality - desktop recording may stop working when switching browser tabs or apps</li>
-                <li>• Always review the generated notes before copying to your system</li>
+                <li>• Always review and edit the generated notes before copying to your PMS</li>
                 {isBasicTier && (
-                  <>
-                    <li>• Basic tier: 5 consultations per day, resets at midnight</li>
-                    <li>• Upgrade to Standard for unlimited sessions and custom templates</li>
-                  </>
+                  <></>
                 )}
                 {!isBasicTier && (
                   <>
