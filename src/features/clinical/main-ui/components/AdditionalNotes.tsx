@@ -47,6 +47,33 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   const planRef = React.useRef<HTMLTextAreaElement | null>(null);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
 
+  // Keydown handler to cycle focus within SOAP textareas only
+  const handleTextareaKeyDown = (
+    section: 'problems' | 'objective' | 'assessment' | 'plan',
+    e: React.KeyboardEvent<HTMLTextAreaElement>,
+  ) => {
+    if (e.key !== 'Tab') {
+      return;
+    }
+    e.preventDefault();
+    const forward = !e.shiftKey;
+    let next: HTMLTextAreaElement | null | undefined;
+    if (forward) {
+      if (section === 'problems') next = objectiveRef.current;
+      else if (section === 'objective') next = assessmentRef.current;
+      else if (section === 'assessment') next = planRef.current;
+      else next = problemsRef.current;
+    } else {
+      if (section === 'problems') next = planRef.current;
+      else if (section === 'objective') next = problemsRef.current;
+      else if (section === 'assessment') next = objectiveRef.current;
+      else next = assessmentRef.current;
+    }
+    try {
+      next?.focus();
+    } catch {}
+  };
+
   // Auto-focus Problems when expanding the section
   useEffect(() => {
     if (isExpanded && problemsRef.current) {
@@ -346,6 +373,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                   value={problemsText}
                   onChange={e => handleSectionChange('problems', e.target.value)}
                   onBlur={() => handleSectionBlur('problems')}
+                  onKeyDown={e => handleTextareaKeyDown('problems', e)}
                   className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   rows={2}
                   ref={problemsRef}
@@ -354,13 +382,14 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               <div>
                 <div className="mb-1 flex items-center justify-between">
                   <label htmlFor="additional-notes-minimized-objective" className="block text-xs font-medium text-slate-500">Objective</label>
-                  <ExaminationChecklistButton />
+                  <ExaminationChecklistButton tabIndex={-1} />
                 </div>
                 <Textarea
                   id="additional-notes-minimized-objective"
                   value={objectiveText}
                   onChange={e => handleSectionChange('objective', e.target.value)}
                   onBlur={() => handleSectionBlur('objective')}
+                  onKeyDown={e => handleTextareaKeyDown('objective', e)}
                   className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   rows={2}
                   ref={objectiveRef}
@@ -373,6 +402,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                   value={assessmentText}
                   onChange={e => handleSectionChange('assessment', e.target.value)}
                   onBlur={() => handleSectionBlur('assessment')}
+                  onKeyDown={e => handleTextareaKeyDown('assessment', e)}
                   className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   rows={2}
                   ref={assessmentRef}
@@ -381,13 +411,14 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               <div>
                 <div className="mb-1 flex items-center justify-between">
                   <label htmlFor="additional-notes-minimized-plan" className="block text-xs font-medium text-slate-500">Plan</label>
-                  <PlanSafetyNettingButton />
+                  <PlanSafetyNettingButton tabIndex={-1} />
                 </div>
                 <Textarea
                   id="additional-notes-minimized-plan"
                   value={planText}
                   onChange={e => handleSectionChange('plan', e.target.value)}
                   onBlur={() => handleSectionBlur('plan')}
+                  onKeyDown={e => handleTextareaKeyDown('plan', e)}
                   className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   rows={2}
                   ref={planRef}
@@ -413,12 +444,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               <FileText size={16} className="text-slate-600" />
               <span className="text-sm font-medium text-slate-700">Additional Notes (optional)</span>
             </div>
-            <span className="text-xs text-slate-500">Tip: Use Tab to move through sections; Shift+Tab to go back</span>
+            <span className="text-xs text-slate-500">Tip: Tab cycles Problems → Objective → Assessment → Plan; Shift+Tab reverses. Alt+C checklist, Alt+P safety-net.</span>
             {renderCharacterCount()}
           </div>
           <div className="flex items-center gap-1">
-            <ExaminationChecklistButton />
-            <PlanSafetyNettingButton />
+            <ExaminationChecklistButton tabIndex={-1} />
+            <PlanSafetyNettingButton tabIndex={-1} />
             <button
               type="button"
               className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
@@ -465,6 +496,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 value={problemsText}
                 onChange={e => handleSectionChange('problems', e.target.value)}
                 onBlur={() => handleSectionBlur('problems')}
+                onKeyDown={e => handleTextareaKeyDown('problems', e)}
                 className="min-h-[100px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 ref={problemsRef}
               />
@@ -472,13 +504,14 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             <div>
               <div className="mb-1 flex items-center justify-between">
                 <label htmlFor="additional-notes-objective" className="block text-xs font-medium text-slate-500">Objective</label>
-                <ExaminationChecklistButton />
+                <ExaminationChecklistButton tabIndex={-1} />
               </div>
               <Textarea
                 id="additional-notes-objective"
                 value={objectiveText}
                 onChange={e => handleSectionChange('objective', e.target.value)}
                 onBlur={() => handleSectionBlur('objective')}
+                onKeyDown={e => handleTextareaKeyDown('objective', e)}
                 className="min-h-[100px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 ref={objectiveRef}
               />
@@ -490,6 +523,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 value={assessmentText}
                 onChange={e => handleSectionChange('assessment', e.target.value)}
                 onBlur={() => handleSectionBlur('assessment')}
+                onKeyDown={e => handleTextareaKeyDown('assessment', e)}
                 className="min-h-[100px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 ref={assessmentRef}
               />
@@ -497,13 +531,14 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             <div>
               <div className="mb-1 flex items-center justify-between">
                 <label htmlFor="additional-notes-plan" className="block text-xs font-medium text-slate-500">Plan</label>
-                <PlanSafetyNettingButton />
+                <PlanSafetyNettingButton tabIndex={-1} />
               </div>
               <Textarea
                 id="additional-notes-plan"
                 value={planText}
                 onChange={e => handleSectionChange('plan', e.target.value)}
                 onBlur={() => handleSectionBlur('plan')}
+                onKeyDown={e => handleTextareaKeyDown('plan', e)}
                 className="min-h-[100px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 ref={planRef}
               />
@@ -525,7 +560,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               Additional Notes (optional)
             </label>
           </div>
-          <span className="text-xs text-slate-500">Tip: Use Tab to cycle sections; Shift+Tab to reverse</span>
+          <span className="text-xs text-slate-500">Tip: Tab cycles Problems → Objective → Assessment → Plan; Shift+Tab reverses. Alt+C checklist, Alt+P safety-net.</span>
         </div>
         <div className="flex items-center gap-1">
           <button
@@ -553,7 +588,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
         <div>
           <div className="mb-1 flex items-center justify-between">
             <label htmlFor="additional-notes-objective" className="block text-xs font-medium text-slate-500">Objective</label>
-            <ExaminationChecklistButton />
+            <ExaminationChecklistButton tabIndex={-1} />
           </div>
           <Textarea
             id="additional-notes-objective"
@@ -580,7 +615,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
         <div>
           <div className="mb-1 flex items-center justify-between">
             <label htmlFor="additional-notes-plan" className="block text-xs font-medium text-slate-500">Plan</label>
-            <PlanSafetyNettingButton />
+            <PlanSafetyNettingButton tabIndex={-1} />
           </div>
           <Textarea
             id="additional-notes-plan"

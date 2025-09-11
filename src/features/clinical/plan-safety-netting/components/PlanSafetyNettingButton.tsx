@@ -9,10 +9,12 @@ import { PlanSafetyNettingModal } from './PlanSafetyNettingModal';
 
 type PlanSafetyNettingButtonProps = {
   className?: string;
+  tabIndex?: number;
 };
 
 export const PlanSafetyNettingButton: React.FC<PlanSafetyNettingButtonProps> = ({
   className,
+  tabIndex,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -36,6 +38,7 @@ export const PlanSafetyNettingButton: React.FC<PlanSafetyNettingButtonProps> = (
         size="sm"
         variant="ghost"
         className={`size-6 p-0 text-slate-500 hover:text-slate-700 ${className || ''}`}
+        tabIndex={tabIndex}
         title="Plan & Safety-Netting (Alt+P)"
       >
         <ClipboardList size={14} />
