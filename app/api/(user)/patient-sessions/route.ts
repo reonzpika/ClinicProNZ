@@ -157,6 +157,7 @@ export async function PUT(req: NextRequest) {
       notes,
       typedInput,
       consultationNotes,
+      templateId,
       problemsText,
       objectiveText,
       assessmentText,
@@ -188,6 +189,9 @@ export async function PUT(req: NextRequest) {
     if (consultationNotes !== undefined) {
  updateData.consultationNotes = consultationNotes;
 }
+    if (templateId !== undefined) {
+      updateData.templateId = templateId;
+    }
     if (problemsText !== undefined) {
  updateData.problemsText = problemsText;
 }
