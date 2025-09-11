@@ -56,8 +56,7 @@ export default function ConsultationPage() {
     setInputMode,
 
     saveNotesToCurrentSession, // For saving generated notes
-    saveTypedInputToCurrentSession: _saveTypedInputToCurrentSession, // For clearing typed input (unused)
-    saveConsultationNotesToCurrentSession: _saveConsultationNotesToCurrentSession, // For clearing consultation notes (unused)
+    // Removed unused legacy save functions
     ensureActiveSession, // For ensuring session exists before note generation
     resetLastGeneratedInput, // For resetting generation tracking
     switchToPatientSession: originalSwitchToPatientSession, // Rename to create wrapper

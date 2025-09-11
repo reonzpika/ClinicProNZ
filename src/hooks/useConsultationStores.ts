@@ -307,10 +307,7 @@ export function useConsultationStores(): any {
     return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
-  // Deprecated: legacy notes not used for additional note persistence anymore
-  const saveConsultationNotesToCurrentSession = useCallback(async (_consultationNotes: string): Promise<boolean> => {
-    return true;
-  }, []);
+  // Removed legacy saveConsultationNotesToCurrentSession
 
   // New per-section save helpers
   const saveProblemsToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
@@ -513,7 +510,6 @@ export function useConsultationStores(): any {
     deleteAllPatientSessions,
     saveNotesToCurrentSession,
     saveTypedInputToCurrentSession,
-    saveConsultationNotesToCurrentSession,
     saveProblemsToCurrentSession,
     saveObjectiveToCurrentSession,
     saveAssessmentToCurrentSession,
