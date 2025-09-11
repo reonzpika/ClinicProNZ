@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 
 import { useAuth } from '@clerk/nextjs';
 import { AlertTriangle, Camera } from 'lucide-react';

@@ -20,10 +20,10 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
     lastGeneratedTemplateId: _lastGeneratedTemplateId,
     setGeneratedNotes,
     consentObtained,
-    inputMode,
+    // inputMode removed
     getCompiledConsultationText: _getCompiledConsultationText,
     saveNotesToCurrentSession,
-    saveTypedInputToCurrentSession,
+    // typed input removed
     createPatientSession,
     switchToPatientSession,
     // Per-section fields

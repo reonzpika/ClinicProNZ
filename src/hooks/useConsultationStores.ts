@@ -544,7 +544,6 @@ export function useConsultationStores(): any {
 
       // Clear transcription state
       transcriptionStore.setTranscription('', false);
-      transcriptionStore.setTypedInput('');
 
       // Clear consultation notes
       consultationStore.setConsultationNotes('');

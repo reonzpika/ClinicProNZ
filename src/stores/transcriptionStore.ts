@@ -87,7 +87,6 @@ type TranscriptionActions = {
   // Last generated tracking actions
   setLastGeneratedInput: (
     transcription: string,
-    // typed input removed
     compiledConsultationText?: string,
     templateId?: string
   ) => void;
@@ -259,7 +258,7 @@ export const useTranscriptionStore = create<TranscriptionStore>()(
     setVolumeThreshold: threshold => set({ volumeThreshold: threshold }),
 
     // Last generated tracking
-    setLastGeneratedInput: (transcription, _typedInput, compiledConsultationText, templateId) =>
+    setLastGeneratedInput: (transcription, compiledConsultationText, templateId) =>
       set({
         lastGeneratedTranscription: transcription,
         // lastGeneratedTypedInput removed

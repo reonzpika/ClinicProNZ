@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = 'force-dynamic';
 
 import { useAuth } from '@clerk/nextjs';
 import { useQueryClient } from '@tanstack/react-query';
@@ -628,7 +629,6 @@ export default function ConsultationPage() {
       // Track the original inputs for UI purposes
       setLastGeneratedInput(
         transcription.transcript,
-        undefined,
         getCompiledConsultationText(),
         templateId,
       );

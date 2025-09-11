@@ -25,7 +25,7 @@ export function DefaultSettings() {
 
   const [templates, setTemplates] = useState<Template[]>([]);
   const favouriteTemplateId = settings?.favouriteTemplateId || DEFAULT_TEMPLATE_ID;
-  const defaultInputMode: DefaultInputMode = 'audio';
+  // audio-only input mode
   const defaultRecordingMethod: RecordingMethod = (settings?.defaultRecordingMethod as RecordingMethod) || 'desktop';
   const [collapsed, setCollapsed] = useState(true);
 

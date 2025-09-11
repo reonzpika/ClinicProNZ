@@ -1,6 +1,6 @@
 'use client';
 
-import { Info, Keyboard, Mic } from 'lucide-react';
+import { Info, Mic } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
@@ -21,7 +21,7 @@ export const ConsultationInputHeader: React.FC<ConsultationInputHeaderProps> = (
   onHelpToggle,
   showHelp = false,
 }) => {
-  const { inputMode, setInputMode } = useConsultationStores();
+  const { setInputMode } = useConsultationStores();
   const [helpVisible, setHelpVisible] = useState(showHelp);
 
   const handleHelpClick = () => {

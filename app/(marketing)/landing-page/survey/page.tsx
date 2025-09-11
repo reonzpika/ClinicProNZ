@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { Survey } from '@/src/features/marketing/survey/components/Survey';
 
 export default function SurveyPage() {
