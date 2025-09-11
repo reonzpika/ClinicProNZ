@@ -20,6 +20,8 @@ export async function createUserSession(userId: string, patientName: string, tem
       typedInput: '',
       consultationNotes: '',
       notes: '',
+      // Set absolute expiry to 12 hours from creation
+      expiresAt: new Date(Date.now() + 12 * 60 * 60 * 1000),
     })
     .returning();
 

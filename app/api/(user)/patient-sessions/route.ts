@@ -1,6 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
 import { getDb } from 'database/client';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, isNull } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     let query = db
       .select()
       .from(patientSessions)
-      .where(eq(patientSessions.userId, userId))
+      .where(and(eq(patientSessions.userId, userId), isNull(patientSessions.deletedAt)))
       .orderBy(desc(patientSessions.createdAt))
       .limit(limit);
 
@@ -35,7 +35,13 @@ export async function GET(req: NextRequest) {
       const one = await db
         .select()
         .from(patientSessions)
-        .where(and(eq(patientSessions.userId, userId), eq(patientSessions.id, singleId)))
+        .where(
+          and(
+            eq(patientSessions.userId, userId),
+            eq(patientSessions.id, singleId),
+            isNull(patientSessions.deletedAt),
+          ),
+        )
         .limit(1);
 
       const sessions = one.map((session: any) => ({
@@ -58,6 +64,7 @@ export async function GET(req: NextRequest) {
           and(
             eq(patientSessions.userId, userId),
             eq(patientSessions.status, status),
+            isNull(patientSessions.deletedAt),
           ),
         )
         .orderBy(desc(patientSessions.createdAt))
@@ -276,7 +283,13 @@ export async function DELETE(req: NextRequest) {
       const nextActive = await db
         .select()
         .from(patientSessions)
-        .where(and(eq(patientSessions.userId, userId), eq(patientSessions.status, 'active')))
+        .where(
+          and(
+            eq(patientSessions.userId, userId),
+            eq(patientSessions.status, 'active'),
+            isNull(patientSessions.deletedAt),
+          ),
+        )
         .orderBy(desc(patientSessions.createdAt))
         .limit(1);
 
@@ -298,7 +311,8 @@ export async function DELETE(req: NextRequest) {
       const deleteAllClause = eq(patientSessions.userId, userId);
 
       const deletedSessions = await db
-        .delete(patientSessions)
+        .update(patientSessions)
+        .set({ deletedAt: new Date(), updatedAt: new Date() })
         .where(deleteAllClause)
         .returning();
 
@@ -317,19 +331,20 @@ export async function DELETE(req: NextRequest) {
       });
     }
 
-    // Handle single session delete
+    // Handle single session delete (soft-delete)
     if (!sessionId) {
       return NextResponse.json({ error: 'Session ID is required' }, { status: 400 });
     }
 
-    // Delete session (only if it belongs to the user)
+    // Soft-delete session (only if it belongs to the user)
     const whereClause = and(
       eq(patientSessions.id, sessionId),
       eq(patientSessions.userId, userId),
     );
 
     const deletedSession = await db
-      .delete(patientSessions)
+      .update(patientSessions)
+      .set({ deletedAt: new Date(), updatedAt: new Date() })
       .where(whereClause)
       .returning();
 
@@ -365,7 +380,13 @@ export async function DELETE(req: NextRequest) {
         const stillHasActive = await db
           .select({ id: patientSessions.id })
           .from(patientSessions)
-          .where(and(eq(patientSessions.userId, userId), eq(patientSessions.status, 'active')))
+          .where(
+            and(
+              eq(patientSessions.userId, userId),
+              eq(patientSessions.status, 'active'),
+              isNull(patientSessions.deletedAt),
+            ),
+          )
           .limit(1);
         if (stillHasActive.length === 0) {
           const next = await selectOrCreateNextSession();
