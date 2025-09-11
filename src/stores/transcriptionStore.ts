@@ -20,7 +20,7 @@ type TranscriptionState = {
 
   // Transcription state
   transcription: TranscriptionData;
-  typedInput: string;
+  // typed input removed
 
   // Consent and settings
   consentObtained: boolean;
@@ -29,7 +29,7 @@ type TranscriptionState = {
 
   // Last generated input tracking
   lastGeneratedTranscription?: string;
-  lastGeneratedTypedInput?: string;
+  // typed input removed
   lastGeneratedCompiledConsultationText?: string;
   lastGeneratedTemplateId?: string;
 };
@@ -77,7 +77,7 @@ type TranscriptionActions = {
     paragraphs?: any
   ) => Promise<void>;
 
-  setTypedInput: (input: string) => void;
+  // typed input removed
 
   // Settings actions
   setConsentObtained: (consent: boolean) => void;
@@ -87,7 +87,7 @@ type TranscriptionActions = {
   // Last generated tracking actions
   setLastGeneratedInput: (
     transcription: string,
-    typedInput?: string,
+    // typed input removed
     compiledConsultationText?: string,
     templateId?: string
   ) => void;
@@ -110,7 +110,7 @@ const initialState: TranscriptionState = {
     isLive: false,
     utterances: [],
   },
-  typedInput: '',
+  // typed input removed
   consentObtained: false,
   microphoneGain: 7.0,
   volumeThreshold: 0.1,
@@ -251,7 +251,7 @@ export const useTranscriptionStore = create<TranscriptionStore>()(
       });
     },
 
-    setTypedInput: input => set({ typedInput: input }),
+    // typed input removed
 
     // Settings actions
     setConsentObtained: consent => set({ consentObtained: consent }),
@@ -259,10 +259,10 @@ export const useTranscriptionStore = create<TranscriptionStore>()(
     setVolumeThreshold: threshold => set({ volumeThreshold: threshold }),
 
     // Last generated tracking
-    setLastGeneratedInput: (transcription, typedInput, compiledConsultationText, templateId) =>
+    setLastGeneratedInput: (transcription, _typedInput, compiledConsultationText, templateId) =>
       set({
         lastGeneratedTranscription: transcription,
-        lastGeneratedTypedInput: typedInput,
+        // lastGeneratedTypedInput removed
         lastGeneratedCompiledConsultationText: compiledConsultationText,
         lastGeneratedTemplateId: templateId,
       }),
@@ -270,7 +270,7 @@ export const useTranscriptionStore = create<TranscriptionStore>()(
     resetLastGeneratedInput: () =>
       set({
         lastGeneratedTranscription: undefined,
-        lastGeneratedTypedInput: undefined,
+        // lastGeneratedTypedInput removed
         lastGeneratedCompiledConsultationText: undefined,
         lastGeneratedTemplateId: undefined,
       }),
@@ -278,8 +278,8 @@ export const useTranscriptionStore = create<TranscriptionStore>()(
     // Utility getters
     getCurrentTranscript: () => get().transcription.transcript,
     getCurrentInput: () => {
-      const { inputMode, transcription, typedInput } = get();
-      return inputMode === 'audio' ? transcription.transcript : typedInput;
+      const { transcription } = get();
+      return transcription.transcript;
     },
 
     // Reset function

@@ -25,7 +25,7 @@ export function DefaultSettings() {
 
   const [templates, setTemplates] = useState<Template[]>([]);
   const favouriteTemplateId = settings?.favouriteTemplateId || DEFAULT_TEMPLATE_ID;
-  const defaultInputMode: DefaultInputMode = (settings?.defaultInputMode as DefaultInputMode) || 'audio';
+  const defaultInputMode: DefaultInputMode = 'audio';
   const defaultRecordingMethod: RecordingMethod = (settings?.defaultRecordingMethod as RecordingMethod) || 'desktop';
   const [collapsed, setCollapsed] = useState(true);
 
@@ -66,9 +66,9 @@ export function DefaultSettings() {
     setTemplateId(id);
   };
 
-  const onInputModeChange = async (mode: DefaultInputMode) => {
-    await updateSettings({ defaultInputMode: mode }, userId, userTier);
-    setInputMode(mode);
+  const onInputModeChange = async (_mode: DefaultInputMode) => {
+    await updateSettings({ defaultInputMode: 'audio' }, userId, userTier);
+    setInputMode('audio');
   };
 
   const onRecordingMethodChange = async (method: RecordingMethod) => {
@@ -125,19 +125,11 @@ export function DefaultSettings() {
         <div className="inline-flex rounded-md border border-slate-300 bg-white p-1 text-sm">
           <Button
             type="button"
-            variant={defaultInputMode === 'audio' ? 'default' : 'ghost'}
-            className={`h-8 px-3 ${defaultInputMode === 'audio' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-700'}`}
+            variant={'default'}
+            className={`h-8 px-3 bg-blue-600 text-white hover:bg-blue-700`}
             onClick={() => onInputModeChange('audio')}
           >
             Audio
-          </Button>
-          <Button
-            type="button"
-            variant={defaultInputMode === 'typed' ? 'default' : 'ghost'}
-            className={`h-8 px-3 ${defaultInputMode === 'typed' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-700'}`}
-            onClick={() => onInputModeChange('typed')}
-          >
-            Typed
           </Button>
         </div>
       </div>

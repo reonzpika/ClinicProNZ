@@ -10,7 +10,7 @@ import { DefaultSettings } from '@/src/features/clinical/main-ui/components/Defa
 import { DocumentationSettingsBadge } from '@/src/features/clinical/main-ui/components/DocumentationSettingsBadge';
 import { GeneratedNotes } from '@/src/features/clinical/main-ui/components/GeneratedNotes';
 import { TranscriptionControls } from '@/src/features/clinical/main-ui/components/TranscriptionControls';
-import { TypedInput } from '@/src/features/clinical/main-ui/components/TypedInput';
+// Typed input removed
 import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTranscription';
 import { MobileRightPanelOverlay } from '@/src/features/clinical/mobile/components/MobileRightPanelOverlay';
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
@@ -38,10 +38,10 @@ export default function ConsultationPage() {
     setStatus,
     currentPatientSessionId,
     inputMode,
-    typedInput,
+    // typed input removed
     transcription,
     setTranscription,
-    setTypedInput,
+    // typed input removed
     generatedNotes,
     setGeneratedNotes,
     // Deprecated legacy notes
@@ -110,11 +110,7 @@ export default function ConsultationPage() {
       return;
     }
     // Apply input mode default once
-    if (settings.defaultInputMode === 'typed') {
-      setInputMode('typed');
-    } else {
-      setInputMode('audio');
-    }
+    setInputMode('audio');
 
     // Apply template default once
     const fav = settings.favouriteTemplateId || '20dc1526-62cc-4ff4-a370-ffc1ded52aef';
@@ -458,7 +454,6 @@ export default function ConsultationPage() {
 
     // Clear local store state
     setConsultationNotes('');
-    setTypedInput('');
     setTranscription('', false);
     resetLastGeneratedInput();
 
@@ -486,7 +481,7 @@ export default function ConsultationPage() {
               return old;
             }
             return old.map((s: any) => (s.id === currentPatientSessionId
-              ? { ...s, notes: '', typedInput: '', consultationNotes: '', transcriptions: [] }
+              ? { ...s, notes: '', consultationNotes: '', transcriptions: [] }
               : s));
           },
         );
@@ -497,7 +492,7 @@ export default function ConsultationPage() {
             if (!old) {
               return old;
             }
-            return { ...old, notes: '', typedInput: '', consultationNotes: '', transcriptions: [] };
+            return { ...old, notes: '', consultationNotes: '', transcriptions: [] };
           },
         );
         // Pull fresh server state to remove any stale rehydration edge cases
@@ -508,7 +503,6 @@ export default function ConsultationPage() {
 
       // Re-enforce local clears in case of any async rehydration
       setGeneratedNotes('');
-      setTypedInput('');
       setConsultationNotes('');
       setTranscription('', false);
     } catch (error) {
@@ -558,15 +552,10 @@ export default function ConsultationPage() {
       // Single-pass: Combine raw consultation data and send directly to notes API
       // Include both inputs if present and label transcription as GP–patient conversation
       const hasTranscript = typeof transcription?.transcript === 'string' && transcription.transcript.trim().length > 0;
-      const hasTyped = typeof typedInput === 'string' && typedInput.trim().length > 0;
       const inputBlocks: string[] = [];
       if (hasTranscript) {
         inputBlocks.push('TRANSCRIPTION (GP–patient conversation, unlabelled):');
         inputBlocks.push(transcription.transcript.trim());
-      }
-      if (hasTyped) {
-        inputBlocks.push('TYPED INPUT:');
-        inputBlocks.push(typedInput.trim());
       }
       const mainContent = inputBlocks.join('\n\n');
       const additionalContent = getCompiledConsultationText();
@@ -638,8 +627,8 @@ export default function ConsultationPage() {
 
       // Track the original inputs for UI purposes
       setLastGeneratedInput(
-        inputMode === 'audio' ? transcription.transcript : '',
-        inputMode === 'typed' ? typedInput : '',
+        transcription.transcript,
+        undefined,
         getCompiledConsultationText(),
         templateId,
       );
@@ -797,18 +786,10 @@ export default function ConsultationPage() {
                                 />
                               )}
 
-                              {/* Show typed input if it has content */}
-                              {typedInput && typedInput.trim() !== '' && (
-                                <TypedInput
-                                  collapsed={false}
-                                  onExpand={() => setIsNoteFocused(false)}
-                                  isMinimized
-                                />
-                              )}
+                              {/* Typed input removed */}
 
                               {/* Show separator only if we have input sources above */}
-                              {((transcription.transcript && transcription.transcript.trim() !== '')
-                                || (typedInput && typedInput.trim() !== '')) && (
+                              {((transcription.transcript && transcription.transcript.trim() !== '')) && (
                                 <div className="border-t border-slate-200" />
                               )}
 
@@ -852,23 +833,13 @@ export default function ConsultationPage() {
                               <div className="flex h-full flex-col space-y-4">
                                 {/* Input Components */}
                                 <div className="flex flex-1 flex-col space-y-4">
-                                  {inputMode === 'audio'
-                                    ? (
-                                        <TranscriptionControls
-                                          collapsed={isNoteFocused}
-                                          onExpand={() => setIsNoteFocused(false)}
-                                          isMinimized={false}
-                                          mobileIsRecording={mobileIsRecording}
-                                          defaultRecordingMethod={defaultRecordingMethod}
-                                        />
-                                      )
-                                    : (
-                                        <TypedInput
-                                          collapsed={isNoteFocused}
-                                          onExpand={() => setIsNoteFocused(false)}
-                                          isMinimized={false}
-                                        />
-                                      )}
+                                  <TranscriptionControls
+                                    collapsed={isNoteFocused}
+                                    onExpand={() => setIsNoteFocused(false)}
+                                    isMinimized={false}
+                                    mobileIsRecording={mobileIsRecording}
+                                    defaultRecordingMethod={defaultRecordingMethod}
+                                  />
 
                                   <AdditionalNotes
                                     items={consultationItems}
@@ -924,23 +895,13 @@ export default function ConsultationPage() {
                               {/* Minimized Consultation Sections */}
                               <div className="space-y-1">
                                 <div className="space-y-2">
-                                  {inputMode === 'audio'
-                                    ? (
-                                        <TranscriptionControls
-                                          collapsed={false}
-                                          onExpand={() => setIsNoteFocused(false)}
-                                          isMinimized
-                                          mobileIsRecording={mobileIsRecording}
-                                          defaultRecordingMethod={defaultRecordingMethod}
-                                        />
-                                      )
-                                    : (
-                                        <TypedInput
-                                          collapsed={false}
-                                          onExpand={() => setIsNoteFocused(false)}
-                                          isMinimized
-                                        />
-                                      )}
+                                  <TranscriptionControls
+                                    collapsed={false}
+                                    onExpand={() => setIsNoteFocused(false)}
+                                    isMinimized
+                                    mobileIsRecording={mobileIsRecording}
+                                    defaultRecordingMethod={defaultRecordingMethod}
+                                  />
 
                                   <AdditionalNotes
                                     items={consultationItems}
@@ -959,23 +920,13 @@ export default function ConsultationPage() {
                             <div className="flex flex-1 flex-col space-y-4">
                               {/* Input Components */}
                               <div className="flex flex-1 flex-col space-y-4">
-                                {inputMode === 'audio'
-                                  ? (
-                                      <TranscriptionControls
-                                        collapsed={isNoteFocused}
-                                        onExpand={() => setIsNoteFocused(false)}
-                                        isMinimized={false}
-                                        mobileIsRecording={mobileIsRecording}
-                                        defaultRecordingMethod={defaultRecordingMethod}
-                                      />
-                                    )
-                                  : (
-                                      <TypedInput
-                                        collapsed={isNoteFocused}
-                                        onExpand={() => setIsNoteFocused(false)}
-                                        isMinimized={false}
-                                      />
-                                    )}
+                                <TranscriptionControls
+                                  collapsed={isNoteFocused}
+                                  onExpand={() => setIsNoteFocused(false)}
+                                  isMinimized={false}
+                                  mobileIsRecording={mobileIsRecording}
+                                  defaultRecordingMethod={defaultRecordingMethod}
+                                />
 
                                 <AdditionalNotes
                                   items={consultationItems}

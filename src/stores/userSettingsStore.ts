@@ -4,7 +4,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { createAuthHeaders } from '@/src/shared/utils';
 
 export type RecordingMethod = 'desktop' | 'mobile';
-export type DefaultInputMode = 'audio' | 'typed';
+export type DefaultInputMode = 'audio';
 
 export type UserSettings = {
   templateOrder: string[];

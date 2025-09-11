@@ -22,17 +22,6 @@ export function InputModeToggle() {
         >
           Audio
         </button>
-        <button
-          type="button"
-          onClick={() => setInputMode('typed')}
-          className={`px-2 py-1 text-xs transition-colors ${
-            inputMode === 'typed'
-              ? 'bg-blue-600 text-white'
-              : 'text-muted-foreground hover:bg-gray-50 hover:text-foreground'
-          } rounded-r`}
-        >
-          Typed
-        </button>
       </div>
     </div>
   );

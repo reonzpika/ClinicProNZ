@@ -17,7 +17,6 @@ export async function createUserSession(userId: string, patientName: string, tem
       transcriptions: JSON.stringify([]),
       consultationItems: JSON.stringify([]),
 
-      typedInput: '',
       consultationNotes: '',
       notes: '',
     })

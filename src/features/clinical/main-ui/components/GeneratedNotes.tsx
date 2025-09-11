@@ -15,13 +15,12 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
     transcription,
     resetConsultation,
     lastGeneratedTranscription: _lastGeneratedTranscription,
-    lastGeneratedTypedInput: _lastGeneratedTypedInput,
+    // lastGeneratedTypedInput removed
     lastGeneratedCompiledConsultationText: _lastGeneratedCompiledConsultationText,
     lastGeneratedTemplateId: _lastGeneratedTemplateId,
     setGeneratedNotes,
     consentObtained,
     inputMode,
-    typedInput,
     getCompiledConsultationText: _getCompiledConsultationText,
     saveNotesToCurrentSession,
     saveTypedInputToCurrentSession,
@@ -77,9 +76,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
 
   // Button enable logic - enable for any non-empty input
   const canGenerate = React.useMemo(() => {
-    const hasInput = inputMode === 'typed'
-      ? (typedInput && typedInput.trim() !== '')
-      : (transcription.transcript && transcription.transcript.trim() !== '');
+    const hasInput = (transcription.transcript && transcription.transcript.trim() !== '');
 
     if (!hasInput) {
       return false;
@@ -93,8 +90,6 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
     // Enable for any non-empty input (removed "changed since last generation" requirement)
     return true;
   }, [
-    inputMode,
-    typedInput,
     transcription.transcript,
     isSignedIn,
     canCreateSession,
@@ -103,8 +98,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
   const hasContent = !!(displayNotes && displayNotes.trim() !== '');
 
   const hasAnyState = hasContent
-    || (inputMode === 'typed' && typedInput && typedInput.trim() !== '')
-    || (inputMode === 'audio' && (transcription.transcript && transcription.transcript.trim() !== ''))
+    || (transcription.transcript && transcription.transcript.trim() !== '')
     || [problemsText, objectiveText, assessmentText, planText].some(s => s && s.trim() !== '');
 
   // Determine if we should show minimal or expanded view
@@ -203,9 +197,7 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
         savePromises.push(saveNotesToCurrentSession(generatedNotes));
       }
 
-      if (typedInput && typedInput.trim() !== '') {
-        savePromises.push(saveTypedInputToCurrentSession(typedInput));
-      }
+      // typed input removed
 
       // Additional note sections are saved from their own UI; no JSON saves here
 

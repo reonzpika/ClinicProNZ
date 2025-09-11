@@ -36,7 +36,7 @@ const getLastUsedSettings = () => {
   return parsed;
 };
 
-const saveLastUsedSettings = (templateId: string, inputMode: 'audio' | 'typed') => {
+const saveLastUsedSettings = (templateId: string, inputMode: 'audio') => {
   if (typeof window === 'undefined') {
     return;
   }
@@ -154,7 +154,7 @@ export const DocumentationSettingsBadge: React.FC = () => {
       } else if (lastUsed?.templateId && templates.some(t => t.id === lastUsed.templateId)) {
         // 2. Last used settings
         setTemplateId(lastUsed.templateId);
-        setInputMode(lastUsed.inputMode);
+        setInputMode('audio');
       } else if (userDefault && templates.some(t => t.id === userDefault)) {
         // 3. localStorage default (deprecated but kept for migration)
         setTemplateId(userDefault);
@@ -179,7 +179,7 @@ export const DocumentationSettingsBadge: React.FC = () => {
   }, [templates, templateId]);
 
   const templateDisplayName = currentTemplate?.name || (isLoading ? 'Loading...' : 'Select Template');
-  const inputDisplayName = inputMode === 'audio' ? 'Audio' : 'Typed';
+  const inputDisplayName = 'Audio';
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -189,14 +189,13 @@ export const DocumentationSettingsBadge: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const handleSettingsChange = (newTemplateId: string, newInputMode: 'audio' | 'typed') => {
+  const handleSettingsChange = (newTemplateId: string, _newInputMode: 'audio') => {
     setTemplateId(newTemplateId);
-    setInputMode(newInputMode);
+    setInputMode('audio');
   };
 
   const handleInputModeToggle = () => {
-    const newInputMode = inputMode === 'audio' ? 'typed' : 'audio';
-    setInputMode(newInputMode);
+    setInputMode('audio');
   };
 
   const handleTemplateClick = () => {
@@ -243,7 +242,7 @@ export const DocumentationSettingsBadge: React.FC = () => {
                         type="button"
                         onClick={handleInputModeToggle}
                         className="cursor-pointer font-medium text-green-600 hover:text-green-800 hover:underline"
-                        title={`Click to switch to ${inputMode === 'audio' ? 'typed' : 'audio'} mode`}
+                        title={`Audio input only`}
                       >
                         {inputDisplayName}
                       </button>
@@ -270,7 +269,7 @@ export const DocumentationSettingsBadge: React.FC = () => {
                         type="button"
                         onClick={handleInputModeToggle}
                         className="cursor-pointer font-medium text-green-600 hover:text-green-800 hover:underline"
-                        title={`Click to switch to ${inputMode === 'audio' ? 'typed' : 'audio'} mode`}
+                        title={`Audio input only`}
                       >
                         {inputDisplayName}
                       </button>

@@ -50,7 +50,6 @@ export default function ClinicalReferencePage() {
   // Sample consultation data for context
   const sampleConsultationData = {
     transcription: 'Patient presents with chest tightness and shortness of breath. Symptoms started 3 days ago. No fever. History of asthma. Using salbutamol inhaler as needed.',
-    typedInput: '42-year-old male with asthma exacerbation. Peak flow 60% of predicted. Wheeze bilateral. No signs of pneumonia on examination.',
   };
 
   const sendMessage = async () => {

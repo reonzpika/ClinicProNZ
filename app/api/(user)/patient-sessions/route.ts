@@ -155,7 +155,6 @@ export async function PUT(req: NextRequest) {
       status,
       transcriptions,
       notes,
-      typedInput,
       consultationNotes,
       templateId,
       problemsText,
@@ -183,9 +182,7 @@ export async function PUT(req: NextRequest) {
     if (notes !== undefined) {
       updateData.notes = notes;
     }
-    if (typedInput !== undefined) {
-      updateData.typedInput = typedInput;
-    }
+    // typedInput removed
     if (consultationNotes !== undefined) {
  updateData.consultationNotes = consultationNotes;
 }

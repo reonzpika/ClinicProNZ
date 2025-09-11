@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, FileText, Mic, Type } from 'lucide-react';
+import { Check, FileText, Mic } from 'lucide-react';
 import { useState } from 'react';
 
 import type { Template } from '@/src/features/templates/types';
@@ -10,9 +10,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/c
 type DocumentationSettingsModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (templateId: string, inputMode: 'audio' | 'typed') => void;
+  onSave: (templateId: string, inputMode: 'audio') => void;
   currentTemplateId: string;
-  currentInputMode: 'audio' | 'typed';
+  currentInputMode: 'audio';
   templates: Template[];
   isLoading: boolean;
 };
@@ -27,7 +27,7 @@ export const DocumentationSettingsModal: React.FC<DocumentationSettingsModalProp
   isLoading,
 }) => {
   const [selectedTemplateId, setSelectedTemplateId] = useState(currentTemplateId);
-  const [selectedInputMode, setSelectedInputMode] = useState<'audio' | 'typed'>(currentInputMode);
+  const [selectedInputMode, setSelectedInputMode] = useState<'audio'>(currentInputMode);
 
   // Reset selections when modal opens
   const handleModalOpen = () => {
@@ -36,7 +36,7 @@ export const DocumentationSettingsModal: React.FC<DocumentationSettingsModalProp
   };
 
   // Handle input mode selection (update state only)
-  const handleInputModeChange = (newInputMode: 'audio' | 'typed') => {
+  const handleInputModeChange = (newInputMode: 'audio') => {
     setSelectedInputMode(newInputMode);
     // Apply change immediately to badge
     onSave(selectedTemplateId, newInputMode);
@@ -73,7 +73,7 @@ export const DocumentationSettingsModal: React.FC<DocumentationSettingsModalProp
         </DialogHeader>
 
         <div className="flex min-h-0 flex-1 flex-col gap-4">
-          {/* Input Method Selection */}
+          {/* Input Method Selection (Typed removed - audio only) */}
           <div className="shrink-0">
             <h3 className="mb-2 text-sm font-medium text-gray-900">Input Method</h3>
             <div className="flex gap-2">
@@ -90,21 +90,6 @@ export const DocumentationSettingsModal: React.FC<DocumentationSettingsModalProp
                   <Mic className="size-4" />
                   <span>Audio</span>
                   {selectedInputMode === 'audio' && <Check className="size-3" />}
-                </div>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleInputModeChange('typed')}
-                className={`flex-1 rounded-md border px-3 py-2 text-sm transition-all ${
-                  selectedInputMode === 'typed'
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
-                }`}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <Type className="size-4" />
-                  <span>Typed</span>
-                  {selectedInputMode === 'typed' && <Check className="size-3" />}
                 </div>
               </button>
             </div>

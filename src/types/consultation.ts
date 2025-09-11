@@ -16,7 +16,7 @@ export type ConsultationItem = {
   timestamp: number;
 };
 
-export type InputMode = 'audio' | 'typed';
+export type InputMode = 'audio';
 
 // Enhanced transcription types for confidence and timestamp features
 export type TranscriptionWord = {
@@ -59,7 +59,6 @@ export type PatientSession = {
   status: 'active' | 'completed' | 'archived';
   transcriptions: TranscriptionEntry[];
   notes: string;
-  typedInput: string;
   consultationNotes: string;
   // New per-section fields
   problemsText?: string;

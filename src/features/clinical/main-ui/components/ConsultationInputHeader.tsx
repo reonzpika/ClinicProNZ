@@ -7,7 +7,7 @@ import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
 
 type ConsultationInputHeaderProps = {
-  mode: 'audio' | 'typed';
+  mode: 'audio';
   status?: string;
   isRecording?: boolean;
   onHelpToggle?: () => void;
@@ -30,8 +30,7 @@ export const ConsultationInputHeader: React.FC<ConsultationInputHeaderProps> = (
   };
 
   const handleInputModeToggle = () => {
-    const newInputMode = inputMode === 'audio' ? 'typed' : 'audio';
-    setInputMode(newInputMode);
+    setInputMode('audio');
   };
 
   const getStatusDisplay = () => {
@@ -50,32 +49,14 @@ export const ConsultationInputHeader: React.FC<ConsultationInputHeaderProps> = (
           )
         : null;
     }
-
-    // Typed mode
-    return status
-      ? (
-          <div className="flex items-center gap-1">
-            {status === 'Saved' && <span className="text-xs text-green-600">✓ Saved</span>}
-            {status === 'Editing' && <span className="text-xs text-slate-600">Editing...</span>}
-            {status !== 'Saved' && status !== 'Editing' && (
-              <span className="text-xs text-slate-600">{status}</span>
-            )}
-          </div>
-        )
-      : null;
+    return status ? (<span className="text-xs text-slate-600">{status}</span>) : null;
   };
 
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1">
-          {mode === 'audio'
-            ? (
-                <Mic size={16} className="text-slate-600" />
-              )
-            : (
-                <Keyboard size={16} className="text-slate-600" />
-              )}
+          <Mic size={16} className="text-slate-600" />
           <h3 className="text-sm font-medium text-slate-700">Consultation Note</h3>
         </div>
         {getStatusDisplay()}
@@ -85,9 +66,9 @@ export const ConsultationInputHeader: React.FC<ConsultationInputHeaderProps> = (
         <button
           onClick={handleInputModeToggle}
           className="cursor-pointer text-xs font-medium text-green-600 hover:text-green-800 hover:underline"
-          title={`Click to switch to ${inputMode === 'audio' ? 'typed' : 'audio'} mode`}
+          title="Audio input only"
         >
-          {inputMode === 'audio' ? 'Audio' : 'Typed'}
+          Audio
         </button>
         <Button
           variant="ghost"

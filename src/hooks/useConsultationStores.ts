@@ -159,7 +159,7 @@ export function useConsultationStores(): any {
       }
     } catch {}
 
-    const hasLocal = !!(transcriptionStore.transcription.transcript || transcriptionStore.typedInput);
+    const hasLocal = !!(transcriptionStore.transcription.transcript);
     // Only treat as remote content if non-empty values are present
     let remoteTrans: any[] = [];
     try {
@@ -172,8 +172,7 @@ export function useConsultationStores(): any {
       remoteTrans = [];
     }
     const hasRemoteTrans = Array.isArray(remoteTrans) && remoteTrans.length > 0;
-    const hasRemoteTextFields = !!(session.typedInput && String(session.typedInput).trim())
-      || !!(session.notes && String(session.notes).trim())
+    const hasRemoteTextFields = !!(session.notes && String(session.notes).trim())
       || !!(session.consultationNotes && String(session.consultationNotes).trim())
       || !!(session.problemsText && String(session.problemsText).trim())
       || !!(session.objectiveText && String(session.objectiveText).trim())
@@ -198,9 +197,7 @@ export function useConsultationStores(): any {
       // ignore JSON errors
     }
     // Only update local state when values actually differ to avoid update loops
-    if (session.typedInput && session.typedInput !== transcriptionStore.typedInput) {
-      transcriptionStore.setTypedInput(session.typedInput);
-    }
+    // typed input removed
     if (session.notes && session.notes !== consultationStore.generatedNotes) {
       consultationStore.setGeneratedNotes(session.notes);
     }
@@ -298,14 +295,7 @@ export function useConsultationStores(): any {
     return true;
   }, [consultationStore.currentPatientSessionId, updatePatientSession]);
 
-  const saveTypedInputToCurrentSession = useCallback(async (typedInput: string): Promise<boolean> => {
-    const id = consultationStore.currentPatientSessionId;
-    if (!id) {
-      return false;
-    }
-    await updatePatientSession(id, { typedInput } as any);
-    return true;
-  }, [consultationStore.currentPatientSessionId, updatePatientSession]);
+  // typed input removed
 
   
 
@@ -383,7 +373,7 @@ export function useConsultationStores(): any {
     // Inputs
     inputMode: transcriptionStore.inputMode,
     transcription: transcriptionStore.transcription,
-    typedInput: transcriptionStore.typedInput,
+    // typed input removed
 
     // Generated content
     generatedNotes: consultationStore.generatedNotes,
@@ -412,7 +402,7 @@ export function useConsultationStores(): any {
 
     // Last generated tracking
     lastGeneratedTranscription: transcriptionStore.lastGeneratedTranscription,
-    lastGeneratedTypedInput: transcriptionStore.lastGeneratedTypedInput,
+    // typed input removed
     lastGeneratedCompiledConsultationText: transcriptionStore.lastGeneratedCompiledConsultationText,
     lastGeneratedTemplateId: transcriptionStore.lastGeneratedTemplateId,
 
@@ -461,7 +451,7 @@ export function useConsultationStores(): any {
         await updatePatientSession(id, { transcriptions: updated } as any);
       } catch {}
     }, [transcriptionStore, consultationStore.currentPatientSessionId, patientSessions, updatePatientSession]),
-    setTypedInput: transcriptionStore.setTypedInput,
+    // typed input removed
 
     // Actions - generated content
     setGeneratedNotes: consultationStore.setGeneratedNotes,
@@ -509,7 +499,7 @@ export function useConsultationStores(): any {
     deletePatientSession,
     deleteAllPatientSessions,
     saveNotesToCurrentSession,
-    saveTypedInputToCurrentSession,
+    // typed input removed
     saveProblemsToCurrentSession,
     saveObjectiveToCurrentSession,
     saveAssessmentToCurrentSession,
@@ -597,9 +587,7 @@ export function useConsultationStores(): any {
         }
 
         // Load typed input
-        if (session.typedInput) {
-          transcriptionStore.setTypedInput(session.typedInput);
-        }
+        // typed input removed
 
         // Load generated notes
         if (session.notes) {

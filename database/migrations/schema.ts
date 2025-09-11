@@ -117,7 +117,6 @@ export const patientSessions = pgTable('patient_sessions', {
   createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
   completedAt: timestamp('completed_at', { mode: 'string' }),
   updatedAt: timestamp('updated_at', { mode: 'string' }).defaultNow().notNull(),
-  typedInput: text('typed_input'),
   consultationNotes: text('consultation_notes'),
   problemsText: text('problems_text'),
   objectiveText: text('objective_text'),

@@ -11,7 +11,6 @@ export type ConsultationChatRequest = {
   useContext?: boolean;
   rawConsultationData?: {
     transcription?: string;
-    typedInput?: string;
   };
 };
 

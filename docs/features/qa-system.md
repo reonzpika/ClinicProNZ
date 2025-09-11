@@ -27,7 +27,7 @@ This document defines the end-to-end Quality Assurance (QA) signals, tracking, a
 - `database/schema/patient_sessions.ts`
   - `transcriptions`: JSON string array of `{ id, text, timestamp, source, deviceId? }`
   - `notes`: AI-generated consultation notes (string)
-  - `typedInput`: free text entered by user
+  - [Removed] typedInput: free text entered by user (use Additional Notes sections instead)
   - `templateId`: template used for generation
   - `problems_text`: structured Additional Notes – Problems (string)
   - `objective_text`: structured Additional Notes – Objective (string)
@@ -78,7 +78,7 @@ Notes:
 
 ### API/Generation Integration
 
-- `app/(clinical)/consultation/page.tsx` composes `rawConsultationData` by combining main input (audio transcript or typed input) with a concatenation of `problems_text`, `objective_text`, `assessment_text`, `plan_text` (when present), using the canonical headers.
+- `app/(clinical)/consultation/page.tsx` composes `rawConsultationData` by combining audio transcription with a concatenation of `problems_text`, `objective_text`, `assessment_text`, `plan_text` (when present), using the canonical headers.
 - `app/api/(clinical)/consultation/notes/route.ts` consumes the combined `rawConsultationData` and templates map SOAP (see `systemPrompt.ts`).
 - No API shape change is required; structured Additional Notes are sourced from the four dedicated fields.
 
@@ -106,7 +106,7 @@ At save time or generation time, apply lightweight validation:
 - QA: Ensure `notes` saved to `patient_sessions.notes`. Reopen session: generated notes display matches last saved.
 
 ### 4) Session Clearing
-- `POST /api/patient-sessions/clear` clears `notes`, `typedInput`, `transcriptions`, and all Additional Notes fields (`problems_text`, `objective_text`, `assessment_text`, `plan_text`).
+- `POST /api/patient-sessions/clear` clears `notes`, `transcriptions`, and all Additional Notes fields (`problems_text`, `objective_text`, `assessment_text`, `plan_text`).
 - QA: After clear, UI shows empty sources, and refetch confirms server-side cleared state.
 
 ### 5) Mobile Images
@@ -168,7 +168,7 @@ Migration Risk:
 ## API Contracts (No Schema Change Required)
 
 - `PUT /api/patient-sessions` accepts `problems_text`, `objective_text`, `assessment_text`, `plan_text`, plus other session fields as applicable.
-- `GET /api/patient-sessions` returns these four fields (strings), along with `notes`, `typedInput`, and parsed `transcriptions`.
+- `GET /api/patient-sessions` returns these four fields (strings), along with `notes`, and parsed `transcriptions`.
 - `POST /api/consultation/notes` expects `rawConsultationData` that may include structured Additional Notes sections (concatenated from the four fields).
 
 Legacy Notes:

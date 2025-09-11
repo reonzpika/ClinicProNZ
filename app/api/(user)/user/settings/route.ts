@@ -8,7 +8,7 @@ import { userSettings } from '@/db/schema/user_settings';
 const DEFAULT_SETTINGS = {
   templateOrder: [],
   favouriteTemplateId: '20dc1526-62cc-4ff4-a370-ffc1ded52aef',
-  defaultInputMode: 'audio', // 'audio' | 'typed'
+  defaultInputMode: 'audio',
   defaultRecordingMethod: 'desktop', // 'desktop' | 'mobile'
 };
 

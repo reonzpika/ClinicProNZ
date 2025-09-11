@@ -25,7 +25,6 @@ export async function POST(req: Request) {
       .set({
         isRecording: false,
         transcriptions: JSON.stringify([]),
-        typedInput: '',
         consultationNotes: '',
         problemsText: '',
         objectiveText: '',

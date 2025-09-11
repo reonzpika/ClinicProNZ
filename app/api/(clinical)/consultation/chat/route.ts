@@ -67,9 +67,7 @@ export async function POST(req: Request) {
           rawContext += `TRANSCRIPTION:\n${rawConsultationData.transcription}\n\n`;
         }
 
-        if (rawConsultationData.typedInput && rawConsultationData.typedInput.trim()) {
-          rawContext += `TYPED INPUT:\n${rawConsultationData.typedInput}\n\n`;
-        }
+        // typed input removed
 
         if (rawContext.trim()) {
           systemPrompt += `

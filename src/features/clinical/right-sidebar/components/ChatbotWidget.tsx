@@ -24,7 +24,6 @@ export const ChatbotWidget: React.FC = () => {
     setChatLoading,
     // Raw consultation data for Phase 1 context
     transcription,
-    typedInput,
     inputMode,
     // Consultation notes functionality
     addConsultationItem,
@@ -103,7 +102,6 @@ export const ChatbotWidget: React.FC = () => {
       // Prepare raw consultation data for Phase 1 context
       const rawConsultationData = {
         transcription: inputMode === 'audio' ? transcription.transcript : '',
-        typedInput: inputMode === 'typed' ? typedInput : '',
       };
 
       const response = await fetch('/api/consultation/chat', {
@@ -171,7 +169,6 @@ export const ChatbotWidget: React.FC = () => {
     setChatLoading,
     inputMode,
     transcription,
-    typedInput,
   ]);
 
   // Handle Enter key press
@@ -295,13 +292,13 @@ export const ChatbotWidget: React.FC = () => {
                       id="context-toggle-modal"
                       checked={isChatContextEnabled}
                       onCheckedChange={setChatContextEnabled}
-                      disabled={!generatedNotes && !transcription.transcript && !typedInput}
+                      disabled={!generatedNotes && !transcription.transcript}
                     />
                     <label htmlFor="context-toggle-modal" className="text-sm text-slate-600">
                       {generatedNotes
                         ? 'Use clinical notes as context'
                         : 'Use consultation data as context'}
-                      {!generatedNotes && !transcription.transcript && !typedInput && (
+                      {!generatedNotes && !transcription.transcript && (
                         <span className="ml-1 text-slate-400">(No consultation data available)</span>
                       )}
                     </label>
@@ -391,13 +388,13 @@ export const ChatbotWidget: React.FC = () => {
             id="context-toggle"
             checked={isChatContextEnabled}
             onCheckedChange={setChatContextEnabled}
-            disabled={!generatedNotes && !transcription.transcript && !typedInput}
+            disabled={!generatedNotes && !transcription.transcript}
           />
           <label htmlFor="context-toggle" className="text-sm text-slate-600">
             {generatedNotes
               ? 'Use clinical notes as context'
               : 'Use consultation data as context'}
-            {!generatedNotes && !transcription.transcript && !typedInput && (
+            {!generatedNotes && !transcription.transcript && (
               <span className="ml-1 text-slate-400">(No consultation data available)</span>
             )}
           </label>

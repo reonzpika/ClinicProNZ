@@ -15,7 +15,6 @@ export const patientSessions = pgTable('patient_sessions', {
 
   transcriptions: text('transcriptions'), // JSON string of transcription array
   notes: text('notes'), // Generated consultation notes
-  typedInput: text('typed_input'), // Text input when in typed mode
   consultationNotes: text('consultation_notes'), // Legacy additional notes (deprecated)
   problemsText: text('problems_text'), // New: Problems
   objectiveText: text('objective_text'), // New: Objective
