@@ -62,14 +62,18 @@ export const ChatbotWidget: React.FC = () => {
     setTimeout(scrollToBottom, 100);
   }, [chatHistory, streamingMessage, scrollToBottom]);
 
-  // Update context toggle when notes are available
+  // Update context toggle when notes are available (guard against redundant writes)
   useEffect(() => {
-    if (generatedNotes && !isChatContextEnabled) {
-      setChatContextEnabled(true);
-    } else if (!generatedNotes) {
-      setChatContextEnabled(false);
+    if (generatedNotes) {
+      if (!isChatContextEnabled) {
+        setChatContextEnabled(true);
+      }
+    } else {
+      if (isChatContextEnabled) {
+        setChatContextEnabled(false);
+      }
     }
-  }, [generatedNotes, setChatContextEnabled]);
+  }, [generatedNotes, isChatContextEnabled, setChatContextEnabled]);
 
   // Handle sending a message
   const handleSendMessage = useCallback(async () => {
