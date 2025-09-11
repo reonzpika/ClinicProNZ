@@ -252,6 +252,15 @@ export function useConsultationStores(): any {
 
   const createPatientSession = useCallback(async (patientName: string, templateId?: string): Promise<PatientSession | null> => {
     try {
+      // Autosave current per-section fields before creating a new session
+      const currentId = consultationStore.currentPatientSessionId;
+      if (currentId) {
+        const { problemsText, objectiveText, assessmentText, planText } = consultationStore as any;
+        try {
+          await updatePatientSession(currentId, { problemsText, objectiveText, assessmentText, planText } as any);
+        } catch {}
+      }
+
       const chosenTemplateId = templateId || (settings?.favouriteTemplateId as string | undefined) || DEFAULT_TEMPLATE_ID;
       const result = await createSessionMutation.mutateAsync({ patientName, templateId: chosenTemplateId });
       consultationStore.setTemplateId(chosenTemplateId);
@@ -260,7 +269,7 @@ export function useConsultationStores(): any {
     } catch {
       return null;
     }
-  }, [createSessionMutation, consultationStore, settings?.favouriteTemplateId]);
+  }, [createSessionMutation, consultationStore, settings?.favouriteTemplateId, updatePatientSession]);
 
   const deletePatientSession = useCallback(async (sessionId: string): Promise<boolean> => {
     try {
@@ -532,8 +541,16 @@ export function useConsultationStores(): any {
       }
       return patientSessions.find((s: any) => s.id === consultationStore.currentPatientSessionId) || null;
         },
-    switchToPatientSession: (sessionId: string, onSwitch?: (sessionId: string, patientName: string) => void) => {
+    switchToPatientSession: async (sessionId: string, onSwitch?: (sessionId: string, patientName: string) => void) => {
       // 🔧 STEP 1: CLEAR ALL LOCAL STATE FIRST (prevents state leakage between sessions)
+      // Autosave current per-section fields before switching
+      try {
+        const currentId = consultationStore.currentPatientSessionId;
+        if (currentId) {
+          const { problemsText, objectiveText, assessmentText, planText } = consultationStore as any;
+          await updatePatientSession(currentId, { problemsText, objectiveText, assessmentText, planText } as any);
+        }
+      } catch {}
 
       // Clear generated content
       consultationStore.setGeneratedNotes(null);
@@ -597,6 +614,18 @@ export function useConsultationStores(): any {
         if (session.consultationNotes) {
           consultationStore.setConsultationNotes(session.consultationNotes);
         }
+
+        // Load per-section fields from DB (authoritative)
+        try {
+          (consultationStore as any).hydrateProblemsText?.(session.problemsText || '');
+          (consultationStore as any).hydrateObjectiveText?.(session.objectiveText || '');
+          (consultationStore as any).hydrateAssessmentText?.(session.assessmentText || '');
+          (consultationStore as any).hydratePlanText?.(session.planText || '');
+          consultationStore.clearProblemsDirty?.();
+          consultationStore.clearObjectiveDirty?.();
+          consultationStore.clearAssessmentDirty?.();
+          consultationStore.clearPlanDirty?.();
+        } catch {}
 
         // Load template ID
         if (session.templateId) {
