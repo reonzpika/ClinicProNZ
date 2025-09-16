@@ -213,11 +213,11 @@ export function useConsultationStores(): any {
     const nextAssessment = session.assessmentText || '';
     const nextPlan = session.planText || '';
     const now = Date.now();
-    const recentMs = 800;
-    const problemsRecentlyEdited = !!(consultationStore.problemsDirty && consultationStore.problemsEditedAt && (now - consultationStore.problemsEditedAt) < recentMs);
-    const objectiveRecentlyEdited = !!(consultationStore.objectiveDirty && consultationStore.objectiveEditedAt && (now - consultationStore.objectiveEditedAt) < recentMs);
-    const assessmentRecentlyEdited = !!(consultationStore.assessmentDirty && consultationStore.assessmentEditedAt && (now - consultationStore.assessmentEditedAt) < recentMs);
-    const planRecentlyEdited = !!(consultationStore.planDirty && consultationStore.planEditedAt && (now - consultationStore.planEditedAt) < recentMs);
+    const recentMs = 3000;
+    const problemsRecentlyEdited = !!(consultationStore.problemsEditedAt && (now - consultationStore.problemsEditedAt) < recentMs);
+    const objectiveRecentlyEdited = !!(consultationStore.objectiveEditedAt && (now - consultationStore.objectiveEditedAt) < recentMs);
+    const assessmentRecentlyEdited = !!(consultationStore.assessmentEditedAt && (now - consultationStore.assessmentEditedAt) < recentMs);
+    const planRecentlyEdited = !!(consultationStore.planEditedAt && (now - consultationStore.planEditedAt) < recentMs);
     if (!consultationStore.problemsDirty && !problemsRecentlyEdited && nextProblems !== consultationStore.problemsText) {
       (consultationStore as any).hydrateProblemsText(nextProblems);
     }

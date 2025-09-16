@@ -31,6 +31,8 @@ export async function POST(req: Request) {
         objectiveText: '',
         assessmentText: '',
         planText: '',
+        consultationItems: JSON.stringify([]),
+        clinicalImages: JSON.stringify([]),
         notes: '',
         updatedAt: new Date(),
       })

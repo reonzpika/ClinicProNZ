@@ -48,6 +48,7 @@ export default function ConsultationPage() {
     consultationNotes,
     setConsultationNotes,
     consultationItems,
+    removeConsultationItem,
     getCompiledConsultationText,
     templateId,
     setLastGeneratedInput,
@@ -467,8 +468,8 @@ export default function ConsultationPage() {
       if (currentPatientSessionId) {
         // Set a brief global suppression window to prevent hydration re-population
         try {
- (window as any).__clinicproJustClearedUntil = Date.now() + 800;
-} catch {}
+          (window as any).__clinicproJustClearedUntil = Date.now() + 3000;
+        } catch {}
         await fetch('/api/patient-sessions/clear', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...createAuthHeaders(userId, userTier) },
@@ -486,7 +487,7 @@ export default function ConsultationPage() {
               return old;
             }
             return old.map((s: any) => (s.id === currentPatientSessionId
-              ? { ...s, notes: '', typedInput: '', consultationNotes: '', transcriptions: [] }
+              ? { ...s, notes: '', typedInput: '', consultationNotes: '', transcriptions: [], consultationItems: [], problemsText: '', objectiveText: '', assessmentText: '', planText: '' }
               : s));
           },
         );
@@ -497,7 +498,7 @@ export default function ConsultationPage() {
             if (!old) {
               return old;
             }
-            return { ...old, notes: '', typedInput: '', consultationNotes: '', transcriptions: [] };
+            return { ...old, notes: '', typedInput: '', consultationNotes: '', transcriptions: [], consultationItems: [], problemsText: '', objectiveText: '', assessmentText: '', planText: '' };
           },
         );
         // Pull fresh server state to remove any stale rehydration edge cases
@@ -511,6 +512,13 @@ export default function ConsultationPage() {
       setTypedInput('');
       setConsultationNotes('');
       setTranscription('', false);
+      try {
+        // Clear any consultation items in the local store
+        const items = Array.isArray(consultationItems) ? [...consultationItems] : [];
+        items.forEach((item: any) => {
+          try { removeConsultationItem?.(item.id); } catch {}
+        });
+      } catch {}
     } catch (error) {
       console.error('Error clearing server data:', error);
       // Continue anyway - UI is already cleared
