@@ -574,6 +574,13 @@ export function useConsultationStores(): any {
     saveAssessmentToCurrentSession,
     savePlanToCurrentSession,
 
+    // Mutation queue controls and atomic clear flag setters
+    pauseMutations,
+    resumeMutations,
+    setClearInProgress: consultationStore.setClearInProgress,
+    setClearedAt: consultationStore.setClearedAt,
+    setTemplateLock: consultationStore.setTemplateLock,
+
     // Reset
     resetConsultation: () => {
       // UI-only reset: preserve mobile connection/token across session changes
