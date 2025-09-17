@@ -53,6 +53,11 @@ type ConsultationState = {
   // Current patient session
   currentPatientSessionId: string | null;
 
+  // Atomic clear flags
+  clearInProgress?: boolean;
+  clearedAt?: number | null;
+  templateLock?: string | null;
+
   
 };
 
@@ -104,6 +109,11 @@ type ConsultationActions = {
 
   // Current patient session actions
   setCurrentPatientSessionId: (sessionId: string | null) => void;
+
+  // Atomic clear actions
+  setClearInProgress: (inProgress: boolean) => void;
+  setClearedAt: (ts: number | null) => void;
+  setTemplateLock: (templateId: string | null) => void;
 
   
 
@@ -169,6 +179,9 @@ const initialState: ConsultationState = {
   planEditedAt: null,
   clinicalImages: [],
   currentPatientSessionId: getCurrentPatientSessionId(),
+  clearInProgress: false,
+  clearedAt: null,
+  templateLock: null,
 };
 
 export const useConsultationStore = create<ConsultationStore>()(
@@ -287,6 +300,11 @@ export const useConsultationStore = create<ConsultationStore>()(
       }
       set({ currentPatientSessionId: sessionId });
     },
+
+    // Atomic clear actions
+    setClearInProgress: (inProgress: boolean) => set({ clearInProgress: inProgress }),
+    setClearedAt: (ts: number | null) => set({ clearedAt: ts ?? null }),
+    setTemplateLock: (templateId: string | null) => set({ templateLock: templateId }),
 
     
 
