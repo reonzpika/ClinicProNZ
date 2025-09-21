@@ -48,6 +48,63 @@ export function useConsultationStores(): any {
     await updateSessionMutation.mutateAsync({ sessionId, updates });
   }, [updateSessionMutation]);
 
+  // ----------------------
+  // Single Mutation Queue (client-only)
+  // ----------------------
+  type UpdateOp = { updates: Partial<PatientSession> };
+  const queueKey = '__clinicproMutationQueueRef';
+  const processingKey = '__clinicproMutationProcessingRef';
+  const pausedKey = '__clinicproMutationPausedRef';
+  const g: any = (typeof window !== 'undefined' ? window : globalThis) as any;
+  if (!g[queueKey]) g[queueKey] = { current: [] as UpdateOp[] };
+  if (!g[processingKey]) g[processingKey] = { current: false };
+  if (!g[pausedKey]) g[pausedKey] = { current: false };
+  const mutationQueueRef = g[queueKey] as { current: UpdateOp[] };
+  const processingRef = g[processingKey] as { current: boolean };
+  const pausedRef = g[pausedKey] as { current: boolean };
+
+  const processQueue = useCallback(async (): Promise<void> => {
+    if (processingRef.current || pausedRef.current) {
+      return;
+    }
+    const id = consultationStore.currentPatientSessionId;
+    if (!id) {
+      return;
+    }
+    const next = mutationQueueRef.current.shift();
+    if (!next) {
+      return;
+    }
+    processingRef.current = true;
+    try {
+      await updatePatientSession(id, next.updates);
+    } catch {
+      // keep optimistic UI; optionally log
+    } finally {
+      processingRef.current = false;
+      if (!pausedRef.current && mutationQueueRef.current.length > 0) {
+        setTimeout(() => { processQueue().catch(() => {}); }, 0);
+      }
+    }
+  }, [consultationStore.currentPatientSessionId, updatePatientSession]);
+
+  const coalesceIntoQueue = useCallback((updates: Partial<PatientSession>) => {
+    const tail = mutationQueueRef.current[mutationQueueRef.current.length - 1];
+    if (tail) {
+      tail.updates = { ...tail.updates, ...updates };
+    } else {
+      mutationQueueRef.current.push({ updates });
+    }
+  }, []);
+
+  const enqueueUpdate = useCallback((updates: Partial<PatientSession>) => {
+    coalesceIntoQueue(updates);
+    Promise.resolve().then(() => processQueue());
+  }, [coalesceIntoQueue, processQueue]);
+
+  const pauseMutations = useCallback(() => { pausedRef.current = true; }, []);
+  const resumeMutations = useCallback(() => { pausedRef.current = false; Promise.resolve().then(() => processQueue()); }, [processQueue]);
+
   const ensureActiveSession = useCallback(async (): Promise<string | null> => {
     // If a previous ensure is in progress, await it
     if (__ensureSessionPromise) {
@@ -213,11 +270,11 @@ export function useConsultationStores(): any {
     const nextAssessment = session.assessmentText || '';
     const nextPlan = session.planText || '';
     const now = Date.now();
-    const recentMs = 800;
-    const problemsRecentlyEdited = !!(consultationStore.problemsDirty && consultationStore.problemsEditedAt && (now - consultationStore.problemsEditedAt) < recentMs);
-    const objectiveRecentlyEdited = !!(consultationStore.objectiveDirty && consultationStore.objectiveEditedAt && (now - consultationStore.objectiveEditedAt) < recentMs);
-    const assessmentRecentlyEdited = !!(consultationStore.assessmentDirty && consultationStore.assessmentEditedAt && (now - consultationStore.assessmentEditedAt) < recentMs);
-    const planRecentlyEdited = !!(consultationStore.planDirty && consultationStore.planEditedAt && (now - consultationStore.planEditedAt) < recentMs);
+    const recentMs = 3000;
+    const problemsRecentlyEdited = !!(consultationStore.problemsEditedAt && (now - consultationStore.problemsEditedAt) < recentMs);
+    const objectiveRecentlyEdited = !!(consultationStore.objectiveEditedAt && (now - consultationStore.objectiveEditedAt) < recentMs);
+    const assessmentRecentlyEdited = !!(consultationStore.assessmentEditedAt && (now - consultationStore.assessmentEditedAt) < recentMs);
+    const planRecentlyEdited = !!(consultationStore.planEditedAt && (now - consultationStore.planEditedAt) < recentMs);
     if (!consultationStore.problemsDirty && !problemsRecentlyEdited && nextProblems !== consultationStore.problemsText) {
       (consultationStore as any).hydrateProblemsText(nextProblems);
     }
@@ -240,7 +297,11 @@ export function useConsultationStores(): any {
       }
     } catch {}
     if (session.templateId && session.templateId !== consultationStore.templateId) {
-      consultationStore.setTemplateId(session.templateId);
+      // Skip template hydration if a template lock is present (atomic clear)
+      const locked = (consultationStore as any).templateLock;
+      if (!locked) {
+        consultationStore.setTemplateId(session.templateId);
+      }
     }
   }, [
     // Scope hydration primarily to session/data changes, not keystrokes
@@ -294,18 +355,18 @@ export function useConsultationStores(): any {
     if (!id) {
       return false;
     }
-    await updatePatientSession(id, { notes } as any);
+    enqueueUpdate({ notes } as any);
     return true;
-  }, [consultationStore.currentPatientSessionId, updatePatientSession]);
+  }, [consultationStore.currentPatientSessionId, enqueueUpdate]);
 
   const saveTypedInputToCurrentSession = useCallback(async (typedInput: string): Promise<boolean> => {
     const id = consultationStore.currentPatientSessionId;
     if (!id) {
       return false;
     }
-    await updatePatientSession(id, { typedInput } as any);
+    enqueueUpdate({ typedInput } as any);
     return true;
-  }, [consultationStore.currentPatientSessionId, updatePatientSession]);
+  }, [consultationStore.currentPatientSessionId, enqueueUpdate]);
 
   
 
@@ -315,48 +376,48 @@ export function useConsultationStores(): any {
     if (!id) {
  return false;
 }
-    await updatePatientSession(id, { problemsText: text } as any);
+    enqueueUpdate({ problemsText: text } as any);
     try {
       consultationStore.clearProblemsDirty?.();
     } catch {}
     return true;
-  }, [consultationStore.currentPatientSessionId, updatePatientSession]);
+  }, [consultationStore.currentPatientSessionId, enqueueUpdate]);
 
   const saveObjectiveToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
     const id = consultationStore.currentPatientSessionId;
     if (!id) {
  return false;
 }
-    await updatePatientSession(id, { objectiveText: text } as any);
+    enqueueUpdate({ objectiveText: text } as any);
     try {
       consultationStore.clearObjectiveDirty?.();
     } catch {}
     return true;
-  }, [consultationStore.currentPatientSessionId, updatePatientSession]);
+  }, [consultationStore.currentPatientSessionId, enqueueUpdate]);
 
   const saveAssessmentToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
     const id = consultationStore.currentPatientSessionId;
     if (!id) {
  return false;
 }
-    await updatePatientSession(id, { assessmentText: text } as any);
+    enqueueUpdate({ assessmentText: text } as any);
     try {
       consultationStore.clearAssessmentDirty?.();
     } catch {}
     return true;
-  }, [consultationStore.currentPatientSessionId, updatePatientSession]);
+  }, [consultationStore.currentPatientSessionId, enqueueUpdate]);
 
   const savePlanToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
     const id = consultationStore.currentPatientSessionId;
     if (!id) {
  return false;
 }
-    await updatePatientSession(id, { planText: text } as any);
+    enqueueUpdate({ planText: text } as any);
     try {
       consultationStore.clearPlanDirty?.();
     } catch {}
     return true;
-  }, [consultationStore.currentPatientSessionId, updatePatientSession]);
+  }, [consultationStore.currentPatientSessionId, enqueueUpdate]);
 
   const saveTranscriptionsToCurrentSession = useCallback(async (): Promise<boolean> => {
     const id = consultationStore.currentPatientSessionId;
@@ -425,11 +486,9 @@ export function useConsultationStores(): any {
       consultationStore.setTemplateId(id);
       const sid = consultationStore.currentPatientSessionId;
       if (sid) {
-        try {
-          await updatePatientSession(sid, { templateId: id } as any);
-        } catch {}
+        enqueueUpdate({ templateId: id } as any);
       }
-    }, [consultationStore.templateId, consultationStore.currentPatientSessionId, updatePatientSession, consultationStore.setTemplateId]),
+    }, [consultationStore.templateId, consultationStore.currentPatientSessionId, enqueueUpdate, consultationStore.setTemplateId]),
 
     // Actions - input/transcription
     setInputMode: transcriptionStore.setInputMode,
@@ -514,6 +573,13 @@ export function useConsultationStores(): any {
     saveObjectiveToCurrentSession,
     saveAssessmentToCurrentSession,
     savePlanToCurrentSession,
+
+    // Mutation queue controls and atomic clear flag setters
+    pauseMutations,
+    resumeMutations,
+    setClearInProgress: consultationStore.setClearInProgress,
+    setClearedAt: consultationStore.setClearedAt,
+    setTemplateLock: consultationStore.setTemplateLock,
 
     // Reset
     resetConsultation: () => {
