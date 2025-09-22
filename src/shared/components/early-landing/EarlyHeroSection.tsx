@@ -88,7 +88,7 @@ export const EarlyHeroSection = () => {
               <p className="mb-3 font-semibold text-green-200">Real-time AI medical scribe for NZ general practice</p>
               <p className="mb-3">ClinicPro gives you more control:</p>
               <ul className="ml-5 list-disc space-y-2">
-                <li>Specify problems, add notes on the fly</li>
+                <li>Specify problems, add additional note</li>
                 <li>Upload and resize lesion images instantly during the consult</li>
                 <li>Chat with trusted NZ health resources</li>
               </ul>
