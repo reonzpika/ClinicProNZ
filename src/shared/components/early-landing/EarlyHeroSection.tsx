@@ -63,10 +63,13 @@ export const EarlyHeroSection = () => {
 
           {/* Left Column - Content */}
           <div className="flex flex-col justify-center text-center lg:text-left">
-            {/* Trust Badge */}
-            <div className="mb-6">
+            {/* Trust Badges */}
+            <div className="mb-6 flex flex-wrap items-center justify-center gap-2 lg:justify-start">
               <div className="inline-flex items-center rounded-full border border-green-300/30 bg-green-500/20 px-4 py-2 text-sm font-medium text-green-200">
                 🩺 Built by a Practising NZ GP
+              </div>
+              <div className="inline-flex items-center rounded-full border border-blue-300/30 bg-blue-500/20 px-4 py-2 text-sm font-semibold text-blue-100">
+                🤖 AI Medical Scribe
               </div>
             </div>
 
@@ -82,13 +85,13 @@ export const EarlyHeroSection = () => {
 
             {/* Subtitle */}
             <div className="mb-8 text-lg text-gray-100 lg:text-xl">
+              <p className="mb-3 font-semibold text-green-200">Real-time AI medical scribe for NZ general practice</p>
               <p className="mb-3">ClinicPro gives you more control:</p>
               <ul className="ml-5 list-disc space-y-2">
                 <li>Specify problems, add notes on the fly</li>
                 <li>Upload and resize lesion images instantly during the consult</li>
                 <li>Chat with trusted NZ health resources</li>
               </ul>
-              <p className="mt-4 text-gray-200">All in one smart tool.</p>
             </div>
 
             {/* Mobile Image - Between Benefits and CTA */}
