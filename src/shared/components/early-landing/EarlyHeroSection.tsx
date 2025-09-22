@@ -3,7 +3,6 @@
 import { ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 
-import SplitText from '@/src/shared/components/SplitText';
 import { Button } from '@/src/shared/components/ui/button';
 
 import Aurora from './Aurora';
@@ -74,41 +73,23 @@ export const EarlyHeroSection = () => {
             {/* Headline */}
             <h1 className="mb-6 leading-tight">
               <span className="block font-oswald text-4xl font-black tracking-tight text-white lg:text-6xl xl:text-7xl">
-                GET MORE DONE IN
-                <span className="bg-gradient-to-r from-nz-blue-400 to-nz-green-400 bg-clip-text text-transparent"> 15 MINUTES</span>
+                More Than a Scribe.
               </span>
-              <div className="mt-2">
-                <SplitText
-                  text="— AND LEAVE ON TIME,"
-                  className="block font-open-sans text-3xl font-bold tracking-tight text-green-300 lg:text-4xl xl:text-5xl"
-                  delay={120}
-                  duration={0.8}
-                  ease="power3.out"
-                  splitType="chars"
-                  from={{ opacity: 0, y: 50, rotationX: -90 }}
-                  to={{ opacity: 1, y: 0, rotationX: 0 }}
-                  threshold={0.2}
-                  textAlign="left"
-                />
-                <SplitText
-                  text="SATISFIED."
-                  className="block font-open-sans text-3xl font-bold tracking-tight text-green-300 lg:text-4xl xl:text-5xl"
-                  delay={80}
-                  duration={1.0}
-                  ease="bounce.out"
-                  splitType="chars"
-                  from={{ opacity: 0, y: 60, scale: 0.3 }}
-                  to={{ opacity: 1, y: 0, scale: 1 }}
-                  threshold={0.2}
-                  textAlign="left"
-                />
-              </div>
+              <span className="mt-2 block font-open-sans text-3xl font-bold tracking-tight text-green-300 lg:text-4xl xl:text-5xl">
+                Built for NZ GPs.
+              </span>
             </h1>
 
             {/* Subtitle */}
-            <p className="mb-8 text-lg text-gray-100 lg:text-xl">
-              ClinicPro brings the latest smart tools to your practice — happier patients, smoother admin, and more time for what matters.
-            </p>
+            <div className="mb-8 text-lg text-gray-100 lg:text-xl">
+              <p className="mb-3">ClinicPro gives you more control:</p>
+              <ul className="ml-5 list-disc space-y-2">
+                <li>Specify problems, add notes on the fly</li>
+                <li>Upload and resize lesion images instantly during the consult</li>
+                <li>Chat with trusted NZ health resources</li>
+              </ul>
+              <p className="mt-4 text-gray-200">All in one smart tool.</p>
+            </div>
 
             {/* Mobile Image - Between Benefits and CTA */}
             <div className="my-8 lg:hidden">
@@ -172,9 +153,7 @@ export const EarlyHeroSection = () => {
               ? 'Loading...'
               : (
                   <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
-                    <span className="whitespace-nowrap">
-                      👉 Start Today
-                    </span>
+                    <span className="whitespace-nowrap">Get more done in 15 min</span>
                     <ArrowRight className="ml-1 size-3 transition-transform duration-300 group-hover:translate-x-1 sm:size-4" />
                   </div>
                 )}
@@ -192,7 +171,7 @@ export const EarlyHeroSection = () => {
               ? 'Loading...'
               : (
                   <div className="flex items-center justify-center gap-2">
-                    <span>Start Today</span>
+                    <span>Get more done in 15 min</span>
                     <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
                   </div>
                 )}
