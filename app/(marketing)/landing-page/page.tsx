@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 
 import { EarlyFooterCTA } from '@/src/shared/components/early-landing/EarlyFooterCTA';
 import { EarlyHeroSection } from '@/src/shared/components/early-landing/EarlyHeroSection';
-import { ConclusionSection } from '@/src/shared/components/early-landing/ConclusionSection';
 import { PageFooter } from '@/src/shared/components/early-landing/PageFooter';
 import { PageNavigation } from '@/src/shared/components/early-landing/PageNavigation';
 import { PersonalStorySection } from '@/src/shared/components/early-landing/PersonalStorySection';
@@ -47,9 +46,7 @@ export default function EarlyAccessPage() {
         <div id="feature-chat">
           <FeatureChat />
         </div>
-        <div id="conclusion">
-          <ConclusionSection />
-        </div>
+        
         <div id="start">
           <EarlyFooterCTA />
         </div>
