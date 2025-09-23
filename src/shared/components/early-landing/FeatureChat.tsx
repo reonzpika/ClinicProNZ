@@ -18,16 +18,17 @@ export const FeatureChat = () => {
           <div className="relative inline-block">
             <div className="absolute -left-6 top-4 h-14 w-1 bg-gradient-to-b from-nz-green-500 to-nz-blue-600 lg:-left-10 lg:h-16"></div>
             <h2 className="relative text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
-              Chat
+              Search & Chat
             </h2>
           </div>
-          <p className="mt-4 text-lg text-gray-700">Ask and get referenced answers fast</p>
+          <p className="mt-4 text-lg text-gray-700">Trusted NZ resources at your fingertips</p>
         </div>
 
         {/* Band A: What you can ask (copy left, screenshot right) */}
         <div className="mb-12 grid items-center gap-10 lg:mb-16 lg:grid-cols-2 lg:gap-16">
           <div>
-            <h3 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl">What you can ask</h3>
+            <h3 className="mb-3 text-2xl font-bold text-gray-900 sm:text-3xl">What you can ask</h3>
+            <p className="mb-3 text-gray-700">Search guidelines and local pathways, referral criteria, patient info (Healthify), and drug information (NZ Formulary) — open sources in one click.</p>
             <ul className="space-y-2 text-gray-700">
               <li>• General health/disease questions</li>
               <li>• Referral info (where/when/how)</li>
