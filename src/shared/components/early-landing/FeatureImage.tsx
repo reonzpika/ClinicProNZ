@@ -3,7 +3,7 @@
 export const FeatureImage = () => {
   return (
     <section className="relative overflow-hidden bg-white py-16 sm:py-24 lg:py-28">
-      <div className="pointer-events-none absolute inset-0 opacity-[0.03]">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.02] will-change-[transform]">
         <div
           className="absolute inset-0"
           style={{
@@ -40,11 +40,13 @@ export const FeatureImage = () => {
             </ul>
             
           </div>
-          <div>
-            <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-xl">
+          <div className="[content-visibility:auto] [contain:layout_paint_style]">
+            <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md">
               <img
                 src="https://placehold.co/960x600?text=Mobile+Upload+%2B+Auto-Resize"
                 alt="Mobile upload with auto-resize and desktop availability"
+                loading="lazy"
+                decoding="async"
                 className="block w-full object-cover"
               />
             </div>

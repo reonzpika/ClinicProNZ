@@ -4,6 +4,7 @@ import { ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
+import Image from 'next/image';
 
 import Aurora from './Aurora';
 
@@ -46,7 +47,7 @@ export const EarlyHeroSection = () => {
   return (
         <section className="relative min-h-screen bg-gray-900 py-20 motion-reduce:transition-none motion-reduce:duration-0 lg:py-28">
       {/* Aurora Background */}
-      <div className="absolute inset-0 opacity-90">
+      <div className="absolute inset-0 opacity-90 motion-reduce:hidden">
         <Aurora
           colorStops={['#3b82f6', '#22c55e', '#06b6d4']}
           blend={0.8}
@@ -93,10 +94,13 @@ export const EarlyHeroSection = () => {
               <div className="relative">
                 <div className="aspect-[4/3] overflow-hidden rounded-2xl border border-gray-600/30 bg-gradient-to-br from-gray-800 to-gray-700 shadow-2xl">
                   <div className="group relative size-full">
-                    <img
+                    <Image
                       src="/images/landing-page/hero-image.png"
                       alt="ClinicPro AI Medical Scribe Interface"
-                      className="size-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none"
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                      priority
+                      className="object-cover opacity-90 transition-transform duration-700 group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none"
                     />
                     {/* 2025 Trend: Video Play Overlay */}
                     <div className="absolute inset-0 flex items-center justify-center bg-gray-900/20 opacity-0 transition-all duration-500 group-hover:opacity-100">
@@ -118,10 +122,12 @@ export const EarlyHeroSection = () => {
             <div className="relative">
               <div className="aspect-[4/3] w-full max-w-lg overflow-hidden rounded-2xl border border-gray-600/30 bg-gradient-to-br from-gray-800 to-gray-700 shadow-2xl">
                 <div className="group relative size-full">
-                  <img
+                  <Image
                     src="/images/landing-page/hero-image.png"
                     alt="ClinicPro AI Medical Scribe Interface"
-                    className="size-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105"
+                    fill
+                    sizes="(max-width: 1280px) 50vw, 600px"
+                    className="object-cover opacity-90 transition-transform duration-700 group-hover:scale-105"
                   />
                   {/* 2025 Trend: Video Play Overlay */}
                   <div className="absolute inset-0 flex items-center justify-center bg-gray-900/20 opacity-0 transition-all duration-500 group-hover:opacity-100">

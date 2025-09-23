@@ -3,7 +3,7 @@
 export const FeatureAiscribe = () => {
   return (
     <section className="relative overflow-hidden bg-white py-16 sm:py-24 lg:py-28">
-      <div className="pointer-events-none absolute inset-0 opacity-[0.03]">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.03] will-change-[transform]">
         <div
           className="absolute inset-0"
           style={{
@@ -36,11 +36,13 @@ export const FeatureAiscribe = () => {
               <li>• Switch templates anytime</li>
             </ul>
           </div>
-          <div>
-            <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-xl">
+          <div className="[content-visibility:auto] [contain:layout_paint_style]">
+            <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md">
               <img
                 src="https://placehold.co/960x600?text=Consultation"
                 alt="Consultation screen showing recording, additional note input, and template switcher"
+                loading="lazy"
+                decoding="async"
                 className="block w-full object-cover"
               />
             </div>
@@ -49,11 +51,13 @@ export const FeatureAiscribe = () => {
 
         {/* Band B: Generated note (screenshot left, copy right) */}
         <div className="mb-12 grid items-center gap-10 lg:mb-16 lg:grid-cols-2 lg:gap-16">
-          <div className="order-2 lg:order-1">
-            <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-xl">
+          <div className="order-2 [content-visibility:auto] [contain:layout_paint_style] lg:order-1">
+            <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md">
               <img
                 src="https://placehold.co/960x600?text=Generated+Note"
                 alt="Generated note with editable sections"
+                loading="lazy"
+                decoding="async"
                 className="block w-full object-cover"
               />
             </div>

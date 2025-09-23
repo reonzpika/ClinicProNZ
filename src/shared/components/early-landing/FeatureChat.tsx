@@ -3,7 +3,7 @@
 export const FeatureChat = () => {
   return (
     <section className="relative overflow-hidden bg-white py-16 sm:py-24 lg:py-28">
-      <div className="pointer-events-none absolute inset-0 opacity-[0.03]">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.02] will-change-[transform]">
         <div
           className="absolute inset-0"
           style={{
@@ -37,11 +37,13 @@ export const FeatureChat = () => {
             </ul>
             <p className="mt-3 text-sm text-gray-600">Not intended for clinical judgement or decision‑making. Verify with the cited sources.</p>
           </div>
-          <div>
-            <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-xl">
+          <div className="[content-visibility:auto] [contain:layout_paint_style]">
+            <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md">
               <img
                 src="https://placehold.co/960x600?text=Chat+with+NZ+resources"
                 alt="Chat UI showing an answer with Healthify and NZ Formulary references"
+                loading="lazy"
+                decoding="async"
                 className="block w-full object-cover"
               />
             </div>
