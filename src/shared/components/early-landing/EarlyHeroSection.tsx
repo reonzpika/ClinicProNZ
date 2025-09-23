@@ -47,13 +47,15 @@ export const EarlyHeroSection = () => {
   return (
         <section className="relative min-h-screen bg-gray-900 py-20 motion-reduce:transition-none motion-reduce:duration-0 lg:py-28">
       {/* Aurora Background */}
-      <div className="absolute inset-0 opacity-90 motion-reduce:hidden">
+      <div className="absolute inset-0 opacity-90">
         <Aurora
           colorStops={['#3b82f6', '#22c55e', '#06b6d4']}
           blend={0.8}
           amplitude={1.5}
           speed={0.4}
+          className="motion-reduce:hidden"
         />
+        <div className="absolute inset-0 hidden bg-gradient-to-br from-nz-blue-700/40 via-nz-green-700/30 to-gray-900/60 motion-reduce:block"></div>
       </div>
 
       {/* Light overlay for better text readability */}
@@ -92,7 +94,7 @@ export const EarlyHeroSection = () => {
             {/* Mobile Image - Between Benefits and CTA */}
             <div className="my-8 lg:hidden">
               <div className="relative">
-                <div className="aspect-[4/3] overflow-hidden rounded-2xl border border-gray-600/30 bg-gradient-to-br from-gray-800 to-gray-700 shadow-2xl">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-gray-600/30 bg-gradient-to-br from-gray-800 to-gray-700 shadow-2xl">
                   <div className="group relative size-full">
                     <Image
                       src="/images/landing-page/hero-image.png"
@@ -120,7 +122,7 @@ export const EarlyHeroSection = () => {
           {/* Right Column - Hero Image - Desktop Only */}
           <div className="hidden lg:flex lg:items-center lg:justify-center">
             <div className="relative">
-              <div className="aspect-[4/3] w-full max-w-lg overflow-hidden rounded-2xl border border-gray-600/30 bg-gradient-to-br from-gray-800 to-gray-700 shadow-2xl">
+              <div className="relative aspect-[4/3] w-full max-w-lg overflow-hidden rounded-2xl border border-gray-600/30 bg-gradient-to-br from-gray-800 to-gray-700 shadow-2xl">
                 <div className="group relative size-full">
                   <Image
                     src="/images/landing-page/hero-image.png"
