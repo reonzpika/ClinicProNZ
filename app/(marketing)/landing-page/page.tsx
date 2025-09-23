@@ -9,6 +9,7 @@ import { PageFooter } from '@/src/shared/components/early-landing/PageFooter';
 import { PageNavigation } from '@/src/shared/components/early-landing/PageNavigation';
 import { PersonalStorySection } from '@/src/shared/components/early-landing/PersonalStorySection';
 import { FeatureAiscribe } from '@/src/shared/components/early-landing/FeatureAiscribe';
+import { FeatureImage } from '@/src/shared/components/early-landing/FeatureImage';
 
 export const metadata: Metadata = {
   title: 'ClinicPro - Get More Done in 15 Minutes and Leave on Time, Satisfied',
@@ -40,6 +41,9 @@ export default function EarlyAccessPage() {
         </div>
         <div id="ai-scribe">
           <FeatureAiscribe />
+        </div>
+        <div id="feature-image">
+          <FeatureImage />
         </div>
         <div id="problems">
           <HowItWorksSection />
