@@ -48,13 +48,14 @@ export const EarlyHeroSection = () => {
         <section className="relative min-h-screen bg-gray-900 py-20 motion-reduce:transition-none motion-reduce:duration-0 lg:py-28">
       {/* Aurora Background */}
       <div className="absolute inset-0 opacity-90">
-        <Aurora
-          colorStops={['#3b82f6', '#22c55e', '#06b6d4']}
-          blend={0.8}
-          amplitude={1.5}
-          speed={0.4}
-          className="motion-reduce:hidden"
-        />
+        <div className="motion-reduce:hidden">
+          <Aurora
+            colorStops={['#3b82f6', '#22c55e', '#06b6d4']}
+            blend={0.8}
+            amplitude={1.5}
+            speed={0.4}
+          />
+        </div>
         <div className="absolute inset-0 hidden bg-gradient-to-br from-nz-blue-700/40 via-nz-green-700/30 to-gray-900/60 motion-reduce:block"></div>
       </div>
 
