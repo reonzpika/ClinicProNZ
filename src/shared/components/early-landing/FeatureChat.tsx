@@ -28,7 +28,7 @@ export const FeatureChat = () => {
         <div className="mb-12 grid items-center gap-10 lg:mb-16 lg:grid-cols-2 lg:gap-16">
           <div>
             <h3 className="mb-3 text-2xl font-bold text-gray-900 sm:text-3xl">What you can ask</h3>
-            <p className="mb-3 text-gray-700">Search guidelines and local pathways, referral criteria, patient info (Healthify), and drug information (NZ Formulary) — open sources in one click.</p>
+            <p className="mb-3 text-gray-700">Search like Google — without tab‑hopping in front of the patient. Get trusted NZ references fast, ask follow‑up questions to refine, and optionally include the consult note as context.</p>
             <ul className="space-y-2 text-gray-700">
               <li>• General health/disease questions</li>
               <li>• Referral info (where/when/how)</li>
