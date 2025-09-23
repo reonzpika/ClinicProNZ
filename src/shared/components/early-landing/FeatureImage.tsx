@@ -21,12 +21,13 @@ export const FeatureImage = () => {
               Clinical Image
             </h2>
           </div>
+          <p className="mt-4 text-lg text-gray-700">Snap on mobile. Resize automatically.</p>
         </div>
 
         {/* Mobile upload band (copy left, screenshot right) */}
         <div className="mb-12 grid items-center gap-10 lg:mb-16 lg:grid-cols-2 lg:gap-16">
           <div>
-            <h3 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl">Snap on mobile. Resize automatically.</h3>
+            <h3 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl">Why use this</h3>
             <p className="mb-6 text-lg leading-relaxed text-gray-700">
               Upload from your phone without saving to your personal gallery. Images are auto‑resized for referrals and ready on your desktop.
             </p>
@@ -37,6 +38,7 @@ export const FeatureImage = () => {
               <li>• Ready to download on desktop and attach to PMS/referral</li>
               <li>• Also supports desktop upload when you’re at your computer</li>
             </ul>
+            <p className="mt-3 text-sm text-gray-600">Images aren’t saved to your personal phone. Processing is transient for resizing, then delivered to you.</p>
           </div>
           <div>
             <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-xl">

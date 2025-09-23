@@ -21,15 +21,15 @@ export const FeatureAiscribe = () => {
               AI Scribe
             </h2>
           </div>
+          <p className="mt-4 text-lg text-gray-700">Quality consultation note, fast.</p>
         </div>
 
         {/* Band A: Consultation (copy left, screenshot right) */}
         <div className="mb-16 grid items-center gap-10 lg:mb-20 lg:grid-cols-2 lg:gap-16">
           <div>
             <h3 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl">Capture the consult. Get structured notes.</h3>
-            <p className="mb-6 text-lg leading-relaxed text-gray-700">
-              Audio captures the subjective; spoken objectives are included. Type objective findings (exam, assessment/Dx, plan) as needed for more control and accuracy — you’re in charge.
-            </p>
+            <p className="mb-4 text-lg leading-relaxed text-gray-700">Audio captures the subjective; spoken objectives are included. Type objective findings (exam, assessment/Dx, plan) as needed for more control and accuracy — you’re in charge.</p>
+            <p className="mb-6 text-gray-700">Most GPs battle speed versus quality: detailed notes take longer; brief notes keep you on time but miss nuance. ClinicPro ends this dilemma — clear, structured notes without after‑hours admin.</p>
             <ul className="space-y-2 text-gray-700">
               <li>• Record on mobile or desktop</li>
               <li>• Mark problems as you go (multi‑problem ready)</li>
