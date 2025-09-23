@@ -28,13 +28,14 @@ export const FeatureChat = () => {
         <div className="mb-12 grid items-center gap-10 lg:mb-16 lg:grid-cols-2 lg:gap-16">
           <div>
             <h3 className="mb-3 text-2xl font-bold text-gray-900 sm:text-3xl">What you can ask</h3>
-            <p className="mb-3 text-gray-700">Search like Google — without tab‑hopping in front of the patient. Get trusted NZ references fast, ask follow‑up questions to refine, and optionally include the consult note as context.</p>
+            <p className="mb-3 text-gray-700">Search NZ resources in one place — like Google, but for GPs. Get trusted references fast, and ask follow‑up questions to refine.</p>
             <ul className="space-y-2 text-gray-700">
               <li>• General health/disease questions</li>
               <li>• Referral info (where/when/how)</li>
               <li>• Patient info (Healthify)</li>
               <li>• Drug info (NZ Formulary)</li>
             </ul>
+            <p className="mt-3 text-sm text-gray-600">Not intended for clinical judgement or decision‑making. Verify with the cited sources.</p>
           </div>
           <div>
             <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-xl">
@@ -55,7 +56,7 @@ export const FeatureChat = () => {
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
               <span className="font-medium text-gray-900">1.</span>
-              {' '}Type a question
+              {' '}Type keywords or a question
             </div>
             <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
               <span className="font-medium text-gray-900">2.</span>
@@ -68,10 +69,7 @@ export const FeatureChat = () => {
           </div>
         </div>
 
-        {/* Guardrails */}
-        <div className="mb-12 text-center text-sm text-gray-600 lg:mb-16">
-          Not intended for clinical judgement or decision‑making. Verify with the cited sources.
-        </div>
+        
 
         {/* CTA */}
         <div className="text-center">
