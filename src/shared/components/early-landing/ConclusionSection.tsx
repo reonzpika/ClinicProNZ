@@ -63,21 +63,7 @@ export const ConclusionSection = () => {
           <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Images never saved to your phone</span>
         </div>
 
-        {/* Dual CTAs */}
-        <div className="flex flex-col items-center gap-4 sm:flex-row">
-          <a
-            href="#start"
-            className="inline-flex items-center justify-center rounded-xl bg-orange-600 px-6 py-3 text-base font-bold text-white shadow-xl ring-1 ring-orange-500/40 transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01] hover:bg-orange-700 hover:shadow-orange-500/25"
-          >
-            Join beta (free)
-          </a>
-          <a
-            href="#ai-scribe"
-            className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-6 py-3 text-base font-bold text-white/90 transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01] hover:bg-white/10"
-          >
-            See 60‑sec demo
-          </a>
-        </div>
+        
       </div>
     </section>
   );
