@@ -2,67 +2,80 @@
 
 export const ConclusionSection = () => {
   return (
-    <section className="relative overflow-hidden bg-white py-16 sm:py-24 lg:py-28">
-      <div className="pointer-events-none absolute inset-0 opacity-[0.02]">
+    <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-900 to-black py-20 text-white sm:py-24 lg:py-28">
+      {/* soft grid texture */}
+      <div className="pointer-events-none absolute inset-0 opacity-[0.06]">
         <div
           className="absolute inset-0"
           style={{
             backgroundImage:
-              `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%233b82f6' fill-opacity='1' fill-rule='evenodd'%3E%3Ccircle cx='30' cy='30' r='1.2'/%3E%3C/g%3E%3C/svg%3E")`,
+              `radial-gradient(circle at 25% 10%, rgba(99,102,241,0.15) 0, rgba(99,102,241,0) 40%), radial-gradient(circle at 75% 90%, rgba(16,185,129,0.12) 0, rgba(16,185,129,0) 40%)`,
           }}
         />
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Title */}
+        {/* Headline */}
         <div className="mb-12 lg:mb-16">
-          <div className="relative inline-block">
-            <div className="absolute -left-6 top-4 h-14 w-1 bg-gradient-to-b from-nz-green-500 to-nz-blue-600 lg:-left-10 lg:h-16"></div>
-            <h2 className="relative text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
-              In summary
-            </h2>
-          </div>
+          <h2 className="font-oswald text-4xl font-black leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+            End the 15‑minute compromise.
+          </h2>
+          <p className="mt-4 max-w-3xl text-lg text-gray-200">
+            Structured notes, referral‑ready images, and referenced answers — without breaking eye contact.
+          </p>
         </div>
 
-        {/* Feature summary */}
-        <div className="mb-10 grid gap-6 lg:grid-cols-3">
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h3 className="mb-2 text-xl font-bold text-gray-900">AI Scribe</h3>
-            <p className="text-gray-700">Capture the consult efficiently. Structured notes fast. Audio for subjective, optional typed objectives — you’re in charge.</p>
-          </div>
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h3 className="mb-2 text-xl font-bold text-gray-900">Clinical Image</h3>
-            <p className="text-gray-700">Snap on mobile, auto‑resize, download on desktop. Keeps images off personal phones; referral‑friendly sizes.</p>
-          </div>
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h3 className="mb-2 text-xl font-bold text-gray-900">Search & Chat</h3>
-            <p className="text-gray-700">Search NZ resources in one place — like Google, for GPs. Referenced answers fast; open sources in one click.</p>
-          </div>
+        {/* Essentials inline line */}
+        <div className="mb-12 border-y border-white/10 py-6 text-base text-gray-200">
+          <span className="font-semibold text-white">AI Scribe</span>
+          : quality notes in minutes
+          {' '}
+          <span className="mx-3 inline-block h-1 w-8 -translate-y-1 align-middle rounded-full bg-gradient-to-r from-nz-green-400 to-nz-blue-400" />
+          <span className="font-semibold text-white">Clinical Image</span>
+          : snap, auto‑resize
+          {' '}
+          <span className="mx-3 inline-block h-1 w-8 -translate-y-1 align-middle rounded-full bg-gradient-to-r from-nz-green-400 to-nz-blue-400" />
+          <span className="font-semibold text-white">Search & Chat</span>
+          : trusted NZ answers fast
         </div>
 
-        {/* Key phrases */}
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 shadow-sm">
-            <h4 className="mb-2 text-lg font-semibold text-gray-900">Does this sound familiar?</h4>
-            <p className="text-gray-700">Back‑to‑back patients, notes slipping after hours, and admin piling up.</p>
-          </div>
-          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 shadow-sm">
-            <h4 className="mb-2 text-lg font-semibold text-gray-900">Imagine a consult where…</h4>
-            <p className="text-gray-700">You stay present, capture what matters, and finish on time — every day.</p>
-          </div>
-          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 shadow-sm">
-            <h4 className="mb-2 text-lg font-semibold text-gray-900">How ClinicPro makes it possible</h4>
-            <p className="text-gray-700">AI Scribe, Clinical Image, and Search & Chat working together — less admin, better notes.</p>
-          </div>
+        {/* 3‑step flow - large numerals */}
+        <div className="mb-12 grid gap-8 lg:grid-cols-3">
+          {["Hit record (phone or desktop)", "Talk to the patient; type key objectives if needed", "Review a clean note, download resized images, open referenced guidance"].map((step, idx) => (
+            <div key={idx} className="relative">
+              <div className="pointer-events-none absolute -left-1 -top-2 select-none text-6xl font-black text-white/10">{idx + 1}</div>
+              <p className="relative z-10 text-lg text-gray-100">{step}</p>
+            </div>
+          ))}
         </div>
 
-        {/* CTA */}
-        <div className="mt-12 text-center">
+        {/* Impact bullets */}
+        <div className="mb-12 grid gap-4 sm:grid-cols-3">
+          <div className="rounded-xl bg-white/5 p-4 text-center ring-1 ring-white/10">No after‑hours admin</div>
+          <div className="rounded-xl bg-white/5 p-4 text-center ring-1 ring-white/10">Notes you’re proud of</div>
+          <div className="rounded-xl bg-white/5 p-4 text-center ring-1 ring-white/10">Answers in seconds — NZ sources</div>
+        </div>
+
+        {/* Trust & privacy */}
+        <div className="mb-12 flex flex-wrap items-center gap-3 text-sm text-gray-300">
+          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Built by a practising NZ GP</span>
+          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Consent‑first workflow</span>
+          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">Images never saved to your phone</span>
+        </div>
+
+        {/* Dual CTAs */}
+        <div className="flex flex-col items-center gap-4 sm:flex-row">
           <a
             href="#start"
-            className="inline-block rounded-xl bg-orange-600 px-6 py-3 text-base font-bold text-white shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01] hover:bg-orange-700 hover:shadow-orange-500/25"
+            className="inline-flex items-center justify-center rounded-xl bg-orange-600 px-6 py-3 text-base font-bold text-white shadow-xl ring-1 ring-orange-500/40 transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01] hover:bg-orange-700 hover:shadow-orange-500/25"
           >
-            Get more done in 15 min
+            Join beta (free)
+          </a>
+          <a
+            href="#ai-scribe"
+            className="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-6 py-3 text-base font-bold text-white/90 transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01] hover:bg-white/10"
+          >
+            See 60‑sec demo
           </a>
         </div>
       </div>
