@@ -76,22 +76,13 @@ export const EarlyHeroSection = () => {
             {/* Headline */}
             <h1 className="mb-6 leading-tight">
               <span className="block font-oswald text-4xl font-black tracking-tight text-white lg:text-6xl xl:text-7xl">
-                More Than a Scribe.
-              </span>
-              <span className="mt-2 block font-open-sans text-3xl font-bold tracking-tight text-green-300 lg:text-4xl xl:text-5xl">
-                Built for NZ GPs.
+                AI scribe for NZ GPs
               </span>
             </h1>
 
             {/* Subtitle */}
             <div className="mb-8 text-lg text-gray-100 lg:text-xl">
-              <p className="mb-3 font-semibold text-green-200">Real-time AI medical scribe for NZ general practice</p>
-              <p className="mb-3">ClinicPro gives you more control:</p>
-              <ul className="ml-5 list-disc space-y-2">
-                <li>Specify problems, add additional note</li>
-                <li>Upload and resize lesion images instantly during the consult</li>
-                <li>Chat with trusted NZ health resources</li>
-              </ul>
+              <p className="mb-0">and more...</p>
             </div>
 
             {/* Mobile Image - Between Benefits and CTA */}
