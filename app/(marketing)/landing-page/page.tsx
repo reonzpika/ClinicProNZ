@@ -8,7 +8,7 @@ import { HowItWorksSection } from '@/src/shared/components/early-landing/HowItWo
 import { PageFooter } from '@/src/shared/components/early-landing/PageFooter';
 import { PageNavigation } from '@/src/shared/components/early-landing/PageNavigation';
 import { PersonalStorySection } from '@/src/shared/components/early-landing/PersonalStorySection';
-import { AiScribe } from '@/src/shared/components/early-landing/AiScribe';
+import { FeatureAiscribe } from '@/src/shared/components/early-landing/FeatureAiscribe';
 
 export const metadata: Metadata = {
   title: 'ClinicPro - Get More Done in 15 Minutes and Leave on Time, Satisfied',
@@ -39,7 +39,7 @@ export default function EarlyAccessPage() {
           <PersonalStorySection />
         </div>
         <div id="ai-scribe">
-          <AiScribe />
+          <FeatureAiscribe />
         </div>
         <div id="problems">
           <HowItWorksSection />
