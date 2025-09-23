@@ -2,11 +2,10 @@
 
 export const PageNavigation = () => {
   const sections = [
-    { id: 'hero', label: 'Why ClinicPro' },
     { id: 'story', label: 'Dr. Ryo\'s Story' },
-    { id: 'problems', label: 'GP Struggles' },
-    { id: 'vision', label: 'What\'s Possible' },
-    { id: 'features', label: 'Features & Benefits' },
+    { id: 'ai-scribe', label: 'AI Scribe' },
+    { id: 'feature-image', label: 'Clinical Image' },
+    { id: 'feature-chat', label: 'Search/Chat' },
     { id: 'start', label: 'Start Today' },
   ];
 
