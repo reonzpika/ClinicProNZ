@@ -19,7 +19,7 @@ export const FeatureImage = () => {
             <div className="absolute -left-6 top-6 h-14 w-1 bg-gradient-to-b from-cyan-500 to-blue-600 lg:-left-10 lg:h-16"></div>
             <div className="absolute -right-6 top-10 h-12 w-1 bg-gradient-to-b from-emerald-500 to-teal-600 lg:-right-10 lg:h-14"></div>
             <h2 className="relative text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
-              FeatureImage — images that fit your referral workflow
+              From phone to PMS, without the back‑and‑forth
             </h2>
           </div>
         </div>
@@ -50,13 +50,7 @@ export const FeatureImage = () => {
           </div>
         </div>
 
-        {/* Why this matters */}
-        <div className="mb-12 rounded-2xl border border-gray-200 bg-white p-6 shadow-lg lg:mb-16">
-          <h4 className="mb-2 text-xl font-semibold text-gray-900">Why this matters</h4>
-          <p className="text-gray-700">
-            Today, many GPs use personal phones to capture clinical images and send them via email or messenger to admin for the PMS — images are often too large for referrals. ClinicPro Image auto‑resizes, keeps images off personal phones, and gets them into PMS/referrals cleanly.
-          </p>
-        </div>
+        
 
         {/* How it works (slim) */}
         <div className="mb-12 rounded-2xl border border-gray-200 bg-white p-6 shadow-lg lg:mb-16">
@@ -88,7 +82,6 @@ export const FeatureImage = () => {
 
         {/* CTA */}
         <div className="text-center">
-          <h4 className="mb-4 text-2xl font-bold text-gray-900">Referral‑ready images in seconds</h4>
           <a
             href="#start"
             className="inline-block rounded-xl bg-orange-600 px-6 py-3 text-base font-bold text-white shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01] hover:bg-orange-700 hover:shadow-orange-500/25"
