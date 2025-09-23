@@ -79,7 +79,7 @@ export const EarlyHeroSection = () => {
 
             {/* Subtitle */}
             <div className="mb-8 text-lg text-gray-100 lg:text-xl">
-              <p className="mb-0">and more...</p>
+              <p className="mb-3 font-open-sans text-2xl font-bold text-green-300 lg:text-3xl">and more...</p>
               <p className="mb-3">ClinicPro gives you more control:</p>
               <ul className="ml-5 list-disc space-y-2">
                 <li>Specify problems, add additional note</li>

@@ -28,7 +28,7 @@ export const FeatureAiscribe = () => {
         <div className="mb-16 grid items-center gap-10 lg:mb-20 lg:grid-cols-2 lg:gap-16">
           <div>
             <h3 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl">End the Speed vs Quality Dilemma</h3>
-            <p className="mb-4 text-gray-700">Most GPs battle speed versus quality: detailed notes take longer; brief notes keep you on time but miss key information. ClinicPro ends this dilemma — clear, structured notes without after‑hours admin.</p>
+            <p className="mb-4 text-lg leading-relaxed text-gray-700">Most GPs battle speed versus quality: detailed notes take longer; brief notes keep you on time but miss key information. ClinicPro ends this dilemma — clear, structured notes without after‑hours admin.</p>
             <p className="mb-6 text-lg leading-relaxed text-gray-700">ClinicPro's audio recording captures the subjective; spoken objectives are included. Type objective findings (exam, assessment/Dx, plan) as needed for more control and accuracy — you’re in charge.</p>
             <ul className="space-y-2 text-gray-700">
               <li>• Record on mobile or desktop</li>
@@ -94,7 +94,6 @@ export const FeatureAiscribe = () => {
 
         {/* CTA row (compact) */}
         <div className="text-center">
-          <h4 className="mb-4 text-2xl font-bold text-gray-900">Finish on time, without cutting corners</h4>
           <a
             href="#start"
             className="inline-block rounded-xl bg-orange-600 px-6 py-3 text-base font-bold text-white shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01] hover:bg-orange-700 hover:shadow-orange-500/25"

@@ -38,7 +38,7 @@ export const FeatureImage = () => {
               <li>• Ready to download on desktop and attach to PMS/referral</li>
               <li>• Also supports desktop upload when you’re at your computer</li>
             </ul>
-            <p className="mt-3 text-sm text-gray-600">Images aren’t saved to your personal phone. Processing is transient for resizing, then delivered to you.</p>
+            
           </div>
           <div>
             <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-xl">
@@ -76,10 +76,7 @@ export const FeatureImage = () => {
           </div>
         </div>
 
-        {/* Privacy note */}
-        <div className="mb-12 text-center text-sm text-gray-600 lg:mb-16">
-          Images aren’t saved to your personal phone. Processing is transient for resizing, then delivered to you.
-        </div>
+        
 
         {/* CTA */}
         <div className="text-center">
