@@ -19,7 +19,7 @@ export const FeatureImage = () => {
             <div className="absolute -left-6 top-6 h-14 w-1 bg-gradient-to-b from-cyan-500 to-blue-600 lg:-left-10 lg:h-16"></div>
             <div className="absolute -right-6 top-10 h-12 w-1 bg-gradient-to-b from-emerald-500 to-teal-600 lg:-right-10 lg:h-14"></div>
             <h2 className="relative text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
-              Clinical Image: snap, auto-resize, attach
+              Clinical Image
             </h2>
           </div>
         </div>

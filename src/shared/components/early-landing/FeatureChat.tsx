@@ -19,22 +19,21 @@ export const FeatureChat = () => {
             <div className="absolute -left-6 top-6 h-14 w-1 bg-gradient-to-b from-gray-500 to-gray-700 lg:-left-10 lg:h-16"></div>
             <div className="absolute -right-6 top-10 h-12 w-1 bg-gradient-to-b from-blue-500 to-indigo-600 lg:-right-10 lg:h-14"></div>
             <h2 className="relative text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
-              Chat — NZ health resources on demand
+              Chat
             </h2>
           </div>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-700">
-            Get referenced answers from trusted NZ health resources.
-          </p>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-700">Ask and get referenced answers fast</p>
         </div>
 
-        {/* Band A: Ask and get referenced answers */}
+        {/* Band A: What you can ask (copy left, screenshot right) */}
         <div className="mb-12 grid items-center gap-10 lg:mb-16 lg:grid-cols-2 lg:gap-16">
           <div>
-            <h3 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl">Ask and get referenced answers</h3>
+            <h3 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl">What you can ask</h3>
             <ul className="space-y-2 text-gray-700">
-              <li>• Answers cite NZ resources with links</li>
-              <li>• One‑click to open source</li>
-              <li>• Get info fast</li>
+              <li>• General health/disease questions</li>
+              <li>• Referral info (where/when/how)</li>
+              <li>• Patient info (Healthify)</li>
+              <li>• Drug info (NZ Formulary)</li>
             </ul>
           </div>
           <div>
@@ -48,16 +47,7 @@ export const FeatureChat = () => {
           </div>
         </div>
 
-        {/* What you can ask */}
-        <div className="mb-12 rounded-2xl border border-gray-200 bg-white p-6 shadow-lg lg:mb-16">
-          <h4 className="mb-4 text-xl font-semibold text-gray-900">What you can ask</h4>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">General health/disease questions</div>
-            <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">Referral info (where/when/how)</div>
-            <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">Patient info (Healthify)</div>
-            <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">Drug info (NZ Formulary)</div>
-          </div>
-        </div>
+        
 
         {/* How it works (slim) */}
         <div className="mb-12 rounded-2xl border border-gray-200 bg-white p-6 shadow-lg lg:mb-16">

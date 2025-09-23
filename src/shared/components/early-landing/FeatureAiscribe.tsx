@@ -19,7 +19,7 @@ export const FeatureAiscribe = () => {
             <div className="absolute -left-6 top-6 h-14 w-1 bg-gradient-to-b from-blue-500 to-indigo-600 lg:-left-10 lg:h-16"></div>
             <div className="absolute -right-6 top-10 h-12 w-1 bg-gradient-to-b from-green-500 to-teal-600 lg:-right-10 lg:h-14"></div>
             <h2 className="relative text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
-              AI Scribe — built for NZ GPs
+              AI Scribe
             </h2>
           </div>
           
