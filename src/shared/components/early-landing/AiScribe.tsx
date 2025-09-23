@@ -1,46 +1,6 @@
 'use client';
 
-import { Headphones, Mic, ShieldCheck, Sparkles, Smartphone } from 'lucide-react';
-
 export const AiScribe = () => {
-  const features = [
-    {
-      icon: Headphones,
-      title: 'Audio to text transcription',
-      description: 'Accurate speech-to-text optimised for NZ accents and clinical language.',
-      color: 'from-blue-50 to-indigo-50',
-      border: 'border-blue-200',
-    },
-    {
-      icon: Smartphone,
-      title: 'Record on mobile or desktop',
-      description: 'Start recording from your phone or computer — no special setup.',
-      color: 'from-green-50 to-teal-50',
-      border: 'border-green-200',
-    },
-    {
-      icon: ShieldCheck,
-      title: 'Easy consent process',
-      description: 'Simple, clear prompts to capture verbal consent and keep records tidy.',
-      color: 'from-amber-50 to-orange-50',
-      border: 'border-amber-200',
-    },
-    {
-      icon: Sparkles,
-      title: 'Easy to add additional information',
-      description: 'Append extra notes, clarify problems, and tweak content live.',
-      color: 'from-purple-50 to-pink-50',
-      border: 'border-purple-200',
-    },
-    {
-      icon: Mic,
-      title: 'Customisable note structure',
-      description: 'Templates tuned for NZ GP workflows — adjust headings to your style.',
-      color: 'from-cyan-50 to-blue-50',
-      border: 'border-cyan-200',
-    },
-  ];
-
   return (
     <section className="relative overflow-hidden bg-white py-16 sm:py-24 lg:py-28">
       <div className="pointer-events-none absolute inset-0 opacity-[0.03]">
@@ -59,35 +19,90 @@ export const AiScribe = () => {
             <div className="absolute -left-6 top-6 h-14 w-1 bg-gradient-to-b from-blue-500 to-indigo-600 lg:-left-10 lg:h-16"></div>
             <div className="absolute -right-6 top-10 h-12 w-1 bg-gradient-to-b from-green-500 to-teal-600 lg:-right-10 lg:h-14"></div>
             <h2 className="relative text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
-              AI Scribe Built for NZ GPs
+              AI Scribe — built for NZ GPs
             </h2>
           </div>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
-            Capture the consult naturally. Your notes, structured and ready to file.
-          </p>
+          
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map((feature, idx) => {
-            const Icon = feature.icon;
-            return (
-              <div
-                key={idx}
-                className={`group relative overflow-hidden rounded-2xl border ${feature.border} bg-gradient-to-br ${feature.color} p-6 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl`}
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-white/20 opacity-40"></div>
-                <div className="relative z-10">
-                  <div className="mb-4 inline-flex items-center justify-center rounded-xl bg-white/70 p-3 shadow-md">
-                    <Icon className="size-6 text-gray-800" />
-                  </div>
-                  <h3 className="mb-2 text-lg font-bold text-gray-900">{feature.title}</h3>
-                  <p className="text-sm text-gray-700">{feature.description}</p>
-                </div>
-                <div className="absolute -right-4 -top-4 size-10 rounded-full bg-white/30"></div>
-                <div className="absolute -left-3 -bottom-3 size-8 rounded-full bg-white/20"></div>
-              </div>
-            );
-          })}
+        {/* Band A: Consultation (copy left, screenshot right) */}
+        <div className="mb-16 grid items-center gap-10 lg:mb-20 lg:grid-cols-2 lg:gap-16">
+          <div>
+            <h3 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl">Capture the consult. Get structured notes.</h3>
+            <p className="mb-6 text-lg leading-relaxed text-gray-700">
+              Audio captures the subjective; spoken objectives are included. Type objective findings (exam, assessment/Dx, plan) as needed for more control and accuracy — you’re in charge.
+            </p>
+            <ul className="space-y-2 text-gray-700">
+              <li>• Record on mobile or desktop</li>
+              <li>• Mark problems as you go (multi‑problem ready)</li>
+              <li>• Switch templates anytime</li>
+            </ul>
+          </div>
+          <div>
+            <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-xl">
+              <img
+                src="https://placehold.co/960x600?text=Consultation"
+                alt="Consultation screen showing recording, additional note input, and template switcher"
+                className="block w-full object-cover"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Band B: Generated note (screenshot left, copy right) */}
+        <div className="mb-12 grid items-center gap-10 lg:mb-16 lg:grid-cols-2 lg:gap-16">
+          <div className="order-2 lg:order-1">
+            <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-xl">
+              <img
+                src="https://placehold.co/960x600?text=Generated+Note"
+                alt="Generated note with editable sections"
+                className="block w-full object-cover"
+              />
+            </div>
+          </div>
+          <div className="order-1 lg:order-2">
+            <h3 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl">Review and edit your note</h3>
+            <p className="mb-6 text-lg leading-relaxed text-gray-700">Clean, structured note — you are in charge. Review and edit quickly.</p>
+            <ul className="space-y-2 text-gray-700">
+              <li>• Default template handles most consults; multi‑problem ready</li>
+              <li>• Switch output style (template) when needed</li>
+              <li>• Highly customisable templates: NZTA driver licence (NZTA‑aligned), ACC consult, 6‑week baby check</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* How it works (slim) */}
+        <div className="mb-12 rounded-2xl border border-gray-200 bg-white p-6 shadow-lg lg:mb-16">
+          <h4 className="mb-4 text-center text-xl font-semibold text-gray-900">How it works</h4>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
+              <span className="font-medium text-gray-900">1.</span>
+              {' '}Start recording (mobile or desktop)
+            </div>
+            <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
+              <span className="font-medium text-gray-900">2.</span>
+              {' '}Speak naturally; focus on the patient and history
+            </div>
+            <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
+              <span className="font-medium text-gray-900">3.</span>
+              {' '}Dictate or type in objectives (problems, exam findings, assessment, plan, etc)
+            </div>
+            <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
+              <span className="font-medium text-gray-900">4.</span>
+              {' '}Review structured draft, make quick edits, finish
+            </div>
+          </div>
+        </div>
+
+        {/* CTA row (compact) */}
+        <div className="text-center">
+          <h4 className="mb-4 text-2xl font-bold text-gray-900">Finish on time, without cutting corners</h4>
+          <a
+            href="#start"
+            className="inline-block rounded-xl bg-orange-600 px-6 py-3 text-base font-bold text-white shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01] hover:bg-orange-700 hover:shadow-orange-500/25"
+          >
+            Get more done in 15 min
+          </a>
         </div>
       </div>
     </section>
