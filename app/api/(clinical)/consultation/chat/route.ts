@@ -64,30 +64,15 @@ function createSourceFilter(controller: ReadableStreamDefaultController<Uint8Arr
   const encoder = new TextEncoder();
   let buffer = '';
   let inSources = false;
+  let inFollowups = false;
+  let seenAnswerBullet = false;
+  let lastLineWasBlank = false;
   let sourcesProcessed = 0;
   const maxSources = 3;
 
   function emit(text: string) {
     if (!text) return;
     controller.enqueue(encoder.encode(text));
-  }
-
-  async function verifyReachable(urlStr: string): Promise<boolean> {
-    try {
-      const ac = new AbortController();
-      const t = setTimeout(() => ac.abort(), 2500);
-      const resp = await fetch(urlStr, { method: 'HEAD', signal: ac.signal });
-      clearTimeout(t);
-      if (resp.ok) return true;
-      // Some servers do not support HEAD well; try GET with small timeout
-      const ac2 = new AbortController();
-      const t2 = setTimeout(() => ac2.abort(), 3000);
-      const respGet = await fetch(urlStr, { method: 'GET', signal: ac2.signal });
-      clearTimeout(t2);
-      return respGet.ok;
-    } catch {
-      return false;
-    }
   }
 
   async function processLine(line: string) {
@@ -100,10 +85,41 @@ function createSourceFilter(controller: ReadableStreamDefaultController<Uint8Arr
     }
 
     if (!inSources) {
-      if (line.includes('SOURCES:')) {
-        inSources = true;
+      const trimmed = line.trim();
+      // Track answer bullets
+      if (trimmed.startsWith('- ')) {
+        seenAnswerBullet = true;
       }
+
+      // Detect transition into follow-ups: first question after answer bullets
+      if (!inFollowups && seenAnswerBullet && trimmed.endsWith('?')) {
+        if (!lastLineWasBlank) {
+          emit('\n'); // ensure a blank line before follow-ups
+        }
+        inFollowups = true;
+      }
+
+      // Normalise follow-up formatting: remove bullet dash if present
+      if (inFollowups && trimmed.endsWith('?')) {
+        const withoutDash = trimmed.replace(/^\-\s+/, '');
+        emit(withoutDash + '\n');
+        lastLineWasBlank = false;
+        return;
+      }
+
+      // When encountering SOURCES, ensure a blank line before label
+      if (trimmed === 'SOURCES:') {
+        if (!lastLineWasBlank) {
+          emit('\n');
+        }
+        inSources = true;
+        emit('SOURCES:' + '\n');
+        lastLineWasBlank = false;
+        return;
+      }
+
       emit(line + '\n');
+      lastLineWasBlank = trimmed === '';
       return;
     }
 
@@ -121,7 +137,7 @@ function createSourceFilter(controller: ReadableStreamDefaultController<Uint8Arr
     }
     const originalUrl = urlMatch[0];
     const cleaned = sanitiseUrl(originalUrl);
-    if (cleaned && (await verifyReachable(cleaned))) {
+    if (cleaned) {
       if (cleaned !== originalUrl) {
         const replaced = line.replace(originalUrl, cleaned);
         emit(replaced + '\n');
