@@ -84,15 +84,14 @@ export const EarlyHeroSection = () => {
 
             {/* Mobile Image - Between Benefits and CTA */}
             <div className="my-8 lg:hidden">
-              <div className="overflow-hidden rounded-2xl">
+              <div className="relative h-64 overflow-hidden rounded-2xl sm:h-80 md:h-96">
                 <Image
                   src="/images/landing-page/hero-image.png"
                   alt="ClinicPro AI Medical Scribe Interface"
-                  width={1280}
-                  height={960}
+                  fill
                   sizes="100vw"
                   priority
-                  className="block h-auto w-full object-cover"
+                  className="object-cover"
                 />
               </div>
             </div>
@@ -100,14 +99,13 @@ export const EarlyHeroSection = () => {
 
           {/* Right Column - Hero Image - Desktop Only */}
           <div className="hidden lg:flex lg:items-center lg:justify-center">
-            <div className="w-full max-w-lg overflow-hidden rounded-2xl">
+            <div className="relative h-[460px] w-full max-w-lg overflow-hidden rounded-2xl">
               <Image
                 src="/images/landing-page/hero-image.png"
                 alt="ClinicPro AI Medical Scribe Interface"
-                width={1200}
-                height={900}
+                fill
                 sizes="(max-width: 1280px) 50vw, 600px"
-                className="block h-auto w-full object-cover"
+                className="object-cover"
               />
             </div>
           </div>
