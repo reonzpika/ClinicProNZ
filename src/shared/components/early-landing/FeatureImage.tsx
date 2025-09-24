@@ -25,8 +25,8 @@ export const FeatureImage = () => {
         </div>
 
         {/* Mobile upload band (copy left, screenshot right) */}
-        <div className="mb-12 grid items-center gap-10 lg:mb-16 lg:grid-cols-2 lg:gap-16">
-          <div>
+        <div className="mb-12 grid items-center gap-10 lg:mb-16 lg:grid-cols-12 lg:gap-16">
+          <div className="lg:col-span-8">
             <h3 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl">Why use this</h3>
             <p className="mb-6 text-lg leading-relaxed text-gray-700">
               Upload from your phone without saving to your personal gallery. Images are auto‑resized for referrals and ready on your desktop.
@@ -40,14 +40,14 @@ export const FeatureImage = () => {
             </ul>
             
           </div>
-          <div className="[content-visibility:auto] [contain:layout_paint_style]">
-            <div className="relative mx-auto max-w-md sm:max-w-lg md:max-w-xl overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md h-[220px] sm:h-[260px] md:h-[300px]">
+          <div className="[content-visibility:auto] [contain:layout_paint_style] lg:col-span-4">
+            <div className="relative mx-auto overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md">
               <img
                 src="/images/landing-page/mobile_recording_page"
                 alt="Mobile upload with auto-resize and desktop availability"
                 loading="lazy"
                 decoding="async"
-                className="block w-full object-cover"
+                  className="block w-full h-auto object-contain"
               />
             </div>
           </div>
