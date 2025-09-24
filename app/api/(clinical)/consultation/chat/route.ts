@@ -12,7 +12,6 @@ function getOpenAI(): OpenAI {
 // Trusted sources allowlists
 const NZ_TRUSTED_DOMAINS = [
   'bpac.org.nz',
-  'nzf.org.nz',
   'tewhatuora.govt.nz',
   'health.govt.nz',
   'healthify.nz',
