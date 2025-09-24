@@ -20,19 +20,23 @@ export const imageQueryKeys = {
 } as const;
 
 // Server Images Query
-export function useServerImages() {
+export function useServerImages(sessionId?: string) {
   const { userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
 
   return useQuery({
-    queryKey: imageQueryKeys.list(userId || ''),
+    queryKey: imageQueryKeys.list(`${userId || ''}:${sessionId || ''}`),
     queryFn: async (): Promise<ServerImage[]> => {
       if (!userId) {
         return [];
       }
 
-      const response = await fetch('/api/clinical-images/list', {
+      const url = sessionId
+        ? `/api/clinical-images/list?sessionId=${encodeURIComponent(sessionId)}`
+        : '/api/clinical-images/list';
+
+      const response = await fetch(url, {
         headers: createAuthHeaders(userId, userTier),
       });
 
@@ -90,6 +94,7 @@ export function useUploadImage() {
         body: resizedBlob,
         headers: {
           'Content-Type': file.type,
+          'X-Amz-Server-Side-Encryption': 'AES256',
         },
       });
 
@@ -106,7 +111,7 @@ export function useUploadImage() {
     onSuccess: () => {
       // Invalidate and refetch images list
       queryClient.invalidateQueries({
-        queryKey: imageQueryKeys.list(userId || ''),
+        queryKey: imageQueryKeys.lists(),
       });
     },
   });
@@ -337,7 +342,7 @@ export function useSaveAnalysis() {
     onSuccess: (_data, variables) => {
       // Invalidate the images list to show updated analysis status
       queryClient.invalidateQueries({
-        queryKey: imageQueryKeys.list(userId || ''),
+        queryKey: imageQueryKeys.lists(),
       });
 
       // Invalidate specific analysis query
