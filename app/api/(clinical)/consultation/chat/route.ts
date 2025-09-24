@@ -29,6 +29,107 @@ const INTL_TRUSTED_DOMAINS = [
   'ema.europa.eu',
 ];
 
+// URL allowlist helpers
+const ALLOWED_DOMAINS = new Set([...NZ_TRUSTED_DOMAINS, ...INTL_TRUSTED_DOMAINS]);
+
+function isAllowedHost(hostname: string): boolean {
+  for (const domain of ALLOWED_DOMAINS) {
+    if (hostname === domain || hostname.endsWith(`.${domain}`)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function sanitiseUrl(urlStr: string): string | null {
+  try {
+    const u = new URL(urlStr);
+    if (u.protocol !== 'https:') {
+      return null;
+    }
+    if (!isAllowedHost(u.hostname)) {
+      return null;
+    }
+    // Strip common tracking params
+    const paramsToRemove = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'gclid', 'fbclid'];
+    for (const p of paramsToRemove) {
+      u.searchParams.delete(p);
+    }
+    return u.toString();
+  } catch {
+    return null;
+  }
+}
+
+function createSourceFilter(controller: ReadableStreamDefaultController<Uint8Array>) {
+  const encoder = new TextEncoder();
+  let buffer = '';
+  let inSources = false;
+  let sourcesProcessed = 0;
+  const maxSources = 3;
+
+  function emit(text: string) {
+    if (!text) return;
+    controller.enqueue(encoder.encode(text));
+  }
+
+  function processLine(line: string) {
+    if (!inSources) {
+      if (line.includes('SOURCES:')) {
+        inSources = true;
+      }
+      emit(line + '\n');
+      return;
+    }
+
+    if (sourcesProcessed >= maxSources) {
+      // pass through remaining lines after cap
+      emit(line + '\n');
+      return;
+    }
+
+    // Validate URLs in source lines; replace disallowed URLs
+    const urlMatch = line.match(/https?:\/\/\S+/);
+    if (!urlMatch) {
+      emit(line + '\n');
+      return;
+    }
+    const originalUrl = urlMatch[0];
+    const cleaned = sanitiseUrl(originalUrl);
+    if (cleaned) {
+      if (cleaned !== originalUrl) {
+        const replaced = line.replace(originalUrl, cleaned);
+        emit(replaced + '\n');
+      } else {
+        emit(line + '\n');
+      }
+      sourcesProcessed += 1;
+    } else {
+      const replaced = line.replace(originalUrl, '(removed non-trusted source)');
+      emit(replaced + '\n');
+      sourcesProcessed += 1;
+    }
+  }
+
+  return {
+    write(chunk: string) {
+      buffer += chunk;
+      let idx;
+      while ((idx = buffer.indexOf('\n')) !== -1) {
+        const line = buffer.slice(0, idx);
+        buffer = buffer.slice(idx + 1);
+        processLine(line);
+      }
+    },
+    end() {
+      if (buffer) {
+        processLine(buffer);
+        buffer = '';
+      }
+    },
+  };
+}
+
 // System prompt for NZ GP clinical assistant with strict structure and citations
 const CHATBOT_SYSTEM_PROMPT = `You are a clinical AI assistant for New Zealand General Practitioners (GPs).
 
@@ -134,19 +235,20 @@ Please use this raw consultation data to provide relevant guidance. This is unst
         parallel_tool_calls: true,
       });
 
-      const encoder = new TextEncoder();
       readable = new ReadableStream({
         async start(controller) {
           try {
+            const filter = createSourceFilter(controller);
             for await (const event of respStream as AsyncIterable<any>) {
               // Stream only text deltas
               if (event.type === 'response.output_text.delta' && event.delta) {
-                controller.enqueue(encoder.encode(event.delta));
+                filter.write(event.delta);
               }
               if (event.type === 'response.error') {
                 console.error('Responses stream error event:', event.error);
               }
             }
+            filter.end();
             controller.close();
           } catch (err) {
             console.error('Responses API streaming error:', err);
@@ -166,16 +268,17 @@ Please use this raw consultation data to provide relevant guidance. This is unst
         stream: true,
       });
 
-      const encoder = new TextEncoder();
       readable = new ReadableStream({
         async start(controller) {
           try {
+            const filter = createSourceFilter(controller);
             for await (const chunk of completionStream) {
               const content = chunk.choices?.[0]?.delta?.content;
               if (content) {
-                controller.enqueue(encoder.encode(content));
+                filter.write(content);
               }
             }
+            filter.end();
             controller.close();
           } catch (error) {
             console.error('Chat Completions streaming error:', error);
