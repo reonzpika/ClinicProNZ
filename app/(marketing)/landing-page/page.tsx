@@ -8,6 +8,7 @@ import { PersonalStorySection } from '@/src/shared/components/early-landing/Pers
 import { FeatureAiscribe } from '@/src/shared/components/early-landing/FeatureAiscribe';
 import { FeatureImage } from '@/src/shared/components/early-landing/FeatureImage';
 import { FeatureChat } from '@/src/shared/components/early-landing/FeatureChat';
+import { MissionSection } from '@/src/shared/components/early-landing/MissionSection';
 
 export const metadata: Metadata = {
   title: 'ClinicPro - Get More Done in 15 Minutes and Leave on Time, Satisfied',
@@ -36,6 +37,9 @@ export default function EarlyAccessPage() {
         </div>
         <div id="story">
           <PersonalStorySection />
+        </div>
+        <div id="mission">
+          <MissionSection />
         </div>
         <div id="ai-scribe">
           <FeatureAiscribe />
