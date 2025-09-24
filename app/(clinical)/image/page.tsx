@@ -21,7 +21,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 // Removed in-page WebRTC camera in favour of native camera capture
-import { imageQueryKeys, useAnalyzeImage, useDeleteImage, useSaveAnalysis, useServerImages, useUploadImages } from '@/src/hooks/useImageQueries';
+import { imageQueryKeys, useAnalyzeImage, useDeleteImage, useImageUrl, useSaveAnalysis, useServerImages, useUploadImages } from '@/src/hooks/useImageQueries';
 import { Container } from '@/src/shared/components/layout/Container';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
@@ -37,7 +37,7 @@ export default function ClinicalImagePage() {
   const userTier = getUserTier();
 
   // Queries and mutations
-  const { data: serverImages = [], isLoading: isLoadingImages } = useServerImages();
+  const { data: serverImages = [], isLoading: isLoadingImages } = useServerImages(undefined);
   const uploadImages = useUploadImages();
   const analyzeImage = useAnalyzeImage();
   const saveAnalysis = useSaveAnalysis();
@@ -666,9 +666,10 @@ function ServerImageCard({
   formatFileSize: (bytes: number) => string;
 }) {
   const [isDeleting, setIsDeleting] = React.useState(false);
-  // Use thumbnail URL directly from image object (performance optimization)
-  const imageUrl = image.thumbnailUrl;
-  const isLoadingUrl = !imageUrl; // Only loading if no URL provided
+  // Lazily fetch image URL per tile
+  const { data: fetchedUrl } = useImageUrl(image.key);
+  const imageUrl = fetchedUrl;
+  const isLoadingUrl = !imageUrl;
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -799,9 +800,9 @@ function AnalysisModal({
   onDownload: () => void;
   onDelete: (imageKey: string) => void;
 }) {
-  // Use thumbnail URL directly from image object (performance optimization)
-  const imageUrl = modal.image?.thumbnailUrl;
-  const isLoadingUrl = !imageUrl; // Only loading if no URL provided
+  const { data: fetchedUrl } = useImageUrl(modal.image?.key || '');
+  const imageUrl = fetchedUrl;
+  const isLoadingUrl = !imageUrl;
 
   const handleDeleteFromModal = () => {
     if (!modal.image) {
@@ -1023,9 +1024,9 @@ function ImageEnlargeModal({
   image: ServerImage;
   onClose: () => void;
 }) {
-  // Use thumbnail URL directly from image object (performance optimization)
-  const imageUrl = image.thumbnailUrl;
-  const isLoadingUrl = !imageUrl; // Only loading if no URL provided
+  const { data: fetchedUrl } = useImageUrl(image.key);
+  const imageUrl = fetchedUrl;
+  const isLoadingUrl = !imageUrl;
 
   // Handle ESC key press to close modal
   useEffect(() => {

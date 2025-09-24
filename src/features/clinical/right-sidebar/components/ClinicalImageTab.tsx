@@ -7,12 +7,71 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
-import { imageQueryKeys, useServerImages } from '@/src/hooks/useImageQueries';
+import { imageQueryKeys, useImageUrl, useServerImages } from '@/src/hooks/useImageQueries';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
 import { resizeImageFile } from '@/src/shared/utils/image';
 import type { ClinicalImage } from '@/src/types/consultation';
+
+function SessionImageTile({
+  image,
+  isAnalyzing,
+  onAnalyze,
+  onEnlarge,
+  onDownload,
+}: {
+  image: any;
+  isAnalyzing: boolean;
+  onAnalyze: () => void;
+  onEnlarge: () => void;
+  onDownload: () => void;
+}) {
+  const { data: imageUrl } = useImageUrl(image.key);
+  return (
+    <div className="flex flex-col">
+      <div className="aspect-square overflow-hidden rounded-lg bg-slate-100">
+        {imageUrl
+          ? (
+            <img src={imageUrl} alt="" className="size-full object-cover" />
+          )
+          : (
+            <div className="flex size-full items-center justify-center text-xs text-slate-400">No preview</div>
+          )}
+      </div>
+      <div className="mt-2 flex items-center justify-center gap-2">
+        <Button
+          size="icon"
+          variant="outline"
+          onClick={onAnalyze}
+          disabled={isAnalyzing}
+          className="size-7"
+          title={isAnalyzing ? 'Analysing...' : 'Analyse'}
+        >
+          {isAnalyzing ? <Loader2 size={12} className="animate-spin" /> : <Brain size={12} />}
+        </Button>
+        <Button
+          size="icon"
+          variant="outline"
+          onClick={onEnlarge}
+          className="size-7"
+          title="Enlarge"
+        >
+          <Expand size={12} />
+        </Button>
+        <Button
+          size="icon"
+          variant="outline"
+          onClick={onDownload}
+          className="size-7"
+          title="Download"
+        >
+          <Download size={12} />
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 export const ClinicalImageTab: React.FC = () => {
   const {
@@ -34,7 +93,7 @@ export const ClinicalImageTab: React.FC = () => {
 
   // Server images (user scope) for session grouping
   const { userId } = useAuth();
-  const { data: serverImages = [], isLoading: isLoadingServerImages } = useServerImages();
+  const { data: serverImages = [], isLoading: isLoadingServerImages } = useServerImages(currentPatientSessionId || undefined);
   const sessionServerImages = useMemo(() => {
     return (serverImages || []).filter((img: any) => img.source === 'clinical' && img.sessionId && img.sessionId === currentPatientSessionId);
   }, [serverImages, currentPatientSessionId]);
@@ -420,49 +479,15 @@ export const ClinicalImageTab: React.FC = () => {
                 <div className="grid grid-cols-2 gap-3">
                   {sessionServerImages.map((image: any) => {
                     const isAnalyzing = analyzingImages.has(image.id);
-                    const imageUrl = image.thumbnailUrl as string | undefined;
                     return (
-                      <div key={image.id} className="flex flex-col">
-                        <div className="aspect-square overflow-hidden rounded-lg bg-slate-100">
-                          {imageUrl
-                            ? (
-                              <img src={imageUrl} alt="" className="size-full object-cover" />
-                            )
-: (
-                              <div className="flex size-full items-center justify-center text-xs text-slate-400">No preview</div>
-                            )}
-                        </div>
-                        <div className="mt-2 flex items-center justify-center gap-2">
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            onClick={() => handleAnalyzeImage(image as any)}
-                            disabled={isAnalyzing}
-                            className="size-7"
-                            title={isAnalyzing ? 'Analysing...' : 'Analyse'}
-                          >
-                            {isAnalyzing ? <Loader2 size={12} className="animate-spin" /> : <Brain size={12} />}
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            onClick={() => setEnlargeImage(image)}
-                            className="size-7"
-                            title="Enlarge"
-                          >
-                            <Expand size={12} />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            onClick={() => handleDownloadImage(image as any)}
-                            className="size-7"
-                            title="Download"
-                          >
-                            <Download size={12} />
-                          </Button>
-                        </div>
-                      </div>
+                      <SessionImageTile
+                        key={image.id}
+                        image={image}
+                        isAnalyzing={isAnalyzing}
+                        onAnalyze={() => handleAnalyzeImage(image as any)}
+                        onEnlarge={() => setEnlargeImage(image)}
+                        onDownload={() => handleDownloadImage(image as any)}
+                      />
                     );
                   })}
                 </div>
