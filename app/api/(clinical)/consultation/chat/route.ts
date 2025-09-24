@@ -9,44 +9,11 @@ function getOpenAI(): OpenAI {
   return new OpenAI({ apiKey });
 }
 
-// Trusted sources allowlists
-const NZ_TRUSTED_DOMAINS = [
-  'bpac.org.nz',
-  'tewhatuora.govt.nz',
-  'health.govt.nz',
-  'healthify.nz',
-  'starship.org.nz',
-  'medsafe.govt.nz',
-  'rph.org.nz',
-];
-
-const INTL_TRUSTED_DOMAINS = [
-  'nice.org.uk',
-  'cochranelibrary.com',
-  'who.int',
-  'cdc.gov',
-  'ema.europa.eu',
-];
-
-// URL allowlist helpers
-const ALLOWED_DOMAINS = new Set([...NZ_TRUSTED_DOMAINS, ...INTL_TRUSTED_DOMAINS]);
-
-function isAllowedHost(hostname: string): boolean {
-  for (const domain of ALLOWED_DOMAINS) {
-    if (hostname === domain || hostname.endsWith(`.${domain}`)) {
-      return true;
-    }
-  }
-  return false;
-}
-
+// URL cleaner (no allowlist enforcement; HTTPS required; tracking params removed)
 function sanitiseUrl(urlStr: string): string | null {
   try {
     const u = new URL(urlStr);
     if (u.protocol !== 'https:') {
-      return null;
-    }
-    if (!isAllowedHost(u.hostname)) {
       return null;
     }
     // Strip common tracking params
@@ -107,6 +74,14 @@ function createSourceFilter(controller: ReadableStreamDefaultController<Uint8Arr
         return;
       }
 
+      // Remove inline numeric citation markers like [1], [2] from answer bullets
+      if (!inFollowups && trimmed) {
+        const cleanedLine = line.replace(/\s*\[\d+\]/g, '');
+        emit(cleanedLine + '\n');
+        lastLineWasBlank = cleanedLine.trim() === '';
+        return;
+      }
+
       // When encountering SOURCES, ensure a blank line before label
       if (trimmed === 'SOURCES:') {
         if (!lastLineWasBlank) {
@@ -146,7 +121,7 @@ function createSourceFilter(controller: ReadableStreamDefaultController<Uint8Arr
       }
       sourcesProcessed += 1;
     } else {
-      const replaced = line.replace(originalUrl, '(removed invalid or non-trusted source)');
+      const replaced = line.replace(originalUrl, '(removed invalid source)');
       emit(replaced + '\n');
       sourcesProcessed += 1;
     }
@@ -171,18 +146,18 @@ function createSourceFilter(controller: ReadableStreamDefaultController<Uint8Arr
   };
 }
 
-// System prompt for NZ GP clinical assistant with strict structure and citations
+// System prompt for NZ GP clinical assistant with structured output and citations
 const CHATBOT_SYSTEM_PROMPT = `You are a clinical AI assistant for New Zealand General Practitioners (GPs).
 
 Output format (follow exactly):
-- Start with 3–6 bullet points that directly answer the question. Use terse keywords/phrases. Include inline numeric citations like [1], [2] where relevant. Do NOT write a heading like "SHORT ANSWER:".
-- Then a blank line, then up to 3 bullet-point follow-up questions (e.g. "- Need step-up options?"), no heading like "FOLLOW-UPS:".
-- Then a blank line, then the line "SOURCES:" followed by up to 3 sources, each on its own line in the format: [n] Title — https://domain/path
+- Start with 3–6 bullet points that directly answer the question. Use terse keywords/phrases. Do NOT include numeric citation markers in these bullets. Do NOT write a heading like "SHORT ANSWER:".
+- Then a blank line, then up to 3 follow-up questions (one per line, phrased as questions), no leading dashes, no heading like "FOLLOW-UPS:".
+- Then a blank line, then the line "SOURCES:" followed by up to 3 sources, each on its own line in the format: Title — https://domain/path
 
 Citation policy:
-- Prioritise New Zealand sources first. Allowed NZ domains: ${NZ_TRUSTED_DOMAINS.join(', ')}.
-- If no suitable NZ page exists, use trusted international sources: ${INTL_TRUSTED_DOMAINS.join(', ')}.
-- Use specific guideline/article pages (not homepages). Always include HTTPS URL. Avoid blogs/forums. Prefer publicly accessible pages.
+- Prefer New Zealand sources (e.g., bpac.org.nz, tewhatuora.govt.nz/health.govt.nz, healthify.nz, starship.org.nz, medsafe.govt.nz) over international where applicable.
+- If suitable NZ pages are unavailable, use trusted international clinical resources (e.g., nice.org.uk, cochranelibrary.com, who.int, cdc.gov, ema.europa.eu).
+- Use specific guideline/article pages (not homepages). Always include HTTPS URL. Avoid news sites, general blogs, forums, or opinion pieces.
 
 Clinical style:
 - Professional, clear, GP-focused. Support safe reasoning; avoid definitive diagnoses. Flag red flags and referral triggers when appropriate.
