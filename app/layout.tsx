@@ -4,6 +4,7 @@ import { ClerkProvider } from '@clerk/nextjs';
 import { Analytics } from '@vercel/analytics/next';
 import type { Metadata } from 'next';
 import { Inter, Open_Sans, Oswald } from 'next/font/google';
+import Script from 'next/script';
 
 import { QueryClientProvider } from '@/src/providers/QueryClientProvider';
 import { AppLayoutWrapper } from '@/src/shared/components/AppLayoutWrapper';
@@ -60,6 +61,13 @@ export default function RootLayout({
               <link rel="preconnect" href="https://accounts.google.com" />
               <link rel="preconnect" href="https://www.google.com" />
               <link rel="preconnect" href="https://www.gstatic.com" crossOrigin="anonymous" />
+              <Script src="https://www.googletagmanager.com/gtag/js?id=G-S52BKYBFY9" strategy="afterInteractive" />
+              <Script id="gtag-init" strategy="afterInteractive">
+                {`window.dataLayer = window.dataLayer || [];
+                 function gtag(){dataLayer.push(arguments);}
+                 gtag('js', new Date());
+                 gtag('config', 'G-S52BKYBFY9');`}
+              </Script>
             </head>
             <body className={`${inter.variable} ${oswald.variable} ${openSans.variable} ${inter.className}`}>
               {/* <StagewiseToolbar /> */}
