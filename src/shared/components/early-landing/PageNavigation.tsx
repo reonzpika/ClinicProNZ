@@ -10,7 +10,6 @@ export const PageNavigation = () => {
   ];
 
   const navItems = sections.filter(s => s.id !== 'start');
-  const startItem = sections.find(s => s.id === 'start');
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
