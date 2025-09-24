@@ -38,7 +38,7 @@ export const FeatureChat = () => {
             <p className="mt-3 text-sm text-gray-600">Not intended for clinical judgement or decision‑making. Verify with the cited sources.</p>
           </div>
           <div className="[content-visibility:auto] [contain:layout_paint_style]">
-            <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md">
+          <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md h-[380px] sm:h-[480px] lg:h-[620px]">
               <img
                 src="/images/landing-page/ClinicProChat.jpg"
                 alt="Chat UI showing an answer with Healthify and NZ Formulary references"

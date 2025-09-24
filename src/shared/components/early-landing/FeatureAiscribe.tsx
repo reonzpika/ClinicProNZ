@@ -37,7 +37,7 @@ export const FeatureAiscribe = () => {
             </ul>
           </div>
           <div className="[content-visibility:auto] [contain:layout_paint_style]">
-            <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md">
+          <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md h-[380px] sm:h-[480px] lg:h-[620px]">
               <img
                 src="/images/landing-page/ClinicProConsultation.jpg"
                 alt="Consultation screen showing recording, additional note input, and template switcher"
@@ -52,7 +52,7 @@ export const FeatureAiscribe = () => {
         {/* Band B: Generated note (screenshot left, copy right) */}
         <div className="mb-12 grid items-center gap-10 lg:mb-16 lg:grid-cols-2 lg:gap-16">
           <div className="order-2 [content-visibility:auto] [contain:layout_paint_style] lg:order-1">
-            <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md">
+            <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md h-[380px] sm:h-[480px] lg:h-[620px]">
               <img
                 src="/images/landing-page/ClinicProGenerateNote.jpg"
                 alt="Generated note with editable sections"

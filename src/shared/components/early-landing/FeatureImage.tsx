@@ -41,7 +41,7 @@ export const FeatureImage = () => {
             
           </div>
           <div className="[content-visibility:auto] [contain:layout_paint_style]">
-            <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md">
+            <div className="relative mx-auto max-w-md sm:max-w-lg md:max-w-xl overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md h-[220px] sm:h-[260px] md:h-[300px]">
               <img
                 src="/images/landing-page/mobile_recording_page"
                 alt="Mobile upload with auto-resize and desktop availability"
