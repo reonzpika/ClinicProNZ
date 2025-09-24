@@ -105,11 +105,8 @@ export const HeroSection = () => {
                   <div className="absolute -left-2 top-2 h-12 w-0.5 bg-gradient-to-b from-blue-500 to-indigo-600 sm:h-16 lg:-left-4 lg:h-20"></div>
 
                   <h1 className="relative text-3xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl">
-                    <span className="block">Stop Working</span>
-                    <span className="block text-blue-600">Afterhours.</span>
-                    <span className="mt-2 block text-2xl font-bold text-gray-700 sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
-                      Get Your Time Back.
-                    </span>
+                    <span className="block">More Than a Scribe.</span>
+                    <span className="block text-blue-600">Built for NZ GPs.</span>
                   </h1>
 
                   {/* Stylish accent elements - mobile positioned */}
@@ -121,14 +118,15 @@ export const HeroSection = () => {
               {/* Stylish Subtitle */}
               <div className="relative mb-8">
                 <p className="mx-auto max-w-2xl text-lg leading-relaxed text-gray-600 sm:text-xl lg:mx-0 lg:text-2xl">
-                  The AI medical scribe built specifically for
-                  <span className="font-semibold text-blue-600"> NZ healthcare</span>
-                  .
+                  ClinicPro gives you more control:
                 </p>
+                <ul className="mx-auto mt-3 max-w-2xl list-disc pl-5 text-base leading-relaxed text-gray-600 sm:text-lg lg:mx-0 lg:text-xl">
+                  <li>Specify problems, add notes on the fly</li>
+                  <li>Upload and resize lesion images instantly during the consult</li>
+                  <li>Chat with trusted NZ health resources</li>
+                </ul>
                 <p className="mx-auto mt-3 max-w-2xl text-base leading-relaxed text-gray-500 sm:text-lg lg:mx-0 lg:text-xl">
-                  Finally, documentation that works
-                  <span className="font-semibold text-green-600"> with you, not against you</span>
-                  .
+                  All in one smart tool.
                 </p>
 
                 {/* Decorative line accent - mobile friendly */}
@@ -144,7 +142,7 @@ export const HeroSection = () => {
                     className="relative bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3 text-base font-semibold text-white shadow-xl transition-all duration-300 hover:from-blue-700 hover:to-blue-800 hover:shadow-2xl sm:px-8 sm:py-4 sm:text-lg lg:px-10 lg:py-5"
                     onClick={() => setShowEmailModal(true)}
                   >
-                    Join Beta Testing (Free)
+                    Get more done in 15 min
                   </Button>
                 </div>
               </div>

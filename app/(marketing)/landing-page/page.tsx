@@ -2,12 +2,13 @@ import type { Metadata } from 'next';
 
 import { EarlyFooterCTA } from '@/src/shared/components/early-landing/EarlyFooterCTA';
 import { EarlyHeroSection } from '@/src/shared/components/early-landing/EarlyHeroSection';
-import { EarlyPricingSection } from '@/src/shared/components/early-landing/EarlyPricingSection';
-import { FutureIntegrationsSection } from '@/src/shared/components/early-landing/FutureIntegrationsSection';
-import { HowItWorksSection } from '@/src/shared/components/early-landing/HowItWorksSection';
 import { PageFooter } from '@/src/shared/components/early-landing/PageFooter';
 import { PageNavigation } from '@/src/shared/components/early-landing/PageNavigation';
 import { PersonalStorySection } from '@/src/shared/components/early-landing/PersonalStorySection';
+import { FeatureAiscribe } from '@/src/shared/components/early-landing/FeatureAiscribe';
+import { FeatureImage } from '@/src/shared/components/early-landing/FeatureImage';
+import { FeatureChat } from '@/src/shared/components/early-landing/FeatureChat';
+import { MissionSection } from '@/src/shared/components/early-landing/MissionSection';
 
 export const metadata: Metadata = {
   title: 'ClinicPro - Get More Done in 15 Minutes and Leave on Time, Satisfied',
@@ -37,15 +38,19 @@ export default function EarlyAccessPage() {
         <div id="story">
           <PersonalStorySection />
         </div>
-        <div id="problems">
-          <HowItWorksSection />
+        <div id="mission">
+          <MissionSection />
         </div>
-        <div id="vision">
-          <EarlyPricingSection />
+        <div id="ai-scribe">
+          <FeatureAiscribe />
         </div>
-        <div id="features">
-          <FutureIntegrationsSection />
+        <div id="feature-image">
+          <FeatureImage />
         </div>
+        <div id="feature-chat">
+          <FeatureChat />
+        </div>
+        
         <div id="start">
           <EarlyFooterCTA />
         </div>
