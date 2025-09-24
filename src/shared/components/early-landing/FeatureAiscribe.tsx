@@ -25,8 +25,8 @@ export const FeatureAiscribe = () => {
         </div>
 
         {/* Band A: Consultation (copy left, screenshot right) */}
-        <div className="mb-16 grid items-center gap-10 lg:mb-20 lg:grid-cols-2 lg:gap-16">
-          <div>
+        <div className="mb-16 grid items-center gap-10 lg:mb-20 lg:grid-cols-12 lg:gap-16">
+          <div className="lg:col-span-5">
             <h3 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl">End the Speed vs Quality Dilemma</h3>
             <p className="mb-4 text-lg leading-relaxed text-gray-700">Most GPs battle speed versus quality: detailed notes take longer; brief notes keep you on time but miss key information. ClinicPro ends this dilemma — clear, structured notes without after‑hours admin.</p>
             <p className="mb-6 text-lg leading-relaxed text-gray-700">ClinicPro's audio recording captures the subjective; spoken objectives are included. Type objective findings (exam, assessment/Dx, plan) as needed for more control and accuracy — you’re in charge.</p>
@@ -36,33 +36,33 @@ export const FeatureAiscribe = () => {
               <li>• Switch templates anytime</li>
             </ul>
           </div>
-          <div className="[content-visibility:auto] [contain:layout_paint_style]">
+          <div className="[content-visibility:auto] [contain:layout_paint_style] lg:col-span-7">
             <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md">
               <img
-                src="https://placehold.co/960x600?text=Consultation"
+                src="/images/landing-page/ClinicProConsultation.jpg"
                 alt="Consultation screen showing recording, additional note input, and template switcher"
                 loading="lazy"
                 decoding="async"
-                className="block w-full object-cover"
+                  className="block w-full h-auto object-contain"
               />
             </div>
           </div>
         </div>
 
         {/* Band B: Generated note (screenshot left, copy right) */}
-        <div className="mb-12 grid items-center gap-10 lg:mb-16 lg:grid-cols-2 lg:gap-16">
-          <div className="order-2 [content-visibility:auto] [contain:layout_paint_style] lg:order-1">
+        <div className="mb-12 grid items-center gap-10 lg:mb-16 lg:grid-cols-12 lg:gap-16">
+          <div className="order-2 [content-visibility:auto] [contain:layout_paint_style] lg:order-1 lg:col-span-7">
             <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md">
               <img
-                src="https://placehold.co/960x600?text=Generated+Note"
+                src="/images/landing-page/ClinicProGenerateNote.jpg"
                 alt="Generated note with editable sections"
                 loading="lazy"
                 decoding="async"
-                className="block w-full object-cover"
+                className="block w-full h-auto object-contain"
               />
             </div>
           </div>
-          <div className="order-1 lg:order-2">
+          <div className="order-1 lg:order-2 lg:col-span-5">
             <h3 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl">Review and edit your note</h3>
             <p className="mb-6 text-lg leading-relaxed text-gray-700">Clean, structured note — you are in charge. Review and edit quickly.</p>
             <ul className="space-y-2 text-gray-700">

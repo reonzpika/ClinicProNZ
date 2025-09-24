@@ -25,8 +25,8 @@ export const FeatureChat = () => {
         </div>
 
         {/* Band A: What you can ask (copy left, screenshot right) */}
-        <div className="mb-12 grid items-center gap-10 lg:mb-16 lg:grid-cols-2 lg:gap-16">
-          <div>
+        <div className="mb-12 grid items-center gap-10 lg:mb-16 lg:grid-cols-12 lg:gap-16">
+          <div className="lg:col-span-5">
             <h3 className="mb-3 text-2xl font-bold text-gray-900 sm:text-3xl">What you can ask</h3>
             <p className="mb-3 text-gray-700">Search NZ resources in one place — like Google, but for GPs. Get trusted references fast, and ask follow‑up questions to refine.</p>
             <ul className="space-y-2 text-gray-700">
@@ -37,14 +37,14 @@ export const FeatureChat = () => {
             </ul>
             <p className="mt-3 text-sm text-gray-600">Not intended for clinical judgement or decision‑making. Verify with the cited sources.</p>
           </div>
-          <div className="[content-visibility:auto] [contain:layout_paint_style]">
+          <div className="[content-visibility:auto] [contain:layout_paint_style] lg:col-span-7">
             <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md">
               <img
-                src="https://placehold.co/960x600?text=Chat+with+NZ+resources"
+                src="/images/landing-page/ClinicProChat.jpg"
                 alt="Chat UI showing an answer with Healthify and NZ Formulary references"
                 loading="lazy"
                 decoding="async"
-                className="block w-full object-cover"
+                  className="block w-full h-auto object-contain"
               />
             </div>
           </div>
