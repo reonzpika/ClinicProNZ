@@ -100,10 +100,11 @@ export const EarlyHeroSection = () => {
                     <Image
                       src="/images/landing-page/hero-image.png"
                       alt="ClinicPro AI Medical Scribe Interface"
-                      fill
-                      sizes="(max-width: 1024px) 100vw, 50vw"
+                      width={1280}
+                      height={960}
+                      sizes="100vw"
                       priority
-                      className="object-cover opacity-90 transition-transform duration-700 group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none"
+                      className="h-auto w-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none"
                     />
                     {/* 2025 Trend: Video Play Overlay */}
                     <div className="absolute inset-0 flex items-center justify-center bg-gray-900/20 opacity-0 transition-all duration-500 group-hover:opacity-100">
@@ -128,9 +129,10 @@ export const EarlyHeroSection = () => {
                   <Image
                     src="/images/landing-page/hero-image.png"
                     alt="ClinicPro AI Medical Scribe Interface"
-                    fill
+                    width={1200}
+                    height={900}
                     sizes="(max-width: 1280px) 50vw, 600px"
-                    className="object-cover opacity-90 transition-transform duration-700 group-hover:scale-105"
+                    className="h-auto w-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105"
                   />
                   {/* 2025 Trend: Video Play Overlay */}
                   <div className="absolute inset-0 flex items-center justify-center bg-gray-900/20 opacity-0 transition-all duration-500 group-hover:opacity-100">
