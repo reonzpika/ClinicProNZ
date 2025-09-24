@@ -95,8 +95,8 @@ export const EarlyHeroSection = () => {
             {/* Mobile Image - Between Benefits and CTA */}
             <div className="my-8 lg:hidden">
               <div className="relative">
-                <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-gray-600/30 bg-gradient-to-br from-gray-800 to-gray-700 shadow-2xl">
-                  <div className="group relative size-full">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-transparent bg-transparent shadow-2xl">
+                  <div className="group absolute inset-0">
                     <Image
                       src="/images/landing-page/hero-image.png"
                       alt="ClinicPro AI Medical Scribe Interface"
@@ -123,8 +123,8 @@ export const EarlyHeroSection = () => {
           {/* Right Column - Hero Image - Desktop Only */}
           <div className="hidden lg:flex lg:items-center lg:justify-center">
             <div className="relative">
-              <div className="relative aspect-[4/3] w-full max-w-lg overflow-hidden rounded-2xl border border-gray-600/30 bg-gradient-to-br from-gray-800 to-gray-700 shadow-2xl">
-                <div className="group relative size-full">
+              <div className="relative aspect-[4/3] w-full max-w-lg overflow-hidden rounded-2xl border border-transparent bg-transparent shadow-2xl">
+                <div className="group absolute inset-0">
                   <Image
                     src="/images/landing-page/hero-image.png"
                     alt="ClinicPro AI Medical Scribe Interface"
