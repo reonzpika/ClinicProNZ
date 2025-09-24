@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { Button } from '@/src/shared/components/ui/button';
 import Image from 'next/image';
 
-import Aurora from './Aurora';
+// Removed animated Aurora for reliability and performance
 
 export const EarlyHeroSection = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -46,18 +46,8 @@ export const EarlyHeroSection = () => {
 
   return (
         <section className="relative min-h-screen bg-gray-900 py-20 motion-reduce:transition-none motion-reduce:duration-0 lg:py-28">
-      {/* Aurora Background */}
-      <div className="absolute inset-0 opacity-90">
-        <div className="motion-reduce:hidden">
-          <Aurora
-            colorStops={['#3b82f6', '#22c55e', '#06b6d4']}
-            blend={0.8}
-            amplitude={1.5}
-            speed={0.4}
-          />
-        </div>
-        <div className="absolute inset-0 hidden bg-gradient-to-br from-nz-blue-700/40 via-nz-green-700/30 to-gray-900/60 motion-reduce:block"></div>
-      </div>
+      {/* Static gradient background (simple & reliable) */}
+      <div className="absolute inset-0 bg-gradient-to-br from-nz-blue-800/40 via-nz-green-800/30 to-gray-900/70"></div>
 
       {/* Light overlay for better text readability */}
       <div className="absolute inset-0 bg-gray-900/20"></div>
@@ -96,24 +86,14 @@ export const EarlyHeroSection = () => {
             <div className="my-8 lg:hidden">
               <div className="relative">
                 <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-transparent bg-transparent shadow-2xl">
-                  <div className="group absolute inset-0">
-                    <Image
-                      src="/images/landing-page/hero-image.png"
-                      alt="ClinicPro AI Medical Scribe Interface"
-                      fill
-                      sizes="100vw"
-                      priority
-                      className="object-cover opacity-90 transition-transform duration-700 group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none"
-                    />
-                    {/* 2025 Trend: Video Play Overlay */}
-                    <div className="absolute inset-0 flex items-center justify-center bg-gray-900/20 opacity-0 transition-all duration-500 group-hover:opacity-100">
-                      <button className="rounded-full bg-white/10 p-4 backdrop-blur-sm transition-all duration-300 hover:scale-110 hover:bg-white/20">
-                        <div className="flex size-8 items-center justify-center rounded-full bg-green-500 shadow-lg">
-                          <div className="ml-1 size-0 border-y-8 border-l-[12px] border-y-transparent border-l-white"></div>
-                        </div>
-                      </button>
-                    </div>
-                  </div>
+                  <Image
+                    src="/images/landing-page/hero-image.png"
+                    alt="ClinicPro AI Medical Scribe Interface"
+                    fill
+                    sizes="100vw"
+                    priority
+                    className="object-cover"
+                  />
                 </div>
 
               </div>
@@ -124,23 +104,13 @@ export const EarlyHeroSection = () => {
           <div className="hidden lg:flex lg:items-center lg:justify-center">
             <div className="relative">
               <div className="relative aspect-[4/3] w-full max-w-lg overflow-hidden rounded-2xl border border-transparent bg-transparent shadow-2xl">
-                <div className="group absolute inset-0">
-                  <Image
-                    src="/images/landing-page/hero-image.png"
-                    alt="ClinicPro AI Medical Scribe Interface"
-                    fill
-                    sizes="(max-width: 1280px) 50vw, 600px"
-                    className="object-cover opacity-90 transition-transform duration-700 group-hover:scale-105"
-                  />
-                  {/* 2025 Trend: Video Play Overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center bg-gray-900/20 opacity-0 transition-all duration-500 group-hover:opacity-100">
-                    <button className="rounded-full bg-white/10 p-4 backdrop-blur-sm transition-all duration-300 hover:scale-110 hover:bg-white/20">
-                      <div className="flex size-10 items-center justify-center rounded-full bg-green-500 shadow-lg">
-                        <div className="ml-1 size-0 border-y-[10px] border-l-[15px] border-y-transparent border-l-white"></div>
-                      </div>
-                    </button>
-                  </div>
-                </div>
+                <Image
+                  src="/images/landing-page/hero-image.png"
+                  alt="ClinicPro AI Medical Scribe Interface"
+                  fill
+                  sizes="(max-width: 1280px) 50vw, 600px"
+                  className="object-cover"
+                />
               </div>
 
             </div>
