@@ -11,34 +11,8 @@ export const EarlyFooterCTA = () => {
 
   const handleJoinClick = async () => {
     setIsLoading(true);
-
-    try {
-      const response = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tier: 'standard',
-        }),
-      });
-
-      if (response.ok) {
-        const { url } = await response.json();
-        window.location.href = url;
-      } else if (response.status === 401) {
-        // Public user needs to sign up first
-        window.location.href = '/auth/register?redirect=upgrade';
-      } else {
-        console.error('Failed to create checkout session');
-        // TODO: Replace with proper toast notification
-        console.error('Something went wrong. Please try again.');
-        setIsLoading(false);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      // TODO: Replace with proper toast notification
-      console.error('Something went wrong. Please try again.');
-      setIsLoading(false);
-    }
+    // Always send public users to sign-up, then redirect straight to clinical consultation
+    window.location.href = '/auth/register?redirect=/app/(clinical)/consultation';
   };
 
   return (

@@ -41,12 +41,12 @@ export const PageNavigation = () => {
 
           {/* Right: Start Today */}
           <div className="hidden shrink-0 md:block">
-            <button
-              onClick={() => startItem && scrollToSection(startItem.id)}
+            <a
+              href="/auth/register?redirect=/app/(clinical)/consultation"
               className="rounded-full bg-nz-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-nz-green-700"
             >
               Start Today
-            </button>
+            </a>
           </div>
         </div>
       </div>
