@@ -52,7 +52,7 @@ export const EarlyHeroSection = () => {
       {/* Light overlay for better text readability */}
       <div className="absolute inset-0 bg-gray-900/20"></div>
 
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
 
           {/* Left Column - Content */}
@@ -84,35 +84,31 @@ export const EarlyHeroSection = () => {
 
             {/* Mobile Image - Between Benefits and CTA */}
             <div className="my-8 lg:hidden">
-              <div className="relative">
-                <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-transparent bg-transparent shadow-2xl">
-                  <Image
-                    src="/images/landing-page/hero-image.png"
-                    alt="ClinicPro AI Medical Scribe Interface"
-                    fill
-                    sizes="100vw"
-                    priority
-                    className="object-cover"
-                  />
-                </div>
-
+              <div className="overflow-hidden rounded-2xl">
+                <Image
+                  src="/images/landing-page/hero-image.png"
+                  alt="ClinicPro AI Medical Scribe Interface"
+                  width={1280}
+                  height={960}
+                  sizes="100vw"
+                  priority
+                  className="block h-auto w-full object-cover"
+                />
               </div>
             </div>
           </div>
 
           {/* Right Column - Hero Image - Desktop Only */}
           <div className="hidden lg:flex lg:items-center lg:justify-center">
-            <div className="relative">
-              <div className="relative aspect-[4/3] w-full max-w-lg overflow-hidden rounded-2xl border border-transparent bg-transparent shadow-2xl">
-                <Image
-                  src="/images/landing-page/hero-image.png"
-                  alt="ClinicPro AI Medical Scribe Interface"
-                  fill
-                  sizes="(max-width: 1280px) 50vw, 600px"
-                  className="object-cover"
-                />
-              </div>
-
+            <div className="w-full max-w-lg overflow-hidden rounded-2xl">
+              <Image
+                src="/images/landing-page/hero-image.png"
+                alt="ClinicPro AI Medical Scribe Interface"
+                width={1200}
+                height={900}
+                sizes="(max-width: 1280px) 50vw, 600px"
+                className="block h-auto w-full object-cover"
+              />
             </div>
           </div>
 
