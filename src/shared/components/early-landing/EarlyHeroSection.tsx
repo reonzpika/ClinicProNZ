@@ -74,11 +74,12 @@ export const EarlyHeroSection = () => {
             {/* Subtitle */}
             <div className="mb-8 text-lg text-gray-100 lg:text-xl">
               <p className="mb-3 font-open-sans text-2xl font-bold text-green-300 lg:text-3xl">and more...</p>
-              <p className="mb-3">ClinicPro gives you more control:</p>
+              <p className="mb-3">Handle complex, multi5problem consults with ease:</p>
               <ul className="ml-5 list-disc space-y-2">
-                <li>Specify problems, add additional note</li>
-                <li>Upload and resize lesion images instantly during the consult</li>
+                <li>Capture by audio; add typed input when needed</li>
+                <li>Upload and resize lesion images during the consult</li>
                 <li>Chat with trusted NZ health resources</li>
+                <li>Get structured notes in minutes  finish on time</li>
               </ul>
             </div>
 
