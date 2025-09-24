@@ -31,8 +31,6 @@ function createSourceFilter(controller: ReadableStreamDefaultController<Uint8Arr
   const encoder = new TextEncoder();
   let buffer = '';
   let inSources = false;
-  let inFollowups = false;
-  let seenAnswerBullet = false;
   let lastLineWasBlank = false;
   let sourcesProcessed = 0;
   const maxSources = 3;
@@ -53,24 +51,11 @@ function createSourceFilter(controller: ReadableStreamDefaultController<Uint8Arr
 
     if (!inSources) {
       const trimmed = line.trim();
-      // Track answer bullets
-      if (trimmed.startsWith('- ')) {
-        seenAnswerBullet = true;
-      }
-
-      // Detect transition into follow-ups: first question after answer bullets
-      if (!inFollowups && seenAnswerBullet && trimmed.endsWith('?')) {
-        if (!lastLineWasBlank) {
-          emit('\n'); // ensure a blank line before follow-ups
-        }
-        inFollowups = true;
-      }
-
-      // Normalise follow-up formatting: remove bullet dash if present
-      if (inFollowups && trimmed.endsWith('?')) {
-        const withoutDash = trimmed.replace(/^\-\s+/, '');
-        emit(withoutDash + '\n');
-        lastLineWasBlank = false;
+      // Drop any standalone question lines (no follow-ups allowed)
+      if (trimmed.endsWith('?')) {
+        // ensure a single blank line before SOURCES later
+        if (!lastLineWasBlank) emit('\n');
+        lastLineWasBlank = true;
         return;
       }
 
@@ -90,6 +75,14 @@ function createSourceFilter(controller: ReadableStreamDefaultController<Uint8Arr
         inSources = true;
         emit('SOURCES:' + '\n');
         lastLineWasBlank = false;
+        return;
+      }
+
+      // Remove inline numeric citation markers like [1], [2] from answer bullets
+      if (trimmed) {
+        const cleanedLine = line.replace(/\s*\[\d+\]/g, '');
+        emit(cleanedLine + '\n');
+        lastLineWasBlank = cleanedLine.trim() === '';
         return;
       }
 
@@ -151,8 +144,9 @@ const CHATBOT_SYSTEM_PROMPT = `You are a clinical AI assistant for New Zealand G
 
 Output format (follow exactly):
 - Start with 3–6 bullet points that directly answer the question. Use terse keywords/phrases. Do NOT include numeric citation markers in these bullets. Do NOT write a heading like "SHORT ANSWER:".
-- Then a blank line, then up to 3 follow-up questions (one per line, phrased as questions), no leading dashes, no heading like "FOLLOW-UPS:".
 - Then a blank line, then the line "SOURCES:" followed by up to 3 sources, each on its own line in the format: Title — https://domain/path
+
+Strictly do NOT include any follow-up questions.
 
 Citation policy:
 - Prefer New Zealand sources (e.g., bpac.org.nz, tewhatuora.govt.nz/health.govt.nz, healthify.nz, starship.org.nz, medsafe.govt.nz) over international where applicable.
