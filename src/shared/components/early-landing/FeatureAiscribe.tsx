@@ -39,7 +39,7 @@ export const FeatureAiscribe = () => {
           <div className="[content-visibility:auto] [contain:layout_paint_style]">
             <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md">
               <img
-                src="https://placehold.co/960x600?text=Consultation"
+                src="/images/landing-page/ClinicProConsultation.jpg"
                 alt="Consultation screen showing recording, additional note input, and template switcher"
                 loading="lazy"
                 decoding="async"
@@ -54,7 +54,7 @@ export const FeatureAiscribe = () => {
           <div className="order-2 [content-visibility:auto] [contain:layout_paint_style] lg:order-1">
             <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md">
               <img
-                src="https://placehold.co/960x600?text=Generated+Note"
+                src="/images/landing-page/ClinicProGenerateNote.jpg"
                 alt="Generated note with editable sections"
                 loading="lazy"
                 decoding="async"

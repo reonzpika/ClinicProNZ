@@ -40,7 +40,7 @@ export const FeatureChat = () => {
           <div className="[content-visibility:auto] [contain:layout_paint_style]">
             <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md">
               <img
-                src="https://placehold.co/960x600?text=Chat+with+NZ+resources"
+                src="/images/landing-page/ClinicProChat.jpg"
                 alt="Chat UI showing an answer with Healthify and NZ Formulary references"
                 loading="lazy"
                 decoding="async"

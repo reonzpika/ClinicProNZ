@@ -43,7 +43,7 @@ export const FeatureImage = () => {
           <div className="[content-visibility:auto] [contain:layout_paint_style]">
             <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md">
               <img
-                src="https://placehold.co/960x600?text=Mobile+Upload+%2B+Auto-Resize"
+                src="/images/landing-page/mobile_recording_page"
                 alt="Mobile upload with auto-resize and desktop availability"
                 loading="lazy"
                 decoding="async"
