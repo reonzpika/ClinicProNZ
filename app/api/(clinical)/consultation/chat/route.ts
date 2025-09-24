@@ -73,7 +73,33 @@ function createSourceFilter(controller: ReadableStreamDefaultController<Uint8Arr
     controller.enqueue(encoder.encode(text));
   }
 
-  function processLine(line: string) {
+  async function verifyReachable(urlStr: string): Promise<boolean> {
+    try {
+      const ac = new AbortController();
+      const t = setTimeout(() => ac.abort(), 2500);
+      const resp = await fetch(urlStr, { method: 'HEAD', signal: ac.signal });
+      clearTimeout(t);
+      if (resp.ok) return true;
+      // Some servers do not support HEAD well; try GET with small timeout
+      const ac2 = new AbortController();
+      const t2 = setTimeout(() => ac2.abort(), 3000);
+      const respGet = await fetch(urlStr, { method: 'GET', signal: ac2.signal });
+      clearTimeout(t2);
+      return respGet.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  async function processLine(line: string) {
+    // Strip unwanted headings if present
+    if (line.trim().toUpperCase().startsWith('SHORT ANSWER:')) {
+      return; // drop label line
+    }
+    if (line.trim().toUpperCase().startsWith('FOLLOW-UPS:')) {
+      return; // drop label line
+    }
+
     if (!inSources) {
       if (line.includes('SOURCES:')) {
         inSources = true;
@@ -88,7 +114,7 @@ function createSourceFilter(controller: ReadableStreamDefaultController<Uint8Arr
       return;
     }
 
-    // Validate URLs in source lines; replace disallowed URLs
+    // Validate URLs in source lines; replace disallowed or unreachable URLs
     const urlMatch = line.match(/https?:\/\/\S+/);
     if (!urlMatch) {
       emit(line + '\n');
@@ -96,7 +122,7 @@ function createSourceFilter(controller: ReadableStreamDefaultController<Uint8Arr
     }
     const originalUrl = urlMatch[0];
     const cleaned = sanitiseUrl(originalUrl);
-    if (cleaned) {
+    if (cleaned && (await verifyReachable(cleaned))) {
       if (cleaned !== originalUrl) {
         const replaced = line.replace(originalUrl, cleaned);
         emit(replaced + '\n');
@@ -105,25 +131,25 @@ function createSourceFilter(controller: ReadableStreamDefaultController<Uint8Arr
       }
       sourcesProcessed += 1;
     } else {
-      const replaced = line.replace(originalUrl, '(removed non-trusted source)');
+      const replaced = line.replace(originalUrl, '(removed invalid or non-trusted source)');
       emit(replaced + '\n');
       sourcesProcessed += 1;
     }
   }
 
   return {
-    write(chunk: string) {
+    async write(chunk: string) {
       buffer += chunk;
       let idx;
       while ((idx = buffer.indexOf('\n')) !== -1) {
         const line = buffer.slice(0, idx);
         buffer = buffer.slice(idx + 1);
-        processLine(line);
+        await processLine(line);
       }
     },
-    end() {
+    async end() {
       if (buffer) {
-        processLine(buffer);
+        await processLine(buffer);
         buffer = '';
       }
     },
@@ -133,17 +159,15 @@ function createSourceFilter(controller: ReadableStreamDefaultController<Uint8Arr
 // System prompt for NZ GP clinical assistant with strict structure and citations
 const CHATBOT_SYSTEM_PROMPT = `You are a clinical AI assistant for New Zealand General Practitioners (GPs).
 
-Response contract (follow exactly):
-SHORT ANSWER:\n<one or two sentences, practical, directly answer the question>. Include inline numeric citations like [1], [2] where relevant.
-
-FOLLOW-UPS:\n- Up to 3 short questions offering logical next steps.
-
-SOURCES:\n[List up to 3 sources, each on its own line in the format: [n] Title — https://domain/path]
+Output format (follow exactly):
+- Start with 3–6 bullet points that directly answer the question. Use terse keywords/phrases. Include inline numeric citations like [1], [2] where relevant. Do NOT write a heading like "SHORT ANSWER:".
+- Then a blank line, then up to 3 bullet-point follow-up questions (e.g. "- Need step-up options?"), no heading like "FOLLOW-UPS:".
+- Then a blank line, then the line "SOURCES:" followed by up to 3 sources, each on its own line in the format: [n] Title — https://domain/path
 
 Citation policy:
 - Prioritise New Zealand sources first. Allowed NZ domains: ${NZ_TRUSTED_DOMAINS.join(', ')}.
 - If no suitable NZ page exists, use trusted international sources: ${INTL_TRUSTED_DOMAINS.join(', ')}.
-- Use specific guideline/article pages (not homepages). Always include HTTPS URL. Avoid blogs/forums.
+- Use specific guideline/article pages (not homepages). Always include HTTPS URL. Avoid blogs/forums. Prefer publicly accessible pages.
 
 Clinical style:
 - Professional, clear, GP-focused. Support safe reasoning; avoid definitive diagnoses. Flag red flags and referral triggers when appropriate.
