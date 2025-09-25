@@ -2,16 +2,15 @@ import { getDb } from 'database/client';
 import { sql } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
-import { apiUsageCosts } from '@/database/schema/api_usage_costs';
-import { users } from '@/database/schema/users';
+import { apiUsageCosts } from '@/db/schema/api_usage_costs';
+import { users } from '@/db/schema/users';
 import { extractRBACContext } from '@/src/lib/rbac-enforcer';
-import { checkTierFromSessionClaims } from '@/src/shared/utils/roles';
 
 export async function GET(req: Request) {
   try {
     // Check admin access
     const context = await extractRBACContext(req);
-    const isAdmin = checkTierFromSessionClaims(context.sessionClaims, 'admin');
+    const isAdmin = context.tier === 'admin';
 
     if (!isAdmin) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
@@ -53,10 +52,10 @@ export async function GET(req: Request) {
       .groupBy(apiUsageCosts.userId, apiUsageCosts.apiFunction);
 
     // Format response
-    const response = userSummaries.map((user) => {
+    const response = userSummaries.map((user: { userId: string | null; email: string | null; totalCost: unknown; sessionCount: unknown; requestCount: unknown }) => {
       const userProviderBreakdown = providerBreakdowns
-        .filter(p => p.userId === user.userId)
-        .reduce((acc, item) => {
+        .filter((p: { userId: string | null }) => p.userId === user.userId)
+        .reduce((acc: { deepgram: number; openai: number; perplexity: number }, item: { provider: string | null; totalCost: unknown }) => {
           if (item.provider) {
             acc[item.provider as 'deepgram' | 'openai' | 'perplexity'] = Number(item.totalCost);
           }
@@ -64,8 +63,8 @@ export async function GET(req: Request) {
         }, { deepgram: 0, openai: 0, perplexity: 0 });
 
       const userFunctionBreakdown = functionBreakdowns
-        .filter(f => f.userId === user.userId)
-        .reduce((acc, item) => {
+        .filter((f: { userId: string | null }) => f.userId === user.userId)
+        .reduce((acc: { transcription: number; note_generation: number; chat: number }, item: { function: string | null; totalCost: unknown }) => {
           if (item.function) {
             acc[item.function as 'transcription' | 'note_generation' | 'chat'] = Number(item.totalCost);
           }
