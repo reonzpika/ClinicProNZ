@@ -59,14 +59,6 @@ function createSourceFilter(controller: ReadableStreamDefaultController<Uint8Arr
         return;
       }
 
-      // Remove inline numeric citation markers like [1], [2] from answer bullets
-      if (!inFollowups && trimmed) {
-        const cleanedLine = line.replace(/\s*\[\d+\]/g, '');
-        emit(cleanedLine + '\n');
-        lastLineWasBlank = cleanedLine.trim() === '';
-        return;
-      }
-
       // When encountering SOURCES, ensure a blank line before label
       if (trimmed === 'SOURCES:') {
         if (!lastLineWasBlank) {
