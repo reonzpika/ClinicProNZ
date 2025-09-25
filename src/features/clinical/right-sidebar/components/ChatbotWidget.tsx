@@ -356,34 +356,6 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
     return (
       <Card className={`flex flex-col border-slate-200 bg-white shadow-sm transition-all duration-300 ${isCollapsed ? '' : chatHeight}`}>
         <CardContent className="flex flex-col p-3">
-          <div className="mb-2 flex items-center gap-2">
-            <div className="relative flex flex-1 items-center space-x-2 rounded-lg border border-slate-200 bg-white p-2 shadow-sm focus-within:border-slate-400 focus-within:ring-1 focus-within:ring-slate-400">
-              <Textarea
-                ref={textareaRef}
-                value={inputMessage}
-                onChange={handleInputChange}
-                onKeyPress={handleKeyPress}
-                onFocus={() => setIsCollapsed(false)}
-                placeholder="Search or ask a clinical question..."
-                className="max-h-[40px] min-h-[24px] flex-1 resize-none border-0 bg-transparent py-1 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-0"
-                disabled={isChatLoading}
-                rows={1}
-              />
-              <Button
-                onClick={handleSendMessage}
-                disabled={!inputMessage.trim() || isChatLoading}
-                size="sm"
-                className="h-7 shrink-0 rounded-md bg-slate-600 px-3 py-1 text-sm text-white hover:bg-slate-700 disabled:bg-slate-300"
-              >
-                {isChatLoading ? (
-                  <div className="size-3 animate-spin rounded-full border border-white border-t-transparent"></div>
-                ) : (
-                  'Send'
-                )}
-              </Button>
-            </div>
-            {modalContent}
-          </div>
           {!isCollapsed && (
             <div className={`flex flex-1 flex-col overflow-hidden ${chatHeight}`}>
               <div className="mb-2 flex items-center space-x-3">
@@ -399,7 +371,8 @@ export const ChatbotWidget: React.FC<ChatbotWidgetProps> = ({
                     <span className="ml-1 text-slate-400">(No consultation data available)</span>
                   )}
                 </label>
-                <div className="ml-auto">
+                <div className="ml-auto flex items-center gap-1">
+                  {modalContent}
                   <Button
                     variant="ghost"
                     size="sm"
