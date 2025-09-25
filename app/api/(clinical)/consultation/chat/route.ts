@@ -35,7 +35,8 @@ function sanitiseUrl(urlStr: string): string | null {
 const CHATBOT_SYSTEM_PROMPT = `You are a clinical AI assistant for New Zealand General Practitioners (GPs).
 
 Output format (follow exactly):
-- Start with 3–6 bullet points, each \u226412 words, telegraphic, easy to scan. Do NOT include numeric citation markers in these bullets. Do NOT write a heading like "SHORT ANSWER:".
+- Start with ONLY 3–6 bullet points, each \u226410 words, telegraphic, keywords/phrases; grammar can be minimal. Do NOT include numeric citation markers in these bullets. Do NOT write any headings.
+- Do NOT write any paragraphs after the bullets. Stop after the bullet list.
 - Do NOT include a SOURCES section or any list of links at the end.
 
 Strictly do NOT include any follow-up questions.
@@ -162,20 +163,28 @@ Please use this raw consultation data to provide relevant guidance. This is unst
       citations = pplxJson.metadata.citations;
     }
 
-    // Clean main content: remove label lines and any trailing sources; strip inline numeric markers like [1]
-    const cleanedContent = (content || '')
-      .split('\n')
-      .filter((line: string) => {
-        const upper = line.trim().toUpperCase();
-        if (upper.startsWith('SHORT ANSWER:')) return false;
-        if (upper.startsWith('FOLLOW-UPS:')) return false;
-        if (upper === 'SOURCES:') return false;
-        if (/\s—\shttps?:\/\//.test(line)) return false;
-        return true;
-      })
-      .map((line: string) => line.replace(/\s*\[\d+\]/g, ''))
-      .join('\n')
-      .trim();
+    // Clean main content: keep only initial bullet list; drop any prose/links; strip inline numeric markers like [1]
+    const lines = (content || '').split('\n');
+    const bullets: string[] = [];
+    let foundAnyBullet = false;
+    for (let i = 0; i < lines.length; i++) {
+      const raw = lines[i] ?? '';
+      const trimmed = raw.trim();
+      const isBullet = trimmed.startsWith('- ') || trimmed.startsWith('* ');
+      const isSourceLine = /\s—\shttps?:\/\//.test(raw) || trimmed.toUpperCase() === 'SOURCES:';
+      const isLabel = trimmed.toUpperCase().startsWith('SHORT ANSWER:') || trimmed.toUpperCase().startsWith('FOLLOW-UPS:');
+      if (isSourceLine || isLabel) {
+        continue;
+      }
+      if (isBullet) {
+        foundAnyBullet = true;
+        bullets.push(raw.replace(/\s*\[\d+\]/g, ''));
+      } else if (foundAnyBullet) {
+        // stop at first non-bullet after bullets start
+        break;
+      }
+    }
+    const cleanedContent = bullets.join('\n').trim();
 
     // Prepare all unique citations with sanitised HTTPS URLs (no cap)
     const seen = new Set<string>();
