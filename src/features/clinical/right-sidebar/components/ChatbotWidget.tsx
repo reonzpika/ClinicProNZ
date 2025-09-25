@@ -123,34 +123,13 @@ export const ChatbotWidget: React.FC = () => {
         throw new Error('Failed to get response from chatbot');
       }
 
-      if (!response.body) {
-        throw new Error('No response body');
-      }
+      const data = await response.json();
+      const assistantMessage = data?.response || '';
 
-      // Handle streaming response
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let assistantMessage = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          break;
-        }
-
-        const chunk = decoder.decode(value, { stream: true });
-        assistantMessage += chunk;
-        setStreamingMessage(assistantMessage);
-      }
-
-      // Add the complete assistant message to chat history
       addChatMessage({
         role: 'assistant',
         content: assistantMessage,
       });
-
-      // Clear streaming message
-      setStreamingMessage('');
     } catch (error) {
       console.error('Chat error:', error);
       addChatMessage({

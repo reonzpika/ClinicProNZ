@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
 
-function getOpenAI(): OpenAI {
-  const apiKey = process.env.OPENAI_API_KEY;
+// Perplexity API configuration
+const PPLX_API_URL = 'https://api.perplexity.ai/chat/completions';
+function getPerplexityConfig() {
+  const apiKey = process.env.PPLX_API_KEY;
   if (!apiKey) {
-    throw new Error('Missing OPENAI_API_KEY');
+    throw new Error('Missing PPLX_API_KEY');
   }
-  return new OpenAI({ apiKey });
+  const model = process.env.PPLX_MODEL || 'sonar-small-online';
+  return { apiKey, model };
 }
 
 // URL cleaner (no allowlist enforcement; HTTPS required; tracking params removed)
@@ -136,7 +138,7 @@ const CHATBOT_SYSTEM_PROMPT = `You are a clinical AI assistant for New Zealand G
 
 Output format (follow exactly):
 - Start with 3–6 bullet points that directly answer the question. Use terse keywords/phrases. Do NOT include numeric citation markers in these bullets. Do NOT write a heading like "SHORT ANSWER:".
-- Then a blank line, then the line "SOURCES:" followed by up to 3 sources, each on its own line in the format: Title — https://domain/path
+- Then a blank line, then the line "SOURCES:" followed by all relevant sources, each on its own line in the format: Title — https://domain/path
 
 Strictly do NOT include any follow-up questions.
 
@@ -209,92 +211,98 @@ Please use this raw consultation data to provide relevant guidance. This is unst
       }
     }
 
-    // Prepare messages for OpenAI API
-    const openaiMessages = [
+    // Prepare messages for Perplexity API
+    const pplxMessages = [
       { role: 'system' as const, content: systemPrompt },
       ...messages.map((msg: any) => ({
         role: msg.role as 'user' | 'assistant',
         content: msg.content,
       })),
     ];
-
-    // Prefer Responses API with web_search tool. Fallback to Chat Completions if unavailable.
-    const openai = getOpenAI();
-    let readable: ReadableStream<Uint8Array> | null = null;
-
-    try {
-      // Responses API streaming with web_search tool
-      // Note: We stream only output_text deltas for compatibility with existing clients
-      // and let the model handle citations and structure per system prompt.
-      const respStream: any = await (openai as any).responses.stream({
-        model: 'gpt-4o-mini',
-        input: openaiMessages,
-        tools: [{ type: 'web_search' }],
-        temperature: 0.2,
-        max_output_tokens: 400,
-        parallel_tool_calls: true,
-      });
-
-      readable = new ReadableStream({
-        async start(controller) {
-          try {
-            const filter = createSourceFilter(controller);
-            for await (const event of respStream as AsyncIterable<any>) {
-              // Stream only text deltas
-              if (event.type === 'response.output_text.delta' && event.delta) {
-                filter.write(event.delta);
-              }
-              if (event.type === 'response.error') {
-                console.error('Responses stream error event:', event.error);
-              }
-            }
-            filter.end();
-            controller.close();
-          } catch (err) {
-            console.error('Responses API streaming error:', err);
-            controller.error(err);
-          }
-        },
-      });
-    } catch (responsesErr) {
-      console.warn('Falling back to Chat Completions streaming. Reason:', responsesErr);
-
-      // Fallback: Chat Completions streaming (no web search)
-      const completionStream = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: openaiMessages,
+    // Call Perplexity (non-streaming for reliable citation metadata)
+    const { apiKey, model } = getPerplexityConfig();
+    const pplxResp = await fetch(PPLX_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: pplxMessages,
         temperature: 0.2,
         max_tokens: 400,
-        stream: true,
-      });
+        stream: false,
+      }),
+    });
 
-      readable = new ReadableStream({
-        async start(controller) {
-          try {
-            const filter = createSourceFilter(controller);
-            for await (const chunk of completionStream) {
-              const content = chunk.choices?.[0]?.delta?.content;
-              if (content) {
-                filter.write(content);
-              }
-            }
-            filter.end();
-            controller.close();
-          } catch (error) {
-            console.error('Chat Completions streaming error:', error);
-            controller.error(error);
-          }
-        },
-      });
+    if (!pplxResp.ok) {
+      const text = await pplxResp.text().catch(() => '');
+      console.error('Perplexity API error:', pplxResp.status, text);
+      return NextResponse.json(
+        { code: 'UPSTREAM_ERROR', message: 'Failed to fetch from Perplexity' },
+        { status: 502 },
+      );
     }
 
-    return new Response(readable, {
-      headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-        'Cache-Control': 'no-cache',
-        'Transfer-Encoding': 'chunked',
-      },
-    });
+    const pplxJson: any = await pplxResp.json();
+
+    // Extract content
+    const content: string = pplxJson?.choices?.[0]?.message?.content || '';
+
+    // Extract citation metadata from various possible locations
+    let citations: Array<{ url?: string; title?: string }> = [];
+    if (Array.isArray(pplxJson?.citations)) citations = pplxJson.citations;
+    if (!citations.length && Array.isArray(pplxJson?.choices?.[0]?.message?.citations)) {
+      citations = pplxJson.choices[0].message.citations;
+    }
+    if (!citations.length && Array.isArray(pplxJson?.choices?.[0]?.citations)) {
+      citations = pplxJson.choices[0].citations;
+    }
+    if (!citations.length && Array.isArray(pplxJson?.metadata?.citations)) {
+      citations = pplxJson.metadata.citations;
+    }
+
+    // Clean main content: remove label lines and inline numeric markers like [1]
+    const cleanedContent = (content || '')
+      .split('\n')
+      .filter((line: string) => {
+        const upper = line.trim().toUpperCase();
+        if (upper.startsWith('SHORT ANSWER:')) return false;
+        if (upper.startsWith('FOLLOW-UPS:')) return false;
+        return true;
+      })
+      .map((line: string) => line.replace(/\s*\[\d+\]/g, ''))
+      .join('\n')
+      .trim();
+
+    // Build SOURCES block from all citation metadata URLs (no cap)
+    const seen = new Set<string>();
+    const sourceLines: string[] = [];
+    for (const c of citations || []) {
+      const urlMatch = typeof c?.url === 'string' ? c.url : (typeof (c as any) === 'string' ? (c as any) : undefined);
+      if (!urlMatch) continue;
+      const cleaned = sanitiseUrl(urlMatch);
+      if (!cleaned) continue;
+      if (seen.has(cleaned)) continue;
+      seen.add(cleaned);
+      let title = c?.title;
+      if (!title) {
+        try {
+          const u = new URL(cleaned);
+          title = u.hostname;
+        } catch {
+          title = cleaned;
+        }
+      }
+      sourceLines.push(`${title} — ${cleaned}`);
+    }
+
+    const finalResponse = sourceLines.length
+      ? `${cleanedContent}\n\nSOURCES:\n${sourceLines.join('\n')}`
+      : cleanedContent;
+
+    return NextResponse.json({ response: finalResponse });
   } catch (error) {
     console.error('Chat API error:', error);
     return NextResponse.json(
