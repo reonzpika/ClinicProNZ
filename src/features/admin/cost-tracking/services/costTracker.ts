@@ -10,7 +10,7 @@ import type { ApiFunction, ApiProvider, CostBreakdown, UsageMetrics } from './co
 import { calculateApiCost } from './costCalculator';
 
 export type TrackingContext = {
-  userId: string;
+  userId: string | null;
   sessionId?: string;
 };
 
