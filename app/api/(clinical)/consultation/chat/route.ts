@@ -35,13 +35,13 @@ function sanitiseUrl(urlStr: string): string | null {
 const CHATBOT_SYSTEM_PROMPT = `You are a clinical AI assistant for New Zealand General Practitioners (GPs).
 
 Output format (follow exactly):
-- Start with 3–6 bullet points that directly answer the question. Use terse keywords/phrases. Do NOT include numeric citation markers in these bullets. Do NOT write a heading like "SHORT ANSWER:".
-- Then a blank line, then the line "SOURCES:" followed by all relevant sources, each on its own line in the format: Title — https://domain/path
+- Start with 3–6 bullet points, each \u226412 words, telegraphic, easy to scan. Do NOT include numeric citation markers in these bullets. Do NOT write a heading like "SHORT ANSWER:".
+- Do NOT include a SOURCES section or any list of links at the end.
 
 Strictly do NOT include any follow-up questions.
 
 Citation policy:
-- Prefer New Zealand sources (e.g., bpac.org.nz, tewhatuora.govt.nz/health.govt.nz, healthify.nz, starship.org.nz, medsafe.govt.nz) over international where applicable.
+- Prefer New Zealand sources. Prioritise domains ending with .nz, .org.nz, .co.nz (e.g., bpac.org.nz, tewhatuora.govt.nz/health.govt.nz, healthify.nz, starship.org.nz, medsafe.govt.nz). Use these wherever applicable.
 - If suitable NZ pages are unavailable, use trusted international clinical resources (e.g., nice.org.uk, cochranelibrary.com, who.int, cdc.gov, ema.europa.eu).
 - Use specific guideline/article pages (not homepages). Always include HTTPS URL. Avoid news sites, general blogs, forums, or opinion pieces.
 
@@ -176,7 +176,7 @@ Please use this raw consultation data to provide relevant guidance. This is unst
       .join('\n')
       .trim();
 
-    // Prepare top 5 unique citations with sanitised HTTPS URLs
+    // Prepare all unique citations with sanitised HTTPS URLs (no cap)
     const seen = new Set<string>();
     const topCitations: Array<{ index: number; url: string; title: string }> = [];
     for (const c of citations || []) {
@@ -196,7 +196,6 @@ Please use this raw consultation data to provide relevant guidance. This is unst
         }
       }
       topCitations.push({ index: topCitations.length + 1, url: cleaned, title });
-      if (topCitations.length >= 5) break;
     }
 
     function escapeTitle(t: string): string {
