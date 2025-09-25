@@ -4,7 +4,7 @@
 
 import { getDb } from 'database/client';
 
-import { apiUsageCosts, type NewApiUsageCost } from '@/database/schema/api_usage_costs';
+import { apiUsageCosts, type NewApiUsageCost } from '@/db/schema/api_usage_costs';
 
 import type { ApiFunction, ApiProvider, CostBreakdown, UsageMetrics } from './costCalculator';
 import { calculateApiCost } from './costCalculator';

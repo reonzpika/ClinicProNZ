@@ -2,15 +2,14 @@ import { getDb } from 'database/client';
 import { sql } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
-import { apiUsageCosts } from '@/database/schema/api_usage_costs';
+import { apiUsageCosts } from '@/db/schema/api_usage_costs';
 import { extractRBACContext } from '@/src/lib/rbac-enforcer';
-import { checkTierFromSessionClaims } from '@/src/shared/utils/roles';
 
 export async function GET(req: Request) {
   try {
     // Check admin access
     const context = await extractRBACContext(req);
-    const isAdmin = checkTierFromSessionClaims(context.sessionClaims, 'admin');
+    const isAdmin = context.tier === 'admin';
 
     if (!isAdmin) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
@@ -72,14 +71,14 @@ export async function GET(req: Request) {
     };
 
     // Populate provider breakdown
-    providerBreakdown.forEach((item) => {
+    providerBreakdown.forEach((item: { provider: string | null; totalCost: unknown }) => {
       if (item.provider && item.provider in response.byProvider) {
         response.byProvider[item.provider as keyof typeof response.byProvider] = Number(item.totalCost);
       }
     });
 
     // Populate function breakdown
-    functionBreakdown.forEach((item) => {
+    functionBreakdown.forEach((item: { function: string | null; totalCost: unknown }) => {
       if (item.function && item.function in response.byFunction) {
         response.byFunction[item.function as keyof typeof response.byFunction] = Number(item.totalCost);
       }
