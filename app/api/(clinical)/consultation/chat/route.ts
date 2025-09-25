@@ -31,23 +31,13 @@ function sanitiseUrl(urlStr: string): string | null {
 
 // Note: streaming filter removed (non-streaming Perplexity path)
 
-// System prompt for NZ GP clinical assistant with NZ-search instruction
+// Minimal system prompt: bullets-only style and clinical tone
 const CHATBOT_SYSTEM_PROMPT = `You are a clinical AI assistant for New Zealand General Practitioners (GPs).
 
 Output format (follow exactly):
-- Start with ONLY 3–6 bullet points, each \u226410 words, telegraphic, keywords/phrases; grammar can be minimal. Do NOT include numeric citation markers in these bullets. Do NOT write any headings.
+- ONLY 3–6 bullet points, each \u226410 words, telegraphic, keywords/phrases; grammar may be minimal. Do NOT write any headings.
 - Do NOT write any paragraphs after the bullets. Stop after the bullet list.
-- Do NOT include a SOURCES section or any list of links at the end.
-
-Strictly do NOT include any follow-up questions.
-
-Search instruction:
-- Actively search New Zealand websites to answer the query. Prioritise domains ending with .nz, .co.nz, .org.nz, .net.nz (e.g., bpac.org.nz, tewhatuora.govt.nz/health.govt.nz, healthify.nz, starship.org.nz, medsafe.govt.nz). If suitable NZ pages are unavailable, then use trusted international clinical resources (e.g., nice.org.uk, cochranelibrary.com, who.int, cdc.gov, ema.europa.eu). Use specific guideline/article pages (not homepages). Avoid news sites, general blogs, forums, or opinion pieces.
-
-Clinical style:
-- Professional, clear, GP-focused. Support safe reasoning; avoid definitive diagnoses. Flag red flags and referral triggers when appropriate.
-- When consultation context is provided, adapt advice to that scenario.
-- Be concise.
+- Professional, clear, GP-focused. Support safe reasoning; avoid definitive diagnoses.
 `;
 
 const CONSULTATION_CONTEXT_PREFIX = `
@@ -74,44 +64,54 @@ export async function POST(req: Request) {
       );
     }
 
-    // Build system prompt with context based on two-phase logic
+    // Build user prompt dynamically: inject query + NZ search instruction, and optionally consultation context
     let systemPrompt = CHATBOT_SYSTEM_PROMPT;
+
+    // Determine latest user query (fallback to last user message content)
+    const lastUserMsg = [...messages].reverse().find((m: any) => m?.role === 'user');
+    const queryText = (lastUserMsg?.content || '').toString().trim();
+
+    let dynamicUserContent = '';
+    dynamicUserContent += `I want to know more about this: "${queryText}"\n`;
+    dynamicUserContent += `Search instruction:\n`;
+    dynamicUserContent += `- Actively search New Zealand websites to answer the query. Prioritise domains ending with .nz, .co.nz, .org.nz, .net.nz.\n`;
+    dynamicUserContent += `- Avoid news sites, general blogs, forums, or opinion pieces.\n`;
 
     if (useContext) {
       if (consultationNote && consultationNote.trim()) {
-        // Phase 2: Generated notes exist - use only the structured notes
-        systemPrompt += CONSULTATION_CONTEXT_PREFIX + consultationNote + CONSULTATION_CONTEXT_SUFFIX;
+        dynamicUserContent += `\nBelow is additional context about the patient.\n${consultationNote.trim()}\n`;
       } else if (rawConsultationData) {
-        // Phase 1: No generated notes - use raw consultation data
-        let rawContext = '';
-
+        const parts: string[] = [];
         if (rawConsultationData.transcription && rawConsultationData.transcription.trim()) {
-          rawContext += `TRANSCRIPTION:\n${rawConsultationData.transcription}\n\n`;
+          parts.push(rawConsultationData.transcription.trim());
         }
-
         if (rawConsultationData.typedInput && rawConsultationData.typedInput.trim()) {
-          rawContext += `TYPED INPUT:\n${rawConsultationData.typedInput}\n\n`;
+          parts.push(rawConsultationData.typedInput.trim());
         }
-
-        if (rawContext.trim()) {
-          systemPrompt += `
-
-RAW CONSULTATION DATA:
-The following raw consultation data provides clinical context for this conversation:
-
----
-${rawContext.trim()}
----
-
-Please use this raw consultation data to provide relevant guidance. This is unstructured consultation information that may need clarification or organisation.`;
+        if ((rawConsultationData as any).additionalNote && (rawConsultationData as any).additionalNote.trim()) {
+          parts.push((rawConsultationData as any).additionalNote.trim());
+        }
+        if (parts.length > 0) {
+          dynamicUserContent += `\nBelow is additional context about the patient.\n${parts.join('\n')}\n`;
         }
       }
     }
 
     // Prepare messages for Perplexity API
+    // Replace latest user message with dynamic user content
+    const transformed = [...messages];
+    const lastUserIndex = [...transformed].map((m: any, idx: number) => ({ m, idx }))
+      .reverse()
+      .find(({ m }) => m?.role === 'user')?.idx;
+    if (typeof lastUserIndex === 'number') {
+      transformed[lastUserIndex] = { ...transformed[lastUserIndex], content: dynamicUserContent };
+    } else {
+      transformed.push({ role: 'user', content: dynamicUserContent });
+    }
+
     const pplxMessages = [
       { role: 'system' as const, content: systemPrompt },
-      ...messages.map((msg: any) => ({
+      ...transformed.map((msg: any) => ({
         role: msg.role as 'user' | 'assistant',
         content: msg.content,
       })),
