@@ -7,7 +7,7 @@ function getPerplexityConfig() {
   if (!apiKey) {
     throw new Error('Missing PPLX_API_KEY');
   }
-  const model = process.env.PPLX_MODEL || 'sonar-small-online';
+  const model = process.env.PPLX_MODEL || 'sonar';
   return { apiKey, model };
 }
 
@@ -131,6 +131,7 @@ Please use this raw consultation data to provide relevant guidance. This is unst
         temperature: 0.2,
         max_tokens: 400,
         stream: false,
+        return_citations: true,
       }),
     });
 
