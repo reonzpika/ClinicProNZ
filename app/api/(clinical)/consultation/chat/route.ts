@@ -217,9 +217,12 @@ Please use this raw consultation data to provide relevant guidance. This is unst
         const isBullet = trimmed.startsWith('- ') || trimmed.startsWith('* ');
         const isParagraphEnd = trimmed !== '' && !isBullet && (i + 1 === lines.length || nextTrim === '');
         if (isBullet || isParagraphEnd) {
-          const src = topCitations[srcIdx % topCitations.length];
+          const idx = srcIdx % topCitations.length;
+          const src = topCitations[idx];
           srcIdx++;
-          line = `${line} [${src.index}](${src.url} "${escapeTitle(src.title)}")`;
+          if (src) {
+            line = `${line} [${src.index}](${src.url} "${escapeTitle(src.title)}")`;
+          }
         }
         out.push(line);
       }
