@@ -1,10 +1,10 @@
 'use client';
 
 import { ArrowRight } from 'lucide-react';
+import Image from 'next/image';
 import { useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
-import Image from 'next/image';
 
 // Removed animated Aurora for reliability and performance
 

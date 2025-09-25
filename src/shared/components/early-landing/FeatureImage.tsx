@@ -3,7 +3,7 @@
 export const FeatureImage = () => {
   return (
     <section className="relative overflow-hidden bg-white py-16 sm:py-24 lg:py-28">
-      <div className="pointer-events-none absolute inset-0 opacity-[0.02] will-change-[transform]">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.02] will-change-transform">
         <div
           className="absolute inset-0"
           style={{
@@ -38,22 +38,20 @@ export const FeatureImage = () => {
               <li>• Ready to download on desktop and attach to PMS/referral</li>
               <li>• Also supports desktop upload when you’re at your computer</li>
             </ul>
-            
+
           </div>
-          <div className="[content-visibility:auto] [contain:layout_paint_style] lg:col-span-4">
+          <div className="[contain:layout_paint_style] [content-visibility:auto] lg:col-span-4">
             <div className="relative mx-auto overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md">
               <img
                 src="/images/landing-page/mobile_recording_page"
                 alt="Mobile upload with auto-resize and desktop availability"
                 loading="lazy"
                 decoding="async"
-                  className="block w-full h-auto object-contain"
+                className="block h-auto w-full object-contain"
               />
             </div>
           </div>
         </div>
-
-        
 
         {/* How it works (slim) */}
         <div className="mb-12 rounded-2xl border border-gray-200 bg-white p-6 shadow-lg lg:mb-16">
@@ -61,30 +59,30 @@ export const FeatureImage = () => {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
               <span className="font-medium text-gray-900">1.</span>
-              {' '}Open on mobile via QR (or on desktop)
+              {' '}
+Open on mobile via QR (or on desktop)
             </div>
             <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
               <span className="font-medium text-gray-900">2.</span>
-              {' '}Take or upload a photo
+              {' '}
+Take or upload a photo
             </div>
             <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
               <span className="font-medium text-gray-900">3.</span>
-              {' '}Auto‑resized to referral‑friendly size
+              {' '}
+Auto‑resized to referral‑friendly size
             </div>
             <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
               <span className="font-medium text-gray-900">4.</span>
-              {' '}Download on desktop and attach to PMS/referral
+              {' '}
+Download on desktop and attach to PMS/referral
             </div>
           </div>
         </div>
 
-        
-
-        
       </div>
     </section>
   );
 };
 
 export default FeatureImage;
-

@@ -88,8 +88,6 @@ export default function ConsultationPage() {
   // Mobile block modal - prevent mobile access to consultation
   const showMobileBlock = isMobile;
 
-  
-
   // Check for upgrade redirect
   const [showUpgradeNotification, setShowUpgradeNotification] = useState(false);
   const [upgradeLoading, setUpgradeLoading] = useState(false);
@@ -167,7 +165,7 @@ export default function ConsultationPage() {
       lastMobileStatusAtRef.current = Date.now();
     },
     onError: handleError,
-    
+
     isMobile: false,
     onTranscriptionsUpdated: async (signalledSessionId?: string) => {
       if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
@@ -282,7 +280,6 @@ export default function ConsultationPage() {
 
     // Now perform the actual session switch
     originalSwitchToPatientSession(sessionId, onSwitch);
-    
   }, [isRecording, mobileIsRecording, stopRecording, sendRecordingControl, originalSwitchToPatientSession]);
 
   useEffect(() => {
@@ -313,7 +310,6 @@ export default function ConsultationPage() {
         const sessionId = await ensureActiveSession();
         if (isMounted && sessionId) {
           hasEnsuredSessionRef.current = true;
-          
         }
       } finally {
         if (isMounted) {
@@ -358,7 +354,6 @@ export default function ConsultationPage() {
   };
 
   // Admin preview approval handler
-  
 
   // Session limits are now handled contextually when users try to perform actions
   // The UsageDashboard will show the current status and the modal will appear on 429 errors
@@ -411,10 +406,6 @@ export default function ConsultationPage() {
     };
   }, [sendRecordingControl]);
 
-  
-
-  
-
   // On mount, sync current session from server (server truth); create one if missing
   useEffect(() => {
     const fetchCurrent = async () => {
@@ -443,15 +434,22 @@ export default function ConsultationPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, userTier]);
 
-  
   // This eliminates dual broadcasting sources and race conditions
 
   const handleClearAll = async () => {
     isClearingRef.current = true;
-    try { setClearInProgress?.(true); } catch {}
-    try { setClearedAt?.(Date.now()); } catch {}
-    try { setTemplateLock?.(templateId || null); } catch {}
-    try { pauseMutations?.(); } catch {}
+    try {
+ setClearInProgress?.(true);
+} catch {}
+    try {
+ setClearedAt?.(Date.now());
+} catch {}
+    try {
+ setTemplateLock?.(templateId || null);
+} catch {}
+    try {
+ pauseMutations?.();
+} catch {}
     // Abort any in-flight note generation to prevent stream from repopulating notes
     if (genAbortRef.current) {
       try {
@@ -477,7 +475,9 @@ export default function ConsultationPage() {
     try {
       if (currentPatientSessionId) {
         // Set a brief global suppression window to prevent hydration re-population
-        try { (window as any).__clinicproJustClearedUntil = Date.now() + 3000; } catch {}
+        try {
+ (window as any).__clinicproJustClearedUntil = Date.now() + 3000;
+} catch {}
         await fetch('/api/patient-sessions/clear', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...createAuthHeaders(userId, userTier) },
@@ -525,7 +525,9 @@ export default function ConsultationPage() {
             const empty = s && !((s.problemsText && s.problemsText.trim()) || (s.objectiveText && s.objectiveText.trim()) || (s.assessmentText && s.assessmentText.trim()) || (s.planText && s.planText.trim()) || (s.typedInput && s.typedInput.trim()) || (s.notes && s.notes.trim()) || (Array.isArray(s.transcriptions) && s.transcriptions.length > 0) || (Array.isArray(s.consultationItems) && s.consultationItems.length > 0));
             if (!empty) {
               // Keep suppression a bit longer
-              try { (window as any).__clinicproJustClearedUntil = Date.now() + 5000; } catch {}
+              try {
+ (window as any).__clinicproJustClearedUntil = Date.now() + 5000;
+} catch {}
             }
           }
         } catch {}
@@ -540,7 +542,9 @@ export default function ConsultationPage() {
         // Clear any consultation items in the local store
         const items = Array.isArray(consultationItems) ? [...consultationItems] : [];
         items.forEach((item: any) => {
-          try { removeConsultationItem?.(item.id); } catch {}
+          try {
+ removeConsultationItem?.(item.id);
+} catch {}
         });
       } catch {}
     } catch (error) {
@@ -550,9 +554,17 @@ export default function ConsultationPage() {
       // Release guard after state has settled and a tick has elapsed to avoid flash
       requestAnimationFrame(() => {
         isClearingRef.current = false;
-        try { setClearInProgress?.(false); } catch {}
-        try { if (typeof templateId === 'string') { setTemplateId(templateId); } } catch {}
-        try { resumeMutations?.(); } catch {}
+        try {
+ setClearInProgress?.(false);
+} catch {}
+        try {
+ if (typeof templateId === 'string') {
+ setTemplateId(templateId);
+}
+} catch {}
+        try {
+ resumeMutations?.();
+} catch {}
       });
     }
   };
@@ -872,7 +884,7 @@ export default function ConsultationPage() {
                               <>
                                 {/* Clinical Documentation - Top Priority */}
                                 <div className="flex h-full flex-col">
-                                  
+
                                   <GeneratedNotes
                                     onGenerate={handleGenerateNotes}
                                     onClearAll={handleClearAll}
@@ -946,7 +958,7 @@ export default function ConsultationPage() {
                             <>
                               {/* Clinical Documentation - Top Priority */}
                               <div className="flex flex-1 flex-col">
-                                
+
                                 <GeneratedNotes
                                   onGenerate={handleGenerateNotes}
                                   onClearAll={handleClearAll}
@@ -1058,8 +1070,6 @@ export default function ConsultationPage() {
           error={rateLimitError}
         />
       )}
-
-      
 
       {/* Mobile Block Modal */}
       <MobileBlockModal isOpen={showMobileBlock} />

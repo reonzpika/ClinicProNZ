@@ -59,15 +59,25 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     const forward = !e.shiftKey;
     let next: HTMLTextAreaElement | null | undefined;
     if (forward) {
-      if (section === 'problems') next = objectiveRef.current;
-      else if (section === 'objective') next = assessmentRef.current;
-      else if (section === 'assessment') next = planRef.current;
-      else next = problemsRef.current;
+      if (section === 'problems') {
+ next = objectiveRef.current;
+} else if (section === 'objective') {
+ next = assessmentRef.current;
+} else if (section === 'assessment') {
+ next = planRef.current;
+} else {
+ next = problemsRef.current;
+}
     } else {
-      if (section === 'problems') next = planRef.current;
-      else if (section === 'objective') next = problemsRef.current;
-      else if (section === 'assessment') next = objectiveRef.current;
-      else next = assessmentRef.current;
+      if (section === 'problems') {
+ next = planRef.current;
+} else if (section === 'objective') {
+ next = problemsRef.current;
+} else if (section === 'assessment') {
+ next = objectiveRef.current;
+} else {
+ next = assessmentRef.current;
+}
     }
     try {
       next?.focus();

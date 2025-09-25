@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 
+import { trackPerplexityUsage } from '@/src/features/admin/cost-tracking/services/costTracker';
+import { extractRBACContext } from '@/src/lib/rbac-enforcer';
+
 // Perplexity API configuration
 const PPLX_API_URL = 'https://api.perplexity.ai/chat/completions';
 function getPerplexityConfig() {
@@ -44,6 +47,9 @@ Output format (follow exactly):
 
 export async function POST(req: Request) {
   try {
+    // Extract user context for cost tracking
+    const context = await extractRBACContext(req);
+
     const { messages, consultationNote, useContext, rawConsultationData } = await req.json();
 
     if (!messages || !Array.isArray(messages)) {
@@ -54,7 +60,7 @@ export async function POST(req: Request) {
     }
 
     // Build user prompt dynamically: inject query + NZ search instruction, and optionally consultation context
-    let systemPrompt = CHATBOT_SYSTEM_PROMPT;
+    const systemPrompt = CHATBOT_SYSTEM_PROMPT;
 
     // Determine latest user query (fallback to last user message content)
     const lastUserMsg = [...messages].reverse().find((m: any) => m?.role === 'user');
@@ -137,9 +143,16 @@ export async function POST(req: Request) {
     // Extract content
     const content: string = pplxJson?.choices?.[0]?.message?.content || '';
 
+    // Extract token usage for cost tracking
+    const usage = pplxJson?.usage || {};
+    const inputTokens = usage.prompt_tokens || 0;
+    const outputTokens = usage.completion_tokens || 0;
+
     // Extract citation metadata from various possible locations
     let citations: Array<{ url?: string; title?: string }> = [];
-    if (Array.isArray(pplxJson?.citations)) citations = pplxJson.citations;
+    if (Array.isArray(pplxJson?.citations)) {
+ citations = pplxJson.citations;
+}
     if (!citations.length && Array.isArray(pplxJson?.choices?.[0]?.message?.citations)) {
       citations = pplxJson.choices[0].message.citations;
     }
@@ -178,10 +191,16 @@ export async function POST(req: Request) {
     const topCitations: Array<{ index: number; url: string; title: string }> = [];
     for (const c of citations || []) {
       const urlMatch = typeof c?.url === 'string' ? c.url : (typeof (c as any) === 'string' ? (c as any) : undefined);
-      if (!urlMatch) continue;
+      if (!urlMatch) {
+ continue;
+}
       const cleaned = sanitiseUrl(urlMatch);
-      if (!cleaned) continue;
-      if (seen.has(cleaned)) continue;
+      if (!cleaned) {
+ continue;
+}
+      if (seen.has(cleaned)) {
+ continue;
+}
       seen.add(cleaned);
       let title = c?.title;
       if (!title) {
@@ -197,6 +216,19 @@ export async function POST(req: Request) {
 
     // Build citations payload for client dropdown
     const citationsPayload = topCitations.map(c => ({ title: c.title, url: c.url }));
+
+    // Track Perplexity usage cost
+    try {
+      await trackPerplexityUsage(
+        { userId: context.userId },
+        inputTokens,
+        outputTokens,
+        1, // 1 request
+        'low', // Assume low context size for now
+      );
+    } catch (error) {
+      console.warn('[Chat] Failed to track Perplexity cost:', error);
+    }
 
     return NextResponse.json({ response: cleanedContent, citations: citationsPayload });
   } catch (error) {

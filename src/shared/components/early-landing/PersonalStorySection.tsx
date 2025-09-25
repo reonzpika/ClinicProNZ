@@ -56,7 +56,6 @@ export const PersonalStorySection = () => {
                   </p>
                 </blockquote>
 
-                
               </div>
             </AnimatedContent>
           </div>

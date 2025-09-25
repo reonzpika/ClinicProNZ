@@ -26,4 +26,3 @@ export const MissionSection = () => {
 };
 
 export default MissionSection;
-

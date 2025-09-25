@@ -1,4 +1,4 @@
-import { Check, Plus, ChevronDown } from 'lucide-react';
+import { Check, ChevronDown, Plus } from 'lucide-react';
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -96,7 +96,11 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAddToConsul
                 {!isUser && Array.isArray(message.citations) && message.citations.length > 0 && (
                   <details className="mt-1">
                     <summary className="flex cursor-pointer select-none items-center text-xs text-slate-600">
-                      <ChevronDown className="mr-1 size-3" /> Sources ({message.citations.length})
+                      <ChevronDown className="mr-1 size-3" />
+{' '}
+Sources (
+{message.citations.length}
+)
                     </summary>
                     <ul className="mt-1 list-disc pl-4 text-[11px] text-slate-700">
                       {message.citations.map((c, idx) => (

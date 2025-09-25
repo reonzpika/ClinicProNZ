@@ -8,6 +8,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { patientSessions, users } from '@/db/schema';
+import { trackDeepgramUsage } from '@/src/features/admin/cost-tracking/services/costTracker';
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 import { createUserSession } from '@/src/lib/services/guest-session-service';
 
@@ -98,6 +99,14 @@ export async function POST(req: NextRequest) {
 
     // NEW: Extract confidence and word-level data for enhanced transcription
     const confidence = alt?.confidence || null;
+
+    // Track cost for Deepgram usage
+    try {
+      const durationMinutes = (metadata?.duration || 0) / 60; // Convert seconds to minutes
+      await trackDeepgramUsage({ userId: context.userId }, durationMinutes);
+    } catch (error) {
+      console.warn('[Transcribe] Failed to track Deepgram cost:', error);
+    }
 
     // 🆕 UPDATED: Extract words from utterances (preferred) or alternatives fallback
     const utterances = result?.results?.utterances || [];
@@ -197,6 +206,14 @@ export async function POST(req: NextRequest) {
     try {
  console.log('[Transcribe] persisted chunk', { sessionId: currentSessionId, chunkId, textLen: newEntry.text.length });
 } catch {}
+
+    // Track cost for Deepgram usage (persist mode)
+    try {
+      const durationMinutes = (metadata?.duration || 0) / 60; // Convert seconds to minutes
+      await trackDeepgramUsage({ userId, sessionId: currentSessionId }, durationMinutes);
+    } catch (error) {
+      console.warn('[Transcribe] Failed to track Deepgram cost:', error);
+    }
 
     // Signal desktop via Ably (best-effort). Ensure single publish per chunk with helpful logs.
     try {

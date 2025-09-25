@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
+import { trackOpenAIUsage } from '@/src/features/admin/cost-tracking/services/costTracker';
 import { TemplateService } from '@/src/features/templates/template-service';
 import { compileTemplate } from '@/src/features/templates/utils/compileTemplate';
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
@@ -122,6 +123,8 @@ export async function POST(req: Request) {
     const readable = new ReadableStream({
       async start(controller) {
         let timeoutId: NodeJS.Timeout | null = null;
+        let totalInputTokens = 0;
+        let totalOutputTokens = 0;
 
         try {
           timeoutId = setTimeout(() => {
@@ -133,6 +136,23 @@ export async function POST(req: Request) {
             if (content) {
               controller.enqueue(encoder.encode(content));
             }
+
+            // Collect token usage from the stream
+            if (chunk.usage) {
+              totalInputTokens = chunk.usage.prompt_tokens || 0;
+              totalOutputTokens = chunk.usage.completion_tokens || 0;
+            }
+          }
+
+          // Track OpenAI usage cost after streaming completes
+          try {
+            await trackOpenAIUsage(
+              { userId: context.userId },
+              totalInputTokens,
+              totalOutputTokens,
+            );
+          } catch (error) {
+            console.warn('[Notes] Failed to track OpenAI cost:', error);
           }
 
           if (timeoutId) {

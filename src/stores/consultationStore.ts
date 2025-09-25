@@ -58,7 +58,6 @@ type ConsultationState = {
   clearedAt?: number | null;
   templateLock?: string | null;
 
-  
 };
 
 type ConsultationActions = {
@@ -114,8 +113,6 @@ type ConsultationActions = {
   setClearInProgress: (inProgress: boolean) => void;
   setClearedAt: (ts: number | null) => void;
   setTemplateLock: (templateId: string | null) => void;
-
-  
 
   // Reset actions
   resetConsultation: () => void;
@@ -305,8 +302,6 @@ export const useConsultationStore = create<ConsultationStore>()(
     setClearInProgress: (inProgress: boolean) => set({ clearInProgress: inProgress }),
     setClearedAt: (ts: number | null) => set({ clearedAt: ts ?? null }),
     setTemplateLock: (templateId: string | null) => set({ templateLock: templateId }),
-
-    
 
     // Reset actions
     resetConsultation: () => {

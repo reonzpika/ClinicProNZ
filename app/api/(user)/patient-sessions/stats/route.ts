@@ -1,6 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
 import { getDb } from 'database/client';
-import { count, eq, and, isNull, gt } from 'drizzle-orm';
+import { and, count, eq, gt, isNull } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 import { patientSessions } from '@/db/schema';
@@ -40,4 +40,3 @@ export async function GET() {
     return NextResponse.json({ error: 'Failed to fetch session stats' }, { status: 500 });
   }
 }
-

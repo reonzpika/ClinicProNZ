@@ -3,7 +3,7 @@
 export const FeatureAiscribe = () => {
   return (
     <section className="relative overflow-hidden bg-white py-16 sm:py-24 lg:py-28">
-      <div className="pointer-events-none absolute inset-0 opacity-[0.03] will-change-[transform]">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.03] will-change-transform">
         <div
           className="absolute inset-0"
           style={{
@@ -36,14 +36,14 @@ export const FeatureAiscribe = () => {
               <li>• Switch templates anytime</li>
             </ul>
           </div>
-          <div className="[content-visibility:auto] [contain:layout_paint_style] lg:col-span-7">
+          <div className="[contain:layout_paint_style] [content-visibility:auto] lg:col-span-7">
             <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md">
               <img
                 src="/images/landing-page/ClinicProConsultation.jpg"
                 alt="Consultation screen showing recording, additional note input, and template switcher"
                 loading="lazy"
                 decoding="async"
-                  className="block w-full h-auto object-contain"
+                className="block h-auto w-full object-contain"
               />
             </div>
           </div>
@@ -51,14 +51,14 @@ export const FeatureAiscribe = () => {
 
         {/* Band B: Generated note (screenshot left, copy right) */}
         <div className="mb-12 grid items-center gap-10 lg:mb-16 lg:grid-cols-12 lg:gap-16">
-          <div className="order-2 [content-visibility:auto] [contain:layout_paint_style] lg:order-1 lg:col-span-7">
+          <div className="order-2 [contain:layout_paint_style] [content-visibility:auto] lg:order-1 lg:col-span-7">
             <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md">
               <img
                 src="/images/landing-page/ClinicProGenerateNote.jpg"
                 alt="Generated note with editable sections"
                 loading="lazy"
                 decoding="async"
-                className="block w-full h-auto object-contain"
+                className="block h-auto w-full object-contain"
               />
             </div>
           </div>
@@ -79,19 +79,23 @@ export const FeatureAiscribe = () => {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
               <span className="font-medium text-gray-900">1.</span>
-              {' '}Start recording (mobile or desktop)
+              {' '}
+Start recording (mobile or desktop)
             </div>
             <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
               <span className="font-medium text-gray-900">2.</span>
-              {' '}Speak naturally; focus on the patient and history
+              {' '}
+Speak naturally; focus on the patient and history
             </div>
             <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
               <span className="font-medium text-gray-900">3.</span>
-              {' '}Dictate or type in objectives (problems, exam findings, assessment, plan, etc)
+              {' '}
+Dictate or type in objectives (problems, exam findings, assessment, plan, etc)
             </div>
             <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
               <span className="font-medium text-gray-900">4.</span>
-              {' '}Review structured draft, make quick edits, finish
+              {' '}
+Review structured draft, make quick edits, finish
             </div>
           </div>
         </div>
@@ -111,4 +115,3 @@ export const FeatureAiscribe = () => {
 };
 
 export default FeatureAiscribe;
-

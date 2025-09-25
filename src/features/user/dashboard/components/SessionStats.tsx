@@ -32,9 +32,12 @@ export default function SessionStats() {
         <CardDescription>Total sessions (lifetime) and currently active</CardDescription>
       </CardHeader>
       <CardContent>
-        {loading ? (
+        {loading
+? (
           <div className="py-6 text-gray-600">Loading...</div>
-        ) : stats ? (
+        )
+: stats
+? (
           <div className="grid grid-cols-2 gap-6">
             <div>
               <div className="text-sm text-gray-600">Lifetime Sessions</div>
@@ -45,11 +48,11 @@ export default function SessionStats() {
               <div className="text-3xl font-semibold">{stats.active}</div>
             </div>
           </div>
-        ) : (
+        )
+: (
           <div className="py-6 text-gray-600">No data</div>
         )}
       </CardContent>
     </Card>
   );
 }
-
