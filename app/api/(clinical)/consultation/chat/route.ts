@@ -40,18 +40,7 @@ Output format (follow exactly):
 - Professional, clear, GP-focused. Support safe reasoning; avoid definitive diagnoses.
 `;
 
-const CONSULTATION_CONTEXT_PREFIX = `
-
-CONSULTATION CONTEXT:
-The following consultation note provides clinical context for this conversation:
-
----
-`;
-
-const CONSULTATION_CONTEXT_SUFFIX = `
----
-
-Please use this consultation context to provide relevant, specific guidance for this clinical scenario.`;
+// (Deprecated) legacy context wrappers removed; context now appended in user prompt
 
 export async function POST(req: Request) {
   try {
