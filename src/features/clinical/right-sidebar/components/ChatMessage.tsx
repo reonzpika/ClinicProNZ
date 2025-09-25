@@ -59,6 +59,17 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAddToConsul
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
+                      a: ({ href, title, children }) => (
+                        <a
+                          href={href}
+                          title={title as string}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="no-underline"
+                        >
+                          {children}
+                        </a>
+                      ),
                       p: ({ children }) => <p className="mb-1 last:mb-0">{children}</p>,
                       ul: ({ children }) => <ul className="mb-1 ml-3 list-disc">{children}</ul>,
                       ol: ({ children }) => <ol className="mb-1 ml-3 list-decimal">{children}</ol>,

@@ -206,13 +206,14 @@ Please use this raw consultation data to provide relevant guidance. This is unst
     // Insert inline citations: one per paragraph or bullet, cycling through sources
     function insertInlineCitations(text: string): string {
       if (topCitations.length === 0) return text;
-      const lines = text.split('\n');
+      const lines: string[] = text.split('\n');
       const out: string[] = [];
       let srcIdx = 0;
       for (let i = 0; i < lines.length; i++) {
-        let line = lines[i];
+        let line: string = lines[i] ?? '';
         const trimmed = line.trim();
-        const nextTrim = i + 1 < lines.length ? lines[i + 1].trim() : '';
+        const nextLine: string = i + 1 < lines.length ? (lines[i + 1] ?? '') : '';
+        const nextTrim = nextLine.trim();
         const isBullet = trimmed.startsWith('- ') || trimmed.startsWith('* ');
         const isParagraphEnd = trimmed !== '' && !isBullet && (i + 1 === lines.length || nextTrim === '');
         if (isBullet || isParagraphEnd) {
