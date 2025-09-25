@@ -15,11 +15,7 @@ import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTrans
 // Removed MobileRightPanelOverlay; widgets now live in main column
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 // Removed RightPanelFeatures; widgets embedded below settings
-import { ChatbotWidget } from '@/src/features/clinical/right-sidebar/components/ChatbotWidget';
-import { ClinicalImageTab } from '@/src/features/clinical/right-sidebar/components/ClinicalImageTab';
-import { ChecklistTab } from '@/src/features/clinical/right-sidebar/components/ChecklistTab';
-import { DifferentialDiagnosisTab } from '@/src/features/clinical/right-sidebar/components/DifferentialDiagnosisTab';
-import { AccCodeSuggestions } from '@/src/features/clinical/right-sidebar/components/AccCodeSuggestions';
+import ClinicalToolsTabs from '@/src/features/clinical/right-sidebar/components/ClinicalToolsTabs';
 import { WorkflowInstructions } from '@/src/features/clinical/right-sidebar/components/WorkflowInstructions';
 import { PatientSessionManager } from '@/src/features/clinical/session-management/components/PatientSessionManager';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
@@ -765,14 +761,8 @@ export default function ConsultationPage() {
                         {/* Documentation Settings Badge - Always visible below session bar */}
                         <DocumentationSettingsBadge />
 
-                        {/* Clinical Widgets - now embedded below settings */}
-                        <div className="space-y-4">
-                          <ChatbotWidget embedded defaultCollapsed fixedHeightClass="h-[400px]" />
-                          <ClinicalImageTab />
-                          <ChecklistTab />
-                          <DifferentialDiagnosisTab />
-                          <AccCodeSuggestions />
-                        </div>
+                        {/* Clinical Widgets - Icon-only tabs under settings */}
+                        <ClinicalToolsTabs fixedHeightClass="h-[400px]" />
 
                         {/* Default Settings */}
                         <DefaultSettings />
@@ -922,14 +912,8 @@ export default function ConsultationPage() {
                       {/* Documentation Settings Badge - Always visible below session bar */}
                       <DocumentationSettingsBadge />
 
-                      {/* Clinical Widgets - embedded below settings for smaller screens */}
-                      <div className="space-y-4">
-                        <ChatbotWidget embedded defaultCollapsed fixedHeightClass="h-[400px]" />
-                        <ClinicalImageTab />
-                        <ChecklistTab />
-                        <DifferentialDiagnosisTab />
-                        <AccCodeSuggestions />
-                      </div>
+                      {/* Clinical Widgets - Icon-only tabs under settings for smaller screens */}
+                      <ClinicalToolsTabs fixedHeightClass="h-[400px]" />
 
                       {/* Conditional Layout Based on Documentation Mode */}
                       {isDocumentationMode
