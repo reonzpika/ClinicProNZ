@@ -169,15 +169,16 @@ Please use this raw consultation data to provide relevant guidance. This is unst
         const upper = line.trim().toUpperCase();
         if (upper.startsWith('SHORT ANSWER:')) return false;
         if (upper.startsWith('FOLLOW-UPS:')) return false;
+        if (upper === 'SOURCES:') return false;
         return true;
       })
       .map((line: string) => line.replace(/\s*\[\d+\]/g, ''))
       .join('\n')
       .trim();
 
-    // Build SOURCES block from all citation metadata URLs (no cap)
+    // Prepare top 5 unique citations with sanitised HTTPS URLs
     const seen = new Set<string>();
-    const sourceLines: string[] = [];
+    const topCitations: Array<{ index: number; url: string; title: string }> = [];
     for (const c of citations || []) {
       const urlMatch = typeof c?.url === 'string' ? c.url : (typeof (c as any) === 'string' ? (c as any) : undefined);
       if (!urlMatch) continue;
@@ -194,12 +195,37 @@ Please use this raw consultation data to provide relevant guidance. This is unst
           title = cleaned;
         }
       }
-      sourceLines.push(`${title} — ${cleaned}`);
+      topCitations.push({ index: topCitations.length + 1, url: cleaned, title });
+      if (topCitations.length >= 5) break;
     }
 
-    const finalResponse = sourceLines.length
-      ? `${cleanedContent}\n\nSOURCES:\n${sourceLines.join('\n')}`
-      : cleanedContent;
+    function escapeTitle(t: string): string {
+      return t.replace(/"/g, '\\"');
+    }
+
+    // Insert inline citations: one per paragraph or bullet, cycling through sources
+    function insertInlineCitations(text: string): string {
+      if (topCitations.length === 0) return text;
+      const lines = text.split('\n');
+      const out: string[] = [];
+      let srcIdx = 0;
+      for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
+        const trimmed = line.trim();
+        const nextTrim = i + 1 < lines.length ? lines[i + 1].trim() : '';
+        const isBullet = trimmed.startsWith('- ') || trimmed.startsWith('* ');
+        const isParagraphEnd = trimmed !== '' && !isBullet && (i + 1 === lines.length || nextTrim === '');
+        if (isBullet || isParagraphEnd) {
+          const src = topCitations[srcIdx % topCitations.length];
+          srcIdx++;
+          line = `${line} [${src.index}](${src.url} "${escapeTitle(src.title)}")`;
+        }
+        out.push(line);
+      }
+      return out.join('\n');
+    }
+
+    const finalResponse = insertInlineCitations(cleanedContent);
 
     return NextResponse.json({ response: finalResponse });
   } catch (error) {
