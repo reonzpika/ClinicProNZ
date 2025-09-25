@@ -1,4 +1,4 @@
-import { Check, Plus } from 'lucide-react';
+import { Check, Plus, ChevronDown } from 'lucide-react';
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -55,10 +55,22 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAddToConsul
                 <div className="text-xs">{message.content}</div>
               )
             : (
+                <>
                 <div className="prose prose-xs max-w-none text-xs">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
+                      a: ({ href, title, children }) => (
+                        <a
+                          href={href}
+                          title={title as string}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="no-underline"
+                        >
+                          {children}
+                        </a>
+                      ),
                       p: ({ children }) => <p className="mb-1 last:mb-0">{children}</p>,
                       ul: ({ children }) => <ul className="mb-1 ml-3 list-disc">{children}</ul>,
                       ol: ({ children }) => <ol className="mb-1 ml-3 list-decimal">{children}</ol>,
@@ -80,6 +92,30 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAddToConsul
                     {message.content}
                   </ReactMarkdown>
                 </div>
+                {/* Collapsible Sources - assistant only */}
+                {!isUser && Array.isArray(message.citations) && message.citations.length > 0 && (
+                  <details className="mt-1">
+                    <summary className="flex cursor-pointer select-none items-center text-xs text-slate-600">
+                      <ChevronDown className="mr-1 size-3" /> Sources ({message.citations.length})
+                    </summary>
+                    <ul className="mt-1 list-disc pl-4 text-[11px] text-slate-700">
+                      {message.citations.map((c, idx) => (
+                        <li key={idx} className="truncate">
+                          <a
+                            href={c.url}
+                            title={c.title}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="no-underline"
+                          >
+                            {c.title}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
+                </>
               )}
         </div>
       </div>

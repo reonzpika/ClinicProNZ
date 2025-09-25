@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
 
-function getOpenAI(): OpenAI {
-  const apiKey = process.env.OPENAI_API_KEY;
+// Perplexity API configuration
+const PPLX_API_URL = 'https://api.perplexity.ai/chat/completions';
+function getPerplexityConfig() {
+  const apiKey = process.env.PPLX_API_KEY;
   if (!apiKey) {
-    throw new Error('Missing OPENAI_API_KEY');
+    throw new Error('Missing PPLX_API_KEY');
   }
-  return new OpenAI({ apiKey });
+  const model = process.env.PPLX_MODEL || 'sonar';
+  return { apiKey, model };
 }
 
 // URL cleaner (no allowlist enforcement; HTTPS required; tracking params removed)
@@ -27,142 +29,18 @@ function sanitiseUrl(urlStr: string): string | null {
   }
 }
 
-function createSourceFilter(controller: ReadableStreamDefaultController<Uint8Array>) {
-  const encoder = new TextEncoder();
-  let buffer = '';
-  let inSources = false;
-  let lastLineWasBlank = false;
-  let sourcesProcessed = 0;
-  const maxSources = 3;
+// Note: streaming filter removed (non-streaming Perplexity path)
 
-  function emit(text: string) {
-    if (!text) return;
-    controller.enqueue(encoder.encode(text));
-  }
-
-  async function processLine(line: string) {
-    // Strip unwanted headings if present
-    if (line.trim().toUpperCase().startsWith('SHORT ANSWER:')) {
-      return; // drop label line
-    }
-    if (line.trim().toUpperCase().startsWith('FOLLOW-UPS:')) {
-      return; // drop label line
-    }
-
-    if (!inSources) {
-      const trimmed = line.trim();
-      // Drop any standalone question lines (no follow-ups allowed)
-      if (trimmed.endsWith('?')) {
-        // ensure a single blank line before SOURCES later
-        if (!lastLineWasBlank) emit('\n');
-        lastLineWasBlank = true;
-        return;
-      }
-
-      // When encountering SOURCES, ensure a blank line before label
-      if (trimmed === 'SOURCES:') {
-        if (!lastLineWasBlank) {
-          emit('\n');
-        }
-        inSources = true;
-        emit('SOURCES:' + '\n');
-        lastLineWasBlank = false;
-        return;
-      }
-
-      // Remove inline numeric citation markers like [1], [2] from answer bullets
-      if (trimmed) {
-        const cleanedLine = line.replace(/\s*\[\d+\]/g, '');
-        emit(cleanedLine + '\n');
-        lastLineWasBlank = cleanedLine.trim() === '';
-        return;
-      }
-
-      emit(line + '\n');
-      lastLineWasBlank = trimmed === '';
-      return;
-    }
-
-    if (sourcesProcessed >= maxSources) {
-      // pass through remaining lines after cap
-      emit(line + '\n');
-      return;
-    }
-
-    // Validate URLs in source lines; replace disallowed or unreachable URLs
-    const urlMatch = line.match(/https?:\/\/\S+/);
-    if (!urlMatch) {
-      emit(line + '\n');
-      return;
-    }
-    const originalUrl = urlMatch[0];
-    const cleaned = sanitiseUrl(originalUrl);
-    if (cleaned) {
-      if (cleaned !== originalUrl) {
-        const replaced = line.replace(originalUrl, cleaned);
-        emit(replaced + '\n');
-      } else {
-        emit(line + '\n');
-      }
-      sourcesProcessed += 1;
-    } else {
-      const replaced = line.replace(originalUrl, '(removed invalid source)');
-      emit(replaced + '\n');
-      sourcesProcessed += 1;
-    }
-  }
-
-  return {
-    async write(chunk: string) {
-      buffer += chunk;
-      let idx;
-      while ((idx = buffer.indexOf('\n')) !== -1) {
-        const line = buffer.slice(0, idx);
-        buffer = buffer.slice(idx + 1);
-        await processLine(line);
-      }
-    },
-    async end() {
-      if (buffer) {
-        await processLine(buffer);
-        buffer = '';
-      }
-    },
-  };
-}
-
-// System prompt for NZ GP clinical assistant with structured output and citations
+// Minimal system prompt: bullets-only style and clinical tone
 const CHATBOT_SYSTEM_PROMPT = `You are a clinical AI assistant for New Zealand General Practitioners (GPs).
 
 Output format (follow exactly):
-- Start with 3–6 bullet points that directly answer the question. Use terse keywords/phrases. Do NOT include numeric citation markers in these bullets. Do NOT write a heading like "SHORT ANSWER:".
-- Then a blank line, then the line "SOURCES:" followed by up to 3 sources, each on its own line in the format: Title — https://domain/path
-
-Strictly do NOT include any follow-up questions.
-
-Citation policy:
-- Prefer New Zealand sources (e.g., bpac.org.nz, tewhatuora.govt.nz/health.govt.nz, healthify.nz, starship.org.nz, medsafe.govt.nz) over international where applicable.
-- If suitable NZ pages are unavailable, use trusted international clinical resources (e.g., nice.org.uk, cochranelibrary.com, who.int, cdc.gov, ema.europa.eu).
-- Use specific guideline/article pages (not homepages). Always include HTTPS URL. Avoid news sites, general blogs, forums, or opinion pieces.
-
-Clinical style:
-- Professional, clear, GP-focused. Support safe reasoning; avoid definitive diagnoses. Flag red flags and referral triggers when appropriate.
-- When consultation context is provided, adapt advice to that scenario.
-- Be concise.
+- ONLY 3–6 bullet points, each \u226410 words, telegraphic, keywords/phrases; grammar may be minimal. Do NOT write any headings.
+- Do NOT write any paragraphs after the bullets. Stop after the bullet list.
+- Professional, clear, GP-focused. Support safe reasoning; avoid definitive diagnoses.
 `;
 
-const CONSULTATION_CONTEXT_PREFIX = `
-
-CONSULTATION CONTEXT:
-The following consultation note provides clinical context for this conversation:
-
----
-`;
-
-const CONSULTATION_CONTEXT_SUFFIX = `
----
-
-Please use this consultation context to provide relevant, specific guidance for this clinical scenario.`;
+// (Deprecated) legacy context wrappers removed; context now appended in user prompt
 
 export async function POST(req: Request) {
   try {
@@ -175,126 +53,152 @@ export async function POST(req: Request) {
       );
     }
 
-    // Build system prompt with context based on two-phase logic
+    // Build user prompt dynamically: inject query + NZ search instruction, and optionally consultation context
     let systemPrompt = CHATBOT_SYSTEM_PROMPT;
+
+    // Determine latest user query (fallback to last user message content)
+    const lastUserMsg = [...messages].reverse().find((m: any) => m?.role === 'user');
+    const queryText = (lastUserMsg?.content || '').toString().trim();
+
+    let dynamicUserContent = '';
+    dynamicUserContent += `I want to know more about this: "${queryText}"\n`;
+    dynamicUserContent += `Search instruction:\n`;
+    dynamicUserContent += `- Actively search New Zealand websites to answer the query. Prioritise domains ending with .nz, .co.nz, .org.nz, .net.nz.\n`;
+    dynamicUserContent += `- Avoid news sites, general blogs, forums, or opinion pieces.\n`;
 
     if (useContext) {
       if (consultationNote && consultationNote.trim()) {
-        // Phase 2: Generated notes exist - use only the structured notes
-        systemPrompt += CONSULTATION_CONTEXT_PREFIX + consultationNote + CONSULTATION_CONTEXT_SUFFIX;
+        dynamicUserContent += `\nBelow is additional context about the patient.\n${consultationNote.trim()}\n`;
       } else if (rawConsultationData) {
-        // Phase 1: No generated notes - use raw consultation data
-        let rawContext = '';
-
+        const parts: string[] = [];
         if (rawConsultationData.transcription && rawConsultationData.transcription.trim()) {
-          rawContext += `TRANSCRIPTION:\n${rawConsultationData.transcription}\n\n`;
+          parts.push(rawConsultationData.transcription.trim());
         }
-
         if (rawConsultationData.typedInput && rawConsultationData.typedInput.trim()) {
-          rawContext += `TYPED INPUT:\n${rawConsultationData.typedInput}\n\n`;
+          parts.push(rawConsultationData.typedInput.trim());
         }
-
-        if (rawContext.trim()) {
-          systemPrompt += `
-
-RAW CONSULTATION DATA:
-The following raw consultation data provides clinical context for this conversation:
-
----
-${rawContext.trim()}
----
-
-Please use this raw consultation data to provide relevant guidance. This is unstructured consultation information that may need clarification or organisation.`;
+        if ((rawConsultationData as any).additionalNote && (rawConsultationData as any).additionalNote.trim()) {
+          parts.push((rawConsultationData as any).additionalNote.trim());
+        }
+        if (parts.length > 0) {
+          dynamicUserContent += `\nBelow is additional context about the patient.\n${parts.join('\n')}\n`;
         }
       }
     }
 
-    // Prepare messages for OpenAI API
-    const openaiMessages = [
+    // Prepare messages for Perplexity API
+    // Replace latest user message with dynamic user content
+    const transformed = [...messages];
+    const lastUserIndex = [...transformed].map((m: any, idx: number) => ({ m, idx }))
+      .reverse()
+      .find(({ m }) => m?.role === 'user')?.idx;
+    if (typeof lastUserIndex === 'number') {
+      transformed[lastUserIndex] = { ...transformed[lastUserIndex], content: dynamicUserContent };
+    } else {
+      transformed.push({ role: 'user', content: dynamicUserContent });
+    }
+
+    const pplxMessages = [
       { role: 'system' as const, content: systemPrompt },
-      ...messages.map((msg: any) => ({
+      ...transformed.map((msg: any) => ({
         role: msg.role as 'user' | 'assistant',
         content: msg.content,
       })),
     ];
-
-    // Prefer Responses API with web_search tool. Fallback to Chat Completions if unavailable.
-    const openai = getOpenAI();
-    let readable: ReadableStream<Uint8Array> | null = null;
-
-    try {
-      // Responses API streaming with web_search tool
-      // Note: We stream only output_text deltas for compatibility with existing clients
-      // and let the model handle citations and structure per system prompt.
-      const respStream: any = await (openai as any).responses.stream({
-        model: 'gpt-4o-mini',
-        input: openaiMessages,
-        tools: [{ type: 'web_search' }],
-        temperature: 0.2,
-        max_output_tokens: 400,
-        parallel_tool_calls: true,
-      });
-
-      readable = new ReadableStream({
-        async start(controller) {
-          try {
-            const filter = createSourceFilter(controller);
-            for await (const event of respStream as AsyncIterable<any>) {
-              // Stream only text deltas
-              if (event.type === 'response.output_text.delta' && event.delta) {
-                filter.write(event.delta);
-              }
-              if (event.type === 'response.error') {
-                console.error('Responses stream error event:', event.error);
-              }
-            }
-            filter.end();
-            controller.close();
-          } catch (err) {
-            console.error('Responses API streaming error:', err);
-            controller.error(err);
-          }
-        },
-      });
-    } catch (responsesErr) {
-      console.warn('Falling back to Chat Completions streaming. Reason:', responsesErr);
-
-      // Fallback: Chat Completions streaming (no web search)
-      const completionStream = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: openaiMessages,
+    // Call Perplexity (non-streaming for reliable citation metadata)
+    const { apiKey, model } = getPerplexityConfig();
+    const pplxResp = await fetch(PPLX_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: pplxMessages,
         temperature: 0.2,
         max_tokens: 400,
-        stream: true,
-      });
+        stream: false,
+        return_citations: true,
+      }),
+    });
 
-      readable = new ReadableStream({
-        async start(controller) {
-          try {
-            const filter = createSourceFilter(controller);
-            for await (const chunk of completionStream) {
-              const content = chunk.choices?.[0]?.delta?.content;
-              if (content) {
-                filter.write(content);
-              }
-            }
-            filter.end();
-            controller.close();
-          } catch (error) {
-            console.error('Chat Completions streaming error:', error);
-            controller.error(error);
-          }
-        },
-      });
+    if (!pplxResp.ok) {
+      const text = await pplxResp.text().catch(() => '');
+      console.error('Perplexity API error:', pplxResp.status, text);
+      return NextResponse.json(
+        { code: 'UPSTREAM_ERROR', message: 'Failed to fetch from Perplexity' },
+        { status: 502 },
+      );
     }
 
-    return new Response(readable, {
-      headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-        'Cache-Control': 'no-cache',
-        'Transfer-Encoding': 'chunked',
-      },
-    });
+    const pplxJson: any = await pplxResp.json();
+
+    // Extract content
+    const content: string = pplxJson?.choices?.[0]?.message?.content || '';
+
+    // Extract citation metadata from various possible locations
+    let citations: Array<{ url?: string; title?: string }> = [];
+    if (Array.isArray(pplxJson?.citations)) citations = pplxJson.citations;
+    if (!citations.length && Array.isArray(pplxJson?.choices?.[0]?.message?.citations)) {
+      citations = pplxJson.choices[0].message.citations;
+    }
+    if (!citations.length && Array.isArray(pplxJson?.choices?.[0]?.citations)) {
+      citations = pplxJson.choices[0].citations;
+    }
+    if (!citations.length && Array.isArray(pplxJson?.metadata?.citations)) {
+      citations = pplxJson.metadata.citations;
+    }
+
+    // Clean main content: keep only initial bullet list; drop any prose/links; strip inline numeric markers like [1]
+    const lines = (content || '').split('\n');
+    const bullets: string[] = [];
+    let foundAnyBullet = false;
+    for (let i = 0; i < lines.length; i++) {
+      const raw = lines[i] ?? '';
+      const trimmed = raw.trim();
+      const isBullet = trimmed.startsWith('- ') || trimmed.startsWith('* ');
+      const isSourceLine = /\s—\shttps?:\/\//.test(raw) || trimmed.toUpperCase() === 'SOURCES:';
+      const isLabel = trimmed.toUpperCase().startsWith('SHORT ANSWER:') || trimmed.toUpperCase().startsWith('FOLLOW-UPS:');
+      if (isSourceLine || isLabel) {
+        continue;
+      }
+      if (isBullet) {
+        foundAnyBullet = true;
+        bullets.push(raw.replace(/\s*\[\d+\]/g, ''));
+      } else if (foundAnyBullet) {
+        // stop at first non-bullet after bullets start
+        break;
+      }
+    }
+    const cleanedContent = bullets.join('\n').trim();
+
+    // Prepare all unique citations with sanitised HTTPS URLs (no cap)
+    const seen = new Set<string>();
+    const topCitations: Array<{ index: number; url: string; title: string }> = [];
+    for (const c of citations || []) {
+      const urlMatch = typeof c?.url === 'string' ? c.url : (typeof (c as any) === 'string' ? (c as any) : undefined);
+      if (!urlMatch) continue;
+      const cleaned = sanitiseUrl(urlMatch);
+      if (!cleaned) continue;
+      if (seen.has(cleaned)) continue;
+      seen.add(cleaned);
+      let title = c?.title;
+      if (!title) {
+        try {
+          const u = new URL(cleaned);
+          title = u.hostname;
+        } catch {
+          title = cleaned;
+        }
+      }
+      topCitations.push({ index: topCitations.length + 1, url: cleaned, title });
+    }
+
+    // Build citations payload for client dropdown
+    const citationsPayload = topCitations.map(c => ({ title: c.title, url: c.url }));
+
+    return NextResponse.json({ response: cleanedContent, citations: citationsPayload });
   } catch (error) {
     console.error('Chat API error:', error);
     return NextResponse.json(

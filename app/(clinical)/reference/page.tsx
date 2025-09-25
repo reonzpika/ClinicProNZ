@@ -90,36 +90,15 @@ export default function ClinicalReferencePage() {
         throw new Error(errorData.error || 'Failed to send message');
       }
 
-      // Handle streaming response
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-
+      const data = await response.json();
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: '',
+        content: data?.response || '',
         timestamp: new Date(),
       };
 
       setMessages(prev => [...prev, assistantMessage]);
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) {
-            break;
-          }
-
-          const chunk = decoder.decode(value);
-          setMessages(prev =>
-            prev.map(msg =>
-              msg.id === assistantMessage.id
-                ? { ...msg, content: msg.content + chunk }
-                : msg,
-            ),
-          );
-        }
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send message');
       console.error('Chat error:', err);
