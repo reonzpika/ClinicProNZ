@@ -2,7 +2,7 @@
 
 import { useAuth } from '@clerk/nextjs';
 import { useQueryClient } from '@tanstack/react-query';
-import { Crown, Stethoscope } from 'lucide-react';
+import { Crown } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { AdditionalNotes } from '@/src/features/clinical/main-ui/components/AdditionalNotes';
@@ -12,9 +12,14 @@ import { GeneratedNotes } from '@/src/features/clinical/main-ui/components/Gener
 import { TranscriptionControls } from '@/src/features/clinical/main-ui/components/TranscriptionControls';
 import { TypedInput } from '@/src/features/clinical/main-ui/components/TypedInput';
 import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTranscription';
-import { MobileRightPanelOverlay } from '@/src/features/clinical/mobile/components/MobileRightPanelOverlay';
+// Removed MobileRightPanelOverlay; widgets now live in main column
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
-import RightPanelFeatures from '@/src/features/clinical/right-sidebar/components/RightPanelFeatures';
+// Removed RightPanelFeatures; widgets embedded below settings
+import { ChatbotWidget } from '@/src/features/clinical/right-sidebar/components/ChatbotWidget';
+import { ClinicalImageTab } from '@/src/features/clinical/right-sidebar/components/ClinicalImageTab';
+import { ChecklistTab } from '@/src/features/clinical/right-sidebar/components/ChecklistTab';
+import { DifferentialDiagnosisTab } from '@/src/features/clinical/right-sidebar/components/DifferentialDiagnosisTab';
+import { AccCodeSuggestions } from '@/src/features/clinical/right-sidebar/components/AccCodeSuggestions';
 import { WorkflowInstructions } from '@/src/features/clinical/right-sidebar/components/WorkflowInstructions';
 import { PatientSessionManager } from '@/src/features/clinical/session-management/components/PatientSessionManager';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
@@ -73,8 +78,7 @@ export default function ConsultationPage() {
   const [loading, setLoading] = useState(false);
   const [isNoteFocused, setIsNoteFocused] = useState(false);
   const [isDocumentationMode, setIsDocumentationMode] = useState(false);
-  const [rightPanelOpen, setRightPanelOpen] = useState(false);
-  const [rightPanelCollapsed, setRightPanelCollapsed] = useState(true);
+  // Sidebar removed
   const [rateLimitModalOpen, setRateLimitModalOpen] = useState(false);
   const [rateLimitError, setRateLimitError] = useState<{ limit: number; resetIn: number; message: string } | null>(null);
   const { isMobile, isTablet, isDesktop, isLargeDesktop } = useResponsive();
@@ -705,44 +709,13 @@ export default function ConsultationPage() {
   return (
     <RecordingAwareSessionContext.Provider value={contextValue}>
       <div className="flex h-full flex-col">
-      {/* Right Panel Sidebar (Desktop Only) */}
-      {isDesktop && (
-        <div className={`
-          fixed right-0 top-0 z-30 h-[calc(100vh-80px)] border-l border-slate-200 bg-white transition-all duration-300 ease-in-out
-          ${rightPanelCollapsed ? 'w-12' : 'w-80'}
-        `}
-        >
-          <RightPanelFeatures
-            isCollapsed={rightPanelCollapsed}
-            onToggle={() => setRightPanelCollapsed(!rightPanelCollapsed)}
-          />
-        </div>
-      )}
-
       <div className={`
         flex h-screen flex-col transition-all duration-300 ease-in-out
-        ${isDesktop
-      ? (rightPanelCollapsed ? 'mr-12' : 'mr-80')
-      : 'mr-0'
-    }
       `}
       >
         <Container size="fluid" className="h-full">
           <div className={`flex h-full flex-col ${(isMobile || isTablet) ? 'py-4' : 'py-6'}`}>
-            {/* Mobile Tools Button */}
-            {isTablet && (
-              <div className="mb-4 flex justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setRightPanelOpen(true)}
-                  className="bg-white shadow-sm"
-                >
-                  <Stethoscope size={16} className="mr-2" />
-                  Clinical Tools
-                </Button>
-              </div>
-            )}
+            {/* Mobile Tools Button removed; tools embedded below settings */}
 
             {/* Upgrade Notification for users redirected from registration */}
             {showUpgradeNotification && (
@@ -786,20 +759,29 @@ export default function ConsultationPage() {
                     <div className="flex h-full gap-6">
                       {/* Left Column - Supporting Information (30-35%) */}
                       <div className="h-full w-1/3 space-y-4">
-                        {/* Patient Session Manager - V2 Feature */}
+                      {/* Patient Session Manager - V2 Feature */}
                         <PatientSessionManager />
 
                         {/* Documentation Settings Badge - Always visible below session bar */}
                         <DocumentationSettingsBadge />
 
-                        {/* Workflow Instructions - Only visible on large desktop */}
-                        <WorkflowInstructions />
+                        {/* Clinical Widgets - now embedded below settings */}
+                        <div className="space-y-4">
+                          <ChatbotWidget embedded defaultCollapsed fixedHeightClass="h-[400px]" />
+                          <ClinicalImageTab />
+                          <ChecklistTab />
+                          <DifferentialDiagnosisTab />
+                          <AccCodeSuggestions />
+                        </div>
 
-                        {/* Default Settings - between guide and contact */}
+                        {/* Default Settings */}
                         <DefaultSettings />
 
-                        {/* Contact & Feedback - side by side 50/50 */}
-                        <div className="mt-auto">
+                        {/* Bottom helpers */}
+                        <div className="mt-auto space-y-4">
+                          {/* Workflow Instructions - moved to bottom */}
+                          <WorkflowInstructions />
+                          {/* Contact & Feedback - moved to bottom */}
                           <div className="flex gap-2">
                             <div className="w-1/2">
                               <FeatureFeedbackButton
@@ -940,6 +922,15 @@ export default function ConsultationPage() {
                       {/* Documentation Settings Badge - Always visible below session bar */}
                       <DocumentationSettingsBadge />
 
+                      {/* Clinical Widgets - embedded below settings for smaller screens */}
+                      <div className="space-y-4">
+                        <ChatbotWidget embedded defaultCollapsed fixedHeightClass="h-[400px]" />
+                        <ClinicalImageTab />
+                        <ChecklistTab />
+                        <DifferentialDiagnosisTab />
+                        <AccCodeSuggestions />
+                      </div>
+
                       {/* Conditional Layout Based on Documentation Mode */}
                       {isDocumentationMode
                         ? (
@@ -1042,13 +1033,7 @@ export default function ConsultationPage() {
         </Container>
       </div>
 
-      {/* Mobile Right Panel Overlay (hidden on phones) */}
-      {isTablet && (
-        <MobileRightPanelOverlay
-          isOpen={rightPanelOpen}
-          onClose={() => setRightPanelOpen(false)}
-        />
-      )}
+      {/* Right panel overlay removed */}
 
       {/* Rate Limit Modal */}
       {rateLimitError && (
@@ -1064,24 +1049,7 @@ export default function ConsultationPage() {
       {/* Mobile Block Modal */}
       <MobileBlockModal isOpen={showMobileBlock} />
 
-      {/* Contact & Feedback - Fixed bottom row for non-large desktop */}
-      {!isLargeDesktop && (
-        <div className="fixed inset-x-4 bottom-4 z-20">
-          <div className="flex gap-2">
-            <div className="w-1/2">
-              <FeatureFeedbackButton
-                feature="general"
-                context={`Page: Consultation; Template: ${templateId || 'none'}; Input Mode: ${inputMode}`}
-                variant="text"
-                className="w-full justify-center"
-              />
-            </div>
-            <div className="w-1/2">
-              <ContactLink className="w-full justify-center" />
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Fixed bottom buttons removed; now placed at bottom of content */}
       </div>
     </RecordingAwareSessionContext.Provider>
   );
