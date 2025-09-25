@@ -162,7 +162,7 @@ Please use this raw consultation data to provide relevant guidance. This is unst
       citations = pplxJson.metadata.citations;
     }
 
-    // Clean main content: remove label lines and inline numeric markers like [1]
+    // Clean main content: remove label lines and any trailing sources; strip inline numeric markers like [1]
     const cleanedContent = (content || '')
       .split('\n')
       .filter((line: string) => {
@@ -170,6 +170,7 @@ Please use this raw consultation data to provide relevant guidance. This is unst
         if (upper.startsWith('SHORT ANSWER:')) return false;
         if (upper.startsWith('FOLLOW-UPS:')) return false;
         if (upper === 'SOURCES:') return false;
+        if (/\s—\shttps?:\/\//.test(line)) return false;
         return true;
       })
       .map((line: string) => line.replace(/\s*\[\d+\]/g, ''))
@@ -198,39 +199,10 @@ Please use this raw consultation data to provide relevant guidance. This is unst
       topCitations.push({ index: topCitations.length + 1, url: cleaned, title });
     }
 
-    function escapeTitle(t: string): string {
-      return t.replace(/"/g, '\\"');
-    }
+    // Build citations payload for client dropdown
+    const citationsPayload = topCitations.map(c => ({ title: c.title, url: c.url }));
 
-    // Insert inline citations: one per paragraph or bullet, cycling through sources
-    function insertInlineCitations(text: string): string {
-      if (topCitations.length === 0) return text;
-      const lines: string[] = text.split('\n');
-      const out: string[] = [];
-      let srcIdx = 0;
-      for (let i = 0; i < lines.length; i++) {
-        let line: string = lines[i] ?? '';
-        const trimmed = line.trim();
-        const nextLine: string = i + 1 < lines.length ? (lines[i + 1] ?? '') : '';
-        const nextTrim = nextLine.trim();
-        const isBullet = trimmed.startsWith('- ') || trimmed.startsWith('* ');
-        const isParagraphEnd = trimmed !== '' && !isBullet && (i + 1 === lines.length || nextTrim === '');
-        if (isBullet || isParagraphEnd) {
-          const idx = srcIdx % topCitations.length;
-          const src = topCitations[idx];
-          srcIdx++;
-          if (src) {
-            line = `${line} [${src.index}](${src.url} "${escapeTitle(src.title)}")`;
-          }
-        }
-        out.push(line);
-      }
-      return out.join('\n');
-    }
-
-    const finalResponse = insertInlineCitations(cleanedContent);
-
-    return NextResponse.json({ response: finalResponse });
+    return NextResponse.json({ response: cleanedContent, citations: citationsPayload });
   } catch (error) {
     console.error('Chat API error:', error);
     return NextResponse.json(

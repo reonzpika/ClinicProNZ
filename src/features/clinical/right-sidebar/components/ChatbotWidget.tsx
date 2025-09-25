@@ -129,6 +129,7 @@ export const ChatbotWidget: React.FC = () => {
       addChatMessage({
         role: 'assistant',
         content: assistantMessage,
+        citations: Array.isArray(data?.citations) ? data.citations : undefined,
       });
     } catch (error) {
       console.error('Chat error:', error);
