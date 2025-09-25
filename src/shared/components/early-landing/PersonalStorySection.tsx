@@ -56,30 +56,7 @@ export const PersonalStorySection = () => {
                   </p>
                 </blockquote>
 
-                {/* Three key points */}
-                <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    <div className="mt-2 size-2 shrink-0 rounded-full bg-nz-green-600"></div>
-                    <div>
-                      <h5 className="mb-1 text-lg font-bold text-nz-green-600">Built by a GP, for GPs:</h5>
-                      <p className="text-base text-gray-700">Every feature tested in real practice, every day.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="mt-2 size-2 shrink-0 rounded-full bg-nz-green-600"></div>
-                    <div>
-                      <h5 className="mb-1 text-lg font-bold text-nz-green-600">Community-driven:</h5>
-                      <p className="text-base text-gray-700">Join fellow GPs in our platform community, sharing workflow innovations and practical insights.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="mt-2 size-2 shrink-0 rounded-full bg-nz-green-600"></div>
-                    <div>
-                      <h5 className="mb-1 text-lg font-bold text-nz-green-600">The result:</h5>
-                      <p className="text-base text-gray-700">GPs who finish on time and feel fulfilled in their practice.</p>
-                    </div>
-                  </div>
-                </div>
+                
               </div>
             </AnimatedContent>
           </div>

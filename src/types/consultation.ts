@@ -6,6 +6,7 @@ export type ChatMessage = {
   role: 'user' | 'assistant';
   content: string;
   timestamp: number;
+  citations?: Array<{ title: string; url: string }>;
 };
 
 export type ConsultationItem = {

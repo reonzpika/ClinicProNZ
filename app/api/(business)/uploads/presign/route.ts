@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
       Bucket: BUCKET_NAME,
       Key: key,
       ContentType: mimeType,
-      // Temporarily remove ServerSideEncryption to test
+      ServerSideEncryption: 'AES256',
       Metadata: {
         ...(patientSessionId && { 'patient-session-id': patientSessionId }),
         'upload-type': 'clinical',

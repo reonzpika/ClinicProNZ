@@ -27,4 +27,8 @@ export const patientSessions = pgTable('patient_sessions', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   completedAt: timestamp('completed_at'),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  // Soft-delete timestamp; when set, session is considered deleted
+  deletedAt: timestamp('deleted_at'),
+  // Absolute expiry timestamp for session validity
+  expiresAt: timestamp('expires_at'),
 });

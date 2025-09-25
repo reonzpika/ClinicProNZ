@@ -1,45 +1,46 @@
 import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
 
-function getOpenAI(): OpenAI {
-  const apiKey = process.env.OPENAI_API_KEY;
+// Perplexity API configuration
+const PPLX_API_URL = 'https://api.perplexity.ai/chat/completions';
+function getPerplexityConfig() {
+  const apiKey = process.env.PPLX_API_KEY;
   if (!apiKey) {
-    throw new Error('Missing OPENAI_API_KEY');
+    throw new Error('Missing PPLX_API_KEY');
   }
-  return new OpenAI({ apiKey });
+  const model = process.env.PPLX_MODEL || 'sonar';
+  return { apiKey, model };
 }
 
-// System prompt for NZ GP clinical assistant
-const CHATBOT_SYSTEM_PROMPT = `You are a clinical AI assistant specifically designed to support New Zealand General Practitioners (GPs) in their post-consultation workflow. Your role is to provide evidence-based, accurate clinical guidance that aligns with New Zealand healthcare guidelines and best practices.
+// URL cleaner (no allowlist enforcement; HTTPS required; tracking params removed)
+function sanitiseUrl(urlStr: string): string | null {
+  try {
+    const u = new URL(urlStr);
+    if (u.protocol !== 'https:') {
+      return null;
+    }
+    // Strip common tracking params
+    const paramsToRemove = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'gclid', 'fbclid'];
+    for (const p of paramsToRemove) {
+      u.searchParams.delete(p);
+    }
+    return u.toString();
+  } catch {
+    return null;
+  }
+}
 
-Key Guidelines:
-- Provide CONCISE, evidence-based medical advice grounded in current clinical guidelines
-- Keep responses SHORT and to the point - aim for 2-3 sentences maximum
-- Reference New Zealand-specific resources including HealthPathways when relevant
-- Focus on primary care context and GP decision-making
-- Ask clarifying questions when queries are ambiguous or require more context
-- Acknowledge limitations and recommend specialist referral when appropriate
-- Maintain professional, clear, and concise communication
-- Never provide definitive diagnoses - support clinical reasoning instead
-- Emphasize patient safety and appropriate follow-up care
-- Be direct and practical in your advice
+// Note: streaming filter removed (non-streaming Perplexity path)
 
-When consultation note context is provided, use it to ground your responses in the specific clinical scenario. When context is disabled, function as a general medical assistant for GPs.
+// Minimal system prompt: bullets-only style and clinical tone
+const CHATBOT_SYSTEM_PROMPT = `You are a clinical AI assistant for New Zealand General Practitioners (GPs).
 
-Always prioritize patient safety and encourage appropriate clinical judgment. Keep all responses brief and actionable.`;
-
-const CONSULTATION_CONTEXT_PREFIX = `
-
-CONSULTATION CONTEXT:
-The following consultation note provides clinical context for this conversation:
-
----
+Output format (follow exactly):
+- ONLY 3–6 bullet points, each \u226410 words, telegraphic, keywords/phrases; grammar may be minimal. Do NOT write any headings.
+- Do NOT write any paragraphs after the bullets. Stop after the bullet list.
+- Professional, clear, GP-focused. Support safe reasoning; avoid definitive diagnoses.
 `;
 
-const CONSULTATION_CONTEXT_SUFFIX = `
----
-
-Please use this consultation context to provide relevant, specific guidance for this clinical scenario.`;
+// (Deprecated) legacy context wrappers removed; context now appended in user prompt
 
 export async function POST(req: Request) {
   try {
@@ -52,85 +53,152 @@ export async function POST(req: Request) {
       );
     }
 
-    // Build system prompt with context based on two-phase logic
+    // Build user prompt dynamically: inject query + NZ search instruction, and optionally consultation context
     let systemPrompt = CHATBOT_SYSTEM_PROMPT;
+
+    // Determine latest user query (fallback to last user message content)
+    const lastUserMsg = [...messages].reverse().find((m: any) => m?.role === 'user');
+    const queryText = (lastUserMsg?.content || '').toString().trim();
+
+    let dynamicUserContent = '';
+    dynamicUserContent += `I want to know more about this: "${queryText}"\n`;
+    dynamicUserContent += `Search instruction:\n`;
+    dynamicUserContent += `- Actively search New Zealand websites to answer the query. Prioritise domains ending with .nz, .co.nz, .org.nz, .net.nz.\n`;
+    dynamicUserContent += `- Avoid news sites, general blogs, forums, or opinion pieces.\n`;
 
     if (useContext) {
       if (consultationNote && consultationNote.trim()) {
-        // Phase 2: Generated notes exist - use only the structured notes
-        systemPrompt += CONSULTATION_CONTEXT_PREFIX + consultationNote + CONSULTATION_CONTEXT_SUFFIX;
+        dynamicUserContent += `\nBelow is additional context about the patient.\n${consultationNote.trim()}\n`;
       } else if (rawConsultationData) {
-        // Phase 1: No generated notes - use raw consultation data
-        let rawContext = '';
-
+        const parts: string[] = [];
         if (rawConsultationData.transcription && rawConsultationData.transcription.trim()) {
-          rawContext += `TRANSCRIPTION:\n${rawConsultationData.transcription}\n\n`;
+          parts.push(rawConsultationData.transcription.trim());
         }
-
         if (rawConsultationData.typedInput && rawConsultationData.typedInput.trim()) {
-          rawContext += `TYPED INPUT:\n${rawConsultationData.typedInput}\n\n`;
+          parts.push(rawConsultationData.typedInput.trim());
         }
-
-        if (rawContext.trim()) {
-          systemPrompt += `
-
-RAW CONSULTATION DATA:
-The following raw consultation data provides clinical context for this conversation:
-
----
-${rawContext.trim()}
----
-
-Please use this raw consultation data to provide relevant guidance. This is unstructured consultation information that may need clarification or organisation.`;
+        if ((rawConsultationData as any).additionalNote && (rawConsultationData as any).additionalNote.trim()) {
+          parts.push((rawConsultationData as any).additionalNote.trim());
+        }
+        if (parts.length > 0) {
+          dynamicUserContent += `\nBelow is additional context about the patient.\n${parts.join('\n')}\n`;
         }
       }
     }
 
-    // Prepare messages for OpenAI API
-    const openaiMessages = [
+    // Prepare messages for Perplexity API
+    // Replace latest user message with dynamic user content
+    const transformed = [...messages];
+    const lastUserIndex = [...transformed].map((m: any, idx: number) => ({ m, idx }))
+      .reverse()
+      .find(({ m }) => m?.role === 'user')?.idx;
+    if (typeof lastUserIndex === 'number') {
+      transformed[lastUserIndex] = { ...transformed[lastUserIndex], content: dynamicUserContent };
+    } else {
+      transformed.push({ role: 'user', content: dynamicUserContent });
+    }
+
+    const pplxMessages = [
       { role: 'system' as const, content: systemPrompt },
-      ...messages.map((msg: any) => ({
+      ...transformed.map((msg: any) => ({
         role: msg.role as 'user' | 'assistant',
         content: msg.content,
       })),
     ];
-
-    // Call OpenAI with streaming
-    const openai = getOpenAI();
-    const stream = await openai.chat.completions.create({
-      model: 'gpt-4', // Using GPT-4 for better clinical reasoning
-      messages: openaiMessages,
-      temperature: 0.3, // Lower temperature for more consistent medical advice
-      max_tokens: 300, // Reduced for shorter responses
-      stream: true,
-    });
-
-    // Stream the response to the client
-    const encoder = new TextEncoder();
-    const readable = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const chunk of stream) {
-            const content = chunk.choices?.[0]?.delta?.content;
-            if (content) {
-              controller.enqueue(encoder.encode(content));
-            }
-          }
-          controller.close();
-        } catch (error) {
-          console.error('Streaming error:', error);
-          controller.error(error);
-        }
-      },
-    });
-
-    return new Response(readable, {
+    // Call Perplexity (non-streaming for reliable citation metadata)
+    const { apiKey, model } = getPerplexityConfig();
+    const pplxResp = await fetch(PPLX_API_URL, {
+      method: 'POST',
       headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-        'Cache-Control': 'no-cache',
-        'Transfer-Encoding': 'chunked',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
       },
+      body: JSON.stringify({
+        model,
+        messages: pplxMessages,
+        temperature: 0.2,
+        max_tokens: 400,
+        stream: false,
+        return_citations: true,
+      }),
     });
+
+    if (!pplxResp.ok) {
+      const text = await pplxResp.text().catch(() => '');
+      console.error('Perplexity API error:', pplxResp.status, text);
+      return NextResponse.json(
+        { code: 'UPSTREAM_ERROR', message: 'Failed to fetch from Perplexity' },
+        { status: 502 },
+      );
+    }
+
+    const pplxJson: any = await pplxResp.json();
+
+    // Extract content
+    const content: string = pplxJson?.choices?.[0]?.message?.content || '';
+
+    // Extract citation metadata from various possible locations
+    let citations: Array<{ url?: string; title?: string }> = [];
+    if (Array.isArray(pplxJson?.citations)) citations = pplxJson.citations;
+    if (!citations.length && Array.isArray(pplxJson?.choices?.[0]?.message?.citations)) {
+      citations = pplxJson.choices[0].message.citations;
+    }
+    if (!citations.length && Array.isArray(pplxJson?.choices?.[0]?.citations)) {
+      citations = pplxJson.choices[0].citations;
+    }
+    if (!citations.length && Array.isArray(pplxJson?.metadata?.citations)) {
+      citations = pplxJson.metadata.citations;
+    }
+
+    // Clean main content: keep only initial bullet list; drop any prose/links; strip inline numeric markers like [1]
+    const lines = (content || '').split('\n');
+    const bullets: string[] = [];
+    let foundAnyBullet = false;
+    for (let i = 0; i < lines.length; i++) {
+      const raw = lines[i] ?? '';
+      const trimmed = raw.trim();
+      const isBullet = trimmed.startsWith('- ') || trimmed.startsWith('* ');
+      const isSourceLine = /\s—\shttps?:\/\//.test(raw) || trimmed.toUpperCase() === 'SOURCES:';
+      const isLabel = trimmed.toUpperCase().startsWith('SHORT ANSWER:') || trimmed.toUpperCase().startsWith('FOLLOW-UPS:');
+      if (isSourceLine || isLabel) {
+        continue;
+      }
+      if (isBullet) {
+        foundAnyBullet = true;
+        bullets.push(raw.replace(/\s*\[\d+\]/g, ''));
+      } else if (foundAnyBullet) {
+        // stop at first non-bullet after bullets start
+        break;
+      }
+    }
+    const cleanedContent = bullets.join('\n').trim();
+
+    // Prepare all unique citations with sanitised HTTPS URLs (no cap)
+    const seen = new Set<string>();
+    const topCitations: Array<{ index: number; url: string; title: string }> = [];
+    for (const c of citations || []) {
+      const urlMatch = typeof c?.url === 'string' ? c.url : (typeof (c as any) === 'string' ? (c as any) : undefined);
+      if (!urlMatch) continue;
+      const cleaned = sanitiseUrl(urlMatch);
+      if (!cleaned) continue;
+      if (seen.has(cleaned)) continue;
+      seen.add(cleaned);
+      let title = c?.title;
+      if (!title) {
+        try {
+          const u = new URL(cleaned);
+          title = u.hostname;
+        } catch {
+          title = cleaned;
+        }
+      }
+      topCitations.push({ index: topCitations.length + 1, url: cleaned, title });
+    }
+
+    // Build citations payload for client dropdown
+    const citationsPayload = topCitations.map(c => ({ title: c.title, url: c.url }));
+
+    return NextResponse.json({ response: cleanedContent, citations: citationsPayload });
   } catch (error) {
     console.error('Chat API error:', error);
     return NextResponse.json(

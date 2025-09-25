@@ -22,6 +22,11 @@ export default defineConfig({
     table: '__drizzle_migrations',
     schema: 'public',
   },
+  // Configure which tables Drizzle Kit should manage
+  // - 'patient_sessions': Include this table for schema management
+  // - '!acc_*': Exclude all tables starting with 'acc_' (ACC injury data tables)
+  // To modify: Add table names to include, or '!pattern' to exclude
+  tablesFilter: ['patient_sessions', '!acc_*'],
   verbose: true,
   strict: true,
 });

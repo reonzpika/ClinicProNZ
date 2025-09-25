@@ -11,34 +11,8 @@ export const EarlyFooterCTA = () => {
 
   const handleJoinClick = async () => {
     setIsLoading(true);
-
-    try {
-      const response = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tier: 'standard',
-        }),
-      });
-
-      if (response.ok) {
-        const { url } = await response.json();
-        window.location.href = url;
-      } else if (response.status === 401) {
-        // Public user needs to sign up first
-        window.location.href = '/auth/register?redirect=upgrade';
-      } else {
-        console.error('Failed to create checkout session');
-        // TODO: Replace with proper toast notification
-        console.error('Something went wrong. Please try again.');
-        setIsLoading(false);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      // TODO: Replace with proper toast notification
-      console.error('Something went wrong. Please try again.');
-      setIsLoading(false);
-    }
+    // Always send public users to sign-up, then redirect straight to clinical consultation
+    window.location.href = '/auth/register?redirect=/app/(clinical)/consultation';
   };
 
   return (
@@ -51,58 +25,35 @@ export const EarlyFooterCTA = () => {
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          {/* Main Headline */}
-          <AnimatedContent
-            distance={40}
-            direction="vertical"
-            duration={0.4}
-            ease="power3.out"
-            threshold={0.1}
-          >
-            <div className="mb-8">
-              <h2 className="font-oswald text-5xl font-extrabold leading-tight tracking-tight text-white sm:text-6xl lg:text-7xl xl:text-8xl">
-                <span className="text-white">ENOUGH IS</span>
-{' '}
-<span>ENOUGH</span>
+          {/* Headline */}
+          <AnimatedContent distance={40} direction="vertical" duration={0.4} ease="power3.out" threshold={0.1}>
+            <div className="mb-6">
+              <h2 className="font-oswald text-5xl font-extrabold leading-tight tracking-tight text-white sm:text-6xl lg:text-7xl">
+                AI scribe for NZ GPs
               </h2>
             </div>
           </AnimatedContent>
 
-          {/* Strong Message */}
-          <AnimatedContent
-            distance={30}
-            direction="vertical"
-            duration={0.3}
-            ease="power3.out"
-            threshold={0.1}
-            delay={0.1}
-          >
-            <div className="mx-auto mb-12 max-w-4xl">
-              <p className="text-xl leading-relaxed text-white/90 sm:text-2xl">
-                The 15-minute consult isn't stretching. The health system isn't fixing itself. Legacy tools won't suddenly work for us.
-              </p>
-              <p className="mt-4 text-xl font-bold text-white">
-                Technology is moving fast — but if we don't change how we work, nothing will change.
-              </p>
+          {/* Sub */}
+          <AnimatedContent distance={30} direction="vertical" duration={0.3} ease="power3.out" threshold={0.1} delay={0.1}>
+            <p className="mx-auto mb-8 max-w-3xl text-xl leading-relaxed text-white/90 sm:text-2xl">
+              Structured notes, referral‑ready images, and NZ‑referenced answers — fast
+            </p>
+          </AnimatedContent>
+
+          {/* Bullets */}
+          <AnimatedContent distance={30} direction="vertical" duration={0.3} ease="power3.out" threshold={0.1} delay={0.15}>
+            <div className="mx-auto mb-8 grid max-w-3xl gap-3 sm:grid-cols-3">
+              <div className="rounded-xl bg-white/10 px-4 py-3 text-white/95 ring-1 ring-white/20">✓ Notes in minutes</div>
+              <div className="rounded-xl bg-white/10 px-4 py-3 text-white/95 ring-1 ring-white/20">✓ Photos sized for referrals</div>
+              <div className="rounded-xl bg-white/10 px-4 py-3 text-white/95 ring-1 ring-white/20">✓ Trusted NZ sources, cited</div>
             </div>
           </AnimatedContent>
 
-          {/* Secondary Headline */}
-          <AnimatedContent
-            distance={30}
-            direction="vertical"
-            duration={0.3}
-            ease="power3.out"
-            threshold={0.1}
-            delay={0.2}
-          >
-            <div className="mb-12">
-            <h3 className="font-oswald text-2xl font-black text-white sm:text-3xl md:text-4xl">
-              GET MORE DONE IN 15 MINUTES
-            </h3>
-            <p className="mt-4 text-lg text-white/90 sm:text-xl">
-              Take back control of your time, your consults, and your sanity.
-            </p>
+          {/* Trust */}
+          <AnimatedContent distance={20} direction="vertical" duration={0.3} ease="power3.out" threshold={0.1} delay={0.2}>
+            <div className="mb-10 flex flex-wrap items-center justify-center gap-3 text-sm text-white/90">
+              <span className="rounded-full border border-white/30 bg-white/10 px-3 py-1">Built by a practising NZ GP</span>
             </div>
           </AnimatedContent>
 
@@ -128,9 +79,7 @@ export const EarlyFooterCTA = () => {
                   ? 'Loading...'
                   : (
                       <div className="flex items-center justify-center gap-2">
-                        <span className="font-open-sans text-lg font-bold">
-                          Start Today
-                        </span>
+                        <span className="font-open-sans text-lg font-bold">Get more done in 15 min</span>
                         <ArrowRight className="size-5 transition-transform duration-300 group-hover:translate-x-1 sm:size-6" />
                       </div>
                     )}

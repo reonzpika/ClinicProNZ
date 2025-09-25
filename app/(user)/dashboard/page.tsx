@@ -1,9 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 
-import { QuickToolAccess } from '@/src/features/user/dashboard/components/QuickToolAccess';
-import { UpgradeCTA } from '@/src/features/user/dashboard/components/UpgradeCTA';
-import UsageTracker from '@/src/features/user/dashboard/components/UsageTracker';
+import SessionStats from '@/src/features/user/dashboard/components/SessionStats';
 import { DashboardHeader } from '@/src/shared/components/DashboardHeader';
 import { checkTierFromSessionClaims } from '@/src/shared/utils/roles';
 
@@ -27,14 +25,7 @@ export default async function DashboardPage() {
       {/* Main Content */}
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="space-y-8">
-          {/* Quick Actions */}
-          <QuickToolAccess />
-
-          {/* Usage Tracking */}
-          <UsageTracker />
-
-          {/* Upgrade CTA */}
-          <UpgradeCTA />
+          <SessionStats />
         </div>
       </main>
     </div>
