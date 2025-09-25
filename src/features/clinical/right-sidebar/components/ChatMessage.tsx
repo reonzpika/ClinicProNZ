@@ -55,6 +55,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAddToConsul
                 <div className="text-xs">{message.content}</div>
               )
             : (
+                <>
                 <div className="prose prose-xs max-w-none text-xs">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
@@ -114,6 +115,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAddToConsul
                     </ul>
                   </details>
                 )}
+                </>
               )}
         </div>
       </div>
