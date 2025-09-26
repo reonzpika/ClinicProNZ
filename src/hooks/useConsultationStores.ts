@@ -629,6 +629,9 @@ export function useConsultationStores(): any {
     updatePatientSession,
     deletePatientSession,
     deleteAllPatientSessions,
+    // Unified helpers
+    finishCurrentSessionFresh,
+    deleteSessionAndMaybeSwitch,
     saveNotesToCurrentSession,
     saveTypedInputToCurrentSession,
     saveProblemsToCurrentSession,
