@@ -50,7 +50,12 @@ export async function GET(req: Request) {
       if (row.func) byFunction[row.func as 'transcription'|'note_generation'|'chat'] = Number(row.totalCost);
     });
 
-    const total = totals[0];
+    const total = totals[0] ?? {
+      totalCost: 0,
+      totalUsers: 0,
+      totalSessions: 0,
+      totalRequests: 0,
+    } as { totalCost: number; totalUsers: number; totalSessions: number; totalRequests: number };
     return NextResponse.json({
       totalCost: Number(total.totalCost) || 0,
       totalUsers: Number(total.totalUsers) || 0,
