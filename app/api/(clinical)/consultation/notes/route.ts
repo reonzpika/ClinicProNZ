@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
+import { getDb } from 'database/client';
+import { eq } from 'drizzle-orm';
 import OpenAI from 'openai';
 
 import { trackOpenAIUsage } from '@/src/features/admin/cost-tracking/services/costTracker';
 import { TemplateService } from '@/src/features/templates/template-service';
 import { compileTemplate } from '@/src/features/templates/utils/compileTemplate';
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
+import { users } from '@/db/schema';
 
 function getOpenAI(): OpenAI {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -124,8 +127,22 @@ export async function POST(req: Request) {
 
     // Track OpenAI usage cost
     try {
+      // Try attach current session id if available
+      let currentSessionId: string | null = null;
+      try {
+        if (context.userId) {
+          const db = getDb();
+          const current = await db
+            .select({ currentSessionId: users.currentSessionId })
+            .from(users)
+            .where(eq(users.id, context.userId))
+            .limit(1);
+          currentSessionId = current?.[0]?.currentSessionId || null;
+        }
+      } catch {}
+
       await trackOpenAIUsage(
-        { userId: context.userId },
+        { userId: context.userId, sessionId: currentSessionId || undefined },
         totalInputTokens,
         totalOutputTokens,
         totalCachedInputTokens,

@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
+import { getDb } from 'database/client';
+import { eq } from 'drizzle-orm';
 
 import { trackPerplexityUsage } from '@/src/features/admin/cost-tracking/services/costTracker';
 import { extractRBACContext } from '@/src/lib/rbac-enforcer';
+import { users } from '@/db/schema';
 
 // Perplexity API configuration
 const PPLX_API_URL = 'https://api.perplexity.ai/chat/completions';
@@ -219,8 +222,22 @@ export async function POST(req: Request) {
 
     // Track Perplexity usage cost
     try {
+      // Fetch current session id for user (if available)
+      let currentSessionId: string | null = null;
+      try {
+        if (context.userId) {
+          const db = getDb();
+          const current = await db
+            .select({ currentSessionId: users.currentSessionId })
+            .from(users)
+            .where(eq(users.id, context.userId))
+            .limit(1);
+          currentSessionId = current?.[0]?.currentSessionId || null;
+        }
+      } catch {}
+
       await trackPerplexityUsage(
-        { userId: context.userId },
+        { userId: context.userId, sessionId: currentSessionId || undefined },
         inputTokens,
         outputTokens,
         1, // 1 request
