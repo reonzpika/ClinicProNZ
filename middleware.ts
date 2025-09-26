@@ -151,6 +151,24 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
+  // Protect /api/admin routes (admin only) and forward user context headers
+  if (req.nextUrl.pathname.startsWith('/api/admin')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return returnUnauthorized();
+    }
+    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
+    if (userTier !== 'admin') {
+      return returnUnauthorized();
+    }
+
+    // Inject headers so downstream handlers can read RBAC context
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set('x-user-id', resolvedAuth.userId);
+    requestHeaders.set('x-user-tier', userTier);
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
+
   // Protect /api/rag/query routes - require sign-in only
   if (req.nextUrl.pathname.startsWith('/api/rag/query')) {
     const resolvedAuth = await auth();
