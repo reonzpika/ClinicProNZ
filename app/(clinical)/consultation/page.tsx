@@ -49,7 +49,6 @@ export default function ConsultationPage() {
     consultationNotes,
     setConsultationNotes,
     consultationItems,
-    removeConsultationItem,
     getCompiledConsultationText,
     templateId,
     setLastGeneratedInput,
