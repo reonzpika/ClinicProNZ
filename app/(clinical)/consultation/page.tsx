@@ -42,7 +42,6 @@ export default function ConsultationPage() {
     typedInput,
     transcription,
     setTranscription,
-    setTypedInput,
     generatedNotes,
     setGeneratedNotes,
     // Deprecated legacy notes
@@ -54,16 +53,11 @@ export default function ConsultationPage() {
     setLastGeneratedInput,
     setTemplateId,
     setInputMode,
-    // mutation queue controls & clear flags
+    // mutation queue controls
     pauseMutations,
     resumeMutations,
-    setClearInProgress,
-    setClearedAt,
-    setTemplateLock,
 
     saveNotesToCurrentSession, // For saving generated notes
-    saveTypedInputToCurrentSession,
-    saveTranscriptionsToCurrentSession,
     // Removed unused legacy save functions
     ensureActiveSession, // For ensuring session exists before note generation
     resetLastGeneratedInput, // For resetting generation tracking
