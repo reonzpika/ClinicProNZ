@@ -265,11 +265,11 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
             variant="outline"
             onClick={handleFinish}
             disabled={isFinishing}
-            className="h-10 border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-            title="Finish this session"
-            aria-label="Finish this session"
+            className="h-10 border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+            title="Delete this session"
+            aria-label="Delete this session"
           >
-            {isFinishing ? 'Finishing…' : 'Finish'}
+            {isFinishing ? 'Deleting…' : 'Delete'}
           </Button>
           {showNewPatientButton && (
             <Button
@@ -338,11 +338,11 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
             variant="outline"
             onClick={handleFinish}
             disabled={isFinishing}
-            className="h-9 border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-            title="Finish this session"
-            aria-label="Finish this session"
+            className="h-9 border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+            title="Delete this session"
+            aria-label="Delete this session"
           >
-            {isFinishing ? 'Finishing…' : 'Finish'}
+            {isFinishing ? 'Deleting…' : 'Delete'}
           </Button>
           {showNewPatientButton && (
             <Button
