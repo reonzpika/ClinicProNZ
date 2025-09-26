@@ -485,10 +485,7 @@ export default function ConsultationPage() {
 
   const handleFinish = async () => {
     setIsFinishing(true);
-    isClearingRef.current = true;
-    try { setClearInProgress?.(true); } catch {}
-    try { setClearedAt?.(Date.now()); } catch {}
-    try { setTemplateLock?.(templateId || null); } catch {}
+    // Keep documentation view until operations complete; do not flip modes early
     try { pauseMutations?.(); } catch {}
     // Abort any in-flight note generation to prevent stream from repopulating notes
     if (genAbortRef.current) {
@@ -517,65 +514,26 @@ export default function ConsultationPage() {
           await waitForTranscriptionFlush(currentPatientSessionId);
         } catch {}
       }
-
-      // Save current content before deletion
-      try {
-        const savePromises: Array<Promise<any>> = [];
-        if (generatedNotes && generatedNotes.trim()) {
-          savePromises.push(saveNotesToCurrentSession(generatedNotes));
-        }
-        if (typedInput && typedInput.trim()) {
-          savePromises.push(saveTypedInputToCurrentSession(typedInput));
-        }
-        // Per-section saves (only if non-empty)
-        // Note: do not save consultationItems/clinicalImages per requirements
-        // Push transcription save explicitly
-        savePromises.push(saveTranscriptionsToCurrentSession());
-        await Promise.allSettled(savePromises);
-      } catch {}
-
-      // Finish: soft-delete current session on server (single attempt)
-      if (currentPatientSessionId && deletePatientSession) {
-        try { (window as any).__clinicproJustClearedUntil = Date.now() + 3000; } catch {}
-        const ok = await deletePatientSession(currentPatientSessionId);
-        if (!ok) {
-          throw new Error('Failed to delete session');
-        }
-      }
-
-      // Create a fresh session using favourite template
+      // Create a fresh session using favourite template, then switch, then soft-delete old in background
+      const oldSessionId = currentPatientSessionId || null;
       let newSessionId: string | null = null;
-      try {
-        const newSession = await createPatientSession?.('Patient');
-        if (!newSession || !newSession.id) {
-          throw new Error('Failed to create new session');
-        }
-        newSessionId = newSession.id;
-      } catch (e) {
-        throw e;
+      const newSession = await createPatientSession?.('Patient');
+      if (!newSession || !newSession.id) {
+        throw new Error('Failed to create new session');
       }
-
-      // Clear local state just before switching so hydration works cleanly
-      setGeneratedNotes('');
-      setConsultationNotes('');
-      setTypedInput('');
-      setTranscription('', false);
-      resetLastGeneratedInput();
-
-      // Switch to the new, fresh session
-      if (newSessionId) {
-        try {
-          await switchToPatientSession(newSessionId);
-        } catch {}
+      newSessionId = newSession.id;
+      try {
+        await switchToPatientSession(newSessionId);
+      } catch {}
+      // Soft-delete previous session in background (now it's not current)
+      if (oldSessionId && deletePatientSession) {
+        try { deletePatientSession(oldSessionId); } catch {}
       }
     } catch (error) {
       console.error('Error finishing session:', error);
     } finally {
       // Release guard after state has settled and a tick has elapsed to avoid flash
       requestAnimationFrame(() => {
-        isClearingRef.current = false;
-        try { setClearInProgress?.(false); } catch {}
-        try { if (typeof templateId === 'string') { setTemplateId(templateId); } } catch {}
         try { resumeMutations?.(); } catch {}
         setIsFinishing(false);
       });
