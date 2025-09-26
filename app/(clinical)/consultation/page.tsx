@@ -60,7 +60,6 @@ export default function ConsultationPage() {
     saveNotesToCurrentSession, // For saving generated notes
     // Removed unused legacy save functions
     ensureActiveSession, // For ensuring session exists before note generation
-    resetLastGeneratedInput, // For resetting generation tracking
     switchToPatientSession: originalSwitchToPatientSession, // Rename to create wrapper
     deletePatientSession,
     createPatientSession,
