@@ -1,5 +1,5 @@
 import { getDb } from 'database/client';
-import { and, eq, sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 import { apiUsageCosts } from '@/db/schema/api_usage_costs';
@@ -42,7 +42,7 @@ export async function GET(req: Request) {
       .orderBy(sql`MAX(${patientSessions.createdAt}) DESC`);
 
     const result = rows
-      .filter(r => r.sessionId)
+      .filter((r: any) => r.sessionId)
       .map((r: any) => ({
         sessionId: r.sessionId,
         patientName: r.patientName || 'Unknown',
