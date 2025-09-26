@@ -160,24 +160,52 @@ export const SessionModal: React.FC<SessionModalProps> = ({
 
   const getSessionSummary = (session: any) => {
     // Create a brief summary from session data
-    // Priority: generated notes > typed input > transcription > consultation notes
+    // Priority:
+    // 1) notes
+    // 2) transcriptions (joined)
+    // 3) problemsText
+    // 4) objectiveText
+    // 5) assessmentText
+    // 6) planText
+    // 7) typedInput
 
-    // 1. Generated notes (primary content)
-    if (session.notes && session.notes.trim().length > 0) {
-      return session.notes.substring(0, 80) + (session.notes.length > 80 ? '...' : '');
+    const trimTo = (text: string) => text.substring(0, 80) + (text.length > 80 ? '...' : '');
+
+    if (session.notes && String(session.notes).trim().length > 0) {
+      const text = String(session.notes).trim();
+      return trimTo(text);
     }
 
-    // 2. Typed input
-    if (session.typedInput && session.typedInput.trim().length > 0) {
-      return session.typedInput.substring(0, 80) + (session.typedInput.length > 80 ? '...' : '');
-    }
-
-    // 3. Transcriptions (voice input)
-    if (session.transcriptions && session.transcriptions.length > 0) {
-      const transcriptText = session.transcriptions.map((t: any) => t.text).join(' ');
+    if (Array.isArray(session.transcriptions) && session.transcriptions.length > 0) {
+      const transcriptText = session.transcriptions.map((t: any) => (t?.text || '').trim()).filter(Boolean).join(' ');
       if (transcriptText.trim().length > 0) {
-        return transcriptText.substring(0, 80) + (transcriptText.length > 80 ? '...' : '');
+        return trimTo(transcriptText);
       }
+    }
+
+    const problems = String(session.problemsText || '').trim();
+    if (problems) {
+      return trimTo(problems);
+    }
+
+    const objective = String(session.objectiveText || '').trim();
+    if (objective) {
+      return trimTo(objective);
+    }
+
+    const assessment = String(session.assessmentText || '').trim();
+    if (assessment) {
+      return trimTo(assessment);
+    }
+
+    const plan = String(session.planText || '').trim();
+    if (plan) {
+      return trimTo(plan);
+    }
+
+    const typed = String(session.typedInput || '').trim();
+    if (typed) {
+      return trimTo(typed);
     }
 
     return 'No content yet';
