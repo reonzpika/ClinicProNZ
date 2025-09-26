@@ -1,7 +1,7 @@
 'use client';
 
 import { Calendar, ChevronDown, RefreshCw, User, UserCheck } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
@@ -20,19 +20,13 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
 }) => {
   const {
     getCurrentPatientSession = () => null,
-    completePatientSession = () => {},
     updatePatientSession = () => {},
-    createPatientSession = () => null,
-    switchToPatientSession = () => {},
-    resetConsultation = () => {},
     // Mobile device state removed in simplified architecture
   } = useConsultationStores();
 
   const { isLargeDesktop } = useResponsive();
 
   // Loading states for various operations
-  const [isCreatingNewPatient, setIsCreatingNewPatient] = useState<boolean>(false);
-  const [isCompletingSession, setIsCompletingSession] = useState<boolean>(false);
   const [isSavingEdit, setIsSavingEdit] = useState<boolean>(false);
 
   const [editingSession, setEditingSession] = useState<{
@@ -77,54 +71,6 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
       closeEditDialog();
     }
   };
-
-  const handleCompleteSession = async () => {
-    if (!currentSession) {
-      return;
-    }
-
-    setIsCompletingSession(true);
-    try {
-      const success = await completePatientSession(currentSession.id);
-      if (!success) {
-        console.error('Failed to complete session');
-      }
-    } catch (error) {
-      console.error('Failed to complete session:', error);
-    } finally {
-      setIsCompletingSession(false);
-    }
-  };
-
-  const handleNewPatient = useCallback(async () => {
-    if (isCreatingNewPatient) {
- return;
-} // Guard against re-entry
-    setIsCreatingNewPatient(true);
-    try {
-      // TODO: Add save logic here similar to GeneratedNotes component
-      // For now, this creates a new session without auto-saving the current one
-      // Users should manually save their work before creating a new session
-
-      // Simple patient name - date/time info stored in session table
-      const patientName = 'Patient';
-
-      // Create new patient session
-      const newSession = await createPatientSession(patientName);
-      if (!newSession) {
-        throw new Error('Failed to create new patient session');
-      }
-
-      // Switch to the new session
-      switchToPatientSession(newSession.id);
-      // Reset consultation data for the new patient (UI only)
-      resetConsultation();
-    } catch (error) {
-      console.error('Error creating new patient:', error);
-    } finally {
-      setIsCreatingNewPatient(false);
-    }
-  }, [createPatientSession, switchToPatientSession, resetConsultation, isCreatingNewPatient]);
 
   const formatSessionDate = (dateString?: string) => {
     const date = new Date(dateString || new Date());
@@ -225,27 +171,6 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
 
           {/* Action Buttons */}
           <div className={isLargeDesktop ? 'flex gap-2' : 'flex shrink-0 items-center gap-2'}>
-            {currentSession && currentSession.status !== 'completed' && (
-              <Button
-                onClick={handleCompleteSession}
-                disabled={isCompletingSession || isLoading}
-                size="sm"
-                variant="outline"
-                className="h-7 border-blue-300 px-3 text-xs text-blue-700 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isCompletingSession
-? (
-                  <>
-                    <RefreshCw className="mr-1 size-3 animate-spin" />
-                    Completing...
-                  </>
-                )
-: (
-                  'Complete'
-                )}
-              </Button>
-            )}
-
             <Button
               onClick={onSwitchSession}
               size="sm"
@@ -255,27 +180,6 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
             >
               <span className="mr-1">Switch Session</span>
               <ChevronDown className="size-3" />
-            </Button>
-
-            <Button
-              onClick={handleNewPatient}
-              size="sm"
-              variant="default"
-              disabled={isCreatingNewPatient || isLoading}
-              className="h-7 bg-blue-600 px-3 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
-              title={isCreatingNewPatient ? 'Creating…' : 'Create new patient session'}
-              aria-busy={isCreatingNewPatient}
-            >
-              {isCreatingNewPatient
-? (
-                <>
-                  <RefreshCw className="mr-1 size-3 animate-spin" />
-                  Creating...
-                </>
-              )
-: (
-                'New Patient'
-              )}
             </Button>
           </div>
         </div>
