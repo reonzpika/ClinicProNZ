@@ -14,7 +14,7 @@ import { fetchTemplates } from '../utils/api';
 import { TemplateSelectorModal } from './TemplateSelectorModal';
 
 export function TemplateSelector() {
-  const { isSignedIn, userId } = useAuth();
+  const { isSignedIn, isLoaded, userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
   const { templateId, setTemplateId, userDefaultTemplateId } = useConsultationStores();
@@ -28,8 +28,8 @@ export function TemplateSelector() {
     async function loadTemplates() {
       try {
         setIsLoading(true);
-        // Require sign-in before fetching templates
-        if (!isSignedIn || !userId) {
+        // Require auth to be fully loaded and user signed in before fetching
+        if (!isLoaded || !isSignedIn || !userId) {
           setTemplates([]);
           return;
         }
@@ -73,7 +73,7 @@ export function TemplateSelector() {
       }
     }
     loadTemplates();
-  }, [isSignedIn, userId, userTier]);
+  }, [isLoaded, isSignedIn, userId, userTier]);
 
   // Initial template selection: run once when templates load and no templateId is set or invalid
   useEffect(() => {

@@ -9,7 +9,7 @@ import type { Template } from '../types';
 import { fetchTemplates } from '../utils/api';
 
 export function useSelectedTemplate() {
-  const { isSignedIn, userId } = useAuth();
+  const { isSignedIn, isLoaded, userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const { templateId } = useConsultationStores();
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -22,7 +22,7 @@ export function useSelectedTemplate() {
         setIsLoading(true);
         // Use centralized fetchTemplates function with auth headers
         const userTier = getUserTier();
-        if (!isSignedIn || !userId) {
+        if (!isLoaded || !isSignedIn || !userId) {
           setTemplates([]);
           return;
         }
@@ -65,7 +65,7 @@ export function useSelectedTemplate() {
       }
     }
     loadTemplates();
-  }, [isSignedIn, userId, getUserTier]);
+  }, [isLoaded, isSignedIn, userId, getUserTier]);
 
   // Find the selected template from the templates list
   const selectedTemplate = useMemo(() => templates.find(t => t.id === templateId) || templates[0], [templates, templateId]);
