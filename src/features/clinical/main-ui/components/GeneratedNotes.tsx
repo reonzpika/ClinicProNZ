@@ -76,30 +76,24 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
     setCanCreateSession(!!isSignedIn);
   }, [isSignedIn]);
 
-  // Button enable logic - enable for any non-empty input
-  const canGenerate = React.useMemo(() => {
-    const hasInput = inputMode === 'typed'
-      ? (typedInput && typedInput.trim() !== '')
-      : (transcription.transcript && transcription.transcript.trim() !== '');
+  // Core user-entered content (exclude generated notes)
+  const hasUserContent = React.useMemo(() => {
+    const hasTranscript = !!(transcription.transcript && transcription.transcript.trim() !== '');
+    const hasTyped = !!(typedInput && typedInput.trim() !== '');
+    const hasPerSection = [problemsText, objectiveText, assessmentText, planText].some(s => s && s.trim() !== '');
+    return hasTranscript || hasTyped || hasPerSection;
+  }, [transcription.transcript, typedInput, problemsText, objectiveText, assessmentText, planText]);
 
-    if (!hasInput) {
+  // Enable Process Notes if any user content exists
+  const canGenerate = React.useMemo(() => {
+    if (!hasUserContent) {
       return false;
     }
-
-    // Authentication required
     if (!isSignedIn && !canCreateSession) {
       return false;
     }
-
-    // Enable for any non-empty input (removed "changed since last generation" requirement)
     return true;
-  }, [
-    inputMode,
-    typedInput,
-    transcription.transcript,
-    isSignedIn,
-    canCreateSession,
-  ]);
+  }, [hasUserContent, isSignedIn, canCreateSession]);
 
   const hasContent = !!(displayNotes && displayNotes.trim() !== '');
 
@@ -279,7 +273,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
             type="button"
             variant="outline"
             onClick={handleFinish}
-            disabled={isFinishing}
+            disabled={isFinishing || !hasUserContent}
             className="h-10 border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
             title="Delete this session"
             aria-label="Delete this session"
@@ -291,7 +285,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
               type="button"
               variant="default"
               onClick={handleNewPatient}
-              disabled={!canCreateSession || isCreatingNewSession}
+              disabled={!canCreateSession || isCreatingNewSession || !hasUserContent}
               className="h-10 bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
               title="Create a new session"
               aria-label="Create a new session"
@@ -363,7 +357,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
             type="button"
             variant="outline"
             onClick={handleFinish}
-            disabled={isFinishing}
+            disabled={isFinishing || !hasUserContent}
             className="h-9 border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
             title="Delete this session"
             aria-label="Delete this session"
@@ -375,7 +369,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
               type="button"
               variant="default"
               onClick={handleNewPatient}
-              disabled={!canCreateSession || isCreatingNewSession}
+              disabled={!canCreateSession || isCreatingNewSession || !hasUserContent}
               className="h-9 bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
               title="Create a new session"
               aria-label="Create a new session"
