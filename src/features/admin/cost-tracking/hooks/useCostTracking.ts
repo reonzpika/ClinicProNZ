@@ -77,6 +77,8 @@ export function useCostSummary() {
       }
       return response.json();
     },
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: 'always',
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
@@ -94,6 +96,8 @@ export function useUserCostSummaries() {
       }
       return response.json();
     },
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: 'always',
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
@@ -116,6 +120,8 @@ export function useSessionCostDetails(userId?: string) {
       return response.json();
     },
     enabled: !!userId,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: 'always',
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
