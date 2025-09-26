@@ -1,21 +1,31 @@
+'use client';
+
 /**
  * Main cost tracking tab component
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useCostSummary, useUserCostSummaries } from '../hooks/useCostTracking';
 import { CostBreakdown } from './CostBreakdown';
 import { CostMetrics } from './CostMetrics';
 import { UserCostTable } from './UserCostTable';
+import { Button } from '@/src/shared/components/ui/button';
 
 type CostView = 'overview' | 'users' | 'sessions';
 
 export const CostTab: React.FC = () => {
   const [currentView, setCurrentView] = useState<CostView>('overview');
 
-  const { data: summary, isLoading: summaryLoading, error: summaryError } = useCostSummary();
-  const { data: userSummaries, isLoading: usersLoading } = useUserCostSummaries();
+  const { data: summary, isLoading: summaryLoading, error: summaryError, refetch: refetchSummary } = useCostSummary();
+  const { data: userSummaries, isLoading: usersLoading, refetch: refetchUsers } = useUserCostSummaries();
+
+  // Ensure fresh data on mount similar to Messages/Analytics views
+  useEffect(() => {
+    refetchSummary();
+    refetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const viewOptions = [
     { id: 'overview' as const, label: 'Overview' },
@@ -85,9 +95,14 @@ export const CostTab: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900">Cost Tracking</h2>
-        <p className="mt-2 text-gray-600">Monitor API usage costs across the platform</p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Cost Tracking</h2>
+          <p className="mt-2 text-gray-600">Monitor API usage costs across the platform</p>
+        </div>
+        <Button onClick={() => { refetchSummary(); refetchUsers(); }} variant="outline" size="sm">
+          Refresh
+        </Button>
       </div>
 
       {/* View Selector */}
