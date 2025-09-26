@@ -3,7 +3,7 @@ import { Buffer } from 'node:buffer';
 import { createClient } from '@deepgram/sdk';
 import * as Ably from 'ably';
 import { getDb } from 'database/client';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
@@ -127,11 +127,7 @@ export async function POST(req: NextRequest) {
               await db
                 .update(patientSessions)
                 .set({
-                  deepgramDurationSec: (Number((await db
-                    .select({ v: patientSessions.deepgramDurationSec })
-                    .from(patientSessions)
-                    .where(and(eq(patientSessions.id, currentSessionId), eq(patientSessions.userId, userId)))
-                    .limit(1))[0]?.v || 0) + incrementBy,
+                  deepgramDurationSec: sql`${patientSessions.deepgramDurationSec} + ${incrementBy}` as unknown as number,
                   updatedAt: new Date(),
                 } as any)
                 .where(and(eq(patientSessions.id, currentSessionId), eq(patientSessions.userId, userId)));
