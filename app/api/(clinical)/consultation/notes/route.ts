@@ -98,81 +98,48 @@ export async function POST(req: Request) {
       }, { status: 408 });
     }
 
-    // Call OpenAI with dynamic timeout based on remaining time
+    // Call OpenAI (non-streaming) to reliably capture usage metrics
     const openaiTimeout = Math.min(remainingTime - 5000, 40000);
     const openai = getOpenAI();
-    const stream = await withTimeout(
+    const completion: any = await withTimeout(
       openai.chat.completions.create({
         model: 'gpt-4.1-mini', // Faster, more affordable reasoning model
         messages: [
           { role: 'system', content: system },
           { role: 'user', content: user },
         ],
-        stream: true,
-        // Ensure final usage chunk is emitted so we can record tokens
-        stream_options: { include_usage: true } as any,
-        max_completion_tokens: 2000, // Reduced further for faster generation
-        temperature: 0.1, // Lower temperature for faster, more deterministic responses
-      } as any),
+        temperature: 0.1,
+        max_tokens: 2000,
+        stream: false,
+      }),
       openaiTimeout,
       'OpenAI API timeout',
     );
 
-    // Stream the response to the client with dynamic timeout
+    const fullContent = completion.choices?.[0]?.message?.content || '';
+    const usage = (completion as any)?.usage || {};
+    const totalInputTokens = usage?.prompt_tokens || 0;
+    const totalOutputTokens = usage?.completion_tokens || 0;
+    const totalCachedInputTokens = usage?.prompt_tokens_details?.cached_tokens || 0;
+
+    // Track OpenAI usage cost
+    try {
+      await trackOpenAIUsage(
+        { userId: context.userId },
+        totalInputTokens,
+        totalOutputTokens,
+        totalCachedInputTokens,
+      );
+    } catch (error) {
+      console.warn('[Notes] Failed to track OpenAI cost:', error);
+    }
+
+    // Stream the final content to the client (single-chunk stream)
     const encoder = new TextEncoder();
-    const streamTimeout = Math.min(remainingTime - 2000, 35000);
-
     const readable = new ReadableStream({
-      async start(controller) {
-        let timeoutId: NodeJS.Timeout | null = null;
-        let totalInputTokens = 0;
-        let totalOutputTokens = 0;
-        let totalCachedInputTokens = 0;
-
-        try {
-          timeoutId = setTimeout(() => {
-            controller.error(new Error('Stream timeout'));
-          }, streamTimeout);
-
-          for await (const chunk of stream) {
-            const content = chunk.choices?.[0]?.delta?.content;
-            if (content) {
-              controller.enqueue(encoder.encode(content));
-            }
-
-            // Collect token usage from the stream
-            if (chunk.usage) {
-              totalInputTokens = chunk.usage.prompt_tokens || 0;
-              totalOutputTokens = chunk.usage.completion_tokens || 0;
-              // Try to capture cached tokens when prompt caching is used
-              const details = (chunk.usage as any).prompt_tokens_details || {};
-              totalCachedInputTokens = details.cached_tokens || details.cached || 0;
-            }
-          }
-
-          // Track OpenAI usage cost after streaming completes
-          try {
-            await trackOpenAIUsage(
-              { userId: context.userId },
-              totalInputTokens,
-              totalOutputTokens,
-              totalCachedInputTokens,
-            );
-          } catch (error) {
-            console.warn('[Notes] Failed to track OpenAI cost:', error);
-          }
-
-          if (timeoutId) {
-            clearTimeout(timeoutId);
-          }
-          controller.close();
-        } catch (error) {
-          if (timeoutId) {
-            clearTimeout(timeoutId);
-          }
-          console.error('Streaming error:', error);
-          controller.error(error);
-        }
+      start(controller) {
+        controller.enqueue(encoder.encode(fullContent));
+        controller.close();
       },
     });
 
