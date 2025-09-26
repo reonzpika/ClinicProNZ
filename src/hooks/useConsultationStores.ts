@@ -364,6 +364,68 @@ export function useConsultationStores(): any {
     }
   }, [deleteAllSessionsMutation]);
 
+  // Unified flows
+  const finishCurrentSessionFresh = useCallback(async (): Promise<boolean> => {
+    const currentId = consultationStore.currentPatientSessionId;
+    if (!currentId) {
+      return false;
+    }
+    try {
+      pauseMutations();
+      // Soft delete current
+      await deleteSessionMutation.mutateAsync(currentId);
+      // Create new with default template
+      const newSession = await createSessionMutation.mutateAsync({ patientName: 'Patient', templateId: DEFAULT_TEMPLATE_ID });
+      // Clear local UI state before switching to avoid stale render
+      transcriptionStore.resetTranscription();
+      consultationStore.resetConsultation();
+      // Switch to new
+      consultationStore.setCurrentPatientSessionId(newSession.id);
+      try {
+        const headers = { ...createAuthHeaders(userId), 'Content-Type': 'application/json' } as HeadersInit;
+        fetch('/api/current-session', { method: 'PUT', headers, body: JSON.stringify({ sessionId: newSession.id }) }).catch(() => {});
+      } catch {}
+      // Hydrate via switch helper
+      await (async () => {
+        try {
+          await (consultationStore as any).setTemplateId?.(newSession.templateId || DEFAULT_TEMPLATE_ID);
+        } catch {}
+      })();
+      return true;
+    } catch {
+      return false;
+    } finally {
+      resumeMutations();
+    }
+  }, [consultationStore, transcriptionStore, pauseMutations, resumeMutations, deleteSessionMutation, createSessionMutation, userId]);
+
+  const deleteSessionAndMaybeSwitch = useCallback(async (sessionId: string): Promise<boolean> => {
+    try {
+      pauseMutations();
+      const res = await deleteSessionMutation.mutateAsync(sessionId);
+      // If server provided a currentSessionId and we deleted current, switch
+      try {
+        const currentId = consultationStore.currentPatientSessionId;
+        const nextId = (res as any)?.currentSessionId as string | undefined;
+        if (nextId && currentId === sessionId) {
+          // Clear local UI state before switching
+          transcriptionStore.resetTranscription();
+          consultationStore.resetConsultation();
+          consultationStore.setCurrentPatientSessionId(nextId);
+          try {
+            const headers = { ...createAuthHeaders(userId), 'Content-Type': 'application/json' } as HeadersInit;
+            fetch('/api/current-session', { method: 'PUT', headers, body: JSON.stringify({ sessionId: nextId }) }).catch(() => {});
+          } catch {}
+        }
+      } catch {}
+      return true;
+    } catch {
+      return false;
+    } finally {
+      resumeMutations();
+    }
+  }, [consultationStore, transcriptionStore, pauseMutations, resumeMutations, deleteSessionMutation, userId]);
+
   const saveNotesToCurrentSession = useCallback(async (notes: string): Promise<boolean> => {
     const id = consultationStore.currentPatientSessionId;
     if (!id) {
@@ -575,6 +637,9 @@ export function useConsultationStores(): any {
     updatePatientSession,
     deletePatientSession,
     deleteAllPatientSessions,
+    // Unified helpers
+    finishCurrentSessionFresh,
+    deleteSessionAndMaybeSwitch,
     saveNotesToCurrentSession,
     saveTypedInputToCurrentSession,
     saveProblemsToCurrentSession,

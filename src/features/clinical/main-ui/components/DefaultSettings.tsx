@@ -15,10 +15,10 @@ import { type DefaultInputMode, type RecordingMethod, useUserSettingsStore } fro
 const DEFAULT_TEMPLATE_ID = '20dc1526-62cc-4ff4-a370-ffc1ded52aef';
 
 export function DefaultSettings() {
-  const { isSignedIn } = useAuth();
-  const { getUserTier, user } = useClerkMetadata();
+  const { isSignedIn, isLoaded, userId: authUserId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
-  const userId = user?.id;
+  const userId = authUserId;
 
   const { setTemplateId, setInputMode } = useConsultationStores();
   const { settings, loadSettings, updateSettings } = useUserSettingsStore();
@@ -39,13 +39,17 @@ export function DefaultSettings() {
   useEffect(() => {
     (async () => {
       try {
+        if (!isLoaded || !isSignedIn || !userId) {
+          setTemplates([]);
+          return;
+        }
         const list = await fetchTemplates(userId, userTier);
         setTemplates(list);
       } catch {
         setTemplates([]);
       }
     })();
-  }, [userId, userTier]);
+  }, [isLoaded, isSignedIn, userId, userTier]);
 
   const orderedTemplates = useMemo(() => {
     if (!templates || !Array.isArray(templates)) {

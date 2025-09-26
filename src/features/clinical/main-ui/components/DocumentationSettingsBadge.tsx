@@ -48,7 +48,7 @@ const saveLastUsedSettings = (templateId: string, inputMode: 'audio' | 'typed') 
 };
 
 export const DocumentationSettingsBadge: React.FC = () => {
-  const { isSignedIn, userId } = useAuth();
+  const { isSignedIn, isLoaded, userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
   const { templateId, inputMode, setTemplateId, setInputMode } = useConsultationStores();
@@ -64,8 +64,8 @@ export const DocumentationSettingsBadge: React.FC = () => {
     async function loadTemplates() {
       try {
         setIsLoading(true);
-        // Require sign-in before fetching templates
-        if (!isSignedIn || !userId) {
+        // Require auth fully loaded and sign-in before fetching
+        if (!isLoaded || !isSignedIn || !userId) {
           setTemplates([]);
           return;
         }
@@ -117,7 +117,7 @@ export const DocumentationSettingsBadge: React.FC = () => {
       }
     }
     loadTemplates();
-  }, [isSignedIn, userId, userTier]);
+  }, [isLoaded, isSignedIn, userId, userTier]);
 
   // Apply smart defaults on first load ONLY
   useEffect(() => {
