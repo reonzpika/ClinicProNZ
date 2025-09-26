@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
+import { getDb } from 'database/client';
+import { and, desc, eq, isNull } from 'drizzle-orm';
 
 import { trackPerplexityUsage } from '@/src/features/admin/cost-tracking/services/costTracker';
 import { extractRBACContext } from '@/src/lib/rbac-enforcer';
+import { patientSessions, users } from '@/db/schema';
 
 // Perplexity API configuration
 const PPLX_API_URL = 'https://api.perplexity.ai/chat/completions';
@@ -219,8 +222,33 @@ export async function POST(req: Request) {
 
     // Track Perplexity usage cost
     try {
+      // Fetch current session id for user (if available)
+      let currentSessionId: string | null = null;
+      try {
+        if (context.userId) {
+          const db = getDb();
+          // Prefer user's currentSessionId
+          const current = await db
+            .select({ currentSessionId: users.currentSessionId })
+            .from(users)
+            .where(eq(users.id, context.userId))
+            .limit(1);
+          currentSessionId = current?.[0]?.currentSessionId || null;
+          // Fallback: latest active patient session
+          if (!currentSessionId) {
+            const latestActive = await db
+              .select({ id: patientSessions.id })
+              .from(patientSessions)
+              .where(and(eq(patientSessions.userId, context.userId), eq(patientSessions.status, 'active'), isNull(patientSessions.deletedAt)))
+              .orderBy(desc(patientSessions.createdAt))
+              .limit(1);
+            currentSessionId = latestActive?.[0]?.id || null;
+          }
+        }
+      } catch {}
+
       await trackPerplexityUsage(
-        { userId: context.userId },
+        { userId: context.userId, sessionId: currentSessionId || undefined },
         inputTokens,
         outputTokens,
         1, // 1 request

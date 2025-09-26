@@ -8,17 +8,14 @@ import { extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 export async function GET(req: Request) {
   try {
-    // Check admin access
     const context = await extractRBACContext(req);
     const isAdmin = context.tier === 'admin';
-
     if (!isAdmin) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
     const db = getDb();
 
-    // Get user cost summaries
     const userSummaries = await db
       .select({
         userId: apiUsageCosts.userId,
@@ -31,7 +28,6 @@ export async function GET(req: Request) {
       .leftJoin(users, sql`${apiUsageCosts.userId} = ${users.id}`)
       .groupBy(apiUsageCosts.userId, users.email);
 
-    // Get provider breakdown for each user
     const providerBreakdowns = await db
       .select({
         userId: apiUsageCosts.userId,
@@ -41,35 +37,29 @@ export async function GET(req: Request) {
       .from(apiUsageCosts)
       .groupBy(apiUsageCosts.userId, apiUsageCosts.apiProvider);
 
-    // Get function breakdown for each user
     const functionBreakdowns = await db
       .select({
         userId: apiUsageCosts.userId,
-        function: apiUsageCosts.apiFunction,
+        func: apiUsageCosts.apiFunction,
         totalCost: sql<number>`COALESCE(SUM(CAST(${apiUsageCosts.costUsd} AS DECIMAL)), 0)`,
       })
       .from(apiUsageCosts)
       .groupBy(apiUsageCosts.userId, apiUsageCosts.apiFunction);
 
-    // Format response
-    const response = userSummaries.map((user: { userId: string | null; email: string | null; totalCost: unknown; sessionCount: unknown; requestCount: unknown }) => {
-      const userProviderBreakdown = providerBreakdowns
-        .filter((p: { userId: string | null }) => p.userId === user.userId)
-        .reduce((acc: { deepgram: number; openai: number; perplexity: number }, item: { provider: string | null; totalCost: unknown }) => {
-          if (item.provider) {
-            acc[item.provider as 'deepgram' | 'openai' | 'perplexity'] = Number(item.totalCost);
-          }
-          return acc;
-        }, { deepgram: 0, openai: 0, perplexity: 0 });
+    const response = userSummaries.map((user: any) => {
+      const byProvider = { deepgram: 0, openai: 0, perplexity: 0 } as Record<'deepgram'|'openai'|'perplexity', number>;
+      providerBreakdowns
+        .filter((p: any) => p.userId === user.userId && p.provider)
+        .forEach((p: any) => {
+          byProvider[p.provider as 'deepgram'|'openai'|'perplexity'] = Number(p.totalCost);
+        });
 
-      const userFunctionBreakdown = functionBreakdowns
-        .filter((f: { userId: string | null }) => f.userId === user.userId)
-        .reduce((acc: { transcription: number; note_generation: number; chat: number }, item: { function: string | null; totalCost: unknown }) => {
-          if (item.function) {
-            acc[item.function as 'transcription' | 'note_generation' | 'chat'] = Number(item.totalCost);
-          }
-          return acc;
-        }, { transcription: 0, note_generation: 0, chat: 0 });
+      const byFunction = { transcription: 0, note_generation: 0, chat: 0 } as Record<'transcription'|'note_generation'|'chat', number>;
+      functionBreakdowns
+        .filter((f: any) => f.userId === user.userId && f.func)
+        .forEach((f: any) => {
+          byFunction[f.func as 'transcription'|'note_generation'|'chat'] = Number(f.totalCost);
+        });
 
       return {
         userId: user.userId,
@@ -77,8 +67,8 @@ export async function GET(req: Request) {
         totalCost: Number(user.totalCost),
         sessionCount: Number(user.sessionCount),
         requestCount: Number(user.requestCount),
-        byProvider: userProviderBreakdown,
-        byFunction: userFunctionBreakdown,
+        byProvider,
+        byFunction,
       };
     });
 
@@ -88,3 +78,4 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+

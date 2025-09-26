@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
+import { getDb } from 'database/client';
+import { and, eq } from 'drizzle-orm';
 import OpenAI from 'openai';
 
 import { trackOpenAIUsage } from '@/src/features/admin/cost-tracking/services/costTracker';
 import { TemplateService } from '@/src/features/templates/template-service';
 import { compileTemplate } from '@/src/features/templates/utils/compileTemplate';
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
+import { apiUsageCosts, patientSessions, users } from '@/db/schema';
+import { calculateDeepgramCost } from '@/src/features/admin/cost-tracking/services/costCalculator';
 
 function getOpenAI(): OpenAI {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -98,74 +102,117 @@ export async function POST(req: Request) {
       }, { status: 408 });
     }
 
-    // Call OpenAI with dynamic timeout based on remaining time
+    // Call OpenAI (non-streaming) to reliably capture usage metrics
     const openaiTimeout = Math.min(remainingTime - 5000, 40000);
     const openai = getOpenAI();
-    const stream = await withTimeout(
+    const completion: any = await withTimeout(
       openai.chat.completions.create({
         model: 'gpt-4.1-mini', // Faster, more affordable reasoning model
         messages: [
           { role: 'system', content: system },
           { role: 'user', content: user },
         ],
-        stream: true,
-        max_completion_tokens: 2000, // Reduced further for faster generation
-        temperature: 0.1, // Lower temperature for faster, more deterministic responses
+        temperature: 0.1,
+        max_tokens: 2000,
+        stream: false,
       }),
       openaiTimeout,
       'OpenAI API timeout',
     );
 
-    // Stream the response to the client with dynamic timeout
-    const encoder = new TextEncoder();
-    const streamTimeout = Math.min(remainingTime - 2000, 35000);
+    const fullContent = completion.choices?.[0]?.message?.content || '';
+    const usage = (completion as any)?.usage || {};
+    const totalInputTokens = usage?.prompt_tokens || 0;
+    const totalOutputTokens = usage?.completion_tokens || 0;
+    const totalCachedInputTokens = usage?.prompt_tokens_details?.cached_tokens || 0;
 
-    const readable = new ReadableStream({
-      async start(controller) {
-        let timeoutId: NodeJS.Timeout | null = null;
-        let totalInputTokens = 0;
-        let totalOutputTokens = 0;
-
-        try {
-          timeoutId = setTimeout(() => {
-            controller.error(new Error('Stream timeout'));
-          }, streamTimeout);
-
-          for await (const chunk of stream) {
-            const content = chunk.choices?.[0]?.delta?.content;
-            if (content) {
-              controller.enqueue(encoder.encode(content));
-            }
-
-            // Collect token usage from the stream
-            if (chunk.usage) {
-              totalInputTokens = chunk.usage.prompt_tokens || 0;
-              totalOutputTokens = chunk.usage.completion_tokens || 0;
-            }
-          }
-
-          // Track OpenAI usage cost after streaming completes
-          try {
-            await trackOpenAIUsage(
-              { userId: context.userId },
-              totalInputTokens,
-              totalOutputTokens,
-            );
-          } catch (error) {
-            console.warn('[Notes] Failed to track OpenAI cost:', error);
-          }
-
-          if (timeoutId) {
-            clearTimeout(timeoutId);
-          }
-          controller.close();
-        } catch (error) {
-          if (timeoutId) {
-            clearTimeout(timeoutId);
-          }
-          console.error('Streaming error:', error);
-          controller.error(error);
+    // Track OpenAI usage cost
+    try {
+      // Try attach current session id if available
+      let currentSessionId: string | null = null;
+      try {
+        if (context.userId) {
+          const db = getDb();
+          const current = await db
+            .select({ currentSessionId: users.currentSessionId })
+            .from(users)
+            .where(eq(users.id, context.userId))
+            .limit(1);
+          currentSessionId = current?.[0]?.currentSessionId || null;
         }
+      } catch {}
+
+      await trackOpenAIUsage(
+        { userId: context.userId, sessionId: currentSessionId || undefined },
+        totalInputTokens,
+        totalOutputTokens,
+        totalCachedInputTokens,
+      );
+    } catch (error) {
+      console.warn('[Notes] Failed to track OpenAI cost:', error);
+    }
+
+    // Aggregate Deepgram transcription cost for the session and clear tracked durations
+    try {
+      const db = getDb();
+      const userId = context.userId;
+      if (userId) {
+        const rows = await db
+          .select({ currentSessionId: users.currentSessionId })
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
+        const sessionId = rows?.[0]?.currentSessionId || null;
+
+        if (sessionId) {
+          // Prefer the numeric counter for total duration
+          const existing = await db
+            .select({ deepgramDurationSec: patientSessions.deepgramDurationSec })
+            .from(patientSessions)
+            .where(and(eq(patientSessions.id, sessionId), eq(patientSessions.userId, userId)))
+            .limit(1);
+          const totalDurationSec = Number(existing?.[0]?.deepgramDurationSec || 0);
+          const totalMinutes = totalDurationSec / 60;
+
+          try {
+            await db.delete(apiUsageCosts).where(
+              and(
+                eq(apiUsageCosts.sessionId, sessionId),
+                eq(apiUsageCosts.apiProvider, 'deepgram'),
+                eq(apiUsageCosts.apiFunction, 'transcription'),
+              ),
+            );
+          } catch {}
+
+          const breakdown = calculateDeepgramCost({ duration: totalMinutes } as any);
+          await db.insert(apiUsageCosts).values({
+            userId,
+            sessionId,
+            apiProvider: 'deepgram',
+            apiFunction: 'transcription',
+            usageMetrics: { duration: totalMinutes },
+            costUsd: breakdown.costUsd.toString(),
+          } as any);
+
+          // Clear tracked durations counter
+          try {
+            await db
+              .update(patientSessions)
+              .set({ deepgramDurationSec: 0, updatedAt: new Date() } as any)
+              .where(and(eq(patientSessions.id, sessionId), eq(patientSessions.userId, userId)));
+          } catch {}
+        }
+      }
+    } catch (err) {
+      try { console.warn('[Notes] Failed to aggregate Deepgram cost on process note:', err); } catch {}
+    }
+
+    // Stream the final content to the client (single-chunk stream)
+    const encoder = new TextEncoder();
+    const readable = new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode(fullContent));
+        controller.close();
       },
     });
 
