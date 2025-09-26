@@ -100,36 +100,6 @@ export async function POST(req: NextRequest) {
     // NEW: Extract confidence and word-level data for enhanced transcription
     const confidence = alt?.confidence || null;
 
-    // Aggregate Deepgram cost per session by summing durations and upserting single row
-    try {
-      const totalDurationSec = updatedTranscriptions.reduce((sum: number, entry: any) => {
-        const d = Number(entry?.durationSec || 0);
-        return sum + (Number.isFinite(d) ? d : 0);
-      }, 0);
-      const totalMinutes = totalDurationSec / 60;
-
-      const breakdown = calculateDeepgramCost({ duration: totalMinutes } as any);
-
-      try {
-        await db.delete(apiUsageCosts).where(
-          and(
-            eq(apiUsageCosts.sessionId, currentSessionId),
-            eq(apiUsageCosts.apiProvider, 'deepgram'),
-            eq(apiUsageCosts.apiFunction, 'transcription'),
-          ),
-        );
-      } catch {}
-
-      await db.insert(apiUsageCosts).values({
-        userId,
-        sessionId: currentSessionId,
-        apiProvider: 'deepgram',
-        apiFunction: 'transcription',
-        usageMetrics: { duration: totalMinutes },
-        costUsd: breakdown.costUsd.toString(),
-      } as any);
-    } catch {}
-
     // 🆕 UPDATED: Extract words from utterances (preferred) or alternatives fallback
     const utterances = result?.results?.utterances || [];
     const words = utterances.length > 0
@@ -231,7 +201,35 @@ export async function POST(req: NextRequest) {
  console.log('[Transcribe] persisted chunk', { sessionId: currentSessionId, chunkId, textLen: newEntry.text.length });
 } catch {}
 
-    // Defer Deepgram cost tracking to recording stop to aggregate per session
+    // Aggregate Deepgram cost per session by summing durations and upserting single row
+    try {
+      const totalDurationSec = updatedTranscriptions.reduce((sum: number, entry: any) => {
+        const d = Number(entry?.durationSec || 0);
+        return sum + (Number.isFinite(d) ? d : 0);
+      }, 0);
+      const totalMinutes = totalDurationSec / 60;
+
+      const breakdown = calculateDeepgramCost({ duration: totalMinutes } as any);
+
+      try {
+        await db.delete(apiUsageCosts).where(
+          and(
+            eq(apiUsageCosts.sessionId, currentSessionId),
+            eq(apiUsageCosts.apiProvider, 'deepgram'),
+            eq(apiUsageCosts.apiFunction, 'transcription'),
+          ),
+        );
+      } catch {}
+
+      await db.insert(apiUsageCosts).values({
+        userId,
+        sessionId: currentSessionId,
+        apiProvider: 'deepgram',
+        apiFunction: 'transcription',
+        usageMetrics: { duration: totalMinutes },
+        costUsd: breakdown.costUsd.toString(),
+      } as any);
+    } catch {}
 
     // Signal desktop via Ably (best-effort). Ensure single publish per chunk with helpful logs.
     try {
