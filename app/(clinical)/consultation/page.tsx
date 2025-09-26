@@ -63,6 +63,7 @@ export default function ConsultationPage() {
     switchToPatientSession: originalSwitchToPatientSession, // Rename to create wrapper
     deletePatientSession,
     createPatientSession,
+    resetConsultation,
   } = useConsultationStores();
   const { isSignedIn: _isSignedIn, userId } = useAuth();
   const { getUserTier, user } = useClerkMetadata();
@@ -515,6 +516,8 @@ export default function ConsultationPage() {
       }
       try {
         await switchToPatientSession(newSession.id as string);
+        // Mirror Save flow: clear local stores AFTER switching to ensure a clean UI
+        try { resetConsultation(); } catch {}
       } catch {}
       // Soft-delete previous session in background (now it's not current)
       if (oldSessionId && deletePatientSession) {
