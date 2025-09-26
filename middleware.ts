@@ -68,6 +68,12 @@ export default clerkMiddleware(async (auth, req) => {
     if (!resolvedAuth.userId) {
       return returnUnauthorized();
     }
+    // Forward user context for RBAC in route handlers
+    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set('x-user-id', resolvedAuth.userId);
+    requestHeaders.set('x-user-tier', userTier);
+    return NextResponse.next({ request: { headers: requestHeaders } });
   }
 
   // Protect /api/deepgram routes - require sign-in only
