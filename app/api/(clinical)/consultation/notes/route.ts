@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getDb } from 'database/client';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import OpenAI from 'openai';
 
 import { trackOpenAIUsage } from '@/src/features/admin/cost-tracking/services/costTracker';
 import { TemplateService } from '@/src/features/templates/template-service';
 import { compileTemplate } from '@/src/features/templates/utils/compileTemplate';
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
-import { users } from '@/db/schema';
+import { apiUsageCosts, patientSessions, users } from '@/db/schema';
+import { calculateDeepgramCost } from '@/src/features/admin/cost-tracking/services/costCalculator';
 
 function getOpenAI(): OpenAI {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -149,6 +150,68 @@ export async function POST(req: Request) {
       );
     } catch (error) {
       console.warn('[Notes] Failed to track OpenAI cost:', error);
+    }
+
+    // Aggregate Deepgram transcription cost for the session and clear tracked durations
+    try {
+      const db = getDb();
+      const userId = context.userId;
+      if (userId) {
+        const rows = await db
+          .select({ currentSessionId: users.currentSessionId })
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
+        const sessionId = rows?.[0]?.currentSessionId || null;
+
+        if (sessionId) {
+          const existing = await db
+            .select({ transcriptions: patientSessions.transcriptions })
+            .from(patientSessions)
+            .where(and(eq(patientSessions.id, sessionId), eq(patientSessions.userId, userId)))
+            .limit(1);
+
+          const raw = existing?.[0]?.transcriptions || '[]';
+          let entries: Array<any> = [];
+          try {
+            entries = JSON.parse(raw || '[]');
+            if (!Array.isArray(entries)) entries = [];
+          } catch { entries = []; }
+
+          const totalDurationSec = entries.reduce((sum: number, e: any) => sum + (Number.isFinite(Number(e?.durationSec)) ? Number(e.durationSec) : 0), 0);
+          const totalMinutes = totalDurationSec / 60;
+
+          try {
+            await db.delete(apiUsageCosts).where(
+              and(
+                eq(apiUsageCosts.sessionId, sessionId),
+                eq(apiUsageCosts.apiProvider, 'deepgram'),
+                eq(apiUsageCosts.apiFunction, 'transcription'),
+              ),
+            );
+          } catch {}
+
+          const breakdown = calculateDeepgramCost({ duration: totalMinutes } as any);
+          await db.insert(apiUsageCosts).values({
+            userId,
+            sessionId,
+            apiProvider: 'deepgram',
+            apiFunction: 'transcription',
+            usageMetrics: { duration: totalMinutes },
+            costUsd: breakdown.costUsd.toString(),
+          } as any);
+
+          // Clear tracked durations (reset transcriptions array)
+          try {
+            await db
+              .update(patientSessions)
+              .set({ transcriptions: JSON.stringify([]), updatedAt: new Date() })
+              .where(and(eq(patientSessions.id, sessionId), eq(patientSessions.userId, userId)));
+          } catch {}
+        }
+      }
+    } catch (err) {
+      try { console.warn('[Notes] Failed to aggregate Deepgram cost on process note:', err); } catch {}
     }
 
     // Stream the final content to the client (single-chunk stream)
