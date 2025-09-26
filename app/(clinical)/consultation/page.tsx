@@ -529,10 +529,7 @@ export default function ConsultationPage() {
         }
         // Per-section saves (only if non-empty)
         // Note: do not save consultationItems/clinicalImages per requirements
-        const compiled = getCompiledConsultationText(); // Already built from per-sections
-        // Save per-section fields individually to ensure latest text
-        // We don't have direct access to raw per-section values here; compiled covers them in notes context
-        // but still push transcription save explicitly
+        // Push transcription save explicitly
         savePromises.push(saveTranscriptionsToCurrentSession());
         await Promise.allSettled(savePromises);
       } catch {}
