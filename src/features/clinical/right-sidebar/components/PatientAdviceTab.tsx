@@ -5,6 +5,9 @@ import { Loader2, RefreshCcw, Search } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
+import { useAuth } from '@clerk/nextjs';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { createAuthHeaders } from '@/src/shared/utils';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
@@ -13,6 +16,9 @@ type SearchItem = { title: string; link: string };
 
 export const PatientAdviceTab: React.FC = () => {
   const { generatedNotes } = useConsultationStores();
+  const { userId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
+  const userTier = getUserTier();
 
   const [manualQuery, setManualQuery] = useState('');
   const [keywords, setKeywords] = useState<string[]>([]);
@@ -31,7 +37,7 @@ export const PatientAdviceTab: React.FC = () => {
     try {
       const res = await fetch('/api/patient-advice/keywords', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: createAuthHeaders(userId || undefined, userTier),
         body: JSON.stringify({ note: generatedNotes, max: 10 }),
       });
       if (!res.ok) {
@@ -46,7 +52,7 @@ export const PatientAdviceTab: React.FC = () => {
     } finally {
       setLoadingKW(false);
     }
-  }, [generatedNotes]);
+  }, [generatedNotes, userId, userTier]);
 
   const toggle = useCallback((term: string) => {
     setSelected(prev => {
@@ -63,7 +69,9 @@ export const PatientAdviceTab: React.FC = () => {
     setLoadingTerm(key);
     setError(null);
     try {
-      const res = await fetch(`/api/patient-advice/search?q=${encodeURIComponent(key)}${forceRefresh ? '&refresh=1' : ''}`);
+      const res = await fetch(`/api/patient-advice/search?q=${encodeURIComponent(key)}${forceRefresh ? '&refresh=1' : ''}`, {
+        headers: createAuthHeaders(userId || undefined, userTier),
+      });
       if (!res.ok) {
         throw new Error('Search failed');
       }
@@ -75,7 +83,7 @@ export const PatientAdviceTab: React.FC = () => {
     } finally {
       setLoadingTerm(null);
     }
-  }, [results]);
+  }, [results, userId, userTier]);
 
   const searchSelected = useCallback(async () => {
     const terms = Array.from(selected.values());
