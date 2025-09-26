@@ -67,6 +67,7 @@ export default function ConsultationPage() {
     resetLastGeneratedInput, // For resetting generation tracking
     switchToPatientSession: originalSwitchToPatientSession, // Rename to create wrapper
     deletePatientSession,
+    createPatientSession,
   } = useConsultationStores();
   const { isSignedIn: _isSignedIn, userId } = useAuth();
   const { getUserTier, user } = useClerkMetadata();
@@ -479,6 +480,16 @@ export default function ConsultationPage() {
         try { (window as any).__clinicproJustClearedUntil = Date.now() + 3000; } catch {}
         await deletePatientSession(currentPatientSessionId);
       }
+      // Always create a fresh session after finishing
+      try {
+        const newSession = await createPatientSession?.('Patient', templateId);
+        if (newSession && newSession.id) {
+          try {
+            // Prefer wrapper to ensure recordings are stopped before switching
+            await switchToPatientSession(newSession.id);
+          } catch {}
+        }
+      } catch {}
     } catch (error) {
       console.error('Error finishing session:', error);
     } finally {

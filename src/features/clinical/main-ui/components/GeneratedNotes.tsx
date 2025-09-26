@@ -280,7 +280,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
               title="Save notes and start new patient session"
               aria-label="Save notes and start new patient session"
             >
-              New Patient
+              Save
             </Button>
           )}
         </div>
@@ -352,7 +352,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
               title="Save notes and start new patient session"
               aria-label="Save notes and start new patient session"
             >
-              New Patient
+              Save
             </Button>
           )}
         </div>
