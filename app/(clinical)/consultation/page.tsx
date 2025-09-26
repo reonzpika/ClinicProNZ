@@ -509,14 +509,12 @@ export default function ConsultationPage() {
       }
       // Create a fresh session using favourite template, then switch, then soft-delete old in background
       const oldSessionId = currentPatientSessionId || null;
-      let newSessionId: string | null = null;
       const newSession = await createPatientSession?.('Patient');
       if (!newSession || !newSession.id) {
         throw new Error('Failed to create new session');
       }
-      newSessionId = newSession.id;
       try {
-        await switchToPatientSession(newSessionId);
+        await switchToPatientSession(newSession.id as string);
       } catch {}
       // Soft-delete previous session in background (now it's not current)
       if (oldSessionId && deletePatientSession) {
