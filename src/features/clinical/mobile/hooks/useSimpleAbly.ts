@@ -15,7 +15,7 @@ export type EnhancedTranscriptionData = {
 };
 
 type SimpleAblyMessage = {
-  type: 'transcriptions_updated' | 'recording_status' | 'recording_control' | 'images_uploaded' | 'session_context';
+  type: 'transcriptions_updated' | 'recording_status' | 'recording_control' | 'images_uploaded' | 'session_context' | 'transcription_status' | 'flush_request';
   transcript?: string;
   timestamp?: number;
   // 🆕 Enhanced transcription fields
@@ -32,6 +32,9 @@ type SimpleAblyMessage = {
   uploadTimestamp?: string;
   // 🆕 Session context fields
   sessionId?: string | null;
+  // 🆕 Transcription status fields
+  state?: 'flushing' | 'flushed';
+  lastChunkId?: string;
 };
 
 export type UseSimpleAblyOptions = {
@@ -43,6 +46,7 @@ export type UseSimpleAblyOptions = {
   onControlCommand?: (action: 'start' | 'stop') => void; // For mobile remote control
   onMobileImagesUploaded?: (mobileTokenId: string | undefined, imageCount: number, timestamp: string, sessionId?: string | null) => void; // For desktop image notification
   onTranscriptionsUpdated?: (sessionId?: string, chunkId?: string) => void;
+  onTranscriptionFlushed?: (sessionId?: string, lastChunkId?: string) => void; // Desktop waits on this
   onSessionContextChanged?: (sessionId: string | null) => void; // For mobile to receive session context
 };
 
@@ -55,6 +59,7 @@ export const useSimpleAbly = ({
   onControlCommand,
   onMobileImagesUploaded,
   onTranscriptionsUpdated,
+  onTranscriptionFlushed,
   onSessionContextChanged,
 }: UseSimpleAblyOptions) => {
   const [isConnected, setIsConnected] = useState(false);
@@ -74,6 +79,7 @@ export const useSimpleAbly = ({
     onControlCommand,
     onMobileImagesUploaded,
     onTranscriptionsUpdated,
+    onTranscriptionFlushed,
     onSessionContextChanged,
   });
 
@@ -86,9 +92,10 @@ export const useSimpleAbly = ({
       onControlCommand,
       onMobileImagesUploaded,
       onTranscriptionsUpdated,
+      onTranscriptionFlushed,
       onSessionContextChanged,
     } as any;
-  }, [onRecordingStatusChanged, onError, onConnectionStatusChanged, onControlCommand, onMobileImagesUploaded, onTranscriptionsUpdated, onSessionContextChanged]);
+  }, [onRecordingStatusChanged, onError, onConnectionStatusChanged, onControlCommand, onMobileImagesUploaded, onTranscriptionsUpdated, onTranscriptionFlushed, onSessionContextChanged]);
 
   // Connection status is updated directly to avoid unstable deps
 
@@ -331,6 +338,16 @@ export const useSimpleAbly = ({
             case 'transcriptions_updated':
 
               callbacksRef.current.onTranscriptionsUpdated?.((data as any).sessionId, (data as any).chunkId);
+              break;
+            case 'transcription_status':
+              if (!isMobile && data.state === 'flushed') {
+                callbacksRef.current.onTranscriptionFlushed?.(data.sessionId ?? undefined, (data as any).lastChunkId);
+              }
+              break;
+
+            case 'flush_request':
+              // Mobile may optionally respond by initiating a flush and then emit 'transcription_status: flushed'
+              // Desktop side does not process this case
               break;
 
             case 'recording_status':

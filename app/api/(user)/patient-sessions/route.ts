@@ -1,6 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
 import { getDb } from 'database/client';
-import { and, desc, eq, isNull } from 'drizzle-orm';
+import { and, desc, eq, isNull, gt } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
@@ -259,7 +259,7 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-// DELETE - Delete patient session
+  // DELETE - Delete patient session
 export async function DELETE(req: NextRequest) {
   try {
     const db = getDb();
@@ -277,17 +277,18 @@ export async function DELETE(req: NextRequest) {
       return 'Patient';
     };
 
-    // Helper: choose next session (active first, latest by createdAt). If none active, create a new one.
+    // Helper: choose next session (most recent, non-deleted, non-expired). If none, create a new one.
     const selectOrCreateNextSession = async (): Promise<{ id: string; createdNew: boolean }> => {
-      // Prefer most recent active session
+      // Prefer most recent non-deleted, non-expired session
+      const now = new Date();
       const nextActive = await db
         .select()
         .from(patientSessions)
         .where(
           and(
             eq(patientSessions.userId, userId),
-            eq(patientSessions.status, 'active'),
             isNull(patientSessions.deletedAt),
+            gt(patientSessions.expiresAt, now),
           ),
         )
         .orderBy(desc(patientSessions.createdAt))
@@ -377,14 +378,15 @@ export async function DELETE(req: NextRequest) {
         response.switchedToExisting = !next.createdNew;
       } else {
         // Even if current wasn't deleted, ensure at least one ACTIVE session exists for the user
+        const now = new Date();
         const stillHasActive = await db
           .select({ id: patientSessions.id })
           .from(patientSessions)
           .where(
             and(
               eq(patientSessions.userId, userId),
-              eq(patientSessions.status, 'active'),
               isNull(patientSessions.deletedAt),
+              gt(patientSessions.expiresAt, now),
             ),
           )
           .limit(1);

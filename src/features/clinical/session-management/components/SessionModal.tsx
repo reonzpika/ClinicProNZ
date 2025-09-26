@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, Plus, Search, Trash2, User } from 'lucide-react';
+import { Calendar, Plus, Search, Trash2, User, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
@@ -27,6 +27,11 @@ export const SessionModal: React.FC<SessionModalProps> = ({
     createPatientSession = async () => null,
     switchToPatientSession = () => {},
     deletePatientSession = async () => false,
+    // unified helper
+    // deleteSessionAndMaybeSwitch available via stores
+    // finishCurrentSessionFresh available via stores (not used here)
+    // fallback to deletePatientSession if helper missing
+    deleteSessionAndMaybeSwitch = async (_id: string) => false,
     deleteAllPatientSessions = async () => false,
     loadPatientSessions = async () => {},
   } = useConsultationStores();
@@ -36,6 +41,8 @@ export const SessionModal: React.FC<SessionModalProps> = ({
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
+  const [switchingId, setSwitchingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Load sessions when modal opens
   useEffect(() => {
@@ -87,11 +94,14 @@ export const SessionModal: React.FC<SessionModalProps> = ({
 
   const handleSwitchSession = async (sessionId: string) => {
     try {
+      setSwitchingId(sessionId);
       await switchToPatientSession(sessionId);
       onSessionSelected(sessionId);
       onClose();
     } catch (error) {
       console.error('Failed to switch patient session:', error);
+    } finally {
+      setSwitchingId(null);
     }
   };
 
@@ -100,8 +110,13 @@ export const SessionModal: React.FC<SessionModalProps> = ({
       try {
         // If this was the only session before deletion, close the modal after delete
         const wasLastSession = Array.isArray(patientSessions) && patientSessions.length <= 1;
-        await deletePatientSession(sessionId);
+        setDeletingId(sessionId);
+        // Use unified helper when available to also switch if deleting current
+        if (!(await deleteSessionAndMaybeSwitch(sessionId))) {
+          await deletePatientSession(sessionId);
+        }
         setDeleteConfirmId(null);
+        setDeletingId(null);
         // If we deleted the current session, modal should stay open for user to select another
         // Updated behavior: if it was the last session, server creates a new one and we auto-close
         if (wasLastSession) {
@@ -109,6 +124,7 @@ export const SessionModal: React.FC<SessionModalProps> = ({
         }
       } catch (error) {
         console.error('Failed to delete patient session:', error);
+        setDeletingId(null);
       }
     } else {
       setDeleteConfirmId(sessionId);
@@ -144,24 +160,43 @@ export const SessionModal: React.FC<SessionModalProps> = ({
 
   const getSessionSummary = (session: any) => {
     // Create a brief summary from session data
-    // Priority: generated notes > typed input > transcription > consultation notes
+    // Priority:
+    // 1) notes
+    // 2) transcriptions (joined)
+    // 3) problemsText
+    // 4) objectiveText
+    // 5) assessmentText
+    // 6) planText
+    // 7) typedInput
 
-    // 1. Generated notes (primary content)
-    if (session.notes && session.notes.trim().length > 0) {
-      return session.notes.substring(0, 80) + (session.notes.length > 80 ? '...' : '');
+    const trimTo = (text: string) => text.substring(0, 80) + (text.length > 80 ? '...' : '');
+
+    if (session.notes && String(session.notes).trim().length > 0) {
+      const text = String(session.notes).trim();
+      return trimTo(text);
     }
 
-    // 2. Typed input
-    if (session.typedInput && session.typedInput.trim().length > 0) {
-      return session.typedInput.substring(0, 80) + (session.typedInput.length > 80 ? '...' : '');
-    }
-
-    // 3. Transcriptions (voice input)
-    if (session.transcriptions && session.transcriptions.length > 0) {
-      const transcriptText = session.transcriptions.map((t: any) => t.text).join(' ');
+    if (Array.isArray(session.transcriptions) && session.transcriptions.length > 0) {
+      const transcriptText = session.transcriptions.map((t: any) => (t?.text || '').trim()).filter(Boolean).join(' ');
       if (transcriptText.trim().length > 0) {
-        return transcriptText.substring(0, 80) + (transcriptText.length > 80 ? '...' : '');
+        return trimTo(transcriptText);
       }
+    }
+
+    // Combine Problems + Objective + Assessment + Plan into a single snippet
+    const combinedPOAP = [
+      String(session.problemsText || '').trim(),
+      String(session.objectiveText || '').trim(),
+      String(session.assessmentText || '').trim(),
+      String(session.planText || '').trim(),
+    ].filter(Boolean).join(' ');
+    if (combinedPOAP) {
+      return trimTo(combinedPOAP);
+    }
+
+    const typed = String(session.typedInput || '').trim();
+    if (typed) {
+      return trimTo(typed);
     }
 
     return 'No content yet';
@@ -195,7 +230,14 @@ export const SessionModal: React.FC<SessionModalProps> = ({
               className="shrink-0"
             >
               <Plus className="mr-2 size-4" />
-              {isCreating ? 'Creating...' : 'Create New'}
+              {isCreating
+                ? (
+                    <span className="inline-flex items-center gap-1">
+                      <RefreshCw className="size-3 animate-spin" />
+                      Creating...
+                    </span>
+                  )
+                : 'Create New'}
             </Button>
             {patientSessions.length > 0 && (
               <Button
@@ -210,7 +252,12 @@ export const SessionModal: React.FC<SessionModalProps> = ({
               >
                 <Trash2 className="mr-2 size-4" />
                 {isDeletingAll
-                  ? 'Deleting...'
+                  ? (
+                      <span className="inline-flex items-center gap-1">
+                        <RefreshCw className="size-3 animate-spin" />
+                        Deleting...
+                      </span>
+                    )
                   : showDeleteAllConfirm
                     ? 'Confirm Delete All'
                     : 'Delete All'}
@@ -304,28 +351,44 @@ export const SessionModal: React.FC<SessionModalProps> = ({
                                 onClick={() => handleSwitchSession(session.id)}
                                 size="sm"
                                 variant="outline"
+                                disabled={switchingId === session.id}
                               >
-                                Switch
+                                {switchingId === session.id
+                                  ? (
+                                      <span className="inline-flex items-center gap-1">
+                                        <RefreshCw className="size-3 animate-spin" />
+                                        Switching...
+                                      </span>
+                                    )
+                                  : 'Switch'}
                               </Button>
                             )}
                             <Button
                               onClick={() => handleDeleteSession(session.id)}
                               size="sm"
                               variant="outline"
+                              disabled={deletingId === session.id}
                               className={isDeleteConfirm
                                 ? 'border-red-300 bg-red-50 text-red-700 hover:bg-red-100'
                                 : 'text-red-600 hover:bg-red-50 hover:text-red-700'}
                             >
-                              {isDeleteConfirm
+                              {deletingId === session.id
                                 ? (
-                                    <>
-                                      <Trash2 className="mr-1 size-3" />
-                                      Confirm
-                                    </>
+                                    <span className="inline-flex items-center gap-1">
+                                      <RefreshCw className="size-3 animate-spin" />
+                                      Deleting...
+                                    </span>
                                   )
-                                : (
-                                    <Trash2 className="size-3" />
-                                  )}
+                                : isDeleteConfirm
+                                  ? (
+                                      <>
+                                        <Trash2 className="mr-1 size-3" />
+                                        Confirm
+                                      </>
+                                    )
+                                  : (
+                                      <Trash2 className="size-3" />
+                                    )}
                             </Button>
                           </div>
                         </div>

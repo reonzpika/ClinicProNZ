@@ -42,36 +42,34 @@ export default function ConsultationPage() {
     typedInput,
     transcription,
     setTranscription,
-    setTypedInput,
     generatedNotes,
     setGeneratedNotes,
     // Deprecated legacy notes
     consultationNotes,
     setConsultationNotes,
     consultationItems,
-    removeConsultationItem,
     getCompiledConsultationText,
     templateId,
     setLastGeneratedInput,
     setTemplateId,
     setInputMode,
-    // mutation queue controls & clear flags
+    // mutation queue controls
     pauseMutations,
     resumeMutations,
-    setClearInProgress,
-    setClearedAt,
-    setTemplateLock,
 
     saveNotesToCurrentSession, // For saving generated notes
     // Removed unused legacy save functions
     ensureActiveSession, // For ensuring session exists before note generation
-    resetLastGeneratedInput, // For resetting generation tracking
     switchToPatientSession: originalSwitchToPatientSession, // Rename to create wrapper
+    deletePatientSession,
+    createPatientSession,
+    resetConsultation,
   } = useConsultationStores();
   const { isSignedIn: _isSignedIn, userId } = useAuth();
   const { getUserTier, user } = useClerkMetadata();
   const userTier = getUserTier();
   const [loading, setLoading] = useState(false);
+  const [isFinishing, setIsFinishing] = useState(false);
   const [isNoteFocused, setIsNoteFocused] = useState(false);
   const [isDocumentationMode, setIsDocumentationMode] = useState(false);
   // Sidebar removed
@@ -446,11 +444,42 @@ export default function ConsultationPage() {
   
   // This eliminates dual broadcasting sources and race conditions
 
-  const handleClearAll = async () => {
-    isClearingRef.current = true;
-    try { setClearInProgress?.(true); } catch {}
-    try { setClearedAt?.(Date.now()); } catch {}
-    try { setTemplateLock?.(templateId || null); } catch {}
+  const waitForTranscriptionFlush = async (sessionId: string, maxMs = 6000): Promise<void> => {
+    const start = Date.now();
+    let lastLen = -1;
+    let lastId = '';
+    let stableCount = 0;
+    while (Date.now() - start < maxMs) {
+      try {
+        const res = await fetch(`/api/patient-sessions?sessionId=${encodeURIComponent(sessionId)}`, { method: 'GET', headers: createAuthHeaders(userId, userTier) });
+        if (res.ok) {
+          const data = await res.json();
+          const s = (data?.sessions || [])[0] || null;
+          let chunks: any[] = [];
+          if (s?.transcriptions) {
+            chunks = Array.isArray(s.transcriptions) ? s.transcriptions : JSON.parse(s.transcriptions);
+          }
+          const len = Array.isArray(chunks) ? chunks.length : 0;
+          const id = len > 0 ? (chunks[len - 1]?.id || '') : '';
+          if (len === lastLen && id === lastId) {
+            stableCount += 1;
+          } else {
+            stableCount = 0;
+          }
+          lastLen = len;
+          lastId = id;
+          if (stableCount >= 2) {
+            return;
+          }
+        }
+      } catch {}
+      await new Promise(r => setTimeout(r, 500));
+    }
+  };
+
+  const handleFinish = async () => {
+    setIsFinishing(true);
+    // Keep documentation view until operations complete; do not flip modes early
     try { pauseMutations?.(); } catch {}
     // Abort any in-flight note generation to prevent stream from repopulating notes
     if (genAbortRef.current) {
@@ -459,100 +488,48 @@ export default function ConsultationPage() {
 } catch { /* ignore */ }
       genAbortRef.current = null;
     }
-    // Clear UI state immediately
+    // Keep current UI visible until operations complete
     setLoading(false);
-    setIsNoteFocused(false);
-    setIsDocumentationMode(false);
-    setGeneratedNotes('');
     setStatus('idle');
     setError(null);
 
-    // Clear local store state
-    setConsultationNotes('');
-    setTypedInput('');
-    setTranscription('', false);
-    resetLastGeneratedInput();
-
-    // Clear server-side session data atomically
+    // Stop recordings only if active, and wait for transcript flush (poll fallback)
     try {
-      if (currentPatientSessionId) {
-        // Set a brief global suppression window to prevent hydration re-population
-        try { (window as any).__clinicproJustClearedUntil = Date.now() + 3000; } catch {}
-        await fetch('/api/patient-sessions/clear', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...createAuthHeaders(userId, userTier) },
-          body: JSON.stringify({ sessionId: currentPatientSessionId }),
-        });
-      }
-
-      // Optimistically update React Query caches for current session
-      if (currentPatientSessionId) {
-        // Update sessions list cache
-        queryClient.setQueryData<any>(
-          ['consultation', 'sessions'],
-          (old: any) => {
-            if (!Array.isArray(old)) {
-              return old;
-            }
-            return old.map((s: any) => (s.id === currentPatientSessionId
-              ? { ...s, notes: '', typedInput: '', consultationNotes: '', transcriptions: [], consultationItems: [], problemsText: '', objectiveText: '', assessmentText: '', planText: '' }
-              : s));
-          },
-        );
-        // Update individual session cache
-        queryClient.setQueryData<any>(
-          ['consultation', 'session', currentPatientSessionId],
-          (old: any) => {
-            if (!old) {
-              return old;
-            }
-            return { ...old, notes: '', typedInput: '', consultationNotes: '', transcriptions: [], consultationItems: [], problemsText: '', objectiveText: '', assessmentText: '', planText: '' };
-          },
-        );
-        // Pull fresh server state to remove any stale rehydration edge cases
+      if ((isRecording || mobileIsRecording) && currentPatientSessionId) {
         try {
-          await queryClient.invalidateQueries({ queryKey: ['consultation', 'session', currentPatientSessionId] });
-        } catch {}
-        // Confirm fetch and verify empty snapshot before releasing lock
-        try {
-          const res = await fetch(`/api/patient-sessions?sessionId=${encodeURIComponent(currentPatientSessionId)}`, {
-            method: 'GET',
-            headers: createAuthHeaders(userId, userTier),
-          });
-          if (res.ok) {
-            const data = await res.json();
-            const s = Array.isArray(data?.sessions) ? data.sessions[0] : null;
-            const empty = s && !((s.problemsText && s.problemsText.trim()) || (s.objectiveText && s.objectiveText.trim()) || (s.assessmentText && s.assessmentText.trim()) || (s.planText && s.planText.trim()) || (s.typedInput && s.typedInput.trim()) || (s.notes && s.notes.trim()) || (Array.isArray(s.transcriptions) && s.transcriptions.length > 0) || (Array.isArray(s.consultationItems) && s.consultationItems.length > 0));
-            if (!empty) {
-              // Keep suppression a bit longer
-              try { (window as any).__clinicproJustClearedUntil = Date.now() + 5000; } catch {}
-            }
+          if (isRecording) {
+            stopRecording();
+          }
+          if (mobileIsRecording && sendRecordingControl) {
+            sendRecordingControl('stop');
           }
         } catch {}
+        try {
+          await waitForTranscriptionFlush(currentPatientSessionId);
+        } catch {}
       }
-
-      // Re-enforce local clears in case of any async rehydration
-      setGeneratedNotes('');
-      setTypedInput('');
-      setConsultationNotes('');
-      setTranscription('', false);
+      // Create a fresh session using favourite template, then switch, then soft-delete old in background
+      const oldSessionId = currentPatientSessionId || null;
+      const newSession = await createPatientSession?.('Patient');
+      if (!newSession || !newSession.id) {
+        throw new Error('Failed to create new session');
+      }
       try {
-        // Clear any consultation items in the local store
-        const items = Array.isArray(consultationItems) ? [...consultationItems] : [];
-        items.forEach((item: any) => {
-          try { removeConsultationItem?.(item.id); } catch {}
-        });
+        await switchToPatientSession(newSession.id as string);
+        // Mirror Save flow: clear local stores AFTER switching to ensure a clean UI
+        try { resetConsultation(); } catch {}
       } catch {}
+      // Soft-delete previous session in background (now it's not current)
+      if (oldSessionId && deletePatientSession) {
+        try { deletePatientSession(oldSessionId); } catch {}
+      }
     } catch (error) {
-      console.error('Error clearing server data:', error);
-      // Continue anyway - UI is already cleared
+      console.error('Error finishing session:', error);
     } finally {
       // Release guard after state has settled and a tick has elapsed to avoid flash
       requestAnimationFrame(() => {
-        isClearingRef.current = false;
-        try { setClearInProgress?.(false); } catch {}
-        try { if (typeof templateId === 'string') { setTemplateId(templateId); } } catch {}
         try { resumeMutations?.(); } catch {}
+        setIsFinishing(false);
       });
     }
   };
@@ -847,10 +824,11 @@ export default function ConsultationPage() {
                                   
                                   <GeneratedNotes
                                     onGenerate={handleGenerateNotes}
-                                    onClearAll={handleClearAll}
+                                    onFinish={handleFinish}
                                     loading={loading}
                                     isNoteFocused={isNoteFocused}
                                     isDocumentationMode={isDocumentationMode}
+                                    isFinishing={isFinishing}
                                   />
                                 </div>
                               </>
@@ -892,10 +870,11 @@ export default function ConsultationPage() {
                                 <div className="mt-auto flex flex-col">
                                   <GeneratedNotes
                                     onGenerate={handleGenerateNotes}
-                                    onClearAll={handleClearAll}
+                                    onFinish={handleFinish}
                                     loading={loading}
                                     isNoteFocused={isNoteFocused}
                                     isDocumentationMode={isDocumentationMode}
+                                    isFinishing={isFinishing}
                                   />
                                 </div>
                               </div>
@@ -924,10 +903,11 @@ export default function ConsultationPage() {
                                 
                                 <GeneratedNotes
                                   onGenerate={handleGenerateNotes}
-                                  onClearAll={handleClearAll}
+                                  onFinish={handleFinish}
                                   loading={loading}
                                   isNoteFocused={isNoteFocused}
                                   isDocumentationMode={isDocumentationMode}
+                                  isFinishing={isFinishing}
                                 />
                               </div>
 
@@ -1002,10 +982,11 @@ export default function ConsultationPage() {
                                 <div className="mt-auto flex flex-col">
                                  <GeneratedNotes
                                    onGenerate={handleGenerateNotes}
-                                   onClearAll={handleClearAll}
+                                   onFinish={handleFinish}
                                    loading={loading}
                                    isNoteFocused={isNoteFocused}
                                    isDocumentationMode={isDocumentationMode}
+                                   isFinishing={isFinishing}
                                  />
                                 </div>
                             </div>
@@ -1026,6 +1007,19 @@ export default function ConsultationPage() {
           onClose={() => setRateLimitModalOpen(false)}
           error={rateLimitError}
         />
+      )}
+
+      {/* Centered loading overlay for Delete flow */}
+      {isFinishing && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20">
+          <div className="flex items-center gap-3 rounded-md bg-white px-4 py-3 shadow">
+            <svg className="size-4 animate-spin text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+            </svg>
+            <span className="text-sm text-slate-700">Deleting and creating new session...</span>
+          </div>
+        </div>
       )}
 
       
