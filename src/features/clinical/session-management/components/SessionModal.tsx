@@ -183,24 +183,15 @@ export const SessionModal: React.FC<SessionModalProps> = ({
       }
     }
 
-    const problems = String(session.problemsText || '').trim();
-    if (problems) {
-      return trimTo(problems);
-    }
-
-    const objective = String(session.objectiveText || '').trim();
-    if (objective) {
-      return trimTo(objective);
-    }
-
-    const assessment = String(session.assessmentText || '').trim();
-    if (assessment) {
-      return trimTo(assessment);
-    }
-
-    const plan = String(session.planText || '').trim();
-    if (plan) {
-      return trimTo(plan);
+    // Combine Problems + Objective + Assessment + Plan into a single snippet
+    const combinedPOAP = [
+      String(session.problemsText || '').trim(),
+      String(session.objectiveText || '').trim(),
+      String(session.assessmentText || '').trim(),
+      String(session.planText || '').trim(),
+    ].filter(Boolean).join(' ');
+    if (combinedPOAP) {
+      return trimTo(combinedPOAP);
     }
 
     const typed = String(session.typedInput || '').trim();
