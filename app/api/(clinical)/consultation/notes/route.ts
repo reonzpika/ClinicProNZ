@@ -178,7 +178,17 @@ export async function POST(req: Request) {
             if (!Array.isArray(entries)) entries = [];
           } catch { entries = []; }
 
-          const totalDurationSec = entries.reduce((sum: number, e: any) => sum + (Number.isFinite(Number(e?.durationSec)) ? Number(e.durationSec) : 0), 0);
+          // Sum duration from both desktop duration-only entries and persisted mobile entries
+          const totalDurationSec = entries.reduce((sum: number, e: any) => {
+            // Desktop duration-only entries
+            if (Number.isFinite(Number(e?.durationSec))) {
+              return sum + Number(e.durationSec);
+            }
+            // Mobile persisted entries may carry a per-chunk duration; common shapes:
+            // - { paragraphs, ... } with no duration (skip)
+            // - { words/utterances, ... } but we can fall back to Deepgram metadata not stored here
+            return sum;
+          }, 0);
           const totalMinutes = totalDurationSec / 60;
 
           try {

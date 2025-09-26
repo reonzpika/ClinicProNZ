@@ -106,57 +106,8 @@ export async function POST(req: NextRequest) {
       ? utterances.flatMap((utterance: any) => utterance.words || [])
       : (alt?.words || []);
 
-    // If not persisting, append duration-only entry to current session (no text), then return
+    // If not persisting, just return the transcription as before
     if (!persist) {
-      try {
-        const userId = context.userId;
-        if (userId) {
-          // Resolve current session
-          let currentSessionId: string | null = null;
-          try {
-            const current = await db
-              .select({ currentSessionId: users.currentSessionId })
-              .from(users)
-              .where(eq(users.id, userId))
-              .limit(1);
-            currentSessionId = current?.[0]?.currentSessionId || null;
-          } catch {}
-
-          if (currentSessionId) {
-            // Load existing entries
-            const existing = await db
-              .select({ id: patientSessions.id, transcriptions: patientSessions.transcriptions })
-              .from(patientSessions)
-              .where(and(eq(patientSessions.id, currentSessionId), eq(patientSessions.userId, userId)))
-              .limit(1);
-
-            const existingTranscriptionsRaw = existing?.[0]?.transcriptions || '[]';
-            let existingTranscriptions: Array<any> = [];
-            try {
-              existingTranscriptions = JSON.parse(existingTranscriptionsRaw || '[]');
-              if (!Array.isArray(existingTranscriptions)) {
-                existingTranscriptions = [];
-              }
-            } catch {
-              existingTranscriptions = [];
-            }
-
-            const chunkId = Math.random().toString(36).substr(2, 9);
-            const durationOnlyEntry = {
-              id: chunkId,
-              timestamp: new Date().toISOString(),
-              source: 'desktop' as const,
-              durationSec: Number(metadata?.duration || 0),
-            };
-            const updatedEntries = [...existingTranscriptions, durationOnlyEntry];
-            await db
-              .update(patientSessions)
-              .set({ transcriptions: JSON.stringify(updatedEntries), updatedAt: new Date() })
-              .where(and(eq(patientSessions.id, currentSessionId), eq(patientSessions.userId, userId))); 
-          }
-        }
-      } catch {}
-
       const apiResponse = {
         transcript, // return plain transcript
         paragraphs,
