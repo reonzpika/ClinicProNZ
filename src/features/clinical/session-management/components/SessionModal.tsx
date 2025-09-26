@@ -106,7 +106,9 @@ export const SessionModal: React.FC<SessionModalProps> = ({
         // If this was the only session before deletion, close the modal after delete
         const wasLastSession = Array.isArray(patientSessions) && patientSessions.length <= 1;
         // Use unified helper when available to also switch if deleting current
-        const ok = (await deleteSessionAndMaybeSwitch(sessionId)) || (await deletePatientSession(sessionId));
+        if (!(await deleteSessionAndMaybeSwitch(sessionId))) {
+          await deletePatientSession(sessionId);
+        }
         setDeleteConfirmId(null);
         // If we deleted the current session, modal should stay open for user to select another
         // Updated behavior: if it was the last session, server creates a new one and we auto-close
