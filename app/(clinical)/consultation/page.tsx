@@ -63,10 +63,6 @@ export default function ConsultationPage() {
 
     saveNotesToCurrentSession, // For saving generated notes
     saveTypedInputToCurrentSession,
-    saveProblemsToCurrentSession,
-    saveObjectiveToCurrentSession,
-    saveAssessmentToCurrentSession,
-    savePlanToCurrentSession,
     saveTranscriptionsToCurrentSession,
     // Removed unused legacy save functions
     ensureActiveSession, // For ensuring session exists before note generation
