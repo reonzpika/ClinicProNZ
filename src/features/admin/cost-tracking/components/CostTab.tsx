@@ -17,8 +17,19 @@ type CostView = 'overview' | 'users' | 'sessions';
 export const CostTab: React.FC = () => {
   const [currentView, setCurrentView] = useState<CostView>('overview');
 
-  const { data: summary, isLoading: summaryLoading, error: summaryError, refetch: refetchSummary } = useCostSummary();
-  const { data: userSummaries, isLoading: usersLoading, refetch: refetchUsers } = useUserCostSummaries();
+  const {
+    data: summary,
+    isLoading: summaryLoading,
+    isFetching: summaryFetching,
+    error: summaryError,
+    refetch: refetchSummary,
+  } = useCostSummary();
+  const {
+    data: userSummaries,
+    isLoading: usersLoading,
+    isFetching: usersFetching,
+    refetch: refetchUsers,
+  } = useUserCostSummaries();
 
   // Ensure fresh data on mount similar to Messages/Analytics views
   useEffect(() => {
@@ -83,10 +94,10 @@ export const CostTab: React.FC = () => {
         return (
           <div className="space-y-6">
             {/* Cost Metrics */}
-            <CostMetrics summary={summary!} loading={summaryLoading} />
+            <CostMetrics summary={summary!} loading={summaryLoading || summaryFetching} />
 
             {/* Cost Breakdown */}
-            <CostBreakdown summary={summary!} loading={summaryLoading} />
+            <CostBreakdown summary={summary!} loading={summaryLoading || summaryFetching} />
           </div>
         );
     }
@@ -100,9 +111,19 @@ export const CostTab: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-900">Cost Tracking</h2>
           <p className="mt-2 text-gray-600">Monitor API usage costs across the platform</p>
         </div>
-        <Button onClick={() => { refetchSummary(); refetchUsers(); }} variant="outline" size="sm">
-          Refresh
-        </Button>
+        <div className="flex items-center space-x-2">
+          {(summaryFetching || usersFetching) && (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-transparent" aria-label="Refreshing" />
+          )}
+          <Button
+            onClick={() => { refetchSummary(); refetchUsers(); }}
+            variant="outline"
+            size="sm"
+            disabled={summaryFetching || usersFetching}
+          >
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* View Selector */}
@@ -125,7 +146,16 @@ export const CostTab: React.FC = () => {
       </div>
 
       {/* Content */}
-      {renderCurrentView()}
+      {currentView === 'users' ? (
+        <div className="space-y-6">
+          <div className="rounded-lg border border-gray-200 bg-white p-6">
+            <h3 className="mb-4 text-lg font-medium text-gray-900">Cost by User</h3>
+            <UserCostTable users={userSummaries || []} loading={usersLoading || usersFetching} />
+          </div>
+        </div>
+      ) : (
+        renderCurrentView()
+      )}
     </div>
   );
 };
