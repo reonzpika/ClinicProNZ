@@ -7,7 +7,7 @@ import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
 // import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
-export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused: _isNoteFocused, isDocumentationMode: _isDocumentationMode }: { onGenerate?: () => void; onClearAll?: () => void; loading?: boolean; isNoteFocused?: boolean; isDocumentationMode?: boolean }) {
+export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _isNoteFocused, isDocumentationMode: _isDocumentationMode }: { onGenerate?: () => void; onFinish?: () => void; loading?: boolean; isNoteFocused?: boolean; isDocumentationMode?: boolean }) {
   const { isSignedIn } = useAuth();
   const {
     generatedNotes,
@@ -182,14 +182,13 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
     }
   };
 
-  // Clear all handler: reset consultation context and return to minimal state
-  const handleClearAll = () => {
-    resetConsultation(); // Clears all consultation data including transcript
+  // Finish handler: delegate to parent and return to minimal state
+  const handleFinish = () => {
     setIsExpanded(false);
-    setLastSavedNotes(''); // Reset saved notes tracking
-    setIsManualEdit(false); // Reset manual edit flag
-    if (onClearAll) {
-      onClearAll();
+    setLastSavedNotes('');
+    setIsManualEdit(false);
+    if (onFinish) {
+      onFinish();
     }
   };
 
@@ -264,13 +263,12 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
           <Button
             type="button"
             variant="outline"
-            onClick={handleClearAll}
-            disabled={!hasAnyState}
+            onClick={handleFinish}
             className="h-10 border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
-            title="Clear all consultation data"
-            aria-label="Clear all consultation data"
+            title="Finish this session"
+            aria-label="Finish this session"
           >
-            Clear All
+            Finish
           </Button>
           {showNewPatientButton && (
             <Button
@@ -337,13 +335,12 @@ export function GeneratedNotes({ onGenerate, onClearAll, loading, isNoteFocused:
           <Button
             type="button"
             variant="outline"
-            onClick={handleClearAll}
-            disabled={!hasAnyState}
+            onClick={handleFinish}
             className="h-9 border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
-            title="Clear all consultation data"
-            aria-label="Clear all consultation data"
+            title="Finish this session"
+            aria-label="Finish this session"
           >
-            Clear All
+            Finish
           </Button>
           {showNewPatientButton && (
             <Button
