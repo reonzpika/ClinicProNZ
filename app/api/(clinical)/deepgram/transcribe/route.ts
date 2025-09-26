@@ -106,8 +106,39 @@ export async function POST(req: NextRequest) {
       ? utterances.flatMap((utterance: any) => utterance.words || [])
       : (alt?.words || []);
 
-    // If not persisting, just return the transcription as before
+    // If not persisting (desktop), increment per-session duration counter and return
     if (!persist) {
+      try {
+        const userId = context.userId;
+        if (userId) {
+          let currentSessionId: string | null = null;
+          try {
+            const current = await db
+              .select({ currentSessionId: users.currentSessionId })
+              .from(users)
+              .where(eq(users.id, userId))
+              .limit(1);
+            currentSessionId = current?.[0]?.currentSessionId || null;
+          } catch {}
+
+          if (currentSessionId) {
+            const incrementBy = Math.max(0, Math.round(Number(metadata?.duration || 0)));
+            if (incrementBy > 0) {
+              await db
+                .update(patientSessions)
+                .set({
+                  deepgramDurationSec: (Number((await db
+                    .select({ v: patientSessions.deepgramDurationSec })
+                    .from(patientSessions)
+                    .where(and(eq(patientSessions.id, currentSessionId), eq(patientSessions.userId, userId)))
+                    .limit(1))[0]?.v || 0) + incrementBy,
+                  updatedAt: new Date(),
+                } as any)
+                .where(and(eq(patientSessions.id, currentSessionId), eq(patientSessions.userId, userId)));
+            }
+          }
+        }
+      } catch {}
       const apiResponse = {
         transcript, // return plain transcript
         paragraphs,

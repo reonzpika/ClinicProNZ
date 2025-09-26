@@ -1,4 +1,4 @@
-import { boolean, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { boolean, integer, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 import { users } from './users';
 
@@ -24,6 +24,8 @@ export const patientSessions = pgTable('patient_sessions', {
   templateId: text('template_id'), // Link to template used
   consultationItems: text('consultation_items'), // JSON string of checklist/acc items
   clinicalImages: text('clinical_images'), // JSON string of clinical images
+  // Total Deepgram transcription duration accumulated for current cycle (seconds)
+  deepgramDurationSec: integer('deepgram_duration_sec').default(0).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   completedAt: timestamp('completed_at'),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

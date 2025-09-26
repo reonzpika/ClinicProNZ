@@ -165,30 +165,13 @@ export async function POST(req: Request) {
         const sessionId = rows?.[0]?.currentSessionId || null;
 
         if (sessionId) {
+          // Prefer the numeric counter for total duration
           const existing = await db
-            .select({ transcriptions: patientSessions.transcriptions })
+            .select({ deepgramDurationSec: patientSessions.deepgramDurationSec })
             .from(patientSessions)
             .where(and(eq(patientSessions.id, sessionId), eq(patientSessions.userId, userId)))
             .limit(1);
-
-          const raw = existing?.[0]?.transcriptions || '[]';
-          let entries: Array<any> = [];
-          try {
-            entries = JSON.parse(raw || '[]');
-            if (!Array.isArray(entries)) entries = [];
-          } catch { entries = []; }
-
-          // Sum duration from both desktop duration-only entries and persisted mobile entries
-          const totalDurationSec = entries.reduce((sum: number, e: any) => {
-            // Desktop duration-only entries
-            if (Number.isFinite(Number(e?.durationSec))) {
-              return sum + Number(e.durationSec);
-            }
-            // Mobile persisted entries may carry a per-chunk duration; common shapes:
-            // - { paragraphs, ... } with no duration (skip)
-            // - { words/utterances, ... } but we can fall back to Deepgram metadata not stored here
-            return sum;
-          }, 0);
+          const totalDurationSec = Number(existing?.[0]?.deepgramDurationSec || 0);
           const totalMinutes = totalDurationSec / 60;
 
           try {
@@ -211,11 +194,11 @@ export async function POST(req: Request) {
             costUsd: breakdown.costUsd.toString(),
           } as any);
 
-          // Clear tracked durations (reset transcriptions array)
+          // Clear tracked durations counter
           try {
             await db
               .update(patientSessions)
-              .set({ transcriptions: JSON.stringify([]), updatedAt: new Date() })
+              .set({ deepgramDurationSec: 0, updatedAt: new Date() } as any)
               .where(and(eq(patientSessions.id, sessionId), eq(patientSessions.userId, userId)));
           } catch {}
         }
