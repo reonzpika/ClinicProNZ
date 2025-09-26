@@ -7,7 +7,7 @@ import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
 // import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
-export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _isNoteFocused, isDocumentationMode: _isDocumentationMode }: { onGenerate?: () => void; onFinish?: () => void; loading?: boolean; isNoteFocused?: boolean; isDocumentationMode?: boolean }) {
+export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _isNoteFocused, isDocumentationMode: _isDocumentationMode, isFinishing }: { onGenerate?: () => void; onFinish?: () => void; loading?: boolean; isNoteFocused?: boolean; isDocumentationMode?: boolean; isFinishing?: boolean }) {
   const { isSignedIn } = useAuth();
   const {
     generatedNotes,
@@ -264,11 +264,12 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
             type="button"
             variant="outline"
             onClick={handleFinish}
-            className="h-10 border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
+            disabled={isFinishing}
+            className="h-10 border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
             title="Finish this session"
             aria-label="Finish this session"
           >
-            Finish
+            {isFinishing ? 'Finishing…' : 'Finish'}
           </Button>
           {showNewPatientButton && (
             <Button
@@ -336,11 +337,12 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
             type="button"
             variant="outline"
             onClick={handleFinish}
-            className="h-9 border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
+            disabled={isFinishing}
+            className="h-9 border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
             title="Finish this session"
             aria-label="Finish this session"
           >
-            Finish
+            {isFinishing ? 'Finishing…' : 'Finish'}
           </Button>
           {showNewPatientButton && (
             <Button

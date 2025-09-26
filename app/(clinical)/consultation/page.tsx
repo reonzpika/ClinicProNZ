@@ -73,6 +73,7 @@ export default function ConsultationPage() {
   const { getUserTier, user } = useClerkMetadata();
   const userTier = getUserTier();
   const [loading, setLoading] = useState(false);
+  const [isFinishing, setIsFinishing] = useState(false);
   const [isNoteFocused, setIsNoteFocused] = useState(false);
   const [isDocumentationMode, setIsDocumentationMode] = useState(false);
   // Sidebar removed
@@ -448,6 +449,7 @@ export default function ConsultationPage() {
   // This eliminates dual broadcasting sources and race conditions
 
   const handleFinish = async () => {
+    setIsFinishing(true);
     isClearingRef.current = true;
     try { setClearInProgress?.(true); } catch {}
     try { setClearedAt?.(Date.now()); } catch {}
@@ -499,6 +501,7 @@ export default function ConsultationPage() {
         try { setClearInProgress?.(false); } catch {}
         try { if (typeof templateId === 'string') { setTemplateId(templateId); } } catch {}
         try { resumeMutations?.(); } catch {}
+        setIsFinishing(false);
       });
     }
   };
@@ -797,6 +800,7 @@ export default function ConsultationPage() {
                                     loading={loading}
                                     isNoteFocused={isNoteFocused}
                                     isDocumentationMode={isDocumentationMode}
+                                    isFinishing={isFinishing}
                                   />
                                 </div>
                               </>
@@ -842,6 +846,7 @@ export default function ConsultationPage() {
                                     loading={loading}
                                     isNoteFocused={isNoteFocused}
                                     isDocumentationMode={isDocumentationMode}
+                                    isFinishing={isFinishing}
                                   />
                                 </div>
                               </div>
@@ -874,6 +879,7 @@ export default function ConsultationPage() {
                                   loading={loading}
                                   isNoteFocused={isNoteFocused}
                                   isDocumentationMode={isDocumentationMode}
+                                  isFinishing={isFinishing}
                                 />
                               </div>
 
@@ -952,6 +958,7 @@ export default function ConsultationPage() {
                                    loading={loading}
                                    isNoteFocused={isNoteFocused}
                                    isDocumentationMode={isDocumentationMode}
+                                   isFinishing={isFinishing}
                                  />
                                 </div>
                             </div>
