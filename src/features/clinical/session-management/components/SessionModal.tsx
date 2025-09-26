@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, Plus, Search, Trash2, User } from 'lucide-react';
+import { Calendar, Plus, Search, Trash2, User, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
@@ -211,7 +211,14 @@ export const SessionModal: React.FC<SessionModalProps> = ({
               className="shrink-0"
             >
               <Plus className="mr-2 size-4" />
-              {isCreating ? 'Creating...' : 'Create New'}
+              {isCreating
+                ? (
+                    <span className="inline-flex items-center gap-1">
+                      <RefreshCw className="size-3 animate-spin" />
+                      Creating...
+                    </span>
+                  )
+                : 'Create New'}
             </Button>
             {patientSessions.length > 0 && (
               <Button
@@ -226,7 +233,12 @@ export const SessionModal: React.FC<SessionModalProps> = ({
               >
                 <Trash2 className="mr-2 size-4" />
                 {isDeletingAll
-                  ? 'Deleting...'
+                  ? (
+                      <span className="inline-flex items-center gap-1">
+                        <RefreshCw className="size-3 animate-spin" />
+                        Deleting...
+                      </span>
+                    )
                   : showDeleteAllConfirm
                     ? 'Confirm Delete All'
                     : 'Delete All'}
@@ -322,7 +334,14 @@ export const SessionModal: React.FC<SessionModalProps> = ({
                                 variant="outline"
                                 disabled={switchingId === session.id}
                               >
-                                {switchingId === session.id ? 'Switching...' : 'Switch'}
+                                {switchingId === session.id
+                                  ? (
+                                      <span className="inline-flex items-center gap-1">
+                                        <RefreshCw className="size-3 animate-spin" />
+                                        Switching...
+                                      </span>
+                                    )
+                                  : 'Switch'}
                               </Button>
                             )}
                             <Button
@@ -335,7 +354,12 @@ export const SessionModal: React.FC<SessionModalProps> = ({
                                 : 'text-red-600 hover:bg-red-50 hover:text-red-700'}
                             >
                               {deletingId === session.id
-                                ? 'Deleting...'
+                                ? (
+                                    <span className="inline-flex items-center gap-1">
+                                      <RefreshCw className="size-3 animate-spin" />
+                                      Deleting...
+                                    </span>
+                                  )
                                 : isDeleteConfirm
                                   ? (
                                       <>
