@@ -3,7 +3,8 @@ import { getDb } from 'database/client';
 import { and, eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
-import { patientSessions } from '@/db/schema';
+import { apiUsageCosts, patientSessions, type NewApiUsageCost } from '@/db/schema';
+import { calculateDeepgramCost } from '@/src/features/admin/cost-tracking/services/costCalculator';
 import { extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 export async function POST(req: Request) {
@@ -28,6 +29,64 @@ export async function POST(req: Request) {
     if (!updated.length) {
  return NextResponse.json({ error: 'Session not found' }, { status: 404 });
 }
+
+    // When recording stops, aggregate Deepgram cost once per session
+    if (isRecording === false) {
+      try {
+        const sessionRows = await db
+          .select({ transcriptions: patientSessions.transcriptions })
+          .from(patientSessions)
+          .where(and(eq(patientSessions.id, sessionId), eq(patientSessions.userId, context.userId)))
+          .limit(1);
+
+        const transcriptionsRaw = sessionRows?.[0]?.transcriptions || '[]';
+        let transcriptions: Array<any> = [];
+        try {
+          transcriptions = JSON.parse(transcriptionsRaw || '[]');
+          if (!Array.isArray(transcriptions)) {
+            transcriptions = [];
+          }
+        } catch {
+          transcriptions = [];
+        }
+
+        const totalDurationSec = transcriptions.reduce((sum: number, entry: any) => {
+          const d = Number(entry?.durationSec || 0);
+          return sum + (Number.isFinite(d) ? d : 0);
+        }, 0);
+        const totalMinutes = totalDurationSec / 60;
+
+        // Compute cost and upsert a single Deepgram record for this session
+        const metrics = { duration: totalMinutes } as const;
+        const breakdown = calculateDeepgramCost(metrics as any);
+
+        // Remove prior deepgram transcription cost rows for this session (idempotent aggregate)
+        try {
+          await db.delete(apiUsageCosts).where(
+            and(
+              eq(apiUsageCosts.sessionId, sessionId),
+              eq(apiUsageCosts.apiProvider, 'deepgram'),
+              eq(apiUsageCosts.apiFunction, 'transcription'),
+            ),
+          );
+        } catch {}
+
+        const record: NewApiUsageCost = {
+          userId: context.userId,
+          sessionId,
+          apiProvider: 'deepgram',
+          apiFunction: 'transcription',
+          usageMetrics: { duration: totalMinutes },
+          costUsd: breakdown.costUsd.toString(),
+        } as any;
+
+        await db.insert(apiUsageCosts).values(record);
+      } catch (err) {
+        try {
+          console.warn('[Recording] Failed to aggregate Deepgram cost:', err);
+        } catch {}
+      }
+    }
 
     // Server emits recording status (best-effort)
     try {
