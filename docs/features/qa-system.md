@@ -2,14 +2,15 @@
 
 ## Purpose
 
-This document defines the end-to-end Quality Assurance (QA) signals, tracking, and verification flows across ClinicPro, with emphasis on consultation workflows, transcription, generated notes, and structured Additional Notes.
+This document defines the end-to-end Quality Assurance (QA) signals, tracking, and verification flows across ClinicPro, with emphasis on consultation workflows, transcription, generated notes, structured Additional Notes, and cost tracking systems.
 
 ## Scope
 
 - Desktop and mobile recording QA checkpoints
 - Transcription persistence and reconstruction checks
 - Consultation note generation QA
-- Additional Notes structure and persistence (updated)
+- Additional Notes structure and persistence (implemented)
+- API cost tracking and monitoring (implemented)
 - API/DB invariants and monitoring hooks
 
 ---
@@ -34,6 +35,14 @@ This document defines the end-to-end Quality Assurance (QA) signals, tracking, a
   - `assessment_text`: structured Additional Notes – Assessment (string)
   - `plan_text`: structured Additional Notes – Plan (string)
   - `clinicalImages`: JSON string array of uploaded images
+
+- `database/schema/api_usage_costs.ts` (NEW)
+  - `userId`: user identifier for cost attribution
+  - `sessionId`: patient session for cost attribution
+  - `apiProvider`: 'deepgram' | 'openai' | 'perplexity'
+  - `apiFunction`: 'transcription' | 'note_generation' | 'chat'
+  - `usageMetrics`: JSONB with provider-specific metrics (duration, tokens, requests)
+  - `costUsd`: calculated cost in USD (precision: 10,6)
 
 - `src/types/consultation.ts`
   - `PatientSession` mirrors above for client usage
@@ -91,6 +100,64 @@ At save time or generation time, apply lightweight validation:
 
 ---
 
+## API Cost Tracking System (IMPLEMENTED)
+
+### Purpose
+Real-time tracking and monitoring of API usage costs across Deepgram, OpenAI, and Perplexity services for administrative oversight and cost management.
+
+### Implementation Status: ✅ COMPLETE
+
+#### Cost Calculation Services
+- **Real-time pricing**: Updated 2024 API costs
+  - **Deepgram Nova-3**: $0.0043/minute
+  - **OpenAI GPT-5 mini**: $0.25/1M input, $2.00/1M output tokens
+  - **Perplexity Sonar**: $1/1M input, $1/1M output tokens + $5-12 per 1000 requests
+- **Precision**: 6 decimal places for accurate micro-cost tracking
+- **Service**: `src/features/admin/cost-tracking/services/costCalculator.ts`
+
+#### API Integration Points
+1. **Deepgram Transcription** (`/api/(clinical)/deepgram/transcribe/route.ts`)
+   - Tracks audio duration in minutes for both persist/non-persist modes
+   - Calculates cost: `duration × $0.0043`
+   - Records usage per user and session
+
+2. **OpenAI Note Generation** (`/api/(clinical)/consultation/notes/route.ts`)
+   - Tracks input/output tokens from streaming responses
+   - Calculates cost: `(input_tokens × $0.25/1M) + (output_tokens × $2.00/1M)`
+   - Supports cached input token pricing
+
+3. **Perplexity Chat** (`/api/(clinical)/consultation/chat/route.ts`)
+   - Tracks input/output tokens plus request counts
+   - Calculates cost: `(tokens × $1/1M) + (requests × $5-12/1000)`
+   - Context size awareness (low/medium/high)
+
+#### Admin Dashboard
+- **Location**: `/admin` → "Cost Tracking" tab
+- **Features**:
+  - Total cost metrics and breakdowns
+  - Per-user cost analysis with provider/function breakdowns
+  - Real-time cost visualization with charts and tables
+- **Access Control**: Admin-only via existing RBAC
+- **Components**: `src/features/admin/cost-tracking/components/`
+
+#### Database Storage
+- **Table**: `api_usage_costs` with foreign keys to users and sessions
+- **Retention**: Permanent storage for historical analysis
+- **Performance**: Indexed queries for efficient cost aggregation
+
+#### API Endpoints
+- **`/api/admin/cost-tracking/summary`**: Overall cost metrics
+- **`/api/admin/cost-tracking/users`**: Per-user cost breakdowns
+- **Protection**: Admin-only access with RBAC validation
+
+### Cost Tracking QA Signals
+- **API Call Logging**: Every API request logs cost data to database
+- **Error Handling**: Cost tracking failures don't affect core functionality
+- **Data Integrity**: Foreign key constraints ensure cost attribution accuracy
+- **Real-time Updates**: Admin dashboard reflects latest costs within 5 minutes
+
+---
+
 ## QA Checkpoints
 
 ### 1) Transcription Persistence
@@ -115,53 +182,65 @@ At save time or generation time, apply lightweight validation:
 
 ---
 
-## Change Tracking & NLP Extraction (Technical Updates)
+## Implementation Status Summary
 
-### Replace Custom Diff Implementation → diff-match-patch
+### ✅ IMPLEMENTED FEATURES
 
-Current:
-- Manual diff computation and edit distance calculations described for note changes.
+1. **API Cost Tracking System**
+   - Real-time cost calculation for all APIs (Deepgram, OpenAI, Perplexity)
+   - Database storage with user/session attribution
+   - Admin dashboard with metrics and breakdowns
+   - Per-user cost analysis and visualization
 
-Change:
-- Use a well-established diff library such as `diff-match-patch` for text change tracking.
+2. **Structured Additional Notes**
+   - Four-field SOAP structure (Problems, Objective, Assessment, Plan)
+   - Database persistence in dedicated columns
+   - UI components for structured input
+   - Template compilation with SOAP sections
 
-Reasons:
-- Improved reliability and performance on large texts
-- Robust handling of complex edits and Unicode edge cases
-- Built-in semantic cleanup (`diff_cleanupSemantic`) for human-friendly diffs
+3. **Core Session Management**
+   - Session creation, switching, and clearing functionality
+   - Transcription persistence and reconstruction
+   - Generated notes storage and retrieval
+   - Mobile image handling with Ably synchronization
 
-Implementation Notes:
-- Frontend/Node: `diff-match-patch` npm package
-- Apply `diff_main(oldText, newText)` → `diff_cleanupSemantic(diff)` for readable QA diffs
-- Persist minimal delta if needed, or store full before/after with rendered diff for audits
+### 🔄 PARTIALLY IMPLEMENTED
 
-Migration Risk:
-- None to data model; replace call sites where custom diff was referenced in QA workflows.
+1. **QA Checkpoints**
+   - Basic persistence verification for sessions and notes
+   - Manual testing workflows for core functionality
+   - Server-client state synchronization via Ably
 
-### Upgrade Entity Extraction → spaCy clinical model (medspaCy)
+### ❌ NOT YET IMPLEMENTED
 
-Current:
-- Simple, deterministic patterns and regex-based entity extraction.
+1. **Advanced Change Tracking**
+   - `diff-match-patch` integration for text change tracking
+   - Automated QA validation workflows
+   - Historical change audit trails
 
-Change:
-- Use spaCy with a clinical/biomedical pipeline. Recommended: `medspaCy` for clinical text; alternatively `scispaCy` for biomedical literature or `Med7` for medication-centric use cases.
+2. **Clinical NLP Enhancement**
+   - `medspaCy` integration for clinical entity extraction
+   - Automated section detection and validation
+   - NZ-specific clinical terminology rules
 
-Recommendation for ClinicPro QA:
-- Adopt `medspaCy` as default clinical NER/sectionizer for consultation notes. It aligns with clinical narratives and supports section detection (useful alongside SOAP).
+3. **Automated QA Signals**
+   - Systematic validation of transcription reconstruction
+   - Additional Notes persistence verification
+   - Cross-session state consistency checks
 
-Reasons:
-- Higher recall/precision on clinical entities than regex heuristics
-- Domain-adapted tokenisation and section detection
-- Extensible with rules for NZ-specific terminology
+### Recommended Next Steps
 
-Implementation Notes:
-- Service layer (Python) with spaCy + medspaCy
-- Expose HTTP endpoint for entity extraction if app layer is Node/TS
-- Start with core medspaCy components: `TargetMatcher`, `Sectionizer`; add rules for SOAP headers and NZ abbreviations
+1. **Immediate (High Priority)**
+   - Implement automated QA validation for session state consistency
+   - Add transcription reconstruction verification tests
 
-Migration Risk:
-- Operational: add Python service/runtime. Mitigate with containerised microservice and health checks.
-- Model choice: evaluate medspaCy vs scispaCy on sample datasets; retain fallback regex for edge conditions initially.
+2. **Medium Term**
+   - Integrate `diff-match-patch` for change tracking
+   - Enhance Additional Notes validation with canonical markers
+
+3. **Long Term**
+   - Implement `medspaCy` for clinical text analysis
+   - Build comprehensive QA monitoring dashboard
 
 ---
 
@@ -198,5 +277,19 @@ Legacy Notes:
 
 ## Future Enhancements
 
-- Export helpers to render/parse the four Additional Notes fields with canonical headers for interoperable exports.
-- Export helpers to parse structured Additional Notes back into sections.
+### Cost Tracking Enhancements
+- Session-level cost analysis and breakdown
+- Cost alerts and budget thresholds
+- Historical cost trending and forecasting
+- Export cost reports for accounting/billing
+
+### QA System Enhancements
+- Automated QA test suites for session state consistency
+- Real-time validation of transcription reconstruction
+- Change tracking with `diff-match-patch` integration
+- Clinical NLP with `medspaCy` for entity extraction
+
+### Additional Notes Enhancements
+- Export helpers to render/parse the four Additional Notes fields with canonical headers
+- Automated validation of SOAP section markers
+- Template-driven section suggestions and auto-completion
