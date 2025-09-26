@@ -15,7 +15,7 @@ export async function GET(req: Request) {
 
     const db = getDb();
 
-    const summaryResult = await db
+    const totals = await db
       .select({
         totalCost: sql<number>`COALESCE(SUM(CAST(${apiUsageCosts.costUsd} AS DECIMAL)), 0)`,
         totalUsers: sql<number>`COUNT(DISTINCT ${apiUsageCosts.userId})`,
@@ -24,7 +24,7 @@ export async function GET(req: Request) {
       })
       .from(apiUsageCosts);
 
-    const providerBreakdown = await db
+    const byProviderRows = await db
       .select({
         provider: apiUsageCosts.apiProvider,
         totalCost: sql<number>`COALESCE(SUM(CAST(${apiUsageCosts.costUsd} AS DECIMAL)), 0)`,
@@ -32,43 +32,33 @@ export async function GET(req: Request) {
       .from(apiUsageCosts)
       .groupBy(apiUsageCosts.apiProvider);
 
-    const functionBreakdown = await db
+    const byFunctionRows = await db
       .select({
-        function: apiUsageCosts.apiFunction,
+        func: apiUsageCosts.apiFunction,
         totalCost: sql<number>`COALESCE(SUM(CAST(${apiUsageCosts.costUsd} AS DECIMAL)), 0)`,
       })
       .from(apiUsageCosts)
       .groupBy(apiUsageCosts.apiFunction);
 
-    const summary = summaryResult[0] || {
-      totalCost: 0,
-      totalUsers: 0,
-      totalSessions: 0,
-      totalRequests: 0,
-    };
-
-    const response = {
-      totalCost: Number(summary.totalCost),
-      totalUsers: Number(summary.totalUsers),
-      totalSessions: Number(summary.totalSessions),
-      totalRequests: Number(summary.totalRequests),
-      byProvider: { deepgram: 0, openai: 0, perplexity: 0 },
-      byFunction: { transcription: 0, note_generation: 0, chat: 0 },
-    };
-
-    providerBreakdown.forEach((item: { provider: string | null; totalCost: unknown }) => {
-      if (item.provider && item.provider in response.byProvider) {
-        response.byProvider[item.provider as keyof typeof response.byProvider] = Number(item.totalCost);
-      }
+    const byProvider = { deepgram: 0, openai: 0, perplexity: 0 } as Record<'deepgram'|'openai'|'perplexity', number>;
+    byProviderRows.forEach((row: any) => {
+      if (row.provider) byProvider[row.provider as 'deepgram'|'openai'|'perplexity'] = Number(row.totalCost);
     });
 
-    functionBreakdown.forEach((item: { function: string | null; totalCost: unknown }) => {
-      if (item.function && item.function in response.byFunction) {
-        response.byFunction[item.function as keyof typeof response.byFunction] = Number(item.totalCost);
-      }
+    const byFunction = { transcription: 0, note_generation: 0, chat: 0 } as Record<'transcription'|'note_generation'|'chat', number>;
+    byFunctionRows.forEach((row: any) => {
+      if (row.func) byFunction[row.func as 'transcription'|'note_generation'|'chat'] = Number(row.totalCost);
     });
 
-    return NextResponse.json(response);
+    const total = totals[0];
+    return NextResponse.json({
+      totalCost: Number(total.totalCost) || 0,
+      totalUsers: Number(total.totalUsers) || 0,
+      totalSessions: Number(total.totalSessions) || 0,
+      totalRequests: Number(total.totalRequests) || 0,
+      byProvider,
+      byFunction,
+    });
   } catch (error) {
     console.error('Error fetching cost summary:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

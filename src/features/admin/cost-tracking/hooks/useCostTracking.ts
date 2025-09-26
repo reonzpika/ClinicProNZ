@@ -119,7 +119,8 @@ export function useSessionCostDetails(userId?: string) {
       }
       return response.json();
     },
-    enabled: !!userId,
+    // Enable fetching for all sessions when no userId provided
+    enabled: true,
     refetchOnMount: 'always',
     refetchOnWindowFocus: 'always',
     staleTime: 5 * 60 * 1000, // 5 minutes

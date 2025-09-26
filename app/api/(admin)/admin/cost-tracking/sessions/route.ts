@@ -1,5 +1,5 @@
 import { getDb } from 'database/client';
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 import { apiUsageCosts } from '@/db/schema/api_usage_costs';
@@ -14,75 +14,56 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    const url = new URL(req.url);
-    const userId = url.searchParams.get('userId');
+    const { searchParams } = new URL(req.url);
+    const filterUserId = searchParams.get('userId') || undefined;
 
     const db = getDb();
 
-    const baseQuery = db
+    // Aggregate costs by session
+    const rows = await db
       .select({
         sessionId: apiUsageCosts.sessionId,
+        userId: apiUsageCosts.userId,
         patientName: patientSessions.patientName,
-        totalCost: sql<number>`COALESCE(SUM(CAST(${apiUsageCosts.costUsd} AS DECIMAL)), 0)`,
-        requestCount: sql<number>`COUNT(*)`,
         createdAt: patientSessions.createdAt,
+        requestCount: sql<number>`COUNT(*)`,
+        totalCost: sql<number>`COALESCE(SUM(CAST(${apiUsageCosts.costUsd} AS DECIMAL)), 0)`,
+        deepgram: sql<number>`COALESCE(SUM(CASE WHEN ${apiUsageCosts.apiProvider} = 'deepgram' THEN CAST(${apiUsageCosts.costUsd} AS DECIMAL) ELSE 0 END), 0)`,
+        openai: sql<number>`COALESCE(SUM(CASE WHEN ${apiUsageCosts.apiProvider} = 'openai' THEN CAST(${apiUsageCosts.costUsd} AS DECIMAL) ELSE 0 END), 0)`,
+        perplexity: sql<number>`COALESCE(SUM(CASE WHEN ${apiUsageCosts.apiProvider} = 'perplexity' THEN CAST(${apiUsageCosts.costUsd} AS DECIMAL) ELSE 0 END), 0)`,
+        transcription: sql<number>`COALESCE(SUM(CASE WHEN ${apiUsageCosts.apiFunction} = 'transcription' THEN CAST(${apiUsageCosts.costUsd} AS DECIMAL) ELSE 0 END), 0)`,
+        note_generation: sql<number>`COALESCE(SUM(CASE WHEN ${apiUsageCosts.apiFunction} = 'note_generation' THEN CAST(${apiUsageCosts.costUsd} AS DECIMAL) ELSE 0 END), 0)`,
+        chat: sql<number>`COALESCE(SUM(CASE WHEN ${apiUsageCosts.apiFunction} = 'chat' THEN CAST(${apiUsageCosts.costUsd} AS DECIMAL) ELSE 0 END), 0)`,
       })
       .from(apiUsageCosts)
       .leftJoin(patientSessions, eq(apiUsageCosts.sessionId, patientSessions.id))
-      .groupBy(apiUsageCosts.sessionId, patientSessions.patientName, patientSessions.createdAt);
+      .where(filterUserId ? eq(apiUsageCosts.userId, filterUserId) : undefined as any)
+      .groupBy(apiUsageCosts.sessionId, apiUsageCosts.userId, patientSessions.patientName, patientSessions.createdAt)
+      .orderBy(sql`MAX(${patientSessions.createdAt}) DESC`);
 
-    const sessionsAgg = userId ? await baseQuery.where(eq(apiUsageCosts.userId, userId)) : await baseQuery;
+    const result = rows
+      .filter(r => r.sessionId)
+      .map((r: any) => ({
+        sessionId: r.sessionId,
+        patientName: r.patientName || 'Unknown',
+        totalCost: Number(r.totalCost) || 0,
+        requestCount: Number(r.requestCount) || 0,
+        createdAt: r.createdAt?.toISOString?.() || new Date(r.createdAt as any).toISOString(),
+        byProvider: {
+          deepgram: Number(r.deepgram) || 0,
+          openai: Number(r.openai) || 0,
+          perplexity: Number(r.perplexity) || 0,
+        },
+        byFunction: {
+          transcription: Number(r.transcription) || 0,
+          note_generation: Number(r.note_generation) || 0,
+          chat: Number(r.chat) || 0,
+        },
+      }));
 
-    const providerAgg = await db
-      .select({
-        sessionId: apiUsageCosts.sessionId,
-        provider: apiUsageCosts.apiProvider,
-        totalCost: sql<number>`COALESCE(SUM(CAST(${apiUsageCosts.costUsd} AS DECIMAL)), 0)`,
-      })
-      .from(apiUsageCosts)
-      .groupBy(apiUsageCosts.sessionId, apiUsageCosts.apiProvider);
-
-    const functionAgg = await db
-      .select({
-        sessionId: apiUsageCosts.sessionId,
-        func: apiUsageCosts.apiFunction,
-        totalCost: sql<number>`COALESCE(SUM(CAST(${apiUsageCosts.costUsd} AS DECIMAL)), 0)`,
-      })
-      .from(apiUsageCosts)
-      .groupBy(apiUsageCosts.sessionId, apiUsageCosts.apiFunction);
-
-    const response = sessionsAgg
-      .filter((s: any) => !!s.sessionId)
-      .map((s: any) => {
-        const byProvider = { deepgram: 0, openai: 0, perplexity: 0 } as Record<'deepgram'|'openai'|'perplexity', number>;
-        providerAgg
-          .filter((p: any) => p.sessionId === s.sessionId && p.provider)
-          .forEach((p: any) => {
-            byProvider[p.provider as 'deepgram'|'openai'|'perplexity'] = Number(p.totalCost);
-          });
-
-        const byFunction = { transcription: 0, note_generation: 0, chat: 0 } as Record<'transcription'|'note_generation'|'chat', number>;
-        functionAgg
-          .filter((f: any) => f.sessionId === s.sessionId && f.func)
-          .forEach((f: any) => {
-            byFunction[f.func as 'transcription'|'note_generation'|'chat'] = Number(f.totalCost);
-          });
-
-        return {
-          sessionId: s.sessionId as string,
-          patientName: s.patientName || 'Session',
-          totalCost: Number(s.totalCost),
-          requestCount: Number(s.requestCount),
-          createdAt: s.createdAt?.toISOString?.() || new Date().toISOString(),
-          byProvider,
-          byFunction,
-        };
-      });
-
-    return NextResponse.json(response);
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error fetching session cost details:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-
