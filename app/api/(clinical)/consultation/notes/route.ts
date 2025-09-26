@@ -109,9 +109,11 @@ export async function POST(req: Request) {
           { role: 'user', content: user },
         ],
         stream: true,
+        // Ensure final usage chunk is emitted so we can record tokens
+        stream_options: { include_usage: true } as any,
         max_completion_tokens: 2000, // Reduced further for faster generation
         temperature: 0.1, // Lower temperature for faster, more deterministic responses
-      }),
+      } as any),
       openaiTimeout,
       'OpenAI API timeout',
     );
@@ -125,6 +127,7 @@ export async function POST(req: Request) {
         let timeoutId: NodeJS.Timeout | null = null;
         let totalInputTokens = 0;
         let totalOutputTokens = 0;
+        let totalCachedInputTokens = 0;
 
         try {
           timeoutId = setTimeout(() => {
@@ -141,6 +144,9 @@ export async function POST(req: Request) {
             if (chunk.usage) {
               totalInputTokens = chunk.usage.prompt_tokens || 0;
               totalOutputTokens = chunk.usage.completion_tokens || 0;
+              // Try to capture cached tokens when prompt caching is used
+              const details = (chunk.usage as any).prompt_tokens_details || {};
+              totalCachedInputTokens = details.cached_tokens || details.cached || 0;
             }
           }
 
@@ -150,6 +156,7 @@ export async function POST(req: Request) {
               { userId: context.userId },
               totalInputTokens,
               totalOutputTokens,
+              totalCachedInputTokens,
             );
           } catch (error) {
             console.warn('[Notes] Failed to track OpenAI cost:', error);
