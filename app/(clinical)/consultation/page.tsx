@@ -62,6 +62,12 @@ export default function ConsultationPage() {
     setTemplateLock,
 
     saveNotesToCurrentSession, // For saving generated notes
+    saveTypedInputToCurrentSession,
+    saveProblemsToCurrentSession,
+    saveObjectiveToCurrentSession,
+    saveAssessmentToCurrentSession,
+    savePlanToCurrentSession,
+    saveTranscriptionsToCurrentSession,
     // Removed unused legacy save functions
     ensureActiveSession, // For ensuring session exists before note generation
     resetLastGeneratedInput, // For resetting generation tracking
@@ -448,6 +454,39 @@ export default function ConsultationPage() {
   
   // This eliminates dual broadcasting sources and race conditions
 
+  const waitForTranscriptionFlush = async (sessionId: string, maxMs = 6000): Promise<void> => {
+    const start = Date.now();
+    let lastLen = -1;
+    let lastId = '';
+    let stableCount = 0;
+    while (Date.now() - start < maxMs) {
+      try {
+        const res = await fetch(`/api/patient-sessions?sessionId=${encodeURIComponent(sessionId)}`, { method: 'GET', headers: createAuthHeaders(userId, userTier) });
+        if (res.ok) {
+          const data = await res.json();
+          const s = (data?.sessions || [])[0] || null;
+          let chunks: any[] = [];
+          if (s?.transcriptions) {
+            chunks = Array.isArray(s.transcriptions) ? s.transcriptions : JSON.parse(s.transcriptions);
+          }
+          const len = Array.isArray(chunks) ? chunks.length : 0;
+          const id = len > 0 ? (chunks[len - 1]?.id || '') : '';
+          if (len === lastLen && id === lastId) {
+            stableCount += 1;
+          } else {
+            stableCount = 0;
+          }
+          lastLen = len;
+          lastId = id;
+          if (stableCount >= 2) {
+            return;
+          }
+        }
+      } catch {}
+      await new Promise(r => setTimeout(r, 500));
+    }
+  };
+
   const handleFinish = async () => {
     setIsFinishing(true);
     isClearingRef.current = true;
@@ -462,36 +501,80 @@ export default function ConsultationPage() {
 } catch { /* ignore */ }
       genAbortRef.current = null;
     }
-    // Clear UI state immediately
+    // Keep current UI visible until operations complete
     setLoading(false);
-    setIsNoteFocused(false);
-    setIsDocumentationMode(false);
-    setGeneratedNotes('');
     setStatus('idle');
     setError(null);
 
-    // Clear local store state
-    setConsultationNotes('');
-    setTypedInput('');
-    setTranscription('', false);
-    resetLastGeneratedInput();
-
-    // Finish: soft-delete current session on server
+    // Stop recordings only if active, and wait for transcript flush (poll fallback)
     try {
+      if ((isRecording || mobileIsRecording) && currentPatientSessionId) {
+        try {
+          if (isRecording) {
+            stopRecording();
+          }
+          if (mobileIsRecording && sendRecordingControl) {
+            sendRecordingControl('stop');
+          }
+        } catch {}
+        try {
+          await waitForTranscriptionFlush(currentPatientSessionId);
+        } catch {}
+      }
+
+      // Save current content before deletion
+      try {
+        const savePromises: Array<Promise<any>> = [];
+        if (generatedNotes && generatedNotes.trim()) {
+          savePromises.push(saveNotesToCurrentSession(generatedNotes));
+        }
+        if (typedInput && typedInput.trim()) {
+          savePromises.push(saveTypedInputToCurrentSession(typedInput));
+        }
+        // Per-section saves (only if non-empty)
+        // Note: do not save consultationItems/clinicalImages per requirements
+        const compiled = getCompiledConsultationText(); // Already built from per-sections
+        // Save per-section fields individually to ensure latest text
+        // We don't have direct access to raw per-section values here; compiled covers them in notes context
+        // but still push transcription save explicitly
+        savePromises.push(saveTranscriptionsToCurrentSession());
+        await Promise.allSettled(savePromises);
+      } catch {}
+
+      // Finish: soft-delete current session on server (single attempt)
       if (currentPatientSessionId && deletePatientSession) {
         try { (window as any).__clinicproJustClearedUntil = Date.now() + 3000; } catch {}
-        await deletePatientSession(currentPatientSessionId);
-      }
-      // Always create a fresh session after finishing
-      try {
-        const newSession = await createPatientSession?.('Patient', templateId);
-        if (newSession && newSession.id) {
-          try {
-            // Prefer wrapper to ensure recordings are stopped before switching
-            await switchToPatientSession(newSession.id);
-          } catch {}
+        const ok = await deletePatientSession(currentPatientSessionId);
+        if (!ok) {
+          throw new Error('Failed to delete session');
         }
-      } catch {}
+      }
+
+      // Create a fresh session using favourite template
+      let newSessionId: string | null = null;
+      try {
+        const newSession = await createPatientSession?.('Patient');
+        if (!newSession || !newSession.id) {
+          throw new Error('Failed to create new session');
+        }
+        newSessionId = newSession.id;
+      } catch (e) {
+        throw e;
+      }
+
+      // Clear local state just before switching so hydration works cleanly
+      setGeneratedNotes('');
+      setConsultationNotes('');
+      setTypedInput('');
+      setTranscription('', false);
+      resetLastGeneratedInput();
+
+      // Switch to the new, fresh session
+      if (newSessionId) {
+        try {
+          await switchToPatientSession(newSessionId);
+        } catch {}
+      }
     } catch (error) {
       console.error('Error finishing session:', error);
     } finally {
