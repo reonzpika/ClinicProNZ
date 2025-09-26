@@ -1,4 +1,5 @@
 import { and, eq } from 'drizzle-orm';
+import { auth } from '@clerk/nextjs/server';
 
 import { getDb } from '../../database/client';
 import { mobileTokens } from '../../database/schema';
@@ -46,11 +47,23 @@ export async function validateMobileToken(req: Request): Promise<string | null> 
  * Extract RBAC context from request headers (simplified for mobile token validation)
  */
 export async function extractRBACContext(req: Request): Promise<RBACContext> {
-  // Get user information from request headers (sent by client)
-  const userId = req.headers.get('x-user-id');
-  const userTier = req.headers.get('x-user-tier') as UserTier || 'basic';
+  // 1) Try Clerk server auth (cookie-based) first
+  try {
+    const resolved = await auth();
+    const cookieUserId = resolved?.userId || null;
+    if (cookieUserId) {
+      const tierFromClaims = (resolved.sessionClaims as any)?.metadata?.tier as UserTier | undefined;
+      return {
+        userId: cookieUserId,
+        tier: tierFromClaims || 'basic',
+        isAuthenticated: true,
+      };
+    }
+  } catch {
+    // Ignore and fall through
+  }
 
-  // Check for mobile token first
+  // 2) Check for mobile token
   const mobileUserId = await validateMobileToken(req);
   if (mobileUserId) {
     return {
@@ -60,16 +73,18 @@ export async function extractRBACContext(req: Request): Promise<RBACContext> {
     };
   }
 
-  // Standard authenticated user
-  if (userId) {
+  // 3) Fall back to client-provided headers (legacy)
+  const headerUserId = req.headers.get('x-user-id');
+  const headerUserTier = (req.headers.get('x-user-tier') as UserTier) || 'basic';
+  if (headerUserId) {
     return {
-      userId,
-      tier: userTier,
+      userId: headerUserId,
+      tier: headerUserTier,
       isAuthenticated: true,
     };
   }
 
-  // No authentication
+  // 4) Unauthenticated
   return {
     userId: null,
     tier: 'basic',
