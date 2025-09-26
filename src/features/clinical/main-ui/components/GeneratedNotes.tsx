@@ -40,6 +40,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
   const [lastSavedNotes, setLastSavedNotes] = useState('');
   const [_saveStatus, setSaveStatus] = useState('idle');
   const [canCreateSession, setCanCreateSession] = useState<boolean>(true);
+  const [isCreatingNewSession, setIsCreatingNewSession] = useState<boolean>(false);
 
   // Consent statement to append when consent was obtained
   const CONSENT_STATEMENT = '\n\nPatient informed and consented verbally to the use of digital documentation assistance during this consultation, in line with NZ Health Information Privacy Principles. The patient retains the right to pause or stop the recording at any time.';
@@ -194,6 +195,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
 
   // New Patient handler: save current notes, create new session, clear data
   const handleNewPatient = async () => {
+    setIsCreatingNewSession(true);
     try {
       // 1. Save all current data to current session if they exist
       const savePromises = [];
@@ -239,16 +241,29 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
     } catch (error) {
       console.error('Error creating new patient session:', error);
       // You might want to show an error message to the user here
+    } finally {
+      setIsCreatingNewSession(false);
     }
   };
 
   // Determine when to show New Patient button (only for authenticated users with content)
-  const showNewPatientButton = isSignedIn && hasContent;
+  const showNewPatientButton = isSignedIn; // Show New Session even in default view
 
   // Minimal state - just the generate button
   if (shouldShowMinimal) {
     return (
       <div className="flex flex-col gap-2">
+        {isCreatingNewSession && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20">
+            <div className="flex items-center gap-3 rounded-md bg-white px-4 py-3 shadow">
+              <svg className="size-4 animate-spin text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+              </svg>
+              <span className="text-sm text-slate-700">Creating new session...</span>
+            </div>
+          </div>
+        )}
         <div className="flex gap-2">
           <Button
             type="button"
@@ -274,14 +289,14 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
           {showNewPatientButton && (
             <Button
               type="button"
-              variant="outline"
+              variant="default"
               onClick={handleNewPatient}
-              disabled={!hasAnyState}
-              className="h-10 border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
-              title="Save notes and start new patient session"
-              aria-label="Save notes and start new patient session"
+              disabled={!canCreateSession || isCreatingNewSession}
+              className="h-10 bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              title="Create a new session"
+              aria-label="Create a new session"
             >
-              Save
+              New Session
             </Button>
           )}
         </div>
@@ -295,6 +310,17 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
   // Expanded state - full interface
   return (
     <div className="flex h-full flex-col">
+      {isCreatingNewSession && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20">
+          <div className="flex items-center gap-3 rounded-md bg-white px-4 py-3 shadow">
+            <svg className="size-4 animate-spin text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+            </svg>
+            <span className="text-sm text-slate-700">Creating new session...</span>
+          </div>
+        </div>
+      )}
       {error && <div className="text-sm text-red-600">{error}</div>}
       <div className="flex flex-1 flex-col space-y-3">
         <textarea
@@ -347,14 +373,14 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
           {showNewPatientButton && (
             <Button
               type="button"
-              variant="outline"
+              variant="default"
               onClick={handleNewPatient}
-              disabled={!hasAnyState}
-              className="h-9 border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
-              title="Save notes and start new patient session"
-              aria-label="Save notes and start new patient session"
+              disabled={!canCreateSession || isCreatingNewSession}
+              className="h-9 bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              title="Create a new session"
+              aria-label="Create a new session"
             >
-              Save
+              New Session
             </Button>
           )}
         </div>
