@@ -341,7 +341,7 @@ export const useSimpleAbly = ({
               break;
             case 'transcription_status':
               if (!isMobile && data.state === 'flushed') {
-                callbacksRef.current.onTranscriptionFlushed?.(data.sessionId, (data as any).lastChunkId);
+                callbacksRef.current.onTranscriptionFlushed?.(data.sessionId ?? undefined, (data as any).lastChunkId);
               }
               break;
 
