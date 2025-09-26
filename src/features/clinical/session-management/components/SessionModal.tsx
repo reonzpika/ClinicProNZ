@@ -41,6 +41,8 @@ export const SessionModal: React.FC<SessionModalProps> = ({
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
+  const [switchingId, setSwitchingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Load sessions when modal opens
   useEffect(() => {
@@ -92,11 +94,14 @@ export const SessionModal: React.FC<SessionModalProps> = ({
 
   const handleSwitchSession = async (sessionId: string) => {
     try {
+      setSwitchingId(sessionId);
       await switchToPatientSession(sessionId);
       onSessionSelected(sessionId);
       onClose();
     } catch (error) {
       console.error('Failed to switch patient session:', error);
+    } finally {
+      setSwitchingId(null);
     }
   };
 
@@ -105,11 +110,13 @@ export const SessionModal: React.FC<SessionModalProps> = ({
       try {
         // If this was the only session before deletion, close the modal after delete
         const wasLastSession = Array.isArray(patientSessions) && patientSessions.length <= 1;
+        setDeletingId(sessionId);
         // Use unified helper when available to also switch if deleting current
         if (!(await deleteSessionAndMaybeSwitch(sessionId))) {
           await deletePatientSession(sessionId);
         }
         setDeleteConfirmId(null);
+        setDeletingId(null);
         // If we deleted the current session, modal should stay open for user to select another
         // Updated behavior: if it was the last session, server creates a new one and we auto-close
         if (wasLastSession) {
@@ -117,6 +124,7 @@ export const SessionModal: React.FC<SessionModalProps> = ({
         }
       } catch (error) {
         console.error('Failed to delete patient session:', error);
+        setDeletingId(null);
       }
     } else {
       setDeleteConfirmId(sessionId);
@@ -312,28 +320,32 @@ export const SessionModal: React.FC<SessionModalProps> = ({
                                 onClick={() => handleSwitchSession(session.id)}
                                 size="sm"
                                 variant="outline"
+                                disabled={switchingId === session.id}
                               >
-                                Switch
+                                {switchingId === session.id ? 'Switching...' : 'Switch'}
                               </Button>
                             )}
                             <Button
                               onClick={() => handleDeleteSession(session.id)}
                               size="sm"
                               variant="outline"
+                              disabled={deletingId === session.id}
                               className={isDeleteConfirm
                                 ? 'border-red-300 bg-red-50 text-red-700 hover:bg-red-100'
                                 : 'text-red-600 hover:bg-red-50 hover:text-red-700'}
                             >
-                              {isDeleteConfirm
-                                ? (
-                                    <>
-                                      <Trash2 className="mr-1 size-3" />
-                                      Confirm
-                                    </>
-                                  )
-                                : (
-                                    <Trash2 className="size-3" />
-                                  )}
+                              {deletingId === session.id
+                                ? 'Deleting...'
+                                : isDeleteConfirm
+                                  ? (
+                                      <>
+                                        <Trash2 className="mr-1 size-3" />
+                                        Confirm
+                                      </>
+                                    )
+                                  : (
+                                      <Trash2 className="size-3" />
+                                    )}
                             </Button>
                           </div>
                         </div>
