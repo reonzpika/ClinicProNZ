@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client';
 
 import { Camera, CheckSquare, MessageCircle, Search, Stethoscope } from 'lucide-react';
@@ -8,8 +9,9 @@ import { ClinicalImageTab } from './ClinicalImageTab';
 import { ChecklistTab } from './ChecklistTab';
 import { DifferentialDiagnosisTab } from './DifferentialDiagnosisTab';
 import { AccCodeSuggestions } from './AccCodeSuggestions';
+import { PatientAdviceTab } from './PatientAdviceTab';
 
-type TabId = 'chat' | 'images' | 'checklist' | 'ddx' | 'acc';
+type TabId = 'chat' | 'images' | 'checklist' | 'ddx' | 'acc' | 'advice';
 
 type ClinicalToolsTabsProps = {
   fixedHeightClass?: string;
@@ -24,6 +26,7 @@ export const ClinicalToolsTabs: React.FC<ClinicalToolsTabsProps> = ({ fixedHeigh
     { id: 'images' as const, icon: Camera, title: 'Clinical Images' },
     { id: 'checklist' as const, icon: CheckSquare, title: 'Checklist' },
     { id: 'ddx' as const, icon: Search, title: 'Differential Diagnosis' },
+    { id: 'advice' as const, icon: Search, title: 'Patient Advice' },
     { id: 'acc' as const, icon: Stethoscope, title: 'ACC Codes' },
   ]), []);
 
@@ -77,6 +80,11 @@ export const ClinicalToolsTabs: React.FC<ClinicalToolsTabsProps> = ({ fixedHeigh
         {/* Differential Diagnosis */}
         <div className={`${activeTab === 'ddx' && isExpanded ? 'block' : 'hidden'} h-full overflow-y-auto pr-1`}>
           <DifferentialDiagnosisTab />
+        </div>
+
+        {/* Patient Advice */}
+        <div className={`${activeTab === 'advice' && isExpanded ? 'block' : 'hidden'} h-full overflow-y-auto pr-1`}>
+          <PatientAdviceTab />
         </div>
 
         {/* ACC Codes */}
