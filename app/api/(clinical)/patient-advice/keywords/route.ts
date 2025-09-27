@@ -41,16 +41,20 @@ function uniqLimit(arr: string[], cap: number): string[] {
 }
 
 function selectKeywords(parsed: any, cap: number): string[] {
-  // Prioritise complaint → medications → diagnoses → nonMed → screenings → other
-  const complaints = Array.isArray(parsed?.complaints) ? parsed.complaints : [];
-  const meds = Array.isArray(parsed?.treatments?.medications) ? parsed.treatments.medications : [];
-  const diagnoses = Array.isArray(parsed?.diagnoses) ? parsed.diagnoses : [];
-  const nonMed = Array.isArray(parsed?.treatments?.nonMed) ? parsed.treatments.nonMed : [];
-  const screenings = Array.isArray(parsed?.screenings) ? parsed.screenings : [];
-  const other = Array.isArray(parsed?.other) ? parsed.other : [];
-  const suggested = Array.isArray(parsed?.topKeywords) ? parsed.topKeywords : [];
+  // New priority based on user rules: diagnoses (max 3) → symptom labels (if needed) → screenings/vaccinations/self-care → other
+  const diagnoses: string[] = Array.isArray(parsed?.diagnoses) ? parsed.diagnoses : [];
+  const otherDiagnoses: string[] = Array.isArray(parsed?.otherDiagnoses) ? parsed.otherDiagnoses : [];
+  const symptomLabels: string[] = Array.isArray(parsed?.symptomLabels) ? parsed.symptomLabels : [];
+  const screenings: string[] = Array.isArray(parsed?.related?.screenings) ? parsed.related.screenings : [];
+  const vaccinations: string[] = Array.isArray(parsed?.related?.vaccinations) ? parsed.related.vaccinations : [];
+  const selfCare: string[] = Array.isArray(parsed?.related?.selfCare) ? parsed.related.selfCare : [];
+  const suggested: string[] = Array.isArray(parsed?.topKeywords) ? parsed.topKeywords : [];
 
-  const ordered = [suggested, complaints, meds, diagnoses, nonMed, screenings, other].flat();
+  const primaryDiagnoses = uniqLimit(diagnoses, 3);
+  const fillWithSymptoms = primaryDiagnoses.length < 3 ? uniqLimit(symptomLabels, 3 - primaryDiagnoses.length) : [];
+  const supportive = uniqLimit([...screenings, ...vaccinations, ...selfCare], 5);
+
+  const ordered = [primaryDiagnoses, fillWithSymptoms, supportive, otherDiagnoses, suggested].flat();
   return uniqLimit(ordered, cap);
 }
 
@@ -81,28 +85,31 @@ export async function POST(req: Request) {
     const openai = getOpenAI();
     const model = process.env.PATIENT_ADVICE_MODEL || 'gpt-5-mini';
 
-    const system = `You extract concise, patient-friendly search keywords from clinical notes to find content on healthify.nz.
-Rules:
-- Output STRICT JSON only. No prose. Use this schema:
-  {
-    "complaints": string[],
-    "diagnoses": string[],
-    "treatments": { "medications": string[], "nonMed": string[] },
-    "screenings": string[],
-    "other": string[],
-    "topKeywords": string[]
-  }
-- Make terms lay-friendly, lowercase; prefer common NZ phrasing.
-- If a category is absent in the note, return an empty array for it.
-- Map clinical terms to patient terms when suitable:
-  - "cervical swab" → "cervical screening"
-  - "gastro-oesophageal reflux" → "heartburn" (if appropriate)
-- Keep 1–3 words per keyword; no punctuation; dedupe.`.trim();
+    const system = `Identify patient-friendly diagnoses and closely related patient topics from clinical notes for search.
 
-    const user = `Extract search terms from this clinical note.
-Focus on: presenting complaint, diagnoses, treatments (medications and non-med), and relevant screenings.
-Also include helpful related terms if explicit items are missing.
-Return 3–5 best terms in "topKeywords", but include up to 10 in total across fields.
+Output STRICT JSON only. Use this schema (omit nothing; use empty arrays when absent):
+{
+  "diagnoses": string[],               // primary current/past problems and suspected diagnoses; patient-friendly, NZ spelling, singular; collapse subtypes unless anatomically specific (e.g., "breast pain")
+  "otherDiagnoses": string[],          // additional diagnoses beyond the top 1–3
+  "symptomLabels": string[],           // use symptoms (e.g., "headache") if no diagnoses are present
+  "related": {
+    "screenings": string[],            // e.g., "cervical screening"
+    "vaccinations": string[],          // e.g., "flu vaccine", "covid vaccine"
+    "selfCare": string[]               // e.g., "sleep hygiene", "jet lag management"
+  },
+  "topKeywords": string[]              // 3–5 best terms prioritising diagnoses (max 3), then symptom labels, then screenings/vaccinations/self-care
+}
+
+Rules:
+- Include current consultation problems and past medical history; include suspected/provisional diagnoses.
+- If no diagnosis is explicit, symptom-only labels are acceptable.
+- Infer likely diagnosis from medicines when reasonable (e.g., "citalopram" → "anxiety" or "depression").
+- Patient-friendly terms; NZ spelling; singular; 1–3 words; no qualifiers (no severity, laterality, timeframe). Keep anatomical specificity when it changes meaning (e.g., "breast pain").
+- Dedupe terms; keep total unique terms ≤ 10.`.trim();
+
+    const user = `Extract diagnoses from this clinical note. Be flexible: include suspected diagnoses and past medical problems if relevant. If diagnoses are unclear, provide symptom labels. Also add useful patient topics such as screenings, vaccinations, or self-care.
+
+Return JSON only per the schema above.
 
 NOTE:
 ${noteText}`;
