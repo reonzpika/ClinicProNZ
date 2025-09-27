@@ -1,95 +1,57 @@
 // @ts-nocheck
 import { NextResponse } from 'next/server';
+import OpenAI from 'openai';
 
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 import { cacheGet, cacheSet, hoursToSeconds } from '@/src/lib/cache/redis';
 
 type KeywordsResponse = {
   keywords: string[];
-  debug?: { scores?: Record<string, number> };
+  debug?: { parsed?: any };
 };
 
-function normaliseTerm(term: string): string {
-  return term
+function getOpenAI(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error('Missing OPENAI_API_KEY');
+  }
+  return new OpenAI({ apiKey, timeout: 30000 });
+}
+
+function normalise(term: string): string {
+  return String(term || '')
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9\s\-]/g, '')
     .replace(/\s+/g, ' ');
 }
 
-function mapClinicalToLay(term: string): string {
-  const t = normaliseTerm(term);
-  const map: Record<string, string> = {
-    'cervical swab': 'cervical screening',
-  };
-  return map[t] || t;
+function uniqLimit(arr: string[], cap: number): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const t of arr) {
+    const n = normalise(t);
+    if (!n) continue;
+    if (seen.has(n)) continue;
+    out.push(n);
+    seen.add(n);
+    if (out.length >= cap) break;
+  }
+  return out;
 }
 
-function scoreTerms(text: string): { term: string; score: number }[] {
-  const cleaned = String(text || '').toLowerCase();
-  const words = cleaned
-    .replace(/[^a-z0-9\s\-]/g, ' ')
-    .split(/\s+/)
-    .filter(Boolean);
+function selectKeywords(parsed: any, cap: number): string[] {
+  // Prioritise complaint → medications → diagnoses → nonMed → screenings → other
+  const complaints = Array.isArray(parsed?.complaints) ? parsed.complaints : [];
+  const meds = Array.isArray(parsed?.treatments?.medications) ? parsed.treatments.medications : [];
+  const diagnoses = Array.isArray(parsed?.diagnoses) ? parsed.diagnoses : [];
+  const nonMed = Array.isArray(parsed?.treatments?.nonMed) ? parsed.treatments.nonMed : [];
+  const screenings = Array.isArray(parsed?.screenings) ? parsed.screenings : [];
+  const other = Array.isArray(parsed?.other) ? parsed.other : [];
+  const suggested = Array.isArray(parsed?.topKeywords) ? parsed.topKeywords : [];
 
-  const frequency: Record<string, number> = {};
-  for (const w of words) {
-    frequency[w] = (frequency[w] || 0) + 1;
-  }
-
-  const candidates = new Map<string, number>();
-  const add = (term: string, base: number) => {
-    const n = mapClinicalToLay(term);
-    candidates.set(n, Math.max(candidates.get(n) || 0, base));
-  };
-
-  // Simple dictionary boosts for common patient topics/meds
-  const topicBoosts = ['anxiety', 'contraception', 'screening'];
-  for (const t of topicBoosts) {
-    if (cleaned.includes(t)) {
-      add(t, 0.8);
-    }
-  }
-
-  // Extract medication-like tokens (very lightweight heuristic)
-  const medHints = ['pam', 'pram', 'zine', 'zole', 'cycline'];
-  for (const w of Object.keys(frequency)) {
-    if (w.length > 4 && medHints.some(s => w.endsWith(s))) {
-      add(w, 0.75);
-    }
-  }
-
-  // Specific terms in sample
-  const explicitTerms = ['citalopram', 'doxycycline', 'lorazepam', 'contraceptive', 'contraception', 'anxiety', 'cervical swab'];
-  for (const t of explicitTerms) {
-    if (cleaned.includes(t)) {
-      add(t, 0.9);
-    }
-  }
-
-  // Frequency-based generic scoring as fallback
-  for (const [w, f] of Object.entries(frequency)) {
-    if (w.length < 4) continue;
-    const score = Math.min(0.6, Math.log(1 + f) / 2);
-    if (score > 0.2) {
-      add(w, score);
-    }
-  }
-
-  const list = Array.from(candidates.entries()).map(([term, score]) => ({ term, score }));
-  // Merge simple singular/plural variants
-  const merged = new Map<string, number>();
-  for (const { term, score } of list) {
-    const base = term.endsWith('s') ? term.slice(0, -1) : term;
-    const key = base;
-    merged.set(key, Math.max(merged.get(key) || 0, score));
-  }
-
-  const scored = Array.from(merged.entries())
-    .map(([term, score]) => ({ term, score }))
-    .sort((a, b) => b.score - a.score);
-
-  return scored;
+  const ordered = [suggested, complaints, meds, diagnoses, nonMed, screenings, other].flat();
+  return uniqLimit(ordered, cap);
 }
 
 export async function POST(req: Request) {
@@ -109,44 +71,86 @@ export async function POST(req: Request) {
     const cap = Math.max(1, Math.min(10, Number(max) || 10));
     const ttlHrs = Number(process.env.SEARCH_CACHE_TTL_HOURS || '72');
     const ttl = hoursToSeconds(ttlHrs);
+    const cacheKey = `advice:kw:v2:${Buffer.from(noteText).toString('base64').slice(0, 64)}:cap:${cap}`;
 
-    const key = `advice:kw:v1:${Buffer.from(noteText).toString('base64').slice(0, 64)}`;
-    const cached = await cacheGet<KeywordsResponse>(key);
-    if (cached && Array.isArray(cached.keywords) && cached.keywords.length > 0) {
-      return NextResponse.json(cached as KeywordsResponse);
+    const cached = await cacheGet<KeywordsResponse>(cacheKey);
+    if (cached && Array.isArray(cached.keywords)) {
+      return NextResponse.json(cached);
     }
 
-    const scored = scoreTerms(noteText);
-    const preferred = ['contraception', 'citalopram', 'doxycycline', 'lorazepam', 'anxiety', 'cervical screening'];
+    const openai = getOpenAI();
+    const model = process.env.PATIENT_ADVICE_MODEL || 'gpt-5-mini';
 
-    // Prioritise preferred terms when present, then fill with top-scored unique terms
-    const out: string[] = [];
-    const seen = new Set<string>();
-    for (const t of preferred) {
-      if (noteText.toLowerCase().includes(t.split(' ')[0])) {
-        const n = mapClinicalToLay(t);
-        if (!seen.has(n)) {
-          out.push(n);
-          seen.add(n);
-        }
+    const system = `You extract concise, patient-friendly search keywords from clinical notes to find content on healthify.nz.
+Rules:
+- Output STRICT JSON only. No prose. Use this schema:
+  {
+    "complaints": string[],
+    "diagnoses": string[],
+    "treatments": { "medications": string[], "nonMed": string[] },
+    "screenings": string[],
+    "other": string[],
+    "topKeywords": string[]
+  }
+- Make terms lay-friendly, lowercase; prefer common NZ phrasing.
+- If a category is absent in the note, return an empty array for it.
+- Map clinical terms to patient terms when suitable:
+  - "cervical swab" → "cervical screening"
+  - "gastro-oesophageal reflux" → "heartburn" (if appropriate)
+- Keep 1–3 words per keyword; no punctuation; dedupe.`.trim();
+
+    const user = `Extract search terms from this clinical note.
+Focus on: presenting complaint, diagnoses, treatments (medications and non-med), and relevant screenings.
+Also include helpful related terms if explicit items are missing.
+Return 3–5 best terms in "topKeywords", but include up to 10 in total across fields.
+
+NOTE:
+${noteText}`;
+
+    const resp = await openai.chat.completions.create({
+      model,
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: user },
+      ],
+      temperature: 0.1,
+      max_tokens: 400,
+    });
+
+    const content = resp?.choices?.[0]?.message?.content || '';
+    let parsed: any = null;
+    try {
+      // Try direct JSON parse
+      parsed = JSON.parse(content);
+    } catch {
+      // Fallback: find first JSON object substring
+      const m = content.match(/\{[\s\S]*\}/);
+      if (m) {
+        try { parsed = JSON.parse(m[0]); } catch {}
       }
-      if (out.length >= 5) break;
-    }
-    for (const { term } of scored) {
-      if (out.length >= cap) break;
-      if (term.length < 3) continue;
-      if (!seen.has(term)) {
-        out.push(term);
-        seen.add(term);
-      }
     }
 
-    const limited = out.slice(0, cap);
-    const response: KeywordsResponse = { keywords: limited };
-    await cacheSet(key, response, ttl);
+    let keywords: string[] = [];
+    if (parsed) {
+      keywords = selectKeywords(parsed, cap);
+    }
+
+    // Final guard: if empty, fallback to naive split on newlines/commas
+    if (!Array.isArray(keywords) || keywords.length === 0) {
+      const rough = content
+        .toLowerCase()
+        .replace(/[^a-z0-9\s,\-]/g, ' ')
+        .split(/[,\n]/)
+        .map(s => s.trim())
+        .filter(Boolean);
+      keywords = uniqLimit(rough, cap);
+    }
+
+    const response: KeywordsResponse = { keywords, debug: { parsed: parsed || null } };
+    await cacheSet(cacheKey, response, ttl);
     return NextResponse.json(response);
   } catch (error) {
-    return NextResponse.json({ keywords: [] } satisfies KeywordsResponse);
+    return NextResponse.json({ keywords: [] } satisfies KeywordsResponse, { status: 200 });
   }
 }
 
