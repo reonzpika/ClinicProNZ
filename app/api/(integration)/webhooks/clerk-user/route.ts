@@ -68,7 +68,7 @@ export async function POST(req: Request) {
 
       // Only assign basic tier on creation, not updates
       if (type === 'user.created') {
-        const client = clerkClient;
+        const client = await clerkClient();
         await client.users.updateUserMetadata(userId, {
           publicMetadata: {
             tier: 'basic',
