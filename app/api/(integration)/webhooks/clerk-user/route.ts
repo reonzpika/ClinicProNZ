@@ -121,3 +121,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ code: 'INTERNAL_ERROR', message: 'Failed to sync user' }, { status: 500 });
   }
 }
+
+// Lightweight reachability check for debugging
+export async function GET() {
+  try {
+    console.info('[Clerk Webhook] Ping');
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    return NextResponse.json({ ok: false }, { status: 500 });
+  }
+}
