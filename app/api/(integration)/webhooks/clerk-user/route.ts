@@ -28,11 +28,8 @@ export async function POST(req: Request) {
 
       try {
         const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
-        wh.verify(body, {
-          'svix-id': id,
-          'svix-signature': signature,
-          'svix-timestamp': timestamp,
-        });
+        // Pass the full Headers object for robust, case-insensitive lookup
+        wh.verify(body, req.headers as any);
       } catch (err) {
         console.error('Webhook verification failed:', err);
         return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
