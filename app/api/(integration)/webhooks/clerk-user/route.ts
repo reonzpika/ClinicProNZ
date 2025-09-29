@@ -9,6 +9,7 @@ export async function POST(req: Request) {
   try {
     const db = getDb();
     // Get headers and body for verification
+    const id = req.headers.get('svix-id');
     const signature = req.headers.get('svix-signature');
     const timestamp = req.headers.get('svix-timestamp');
     const body = await req.text();
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 });
       }
 
-      if (!signature || !timestamp) {
+      if (!id || !signature || !timestamp) {
         console.error('Missing webhook headers');
         return NextResponse.json({ error: 'Missing signature headers' }, { status: 400 });
       }
@@ -28,6 +29,7 @@ export async function POST(req: Request) {
       try {
         const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
         wh.verify(body, {
+          'svix-id': id,
           'svix-signature': signature,
           'svix-timestamp': timestamp,
         });
@@ -62,8 +64,7 @@ export async function POST(req: Request) {
 
       // Only assign basic tier on creation, not updates
       if (type === 'user.created') {
-        const client = await clerkClient();
-        await client.users.updateUserMetadata(userId, {
+        await clerkClient.users.updateUserMetadata(userId, {
           publicMetadata: {
             tier: 'basic',
             assignedAt: new Date().toISOString(),
