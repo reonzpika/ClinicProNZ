@@ -96,6 +96,12 @@ console.log('[Transcribe] model=', deepgramConfig.model);
     const paragraphs = alt?.paragraphs || [];
     const metadata = result?.metadata || {};
 
+    // Debug: log the full transcript for comparison with UI rendering
+    try {
+console.log('[Transcribe][DG] Transcript len=', (transcript || '').length);
+console.log('[Transcribe][DG] Transcript BEGIN\n' + (transcript || '') + '\n[Transcribe][DG] Transcript END');
+    } catch {}
+
     // NEW: Extract confidence and word-level data for enhanced transcription
     const confidence = alt?.confidence || null;
 
