@@ -1,8 +1,9 @@
 // @ts-nocheck
+// @ts-nocheck
 'use client';
 
 import { Camera, CheckSquare, MessageCircle, Search, Stethoscope } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { ChatbotWidget } from './ChatbotWidget';
 import { ClinicalImageTab } from './ClinicalImageTab';
@@ -10,6 +11,7 @@ import { ChecklistTab } from './ChecklistTab';
 import { DifferentialDiagnosisTab } from './DifferentialDiagnosisTab';
 import { AccCodeSuggestions } from './AccCodeSuggestions';
 import { PatientAdviceTab } from './PatientAdviceTab';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
 type TabId = 'chat' | 'images' | 'checklist' | 'ddx' | 'acc' | 'advice';
 
@@ -20,15 +22,26 @@ type ClinicalToolsTabsProps = {
 export const ClinicalToolsTabs: React.FC<ClinicalToolsTabsProps> = ({ fixedHeightClass = 'h-[400px]' }) => {
   const [activeTab, setActiveTab] = useState<TabId>('chat');
   const [isExpanded, setIsExpanded] = useState<boolean>(false); // default collapsed
+  const { getUserTier } = useClerkMetadata();
+  const isAdmin = getUserTier() === 'admin';
 
   const tabs = useMemo(() => ([
     { id: 'chat' as const, icon: MessageCircle, title: 'Chat' },
     { id: 'images' as const, icon: Camera, title: 'Clinical Images' },
-    { id: 'checklist' as const, icon: CheckSquare, title: 'Checklist' },
-    { id: 'ddx' as const, icon: Search, title: 'Differential Diagnosis' },
+    ...(isAdmin ? [{ id: 'checklist' as const, icon: CheckSquare, title: 'Checklist' }] : []),
+    ...(isAdmin ? [{ id: 'ddx' as const, icon: Search, title: 'Differential Diagnosis' }] : []),
     { id: 'advice' as const, icon: Search, title: 'Patient Advice' },
-    { id: 'acc' as const, icon: Stethoscope, title: 'ACC Codes' },
-  ]), []);
+    ...(isAdmin ? [{ id: 'acc' as const, icon: Stethoscope, title: 'ACC Codes' }] : []),
+  ]), [isAdmin]);
+
+  // Ensure active tab remains valid when admin status changes
+  useEffect(() => {
+    const available = tabs.map(t => t.id);
+    if (!available.includes(activeTab)) {
+      setActiveTab('chat');
+      setIsExpanded(false);
+    }
+  }, [tabs, activeTab]);
 
   const handleClick = (id: TabId) => {
     if (id === activeTab) {
