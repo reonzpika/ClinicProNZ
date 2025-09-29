@@ -86,8 +86,6 @@ export default function ConsultationPage() {
   // Mobile block modal - prevent mobile access to consultation
   const showMobileBlock = isMobile;
 
-  
-
   // Check for upgrade redirect
   const [showUpgradeNotification, setShowUpgradeNotification] = useState(false);
   const [upgradeLoading, setUpgradeLoading] = useState(false);
@@ -165,7 +163,7 @@ export default function ConsultationPage() {
       lastMobileStatusAtRef.current = Date.now();
     },
     onError: handleError,
-    
+
     isMobile: false,
     onTranscriptionsUpdated: async (signalledSessionId?: string) => {
       if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
@@ -280,7 +278,6 @@ export default function ConsultationPage() {
 
     // Now perform the actual session switch
     originalSwitchToPatientSession(sessionId, onSwitch);
-    
   }, [isRecording, mobileIsRecording, stopRecording, sendRecordingControl, originalSwitchToPatientSession]);
 
   useEffect(() => {
@@ -311,7 +308,6 @@ export default function ConsultationPage() {
         const sessionId = await ensureActiveSession();
         if (isMounted && sessionId) {
           hasEnsuredSessionRef.current = true;
-          
         }
       } finally {
         if (isMounted) {
@@ -356,7 +352,6 @@ export default function ConsultationPage() {
   };
 
   // Admin preview approval handler
-  
 
   // Session limits are now handled contextually when users try to perform actions
   // The UsageDashboard will show the current status and the modal will appear on 429 errors
@@ -409,10 +404,6 @@ export default function ConsultationPage() {
     };
   }, [sendRecordingControl]);
 
-  
-
-  
-
   // On mount, sync current session from server (server truth); create one if missing
   useEffect(() => {
     const fetchCurrent = async () => {
@@ -441,7 +432,6 @@ export default function ConsultationPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, userTier]);
 
-  
   // This eliminates dual broadcasting sources and race conditions
 
   const waitForTranscriptionFlush = async (sessionId: string, maxMs = 6000): Promise<void> => {
@@ -480,7 +470,9 @@ export default function ConsultationPage() {
   const handleFinish = async () => {
     setIsFinishing(true);
     // Keep documentation view until operations complete; do not flip modes early
-    try { pauseMutations?.(); } catch {}
+    try {
+ pauseMutations?.();
+} catch {}
     // Abort any in-flight note generation to prevent stream from repopulating notes
     if (genAbortRef.current) {
       try {
@@ -517,18 +509,24 @@ export default function ConsultationPage() {
       try {
         await switchToPatientSession(newSession.id as string);
         // Mirror Save flow: clear local stores AFTER switching to ensure a clean UI
-        try { resetConsultation(); } catch {}
+        try {
+ resetConsultation();
+} catch {}
       } catch {}
       // Soft-delete previous session in background (now it's not current)
       if (oldSessionId && deletePatientSession) {
-        try { deletePatientSession(oldSessionId); } catch {}
+        try {
+ deletePatientSession(oldSessionId);
+} catch {}
       }
     } catch (error) {
       console.error('Error finishing session:', error);
     } finally {
       // Release guard after state has settled and a tick has elapsed to avoid flash
       requestAnimationFrame(() => {
-        try { resumeMutations?.(); } catch {}
+        try {
+ resumeMutations?.();
+} catch {}
         setIsFinishing(false);
       });
     }
@@ -821,7 +819,7 @@ export default function ConsultationPage() {
                               <>
                                 {/* Clinical Documentation - Top Priority */}
                                 <div className="flex h-full flex-col">
-                                  
+
                                   <GeneratedNotes
                                     onGenerate={handleGenerateNotes}
                                     onFinish={handleFinish}
@@ -900,7 +898,7 @@ export default function ConsultationPage() {
                             <>
                               {/* Clinical Documentation - Top Priority */}
                               <div className="flex flex-1 flex-col">
-                                
+
                                 <GeneratedNotes
                                   onGenerate={handleGenerateNotes}
                                   onFinish={handleFinish}
@@ -1021,8 +1019,6 @@ export default function ConsultationPage() {
           </div>
         </div>
       )}
-
-      
 
       {/* Mobile Block Modal */}
       <MobileBlockModal isOpen={showMobileBlock} />

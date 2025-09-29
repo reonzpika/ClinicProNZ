@@ -3,7 +3,7 @@
 export const FeatureChat = () => {
   return (
     <section className="relative overflow-hidden bg-white py-16 sm:py-24 lg:py-28">
-      <div className="pointer-events-none absolute inset-0 opacity-[0.02] will-change-[transform]">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.02] will-change-transform">
         <div
           className="absolute inset-0"
           style={{
@@ -37,20 +37,18 @@ export const FeatureChat = () => {
             </ul>
             <p className="mt-3 text-sm text-gray-600">Not intended for clinical judgement or decision‑making. Verify with the cited sources.</p>
           </div>
-          <div className="[content-visibility:auto] [contain:layout_paint_style] lg:col-span-7">
+          <div className="[contain:layout_paint_style] [content-visibility:auto] lg:col-span-7">
             <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-md">
               <img
                 src="/images/landing-page/ClinicProChat.jpg"
                 alt="Chat UI showing an answer with Healthify and NZ Formulary references"
                 loading="lazy"
                 decoding="async"
-                  className="block w-full h-auto object-contain"
+                className="block h-auto w-full object-contain"
               />
             </div>
           </div>
         </div>
-
-        
 
         {/* How it works (slim) */}
         <div className="mb-12 rounded-2xl border border-gray-200 bg-white p-6 shadow-lg lg:mb-16">
@@ -58,26 +56,25 @@ export const FeatureChat = () => {
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
               <span className="font-medium text-gray-900">1.</span>
-              {' '}Type keywords or a question
+              {' '}
+Type keywords or a question
             </div>
             <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
               <span className="font-medium text-gray-900">2.</span>
-              {' '}Get a concise answer with NZ resource references
+              {' '}
+Get a concise answer with NZ resource references
             </div>
             <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-700">
               <span className="font-medium text-gray-900">3.</span>
-              {' '}Open sources in one click
+              {' '}
+Open sources in one click
             </div>
           </div>
         </div>
 
-        
-
-        
       </div>
     </section>
   );
 };
 
 export default FeatureChat;
-

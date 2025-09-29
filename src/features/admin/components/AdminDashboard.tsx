@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 
+import { CostTab } from '../cost-tracking/components/CostTab';
 import { AnalyticsView } from './AnalyticsView';
 import { MessagesView } from './MessagesView';
 
-type AdminView = 'overview' | 'messages' | 'analytics';
+type AdminView = 'overview' | 'messages' | 'analytics' | 'costs';
 
 export const AdminDashboard: React.FC = () => {
   const [currentView, setCurrentView] = useState<AdminView>('overview');
@@ -13,6 +14,7 @@ export const AdminDashboard: React.FC = () => {
   const navItems: { id: AdminView; label: string; icon: string }[] = [
     { id: 'messages', label: 'Messages', icon: '📧' },
     { id: 'analytics', label: 'Analytics', icon: '📊' },
+    { id: 'costs', label: 'Cost Tracking', icon: '💰' },
   ];
 
   const renderCurrentView = () => {
@@ -21,6 +23,8 @@ export const AdminDashboard: React.FC = () => {
         return <MessagesView />;
       case 'analytics':
         return <AnalyticsView />;
+      case 'costs':
+        return <CostTab />;
       case 'overview':
       default:
         return (

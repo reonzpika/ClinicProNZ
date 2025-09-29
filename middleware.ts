@@ -68,6 +68,12 @@ export default clerkMiddleware(async (auth, req) => {
     if (!resolvedAuth.userId) {
       return returnUnauthorized();
     }
+    // Forward user context for RBAC in route handlers
+    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set('x-user-id', resolvedAuth.userId);
+    requestHeaders.set('x-user-tier', userTier);
+    return NextResponse.next({ request: { headers: requestHeaders } });
   }
 
   // Protect /api/deepgram routes - require sign-in only
@@ -149,6 +155,24 @@ export default clerkMiddleware(async (auth, req) => {
     if (userTier !== 'admin') {
       return returnUnauthorized();
     }
+  }
+
+  // Protect /api/admin routes (admin only) and forward user context headers
+  if (req.nextUrl.pathname.startsWith('/api/admin')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return returnUnauthorized();
+    }
+    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
+    if (userTier !== 'admin') {
+      return returnUnauthorized();
+    }
+
+    // Inject headers so downstream handlers can read RBAC context
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set('x-user-id', resolvedAuth.userId);
+    requestHeaders.set('x-user-tier', userTier);
+    return NextResponse.next({ request: { headers: requestHeaders } });
   }
 
   // Protect /api/rag/query routes - require sign-in only

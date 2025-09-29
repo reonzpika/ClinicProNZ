@@ -1,249 +1,295 @@
-# Minimal Notes Tracking & Quality Assessment (Design)
+# ClinicPro QA Systems
 
-## 1. Purpose and Scope
+## Purpose
 
-**Goal:** Track and assess LLM-generated clinical notes with minimal overhead.
+This document defines the end-to-end Quality Assurance (QA) signals, tracking, and verification flows across ClinicPro, with emphasis on consultation workflows, transcription, generated notes, structured Additional Notes, and cost tracking systems.
 
-**Scope:** Notes only (not chat). Preview branch. No external observability tools. No per-template tokens. No LLM-judge.
+## Scope
 
-## 2. Outcomes
+- Desktop and mobile recording QA checkpoints
+- Transcription persistence and reconstruction checks
+- Consultation note generation QA
+- Additional Notes structure and persistence (implemented)
+- API cost tracking and monitoring (implemented)
+- API/DB invariants and monitoring hooks
 
-- **Auditability:** Full chain from inputs → model → output → edits
-- **Safety signal:** Hallucination/omission flags on content
-- **Medication safety (NZ):** Detect medication mentions in transcription; validate against NZ list
-- **User feedback:** Rating + comment on draft quality
+---
 
-## 3. High-Level Flow
+## Key Concepts
 
-1. GP clicks Generate → create trace (pending)
-2. Call LLM → store output → create revision v0
-3. Run heuristics → store hallucination/omission
-4. Run NZ med checks on transcription → store metrics and suspects
-5. Capture user rating/comment (before first edit)
-6. On edit → append revision v1+ with diffs; compute edit distance
+- "QA Signal": an observable state change or persisted artefact we can validate.
+- "Authoritative Store": server database (`patient_sessions`) is source of truth.
+- "Client Store": Zustand stores reflect UI state and must rehydrate from server accurately.
 
-## 4. Data Model (DB)
+---
 
-### `note_traces`
-- `id` (uuid)
-- `session_id` (uuid)
-- `user_id` (text)
-- `trace_id` (text, idempotency)
-- `created_at` (ts)
-- `model` (text)
-- `status` ('success'|'failed'|'partial')
-- `latency_ms` (int, nullable)
-- `tokens_used` (int, nullable)
-- `system_prompt` (text)
-- `user_prompt` (text)
-- `template_id` (text, nullable)
-- `output_text` (text)
-- `output_hash` (text)
-- `user_rating` (smallint 0–5, nullable)
-- `user_feedback` (text, nullable)
-- `user_feedback_at` (ts, nullable)
+## Data Model References
 
-### `note_revisions`
-- `id` (uuid)
-- `trace_id` (uuid, nullable)
-- `session_id` (uuid)
-- `user_id` (text)
-- `version_index` (int; 0=draft, 1+ edits)
-- `source` ('generated'|'manual')
-- `note_text` (text)
-- `diff` (text)
-- `created_at` (ts)
+- `database/schema/patient_sessions.ts`
+  - `transcriptions`: JSON string array of `{ id, text, timestamp, source, deviceId? }`
+  - `notes`: AI-generated consultation notes (string)
+  - `typedInput`: free text entered by user
+  - `templateId`: template used for generation
+  - `problems_text`: structured Additional Notes – Problems (string)
+  - `objective_text`: structured Additional Notes – Objective (string)
+  - `assessment_text`: structured Additional Notes – Assessment (string)
+  - `plan_text`: structured Additional Notes – Plan (string)
+  - `clinicalImages`: JSON string array of uploaded images
 
-### `trace_evals`
-- `id` (uuid)
-- `trace_id` (uuid)
-- `created_at` (ts)
-- `evaluator` ('heuristic')
-- `hallucination_flag` (bool)
-- `omission_flag` (bool)
-- `notes` (text, nullable)
-- `nz_meds_total` (int)
-- `nz_meds_matched` (int)
-- `nz_meds_unknown_count` (int)
-- `nz_meds_unknown_list` (jsonb array of strings)
-- `stt_meds_total` (int)
-- `stt_meds_matched_nz` (int)
-- `stt_meds_unknown_count` (int)
-- `stt_meds_suspects` (jsonb array of { heard, suggested, confidence })
-- `nz_meds_data_version` (text; e.g., "NZULM 2025-03")
+- `database/schema/api_usage_costs.ts` (NEW)
+  - `userId`: user identifier for cost attribution
+  - `sessionId`: patient session for cost attribution
+  - `apiProvider`: 'deepgram' | 'openai' | 'perplexity'
+  - `apiFunction`: 'transcription' | 'note_generation' | 'chat'
+  - `usageMetrics`: JSONB with provider-specific metrics (duration, tokens, requests)
+  - `costUsd`: calculated cost in USD (precision: 10,6)
 
-## 5. API/Service Behaviour
+- `src/types/consultation.ts`
+  - `PatientSession` mirrors above for client usage
 
-### Notes Generation (Server)
-- **On request:** create note_traces row (pending), save system/user prompts, model, template_id, timestamps
-- **After LLM:** update row with output_text, output_hash, status, latency_ms, tokens_used (if available)
-- Create note_revisions v0 (source='generated', diff='')
-- Run heuristics + NZ meds checks → write one trace_evals row
+---
 
-### User Feedback (Server)
-Accept rating/comment for the trace_id until first manual edit exists; afterwards return 409.
+## Consultation Additional Notes – Structured Tracking (Updated: field-based)
 
-### Manual Edits (Client → Server)
-**On blur:** create note_revisions v1+ with diff vs previous; compute draft→final edit distance (stored in memory or added later to traces if needed).
+Additional Notes now include a structured set of fields aligned with SOAP:
 
-## 6. Heuristics (Content-First)
+- Problems: free-form list or bullets of active problems/issues
+- Objective: vitals, exam findings, investigations
+- Assessment: working diagnoses/differentials
+- Plan: management plan including Rx, Ix, f/u, advice
 
-### Hallucination (Yes/No)
-- Extract entities/claims from note: medications (also captured by NZ scan), conditions/diagnoses, procedures/investigations, numbers/dates
-- Normalise and fuzzy-match against input text (transcription + typed input). If novel entity/claim lacks support in inputs → flag = true
-- **Examples:** "CT shows pneumonia" when transcript has no CT; "started warfarin" with no med initiation mentioned
+### UI and Behaviour
 
-### Omission (Yes/No)
-- From input, extract salient items: explicit requests/tasks (e.g., "sick note", "repeat script"), top N noun phrases/symptoms, obvious constraints
-- Check coverage: each salient item appears (or clear paraphrase) in note; compute coverage ratio; below threshold (e.g., <0.6) → flag = true
+- The `AdditionalNotes` experience is retained, persisted in four dedicated columns: `problems_text`, `objective_text`, `assessment_text`, `plan_text`.
+- For generation/export, these are compiled into a single text block (see Canonical Markers) to provide consistent downstream behaviour.
 
-### Notes
-Simple, deterministic patterns; fast (<50 ms target). No section parsing required.
+### Canonical Section Markers
 
-## 7. NZ Medication Checks (Transcription)
+Implementers MUST use the exact markers when composing the concatenated text so that other subsystems (e.g., AI prompts, exports) can parse reliably:
 
-### Dictionary
-NZULM generics + NZ brands; monthly refresh. Brand→generic map.
+```
+PROBLEMS:
+<free text>
 
-### Extraction
-- Normalise transcription; Aho–Corasick/trie exact scan for speed
-- Windowed n-grams (1–5) around cue words ("on", "taking", "prescribe", "mg", "tablet")
+OBJECTIVE:
+<free text>
 
-### Matching
-- **Exact match** → NZ-valid
-- **Fuzzy/phonetic** for near-miss (Levenshtein + Double-Metaphone); keep top 1–2 suggestions with confidence
-- Suspects recorded as { heard, suggested, confidence }; advisory only
+ASSESSMENT:
+<free text>
 
-### Outputs (stored on trace_evals)
-- `nz_meds_total`, `nz_meds_matched`, `nz_meds_unknown_count`, `nz_meds_unknown_list`
-- `stt_meds_total`, `stt_meds_matched_nz`, `stt_meds_unknown_count`, `stt_meds_suspects`
-- `nz_meds_data_version`
-
-## 8. Idempotency and Retries
-
-`trace_id` uniquely identifies a generation attempt.
-
-**Re-submit with same trace_id:**
-- If existing success → return existing record
-- If pending/failed → update in place
-
-## 9. Feature Flags and Config
-
-- **`NOTES_EVALS_ENABLED`:** enable heuristics and NZ meds checks (on in preview)
-
-### Thresholds (env or config)
-- Omission coverage threshold (default 0.6)
-- Fuzzy match threshold for meds (e.g., distance score ≥ 0.8)
-- Max suspects per trace (e.g., 5)
-
-## 10. Security, Privacy, Retention
-
-- Store raw prompts/outputs (approved)
-- Restrict access to staff/admin roles; tag environment (preview/prod)
-- **NZULM data:** store version/date; refresh monthly
-- **PHI:** all on your infra; no third-party submission in this design
-
-## 11. Performance Targets
-
-- Heuristics + meds checks add <50 ms p95 per generation
-- NZ meds scan: tens of ms on 2k-word transcripts (Aho–Corasick + limited fuzzy)
-
-## 12. Acceptance Tests
-
-### Tracing/Idempotency
-Same trace_id → one note_traces row, one v0 note_revisions.
-
-### Heuristics
-- **Hallucination:** crafted examples trigger true/false as expected
-- **Omission:** explicit request in input missing in note → true; covered → false
-
-### NZ Meds
-- "paracetamol", "ibuprofen", "escitalopram", "metformin" → matched
-- "acetaminophen", "Tylenol" → unknown
-- "Augmentin", "Panadol" → matched via brand map
-- **Suspect example:** heard "amoxycillin" → suggested "amoxicillin" (confidence high)
-
-### Feedback
-Rating/comment saved before first edit; blocked after first manual edit (409).
-
-### Revisions
-v0 draft present; v1+ edits with diffs; edit distance computed.
-
-## 13. Rollout Plan (Preview)
-
-- **Phase A:** DB migration + minimal tracing + v0 revision
-- **Phase B:** Heuristics + NZ meds checks
-- **Phase C:** Manual edit revisions + feedback capture
-
-Observe metrics; tune thresholds; promote.
-
-## 14. Risks and Mitigations
-
-### False Positives on Hallucination/Omission
-Keep thresholds conservative; allow manual override later (not in scope).
-
-### NZ List Coverage
-Start with NZULM + common brands; monitor unknown list to patch aliases.
-
-### Tokens_used Availability
-If provider doesn't return tokens on stream, approximate via tokenizer (optional later).
-
-## 15. Open Items / Uncertainties
-
-### Input Scope for Checks
-**Assumption:** compare against both transcription and typed input. [Confirm]
-
-### NZULM Licensing/Source
-**Assumption:** permissible to host a local copy for matching. [Confirm]
-
-### Fuzzy Thresholds
-**Defaults proposed:** (coverage 0.6; med match 0.8). Adjust after preview telemetry. [Tunable]
-
-### Edit Distance Storage
-**Assumption:** compute and store later as needed (not required in v1 schema). [Optional]
-
-### Feedback UX
-**Assumption:** 0–5 stars + optional short comment, shown after generation, dismissible. [Confirm]
-
-## 16. Example Trace Payload
-
-```json
-{
-  "trace_id": "gen_1234",
-  "session_id": "sess_abc",
-  "user_id": "user_gp1",
-  "created_at": "2025-09-02T21:10:00Z",
-  "model": "gpt-4.1-mini",
-  "system_prompt": "You are a medical scribe...",
-  "user_prompt": "TEMPLATE: ...\\nTRANSCRIPTION: ...",
-  "template_id": "tpl_default_gp",
-  "output_text": "S: ...\\nO: ...\\nA+P: ...",
-  "status": "success",
-  "latency_ms": 1100,
-  "tokens_used": 900,
-  "user_rating": 5
-}
+PLAN:
+<free text>
 ```
 
-## 17. Example Eval Record (Heuristics + NZ Meds)
+Notes:
+- Sections may be omitted if empty; preserve order when present.
+- Do not invent content; only include explicitly captured data.
 
-```json
-{
-  "trace_id": "gen_1234",
-  "evaluator": "heuristic",
-  "created_at": "2025-09-02T21:10:02Z",
-  "hallucination_flag": false,
-  "omission_flag": true,
-  "nz_meds_total": 3,
-  "nz_meds_matched": 2,
-  "nz_meds_unknown_count": 1,
-  "nz_meds_unknown_list": ["acetaminophen"],
-  "stt_meds_total": 4,
-  "stt_meds_matched_nz": 3,
-  "stt_meds_unknown_count": 1,
-  "stt_meds_suspects": [
-    { "heard": "amoxycillin", "suggested": "amoxicillin", "confidence": 0.93 }
-  ],
-  "nz_meds_data_version": "NZULM 2025-03"
-}
-```
+### API/Generation Integration
+
+- `app/(clinical)/consultation/page.tsx` composes `rawConsultationData` by combining main input (audio transcript or typed input) with a concatenation of `problems_text`, `objective_text`, `assessment_text`, `plan_text` (when present), using the canonical headers.
+- `app/api/(clinical)/consultation/notes/route.ts` consumes the combined `rawConsultationData` and templates map SOAP (see `systemPrompt.ts`).
+- No API shape change is required; structured Additional Notes are sourced from the four dedicated fields.
+
+### Validation Rules
+
+At save time or generation time, apply lightweight validation:
+- Allow empty sections; trim trailing whitespace.
+- Enforce the section header tokens exactly as above if any SOAP-aligned content is detected.
+- Total concatenated length should remain within UI limits to avoid streaming truncation.
+
+---
+
+## API Cost Tracking System (IMPLEMENTED)
+
+### Purpose
+Real-time tracking and monitoring of API usage costs across Deepgram, OpenAI, and Perplexity services for administrative oversight and cost management.
+
+### Implementation Status: ✅ COMPLETE
+
+#### Cost Calculation Services
+- **Real-time pricing**: Updated 2024 API costs
+  - **Deepgram Nova-3**: $0.0043/minute
+  - **OpenAI GPT-5 mini**: $0.25/1M input, $2.00/1M output tokens
+  - **Perplexity Sonar**: $1/1M input, $1/1M output tokens + $5-12 per 1000 requests
+- **Precision**: 6 decimal places for accurate micro-cost tracking
+- **Service**: `src/features/admin/cost-tracking/services/costCalculator.ts`
+
+#### API Integration Points
+1. **Deepgram Transcription** (`/api/(clinical)/deepgram/transcribe/route.ts`)
+   - Tracks audio duration in minutes for both persist/non-persist modes
+   - Calculates cost: `duration × $0.0043`
+   - Records usage per user and session
+
+2. **OpenAI Note Generation** (`/api/(clinical)/consultation/notes/route.ts`)
+   - Tracks input/output tokens from streaming responses
+   - Calculates cost: `(input_tokens × $0.25/1M) + (output_tokens × $2.00/1M)`
+   - Supports cached input token pricing
+
+3. **Perplexity Chat** (`/api/(clinical)/consultation/chat/route.ts`)
+   - Tracks input/output tokens plus request counts
+   - Calculates cost: `(tokens × $1/1M) + (requests × $5-12/1000)`
+   - Context size awareness (low/medium/high)
+
+#### Admin Dashboard
+- **Location**: `/admin` → "Cost Tracking" tab
+- **Features**:
+  - Total cost metrics and breakdowns
+  - Per-user cost analysis with provider/function breakdowns
+  - Real-time cost visualization with charts and tables
+- **Access Control**: Admin-only via existing RBAC
+- **Components**: `src/features/admin/cost-tracking/components/`
+
+#### Database Storage
+- **Table**: `api_usage_costs` with foreign keys to users and sessions
+- **Retention**: Permanent storage for historical analysis
+- **Performance**: Indexed queries for efficient cost aggregation
+
+#### API Endpoints
+- **`/api/admin/cost-tracking/summary`**: Overall cost metrics
+- **`/api/admin/cost-tracking/users`**: Per-user cost breakdowns
+- **Protection**: Admin-only access with RBAC validation
+
+### Cost Tracking QA Signals
+- **API Call Logging**: Every API request logs cost data to database
+- **Error Handling**: Cost tracking failures don't affect core functionality
+- **Data Integrity**: Foreign key constraints ensure cost attribution accuracy
+- **Real-time Updates**: Admin dashboard reflects latest costs within 5 minutes
+
+---
+
+## QA Checkpoints
+
+### 1) Transcription Persistence
+- Each pause-triggered chunk is appended to `patient_sessions.transcriptions`.
+- QA: After Ably signal, desktop refetch joins chunks to reconstruct full transcript; compare against UI transcript buffer.
+
+### 2) Additional Notes Persistence (Updated)
+- Edits in `AdditionalNotes` save directly to `problems_text`, `objective_text`, `assessment_text`, `plan_text` via `PUT /api/patient-sessions`.
+- QA: Switch sessions then return; fields rehydrate identically and concatenated view preserves section order and content.
+
+### 3) Generated Notes
+- `POST /api/consultation/notes` streams AI output.
+- QA: Ensure `notes` saved to `patient_sessions.notes`. Reopen session: generated notes display matches last saved.
+
+### 4) Session Clearing
+- `POST /api/patient-sessions/clear` clears `notes`, `typedInput`, `transcriptions`, and all Additional Notes fields (`problems_text`, `objective_text`, `assessment_text`, `plan_text`).
+- QA: After clear, UI shows empty sources, and refetch confirms server-side cleared state.
+
+### 5) Mobile Images
+- Upload via presigned URLs; Ably signals desktop to refetch.
+- QA: `clinicalImages` JSON parses and images appear in session context.
+
+---
+
+## Implementation Status Summary
+
+### ✅ IMPLEMENTED FEATURES
+
+1. **API Cost Tracking System**
+   - Real-time cost calculation for all APIs (Deepgram, OpenAI, Perplexity)
+   - Database storage with user/session attribution
+   - Admin dashboard with metrics and breakdowns
+   - Per-user cost analysis and visualization
+
+2. **Structured Additional Notes**
+   - Four-field SOAP structure (Problems, Objective, Assessment, Plan)
+   - Database persistence in dedicated columns
+   - UI components for structured input
+   - Template compilation with SOAP sections
+
+3. **Core Session Management**
+   - Session creation, switching, and clearing functionality
+   - Transcription persistence and reconstruction
+   - Generated notes storage and retrieval
+   - Mobile image handling with Ably synchronization
+
+### 🔄 PARTIALLY IMPLEMENTED
+
+1. **QA Checkpoints**
+   - Basic persistence verification for sessions and notes
+   - Manual testing workflows for core functionality
+   - Server-client state synchronization via Ably
+
+### ❌ NOT YET IMPLEMENTED
+
+1. **Advanced Change Tracking**
+   - `diff-match-patch` integration for text change tracking
+   - Automated QA validation workflows
+   - Historical change audit trails
+
+2. **Clinical NLP Enhancement**
+   - `medspaCy` integration for clinical entity extraction
+   - Automated section detection and validation
+   - NZ-specific clinical terminology rules
+
+3. **Automated QA Signals**
+   - Systematic validation of transcription reconstruction
+   - Additional Notes persistence verification
+   - Cross-session state consistency checks
+
+### Recommended Next Steps
+
+1. **Immediate (High Priority)**
+   - Implement automated QA validation for session state consistency
+   - Add transcription reconstruction verification tests
+
+2. **Medium Term**
+   - Integrate `diff-match-patch` for change tracking
+   - Enhance Additional Notes validation with canonical markers
+
+3. **Long Term**
+   - Implement `medspaCy` for clinical text analysis
+   - Build comprehensive QA monitoring dashboard
+
+---
+
+## API Contracts (No Schema Change Required)
+
+- `PUT /api/patient-sessions` accepts `problems_text`, `objective_text`, `assessment_text`, `plan_text`, plus other session fields as applicable.
+- `GET /api/patient-sessions` returns these four fields (strings), along with `notes`, `typedInput`, and parsed `transcriptions`.
+- `POST /api/consultation/notes` expects `rawConsultationData` that may include structured Additional Notes sections (concatenated from the four fields).
+
+Legacy Notes:
+- Any legacy `consultationNotes` or `consultationItems` usage is deprecated and should not be written in new flows.
+
+---
+
+## Risks & Mitigations
+
+- Risk: Free-text Additional Notes without markers → not parsable into SOAP.
+  - Mitigation: Encourage UI affordances to insert section headers; gentle validation on save.
+- Risk: Over-long Additional Notes causing model truncation.
+  - Mitigation: Soft limits and character counters; advise summarising Problems.
+- Risk: Divergence of section labels.
+  - Mitigation: Enforce exact tokens: PROBLEMS, OBJECTIVE, ASSESSMENT, PLAN.
+
+---
+
+## Test Plan (Smoke)
+
+1. Enter audio transcript, add structured Additional Notes (all four sections), generate notes → AI includes content appropriately.
+2. Switch sessions and return → structured Additional Notes persist and render intact.
+3. Clear all → Additional Notes emptied; server confirms clear.
+4. Type-only flow → structured Additional Notes still used in generation.
+
+---
+
+## Future Enhancements
+
+### Cost Tracking Enhancements
+- Session-level cost analysis and breakdown
+- Cost alerts and budget thresholds
+- Historical cost trending and forecasting
+- Export cost reports for accounting/billing
+
+### QA System Enhancements
+- Automated QA test suites for session state consistency
+- Real-time validation of transcription reconstruction
+- Change tracking with `diff-match-patch` integration
+- Clinical NLP with `medspaCy` for entity extraction
+
+### Additional Notes Enhancements
+- Export helpers to render/parse the four Additional Notes fields with canonical headers
+- Automated validation of SOAP section markers
+- Template-driven section suggestions and auto-completion

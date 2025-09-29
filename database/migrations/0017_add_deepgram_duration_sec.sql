@@ -1,0 +1,1 @@
+ALTER TABLE "patient_sessions" ADD COLUMN IF NOT EXISTS "deepgram_duration_sec" integer DEFAULT 0 NOT NULL;

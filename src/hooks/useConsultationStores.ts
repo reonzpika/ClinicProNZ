@@ -32,7 +32,6 @@ export function useConsultationStores(): any {
   const transcriptionStore = useTranscriptionStore();
   const consultationStore = useConsultationStore();
   const { settings } = useUserSettingsStore();
-  
 
   // Server state via React Query - disable on mobile routes
   const isMobileRoute = pathname === '/mobile';
@@ -56,9 +55,15 @@ export function useConsultationStores(): any {
   const processingKey = '__clinicproMutationProcessingRef';
   const pausedKey = '__clinicproMutationPausedRef';
   const g: any = (typeof window !== 'undefined' ? window : globalThis) as any;
-  if (!g[queueKey]) g[queueKey] = { current: [] as UpdateOp[] };
-  if (!g[processingKey]) g[processingKey] = { current: false };
-  if (!g[pausedKey]) g[pausedKey] = { current: false };
+  if (!g[queueKey]) {
+ g[queueKey] = { current: [] as UpdateOp[] };
+}
+  if (!g[processingKey]) {
+ g[processingKey] = { current: false };
+}
+  if (!g[pausedKey]) {
+ g[pausedKey] = { current: false };
+}
   const mutationQueueRef = g[queueKey] as { current: UpdateOp[] };
   const processingRef = g[processingKey] as { current: boolean };
   const pausedRef = g[pausedKey] as { current: boolean };
@@ -83,10 +88,12 @@ export function useConsultationStores(): any {
     } finally {
       processingRef.current = false;
       if (!pausedRef.current && mutationQueueRef.current.length > 0) {
-        setTimeout(() => { processQueue().catch(() => {}); }, 0);
+        setTimeout(() => {
+          processQueue().catch(() => {});
+        }, 0);
       }
     }
-  }, [consultationStore.currentPatientSessionId, updatePatientSession]);
+  }, [consultationStore.currentPatientSessionId, updatePatientSession, mutationQueueRef, pausedRef, processingRef]);
 
   const coalesceIntoQueue = useCallback((updates: Partial<PatientSession>) => {
     const tail = mutationQueueRef.current[mutationQueueRef.current.length - 1];
@@ -95,15 +102,20 @@ export function useConsultationStores(): any {
     } else {
       mutationQueueRef.current.push({ updates });
     }
-  }, []);
+  }, [mutationQueueRef]);
 
   const enqueueUpdate = useCallback((updates: Partial<PatientSession>) => {
     coalesceIntoQueue(updates);
     Promise.resolve().then(() => processQueue());
   }, [coalesceIntoQueue, processQueue]);
 
-  const pauseMutations = useCallback(() => { pausedRef.current = true; }, []);
-  const resumeMutations = useCallback(() => { pausedRef.current = false; Promise.resolve().then(() => processQueue()); }, [processQueue]);
+  const pauseMutations = useCallback(() => {
+    pausedRef.current = true;
+  }, [pausedRef]);
+  const resumeMutations = useCallback(() => {
+    pausedRef.current = false;
+    Promise.resolve().then(() => processQueue());
+  }, [processQueue, pausedRef]);
 
   const ensureActiveSession = useCallback(async (): Promise<string | null> => {
     // If a previous ensure is in progress, await it
@@ -309,6 +321,8 @@ export function useConsultationStores(): any {
     patientSessions,
     ensureActiveSession,
     updatePatientSession,
+    consultationStore,
+    transcriptionStore,
   ]);
 
   const createPatientSession = useCallback(async (patientName: string, templateId?: string): Promise<PatientSession | null> => {
@@ -430,56 +444,54 @@ export function useConsultationStores(): any {
     return true;
   }, [consultationStore.currentPatientSessionId, enqueueUpdate]);
 
-  
-
   // New per-section save helpers
   const saveProblemsToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
     const id = consultationStore.currentPatientSessionId;
     if (!id) {
- return false;
-}
+      return false;
+    }
     enqueueUpdate({ problemsText: text } as any);
     try {
       consultationStore.clearProblemsDirty?.();
     } catch {}
     return true;
-  }, [consultationStore.currentPatientSessionId, enqueueUpdate]);
+  }, [enqueueUpdate, consultationStore]);
 
   const saveObjectiveToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
     const id = consultationStore.currentPatientSessionId;
     if (!id) {
- return false;
-}
+      return false;
+    }
     enqueueUpdate({ objectiveText: text } as any);
     try {
       consultationStore.clearObjectiveDirty?.();
     } catch {}
     return true;
-  }, [consultationStore.currentPatientSessionId, enqueueUpdate]);
+  }, [enqueueUpdate, consultationStore]);
 
   const saveAssessmentToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
     const id = consultationStore.currentPatientSessionId;
     if (!id) {
- return false;
-}
+      return false;
+    }
     enqueueUpdate({ assessmentText: text } as any);
     try {
       consultationStore.clearAssessmentDirty?.();
     } catch {}
     return true;
-  }, [consultationStore.currentPatientSessionId, enqueueUpdate]);
+  }, [enqueueUpdate, consultationStore]);
 
   const savePlanToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
     const id = consultationStore.currentPatientSessionId;
     if (!id) {
- return false;
-}
+      return false;
+    }
     enqueueUpdate({ planText: text } as any);
     try {
       consultationStore.clearPlanDirty?.();
     } catch {}
     return true;
-  }, [consultationStore.currentPatientSessionId, enqueueUpdate]);
+  }, [enqueueUpdate, consultationStore]);
 
   const saveTranscriptionsToCurrentSession = useCallback(async (): Promise<boolean> => {
     const id = consultationStore.currentPatientSessionId;
@@ -531,8 +543,6 @@ export function useConsultationStores(): any {
     // Sessions list
     patientSessions,
 
-    
-
     // Last generated tracking
     lastGeneratedTranscription: transcriptionStore.lastGeneratedTranscription,
     lastGeneratedTypedInput: transcriptionStore.lastGeneratedTypedInput,
@@ -550,7 +560,7 @@ export function useConsultationStores(): any {
       if (sid) {
         enqueueUpdate({ templateId: id } as any);
       }
-    }, [consultationStore.templateId, consultationStore.currentPatientSessionId, enqueueUpdate, consultationStore.setTemplateId]),
+    }, [enqueueUpdate, consultationStore]),
 
     // Actions - input/transcription
     setInputMode: transcriptionStore.setInputMode,
@@ -612,8 +622,6 @@ export function useConsultationStores(): any {
     setObjectiveText: consultationStore.setObjectiveText,
     setAssessmentText: consultationStore.setAssessmentText,
     setPlanText: consultationStore.setPlanText,
-
-    
 
     // Actions - last generated tracking
     setLastGeneratedInput: transcriptionStore.setLastGeneratedInput,

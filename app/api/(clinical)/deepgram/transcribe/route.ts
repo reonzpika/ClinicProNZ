@@ -3,11 +3,12 @@ import { Buffer } from 'node:buffer';
 import { createClient } from '@deepgram/sdk';
 import * as Ably from 'ably';
 import { getDb } from 'database/client';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { patientSessions, users } from '@/db/schema';
+import { apiUsageCosts, patientSessions, users } from '@/db/schema';
+import { calculateDeepgramCost } from '@/src/features/admin/cost-tracking/services/costCalculator';
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 import { createUserSession } from '@/src/lib/services/guest-session-service';
 
@@ -105,8 +106,35 @@ export async function POST(req: NextRequest) {
       ? utterances.flatMap((utterance: any) => utterance.words || [])
       : (alt?.words || []);
 
-    // If not persisting, just return the transcription as before
+    // If not persisting (desktop), increment per-session duration counter and return
     if (!persist) {
+      try {
+        const userId = context.userId;
+        if (userId) {
+          let currentSessionId: string | null = null;
+          try {
+            const current = await db
+              .select({ currentSessionId: users.currentSessionId })
+              .from(users)
+              .where(eq(users.id, userId))
+              .limit(1);
+            currentSessionId = current?.[0]?.currentSessionId || null;
+          } catch {}
+
+          if (currentSessionId) {
+            const incrementBy = Math.max(0, Math.round(Number(metadata?.duration || 0)));
+            if (incrementBy > 0) {
+              await db
+                .update(patientSessions)
+                .set({
+                  deepgramDurationSec: sql`${patientSessions.deepgramDurationSec} + ${incrementBy}` as unknown as number,
+                  updatedAt: new Date(),
+                } as any)
+                .where(and(eq(patientSessions.id, currentSessionId), eq(patientSessions.userId, userId)));
+            }
+          }
+        }
+      } catch {}
       const apiResponse = {
         transcript, // return plain transcript
         paragraphs,
@@ -194,6 +222,8 @@ export async function POST(req: NextRequest) {
       text: (transcript || '').trim(),
       timestamp: new Date().toISOString(),
       source: 'mobile' as const,
+      // Store duration so we can aggregate cost at recording stop
+      durationSec: Number(metadata?.duration || 0),
     };
     const updatedTranscriptions = [...existingTranscriptions, newEntry];
 
@@ -204,6 +234,36 @@ export async function POST(req: NextRequest) {
     try {
  console.log('[Transcribe] persisted chunk', { sessionId: currentSessionId, chunkId, textLen: newEntry.text.length });
 } catch {}
+
+    // Aggregate Deepgram cost per session by summing durations and upserting single row
+    try {
+      const totalDurationSec = updatedTranscriptions.reduce((sum: number, entry: any) => {
+        const d = Number(entry?.durationSec || 0);
+        return sum + (Number.isFinite(d) ? d : 0);
+      }, 0);
+      const totalMinutes = totalDurationSec / 60;
+
+      const breakdown = calculateDeepgramCost({ duration: totalMinutes } as any);
+
+      try {
+        await db.delete(apiUsageCosts).where(
+          and(
+            eq(apiUsageCosts.sessionId, currentSessionId),
+            eq(apiUsageCosts.apiProvider, 'deepgram'),
+            eq(apiUsageCosts.apiFunction, 'transcription'),
+          ),
+        );
+      } catch {}
+
+      await db.insert(apiUsageCosts).values({
+        userId,
+        sessionId: currentSessionId,
+        apiProvider: 'deepgram',
+        apiFunction: 'transcription',
+        usageMetrics: { duration: totalMinutes },
+        costUsd: breakdown.costUsd.toString(),
+      } as any);
+    } catch {}
 
     // Signal desktop via Ably (best-effort). Ensure single publish per chunk with helpful logs.
     try {
