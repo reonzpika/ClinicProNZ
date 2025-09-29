@@ -5,6 +5,8 @@ import { Webhook } from 'svix';
 
 import { users } from '@/db/schema/users';
 
+export const runtime = 'nodejs';
+
 export async function POST(req: Request) {
   try {
     const db = getDb();
