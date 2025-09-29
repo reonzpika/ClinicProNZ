@@ -114,15 +114,35 @@ Return JSON only per the schema above.
 NOTE:
 ${noteText}`;
 
-    const resp = await openai.chat.completions.create({
-      model,
-      messages: [
-        { role: 'system', content: system },
-        { role: 'user', content: user },
-      ],
-      temperature: 0.1,
-      max_tokens: 400,
-    });
+    let resp: any = null;
+    try {
+      resp = await openai.chat.completions.create({
+        model,
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: user },
+        ],
+        temperature: 0.1,
+        max_tokens: 400,
+      });
+    } catch (e: any) {
+      // Fallback to a widely available small model if the requested model is unavailable
+      const altModel = 'gpt-4o-mini';
+      try {
+        resp = await openai.chat.completions.create({
+          model: altModel,
+          messages: [
+            { role: 'system', content: system },
+            { role: 'user', content: user },
+          ],
+          temperature: 0.1,
+          max_tokens: 400,
+        });
+      } catch (e2: any) {
+        console.error('[PatientAdvice] Keyword extraction failed', { error: e2?.message || String(e2) });
+        return NextResponse.json({ error: 'Keyword extraction failed' }, { status: 503 });
+      }
+    }
 
     const content = resp?.choices?.[0]?.message?.content || '';
     let parsed: any = null;
@@ -156,8 +176,9 @@ ${noteText}`;
     const response: KeywordsResponse = { keywords, debug: { parsed: parsed || null } };
     await cacheSet(cacheKey, response, ttl);
     return NextResponse.json(response);
-  } catch (error) {
-    return NextResponse.json({ keywords: [] } satisfies KeywordsResponse, { status: 200 });
+  } catch (error: any) {
+    console.error('[PatientAdvice] Keywords endpoint error', { error: error?.message || String(error) });
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }
 
