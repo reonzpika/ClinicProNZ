@@ -15,6 +15,20 @@ export async function POST(req: Request) {
     const timestamp = req.headers.get('svix-timestamp');
     const body = await req.text();
 
+    // Debug: basic request diagnostics (no secrets)
+    const nowSec = Math.floor(Date.now() / 1000);
+    const tsNum = timestamp ? Number(timestamp) : undefined;
+    console.info('[Clerk Webhook] Incoming', {
+      path: '/api/webhooks/clerk-user',
+      env: process.env.NODE_ENV,
+      hasId: !!id,
+      hasSignature: !!signature,
+      hasTimestamp: !!timestamp,
+      bodyLength: body.length,
+      timestamp: timestamp,
+      skewSeconds: typeof tsNum === 'number' && Number.isFinite(tsNum) ? nowSec - tsNum : null,
+    });
+
     // Verify webhook signature in production
     if (process.env.NODE_ENV === 'production') {
       if (!process.env.CLERK_WEBHOOK_SECRET) {
@@ -35,15 +49,38 @@ export async function POST(req: Request) {
           'svix-signature': signature,
         });
       } catch (err) {
-        console.error('Webhook verification failed:', err);
+        console.error('[Clerk Webhook] Verification failed', {
+          message: err instanceof Error ? err.message : String(err),
+          idPresent: !!id,
+          signaturePresent: !!signature,
+          timestampPresent: !!timestamp,
+          secretConfigured: !!process.env.CLERK_WEBHOOK_SECRET,
+          secretLength: process.env.CLERK_WEBHOOK_SECRET?.length,
+        });
         return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
       }
     }
 
     // Parse the verified body
-    const { type, data: userData } = JSON.parse(body);
+    let parsed: any;
+    try {
+      parsed = JSON.parse(body);
+    } catch (e) {
+      console.error('[Clerk Webhook] Invalid JSON body', {
+        message: e instanceof Error ? e.message : String(e),
+      });
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    }
+
+    const { type, data: userData } = parsed;
     const userId = userData.id;
     const email = userData.email_addresses?.[0]?.email_address || null;
+
+    console.info('[Clerk Webhook] Event parsed', {
+      type,
+      userIdPresent: !!userId,
+      emailPresent: !!email,
+    });
 
     // Initialize DB only after successful verification and parsing
     const db = getDb();
