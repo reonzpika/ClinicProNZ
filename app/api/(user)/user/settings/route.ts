@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 import { userSettings } from '@/db/schema/user_settings';
+import { users } from '@/db/schema';
 
 // Default settings structure
 const DEFAULT_SETTINGS = {
@@ -24,6 +25,14 @@ export async function GET(req: Request) {
         message: 'You must be logged in to access user settings',
       }, { status: 401 });
     }
+
+    // Ensure users row exists to satisfy FK constraints
+    try {
+      await db
+        .insert(users)
+        .values({ id: userId })
+        .onConflictDoNothing();
+    } catch {}
 
     // Try to fetch settings
     const existing = await db
@@ -61,6 +70,14 @@ export async function POST(req: Request) {
         message: 'You must be logged in to update user settings',
       }, { status: 401 });
     }
+
+    // Ensure users row exists to satisfy FK constraints
+    try {
+      await db
+        .insert(users)
+        .values({ id: userId })
+        .onConflictDoNothing();
+    } catch {}
 
     const body = await req.json();
     const newSettings = body.settings;
