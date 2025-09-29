@@ -9,7 +9,6 @@ export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
   try {
-    const db = getDb();
     // Get headers and body for verification
     const id = req.headers.get('svix-id');
     const signature = req.headers.get('svix-signature');
@@ -46,6 +45,9 @@ export async function POST(req: Request) {
     const userId = userData.id;
     const email = userData.email_addresses?.[0]?.email_address || null;
 
+    // Initialize DB only after successful verification and parsing
+    const db = getDb();
+
     // Only require userId, email is optional
     if (!userId) {
       return NextResponse.json({ code: 'BAD_REQUEST', message: 'Missing user id' }, { status: 400 });
@@ -66,7 +68,7 @@ export async function POST(req: Request) {
 
       // Only assign basic tier on creation, not updates
       if (type === 'user.created') {
-        const client = await clerkClient();
+        const client = clerkClient;
         await client.users.updateUserMetadata(userId, {
           publicMetadata: {
             tier: 'basic',
