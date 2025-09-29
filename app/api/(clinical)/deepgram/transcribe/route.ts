@@ -129,6 +129,13 @@ export async function POST(req: NextRequest) {
 
     // Ensure a current session exists for the user
     let currentSessionId: string | null = null;
+    // Ensure users row exists to satisfy FK constraints
+    try {
+      await db
+        .insert(users)
+        .values({ id: userId })
+        .onConflictDoNothing();
+    } catch {}
     try {
       const current = await db
         .select({ currentSessionId: users.currentSessionId })

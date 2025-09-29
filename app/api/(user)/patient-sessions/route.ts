@@ -104,6 +104,14 @@ export async function POST(req: NextRequest) {
 
     const { patientName, templateId } = await req.json();
 
+    // Ensure users row exists to satisfy FK constraints (defensive against webhook delays)
+    try {
+      await db
+        .insert(users)
+        .values({ id: userId })
+        .onConflictDoNothing();
+    } catch {}
+
     if (!patientName || !patientName.trim()) {
       return NextResponse.json({ error: 'Patient name is required' }, { status: 400 });
     }
