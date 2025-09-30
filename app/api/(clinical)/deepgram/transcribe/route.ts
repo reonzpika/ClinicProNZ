@@ -24,6 +24,8 @@ export const config = {
 export async function POST(req: NextRequest) {
   try {
     const db = getDb();
+    const debugEnabled = ((globalThis as any).process?.env?.DEBUG_TRANSCRIBE) === '1';
+    const reqId = Math.random().toString(36).slice(2, 10);
     // Extract RBAC context and check authentication
     const context = await extractRBACContext(req);
     const permissionCheck = await checkCoreAccess(context);
@@ -43,9 +45,12 @@ export async function POST(req: NextRequest) {
     // Parse query for persist mode
     const url = new URL(req.url);
     const persist = url.searchParams.get('persist') === 'true';
-    try {
- console.log('[Transcribe] persist=', persist);
-} catch {}
+    if (debugEnabled) {
+      try {
+        const hdrs = Object.fromEntries(req.headers.entries());
+        console.log('[Transcribe][req]', { reqId, persist, headers: { 'content-type': hdrs['content-type'], 'content-length': hdrs['content-length'], 'x-debug-request-id': hdrs['x-debug-request-id'] } });
+      } catch {}
+    }
 
     // Parse multipart form data using Web API
     const formData = await req.formData();
@@ -59,9 +64,16 @@ export async function POST(req: NextRequest) {
     // Convert file (Blob) to Buffer
     const arrayBuffer = await file.arrayBuffer();
     const audioBuffer = Buffer.from(arrayBuffer);
+    if (debugEnabled) {
+      try {
+        const view = new Uint8Array(audioBuffer.subarray(0, 8));
+        const headerHex = Array.from(view).map(b => b.toString(16).padStart(2, '0')).join('');
+        console.log('[Transcribe][file]', { reqId, name: (file as any)?.name, type: (file as any)?.type, size: (file as any)?.size, byteLength: audioBuffer.byteLength, headerHex });
+      } catch {}
+    }
 
     // Initialize Deepgram client
-    const deepgram = createClient(process.env.DEEPGRAM_API_KEY!);
+    const deepgram = createClient(((globalThis as any).process?.env?.DEEPGRAM_API_KEY) as string);
 
     // Transcribe the audio file - optimized for pre-recorded processing
     const deepgramConfig = {
@@ -76,18 +88,22 @@ export async function POST(req: NextRequest) {
       profanity_filter: false, // Medical context may include profanity in symptoms/conditions
       filler_words: false, // Remove "um", "uh", etc. for cleaner clinical notes
     };
-    try {
- console.log('[Transcribe] model=', deepgramConfig.model, 'language=', deepgramConfig.language);
-} catch {}
+    if (debugEnabled) {
+      try {
+        console.log('[Transcribe][dg:start]', { reqId, model: deepgramConfig.model, language: deepgramConfig.language });
+      } catch {}
+    }
+    const dgStart = Date.now();
     const { result, error } = await deepgram.listen.prerecorded.transcribeFile(
       audioBuffer,
       deepgramConfig,
     );
+    const dgMs = Date.now() - dgStart;
 
     if (error) {
       try {
- console.error('[Transcribe] Deepgram error', error);
-} catch {}
+        if (debugEnabled) console.error('[Transcribe][dg:error]', { reqId, dgMs, error });
+      } catch {}
       return NextResponse.json({ error: 'Transcription failed' }, { status: 500 });
     }
 
@@ -105,6 +121,12 @@ export async function POST(req: NextRequest) {
     const words = utterances.length > 0
       ? utterances.flatMap((utterance: any) => utterance.words || [])
       : (alt?.words || []);
+    if (debugEnabled) {
+      try {
+        const duration = Number(result?.metadata?.duration || 0);
+        console.log('[Transcribe][dg:ok]', { reqId, dgMs, duration, transcriptLen: (alt?.transcript || '').length, words: words.length, utterances: utterances.length, confidence });
+      } catch {}
+    }
 
     // If not persisting (desktop), increment per-session duration counter and return
     if (!persist) {
@@ -143,9 +165,11 @@ export async function POST(req: NextRequest) {
         confidence,
         words,
       } as any;
-      try {
- console.log('[Transcribe] non-persist response', { transcriptLen: (transcript || '').length });
-} catch {}
+      if (debugEnabled) {
+        try {
+          console.log('[Transcribe][resp:non-persist]', { reqId, transcriptLen: (transcript || '').length });
+        } catch {}
+      }
       return NextResponse.json(apiResponse);
     }
 
@@ -180,9 +204,9 @@ export async function POST(req: NextRequest) {
       try {
         await db.update(users).set({ currentSessionId }).where(eq(users.id, userId));
       } catch {}
-      try {
- console.log('[Transcribe] created new session', currentSessionId);
-} catch {}
+      if (debugEnabled) {
+        try { console.log('[Transcribe][session:new]', { reqId, sessionId: currentSessionId }); } catch {}
+      }
     }
 
     // Load existing transcriptions for the session
@@ -212,6 +236,9 @@ export async function POST(req: NextRequest) {
 
     // Skip empty chunks to avoid noisy updates
     if (!transcript || !transcript.trim()) {
+      if (debugEnabled) {
+        try { console.log('[Transcribe][persist:skip-empty]', { reqId, sessionId: currentSessionId }); } catch {}
+      }
       return NextResponse.json({ persisted: false, chunkId: null, sessionId: currentSessionId });
     }
 
@@ -231,9 +258,9 @@ export async function POST(req: NextRequest) {
       .update(patientSessions)
       .set({ transcriptions: JSON.stringify(updatedTranscriptions), updatedAt: new Date() })
       .where(and(eq(patientSessions.id, currentSessionId), eq(patientSessions.userId, userId)));
-    try {
- console.log('[Transcribe] persisted chunk', { sessionId: currentSessionId, chunkId, textLen: newEntry.text.length });
-} catch {}
+    if (debugEnabled) {
+      try { console.log('[Transcribe][persist:ok]', { reqId, sessionId: currentSessionId, chunkId, textLen: newEntry.text.length, durationSec: newEntry.durationSec }); } catch {}
+    }
 
     // Aggregate Deepgram cost per session by summing durations and upserting single row
     try {
@@ -267,8 +294,8 @@ export async function POST(req: NextRequest) {
 
     // Signal desktop via Ably (best-effort). Ensure single publish per chunk with helpful logs.
     try {
-      if (process.env.ABLY_API_KEY) {
-        const ably = new Ably.Rest({ key: process.env.ABLY_API_KEY });
+      if (((globalThis as any).process?.env?.ABLY_API_KEY)) {
+        const ably = new Ably.Rest({ key: ((globalThis as any).process?.env?.ABLY_API_KEY) as string });
         const channel = ably.channels.get(`user:${userId}`);
         const payload = {
           type: 'transcriptions_updated',
@@ -290,6 +317,9 @@ export async function POST(req: NextRequest) {
       paragraphs,
     });
   } catch (err: any) {
+    try {
+      if (((globalThis as any).process?.env?.DEBUG_TRANSCRIBE) === '1') console.error('[Transcribe][fatal]', { err: err?.message || String(err) });
+    } catch {}
     return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
   }
 }

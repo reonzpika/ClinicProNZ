@@ -120,34 +120,37 @@ function MobilePageContent() {
       try {
         const formData = new FormData();
         formData.append('audio', audioBlob, 'audio.webm');
+        const reqId = Math.random().toString(36).slice(2, 10);
 
         if (!isSignedIn || !userId) {
           setAuthError('Not signed in');
           return;
         }
 
+        const t0 = Date.now();
         const response = await fetch('/api/deepgram/transcribe?persist=true', {
           method: 'POST',
-          headers: createAuthHeadersForFormData(userId),
+          headers: { ...createAuthHeadersForFormData(userId), 'X-Debug-Request-Id': reqId },
           body: formData,
         });
+        const tMs = Date.now() - t0;
         if (!response.ok) {
           let bodyText = '';
           try {
  bodyText = await response.text();
 } catch {}
           try {
- console.warn('[Mobile] persist transcription non-OK', response.status, bodyText);
+            console.warn('[Mobile] persist transcription non-OK', { reqId, status: response.status, tMs, bodyText });
 } catch {}
           setAuthError(`Transcription failed: ${response.statusText}`);
         } else {
           try {
- console.debug('[Mobile] persist transcription OK', response.status);
+            console.debug('[Mobile] persist transcription OK', { reqId, status: response.status, tMs, blobSize: audioBlob.size });
 } catch {}
         }
       } catch (error) {
         try {
- console.error('[Mobile] persist transcription error', error);
+          console.error('[Mobile] persist transcription error', error);
 } catch {}
         setAuthError(`Recording error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
