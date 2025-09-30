@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
       utterances: true, // Enable word-level data with timestamps & confidence
       profanity_filter: false, // Medical context may include profanity in symptoms/conditions
       filler_words: false, // Remove "um", "uh", etc. for cleaner clinical notes
-    } as const;
+    };
     try {
  console.log('[Transcribe] model=', deepgramConfig.model);
 } catch {}
