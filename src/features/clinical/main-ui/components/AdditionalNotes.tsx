@@ -229,18 +229,19 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   }, [items]);
 
   // Debounced autosave per section
-  const debounceTimers = useRef<Record<string, any>>({});
+  type DebounceEntry = { id: ReturnType<typeof setTimeout>; token: number };
+  const debounceTimers = useRef<Record<string, DebounceEntry>>({});
   const debounceMs = 1200;
 
   const enqueueSave = (section: 'problems' | 'objective' | 'assessment' | 'plan') => {
     const key = `save-${section}`;
     if (debounceTimers.current[key]) {
-      clearTimeout(debounceTimers.current[key]);
+      clearTimeout(debounceTimers.current[key].id);
     }
     const token = Date.now();
-    debounceTimers.current[key] = setTimeout(async () => {
+    const id = setTimeout(async () => {
       // Only commit if this timer is still the latest for this key
-      if (debounceTimers.current[key] && (debounceTimers.current[key] as any).__token !== token) {
+      if (debounceTimers.current[key] && debounceTimers.current[key].token !== token) {
         return;
       }
       try {
@@ -259,8 +260,8 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             break;
         }
       } catch {}
-    }, debounceMs) as any;
-    (debounceTimers.current[key] as any).__token = token;
+    }, debounceMs) as unknown as ReturnType<typeof setTimeout>;
+    debounceTimers.current[key] = { id, token };
   };
 
   // Handle text changes per section
