@@ -228,6 +228,80 @@ export default function ConsultationPage() {
     },
   });
 
+  // Focus-reconcile: when tab becomes visible or on pageshow, fetch session and append missed chunks
+  useEffect(() => {
+    const reconcile = async () => {
+      try {
+        const activeSessionId = currentPatientSessionId;
+        if (!activeSessionId || !userId) {
+          return;
+        }
+        const response = await fetch(`/api/patient-sessions?sessionId=${encodeURIComponent(activeSessionId)}`, {
+          method: 'GET',
+          headers: createAuthHeaders(userId, userTier),
+        });
+        if (!response.ok) {
+          return;
+        }
+        const data = await response.json();
+        const session = (data?.sessions || [])[0] || null;
+        if (!session) {
+          return;
+        }
+        let chunks: any[] = [];
+        try {
+          chunks = typeof session.transcriptions === 'string' ? JSON.parse(session.transcriptions) : (session.transcriptions || []);
+        } catch {
+          chunks = [];
+        }
+        if (!Array.isArray(chunks) || chunks.length === 0) {
+          return;
+        }
+        // Determine new chunks by lastAppliedChunkIdRef
+        let startIndex = 0;
+        if (lastAppliedChunkIdRef.current) {
+          const idx = chunks.findIndex((c: any) => c.id === lastAppliedChunkIdRef.current);
+          startIndex = idx >= 0 ? idx + 1 : 0;
+        }
+        const newChunks = chunks.slice(startIndex).filter((c: any) => (c?.text || '').trim().length > 0);
+        if (newChunks.length > 0) {
+          const delta = newChunks.map((t: any) => (t?.text || '').trim()).join(' ').trim();
+          const prev = typeof transcription?.transcript === 'string' ? transcription.transcript : '';
+          const next = prev ? `${prev} ${delta}`.trim() : delta;
+          setTranscription(next, false, undefined, undefined);
+          lastAppliedChunkIdRef.current = chunks[chunks.length - 1]?.id || lastAppliedChunkIdRef.current;
+        } else {
+          lastAppliedChunkIdRef.current = chunks[chunks.length - 1]?.id || lastAppliedChunkIdRef.current;
+        }
+      } catch {}
+    };
+
+    const onVisibility = () => {
+      try {
+        if (document.visibilityState === 'visible') {
+          reconcile();
+        }
+      } catch {}
+    };
+    const onPageShow = () => {
+      reconcile();
+    };
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', onVisibility);
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('pageshow', onPageShow);
+    }
+    return () => {
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', onVisibility);
+      }
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('pageshow', onPageShow);
+      }
+    };
+  }, [currentPatientSessionId, userId, userTier, setTranscription, transcription]);
+
   // Auto-clear stale mobile recording state if no heartbeat/status received recently
   useEffect(() => {
     const interval = setInterval(() => {
