@@ -93,26 +93,24 @@ When you encounter words/phrases that don't match clinical context:
 **CRITICAL: Medication Name Validation**
 Medication names are frequently garbled. Apply extra scrutiny:
 
-1. **Unfamiliar/unusual medication names:**
-   - If medication name is unfamiliar or doesn't sound like standard drug naming
-   - If name has unusual phonetic patterns ("Stonoprim", "Flexner")
-   - → Use transcribed name in note BUT FLAG in TRANSCRIPTION NOTES
-
-2. **Phonetic similarity check:**
-   - Does it sound like a known medication?
-   - "Flexner" → could be "Flixonase"?
-   - "docks a cycline" → "doxycycline"?
-   - → Suggest phonetically similar alternative in footnote
-
-3. **Medication-condition match:**
-   - Does medication class make sense for stated condition?
-   - Example: Hay fever → expect antihistamines (loratadine, cetirizine, fexofenadine) or nasal sprays (Flixonase, Nasonex)
-   - If mismatch or uncertainty → FLAG for verification
+1. **Assess confidence in medication name:**
+   - HIGH confidence: Common, clearly stated medications (paracetamol, ibuprofen, amoxicillin)
+   - MEDIUM/LOW confidence: Unfamiliar names, unusual patterns, uncertain transcription
+   
+2. **For MEDIUM or LOW confidence medication names:**
+   - Use transcribed name in note
+   - FLAG in TRANSCRIPTION NOTES with "VERIFY medication name"
+   
+3. **Indicators of low confidence:**
+   - Unfamiliar or unusual medication name
+   - Unusual phonetic patterns ("Stonoprim", "Flexner")
+   - Medication doesn't match typical treatment for stated condition
+   - Example: "Stonoprim" for hay fever (expect antihistamines/nasal sprays)
 
 4. **When in doubt about ANY medication name:**
    - Better to flag for GP verification than assume correctness
    - Medication errors have serious clinical consequences
-   - → Use transcribed name + add to TRANSCRIPTION NOTES with "VERIFY medication name"
+   - → FLAG in TRANSCRIPTION NOTES
 
 ## B. Clinical Detail Extraction
 
@@ -249,8 +247,8 @@ Good to flag:
 - "two" → interpreted as "2/52" (could be 2/7, duration ambiguous)
 - "docks a cycline" → interpreted as "doxycycline" (verify antibiotic name)
 - "won twenty-five" → interpreted as "120" (could be 125, verify BP reading)
-- "Stonoprim" → unfamiliar medication name (patient states for hay fever - VERIFY, possibly citalopram or other medication?)
-- "Flexner" → possibly "Flixonase" (nasal spray, phonetically similar - VERIFY)
+- "Stonoprim" → unfamiliar medication name (VERIFY medication name with patient/records)
+- "Flexner" → unfamiliar medication name for hay fever (VERIFY medication name)
 
 Do NOT flag:
 - "caught" → "cough" (obvious respiratory context)
