@@ -76,7 +76,7 @@ const deepgramConfig = {
 };
 ```
 
-**Note:** Nova-3 model uses `keyterm` parameter (not `keywords`). Both accept same format: `["term:boost", ...]`
+**Note:** Nova-3 model uses `keyterm` parameter (not `keywords`). Format is array of terms without boost values: `["term1", "term2", ...]`
 
 ### By Category
 

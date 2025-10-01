@@ -20,11 +20,11 @@ export interface MedicalKeywordCategory {
 
 /**
  * Compiled keyword list ready for Deepgram API
- * Format: "term:boost"
+ * Format: Just the term (Nova-3 keyterm doesn't use boost values)
  */
 export function getDeepgramKeywords(): string[] {
   return MEDICAL_KEYWORDS.flatMap(category => 
-    category.keywords.map(keyword => `${keyword}:${category.boost}`)
+    category.keywords
   );
 }
 
@@ -35,17 +35,18 @@ export function getKeywordsByCategory(categories: string[]): string[] {
   return MEDICAL_KEYWORDS
     .filter(cat => categories.includes(cat.category))
     .flatMap(category => 
-      category.keywords.map(keyword => `${keyword}:${category.boost}`)
+      category.keywords
     );
 }
 
 /**
- * Add patient-specific medications with higher boost
+ * Add patient-specific medications (prepended for priority)
+ * Note: Nova-3 keyterm doesn't support boost values, but order matters
  */
 export function addPatientMedications(patientMeds: string[]): string[] {
   const baseKeywords = getDeepgramKeywords();
-  const patientKeywords = patientMeds.map(med => `${med}:3.0`);
-  return [...patientKeywords, ...baseKeywords];
+  // Prepend patient meds (order may affect priority)
+  return [...patientMeds, ...baseKeywords];
 }
 
 // =============================================================================
