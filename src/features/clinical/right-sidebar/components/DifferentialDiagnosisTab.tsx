@@ -24,85 +24,27 @@ type Problem = {
   customDdx: string;
 };
 
-const mockProblems: Problem[] = [
-  {
-    id: 'problem-1',
-    title: 'Headache',
-    customDdx: '',
-    diagnoses: [
-      {
-        id: 'dx-1-1',
-        condition: 'Tension-type headache',
-        probability: 'high',
-        selected: false,
-      },
-      {
-        id: 'dx-1-2',
-        condition: 'Migraine',
-        probability: 'medium',
-        selected: false,
-      },
-      {
-        id: 'dx-1-3',
-        condition: 'Cluster headache',
-        probability: 'low',
-        selected: false,
-      },
-    ],
-  },
-  {
-    id: 'problem-2',
-    title: 'Abdominal pain',
-    customDdx: '',
-    diagnoses: [
-      {
-        id: 'dx-2-1',
-        condition: 'Viral gastroenteritis',
-        probability: 'high',
-        selected: false,
-      },
-      {
-        id: 'dx-2-2',
-        condition: 'Peptic ulcer disease',
-        probability: 'medium',
-        selected: false,
-      },
-      {
-        id: 'dx-2-3',
-        condition: 'Appendicitis',
-        probability: 'low',
-        selected: false,
-      },
-    ],
-  },
-];
+const mockProblems: Problem[] = [];
 
 export const DifferentialDiagnosisTab: React.FC = () => {
   // Use ConsultationContext for adding items
   const { addConsultationItem } = useConsultationStores();
 
   const [problems, setProblems] = useState<Problem[]>(mockProblems);
-  const [expandedProblems, setExpandedProblems] = useState<string[]>(['problem-1', 'problem-2']);
+  const [expandedProblems, setExpandedProblems] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [hasGenerated, setHasGenerated] = useState(true); // Set to true since we have mock data
+  const [hasGenerated, setHasGenerated] = useState(false);
 
   const handleGenerateProblems = async () => {
     setIsGenerating(true);
 
-    // Simulate AI generation delay
+    // Placeholder: no mock data for now
     setTimeout(() => {
-      // In real implementation, this would call an API to analyse consultation data
-      // For now, just shuffle the existing problems
-      const shuffled = [...mockProblems].sort(() => Math.random() - 0.5);
-      setProblems(shuffled.map(problem => ({
-        ...problem,
-        diagnoses: problem.diagnoses.map(dx => ({ ...dx, selected: false })),
-        customDdx: '',
-      })));
-      setExpandedProblems(shuffled.map(p => p.id));
+      setProblems([]);
+      setExpandedProblems([]);
       setHasGenerated(true);
       setIsGenerating(false);
-    }, 2000);
+    }, 300);
   };
 
   const handleProblemToggle = (problemId: string) => {
