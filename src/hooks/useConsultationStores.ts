@@ -819,5 +819,16 @@ export function useConsultationStores(): any {
         return false;
       }
     },
+
+    // Clinical images actions
+    addClinicalImage: consultationStore.addClinicalImage,
+    removeClinicalImage: consultationStore.removeClinicalImage,
+    updateImageDescription: consultationStore.updateImageDescription,
+    saveClinicalImagesToCurrentSession: async (images: any[]) => {
+      const sid = consultationStore.currentPatientSessionId;
+      if (sid) {
+        await updatePatientSession(sid, { clinicalImages: images } as any);
+      }
+    },
   };
 }
