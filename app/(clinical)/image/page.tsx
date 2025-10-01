@@ -73,6 +73,9 @@ export default function ClinicalImagePage() {
   image: ServerImage | null;
   }>({ isOpen: false, image: null });
 
+  // Optimistic delete state
+  const [deletingImages, setDeletingImages] = useState<Set<string>>(new Set());
+
   // Mobile native capture multi-step state
   const [mobileStep, setMobileStep] = useState<'collect' | 'review'>('collect');
   type QueuedItem = { id: string; file: File; previewUrl: string };
@@ -175,12 +178,22 @@ export default function ClinicalImagePage() {
   }, [setAnalysisPrompt]);
 
   const handleDeleteImage = async (imageKey: string) => {
+    // Optimistic UI: immediately hide the image
+    setDeletingImages(prev => new Set(prev).add(imageKey));
+    
     try {
+      // Delete in background
       await deleteImage.mutateAsync(imageKey);
-      // Success handled by the mutation's onSuccess callback
+      // Successfully deleted - keep it hidden
     } catch (error) {
       console.error('Delete error:', error);
       setError(error instanceof Error ? error.message : 'Failed to delete image');
+      // On error, restore the image
+      setDeletingImages(prev => {
+        const updated = new Set(prev);
+        updated.delete(imageKey);
+        return updated;
+      });
     }
   };
 
@@ -608,6 +621,7 @@ Cancel
                         onDownload={handleDownloadImage}
                         onDelete={handleDeleteImage}
                         formatFileSize={formatFileSize}
+                        deletingImages={deletingImages}
                       />
                     )}
             </CardContent>
@@ -1120,6 +1134,7 @@ function ImageSectionsGrid({
   onDownload,
   onDelete,
   formatFileSize,
+  deletingImages,
 }: {
   images: ServerImage[];
   onAnalyze: (img: ServerImage) => void;
@@ -1127,9 +1142,13 @@ function ImageSectionsGrid({
   onDownload: (img: ServerImage) => void;
   onDelete: (imageKey: string) => void;
   formatFileSize: (bytes: number) => string;
+  deletingImages: Set<string>;
 }) {
+  // Filter out images being deleted for optimistic UI
+  const filteredImages = images.filter(img => !deletingImages.has(img.key));
+  
   // Partition images
-  const clinical = images.filter(i => i.source === 'clinical');
+  const clinical = filteredImages.filter(i => i.source === 'clinical');
   const noSession = clinical.filter(i => !i.sessionId);
   const bySession = clinical.filter(i => i.sessionId).reduce<Record<string, ServerImage[]>>((acc, img) => {
     const key = img.sessionId as string;
@@ -1139,7 +1158,7 @@ function ImageSectionsGrid({
     acc[key].push(img);
     return acc;
   }, {});
-  const legacyConsultations = images.filter(i => i.source === 'consultation');
+  const legacyConsultations = filteredImages.filter(i => i.source === 'consultation');
 
   const Section = ({ title, items }: { title: string; items: ServerImage[] }) => (
     items.length === 0

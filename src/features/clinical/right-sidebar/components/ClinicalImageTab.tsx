@@ -2,12 +2,13 @@
 
 import { useAuth } from '@clerk/nextjs';
 import { useQueryClient } from '@tanstack/react-query';
-import { Brain, Download, Expand, Loader2, Trash2 } from 'lucide-react';
+import { Brain, Download, Expand, Loader2, QrCode, Trash2 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
-import { imageQueryKeys, useImageUrl, useServerImages } from '@/src/hooks/useImageQueries';
+import { imageQueryKeys, useDeleteImage, useImageUrl, useServerImages } from '@/src/hooks/useImageQueries';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
@@ -20,12 +21,14 @@ function SessionImageTile({
   onAnalyze,
   onEnlarge,
   onDownload,
+  onDelete,
 }: {
   image: any;
   isAnalyzing: boolean;
   onAnalyze: () => void;
   onEnlarge: () => void;
   onDownload: () => void;
+  onDelete: () => void;
 }) {
   const { data: imageUrl } = useImageUrl(image.key);
   return (
@@ -68,6 +71,15 @@ function SessionImageTile({
         >
           <Download size={12} />
         </Button>
+        <Button
+          size="icon"
+          variant="outline"
+          onClick={onDelete}
+          className="size-7 text-red-600 hover:text-red-700"
+          title="Delete"
+        >
+          <Trash2 size={12} />
+        </Button>
       </div>
     </div>
   );
@@ -90,14 +102,20 @@ export const ClinicalImageTab: React.FC = () => {
   const [analyzingImages, setAnalyzingImages] = useState<Set<string>>(new Set());
   const [analysisErrors, setAnalysisErrors] = useState<Record<string, string>>({});
   const [enlargeImage, setEnlargeImage] = useState<any | null>(null);
+  const [showQR, setShowQR] = useState(false);
+  const [deletingImages, setDeletingImages] = useState<Set<string>>(new Set());
 
   // Server images (user scope) for session grouping
   const { userId } = useAuth();
   const { data: serverImages = [], isLoading: isLoadingServerImages } = useServerImages(currentPatientSessionId || undefined);
+  const deleteImageMutation = useDeleteImage();
   const sessionServerImages = useMemo(() => {
-    return (serverImages || []).filter((img: any) => img.source === 'clinical' && img.sessionId && img.sessionId === currentPatientSessionId);
-  }, [serverImages, currentPatientSessionId]);
-  const queryClientRef = useRef(useQueryClient());
+    const filtered = (serverImages || []).filter((img: any) => img.source === 'clinical' && img.sessionId && img.sessionId === currentPatientSessionId);
+    // Filter out images being deleted for optimistic UI
+    return filtered.filter((img: any) => !deletingImages.has(img.key));
+  }, [serverImages, currentPatientSessionId, deletingImages]);
+  const queryClient = useQueryClient();
+  const queryClientRef = useRef(queryClient);
   useSimpleAbly({
     userId: userId ?? null,
     isMobile: false,
@@ -182,6 +200,11 @@ export const ClinicalImageTab: React.FC = () => {
       // Add to context and save
       addClinicalImage(newImage);
       await saveClinicalImagesToCurrentSession([...clinicalImages, newImage]);
+      
+      // Invalidate React Query cache to refresh server images
+      queryClient.invalidateQueries({
+        queryKey: imageQueryKeys.lists(),
+      });
     } catch (err) {
       console.error('Upload error:', err);
       setError(err instanceof Error ? err.message : 'Upload failed');
@@ -189,16 +212,30 @@ export const ClinicalImageTab: React.FC = () => {
       setUploading(false);
     }
   }, [
-
+    currentPatientSessionId,
     addClinicalImage,
     saveClinicalImagesToCurrentSession,
     clinicalImages,
+    queryClient,
   ]);
 
-  const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      handleFileUpload(file);
+  const handleFileSelect = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) {
+      return;
+    }
+
+    // Upload files sequentially
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file) {
+        await handleFileUpload(file);
+      }
+    }
+
+    // Clear input for re-selection
+    if (event.target) {
+      event.target.value = '';
     }
   }, [handleFileUpload]);
 
@@ -236,6 +273,26 @@ export const ClinicalImageTab: React.FC = () => {
       setError('Failed to download image');
     }
   }, []);
+
+  const handleDeleteSessionImage = useCallback(async (imageKey: string) => {
+    // Optimistic UI: immediately hide the image
+    setDeletingImages(prev => new Set(prev).add(imageKey));
+    
+    try {
+      // Delete in background
+      await deleteImageMutation.mutateAsync(imageKey);
+      // Successfully deleted - keep it hidden
+    } catch (err) {
+      console.error('Delete error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to delete image');
+      // On error, restore the image
+      setDeletingImages(prev => {
+        const updated = new Set(prev);
+        updated.delete(imageKey);
+        return updated;
+      });
+    }
+  }, [deleteImageMutation]);
 
   const handleAnalyzeImage = useCallback(async (image: ClinicalImage) => {
     if (!currentPatientSessionId) {
@@ -359,6 +416,9 @@ export const ClinicalImageTab: React.FC = () => {
     setObjectiveText,
     saveObjectiveToCurrentSession,
   ]);
+
+  // QR code URL for mobile uploads
+  const qrCodeUrl = typeof window !== 'undefined' ? `${window.location.origin}/image` : '';
 
   return (
     <div className="space-y-4">
@@ -487,6 +547,7 @@ export const ClinicalImageTab: React.FC = () => {
                         onAnalyze={() => handleAnalyzeImage(image as any)}
                         onEnlarge={() => setEnlargeImage(image)}
                         onDownload={() => handleDownloadImage(image as any)}
+                        onDelete={() => handleDeleteSessionImage(image.key)}
                       />
                     );
                   })}
@@ -496,39 +557,51 @@ export const ClinicalImageTab: React.FC = () => {
       )}
 
       {/* Lightbox for enlarged view */}
-      {enlargeImage && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
-          onClick={() => setEnlargeImage(null)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
- if (e.key === 'Escape') {
- setEnlargeImage(null);
-}
-}}
-        >
-          <div className="max-h-[90vh] max-w-[90vw]">
-            {enlargeImage.thumbnailUrl
-              ? <img src={enlargeImage.thumbnailUrl} alt="" className="max-h-[90vh] max-w-[90vw] object-contain" />
-              : <div className="flex items-center justify-center p-8 text-white">No preview</div>}
-          </div>
-        </div>
-      )}
+      {enlargeImage && <EnlargeImageModal image={enlargeImage} onClose={() => setEnlargeImage(null)} />}
 
-      {/* Upload Button */}
+      {/* Upload Buttons */}
       <div className="rounded-lg border-2 border-dashed border-slate-200 p-4 text-center">
-        <Button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
-          variant="outline"
-          className="gap-2"
-          size="sm"
-        >
-          {uploading ? 'Uploading...' : 'Add Clinical Image'}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            variant="outline"
+            className="flex-1 gap-2"
+            size="sm"
+          >
+            {uploading ? 'Uploading...' : 'Add Clinical Image'}
+          </Button>
+          <Button
+            onClick={() => setShowQR(!showQR)}
+            variant="outline"
+            size="sm"
+            title="Mobile Upload"
+          >
+            <QrCode className="size-4" />
+          </Button>
+        </div>
+        
+        {/* QR Code for Mobile Upload */}
+        {showQR && (
+          <div className="mt-4 border-t pt-4">
+            <div className="mb-3">
+              <h4 className="mb-1 text-sm font-medium text-slate-700">Mobile Upload</h4>
+              <p className="text-xs text-slate-600">
+                Scan with your mobile device
+              </p>
+            </div>
+            <div className="flex items-center justify-center">
+              <QRCodeSVG
+                value={qrCodeUrl}
+                size={120}
+                className="rounded-lg border border-slate-200"
+              />
+            </div>
+          </div>
+        )}
+        
         <p className="mt-2 text-xs text-slate-500">
-          Images are automatically resized and securely stored.
+          Images are automatically resized and securely stored. Select multiple files to upload at once.
         </p>
       </div>
 
@@ -537,9 +610,77 @@ export const ClinicalImageTab: React.FC = () => {
         ref={fileInputRef}
         type="file"
         accept="image/*"
+        multiple
         onChange={handleFileSelect}
         className="hidden"
       />
     </div>
   );
 };
+
+// Enlarge Image Modal Component
+function EnlargeImageModal({ image, onClose }: { image: any; onClose: () => void }) {
+  const { data: imageUrl } = useImageUrl(image.key);
+  const isLoadingUrl = !imageUrl;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+      onClick={onClose}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClose();
+        }
+      }}
+      aria-label="Close modal"
+    >
+      {/* Close Button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose();
+        }}
+        className="fixed right-4 top-4 z-10 text-white hover:bg-white/20"
+      >
+        ✕
+      </Button>
+
+      {/* Image Container */}
+      <div className="max-h-full max-w-full">
+        {isLoadingUrl ? (
+          <div className="flex items-center justify-center p-8">
+            <Loader2 className="size-12 animate-spin text-white" />
+          </div>
+        ) : imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={image.filename || 'Clinical image'}
+            className="max-h-[90vh] max-w-[90vw] object-contain shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center p-8 text-white">
+            <p>Failed to load image</p>
+          </div>
+        )}
+      </div>
+
+      {/* Image Info */}
+      {image.filename && (
+        <div className="fixed bottom-4 left-4 rounded-lg bg-black/60 px-3 py-2 text-white">
+          <p className="text-sm font-medium">{image.filename}</p>
+          {image.uploadedAt && (
+            <p className="text-xs opacity-75">
+              {new Date(image.uploadedAt).toLocaleDateString()}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
