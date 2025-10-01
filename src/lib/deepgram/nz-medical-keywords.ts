@@ -59,30 +59,14 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
   {
     category: 'pain-analgesics',
     boost: 2.0,
-    description: 'Common pain medications and analgesics',
+    description: 'Hard to pronounce pain medications',
     keywords: [
-      // Generic names
-      'paracetamol',
-      'ibuprofen',
-      'diclofenac',
-      'naproxen',
-      'codeine',
+      // Easily misheard
       'tramadol',
-      'aspirin',
       'oxycodone',
       'methadone',
-      
-      // Brand names
-      'Panadol',
-      'Nurofen',
-      'Brufen',
-      'Voltaren',
-      'Naprosyn',
-      'Panadeine',
-      'Tramacet',
-      'Oxynorm',
-      'OxyContin',
-      'Sevredol',
+      'diclofenac',
+      'naproxen',
     ],
   },
 
@@ -92,20 +76,17 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
   {
     category: 'antibiotics',
     boost: 2.5, // Higher boost - commonly confused names
-    description: 'Commonly prescribed antibiotics in NZ',
+    description: 'Hard to pronounce antibiotics',
     keywords: [
-      // Generic names only
-      'amoxicillin',
+      // Commonly misheard
       'flucloxacillin',
       'doxycycline',
-      'trimethoprim',
       'nitrofurantoin',
       'azithromycin',
       'clarithromycin',
       'metronidazole',
       'ciprofloxacin',
       'roxithromycin',
-      'cefaclor',
       'cefalexin',
       'cephalexin',
       'erythromycin',
@@ -118,47 +99,21 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
   {
     category: 'cardiovascular',
     boost: 2.0,
-    description: 'Blood pressure, heart, and cholesterol medications',
+    description: 'Hard to pronounce cardiovascular medications',
     keywords: [
-      // ACE inhibitors
-      'enalapril',
-      'lisinopril',
+      // Hard to pronounce
       'perindopril',
-      'quinapril',
-      
-      // ARBs
-      'losartan',
       'candesartan',
-      
-      // Beta blockers
-      'atenolol',
-      'metoprolol',
       'bisoprolol',
       'carvedilol',
-      'propranolol',
-      
-      // Calcium channel blockers
-      'amlodipine',
       'felodipine',
       'diltiazem',
-      'verapamil',
-      'nifedipine',
-      
-      // Statins
       'simvastatin',
       'atorvastatin',
       'rosuvastatin',
-      
-      // Anticoagulants
-      'aspirin',
       'clopidogrel',
-      'warfarin',
       'rivaroxaban',
       'dabigatran',
-      
-      // Others
-      'digoxin',
-      'furosemide',
       'Coversyl',
     ],
   },
@@ -169,10 +124,9 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
   {
     category: 'respiratory',
     boost: 2.5, // Brand names frequently used
-    description: 'Asthma, COPD, and respiratory medications',
+    description: 'Hard to pronounce respiratory medications',
     keywords: [
-      // Generic names
-      'salbutamol',
+      // Easily misheard
       'budesonide',
       'beclomethasone',
       'fluticasone',
@@ -180,12 +134,8 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
       'tiotropium',
       'montelukast',
       'ipratropium',
-      'prednisolone',
-      'prednisone',
       
-      // Brand names (commonly used in NZ)
-      'Ventolin',
-      'Bricanyl',
+      // Brand names (commonly confused)
       'Flixotide',
       'Seretide',
       'Symbicort',
@@ -193,7 +143,6 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
       'Singulair',
       'Atrovent',
       'Duoresp',
-      'Breo',
     ],
   },
 
@@ -203,31 +152,20 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
   {
     category: 'mental-health',
     boost: 2.5, // Similar-sounding names
-    description: 'Antidepressants, anxiolytics, antipsychotics',
+    description: 'Hard to pronounce mental health medications',
     keywords: [
-      // SSRIs
+      // Similar sounding SSRIs (keep all - commonly confused)
       'citalopram',
       'escitalopram',
-      'fluoxetine',
       'paroxetine',
       'sertraline',
       
-      // Other antidepressants
+      // Hard to pronounce
       'mirtazapine',
       'venlafaxine',
-      
-      // Anxiolytics
-      'diazepam',
-      'lorazepam',
       'clonazepam',
       'zopiclone',
-      
-      // Mood stabilisers
-      'lithium',
       'lamotrigine',
-      'valproate',
-      
-      // Antipsychotics
       'quetiapine',
       'olanzapine',
       'risperidone',
@@ -241,27 +179,18 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
   {
     category: 'hayfever-allergies',
     boost: 2.5, // Brand names commonly used
-    description: 'Antihistamines and nasal sprays',
+    description: 'Hard to pronounce allergy medications',
     keywords: [
-      // Antihistamines
-      'cetirizine',
-      'loratadine',
+      // Easily misheard
       'fexofenadine',
       'promethazine',
-      
-      // Nasal sprays
-      'fluticasone',
       'mometasone',
-      'beclomethasone',
-      'budesonide',
       
-      // Brand names
-      'Claratyne',
-      'Telfast',
-      'Phenergan',
+      // Brand names (commonly confused)
       'Flixonase',
       'Nasonex',
       'Steroclear',
+      'Phenergan',
     ],
   },
 
@@ -271,21 +200,11 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
   {
     category: 'diabetes',
     boost: 2.0,
-    description: 'Diabetes medications and insulin',
+    description: 'Hard to pronounce diabetes medications',
     keywords: [
-      // Oral medications
-      'metformin',
-      'gliclazide',
+      // Hard to pronounce
       'empagliflozin',
       'vildagliptin',
-      
-      // Insulin types
-      'insulin',
-      'NovoRapid',
-      'Humalog',
-      'Lantus',
-      
-      // Injectable GLP-1
       'dulaglutide',
       'semaglutide',
       
@@ -293,7 +212,6 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
       'Jardiance',
       'Jardiamet',
       'Trulicity',
-      'Galvus',
     ],
   },
 
@@ -303,51 +221,24 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
   {
     category: 'gastrointestinal',
     boost: 2.0,
-    description: 'Reflux, nausea, constipation, diarrhoea medications',
+    description: 'Hard to pronounce GI medications',
     keywords: [
-      // PPIs
-      'omeprazole',
+      // Hard to pronounce
       'lansoprazole',
       'pantoprazole',
-      
-      // H2 antagonists
-      'ranitidine',
       'famotidine',
-      
-      // Antacids
-      'Gaviscon',
-      'Mylanta',
-      'Acidex',
-      
-      // Antiemetics
       'ondansetron',
       'metoclopramide',
       'prochlorperazine',
       'cyclizine',
-      
-      // Laxatives
-      'lactulose',
-      'movicol',
-      'molaxole',
-      'Coloxyl',
       'bisacodyl',
-      'senna',
-      
-      // Antispasmodics
-      'buscopan',
       'hyoscine',
       'mebeverine',
-      
-      // Antidiarrhoeal
       'loperamide',
       
       // Brand names
-      'Losec',
       'Maxolon',
       'Stemetil',
-      'Imodium',
-      'Laxsol',
-      'enema',
     ],
   },
 
@@ -357,49 +248,28 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
   {
     category: 'dermatology',
     boost: 2.0,
-    description: 'Topical steroids, antifungals, antivirals, emollients',
+    description: 'Hard to pronounce dermatology medications',
     keywords: [
-      // Topical steroids
-      'hydrocortisone',
+      // Hard to pronounce
       'betamethasone',
       'mometasone',
       'clobetasol',
       'triamcinolone',
-      
-      // Antifungals
       'clotrimazole',
       'miconazole',
       'terbinafine',
       'ketoconazole',
-      'fluconazole',
-      
-      // Antivirals
-      'aciclovir',
       'valaciclovir',
-      
-      // Antibiotics
       'mupirocin',
-      
-      // Emollients
-      'sorbolene',
       'cetomacrogol',
-      
-      // Acne
       'adapalene',
       'tretinoin',
       'isotretinoin',
-      
-      // Psoriasis
       'calcipotriol',
       
-      // Brand names
-      'Cetaphil',
-      'Dermol',
-      'Differin',
+      // Brand names (commonly confused)
       'Retrieve',
       'Oratane',
-      'Locoid',
-      'Elocon',
       'Advantan',
       'Daivonex',
       'Daivobet',
@@ -414,9 +284,9 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
   {
     category: 'contraception',
     boost: 2.5, // Brand names predominantly used
-    description: 'Oral contraceptives, injections, implants, HRT',
+    description: 'Hard to pronounce contraception/HRT',
     keywords: [
-      // Generic hormones
+      // Hard to pronounce generics
       'levonorgestrel',
       'ethinylestradiol',
       'norethisterone',
@@ -425,59 +295,30 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
       'medroxyprogesterone',
       'etonogestrel',
       
-      // Combined oral contraceptives
+      // Brand names (commonly confused)
       'Microgynon',
-      'Levlen',
-      'Brevinor',
-      'Yasmin',
-      'Yaz',
-      
-      // Progesterone-only pills
       'Cerazette',
-      'Noriday',
-      'Microlut',
-      
-      // Emergency contraception
-      'Postinor',
-      
-      // Long-acting
       'Depo-Provera',
       'Jadelle',
-      'Mirena',
-      'Jaydess',
-      
-      // HRT
-      'estradiol',
-      'oestrogen',
-      'progesterone',
-      'Kliogest',
-      'Livial',
     ],
   },
 
   // ---------------------------------------------------------------------------
-  // 11. GENERAL & OTC MEDICATIONS
+  // 11. GENERAL MEDICATIONS
   // ---------------------------------------------------------------------------
   {
-    category: 'general-otc',
+    category: 'general-medications',
     boost: 2.0,
-    description: 'Common general medications',
+    description: 'Hard to pronounce general medications',
     keywords: [
-      // Thyroid
+      // Hard to pronounce
       'levothyroxine',
-      'thyroxine',
       'carbimazole',
-      
-      // Osteoporosis
       'alendronate',
       'risedronate',
       'denosumab',
-      
-      // Gout
       'allopurinol',
       'colchicine',
-      
-      // Others
       'methotrexate',
       'hydroxychloroquine',
       'azathioprine',

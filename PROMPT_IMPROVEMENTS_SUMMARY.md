@@ -266,24 +266,24 @@ Speech recognition produces medication name errors that LLM validation catches o
 
 **Implementation:**
 - Created `/workspace/src/lib/deepgram/nz-medical-keywords.ts`
-- 221 NZ-specific medical terms (~222 tokens, well under 500 limit)
+- 126 hard-to-pronounce medications (~127 tokens, well under 500 limit)
+- Focus: Easily misheard, similar-sounding, complex medication names only
 - Integrated into Deepgram transcription API using `keyterm` parameter (Nova-3 requirement)
-- 11 categories covering common GP medications
-- 278 tokens headroom for future additions
+- 11 categories covering commonly confused GP medications
+- 373 tokens headroom for future additions
 
-**Categories (with term counts):**
-1. Pain & Analgesics (~20) - paracetamol, ibuprofen, codeine, oxycodone
-2. Antibiotics (~20, boost 2.5) - amoxicillin, doxycycline, flucloxacillin
-3. Cardiovascular (~35) - amlodipine, ramipril, simvastatin
-4. Respiratory (~20, boost 2.5) - Ventolin, Flixonase, salbutamol
-5. Mental Health (~35, boost 2.5) - citalopram, sertraline, mirtazapine
-6. Hay Fever (~15, boost 2.5) - Flixonase, cetirizine, fexofenadine
-7. Diabetes (~15) - metformin, gliclazide, Jardiance
-8. Gastrointestinal (~30) - omeprazole, Buscopan, Movicol
-9. Dermatology (~40) - hydrocortisone, Locoid, Dermol
-10. Contraception (~20, boost 2.5) - Levlen, Mirena, Cerazette
-11. General/OTC (~25) - folic acid, vitamin D, levothyroxine
-12. Clinical Terms (~30) - dyspnoea, auscultation, hypertension
+**Categories (focus on hard to pronounce only):**
+1. Pain & Analgesics (5) - tramadol, oxycodone, methadone, diclofenac
+2. Antibiotics (11, boost 2.5) - flucloxacillin, doxycycline, azithromycin, clarithromycin
+3. Cardiovascular (13) - perindopril, candesartan, bisoprolol, rivaroxaban, dabigatran
+4. Respiratory (14, boost 2.5) - budesonide, tiotropium, Symbicort, Spiriva
+5. Mental Health (13, boost 2.5) - citalopram, escitalopram, mirtazapine, quetiapine
+6. Hay Fever (7, boost 2.5) - fexofenadine, Flixonase, Nasonex, Steroclear
+7. Diabetes (7) - empagliflozin, vildagliptin, Jardiance, Trulicity
+8. Gastrointestinal (13) - lansoprazole, ondansetron, prochlorperazine, Maxolon
+9. Dermatology (22) - betamethasone, clotrimazole, valaciclovir, Daivonex
+10. Contraception (11, boost 2.5) - levonorgestrel, medroxyprogesterone, Depo-Provera
+11. General (10) - levothyroxine, hydroxychloroquine, azathioprine
 
 **Boost Levels:**
 - 2.0: Standard medications
