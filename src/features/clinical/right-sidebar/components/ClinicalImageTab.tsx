@@ -8,7 +8,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
-import { imageQueryKeys, useImageUrl, useServerImages } from '@/src/hooks/useImageQueries';
+import { imageQueryKeys, useDeleteImage, useImageUrl, useServerImages } from '@/src/hooks/useImageQueries';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
@@ -21,12 +21,14 @@ function SessionImageTile({
   onAnalyze,
   onEnlarge,
   onDownload,
+  onDelete,
 }: {
   image: any;
   isAnalyzing: boolean;
   onAnalyze: () => void;
   onEnlarge: () => void;
   onDownload: () => void;
+  onDelete: () => void;
 }) {
   const { data: imageUrl } = useImageUrl(image.key);
   return (
@@ -69,6 +71,15 @@ function SessionImageTile({
         >
           <Download size={12} />
         </Button>
+        <Button
+          size="icon"
+          variant="outline"
+          onClick={onDelete}
+          className="size-7 text-red-600 hover:text-red-700"
+          title="Delete"
+        >
+          <Trash2 size={12} />
+        </Button>
       </div>
     </div>
   );
@@ -96,6 +107,7 @@ export const ClinicalImageTab: React.FC = () => {
   // Server images (user scope) for session grouping
   const { userId } = useAuth();
   const { data: serverImages = [], isLoading: isLoadingServerImages } = useServerImages(currentPatientSessionId || undefined);
+  const deleteImageMutation = useDeleteImage();
   const sessionServerImages = useMemo(() => {
     return (serverImages || []).filter((img: any) => img.source === 'clinical' && img.sessionId && img.sessionId === currentPatientSessionId);
   }, [serverImages, currentPatientSessionId]);
@@ -238,6 +250,15 @@ export const ClinicalImageTab: React.FC = () => {
       setError('Failed to download image');
     }
   }, []);
+
+  const handleDeleteSessionImage = useCallback(async (imageKey: string) => {
+    try {
+      await deleteImageMutation.mutateAsync(imageKey);
+    } catch (err) {
+      console.error('Delete error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to delete image');
+    }
+  }, [deleteImageMutation]);
 
   const handleAnalyzeImage = useCallback(async (image: ClinicalImage) => {
     if (!currentPatientSessionId) {
@@ -492,6 +513,7 @@ export const ClinicalImageTab: React.FC = () => {
                         onAnalyze={() => handleAnalyzeImage(image as any)}
                         onEnlarge={() => setEnlargeImage(image)}
                         onDownload={() => handleDownloadImage(image as any)}
+                        onDelete={() => handleDeleteSessionImage(image.key)}
                       />
                     );
                   })}
