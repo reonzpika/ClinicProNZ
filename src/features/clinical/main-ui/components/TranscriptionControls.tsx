@@ -9,7 +9,6 @@ import { Stack } from '@/src/shared/components/layout/Stack';
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardHeader } from '@/src/shared/components/ui/card';
-import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
 // import { createAuthHeaders } from '@/src/shared/utils';
 import { AudioSettingsModal } from '../../mobile/components/AudioSettingsModal';
