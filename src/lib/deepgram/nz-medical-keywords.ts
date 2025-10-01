@@ -127,8 +127,6 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
     description: 'Hard to pronounce respiratory medications',
     keywords: [
       // Easily misheard
-      'budesonide',
-      'beclomethasone',
       'fluticasone',
       'salmeterol',
       'tiotropium',
@@ -140,9 +138,7 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
       'Seretide',
       'Symbicort',
       'Spiriva',
-      'Singulair',
       'Atrovent',
-      'Duoresp',
     ],
   },
 
@@ -167,9 +163,7 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
       'zopiclone',
       'lamotrigine',
       'quetiapine',
-      'olanzapine',
       'risperidone',
-      'aripiprazole',
     ],
   },
 
@@ -182,13 +176,11 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
     description: 'Hard to pronounce allergy medications',
     keywords: [
       // Easily misheard
-      'fexofenadine',
       'promethazine',
       'mometasone',
       
       // Brand names (commonly confused)
       'Flixonase',
-      'Nasonex',
       'Steroclear',
       'Phenergan',
     ],
@@ -231,7 +223,6 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
       'metoclopramide',
       'prochlorperazine',
       'cyclizine',
-      'bisacodyl',
       'hyoscine',
       'mebeverine',
       'loperamide',
@@ -287,13 +278,7 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
     description: 'Hard to pronounce contraception/HRT',
     keywords: [
       // Hard to pronounce generics
-      'levonorgestrel',
-      'ethinylestradiol',
       'norethisterone',
-      'desogestrel',
-      'drospirenone',
-      'medroxyprogesterone',
-      'etonogestrel',
       
       // Brand names (commonly confused)
       'Microgynon',
@@ -316,11 +301,9 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
       'carbimazole',
       'alendronate',
       'risedronate',
-      'denosumab',
       'allopurinol',
       'colchicine',
       'methotrexate',
-      'hydroxychloroquine',
       'azathioprine',
     ],
   },

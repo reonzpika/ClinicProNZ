@@ -266,11 +266,11 @@ Speech recognition produces medication name errors that LLM validation catches o
 
 **Implementation:**
 - Created `/workspace/src/lib/deepgram/nz-medical-keywords.ts`
-- 126 hard-to-pronounce medications (~127 tokens, well under 500 limit)
-- Focus: Easily misheard, similar-sounding, complex medication names only
+- 109 most problematic medications (~110 tokens, 78% under limit)
+- Focus: Only easily misheard, similar-sounding, complex medication names
 - Integrated into Deepgram transcription API using `keyterm` parameter (Nova-3 requirement)
 - 11 categories covering commonly confused GP medications
-- 373 tokens headroom for future additions
+- 390 tokens headroom for future additions
 
 **Categories (focus on hard to pronounce only):**
 1. Pain & Analgesics (5) - tramadol, oxycodone, methadone, diclofenac

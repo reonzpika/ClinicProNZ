@@ -12,16 +12,16 @@ NZ-specific medical terminology keyword list for Deepgram transcription accuracy
 
 ## Current Stats
 
-**Total Keywords:** 126 terms  
-**Estimated Tokens:** ~127 tokens (limit: 500)  
+**Total Keywords:** 109 terms  
+**Estimated Tokens:** ~110 tokens (limit: 500)  
 **Categories:** 11  
-**Focus:** Hard to pronounce, easily misheard medications only  
+**Focus:** Only the most problematic, hard-to-pronounce, easily misheard medications  
 **Boost Levels:**
 - 2.0: Standard hard-to-pronounce medications
-- 2.5: Commonly confused terms (e.g., antibiotics, mental health meds, similar-sounding names)
+- 2.5: Commonly confused terms (antibiotics, mental health meds, similar-sounding names)
 - 3.0: Patient-specific medications (added dynamically - not yet implemented)
 
-**Headroom:** 373 tokens available for future additions
+**Headroom:** 390 tokens (78% safety margin)
 
 ---
 
