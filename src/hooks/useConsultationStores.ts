@@ -35,7 +35,11 @@ export function useConsultationStores(): any {
 
   // Server state via React Query - disable on mobile routes
   const isMobileRoute = pathname === '/mobile';
-  const { data: patientSessions = [] } = usePatientSessions(hasSessionHistoryAccess && !isMobileRoute);
+  const {
+    data: patientSessions = [],
+    isLoading: patientSessionsLoading,
+    isFetched: patientSessionsFetched,
+  } = usePatientSessions(hasSessionHistoryAccess && !isMobileRoute);
 
   // Mutations
   const createSessionMutation = useCreatePatientSession();
@@ -161,6 +165,23 @@ export function useConsultationStores(): any {
           // Local ID is stale → clear it so we can create a new one
           consultationStore.setCurrentPatientSessionId(null);
         }
+
+        // If no local id, try to adopt server current session before creating a new one
+        try {
+          const res = await fetch('/api/current-session', {
+            method: 'GET',
+            headers: createAuthHeaders(userId),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const serverId = data?.currentSessionId as string | null;
+            if (serverId && typeof serverId === 'string') {
+              consultationStore.setCurrentPatientSessionId(serverId);
+              __ensureSessionLastAt = Date.now();
+              return serverId;
+            }
+          }
+        } catch {}
 
         // Create a brand-new session
         __ensureSessionInFlight = true;
@@ -542,6 +563,8 @@ export function useConsultationStores(): any {
 
     // Sessions list
     patientSessions,
+    patientSessionsLoading,
+    patientSessionsFetched,
 
     // Last generated tracking
     lastGeneratedTranscription: transcriptionStore.lastGeneratedTranscription,
