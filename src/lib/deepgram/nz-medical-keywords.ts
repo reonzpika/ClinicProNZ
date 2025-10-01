@@ -55,260 +55,26 @@ export function addPatientMedications(patientMeds: string[]): string[] {
 
 export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
   // ---------------------------------------------------------------------------
-  // 1. PAIN & ANALGESICS
-  // ---------------------------------------------------------------------------
-  {
-    category: 'pain-analgesics',
-    boost: 2.0,
-    description: 'Hard to pronounce pain medications',
-    keywords: [
-      // Easily misheard
-      'tramadol',
-      'oxycodone',
-      'methadone',
-      'diclofenac',
-      'naproxen',
-    ],
-  },
-
-  // ---------------------------------------------------------------------------
-  // 2. ANTIBIOTICS
-  // ---------------------------------------------------------------------------
-  {
-    category: 'antibiotics',
-    boost: 2.5, // Higher boost - commonly confused names
-    description: 'Hard to pronounce antibiotics',
-    keywords: [
-      // Commonly misheard
-      'flucloxacillin',
-      'doxycycline',
-      'nitrofurantoin',
-      'azithromycin',
-      'clarithromycin',
-      'metronidazole',
-      'ciprofloxacin',
-      'roxithromycin',
-      'cefalexin',
-      'cephalexin',
-      'erythromycin',
-    ],
-  },
-
-  // ---------------------------------------------------------------------------
-  // 3. CARDIOVASCULAR
-  // ---------------------------------------------------------------------------
-  {
-    category: 'cardiovascular',
-    boost: 2.0,
-    description: 'Hard to pronounce cardiovascular medications',
-    keywords: [
-      // Hard to pronounce
-      'perindopril',
-      'candesartan',
-      'bisoprolol',
-      'carvedilol',
-      'felodipine',
-      'diltiazem',
-      'simvastatin',
-      'atorvastatin',
-      'rosuvastatin',
-      'clopidogrel',
-      'rivaroxaban',
-      'dabigatran',
-      'Coversyl',
-    ],
-  },
-
-  // ---------------------------------------------------------------------------
-  // 4. RESPIRATORY
-  // ---------------------------------------------------------------------------
-  {
-    category: 'respiratory',
-    boost: 2.5, // Brand names frequently used
-    description: 'Hard to pronounce respiratory medications',
-    keywords: [
-      // Easily misheard
-      'fluticasone',
-      'salmeterol',
-      'tiotropium',
-      'montelukast',
-      'ipratropium',
-      
-      // Brand names (commonly confused)
-      'Flixotide',
-      'Seretide',
-      'Symbicort',
-      'Spiriva',
-      'Atrovent',
-    ],
-  },
-
-  // ---------------------------------------------------------------------------
-  // 5. MENTAL HEALTH
+  // TEST: MINIMAL SET
   // ---------------------------------------------------------------------------
   {
     category: 'mental-health',
-    boost: 2.5, // Similar-sounding names
-    description: 'Hard to pronounce mental health medications',
+    boost: 2.5,
+    description: 'Test - mental health',
     keywords: [
-      // Similar sounding SSRIs (keep all - commonly confused)
       'citalopram',
-      'escitalopram',
-      'paroxetine',
-      'sertraline',
-      
-      // Hard to pronounce
-      'mirtazapine',
-      'venlafaxine',
-      'clonazepam',
-      'zopiclone',
-      'lamotrigine',
-      'quetiapine',
-      'risperidone',
     ],
   },
-
-  // ---------------------------------------------------------------------------
-  // 6. HAY FEVER & ALLERGIES
-  // ---------------------------------------------------------------------------
+  
   {
     category: 'hayfever-allergies',
-    boost: 2.5, // Brand names commonly used
-    description: 'Hard to pronounce allergy medications',
+    boost: 2.5,
+    description: 'Test - hay fever',
     keywords: [
-      // Easily misheard
-      'promethazine',
-      'mometasone',
-      
-      // Brand names (commonly confused)
       'Flixonase',
       'Steroclear',
-      'Phenergan',
     ],
   },
-
-  // ---------------------------------------------------------------------------
-  // 7. DIABETES
-  // ---------------------------------------------------------------------------
-  {
-    category: 'diabetes',
-    boost: 2.0,
-    description: 'Hard to pronounce diabetes medications',
-    keywords: [
-      // Hard to pronounce
-      'empagliflozin',
-      'vildagliptin',
-      'dulaglutide',
-      'semaglutide',
-      
-      // Brand names
-      'Jardiance',
-      'Jardiamet',
-      'Trulicity',
-    ],
-  },
-
-  // ---------------------------------------------------------------------------
-  // 8. GASTROINTESTINAL & REFLUX
-  // ---------------------------------------------------------------------------
-  {
-    category: 'gastrointestinal',
-    boost: 2.0,
-    description: 'Hard to pronounce GI medications',
-    keywords: [
-      // Hard to pronounce
-      'lansoprazole',
-      'pantoprazole',
-      'famotidine',
-      'ondansetron',
-      'metoclopramide',
-      'prochlorperazine',
-      'cyclizine',
-      'hyoscine',
-      'mebeverine',
-      'loperamide',
-      
-      // Brand names
-      'Maxolon',
-      'Stemetil',
-    ],
-  },
-
-  // ---------------------------------------------------------------------------
-  // 9. SKIN & DERMATOLOGY
-  // ---------------------------------------------------------------------------
-  {
-    category: 'dermatology',
-    boost: 2.0,
-    description: 'Hard to pronounce dermatology medications',
-    keywords: [
-      // Hard to pronounce
-      'betamethasone',
-      'mometasone',
-      'clobetasol',
-      'triamcinolone',
-      'clotrimazole',
-      'miconazole',
-      'terbinafine',
-      'ketoconazole',
-      'valaciclovir',
-      'mupirocin',
-      'cetomacrogol',
-      'adapalene',
-      'tretinoin',
-      'isotretinoin',
-      'calcipotriol',
-      
-      // Brand names (commonly confused)
-      'Retrieve',
-      'Oratane',
-      'Advantan',
-      'Daivonex',
-      'Daivobet',
-      'Enstilar',
-      'Kenacomb',
-    ],
-  },
-
-  // ---------------------------------------------------------------------------
-  // 10. CONTRACEPTION & HRT
-  // ---------------------------------------------------------------------------
-  {
-    category: 'contraception',
-    boost: 2.5, // Brand names predominantly used
-    description: 'Hard to pronounce contraception/HRT',
-    keywords: [
-      // Hard to pronounce generics
-      'norethisterone',
-      
-      // Brand names (commonly confused)
-      'Microgynon',
-      'Cerazette',
-      'Depo-Provera',
-      'Jadelle',
-    ],
-  },
-
-  // ---------------------------------------------------------------------------
-  // 11. GENERAL MEDICATIONS
-  // ---------------------------------------------------------------------------
-  {
-    category: 'general-medications',
-    boost: 2.0,
-    description: 'Hard to pronounce general medications',
-    keywords: [
-      // Hard to pronounce
-      'levothyroxine',
-      'carbimazole',
-      'alendronate',
-      'risedronate',
-      'allopurinol',
-      'colchicine',
-      'methotrexate',
-      'azathioprine',
-    ],
-  },
-
 ];
 
 // =============================================================================
