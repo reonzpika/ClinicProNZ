@@ -266,8 +266,8 @@ Speech recognition produces medication name errors that LLM validation catches o
 
 **Implementation:**
 - Created `/workspace/src/lib/deepgram/nz-medical-keywords.ts`
-- 400+ NZ-specific medical terms with boost values
-- Integrated into Deepgram transcription API
+- 336 NZ-specific medical terms with boost values
+- Integrated into Deepgram transcription API using `keyterm` parameter (Nova-3 requirement)
 - 12 categories covering common GP medications
 
 **Categories (with term counts):**

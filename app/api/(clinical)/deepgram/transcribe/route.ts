@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
       utterances: true, // Enable word-level data with timestamps & confidence
       profanity_filter: false, // Medical context may include profanity in symptoms/conditions
       filler_words: false, // Remove "um", "uh", etc. for cleaner clinical notes
-      keywords: getDeepgramKeywords(), // NZ medical terminology keyword boosting
+      keyterm: getDeepgramKeywords(), // NZ medical terminology keyword boosting (Nova-3 uses 'keyterm')
     };
 
     try {

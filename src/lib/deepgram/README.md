@@ -70,10 +70,12 @@ import { getDeepgramKeywords } from '@/src/lib/deepgram/nz-medical-keywords';
 
 const deepgramConfig = {
   model: 'nova-3-medical',
-  keywords: getDeepgramKeywords(), // All keywords with default boost
+  keyterm: getDeepgramKeywords(), // Nova-3 uses 'keyterm' (not 'keywords')
   // ... other config
 };
 ```
+
+**Note:** Nova-3 model uses `keyterm` parameter (not `keywords`). Both accept same format: `["term:boost", ...]`
 
 ### By Category
 
@@ -85,7 +87,7 @@ const keywords = getKeywordsByCategory(['respiratory', 'cardiovascular']);
 
 const deepgramConfig = {
   model: 'nova-3-medical',
-  keywords: keywords,
+  keyterm: keywords,
 };
 ```
 
@@ -100,7 +102,7 @@ const keywords = addPatientMedications(patientMeds); // Gets boost: 3.0
 
 const deepgramConfig = {
   model: 'nova-3-medical',
-  keywords: keywords,
+  keyterm: keywords,
 };
 ```
 
@@ -264,7 +266,7 @@ const keywords = getKeywordsByCategory(['mental-health'], 3.0);
 
 ### Keywords Not Working?
 
-1. **Check Deepgram config:** Ensure `keywords` parameter is passed
+1. **Check Deepgram config:** Ensure `keyterm` parameter is passed (Nova-3 uses `keyterm`, not `keywords`)
 2. **Check format:** Must be `["term:boost", ...]` format
 3. **Check boost values:** 0.5-3.0 range (outside this = ignored)
 4. **Check term spelling:** Must match exactly (case-insensitive usually)
