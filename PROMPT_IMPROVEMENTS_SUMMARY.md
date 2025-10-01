@@ -73,6 +73,13 @@ Old format treated as transcription for compatibility.
 
 ## Files Modified
 
+### `/workspace/src/features/templates/components/TemplatePerformanceMonitor.tsx`
+**Changes:**
+- Updated to match new cache stats structure
+- Changed from single `templateCacheSize` to `systemPromptCacheSize` + `userPromptCacheSize`
+- Added display for number of templates cached (`systemCacheKeys.length`)
+- Updated cache efficiency indicators
+
 ### `/workspace/src/features/templates/utils/systemPrompt.ts`
 **Changes:**
 - Added `templateBody` parameter to `generateSystemPrompt()`
