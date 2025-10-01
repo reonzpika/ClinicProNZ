@@ -208,13 +208,53 @@ POST /api/consultation/notes
 - Token usage per request
 - Response time P95
 
+## Transcription Error Handling (Added)
+
+### **Problem:**
+Speech recognition produces errors, especially with medical terms, measurements, drug names.
+
+### **Solution: Confidence-Based Correction with Optional Footnote**
+
+**High Confidence Errors (Silent Correction):**
+- Obvious homophones in context: "caught" → "cough"
+- Simple mishears: "chess" → "chest"
+- Clear from context
+- No footnote added
+
+**Low/Medium Confidence Errors (Correction + Footnote):**
+- Ambiguous measurements: "two" → 2/52 or 2/7?
+- Unclear drug names: "docks a cycline" → doxycycline?
+- Misheard numbers: "won twenty-five" → 120 or 125?
+- Critical clinical information where precision matters
+
+### **Output Format:**
+
+**Main note body:** Uses corrected values
+
+**Optional footnote (only if low confidence corrections exist):**
+```
+---
+TRANSCRIPTION NOTES:
+- "two" → interpreted as "2/52" (could be 2/7, duration ambiguous)
+- "docks a cycline" → interpreted as "doxycycline" (verify antibiotic name)
+- "won twenty-five" → interpreted as "120" (could be 125, verify BP reading)
+```
+
+### **Benefits:**
+✓ Clean main note (ready to paste)  
+✓ LLM corrects obvious errors automatically  
+✓ GP alerted to uncertain interpretations  
+✓ Footnote only appears when needed  
+✓ No frontend changes required
+
 ## Next Steps
 
 1. ✅ Backend changes deployed
-2. ⏳ Monitor error rates and quality
-3. ⏳ Update frontend to use new format
-4. ⏳ Collect GP feedback
-5. ⏳ Iterate based on real-world usage
+2. ✅ Transcription error handling added
+3. ⏳ Monitor error rates and quality
+4. ⏳ Collect GP feedback on transcription notes usefulness
+5. ⏳ Update frontend to use new structured format
+6. ⏳ Iterate based on real-world usage
 
 ## Configuration
 

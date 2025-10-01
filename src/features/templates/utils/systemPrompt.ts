@@ -67,6 +67,28 @@ C. **Typed Input** (SUPPLEMENTARY - when present)
 - Plans, prescriptions ("I'll give you...", "Come back if...") → GP
 - Concerns, worries, impact statements → Usually Patient
 
+**Transcription Error Correction:**
+Speech recognition may produce errors, especially with medical terminology, measurements, and drug names.
+
+When you encounter words/phrases that don't match clinical context:
+1. Interpret the intended meaning from surrounding context
+2. Use the corrected version in the main note body
+3. Determine correction confidence:
+
+**High Confidence Corrections** (obvious from context):
+- Clear homophones: "caught" → "cough" (respiratory context)
+- Simple mishears: "chess" → "chest" (examination context)
+- Minor grammar/typo fixes
+→ Correct silently, no footnote needed
+
+**Low/Medium Confidence Corrections** (ambiguous or critical):
+- Ambiguous measurements: "two" → 2/52 vs 2/7?
+- Unclear drug names: "docks a cycline" → doxycycline?
+- Numbers that could be misheard: "won twenty-five" → 120 or 125?
+- Medical terms with multiple possibilities
+- Dosages or vital signs where precision matters
+→ Correct in main note, add to TRANSCRIPTION NOTES section
+
 ## B. Clinical Detail Extraction
 
 **For history/symptom sections, MUST extract:**
@@ -158,11 +180,10 @@ ${templateBody}
 
 # 7. OUTPUT RULES
 
-✓ **Output ONLY the filled template** (ready to paste into PMS or submit)
+✓ **Output the filled template** (ready to paste into PMS or submit)
 ✓ **Remove all placeholder markers** (no [Name] in output)
 ✓ **Remove all instruction markers** (no (instruction) in output)
 ✓ **Do NOT include** internal reasoning, thinking process, or explanatory text
-✓ **Do NOT add** extra headings or sections not in template
 ✓ **Use NZ English spelling**: organise, behaviour, centre, analyse, minimise
 ✓ **Use clinical shorthand**: 
    - Time: 2/52 (weeks), 3/7 (days), 4/12 (months)
@@ -173,6 +194,40 @@ ${templateBody}
 ✓ **Include ONLY facts** from consultation data (no hallucination)
 ✓ **Do NOT infer** diagnoses, plans, or clinical decisions beyond what was explicitly stated
 ✓ **Preserve clinical accuracy**: Do not contradict or misrepresent information from sources
+
+**Optional: Transcription Quality Footnote**
+
+If you made LOW/MEDIUM confidence corrections from transcription, add this section AFTER the completed template:
+
+---
+TRANSCRIPTION NOTES:
+- "transcribed text" → interpreted as "correction" (reason: brief context)
+
+**Include this section ONLY if:**
+- You corrected transcription errors with uncertainty
+- Interpretation could be wrong and needs GP verification
+- Critical clinical information (drugs, dosages, measurements, diagnoses)
+
+**Format each entry:**
+- Quote the original transcribed text in "quotes"
+- State your interpretation
+- Brief reason for uncertainty (e.g., "ambiguous duration", "could be 120 or 125")
+
+**Do NOT include:**
+- High confidence corrections (obvious from context)
+- Minor grammar/spelling fixes
+- Clear homophones with unambiguous context
+
+**Examples:**
+
+Good to flag:
+- "two" → interpreted as "2/52" (could be 2/7, duration ambiguous)
+- "docks a cycline" → interpreted as "doxycycline" (verify antibiotic name)
+- "won twenty-five" → interpreted as "120" (could be 125, verify BP reading)
+
+Do NOT flag:
+- "caught" → "cough" (obvious respiratory context)
+- "chess" → "chest" (obvious examination context)
 
 You are ready to receive the consultation data.
 `.trim();
