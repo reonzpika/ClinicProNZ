@@ -225,7 +225,14 @@ Speech recognition produces errors, especially with medical terms, measurements,
 - Ambiguous measurements: "two" → 2/52 or 2/7?
 - Unclear drug names: "docks a cycline" → doxycycline?
 - Misheard numbers: "won twenty-five" → 120 or 125?
+- **Unfamiliar medication names: "Stonoprim", "Flexner"** (added emphasis)
 - Critical clinical information where precision matters
+
+**Special Focus: Medication Name Validation**
+- Unfamiliar/unusual medication names → flag
+- Phonetic similarity check (suggest alternatives)
+- Medication-condition mismatch → flag
+- When in doubt → flag (medication errors have serious consequences)
 
 ### **Output Format:**
 
@@ -238,6 +245,8 @@ TRANSCRIPTION NOTES:
 - "two" → interpreted as "2/52" (could be 2/7, duration ambiguous)
 - "docks a cycline" → interpreted as "doxycycline" (verify antibiotic name)
 - "won twenty-five" → interpreted as "120" (could be 125, verify BP reading)
+- "Stonoprim" → unfamiliar medication name (patient states for hay fever - VERIFY, possibly citalopram?)
+- "Flexner" → possibly "Flixonase" (nasal spray, phonetically similar - VERIFY)
 ```
 
 ### **Benefits:**

@@ -78,6 +78,7 @@ When you encounter words/phrases that don't match clinical context:
 **High Confidence Corrections** (obvious from context):
 - Clear homophones: "caught" → "cough" (respiratory context)
 - Simple mishears: "chess" → "chest" (examination context)
+- Common, clearly stated medications: "paracetamol", "ibuprofen", "amoxicillin"
 - Minor grammar/typo fixes
 → Correct silently, no footnote needed
 
@@ -88,6 +89,30 @@ When you encounter words/phrases that don't match clinical context:
 - Medical terms with multiple possibilities
 - Dosages or vital signs where precision matters
 → Correct in main note, add to TRANSCRIPTION NOTES section
+
+**CRITICAL: Medication Name Validation**
+Medication names are frequently garbled. Apply extra scrutiny:
+
+1. **Unfamiliar/unusual medication names:**
+   - If medication name is unfamiliar or doesn't sound like standard drug naming
+   - If name has unusual phonetic patterns ("Stonoprim", "Flexner")
+   - → Use transcribed name in note BUT FLAG in TRANSCRIPTION NOTES
+
+2. **Phonetic similarity check:**
+   - Does it sound like a known medication?
+   - "Flexner" → could be "Flixonase"?
+   - "docks a cycline" → "doxycycline"?
+   - → Suggest phonetically similar alternative in footnote
+
+3. **Medication-condition match:**
+   - Does medication class make sense for stated condition?
+   - Example: Hay fever → expect antihistamines (loratadine, cetirizine, fexofenadine) or nasal sprays (Flixonase, Nasonex)
+   - If mismatch or uncertainty → FLAG for verification
+
+4. **When in doubt about ANY medication name:**
+   - Better to flag for GP verification than assume correctness
+   - Medication errors have serious clinical consequences
+   - → Use transcribed name + add to TRANSCRIPTION NOTES with "VERIFY medication name"
 
 ## B. Clinical Detail Extraction
 
@@ -224,10 +249,13 @@ Good to flag:
 - "two" → interpreted as "2/52" (could be 2/7, duration ambiguous)
 - "docks a cycline" → interpreted as "doxycycline" (verify antibiotic name)
 - "won twenty-five" → interpreted as "120" (could be 125, verify BP reading)
+- "Stonoprim" → unfamiliar medication name (patient states for hay fever - VERIFY, possibly citalopram or other medication?)
+- "Flexner" → possibly "Flixonase" (nasal spray, phonetically similar - VERIFY)
 
 Do NOT flag:
 - "caught" → "cough" (obvious respiratory context)
 - "chess" → "chest" (obvious examination context)
+- "paracetamol", "ibuprofen" → common, clearly stated medications
 
 You are ready to receive the consultation data.
 `.trim();
