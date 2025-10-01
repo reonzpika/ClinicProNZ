@@ -15,6 +15,7 @@ export const PatientSessionManager: React.FC = () => {
     switchToPatientSession,
     getCurrentPatientSession,
     patientSessions = [],
+    patientSessionsFetched,
     currentPatientSessionId,
     ensureActiveSession,
   } = useConsultationStores();
@@ -89,8 +90,8 @@ export const PatientSessionManager: React.FC = () => {
       }
     };
 
-    // Run after sessions are loaded
-    if (Array.isArray(patientSessions)) {
+    // Run only after sessions query has completed
+    if (patientSessionsFetched === true && Array.isArray(patientSessions)) {
       ensureSession();
     }
   }, [
@@ -100,6 +101,7 @@ export const PatientSessionManager: React.FC = () => {
     getCurrentPatientSession,
     currentPatientSessionId,
     patientSessions,
+    patientSessionsFetched,
     switchToPatientSession,
     ensureActiveSession,
     isEnsuring,
