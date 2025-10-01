@@ -219,10 +219,23 @@ export const ClinicalImageTab: React.FC = () => {
     queryClient,
   ]);
 
-  const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      handleFileUpload(file);
+  const handleFileSelect = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) {
+      return;
+    }
+
+    // Upload files sequentially
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file) {
+        await handleFileUpload(file);
+      }
+    }
+
+    // Clear input for re-selection
+    if (event.target) {
+      event.target.value = '';
     }
   }, [handleFileUpload]);
 
@@ -588,7 +601,7 @@ export const ClinicalImageTab: React.FC = () => {
         )}
         
         <p className="mt-2 text-xs text-slate-500">
-          Images are automatically resized and securely stored.
+          Images are automatically resized and securely stored. Select multiple files to upload at once.
         </p>
       </div>
 
@@ -597,6 +610,7 @@ export const ClinicalImageTab: React.FC = () => {
         ref={fileInputRef}
         type="file"
         accept="image/*"
+        multiple
         onChange={handleFileSelect}
         className="hidden"
       />
