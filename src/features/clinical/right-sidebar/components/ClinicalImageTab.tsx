@@ -114,7 +114,8 @@ export const ClinicalImageTab: React.FC = () => {
     // Filter out images being deleted for optimistic UI
     return filtered.filter((img: any) => !deletingImages.has(img.key));
   }, [serverImages, currentPatientSessionId, deletingImages]);
-  const queryClientRef = useRef(useQueryClient());
+  const queryClient = useQueryClient();
+  const queryClientRef = useRef(queryClient);
   useSimpleAbly({
     userId: userId ?? null,
     isMobile: false,
@@ -199,6 +200,11 @@ export const ClinicalImageTab: React.FC = () => {
       // Add to context and save
       addClinicalImage(newImage);
       await saveClinicalImagesToCurrentSession([...clinicalImages, newImage]);
+      
+      // Invalidate React Query cache to refresh server images
+      queryClient.invalidateQueries({
+        queryKey: imageQueryKeys.lists(),
+      });
     } catch (err) {
       console.error('Upload error:', err);
       setError(err instanceof Error ? err.message : 'Upload failed');
@@ -210,6 +216,7 @@ export const ClinicalImageTab: React.FC = () => {
     addClinicalImage,
     saveClinicalImagesToCurrentSession,
     clinicalImages,
+    queryClient,
   ]);
 
   const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
