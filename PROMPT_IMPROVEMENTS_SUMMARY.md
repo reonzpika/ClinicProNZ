@@ -257,65 +257,42 @@ TRANSCRIPTION NOTES:
 ✓ Footnote only appears when needed  
 ✓ No frontend changes required
 
-## Deepgram Keyword Boosting (Added)
+## Deepgram Keyword Boosting (Attempted, then Removed)
 
 ### **Problem:**
 Speech recognition produces medication name errors that LLM validation catches only after transcription.
 
-### **Solution: NZ Medical Terminology Keyword List**
+### **Attempted Solution: Deepgram Keyterm Feature**
 
-**Implementation:**
-- Created `/workspace/src/lib/deepgram/nz-medical-keywords.ts`
-- 109 most problematic medications (~110 tokens, 78% under limit)
-- Focus: Only easily misheard, similar-sounding, complex medication names
-- Integrated into Deepgram transcription API using `keyterm` parameter (Nova-3 requirement)
-- 11 categories covering commonly confused GP medications
-- 390 tokens headroom for future additions
+**What was tried:**
+- Deepgram Nova-3's `keyterm` parameter for keyword boosting
+- Created NZ medication keyword list
+- Tested with minimal set: citalopram, Flixonase, Steroclear
 
-**Categories (focus on hard to pronounce only):**
-1. Pain & Analgesics (5) - tramadol, oxycodone, methadone, diclofenac
-2. Antibiotics (11, boost 2.5) - flucloxacillin, doxycycline, azithromycin, clarithromycin
-3. Cardiovascular (13) - perindopril, candesartan, bisoprolol, rivaroxaban, dabigatran
-4. Respiratory (14, boost 2.5) - budesonide, tiotropium, Symbicort, Spiriva
-5. Mental Health (13, boost 2.5) - citalopram, escitalopram, mirtazapine, quetiapine
-6. Hay Fever (7, boost 2.5) - fexofenadine, Flixonase, Nasonex, Steroclear
-7. Diabetes (7) - empagliflozin, vildagliptin, Jardiance, Trulicity
-8. Gastrointestinal (13) - lansoprazole, ondansetron, prochlorperazine, Maxolon
-9. Dermatology (22) - betamethasone, clotrimazole, valaciclovir, Daivonex
-10. Contraception (11, boost 2.5) - levonorgestrel, medroxyprogesterone, Depo-Provera
-11. General (10) - levothyroxine, hydroxychloroquine, azathioprine
+**Results:**
+- ❌ Feature didn't improve accuracy
+- "citalopram" still transcribed as "Zolpram"
+- "Steroclear" still transcribed as "still clear"
+- Keyterm feature not effective for medication names
 
-**Boost Levels:**
-- 2.0: Standard medications
-- 2.5: Commonly confused terms (antibiotics, mental health, brand names)
-- 3.0: (Future) Patient-specific medications
+**Decision:**
+- Removed keyterm implementation
+- Relying solely on LLM validation layer (TRANSCRIPTION NOTES)
+- Nova-3-medical model alone without keyword boosting
 
-**Expected Impact:**
-- 70-90% reduction in medication transcription errors
-- "Stonoprim" → "citalopram" ✓
-- "Flexner" → "Flixonase" ✓
-
-**Two-Layer Defense:**
-1. **Deepgram keywords** - prevent errors at source (70-90% effective)
-2. **LLM validation** - catch remaining errors (safety net)
-
-**Maintenance:**
-- Weekly: Review LLM flags for new problematic terms
-- Quarterly: Update from PHARMAC/Medsafe
-- On-demand: Add medications when errors reported
-
-See `/workspace/src/lib/deepgram/README.md` for full documentation.
+**Current Defense:**
+- **LLM validation only** - flags unfamiliar medication names in TRANSCRIPTION NOTES
+- GPs verify flagged medications manually
 
 ## Next Steps
 
 1. ✅ Backend changes deployed
-2. ✅ Transcription error handling added
-3. ✅ Deepgram keyword boosting implemented
-4. ⏳ Monitor medication transcription accuracy improvement
-5. ⏳ Collect GP feedback on transcription notes usefulness
-6. ⏳ Phase 2: Patient-specific medication boosting
-7. ⏳ Update frontend to use new structured format
-8. ⏳ Iterate based on real-world usage
+2. ✅ Transcription error handling added (LLM validation with TRANSCRIPTION NOTES)
+3. ✅ Deepgram keyterm tested and removed (not effective)
+4. ⏳ Monitor LLM validation effectiveness
+5. ⏳ Collect GP feedback on TRANSCRIPTION NOTES usefulness
+6. ⏳ Update frontend to use new structured format (additionalNotes, transcription, typedInput)
+7. ⏳ Iterate based on real-world usage
 
 ## Configuration
 

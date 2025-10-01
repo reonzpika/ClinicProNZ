@@ -11,7 +11,6 @@ import { apiUsageCosts, patientSessions, users } from '@/db/schema';
 import { calculateDeepgramCost } from '@/src/features/admin/cost-tracking/services/costCalculator';
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 import { createUserSession } from '@/src/lib/services/guest-session-service';
-import { getDeepgramKeywords } from '@/src/lib/deepgram/nz-medical-keywords';
 
 export const runtime = 'nodejs'; // Ensure Node.js runtime for Buffer support
 
@@ -87,7 +86,6 @@ export async function POST(req: NextRequest) {
       utterances: true, // Enable word-level data with timestamps & confidence
       profanity_filter: false, // Medical context may include profanity in symptoms/conditions
       filler_words: false, // Remove "um", "uh", etc. for cleaner clinical notes
-      keyterm: getDeepgramKeywords(), // NZ medical terminology keyword boosting (Nova-3 uses 'keyterm')
     };
 
     try {
