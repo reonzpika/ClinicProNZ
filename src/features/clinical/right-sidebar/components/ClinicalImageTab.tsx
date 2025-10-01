@@ -103,14 +103,17 @@ export const ClinicalImageTab: React.FC = () => {
   const [analysisErrors, setAnalysisErrors] = useState<Record<string, string>>({});
   const [enlargeImage, setEnlargeImage] = useState<any | null>(null);
   const [showQR, setShowQR] = useState(false);
+  const [deletingImages, setDeletingImages] = useState<Set<string>>(new Set());
 
   // Server images (user scope) for session grouping
   const { userId } = useAuth();
   const { data: serverImages = [], isLoading: isLoadingServerImages } = useServerImages(currentPatientSessionId || undefined);
   const deleteImageMutation = useDeleteImage();
   const sessionServerImages = useMemo(() => {
-    return (serverImages || []).filter((img: any) => img.source === 'clinical' && img.sessionId && img.sessionId === currentPatientSessionId);
-  }, [serverImages, currentPatientSessionId]);
+    const filtered = (serverImages || []).filter((img: any) => img.source === 'clinical' && img.sessionId && img.sessionId === currentPatientSessionId);
+    // Filter out images being deleted for optimistic UI
+    return filtered.filter((img: any) => !deletingImages.has(img.key));
+  }, [serverImages, currentPatientSessionId, deletingImages]);
   const queryClientRef = useRef(useQueryClient());
   useSimpleAbly({
     userId: userId ?? null,
@@ -252,11 +255,22 @@ export const ClinicalImageTab: React.FC = () => {
   }, []);
 
   const handleDeleteSessionImage = useCallback(async (imageKey: string) => {
+    // Optimistic UI: immediately hide the image
+    setDeletingImages(prev => new Set(prev).add(imageKey));
+    
     try {
+      // Delete in background
       await deleteImageMutation.mutateAsync(imageKey);
+      // Successfully deleted - keep it hidden
     } catch (err) {
       console.error('Delete error:', err);
       setError(err instanceof Error ? err.message : 'Failed to delete image');
+      // On error, restore the image
+      setDeletingImages(prev => {
+        const updated = new Set(prev);
+        updated.delete(imageKey);
+        return updated;
+      });
     }
   }, [deleteImageMutation]);
 
