@@ -92,6 +92,7 @@ export async function POST(req: NextRequest) {
  console.log('[Transcribe] model=', deepgramConfig.model);
 } catch {}
 
+    const dgStart = Date.now();
     const { result, error } = await deepgram.listen.prerecorded.transcribeFile(
       audioBuffer,
       deepgramConfig,
