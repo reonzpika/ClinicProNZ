@@ -265,7 +265,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
 
         // Create complete audio blob from all chunks
         const audioBlob = new Blob(currentAudioChunksRef.current, { type: useMime || 'audio/webm' });
-        debugLog('mediaRecorder.onstop', { durationSec, blobSize: audioBlob.size });
+        debugLog('mediaRecorder.onstop', { durationSec, blobSize: audioBlob.size, mimeType: audioBlob.type });
 
         // Send to Deepgram
         await sendRecordingSession(audioBlob);
