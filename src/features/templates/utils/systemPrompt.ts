@@ -201,24 +201,7 @@ ${templateBody}
 - Fill directly without intermediate restructuring
 - Apply section-specific instructions (word limits, format requirements)
 
-# 7. OUTPUT RULES
-
-✓ **Output the filled template** (ready to paste into PMS or submit)
-✓ **Remove all placeholder markers** (no [Name] in output)
-✓ **Remove all instruction markers** (no (instruction) in output)
-✓ **Do NOT include** internal reasoning, thinking process, or explanatory text
-✓ **Use NZ English spelling**: organise, behaviour, centre, analyse, minimise
-✓ **Use clinical shorthand**: 
-   - Time: 2/52 (weeks), 3/7 (days), 4/12 (months)
-   - Abbreviations: SOB, NOF, PRN, BD, WNL, NAD, C/O
-   - Common terms: Hx (history), Ix (investigations), Rx (prescriptions), F/U (follow-up)
-✓ **Match template format exactly**: bullets, numbering, indentation, spacing
-✓ **Leave section blank** if no relevant data exists (do not write "None" or "N/A" unless template specifies)
-✓ **Include ONLY facts** from consultation data (no hallucination)
-✓ **Do NOT infer** diagnoses, plans, or clinical decisions beyond what was explicitly stated
-✓ **Preserve clinical accuracy**: Do not contradict or misrepresent information from sources
-
-**Optional: Transcription Quality Footnote**
+# 7. TRANSCRIPTION QUALITY FOOTNOTE (Optional)
 
 If you made LOW/MEDIUM confidence corrections from transcription, add this section AFTER the completed template:
 

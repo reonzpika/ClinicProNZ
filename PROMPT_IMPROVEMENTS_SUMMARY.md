@@ -284,15 +284,67 @@ Speech recognition produces medication name errors that LLM validation catches o
 - **LLM validation only** - flags unfamiliar medication names in TRANSCRIPTION NOTES
 - GPs verify flagged medications manually
 
+## Anti-Hallucination Rules (Added to User Prompt)
+
+### **Problem:**
+LLM was inventing treatment plans not stated in consultation data:
+- "Consider analgesia, nasal decongestants" (not documented)
+- "Symptomatic treatment advised" (not stated)
+- "Review if symptoms worsen" (not stated)
+
+### **Solution: Strict Output Rules in User Prompt**
+
+**Why user prompt?**
+- User prompt has higher priority than system prompt
+- LLM reads user prompt last = stronger influence
+- More specific, contextual instructions
+
+**What was added to user prompt end:**
+
+1. **Anti-Hallucination Rules**
+   - Only include explicitly stated treatments
+   - No inferring standard treatments from diagnosis
+   - No "Consider..." unless GP said it
+   - Violation examples with ❌ markers
+
+2. **Blank Section Policy**
+   - Leave Plan section completely blank if no plan stated
+   - Do NOT write "Not documented"
+   - Do NOT fill with expected content
+
+3. **Final Validation Checklist**
+   - Hallucination check before output
+   - Medication name verification (100% certain or flag)
+   - Blank section verification
+
+4. **Output Rules** (moved from system prompt)
+   - Explicit formatting instructions
+   - NZ English, clinical shorthand
+   - Leave blank if no data
+
+**Expected result:**
+```
+A+P:
+1. Sinusitis
+
+(Plan section left completely blank if no treatment documented)
+
+---
+TRANSCRIPTION NOTES:
+- "Zolpram" → unfamiliar medication name (VERIFY - does not match known medications)
+- "still clear" → context suggests medication name (VERIFY medication for hay fever)
+```
+
 ## Next Steps
 
 1. ✅ Backend changes deployed
 2. ✅ Transcription error handling added (LLM validation with TRANSCRIPTION NOTES)
 3. ✅ Deepgram keyterm tested and removed (not effective)
-4. ⏳ Monitor LLM validation effectiveness
-5. ⏳ Collect GP feedback on TRANSCRIPTION NOTES usefulness
-6. ⏳ Update frontend to use new structured format (additionalNotes, transcription, typedInput)
-7. ⏳ Iterate based on real-world usage
+4. ✅ Anti-hallucination rules added to user prompt (end position)
+5. ⏳ Monitor LLM validation effectiveness
+6. ⏳ Collect GP feedback on TRANSCRIPTION NOTES usefulness
+7. ⏳ Update frontend to use new structured format (additionalNotes, transcription, typedInput)
+8. ⏳ Iterate based on real-world usage
 
 ## Configuration
 
