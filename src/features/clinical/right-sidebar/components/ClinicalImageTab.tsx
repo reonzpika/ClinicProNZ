@@ -523,25 +523,7 @@ export const ClinicalImageTab: React.FC = () => {
       )}
 
       {/* Lightbox for enlarged view */}
-      {enlargeImage && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
-          onClick={() => setEnlargeImage(null)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
- if (e.key === 'Escape') {
- setEnlargeImage(null);
-}
-}}
-        >
-          <div className="max-h-[90vh] max-w-[90vw]">
-            {enlargeImage.thumbnailUrl
-              ? <img src={enlargeImage.thumbnailUrl} alt="" className="max-h-[90vh] max-w-[90vw] object-contain" />
-              : <div className="flex items-center justify-center p-8 text-white">No preview</div>}
-          </div>
-        </div>
-      )}
+      {enlargeImage && <EnlargeImageModal image={enlargeImage} onClose={() => setEnlargeImage(null)} />}
 
       {/* Upload Buttons */}
       <div className="rounded-lg border-2 border-dashed border-slate-200 p-4 text-center">
@@ -600,3 +582,70 @@ export const ClinicalImageTab: React.FC = () => {
     </div>
   );
 };
+
+// Enlarge Image Modal Component
+function EnlargeImageModal({ image, onClose }: { image: any; onClose: () => void }) {
+  const { data: imageUrl } = useImageUrl(image.key);
+  const isLoadingUrl = !imageUrl;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+      onClick={onClose}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClose();
+        }
+      }}
+      aria-label="Close modal"
+    >
+      {/* Close Button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose();
+        }}
+        className="fixed right-4 top-4 z-10 text-white hover:bg-white/20"
+      >
+        ✕
+      </Button>
+
+      {/* Image Container */}
+      <div className="max-h-full max-w-full">
+        {isLoadingUrl ? (
+          <div className="flex items-center justify-center p-8">
+            <Loader2 className="size-12 animate-spin text-white" />
+          </div>
+        ) : imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={image.filename || 'Clinical image'}
+            className="max-h-[90vh] max-w-[90vw] object-contain shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center p-8 text-white">
+            <p>Failed to load image</p>
+          </div>
+        )}
+      </div>
+
+      {/* Image Info */}
+      {image.filename && (
+        <div className="fixed bottom-4 left-4 rounded-lg bg-black/60 px-3 py-2 text-white">
+          <p className="text-sm font-medium">{image.filename}</p>
+          {image.uploadedAt && (
+            <p className="text-xs opacity-75">
+              {new Date(image.uploadedAt).toLocaleDateString()}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
