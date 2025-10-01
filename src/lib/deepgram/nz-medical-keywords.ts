@@ -94,7 +94,7 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
     boost: 2.5, // Higher boost - commonly confused names
     description: 'Commonly prescribed antibiotics in NZ',
     keywords: [
-      // Generic names
+      // Generic names only
       'amoxicillin',
       'flucloxacillin',
       'doxycycline',
@@ -109,15 +109,6 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
       'cefalexin',
       'cephalexin',
       'erythromycin',
-      
-      // Brand names
-      'Augmentin',
-      'Amoxil',
-      'Floxapen',
-      'Doxine',
-      'Flagyl',
-      'Zithromax',
-      'Klacid',
     ],
   },
 
@@ -130,7 +121,6 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
     description: 'Blood pressure, heart, and cholesterol medications',
     keywords: [
       // ACE inhibitors
-      'ramipril',
       'enalapril',
       'lisinopril',
       'perindopril',
@@ -139,8 +129,6 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
       // ARBs
       'losartan',
       'candesartan',
-      'irbesartan',
-      'valsartan',
       
       // Beta blockers
       'atenolol',
@@ -161,21 +149,16 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
       'atorvastatin',
       'rosuvastatin',
       
-      // Others
+      // Anticoagulants
       'aspirin',
       'clopidogrel',
       'warfarin',
-      'apixaban',
       'rivaroxaban',
-      'digoxin',
-      'frusemide',
-      'furosemide',
+      'dabigatran',
       
-      // Brand names
-      'Lipitor',
-      'Crestor',
-      'Plavix',
-      'Norvasc',
+      // Others
+      'digoxin',
+      'furosemide',
       'Coversyl',
     ],
   },
@@ -190,12 +173,10 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
     keywords: [
       // Generic names
       'salbutamol',
-      'terbutaline',
       'budesonide',
       'beclomethasone',
       'fluticasone',
       'salmeterol',
-      'formoterol',
       'tiotropium',
       'montelukast',
       'ipratropium',
@@ -212,7 +193,7 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
       'Singulair',
       'Atrovent',
       'Duoresp',
-      'Alvesco',
+      'Breo',
     ],
   },
 
@@ -234,24 +215,16 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
       // Other antidepressants
       'mirtazapine',
       'venlafaxine',
-      'desvenlafaxine',
-      'duloxetine',
-      'bupropion',
-      'agomelatine',
-      'vortioxetine',
       
       // Anxiolytics
       'diazepam',
       'lorazepam',
       'clonazepam',
-      'oxazepam',
       'zopiclone',
-      'zolpidem',
       
       // Mood stabilisers
       'lithium',
       'lamotrigine',
-      'sodium valproate',
       'valproate',
       
       // Antipsychotics
@@ -259,21 +232,6 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
       'olanzapine',
       'risperidone',
       'aripiprazole',
-      
-      // Brand names
-      'Cipramil',
-      'Lexapro',
-      'Prozac',
-      'Aropax',
-      'Zoloft',
-      'Avanza',
-      'Efexor',
-      'Pristiq',
-      'Cymbalta',
-      'Zyban',
-      'Seroquel',
-      'Zyprexa',
-      'Risperdal',
     ],
   },
 
@@ -290,26 +248,20 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
       'loratadine',
       'fexofenadine',
       'promethazine',
-      'chlorpheniramine',
-      'desloratadine',
       
       // Nasal sprays
       'fluticasone',
       'mometasone',
       'beclomethasone',
       'budesonide',
-      'azelastine',
       
       // Brand names
-      'Zyrtec',
       'Claratyne',
       'Telfast',
       'Phenergan',
       'Flixonase',
       'Nasonex',
-      'Beconase',
-      'Rhinocort',
-      'Dymista',
+      'Steroclear',
     ],
   },
 
@@ -324,10 +276,7 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
       // Oral medications
       'metformin',
       'gliclazide',
-      'glibenclamide',
       'empagliflozin',
-      'dapagliflozin',
-      'sitagliptin',
       'vildagliptin',
       
       // Insulin types
@@ -335,20 +284,15 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
       'NovoRapid',
       'Humalog',
       'Lantus',
-      'Levemir',
-      'Tresiba',
       
       // Injectable GLP-1
       'dulaglutide',
       'semaglutide',
       
       // Brand names
-      'Glucophage',
-      'Diamicron',
       'Jardiance',
       'Jardiamet',
       'Trulicity',
-      'Januvia',
       'Galvus',
     ],
   },
@@ -365,7 +309,6 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
       'omeprazole',
       'lansoprazole',
       'pantoprazole',
-      'rabeprazole',
       
       // H2 antagonists
       'ranitidine',
@@ -435,41 +378,26 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
       'valaciclovir',
       
       // Antibiotics
-      'fusidic acid',
       'mupirocin',
       
       // Emollients
       'sorbolene',
       'cetomacrogol',
-      'emulsifying ointment',
-      'aqueous cream',
-      'glycerol',
       
       // Acne
-      'benzoyl peroxide',
       'adapalene',
       'tretinoin',
       'isotretinoin',
       
       // Psoriasis
       'calcipotriol',
-      'dithranol',
       
       // Brand names
-      'Canesten',
-      'Daktarin',
-      'Lamisil',
-      'Zovirax',
-      'Valtrex',
-      'Fucidin',
-      'Bactroban',
-      'QV',
-      'Cetraben',
       'Cetaphil',
       'Dermol',
-      'Epiderm',
       'Differin',
-      'Roaccutane',
+      'Retrieve',
+      'Oratane',
       'Locoid',
       'Elocon',
       'Advantan',
@@ -533,20 +461,8 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
   {
     category: 'general-otc',
     boost: 2.0,
-    description: 'Common over-the-counter and general medications',
+    description: 'Common general medications',
     keywords: [
-      // Vitamins & supplements
-      'folic acid',
-      'iron',
-      'ferrous sulphate',
-      'vitamin D',
-      'colecalciferol',
-      'calcium',
-      'iodine',
-      'vitamin B12',
-      'thiamine',
-      'multivitamin',
-      
       // Thyroid
       'levothyroxine',
       'thyroxine',
@@ -565,67 +481,9 @@ export const MEDICAL_KEYWORDS: MedicalKeywordCategory[] = [
       'methotrexate',
       'hydroxychloroquine',
       'azathioprine',
-      
-      // Brand names
-      'Elevit',
-      'Blackmores',
-      'Eltroxin',
-      'Prolia',
     ],
   },
 
-  // ---------------------------------------------------------------------------
-  // 12. CLINICAL TERMINOLOGY
-  // ---------------------------------------------------------------------------
-  {
-    category: 'clinical-terms',
-    boost: 2.0,
-    description: 'Common medical terminology and abbreviations',
-    keywords: [
-      // Symptoms
-      'dyspnoea',
-      'dyspnea',
-      'dysuria',
-      'nausea',
-      'vertigo',
-      'syncope',
-      'angina',
-      'palpitations',
-      'haematuria',
-      'haemoptysis',
-      
-      // Anatomy
-      'thorax',
-      'abdomen',
-      'auscultation',
-      'palpation',
-      'percussion',
-      
-      // Conditions
-      'hypertension',
-      'diabetes',
-      'hyperlipidaemia',
-      'asthma',
-      'COPD',
-      'gastroenteritis',
-      'cellulitis',
-      'pneumonia',
-      'bronchitis',
-      
-      // Procedures
-      'ECG',
-      'spirometry',
-      'urinalysis',
-      
-      // Abbreviations (expanded)
-      'prn',
-      'PRN',
-      'twice daily',
-      'three times daily',
-      'nocte',
-      'mane',
-    ],
-  },
 ];
 
 // =============================================================================

@@ -12,52 +12,52 @@ NZ-specific medical terminology keyword list for Deepgram transcription accuracy
 
 ## Current Stats
 
-**Total Keywords:** ~400+ terms  
-**Categories:** 12  
+**Total Keywords:** 221 terms  
+**Estimated Tokens:** ~222 tokens (limit: 500)  
+**Categories:** 11  
 **Boost Levels:**
 - 2.0: Standard medications and medical terms
 - 2.5: Commonly confused terms (e.g., antibiotics, mental health meds)
 - 3.0: Patient-specific medications (added dynamically - not yet implemented)
 
+**Headroom:** 278 tokens available for future additions
+
 ---
 
 ## Categories
 
-1. **Pain & Analgesics** (~20 terms)
+1. **Pain & Analgesics** (19 terms, boost: 2.0)
    - Common: paracetamol, ibuprofen, codeine, tramadol, oxycodone
 
-2. **Antibiotics** (~20 terms, boost: 2.5)
+2. **Antibiotics** (14 terms, boost: 2.5)
    - Common: amoxicillin, flucloxacillin, doxycycline, trimethoprim
 
-3. **Cardiovascular** (~35 terms)
-   - Common: amlodipine, atenolol, ramipril, simvastatin
+3. **Cardiovascular** (27 terms, boost: 2.0)
+   - Common: amlodipine, atenolol, simvastatin, dabigatran
 
-4. **Respiratory** (~20 terms, boost: 2.5)
-   - Common: Ventolin, Seretide, Symbicort, salbutamol
+4. **Respiratory** (20 terms, boost: 2.5)
+   - Common: Ventolin, Seretide, Symbicort, Breo, salbutamol
 
-5. **Mental Health** (~35 terms, boost: 2.5)
+5. **Mental Health** (18 terms, boost: 2.5)
    - Common: citalopram, sertraline, mirtazapine, quetiapine
 
-6. **Hay Fever & Allergies** (~15 terms, boost: 2.5)
-   - Common: Flixonase, Nasonex, cetirizine, loratadine
+6. **Hay Fever & Allergies** (14 terms, boost: 2.5)
+   - Common: Flixonase, Nasonex, Steroclear, cetirizine
 
-7. **Diabetes** (~15 terms)
+7. **Diabetes** (14 terms, boost: 2.0)
    - Common: metformin, gliclazide, Jardiance, Trulicity
 
-8. **Gastrointestinal** (~30 terms)
+8. **Gastrointestinal** (28 terms, boost: 2.0)
    - Common: omeprazole, Gaviscon, Buscopan, Movicol
 
-9. **Dermatology** (~40 terms)
-   - Common: hydrocortisone, betamethasone, Locoid, Dermol
+9. **Dermatology** (31 terms, boost: 2.0)
+   - Common: hydrocortisone, Locoid, Dermol, Retrieve, Oratane
 
-10. **Contraception & HRT** (~20 terms, boost: 2.5)
-    - Common: Levlen, Cerazette, Mirena, Depo-Provera
+10. **Contraception & HRT** (25 terms, boost: 2.5)
+    - Common: Levlen, Mirena, Cerazette, Depo-Provera
 
-11. **General & OTC** (~25 terms)
-    - Common: folic acid, iron, vitamin D, levothyroxine
-
-12. **Clinical Terminology** (~30 terms)
-    - Common: dyspnoea, auscultation, hypertension, COPD
+11. **General Medications** (11 terms, boost: 2.0)
+    - Common: levothyroxine, allopurinol, methotrexate
 
 ---
 

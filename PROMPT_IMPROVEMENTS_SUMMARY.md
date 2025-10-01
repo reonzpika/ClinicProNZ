@@ -266,9 +266,10 @@ Speech recognition produces medication name errors that LLM validation catches o
 
 **Implementation:**
 - Created `/workspace/src/lib/deepgram/nz-medical-keywords.ts`
-- 336 NZ-specific medical terms with boost values
+- 221 NZ-specific medical terms (~222 tokens, well under 500 limit)
 - Integrated into Deepgram transcription API using `keyterm` parameter (Nova-3 requirement)
-- 12 categories covering common GP medications
+- 11 categories covering common GP medications
+- 278 tokens headroom for future additions
 
 **Categories (with term counts):**
 1. Pain & Analgesics (~20) - paracetamol, ibuprofen, codeine, oxycodone
