@@ -1,38 +1,21 @@
 import * as Ably from 'ably';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-// 🆕 Enhanced transcription data structure
-export type EnhancedTranscriptionData = {
-  confidence?: number;
-  words?: Array<{
-    word: string;
-    start: number;
-    end: number;
-    confidence: number;
-    punctuated_word: string;
-  }>;
-  paragraphs?: any;
-};
-
 type SimpleAblyMessage = {
   type: 'transcriptions_updated' | 'recording_status' | 'recording_control' | 'images_uploaded' | 'session_context' | 'transcription_status' | 'flush_request';
   transcript?: string;
   timestamp?: number;
-  // 🆕 Enhanced transcription fields
-  confidence?: number;
-  words?: any[];
-  paragraphs?: any;
-  // 🆕 Recording status fields
+  // Recording status fields
   isRecording?: boolean;
-  // 🆕 Recording control fields
+  // Recording control fields
   action?: 'start' | 'stop';
-  // 🆕 Image upload notification fields
+  // Image upload notification fields
   mobileTokenId?: string;
   imageCount?: number;
   uploadTimestamp?: string;
-  // 🆕 Session context fields
+  // Session context fields
   sessionId?: string | null;
-  // 🆕 Transcription status fields
+  // Transcription status fields
   state?: 'flushing' | 'flushed';
   lastChunkId?: string;
 };

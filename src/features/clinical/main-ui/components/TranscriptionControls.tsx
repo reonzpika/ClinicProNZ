@@ -17,7 +17,6 @@ import { MobileRecordingQRV2 } from '../../mobile/components/MobileRecordingQRV2
 import { ConsentModal } from '../../session-management/components/ConsentModal';
 import { useTranscription } from '../hooks/useTranscription';
 import { ConsultationInputHeader } from './ConsultationInputHeader';
-import { EnhancedTranscriptionDisplay } from './EnhancedTranscriptionDisplay';
 
 export function TranscriptionControls({
   collapsed,
@@ -33,10 +32,6 @@ export function TranscriptionControls({
   defaultRecordingMethod?: 'desktop' | 'mobile';
 }) {
   const { isSignedIn } = useAuth();
-  const { getUserTier } = useClerkMetadata();
-  const userTier = getUserTier();
-  // 🆕 FEATURE FLAG: Enhanced transcription for admin tier only
-  const showEnhancedTranscription = userTier === 'admin';
 
   const {
     error: contextError,
@@ -80,9 +75,6 @@ export function TranscriptionControls({
 
   // Use regular transcript since diarization is disabled
   const transcript = contextTranscription.transcript;
-
-  // 🐛 DEBUG: Log tier and enhanced transcription status
-  // debug removed
 
   // Simplified: always show mobile controls and QR
   const hasMobileDevices = true;
@@ -701,44 +693,30 @@ export function TranscriptionControls({
                 </div>
               )}
 
-              {/* 🆕 UPDATED: Transcription display with tier-based feature flag */}
+              {/* Transcription display */}
               {(isRecording || (transcript && transcriptExpanded)) && (
-                showEnhancedTranscription
-                  ? (
-                    <EnhancedTranscriptionDisplay
-                      transcript={transcript}
-                      confidence={contextTranscription.confidence}
-                      words={contextTranscription.words}
-                      isRecording={isRecording}
-                      onEdit={(newText) => {
-                        setTranscription(newText, false, undefined, undefined);
-                      }}
-                    />
-                  )
-                  : (
-                    <div className="max-h-64 overflow-y-auto rounded-md border bg-white p-2">
-                      {!isRecording
-                        ? (
-                          <textarea
-                            value={transcript}
-                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                              setTranscription(e.target.value, false, undefined, undefined);
-                            }}
-                            className="w-full resize-none border-none text-sm leading-relaxed focus:outline-none"
-                            placeholder="Transcription will appear here..."
-                            rows={Math.min(Math.max(transcript.split('\n').length || 3, 3), 12)}
-                          />
-                        )
-                        : (
-                          <div>
-                            <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                              {transcript || 'Listening for speech...'}
-                            </p>
-                            <span className="mt-1 inline-block h-3 w-1 animate-pulse bg-blue-500" />
-                          </div>
-                        )}
-                    </div>
-                  )
+                <div className="max-h-64 overflow-y-auto rounded-md border bg-white p-2">
+                  {!isRecording
+                    ? (
+                      <textarea
+                        value={transcript}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                          setTranscription(e.target.value, false, undefined, undefined);
+                        }}
+                        className="w-full resize-none border-none text-sm leading-relaxed focus:outline-none"
+                        placeholder="Transcription will appear here..."
+                        rows={Math.min(Math.max(transcript.split('\n').length || 3, 3), 12)}
+                      />
+                    )
+                    : (
+                      <div>
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                          {transcript || 'Listening for speech...'}
+                        </p>
+                        <span className="mt-1 inline-block h-3 w-1 animate-pulse bg-blue-500" />
+                      </div>
+                    )}
+                </div>
               )}
 
               {/* Collapsed transcript state when transcript exists but not expanded */}

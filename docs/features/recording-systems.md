@@ -154,7 +154,6 @@ src/features/clinical/main-ui/
 │   └── useTranscription.ts              # Core VAD logic, audio processing, desktop recording
 ├── components/
 │   ├── TranscriptionControls.tsx        # Recording controls UI (start/stop/pause)
-│   ├── EnhancedTranscriptionDisplay.tsx # Real-time transcription display (admin only)
 │   └── TypedInput.tsx                   # Manual text input component
 
 app/(clinical)/consultation/
