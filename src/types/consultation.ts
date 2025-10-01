@@ -19,21 +19,6 @@ export type ConsultationItem = {
 
 export type InputMode = 'audio' | 'typed';
 
-// Enhanced transcription types for confidence and timestamp features
-export type TranscriptionWord = {
-  word: string;
-  start: number;
-  end: number;
-  confidence: number;
-  punctuated_word: string;
-};
-
-export type TranscriptionSentence = {
-  text: string;
-  start: number;
-  end: number;
-};
-
 export type TranscriptionEntry = {
   id: string;
   text: string;

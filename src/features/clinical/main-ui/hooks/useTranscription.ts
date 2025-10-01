@@ -45,7 +45,6 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     setStatus,
     setTranscription,
     appendTranscription,
-    appendTranscriptionEnhanced,
     transcription,
     microphoneGain,
     volumeThreshold,
@@ -174,36 +173,11 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
 
         const data = await response.json();
         const { transcript } = data;
-        debugLog('transcribe:ok', { reqId, tMs, transcriptLen: (transcript || '').length, words: (data?.words || []).length });
-
-        // 🆕 Extract enhanced data if available (graceful degradation)
-        const enhancedData = {
-          confidence: data.confidence,
-          words: data.words || [],
-          paragraphs: data.paragraphs,
-        };
+        debugLog('transcribe:ok', { reqId, tMs, transcriptLen: (transcript || '').length });
 
         // Use regular transcript since diarization is disabled
         if (transcript && transcript.trim()) {
-          // 🆕 Use enhanced function if we have enhanced data
-          const hasEnhancedData = enhancedData.confidence !== undefined || enhancedData.words.length > 0;
-
-          if (hasEnhancedData) {
-            await appendTranscriptionEnhanced(
-              transcript.trim(),
-              state.isRecording,
-              'desktop',
-              undefined, // deviceId
-              undefined, // diarizedTranscript
-              undefined, // utterances
-              enhancedData.confidence,
-              enhancedData.words,
-              enhancedData.paragraphs,
-            );
-          } else {
-            // ✅ Fallback to existing function
-            await appendTranscription(transcript.trim(), state.isRecording, 'desktop');
-          }
+          await appendTranscription(transcript.trim(), state.isRecording, 'desktop');
 
           setState((prev: TranscriptionState) => ({
             ...prev,

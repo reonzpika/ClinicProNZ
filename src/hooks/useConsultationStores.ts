@@ -588,22 +588,8 @@ export function useConsultationStores(): any {
     // Actions - input/transcription
     setInputMode: transcriptionStore.setInputMode,
     setTranscription: transcriptionStore.setTranscription,
-    setTranscriptionEnhanced: transcriptionStore.setTranscriptionEnhanced,
     appendTranscription: useCallback(async (newTranscript: string, isLive: boolean, source: 'desktop' | 'mobile' = 'desktop', deviceId?: string, diarizedTranscript?: string, utterances?: any[]) => {
       await transcriptionStore.appendTranscription(newTranscript, isLive, source, deviceId, diarizedTranscript, utterances);
-      const id = consultationStore.currentPatientSessionId;
-      if (!id || !newTranscript.trim()) {
-        return;
-      }
-      try {
-        const entry = { id: Math.random().toString(36).substr(2, 9), text: newTranscript.trim(), timestamp: new Date().toISOString(), source, deviceId };
-        const current = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === id) : null;
-        const updated = [...(current?.transcriptions || []), entry];
-        await updatePatientSession(id, { transcriptions: updated } as any);
-      } catch {}
-    }, [transcriptionStore, consultationStore.currentPatientSessionId, patientSessions, updatePatientSession]),
-    appendTranscriptionEnhanced: useCallback(async (newTranscript: string, isLive: boolean, source: 'desktop' | 'mobile' = 'desktop', deviceId?: string, diarizedTranscript?: string, utterances?: any[], confidence?: number, words?: any[], paragraphs?: any) => {
-      await transcriptionStore.appendTranscriptionEnhanced(newTranscript, isLive, source, deviceId, diarizedTranscript, utterances, confidence, words, paragraphs);
       const id = consultationStore.currentPatientSessionId;
       if (!id || !newTranscript.trim()) {
         return;
