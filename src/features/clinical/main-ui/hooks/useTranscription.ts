@@ -101,6 +101,9 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     }
   };
 
+  // Request correlation id helper
+  const nextReqId = () => Math.random().toString(36).slice(2, 10);
+
   // Volume measurement for VAD
   const measureVolume = useCallback((): number => {
     if (!analyserRef.current) {
@@ -146,27 +149,32 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
 
       sessionCountRef.current += 1;
       const currentSession = sessionCountRef.current;
+      const reqId = nextReqId();
 
       if (isMobile && onChunkComplete) {
+        debugLog('sendRecordingSession[mobile]', { reqId, blobSize: audioBlob.size });
         await onChunkComplete(audioBlob);
       } else {
         const formData = new FormData();
         formData.append('audio', audioBlob, `session-${currentSession}.webm`);
 
         // Authentication required via headers
-
+        const t0 = Date.now();
         const response = await fetch('/api/deepgram/transcribe', {
           method: 'POST',
-          headers: createAuthHeadersForFormData(userId, userTier),
+          headers: { ...createAuthHeadersForFormData(userId, userTier), 'X-Debug-Request-Id': reqId },
           body: formData,
         });
+        const tMs = Date.now() - t0;
 
         if (!response.ok) {
+          debugLog('transcribe:nonOk', { reqId, status: response.status, tMs });
           throw new Error(`Transcription failed: ${response.statusText}`);
         }
 
         const data = await response.json();
         const { transcript } = data;
+        debugLog('transcribe:ok', { reqId, tMs, transcriptLen: (transcript || '').length, words: (data?.words || []).length });
 
         // 🆕 Extract enhanced data if available (graceful degradation)
         const enhancedData = {
@@ -206,7 +214,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
       }
     } catch (error: any) {
       try {
- console.error('[Transcription] sendRecordingSession error', error?.message || error);
+        console.error('[Transcription] sendRecordingSession error', error?.message || error);
 } catch {}
       setState((prev: TranscriptionState) => ({
         ...prev,
@@ -265,6 +273,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
 
         // Create complete audio blob from all chunks
         const audioBlob = new Blob(currentAudioChunksRef.current, { type: useMime || 'audio/webm' });
+
         debugLog('mediaRecorder.onstop', { durationSec, blobSize: audioBlob.size, mimeType: audioBlob.type });
 
         // Send to Deepgram
@@ -283,6 +292,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
       };
 
       currentRecorderRef.current = mediaRecorder;
+      debugLog('MediaRecorder.start', { mimeType: mediaRecorder.mimeType });
       mediaRecorder.start(); // Record everything in one session
     } catch {
       isSessionActiveRef.current = false;
