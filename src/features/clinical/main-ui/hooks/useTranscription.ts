@@ -70,8 +70,12 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
-  const vadLoopRef = useRef<NodeJS.Timeout | null>(null);
-  const postRollTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const highPassFilterRef = useRef<BiquadFilterNode | null>(null);
+  const compressorNodeRef = useRef<DynamicsCompressorNode | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
+  const destinationNodeRef = useRef<MediaStreamAudioDestinationNode | null>(null);
+  const vadLoopRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const postRollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Recording session management
   const currentRecorderRef = useRef<MediaRecorder | null>(null);
@@ -141,7 +145,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     }
 
     try {
-      setState(prev => ({ ...prev, isTranscribing: true }));
+      setState((prev: TranscriptionState) => ({ ...prev, isTranscribing: true }));
 
       sessionCountRef.current += 1;
       const currentSession = sessionCountRef.current;
@@ -201,7 +205,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
             await appendTranscription(transcript.trim(), state.isRecording, 'desktop');
           }
 
-          setState(prev => ({
+          setState((prev: TranscriptionState) => ({
             ...prev,
             noInputWarning: false,
             chunksCompleted: prev.chunksCompleted + 1,
@@ -212,12 +216,12 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
       try {
         console.error('[Transcription] sendRecordingSession error', error?.message || error);
 } catch {}
-      setState(prev => ({
+      setState((prev: TranscriptionState) => ({
         ...prev,
         error: `Transcription failed: ${error.message}`,
       }));
     } finally {
-      setState(prev => ({ ...prev, isTranscribing: false }));
+      setState((prev: TranscriptionState) => ({ ...prev, isTranscribing: false }));
     }
   }, [appendTranscription, state.isRecording, isMobile, onChunkComplete]);
 
@@ -228,10 +232,27 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     }
 
     try {
-      // Debug supported types
-      const mediaRecorder = new MediaRecorder(audioStreamRef.current, {
-        mimeType: 'audio/webm;codecs=opus',
-      });
+      const inputStream = destinationNodeRef.current?.stream || audioStreamRef.current;
+
+      let preferredMime = 'audio/webm;codecs=opus';
+      let fallbackMime = 'audio/webm';
+      let useMime: string | null = preferredMime;
+      try {
+        const checker = (MediaRecorder as any)?.isTypeSupported;
+        if (typeof checker === 'function') {
+          if (!checker(preferredMime)) {
+            useMime = checker(fallbackMime) ? fallbackMime : null;
+          }
+        }
+      } catch {
+        // ignore feature detection errors
+      }
+
+      const recorderOptions: MediaRecorderOptions = useMime
+        ? { mimeType: useMime, audioBitsPerSecond: 96000 }
+        : { audioBitsPerSecond: 96000 };
+
+      const mediaRecorder = new MediaRecorder(inputStream, recorderOptions);
 
       currentAudioChunksRef.current = [];
       recordingSessionStartRef.current = Date.now();
@@ -251,9 +272,8 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
           : 0;
 
         // Create complete audio blob from all chunks
-        const audioBlob = new Blob(currentAudioChunksRef.current, {
-          type: 'audio/webm;codecs=opus',
-        });
+        const audioBlob = new Blob(currentAudioChunksRef.current, { type: useMime || 'audio/webm' });
+
         debugLog('mediaRecorder.onstop', { durationSec, blobSize: audioBlob.size, mimeType: audioBlob.type });
 
         // Send to Deepgram
@@ -262,7 +282,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
 
       mediaRecorder.onerror = () => {
         isSessionActiveRef.current = false;
-        setState(prev => ({
+        setState((prev: TranscriptionState) => ({
           ...prev,
           error: 'Recording session error occurred',
         }));
@@ -307,7 +327,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     const adjustedVolume = volume * (microphoneGain || 1);
 
     // Update volume level for UI
-    setState(prev => ({ ...prev, volumeLevel: adjustedVolume }));
+    setState((prev: TranscriptionState) => ({ ...prev, volumeLevel: adjustedVolume }));
 
     // Speech detection with hysteresis
     const startThreshold = volumeThreshold || 0.01;
@@ -320,7 +340,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
       const requiredFrames = withinGrace ? 1 : SPEECH_CONFIRMATION_FRAMES;
       if (speechFrameCountRef.current >= requiredFrames) {
         lastSpokeAtRef.current = currentTime;
-        setState(prev => ({ ...prev, noInputWarning: false }));
+        setState((prev: TranscriptionState) => ({ ...prev, noInputWarning: false }));
         // Cancel any pending post-roll stop if speech resumed
         if (postRollTimerRef.current) {
           clearTimeout(postRollTimerRef.current);
@@ -384,7 +404,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
 
     // No input warning
     if (silenceDuration > 10 && !state.noInputWarning) {
-      setState(prev => ({ ...prev, noInputWarning: true }));
+      setState((prev: TranscriptionState) => ({ ...prev, noInputWarning: true }));
     }
   }, [measureVolume, microphoneGain, volumeThreshold, startRecordingSession, stopRecordingSession, state.noInputWarning]);
 
@@ -411,16 +431,17 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
       if (!audioStreamRef.current) {
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            sampleRate: 16000,
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false,
+            channelCount: 1,
           },
         });
         audioStreamRef.current = stream;
       }
 
       if (!audioContextRef.current) {
-        audioContextRef.current = new AudioContext({ sampleRate: 16000 });
+        audioContextRef.current = new AudioContext();
       }
 
       if (!analyserRef.current) {
@@ -431,12 +452,40 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
 
       if (!sourceNodeRef.current) {
         sourceNodeRef.current = audioContextRef.current.createMediaStreamSource(audioStreamRef.current);
-        sourceNodeRef.current.connect(analyserRef.current);
+      }
+
+      // Build processing chain once
+      if (!destinationNodeRef.current && sourceNodeRef.current) {
+        highPassFilterRef.current = audioContextRef.current.createBiquadFilter();
+        highPassFilterRef.current.type = 'highpass';
+        highPassFilterRef.current.frequency.value = 100;
+
+        compressorNodeRef.current = audioContextRef.current.createDynamicsCompressor();
+        compressorNodeRef.current.threshold.value = -30;
+        compressorNodeRef.current.knee.value = 20;
+        compressorNodeRef.current.ratio.value = 3;
+        compressorNodeRef.current.attack.value = 0.003;
+        compressorNodeRef.current.release.value = 0.25;
+
+        gainNodeRef.current = audioContextRef.current.createGain();
+        gainNodeRef.current.gain.value = 2.0;
+
+        destinationNodeRef.current = audioContextRef.current.createMediaStreamDestination();
+
+        try {
+          sourceNodeRef.current.connect(highPassFilterRef.current);
+          highPassFilterRef.current.connect(compressorNodeRef.current);
+          compressorNodeRef.current.connect(gainNodeRef.current);
+          gainNodeRef.current.connect(analyserRef.current as unknown as AudioNode);
+          gainNodeRef.current.connect(destinationNodeRef.current);
+        } catch {
+          try { sourceNodeRef.current.connect(analyserRef.current as unknown as AudioNode); } catch {}
+        }
       }
 
       return true;
     } catch (error: any) {
-      setState(prev => ({
+      setState((prev: TranscriptionState) => ({
         ...prev,
         error: `Microphone access failed: ${error.message}`,
       }));
@@ -454,17 +503,33 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
       sourceNodeRef.current = null;
     }
 
+    if (highPassFilterRef.current) {
+      try { highPassFilterRef.current.disconnect(); } catch {}
+      highPassFilterRef.current = null;
+    }
+
+    if (compressorNodeRef.current) {
+      try { compressorNodeRef.current.disconnect(); } catch {}
+      compressorNodeRef.current = null;
+    }
+
+    if (gainNodeRef.current) {
+      try { gainNodeRef.current.disconnect(); } catch {}
+      gainNodeRef.current = null;
+    }
+
     if (audioContextRef.current) {
       audioContextRef.current.close();
       audioContextRef.current = null;
     }
 
     if (audioStreamRef.current) {
-      audioStreamRef.current.getTracks().forEach(track => track.stop());
+      audioStreamRef.current.getTracks().forEach((track: MediaStreamTrack) => track.stop());
       audioStreamRef.current = null;
     }
 
     analyserRef.current = null;
+    destinationNodeRef.current = null;
     isRecordingRef.current = false;
     isPausedRef.current = false;
     isSessionActiveRef.current = false;
@@ -485,7 +550,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     speechFrameCountRef.current = 0;
     sessionCountRef.current = 0;
 
-    setState(prev => ({
+    setState((prev: TranscriptionState) => ({
       ...prev,
       isRecording: true,
       isPaused: false,
@@ -514,7 +579,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     stopVADLoop();
     stopRecordingSession();
 
-    setState(prev => ({
+    setState((prev: TranscriptionState) => ({
       ...prev,
       isRecording: false,
       isPaused: false,
@@ -530,7 +595,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     stopVADLoop();
     stopRecordingSession();
 
-    setState(prev => ({
+    setState((prev: TranscriptionState) => ({
       ...prev,
       isPaused: true,
     }));
@@ -542,7 +607,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     lastSpokeAtRef.current = Date.now();
     speechFrameCountRef.current = 0;
 
-    setState(prev => ({
+    setState((prev: TranscriptionState) => ({
       ...prev,
       isPaused: false,
     }));
@@ -553,7 +618,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
   // Clear current transcription
   const clearTranscription = useCallback(() => {
     setTranscription('', false);
-    setState(prev => ({
+    setState((prev: TranscriptionState) => ({
       ...prev,
       chunksCompleted: 0,
       totalChunks: 0,

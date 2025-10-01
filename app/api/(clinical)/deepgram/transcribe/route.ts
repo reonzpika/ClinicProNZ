@@ -77,9 +77,8 @@ export async function POST(req: NextRequest) {
 
     // Transcribe the audio file - optimized for pre-recorded processing
     const deepgramConfig = {
-      model: 'nova-3', // Default to general nova-3 for broad access
+      model: 'nova-3-medical',
       punctuate: true,
-      language: 'en-NZ', // NZ English is supported by nova-3-medical
       smart_format: true,
       redact: ['name_given', 'name_family'],
       diarize: false, // Disable speaker diarization
@@ -88,11 +87,11 @@ export async function POST(req: NextRequest) {
       profanity_filter: false, // Medical context may include profanity in symptoms/conditions
       filler_words: false, // Remove "um", "uh", etc. for cleaner clinical notes
     };
-    if (debugEnabled) {
-      try {
-        console.log('[Transcribe][dg:start]', { reqId, model: deepgramConfig.model, language: deepgramConfig.language });
-      } catch {}
-    }
+
+    try {
+ console.log('[Transcribe] model=', deepgramConfig.model);
+} catch {}
+
     const dgStart = Date.now();
     const { result, error } = await deepgram.listen.prerecorded.transcribeFile(
       audioBuffer,
