@@ -206,7 +206,7 @@ export const ClinicalImageTab: React.FC = () => {
       setUploading(false);
     }
   }, [
-
+    currentPatientSessionId,
     addClinicalImage,
     saveClinicalImagesToCurrentSession,
     clinicalImages,
