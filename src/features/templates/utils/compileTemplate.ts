@@ -1,118 +1,159 @@
 import { generateSystemPrompt } from './systemPrompt';
 
-// Performance optimisation: Cache compiled system prompts
-let cachedSystemPrompt: string | null = null;
-let systemPromptCacheTime: number = 0;
-const SYSTEM_PROMPT_CACHE_TTL = 60000; // 1 minute cache
+// Cache structure: templateId → { system: string, timestamp: number }
+const systemPromptCache = new Map<string, { prompt: string; timestamp: number }>();
+const SYSTEM_PROMPT_CACHE_TTL = 300000; // 5 minutes (templates rarely change)
+const MAX_SYSTEM_CACHE_SIZE = 10; // Max 10 templates cached
 
-// Performance optimisation: Template compilation cache
-const templateCache = new Map<string, { compiled: string; timestamp: number }>();
-const TEMPLATE_CACHE_TTL = 30000; // 30 seconds cache
-const MAX_CACHE_SIZE = 100; // Maximum number of cached templates
+// User prompt cache structure
+const userPromptCache = new Map<string, { compiled: string; timestamp: number }>();
+const USER_PROMPT_CACHE_TTL = 30000; // 30 seconds
+const MAX_USER_CACHE_SIZE = 100;
 
-// Helper function to generate cache key
-function generateCacheKey(
-  templateBody: string,
-  rawConsultationData: string,
-): string {
-  const inputs = [
-    templateBody.substring(0, 100), // First 100 chars of template for uniqueness
-    rawConsultationData.substring(0, 100),
-  ];
-  return inputs.join('|');
+interface ConsultationDataSources {
+  additionalNotes?: string;
+  transcription?: string;
+  typedInput?: string;
 }
 
-// Helper function to clean up old cache entries
-function cleanupCache() {
+// Generate cache key for user prompt
+function generateUserPromptCacheKey(data: ConsultationDataSources): string {
+  const parts = [
+    data.additionalNotes?.substring(0, 100) || '',
+    data.transcription?.substring(0, 100) || '',
+    data.typedInput?.substring(0, 100) || '',
+  ];
+  return parts.join('|');
+}
+
+// Clean up old cache entries
+function cleanupCache<T>(
+  cache: Map<string, T & { timestamp: number }>,
+  ttl: number,
+  maxSize: number
+) {
   const now = Date.now();
-  for (const [key, value] of templateCache.entries()) {
-    if (now - value.timestamp > TEMPLATE_CACHE_TTL) {
-      templateCache.delete(key);
+  
+  // Remove expired entries
+  for (const [key, value] of cache.entries()) {
+    if (now - value.timestamp > ttl) {
+      cache.delete(key);
     }
   }
 
-  // If cache is still too large, remove oldest entries
-  if (templateCache.size > MAX_CACHE_SIZE) {
-    const entries = Array.from(templateCache.entries())
+  // Remove oldest if still too large
+  if (cache.size > maxSize) {
+    const entries = Array.from(cache.entries())
       .sort((a, b) => a[1].timestamp - b[1].timestamp);
-
-    const toRemove = entries.slice(0, templateCache.size - MAX_CACHE_SIZE);
-    toRemove.forEach(([key]) => templateCache.delete(key));
+    
+    const toRemove = entries.slice(0, cache.size - maxSize);
+    toRemove.forEach(([key]) => cache.delete(key));
   }
 }
 
-// Optimised function to substitute placeholders in natural language templates
-function substitutePlaceholders(
-  templateBody: string,
-  rawConsultationData: string,
-): string {
-  // Check cache first
-  const cacheKey = generateCacheKey(templateBody, rawConsultationData);
-  const cached = templateCache.get(cacheKey);
+// Get cached system prompt for template
+function getCachedSystemPrompt(templateId: string, templateBody: string): string {
+  const cached = systemPromptCache.get(templateId);
+  const now = Date.now();
 
-  if (cached && Date.now() - cached.timestamp < TEMPLATE_CACHE_TTL) {
+  if (cached && now - cached.timestamp < SYSTEM_PROMPT_CACHE_TTL) {
+    return cached.prompt;
+  }
+
+  // Generate new system prompt with template embedded
+  const systemPrompt = generateSystemPrompt(templateBody);
+  
+  systemPromptCache.set(templateId, {
+    prompt: systemPrompt,
+    timestamp: now,
+  });
+
+  // Cleanup if needed
+  if (systemPromptCache.size > MAX_SYSTEM_CACHE_SIZE * 0.8) {
+    cleanupCache(systemPromptCache, SYSTEM_PROMPT_CACHE_TTL, MAX_SYSTEM_CACHE_SIZE);
+  }
+
+  return systemPrompt;
+}
+
+// Build structured user prompt with prioritized data sources
+function buildUserPrompt(data: ConsultationDataSources): string {
+  // Check cache first
+  const cacheKey = generateUserPromptCacheKey(data);
+  const cached = userPromptCache.get(cacheKey);
+
+  if (cached && Date.now() - cached.timestamp < USER_PROMPT_CACHE_TTL) {
     return cached.compiled;
   }
 
-  // Create the complete prompt with optimised string concatenation
-  const completePrompt = [
-    '--- CONSULTATION DATA ---',
-    rawConsultationData,
-    '',
-    '--- TEMPLATE INSTRUCTIONS ---',
-    templateBody,
-    '',
-  ].join('\n');
+  // Build sections only for provided data
+  const sections: string[] = [];
+
+  if (data.additionalNotes?.trim()) {
+    sections.push(
+      '=== PRIMARY CLINICAL REASONING (Additional Notes) ===',
+      data.additionalNotes.trim(),
+      ''
+    );
+  }
+
+  if (data.transcription?.trim()) {
+    sections.push(
+      '=== SUPPLEMENTARY TRANSCRIPTION (Doctor↔Patient Conversation) ===',
+      data.transcription.trim(),
+      ''
+    );
+  }
+
+  if (data.typedInput?.trim()) {
+    sections.push(
+      '=== SUPPLEMENTARY TYPED NOTES ===',
+      data.typedInput.trim(),
+      ''
+    );
+  }
+
+  if (sections.length === 0) {
+    throw new Error('At least one data source must be provided');
+  }
+
+  sections.push('Generate the completed clinical note now.');
+
+  const userPrompt = sections.join('\n');
 
   // Cache the result
-  templateCache.set(cacheKey, {
-    compiled: completePrompt,
+  userPromptCache.set(cacheKey, {
+    compiled: userPrompt,
     timestamp: Date.now(),
   });
 
-  // Clean up cache periodically
-  if (templateCache.size > MAX_CACHE_SIZE * 0.8) {
-    cleanupCache();
+  // Cleanup if needed
+  if (userPromptCache.size > MAX_USER_CACHE_SIZE * 0.8) {
+    cleanupCache(userPromptCache, USER_PROMPT_CACHE_TTL, MAX_USER_CACHE_SIZE);
   }
 
-  return completePrompt;
-}
-
-// Optimised system prompt generation with caching
-function getCachedSystemPrompt(): string {
-  const now = Date.now();
-
-  if (cachedSystemPrompt && now - systemPromptCacheTime < SYSTEM_PROMPT_CACHE_TTL) {
-    return cachedSystemPrompt;
-  }
-
-  cachedSystemPrompt = generateSystemPrompt();
-  systemPromptCacheTime = now;
-
-  return cachedSystemPrompt;
+  return userPrompt;
 }
 
 export function compileTemplate(
+  templateId: string,
   templateBody: string,
-  rawConsultationData: string,
+  consultationData: ConsultationDataSources,
 ): { system: string; user: string } {
-  // Input validation for performance
+  // Input validation
+  if (!templateId?.trim()) {
+    throw new Error('Template ID is required');
+  }
+
   if (!templateBody?.trim()) {
     throw new Error('Template body is required');
   }
 
-  if (!rawConsultationData?.trim()) {
-    throw new Error('Raw consultation data is required');
-  }
+  // Get template-specific system prompt (cached per templateId)
+  const systemPrompt = getCachedSystemPrompt(templateId, templateBody);
 
-  // Use cached system prompt
-  const systemPrompt = getCachedSystemPrompt();
-
-  // Create the user prompt with optimised substitution
-  const userPrompt = substitutePlaceholders(
-    templateBody,
-    rawConsultationData,
-  );
+  // Build user prompt with structured data sources
+  const userPrompt = buildUserPrompt(consultationData);
 
   return {
     system: systemPrompt,
@@ -123,16 +164,18 @@ export function compileTemplate(
 // Performance monitoring utilities
 export const templatePerformance = {
   getCacheStats: () => ({
-    templateCacheSize: templateCache.size,
-    systemPromptCached: !!cachedSystemPrompt,
-    cacheHitRate: templateCache.size > 0 ? 'Available' : 'No data',
+    systemPromptCacheSize: systemPromptCache.size,
+    userPromptCacheSize: userPromptCache.size,
+    systemCacheKeys: Array.from(systemPromptCache.keys()),
   }),
 
   clearCache: () => {
-    templateCache.clear();
-    cachedSystemPrompt = null;
-    systemPromptCacheTime = 0;
+    systemPromptCache.clear();
+    userPromptCache.clear();
   },
 
-  getCacheSize: () => templateCache.size,
+  getCacheSize: () => ({
+    system: systemPromptCache.size,
+    user: userPromptCache.size,
+  }),
 };

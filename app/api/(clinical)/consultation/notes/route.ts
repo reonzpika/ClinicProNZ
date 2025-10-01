@@ -40,15 +40,30 @@ export async function POST(req: Request) {
       'Request parsing timeout',
     );
 
-    const { rawConsultationData, templateId } = body;
+    const { 
+      rawConsultationData,  // Keep for backward compatibility
+      additionalNotes,
+      transcription, 
+      typedInput,
+      templateId 
+    } = body;
 
     // Quick validation first
     if (!templateId) {
       return NextResponse.json({ code: 'BAD_REQUEST', message: 'Missing templateId' }, { status: 400 });
     }
 
-    if (!rawConsultationData || rawConsultationData.trim() === '') {
-      return NextResponse.json({ code: 'BAD_REQUEST', message: 'Missing rawConsultationData' }, { status: 400 });
+    // Accept either old format (rawConsultationData) or new format (split sources)
+    const hasOldFormat = rawConsultationData && typeof rawConsultationData === 'string' && rawConsultationData.trim() !== '';
+    const hasNewFormat = (additionalNotes && additionalNotes.trim() !== '') || 
+                         (transcription && transcription.trim() !== '') || 
+                         (typedInput && typedInput.trim() !== '');
+
+    if (!hasOldFormat && !hasNewFormat) {
+      return NextResponse.json({ 
+        code: 'BAD_REQUEST', 
+        message: 'Missing consultation data (provide additionalNotes, transcription, typedInput, or rawConsultationData)' 
+      }, { status: 400 });
     }
 
     // Run RBAC and template fetch in parallel to save time
@@ -85,10 +100,20 @@ export async function POST(req: Request) {
       );
     }
 
-    // Compile template with raw consultation data
+    // Compile template with consultation data
     const { system, user } = compileTemplate(
+      templateId,
       template.templateBody,
-      rawConsultationData,
+      hasNewFormat
+        ? {
+            additionalNotes: additionalNotes || '',
+            transcription: transcription || '',
+            typedInput: typedInput || '',
+          }
+        : {
+            // Backward compatibility: treat rawConsultationData as transcription
+            transcription: rawConsultationData,
+          }
     );
 
     // Check remaining time before starting OpenAI call
