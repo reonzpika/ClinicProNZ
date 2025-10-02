@@ -314,7 +314,9 @@ LLM was inventing treatment plans not stated in consultation data:
 
 3. **Final Validation Checklist**
    - Hallucination check before output
-   - Medication name verification (100% certain or flag)
+   - **Enhanced medication validation**: Cross-reference against NZ pharmaceutical training data
+   - Explicit examples: "Zolpram" NOT in NZ formulary → FLAG
+   - Rule: Similar ≠ Exact → FLAG if not exact match
    - Blank section verification
 
 4. **Output Rules** (moved from system prompt)
