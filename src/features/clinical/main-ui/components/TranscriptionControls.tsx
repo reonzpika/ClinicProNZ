@@ -185,7 +185,7 @@ export function TranscriptionControls({
     setCanCreateSession(!!isSignedIn);
   }, [isSignedIn]);
 
-  // Handle start recording - desktop respects consent; mobile bypasses consent
+  // Handle start recording - now add cross-device consent for mobile
   const handleStartRecording = () => {
     // Check authentication status
     if (!isSignedIn && !canCreateSession) {
@@ -193,18 +193,27 @@ export function TranscriptionControls({
       return;
     }
 
-    // Mobile: bypass consent and send remote start (or open connect)
+    // Mobile: initiate consent process then send remote start
     if (recordingMethod === 'mobile') {
-      const canSend = typeof window !== 'undefined'
+      const canSignal = typeof window !== 'undefined'
         && (window as any).ablySyncHook
+        && typeof (window as any).ablySyncHook.sendConsentRequest === 'function'
         && typeof (window as any).ablySyncHook.sendRecordingControl === 'function';
 
-      if (!canSend) {
+      if (!canSignal) {
         setShowMobileRecordingV2(true);
         return;
       }
 
-      sendMobileControl('start');
+      try {
+        const requestId = Math.random().toString(36).slice(2, 10);
+        (window as any).ablySyncHook.sendConsentRequest(requestId, 'desktop');
+        // Desktop will also show its own modal via consultation/page subscription
+        // Do not send start until consent_granted handler fires on desktop
+      } catch {
+        // Fallback: show QR/connect
+        setShowMobileRecordingV2(true);
+      }
       return;
     }
 
