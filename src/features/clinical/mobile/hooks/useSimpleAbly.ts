@@ -336,8 +336,7 @@ export const useSimpleAbly = ({
 
           switch (type) {
             case 'transcriptions_updated':
-
-              callbacksRef.current.onTranscriptionsUpdated?.((data as any).sessionId, (data as any).chunkId);
+              callbacksRef.current.onTranscriptionsUpdated?.((data as any).sessionId, (data as any).lastId);
               break;
             case 'consent_request':
               if ((data as any).requestId && (data as any).initiator) {

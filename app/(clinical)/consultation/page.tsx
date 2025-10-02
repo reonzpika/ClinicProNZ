@@ -155,7 +155,7 @@ export default function ConsultationPage() {
   }, [currentPatientSessionId]);
 
   // Incremental append + debounce helpers
-  const lastAppliedChunkIdRef = useRef<string | null>(null);
+  const lastAppliedServerIdRef = useRef<number>(0);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [desktopConsentOpen, setDesktopConsentOpen] = useState(false);
@@ -212,7 +212,7 @@ export default function ConsultationPage() {
         }
       }
     },
-    onTranscriptionsUpdated: async (signalledSessionId?: string) => {
+    onTranscriptionsUpdated: async (signalledSessionId?: string, lastIdFromSignal?: string) => {
       if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
         return;
       }
@@ -224,53 +224,28 @@ export default function ConsultationPage() {
         if (!activeSessionId) {
           return;
         }
-
-        let session: any = null;
+        // Fetch only new chunks from server using afterId
         try {
-          session = await queryClientRef.current.fetchQuery({
-            queryKey: ['consultation', 'session', activeSessionId],
-            queryFn: async () => {
-              const response = await fetch(`/api/patient-sessions?sessionId=${encodeURIComponent(activeSessionId)}`, {
-                method: 'GET',
-                headers: createAuthHeaders(userId, userTier),
-              });
-              if (!response.ok) {
-                throw new Error('Failed to fetch session');
-              }
-              const data = await response.json();
-              const sessions = data.sessions || [];
-              return sessions[0] || null;
-            },
-            staleTime: 0,
+          const afterId = Math.max(lastAppliedServerIdRef.current || 0, ((lastIdFromSignal ? Number(lastIdFromSignal) : 0)) - 2000); // guard, but server will filter
+          const res = await fetch(`/api/transcriptions?sessionId=${encodeURIComponent(activeSessionId)}&afterId=${afterId}`, {
+            method: 'GET',
+            headers: createAuthHeaders(userId, userTier),
           });
-        } catch {
-          session = queryClientRef.current.getQueryData(['consultation', 'session', activeSessionId]);
-        }
-        if (session) {
-          let chunks: any[] = [];
-          try {
-            chunks = typeof session.transcriptions === 'string' ? JSON.parse(session.transcriptions) : (session.transcriptions || []);
-          } catch {
-            chunks = [];
+          if (!res.ok) {
+            return;
           }
-          if (Array.isArray(chunks) && chunks.length > 0) {
-            let startIndex = 0;
-            if (lastAppliedChunkIdRef.current) {
-              const idx = chunks.findIndex((c: any) => c.id === lastAppliedChunkIdRef.current);
-              startIndex = idx >= 0 ? idx + 1 : 0;
-            }
-            const newChunks = chunks.slice(startIndex).filter((c: any) => (c?.text || '').trim().length > 0);
-            if (newChunks.length > 0) {
-              const delta = newChunks.map((t: any) => (t?.text || '').trim()).join(' ').trim();
+          const data = await res.json();
+          const chunks = Array.isArray(data?.chunks) ? data.chunks : [];
+          if (chunks.length > 0) {
+            const delta = chunks.map((c: any) => (c?.text || '').trim()).filter(Boolean).join(' ').trim();
+            if (delta) {
               const prev = typeof transcription?.transcript === 'string' ? transcription.transcript : '';
               const next = prev ? `${prev} ${delta}`.trim() : delta;
               setTranscription(next, false, undefined, undefined);
-              lastAppliedChunkIdRef.current = chunks[chunks.length - 1]?.id || lastAppliedChunkIdRef.current;
-            } else {
-              lastAppliedChunkIdRef.current = chunks[chunks.length - 1]?.id || lastAppliedChunkIdRef.current;
             }
+            lastAppliedServerIdRef.current = Number(chunks[chunks.length - 1]?.id) || lastAppliedServerIdRef.current;
           }
-        }
+        } catch {}
       }, 900);
     },
   });
@@ -283,43 +258,19 @@ export default function ConsultationPage() {
         if (!activeSessionId || !userId) {
           return;
         }
-        const response = await fetch(`/api/patient-sessions?sessionId=${encodeURIComponent(activeSessionId)}`, {
+        // On visibility/page show, fetch all chunks and render (simple, reliable)
+        const res = await fetch(`/api/transcriptions?sessionId=${encodeURIComponent(activeSessionId)}`, {
           method: 'GET',
           headers: createAuthHeaders(userId, userTier),
         });
-        if (!response.ok) {
+        if (!res.ok) {
           return;
         }
-        const data = await response.json();
-        const session = (data?.sessions || [])[0] || null;
-        if (!session) {
-          return;
-        }
-        let chunks: any[] = [];
-        try {
-          chunks = typeof session.transcriptions === 'string' ? JSON.parse(session.transcriptions) : (session.transcriptions || []);
-        } catch {
-          chunks = [];
-        }
-        if (!Array.isArray(chunks) || chunks.length === 0) {
-          return;
-        }
-        // Determine new chunks by lastAppliedChunkIdRef
-        let startIndex = 0;
-        if (lastAppliedChunkIdRef.current) {
-          const idx = chunks.findIndex((c: any) => c.id === lastAppliedChunkIdRef.current);
-          startIndex = idx >= 0 ? idx + 1 : 0;
-        }
-        const newChunks = chunks.slice(startIndex).filter((c: any) => (c?.text || '').trim().length > 0);
-        if (newChunks.length > 0) {
-          const delta = newChunks.map((t: any) => (t?.text || '').trim()).join(' ').trim();
-          const prev = typeof transcription?.transcript === 'string' ? transcription.transcript : '';
-          const next = prev ? `${prev} ${delta}`.trim() : delta;
-          setTranscription(next, false, undefined, undefined);
-          lastAppliedChunkIdRef.current = chunks[chunks.length - 1]?.id || lastAppliedChunkIdRef.current;
-        } else {
-          lastAppliedChunkIdRef.current = chunks[chunks.length - 1]?.id || lastAppliedChunkIdRef.current;
-        }
+        const data = await res.json();
+        const chunks = Array.isArray(data?.chunks) ? data.chunks : [];
+        const fullText = chunks.map((c: any) => (c?.text || '').trim()).filter(Boolean).join(' ').trim();
+        setTranscription(fullText, false, undefined, undefined);
+        lastAppliedServerIdRef.current = chunks.length > 0 ? Number(chunks[chunks.length - 1]?.id) : 0;
       } catch {}
     };
 

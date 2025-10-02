@@ -1,4 +1,4 @@
-import { boolean, date, foreignKey, integer, jsonb, pgEnum, pgTable, serial, text, timestamp, unique, uuid, varchar, vector } from 'drizzle-orm/pg-core';
+import { boolean, date, foreignKey, integer, jsonb, pgEnum, pgTable, serial, text, timestamp, unique, uuid, varchar, vector, bigint } from 'drizzle-orm/pg-core';
 
 export const featureStatus = pgEnum('feature_status', ['planned', 'in_progress', 'completed']);
 export const mailStatus = pgEnum('mail_status', ['queued', 'sent', 'failed']);
@@ -212,3 +212,27 @@ export const contactMessages = pgTable('contact_messages', {
   status: text().default('unread'),
   createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
 });
+
+// New append-only table for transcription chunks
+export const transcriptionChunks = pgTable('transcription_chunks', {
+  id: bigint('id', { mode: 'number' }).primaryKey().notNull(),
+  sessionId: uuid('session_id').notNull(),
+  userId: text('user_id').notNull(),
+  chunkId: uuid('chunk_id').notNull(),
+  text: text().notNull(),
+  source: text('source').default('desktop').notNull(),
+  deviceId: text('device_id'),
+  createdAt: timestamp('created_at', { mode: 'string' }).defaultNow().notNull(),
+}, table => [
+  foreignKey({
+      columns: [table.sessionId],
+      foreignColumns: [patientSessions.id],
+      name: 'transcription_chunks_session_id_patient_sessions_id_fk',
+    }).onDelete('cascade'),
+  foreignKey({
+      columns: [table.userId],
+      foreignColumns: [users.id],
+      name: 'transcription_chunks_user_id_users_id_fk',
+    }).onDelete('cascade'),
+  unique('transcription_chunks_session_id_chunk_id_unique').on(table.sessionId, table.chunkId),
+]);

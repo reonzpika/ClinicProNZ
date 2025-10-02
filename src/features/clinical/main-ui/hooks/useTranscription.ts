@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
-import { createAuthHeadersForFormData } from '@/src/shared/utils';
+import { createAuthHeadersForFormData, createAuthHeaders } from '@/src/shared/utils';
 import { fetchWithRetry } from '@/src/shared/utils';
 
 type TranscriptionState = {
@@ -45,11 +45,11 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
   const {
     setStatus,
     setTranscription,
-    appendTranscription,
     transcription,
     microphoneGain,
     volumeThreshold,
     ensureActiveSession,
+    currentPatientSessionId,
   } = useConsultationStores();
 
   const [state, setState] = useState<TranscriptionState>({
@@ -178,7 +178,32 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
 
         // Use regular transcript since diarization is disabled
         if (transcript && transcript.trim()) {
-          await appendTranscription(transcript.trim(), state.isRecording, 'desktop');
+          // Ensure we have a session id
+          const sid = currentPatientSessionId || await ensureActiveSession();
+          if (sid) {
+            // Post chunk to server (append-only)
+            try {
+              const payload = {
+                sessionId: sid,
+                chunkId: (typeof crypto !== 'undefined' && (crypto as any).randomUUID) ? (crypto as any).randomUUID() : Math.random().toString(36).slice(2, 10),
+                text: transcript.trim(),
+                source: 'desktop',
+                deviceId: 'browser',
+              } as any;
+              await fetch('/api/transcriptions/chunk', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...createAuthHeaders(userId, userTier) },
+                body: JSON.stringify(payload),
+              });
+            } catch {
+              // best-effort; Ably/polling will reconcile
+            }
+          }
+
+          // Optimistically append to local transcript for immediate UX
+          const currentText = transcription.transcript || '';
+          const nextText = currentText ? `${currentText} ${transcript.trim()}` : transcript.trim();
+          setTranscription(nextText, state.isRecording);
 
           setState((prev: TranscriptionState) => ({
             ...prev,
@@ -198,7 +223,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     } finally {
       setState((prev: TranscriptionState) => ({ ...prev, isTranscribing: false }));
     }
-  }, [appendTranscription, state.isRecording, isMobile, onChunkComplete]);
+  }, [state.isRecording, isMobile, onChunkComplete, currentPatientSessionId, ensureActiveSession, transcription.transcript, setTranscription, userId, userTier]);
 
   // Start a new recording session
   const startRecordingSession = useCallback(() => {
