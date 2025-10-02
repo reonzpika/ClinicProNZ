@@ -58,6 +58,8 @@ export default function ConsultationPage() {
     // mutation queue controls
     pauseMutations,
     resumeMutations,
+    // sessions loading state
+    patientSessionsFetched,
 
     saveNotesToCurrentSession, // For saving generated notes
     // Removed unused legacy save functions
@@ -96,12 +98,16 @@ export default function ConsultationPage() {
   const [mobileIsRecording, setMobileIsRecording] = useState(false);
   const lastMobileStatusAtRef = useRef<number>(0);
   const [defaultRecordingMethod, setDefaultRecordingMethod] = useState<'desktop' | 'mobile'>('desktop');
+  // Boot overlay guards
+  const [ensureSessionLoading, setEnsureSessionLoading] = useState(false);
+  const [bootMinDelayDone, setBootMinDelayDone] = useState(false);
+  const [bootTimeoutElapsed, setBootTimeoutElapsed] = useState(false);
 
   // Desktop recording controls
   const { stopRecording, isRecording } = useTranscription();
 
   // Load user settings and apply defaults
-  const { settings, loadSettings } = useUserSettingsStore();
+  const { settings, loadSettings, loading: settingsLoading } = useUserSettingsStore();
   useEffect(() => {
     if (!userId) {
       return;
@@ -135,6 +141,16 @@ export default function ConsultationPage() {
     }
     setDefaultRecordingMethod((settings.defaultRecordingMethod as any) || 'desktop');
   }, [settings]);
+
+  // Boot overlay timing controls (avoid flash and avoid lock)
+  useEffect(() => {
+    const t = setTimeout(() => setBootMinDelayDone(true), 350);
+    return () => clearTimeout(t);
+  }, []);
+  useEffect(() => {
+    const t = setTimeout(() => setBootTimeoutElapsed(true), 8000);
+    return () => clearTimeout(t);
+  }, []);
 
   // Handle Ably errors (moved before useSimpleAbly)
   const handleError = useCallback((error: string) => {
@@ -533,6 +549,7 @@ export default function ConsultationPage() {
   useEffect(() => {
     const fetchCurrent = async () => {
       try {
+        setEnsureSessionLoading(true);
         if (!userId) {
           return;
         }
@@ -552,6 +569,9 @@ export default function ConsultationPage() {
           }
         }
       } catch {}
+      finally {
+        setEnsureSessionLoading(false);
+      }
     };
     fetchCurrent();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -801,6 +821,15 @@ export default function ConsultationPage() {
 
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(() => ({ switchToPatientSession }), [switchToPatientSession]);
+
+  // Determine readiness for hiding boot overlay
+  const defaultsRequired = !!settings;
+  const defaultsReady = !defaultsRequired || hasAppliedDefaultsRef.current;
+  const hasSession = !!currentPatientSessionId;
+  const isBootLoading = (
+    (settingsLoading || !defaultsReady || ensureSessionLoading || (!patientSessionsFetched && !hasSession))
+    && !bootTimeoutElapsed
+  ) || (!bootMinDelayDone && (settingsLoading || ensureSessionLoading || (!patientSessionsFetched && !hasSession)));
 
   return (
     <RecordingAwareSessionContext.Provider value={contextValue}>
@@ -1148,6 +1177,19 @@ export default function ConsultationPage() {
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
             </svg>
             <span className="text-sm text-slate-700">Deleting and creating new session...</span>
+          </div>
+        </div>
+      )}
+
+      {/* Page boot overlay - initial load (settings, template default, session ensure) */}
+      {isBootLoading && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/20" aria-busy>
+          <div className="flex items-center gap-3 rounded-md bg-white px-4 py-3 shadow">
+            <svg className="size-4 animate-spin text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+            </svg>
+            <span className="text-sm text-slate-700">Loading your consultation…</span>
           </div>
         </div>
       )}
