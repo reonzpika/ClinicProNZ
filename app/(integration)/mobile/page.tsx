@@ -10,8 +10,8 @@ import { useUploadImages } from '@/src/hooks/useImageQueries';
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
+import { ConsentModal } from '@/src/features/clinical/session-management/components/ConsentModal';
 import { createAuthHeadersForFormData, fetchWithRetry } from '@/src/shared/utils';
-import { isFeatureEnabled } from '@/src/shared/utils/launch-config';
 
 // Types for native mobile capture queue
 type QueuedItem = { id: string; file: File; previewUrl: string };
@@ -88,7 +88,11 @@ function MobilePageContent() {
   const stopRecordingRef = useRef<() => Promise<void> | void>(() => {});
 
   // Simple Ably for real-time sync
-  const { isConnected, sendRecordingStatus, sendImageNotification } = useSimpleAbly({
+  const [consentOpen, setConsentOpen] = useState(false);
+  const pendingRequestIdRef = useRef<string | null>(null);
+  const consentTimerRef = useRef<any>(null);
+
+  const { isConnected, sendRecordingStatus, sendImageNotification, sendConsentRequest, sendConsentGranted, sendConsentDenied } = useSimpleAbly({
     userId: isSignedIn ? userId : null,
     onError: (err: string) => {
       handleError(err);
@@ -98,8 +102,12 @@ function MobilePageContent() {
     onControlCommand: async (action: 'start' | 'stop') => {
       try {
         if (action === 'start' && !isRecordingRef.current) {
-          await startRecordingRef.current?.();
-          sendRecordingStatus(true);
+          // Require consent first: emit request and open modal
+          const requestId = Math.random().toString(36).slice(2, 10);
+          pendingRequestIdRef.current = requestId;
+          sendConsentRequest?.(requestId, 'desktop');
+          setConsentOpen(true);
+          return;
         }
         if (action === 'stop' && isRecordingRef.current) {
           await stopRecordingRef.current?.();
@@ -107,6 +115,49 @@ function MobilePageContent() {
         }
       } catch (e) {
         setAuthError(`Control error: ${e instanceof Error ? e.message : 'Unknown error'}`);
+      }
+    },
+    onConsentRequested: ({ requestId }) => {
+      // When local user taps start, we'll emit, but also if desktop emits, show modal
+      pendingRequestIdRef.current = requestId;
+      setConsentOpen(true);
+      // Start timeout to auto-deny after 30s
+      if (consentTimerRef.current) {
+        clearTimeout(consentTimerRef.current);
+      }
+      consentTimerRef.current = setTimeout(() => {
+        try {
+          if (pendingRequestIdRef.current) {
+            sendConsentDenied?.(pendingRequestIdRef.current, 'mobile', 'timeout');
+          }
+        } catch {}
+        setConsentOpen(false);
+        pendingRequestIdRef.current = null;
+      }, 30000);
+    },
+    onConsentGranted: async ({ requestId }) => {
+      if (pendingRequestIdRef.current && requestId === pendingRequestIdRef.current) {
+        setConsentOpen(false);
+        if (consentTimerRef.current) {
+          clearTimeout(consentTimerRef.current);
+          consentTimerRef.current = null;
+        }
+        // Start immediately on mobile if not already recording
+        if (!isRecordingRef.current) {
+          await startRecordingRef.current?.();
+          sendRecordingStatus(true);
+        }
+        pendingRequestIdRef.current = null;
+      }
+    },
+    onConsentDenied: ({ requestId }) => {
+      if (pendingRequestIdRef.current && requestId === pendingRequestIdRef.current) {
+        setConsentOpen(false);
+        if (consentTimerRef.current) {
+          clearTimeout(consentTimerRef.current);
+          consentTimerRef.current = null;
+        }
+        pendingRequestIdRef.current = null;
       }
     },
   });
@@ -256,11 +307,13 @@ function MobilePageContent() {
 
   const handleStartRecording = useCallback(async () => {
     if (mobileState === 'connected') {
-      await startRecording();
-      // Broadcast recording start to desktop
-      await sendRecordingStatusWithRetry(true);
+      // Initiate consent flow first
+      const requestId = Math.random().toString(36).slice(2, 10);
+      pendingRequestIdRef.current = requestId;
+      sendConsentRequest?.(requestId, 'mobile');
+      setConsentOpen(true);
     }
-  }, [mobileState, startRecording, sendRecordingStatusWithRetry]);
+  }, [mobileState, sendConsentRequest]);
 
   const handleStopRecording = useCallback(async () => {
     if (isRecording) {
@@ -458,6 +511,24 @@ selected
             )}
           </CardContent>
         </Card>
+        {/* Consent Modal */}
+        <ConsentModal
+          isOpen={consentOpen}
+          onConfirm={() => {
+            const id = pendingRequestIdRef.current;
+            if (id) {
+              try { sendConsentGranted?.(id, 'mobile'); } catch {}
+            }
+            setConsentOpen(false);
+          }}
+          onCancel={() => {
+            const id = pendingRequestIdRef.current;
+            if (id) {
+              try { sendConsentDenied?.(id, 'mobile', 'user'); } catch {}
+            }
+            setConsentOpen(false);
+          }}
+        />
       </div>
     </div>
   );
