@@ -12,6 +12,7 @@ import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { ConsentModal } from '@/src/features/clinical/session-management/components/ConsentModal';
 import { createAuthHeadersForFormData, fetchWithRetry } from '@/src/shared/utils';
+import { isFeatureEnabled } from '@/src/shared/utils/launch-config';
 
 // Types for native mobile capture queue
 type QueuedItem = { id: string; file: File; previewUrl: string };
