@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     console.log(`[SEARCH DEBUG] === STEP 2: CONTENT SYNTHESIS (NO DATABASE) ===`);
     console.log(`[SEARCH DEBUG] Input: ${searchResults.length} selected articles from DB`);
     console.log(`[SEARCH DEBUG] Content types used: sectionSummaries (≥0.5 score), overallSummary (<0.5), fallback (missing summaries)`);
-    console.log(`[SEARCH DEBUG] LLM model: GPT-5 nano, task: Generate 4-6 bullet points with citations`);
+    console.log(`[SEARCH DEBUG] LLM model: GPT-4o-mini, task: Generate 3-4 bullet points with citations`);
 
     // Helper function to format section summaries into readable text
     const formatSectionSummaries = (sectionSummaries: any): string => {

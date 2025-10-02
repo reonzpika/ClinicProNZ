@@ -58,51 +58,56 @@ export async function searchSimilarDocuments(
   sourceType?: string,
 ): Promise<RagQueryResult[]> {
   const queryEmbedding = await createEmbedding(query);
-
-  // Calculate similarity score
-  const similarity = sql<number>`1 - (${cosineDistance(ragDocuments.embedding, queryEmbedding)})`;
-
   const db = getDb();
-  const results = await db
-    .select({
-      id: ragDocuments.id,
-      title: ragDocuments.title,
-      content: ragDocuments.content,
-      source: ragDocuments.source,
-      sourceType: ragDocuments.sourceType,
-      score: similarity,
-      // Add missing summary fields for smart content selection
-      sectionSummaries: ragDocuments.sectionSummaries,
-      overallSummary: ragDocuments.overallSummary,
-      sections: ragDocuments.sections,
-      enhancementStatus: ragDocuments.enhancementStatus,
-    })
-    .from(ragDocuments)
-    .where(
-      and(
-        sql`${similarity} > ${threshold}`,
-        sourceType ? eq(ragDocuments.sourceType, sourceType) : sql`true`,
-      ),
-    )
-    .orderBy(sql`${similarity} DESC`)
-    .limit(limit);
 
-  return results.map((row) => {
+  const results = await db.transaction(async (tx) => {
+    await tx.execute(sql`SET LOCAL ivfflat.probes = 10`);
+    // await tx.execute(sql`SET LOCAL enable_seqscan = off`);
+
+    const distance = cosineDistance(ragDocuments.embedding, queryEmbedding);
+
+    const rows = await tx
+      .select({
+        id: ragDocuments.id,
+        title: ragDocuments.title,
+        content: ragDocuments.content,
+        source: ragDocuments.source,
+        sourceType: ragDocuments.sourceType,
+        distance,
+        sectionSummaries: ragDocuments.sectionSummaries,
+        overallSummary: ragDocuments.overallSummary,
+        sections: ragDocuments.sections,
+        enhancementStatus: ragDocuments.enhancementStatus,
+      })
+      .from(ragDocuments)
+      .where(sourceType ? eq(ragDocuments.sourceType, sourceType) : sql`true`)
+      .orderBy(distance)
+      .limit(limit);
+
+    return rows;
+  });
+
+  return results
+    .map((row: any) => {
     const sectionSummaries = coerceJsonb<Record<string, string[]>>(row.sectionSummaries);
     const sections = coerceJsonb<Record<string, string>>(row.sections);
-    return {
-      content: row.content,
-      title: row.title,
-      source: row.source,
-      sourceType: row.sourceType,
-      score: row.score,
-      // Include summary fields for smart content selection
-      sectionSummaries,
-      overallSummary: row.overallSummary,
-      sections,
-      enhancementStatus: row.enhancementStatus,
-    } as RagQueryResult;
-  });
+      const score = 1 - Number(row.distance);
+      if (score < threshold) {
+        return null;
+      }
+      return {
+        content: row.content,
+        title: row.title,
+        source: row.source,
+        sourceType: row.sourceType,
+        score,
+        sectionSummaries,
+        overallSummary: row.overallSummary,
+        sections,
+        enhancementStatus: row.enhancementStatus,
+      } as RagQueryResult;
+    })
+    .filter(Boolean) as RagQueryResult[];
 }
 
 /**
