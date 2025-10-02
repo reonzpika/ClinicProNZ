@@ -86,126 +86,98 @@ function buildUserPrompt(data: ConsultationDataSources): string {
     return cached.compiled;
   }
 
-  // Build sections only for provided data
+  // Build sections with consultation data
   const sections: string[] = [];
+  
+  sections.push('=== CONSULTATION DATA ===');
+  sections.push('');
 
   if (data.additionalNotes?.trim()) {
-    sections.push(
-      '=== PRIMARY CLINICAL REASONING (Additional Notes) ===',
-      data.additionalNotes.trim(),
-      ''
-    );
+    sections.push('PRIMARY SOURCE: Additional Notes');
+    sections.push('(GP\'s clinical reasoning and problem list - use as clinical authority)');
+    sections.push('');
+    sections.push(data.additionalNotes.trim());
+    sections.push('');
   }
 
   if (data.transcription?.trim()) {
-    sections.push(
-      '=== SUPPLEMENTARY TRANSCRIPTION (Doctor↔Patient Conversation) ===',
-      data.transcription.trim(),
-      ''
-    );
+    sections.push('SUPPLEMENTARY SOURCE: Transcription');
+    sections.push('(Doctor-patient dialogue - extract supporting details)');
+    sections.push('');
+    sections.push(data.transcription.trim());
+    sections.push('');
   }
 
   if (data.typedInput?.trim()) {
-    sections.push(
-      '=== SUPPLEMENTARY TYPED NOTES ===',
-      data.typedInput.trim(),
-      ''
-    );
+    sections.push('SUPPLEMENTARY SOURCE: Typed Notes');
+    sections.push('(Additional observations and measurements)');
+    sections.push('');
+    sections.push(data.typedInput.trim());
+    sections.push('');
   }
 
   if (sections.length === 0) {
     throw new Error('At least one data source must be provided');
   }
 
-  // Add output rules at the end of user prompt (higher priority than system prompt)
+  // Add critical safety requirements at end (high priority - recency effect)
+  sections.push('=== CRITICAL SAFETY REQUIREMENTS ===');
   sections.push('');
-  sections.push('=== CRITICAL OUTPUT INSTRUCTIONS ===');
+  sections.push('## MEDICATION VERIFICATION (MANDATORY)');
   sections.push('');
-  sections.push('## 1. ANTI-HALLUCINATION RULES (MUST FOLLOW)');
+  sections.push('Cross-reference EVERY medication against your NZ pharmaceutical training data:');
   sections.push('');
-  sections.push('**For Plan/Management sections:**');
-  sections.push('- ONLY include actions/advice EXPLICITLY stated in consultation data');
-  sections.push('- If GP stated a treatment → write exactly what was stated');
-  sections.push('- If GP stated NO treatment plan → leave Plan section COMPLETELY BLANK (no text at all)');
-  sections.push('- DO NOT infer standard treatments based on diagnosis');
-  sections.push('- DO NOT add "Consider..." unless GP specifically said "Consider..."');
-  sections.push('- DO NOT add "Advised..." unless GP specifically documented advice given');
-  sections.push('- DO NOT add "Review if..." unless GP specifically stated follow-up criteria');
+  sections.push('**Test each medication:**');
+  sections.push('☐ Is this EXACT name in NZ formulary/PHARMAC data I was trained on?');
+  sections.push('☐ Does it match a known NZ medication EXACTLY (not just similar)?');
   sections.push('');
-  sections.push('**Violation examples (NEVER do this):**');
-  sections.push('- Diagnosis = "sinusitis" → adding "Consider decongestants" when not stated ❌');
-  sections.push('- Diagnosis present → inferring standard treatment ❌');
-  sections.push('- Symptoms present → diagnosing condition not explicitly stated ❌');
-  sections.push('- Adding "symptomatic treatment" when not documented ❌');
-  sections.push('');
-  sections.push('**For Assessment sections:**');
-  sections.push('- ONLY include diagnoses/problems EXPLICITLY stated by GP');
-  sections.push('- Use exact wording from Additional Notes for diagnoses');
-  sections.push('- Do not upgrade symptom descriptions to formal diagnoses');
-  sections.push('');
-  sections.push('## 2. BLANK SECTION POLICY');
-  sections.push('');
-  sections.push('If a template section has no corresponding data in consultation:');
-  sections.push('- Leave the section COMPLETELY BLANK (empty, no text)');
-  sections.push('- DO NOT write "Not documented"');
-  sections.push('- DO NOT write "None"');
-  sections.push('- DO NOT fill with standard/expected content');
-  sections.push('- DO NOT infer what should be there');
-  sections.push('');
-  sections.push('**Example:**');
-  sections.push('- Template has [Plan]');
-  sections.push('- Additional Notes mention "sinusitis" assessment');
-  sections.push('- No treatment plan documented anywhere');
-  sections.push('- → Output: [Leave Plan section completely empty]');
-  sections.push('');
-  sections.push('## 3. FINAL VALIDATION CHECKLIST');
-  sections.push('');
-  sections.push('Before outputting, mentally verify:');
-  sections.push('');
-  sections.push('**Hallucination check:**');
-  sections.push('- [ ] Every statement in Plan section directly from consultation data?');
-  sections.push('- [ ] Did I add any "standard treatments" not explicitly stated? If YES → DELETE THEM');
-  sections.push('- [ ] Did I add any advice/follow-up not explicitly stated? If YES → DELETE THEM');
-  sections.push('');
-  sections.push('**Medication check (CRITICAL):**');
-  sections.push('For EVERY medication mentioned, you MUST cross-reference against your NZ medication training data:');
-  sections.push('');
-  sections.push('- [ ] Can I find this EXACT medication name in my NZ pharmaceutical training data?');
-  sections.push('- [ ] Is this in the NZ formulary/PHARMAC schedule I was trained on?');
-  sections.push('- [ ] Does it match a known NZ medication EXACTLY (not just similar)?');
-  sections.push('');
-  sections.push('**Examples that MUST be flagged:**');
+  sections.push('**MUST flag these examples:**');
   sections.push('- "Zolpram" → Sounds like Zoloft/Zolpidem but NOT in NZ formulary → FLAG');
-  sections.push('- "Stonoprim" → Not found in NZ medication data → FLAG');
+  sections.push('- "Stonoprim" → Not in NZ medication database → FLAG');
   sections.push('- "still clear" → Not a medication name → FLAG');
-  sections.push('- Any name that is SIMILAR but not EXACT → FLAG');
+  sections.push('- Similar-sounding but not exact → FLAG');
   sections.push('');
-  sections.push('**Test yourself:**');
-  sections.push('- "citalopram" → Yes, NZ-approved SSRI → Confident ✓');
-  sections.push('- "Flixonase" → Yes, NZ nasal spray brand → Confident ✓');
-  sections.push('- "Zolpram" → NOT in my NZ training data → MUST FLAG ✓');
+  sections.push('**Confident examples:**');
+  sections.push('- "citalopram" → Yes, NZ SSRI → Use confidently ✓');
+  sections.push('- "Flixonase" → Yes, NZ nasal spray brand → Use confidently ✓');
+  sections.push('- "paracetamol" → Yes, common NZ medication → Use confidently ✓');
   sections.push('');
-  sections.push('**Rule: If medication NOT found in your NZ pharmaceutical knowledge → FLAG IT**');
+  sections.push('**Rule: If NOT found in your NZ pharmaceutical knowledge → FLAG IT**');
   sections.push('Better to over-flag than miss medication errors.');
   sections.push('');
-  sections.push('**Blank section check:**');
-  sections.push('- [ ] Did I leave sections blank when no data provided?');
-  sections.push('- [ ] Or did I fill them with inferred content? If YES → REMOVE IT, LEAVE BLANK');
+  sections.push('## ANTI-HALLUCINATION REQUIREMENTS');
   sections.push('');
-  sections.push('## 4. OUTPUT RULES');
+  sections.push('**Assessment sections:**');
+  sections.push('✓ Use EXACT problem wording from Additional Notes');
+  sections.push('✗ Never upgrade symptoms to diagnoses not stated by GP');
+  sections.push('✗ Never add differential diagnoses not mentioned');
   sections.push('');
-  sections.push('✓ Output ONLY the filled template');
-  sections.push('✓ Remove all placeholder markers [Name]');
-  sections.push('✓ Remove all instruction markers (instruction)');
-  sections.push('✓ Use NZ English spelling: organise, behaviour, centre');
-  sections.push('✓ Use clinical shorthand: 2/52 (weeks), 3/7 (days), SOB, PRN, WNL');
-  sections.push('✓ Match template format exactly');
-  sections.push('✓ Leave sections BLANK if no data (do not write "None" or "Not documented")');
-  sections.push('✓ Include ONLY facts from consultation data');
-  sections.push('✓ DO NOT infer diagnoses or plans beyond what was stated');
-  sections.push('✓ Preserve clinical accuracy');
+  sections.push('**Plan/Management sections:**');
+  sections.push('✓ Include ONLY actions explicitly stated in consultation data');
+  sections.push('✗ Never infer standard treatments based on diagnosis');
+  sections.push('✗ Never add "Consider..." unless GP said it');
+  sections.push('✗ Never add "Advised..." unless documented');
+  sections.push('✗ Never add "Review if..." unless stated');
   sections.push('');
-  sections.push('Generate the completed clinical note now.');
+  sections.push('**Violation examples to AVOID:**');
+  sections.push('❌ Diagnosis="sinusitis" → adding "Consider decongestants" (not stated)');
+  sections.push('❌ Adding "symptomatic treatment" (not documented)');
+  sections.push('❌ Writing "None documented" in empty sections');
+  sections.push('');
+  sections.push('**Blank section policy:**');
+  sections.push('- If template section has no data → leave COMPLETELY BLANK (no text)');
+  sections.push('- Do NOT write "None", "Not documented", or any placeholder');
+  sections.push('');
+  sections.push('## PRE-OUTPUT VALIDATION CHECKLIST');
+  sections.push('');
+  sections.push('Before generating, verify:');
+  sections.push('☐ Every assessment matches Additional Notes exactly?');
+  sections.push('☐ Every plan item explicitly stated?');
+  sections.push('☐ All medications verified against NZ formulary or flagged?');
+  sections.push('☐ No inferred treatments added?');
+  sections.push('☐ Empty sections left blank?');
+  sections.push('');
+  sections.push('Generate the clinical note now.');
 
   const userPrompt = sections.join('\n');
 

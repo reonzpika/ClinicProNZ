@@ -337,16 +337,56 @@ TRANSCRIPTION NOTES:
 - "still clear" → context suggests medication name (VERIFY medication for hay fever)
 ```
 
+## Final Prompt Structure (Optimized)
+
+### **System Prompt Structure**
+1. Goal & Role (with core principles)
+2. Input Source Types (brief overview)
+3. **Template to Complete** (middle position - after context)
+4. Template Syntax
+5. Data Processing Rules (consolidated)
+   - Transcription parsing & error correction
+   - Clinical detail extraction (all requirements)
+   - Section mapping & completion
+6. Output Format Standards (NZ English, shorthand)
+7. Transcription Notes Format
+
+**Size:** ~800-1000 tokens (includes template)  
+**Cached:** Per templateId
+
+### **User Prompt Structure**
+1. Consultation Data (hierarchical with labels)
+   - PRIMARY: Additional Notes (if present)
+   - SUPPLEMENTARY: Transcription (if present)
+   - SUPPLEMENTARY: Typed Notes (if present)
+2. **Critical Safety Requirements** (end position - high priority)
+   - Medication verification with NZ formulary cross-reference
+   - Anti-hallucination rules (concrete violation examples)
+   - Blank section policy (no "None" or "Not documented")
+   - Pre-output validation checklist
+
+**Size:** ~400-800 tokens + data  
+**Not cached:** Changes per request
+
+### **Key Improvements**
+✓ Template in middle (after context, before detailed rules)  
+✓ Removed duplication between system/user prompts  
+✓ Consolidated clinical detail extraction (single section)  
+✓ Safety requirements at user prompt end (recency effect)  
+✓ Explicit NZ formulary cross-reference with examples  
+✓ Checkbox validation format (forces verification)
+
 ## Next Steps
 
 1. ✅ Backend changes deployed
 2. ✅ Transcription error handling added (LLM validation with TRANSCRIPTION NOTES)
 3. ✅ Deepgram keyterm tested and removed (not effective)
 4. ✅ Anti-hallucination rules added to user prompt (end position)
-5. ⏳ Monitor LLM validation effectiveness
-6. ⏳ Collect GP feedback on TRANSCRIPTION NOTES usefulness
-7. ⏳ Update frontend to use new structured format (additionalNotes, transcription, typedInput)
-8. ⏳ Iterate based on real-world usage
+5. ✅ Prompt structure optimized (deduplication, better flow)
+6. ⏳ Monitor LLM validation effectiveness
+7. ⏳ Collect GP feedback on TRANSCRIPTION NOTES usefulness
+8. ⏳ Update frontend to use new structured format (additionalNotes, transcription, typedInput)
+9. ⏳ Iterate based on real-world usage
 
 ## Configuration
 
