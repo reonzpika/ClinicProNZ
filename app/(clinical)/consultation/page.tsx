@@ -102,6 +102,7 @@ export default function ConsultationPage() {
   const [ensureSessionLoading, setEnsureSessionLoading] = useState(false);
   const [bootMinDelayDone, setBootMinDelayDone] = useState(false);
   const [bootTimeoutElapsed, setBootTimeoutElapsed] = useState(false);
+  const [defaultsSettled, setDefaultsSettled] = useState(false);
 
   // Desktop recording controls
   const { stopRecording, isRecording } = useTranscription();
@@ -151,6 +152,33 @@ export default function ConsultationPage() {
     const t = setTimeout(() => setBootTimeoutElapsed(true), 8000);
     return () => clearTimeout(t);
   }, []);
+
+  // After applying defaults, wait a brief moment to allow dependent UI to render labels
+  useEffect(() => {
+    if (!settings) {
+      return;
+    }
+    const favTemplateId = settings.favouriteTemplateId || '20dc1526-62cc-4ff4-a370-ffc1ded52aef';
+    const expectedInput = settings.defaultInputMode === 'typed' ? 'typed' : 'audio';
+    const bothApplied = templateId === favTemplateId && inputMode === expectedInput && hasAppliedDefaultsRef.current;
+    if (!bothApplied) {
+      setDefaultsSettled(false);
+      return;
+    }
+    let raf1: number | null = null;
+    let t: any = null;
+    raf1 = typeof window !== 'undefined' ? window.requestAnimationFrame(() => {
+      t = setTimeout(() => setDefaultsSettled(true), 120);
+    }) : null;
+    return () => {
+      if (raf1 && typeof window !== 'undefined') {
+        window.cancelAnimationFrame(raf1);
+      }
+      if (t) {
+        clearTimeout(t);
+      }
+    };
+  }, [settings, templateId, inputMode]);
 
   // Handle Ably errors (moved before useSimpleAbly)
   const handleError = useCallback((error: string) => {
@@ -828,7 +856,7 @@ export default function ConsultationPage() {
   const templateApplied = !defaultsRequired || templateId === favTemplateId;
   const expectedInputMode = settings?.defaultInputMode === 'typed' ? 'typed' : 'audio';
   const inputModeApplied = !defaultsRequired || inputMode === expectedInputMode;
-  const defaultsReady = !defaultsRequired || (hasAppliedDefaultsRef.current && templateApplied && inputModeApplied);
+  const defaultsReady = !defaultsRequired || (hasAppliedDefaultsRef.current && templateApplied && inputModeApplied && defaultsSettled);
   const hasSession = !!currentPatientSessionId;
   const waitingDefaults = defaultsRequired && !defaultsReady;
   const isBootLoading = (
