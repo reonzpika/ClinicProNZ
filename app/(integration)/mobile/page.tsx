@@ -118,7 +118,7 @@ function MobilePageContent() {
         setAuthError(`Control error: ${e instanceof Error ? e.message : 'Unknown error'}`);
       }
     },
-    onConsentRequested: ({ requestId, initiator }) => {
+    onConsentRequested: ({ requestId }) => {
       // When local user taps start, we'll emit, but also if desktop emits, show modal
       pendingRequestIdRef.current = requestId;
       setConsentOpen(true);
