@@ -10,9 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/component
 import { templatePerformance } from '../utils/compileTemplate';
 
 type PerformanceStats = {
-  templateCacheSize: number;
-  systemPromptCached: boolean;
-  cacheHitRate: string;
+  systemPromptCacheSize: number;
+  userPromptCacheSize: number;
+  systemCacheKeys: string[];
   compilationTimes: number[];
   averageCompilationTime: number;
   totalCompilations: number;
@@ -20,9 +20,9 @@ type PerformanceStats = {
 
 export function TemplatePerformanceMonitor() {
   const [stats, setStats] = useState<PerformanceStats>({
-    templateCacheSize: 0,
-    systemPromptCached: false,
-    cacheHitRate: 'No data',
+    systemPromptCacheSize: 0,
+    userPromptCacheSize: 0,
+    systemCacheKeys: [],
     compilationTimes: [],
     averageCompilationTime: 0,
     totalCompilations: 0,
@@ -33,9 +33,9 @@ export function TemplatePerformanceMonitor() {
     const cacheStats = templatePerformance.getCacheStats();
     setStats(prev => ({
       ...prev,
-      templateCacheSize: cacheStats.templateCacheSize,
-      systemPromptCached: cacheStats.systemPromptCached,
-      cacheHitRate: cacheStats.cacheHitRate,
+      systemPromptCacheSize: cacheStats.systemPromptCacheSize,
+      userPromptCacheSize: cacheStats.userPromptCacheSize,
+      systemCacheKeys: cacheStats.systemCacheKeys,
     }));
   };
 
@@ -104,32 +104,34 @@ export function TemplatePerformanceMonitor() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
                 <Database className="size-3" />
-                <span>Template Cache</span>
+                <span>System Prompts</span>
               </div>
-              <Badge variant={stats.templateCacheSize > 0 ? 'default' : 'secondary'}>
-                {stats.templateCacheSize}
+              <Badge variant={stats.systemPromptCacheSize > 0 ? 'default' : 'secondary'}>
+                {stats.systemPromptCacheSize}
                 {' '}
-                entries
+                cached
               </Badge>
             </div>
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
                 <Zap className="size-3" />
-                <span>System Prompt</span>
+                <span>User Prompts</span>
               </div>
-              <Badge variant={stats.systemPromptCached ? 'default' : 'secondary'}>
-                {stats.systemPromptCached ? 'Cached' : 'Not cached'}
+              <Badge variant={stats.userPromptCacheSize > 0 ? 'default' : 'secondary'}>
+                {stats.userPromptCacheSize}
+                {' '}
+                cached
               </Badge>
             </div>
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
                 <TrendingUp className="size-3" />
-                <span>Cache Hit Rate</span>
+                <span>Templates Cached</span>
               </div>
               <Badge variant="outline">
-                {stats.cacheHitRate}
+                {stats.systemCacheKeys.length}
               </Badge>
             </div>
           </div>
@@ -178,13 +180,13 @@ export function TemplatePerformanceMonitor() {
 
           {/* Cache Efficiency Indicator */}
           <div className="text-center">
-            {stats.templateCacheSize > 10 && (
+            {stats.systemPromptCacheSize > 0 && stats.userPromptCacheSize > 10 && (
               <div className="flex items-center justify-center gap-1 text-green-600">
                 <Zap className="size-3" />
                 <span>Cache optimised</span>
               </div>
             )}
-            {stats.templateCacheSize === 0 && (
+            {stats.systemPromptCacheSize === 0 && stats.userPromptCacheSize === 0 && (
               <div className="flex items-center justify-center gap-1 text-amber-600">
                 <Clock className="size-3" />
                 <span>Cache warming up</span>
