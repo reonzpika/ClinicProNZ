@@ -60,32 +60,25 @@ export async function searchSimilarDocuments(
   const queryEmbedding = await createEmbedding(query);
   const db = getDb();
 
-  const results = await db.transaction(async (tx) => {
-    await tx.execute(sql`SET LOCAL ivfflat.probes = 10`);
-    // await tx.execute(sql`SET LOCAL enable_seqscan = off`);
+  const distance = cosineDistance(ragDocuments.embedding, queryEmbedding);
 
-    const distance = cosineDistance(ragDocuments.embedding, queryEmbedding);
-
-    const rows = await tx
-      .select({
-        id: ragDocuments.id,
-        title: ragDocuments.title,
-        content: ragDocuments.content,
-        source: ragDocuments.source,
-        sourceType: ragDocuments.sourceType,
-        distance,
-        sectionSummaries: ragDocuments.sectionSummaries,
-        overallSummary: ragDocuments.overallSummary,
-        sections: ragDocuments.sections,
-        enhancementStatus: ragDocuments.enhancementStatus,
-      })
-      .from(ragDocuments)
-      .where(sourceType ? eq(ragDocuments.sourceType, sourceType) : sql`true`)
-      .orderBy(distance)
-      .limit(limit);
-
-    return rows;
-  });
+  const results = await db
+    .select({
+      id: ragDocuments.id,
+      title: ragDocuments.title,
+      content: ragDocuments.content,
+      source: ragDocuments.source,
+      sourceType: ragDocuments.sourceType,
+      distance,
+      sectionSummaries: ragDocuments.sectionSummaries,
+      overallSummary: ragDocuments.overallSummary,
+      sections: ragDocuments.sections,
+      enhancementStatus: ragDocuments.enhancementStatus,
+    })
+    .from(ragDocuments)
+    .where(sourceType ? eq(ragDocuments.sourceType, sourceType) : sql`true`)
+    .orderBy(distance)
+    .limit(limit);
 
   return results
     .map((row: any) => {
