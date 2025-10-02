@@ -824,12 +824,17 @@ export default function ConsultationPage() {
 
   // Determine readiness for hiding boot overlay
   const defaultsRequired = !!settings;
-  const defaultsReady = !defaultsRequired || hasAppliedDefaultsRef.current;
+  const favTemplateId = settings?.favouriteTemplateId || '20dc1526-62cc-4ff4-a370-ffc1ded52aef';
+  const templateApplied = !defaultsRequired || templateId === favTemplateId;
+  const expectedInputMode = settings?.defaultInputMode === 'typed' ? 'typed' : 'audio';
+  const inputModeApplied = !defaultsRequired || inputMode === expectedInputMode;
+  const defaultsReady = !defaultsRequired || (hasAppliedDefaultsRef.current && templateApplied && inputModeApplied);
   const hasSession = !!currentPatientSessionId;
+  const waitingDefaults = defaultsRequired && !defaultsReady;
   const isBootLoading = (
-    (settingsLoading || !defaultsReady || ensureSessionLoading || (!patientSessionsFetched && !hasSession))
+    (settingsLoading || waitingDefaults || ensureSessionLoading || (!patientSessionsFetched && !hasSession))
     && !bootTimeoutElapsed
-  ) || (!bootMinDelayDone && (settingsLoading || ensureSessionLoading || (!patientSessionsFetched && !hasSession)));
+  ) || (!bootMinDelayDone && (settingsLoading || waitingDefaults || ensureSessionLoading || (!patientSessionsFetched && !hasSession)));
 
   return (
     <RecordingAwareSessionContext.Provider value={contextValue}>
