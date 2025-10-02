@@ -11,7 +11,7 @@ import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { ConsentModal } from '@/src/features/clinical/session-management/components/ConsentModal';
-import { createAuthHeadersForFormData } from '@/src/shared/utils';
+import { createAuthHeadersForFormData, fetchWithRetry } from '@/src/shared/utils';
 import { isFeatureEnabled } from '@/src/shared/utils/launch-config';
 
 // Types for native mobile capture queue
@@ -180,11 +180,11 @@ function MobilePageContent() {
         }
 
         const t0 = Date.now();
-        const response = await fetch('/api/deepgram/transcribe?persist=true', {
+        const response = await fetchWithRetry('/api/deepgram/transcribe?persist=true', {
           method: 'POST',
           headers: { ...createAuthHeadersForFormData(userId), 'X-Debug-Request-Id': reqId },
           body: formData,
-        });
+        }, { maxRetries: 2 });
         const tMs = Date.now() - t0;
         if (!response.ok) {
           let bodyText = '';
