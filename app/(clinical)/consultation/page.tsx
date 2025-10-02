@@ -14,6 +14,7 @@ import { TypedInput } from '@/src/features/clinical/main-ui/components/TypedInpu
 import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTranscription';
 // Removed MobileRightPanelOverlay; widgets now live in main column
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
+import { ConsentModal } from '@/src/features/clinical/session-management/components/ConsentModal';
 // Removed RightPanelFeatures; widgets embedded below settings
 import ClinicalToolsTabs from '@/src/features/clinical/right-sidebar/components/ClinicalToolsTabs';
 import { WorkflowInstructions } from '@/src/features/clinical/right-sidebar/components/WorkflowInstructions';
@@ -44,6 +45,7 @@ export default function ConsultationPage() {
     setTranscription,
     generatedNotes,
     setGeneratedNotes,
+    setConsentObtained,
     // Deprecated legacy notes
     consultationNotes,
     setConsultationNotes,
@@ -156,7 +158,11 @@ export default function ConsultationPage() {
   const lastAppliedChunkIdRef = useRef<string | null>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const { sendRecordingControl } = useSimpleAbly({
+  const [desktopConsentOpen, setDesktopConsentOpen] = useState(false);
+  const [pendingConsentRequestId, setPendingConsentRequestId] = useState<string | null>(null);
+  const [pendingConsentInitiator, setPendingConsentInitiator] = useState<'desktop' | 'mobile' | null>(null);
+
+  const { sendRecordingControl, sendConsentRequest, sendConsentGranted, sendConsentDenied } = useSimpleAbly({
     userId: userId ?? null,
     onRecordingStatusChanged: (isRecording: boolean) => {
       setMobileIsRecording(isRecording);
@@ -165,6 +171,28 @@ export default function ConsultationPage() {
     onError: handleError,
 
     isMobile: false,
+    onConsentRequested: ({ requestId, initiator }) => {
+      // Open desktop consent modal on any consent request
+      setPendingConsentRequestId(requestId);
+      setPendingConsentInitiator(initiator);
+      setDesktopConsentOpen(true);
+    },
+    onConsentGranted: ({ requestId }) => {
+      // Close modal if matching and mark consent in store
+      if (pendingConsentRequestId && requestId === pendingConsentRequestId) {
+        try { setConsentObtained(true); } catch {}
+        setDesktopConsentOpen(false);
+        setPendingConsentRequestId(null);
+        setPendingConsentInitiator(null);
+      }
+    },
+    onConsentDenied: ({ requestId }) => {
+      if (pendingConsentRequestId && requestId === pendingConsentRequestId) {
+        setDesktopConsentOpen(false);
+        setPendingConsentRequestId(null);
+        setPendingConsentInitiator(null);
+      }
+    },
     onTranscriptionsUpdated: async (signalledSessionId?: string) => {
       if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
         return;
@@ -439,6 +467,9 @@ export default function ConsultationPage() {
     if (typeof window !== 'undefined') {
       (window as any).ablySyncHook = {
         sendRecordingControl: (action: 'start' | 'stop') => (sendRecordingControl ? sendRecordingControl(action) : false),
+        sendConsentRequest: (requestId: string, initiator: 'desktop' | 'mobile', sessionId?: string | null) => (sendConsentRequest ? sendConsentRequest(requestId, initiator, sessionId) : false),
+        sendConsentGranted: (requestId: string, actor: 'desktop' | 'mobile', sessionId?: string | null) => (sendConsentGranted ? sendConsentGranted(requestId, actor, sessionId) : false),
+        sendConsentDenied: (requestId: string, actor: 'desktop' | 'mobile', reason?: 'user' | 'timeout' | 'other', sessionId?: string | null) => (sendConsentDenied ? sendConsentDenied(requestId, actor, reason as any, sessionId) : false),
       };
     }
 
@@ -448,6 +479,36 @@ export default function ConsultationPage() {
       }
     };
   }, [sendRecordingControl]);
+
+  // Desktop consent modal handlers for mobile recording
+  const handleDesktopConsentConfirm = async () => {
+    if (!pendingConsentRequestId) {
+      setDesktopConsentOpen(false);
+      return;
+    }
+    try {
+      setConsentObtained(true);
+    } catch {}
+    try {
+      sendConsentGranted?.(pendingConsentRequestId, 'desktop', currentPatientSessionId || undefined);
+    } catch {}
+    // If desktop initiated a mobile start, send control now
+    if (pendingConsentInitiator === 'desktop') {
+      try { sendRecordingControl?.('start'); } catch {}
+    }
+    setDesktopConsentOpen(false);
+    setPendingConsentRequestId(null);
+    setPendingConsentInitiator(null);
+  };
+
+  const handleDesktopConsentCancel = () => {
+    if (pendingConsentRequestId) {
+      try { sendConsentDenied?.(pendingConsentRequestId, 'desktop', 'user', currentPatientSessionId || undefined); } catch {}
+    }
+    setDesktopConsentOpen(false);
+    setPendingConsentRequestId(null);
+    setPendingConsentInitiator(null);
+  };
 
   // On mount, sync current session from server (server truth); create one if missing
   useEffect(() => {
@@ -1040,6 +1101,13 @@ export default function ConsultationPage() {
           </div>
         </Container>
       </div>
+
+      {/* Consent modal for mobile flow requests */}
+      <ConsentModal
+        isOpen={desktopConsentOpen}
+        onConfirm={handleDesktopConsentConfirm}
+        onCancel={handleDesktopConsentCancel}
+      />
 
       {/* Right panel overlay removed */}
 

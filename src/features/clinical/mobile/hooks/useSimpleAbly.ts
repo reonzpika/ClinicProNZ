@@ -2,13 +2,18 @@ import * as Ably from 'ably';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 type SimpleAblyMessage = {
-  type: 'transcriptions_updated' | 'recording_status' | 'recording_control' | 'images_uploaded' | 'session_context' | 'transcription_status' | 'flush_request';
+  type: 'transcriptions_updated' | 'recording_status' | 'recording_control' | 'images_uploaded' | 'session_context' | 'transcription_status' | 'flush_request' | 'consent_request' | 'consent_granted' | 'consent_denied';
   transcript?: string;
   timestamp?: number;
   // Recording status fields
   isRecording?: boolean;
   // Recording control fields
   action?: 'start' | 'stop';
+  // Consent fields
+  requestId?: string;
+  initiator?: 'desktop' | 'mobile';
+  actor?: 'desktop' | 'mobile';
+  reason?: 'user' | 'timeout' | 'other';
   // Image upload notification fields
   mobileTokenId?: string;
   imageCount?: number;
@@ -31,6 +36,9 @@ export type UseSimpleAblyOptions = {
   onTranscriptionsUpdated?: (sessionId?: string, chunkId?: string) => void;
   onTranscriptionFlushed?: (sessionId?: string, lastChunkId?: string) => void; // Desktop waits on this
   onSessionContextChanged?: (sessionId: string | null) => void; // For mobile to receive session context
+  onConsentRequested?: (data: { requestId: string; initiator: 'desktop' | 'mobile'; sessionId?: string | null }) => void;
+  onConsentGranted?: (data: { requestId: string; actor: 'desktop' | 'mobile'; sessionId?: string | null }) => void;
+  onConsentDenied?: (data: { requestId: string; actor: 'desktop' | 'mobile'; reason?: 'user' | 'timeout' | 'other'; sessionId?: string | null }) => void;
 };
 
 export const useSimpleAbly = ({
@@ -64,6 +72,9 @@ export const useSimpleAbly = ({
     onTranscriptionsUpdated,
     onTranscriptionFlushed,
     onSessionContextChanged,
+    onConsentRequested,
+    onConsentGranted,
+    onConsentDenied,
   });
 
   // Update callbacks without triggering reconnection
@@ -77,8 +88,11 @@ export const useSimpleAbly = ({
       onTranscriptionsUpdated,
       onTranscriptionFlushed,
       onSessionContextChanged,
+      onConsentRequested,
+      onConsentGranted,
+      onConsentDenied,
     } as any;
-  }, [onRecordingStatusChanged, onError, onConnectionStatusChanged, onControlCommand, onMobileImagesUploaded, onTranscriptionsUpdated, onTranscriptionFlushed, onSessionContextChanged]);
+  }, [onRecordingStatusChanged, onError, onConnectionStatusChanged, onControlCommand, onMobileImagesUploaded, onTranscriptionsUpdated, onTranscriptionFlushed, onSessionContextChanged, onConsentRequested, onConsentGranted, onConsentDenied]);
 
   // Connection status is updated directly to avoid unstable deps
 
@@ -322,6 +336,34 @@ export const useSimpleAbly = ({
 
               callbacksRef.current.onTranscriptionsUpdated?.((data as any).sessionId, (data as any).chunkId);
               break;
+            case 'consent_request':
+              if ((data as any).requestId && (data as any).initiator) {
+                callbacksRef.current.onConsentRequested?.({
+                  requestId: (data as any).requestId,
+                  initiator: (data as any).initiator,
+                  sessionId: (data as any).sessionId ?? undefined,
+                });
+              }
+              break;
+            case 'consent_granted':
+              if ((data as any).requestId && (data as any).actor) {
+                callbacksRef.current.onConsentGranted?.({
+                  requestId: (data as any).requestId,
+                  actor: (data as any).actor,
+                  sessionId: (data as any).sessionId ?? undefined,
+                });
+              }
+              break;
+            case 'consent_denied':
+              if ((data as any).requestId && (data as any).actor) {
+                callbacksRef.current.onConsentDenied?.({
+                  requestId: (data as any).requestId,
+                  actor: (data as any).actor,
+                  reason: (data as any).reason,
+                  sessionId: (data as any).sessionId ?? undefined,
+                });
+              }
+              break;
             case 'transcription_status':
               if (!isMobile && data.state === 'flushed') {
                 callbacksRef.current.onTranscriptionFlushed?.(data.sessionId ?? undefined, (data as any).lastChunkId);
@@ -541,6 +583,38 @@ export const useSimpleAbly = ({
     }, { queueIfNotReady: true });
   }, [publishSafe]);
 
+  // Consent signalling
+  const sendConsentRequest = useCallback((requestId: string, initiator: 'desktop' | 'mobile', sessionId?: string | null) => {
+    return publishSafe('consent_request', {
+      type: 'consent_request',
+      requestId,
+      initiator,
+      sessionId: sessionId ?? undefined,
+      timestamp: Date.now(),
+    });
+  }, [publishSafe]);
+
+  const sendConsentGranted = useCallback((requestId: string, actor: 'desktop' | 'mobile', sessionId?: string | null) => {
+    return publishSafe('consent_granted', {
+      type: 'consent_granted',
+      requestId,
+      actor,
+      sessionId: sessionId ?? undefined,
+      timestamp: Date.now(),
+    });
+  }, [publishSafe]);
+
+  const sendConsentDenied = useCallback((requestId: string, actor: 'desktop' | 'mobile', reason: 'user' | 'timeout' | 'other' = 'user', sessionId?: string | null) => {
+    return publishSafe('consent_denied', {
+      type: 'consent_denied',
+      requestId,
+      actor,
+      reason,
+      sessionId: sessionId ?? undefined,
+      timestamp: Date.now(),
+    });
+  }, [publishSafe]);
+
   // Removed HTTP polling - using broadcast requests instead
 
   return {
@@ -549,5 +623,8 @@ export const useSimpleAbly = ({
     sendRecordingControl,
     sendImageNotification,
     sendSessionContext,
+    sendConsentRequest,
+    sendConsentGranted,
+    sendConsentDenied,
   };
 };
