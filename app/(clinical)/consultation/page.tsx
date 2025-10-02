@@ -161,6 +161,7 @@ export default function ConsultationPage() {
   const [desktopConsentOpen, setDesktopConsentOpen] = useState(false);
   const [pendingConsentRequestId, setPendingConsentRequestId] = useState<string | null>(null);
   const [pendingConsentInitiator, setPendingConsentInitiator] = useState<'desktop' | 'mobile' | null>(null);
+  const desktopConsentTimerRef = useRef<any>(null);
 
   const { sendRecordingControl, sendConsentRequest, sendConsentGranted, sendConsentDenied } = useSimpleAbly({
     userId: userId ?? null,
@@ -176,6 +177,16 @@ export default function ConsultationPage() {
       setPendingConsentRequestId(requestId);
       setPendingConsentInitiator(initiator);
       setDesktopConsentOpen(true);
+      // Auto-deny after 30s if no action
+      if (desktopConsentTimerRef.current) {
+        clearTimeout(desktopConsentTimerRef.current);
+      }
+      desktopConsentTimerRef.current = setTimeout(() => {
+        try { sendConsentDenied?.(requestId, 'desktop', 'timeout', currentPatientSessionId || undefined); } catch {}
+        setDesktopConsentOpen(false);
+        setPendingConsentRequestId(null);
+        setPendingConsentInitiator(null);
+      }, 30000);
     },
     onConsentGranted: ({ requestId }) => {
       // Close modal if matching and mark consent in store
@@ -184,6 +195,10 @@ export default function ConsultationPage() {
         setDesktopConsentOpen(false);
         setPendingConsentRequestId(null);
         setPendingConsentInitiator(null);
+        if (desktopConsentTimerRef.current) {
+          clearTimeout(desktopConsentTimerRef.current);
+          desktopConsentTimerRef.current = null;
+        }
       }
     },
     onConsentDenied: ({ requestId }) => {
@@ -191,6 +206,10 @@ export default function ConsultationPage() {
         setDesktopConsentOpen(false);
         setPendingConsentRequestId(null);
         setPendingConsentInitiator(null);
+        if (desktopConsentTimerRef.current) {
+          clearTimeout(desktopConsentTimerRef.current);
+          desktopConsentTimerRef.current = null;
+        }
       }
     },
     onTranscriptionsUpdated: async (signalledSessionId?: string) => {

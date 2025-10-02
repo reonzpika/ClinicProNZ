@@ -52,6 +52,9 @@ export const useSimpleAbly = ({
   onTranscriptionsUpdated,
   onTranscriptionFlushed,
   onSessionContextChanged,
+  onConsentRequested,
+  onConsentGranted,
+  onConsentDenied,
 }: UseSimpleAblyOptions) => {
   const [isConnected, setIsConnected] = useState(false);
 

@@ -91,6 +91,7 @@ function MobilePageContent() {
   // Simple Ably for real-time sync
   const [consentOpen, setConsentOpen] = useState(false);
   const pendingRequestIdRef = useRef<string | null>(null);
+  const consentTimerRef = useRef<any>(null);
 
   const { isConnected, sendRecordingStatus, sendImageNotification, sendConsentRequest, sendConsentGranted, sendConsentDenied } = useSimpleAbly({
     userId: isSignedIn ? userId : null,
@@ -121,10 +122,27 @@ function MobilePageContent() {
       // When local user taps start, we'll emit, but also if desktop emits, show modal
       pendingRequestIdRef.current = requestId;
       setConsentOpen(true);
+      // Start timeout to auto-deny after 30s
+      if (consentTimerRef.current) {
+        clearTimeout(consentTimerRef.current);
+      }
+      consentTimerRef.current = setTimeout(() => {
+        try {
+          if (pendingRequestIdRef.current) {
+            sendConsentDenied?.(pendingRequestIdRef.current, 'mobile', 'timeout');
+          }
+        } catch {}
+        setConsentOpen(false);
+        pendingRequestIdRef.current = null;
+      }, 30000);
     },
     onConsentGranted: async ({ requestId }) => {
       if (pendingRequestIdRef.current && requestId === pendingRequestIdRef.current) {
         setConsentOpen(false);
+        if (consentTimerRef.current) {
+          clearTimeout(consentTimerRef.current);
+          consentTimerRef.current = null;
+        }
         // Start immediately on mobile if not already recording
         if (!isRecordingRef.current) {
           await startRecordingRef.current?.();
@@ -136,6 +154,10 @@ function MobilePageContent() {
     onConsentDenied: ({ requestId }) => {
       if (pendingRequestIdRef.current && requestId === pendingRequestIdRef.current) {
         setConsentOpen(false);
+        if (consentTimerRef.current) {
+          clearTimeout(consentTimerRef.current);
+          consentTimerRef.current = null;
+        }
         pendingRequestIdRef.current = null;
       }
     },
