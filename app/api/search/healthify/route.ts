@@ -22,83 +22,7 @@ type SearchResponse = {
   error?: string;
 };
 
-/**
- * Intelligently select most relevant sources using GPT-5 nano
- */
-async function selectRelevantSources(
-  query: string,
-  healthifyResults: any[],
-): Promise<number[]> {
-  try {
-    // Take top 5 candidates for selection (matching our database limit)
-    const candidates = healthifyResults.slice(0, 5);
-
-    // Create summaries for selection - only overallSummary content
-    const sourceSummaries = candidates
-      .map((result, index) => {
-        const summary = result.overallSummary || result.content?.substring(0, 200) || 'No summary available';
-        return `[${index}] ${summary}`;
-      })
-      .join('\n\n');
-
-    console.log(`[SEARCH DEBUG] Selection stage: Reviewing ${candidates.length} candidates for "${query}"`);
-    console.log(`[SEARCH DEBUG] LLM input format per article: [index] overallSummary_content`);
-    console.log(`[SEARCH DEBUG] Total LLM input size: ~${sourceSummaries.length} characters`);
-
-    const llmSelectionStart = performance.now();
-    const openai = getOpenAI();
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-5-nano', // Ultra-fast selection
-      messages: [{
-        role: 'user',
-        content: `Select 1-5 most relevant articles for medical query: "${query}"
-
-Review these article summaries and select the most relevant ones that:
-- Directly address the query topic
-- Provide complementary information (avoid redundant content)  
-- Cover different aspects (causes, symptoms, treatments, management)
-
-Article summaries to review:
-${sourceSummaries}
-
-Return only a JSON object with selected indices:
-{"selected": [0, 2, 4]}`,
-      }],
-      // Note: GPT-5 models only support default temperature (1)
-      response_format: { type: 'json_object' },
-    });
-
-    const llmSelectionEnd = performance.now();
-    console.log(`[SEARCH TIMING] LLM selection call: ${Math.round(llmSelectionEnd - llmSelectionStart)}ms`);
-
-    const response = completion.choices[0]?.message?.content?.trim();
-    if (!response) {
- throw new Error('Empty response from selection model');
-}
-
-    const parsed = JSON.parse(response);
-    const selectedIndices = parsed.selected || [];
-
-    // Validate selection (ensure indices are within range and reasonable count)
-    const validIndices = selectedIndices
-      .filter((idx: number) => typeof idx === 'number' && idx >= 0 && idx < candidates.length)
-      .slice(0, 5); // Cap at 5 sources max
-
-    if (validIndices.length === 0) {
- throw new Error('No valid selections returned');
-}
-
-    console.log(`[SEARCH DEBUG] Selection complete: Selected ${validIndices.length} sources from ${candidates.length} candidates`);
-    console.log(`[SEARCH DEBUG] Selected indices: [${validIndices.join(', ')}]`);
-
-    return validIndices;
-  } catch (error) {
-    console.error('[SEARCH] Source selection failed:', error);
-    // Fallback: return top 3 indices
-    console.log('[SEARCH DEBUG] Fallback: Using top 3 sources');
-    return [0, 1, 2].slice(0, Math.min(3, healthifyResults.length));
-  }
-}
+// Removed source selection LLM step – rely on pgvector top-k
 
 export async function POST(request: NextRequest) {
   try {
@@ -133,16 +57,15 @@ export async function POST(request: NextRequest) {
     console.log(`[SEARCH DEBUG] Search parameters: limit=5, threshold=0.4, embedding_model=text-embedding-3-small`);
 
     const searchStart = performance.now();
-    const allResults = await searchSimilarDocuments(correctedQuery, 5, 0.4);
-    const healthifyResults = allResults.filter(result => result.sourceType === 'healthify');
+    const results = await searchSimilarDocuments(correctedQuery, 5, 0.4, 'healthify');
     const searchEnd = performance.now();
 
     console.log(`[SEARCH TIMING] Database search: ${Math.round(searchEnd - searchStart)}ms`);
-    console.log(`[SEARCH DEBUG] Database query results: ${allResults.length} total, ${healthifyResults.length} from healthify`);
+    console.log(`[SEARCH DEBUG] Database query results: ${results.length} from healthify (filtered in SQL)`);
     console.log(`[SEARCH DEBUG] Database fields retrieved: id, title, content, source, sourceType, score, sectionSummaries, overallSummary, sections, enhancementStatus`);
-    console.log(`[SEARCH DEBUG] Top 3 scores: [${healthifyResults.slice(0, 3).map(r => r.score?.toFixed(3)).join(', ')}]`);
+    console.log(`[SEARCH DEBUG] Top 3 scores: [${results.slice(0, 3).map(r => r.score?.toFixed(3)).join(', ')}]`);
 
-    if (healthifyResults.length === 0) {
+    if (results.length === 0) {
       const overallEnd = performance.now();
       console.log(`[SEARCH TIMING] TOTAL: ${Math.round(overallEnd - overallStart)}ms`);
       return NextResponse.json({
@@ -158,7 +81,7 @@ export async function POST(request: NextRequest) {
       // LIST MODE: Return top 5 titles only (no LLM processing)
       console.log(`[SEARCH DEBUG] === LIST MODE: Returning top 5 titles only ===`);
 
-      const titles = healthifyResults.slice(0, 5).map(result => ({
+      const titles = results.slice(0, 5).map(result => ({
         title: result.title,
         url: result.source,
       }));
@@ -178,24 +101,8 @@ export async function POST(request: NextRequest) {
 
     // SUMMARY MODE: Full LLM processing pipeline
     console.log(`[SEARCH DEBUG] === SUMMARY MODE: Full LLM processing pipeline ===`);
-
-    // Step 2: Intelligent source selection using GPT-5 nano
-    console.log(`[SEARCH DEBUG] === STEP 2: SOURCE SELECTION (NO DATABASE) ===`);
-    console.log(`[SEARCH DEBUG] Input: ${healthifyResults.length} database results from Step 1`);
-    console.log(`[SEARCH DEBUG] LLM input data: Article titles + overallSummary (first 150 chars each)`);
-    console.log(`[SEARCH DEBUG] LLM model: GPT-5 nano, task: Select 1-8 most relevant articles`);
-    console.log(`[SEARCH DEBUG] LLM will review: [${healthifyResults.slice(0, 3).map(r => `"${r.title?.substring(0, 30)}..."`).join(', ')}]`);
-
-    const selectionStart = performance.now();
-    const selectedIndices = await selectRelevantSources(query, healthifyResults);
-    const searchResults = selectedIndices
-      .map(index => healthifyResults[index])
-      .filter((result): result is NonNullable<typeof result> => result !== undefined);
-    const selectionEnd = performance.now();
-
-    console.log(`[SEARCH TIMING] Source selection: ${Math.round(selectionEnd - selectionStart)}ms`);
-    console.log(`[SEARCH DEBUG] LLM selection result: Selected ${searchResults.length} sources from ${healthifyResults.length} candidates`);
-    console.log(`[SEARCH DEBUG] Selected articles: [${searchResults.map(r => `"${r.title?.substring(0, 25)}..."`).join(', ')}]`);
+    console.log(`[SEARCH DEBUG] Skipping separate source selection — using DB top-k directly`);
+    const searchResults = results;
 
     if (searchResults.length === 0) {
       console.log(`[SEARCH DEBUG] No results found for "${correctedQuery}"`);
@@ -206,8 +113,8 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    console.log(`[SEARCH DEBUG] === STEP 3: CONTENT SYNTHESIS (NO DATABASE) ===`);
-    console.log(`[SEARCH DEBUG] Input: ${searchResults.length} selected articles from Step 2`);
+    console.log(`[SEARCH DEBUG] === STEP 2: CONTENT SYNTHESIS (NO DATABASE) ===`);
+    console.log(`[SEARCH DEBUG] Input: ${searchResults.length} selected articles from DB`);
     console.log(`[SEARCH DEBUG] Content types used: sectionSummaries (≥0.5 score), overallSummary (<0.5), fallback (missing summaries)`);
     console.log(`[SEARCH DEBUG] LLM model: GPT-5 nano, task: Generate 4-6 bullet points with citations`);
 
@@ -280,11 +187,11 @@ Rules:
 Sources:
 ${contextData}`;
 
-    // Step 3: Get concise synthesised bullet points from GPT-5 nano
+    // Get concise synthesised bullet points
     const synthesisStart = performance.now();
     const openai = getOpenAI();
     const completion = await openai.chat.completions.create({
-      model: 'gpt-5-nano', // Ultra-fast synthesis for speed
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
@@ -295,7 +202,8 @@ ${contextData}`;
           content: `Create 3-4 concise bullet points about "${query}" ensuring ALL sources [1] through [${searchResults.length}] are cited.`,
         },
       ],
-      // Note: GPT-5 models only support default temperature (1)
+      temperature: 0.2,
+      max_tokens: 220,
     });
     const synthesisEnd = performance.now();
     console.log(`[SEARCH TIMING] Content synthesis: ${Math.round(synthesisEnd - synthesisStart)}ms`);
@@ -318,21 +226,18 @@ ${contextData}`;
         index: index + 1,
       }));
 
-    console.log(`[SEARCH DEBUG] Stage 2 complete: Generated bullet points with ${sources.length} selected sources`);
-    console.log(`[SEARCH DEBUG] Two-stage search complete: Selection + Synthesis`);
+    console.log(`[SEARCH DEBUG] Stage complete: Generated bullet points with ${sources.length} sources`);
 
     // Overall timing summary
     const totalTime = Math.round(synthesisEnd - overallStart);
     const searchTime = Math.round(searchEnd - searchStart);
-    const selectionTime = Math.round(selectionEnd - selectionStart);
     const synthesisTime = Math.round(synthesisEnd - synthesisStart);
     console.log(`[SEARCH TIMING] ===== PERFORMANCE SUMMARY =====`);
     console.log(`[SEARCH TIMING] Database search: ${searchTime}ms (${Math.round(searchTime / totalTime * 100)}%) - ONLY DB ACCESS`);
-    console.log(`[SEARCH TIMING] Source selection: ${selectionTime}ms (${Math.round(selectionTime / totalTime * 100)}%) - GPT-5 nano LLM call`);
-    console.log(`[SEARCH TIMING] Content synthesis: ${synthesisTime}ms (${Math.round(synthesisTime / totalTime * 100)}%) - GPT-5 nano LLM call`);
+    console.log(`[SEARCH TIMING] Content synthesis: ${synthesisTime}ms (${Math.round(synthesisTime / totalTime * 100)}%) - GPT-4o-mini LLM call`);
     console.log(`[SEARCH TIMING] TOTAL: ${totalTime}ms`);
     console.log(`[SEARCH TIMING] DATABASE ACCESSES: 1 (vector similarity search only)`);
-    console.log(`[SEARCH TIMING] LLM API CALLS: 2 (selection + synthesis)`);
+    console.log(`[SEARCH TIMING] LLM API CALLS: 1 (synthesis only)`);
     console.log(`[SEARCH TIMING] ================================`);
 
     const searchResponse: SearchResponse = {

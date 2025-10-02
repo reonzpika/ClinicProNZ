@@ -1,4 +1,4 @@
-import { cosineDistance, sql } from 'drizzle-orm';
+import { and, cosineDistance, eq, sql } from 'drizzle-orm';
 import OpenAI from 'openai';
 
 import { getDb } from '../../../database/client';
@@ -55,6 +55,7 @@ export async function searchSimilarDocuments(
   query: string,
   limit: number = 5,
   threshold: number = 0.7,
+  sourceType?: string,
 ): Promise<RagQueryResult[]> {
   const queryEmbedding = await createEmbedding(query);
 
@@ -77,7 +78,12 @@ export async function searchSimilarDocuments(
       enhancementStatus: ragDocuments.enhancementStatus,
     })
     .from(ragDocuments)
-    .where(sql`${similarity} > ${threshold}`)
+    .where(
+      and(
+        sql`${similarity} > ${threshold}`,
+        sourceType ? eq(ragDocuments.sourceType, sourceType) : sql`true`,
+      ),
+    )
     .orderBy(sql`${similarity} DESC`)
     .limit(limit);
 
