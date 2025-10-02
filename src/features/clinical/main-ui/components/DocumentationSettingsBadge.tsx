@@ -12,7 +12,7 @@ import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { useResponsive } from '@/src/shared/hooks/useResponsive';
 import { createAuthHeaders } from '@/src/shared/utils';
-import { MULTIPROBLEM_SOAP_UUID } from '@/src/stores/consultationStore';
+import { DEFAULT_TEMPLATE_ID, MULTIPROBLEM_SOAP_UUID } from '@/src/stores/consultationStore';
 
 import { DocumentationSettingsModal } from './DocumentationSettingsModal';
 
@@ -178,7 +178,18 @@ export const DocumentationSettingsBadge: React.FC = () => {
     return templates.find(t => t.id === templateId);
   }, [templates, templateId]);
 
-  const templateDisplayName = currentTemplate?.name || (isLoading ? 'Loading...' : 'Select Template');
+  // Fallback names to avoid UI lag before templates finish fetching
+  const fallbackTemplateName = useMemo(() => {
+    if (templateId === DEFAULT_TEMPLATE_ID) {
+      return 'Default SOAP Template';
+    }
+    if (templateId === MULTIPROBLEM_SOAP_UUID) {
+      return 'Multi‑problem SOAP Template';
+    }
+    return null;
+  }, [templateId]);
+
+  const templateDisplayName = currentTemplate?.name || fallbackTemplateName || (isLoading ? 'Loading...' : 'Select Template');
   const inputDisplayName = inputMode === 'audio' ? 'Audio' : 'Typed';
 
   const handleOpenModal = () => {
