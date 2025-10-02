@@ -1,4 +1,4 @@
-import { and, cosineDistance, eq, sql } from 'drizzle-orm';
+import { cosineDistance, eq, sql } from 'drizzle-orm';
 import OpenAI from 'openai';
 
 import { getDb } from '../../../database/client';
