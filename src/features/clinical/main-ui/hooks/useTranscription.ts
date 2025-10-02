@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { createAuthHeadersForFormData } from '@/src/shared/utils';
+import { fetchWithRetry } from '@/src/shared/utils';
 
 type TranscriptionState = {
   isRecording: boolean;
@@ -159,11 +160,11 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
 
         // Authentication required via headers
         const t0 = Date.now();
-        const response = await fetch('/api/deepgram/transcribe', {
+        const response = await fetchWithRetry('/api/deepgram/transcribe', {
           method: 'POST',
           headers: { ...createAuthHeadersForFormData(userId, userTier), 'X-Debug-Request-Id': reqId },
           body: formData,
-        });
+        }, { maxRetries: 2 });
         const tMs = Date.now() - t0;
 
         if (!response.ok) {
