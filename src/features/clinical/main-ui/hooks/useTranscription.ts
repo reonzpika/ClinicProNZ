@@ -10,6 +10,7 @@ type TranscriptionState = {
   isRecording: boolean;
   isPaused: boolean;
   isTranscribing: boolean;
+  postInFlight: number;
   error: string | null;
   volumeLevel: number;
   noInputWarning: boolean;
@@ -56,6 +57,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     isRecording: false,
     isPaused: false,
     isTranscribing: false,
+    postInFlight: 0,
     error: null,
     volumeLevel: 0,
     noInputWarning: false,
@@ -183,6 +185,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
           if (sid) {
             // Post chunk to server (append-only)
             try {
+              setState((prev: TranscriptionState) => ({ ...prev, postInFlight: prev.postInFlight + 1 }));
               const payload = {
                 sessionId: sid,
                 chunkId: (typeof crypto !== 'undefined' && (crypto as any).randomUUID) ? (crypto as any).randomUUID() : Math.random().toString(36).slice(2, 10),
@@ -197,6 +200,8 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
               });
             } catch {
               // best-effort; Ably/polling will reconcile
+            } finally {
+              setState((prev: TranscriptionState) => ({ ...prev, postInFlight: Math.max(0, prev.postInFlight - 1) }));
             }
           }
 

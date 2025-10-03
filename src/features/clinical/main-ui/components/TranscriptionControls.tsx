@@ -63,6 +63,7 @@ export function TranscriptionControls({
 
   const {
     isRecording,
+    isTranscribing,
     error,
     startRecording,
     stopRecording,
@@ -400,7 +401,7 @@ export function TranscriptionControls({
             <Mic size={16} className="text-slate-600" />
             <h3 className="text-sm font-medium text-slate-700">Consultation Note</h3>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             {isRecording && (
               <>
                 <span className="inline-block size-2 animate-pulse rounded-full bg-red-500" />
@@ -412,6 +413,9 @@ export function TranscriptionControls({
                 <span className="inline-block size-2 animate-pulse rounded-full bg-blue-500" />
                 <span className="animate-pulse text-xs text-blue-600">Mobile device recording...</span>
               </>
+            )}
+            {!isRecording && isTranscribing && (
+              <span className="text-xs text-slate-600">Transcribing…</span>
             )}
             {/* removed ready-for-review label */}
           </div>
