@@ -142,8 +142,7 @@ export async function POST(req: NextRequest) {
         createdAt: session?.createdAt?.toISOString() || new Date().toISOString(),
         updatedAt: session?.updatedAt?.toISOString() || new Date().toISOString(),
         completedAt: session?.completedAt?.toISOString() || null,
-        // Override with empty arrays for client
-        transcriptions: [],
+        // Drop legacy transcriptions from response
         consultationItems: [],
       },
     });
@@ -168,7 +167,6 @@ export async function PUT(req: NextRequest) {
       sessionId,
       patientName,
       status,
-      transcriptions,
       notes,
       typedInput,
       consultationNotes,
@@ -219,9 +217,7 @@ export async function PUT(req: NextRequest) {
     if (planText !== undefined) {
  updateData.planText = planText;
 }
-    if (transcriptions !== undefined) {
-      updateData.transcriptions = JSON.stringify(transcriptions);
-    }
+    // transcriptions field deprecated (server-authoritative chunks table)
     if (consultationItems !== undefined) {
       updateData.consultationItems = JSON.stringify(consultationItems);
     }
@@ -256,8 +252,7 @@ export async function PUT(req: NextRequest) {
         createdAt: session?.createdAt?.toISOString() || new Date().toISOString(),
         updatedAt: session?.updatedAt?.toISOString() || new Date().toISOString(),
         completedAt: session?.completedAt?.toISOString() || null,
-        // Parse JSON fields
-        transcriptions: session.transcriptions ? JSON.parse(session.transcriptions) : [],
+        // Parse JSON fields (transcriptions removed)
         consultationItems: session.consultationItems ? JSON.parse(session.consultationItems) : [],
       },
     });

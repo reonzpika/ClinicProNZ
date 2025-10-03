@@ -250,18 +250,8 @@ export function useConsultationStores(): any {
     } catch {}
 
     const hasLocal = !!(transcriptionStore.transcription.transcript || transcriptionStore.typedInput);
-    // Only treat as remote content if non-empty values are present
-    let remoteTrans: any[] = [];
-    try {
-      if (session.transcriptions) {
-        remoteTrans = typeof session.transcriptions === 'string'
-          ? JSON.parse(session.transcriptions)
-          : session.transcriptions;
-      }
-    } catch {
-      remoteTrans = [];
-    }
-    const hasRemoteTrans = Array.isArray(remoteTrans) && remoteTrans.length > 0;
+    // Drop legacy transcriptions JSON hydration; transcripts now fetched from /api/transcriptions
+    const hasRemoteTrans = false;
     const hasRemoteTextFields = !!(session.typedInput && String(session.typedInput).trim())
       || !!(session.notes && String(session.notes).trim())
       || !!(session.consultationNotes && String(session.consultationNotes).trim())
@@ -279,14 +269,7 @@ export function useConsultationStores(): any {
       return;
     }
 
-    try {
-      if (hasRemoteTrans) {
-        const fullTranscript = remoteTrans.map((t: any) => (t?.text || '').trim()).join(' ');
-        transcriptionStore.setTranscription(fullTranscript, false, undefined, undefined);
-      }
-    } catch {
-      // ignore JSON errors
-    }
+    // No transcript hydration here; page fetches from /api/transcriptions
     // Only update local state when values actually differ to avoid update loops
     if (session.typedInput && session.typedInput !== transcriptionStore.typedInput) {
       transcriptionStore.setTypedInput(session.typedInput);
@@ -590,17 +573,8 @@ export function useConsultationStores(): any {
     setTranscription: transcriptionStore.setTranscription,
     appendTranscription: useCallback(async (newTranscript: string, isLive: boolean, source: 'desktop' | 'mobile' = 'desktop', deviceId?: string, diarizedTranscript?: string, utterances?: any[]) => {
       await transcriptionStore.appendTranscription(newTranscript, isLive, source, deviceId, diarizedTranscript, utterances);
-      const id = consultationStore.currentPatientSessionId;
-      if (!id || !newTranscript.trim()) {
-        return;
-      }
-      try {
-        const entry = { id: Math.random().toString(36).substr(2, 9), text: newTranscript.trim(), timestamp: new Date().toISOString(), source, deviceId };
-        const current = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === id) : null;
-        const updated = [...(current?.transcriptions || []), entry];
-        await updatePatientSession(id, { transcriptions: updated } as any);
-      } catch {}
-    }, [transcriptionStore, consultationStore.currentPatientSessionId, patientSessions, updatePatientSession]),
+      // No server write here; chunks are persisted via /api/transcriptions/chunk
+    }, [transcriptionStore]),
     setTypedInput: transcriptionStore.setTypedInput,
 
     // Actions - generated content
@@ -729,20 +703,8 @@ export function useConsultationStores(): any {
       } catch {}
 
       // 🔧 STEP 4: LOAD SESSION DATA INTO LOCAL STORES (complete hydration)
-      if (session) {
-        // Load transcriptions (concatenate all chunks for full conversation)
-        try {
-          if (session.transcriptions) {
-            const trans = typeof session.transcriptions === 'string' ? JSON.parse(session.transcriptions) : session.transcriptions;
-            if (Array.isArray(trans) && trans.length > 0) {
-              // ✅ FIX: Join all transcription chunks instead of showing only the last one
-              const fullTranscript = trans.map((t: any) => t.text).join(' ');
-              transcriptionStore.setTranscription(fullTranscript, false, undefined, undefined);
-            }
-          }
-        } catch (error) {
-          console.warn('Failed to parse session transcriptions:', error);
-        }
+    if (session) {
+      // Transcripts are fetched by page via /api/transcriptions now
 
         // Load typed input
         if (session.typedInput) {
