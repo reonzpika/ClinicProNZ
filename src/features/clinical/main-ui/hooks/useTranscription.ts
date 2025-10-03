@@ -205,11 +205,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
             }
           }
 
-          // Optimistically append to local transcript for immediate UX
-          const currentText = transcription.transcript || '';
-          const nextText = currentText ? `${currentText} ${transcript.trim()}` : transcript.trim();
-          setTranscription(nextText, state.isRecording);
-
+          // No optimistic echo: UI will update from DB-committed chunks only
           setState((prev: TranscriptionState) => ({
             ...prev,
             noInputWarning: false,
@@ -643,6 +639,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     isRecording: state.isRecording,
     isPaused: state.isPaused,
     isTranscribing: state.isTranscribing,
+    postInFlight: state.postInFlight,
     error: state.error,
     volumeLevel: state.volumeLevel,
     noInputWarning: state.noInputWarning,

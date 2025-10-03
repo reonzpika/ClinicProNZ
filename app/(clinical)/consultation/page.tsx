@@ -97,8 +97,8 @@ export default function ConsultationPage() {
   const lastMobileStatusAtRef = useRef<number>(0);
   const [defaultRecordingMethod, setDefaultRecordingMethod] = useState<'desktop' | 'mobile'>('desktop');
 
-  // Desktop recording controls
-  const { stopRecording, isRecording } = useTranscription();
+  // Desktop recording controls + counters
+  const { stopRecording, isRecording, isTranscribing, postInFlight } = useTranscription();
 
   // Load user settings and apply defaults
   const { settings, loadSettings } = useUserSettingsStore();
@@ -249,6 +249,28 @@ export default function ConsultationPage() {
       }, 900);
     },
   });
+
+  // Backstop polling every 15s while session active
+  useEffect(() => {
+    if (!currentPatientSessionId || !userId) {
+      return;
+    }
+    const id = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/transcriptions?sessionId=${encodeURIComponent(currentPatientSessionId)}`, {
+          method: 'GET',
+          headers: createAuthHeaders(userId, userTier),
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const chunks = Array.isArray(data?.chunks) ? data.chunks : [];
+        const fullText = chunks.map((c: any) => (c?.text || '').trim()).filter(Boolean).join(' ').trim();
+        setTranscription(fullText, false, undefined, undefined);
+        lastAppliedServerIdRef.current = chunks.length > 0 ? Number(chunks[chunks.length - 1]?.id) : lastAppliedServerIdRef.current;
+      } catch {}
+    }, 15000);
+    return () => clearInterval(id);
+  }, [currentPatientSessionId, userId, userTier, setTranscription]);
 
   // Focus-reconcile: when tab becomes visible or on pageshow, fetch session and append missed chunks
   useEffect(() => {
@@ -543,6 +565,35 @@ export default function ConsultationPage() {
     }
   };
 
+  // Flush barrier: wait for local counters then stable DB lastId
+  const waitForStableTranscriptions = async (sessionId: string, maxMs = 10000): Promise<void> => {
+    const start = Date.now();
+    let lastId = -1;
+    let stable = 0;
+    while (Date.now() - start < maxMs) {
+      if (isTranscribing || (postInFlight || 0) > 0) {
+        await new Promise(r => setTimeout(r, 250));
+        continue;
+      }
+      try {
+        const res = await fetch(`/api/transcriptions?sessionId=${encodeURIComponent(sessionId)}`, { method: 'GET', headers: createAuthHeaders(userId, userTier) });
+        if (res.ok) {
+          const data = await res.json();
+          const chunks = Array.isArray(data?.chunks) ? data.chunks : [];
+          const currId = chunks.length > 0 ? Number(chunks[chunks.length - 1]?.id) : 0;
+          if (currId === lastId) {
+            stable += 1;
+            if (stable >= 2) return;
+          } else {
+            stable = 0;
+          }
+          lastId = currId;
+        }
+      } catch {}
+      await new Promise(r => setTimeout(r, 300));
+    }
+  };
+
   const handleFinish = async () => {
     setIsFinishing(true);
     // Keep documentation view until operations complete; do not flip modes early
@@ -573,7 +624,7 @@ export default function ConsultationPage() {
           }
         } catch {}
         try {
-          await waitForTranscriptionFlush(currentPatientSessionId);
+          await waitForStableTranscriptions(currentPatientSessionId);
         } catch {}
       }
       // Create a fresh session using favourite template, then switch, then soft-delete old in background
