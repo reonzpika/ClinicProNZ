@@ -1,7 +1,6 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { useQueryClient } from '@tanstack/react-query';
 import { Crown } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -34,7 +33,6 @@ import { createAuthHeaders } from '@/src/shared/utils';
 import { useUserSettingsStore } from '@/src/stores/userSettingsStore';
 
 export default function ConsultationPage() {
-  const queryClient = useQueryClient();
   const {
     setError,
     setStatus,
@@ -148,7 +146,6 @@ export default function ConsultationPage() {
   }, [setError]);
 
   // Simple Ably sync implementation - always connected when token exists (moved before switchToPatientSession)
-  const queryClientRef = useRef(queryClient);
   const currentSessionIdRef = useRef<string | null>(null);
   useEffect(() => {
     currentSessionIdRef.current = currentPatientSessionId || null;
