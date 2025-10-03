@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(apiResponse);
     }
 
-    // Persist mode: append chunk to user's current session and signal desktop
+    // Persist mode: append chunk to server authoritative chunk table and signal desktop
     const userId = context.userId;
     if (!userId) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
@@ -208,31 +208,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Load existing transcriptions for the session
-    const existing = await db
-      .select({ id: patientSessions.id, transcriptions: patientSessions.transcriptions })
-      .from(patientSessions)
-      .where(and(eq(patientSessions.id, currentSessionId), eq(patientSessions.userId, userId)))
-      .limit(1);
-
-    if (!existing.length) {
-      try {
- console.warn('[Transcribe] session not found for user', userId, 'session', currentSessionId);
-} catch {}
-      return NextResponse.json({ error: 'Session not found' }, { status: 404 });
-    }
-
-    const existingTranscriptionsRaw = existing[0]?.transcriptions || '[]';
-    let existingTranscriptions: Array<any> = [];
-    try {
-      existingTranscriptions = JSON.parse(existingTranscriptionsRaw || '[]');
-      if (!Array.isArray(existingTranscriptions)) {
-        existingTranscriptions = [];
-      }
-    } catch {
-      existingTranscriptions = [];
-    }
-
     // Skip empty chunks to avoid noisy updates
     if (!transcript || !transcript.trim()) {
       if (debugEnabled) {
@@ -241,33 +216,40 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ persisted: false, chunkId: null, sessionId: currentSessionId });
     }
 
-    // Append new chunk (drop enhanced fields per spec)
+    // Insert new chunk row, idempotent on (session_id, chunk_id)
     const chunkId = Math.random().toString(36).substr(2, 9);
-    const newEntry = {
-      id: chunkId,
-      text: (transcript || '').trim(),
-      timestamp: new Date().toISOString(),
-      source: 'mobile' as const,
-      // Store duration so we can aggregate cost at recording stop
-      durationSec: Number(metadata?.duration || 0),
-    };
-    const updatedTranscriptions = [...existingTranscriptions, newEntry];
-
-    await db
-      .update(patientSessions)
-      .set({ transcriptions: JSON.stringify(updatedTranscriptions), updatedAt: new Date() })
-      .where(and(eq(patientSessions.id, currentSessionId), eq(patientSessions.userId, userId)));
+    const { transcriptionChunks } = await import('database/schema');
+    let insertedId: number | null = null;
+    try {
+      const rows = await db
+        .insert(transcriptionChunks)
+        .values({
+          sessionId: currentSessionId as any,
+          userId,
+          chunkId: chunkId as any,
+          text: (transcript || '').trim(),
+          source: 'mobile' as any,
+          deviceId: 'mobile',
+        } as any)
+        .returning({ id: transcriptionChunks.id });
+      insertedId = rows?.[0]?.id ?? null;
+    } catch {
+      try {
+        const rows = await db
+          .select({ id: transcriptionChunks.id })
+          .from(transcriptionChunks)
+          .where(and(eq(transcriptionChunks.sessionId, currentSessionId as any), eq(transcriptionChunks.chunkId, chunkId as any)))
+          .limit(1);
+        insertedId = rows?.[0]?.id ?? null;
+      } catch {}
+    }
     if (debugEnabled) {
-      try { console.log('[Transcribe][persist:ok]', { reqId, sessionId: currentSessionId, chunkId, textLen: newEntry.text.length, durationSec: newEntry.durationSec }); } catch {}
+      try { console.log('[Transcribe][persist:ok]', { reqId, sessionId: currentSessionId, chunkId, textLen: (transcript || '').trim().length, insertedId }); } catch {}
     }
 
     // Aggregate Deepgram cost per session by summing durations and upserting single row
     try {
-      const totalDurationSec = updatedTranscriptions.reduce((sum: number, entry: any) => {
-        const d = Number(entry?.durationSec || 0);
-        return sum + (Number.isFinite(d) ? d : 0);
-      }, 0);
-      const totalMinutes = totalDurationSec / 60;
+      const totalMinutes = Number(metadata?.duration || 0) / 60;
 
       const breakdown = calculateDeepgramCost({ duration: totalMinutes } as any);
 
@@ -299,7 +281,7 @@ export async function POST(req: NextRequest) {
         const payload = {
           type: 'transcriptions_updated',
           sessionId: currentSessionId,
-          chunkId,
+          lastId: insertedId || undefined,
           timestamp: Date.now(),
         } as any;
         await channel.publish('transcriptions_updated', payload);
