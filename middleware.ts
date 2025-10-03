@@ -62,6 +62,14 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
+  // Protect /api/transcriptions routes - require sign-in only
+  if (req.nextUrl.pathname.startsWith('/api/transcriptions')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return returnUnauthorized();
+    }
+  }
+
   // Protect /api/consultation routes - require sign-in only
   if (req.nextUrl.pathname.startsWith('/api/consultation')) {
     const resolvedAuth = await auth();
@@ -257,6 +265,7 @@ export const config = {
     '/api/current-session', // Add missing current-session route
     '/api/uploads/:path*',
     '/api/patient-sessions/:path*',
+    '/api/transcriptions/:path*',
     '/api/mobile/:path*',
     '/api/ably/:path*',
     '/api/clinical-images/:path*',
