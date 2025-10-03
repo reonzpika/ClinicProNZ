@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     try {
       const rows = await db
         .insert(schema.transcriptionChunks)
-        .values({ sessionId, userId, chunkId, text, source: (source || 'desktop') as any, deviceId })
+        .values({ sessionId, userId, chunkId, text, source: (source || 'desktop') as any, deviceId } as any)
         .returning({ id: schema.transcriptionChunks.id });
       rowId = rows?.[0]?.id ?? null;
     } catch (e: any) {

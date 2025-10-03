@@ -1,10 +1,10 @@
-import { bigint, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { bigserial, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 import { patientSessions } from './patient_sessions';
 import { users } from './users';
 
 export const transcriptionChunks = pgTable('transcription_chunks', {
-  id: bigint('id', { mode: 'number' }).primaryKey(),
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
   sessionId: uuid('session_id').references(() => patientSessions.id).notNull(),
   userId: text('user_id').references(() => users.id).notNull(),
   chunkId: uuid('chunk_id').notNull(),
