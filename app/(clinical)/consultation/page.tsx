@@ -558,6 +558,26 @@ export default function ConsultationPage() {
     }
   };
 
+  // Immediate fetch on mount/session change to avoid initial delay
+  useEffect(() => {
+    const loadAll = async () => {
+      try {
+        if (!currentPatientSessionId || !userId) return;
+        const res = await fetch(`/api/transcriptions?sessionId=${encodeURIComponent(currentPatientSessionId)}`, {
+          method: 'GET',
+          headers: createAuthHeaders(userId, userTier),
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const chunks = Array.isArray(data?.chunks) ? data.chunks : [];
+        const fullText = chunks.map((c: any) => (c?.text || '').trim()).filter(Boolean).join(' ').trim();
+        setTranscription(fullText, false, undefined, undefined);
+        lastAppliedServerIdRef.current = chunks.length > 0 ? Number(chunks[chunks.length - 1]?.id) : 0;
+      } catch {}
+    };
+    loadAll();
+  }, [currentPatientSessionId, userId, userTier, setTranscription]);
+
   const handleFinish = async () => {
     setIsFinishing(true);
     // Keep documentation view until operations complete; do not flip modes early
