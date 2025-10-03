@@ -529,39 +529,6 @@ export default function ConsultationPage() {
 
   // This eliminates dual broadcasting sources and race conditions
 
-  const waitForTranscriptionFlush = async (sessionId: string, maxMs = 6000): Promise<void> => {
-    const start = Date.now();
-    let lastLen = -1;
-    let lastId = '';
-    let stableCount = 0;
-    while (Date.now() - start < maxMs) {
-      try {
-        const res = await fetch(`/api/patient-sessions?sessionId=${encodeURIComponent(sessionId)}`, { method: 'GET', headers: createAuthHeaders(userId, userTier) });
-        if (res.ok) {
-          const data = await res.json();
-          const s = (data?.sessions || [])[0] || null;
-          let chunks: any[] = [];
-          if (s?.transcriptions) {
-            chunks = Array.isArray(s.transcriptions) ? s.transcriptions : JSON.parse(s.transcriptions);
-          }
-          const len = Array.isArray(chunks) ? chunks.length : 0;
-          const id = len > 0 ? (chunks[len - 1]?.id || '') : '';
-          if (len === lastLen && id === lastId) {
-            stableCount += 1;
-          } else {
-            stableCount = 0;
-          }
-          lastLen = len;
-          lastId = id;
-          if (stableCount >= 2) {
-            return;
-          }
-        }
-      } catch {}
-      await new Promise(r => setTimeout(r, 500));
-    }
-  };
-
   // Flush barrier: wait for local counters then stable DB lastId
   const waitForStableTranscriptions = async (sessionId: string, maxMs = 10000): Promise<void> => {
     const start = Date.now();
