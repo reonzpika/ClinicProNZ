@@ -70,11 +70,15 @@ async def crawl_one(crawler: AsyncWebCrawler, url: str) -> dict | None:
                 # Generate markdown using default generator; library returns a MarkdownGenerationResult
                 markdown_generator=DefaultMarkdownGenerator(),
                 scraping_strategy=LXMLWebScrapingStrategy(),
-                css_selector="#main, main, article",
+                css_selector="article",
                 excluded_selector=(
-                    "header, nav, footer, aside, .breadcrumbs, .cookie, .ads, .newsletter, "
-                    ".share, .social, .print, .affiliate, .supporters, .search, .site-header, .site-footer"
+                    "header, nav, footer, aside, ol.breadcrumbs, .breadcrumb, .cookie, .ads, .newsletter, "
+                    ".share, .social, .print, .qr, .qr-code, .supporters, .affiliate, .search, .site-header, .site-footer"
                 ),
+                exclude_social_media_links=True,
+                exclude_social_media_domains=[
+                    "facebook.com", "linkedin.com", "instagram.com", "x.com", "twitter.com"
+                ],
                 user_agent=USER_AGENT,
                 verbose=False,
             ),
