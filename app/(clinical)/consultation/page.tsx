@@ -214,12 +214,14 @@ export default function ConsultationPage() {
       if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
         return;
       }
+      try { setAwaitingDisplay(true); } catch {}
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
       }
       debounceTimerRef.current = setTimeout(async () => {
         const activeSessionId = signalledSessionId || currentPatientSessionId;
         if (!activeSessionId) {
+          try { setAwaitingDisplay(false); } catch {}
           return;
         }
         // Fetch only new chunks from server using afterId
@@ -230,6 +232,7 @@ export default function ConsultationPage() {
             headers: createAuthHeaders(userId, userTier),
           });
           if (!res.ok) {
+            try { setAwaitingDisplay(false); } catch {}
             return;
           }
           const data = await res.json();
@@ -240,11 +243,15 @@ export default function ConsultationPage() {
               const prev = typeof transcription?.transcript === 'string' ? transcription.transcript : '';
               const next = prev ? `${prev} ${delta}`.trim() : delta;
               setTranscription(next, false, undefined, undefined);
-              try { (useConsultationStores() as any).setAwaitingDisplay?.(false); } catch {}
+              try { setAwaitingDisplay(false); } catch {}
             }
             lastAppliedServerIdRef.current = Number(chunks[chunks.length - 1]?.id) || lastAppliedServerIdRef.current;
+          } else {
+            try { setAwaitingDisplay(false); } catch {}
           }
-        } catch {}
+        } catch {
+          try { setAwaitingDisplay(false); } catch {}
+        }
       }, 900);
     },
   });
@@ -265,7 +272,7 @@ export default function ConsultationPage() {
         const chunks = Array.isArray(data?.chunks) ? data.chunks : [];
         const fullText = chunks.map((c: any) => (c?.text || '').trim()).filter(Boolean).join(' ').trim();
         setTranscription(fullText, false, undefined, undefined);
-        try { (useConsultationStores() as any).setAwaitingDisplay?.(false); } catch {}
+        try { setAwaitingDisplay(false); } catch {}
         lastAppliedServerIdRef.current = chunks.length > 0 ? Number(chunks[chunks.length - 1]?.id) : lastAppliedServerIdRef.current;
       } catch {}
     }, 15000);
