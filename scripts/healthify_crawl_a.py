@@ -99,10 +99,15 @@ async def crawl_one(crawler: AsyncWebCrawler, url: str) -> dict | None:
                 # Generate markdown using default generator; library returns a MarkdownGenerationResult
                 markdown_generator=DefaultMarkdownGenerator(),
                 scraping_strategy=LXMLWebScrapingStrategy(),
-                css_selector="article",
+                css_selector="#main, main, article",
                 excluded_selector=(
-                    "header, nav, footer, aside, ol.breadcrumbs, .breadcrumb, .cookie, .ads, .newsletter, "
-                    ".share, .social, .print, .qr, .qr-code, .supporters, .affiliate, .search, .site-header, .site-footer"
+                    'header, nav, footer, aside, '
+                    'nav[aria-label="breadcrumb"], ol.breadcrumbs, .breadcrumb, [class*="breadcrumb"], '
+                    '.cookie, .ads, .newsletter, '
+                    '.share, .social, .site-header, .site-footer, '
+                    '[class*="qr"], [id*="qr"], .qr, .qr-code, .qrCode, .qr-code-block, '
+                    '[class*="print"], .print, .print-link, a[href*="print"], '
+                    '.open-all, .close-all, [class*="toggle"], [id*="toggle"]'
                 ),
                 exclude_social_media_links=True,
                 exclude_social_media_domains=[
