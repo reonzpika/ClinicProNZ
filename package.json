@@ -27,6 +27,7 @@
     "test:allergies": "tsx scripts/test-allergies-extraction.ts",
     "db:status": "tsx scripts/check-db-status.ts",
     "db:ingest-healthify-a": "tsx scripts/ingest-healthify-a.ts",
+    "db:ingest-healthify-chunks": "tsx scripts/ingest-healthify-chunks.ts",
     "test": "vitest run",
     "clean": "rimraf .next out coverage",
     "commit": "cz",
