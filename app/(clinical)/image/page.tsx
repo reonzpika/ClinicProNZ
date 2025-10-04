@@ -42,7 +42,6 @@ export default function ClinicalImagePage() {
   const analyzeImage = useAnalyzeImage();
   const saveAnalysis = useSaveAnalysis();
   const deleteImage = useDeleteImage();
-  const renameImage = useRenameImage();
 
   // Store state and actions
   const {
@@ -813,7 +812,7 @@ function ServerImageCard({
 
       <CardContent className="p-2">
         <div className="mb-1">
-          <InlineEditableName image={image} onRename={(name) => renameImage.mutate({ imageKey: image.key, displayName: name })} />
+          <InlineEditableName image={image} />
           <div className="flex items-center justify-between text-xs text-slate-500">
             <span className="capitalize">{image.source}</span>
             <span>{formatFileSize(image.size)}</span>
@@ -825,7 +824,8 @@ function ServerImageCard({
 }
 
 // Inline editable filename component for desktop cards
-function InlineEditableName({ image, onRename }: { image: ServerImage; onRename: (name: string) => void }) {
+function InlineEditableName({ image }: { image: ServerImage }) {
+  const renameImage = useRenameImage();
   const [isEditing, setIsEditing] = React.useState(false);
   const [value, setValue] = React.useState(image.displayName || image.filename.replace(/\.[^.]+$/, ''));
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -840,7 +840,7 @@ function InlineEditableName({ image, onRename }: { image: ServerImage; onRename:
   const commit = () => {
     const cleaned = value.replace(/\s+/g, ' ').trim();
     if (cleaned && cleaned !== (image.displayName || image.filename.replace(/\.[^.]+$/, ''))) {
-      onRename(cleaned);
+      renameImage.mutate({ imageKey: image.key, displayName: cleaned });
     }
     setIsEditing(false);
   };
