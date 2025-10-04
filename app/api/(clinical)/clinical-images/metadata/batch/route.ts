@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
       // Derive sessionId from path if present
       const parts = imageKey.split('/');
       // clinical-images/{userId}/{optionalSessionId}/{file}
-      const derivedSessionId = parts.length >= 4 ? parts[2] : null;
+      const derivedSessionId: string | null = parts.length >= 4 && parts[2] ? parts[2] : null;
       validated.push({
         imageKey,
         sessionId: derivedSessionId,
