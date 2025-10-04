@@ -12,6 +12,7 @@ from crawl4ai import (
     CrawlerRunConfig,
     CacheMode,
     DefaultMarkdownGenerator,
+    LXMLWebScrapingStrategy,
 )
 
 INDEX_URL = "https://healthify.nz/health-a-z/a"
@@ -68,6 +69,13 @@ async def crawl_one(crawler: AsyncWebCrawler, url: str) -> dict | None:
                 cache_mode=CacheMode.BYPASS,
                 # Generate markdown using default generator; library returns a MarkdownGenerationResult
                 markdown_generator=DefaultMarkdownGenerator(),
+                scraping_strategy=LXMLWebScrapingStrategy(),
+                css_selector="#main, main, article",
+                excluded_selector=(
+                    "header, nav, footer, aside, .breadcrumbs, .cookie, .ads, .newsletter, "
+                    ".share, .social, .print, .affiliate, .supporters, .search, .site-header, .site-footer"
+                ),
+                user_agent=USER_AGENT,
                 verbose=False,
             ),
         )

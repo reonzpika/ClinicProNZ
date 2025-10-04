@@ -59,6 +59,7 @@ export default async function parseHealthifyData(): Promise<Document[]> {
 
         // Determine date: prefer crawled date fields if available; fallback to now
         const candidateDates: Array<unknown> = [
+          (sourceMetadata as any)?.crawledAt,
           (sourceMetadata as any)?.crawled_at,
           (sourceMetadata as any)?.crawlDate,
           (sourceMetadata as any)?.lastModified,
