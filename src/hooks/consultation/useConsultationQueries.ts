@@ -112,12 +112,13 @@ export function useUpdatePatientSession(): any {
     mutationFn: ({
       sessionId,
       updates,
+      ifUnmodifiedSince,
     }: {
       sessionId: string;
-      // Allow updating templateId and per-section fields too
       updates: Partial<Pick<PatientSession, 'patientName' | 'consultationNotes' | 'templateId' | 'problemsText' | 'objectiveText' | 'assessmentText' | 'planText' | 'typedInput' | 'notes'>>;
+      ifUnmodifiedSince?: string;
     }) =>
-      consultationApi.updateSession(sessionId, updates, userId),
+      consultationApi.updateSession(sessionId, updates, userId, { ifUnmodifiedSince }),
     onSuccess: (updatedSession: PatientSession) => {
       // Update sessions list cache
       queryClient.setQueryData<PatientSession[]>(

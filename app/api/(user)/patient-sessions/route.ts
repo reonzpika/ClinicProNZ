@@ -182,6 +182,9 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Session ID is required' }, { status: 400 });
     }
 
+    // Precondition: If-Unmodified-Since header (ISO string)
+    const ifUnmodifiedSince = req.headers.get('if-unmodified-since');
+
     // Build update object dynamically
     const updateData: any = {
       updatedAt: new Date(),
@@ -232,6 +235,23 @@ export async function PUT(req: NextRequest) {
       eq(patientSessions.id, sessionId),
       eq(patientSessions.userId, userId),
     );
+
+    // Precondition check (if provided)
+    if (ifUnmodifiedSince) {
+      const current = await db
+        .select({ updatedAt: patientSessions.updatedAt })
+        .from(patientSessions)
+        .where(whereClause)
+        .limit(1);
+      if (!current || current.length === 0) {
+        return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+      }
+      const currentUpdatedAtIso = current[0]?.updatedAt ? new Date(current[0].updatedAt as any).toISOString() : '';
+      const providedIso = new Date(ifUnmodifiedSince).toISOString();
+      if (currentUpdatedAtIso && currentUpdatedAtIso !== providedIso) {
+        return NextResponse.json({ error: 'Precondition failed' }, { status: 409 });
+      }
+    }
 
     const updatedSession = await db
       .update(patientSessions)

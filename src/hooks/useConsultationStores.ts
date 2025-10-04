@@ -47,8 +47,8 @@ export function useConsultationStores(): any {
   const deleteSessionMutation = useDeletePatientSession();
   const deleteAllSessionsMutation = useDeleteAllPatientSessions();
 
-  const updatePatientSession = useCallback(async (sessionId: string, updates: Partial<PatientSession>): Promise<void> => {
-    await updateSessionMutation.mutateAsync({ sessionId, updates });
+  const updatePatientSession = useCallback(async (sessionId: string, updates: Partial<PatientSession>, ifUnmodifiedSince?: string): Promise<void> => {
+    await updateSessionMutation.mutateAsync({ sessionId, updates, ifUnmodifiedSince } as any);
   }, [updateSessionMutation]);
 
   // ----------------------
@@ -444,9 +444,11 @@ export function useConsultationStores(): any {
     if (!id) {
       return false;
     }
-    enqueueUpdate({ typedInput } as any);
+    const current = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === id) : null;
+    const ifUnmodifiedSince = current?.updatedAt || undefined;
+    enqueueUpdate({ typedInput, ifUnmodifiedSince } as any);
     return true;
-  }, [consultationStore.currentPatientSessionId, enqueueUpdate]);
+  }, [consultationStore.currentPatientSessionId, enqueueUpdate, patientSessions]);
 
   // New per-section save helpers
   const saveProblemsToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
@@ -454,7 +456,9 @@ export function useConsultationStores(): any {
     if (!id) {
       return false;
     }
-    enqueueUpdate({ problemsText: text } as any);
+    const current = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === id) : null;
+    const ifUnmodifiedSince = current?.updatedAt || undefined;
+    enqueueUpdate({ problemsText: text, ifUnmodifiedSince } as any);
     try {
       consultationStore.clearProblemsDirty?.();
     } catch {}
@@ -466,7 +470,9 @@ export function useConsultationStores(): any {
     if (!id) {
       return false;
     }
-    enqueueUpdate({ objectiveText: text } as any);
+    const current = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === id) : null;
+    const ifUnmodifiedSince = current?.updatedAt || undefined;
+    enqueueUpdate({ objectiveText: text, ifUnmodifiedSince } as any);
     try {
       consultationStore.clearObjectiveDirty?.();
     } catch {}
@@ -478,7 +484,9 @@ export function useConsultationStores(): any {
     if (!id) {
       return false;
     }
-    enqueueUpdate({ assessmentText: text } as any);
+    const current = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === id) : null;
+    const ifUnmodifiedSince = current?.updatedAt || undefined;
+    enqueueUpdate({ assessmentText: text, ifUnmodifiedSince } as any);
     try {
       consultationStore.clearAssessmentDirty?.();
     } catch {}
@@ -490,7 +498,9 @@ export function useConsultationStores(): any {
     if (!id) {
       return false;
     }
-    enqueueUpdate({ planText: text } as any);
+    const current = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === id) : null;
+    const ifUnmodifiedSince = current?.updatedAt || undefined;
+    enqueueUpdate({ planText: text, ifUnmodifiedSince } as any);
     try {
       consultationStore.clearPlanDirty?.();
     } catch {}

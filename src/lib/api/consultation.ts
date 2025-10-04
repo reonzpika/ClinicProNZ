@@ -125,11 +125,13 @@ export const consultationApi = {
     sessionId: string,
     updates: Partial<PatientSession>,
     userId?: string | null,
+    opts?: { ifUnmodifiedSince?: string },
   ): Promise<PatientSession> {
     const response = await fetch('/api/patient-sessions', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        ...(opts?.ifUnmodifiedSince ? { 'If-Unmodified-Since': opts.ifUnmodifiedSince } : {}),
         ...createAuthHeaders(userId),
       },
       body: JSON.stringify({ sessionId, ...updates }),
