@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic';
-
 import { PricingCTA } from '@/src/shared/components/pricing/PricingCTA';
 import { PricingFAQ } from '@/src/shared/components/pricing/PricingFAQ';
 import { PricingHero } from '@/src/shared/components/pricing/PricingHero';
