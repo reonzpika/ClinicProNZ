@@ -61,6 +61,35 @@ def infer_letter_and_slug(url: str) -> tuple[str, str]:
     slug = parts[2] if len(parts) >= 3 else (parts[-1] if parts else "index")
     return letter, slug
 
+def clean_markdown(markdown: str, page_url: str) -> str:
+    """Remove site chrome noise like breadcrumbs, QR/Print lines, and page-self QR image."""
+    lines = markdown.splitlines()
+    cleaned: list[str] = []
+
+    # Drop leading breadcrumb list (eg: "1. [Home] ...")
+    import re as _re
+    breadcrumb_pattern = _re.compile(r"^\s*\d+\.\s*\[.*?\]\(https?://healthify\.nz/.*?\)\s*$", _re.I)
+    idx = 0
+    while idx < len(lines) and breadcrumb_pattern.match(lines[idx] or ""):
+        idx += 1
+    # Skip following blank lines
+    while idx < len(lines) and (lines[idx] or "").strip() == "":
+        idx += 1
+
+    # Process remaining lines
+    page_url_img_pattern = _re.compile(r"^!\[[^\]]*\]\(" + _re.escape(page_url.rstrip("/")) + r"/?\)\s*$", _re.I)
+    drop_exact = {"qr code", "print", "open all close all"}
+    for i in range(idx, len(lines)):
+        raw = lines[i] or ""
+        s = raw.strip().lower()
+        if s in drop_exact:
+            continue
+        if page_url_img_pattern.match(raw):
+            continue
+        cleaned.append(lines[i])
+
+    return "\n".join(cleaned).strip() + "\n"
+
 async def crawl_one(crawler: AsyncWebCrawler, url: str) -> dict | None:
     try:
         result = await crawler.arun(
@@ -91,6 +120,8 @@ async def crawl_one(crawler: AsyncWebCrawler, url: str) -> dict | None:
         ) or getattr(result, "cleaned_html", "") or getattr(result, "html", "")
         if not markdown.strip():
             return None
+        # Post-process to remove residual chrome (breadcrumbs/QR/Print)
+        markdown = clean_markdown(markdown, url)
         letter, slug = infer_letter_and_slug(url)
         return {
             "url": url,
