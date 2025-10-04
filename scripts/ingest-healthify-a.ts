@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import path from 'path';
 
 import { ingestDocument } from '../src/lib/rag';
+import { Document as LlamaDocument, MarkdownNodeParser, SentenceSplitter } from 'llamaindex';
 import type { DocumentToIngest } from '../src/lib/rag/types';
 
 type HealthifyJson = {
@@ -69,6 +70,10 @@ async function main(): Promise<void> {
 
   let ingested = 0;
   let skipped = 0;
+  // Configure LlamaIndex chunking (SentenceSplitter as Semantic not available in JS)
+  const splitter = new SentenceSplitter({ chunkSize: 800, chunkOverlap: 120 });
+  const mdParser = new MarkdownNodeParser();
+
   for (const item of items) {
     const text = (item.markdown && item.markdown.trim().length > 0) ? item.markdown : (item.content || '');
     if (!item.url || !text) {
@@ -77,20 +82,35 @@ async function main(): Promise<void> {
     }
     const lastUpdated = coerceDate(item.metadata || undefined);
 
-    const doc: DocumentToIngest = {
-      title: item.title || 'Untitled',
-      content: text,
-      source: item.url,
-      sourceType: 'healthify',
-      lastUpdated: lastUpdated || undefined,
-      enhancementStatus: 'basic',
-    };
-
     try {
-      await ingestDocument(doc);
-      ingested++;
-      if (ingested % 10 === 0) {
-        console.log(`[INGEST] Progress: ${ingested}/${items.length} ingested (skipped ${skipped})`);
+      // Build LlamaIndex Document and get markdown-aware nodes, then split
+      const liDoc = new LlamaDocument({ text, metadata: { url: item.url, title: item.title || 'Untitled' } });
+      const mdNodes = mdParser.getNodesFromDocuments([liDoc]);
+      const nodes = splitter.getNodesFromDocuments(mdNodes);
+
+      let chunkIdx = 0;
+      for (const node of nodes) {
+        const content = node.getContent ? node.getContent() : (node.text ?? '');
+        if (!content || content.trim().length === 0) {
+          continue;
+        }
+
+        const doc: DocumentToIngest = {
+          title: item.title || 'Untitled',
+          content,
+          source: item.url,
+          sourceType: 'healthify',
+          lastUpdated: lastUpdated || undefined,
+          enhancementStatus: 'basic',
+        };
+
+        await ingestDocument(doc, { chunkIndex: chunkIdx });
+        chunkIdx++;
+        ingested++;
+      }
+
+      if ((ingested + skipped) % 50 === 0) {
+        console.log(`[INGEST] Progress: processed ${ingested + skipped}/${items.length} files; total chunks ingested: ${ingested}`);
       }
     } catch (err) {
       skipped++;

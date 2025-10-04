@@ -1,11 +1,14 @@
-import { jsonb, pgTable, text, timestamp, uuid, vector } from 'drizzle-orm/pg-core';
+import { integer, jsonb, pgTable, text, timestamp, uuid, vector, uniqueIndex, index } from 'drizzle-orm/pg-core';
 
 export const ragDocuments = pgTable('rag_documents', {
   id: uuid('id').primaryKey().defaultRandom(),
   title: text('title').notNull(),
   content: text('content').notNull(), // Original full content (or basic content for light scrapes)
-  source: text('source').notNull().unique(), // URL or filename
+  source: text('source').notNull(), // URL or filename
   sourceType: text('source_type').notNull(), // 'bpac', 'moh', 'manual', 'healthify'
+
+  // Chunking support
+  chunkIndex: integer('chunk_index').notNull().default(0),
 
   // Enhancement tracking
   enhancementStatus: text('enhancement_status').default('basic').notNull(), // 'basic', 'enhanced', 'failed'
@@ -33,6 +36,11 @@ export const ragDocuments = pgTable('rag_documents', {
   embedding: vector('embedding', { dimensions: 1536 }), // OpenAI embeddings
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => {
+  return {
+    sourceChunkUnique: uniqueIndex('rag_documents_source_chunk_unique').on(table.source, table.chunkIndex),
+    sourceIdx: index('rag_documents_source_idx').on(table.source),
+  };
 });
 
 export type RagDocument = typeof ragDocuments.$inferSelect;

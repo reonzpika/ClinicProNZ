@@ -102,7 +102,7 @@ export async function searchSimilarDocuments(
 /**
  * Ingest a document into the RAG system
  */
-export async function ingestDocument(document: DocumentToIngest): Promise<void> {
+export async function ingestDocument(document: DocumentToIngest, options?: { chunkIndex?: number }): Promise<void> {
   // Use overall summary for embedding if available, otherwise basic content or full content
   const textToEmbed = document.overallSummary || document.basicContent || document.content;
   const embedding = await createEmbedding(textToEmbed);
@@ -113,6 +113,7 @@ export async function ingestDocument(document: DocumentToIngest): Promise<void> 
     content: document.content,
     source: document.source,
     sourceType: document.sourceType,
+    chunkIndex: options?.chunkIndex ?? 0,
     embedding,
 
     // Enhancement tracking
@@ -138,7 +139,7 @@ export async function ingestDocument(document: DocumentToIngest): Promise<void> 
     externalCitations: document.externalCitations ? JSON.stringify(document.externalCitations) : null,
   })
   .onConflictDoUpdate({
-    target: ragDocuments.source,
+    target: [ragDocuments.source, ragDocuments.chunkIndex],
     set: {
       title: document.title,
       content: document.content,
