@@ -47,6 +47,7 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     setStatus,
     setTranscription,
     transcription,
+    setAwaitingDisplay,
     microphoneGain,
     volumeThreshold,
     ensureActiveSession,
@@ -205,6 +206,8 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
             }
           }
 
+          // Indicate we are awaiting the DB-committed chunk to be displayed
+          try { setAwaitingDisplay(true); } catch {}
           // No optimistic echo: UI will update from DB-committed chunks only
           setState((prev: TranscriptionState) => ({
             ...prev,

@@ -18,6 +18,9 @@ type TranscriptionState = {
   transcription: TranscriptionData;
   typedInput: string;
 
+  // Awaiting display of newly committed chunks from DB
+  awaitingDisplay?: boolean;
+
   // Consent and settings
   consentObtained: boolean;
   microphoneGain: number;
@@ -53,6 +56,9 @@ type TranscriptionActions = {
 
   setTypedInput: (input: string) => void;
 
+  // Display coordination
+  setAwaitingDisplay: (value: boolean) => void;
+
   // Settings actions
   setConsentObtained: (consent: boolean) => void;
   setMicrophoneGain: (gain: number) => void;
@@ -85,6 +91,7 @@ const initialState: TranscriptionState = {
     utterances: [],
   },
   typedInput: '',
+  awaitingDisplay: false,
   consentObtained: false,
   microphoneGain: 7.0,
   volumeThreshold: 0.1,
@@ -128,6 +135,9 @@ export const useTranscriptionStore = create<TranscriptionStore>()(
     },
 
     setTypedInput: input => set({ typedInput: input }),
+
+    // Display coordination
+    setAwaitingDisplay: value => set({ awaitingDisplay: !!value }),
 
     // Settings actions
     setConsentObtained: consent => set({ consentObtained: consent }),
