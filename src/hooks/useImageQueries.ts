@@ -125,6 +125,7 @@ export function useUploadImages() {
   const { userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (input: { files: File[]; names?: Array<{ patientName?: string; identifier?: string; displayName?: string }> } | File[]): Promise<{ keys: string[] }> => {
@@ -150,6 +151,8 @@ export function useUploadImages() {
             headers: createAuthHeaders(userId, userTier),
             body: JSON.stringify({ items }),
           });
+          // Ensure UI reflects updated display names
+          queryClient.invalidateQueries({ queryKey: imageQueryKeys.lists() });
         }
       } catch {}
 
