@@ -4,6 +4,7 @@ import { Calendar, Plus, Search, Trash2, User, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
+import { useFlushBarrier } from '@/src/hooks/useFlushBarrier';
 import { Button } from '@/src/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
 import { Input } from '@/src/shared/components/ui/input';
@@ -44,6 +45,8 @@ export const SessionModal: React.FC<SessionModalProps> = ({
   const [switchingId, setSwitchingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  const { stopAndFlush } = useFlushBarrier();
+
   // Load sessions when modal opens
   useEffect(() => {
     if (isOpen && typeof window !== 'undefined' && loadPatientSessions) {
@@ -80,6 +83,8 @@ export const SessionModal: React.FC<SessionModalProps> = ({
   const handleCreateSession = async () => {
     setIsCreating(true);
     try {
+      // Stop and flush current session before creating a new one
+      await stopAndFlush(currentPatientSessionId);
       const newSession = await createPatientSession(generatePatientName());
       if (newSession) {
         onSessionCreated(newSession.id);
@@ -95,6 +100,8 @@ export const SessionModal: React.FC<SessionModalProps> = ({
   const handleSwitchSession = async (sessionId: string) => {
     try {
       setSwitchingId(sessionId);
+      // Ensure current session recording is stopped and flushed before switching
+      await stopAndFlush(currentPatientSessionId);
       await switchToPatientSession(sessionId);
       onSessionSelected(sessionId);
       onClose();
