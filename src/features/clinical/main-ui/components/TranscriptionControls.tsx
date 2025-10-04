@@ -64,6 +64,7 @@ export function TranscriptionControls({
   const {
     isRecording,
     isTranscribing,
+    postInFlight,
     error,
     startRecording,
     stopRecording,
@@ -414,8 +415,11 @@ export function TranscriptionControls({
                 <span className="animate-pulse text-xs text-blue-600">Mobile device recording...</span>
               </>
             )}
-            {!isRecording && isTranscribing && (
-              <span className="text-xs text-slate-600">Transcribing…</span>
+            {!isRecording && (isTranscribing || (postInFlight || 0) > 0) && (
+              <span className="inline-flex items-center gap-1 text-xs text-slate-600">
+                <span className="inline-block size-2 animate-spin rounded-full border-2 border-slate-300 border-t-transparent" />
+                {isTranscribing ? 'Transcribing…' : 'Saving…'}
+              </span>
             )}
             {/* removed ready-for-review label */}
           </div>
