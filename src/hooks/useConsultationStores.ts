@@ -54,7 +54,11 @@ export function useConsultationStores(): any {
   // ----------------------
   // Single Mutation Queue (client-only)
   // ----------------------
-  type UpdateOp = { updates: Partial<PatientSession> };
+  type UpdateOp = {
+    updates: Partial<PatientSession>;
+    resolvers: Array<(ok: boolean) => void>;
+    rejecters: Array<(e: any) => void>;
+  };
   const queueKey = '__clinicproMutationQueueRef';
   const processingKey = '__clinicproMutationProcessingRef';
   const pausedKey = '__clinicproMutationPausedRef';
@@ -86,9 +90,21 @@ export function useConsultationStores(): any {
     }
     processingRef.current = true;
     try {
-      await updatePatientSession(id, next.updates);
-    } catch {
-      // keep optimistic UI; optionally log
+      // Extract optimistic locking header if present inside updates
+      const { ifUnmodifiedSince, ...sessionUpdates } = (next.updates as any) || {};
+      await updatePatientSession(id, sessionUpdates as Partial<PatientSession>, ifUnmodifiedSince as string | undefined);
+      // Resolve all waiters with success
+      next.resolvers.forEach(fn => {
+        try { fn(true); } catch {}
+      });
+    } catch (e) {
+      // keep optimistic UI; optionally log; notify waiters of failure
+      next.rejecters.forEach(fn => {
+        try { fn(e); } catch {}
+      });
+      next.resolvers.forEach(fn => {
+        try { fn(false); } catch {}
+      });
     } finally {
       processingRef.current = false;
       if (!pausedRef.current && mutationQueueRef.current.length > 0) {
@@ -99,18 +115,31 @@ export function useConsultationStores(): any {
     }
   }, [consultationStore.currentPatientSessionId, updatePatientSession, mutationQueueRef, pausedRef, processingRef]);
 
-  const coalesceIntoQueue = useCallback((updates: Partial<PatientSession>) => {
+  const coalesceIntoQueue = useCallback((updates: Partial<PatientSession>): Promise<boolean> => {
     const tail = mutationQueueRef.current[mutationQueueRef.current.length - 1];
     if (tail) {
+      // Merge into tail and piggyback on its completion
       tail.updates = { ...tail.updates, ...updates };
-    } else {
-      mutationQueueRef.current.push({ updates });
+      return new Promise<boolean>((resolve, reject) => {
+        tail.resolvers.push(resolve);
+        tail.rejecters.push(reject);
+      });
     }
+    // Create a new queue op
+    let resolveRef: (ok: boolean) => void = () => {};
+    let rejectRef: (e: any) => void = () => {};
+    const promise = new Promise<boolean>((resolve, reject) => {
+      resolveRef = resolve;
+      rejectRef = reject;
+    });
+    mutationQueueRef.current.push({ updates, resolvers: [resolveRef], rejecters: [rejectRef] });
+    return promise;
   }, [mutationQueueRef]);
 
-  const enqueueUpdate = useCallback((updates: Partial<PatientSession>) => {
-    coalesceIntoQueue(updates);
+  const enqueueUpdate = useCallback((updates: Partial<PatientSession>): Promise<boolean> => {
+    const p = coalesceIntoQueue(updates);
     Promise.resolve().then(() => processQueue());
+    return p;
   }, [coalesceIntoQueue, processQueue]);
 
   const pauseMutations = useCallback(() => {
@@ -435,8 +464,8 @@ export function useConsultationStores(): any {
     if (!id) {
       return false;
     }
-    enqueueUpdate({ notes } as any);
-    return true;
+    const ok = await enqueueUpdate({ notes } as any);
+    return ok;
   }, [consultationStore.currentPatientSessionId, enqueueUpdate]);
 
   const saveTypedInputToCurrentSession = useCallback(async (typedInput: string): Promise<boolean> => {
@@ -446,8 +475,8 @@ export function useConsultationStores(): any {
     }
     const current = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === id) : null;
     const ifUnmodifiedSince = current?.updatedAt || undefined;
-    enqueueUpdate({ typedInput, ifUnmodifiedSince } as any);
-    return true;
+    const ok = await enqueueUpdate({ typedInput, ifUnmodifiedSince } as any);
+    return ok;
   }, [consultationStore.currentPatientSessionId, enqueueUpdate, patientSessions]);
 
   // New per-section save helpers
@@ -458,12 +487,12 @@ export function useConsultationStores(): any {
     }
     const current = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === id) : null;
     const ifUnmodifiedSince = current?.updatedAt || undefined;
-    enqueueUpdate({ problemsText: text, ifUnmodifiedSince } as any);
+    const ok = await enqueueUpdate({ problemsText: text, ifUnmodifiedSince } as any);
     try {
       consultationStore.clearProblemsDirty?.();
     } catch {}
-    return true;
-  }, [enqueueUpdate, consultationStore]);
+    return ok;
+  }, [enqueueUpdate, consultationStore, patientSessions, consultationStore.currentPatientSessionId]);
 
   const saveObjectiveToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
     const id = consultationStore.currentPatientSessionId;
@@ -472,12 +501,12 @@ export function useConsultationStores(): any {
     }
     const current = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === id) : null;
     const ifUnmodifiedSince = current?.updatedAt || undefined;
-    enqueueUpdate({ objectiveText: text, ifUnmodifiedSince } as any);
+    const ok = await enqueueUpdate({ objectiveText: text, ifUnmodifiedSince } as any);
     try {
       consultationStore.clearObjectiveDirty?.();
     } catch {}
-    return true;
-  }, [enqueueUpdate, consultationStore]);
+    return ok;
+  }, [enqueueUpdate, consultationStore, patientSessions, consultationStore.currentPatientSessionId]);
 
   const saveAssessmentToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
     const id = consultationStore.currentPatientSessionId;
@@ -486,12 +515,12 @@ export function useConsultationStores(): any {
     }
     const current = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === id) : null;
     const ifUnmodifiedSince = current?.updatedAt || undefined;
-    enqueueUpdate({ assessmentText: text, ifUnmodifiedSince } as any);
+    const ok = await enqueueUpdate({ assessmentText: text, ifUnmodifiedSince } as any);
     try {
       consultationStore.clearAssessmentDirty?.();
     } catch {}
-    return true;
-  }, [enqueueUpdate, consultationStore]);
+    return ok;
+  }, [enqueueUpdate, consultationStore, patientSessions, consultationStore.currentPatientSessionId]);
 
   const savePlanToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
     const id = consultationStore.currentPatientSessionId;
@@ -500,12 +529,12 @@ export function useConsultationStores(): any {
     }
     const current = Array.isArray(patientSessions) ? patientSessions.find((s: any) => s.id === id) : null;
     const ifUnmodifiedSince = current?.updatedAt || undefined;
-    enqueueUpdate({ planText: text, ifUnmodifiedSince } as any);
+    const ok = await enqueueUpdate({ planText: text, ifUnmodifiedSince } as any);
     try {
       consultationStore.clearPlanDirty?.();
     } catch {}
-    return true;
-  }, [enqueueUpdate, consultationStore]);
+    return ok;
+  }, [enqueueUpdate, consultationStore, patientSessions, consultationStore.currentPatientSessionId]);
 
   const saveTranscriptionsToCurrentSession = useCallback(async (): Promise<boolean> => {
     const id = consultationStore.currentPatientSessionId;
