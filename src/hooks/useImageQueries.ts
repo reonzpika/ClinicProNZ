@@ -129,8 +129,11 @@ export function useUploadImages() {
 
   return useMutation({
     mutationFn: async (input: { files: File[]; names?: Array<{ patientName?: string; identifier?: string; displayName?: string }> } | File[]): Promise<{ keys: string[] }> => {
-      const files = Array.isArray(input) ? input : input.files;
-      const names = Array.isArray(input) && (input as any).names ? (input as any).names as Array<{ patientName?: string; identifier?: string; displayName?: string }> : [];
+      const isArrayInput = Array.isArray(input);
+      const files = isArrayInput ? (input as File[]) : (input as { files: File[] }).files;
+      const names = (!isArrayInput && (input as any).names)
+        ? ((input as any).names as Array<{ patientName?: string; identifier?: string; displayName?: string }>)
+        : [];
 
       const results: { key: string }[] = [];
       for (let i = 0; i < files.length; i++) {
