@@ -14,6 +14,9 @@ export type ServerImage = {
   id: string;
   key: string;
   filename: string;
+  displayName?: string; // Optional user-defined display name
+  patientName?: string; // Optional metadata for name generation
+  identifier?: string; // Optional per-image identifier
   mimeType: string;
   size: number;
   uploadedAt: string;

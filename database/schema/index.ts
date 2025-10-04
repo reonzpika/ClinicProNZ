@@ -7,6 +7,7 @@ export * from './features';
 export * from './mail_queue';
 export * from './mobile_tokens';
 export * from './patient_sessions';
+export * from './clinical_image_metadata';
 export * from './rag';
 export * from './survey_responses';
 export * from './templates';

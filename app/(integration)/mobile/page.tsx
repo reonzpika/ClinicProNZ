@@ -15,7 +15,7 @@ import { createAuthHeadersForFormData, fetchWithRetry } from '@/src/shared/utils
 import { isFeatureEnabled } from '@/src/shared/utils/launch-config';
 
 // Types for native mobile capture queue
-type QueuedItem = { id: string; file: File; previewUrl: string };
+  type QueuedItem = { id: string; file: File; previewUrl: string; identifier?: string };
 
 // Custom hook for screen wake lock
 function useWakeLock() {
@@ -74,6 +74,7 @@ function MobilePageContent() {
   const cameraFileInputRef = useRef<HTMLInputElement>(null);
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
   const uploadImages = useUploadImages();
+  const [patientNameInput, setPatientNameInput] = useState('');
   const isUploading = uploadImages.isPending;
   // Wake lock functionality
   const { isSupported: wakeLockSupported, requestWakeLock, releaseWakeLock } = useWakeLock();
@@ -377,6 +378,16 @@ function MobilePageContent() {
                   Upload from gallery
                 </Button>
               )}
+              <div className="mt-2">
+                <label className="mb-1 block text-xs text-gray-600">Patient name (optional)</label>
+                <input
+                  type="text"
+                  value={patientNameInput}
+                  onChange={(e) => setPatientNameInput(e.target.value)}
+                  placeholder="e.g. Jane Doe"
+                  className="w-full rounded-md border px-2 py-2 text-sm"
+                />
+              </div>
               {queuedItems.length > 0 && (
                 <Card>
                   <CardContent className="p-4">
@@ -397,12 +408,26 @@ selected
 
           {mobileStep === 'review' && (
             <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 {queuedItems.map(item => (
-                  <div key={item.id} className="relative aspect-square overflow-hidden rounded-lg border">
-                    {item.previewUrl
-                      ? <img src={item.previewUrl} alt={item.file.name} className="size-full object-cover" />
-                      : <div className="flex size-full items-center justify-center text-xs text-gray-500">Loading...</div>}
+                  <div key={item.id} className="relative overflow-hidden rounded-lg border">
+                    <div className="aspect-square w-full">
+                      {item.previewUrl
+                        ? <img src={item.previewUrl} alt={item.file.name} className="size-full object-cover" />
+                        : <div className="flex size-full items-center justify-center text-xs text-gray-500">Loading...</div>}
+                    </div>
+                    <div className="p-2">
+                      <input
+                        type="text"
+                        value={item.identifier || ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setQueuedItems(prev => prev.map(it => it.id === item.id ? { ...it, identifier: val } : it));
+                        }}
+                        placeholder="Identifier (e.g., left forearm)"
+                        className="w-full rounded-md border px-2 py-1 text-xs"
+                      />
+                    </div>
                     <button
                       onClick={() => {
                         URL.revokeObjectURL(item.previewUrl);
@@ -440,7 +465,10 @@ selected
                   onClick={async () => {
                     const filesToUpload = queuedItems.map(it => it.file);
                     try {
-                      await uploadImages.mutateAsync({ files: filesToUpload });
+                      await uploadImages.mutateAsync({
+                        files: filesToUpload,
+                        names: queuedItems.map(it => ({ patientName: patientNameInput || undefined, identifier: it.identifier || undefined })),
+                      });
                       // Notify desktop to refresh image list
                       try {
  sendImageNotification(undefined, filesToUpload.length, undefined);
@@ -448,6 +476,7 @@ selected
                       // Clear queue and return
                       queuedItems.forEach(it => it.previewUrl && URL.revokeObjectURL(it.previewUrl));
                       setQueuedItems([]);
+                      setPatientNameInput('');
                       setMobileStep('collect');
                     } catch (err) {
                       console.error('Upload failed:', err);

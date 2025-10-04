@@ -21,7 +21,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 // Removed in-page WebRTC camera in favour of native camera capture
-import { imageQueryKeys, useAnalyzeImage, useDeleteImage, useImageUrl, useSaveAnalysis, useServerImages, useUploadImages } from '@/src/hooks/useImageQueries';
+import { imageQueryKeys, useAnalyzeImage, useDeleteImage, useImageUrl, useRenameImage, useSaveAnalysis, useServerImages, useUploadImages } from '@/src/hooks/useImageQueries';
 import { Container } from '@/src/shared/components/layout/Container';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
@@ -42,6 +42,7 @@ export default function ClinicalImagePage() {
   const analyzeImage = useAnalyzeImage();
   const saveAnalysis = useSaveAnalysis();
   const deleteImage = useDeleteImage();
+  const renameImage = useRenameImage();
 
   // Store state and actions
   const {
@@ -78,8 +79,9 @@ export default function ClinicalImagePage() {
 
   // Mobile native capture multi-step state
   const [mobileStep, setMobileStep] = useState<'collect' | 'review'>('collect');
-  type QueuedItem = { id: string; file: File; previewUrl: string };
+  type QueuedItem = { id: string; file: File; previewUrl: string; identifier?: string };
   const [queuedItems, setQueuedItems] = useState<QueuedItem[]>([]);
+  const [patientNameInput, setPatientNameInput] = useState('');
 
   // Maintain preview URLs for queued files
   // Cleanup previews on unmount
@@ -231,7 +233,9 @@ export default function ClinicalImagePage() {
 
       // Create blob URL and download link
       const blobUrl = URL.createObjectURL(blob);
-      const filename = `clinical-image-${image.filename}`;
+      const baseName = image.displayName || image.filename.replace(/\.[^.]+$/, '');
+      const ext = image.filename.includes('.') ? `.${image.filename.split('.').pop()}` : '';
+      const filename = `${baseName}${ext}`;
 
       // Create a temporary anchor element to trigger download
       const link = document.createElement('a');
@@ -371,6 +375,17 @@ export default function ClinicalImagePage() {
               </Button>
             )}
 
+            <div className="mt-2">
+              <label className="mb-1 block text-xs font-medium text-slate-600">Patient name (optional)</label>
+              <input
+                type="text"
+                value={patientNameInput}
+                onChange={(e) => setPatientNameInput(e.target.value)}
+                placeholder="e.g. Jane Doe"
+                className="w-full rounded-md border px-2 py-2 text-sm"
+              />
+            </div>
+
             {queuedItems.length > 0 && (
               <Card>
                 <CardContent className="p-4">
@@ -397,12 +412,26 @@ selected
 
         {mobileStep === 'review' && (
           <div className="flex-1 space-y-4">
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               {queuedItems.map(item => (
-                <div key={item.id} className="relative aspect-square overflow-hidden rounded-lg border">
-                  {item.previewUrl
-                    ? <img src={item.previewUrl} alt={item.file.name} className="size-full object-cover" />
-                    : <div className="flex size-full items-center justify-center text-xs text-slate-500">Loading...</div>}
+                <div key={item.id} className="relative overflow-hidden rounded-lg border">
+                  <div className="aspect-square w-full">
+                    {item.previewUrl
+                      ? <img src={item.previewUrl} alt={item.file.name} className="size-full object-cover" />
+                      : <div className="flex size-full items-center justify-center text-xs text-slate-500">Loading...</div>}
+                  </div>
+                  <div className="p-2">
+                    <input
+                      type="text"
+                      value={item.identifier || ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setQueuedItems(prev => prev.map(it => it.id === item.id ? { ...it, identifier: val } : it));
+                      }}
+                      placeholder="Identifier (e.g., left forearm)"
+                      className="w-full rounded-md border px-2 py-1 text-xs"
+                    />
+                  </div>
                   <button
                     onClick={() => {
                       URL.revokeObjectURL(item.previewUrl);
@@ -440,10 +469,11 @@ Cancel
                   const filesToUpload = queuedItems.map(it => it.file);
                   setUploadingFileCount(filesToUpload.length);
                   try {
-                    await uploadImages.mutateAsync(filesToUpload);
+                    await uploadImages.mutateAsync({ files: filesToUpload, names: queuedItems.map(it => ({ patientName: patientNameInput || undefined, identifier: it.identifier || undefined })) });
                     // Clear queue and return
                     queuedItems.forEach(it => it.previewUrl && URL.revokeObjectURL(it.previewUrl));
                     setQueuedItems([]);
+                    setPatientNameInput('');
                     setMobileStep('collect');
                   } catch (err) {
                     console.error('Upload failed:', err);
@@ -783,9 +813,7 @@ function ServerImageCard({
 
       <CardContent className="p-2">
         <div className="mb-1">
-          <h4 className="truncate text-xs font-medium text-slate-900">
-            {image.filename}
-          </h4>
+          <InlineEditableName image={image} onRename={(name) => renameImage.mutate({ imageKey: image.key, displayName: name })} />
           <div className="flex items-center justify-between text-xs text-slate-500">
             <span className="capitalize">{image.source}</span>
             <span>{formatFileSize(image.size)}</span>
@@ -793,6 +821,62 @@ function ServerImageCard({
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+// Inline editable filename component for desktop cards
+function InlineEditableName({ image, onRename }: { image: ServerImage; onRename: (name: string) => void }) {
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [value, setValue] = React.useState(image.displayName || image.filename.replace(/\.[^.]+$/, ''));
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (isEditing) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [isEditing]);
+
+  const commit = () => {
+    const cleaned = value.replace(/\s+/g, ' ').trim();
+    if (cleaned && cleaned !== (image.displayName || image.filename.replace(/\.[^.]+$/, ''))) {
+      onRename(cleaned);
+    }
+    setIsEditing(false);
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      {isEditing ? (
+        <input
+          ref={inputRef}
+          type="text"
+          value={value}
+          onChange={(e) => setValue(e.target.value.slice(0, 80))}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') commit();
+            if (e.key === 'Escape') setIsEditing(false);
+          }}
+          className="w-full rounded border px-2 py-1 text-xs"
+        />
+      ) : (
+        <h4 className="truncate text-xs font-medium text-slate-900">{image.displayName || image.filename}</h4>
+      )}
+      {!isEditing && (
+        <button
+          type="button"
+          className="rounded border px-1 text-[10px] text-slate-600 hover:bg-slate-50"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsEditing(true);
+          }}
+          title="Rename"
+        >
+          Rename
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -907,7 +991,7 @@ function AnalysisModal({
               </div>
             </div>
             <div className="space-y-1">
-              <p className="text-sm font-medium text-slate-900">{modal.image?.filename}</p>
+              <p className="text-sm font-medium text-slate-900">{modal.image?.displayName || modal.image?.filename}</p>
               <div className="flex items-center gap-2 text-xs text-slate-600">
                 <span className="capitalize">
                 {modal.image?.source}
@@ -1090,7 +1174,7 @@ function ImageEnlargeModal({
 ? (
           <img
             src={imageUrl}
-            alt={image.filename}
+            alt={image.displayName || image.filename}
             className="max-h-[90vh] max-w-[90vw] object-contain shadow-2xl"
           />
         )
@@ -1104,7 +1188,7 @@ function ImageEnlargeModal({
 
       {/* Image Info */}
       <div className="fixed bottom-4 left-4 rounded-lg bg-black/60 px-3 py-2 text-white">
-        <p className="text-sm font-medium">{image.filename}</p>
+        <p className="text-sm font-medium">{image.displayName || image.filename}</p>
         <p className="text-xs opacity-75">
           {new Date(image.uploadedAt).toLocaleDateString()}
 {' '}
