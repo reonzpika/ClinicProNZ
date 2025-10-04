@@ -76,6 +76,7 @@ export function TranscriptionControls({
 
   // Use regular transcript since diarization is disabled
   const transcript = contextTranscription.transcript;
+  const awaitingDisplay = (useConsultationStores() as any).awaitingDisplay as boolean | undefined;
 
   // Simplified: always show mobile controls and QR
   const hasMobileDevices = true;
@@ -407,7 +408,7 @@ export function TranscriptionControls({
               <>
                 <span className="inline-block size-2 animate-pulse rounded-full bg-red-500" />
                 <span className="text-xs text-red-600">Recording...</span>
-                {(isTranscribing || (postInFlight || 0) > 0) && (
+                {(awaitingDisplay || isTranscribing || (postInFlight || 0) > 0) && (
                   <span className="inline-flex items-center gap-1 text-xs text-slate-600">
                     <span className="inline-block size-2 animate-spin rounded-full border-2 border-slate-300 border-t-transparent" />
                     {isTranscribing ? 'Transcribing…' : 'Saving…'}
@@ -419,7 +420,7 @@ export function TranscriptionControls({
               <>
                 <span className="inline-block size-2 animate-pulse rounded-full bg-blue-500" />
                 <span className="animate-pulse text-xs text-blue-600">Mobile device recording...</span>
-                {(isTranscribing || (postInFlight || 0) > 0) && (
+                {(awaitingDisplay || isTranscribing || (postInFlight || 0) > 0) && (
                   <span className="inline-flex items-center gap-1 text-xs text-slate-600">
                     <span className="inline-block size-2 animate-spin rounded-full border-2 border-slate-300 border-t-transparent" />
                     {isTranscribing ? 'Transcribing…' : 'Saving…'}
@@ -427,7 +428,7 @@ export function TranscriptionControls({
                 )}
               </>
             )}
-            {!isRecording && (isTranscribing || (postInFlight || 0) > 0) && (
+            {!isRecording && (awaitingDisplay || isTranscribing || (postInFlight || 0) > 0) && (
               <span className="inline-flex items-center gap-1 text-xs text-slate-600">
                 <span className="inline-block size-2 animate-spin rounded-full border-2 border-slate-300 border-t-transparent" />
                 {isTranscribing ? 'Transcribing…' : 'Saving…'}

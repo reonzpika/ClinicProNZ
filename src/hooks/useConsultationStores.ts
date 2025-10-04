@@ -523,6 +523,7 @@ export function useConsultationStores(): any {
     inputMode: transcriptionStore.inputMode,
     transcription: transcriptionStore.transcription,
     typedInput: transcriptionStore.typedInput,
+    awaitingDisplay: (transcriptionStore as any).awaitingDisplay,
 
     // Generated content
     generatedNotes: consultationStore.generatedNotes,
@@ -571,6 +572,7 @@ export function useConsultationStores(): any {
     // Actions - input/transcription
     setInputMode: transcriptionStore.setInputMode,
     setTranscription: transcriptionStore.setTranscription,
+    setAwaitingDisplay: (transcriptionStore as any).setAwaitingDisplay,
     appendTranscription: useCallback(async (newTranscript: string, isLive: boolean, source: 'desktop' | 'mobile' = 'desktop', deviceId?: string, diarizedTranscript?: string, utterances?: any[]) => {
       await transcriptionStore.appendTranscription(newTranscript, isLive, source, deviceId, diarizedTranscript, utterances);
       // No server write here; chunks are persisted via /api/transcriptions/chunk
