@@ -41,6 +41,7 @@ export default function ConsultationPage() {
     typedInput,
     transcription,
     setTranscription,
+    setAwaitingDisplay,
     generatedNotes,
     setGeneratedNotes,
     setConsentObtained,

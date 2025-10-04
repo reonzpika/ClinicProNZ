@@ -48,6 +48,30 @@ export function TypedInput({ collapsed, onExpand, isMinimized }: { collapsed?: b
     return () => clearTimeout(timeoutId);
   }, [localInput, typedInput, setTypedInput]);
 
+  // Server-first short-debounce save while typing
+  useEffect(() => {
+    const trimmed = localInput.trim();
+    // Only autosave when there's a change from lastSavedInput and non-empty (match blur policy)
+    if (trimmed === lastSavedInput || trimmed === '') {
+      return;
+    }
+    setSaveStatus('saving');
+    const id = setTimeout(async () => {
+      try {
+        const ok = await saveTypedInputToCurrentSession(localInput);
+        if (ok) {
+          setLastSavedInput(localInput);
+          setSaveStatus('saved');
+        } else {
+          setSaveStatus('editing');
+        }
+      } catch {
+        setSaveStatus('editing');
+      }
+    }, 800);
+    return () => clearTimeout(id);
+  }, [localInput, lastSavedInput, saveTypedInputToCurrentSession]);
+
   // Save on blur - sync to context
   const handleBlur = () => {
     setTypedInput(localInput);

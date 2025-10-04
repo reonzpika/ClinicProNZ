@@ -144,6 +144,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     savePlanToCurrentSession,
   } = useConsultationStores();
 
+  // Per-section save status
+  const [problemsStatus, setProblemsStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [objectiveStatus, setObjectiveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [assessmentStatus, setAssessmentStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [planStatus, setPlanStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+
   // Sync expansion state with defaultExpanded prop changes (input mode changes)
   useEffect(() => {
     if (!isMinimized) {
@@ -157,16 +163,24 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     try {
       switch (section) {
         case 'problems':
+          setProblemsStatus('saving');
           ok = await saveProblemsToCurrentSession(problemsText || '');
+          setProblemsStatus(ok ? 'saved' : 'idle');
           break;
         case 'objective':
+          setObjectiveStatus('saving');
           ok = await saveObjectiveToCurrentSession(objectiveText || '');
+          setObjectiveStatus(ok ? 'saved' : 'idle');
           break;
         case 'assessment':
+          setAssessmentStatus('saving');
           ok = await saveAssessmentToCurrentSession(assessmentText || '');
+          setAssessmentStatus(ok ? 'saved' : 'idle');
           break;
         case 'plan':
+          setPlanStatus('saving');
           ok = await savePlanToCurrentSession(planText || '');
+          setPlanStatus(ok ? 'saved' : 'idle');
           break;
       }
     } catch (error) {
@@ -247,16 +261,24 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
       try {
         switch (section) {
           case 'problems':
+            setProblemsStatus('saving');
             await saveProblemsToCurrentSession(problemsText || '');
+            setProblemsStatus('saved');
             break;
           case 'objective':
+            setObjectiveStatus('saving');
             await saveObjectiveToCurrentSession(objectiveText || '');
+            setObjectiveStatus('saved');
             break;
           case 'assessment':
+            setAssessmentStatus('saving');
             await saveAssessmentToCurrentSession(assessmentText || '');
+            setAssessmentStatus('saved');
             break;
           case 'plan':
+            setPlanStatus('saving');
             await savePlanToCurrentSession(planText || '');
+            setPlanStatus('saved');
             break;
         }
       } catch {}
@@ -507,7 +529,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
         <div className="flex flex-1 flex-col space-y-2" ref={containerRef} role="group" aria-label="Additional notes editor">
           <div className="grid grid-cols-1 gap-3">
             <div>
-              <label htmlFor="additional-notes-problems" className="mb-1 block text-xs font-medium text-slate-500">Main Problems Discussed</label>
+          <div className="mb-1 flex items-center justify-between">
+            <label htmlFor="additional-notes-problems" className="block text-xs font-medium text-slate-500">Main Problems Discussed</label>
+            {problemsStatus !== 'idle' && (
+              <span className="text-[10px] text-slate-500">{problemsStatus === 'saving' ? 'Saving…' : 'Saved'}</span>
+            )}
+          </div>
               <Textarea
                 id="additional-notes-problems"
                 value={problemsText}
@@ -605,7 +632,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
         <div>
           <div className="mb-1 flex items-center justify-between">
             <label htmlFor="additional-notes-objective" className="block text-xs font-medium text-slate-500">Objective</label>
-            <ExaminationChecklistButton tabIndex={-1} />
+            <div className="flex items-center gap-2">
+              {objectiveStatus !== 'idle' && (
+                <span className="text-[10px] text-slate-500">{objectiveStatus === 'saving' ? 'Saving…' : 'Saved'}</span>
+              )}
+              <ExaminationChecklistButton tabIndex={-1} />
+            </div>
           </div>
           <Textarea
             id="additional-notes-objective"
@@ -618,7 +650,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
           />
         </div>
         <div>
-          <label htmlFor="additional-notes-assessment" className="mb-1 block text-xs font-medium text-slate-500">Assessment</label>
+          <div className="mb-1 flex items-center justify-between">
+            <label htmlFor="additional-notes-assessment" className="block text-xs font-medium text-slate-500">Assessment</label>
+            {assessmentStatus !== 'idle' && (
+              <span className="text-[10px] text-slate-500">{assessmentStatus === 'saving' ? 'Saving…' : 'Saved'}</span>
+            )}
+          </div>
           <Textarea
             id="additional-notes-assessment"
             value={assessmentText}
@@ -632,7 +669,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
         <div>
           <div className="mb-1 flex items-center justify-between">
             <label htmlFor="additional-notes-plan" className="block text-xs font-medium text-slate-500">Plan</label>
-            <PlanSafetyNettingButton tabIndex={-1} />
+            <div className="flex items-center gap-2">
+              {planStatus !== 'idle' && (
+                <span className="text-[10px] text-slate-500">{planStatus === 'saving' ? 'Saving…' : 'Saved'}</span>
+              )}
+              <PlanSafetyNettingButton tabIndex={-1} />
+            </div>
           </div>
           <Textarea
             id="additional-notes-plan"
