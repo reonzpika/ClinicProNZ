@@ -555,10 +555,6 @@ export default function ConsultationPage() {
     try {
       sendConsentGranted?.(pendingConsentRequestId, 'desktop', currentPatientSessionId || undefined);
     } catch {}
-    // If desktop initiated a mobile start, send control now
-    if (pendingConsentInitiator === 'desktop') {
-      try { sendRecordingControl?.('start'); } catch {}
-    }
     setDesktopConsentOpen(false);
     setPendingConsentRequestId(null);
     setPendingConsentInitiator(null);
