@@ -39,6 +39,7 @@ export default function ConsultationPage() {
     setError,
     setStatus,
     currentPatientSessionId,
+    consentObtained,
     inputMode,
     typedInput,
     transcription,
@@ -216,7 +217,12 @@ export default function ConsultationPage() {
 
     isMobile: false,
     onConsentRequested: ({ requestId }) => {
-      // Open desktop consent modal on any consent request
+      // If consent already obtained for this session, auto-grant and skip modal
+      if (consentObtained) {
+        try { sendConsentGranted?.(requestId, 'desktop', currentPatientSessionId || undefined); } catch {}
+        return;
+      }
+      // Otherwise, show desktop consent modal
       setPendingConsentRequestId(requestId);
       setDesktopConsentOpen(true);
       // Auto-deny after 30s if no action
@@ -547,6 +553,8 @@ export default function ConsultationPage() {
     try {
       setConsentObtained(true);
     } catch {}
+    // Persist a client-side flag so mobile can skip subsequent prompts during this session lifecycle
+    try { (window as any).__clinicproConsentObtained = true; } catch {}
     try {
       sendConsentGranted?.(pendingConsentRequestId, 'desktop', currentPatientSessionId || undefined);
     } catch {}
