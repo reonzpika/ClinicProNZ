@@ -204,7 +204,6 @@ export default function ConsultationPage() {
 
   const [desktopConsentOpen, setDesktopConsentOpen] = useState(false);
   const [pendingConsentRequestId, setPendingConsentRequestId] = useState<string | null>(null);
-  const [pendingConsentInitiator, setPendingConsentInitiator] = useState<'desktop' | 'mobile' | null>(null);
   const desktopConsentTimerRef = useRef<any>(null);
 
   const { sendRecordingControl, sendConsentRequest, sendConsentGranted, sendConsentDenied } = useSimpleAbly({
@@ -216,10 +215,9 @@ export default function ConsultationPage() {
     onError: handleError,
 
     isMobile: false,
-    onConsentRequested: ({ requestId, initiator }) => {
+    onConsentRequested: ({ requestId }) => {
       // Open desktop consent modal on any consent request
       setPendingConsentRequestId(requestId);
-      setPendingConsentInitiator(initiator);
       setDesktopConsentOpen(true);
       // Auto-deny after 30s if no action
       if (desktopConsentTimerRef.current) {
@@ -229,7 +227,6 @@ export default function ConsultationPage() {
         try { sendConsentDenied?.(requestId, 'desktop', 'timeout', currentPatientSessionId || undefined); } catch {}
         setDesktopConsentOpen(false);
         setPendingConsentRequestId(null);
-        setPendingConsentInitiator(null);
       }, 30000);
     },
     onConsentGranted: ({ requestId }) => {
@@ -238,7 +235,6 @@ export default function ConsultationPage() {
         try { setConsentObtained(true); } catch {}
         setDesktopConsentOpen(false);
         setPendingConsentRequestId(null);
-        setPendingConsentInitiator(null);
         if (desktopConsentTimerRef.current) {
           clearTimeout(desktopConsentTimerRef.current);
           desktopConsentTimerRef.current = null;
@@ -249,7 +245,6 @@ export default function ConsultationPage() {
       if (pendingConsentRequestId && requestId === pendingConsentRequestId) {
         setDesktopConsentOpen(false);
         setPendingConsentRequestId(null);
-        setPendingConsentInitiator(null);
         if (desktopConsentTimerRef.current) {
           clearTimeout(desktopConsentTimerRef.current);
           desktopConsentTimerRef.current = null;
@@ -557,7 +552,6 @@ export default function ConsultationPage() {
     } catch {}
     setDesktopConsentOpen(false);
     setPendingConsentRequestId(null);
-    setPendingConsentInitiator(null);
   };
 
   const handleDesktopConsentCancel = () => {
@@ -566,7 +560,6 @@ export default function ConsultationPage() {
     }
     setDesktopConsentOpen(false);
     setPendingConsentRequestId(null);
-    setPendingConsentInitiator(null);
   };
 
   // On mount, sync current session from server (server truth); create one if missing
