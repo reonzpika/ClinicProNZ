@@ -223,9 +223,11 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
         // ignore feature detection errors
       }
 
+      // Use a lower bitrate on mobile to reduce data usage without impacting STT quality
+      const targetBitrate = isMobile ? 48000 : 96000;
       const recorderOptions: MediaRecorderOptions = useMime
-        ? { mimeType: useMime, audioBitsPerSecond: 96000 }
-        : { audioBitsPerSecond: 96000 };
+        ? { mimeType: useMime, audioBitsPerSecond: targetBitrate }
+        : { audioBitsPerSecond: targetBitrate };
 
       const mediaRecorder = new MediaRecorder(inputStream, recorderOptions);
 
