@@ -2,7 +2,7 @@
 
 import { useAuth } from '@clerk/nextjs';
 import { useQueryClient } from '@tanstack/react-query';
-import { Brain, Download, Expand, Loader2, Pencil, QrCode, Trash2 } from 'lucide-react';
+import { Brain, Download, Expand, Loader2, QrCode, Trash2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 
