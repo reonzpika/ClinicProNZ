@@ -2,13 +2,13 @@
 
 import { useAuth } from '@clerk/nextjs';
 import { useQueryClient } from '@tanstack/react-query';
-import { Brain, Download, Expand, Loader2, QrCode, Trash2 } from 'lucide-react';
+import { Brain, Download, Expand, Loader2, Pencil, QrCode, Trash2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
-import { imageQueryKeys, useDeleteImage, useImageUrl, useServerImages } from '@/src/hooks/useImageQueries';
+import { imageQueryKeys, useDeleteImage, useImageUrl, useRenameImage, useServerImages } from '@/src/hooks/useImageQueries';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
@@ -31,6 +31,42 @@ function SessionImageTile({
   onDelete: () => void;
 }) {
   const { data: imageUrl } = useImageUrl(image.key);
+  const renameImage = useRenameImage();
+  const baseName = (image.displayName || image.filename || '').replace(/\.[^.]+$/, '');
+  const [identifier, setIdentifier] = React.useState<string>(() => {
+    // Try to extract identifier from existing displayName pattern: "<patient> <identifier> YYYY-MM-DD #n"
+    const parts = baseName.split(' ');
+    // Heuristic: strip trailing date and #n
+    const hashIndex = parts.lastIndexOf(parts.find(p => /^#\d+$/.test(p)) || '');
+    const dateIndex = parts.findIndex(p => /^\d{4}-\d{2}-\d{2}$/.test(p));
+    let core = baseName;
+    if (dateIndex >= 0) {
+      core = parts.slice(0, dateIndex).join(' ');
+    }
+    // Remove leading patient name if present (assume it's the first token(s) until we can't know reliably).
+    // We leave it empty by default; identifier will replace everything after patient when committed.
+    return '';
+  });
+  const [isEditing, setIsEditing] = React.useState(false);
+
+  const commitIdentifier = () => {
+    const id = identifier.trim();
+    if (!id) {
+      setIsEditing(false);
+      return;
+    }
+    // Build new displayName preserving patient and #n if present
+    const original = baseName;
+    const parts = original.split(' ');
+    const dateIdx = parts.findIndex(p => /^\d{4}-\d{2}-\d{2}$/.test(p));
+    const hashPos = parts.findIndex(p => /^#\d+$/.test(p));
+    const dateStr = dateIdx >= 0 ? parts[dateIdx] : new Date().toISOString().slice(0,10);
+    const hashStr = hashPos >= 0 ? parts[hashPos] : '#1';
+    const patientPart = dateIdx > 0 ? parts.slice(0, Math.max(1, dateIdx - 1)).join(' ') : 'Session';
+    const newDisplay = `${patientPart} ${id} ${dateStr} ${hashStr}`.replace(/\s+/g, ' ').trim();
+    renameImage.mutate({ imageKey: image.key, displayName: newDisplay });
+    setIsEditing(false);
+  };
   return (
     <div className="flex flex-col">
       <div className="aspect-square overflow-hidden rounded-lg bg-slate-100">
@@ -41,6 +77,20 @@ function SessionImageTile({
           : (
             <div className="flex size-full items-center justify-center text-xs text-slate-400">No preview</div>
           )}
+      </div>
+      <div className="mt-2">
+        <input
+          type="text"
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
+          onBlur={commitIdentifier}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') commitIdentifier();
+            if (e.key === 'Escape') setIsEditing(false);
+          }}
+          placeholder="Identifier (e.g., left forearm)"
+          className="w-full rounded-md border px-2 py-1 text-xs"
+        />
       </div>
       <div className="mt-2 flex items-center justify-center gap-2">
         <Button

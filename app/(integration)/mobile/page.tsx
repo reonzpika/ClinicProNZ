@@ -486,7 +486,6 @@ selected
                       // Clear queue and return
                       queuedItems.forEach(it => it.previewUrl && URL.revokeObjectURL(it.previewUrl));
                       setQueuedItems([]);
-                      setPatientNameInput('');
                       setMobileStep('collect');
                     } catch (err) {
                       console.error('Upload failed:', err);
