@@ -148,7 +148,29 @@ export function useUploadImages() {
       // Best-effort metadata batch upsert if provided
       try {
         if (userId && results.length > 0) {
-          const items = results.map((r, idx) => ({ imageKey: r.key, ...(names[idx] || {}) }));
+          const today = new Date();
+          const y = today.getFullYear();
+          const m = String(today.getMonth() + 1).padStart(2, '0');
+          const d = String(today.getDate()).padStart(2, '0');
+          const dateStr = `${y}-${m}-${d}`;
+
+          const items = results.map((r, idx) => {
+            const entry = names[idx] || {};
+            const parts: string[] = [];
+            if (entry.patientName && entry.patientName.trim()) parts.push(entry.patientName.trim());
+            if (entry.identifier && entry.identifier.trim()) parts.push(entry.identifier.trim());
+            let displayName: string | undefined = undefined;
+            if (parts.length > 0) {
+              // Provide a client-side displayName so server doesn't need to infer
+              displayName = `${parts.join(' ')} ${dateStr} #${idx + 1}`.trim();
+            }
+            return {
+              imageKey: r.key,
+              ...(entry.patientName ? { patientName: entry.patientName } : {}),
+              ...(entry.identifier ? { identifier: entry.identifier } : {}),
+              ...(displayName ? { displayName } : {}),
+            };
+          });
           await fetch('/api/clinical-images/metadata/batch', {
             method: 'POST',
             headers: createAuthHeaders(userId, userTier),

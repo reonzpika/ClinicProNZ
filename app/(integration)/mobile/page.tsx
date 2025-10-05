@@ -408,6 +408,16 @@ selected
 
           {mobileStep === 'review' && (
             <div className="space-y-4">
+              <div>
+                <label className="mb-1 block text-xs text-gray-600">Patient name (optional)</label>
+                <input
+                  type="text"
+                  value={patientNameInput}
+                  onChange={(e) => setPatientNameInput(e.target.value)}
+                  placeholder="e.g. Jane Doe"
+                  className="w-full rounded-md border px-2 py-2 text-sm"
+                />
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 {queuedItems.map(item => (
                   <div key={item.id} className="relative overflow-hidden rounded-lg border">
