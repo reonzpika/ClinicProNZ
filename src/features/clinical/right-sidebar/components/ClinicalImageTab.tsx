@@ -33,28 +33,11 @@ function SessionImageTile({
   const { data: imageUrl } = useImageUrl(image.key);
   const renameImage = useRenameImage();
   const baseName = (image.displayName || image.filename || '').replace(/\.[^.]+$/, '');
-  const [identifier, setIdentifier] = React.useState<string>(() => {
-    // Try to extract identifier from existing displayName pattern: "<patient> <identifier> YYYY-MM-DD #n"
-    const parts = baseName.split(' ');
-    // Heuristic: strip trailing date and #n
-    const hashIndex = parts.lastIndexOf(parts.find(p => /^#\d+$/.test(p)) || '');
-    const dateIndex = parts.findIndex(p => /^\d{4}-\d{2}-\d{2}$/.test(p));
-    let core = baseName;
-    if (dateIndex >= 0) {
-      core = parts.slice(0, dateIndex).join(' ');
-    }
-    // Remove leading patient name if present (assume it's the first token(s) until we can't know reliably).
-    // We leave it empty by default; identifier will replace everything after patient when committed.
-    return '';
-  });
-  const [isEditing, setIsEditing] = React.useState(false);
+  const [identifier, setIdentifier] = React.useState<string>('');
 
   const commitIdentifier = () => {
     const id = identifier.trim();
-    if (!id) {
-      setIsEditing(false);
-      return;
-    }
+    if (!id) return;
     // Build new displayName preserving patient and #n if present
     const original = baseName;
     const parts = original.split(' ');
@@ -65,7 +48,6 @@ function SessionImageTile({
     const patientPart = dateIdx > 0 ? parts.slice(0, Math.max(1, dateIdx - 1)).join(' ') : 'Session';
     const newDisplay = `${patientPart} ${id} ${dateStr} ${hashStr}`.replace(/\s+/g, ' ').trim();
     renameImage.mutate({ imageKey: image.key, displayName: newDisplay });
-    setIsEditing(false);
   };
   return (
     <div className="flex flex-col">
@@ -86,7 +68,6 @@ function SessionImageTile({
           onBlur={commitIdentifier}
           onKeyDown={(e) => {
             if (e.key === 'Enter') commitIdentifier();
-            if (e.key === 'Escape') setIsEditing(false);
           }}
           placeholder="Identifier (e.g., left forearm)"
           className="w-full rounded-md border px-2 py-1 text-xs"
