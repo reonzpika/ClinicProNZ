@@ -41,8 +41,8 @@ function SessionImageTile({
     // Build new displayName preserving patient and #n if present
     const original = baseName;
     const parts = original.split(' ');
-    const dateIdx = parts.findIndex(p => /^\d{4}-\d{2}-\d{2}$/.test(p));
-    const hashPos = parts.findIndex(p => /^#\d+$/.test(p));
+    const dateIdx = parts.findIndex((p: string) => /^\d{4}-\d{2}-\d{2}$/.test(p));
+    const hashPos = parts.findIndex((p: string) => /^#\d+$/.test(p));
     const dateStr = dateIdx >= 0 ? parts[dateIdx] : new Date().toISOString().slice(0,10);
     const hashStr = hashPos >= 0 ? parts[hashPos] : '#1';
     const patientPart = dateIdx > 0 ? parts.slice(0, Math.max(1, dateIdx - 1)).join(' ') : 'Session';
