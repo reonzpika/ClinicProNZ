@@ -300,8 +300,12 @@ export function useConsultationStores(): any {
 
     // No transcript hydration here; page fetches from /api/transcriptions
     // Only update local state when values actually differ to avoid update loops
-    if (session.typedInput && session.typedInput !== transcriptionStore.typedInput) {
-      transcriptionStore.setTypedInput(session.typedInput);
+    // Respect recent local edits to typed input to avoid overwriting deletions/changes
+    const typedRecentlyEdited = !!((transcriptionStore as any).typedInputEditedAt && (Date.now() - (transcriptionStore as any).typedInputEditedAt) < 3000);
+    if (!typedRecentlyEdited) {
+      if ((session.typedInput ?? '') !== transcriptionStore.typedInput) {
+        transcriptionStore.setTypedInput(session.typedInput || '');
+      }
     }
     if (session.notes && session.notes !== consultationStore.generatedNotes) {
       consultationStore.setGeneratedNotes(session.notes);

@@ -50,9 +50,8 @@ export function TypedInput({ collapsed, onExpand, isMinimized }: { collapsed?: b
 
   // Server-first short-debounce save while typing
   useEffect(() => {
-    const trimmed = localInput.trim();
-    // Only autosave when there's a change from lastSavedInput and non-empty (match blur policy)
-    if (trimmed === lastSavedInput || trimmed === '') {
+    // Only autosave when content changed vs lastSavedInput (empty is allowed → saves deletion)
+    if (localInput === lastSavedInput) {
       return;
     }
     setSaveStatus('saving');
@@ -79,7 +78,7 @@ export function TypedInput({ collapsed, onExpand, isMinimized }: { collapsed?: b
 
   // Save typed input to session
   const handleSaveToSession = async () => {
-    if (localInput !== lastSavedInput && localInput.trim() !== '') {
+    if (localInput !== lastSavedInput) {
       try {
         setSaveStatus('saving');
         const success = await saveTypedInputToCurrentSession(localInput);

@@ -17,6 +17,7 @@ type TranscriptionState = {
   // Transcription state
   transcription: TranscriptionData;
   typedInput: string;
+  typedInputEditedAt?: number;
 
   // Awaiting display of newly committed chunks from DB
   awaitingDisplay?: boolean;
@@ -91,6 +92,7 @@ const initialState: TranscriptionState = {
     utterances: [],
   },
   typedInput: '',
+  typedInputEditedAt: undefined,
   awaitingDisplay: false,
   consentObtained: false,
   microphoneGain: 7.0,
@@ -134,7 +136,7 @@ export const useTranscriptionStore = create<TranscriptionStore>()(
       });
     },
 
-    setTypedInput: input => set({ typedInput: input }),
+    setTypedInput: input => set({ typedInput: input, typedInputEditedAt: Date.now() }),
 
     // Display coordination
     setAwaitingDisplay: value => set({ awaitingDisplay: !!value }),
