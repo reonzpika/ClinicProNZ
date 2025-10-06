@@ -62,6 +62,7 @@ ${context}`;
         { role: 'user', content: query },
       ],
       temperature: 0.1,
+      max_tokens: 800,
       stream: true,
     });
 
