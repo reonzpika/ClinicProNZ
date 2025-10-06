@@ -338,7 +338,7 @@ export const ClinicalImageTab: React.FC = () => {
         return { url, name };
       }));
       for (let j = 0; j < urls.length; j++) {
-        results[i + j] = urls[j];
+        results[i + j] = urls[j] ?? null;
       }
     }
     // Trigger downloads sequentially
