@@ -184,7 +184,7 @@ function MobilePageContent() {
           headers: { ...createAuthHeadersForFormData(userId), 'X-Debug-Request-Id': reqId },
           body: formData,
         }, { maxRetries: 2 });
-        const _elapsedMs = Date.now() - t0;
+        // timing omitted
         if (!response.ok) {
           let bodyText = '';
           try {
