@@ -157,9 +157,13 @@ export function useUploadImages() {
           const items = results.map((r, idx) => {
             const entry = names[idx] || {};
             const parts: string[] = [];
-            if (entry.patientName && entry.patientName.trim()) parts.push(entry.patientName.trim());
-            if (entry.identifier && entry.identifier.trim()) parts.push(entry.identifier.trim());
-            let displayName: string | undefined = undefined;
+            if (entry.patientName && entry.patientName.trim()) {
+ parts.push(entry.patientName.trim());
+}
+            if (entry.identifier && entry.identifier.trim()) {
+ parts.push(entry.identifier.trim());
+}
+            let displayName: string | undefined;
             if (parts.length > 0) {
               // Provide a client-side displayName so server doesn't need to infer
               displayName = `${parts.join(' ')} ${dateStr} #${idx + 1}`.trim();

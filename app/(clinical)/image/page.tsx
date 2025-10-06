@@ -181,7 +181,7 @@ export default function ClinicalImagePage() {
   const handleDeleteImage = async (imageKey: string) => {
     // Optimistic UI: immediately hide the image
     setDeletingImages(prev => new Set(prev).add(imageKey));
-    
+
     try {
       // Delete in background
       await deleteImage.mutateAsync(imageKey);
@@ -190,7 +190,7 @@ export default function ClinicalImagePage() {
       console.error('Delete error:', error);
       setError(error instanceof Error ? error.message : 'Failed to delete image');
       // On error, restore the image
-      setDeletingImages(prev => {
+      setDeletingImages((prev) => {
         const updated = new Set(prev);
         updated.delete(imageKey);
         return updated;
@@ -375,13 +375,14 @@ export default function ClinicalImagePage() {
             )}
 
             <div className="mt-2">
-              <label className="mb-1 block text-xs font-medium text-slate-600">Patient name (optional)</label>
+              <label htmlFor="image-mobile-collect-patient-name" className="mb-1 block text-xs font-medium text-slate-600">Patient name (optional)</label>
               <input
+                id="image-mobile-collect-patient-name"
                 type="text"
                 value={patientNameInput}
-                onChange={(e) => setPatientNameInput(e.target.value)}
+                onChange={e => setPatientNameInput(e.target.value)}
                 placeholder="e.g. Jane Doe"
-                className="w-full rounded-md border px-2 py-2 text-sm"
+                className="w-full rounded-md border p-2 text-sm"
               />
             </div>
 
@@ -412,13 +413,14 @@ selected
         {mobileStep === 'review' && (
           <div className="flex-1 space-y-4">
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-600">Patient name (optional)</label>
+              <label htmlFor="image-mobile-review-patient-name" className="mb-1 block text-xs font-medium text-slate-600">Patient name (optional)</label>
               <input
+                id="image-mobile-review-patient-name"
                 type="text"
                 value={patientNameInput}
-                onChange={(e) => setPatientNameInput(e.target.value)}
+                onChange={e => setPatientNameInput(e.target.value)}
                 placeholder="e.g. Jane Doe"
-                className="w-full rounded-md border px-2 py-2 text-sm"
+                className="w-full rounded-md border p-2 text-sm"
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -430,7 +432,9 @@ selected
                       : <div className="flex size-full items-center justify-center text-xs text-slate-500">Loading...</div>}
                   </div>
                   <div className="p-2">
+                    <label htmlFor={`image-identifier-${item.id}`} className="sr-only">Identifier</label>
                     <input
+                      id={`image-identifier-${item.id}`}
                       type="text"
                       value={item.identifier || ''}
                       onChange={(e) => {
@@ -447,6 +451,7 @@ selected
                       setQueuedItems(prev => prev.filter(it => it.id !== item.id));
                     }}
                     className="absolute right-2 top-2 rounded bg-white/80 px-2 py-1 text-xs text-red-600"
+                    type="button"
                   >
                     Delete
                   </button>
@@ -856,20 +861,26 @@ function InlineEditableName({ image }: { image: ServerImage }) {
 
   return (
     <div className="flex items-center gap-2">
-      {isEditing ? (
+      {isEditing
+? (
         <input
           ref={inputRef}
           type="text"
           value={value}
-          onChange={(e) => setValue(e.target.value.slice(0, 80))}
+          onChange={e => setValue(e.target.value.slice(0, 80))}
           onBlur={commit}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') commit();
-            if (e.key === 'Escape') setIsEditing(false);
+            if (e.key === 'Enter') {
+ commit();
+}
+            if (e.key === 'Escape') {
+ setIsEditing(false);
+}
           }}
           className="w-full rounded border px-2 py-1 text-xs"
         />
-      ) : (
+      )
+: (
         <h4 className="truncate text-xs font-medium text-slate-900">{image.displayName || image.filename}</h4>
       )}
       {!isEditing && (
@@ -1239,7 +1250,7 @@ function ImageSectionsGrid({
 }) {
   // Filter out images being deleted for optimistic UI
   const filteredImages = images.filter(img => !deletingImages.has(img.key));
-  
+
   // Partition images
   const clinical = filteredImages.filter(i => i.source === 'clinical');
   const noSession = clinical.filter(i => !i.sessionId);

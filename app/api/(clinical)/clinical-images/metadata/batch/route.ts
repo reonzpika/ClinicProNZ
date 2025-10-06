@@ -1,20 +1,24 @@
 import { auth } from '@clerk/nextjs/server';
+import { getDb } from 'database/client';
 import { eq, inArray } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { getDb } from 'database/client';
 import { clinicalImageMetadata, patientSessions } from '@/db/schema';
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 // Naming helpers
 function sanitizePart(part?: string): string | undefined {
-  if (!part) return undefined;
+  if (!part) {
+ return undefined;
+}
   const cleaned = part
-    .replace(/[^A-Za-z0-9 _-]/g, ' ')
+    .replace(/[^\w -]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
-  if (!cleaned) return undefined;
+  if (!cleaned) {
+ return undefined;
+}
   return cleaned.slice(0, 80);
 }
 
@@ -85,7 +89,9 @@ export async function POST(req: NextRequest) {
           .select({ id: patientSessions.id, patientName: patientSessions.patientName })
           .from(patientSessions)
           .where(inArray(patientSessions.id, sessionIds));
-        rows.forEach(r => { sessionNameMap[r.id] = r.patientName || null; });
+        rows.forEach((r) => {
+ sessionNameMap[r.id] = r.patientName || null;
+});
       } catch {}
     }
 
@@ -98,8 +104,12 @@ export async function POST(req: NextRequest) {
       let displayName = v.displayName;
       if (!displayName) {
         const parts: string[] = [];
-        if (basePatient) parts.push(basePatient);
-        if (baseIdentifier) parts.push(baseIdentifier);
+        if (basePatient) {
+ parts.push(basePatient);
+}
+        if (baseIdentifier) {
+ parts.push(baseIdentifier);
+}
         if (parts.length === 0) {
           // fallback to session patient name if available
           const sessionName = (v.sessionId && sessionNameMap[v.sessionId]) || 'Patient';

@@ -6,11 +6,11 @@ import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react
 
 import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTranscription';
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
+import { ConsentModal } from '@/src/features/clinical/session-management/components/ConsentModal';
 import { useUploadImages } from '@/src/hooks/useImageQueries';
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
-import { ConsentModal } from '@/src/features/clinical/session-management/components/ConsentModal';
 import { createAuthHeadersForFormData, fetchWithRetry } from '@/src/shared/utils';
 import { isFeatureEnabled } from '@/src/shared/utils/launch-config';
 
@@ -38,9 +38,7 @@ function useWakeLock() {
       lock.addEventListener('release', () => {
         setWakeLock(null);
       });
-    } catch (error) {
-      console.error('Failed to request wake lock:', error);
-    }
+    } catch (_e) {}
   }, [isSupported, wakeLock]);
 
   const releaseWakeLock = useCallback(() => {
@@ -192,20 +190,15 @@ function MobilePageContent() {
           try {
  bodyText = await response.text();
 } catch {}
-          try {
-            console.warn('[Mobile] persist transcription non-OK', { reqId, status: response.status, tMs, bodyText });
-} catch {}
+          try {}
+          catch {}
           setAuthError(`Transcription failed: ${response.statusText}`);
         } else {
-          try {
-            console.debug('[Mobile] persist transcription OK', { reqId, status: response.status, tMs, blobSize: audioBlob.size });
-} catch {}
+          try {}
+          catch {}
         }
-      } catch (error) {
-        try {
-          console.error('[Mobile] persist transcription error', error);
-} catch {}
-        setAuthError(`Recording error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      } catch (_e) {
+        setAuthError('Recording error');
       }
     },
   });
@@ -379,13 +372,14 @@ function MobilePageContent() {
                 </Button>
               )}
               <div className="mt-2">
-                <label className="mb-1 block text-xs text-gray-600">Patient name (optional)</label>
+                <label htmlFor="mobile-collect-patient-name" className="mb-1 block text-xs text-gray-600">Patient name (optional)</label>
                 <input
+                  id="mobile-collect-patient-name"
                   type="text"
                   value={patientNameInput}
-                  onChange={(e) => setPatientNameInput(e.target.value)}
+                  onChange={e => setPatientNameInput(e.target.value)}
                   placeholder="e.g. Jane Doe"
-                  className="w-full rounded-md border px-2 py-2 text-sm"
+                  className="w-full rounded-md border p-2 text-sm"
                 />
               </div>
               {queuedItems.length > 0 && (
@@ -409,13 +403,14 @@ selected
           {mobileStep === 'review' && (
             <div className="space-y-4">
               <div>
-                <label className="mb-1 block text-xs text-gray-600">Patient name (optional)</label>
+                <label htmlFor="mobile-review-patient-name" className="mb-1 block text-xs text-gray-600">Patient name (optional)</label>
                 <input
+                  id="mobile-review-patient-name"
                   type="text"
                   value={patientNameInput}
-                  onChange={(e) => setPatientNameInput(e.target.value)}
+                  onChange={e => setPatientNameInput(e.target.value)}
                   placeholder="e.g. Jane Doe"
-                  className="w-full rounded-md border px-2 py-2 text-sm"
+                  className="w-full rounded-md border p-2 text-sm"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -487,8 +482,8 @@ selected
                       queuedItems.forEach(it => it.previewUrl && URL.revokeObjectURL(it.previewUrl));
                       setQueuedItems([]);
                       setMobileStep('collect');
-                    } catch (err) {
-                      console.error('Upload failed:', err);
+                    } catch {
+                      // Swallow upload error for UI; error toast handled elsewhere
                     }
                   }}
                   type="button"
@@ -556,14 +551,18 @@ selected
           onConfirm={() => {
             const id = pendingRequestIdRef.current;
             if (id) {
-              try { sendConsentGranted?.(id, 'mobile'); } catch {}
+              try {
+ sendConsentGranted?.(id, 'mobile');
+} catch {}
             }
             setConsentOpen(false);
           }}
           onCancel={() => {
             const id = pendingRequestIdRef.current;
             if (id) {
-              try { sendConsentDenied?.(id, 'mobile', 'user'); } catch {}
+              try {
+ sendConsentDenied?.(id, 'mobile', 'user');
+} catch {}
             }
             setConsentOpen(false);
           }}

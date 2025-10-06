@@ -41,7 +41,7 @@ function SessionImageTile({
     const core = m ? m[1] : baseName;
     // Remove leading session patient name prefix
     const prefix = (sessionPatientName || '').trim();
-    if (prefix && core.startsWith(prefix + ' ')) {
+    if (prefix && core.startsWith(`${prefix} `)) {
       return core.slice(prefix.length + 1);
     }
     return '';
@@ -50,13 +50,15 @@ function SessionImageTile({
 
   const commitIdentifier = () => {
     const id = identifier.trim();
-    if (!id) return;
+    if (!id) {
+ return;
+}
     // Build new displayName preserving patient and #n if present
     const original = baseName;
     const parts = original.split(' ');
     const dateIdx = parts.findIndex((p: string) => /^\d{4}-\d{2}-\d{2}$/.test(p));
     const hashPos = parts.findIndex((p: string) => /^#\d+$/.test(p));
-    const dateStr = dateIdx >= 0 ? parts[dateIdx] : new Date().toISOString().slice(0,10);
+    const dateStr = dateIdx >= 0 ? parts[dateIdx] : new Date().toISOString().slice(0, 10);
     const hashStr = hashPos >= 0 ? parts[hashPos] : '#1';
     const patientPart = (sessionPatientName && sessionPatientName.trim()) || 'Patient';
     const newDisplay = `${patientPart} ${id} ${dateStr} ${hashStr}`.replace(/\s+/g, ' ').trim();
@@ -77,10 +79,12 @@ function SessionImageTile({
         <input
           type="text"
           value={identifier}
-          onChange={(e) => setIdentifier(e.target.value)}
+          onChange={e => setIdentifier(e.target.value)}
           onBlur={commitIdentifier}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') commitIdentifier();
+            if (e.key === 'Enter') {
+ commitIdentifier();
+}
           }}
           placeholder="Identifier (e.g., left forearm)"
           className="w-full rounded-md border px-2 py-1 text-xs"
@@ -245,7 +249,7 @@ export const ClinicalImageTab: React.FC = () => {
       // Add to context and save
       addClinicalImage(newImage);
       await saveClinicalImagesToCurrentSession([...clinicalImages, newImage]);
-      
+
       // Invalidate React Query cache to refresh server images
       queryClient.invalidateQueries({
         queryKey: imageQueryKeys.lists(),
@@ -322,7 +326,7 @@ export const ClinicalImageTab: React.FC = () => {
   const handleDeleteSessionImage = useCallback(async (imageKey: string) => {
     // Optimistic UI: immediately hide the image
     setDeletingImages(prev => new Set(prev).add(imageKey));
-    
+
     try {
       // Delete in background
       await deleteImageMutation.mutateAsync(imageKey);
@@ -331,7 +335,7 @@ export const ClinicalImageTab: React.FC = () => {
       console.error('Delete error:', err);
       setError(err instanceof Error ? err.message : 'Failed to delete image');
       // On error, restore the image
-      setDeletingImages(prev => {
+      setDeletingImages((prev) => {
         const updated = new Set(prev);
         updated.delete(imageKey);
         return updated;
@@ -626,7 +630,7 @@ export const ClinicalImageTab: React.FC = () => {
             <QrCode className="size-4" />
           </Button>
         </div>
-        
+
         {/* QR Code for Mobile Upload */}
         {showQR && (
           <div className="mt-4 border-t pt-4">
@@ -645,7 +649,7 @@ export const ClinicalImageTab: React.FC = () => {
             </div>
           </div>
         )}
-        
+
         <p className="mt-2 text-xs text-slate-500">
           Images are automatically resized and securely stored. Select multiple files to upload at once.
         </p>
@@ -697,19 +701,23 @@ function EnlargeImageModal({ image, onClose }: { image: any; onClose: () => void
       </Button>
 
       {/* Image Container */}
-      <div className="max-h-full max-w-full">
-        {isLoadingUrl ? (
+      <div className="max-h-full max-w-full" role="img" aria-label="Enlarged image">
+        {isLoadingUrl
+? (
           <div className="flex items-center justify-center p-8">
             <Loader2 className="size-12 animate-spin text-white" />
           </div>
-        ) : imageUrl ? (
+        )
+: imageUrl
+? (
           <img
             src={imageUrl}
             alt={image.filename || 'Clinical image'}
             className="max-h-[90vh] max-w-[90vw] object-contain shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           />
-        ) : (
+        )
+: (
           <div className="flex flex-col items-center justify-center p-8 text-white">
             <p>Failed to load image</p>
           </div>
