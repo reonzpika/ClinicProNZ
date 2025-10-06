@@ -135,7 +135,7 @@ export default function ClinicalImagePage() {
         return { url, name };
       }));
       for (let j = 0; j < results.length; j++) {
-        urls[i + j] = results[j];
+        urls[i + j] = results[j] || null;
       }
     }
 
