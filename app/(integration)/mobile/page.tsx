@@ -178,7 +178,6 @@ function MobilePageContent() {
           return;
         }
 
-        const t0 = Date.now();
         const response = await fetchWithRetry('/api/deepgram/transcribe?persist=true', {
           method: 'POST',
           headers: { ...createAuthHeadersForFormData(userId), 'X-Debug-Request-Id': reqId },
