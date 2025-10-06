@@ -207,7 +207,7 @@ export default function ConsultationPage() {
   const [pendingConsentRequestId, setPendingConsentRequestId] = useState<string | null>(null);
   const desktopConsentTimerRef = useRef<any>(null);
 
-  const { sendRecordingControl, sendConsentRequest, sendConsentGranted, sendConsentDenied } = useSimpleAbly({
+  const { sendRecordingControl, sendConsentRequest, sendConsentGranted, sendConsentDenied, sendSessionContext } = useSimpleAbly({
     userId: userId ?? null,
     onRecordingStatusChanged: (isRecording: boolean) => {
       setMobileIsRecording(isRecording);
@@ -216,9 +216,10 @@ export default function ConsultationPage() {
     onError: handleError,
 
     isMobile: false,
-    onConsentRequested: ({ requestId }) => {
+    onConsentRequested: ({ requestId, sessionId }) => {
       // If consent already obtained for this session, auto-grant and skip modal
-      if (consentObtained) {
+      const isSameSession = !!(sessionId && currentPatientSessionId && sessionId === currentPatientSessionId);
+      if (consentObtained && isSameSession) {
         try { sendConsentGranted?.(requestId, 'desktop', currentPatientSessionId || undefined); } catch {}
         return;
       }
@@ -444,6 +445,11 @@ export default function ConsultationPage() {
 
     // Now perform the actual session switch
     originalSwitchToPatientSession(sessionId, onSwitch);
+    // Broadcast new session context to mobile and reset local session-consent mapping
+    try {
+      setConsentObtained(false);
+    } catch {}
+    try { sendSessionContext?.(sessionId); } catch {}
   }, [isRecording, mobileIsRecording, stopRecording, sendRecordingControl, originalSwitchToPatientSession]);
 
   useEffect(() => {
@@ -517,6 +523,9 @@ export default function ConsultationPage() {
   // because isNoteFocused remained true from the previous session
   useEffect(() => {
     setIsNoteFocused(false);
+    // Reset consent state locally and broadcast session context on session change
+    try { setConsentObtained(false); } catch {}
+    try { sendSessionContext?.(currentPatientSessionId || null); } catch {}
   }, [currentPatientSessionId]);
 
   // Reset mobile recording status when connection drops

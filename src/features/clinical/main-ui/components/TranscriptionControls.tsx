@@ -234,7 +234,7 @@ export function TranscriptionControls({
       setShowConsentModal(true);
       return;
     }
-
+    // Consent already obtained for this session; proceed directly
     startRecording();
   };
 

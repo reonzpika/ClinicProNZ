@@ -144,6 +144,10 @@ export function useConsultationStores(): any {
           if (hasLoadedList) {
             const existsLocally = patientSessions.some((s: any) => s.id === localId);
             if (existsLocally) {
+            // Align consent with current session
+            try {
+              transcriptionStore.setConsentForSessionId(localId);
+            } catch {}
               return localId;
             }
           } else {
@@ -164,6 +168,7 @@ export function useConsultationStores(): any {
           }
           // Local ID is stale → clear it so we can create a new one
           consultationStore.setCurrentPatientSessionId(null);
+          try { transcriptionStore.setConsentForSessionId(null); } catch {}
         }
 
         // If no local id, try to adopt server current session before creating a new one
@@ -177,6 +182,7 @@ export function useConsultationStores(): any {
             const serverId = data?.currentSessionId as string | null;
             if (serverId && typeof serverId === 'string') {
               consultationStore.setCurrentPatientSessionId(serverId);
+              try { transcriptionStore.setConsentForSessionId(null); } catch {}
               __ensureSessionLastAt = Date.now();
               return serverId;
             }
@@ -432,6 +438,7 @@ export function useConsultationStores(): any {
           // Clear local UI state before switching
           transcriptionStore.resetTranscription();
           consultationStore.resetConsultation();
+          try { transcriptionStore.setConsentForSessionId(null); } catch {}
           consultationStore.setCurrentPatientSessionId(nextId);
           try {
             const headers = { ...createAuthHeaders(userId), 'Content-Type': 'application/json' } as HeadersInit;
