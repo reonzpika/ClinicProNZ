@@ -185,16 +185,7 @@ function MobilePageContent() {
         }, { maxRetries: 2 });
         // timing omitted
         if (!response.ok) {
-          let bodyText = '';
-          try {
- bodyText = await response.text();
-} catch {}
-          try {}
-          catch {}
           setAuthError(`Transcription failed: ${response.statusText}`);
-        } else {
-          try {}
-          catch {}
         }
       } catch (_e) {
         setAuthError('Recording error');
