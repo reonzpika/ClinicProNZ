@@ -59,20 +59,11 @@ ${context}`;
       return new Response('Missing OPENAI_API_KEY', { status: 500 });
     }
 
-    const sources = Array.from(
-      new Map(
-        relevantDocs.map(d => [d.source, { title: d.title, url: d.source }])
-      ).values()
-    ).slice(0, 8);
-
     const result = await streamText({
       model: openai('gpt-4o-mini'),
       system: systemPrompt,
       messages: [{ role: 'user', content: query }],
       temperature: 0.1,
-      onFinish: async ({ emit }) => {
-        emit('sources', { sources });
-      },
     });
 
     return result.toAIStreamResponse();
