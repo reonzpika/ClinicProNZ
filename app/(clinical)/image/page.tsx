@@ -76,6 +76,86 @@ export default function ClinicalImagePage() {
   // Optimistic delete state
   const [deletingImages, setDeletingImages] = useState<Set<string>>(new Set());
 
+  // Selection state for bulk actions
+  const [selectionMode, setSelectionMode] = useState<boolean>(false);
+  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
+
+  const toggleSelectionMode = useCallback(() => {
+    setSelectionMode(prev => {
+      const next = !prev;
+      if (!next) {
+        setSelectedKeys(new Set());
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleSelectKey = useCallback((key: string) => {
+    setSelectedKeys(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => setSelectedKeys(new Set()), []);
+
+  const selectAllVisible = useCallback((keys: string[]) => {
+    setSelectedKeys(new Set(keys));
+  }, []);
+
+  const getDownloadUrl = useCallback(async (imageKey: string): Promise<string> => {
+    const res = await fetch(`/api/uploads/download?key=${encodeURIComponent(imageKey)}`, {
+      headers: createAuthHeaders(userId, userTier),
+    });
+    if (!res.ok) {
+      throw new Error('Failed to get download URL');
+    }
+    const data = await res.json();
+    return data.downloadUrl as string;
+  }, [userId, userTier]);
+
+  const bulkDownload = useCallback(async (images: ServerImage[]) => {
+    if (!Array.isArray(images) || images.length === 0) {
+      return;
+    }
+    // Step 1: fetch URLs with concurrency limit 10
+    const urls: Array<{ url: string; name: string } | null> = new Array(images.length).fill(null);
+    for (let i = 0; i < images.length; i += 10) {
+      const slice = images.slice(i, i + 10);
+      const results = await Promise.all(slice.map(async (img) => {
+        const url = await getDownloadUrl(img.key);
+        const baseName = (img.displayName || img.filename || '').replace(/\.[^.]+$/, '');
+        const ext = img.filename && img.filename.includes('.') ? `.${img.filename.split('.').pop()}` : '';
+        const name = `${baseName}${ext}`.trim();
+        return { url, name };
+      }));
+      for (let j = 0; j < results.length; j++) {
+        urls[i + j] = results[j];
+      }
+    }
+
+    // Step 2: trigger downloads sequentially to avoid popup blockers
+    for (let i = 0; i < urls.length; i++) {
+      const item = urls[i];
+      if (!item) continue;
+      const a = document.createElement('a');
+      a.href = item.url;
+      a.download = item.name;
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      // Small delay between downloads
+      // eslint-disable-next-line no-await-in-loop
+      await new Promise(resolve => setTimeout(resolve, 150));
+    }
+  }, [getDownloadUrl]);
+
   // Mobile native capture multi-step state
   const [mobileStep, setMobileStep] = useState<'collect' | 'review'>('collect');
   type QueuedItem = { id: string; file: File; previewUrl: string; identifier?: string };
@@ -657,6 +737,40 @@ Cancel
                       </div>
                     )
                   : (
+                      <div className="mb-3 flex items-center justify-between">
+                        <div className="text-xs text-slate-600">
+                          {selectionMode ? `${selectedKeys.size} selected` : `${serverImages.length} images`}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button type="button" size="sm" variant="outline" onClick={toggleSelectionMode}>
+                            {selectionMode ? 'Exit selection' : 'Select'}
+                          </Button>
+                          {selectionMode && (
+                            <>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => selectAllVisible(serverImages.map(img => img.key))}
+                              >
+                                Select all
+                              </Button>
+                              <Button type="button" size="sm" variant="outline" onClick={clearSelection}>Clear</Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                onClick={() => {
+                                  const imagesToDownload = serverImages.filter(img => selectedKeys.has(img.key));
+                                  bulkDownload(imagesToDownload);
+                                }}
+                                disabled={selectedKeys.size === 0}
+                              >
+                                Download selected
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
                       <ImageSectionsGrid
                         images={serverImages}
                         onAnalyze={handleOpenAnalysis}
@@ -665,6 +779,9 @@ Cancel
                         onDelete={handleDeleteImage}
                         formatFileSize={formatFileSize}
                         deletingImages={deletingImages}
+                        selectionMode={selectionMode}
+                        selectedKeys={selectedKeys}
+                        onToggleSelect={toggleSelectKey}
                       />
                     )}
             </CardContent>
@@ -1239,6 +1356,9 @@ function ImageSectionsGrid({
   onDelete,
   formatFileSize,
   deletingImages,
+  selectionMode,
+  selectedKeys,
+  onToggleSelect,
 }: {
   images: ServerImage[];
   onAnalyze: (img: ServerImage) => void;
@@ -1247,6 +1367,9 @@ function ImageSectionsGrid({
   onDelete: (imageKey: string) => void;
   formatFileSize: (bytes: number) => string;
   deletingImages: Set<string>;
+  selectionMode: boolean;
+  selectedKeys: Set<string>;
+  onToggleSelect: (key: string) => void;
 }) {
   // Filter out images being deleted for optimistic UI
   const filteredImages = images.filter(img => !deletingImages.has(img.key));
@@ -1272,15 +1395,25 @@ function ImageSectionsGrid({
         <div className="mb-2 text-sm font-semibold text-slate-700">{title}</div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {items.map(image => (
-            <ServerImageCard
-              key={image.id}
-              image={image}
-              onAnalyze={() => onAnalyze(image)}
-              onEnlarge={() => onEnlarge(image)}
-              onDownload={() => onDownload(image)}
-              onDelete={onDelete}
-              formatFileSize={formatFileSize}
-            />
+            <div key={image.id} className="relative">
+              {selectionMode && (
+                <input
+                  type="checkbox"
+                  aria-label="Select image"
+                  className="absolute left-2 top-2 z-10 h-4 w-4"
+                  checked={selectedKeys.has(image.key)}
+                  onChange={() => onToggleSelect(image.key)}
+                />
+              )}
+              <ServerImageCard
+                image={image}
+                onAnalyze={() => onAnalyze(image)}
+                onEnlarge={() => onEnlarge(image)}
+                onDownload={() => onDownload(image)}
+                onDelete={onDelete}
+                formatFileSize={formatFileSize}
+              />
+            </div>
           ))}
         </div>
       </div>
