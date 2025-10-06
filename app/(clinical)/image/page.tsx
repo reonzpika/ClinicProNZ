@@ -737,6 +737,7 @@ Cancel
                       </div>
                     )
                   : (
+                      <>
                       <div className="mb-3 flex items-center justify-between">
                         <div className="text-xs text-slate-600">
                           {selectionMode ? `${selectedKeys.size} selected` : `${serverImages.length} images`}
@@ -783,6 +784,7 @@ Cancel
                         selectedKeys={selectedKeys}
                         onToggleSelect={toggleSelectKey}
                       />
+                      </>
                     )}
             </CardContent>
           </Card>
