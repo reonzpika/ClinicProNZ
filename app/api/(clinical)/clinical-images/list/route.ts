@@ -5,7 +5,7 @@ import { and, desc, eq, inArray } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { clinicalImageAnalyses } from '@/db/schema';
+import { clinicalImageAnalyses, clinicalImageMetadata } from '@/db/schema';
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 // Initialize S3 client for NZ region (use explicit credentials for consistent performance)
@@ -149,9 +149,27 @@ export async function GET(req: NextRequest) {
     const imageKeys = allImages.map(img => img.key);
     const analysisMap = await getImageAnalyses(userId, imageKeys);
 
+    // Fetch metadata (display names) for returned keys
+    let metadataMap: Record<string, { displayName?: string | null; patientName?: string | null; identifier?: string | null }> = {};
+    if (imageKeys.length > 0) {
+      try {
+        const db = getDb();
+        const rows = await db
+          .select({ imageKey: clinicalImageMetadata.imageKey, displayName: clinicalImageMetadata.displayName, patientName: clinicalImageMetadata.patientName, identifier: clinicalImageMetadata.identifier })
+          .from(clinicalImageMetadata)
+          .where(inArray(clinicalImageMetadata.imageKey, imageKeys));
+        metadataMap = Object.fromEntries(rows.map(r => [r.imageKey, { displayName: r.displayName, patientName: r.patientName, identifier: r.identifier }]));
+      } catch (e) {
+        console.warn('Failed to fetch clinical_image_metadata:', e);
+      }
+    }
+
     // No mass presign here; clients fetch per-tile via /api/uploads/download
     const imagesWithData = allImages.map(image => ({
       ...image,
+      displayName: metadataMap[image.key]?.displayName || undefined,
+      patientName: metadataMap[image.key]?.patientName || undefined,
+      identifier: metadataMap[image.key]?.identifier || undefined,
       analysis: analysisMap[image.key] || undefined,
     }));
 

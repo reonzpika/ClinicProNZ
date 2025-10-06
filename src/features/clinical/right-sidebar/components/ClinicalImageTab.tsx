@@ -8,7 +8,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
-import { imageQueryKeys, useDeleteImage, useImageUrl, useServerImages } from '@/src/hooks/useImageQueries';
+import { imageQueryKeys, useDeleteImage, useImageUrl, useRenameImage, useServerImages } from '@/src/hooks/useImageQueries';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
@@ -31,6 +31,16 @@ function SessionImageTile({
   onDelete: () => void;
 }) {
   const { data: imageUrl } = useImageUrl(image.key);
+  const renameImage = useRenameImage();
+  const baseName = (image.displayName || image.filename || '').replace(/\.[^.]+$/, '');
+  const [isRenaming, setIsRenaming] = React.useState(false);
+  const [nameValue, setNameValue] = React.useState(image.displayName || baseName);
+  const commitRename = () => {
+    const cleaned = nameValue.trim();
+    if (!cleaned) { setIsRenaming(false); return; }
+    renameImage.mutate({ imageKey: image.key, displayName: cleaned });
+    setIsRenaming(false);
+  };
   return (
     <div className="flex flex-col">
       <div className="aspect-square overflow-hidden rounded-lg bg-slate-100">
@@ -41,6 +51,26 @@ function SessionImageTile({
           : (
             <div className="flex size-full items-center justify-center text-xs text-slate-400">No preview</div>
           )}
+      </div>
+      <div className="mt-2 flex items-center gap-2">
+        {isRenaming ? (
+          <input
+            type="text"
+            value={nameValue}
+            onChange={(e) => setNameValue(e.target.value)}
+            onBlur={commitRename}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commitRename();
+              if (e.key === 'Escape') setIsRenaming(false);
+            }}
+            className="w-full rounded-md border px-2 py-1 text-xs"
+          />
+        ) : (
+          <>
+            <div className="min-w-0 flex-1 truncate text-xs text-slate-700">{image.displayName || image.filename}</div>
+            <Button type="button" size="sm" variant="outline" className="h-6 px-2 text-[10px]" onClick={() => setIsRenaming(true)}>Rename</Button>
+          </>
+        )}
       </div>
       <div className="mt-2 flex items-center justify-center gap-2">
         <Button
@@ -104,6 +134,9 @@ export const ClinicalImageTab: React.FC = () => {
   const [enlargeImage, setEnlargeImage] = useState<any | null>(null);
   const [showQR, setShowQR] = useState(false);
   const [deletingImages, setDeletingImages] = useState<Set<string>>(new Set());
+  // Selection state for bulk download
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
 
   // Server images (user scope) for session grouping
   const { userId } = useAuth();
@@ -188,6 +221,15 @@ export const ClinicalImageTab: React.FC = () => {
         throw new Error(`Failed to upload image (${uploadResponse.status}: ${uploadResponse.statusText})`);
       }
 
+      // Default naming: set displayName via metadata so /image shows correct name immediately
+      try {
+        await fetch('/api/clinical-images/metadata/batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: [{ imageKey: key, patientName: (currentSession?.patientName as string) || undefined }] }),
+        });
+      } catch {}
+
       // Create image metadata
       const newImage: ClinicalImage = {
         id: Math.random().toString(36).substr(2, 9),
@@ -200,7 +242,7 @@ export const ClinicalImageTab: React.FC = () => {
       // Add to context and save
       addClinicalImage(newImage);
       await saveClinicalImagesToCurrentSession([...clinicalImages, newImage]);
-      
+
       // Invalidate React Query cache to refresh server images
       queryClient.invalidateQueries({
         queryKey: imageQueryKeys.lists(),
@@ -274,10 +316,83 @@ export const ClinicalImageTab: React.FC = () => {
     }
   }, []);
 
+  // Bulk download helpers
+  const getDownloadUrl = useCallback(async (key: string): Promise<string> => {
+    const res = await fetch(`/api/uploads/download?key=${encodeURIComponent(key)}`);
+    if (!res.ok) throw new Error('Failed to get download URL');
+    const data = await res.json();
+    return data.downloadUrl as string;
+  }, []);
+
+  const bulkDownload = useCallback(async (images: Array<{ key: string; filename: string; displayName?: string }>) => {
+    if (!images || images.length === 0) return;
+    // Fetch URLs with concurrency 10 (batching)
+    const results: Array<{ url: string; name: string } | null> = new Array(images.length).fill(null);
+    for (let i = 0; i < images.length; i += 10) {
+      const slice = images.slice(i, i + 10);
+      const urls = await Promise.all(slice.map(async (img) => {
+        const url = await getDownloadUrl(img.key);
+        const baseName = (img.displayName || img.filename || '').replace(/\.[^.]+$/, '');
+        const ext = img.filename && img.filename.includes('.') ? `.${img.filename.split('.').pop()}` : '';
+        const name = `${baseName}${ext}`.trim();
+        return { url, name };
+      }));
+      for (let j = 0; j < urls.length; j++) {
+        results[i + j] = urls[j] ?? null;
+      }
+    }
+    // Trigger downloads sequentially using blob URLs to force save
+    for (let i = 0; i < results.length; i++) {
+      const item = results[i];
+      if (!item) continue;
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const resp = await fetch(item.url);
+        if (!resp.ok) continue;
+        // eslint-disable-next-line no-await-in-loop
+        const blob = await resp.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = item.name;
+        a.rel = 'noopener noreferrer';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+      } catch {}
+      // eslint-disable-next-line no-await-in-loop
+      await new Promise(resolve => setTimeout(resolve, 150));
+    }
+  }, [getDownloadUrl]);
+
+  const toggleSelectionMode = useCallback(() => {
+    setSelectionMode(prev => {
+      const next = !prev;
+      if (!next) setSelectedKeys(new Set());
+      return next;
+    });
+  }, []);
+
+  const toggleSelectKey = useCallback((key: string) => {
+    setSelectedKeys(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
+
+  const selectAllVisible = useCallback(() => {
+    setSelectedKeys(new Set(sessionServerImages.map((img: any) => img.key)));
+  }, [sessionServerImages]);
+
+  const clearSelection = useCallback(() => setSelectedKeys(new Set()), []);
+
   const handleDeleteSessionImage = useCallback(async (imageKey: string) => {
     // Optimistic UI: immediately hide the image
     setDeletingImages(prev => new Set(prev).add(imageKey));
-    
+
     try {
       // Delete in background
       await deleteImageMutation.mutateAsync(imageKey);
@@ -286,7 +401,7 @@ export const ClinicalImageTab: React.FC = () => {
       console.error('Delete error:', err);
       setError(err instanceof Error ? err.message : 'Failed to delete image');
       // On error, restore the image
-      setDeletingImages(prev => {
+      setDeletingImages((prev) => {
         const updated = new Set(prev);
         updated.delete(imageKey);
         return updated;
@@ -517,7 +632,32 @@ export const ClinicalImageTab: React.FC = () => {
         <div className="border-l-2 border-blue-200 pl-3">
           <div className="mb-3 flex items-center justify-between">
             <h4 className="text-sm font-medium text-blue-600">Session Images</h4>
-            {isLoadingServerImages && <Loader2 size={12} className="animate-spin text-blue-500" />}
+            <div className="flex items-center gap-2">
+              {selectionMode && (
+                <span className="text-xs text-slate-600">{selectedKeys.size} selected</span>
+              )}
+              <Button type="button" size="sm" variant="outline" onClick={toggleSelectionMode}>
+                {selectionMode ? 'Exit selection' : 'Select'}
+              </Button>
+              {selectionMode && (
+                <>
+                  <Button type="button" size="sm" variant="outline" onClick={selectAllVisible}>Select all</Button>
+                  <Button type="button" size="sm" variant="outline" onClick={clearSelection}>Clear</Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => {
+                      const items = sessionServerImages.filter((img: any) => selectedKeys.has(img.key));
+                      bulkDownload(items as any);
+                    }}
+                    disabled={selectedKeys.size === 0}
+                  >
+                    Download selected
+                  </Button>
+                </>
+              )}
+              {isLoadingServerImages && <Loader2 size={12} className="animate-spin text-blue-500" />}
+            </div>
           </div>
 
           {isLoadingServerImages
@@ -540,15 +680,25 @@ export const ClinicalImageTab: React.FC = () => {
                   {sessionServerImages.map((image: any) => {
                     const isAnalyzing = analyzingImages.has(image.id);
                     return (
-                      <SessionImageTile
-                        key={image.id}
-                        image={image}
-                        isAnalyzing={isAnalyzing}
-                        onAnalyze={() => handleAnalyzeImage(image as any)}
-                        onEnlarge={() => setEnlargeImage(image)}
-                        onDownload={() => handleDownloadImage(image as any)}
-                        onDelete={() => handleDeleteSessionImage(image.key)}
-                      />
+                      <div key={image.id} className="relative">
+                        {selectionMode && (
+                          <input
+                            type="checkbox"
+                            aria-label="Select image"
+                            className="absolute left-2 top-2 z-10 h-4 w-4"
+                            checked={selectedKeys.has(image.key)}
+                            onChange={() => toggleSelectKey(image.key)}
+                          />
+                        )}
+                        <SessionImageTile
+                          image={image}
+                          isAnalyzing={isAnalyzing}
+                          onAnalyze={() => handleAnalyzeImage(image as any)}
+                          onEnlarge={() => setEnlargeImage(image)}
+                          onDownload={() => handleDownloadImage(image as any)}
+                          onDelete={() => handleDeleteSessionImage(image.key)}
+                        />
+                      </div>
                     );
                   })}
                 </div>
@@ -580,7 +730,7 @@ export const ClinicalImageTab: React.FC = () => {
             <QrCode className="size-4" />
           </Button>
         </div>
-        
+
         {/* QR Code for Mobile Upload */}
         {showQR && (
           <div className="mt-4 border-t pt-4">
@@ -599,7 +749,7 @@ export const ClinicalImageTab: React.FC = () => {
             </div>
           </div>
         )}
-        
+
         <p className="mt-2 text-xs text-slate-500">
           Images are automatically resized and securely stored. Select multiple files to upload at once.
         </p>
@@ -651,19 +801,23 @@ function EnlargeImageModal({ image, onClose }: { image: any; onClose: () => void
       </Button>
 
       {/* Image Container */}
-      <div className="max-h-full max-w-full">
-        {isLoadingUrl ? (
+      <div className="max-h-full max-w-full" role="img" aria-label="Enlarged image">
+        {isLoadingUrl
+? (
           <div className="flex items-center justify-center p-8">
             <Loader2 className="size-12 animate-spin text-white" />
           </div>
-        ) : imageUrl ? (
+        )
+: imageUrl
+? (
           <img
             src={imageUrl}
             alt={image.filename || 'Clinical image'}
             className="max-h-[90vh] max-w-[90vw] object-contain shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           />
-        ) : (
+        )
+: (
           <div className="flex flex-col items-center justify-center p-8 text-white">
             <p>Failed to load image</p>
           </div>

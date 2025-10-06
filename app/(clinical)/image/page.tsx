@@ -21,7 +21,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 // Removed in-page WebRTC camera in favour of native camera capture
-import { imageQueryKeys, useAnalyzeImage, useDeleteImage, useImageUrl, useSaveAnalysis, useServerImages, useUploadImages } from '@/src/hooks/useImageQueries';
+import { imageQueryKeys, useAnalyzeImage, useDeleteImage, useImageUrl, useRenameImage, useSaveAnalysis, useServerImages, useUploadImages } from '@/src/hooks/useImageQueries';
 import { Container } from '@/src/shared/components/layout/Container';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
@@ -76,10 +76,100 @@ export default function ClinicalImagePage() {
   // Optimistic delete state
   const [deletingImages, setDeletingImages] = useState<Set<string>>(new Set());
 
+  // Selection state for bulk actions
+  const [selectionMode, setSelectionMode] = useState<boolean>(false);
+  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
+
+  const toggleSelectionMode = useCallback(() => {
+    setSelectionMode(prev => {
+      const next = !prev;
+      if (!next) {
+        setSelectedKeys(new Set());
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleSelectKey = useCallback((key: string) => {
+    setSelectedKeys(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => setSelectedKeys(new Set()), []);
+
+  const selectAllVisible = useCallback((keys: string[]) => {
+    setSelectedKeys(new Set(keys));
+  }, []);
+
+  const getDownloadUrl = useCallback(async (imageKey: string): Promise<string> => {
+    const res = await fetch(`/api/uploads/download?key=${encodeURIComponent(imageKey)}`, {
+      headers: createAuthHeaders(userId, userTier),
+    });
+    if (!res.ok) {
+      throw new Error('Failed to get download URL');
+    }
+    const data = await res.json();
+    return data.downloadUrl as string;
+  }, [userId, userTier]);
+
+  const bulkDownload = useCallback(async (images: ServerImage[]) => {
+    if (!Array.isArray(images) || images.length === 0) {
+      return;
+    }
+    // Step 1: fetch URLs with concurrency limit 10
+    const urls: Array<{ url: string; name: string } | null> = new Array(images.length).fill(null);
+    for (let i = 0; i < images.length; i += 10) {
+      const slice = images.slice(i, i + 10);
+      const results = await Promise.all(slice.map(async (img) => {
+        const url = await getDownloadUrl(img.key);
+        const baseName = (img.displayName || img.filename || '').replace(/\.[^.]+$/, '');
+        const ext = img.filename && img.filename.includes('.') ? `.${img.filename.split('.').pop()}` : '';
+        const name = `${baseName}${ext}`.trim();
+        return { url, name };
+      }));
+      for (let j = 0; j < results.length; j++) {
+        urls[i + j] = results[j] || null;
+      }
+    }
+
+    // Step 2: fetch blobs and trigger downloads sequentially to avoid popup blockers
+    for (let i = 0; i < urls.length; i++) {
+      const item = urls[i];
+      if (!item) continue;
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const resp = await fetch(item.url);
+        if (!resp.ok) continue;
+        // eslint-disable-next-line no-await-in-loop
+        const blob = await resp.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = item.name;
+        a.rel = 'noopener noreferrer';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+      } catch {}
+      // Small delay between downloads
+      // eslint-disable-next-line no-await-in-loop
+      await new Promise(resolve => setTimeout(resolve, 150));
+    }
+  }, [getDownloadUrl]);
+
   // Mobile native capture multi-step state
   const [mobileStep, setMobileStep] = useState<'collect' | 'review'>('collect');
-  type QueuedItem = { id: string; file: File; previewUrl: string };
+  type QueuedItem = { id: string; file: File; previewUrl: string; identifier?: string };
   const [queuedItems, setQueuedItems] = useState<QueuedItem[]>([]);
+  const [patientNameInput, setPatientNameInput] = useState('');
 
   // Maintain preview URLs for queued files
   // Cleanup previews on unmount
@@ -180,7 +270,7 @@ export default function ClinicalImagePage() {
   const handleDeleteImage = async (imageKey: string) => {
     // Optimistic UI: immediately hide the image
     setDeletingImages(prev => new Set(prev).add(imageKey));
-    
+
     try {
       // Delete in background
       await deleteImage.mutateAsync(imageKey);
@@ -189,7 +279,7 @@ export default function ClinicalImagePage() {
       console.error('Delete error:', error);
       setError(error instanceof Error ? error.message : 'Failed to delete image');
       // On error, restore the image
-      setDeletingImages(prev => {
+      setDeletingImages((prev) => {
         const updated = new Set(prev);
         updated.delete(imageKey);
         return updated;
@@ -231,7 +321,9 @@ export default function ClinicalImagePage() {
 
       // Create blob URL and download link
       const blobUrl = URL.createObjectURL(blob);
-      const filename = `clinical-image-${image.filename}`;
+      const baseName = image.displayName || image.filename.replace(/\.[^.]+$/, '');
+      const ext = image.filename.includes('.') ? `.${image.filename.split('.').pop()}` : '';
+      const filename = `${baseName}${ext}`;
 
       // Create a temporary anchor element to trigger download
       const link = document.createElement('a');
@@ -371,6 +463,18 @@ export default function ClinicalImagePage() {
               </Button>
             )}
 
+            <div className="mt-2">
+              <label htmlFor="image-mobile-collect-patient-name" className="mb-1 block text-xs font-medium text-slate-600">Patient name (optional)</label>
+              <input
+                id="image-mobile-collect-patient-name"
+                type="text"
+                value={patientNameInput}
+                onChange={e => setPatientNameInput(e.target.value)}
+                placeholder="e.g. Jane Doe"
+                className="w-full rounded-md border p-2 text-sm"
+              />
+            </div>
+
             {queuedItems.length > 0 && (
               <Card>
                 <CardContent className="p-4">
@@ -397,18 +501,46 @@ selected
 
         {mobileStep === 'review' && (
           <div className="flex-1 space-y-4">
-            <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label htmlFor="image-mobile-review-patient-name" className="mb-1 block text-xs font-medium text-slate-600">Patient name (optional)</label>
+              <input
+                id="image-mobile-review-patient-name"
+                type="text"
+                value={patientNameInput}
+                onChange={e => setPatientNameInput(e.target.value)}
+                placeholder="e.g. Jane Doe"
+                className="w-full rounded-md border p-2 text-sm"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
               {queuedItems.map(item => (
-                <div key={item.id} className="relative aspect-square overflow-hidden rounded-lg border">
-                  {item.previewUrl
-                    ? <img src={item.previewUrl} alt={item.file.name} className="size-full object-cover" />
-                    : <div className="flex size-full items-center justify-center text-xs text-slate-500">Loading...</div>}
+                <div key={item.id} className="relative overflow-hidden rounded-lg border">
+                  <div className="aspect-square w-full">
+                    {item.previewUrl
+                      ? <img src={item.previewUrl} alt={item.file.name} className="size-full object-cover" />
+                      : <div className="flex size-full items-center justify-center text-xs text-slate-500">Loading...</div>}
+                  </div>
+                  <div className="p-2">
+                    <label htmlFor={`image-identifier-${item.id}`} className="sr-only">Identifier</label>
+                    <input
+                      id={`image-identifier-${item.id}`}
+                      type="text"
+                      value={item.identifier || ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setQueuedItems(prev => prev.map(it => it.id === item.id ? { ...it, identifier: val } : it));
+                      }}
+                      placeholder="Identifier (e.g., left forearm)"
+                      className="w-full rounded-md border px-2 py-1 text-xs"
+                    />
+                  </div>
                   <button
                     onClick={() => {
                       URL.revokeObjectURL(item.previewUrl);
                       setQueuedItems(prev => prev.filter(it => it.id !== item.id));
                     }}
                     className="absolute right-2 top-2 rounded bg-white/80 px-2 py-1 text-xs text-red-600"
+                    type="button"
                   >
                     Delete
                   </button>
@@ -440,7 +572,7 @@ Cancel
                   const filesToUpload = queuedItems.map(it => it.file);
                   setUploadingFileCount(filesToUpload.length);
                   try {
-                    await uploadImages.mutateAsync(filesToUpload);
+                    await uploadImages.mutateAsync({ files: filesToUpload, names: queuedItems.map(it => ({ patientName: patientNameInput || undefined, identifier: it.identifier || undefined })) });
                     // Clear queue and return
                     queuedItems.forEach(it => it.previewUrl && URL.revokeObjectURL(it.previewUrl));
                     setQueuedItems([]);
@@ -614,6 +746,42 @@ Cancel
                       </div>
                     )
                   : (
+                      <>
+                      <div className="mb-3 flex items-center justify-between">
+                        <div className="text-xs text-slate-600">
+                          {selectionMode ? `${selectedKeys.size} selected` : `${serverImages.length} images`}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button type="button" size="sm" variant="outline" onClick={toggleSelectionMode}>
+                            {selectionMode ? 'Exit selection' : 'Select'}
+                          </Button>
+                          {selectionMode && (
+                            <>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => selectAllVisible(serverImages.map(img => img.key))}
+                              >
+                                Select all
+                              </Button>
+                              <Button type="button" size="sm" variant="outline" onClick={clearSelection}>Clear</Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                onClick={() => {
+                                  const imagesToDownload = serverImages.filter(img => selectedKeys.has(img.key));
+                                  bulkDownload(imagesToDownload);
+                                }}
+                                disabled={selectedKeys.size === 0}
+                              >
+                                Download selected
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      {(
                       <ImageSectionsGrid
                         images={serverImages}
                         onAnalyze={handleOpenAnalysis}
@@ -622,7 +790,11 @@ Cancel
                         onDelete={handleDeleteImage}
                         formatFileSize={formatFileSize}
                         deletingImages={deletingImages}
-                      />
+                        selectionMode={selectionMode}
+                        selectedKeys={selectedKeys}
+                        onToggleSelect={toggleSelectKey}
+                      />)}
+                      </>
                     )}
             </CardContent>
           </Card>
@@ -783,9 +955,7 @@ function ServerImageCard({
 
       <CardContent className="p-2">
         <div className="mb-1">
-          <h4 className="truncate text-xs font-medium text-slate-900">
-            {image.filename}
-          </h4>
+          <InlineEditableName image={image} />
           <div className="flex items-center justify-between text-xs text-slate-500">
             <span className="capitalize">{image.source}</span>
             <span>{formatFileSize(image.size)}</span>
@@ -793,6 +963,69 @@ function ServerImageCard({
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+// Inline editable filename component for desktop cards
+function InlineEditableName({ image }: { image: ServerImage }) {
+  const renameImage = useRenameImage();
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [value, setValue] = React.useState(image.displayName || image.filename.replace(/\.[^.]+$/, ''));
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (isEditing) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [isEditing]);
+
+  const commit = () => {
+    const cleaned = value.replace(/\s+/g, ' ').trim();
+    if (cleaned && cleaned !== (image.displayName || image.filename.replace(/\.[^.]+$/, ''))) {
+      renameImage.mutate({ imageKey: image.key, displayName: cleaned });
+    }
+    setIsEditing(false);
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      {isEditing
+? (
+        <input
+          ref={inputRef}
+          type="text"
+          value={value}
+          onChange={e => setValue(e.target.value.slice(0, 80))}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+ commit();
+}
+            if (e.key === 'Escape') {
+ setIsEditing(false);
+}
+          }}
+          className="w-full rounded border px-2 py-1 text-xs"
+        />
+      )
+: (
+        <h4 className="truncate text-xs font-medium text-slate-900">{image.displayName || image.filename}</h4>
+      )}
+      {!isEditing && (
+        <button
+          type="button"
+          className="rounded border px-1 text-[10px] text-slate-600 hover:bg-slate-50"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsEditing(true);
+          }}
+          title="Rename"
+        >
+          Rename
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -907,7 +1140,7 @@ function AnalysisModal({
               </div>
             </div>
             <div className="space-y-1">
-              <p className="text-sm font-medium text-slate-900">{modal.image?.filename}</p>
+              <p className="text-sm font-medium text-slate-900">{modal.image?.displayName || modal.image?.filename}</p>
               <div className="flex items-center gap-2 text-xs text-slate-600">
                 <span className="capitalize">
                 {modal.image?.source}
@@ -1090,7 +1323,7 @@ function ImageEnlargeModal({
 ? (
           <img
             src={imageUrl}
-            alt={image.filename}
+            alt={image.displayName || image.filename}
             className="max-h-[90vh] max-w-[90vw] object-contain shadow-2xl"
           />
         )
@@ -1104,7 +1337,7 @@ function ImageEnlargeModal({
 
       {/* Image Info */}
       <div className="fixed bottom-4 left-4 rounded-lg bg-black/60 px-3 py-2 text-white">
-        <p className="text-sm font-medium">{image.filename}</p>
+        <p className="text-sm font-medium">{image.displayName || image.filename}</p>
         <p className="text-xs opacity-75">
           {new Date(image.uploadedAt).toLocaleDateString()}
 {' '}
@@ -1135,6 +1368,9 @@ function ImageSectionsGrid({
   onDelete,
   formatFileSize,
   deletingImages,
+  selectionMode,
+  selectedKeys,
+  onToggleSelect,
 }: {
   images: ServerImage[];
   onAnalyze: (img: ServerImage) => void;
@@ -1143,10 +1379,13 @@ function ImageSectionsGrid({
   onDelete: (imageKey: string) => void;
   formatFileSize: (bytes: number) => string;
   deletingImages: Set<string>;
+  selectionMode: boolean;
+  selectedKeys: Set<string>;
+  onToggleSelect: (key: string) => void;
 }) {
   // Filter out images being deleted for optimistic UI
   const filteredImages = images.filter(img => !deletingImages.has(img.key));
-  
+
   // Partition images
   const clinical = filteredImages.filter(i => i.source === 'clinical');
   const noSession = clinical.filter(i => !i.sessionId);
@@ -1168,15 +1407,25 @@ function ImageSectionsGrid({
         <div className="mb-2 text-sm font-semibold text-slate-700">{title}</div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {items.map(image => (
-            <ServerImageCard
-              key={image.id}
-              image={image}
-              onAnalyze={() => onAnalyze(image)}
-              onEnlarge={() => onEnlarge(image)}
-              onDownload={() => onDownload(image)}
-              onDelete={onDelete}
-              formatFileSize={formatFileSize}
-            />
+            <div key={image.id} className="relative">
+              {selectionMode && (
+                <input
+                  type="checkbox"
+                  aria-label="Select image"
+                  className="absolute left-2 top-2 z-10 h-4 w-4"
+                  checked={selectedKeys.has(image.key)}
+                  onChange={() => onToggleSelect(image.key)}
+                />
+              )}
+              <ServerImageCard
+                image={image}
+                onAnalyze={() => onAnalyze(image)}
+                onEnlarge={() => onEnlarge(image)}
+                onDownload={() => onDownload(image)}
+                onDelete={onDelete}
+                formatFileSize={formatFileSize}
+              />
+            </div>
           ))}
         </div>
       </div>

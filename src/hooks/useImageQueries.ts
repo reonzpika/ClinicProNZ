@@ -62,7 +62,7 @@ export function useUploadImage() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (file: File): Promise<void> => {
+    mutationFn: async (file: File): Promise<{ key: string }> => {
       if (!userId) {
         throw new Error('User not authenticated');
       }
@@ -86,7 +86,7 @@ export function useUploadImage() {
         throw new Error(errorData.error || 'Failed to get upload URL');
       }
 
-      const { uploadUrl } = await presignResponse.json();
+      const { uploadUrl, key } = await presignResponse.json();
 
       // Upload to S3
       const uploadResponse = await fetch(uploadUrl, {
@@ -107,6 +107,8 @@ export function useUploadImage() {
         });
         throw new Error(`Failed to upload file: ${uploadResponse.status} ${uploadResponse.statusText}`);
       }
+
+      return { key };
     },
     onSuccess: () => {
       // Invalidate and refetch images list
@@ -120,17 +122,97 @@ export function useUploadImage() {
 // Batch Upload Images Mutation
 export function useUploadImages() {
   const uploadImage = useUploadImage();
+  const { userId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
+  const userTier = getUserTier();
+  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: { files: File[] } | File[]): Promise<void> => {
-      const files = Array.isArray(input) ? input : input.files;
+    mutationFn: async (input: { files: File[]; names?: Array<{ patientName?: string; identifier?: string; displayName?: string }> } | File[]): Promise<{ keys: string[] }> => {
+      const isArrayInput = Array.isArray(input);
+      const files = isArrayInput ? (input as File[]) : (input as { files: File[] }).files;
+      const names = (!isArrayInput && (input as any).names)
+        ? ((input as any).names as Array<{ patientName?: string; identifier?: string; displayName?: string }>)
+        : [];
+
+      const results: { key: string }[] = [];
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         if (!file) {
           throw new Error(`File at index ${i} is undefined`);
         }
-        await uploadImage.mutateAsync(file);
+        const res = await uploadImage.mutateAsync(file);
+        results.push(res);
       }
+
+      // Best-effort metadata batch upsert if provided
+      try {
+        if (userId && results.length > 0) {
+          const today = new Date();
+          const y = today.getFullYear();
+          const m = String(today.getMonth() + 1).padStart(2, '0');
+          const d = String(today.getDate()).padStart(2, '0');
+          const dateStr = `${y}-${m}-${d}`;
+
+          const items = results.map((r, idx) => {
+            const entry = names[idx] || {};
+            const parts: string[] = [];
+            if (entry.patientName && entry.patientName.trim()) parts.push(entry.patientName.trim());
+            if (entry.identifier && entry.identifier.trim()) parts.push(entry.identifier.trim());
+            let displayName: string | undefined;
+            if (parts.length > 0) {
+              // Provide a client-side displayName with date + time (HH:mm)
+              const now = new Date();
+              const hh = String(now.getHours()).padStart(2, '0');
+              const mm = String(now.getMinutes()).padStart(2, '0');
+              displayName = `${parts.join(' ')} ${dateStr} ${hh}:${mm}`.trim();
+            }
+            return {
+              imageKey: r.key,
+              ...(entry.patientName ? { patientName: entry.patientName } : {}),
+              ...(entry.identifier ? { identifier: entry.identifier } : {}),
+              ...(displayName ? { displayName } : {}),
+            };
+          });
+          await fetch('/api/clinical-images/metadata/batch', {
+            method: 'POST',
+            headers: createAuthHeaders(userId, userTier),
+            body: JSON.stringify({ items }),
+          });
+          // Ensure UI reflects updated display names
+          queryClient.invalidateQueries({ queryKey: imageQueryKeys.lists() });
+        }
+      } catch {}
+
+      return { keys: results.map(r => r.key) };
+    },
+  });
+}
+
+// Rename image mutation
+export function useRenameImage() {
+  const { userId } = useAuth();
+  const { getUserTier } = useClerkMetadata();
+  const userTier = getUserTier();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ imageKey, displayName }: { imageKey: string; displayName: string }): Promise<void> => {
+      if (!userId) {
+        throw new Error('User not authenticated');
+      }
+      const res = await fetch('/api/clinical-images/metadata', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', ...createAuthHeaders(userId, userTier) },
+        body: JSON.stringify({ imageKey, displayName }),
+      });
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        throw new Error(e.error || 'Failed to rename image');
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: imageQueryKeys.lists() });
     },
   });
 }

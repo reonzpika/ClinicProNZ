@@ -6,16 +6,16 @@ import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react
 
 import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTranscription';
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
+import { ConsentModal } from '@/src/features/clinical/session-management/components/ConsentModal';
 import { useUploadImages } from '@/src/hooks/useImageQueries';
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
-import { ConsentModal } from '@/src/features/clinical/session-management/components/ConsentModal';
 import { createAuthHeadersForFormData, fetchWithRetry } from '@/src/shared/utils';
 import { isFeatureEnabled } from '@/src/shared/utils/launch-config';
 
 // Types for native mobile capture queue
-type QueuedItem = { id: string; file: File; previewUrl: string };
+  type QueuedItem = { id: string; file: File; previewUrl: string; identifier?: string };
 
 // Custom hook for screen wake lock
 function useWakeLock() {
@@ -38,9 +38,7 @@ function useWakeLock() {
       lock.addEventListener('release', () => {
         setWakeLock(null);
       });
-    } catch (error) {
-      console.error('Failed to request wake lock:', error);
-    }
+    } catch (_e) {}
   }, [isSupported, wakeLock]);
 
   const releaseWakeLock = useCallback(() => {
@@ -74,6 +72,7 @@ function MobilePageContent() {
   const cameraFileInputRef = useRef<HTMLInputElement>(null);
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
   const uploadImages = useUploadImages();
+  const [patientNameInput, setPatientNameInput] = useState('');
   const isUploading = uploadImages.isPending;
   // Wake lock functionality
   const { isSupported: wakeLockSupported, requestWakeLock, releaseWakeLock } = useWakeLock();
@@ -213,32 +212,17 @@ function MobilePageContent() {
           return;
         }
 
-        const t0 = Date.now();
         const response = await fetchWithRetry('/api/deepgram/transcribe?persist=true', {
           method: 'POST',
           headers: { ...createAuthHeadersForFormData(userId), 'X-Debug-Request-Id': reqId },
           body: formData,
         }, { maxRetries: 2 });
-        const tMs = Date.now() - t0;
+        // timing omitted
         if (!response.ok) {
-          let bodyText = '';
-          try {
- bodyText = await response.text();
-} catch {}
-          try {
-            console.warn('[Mobile] persist transcription non-OK', { reqId, status: response.status, tMs, bodyText });
-} catch {}
           setAuthError(`Transcription failed: ${response.statusText}`);
-        } else {
-          try {
-            console.debug('[Mobile] persist transcription OK', { reqId, status: response.status, tMs, blobSize: audioBlob.size });
-} catch {}
         }
-      } catch (error) {
-        try {
-          console.error('[Mobile] persist transcription error', error);
-} catch {}
-        setAuthError(`Recording error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      } catch (_e) {
+        setAuthError('Recording error');
       }
     },
   });
@@ -423,6 +407,17 @@ function MobilePageContent() {
                   Upload from gallery
                 </Button>
               )}
+              <div className="mt-2">
+                <label htmlFor="mobile-collect-patient-name" className="mb-1 block text-xs text-gray-600">Patient name (optional)</label>
+                <input
+                  id="mobile-collect-patient-name"
+                  type="text"
+                  value={patientNameInput}
+                  onChange={e => setPatientNameInput(e.target.value)}
+                  placeholder="e.g. Jane Doe"
+                  className="w-full rounded-md border p-2 text-sm"
+                />
+              </div>
               {queuedItems.length > 0 && (
                 <Card>
                   <CardContent className="p-4">
@@ -443,12 +438,37 @@ selected
 
           {mobileStep === 'review' && (
             <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label htmlFor="mobile-review-patient-name" className="mb-1 block text-xs text-gray-600">Patient name (optional)</label>
+                <input
+                  id="mobile-review-patient-name"
+                  type="text"
+                  value={patientNameInput}
+                  onChange={e => setPatientNameInput(e.target.value)}
+                  placeholder="e.g. Jane Doe"
+                  className="w-full rounded-md border p-2 text-sm"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
                 {queuedItems.map(item => (
-                  <div key={item.id} className="relative aspect-square overflow-hidden rounded-lg border">
-                    {item.previewUrl
-                      ? <img src={item.previewUrl} alt={item.file.name} className="size-full object-cover" />
-                      : <div className="flex size-full items-center justify-center text-xs text-gray-500">Loading...</div>}
+                  <div key={item.id} className="relative overflow-hidden rounded-lg border">
+                    <div className="aspect-square w-full">
+                      {item.previewUrl
+                        ? <img src={item.previewUrl} alt={item.file.name} className="size-full object-cover" />
+                        : <div className="flex size-full items-center justify-center text-xs text-gray-500">Loading...</div>}
+                    </div>
+                    <div className="p-2">
+                      <input
+                        type="text"
+                        value={item.identifier || ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setQueuedItems(prev => prev.map(it => it.id === item.id ? { ...it, identifier: val } : it));
+                        }}
+                        placeholder="Identifier (e.g., left forearm)"
+                        className="w-full rounded-md border px-2 py-1 text-xs"
+                      />
+                    </div>
                     <button
                       onClick={() => {
                         URL.revokeObjectURL(item.previewUrl);
@@ -486,7 +506,10 @@ selected
                   onClick={async () => {
                     const filesToUpload = queuedItems.map(it => it.file);
                     try {
-                      await uploadImages.mutateAsync({ files: filesToUpload });
+                      await uploadImages.mutateAsync({
+                        files: filesToUpload,
+                        names: queuedItems.map(it => ({ patientName: patientNameInput || undefined, identifier: it.identifier || undefined })),
+                      });
                       // Notify desktop to refresh image list
                       try {
  sendImageNotification(undefined, filesToUpload.length, undefined);
@@ -495,8 +518,8 @@ selected
                       queuedItems.forEach(it => it.previewUrl && URL.revokeObjectURL(it.previewUrl));
                       setQueuedItems([]);
                       setMobileStep('collect');
-                    } catch (err) {
-                      console.error('Upload failed:', err);
+                    } catch {
+                      // Swallow upload error for UI; error toast handled elsewhere
                     }
                   }}
                   type="button"
@@ -564,7 +587,9 @@ selected
           onConfirm={() => {
             const id = pendingRequestIdRef.current;
             if (id) {
-              try { sendConsentGranted?.(id, 'mobile'); } catch {}
+              try {
+ sendConsentGranted?.(id, 'mobile');
+} catch {}
             }
             if (consentOpenDelayRef.current) { clearTimeout(consentOpenDelayRef.current); consentOpenDelayRef.current = null; }
             setConsentOpen(false);
@@ -572,7 +597,9 @@ selected
           onCancel={() => {
             const id = pendingRequestIdRef.current;
             if (id) {
-              try { sendConsentDenied?.(id, 'mobile', 'user'); } catch {}
+              try {
+ sendConsentDenied?.(id, 'mobile', 'user');
+} catch {}
             }
             if (consentOpenDelayRef.current) { clearTimeout(consentOpenDelayRef.current); consentOpenDelayRef.current = null; }
             setConsentOpen(false);
