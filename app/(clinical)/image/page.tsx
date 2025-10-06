@@ -772,6 +772,7 @@ Cancel
                           )}
                         </div>
                       </div>
+                      {(
                       <ImageSectionsGrid
                         images={serverImages}
                         onAnalyze={handleOpenAnalysis}
@@ -783,7 +784,7 @@ Cancel
                         selectionMode={selectionMode}
                         selectedKeys={selectedKeys}
                         onToggleSelect={toggleSelectKey}
-                      />
+                      />)}
                       </>
                     )}
             </CardContent>
