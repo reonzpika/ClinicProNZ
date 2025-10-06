@@ -2,8 +2,11 @@ import { auth } from '@clerk/nextjs/server';
 import type { NextRequest } from 'next/server';
 
 // HYBRID STACK NOTE:
-// We use LlamaIndex for RAG orchestration/data prep (semantic chunking already used at ingestion)
-// and Vercel AI SDK for HTTP streaming (DX-friendly SSE and provider adapters).
+// Use LlamaIndex for everything else in the pipeline:
+// - Chunking (semantic, markdown-aware), retrievers, rerankers
+// - Query/chat engines, memory, agents
+// - Provider adapters/integration
+// We only use Vercel AI SDK here for HTTP streaming ergonomics (SSE helpers).
 // If you later move away from Vercel AI SDK, replace streamText/toAIStreamResponse below.
 
 import { streamText } from 'ai';
