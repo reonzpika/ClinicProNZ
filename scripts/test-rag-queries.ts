@@ -3,7 +3,7 @@
 import { searchSimilarDocuments, formatContextForRag } from '../src/lib/rag';
 
 async function runQuery(q: string): Promise<void> {
-  const results = await searchSimilarDocuments(q, 5, 0.65);
+  const results = await searchSimilarDocuments(q, 5, 0.35);
   console.log(`\n=== Query: ${q} ===`);
   for (let i = 0; i < results.length; i++) {
     const r = results[i];
