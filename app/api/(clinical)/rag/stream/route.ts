@@ -66,7 +66,7 @@ ${context}`;
     ).slice(0, 8);
 
     const result = await streamText({
-      model: openai('gpt-4o-mini', { apiKey }),
+      model: openai('gpt-4o-mini'),
       system: systemPrompt,
       messages: [{ role: 'user', content: query }],
       temperature: 0.1,
