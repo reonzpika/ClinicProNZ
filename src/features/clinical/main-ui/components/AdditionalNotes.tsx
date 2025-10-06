@@ -150,6 +150,28 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   const [assessmentStatus, setAssessmentStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [planStatus, setPlanStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
+  // Auto-clear Saved badges to reduce visual noise
+  useEffect(() => {
+    if (problemsStatus !== 'saved') return;
+    const t = setTimeout(() => setProblemsStatus('idle'), 1500);
+    return () => clearTimeout(t);
+  }, [problemsStatus]);
+  useEffect(() => {
+    if (objectiveStatus !== 'saved') return;
+    const t = setTimeout(() => setObjectiveStatus('idle'), 1500);
+    return () => clearTimeout(t);
+  }, [objectiveStatus]);
+  useEffect(() => {
+    if (assessmentStatus !== 'saved') return;
+    const t = setTimeout(() => setAssessmentStatus('idle'), 1500);
+    return () => clearTimeout(t);
+  }, [assessmentStatus]);
+  useEffect(() => {
+    if (planStatus !== 'saved') return;
+    const t = setTimeout(() => setPlanStatus('idle'), 1500);
+    return () => clearTimeout(t);
+  }, [planStatus]);
+
   // Sync expansion state with defaultExpanded prop changes (input mode changes)
   useEffect(() => {
     if (!isMinimized) {
@@ -260,26 +282,30 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
       }
       try {
         switch (section) {
-          case 'problems':
+          case 'problems': {
             setProblemsStatus('saving');
-            await saveProblemsToCurrentSession(problemsText || '');
-            setProblemsStatus('saved');
+            const ok = await saveProblemsToCurrentSession(problemsText || '');
+            setProblemsStatus(ok ? 'saved' : 'idle');
             break;
-          case 'objective':
+          }
+          case 'objective': {
             setObjectiveStatus('saving');
-            await saveObjectiveToCurrentSession(objectiveText || '');
-            setObjectiveStatus('saved');
+            const ok = await saveObjectiveToCurrentSession(objectiveText || '');
+            setObjectiveStatus(ok ? 'saved' : 'idle');
             break;
-          case 'assessment':
+          }
+          case 'assessment': {
             setAssessmentStatus('saving');
-            await saveAssessmentToCurrentSession(assessmentText || '');
-            setAssessmentStatus('saved');
+            const ok = await saveAssessmentToCurrentSession(assessmentText || '');
+            setAssessmentStatus(ok ? 'saved' : 'idle');
             break;
-          case 'plan':
+          }
+          case 'plan': {
             setPlanStatus('saving');
-            await savePlanToCurrentSession(planText || '');
-            setPlanStatus('saved');
+            const ok = await savePlanToCurrentSession(planText || '');
+            setPlanStatus(ok ? 'saved' : 'idle');
             break;
+          }
         }
       } catch {}
     }, debounceMs) as unknown as ReturnType<typeof setTimeout>;
@@ -406,7 +432,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
           <div className="space-y-3" ref={containerRef} role="group" aria-label="Additional notes editor">
             <div className="space-y-3">
               <div>
-                <label htmlFor="additional-notes-minimized-problems" className="mb-1 block text-xs font-medium text-slate-500">Problems</label>
+                <div className="mb-1 flex items-center justify-between">
+                  <label htmlFor="additional-notes-minimized-problems" className="block text-xs font-medium text-slate-500">Problems</label>
+                  {problemsStatus !== 'idle' && (
+                    <span className="text-[10px] text-slate-500">{problemsStatus === 'saving' ? 'Saving…' : 'Saved'}</span>
+                  )}
+                </div>
                 <Textarea
                   id="additional-notes-minimized-problems"
                   value={problemsText}
@@ -421,7 +452,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               <div>
                 <div className="mb-1 flex items-center justify-between">
                   <label htmlFor="additional-notes-minimized-objective" className="block text-xs font-medium text-slate-500">Objective</label>
-                  <ExaminationChecklistButton tabIndex={-1} />
+                  <div className="flex items-center gap-2">
+                    {objectiveStatus !== 'idle' && (
+                      <span className="text-[10px] text-slate-500">{objectiveStatus === 'saving' ? 'Saving…' : 'Saved'}</span>
+                    )}
+                    <ExaminationChecklistButton tabIndex={-1} />
+                  </div>
                 </div>
                 <Textarea
                   id="additional-notes-minimized-objective"
@@ -435,7 +471,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 />
               </div>
               <div>
-                <label htmlFor="additional-notes-minimized-assessment" className="mb-1 block text-xs font-medium text-slate-500">Assessment</label>
+                <div className="mb-1 flex items-center justify-between">
+                  <label htmlFor="additional-notes-minimized-assessment" className="block text-xs font-medium text-slate-500">Assessment</label>
+                  {assessmentStatus !== 'idle' && (
+                    <span className="text-[10px] text-slate-500">{assessmentStatus === 'saving' ? 'Saving…' : 'Saved'}</span>
+                  )}
+                </div>
                 <Textarea
                   id="additional-notes-minimized-assessment"
                   value={assessmentText}
@@ -450,7 +491,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               <div>
                 <div className="mb-1 flex items-center justify-between">
                   <label htmlFor="additional-notes-minimized-plan" className="block text-xs font-medium text-slate-500">Plan</label>
-                  <PlanSafetyNettingButton tabIndex={-1} />
+                  <div className="flex items-center gap-2">
+                    {planStatus !== 'idle' && (
+                      <span className="text-[10px] text-slate-500">{planStatus === 'saving' ? 'Saving…' : 'Saved'}</span>
+                    )}
+                    <PlanSafetyNettingButton tabIndex={-1} />
+                  </div>
                 </div>
                 <Textarea
                   id="additional-notes-minimized-plan"
@@ -548,7 +594,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             <div>
               <div className="mb-1 flex items-center justify-between">
                 <label htmlFor="additional-notes-objective" className="block text-xs font-medium text-slate-500">Objective</label>
-                <ExaminationChecklistButton tabIndex={-1} />
+                <div className="flex items-center gap-2">
+                  {objectiveStatus !== 'idle' && (
+                    <span className="text-[10px] text-slate-500">{objectiveStatus === 'saving' ? 'Saving…' : 'Saved'}</span>
+                  )}
+                  <ExaminationChecklistButton tabIndex={-1} />
+                </div>
               </div>
               <Textarea
                 id="additional-notes-objective"
@@ -561,7 +612,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               />
             </div>
             <div>
-              <label htmlFor="additional-notes-assessment" className="mb-1 block text-xs font-medium text-slate-500">Assessment</label>
+              <div className="mb-1 flex items-center justify-between">
+                <label htmlFor="additional-notes-assessment" className="block text-xs font-medium text-slate-500">Assessment</label>
+                {assessmentStatus !== 'idle' && (
+                  <span className="text-[10px] text-slate-500">{assessmentStatus === 'saving' ? 'Saving…' : 'Saved'}</span>
+                )}
+              </div>
               <Textarea
                 id="additional-notes-assessment"
                 value={assessmentText}
@@ -575,7 +631,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             <div>
               <div className="mb-1 flex items-center justify-between">
                 <label htmlFor="additional-notes-plan" className="block text-xs font-medium text-slate-500">Plan</label>
-                <PlanSafetyNettingButton tabIndex={-1} />
+                <div className="flex items-center gap-2">
+                  {planStatus !== 'idle' && (
+                    <span className="text-[10px] text-slate-500">{planStatus === 'saving' ? 'Saving…' : 'Saved'}</span>
+                  )}
+                  <PlanSafetyNettingButton tabIndex={-1} />
+                </div>
               </div>
               <Textarea
                 id="additional-notes-plan"
@@ -618,7 +679,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
       </div>
       <div className="grid grid-cols-1 gap-3" ref={containerRef} role="group" aria-label="Additional notes editor">
         <div>
-          <label htmlFor="additional-notes" className="mb-1 block text-xs font-medium text-slate-500">Problems</label>
+          <div className="mb-1 flex items-center justify-between">
+            <label htmlFor="additional-notes" className="block text-xs font-medium text-slate-500">Problems</label>
+            {problemsStatus !== 'idle' && (
+              <span className="text-[10px] text-slate-500">{problemsStatus === 'saving' ? 'Saving…' : 'Saved'}</span>
+            )}
+          </div>
           <Textarea
             id="additional-notes"
             value={problemsText}
