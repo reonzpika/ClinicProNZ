@@ -9,8 +9,7 @@ import type { NextRequest } from 'next/server';
 // We only use Vercel AI SDK here for HTTP streaming ergonomics (SSE helpers).
 // If you later move away from Vercel AI SDK, replace streamText/toAIStreamResponse below.
 
-import { streamText } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
+import OpenAI from 'openai';
 
 import { formatContextForRag, searchSimilarDocuments } from '@/src/lib/rag';
 
@@ -53,15 +52,49 @@ ${context}`;
     if (!apiKey) {
       return new Response('Missing OPENAI_API_KEY', { status: 500 });
     }
-    const provider = createOpenAI({ apiKey });
-    const result = await streamText({
-      model: provider.chat('gpt-4o-mini'),
-      system: systemPrompt,
-      messages: [{ role: 'user', content: query }],
+
+    const openai = new OpenAI({ apiKey });
+    const stream = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: query },
+      ],
       temperature: 0.1,
+      stream: true,
     });
 
-    return result.toAIStreamResponse();
+    const { readable, writable } = new TransformStream();
+    const writer = writable.getWriter();
+    const encoder = new TextEncoder();
+
+    (async () => {
+      try {
+        for await (const chunk of stream) {
+          const delta = chunk.choices?.[0]?.delta?.content;
+          if (typeof delta === 'string' && delta.length > 0) {
+            const payload = JSON.stringify({ type: 'response.delta', delta });
+            await writer.write(encoder.encode(`data: ${payload}\n\n`));
+          }
+        }
+        await writer.write(encoder.encode('data: [DONE]\n\n'));
+      } catch (err) {
+        // Emit minimal error event
+        const payload = JSON.stringify({ type: 'error', message: 'stream_error' });
+        await writer.write(encoder.encode(`data: ${payload}\n\n`));
+      } finally {
+        await writer.close();
+      }
+    })();
+
+    return new Response(readable, {
+      headers: {
+        'Content-Type': 'text/event-stream; charset=utf-8',
+        'Cache-Control': 'no-cache, no-transform',
+        Connection: 'keep-alive',
+        'X-Accel-Buffering': 'no',
+      },
+    });
   } catch (error) {
     console.error('[RAG/stream] error:', error);
     return new Response('Internal server error', { status: 500 });
