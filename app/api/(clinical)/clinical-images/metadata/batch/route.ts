@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
         if (baseIdentifier) parts.push(baseIdentifier);
         if (parts.length === 0) {
           // fallback to session patient name if available
-          const sessionName = (v.sessionId && sessionNameMap[v.sessionId]) || 'Session';
+          const sessionName = (v.sessionId && sessionNameMap[v.sessionId]) || 'Patient';
           parts.push(sessionName);
         }
         parts.push(today);

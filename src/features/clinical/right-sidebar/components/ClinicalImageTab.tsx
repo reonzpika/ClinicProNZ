@@ -9,6 +9,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { imageQueryKeys, useDeleteImage, useImageUrl, useRenameImage, useServerImages } from '@/src/hooks/useImageQueries';
+import { createAuthHeaders } from '@/src/shared/utils';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
@@ -22,6 +23,7 @@ function SessionImageTile({
   onEnlarge,
   onDownload,
   onDelete,
+  sessionPatientName,
 }: {
   image: any;
   isAnalyzing: boolean;
@@ -29,11 +31,23 @@ function SessionImageTile({
   onEnlarge: () => void;
   onDownload: () => void;
   onDelete: () => void;
+  sessionPatientName: string;
 }) {
   const { data: imageUrl } = useImageUrl(image.key);
   const renameImage = useRenameImage();
   const baseName = (image.displayName || image.filename || '').replace(/\.[^.]+$/, '');
-  const [identifier, setIdentifier] = React.useState<string>('');
+  const initialIdentifier = React.useMemo(() => {
+    // Strip trailing date + #n
+    const m = baseName.match(/^(.*)\s\d{4}-\d{2}-\d{2}\s#\d+$/);
+    const core = m ? m[1] : baseName;
+    // Remove leading session patient name prefix
+    const prefix = (sessionPatientName || '').trim();
+    if (prefix && core.startsWith(prefix + ' ')) {
+      return core.slice(prefix.length + 1);
+    }
+    return '';
+  }, [baseName, sessionPatientName]);
+  const [identifier, setIdentifier] = React.useState<string>(initialIdentifier);
 
   const commitIdentifier = () => {
     const id = identifier.trim();
@@ -45,7 +59,7 @@ function SessionImageTile({
     const hashPos = parts.findIndex((p: string) => /^#\d+$/.test(p));
     const dateStr = dateIdx >= 0 ? parts[dateIdx] : new Date().toISOString().slice(0,10);
     const hashStr = hashPos >= 0 ? parts[hashPos] : '#1';
-    const patientPart = dateIdx > 0 ? parts.slice(0, Math.max(1, dateIdx - 1)).join(' ') : 'Session';
+    const patientPart = (sessionPatientName && sessionPatientName.trim()) || 'Patient';
     const newDisplay = `${patientPart} ${id} ${dateStr} ${hashStr}`.replace(/\s+/g, ' ').trim();
     renameImage.mutate({ imageKey: image.key, displayName: newDisplay });
   };
@@ -159,6 +173,7 @@ export const ClinicalImageTab: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentSession = getCurrentPatientSession();
+  const sessionPatientName = (currentSession?.patientName as string) || 'Patient';
   const clinicalImages = useMemo(() => {
     const images = currentSession?.clinicalImages || [];
     return images;
@@ -579,6 +594,7 @@ export const ClinicalImageTab: React.FC = () => {
                         onEnlarge={() => setEnlargeImage(image)}
                         onDownload={() => handleDownloadImage(image as any)}
                         onDelete={() => handleDeleteSessionImage(image.key)}
+                        sessionPatientName={sessionPatientName}
                       />
                     );
                   })}
