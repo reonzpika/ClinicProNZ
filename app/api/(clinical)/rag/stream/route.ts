@@ -1,6 +1,10 @@
 import { auth } from '@clerk/nextjs/server';
 import type { NextRequest } from 'next/server';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
+
 // HYBRID STACK NOTE:
 // Use LlamaIndex for everything else in the pipeline:
 // - Chunking (semantic, markdown-aware), retrievers, rerankers
@@ -55,17 +59,6 @@ ${context}`;
     }
 
     const openai = new OpenAI({ apiKey });
-    const stream = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: query },
-      ],
-      temperature: 0.1,
-      max_tokens: 800,
-      stream: true,
-    });
-
     const { readable, writable } = new TransformStream();
     const writer = writable.getWriter();
     const encoder = new TextEncoder();
@@ -76,6 +69,20 @@ ${context}`;
         relevantDocs.map(d => [d.source, { title: d.title, url: d.source }])
       ).values()
     ).slice(0, 8);
+
+    // Send early heartbeat so platform receives first bytes < 10s
+    await writer.write(encoder.encode(`data: ${JSON.stringify({ type: 'started' })}\n\n`));
+
+    const stream = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: query },
+      ],
+      temperature: 0.1,
+      max_tokens: 800,
+      stream: true,
+    });
 
     (async () => {
       try {
