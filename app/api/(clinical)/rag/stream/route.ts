@@ -10,7 +10,7 @@ import type { NextRequest } from 'next/server';
 // If you later move away from Vercel AI SDK, replace streamText/toAIStreamResponse below.
 
 import { streamText } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
+import { openai } from '@ai-sdk/openai';
 
 import { formatContextForRag, searchSimilarDocuments } from '@/src/lib/rag';
 
@@ -53,8 +53,6 @@ ${context}`;
     if (!apiKey) {
       return new Response('Missing OPENAI_API_KEY', { status: 500 });
     }
-
-    const openai = createOpenAI({ apiKey });
     const result = await streamText({
       model: openai('gpt-4o-mini'),
       system: systemPrompt,
