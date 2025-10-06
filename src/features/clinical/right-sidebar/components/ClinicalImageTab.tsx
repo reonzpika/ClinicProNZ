@@ -22,7 +22,6 @@ function SessionImageTile({
   onEnlarge,
   onDownload,
   onDelete,
-  sessionPatientName,
 }: {
   image: any;
   isAnalyzing: boolean;
@@ -30,7 +29,6 @@ function SessionImageTile({
   onEnlarge: () => void;
   onDownload: () => void;
   onDelete: () => void;
-  sessionPatientName: string;
 }) {
   const { data: imageUrl } = useImageUrl(image.key);
   const renameImage = useRenameImage();
@@ -581,7 +579,6 @@ export const ClinicalImageTab: React.FC = () => {
                         onEnlarge={() => setEnlargeImage(image)}
                         onDownload={() => handleDownloadImage(image as any)}
                         onDelete={() => handleDeleteSessionImage(image.key)}
-                        sessionPatientName={sessionPatientName}
                       />
                     );
                   })}
