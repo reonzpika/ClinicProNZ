@@ -134,6 +134,9 @@ export const ClinicalImageTab: React.FC = () => {
   const [enlargeImage, setEnlargeImage] = useState<any | null>(null);
   const [showQR, setShowQR] = useState(false);
   const [deletingImages, setDeletingImages] = useState<Set<string>>(new Set());
+  // Selection state for bulk download
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
 
   // Server images (user scope) for session grouping
   const { userId } = useAuth();
@@ -312,6 +315,70 @@ export const ClinicalImageTab: React.FC = () => {
       setError('Failed to download image');
     }
   }, []);
+
+  // Bulk download helpers
+  const getDownloadUrl = useCallback(async (key: string): Promise<string> => {
+    const res = await fetch(`/api/uploads/download?key=${encodeURIComponent(key)}`);
+    if (!res.ok) throw new Error('Failed to get download URL');
+    const data = await res.json();
+    return data.downloadUrl as string;
+  }, []);
+
+  const bulkDownload = useCallback(async (images: Array<{ key: string; filename: string; displayName?: string }>) => {
+    if (!images || images.length === 0) return;
+    // Fetch URLs with concurrency 10 (batching)
+    const results: Array<{ url: string; name: string } | null> = new Array(images.length).fill(null);
+    for (let i = 0; i < images.length; i += 10) {
+      const slice = images.slice(i, i + 10);
+      const urls = await Promise.all(slice.map(async (img) => {
+        const url = await getDownloadUrl(img.key);
+        const baseName = (img.displayName || img.filename || '').replace(/\.[^.]+$/, '');
+        const ext = img.filename && img.filename.includes('.') ? `.${img.filename.split('.').pop()}` : '';
+        const name = `${baseName}${ext}`.trim();
+        return { url, name };
+      }));
+      for (let j = 0; j < urls.length; j++) {
+        results[i + j] = urls[j];
+      }
+    }
+    // Trigger downloads sequentially
+    for (let i = 0; i < results.length; i++) {
+      const item = results[i];
+      if (!item) continue;
+      const a = document.createElement('a');
+      a.href = item.url;
+      a.download = item.name;
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      // eslint-disable-next-line no-await-in-loop
+      await new Promise(resolve => setTimeout(resolve, 150));
+    }
+  }, [getDownloadUrl]);
+
+  const toggleSelectionMode = useCallback(() => {
+    setSelectionMode(prev => {
+      const next = !prev;
+      if (!next) setSelectedKeys(new Set());
+      return next;
+    });
+  }, []);
+
+  const toggleSelectKey = useCallback((key: string) => {
+    setSelectedKeys(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
+
+  const selectAllVisible = useCallback(() => {
+    setSelectedKeys(new Set(sessionServerImages.map((img: any) => img.key)));
+  }, [sessionServerImages]);
+
+  const clearSelection = useCallback(() => setSelectedKeys(new Set()), []);
 
   const handleDeleteSessionImage = useCallback(async (imageKey: string) => {
     // Optimistic UI: immediately hide the image
@@ -556,7 +623,32 @@ export const ClinicalImageTab: React.FC = () => {
         <div className="border-l-2 border-blue-200 pl-3">
           <div className="mb-3 flex items-center justify-between">
             <h4 className="text-sm font-medium text-blue-600">Session Images</h4>
-            {isLoadingServerImages && <Loader2 size={12} className="animate-spin text-blue-500" />}
+            <div className="flex items-center gap-2">
+              {selectionMode && (
+                <span className="text-xs text-slate-600">{selectedKeys.size} selected</span>
+              )}
+              <Button type="button" size="sm" variant="outline" onClick={toggleSelectionMode}>
+                {selectionMode ? 'Exit selection' : 'Select'}
+              </Button>
+              {selectionMode && (
+                <>
+                  <Button type="button" size="sm" variant="outline" onClick={selectAllVisible}>Select all</Button>
+                  <Button type="button" size="sm" variant="outline" onClick={clearSelection}>Clear</Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => {
+                      const items = sessionServerImages.filter((img: any) => selectedKeys.has(img.key));
+                      bulkDownload(items as any);
+                    }}
+                    disabled={selectedKeys.size === 0}
+                  >
+                    Download selected
+                  </Button>
+                </>
+              )}
+              {isLoadingServerImages && <Loader2 size={12} className="animate-spin text-blue-500" />}
+            </div>
           </div>
 
           {isLoadingServerImages
@@ -579,15 +671,25 @@ export const ClinicalImageTab: React.FC = () => {
                   {sessionServerImages.map((image: any) => {
                     const isAnalyzing = analyzingImages.has(image.id);
                     return (
-                      <SessionImageTile
-                        key={image.id}
-                        image={image}
-                        isAnalyzing={isAnalyzing}
-                        onAnalyze={() => handleAnalyzeImage(image as any)}
-                        onEnlarge={() => setEnlargeImage(image)}
-                        onDownload={() => handleDownloadImage(image as any)}
-                        onDelete={() => handleDeleteSessionImage(image.key)}
-                      />
+                      <div key={image.id} className="relative">
+                        {selectionMode && (
+                          <input
+                            type="checkbox"
+                            aria-label="Select image"
+                            className="absolute left-2 top-2 z-10 h-4 w-4"
+                            checked={selectedKeys.has(image.key)}
+                            onChange={() => toggleSelectKey(image.key)}
+                          />
+                        )}
+                        <SessionImageTile
+                          image={image}
+                          isAnalyzing={isAnalyzing}
+                          onAnalyze={() => handleAnalyzeImage(image as any)}
+                          onEnlarge={() => setEnlargeImage(image)}
+                          onDownload={() => handleDownloadImage(image as any)}
+                          onDelete={() => handleDeleteSessionImage(image.key)}
+                        />
+                      </div>
                     );
                   })}
                 </div>
