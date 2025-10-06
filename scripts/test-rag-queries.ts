@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 
-import { searchSimilarDocuments, formatContextForRag } from '../src/lib/rag';
+import { searchSimilarDocuments } from '../src/lib/rag';
 
 async function runQuery(q: string): Promise<void> {
   const results = await searchSimilarDocuments(q, 5, 0.35);
