@@ -76,8 +76,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, upserted: 0 });
     }
 
-    // Build default names for items lacking displayName
-    const bySessionPrefix: Record<string, number> = {};
+    // Build default names for items lacking displayName (date + time)
     const today = formatDate();
 
     // Fetch patient names for involved sessions (best effort)
@@ -115,13 +114,13 @@ export async function POST(req: NextRequest) {
           const sessionName = (v.sessionId && sessionNameMap[v.sessionId]) || 'Patient';
           parts.push(sessionName);
         }
-        parts.push(today);
+        // Append date and time (HH:mm)
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const timeStr = `${hh}:${mm}`;
         const prefix = parts.join(' ');
-
-        // Sequence number per session/date/prefix
-        const sessionKey = `${v.sessionId || 'no-session'}|${today}|${prefix}`;
-        const n = (bySessionPrefix[sessionKey] = (bySessionPrefix[sessionKey] || 0) + 1);
-        displayName = `${prefix} #${n}`;
+        displayName = `${prefix} ${today} ${timeStr}`;
       }
 
       rows.push({
