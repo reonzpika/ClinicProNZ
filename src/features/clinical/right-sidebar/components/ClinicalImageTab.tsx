@@ -341,17 +341,26 @@ export const ClinicalImageTab: React.FC = () => {
         results[i + j] = urls[j] ?? null;
       }
     }
-    // Trigger downloads sequentially
+    // Trigger downloads sequentially using blob URLs to force save
     for (let i = 0; i < results.length; i++) {
       const item = results[i];
       if (!item) continue;
-      const a = document.createElement('a');
-      a.href = item.url;
-      a.download = item.name;
-      a.rel = 'noopener noreferrer';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const resp = await fetch(item.url);
+        if (!resp.ok) continue;
+        // eslint-disable-next-line no-await-in-loop
+        const blob = await resp.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = item.name;
+        a.rel = 'noopener noreferrer';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+      } catch {}
       // eslint-disable-next-line no-await-in-loop
       await new Promise(resolve => setTimeout(resolve, 150));
     }

@@ -139,17 +139,26 @@ export default function ClinicalImagePage() {
       }
     }
 
-    // Step 2: trigger downloads sequentially to avoid popup blockers
+    // Step 2: fetch blobs and trigger downloads sequentially to avoid popup blockers
     for (let i = 0; i < urls.length; i++) {
       const item = urls[i];
       if (!item) continue;
-      const a = document.createElement('a');
-      a.href = item.url;
-      a.download = item.name;
-      a.rel = 'noopener noreferrer';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const resp = await fetch(item.url);
+        if (!resp.ok) continue;
+        // eslint-disable-next-line no-await-in-loop
+        const blob = await resp.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = item.name;
+        a.rel = 'noopener noreferrer';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+      } catch {}
       // Small delay between downloads
       // eslint-disable-next-line no-await-in-loop
       await new Promise(resolve => setTimeout(resolve, 150));
