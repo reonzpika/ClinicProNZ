@@ -21,7 +21,8 @@ export async function POST(request: NextRequest) {
     }
 
     const userTier = (sessionClaims as any)?.metadata?.tier || 'basic';
-    if (userTier === 'basic') {
+    const enforceTier = process.env.RAG_ENFORCE_TIER === 'true';
+    if (enforceTier && userTier === 'basic') {
       return new Response('Standard tier or higher required', { status: 403 });
     }
 
