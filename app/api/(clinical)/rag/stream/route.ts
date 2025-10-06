@@ -40,11 +40,11 @@ export async function POST(request: NextRequest) {
 
 Instructions:
 - Answer based ONLY on the provided context from NZ clinical guidance
-- Always cite sources using the format: [Source Title](URL)
+- Render output as Markdown (headings, lists, bold where helpful)
+- Always cite sources inline using exact source title and URL from context: [<exact title from context>](<exact URL>)
+- End with a short "Sources" section listing each source as [Title](URL)
 - If no relevant information is found, state this clearly
-- Use NZ medical terminology and spelling
-- Be concise but thorough
-- Focus on evidence-based recommendations
+- Use NZ medical terminology and spelling; be concise but thorough; focus on evidence-based recommendations
 
 Context:
 ${context}`;
@@ -69,6 +69,13 @@ ${context}`;
     const writer = writable.getWriter();
     const encoder = new TextEncoder();
 
+    // Prepare source metadata to emit at the end of the stream for UI linking
+    const sources = Array.from(
+      new Map(
+        relevantDocs.map(d => [d.source, { title: d.title, url: d.source }])
+      ).values()
+    ).slice(0, 8);
+
     (async () => {
       try {
         for await (const chunk of stream) {
@@ -78,6 +85,10 @@ ${context}`;
             await writer.write(encoder.encode(`data: ${payload}\n\n`));
           }
         }
+        // Emit sources list for client UI rendering
+        await writer.write(
+          encoder.encode(`data: ${JSON.stringify({ type: 'sources', sources })}\n\n`)
+        );
         await writer.write(encoder.encode('data: [DONE]\n\n'));
       } catch (err) {
         // Emit minimal error event

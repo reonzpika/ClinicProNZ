@@ -19,6 +19,8 @@ import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { createAuthHeaders } from '@/src/shared/utils';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,6 +46,7 @@ export default function ClinicalReferencePage() {
   // RAG streaming (hybrid: LlamaIndex for retrieval; Vercel AI SDK on server; custom SSE client here)
   const [ragInput, setRagInput] = useState('');
   const [ragCompletion, setRagCompletion] = useState('');
+  const [ragSources, setRagSources] = useState<Array<{ title?: string; url: string }>>([]);
   const [ragLoading, setRagLoading] = useState(false);
 
   async function handleRagSubmit(e: React.FormEvent) {
@@ -85,6 +88,8 @@ export default function ClinicalReferencePage() {
               const evt = JSON.parse(dl);
               if (evt.type === 'response.delta' && typeof evt.delta === 'string') {
                 setRagCompletion((prev) => prev + evt.delta);
+              } else if (evt.type === 'sources' && Array.isArray(evt.sources)) {
+                setRagSources(evt.sources);
               }
             } catch {
               // Fallback: append raw text if not JSON
@@ -248,8 +253,23 @@ export default function ClinicalReferencePage() {
                 </Button>
               </form>
               {ragCompletion && (
-                <div className="rounded-lg bg-slate-50 p-3 text-sm whitespace-pre-wrap">
-                  {ragCompletion}
+                <div className="prose prose-slate max-w-none rounded-lg bg-white p-3 text-sm">
+                  {/* Render markdown safely */}
+                  <MarkdownRenderer markdown={ragCompletion} />
+                  {ragSources.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="mb-2 text-sm font-semibold">Sources</h4>
+                      <ul className="list-disc pl-5">
+                        {ragSources.map((s, idx) => (
+                          <li key={s.url + idx}>
+                            <a href={s.url} target="_blank" rel="noreferrer" className="text-blue-600 underline">
+                              {s.title || s.url}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
@@ -475,5 +495,18 @@ export default function ClinicalReferencePage() {
         </div>
       </div>
     </Container>
+  );
+}
+
+function MarkdownRenderer({ markdown }: { markdown: string }) {
+  return (
+    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
+      a: ({ node, ...props }) => (
+        // open links in new tab for safety
+        <a {...props} target="_blank" rel="noreferrer" />
+      ),
+    }}>
+      {markdown}
+    </ReactMarkdown>
   );
 }
