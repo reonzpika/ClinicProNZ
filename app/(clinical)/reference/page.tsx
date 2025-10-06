@@ -13,7 +13,6 @@ import {
   User,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { useCompletion } from 'ai/react';
 
 import { Container } from '@/src/shared/components/layout/Container';
 import { Button } from '@/src/shared/components/ui/button';
@@ -42,15 +41,64 @@ export default function ClinicalReferencePage() {
   const [consultationNote, setConsultationNote] = useState('');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  // RAG streaming (hybrid: LlamaIndex for retrieval; Vercel AI SDK on server; custom SSE client here)
+  const [ragInput, setRagInput] = useState('');
+  const [ragCompletion, setRagCompletion] = useState('');
+  const [ragLoading, setRagLoading] = useState(false);
 
-  // RAG streaming (hybrid: LlamaIndex for retrieval; Vercel AI SDK for streaming)
-  const {
-    completion: ragCompletion,
-    input: ragInput,
-    setInput: setRagInput,
-    handleSubmit: handleRagSubmit,
-    isLoading: ragLoading,
-  } = useCompletion({ api: '/api/rag/stream' });
+  async function handleRagSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!ragInput.trim() || ragLoading) return;
+    setRagCompletion('');
+    setRagLoading(true);
+    try {
+      const res = await fetch('/api/rag/stream', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...createAuthHeaders(userId, userTier),
+        },
+        body: JSON.stringify({ query: ragInput }),
+      });
+      if (!res.ok || !res.body) {
+        const txt = await res.text();
+        throw new Error(txt || 'Failed to stream response');
+      }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let idx;
+        while ((idx = buffer.indexOf('\n\n')) !== -1) {
+          const eventBlock = buffer.slice(0, idx);
+          buffer = buffer.slice(idx + 2);
+          const dataLines = eventBlock
+            .split('\n')
+            .filter((l) => l.startsWith('data:'))
+            .map((l) => l.replace(/^data:\s?/, ''));
+          for (const dl of dataLines) {
+            if (!dl || dl === '[DONE]') continue;
+            try {
+              const evt = JSON.parse(dl);
+              if (evt.type === 'response.delta' && typeof evt.delta === 'string') {
+                setRagCompletion((prev) => prev + evt.delta);
+              }
+            } catch {
+              // Fallback: append raw text if not JSON
+              setRagCompletion((prev) => prev + dl);
+            }
+          }
+        }
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Streaming failed');
+    } finally {
+      setRagLoading(false);
+    }
+  }
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
@@ -180,20 +228,13 @@ export default function ClinicalReferencePage() {
                 <div>
                   <CardTitle className="text-lg">RAG Chat (Streaming)</CardTitle>
                   <CardDescription>
-                    Powered by LlamaIndex retrieval + Vercel AI SDK streaming
+                    Powered by LlamaIndex retrieval + Vercel AI SDK streaming (custom SSE client)
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-3 p-4">
-              <form
-                onSubmit={e => {
-                  e.preventDefault();
-                  if (!ragInput.trim() || ragLoading) return;
-                  handleRagSubmit(e as any);
-                }}
-                className="flex items-center space-x-2"
-              >
+              <form onSubmit={handleRagSubmit} className="flex items-center space-x-2">
                 <input
                   type="text"
                   value={ragInput}
