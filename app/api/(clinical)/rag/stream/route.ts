@@ -1,7 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import type { NextRequest } from 'next/server';
 
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
@@ -13,7 +13,8 @@ export const maxDuration = 60;
 // We only use Vercel AI SDK here for HTTP streaming ergonomics (SSE helpers).
 // If you later move away from Vercel AI SDK, replace streamText/toAIStreamResponse below.
 
-import OpenAI from 'openai';
+import { streamText } from 'ai';
+import { openai } from '@ai-sdk/openai';
 
 import { formatContextForRag, searchSimilarDocuments } from '@/src/lib/rag';
 
@@ -58,63 +59,24 @@ ${context}`;
       return new Response('Missing OPENAI_API_KEY', { status: 500 });
     }
 
-    const openai = new OpenAI({ apiKey });
-    const { readable, writable } = new TransformStream();
-    const writer = writable.getWriter();
-    const encoder = new TextEncoder();
-
-    // Prepare source metadata to emit at the end of the stream for UI linking
     const sources = Array.from(
       new Map(
         relevantDocs.map(d => [d.source, { title: d.title, url: d.source }])
       ).values()
     ).slice(0, 8);
 
-    // Send early heartbeat so platform receives first bytes < 10s
-    await writer.write(encoder.encode(`data: ${JSON.stringify({ type: 'started' })}\n\n`));
-
-    const stream = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: query },
-      ],
+    const result = await streamText({
+      model: openai('gpt-4o-mini', { apiKey }),
+      system: systemPrompt,
+      messages: [{ role: 'user', content: query }],
       temperature: 0.1,
-      max_tokens: 400,
-      stream: true,
-    });
-
-    (async () => {
-      try {
-        for await (const chunk of stream) {
-          const delta = chunk.choices?.[0]?.delta?.content;
-          if (typeof delta === 'string' && delta.length > 0) {
-            const payload = JSON.stringify({ type: 'response.delta', delta });
-            await writer.write(encoder.encode(`data: ${payload}\n\n`));
-          }
-        }
-        // Emit sources list for client UI rendering
-        await writer.write(
-          encoder.encode(`data: ${JSON.stringify({ type: 'sources', sources })}\n\n`)
-        );
-        await writer.write(encoder.encode('data: [DONE]\n\n'));
-      } catch (err) {
-        // Emit minimal error event
-        const payload = JSON.stringify({ type: 'error', message: 'stream_error' });
-        await writer.write(encoder.encode(`data: ${payload}\n\n`));
-      } finally {
-        await writer.close();
-      }
-    })();
-
-    return new Response(readable, {
-      headers: {
-        'Content-Type': 'text/event-stream; charset=utf-8',
-        'Cache-Control': 'no-cache, no-transform',
-        Connection: 'keep-alive',
-        'X-Accel-Buffering': 'no',
+      maxTokens: 400,
+      onFinish: async ({ emit }) => {
+        emit('sources', { sources });
       },
     });
+
+    return result.toAIStreamResponse();
   } catch (error) {
     console.error('[RAG/stream] error:', error);
     return new Response('Internal server error', { status: 500 });
