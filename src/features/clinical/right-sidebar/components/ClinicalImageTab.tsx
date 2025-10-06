@@ -35,34 +35,13 @@ function SessionImageTile({
   const { data: imageUrl } = useImageUrl(image.key);
   const renameImage = useRenameImage();
   const baseName = (image.displayName || image.filename || '').replace(/\.[^.]+$/, '');
-  const initialIdentifier = React.useMemo(() => {
-    // Strip trailing date + #n
-    const m = baseName.match(/^(.*)\s\d{4}-\d{2}-\d{2}\s#\d+$/);
-    const core = m ? m[1] : baseName;
-    // Remove leading session patient name prefix
-    const prefix = (sessionPatientName || '').trim();
-    if (prefix && core.startsWith(`${prefix} `)) {
-      return core.slice(prefix.length + 1);
-    }
-    return '';
-  }, [baseName, sessionPatientName]);
-  const [identifier, setIdentifier] = React.useState<string>(initialIdentifier);
-
-  const commitIdentifier = () => {
-    const id = identifier.trim();
-    if (!id) {
- return;
-}
-    // Build new displayName preserving patient and #n if present
-    const original = baseName;
-    const parts = original.split(' ');
-    const dateIdx = parts.findIndex((p: string) => /^\d{4}-\d{2}-\d{2}$/.test(p));
-    const hashPos = parts.findIndex((p: string) => /^#\d+$/.test(p));
-    const dateStr = dateIdx >= 0 ? parts[dateIdx] : new Date().toISOString().slice(0, 10);
-    const hashStr = hashPos >= 0 ? parts[hashPos] : '#1';
-    const patientPart = (sessionPatientName && sessionPatientName.trim()) || 'Patient';
-    const newDisplay = `${patientPart} ${id} ${dateStr} ${hashStr}`.replace(/\s+/g, ' ').trim();
-    renameImage.mutate({ imageKey: image.key, displayName: newDisplay });
+  const [isRenaming, setIsRenaming] = React.useState(false);
+  const [nameValue, setNameValue] = React.useState(image.displayName || baseName);
+  const commitRename = () => {
+    const cleaned = nameValue.trim();
+    if (!cleaned) { setIsRenaming(false); return; }
+    renameImage.mutate({ imageKey: image.key, displayName: cleaned });
+    setIsRenaming(false);
   };
   return (
     <div className="flex flex-col">
@@ -75,20 +54,25 @@ function SessionImageTile({
             <div className="flex size-full items-center justify-center text-xs text-slate-400">No preview</div>
           )}
       </div>
-      <div className="mt-2">
-        <input
-          type="text"
-          value={identifier}
-          onChange={e => setIdentifier(e.target.value)}
-          onBlur={commitIdentifier}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
- commitIdentifier();
-}
-          }}
-          placeholder="Identifier (e.g., left forearm)"
-          className="w-full rounded-md border px-2 py-1 text-xs"
-        />
+      <div className="mt-2 flex items-center gap-2">
+        {isRenaming ? (
+          <input
+            type="text"
+            value={nameValue}
+            onChange={(e) => setNameValue(e.target.value)}
+            onBlur={commitRename}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commitRename();
+              if (e.key === 'Escape') setIsRenaming(false);
+            }}
+            className="w-full rounded-md border px-2 py-1 text-xs"
+          />
+        ) : (
+          <>
+            <div className="min-w-0 flex-1 truncate text-xs text-slate-700">{image.displayName || image.filename}</div>
+            <Button type="button" size="sm" variant="outline" className="h-6 px-2 text-[10px]" onClick={() => setIsRenaming(true)}>Rename</Button>
+          </>
+        )}
       </div>
       <div className="mt-2 flex items-center justify-center gap-2">
         <Button
