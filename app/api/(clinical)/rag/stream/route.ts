@@ -37,8 +37,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Retrieve top-k chunks from our RAG store
-    const relevantDocs = await searchSimilarDocuments(query, 5, 0.35);
-    const context = formatContextForRag(relevantDocs);
+    const relevantDocs = await searchSimilarDocuments(query, 3, 0.3);
+    const context = formatContextForRag(relevantDocs).slice(0, 4000);
 
     const systemPrompt = `You are a clinical assistant for New Zealand GPs and healthcare professionals.
 
@@ -80,7 +80,7 @@ ${context}`;
         { role: 'user', content: query },
       ],
       temperature: 0.1,
-      max_tokens: 800,
+      max_tokens: 400,
       stream: true,
     });
 
