@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const query: string | undefined = body?.query;
+    const query: string | undefined = body?.query ?? body?.prompt;
     if (!query || typeof query !== 'string') {
       return new Response('Query is required', { status: 400 });
     }

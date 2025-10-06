@@ -13,6 +13,7 @@ import {
   User,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { useCompletion } from 'ai/react';
 
 import { Container } from '@/src/shared/components/layout/Container';
 import { Button } from '@/src/shared/components/ui/button';
@@ -41,6 +42,15 @@ export default function ClinicalReferencePage() {
   const [consultationNote, setConsultationNote] = useState('');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // RAG streaming (hybrid: LlamaIndex for retrieval; Vercel AI SDK for streaming)
+  const {
+    completion: ragCompletion,
+    input: ragInput,
+    setInput: setRagInput,
+    handleSubmit: handleRagSubmit,
+    isLoading: ragLoading,
+  } = useCompletion({ api: '/api/rag/stream' });
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
@@ -157,6 +167,52 @@ export default function ClinicalReferencePage() {
               Clear Chat
             </Button>
           </div>
+        </div>
+
+        {/* RAG Streaming (uses /api/rag/stream) */}
+        <div className="mb-6">
+          <Card>
+            <CardHeader className="border-b border-slate-200 pb-4">
+              <div className="flex items-center space-x-3">
+                <div className="flex size-10 items-center justify-center rounded-full bg-blue-100">
+                  <Bot className="size-5 text-blue-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">RAG Chat (Streaming)</CardTitle>
+                  <CardDescription>
+                    Powered by LlamaIndex retrieval + Vercel AI SDK streaming
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3 p-4">
+              <form
+                onSubmit={e => {
+                  e.preventDefault();
+                  if (!ragInput.trim() || ragLoading) return;
+                  handleRagSubmit(e as any);
+                }}
+                className="flex items-center space-x-2"
+              >
+                <input
+                  type="text"
+                  value={ragInput}
+                  onChange={e => setRagInput(e.target.value)}
+                  placeholder="Ask a clinical question (e.g., abdominal pain red flags)"
+                  className="flex-1 rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={ragLoading}
+                />
+                <Button type="submit" disabled={!ragInput.trim() || ragLoading}>
+                  {ragLoading ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+                </Button>
+              </form>
+              {ragCompletion && (
+                <div className="rounded-lg bg-slate-50 p-3 text-sm whitespace-pre-wrap">
+                  {ragCompletion}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Main Content */}
