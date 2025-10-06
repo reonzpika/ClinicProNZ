@@ -20,6 +20,8 @@ type TranscriptionState = {
 
   // Consent and settings
   consentObtained: boolean;
+  // Session-scoped consent tracking: the sessionId that has consent
+  consentForSessionId: string | null;
   microphoneGain: number;
   volumeThreshold: number;
 
@@ -55,6 +57,7 @@ type TranscriptionActions = {
 
   // Settings actions
   setConsentObtained: (consent: boolean) => void;
+  setConsentForSessionId: (sessionId: string | null) => void;
   setMicrophoneGain: (gain: number) => void;
   setVolumeThreshold: (threshold: number) => void;
 
@@ -86,6 +89,7 @@ const initialState: TranscriptionState = {
   },
   typedInput: '',
   consentObtained: false,
+  consentForSessionId: null,
   microphoneGain: 7.0,
   volumeThreshold: 0.1,
 };
@@ -131,6 +135,10 @@ export const useTranscriptionStore = create<TranscriptionStore>()(
 
     // Settings actions
     setConsentObtained: consent => set({ consentObtained: consent }),
+    setConsentForSessionId: sessionId => set({
+      consentForSessionId: sessionId,
+      consentObtained: sessionId !== null && sessionId !== undefined,
+    }),
     setMicrophoneGain: gain => set({ microphoneGain: gain }),
     setVolumeThreshold: threshold => set({ volumeThreshold: threshold }),
 

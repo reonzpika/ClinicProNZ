@@ -195,6 +195,18 @@ export function TranscriptionControls({
 
     // Mobile: initiate consent process then send remote start
     if (recordingMethod === 'mobile') {
+      // If consent already obtained this session, skip re-request and send start
+      if (consentObtained) {
+        const canSend = typeof window !== 'undefined'
+          && (window as any).ablySyncHook
+          && typeof (window as any).ablySyncHook.sendRecordingControl === 'function';
+        if (!canSend) {
+          setShowMobileRecordingV2(true);
+          return;
+        }
+        sendMobileControl('start');
+        return;
+      }
       const canSignal = typeof window !== 'undefined'
         && (window as any).ablySyncHook
         && typeof (window as any).ablySyncHook.sendConsentRequest === 'function'
@@ -222,7 +234,7 @@ export function TranscriptionControls({
       setShowConsentModal(true);
       return;
     }
-
+    // Consent already obtained for this session; proceed directly
     startRecording();
   };
 

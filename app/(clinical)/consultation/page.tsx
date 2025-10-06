@@ -39,6 +39,7 @@ export default function ConsultationPage() {
     setError,
     setStatus,
     currentPatientSessionId,
+    consentObtained,
     inputMode,
     typedInput,
     transcription,
@@ -204,10 +205,9 @@ export default function ConsultationPage() {
 
   const [desktopConsentOpen, setDesktopConsentOpen] = useState(false);
   const [pendingConsentRequestId, setPendingConsentRequestId] = useState<string | null>(null);
-  const [pendingConsentInitiator, setPendingConsentInitiator] = useState<'desktop' | 'mobile' | null>(null);
   const desktopConsentTimerRef = useRef<any>(null);
 
-  const { sendRecordingControl, sendConsentRequest, sendConsentGranted, sendConsentDenied } = useSimpleAbly({
+  const { sendRecordingControl, sendConsentRequest, sendConsentGranted, sendConsentDenied, sendSessionContext } = useSimpleAbly({
     userId: userId ?? null,
     onRecordingStatusChanged: (isRecording: boolean) => {
       setMobileIsRecording(isRecording);
@@ -216,10 +216,15 @@ export default function ConsultationPage() {
     onError: handleError,
 
     isMobile: false,
-    onConsentRequested: ({ requestId, initiator }) => {
-      // Open desktop consent modal on any consent request
+    onConsentRequested: ({ requestId, sessionId }) => {
+      // If consent already obtained for this session, auto-grant and skip modal
+      const isSameSession = !!(sessionId && currentPatientSessionId && sessionId === currentPatientSessionId);
+      if (consentObtained && isSameSession) {
+        try { sendConsentGranted?.(requestId, 'desktop', currentPatientSessionId || undefined); } catch {}
+        return;
+      }
+      // Otherwise, show desktop consent modal
       setPendingConsentRequestId(requestId);
-      setPendingConsentInitiator(initiator);
       setDesktopConsentOpen(true);
       // Auto-deny after 30s if no action
       if (desktopConsentTimerRef.current) {
@@ -229,7 +234,6 @@ export default function ConsultationPage() {
         try { sendConsentDenied?.(requestId, 'desktop', 'timeout', currentPatientSessionId || undefined); } catch {}
         setDesktopConsentOpen(false);
         setPendingConsentRequestId(null);
-        setPendingConsentInitiator(null);
       }, 30000);
     },
     onConsentGranted: ({ requestId }) => {
@@ -238,7 +242,6 @@ export default function ConsultationPage() {
         try { setConsentObtained(true); } catch {}
         setDesktopConsentOpen(false);
         setPendingConsentRequestId(null);
-        setPendingConsentInitiator(null);
         if (desktopConsentTimerRef.current) {
           clearTimeout(desktopConsentTimerRef.current);
           desktopConsentTimerRef.current = null;
@@ -249,7 +252,6 @@ export default function ConsultationPage() {
       if (pendingConsentRequestId && requestId === pendingConsentRequestId) {
         setDesktopConsentOpen(false);
         setPendingConsentRequestId(null);
-        setPendingConsentInitiator(null);
         if (desktopConsentTimerRef.current) {
           clearTimeout(desktopConsentTimerRef.current);
           desktopConsentTimerRef.current = null;
@@ -443,6 +445,11 @@ export default function ConsultationPage() {
 
     // Now perform the actual session switch
     originalSwitchToPatientSession(sessionId, onSwitch);
+    // Broadcast new session context to mobile and reset local session-consent mapping
+    try {
+      setConsentObtained(false);
+    } catch {}
+    try { sendSessionContext?.(sessionId); } catch {}
   }, [isRecording, mobileIsRecording, stopRecording, sendRecordingControl, originalSwitchToPatientSession]);
 
   useEffect(() => {
@@ -516,6 +523,9 @@ export default function ConsultationPage() {
   // because isNoteFocused remained true from the previous session
   useEffect(() => {
     setIsNoteFocused(false);
+    // Reset consent state locally and broadcast session context on session change
+    try { setConsentObtained(false); } catch {}
+    try { sendSessionContext?.(currentPatientSessionId || null); } catch {}
   }, [currentPatientSessionId]);
 
   // Reset mobile recording status when connection drops
@@ -552,16 +562,13 @@ export default function ConsultationPage() {
     try {
       setConsentObtained(true);
     } catch {}
+    // Persist a client-side flag so mobile can skip subsequent prompts during this session lifecycle
+    try { (window as any).__clinicproConsentObtained = true; } catch {}
     try {
       sendConsentGranted?.(pendingConsentRequestId, 'desktop', currentPatientSessionId || undefined);
     } catch {}
-    // If desktop initiated a mobile start, send control now
-    if (pendingConsentInitiator === 'desktop') {
-      try { sendRecordingControl?.('start'); } catch {}
-    }
     setDesktopConsentOpen(false);
     setPendingConsentRequestId(null);
-    setPendingConsentInitiator(null);
   };
 
   const handleDesktopConsentCancel = () => {
@@ -570,7 +577,6 @@ export default function ConsultationPage() {
     }
     setDesktopConsentOpen(false);
     setPendingConsentRequestId(null);
-    setPendingConsentInitiator(null);
   };
 
   // On mount, sync current session from server (server truth); create one if missing

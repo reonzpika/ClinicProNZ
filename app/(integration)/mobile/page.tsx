@@ -92,6 +92,9 @@ function MobilePageContent() {
   const [consentOpen, setConsentOpen] = useState(false);
   const pendingRequestIdRef = useRef<string | null>(null);
   const consentTimerRef = useRef<any>(null);
+  const consentOpenDelayRef = useRef<any>(null);
+
+  const currentSessionIdRef = useRef<string | null>(null);
 
   const { isConnected, sendRecordingStatus, sendImageNotification, sendConsentRequest, sendConsentGranted, sendConsentDenied } = useSimpleAbly({
     userId: isSignedIn ? userId : null,
@@ -100,14 +103,33 @@ function MobilePageContent() {
     },
     isMobile: true,
 
+    onSessionContextChanged: (sessionId) => {
+      currentSessionIdRef.current = sessionId || null;
+      // Reset per-session consent when session context changes
+      try { (window as any).__clinicproConsentObtained = false; } catch {}
+      setConsentOpen(false);
+      pendingRequestIdRef.current = null;
+    },
+
     onControlCommand: async (action: 'start' | 'stop') => {
       try {
         if (action === 'start' && !isRecordingRef.current) {
+          // If consent already granted this session, start immediately
+          if (typeof window !== 'undefined') {
+            const consent = (window as any).__clinicproConsentObtained as boolean | undefined;
+            if (consent) {
+              await startRecordingRef.current?.();
+              sendRecordingStatus(true);
+              return;
+            }
+          }
           // Require consent first: emit request and open modal
           const requestId = Math.random().toString(36).slice(2, 10);
           pendingRequestIdRef.current = requestId;
-          sendConsentRequest?.(requestId, 'desktop');
-          setConsentOpen(true);
+          sendConsentRequest?.(requestId, 'desktop', currentSessionIdRef.current);
+          // Delay opening modal briefly to allow auto-grant to arrive
+          if (consentOpenDelayRef.current) { clearTimeout(consentOpenDelayRef.current); }
+          consentOpenDelayRef.current = setTimeout(() => setConsentOpen(true), 200);
           return;
         }
         if (action === 'stop' && isRecordingRef.current) {
@@ -119,6 +141,12 @@ function MobilePageContent() {
       }
     },
     onConsentRequested: ({ requestId }) => {
+      // If consent already granted this session on mobile, auto-grant and skip modal
+      const alreadyConsented = typeof window !== 'undefined' && (window as any).__clinicproConsentObtained === true;
+      if (alreadyConsented) {
+        try { sendConsentGranted?.(requestId, 'mobile', currentSessionIdRef.current); } catch {}
+        return;
+      }
       // When local user taps start, we'll emit, but also if desktop emits, show modal
       pendingRequestIdRef.current = requestId;
       setConsentOpen(true);
@@ -132,12 +160,16 @@ function MobilePageContent() {
             sendConsentDenied?.(pendingRequestIdRef.current, 'mobile', 'timeout');
           }
         } catch {}
+        // Cancel delayed open if pending; otherwise close if visible
+        if (consentOpenDelayRef.current) { clearTimeout(consentOpenDelayRef.current); consentOpenDelayRef.current = null; }
         setConsentOpen(false);
         pendingRequestIdRef.current = null;
       }, 30000);
     },
     onConsentGranted: async ({ requestId }) => {
       if (pendingRequestIdRef.current && requestId === pendingRequestIdRef.current) {
+        // Cancel delayed open if pending; otherwise close if visible
+        if (consentOpenDelayRef.current) { clearTimeout(consentOpenDelayRef.current); consentOpenDelayRef.current = null; }
         setConsentOpen(false);
         if (consentTimerRef.current) {
           clearTimeout(consentTimerRef.current);
@@ -149,6 +181,8 @@ function MobilePageContent() {
           sendRecordingStatus(true);
         }
         pendingRequestIdRef.current = null;
+        // Persist consent flag locally for this session lifecycle
+        try { (window as any).__clinicproConsentObtained = true; } catch {}
       }
     },
     onConsentDenied: ({ requestId }) => {
@@ -307,13 +341,25 @@ function MobilePageContent() {
   }, [sendRecordingStatus]);
 
   const handleStartRecording = useCallback(async () => {
-    if (mobileState === 'connected') {
-      // Initiate consent flow first
-      const requestId = Math.random().toString(36).slice(2, 10);
-      pendingRequestIdRef.current = requestId;
-      sendConsentRequest?.(requestId, 'mobile');
-      setConsentOpen(true);
+    if (mobileState !== 'connected') {
+      return;
     }
+    // If consent already granted in this session, start immediately
+    const alreadyConsented = typeof window !== 'undefined' && (window as any).__clinicproConsentObtained === true;
+    if (alreadyConsented) {
+      if (!isRecordingRef.current) {
+        await startRecordingRef.current?.();
+        sendRecordingStatus(true);
+      }
+      return;
+    }
+    // Initiate consent flow first
+    const requestId = Math.random().toString(36).slice(2, 10);
+    pendingRequestIdRef.current = requestId;
+    sendConsentRequest?.(requestId, 'mobile', currentSessionIdRef.current);
+    // Delay opening to allow potential auto-grant from desktop
+    if (consentOpenDelayRef.current) { clearTimeout(consentOpenDelayRef.current); }
+    consentOpenDelayRef.current = setTimeout(() => setConsentOpen(true), 200);
   }, [mobileState, sendConsentRequest]);
 
   const handleStopRecording = useCallback(async () => {
@@ -520,6 +566,7 @@ selected
             if (id) {
               try { sendConsentGranted?.(id, 'mobile'); } catch {}
             }
+            if (consentOpenDelayRef.current) { clearTimeout(consentOpenDelayRef.current); consentOpenDelayRef.current = null; }
             setConsentOpen(false);
           }}
           onCancel={() => {
@@ -527,6 +574,7 @@ selected
             if (id) {
               try { sendConsentDenied?.(id, 'mobile', 'user'); } catch {}
             }
+            if (consentOpenDelayRef.current) { clearTimeout(consentOpenDelayRef.current); consentOpenDelayRef.current = null; }
             setConsentOpen(false);
           }}
         />
