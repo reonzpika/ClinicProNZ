@@ -70,7 +70,6 @@ ${context}`;
       system: systemPrompt,
       messages: [{ role: 'user', content: query }],
       temperature: 0.1,
-      maxTokens: 400,
       onFinish: async ({ emit }) => {
         emit('sources', { sources });
       },
