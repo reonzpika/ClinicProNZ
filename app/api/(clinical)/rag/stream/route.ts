@@ -66,7 +66,7 @@ ${context}`;
       temperature: 0.1,
     });
 
-    return result.toAIStreamResponse();
+    return result.toTextStreamResponse();
   } catch (error) {
     console.error('[RAG/stream] error:', error);
     return new Response('Internal server error', { status: 500 });
