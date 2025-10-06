@@ -5,13 +5,14 @@ import { searchSimilarDocuments } from '../src/lib/rag';
 async function runQuery(q: string): Promise<void> {
   const results = await searchSimilarDocuments(q, 5, 0.35);
   console.log(`\n=== Query: ${q} ===`);
-  for (let i = 0; i < results.length; i++) {
-    const r = results[i];
-    const snippet = r.content.slice(0, 220).replace(/\s+/g, ' ');
-    console.log(`#${i + 1} [${r.score.toFixed(3)}] ${r.title}`);
+  results.forEach((r, idx) => {
+    if (!r) return;
+    const snippet = (r.content ?? '').slice(0, 220).replace(/\s+/g, ' ');
+    const score = typeof r.score === 'number' ? r.score.toFixed(3) : '0.000';
+    console.log(`#${idx + 1} [${score}] ${r.title}`);
     console.log(`Source: ${r.source}`);
     console.log(`Snippet: ${snippet}...\n`);
-  }
+  });
 }
 
 async function main(): Promise<void> {
