@@ -158,7 +158,6 @@ export const ClinicalImageTab: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentSession = getCurrentPatientSession();
-  const sessionPatientName = (currentSession?.patientName as string) || 'Patient';
   const clinicalImages = useMemo(() => {
     const images = currentSession?.clinicalImages || [];
     return images;
@@ -218,6 +217,15 @@ export const ClinicalImageTab: React.FC = () => {
 
         throw new Error(`Failed to upload image (${uploadResponse.status}: ${uploadResponse.statusText})`);
       }
+
+      // Default naming: set displayName via metadata so /image shows correct name immediately
+      try {
+        await fetch('/api/clinical-images/metadata/batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: [{ imageKey: key, patientName: (currentSession?.patientName as string) || undefined }] }),
+        });
+      } catch {}
 
       // Create image metadata
       const newImage: ClinicalImage = {
