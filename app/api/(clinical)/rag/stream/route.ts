@@ -16,6 +16,7 @@ import OpenAI from 'openai';
 
 import { formatContextForRag, searchSimilarDocuments } from '@/src/lib/rag';
 import configureLlamaIndex from '@/src/lib/rag/settings';
+import { createPgVectorRetriever } from '@/src/lib/rag/li-pgvector-retriever';
 
 export async function POST(request: NextRequest) {
   try {
@@ -81,16 +82,14 @@ Instructions:
           configureLlamaIndex();
           const LI: any = await import('llamaindex');
 
-          const liDocs = relevantDocs.map((d) =>
-            new LI.Document({
-              text: `Title: ${d.title}\nURL: ${d.source}\n\n${d.content}`,
-              metadata: { url: d.source, title: d.title, sourceType: d.sourceType },
-            })
-          );
-          const index = await LI.VectorStoreIndex.fromDocuments(liDocs);
-          const queryEngine = index.asQueryEngine({ similarityTopK: 3 });
+          // Use PGVector-backed retriever inside LI
+          const retriever = createPgVectorRetriever({ topK: 3, threshold: 0.3 });
+          const responseSynthesizer = new LI.ResponseSynthesizer();
+          const queryEngine = new LI.RetrieverQueryEngine(retriever as any, responseSynthesizer, {
+            // Future: add rerankers/postprocessors here
+          });
 
-          const liPrompt = `${systemPrompt}\n\nContext:\n${context}\n\nQuestion: ${query}`;
+          const liPrompt = `${systemPrompt}\n\nQuestion: ${query}`;
           const responseStream = await queryEngine.query({ query: liPrompt, stream: true });
 
           // Stream tokens from LlamaIndex
