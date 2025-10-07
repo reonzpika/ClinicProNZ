@@ -33,10 +33,11 @@ function formatNzDate(dateString?: string) {
 }
 
 export const ImageSessionModal: React.FC<ImageSessionModalProps> = ({ isOpen, onClose, onSessionSelected }) => {
-  const { sessions, create, rename, remove, removeAll, refetch } = usePatientSessions();
+  const { sessions, create, rename, remove, refetch } = usePatientSessions();
   const [search, setSearch] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [pendingName, setPendingName] = useState('');
+  const [renameValues, setRenameValues] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (isOpen) refetch();
@@ -115,7 +116,26 @@ export const ImageSessionModal: React.FC<ImageSessionModalProps> = ({ isOpen, on
                     <div className="flex items-start justify-between">
                       <div className="min-w-0 flex-1">
                         <div className="mb-1 flex items-center gap-2">
-                          <h3 className="truncate font-medium text-gray-900">{s.patientName || 'Untitled Session'}</h3>
+                          <Input
+                            value={renameValues[s.id] ?? s.patientName || ''}
+                            onChange={(e) => setRenameValues(prev => ({ ...prev, [s.id]: e.target.value }))}
+                            onBlur={async () => {
+                              const name = (renameValues[s.id] ?? s.patientName || '').trim();
+                              if (name && name !== s.patientName) {
+                                try { await rename.mutateAsync({ sessionId: s.id, patientName: name }); } catch {}
+                              }
+                            }}
+                            onKeyDown={async (e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const name = (renameValues[s.id] ?? s.patientName || '').trim();
+                                if (name && name !== s.patientName) {
+                                  try { await rename.mutateAsync({ sessionId: s.id, patientName: name }); } catch {}
+                                }
+                              }
+                            }}
+                            className="h-7 text-sm"
+                          />
                         </div>
                         <div className="mb-2 flex items-center gap-4 text-sm text-gray-600">
                           <div className="flex items-center gap-1">
