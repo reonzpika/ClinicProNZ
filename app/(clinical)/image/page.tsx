@@ -20,7 +20,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
-import { usePatientSessions } from '@/src/features/clinical/session-management/hooks/usePatientSessions';
+// Session UI (local-only)
 import { ImageSessionBar } from '@/src/features/clinical/session-management/components/ImageSessionBar';
 import { ImageSessionModal } from '@/src/features/clinical/session-management/components/ImageSessionModal';
 // Removed in-page WebRTC camera in favour of native camera capture
@@ -67,29 +67,8 @@ export default function ClinicalImagePage() {
   const cameraFileInputRef = useRef<HTMLInputElement>(null);
 
   // Local-only session selector state (does not affect global currentSessionId)
-  const { sessions, create: createSession, rename: renameSession, refetch: refetchSessions } = usePatientSessions();
   const [selectedSessionId, setSelectedSessionId] = useState<string | 'none'>('none');
-  const [newPatientName, setNewPatientName] = useState('');
-  const [renameInput, setRenameInput] = useState('');
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
-
-  const formatSessionDate = (dateString?: string) => {
-    const date = new Date(dateString || new Date());
-    const parts = new Intl.DateTimeFormat('en-NZ', {
-      timeZone: 'Pacific/Auckland',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    }).formatToParts(date);
-    const get = (type: string) => parts.find(p => p.type === type)?.value || '';
-    return {
-      date: `${get('day')}/${get('month')}/${get('year')}`,
-      time: `${get('hour')}:${get('minute')}`,
-    };
-  };
 
   // Track upload loading state
   const isUploading = uploadImages.isPending;
