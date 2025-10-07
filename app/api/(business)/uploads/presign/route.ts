@@ -35,7 +35,6 @@ export async function GET(req: NextRequest) {
     const mimeType = req.nextUrl.searchParams.get('mimeType') || 'image/jpeg';
     const providedSessionId = req.nextUrl.searchParams.get('sessionId');
     const noSessionParam = req.nextUrl.searchParams.get('noSession');
-    const context = req.nextUrl.searchParams.get('context') || undefined; // e.g., image-desktop
 
     // 🆕 SERVER-SIDE SESSION RESOLUTION (feature-aware)
     let patientSessionId: string | null = null;

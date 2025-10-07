@@ -103,6 +103,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { patientName, templateId } = await req.json();
+    const suppressSetCurrent = new URL(req.url).searchParams.get('suppressSetCurrent') === '1';
 
     // Ensure users row exists to satisfy FK constraints (defensive against webhook delays)
     try {
@@ -128,7 +129,7 @@ export async function POST(req: NextRequest) {
     // Note: Mobile devices will be notified via Ably when patient session changes
     // Persist as current session for this user for mobile fallback
     try {
-      if (session && session.id) {
+      if (session && session.id && !suppressSetCurrent) {
         await db.update(users).set({ currentSessionId: session.id }).where(eq(users.id, userId));
       }
     } catch {

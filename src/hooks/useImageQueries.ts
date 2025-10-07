@@ -62,10 +62,14 @@ export function useUploadImage() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (file: File): Promise<{ key: string }> => {
+    mutationFn: async (input: File | { file: File; context?: { sessionId?: string; noSession?: boolean } }): Promise<{ key: string }> => {
       if (!userId) {
         throw new Error('User not authenticated');
       }
+
+      // Normalise input
+      const file = input instanceof File ? input : input.file;
+      const ctx = input instanceof File ? undefined : input.context;
 
       // Resize on client before uploading (keeps original MIME type)
       const resizedBlob = await resizeImageFile(file, 1024);
@@ -75,6 +79,8 @@ export function useUploadImage() {
         filename: file.name,
         mimeType: file.type,
       });
+      if (ctx?.sessionId) presignParams.set('sessionId', ctx.sessionId);
+      if (ctx?.noSession) presignParams.set('noSession', '1');
 
       const presignResponse = await fetch(`/api/uploads/presign?${presignParams}`, {
         method: 'GET',
@@ -128,9 +134,10 @@ export function useUploadImages() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: { files: File[]; names?: Array<{ patientName?: string; identifier?: string; displayName?: string }> } | File[]): Promise<{ keys: string[] }> => {
+    mutationFn: async (input: { files: File[]; names?: Array<{ patientName?: string; identifier?: string; displayName?: string }>; context?: { sessionId?: string; noSession?: boolean } } | File[]): Promise<{ keys: string[] }> => {
       const isArrayInput = Array.isArray(input);
       const files = isArrayInput ? (input as File[]) : (input as { files: File[] }).files;
+      const context = (!isArrayInput && (input as any).context) ? ((input as any).context as { sessionId?: string; noSession?: boolean }) : undefined;
       const names = (!isArrayInput && (input as any).names)
         ? ((input as any).names as Array<{ patientName?: string; identifier?: string; displayName?: string }>)
         : [];
@@ -141,7 +148,7 @@ export function useUploadImages() {
         if (!file) {
           throw new Error(`File at index ${i} is undefined`);
         }
-        const res = await uploadImage.mutateAsync(file);
+        const res = await uploadImage.mutateAsync(context ? { file, context } : file);
         results.push(res);
       }
 

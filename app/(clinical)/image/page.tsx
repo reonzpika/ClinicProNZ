@@ -20,6 +20,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
+import { usePatientSessions } from '@/src/features/clinical/session-management/hooks/usePatientSessions';
 // Removed in-page WebRTC camera in favour of native camera capture
 import { imageQueryKeys, useAnalyzeImage, useDeleteImage, useImageUrl, useRenameImage, useSaveAnalysis, useServerImages, useUploadImages } from '@/src/hooks/useImageQueries';
 import { Container } from '@/src/shared/components/layout/Container';
@@ -62,6 +63,12 @@ export default function ClinicalImagePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
   const cameraFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Local-only session selector state (does not affect global currentSessionId)
+  const { sessions, isLoading: isLoadingSessions, create: createSession, rename: renameSession, refetch: refetchSessions } = usePatientSessions();
+  const [selectedSessionId, setSelectedSessionId] = useState<string | 'none'>('none');
+  const [newPatientName, setNewPatientName] = useState('');
+  const [renameInput, setRenameInput] = useState('');
 
   // Track upload loading state
   const isUploading = uploadImages.isPending;
@@ -243,7 +250,10 @@ export default function ClinicalImagePage() {
     // Desktop immediate upload
     setUploadingFileCount(fileArray.length);
     try {
-      await uploadImages.mutateAsync(fileArray);
+      const context = selectedSessionId && selectedSessionId !== 'none'
+        ? { sessionId: selectedSessionId }
+        : { noSession: true };
+      await uploadImages.mutateAsync({ files: fileArray, context });
     } catch (err) {
       console.error('Upload failed:', err);
     } finally {
@@ -636,8 +646,86 @@ Cancel
                 </div>
               </div>
 
-              {/* Upload Controls */}
+              {/* Session Selector and Upload Controls */}
               <div className="flex flex-col gap-2">
+                {/* Session Selector */}
+                <div className="rounded-md border p-3">
+                  <div className="mb-2 text-xs font-semibold text-slate-700">Session (optional)</div>
+                  <div className="space-y-2">
+                    <select
+                      className="w-full rounded border px-2 py-1 text-sm"
+                      value={selectedSessionId}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setSelectedSessionId(val as any);
+                        if (val !== 'none') {
+                          const s = sessions.find(s => s.id === val);
+                          setRenameInput(s?.patientName || '');
+                        }
+                      }}
+                    >
+                      <option value="none">None (no session)</option>
+                      {sessions.map(s => (
+                        <option key={s.id} value={s.id}>{s.patientName}</option>
+                      ))}
+                    </select>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="New patient name"
+                        className="flex-1 rounded border px-2 py-1 text-sm"
+                        value={newPatientName}
+                        onChange={(e) => setNewPatientName(e.target.value)}
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={async () => {
+                          const name = newPatientName.trim();
+                          if (!name) return;
+                          try {
+                            const session = await createSession.mutateAsync(name);
+                            setSelectedSessionId(session.id);
+                            setRenameInput(session.patientName || name);
+                            setNewPatientName('');
+                            refetchSessions();
+                          } catch (e) {
+                            // error surfaced via hook if needed
+                          }
+                        }}
+                        disabled={createSession.isPending}
+                      >
+                        {createSession.isPending ? 'Creating...' : 'Create'}
+                      </Button>
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="text"
+                        placeholder="Rename selected"
+                        className="flex-1 rounded border px-2 py-1 text-sm"
+                        value={renameInput}
+                        onChange={(e) => setRenameInput(e.target.value)}
+                        disabled={selectedSessionId === 'none'}
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={async () => {
+                          const name = renameInput.trim();
+                          if (!name || selectedSessionId === 'none') return;
+                          try {
+                            await renameSession.mutateAsync({ sessionId: selectedSessionId as string, patientName: name });
+                            refetchSessions();
+                          } catch {}
+                        }}
+                        disabled={selectedSessionId === 'none' || renameSession.isPending}
+                      >
+                        {renameSession.isPending ? 'Renaming...' : 'Rename'}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
                 <Button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploading}
