@@ -28,6 +28,7 @@
     "db:status": "tsx scripts/check-db-status.ts",
     "db:ingest-healthify-a": "tsx scripts/ingest-healthify-a.ts",
     "db:ingest-healthify-chunks": "tsx scripts/ingest-healthify-chunks.ts",
+    "db:ingest-weaviate": "tsx scripts/ingest-weaviate.ts",
     "test": "vitest run",
     "clean": "rimraf .next out coverage",
     "commit": "cz",
