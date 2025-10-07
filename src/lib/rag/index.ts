@@ -1,5 +1,7 @@
 import { cosineDistance, sql } from 'drizzle-orm';
 import OpenAI from 'openai';
+import { Settings } from 'llamaindex';
+import configureLlamaIndex from './settings';
 
 import { getDb } from '../../../database/client';
 import { ragDocuments } from '../../../database/schema/rag';
@@ -35,9 +37,33 @@ function coerceJsonb<T>(value: unknown): T | null {
  * Create embedding for text using OpenAI
  */
 export async function createEmbedding(text: string): Promise<number[]> {
+  // First try LlamaIndex embed model if configured
+  try {
+    configureLlamaIndex();
+    const anySettings: any = Settings as any;
+    const embedModel = anySettings?.embedModel;
+    if (embedModel) {
+      if (typeof embedModel.embed === 'function') {
+        const vec = await embedModel.embed(text);
+        if (Array.isArray(vec) && typeof vec[0] === 'number') return vec as number[];
+      }
+      if (typeof embedModel.embedQuery === 'function') {
+        const vec = await embedModel.embedQuery(text);
+        if (Array.isArray(vec) && typeof vec[0] === 'number') return vec as number[];
+      }
+      if (typeof embedModel.getTextEmbedding === 'function') {
+        const vec = await embedModel.getTextEmbedding(text);
+        if (Array.isArray(vec) && typeof vec[0] === 'number') return vec as number[];
+      }
+    }
+  } catch (e) {
+    // Fall through to OpenAI direct embedding
+  }
+
+  // Fallback: direct OpenAI embeddings SDK
   const openai = getOpenAI();
   const response = await openai.embeddings.create({
-    model: 'text-embedding-3-small',
+    model: process.env.LI_EMBED_MODEL || 'text-embedding-3-small',
     input: text,
   });
 

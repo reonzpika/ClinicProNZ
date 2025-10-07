@@ -23,7 +23,7 @@ type SearchResponse = {
 };
 
 /**
- * Intelligently select most relevant sources using GPT-5 nano
+ * Intelligently select most relevant sources using a fast LLM
  */
 async function selectRelevantSources(
   query: string,
@@ -48,7 +48,7 @@ async function selectRelevantSources(
     const llmSelectionStart = performance.now();
     const openai = getOpenAI();
     const completion = await openai.chat.completions.create({
-      model: 'gpt-5-nano', // Ultra-fast selection
+      model: process.env.SEARCH_SELECTION_MODEL || 'gpt-4o-mini',
       messages: [{
         role: 'user',
         content: `Select 1-5 most relevant articles for medical query: "${query}"
@@ -64,7 +64,6 @@ ${sourceSummaries}
 Return only a JSON object with selected indices:
 {"selected": [0, 2, 4]}`,
       }],
-      // Note: GPT-5 models only support default temperature (1)
       response_format: { type: 'json_object' },
     });
 
@@ -284,7 +283,7 @@ ${contextData}`;
     const synthesisStart = performance.now();
     const openai = getOpenAI();
     const completion = await openai.chat.completions.create({
-      model: 'gpt-5-nano', // Ultra-fast synthesis for speed
+      model: process.env.SEARCH_SUMMARY_MODEL || 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
@@ -295,7 +294,6 @@ ${contextData}`;
           content: `Create 3-4 concise bullet points about "${query}" ensuring ALL sources [1] through [${searchResults.length}] are cited.`,
         },
       ],
-      // Note: GPT-5 models only support default temperature (1)
     });
     const synthesisEnd = performance.now();
     console.log(`[SEARCH TIMING] Content synthesis: ${Math.round(synthesisEnd - synthesisStart)}ms`);
