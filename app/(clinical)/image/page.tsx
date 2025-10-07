@@ -70,6 +70,14 @@ export default function ClinicalImagePage() {
   const [newPatientName, setNewPatientName] = useState('');
   const [renameInput, setRenameInput] = useState('');
 
+  const formatSessionDate = (dateString?: string) => {
+    const date = new Date(dateString || new Date());
+    return {
+      date: date.toLocaleDateString('en-GB'),
+      time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+  };
+
   // Track upload loading state
   const isUploading = uploadImages.isPending;
   const [uploadingFileCount, setUploadingFileCount] = useState(0);
@@ -665,9 +673,14 @@ Cancel
                       }}
                     >
                       <option value="none">None (no session)</option>
-                      {sessions.map(s => (
-                        <option key={s.id} value={s.id}>{s.patientName}</option>
-                      ))}
+                      {sessions.map(s => {
+                        const { date, time } = formatSessionDate(s.createdAt);
+                        return (
+                          <option key={s.id} value={s.id}>
+                            {s.patientName} — {date} • {time}
+                          </option>
+                        );
+                      })}
                     </select>
                     <div className="flex gap-2">
                       <input
