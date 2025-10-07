@@ -117,10 +117,10 @@ export const ImageSessionModal: React.FC<ImageSessionModalProps> = ({ isOpen, on
                       <div className="min-w-0 flex-1">
                         <div className="mb-1 flex items-center gap-2">
                           <Input
-                            value={renameValues[s.id] ?? s.patientName || ''}
+                            value={(renameValues[s.id] ?? s.patientName) ?? ''}
                             onChange={(e) => setRenameValues(prev => ({ ...prev, [s.id]: e.target.value }))}
                             onBlur={async () => {
-                              const name = (renameValues[s.id] ?? s.patientName || '').trim();
+                              const name = ((renameValues[s.id] ?? s.patientName) ?? '').trim();
                               if (name && name !== s.patientName) {
                                 try { await rename.mutateAsync({ sessionId: s.id, patientName: name }); } catch {}
                               }
@@ -128,7 +128,7 @@ export const ImageSessionModal: React.FC<ImageSessionModalProps> = ({ isOpen, on
                             onKeyDown={async (e) => {
                               if (e.key === 'Enter') {
                                 e.preventDefault();
-                                const name = (renameValues[s.id] ?? s.patientName || '').trim();
+                                const name = ((renameValues[s.id] ?? s.patientName) ?? '').trim();
                                 if (name && name !== s.patientName) {
                                   try { await rename.mutateAsync({ sessionId: s.id, patientName: name }); } catch {}
                                 }
