@@ -74,9 +74,19 @@ export const CurrentSessionBar: React.FC<CurrentSessionBarProps> = ({
 
   const formatSessionDate = (dateString?: string) => {
     const date = new Date(dateString || new Date());
+    const parts = new Intl.DateTimeFormat('en-NZ', {
+      timeZone: 'Pacific/Auckland',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).formatToParts(date);
+    const get = (type: string) => parts.find(p => p.type === type)?.value || '';
     return {
-      date: date.toLocaleDateString('en-GB'),
-      time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      date: `${get('day')}/${get('month')}/${get('year')}`,
+      time: `${get('hour')}:${get('minute')}`,
     };
   };
 

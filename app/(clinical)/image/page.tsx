@@ -1408,8 +1408,8 @@ function ImageSectionsGrid({
   const bySession = clinical.filter(i => i.sessionId).reduce<Record<string, ServerImage[]>>((acc, img) => {
     const key = img.sessionId as string;
     if (!acc[key]) {
- acc[key] = [];
-}
+      acc[key] = [];
+    }
     acc[key].push(img);
     return acc;
   }, {});
@@ -1448,17 +1448,17 @@ function ImageSectionsGrid({
     )
   );
 
-  const sessionKeys = Object.keys(bySession);
-  const firstSessionId = sessionKeys.length > 0 ? sessionKeys[0] : null;
-  const restSessionIds = sessionKeys.slice(1);
+  // Order session groups by most recent image timestamp within each session
+  const sessionKeys = Object.keys(bySession).sort((a, b) => {
+    const latestA = bySession[a]?.reduce((max, img) => Math.max(max, new Date(img.uploadedAt).getTime()), 0) || 0;
+    const latestB = bySession[b]?.reduce((max, img) => Math.max(max, new Date(img.uploadedAt).getTime()), 0) || 0;
+    return latestB - latestA;
+  });
 
   return (
     <div className="space-y-6">
-      {firstSessionId && (
-        <Section title="This session" items={bySession[firstSessionId] ?? []} />
-      )}
-      {restSessionIds.map(sid => (
-        <Section key={sid} title={`Other session ${sid}`} items={bySession[sid] ?? []} />
+      {sessionKeys.map(sid => (
+        <Section key={sid} title={`Session: ${bySession[sid]?.[0]?.sessionName || sid}`} items={bySession[sid] ?? []} />
       ))}
       <Section title="No session" items={noSession} />
       <Section title="Legacy consultations" items={legacyConsultations} />
