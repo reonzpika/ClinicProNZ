@@ -17,6 +17,7 @@ import OpenAI from 'openai';
 import { formatContextForRag, searchSimilarDocuments } from '@/src/lib/rag';
 import configureLlamaIndex from '@/src/lib/rag/settings';
 import { getVectorIndexFromPg } from '@/src/lib/rag/li-pgvector-store';
+import { getVectorIndexFromWeaviate } from '@/src/lib/rag/li-weaviate-store';
 import { clinicalSystemPrompt, sourcesFromRagResults, sourcesFromLiNodes } from '@/src/lib/rag/prompts';
 
 export async function POST(request: NextRequest) {
@@ -71,8 +72,16 @@ export async function POST(request: NextRequest) {
           configureLlamaIndex();
           const LI: any = await import('llamaindex');
 
-          // Build LI VectorStoreIndex from PGVector
-          const { LI: LI_Any, index } = await getVectorIndexFromPg();
+          // Prefer Weaviate if configured
+          let indexHandle: { LI: any; index: any } | null = null;
+          if (process.env.WEAVIATE_URL && process.env.WEAVIATE_API_KEY) {
+            indexHandle = await getVectorIndexFromWeaviate();
+          } else if (process.env.DATABASE_URL) {
+            indexHandle = await getVectorIndexFromPg();
+          } else {
+            throw new Error('No vector store configured (set WEAVIATE_URL+WEAVIATE_API_KEY or DATABASE_URL)');
+          }
+          const { LI: LI_Any, index } = indexHandle;
 
           // Optional: configure reranker
           let reranker: any = undefined;
