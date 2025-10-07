@@ -57,11 +57,6 @@ ${context}`;
       return new Response('Missing OPENAI_API_KEY', { status: 500 });
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      return new Response('Missing OPENAI_API_KEY', { status: 500 });
-    }
-
     const openaiClient = new OpenAI({ apiKey });
 
     // Create SSE stream
