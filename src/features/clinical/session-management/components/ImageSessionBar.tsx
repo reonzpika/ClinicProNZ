@@ -50,66 +50,35 @@ export const ImageSessionBar: React.FC<ImageSessionBarProps> = ({ selectedSessio
   return (
     <Card className="border-blue-200 bg-blue-50 shadow-sm">
       <CardContent className="p-3">
-        {/* Responsive two-row layout to avoid overlaps */}
+        {/* Responsive three-row layout to avoid overlaps */}
         <div className="flex flex-col gap-2">
-          {/* Row 1: name + actions */}
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex min-w-0 flex-1 items-center gap-2">
-              <UserCheck className="mt-0.5 size-4 shrink-0 text-blue-600" />
-              {current ? (
-                <Input
-                  value={tempName}
-                  onChange={(e) => setTempName(e.target.value)}
-                  onBlur={async () => {
+          {/* Row 1: patient name */}
+          <div className="flex min-w-0 items-center gap-2">
+            <UserCheck className="mt-0.5 size-4 shrink-0 text-blue-600" />
+            {current ? (
+              <Input
+                value={tempName}
+                onChange={(e) => setTempName(e.target.value)}
+                onBlur={async () => {
+                  const name = tempName.trim();
+                  if (name && name !== current.patientName) {
+                    try { await rename.mutateAsync({ sessionId: current.id, patientName: name }); } catch {}
+                  }
+                }}
+                onKeyDown={async (e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
                     const name = tempName.trim();
-                    if (name && name !== current.patientName) {
+                    if (name && current && name !== current.patientName) {
                       try { await rename.mutateAsync({ sessionId: current.id, patientName: name }); } catch {}
                     }
-                  }}
-                  onKeyDown={async (e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      const name = tempName.trim();
-                      if (name && current && name !== current.patientName) {
-                        try { await rename.mutateAsync({ sessionId: current.id, patientName: name }); } catch {}
-                      }
-                    }
-                  }}
-                  className="h-7 flex-1 border-blue-300 bg-blue-50 text-sm font-medium text-blue-800 focus:border-blue-500"
-                />
-              ) : (
-                <div className="text-sm font-medium text-blue-800">No session selected</div>
-              )}
-            </div>
-            <div className="flex shrink-0 items-center gap-2">
-              <Button onClick={onSwitch} size="sm" variant="outline" className="h-8 border-blue-300 px-3 text-xs text-blue-700 hover:bg-blue-100">
-                <span className="mr-1">Switch Session</span>
-                <ChevronDown className="size-3" />
-              </Button>
-              {current && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8 border-red-300 px-3 text-xs text-red-700 hover:bg-red-100"
-                  onClick={async () => {
-                    try { await remove.mutateAsync(current.id); onSelectSession('none'); } catch {}
-                  }}
-                  disabled={remove.isPending}
-                >
-                  {remove.isPending ? (
-                    <span className="inline-flex items-center gap-1">
-                      <RefreshCw className="size-3 animate-spin" />
-                      Deleting...
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1">
-                      <Trash2 className="size-3" />
-                      Delete
-                    </span>
-                  )}
-                </Button>
-              )}
-            </div>
+                  }
+                }}
+                className="h-8 flex-1 border-blue-300 bg-blue-50 text-sm font-medium text-blue-800 focus:border-blue-500"
+              />
+            ) : (
+              <div className="text-sm font-medium text-blue-800">No session selected</div>
+            )}
           </div>
 
           {/* Row 2: date/time */}
@@ -119,6 +88,37 @@ export const ImageSessionBar: React.FC<ImageSessionBarProps> = ({ selectedSessio
                 <Calendar className="size-3" />
                 <span className="truncate">{nz.date} • {nz.time}</span>
               </>
+            )}
+          </div>
+
+          {/* Row 3: actions */}
+          <div className="flex items-center justify-end gap-2">
+            <Button onClick={onSwitch} size="sm" variant="outline" className="h-8 border-blue-300 px-3 text-xs text-blue-700 hover:bg-blue-100">
+              <span className="mr-1">Switch Session</span>
+              <ChevronDown className="size-3" />
+            </Button>
+            {current && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 border-red-300 px-3 text-xs text-red-700 hover:bg-red-100"
+                onClick={async () => {
+                  try { await remove.mutateAsync(current.id); onSelectSession('none'); } catch {}
+                }}
+                disabled={remove.isPending}
+              >
+                {remove.isPending ? (
+                  <span className="inline-flex items-center gap-1">
+                    <RefreshCw className="size-3 animate-spin" />
+                    Deleting...
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1">
+                    <Trash2 className="size-3" />
+                    Delete
+                  </span>
+                )}
+              </Button>
             )}
           </div>
         </div>

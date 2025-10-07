@@ -84,6 +84,8 @@ export function usePatientSessions() {
   const remove = useMutation({
     mutationFn: async (sessionId: string): Promise<void> => {
       if (!userId) throw new Error('Not authenticated');
+      // Optimistic removal: update cache immediately
+      queryClient.setQueryData<PatientSession[]>(qs.list(userId), (prev) => (prev || []).filter(s => s.id !== sessionId));
       const res = await fetch('/api/patient-sessions', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json', ...createAuthHeaders(userId) },
@@ -97,24 +99,10 @@ export function usePatientSessions() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: qs.list(userId || '') });
     },
-  });
-
-  const removeAll = useMutation({
-    mutationFn: async (): Promise<void> => {
-      if (!userId) throw new Error('Not authenticated');
-      const res = await fetch('/api/patient-sessions', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json', ...createAuthHeaders(userId) },
-        body: JSON.stringify({ deleteAll: true }),
-      });
-      if (!res.ok) {
-        const e = await res.json().catch(() => ({}));
-        throw new Error(e.error || 'Failed to delete sessions');
-      }
-    },
-    onSuccess: () => {
+    onError: () => {
+      // Rollback by refetching if delete failed
       queryClient.invalidateQueries({ queryKey: qs.list(userId || '') });
-    },
+    }
   });
 
   return {
@@ -123,7 +111,6 @@ export function usePatientSessions() {
     create,
     rename,
     remove,
-    removeAll,
     refetch: () => queryClient.invalidateQueries({ queryKey: qs.list(userId || '') }),
   };
 }
