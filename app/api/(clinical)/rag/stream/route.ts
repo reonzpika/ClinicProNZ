@@ -17,6 +17,7 @@ import OpenAI from 'openai';
 import { formatContextForRag, searchSimilarDocuments } from '@/src/lib/rag';
 import configureLlamaIndex from '@/src/lib/rag/settings';
 import { getVectorIndexFromPg } from '@/src/lib/rag/li-pgvector-store';
+import { clinicalSystemPrompt, sourcesFromRagResults, sourcesFromLiNodes } from '@/src/lib/rag/prompts';
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,15 +42,7 @@ export async function POST(request: NextRequest) {
     const relevantDocs = await searchSimilarDocuments(query, 3, 0.3);
     const context = formatContextForRag(relevantDocs).slice(0, 4000);
 
-    const systemPrompt = `You are a clinical assistant for New Zealand GPs and healthcare professionals.
-
-Instructions:
-- Answer based ONLY on the provided context from NZ clinical guidance
-- Render output as Markdown (headings, lists, bold where helpful)
-- Always cite sources inline using exact source title and URL from context: [<exact title from context>](<exact URL>)
-- End with a short "Sources" section listing each source as [Title](URL)
-- If no relevant information is found, state this clearly
-- Use NZ medical terminology and spelling; be concise but thorough; focus on evidence-based recommendations`;
+    const systemPrompt = clinicalSystemPrompt();
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
@@ -64,11 +57,7 @@ Instructions:
     const encoder = new TextEncoder();
 
     // Prepare source metadata for client UI
-    const sources = Array.from(
-      new Map(
-        relevantDocs.map(d => [d.source, { title: d.title, url: d.source }])
-      ).values()
-    ).slice(0, 8);
+    const sources = sourcesFromRagResults(relevantDocs, 8);
 
     // Early heartbeat to keep connection active
     await writer.write(encoder.encode(`data: ${JSON.stringify({ type: 'started' })}\n\n`));
@@ -122,6 +111,18 @@ Instructions:
             }
           }
           usedLlamaIndex = true;
+          try {
+            // Pull citations from LI retriever nodes if exposed
+            const retrieverAny: any = (queryEngine as any).retriever || undefined;
+            if (retrieverAny?.lastNodes) {
+              const liSources = sourcesFromLiNodes(retrieverAny.lastNodes, 8);
+              await writer.write(encoder.encode(`data: ${JSON.stringify({ type: 'sources', sources: liSources })}\n\n`));
+            } else {
+              await writer.write(encoder.encode(`data: ${JSON.stringify({ type: 'sources', sources })}\n\n`));
+            }
+          } catch {
+            await writer.write(encoder.encode(`data: ${JSON.stringify({ type: 'sources', sources })}\n\n`));
+          }
         } catch (liErr) {
           // Fall back to OpenAI SDK streaming
           usedLlamaIndex = false;
@@ -147,8 +148,7 @@ Instructions:
           }
         }
 
-        // Send sources at end
-        await writer.write(encoder.encode(`data: ${JSON.stringify({ type: 'sources', sources })}\n\n`));
+        // Send sources at end (fallback path already emitted above in LI branch)
         await writer.write(encoder.encode('data: [DONE]\n\n'));
       } catch (err) {
         const payload = JSON.stringify({ type: 'error', message: 'stream_error' });
