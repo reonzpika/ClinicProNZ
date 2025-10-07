@@ -15,6 +15,7 @@ export const maxDuration = 60;
 import OpenAI from 'openai';
 
 import { formatContextForRag, searchSimilarDocuments } from '@/src/lib/rag';
+import configureLlamaIndex from '@/src/lib/rag/settings';
 
 export async function POST(request: NextRequest) {
   try {
@@ -47,10 +48,7 @@ Instructions:
 - Always cite sources inline using exact source title and URL from context: [<exact title from context>](<exact URL>)
 - End with a short "Sources" section listing each source as [Title](URL)
 - If no relevant information is found, state this clearly
-- Use NZ medical terminology and spelling; be concise but thorough; focus on evidence-based recommendations
-
-Context:
-${context}`;
+- Use NZ medical terminology and spelling; be concise but thorough; focus on evidence-based recommendations`;
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
@@ -74,25 +72,61 @@ ${context}`;
     // Early heartbeat to keep connection active
     await writer.write(encoder.encode(`data: ${JSON.stringify({ type: 'started' })}\n\n`));
 
-    const stream = await openaiClient.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: query },
-      ],
-      temperature: 0.1,
-      stream: true,
-    });
-
+    // Attempt LlamaIndex query engine streaming first; fallback to OpenAI streaming
     (async () => {
       try {
-        for await (const chunk of stream) {
-          const delta = chunk.choices?.[0]?.delta?.content;
-          if (typeof delta === 'string' && delta.length > 0) {
-            const payload = JSON.stringify({ type: 'response.delta', delta });
-            await writer.write(encoder.encode(`data: ${payload}\n\n`));
+        let usedLlamaIndex = false;
+        try {
+          // Configure LlamaIndex providers and attempt streaming via LI QueryEngine
+          configureLlamaIndex();
+          const LI: any = await import('llamaindex');
+
+          const liDocs = relevantDocs.map((d) =>
+            new LI.Document({
+              text: `Title: ${d.title}\nURL: ${d.source}\n\n${d.content}`,
+              metadata: { url: d.source, title: d.title, sourceType: d.sourceType },
+            })
+          );
+          const index = await LI.VectorStoreIndex.fromDocuments(liDocs);
+          const queryEngine = index.asQueryEngine({ similarityTopK: 3 });
+
+          const liPrompt = `${systemPrompt}\n\nContext:\n${context}\n\nQuestion: ${query}`;
+          const responseStream = await queryEngine.query({ query: liPrompt, stream: true });
+
+          // Stream tokens from LlamaIndex
+          for await (const token of responseStream as AsyncIterable<any>) {
+            const delta = token?.delta ?? token?.text ?? token ?? '';
+            if (typeof delta === 'string' && delta.length > 0) {
+              const payload = JSON.stringify({ type: 'response.delta', delta });
+              await writer.write(encoder.encode(`data: ${payload}\n\n`));
+            }
+          }
+          usedLlamaIndex = true;
+        } catch (liErr) {
+          // Fall back to OpenAI SDK streaming
+          usedLlamaIndex = false;
+        }
+
+        if (!usedLlamaIndex) {
+          const stream = await openaiClient.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: `${systemPrompt}\n\nContext:\n${context}` },
+              { role: 'user', content: query },
+            ],
+            temperature: 0.1,
+            stream: true,
+          });
+
+          for await (const chunk of stream) {
+            const delta = (chunk as any).choices?.[0]?.delta?.content;
+            if (typeof delta === 'string' && delta.length > 0) {
+              const payload = JSON.stringify({ type: 'response.delta', delta });
+              await writer.write(encoder.encode(`data: ${payload}\n\n`));
+            }
           }
         }
+
         // Send sources at end
         await writer.write(encoder.encode(`data: ${JSON.stringify({ type: 'sources', sources })}\n\n`));
         await writer.write(encoder.encode('data: [DONE]\n\n'));
