@@ -16,7 +16,7 @@ import OpenAI from 'openai';
 
 import { formatContextForRag, searchSimilarDocuments } from '@/src/lib/rag';
 import configureLlamaIndex from '@/src/lib/rag/settings';
-import { createPgVectorRetriever } from '@/src/lib/rag/li-pgvector-retriever';
+import { getVectorIndexFromPg } from '@/src/lib/rag/li-pgvector-store';
 
 export async function POST(request: NextRequest) {
   try {
@@ -82,11 +82,32 @@ Instructions:
           configureLlamaIndex();
           const LI: any = await import('llamaindex');
 
-          // Use PGVector-backed retriever inside LI
-          const retriever = createPgVectorRetriever({ topK: 3, threshold: 0.3 });
-          const responseSynthesizer = new LI.ResponseSynthesizer();
-          const queryEngine = new LI.RetrieverQueryEngine(retriever as any, responseSynthesizer, {
-            // Future: add rerankers/postprocessors here
+          // Build LI VectorStoreIndex from PGVector
+          const { LI: LI_Any, index } = await getVectorIndexFromPg();
+
+          // Optional: configure reranker
+          let reranker: any = undefined;
+          const rerankModel = process.env.LI_RERANK_MODEL; // e.g., 'cohere/rerank-3'
+          if (rerankModel && LI_Any.Reranker) {
+            reranker = new LI_Any.Reranker({ model: rerankModel, topN: 3 });
+          }
+
+          // Optional: metadata filters; expect LI_METADATA_FILTERS as JSON like {sourceType:'healthify'}
+          let filters: any = undefined;
+          const rawFilters = process.env.LI_METADATA_FILTERS;
+          if (rawFilters) {
+            try { filters = JSON.parse(rawFilters); } catch {}
+          }
+
+          const retriever = index.asRetriever({
+            similarityTopK: 3,
+            filters,
+          });
+
+          const queryEngine = LI_Any.RetrieverQueryEngine.fromArgs({
+            retriever,
+            responseMode: 'compact',
+            nodePostprocessors: reranker ? [reranker] : undefined,
           });
 
           const liPrompt = `${systemPrompt}\n\nQuestion: ${query}`;
