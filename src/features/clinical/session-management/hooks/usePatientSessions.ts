@@ -81,11 +81,49 @@ export function usePatientSessions() {
     },
   });
 
+  const remove = useMutation({
+    mutationFn: async (sessionId: string): Promise<void> => {
+      if (!userId) throw new Error('Not authenticated');
+      const res = await fetch('/api/patient-sessions', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', ...createAuthHeaders(userId) },
+        body: JSON.stringify({ sessionId }),
+      });
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        throw new Error(e.error || 'Failed to delete session');
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: qs.list(userId || '') });
+    },
+  });
+
+  const removeAll = useMutation({
+    mutationFn: async (): Promise<void> => {
+      if (!userId) throw new Error('Not authenticated');
+      const res = await fetch('/api/patient-sessions', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', ...createAuthHeaders(userId) },
+        body: JSON.stringify({ deleteAll: true }),
+      });
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        throw new Error(e.error || 'Failed to delete sessions');
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: qs.list(userId || '') });
+    },
+  });
+
   return {
     sessions: list.data || [],
     isLoading: list.isLoading,
     create,
     rename,
+    remove,
+    removeAll,
     refetch: () => queryClient.invalidateQueries({ queryKey: qs.list(userId || '') }),
   };
 }

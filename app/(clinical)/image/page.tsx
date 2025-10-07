@@ -21,6 +21,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 import { usePatientSessions } from '@/src/features/clinical/session-management/hooks/usePatientSessions';
+import { ImageSessionBar } from '@/src/features/clinical/session-management/components/ImageSessionBar';
+import { ImageSessionModal } from '@/src/features/clinical/session-management/components/ImageSessionModal';
 // Removed in-page WebRTC camera in favour of native camera capture
 import { imageQueryKeys, useAnalyzeImage, useDeleteImage, useImageUrl, useRenameImage, useSaveAnalysis, useServerImages, useUploadImages } from '@/src/hooks/useImageQueries';
 import { Container } from '@/src/shared/components/layout/Container';
@@ -69,12 +71,23 @@ export default function ClinicalImagePage() {
   const [selectedSessionId, setSelectedSessionId] = useState<string | 'none'>('none');
   const [newPatientName, setNewPatientName] = useState('');
   const [renameInput, setRenameInput] = useState('');
+  const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
 
   const formatSessionDate = (dateString?: string) => {
     const date = new Date(dateString || new Date());
+    const parts = new Intl.DateTimeFormat('en-NZ', {
+      timeZone: 'Pacific/Auckland',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).formatToParts(date);
+    const get = (type: string) => parts.find(p => p.type === type)?.value || '';
     return {
-      date: date.toLocaleDateString('en-GB'),
-      time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      date: `${get('day')}/${get('month')}/${get('year')}`,
+      time: `${get('hour')}:${get('minute')}`,
     };
   };
 
@@ -656,89 +669,12 @@ Cancel
 
               {/* Session Selector and Upload Controls */}
               <div className="flex flex-col gap-2">
-                {/* Session Selector */}
-                <div className="rounded-md border p-3">
-                  <div className="mb-2 text-xs font-semibold text-slate-700">Session (optional)</div>
-                  <div className="space-y-2">
-                    <select
-                      className="w-full rounded border px-2 py-1 text-sm"
-                      value={selectedSessionId}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setSelectedSessionId(val as any);
-                        if (val !== 'none') {
-                          const s = sessions.find(s => s.id === val);
-                          setRenameInput(s?.patientName || '');
-                        }
-                      }}
-                    >
-                      <option value="none">None (no session)</option>
-                      {sessions.map(s => {
-                        const { date, time } = formatSessionDate(s.createdAt);
-                        return (
-                          <option key={s.id} value={s.id}>
-                            {s.patientName} — {date} • {time}
-                          </option>
-                        );
-                      })}
-                    </select>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="New patient name"
-                        className="flex-1 rounded border px-2 py-1 text-sm"
-                        value={newPatientName}
-                        onChange={(e) => setNewPatientName(e.target.value)}
-                      />
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={async () => {
-                          const name = newPatientName.trim();
-                          if (!name) return;
-                          try {
-                            const session = await createSession.mutateAsync(name);
-                            setSelectedSessionId(session.id);
-                            setRenameInput(session.patientName || name);
-                            setNewPatientName('');
-                            refetchSessions();
-                          } catch (e) {
-                            // error surfaced via hook if needed
-                          }
-                        }}
-                        disabled={createSession.isPending}
-                      >
-                        {createSession.isPending ? 'Creating...' : 'Create'}
-                      </Button>
-                    </div>
-                    <div className="flex gap-2 items-center">
-                      <input
-                        type="text"
-                        placeholder="Rename selected"
-                        className="flex-1 rounded border px-2 py-1 text-sm"
-                        value={renameInput}
-                        onChange={(e) => setRenameInput(e.target.value)}
-                        disabled={selectedSessionId === 'none'}
-                      />
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={async () => {
-                          const name = renameInput.trim();
-                          if (!name || selectedSessionId === 'none') return;
-                          try {
-                            await renameSession.mutateAsync({ sessionId: selectedSessionId as string, patientName: name });
-                            refetchSessions();
-                          } catch {}
-                        }}
-                        disabled={selectedSessionId === 'none' || renameSession.isPending}
-                      >
-                        {renameSession.isPending ? 'Renaming...' : 'Rename'}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+                {/* Session Bar (local-only) */}
+                <ImageSessionBar
+                  selectedSessionId={selectedSessionId}
+                  onSwitch={() => setIsSessionModalOpen(true)}
+                  onSelectSession={(id) => setSelectedSessionId(id)}
+                />
                 <Button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploading}
@@ -790,13 +726,7 @@ Cancel
                 </div>
               )}
             </CardHeader>
-            <CardContent>
-              <p className="text-sm text-slate-600">
-                Upload images to get started with AI-powered clinical analysis.
-                You can select multiple images at once using Ctrl/Cmd+click.
-                Click on any image in the right panel to analyze it with Claude.
-              </p>
-            </CardContent>
+            <CardContent />
           </Card>
         </div>
 
@@ -916,6 +846,12 @@ Cancel
       )}
 
       {/* Image Enlarge Modal */}
+      {/* Session Modal */}
+      <ImageSessionModal
+        isOpen={isSessionModalOpen}
+        onClose={() => setIsSessionModalOpen(false)}
+        onSessionSelected={(id) => { setSelectedSessionId(id); setIsSessionModalOpen(false); }}
+      />
       {enlargeModal.isOpen && enlargeModal.image && (
         <ImageEnlargeModal
           image={enlargeModal.image}
