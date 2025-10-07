@@ -65,7 +65,7 @@ export default function ClinicalImagePage() {
   const cameraFileInputRef = useRef<HTMLInputElement>(null);
 
   // Local-only session selector state (does not affect global currentSessionId)
-  const { sessions, isLoading: isLoadingSessions, create: createSession, rename: renameSession, refetch: refetchSessions } = usePatientSessions();
+  const { sessions, create: createSession, rename: renameSession, refetch: refetchSessions } = usePatientSessions();
   const [selectedSessionId, setSelectedSessionId] = useState<string | 'none'>('none');
   const [newPatientName, setNewPatientName] = useState('');
   const [renameInput, setRenameInput] = useState('');

@@ -5,7 +5,7 @@ import { and, desc, eq, inArray } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { clinicalImageAnalyses, clinicalImageMetadata } from '@/db/schema';
+import { clinicalImageAnalyses, clinicalImageMetadata, patientSessions } from '@/db/schema';
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 // Initialize S3 client for NZ region (use explicit credentials for consistent performance)
@@ -164,12 +164,27 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    // Optionally join session names for grouping headings on UI
+    const sessionIds = Array.from(new Set(allImages.map(i => i.sessionId).filter(Boolean))) as string[];
+    let sessionNameMap: Record<string, string> = {};
+    if (sessionIds.length > 0) {
+      try {
+        const db = getDb();
+        const rows = await db
+          .select({ id: patientSessions.id, patientName: patientSessions.patientName })
+          .from(patientSessions)
+          .where(inArray(patientSessions.id, sessionIds));
+        sessionNameMap = Object.fromEntries(rows.map(r => [r.id, r.patientName || 'Untitled Session']));
+      } catch {}
+    }
+
     // No mass presign here; clients fetch per-tile via /api/uploads/download
     const imagesWithData = allImages.map(image => ({
       ...image,
       displayName: metadataMap[image.key]?.displayName || undefined,
       patientName: metadataMap[image.key]?.patientName || undefined,
       identifier: metadataMap[image.key]?.identifier || undefined,
+      sessionName: image.sessionId ? sessionNameMap[image.sessionId] : undefined,
       analysis: analysisMap[image.key] || undefined,
     }));
 
