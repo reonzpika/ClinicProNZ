@@ -43,67 +43,7 @@ export default function ClinicalReferencePage() {
   const [consultationNote, setConsultationNote] = useState('');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  // RAG streaming (hybrid: LlamaIndex for retrieval; Vercel AI SDK on server; custom SSE client here)
-  const [ragInput, setRagInput] = useState('');
-  const [ragCompletion, setRagCompletion] = useState('');
-  const [ragSources, setRagSources] = useState<Array<{ title?: string; url: string }>>([]);
-  const [ragLoading, setRagLoading] = useState(false);
-
-  async function handleRagSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!ragInput.trim() || ragLoading) return;
-    setRagCompletion('');
-    setRagLoading(true);
-    try {
-      const res = await fetch('/api/rag/stream', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...createAuthHeaders(userId, userTier),
-        },
-        body: JSON.stringify({ query: ragInput }),
-      });
-      if (!res.ok || !res.body) {
-        const txt = await res.text();
-        throw new Error(txt || 'Failed to stream response');
-      }
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        let idx;
-        while ((idx = buffer.indexOf('\n\n')) !== -1) {
-          const eventBlock = buffer.slice(0, idx);
-          buffer = buffer.slice(idx + 2);
-          const dataLines = eventBlock
-            .split('\n')
-            .filter((l) => l.startsWith('data:'))
-            .map((l) => l.replace(/^data:\s?/, ''));
-          for (const dl of dataLines) {
-            if (!dl || dl === '[DONE]') continue;
-            try {
-              const evt = JSON.parse(dl);
-              if (evt.type === 'response.delta' && typeof evt.delta === 'string') {
-                setRagCompletion((prev) => prev + evt.delta);
-              } else if (evt.type === 'sources' && Array.isArray(evt.sources)) {
-                setRagSources(evt.sources);
-              }
-            } catch {
-              // Fallback: append raw text if not JSON
-              setRagCompletion((prev) => prev + dl);
-            }
-          }
-        }
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Streaming failed');
-    } finally {
-      setRagLoading(false);
-    }
-  }
+  // RAG streaming UI removed per request. We'll rebuild from scratch later.
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
@@ -222,59 +162,7 @@ export default function ClinicalReferencePage() {
           </div>
         </div>
 
-        {/* RAG Streaming (uses /api/rag/stream) */}
-        <div className="mb-6">
-          <Card>
-            <CardHeader className="border-b border-slate-200 pb-4">
-              <div className="flex items-center space-x-3">
-                <div className="flex size-10 items-center justify-center rounded-full bg-blue-100">
-                  <Bot className="size-5 text-blue-600" />
-                </div>
-                <div>
-                  <CardTitle className="text-lg">RAG Chat (Streaming)</CardTitle>
-                  <CardDescription>
-                    Powered by LlamaIndex retrieval + Vercel AI SDK streaming (custom SSE client)
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3 p-4">
-              <form onSubmit={handleRagSubmit} className="flex items-center space-x-2">
-                <input
-                  type="text"
-                  value={ragInput}
-                  onChange={e => setRagInput(e.target.value)}
-                  placeholder="Ask a clinical question (e.g., abdominal pain red flags)"
-                  className="flex-1 rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  disabled={ragLoading}
-                />
-                <Button type="submit" disabled={!ragInput.trim() || ragLoading}>
-                  {ragLoading ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
-                </Button>
-              </form>
-              {ragCompletion && (
-                <div className="prose prose-slate max-w-none rounded-lg bg-white p-3 text-sm">
-                  {/* Render markdown safely */}
-                  <MarkdownRenderer markdown={ragCompletion} />
-                  {ragSources.length > 0 && (
-                    <div className="mt-4">
-                      <h4 className="mb-2 text-sm font-semibold">Sources</h4>
-                      <ul className="list-disc pl-5">
-                        {ragSources.map((s, idx) => (
-                          <li key={s.url + idx}>
-                            <a href={s.url} target="_blank" rel="noreferrer" className="text-blue-600 underline">
-                              {s.title || s.url}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+        {/* RAG streaming UI removed */}
 
         {/* Main Content */}
         <div className="flex flex-1 gap-6">
@@ -498,15 +386,4 @@ export default function ClinicalReferencePage() {
   );
 }
 
-function MarkdownRenderer({ markdown }: { markdown: string }) {
-  return (
-    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
-      a: ({ node, ...props }) => (
-        // open links in new tab for safety
-        <a {...props} target="_blank" rel="noreferrer" />
-      ),
-    }}>
-      {markdown}
-    </ReactMarkdown>
-  );
-}
+// Markdown renderer removed with RAG UI
