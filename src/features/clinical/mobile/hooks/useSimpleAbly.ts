@@ -56,6 +56,10 @@ export const useSimpleAbly = ({
   isMobile = false, // Default to false (desktop)
   onControlCommand,
   onMobileImagesUploaded,
+  onImageUploadStarted,
+  onImageUploaded,
+  onImageProcessed,
+  onImageDeleted,
   onTranscriptionsUpdated,
   onTranscriptionFlushed,
   onSessionContextChanged,
