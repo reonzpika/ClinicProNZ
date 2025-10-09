@@ -134,10 +134,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     objectiveText,
     assessmentText,
     planText,
-    // Dirty flags and last-edited timestamps
+    // Dirty flags and last-edited timestamps (used to skip unnecessary saves and gate auto-inserts)
+    problemsDirty,
     objectiveDirty,
     assessmentDirty,
     planDirty,
+    problemsEditedAt,
     objectiveEditedAt,
     assessmentEditedAt,
     planEditedAt,
@@ -151,6 +153,13 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     savePlanToCurrentSession,
   } = useConsultationStores();
 
+  // Tiny per-section save status (mirrors TypedInput UX)
+  type SaveStatus = 'saved' | 'editing' | 'saving';
+  const [problemsStatus, setProblemsStatus] = useState<SaveStatus>('saved');
+  const [objectiveStatus, setObjectiveStatus] = useState<SaveStatus>('saved');
+  const [assessmentStatus, setAssessmentStatus] = useState<SaveStatus>('saved');
+  const [planStatus, setPlanStatus] = useState<SaveStatus>('saved');
+
   // Sync expansion state with defaultExpanded prop changes (input mode changes)
   useEffect(() => {
     if (!isMinimized) {
@@ -158,21 +167,29 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     }
   }, [defaultExpanded, isMinimized]);
 
-  // Save individual section on blur
+  // Save individual section on blur (skip if no changes via dirty flags)
   const handleSectionBlur = async (section: 'problems' | 'objective' | 'assessment' | 'plan') => {
     let ok = true;
     try {
       switch (section) {
         case 'problems':
+          if (!problemsDirty && (problemsText || '') === (problemsText || '')) { break; }
+          setProblemsStatus('saving');
           ok = await saveProblemsToCurrentSession(problemsText || '');
           break;
         case 'objective':
+          if (!objectiveDirty && (objectiveText || '') === (objectiveText || '')) { break; }
+          setObjectiveStatus('saving');
           ok = await saveObjectiveToCurrentSession(objectiveText || '');
           break;
         case 'assessment':
+          if (!assessmentDirty && (assessmentText || '') === (assessmentText || '')) { break; }
+          setAssessmentStatus('saving');
           ok = await saveAssessmentToCurrentSession(assessmentText || '');
           break;
         case 'plan':
+          if (!planDirty && (planText || '') === (planText || '')) { break; }
+          setPlanStatus('saving');
           ok = await savePlanToCurrentSession(planText || '');
           break;
       }
@@ -185,97 +202,32 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
         (window as any).toast[ok ? 'success' : 'error'](ok ? `${section} saved` : `Failed to save ${section}`);
       }
     } catch {}
+    // Update badges
+    if (section === 'problems') setProblemsStatus(ok ? 'saved' : 'editing');
+    if (section === 'objective') setObjectiveStatus(ok ? 'saved' : 'editing');
+    if (section === 'assessment') setAssessmentStatus(ok ? 'saved' : 'editing');
+    if (section === 'plan') setPlanStatus(ok ? 'saved' : 'editing');
   };
 
-  // Auto-append new items to appropriate sections with gating and persistence
-  const mountedRef = React.useRef(false);
-  useEffect(() => {
-    // On first mount, treat existing items as already processed to avoid re-population on refresh
-    if (!mountedRef.current) {
-      items.forEach(item => processedItemIds.current.add(item.id));
-      mountedRef.current = true;
-      return;
-    }
-
-    const newItems = items.filter(item => !processedItemIds.current.has(item.id));
-    if (newItems.length === 0) {
-      return;
-    }
-
-    // Gating: skip appending into sections that were recently edited or are marked dirty
-    const now = Date.now();
-    const recentMs = 3000;
-    const canAppendObjective = !objectiveDirty && !(objectiveEditedAt && (now - objectiveEditedAt) < recentMs);
-    const canAppendAssessment = !assessmentDirty && !(assessmentEditedAt && (now - assessmentEditedAt) < recentMs);
-    const canAppendPlan = !planDirty && !(planEditedAt && (now - planEditedAt) < recentMs);
-
-    // Route items by type/title and avoid duplicates already present in sections
-    const isPlanItem = (title: string) => /plan|safety[- ]?net/i.test(title);
-    const toLine = (i: any) => `${i.title}: ${i.content}`;
-
-    const objAdds = canAppendObjective
-      ? newItems
-          .filter(i => (i.type === 'checklist' || i.type === 'other' || i.type === 'acc-code') && !isPlanItem(i.title))
-          .map(toLine)
-          .filter(line => !objectiveText.includes(line))
-      : [];
-    const asmtAdds = canAppendAssessment
-      ? newItems
-          .filter(i => i.type === 'differential-diagnosis')
-          .map(toLine)
-          .filter(line => !assessmentText.includes(line))
-      : [];
-    const planAdds = canAppendPlan
-      ? newItems
-          .filter(i => isPlanItem(i.title))
-          .map(toLine)
-          .filter(line => !planText.includes(line))
-      : [];
-
-    // Always mark these items as processed to avoid repeated attempts
-    newItems.forEach(item => processedItemIds.current.add(item.id));
-
-    if (objAdds.length === 0 && asmtAdds.length === 0 && planAdds.length === 0) {
-      return;
-    }
-
-    const objectiveUpdated = objAdds.length > 0 ? [objectiveText.trim(), objAdds.join('\n\n')].filter(Boolean).join('\n\n') : null;
-    const assessmentUpdated = asmtAdds.length > 0 ? [assessmentText.trim(), asmtAdds.join('\n\n')].filter(Boolean).join('\n\n') : null;
-    const planUpdated = planAdds.length > 0 ? [planText.trim(), planAdds.join('\n\n')].filter(Boolean).join('\n\n') : null;
-
-    // Apply updates locally and persist immediately so they survive refresh
-    (async () => {
-      try {
-        if (objectiveUpdated !== null) {
-          setObjectiveText(objectiveUpdated);
-          await saveObjectiveToCurrentSession(objectiveUpdated);
-        }
-        if (assessmentUpdated !== null) {
-          setAssessmentText(assessmentUpdated);
-          await saveAssessmentToCurrentSession(assessmentUpdated);
-        }
-        if (planUpdated !== null) {
-          setPlanText(planUpdated);
-          await savePlanToCurrentSession(planUpdated);
-        }
-      } catch {}
-    })();
-    // No longer writing JSON back through onNotesChange
-  }, [items]);
+  // Note: auto-append from consultation items has been removed by design (user preference)
 
   // Handle text changes per section
   const handleSectionChange = (section: 'problems' | 'objective' | 'assessment' | 'plan', newText: string) => {
     if (section === 'problems') {
  setProblemsText(newText);
+      setProblemsStatus('editing');
 }
     if (section === 'objective') {
  setObjectiveText(newText);
+      setObjectiveStatus('editing');
 }
     if (section === 'assessment') {
  setAssessmentText(newText);
+      setAssessmentStatus('editing');
 }
     if (section === 'plan') {
  setPlanText(newText);
+      setPlanStatus('editing');
 }
     // Persist happens on blur and via explicit programmatic appends
     // No longer writing JSON back through onNotesChange

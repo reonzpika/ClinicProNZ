@@ -358,8 +358,9 @@ export function useConsultationStores(): any {
       const currentId = consultationStore.currentPatientSessionId;
       if (currentId) {
         const { problemsText, objectiveText, assessmentText, planText } = consultationStore as any;
+        const { typedInput } = transcriptionStore as any;
         try {
-          await updatePatientSession(currentId, { problemsText, objectiveText, assessmentText, planText } as any);
+          await updatePatientSession(currentId, { problemsText, objectiveText, assessmentText, planText, typedInput } as any);
         } catch {}
       }
 
@@ -399,6 +400,12 @@ export function useConsultationStores(): any {
     }
     try {
       pauseMutations();
+      // Save current fields before finishing
+      try {
+        const { problemsText, objectiveText, assessmentText, planText } = consultationStore as any;
+        const { typedInput } = transcriptionStore as any;
+        await updatePatientSession(currentId, { problemsText, objectiveText, assessmentText, planText, typedInput } as any);
+      } catch {}
       // Soft delete current
       await deleteSessionMutation.mutateAsync(currentId);
       // Create new with default template
@@ -429,6 +436,15 @@ export function useConsultationStores(): any {
   const deleteSessionAndMaybeSwitch = useCallback(async (sessionId: string): Promise<boolean> => {
     try {
       pauseMutations();
+      // Save current data explicitly before deleting/switching
+      try {
+        const currentId = consultationStore.currentPatientSessionId;
+        if (currentId) {
+          const { problemsText, objectiveText, assessmentText, planText } = consultationStore as any;
+          const { typedInput } = transcriptionStore as any;
+          await updatePatientSession(currentId, { problemsText, objectiveText, assessmentText, planText, typedInput } as any);
+        }
+      } catch {}
       const res = await deleteSessionMutation.mutateAsync(sessionId);
       // If server provided a currentSessionId and we deleted current, switch
       try {
