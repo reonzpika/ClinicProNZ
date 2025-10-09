@@ -886,8 +886,8 @@ function ServerImageCard({
 }) {
   const [isDeleting, setIsDeleting] = React.useState(false);
   // Lazily fetch image URL per tile
-  const { data: fetchedUrl } = useImageUrl(image.thumbnailKey || image.key);
-  const imageUrl = fetchedUrl;
+  const { data: fetchedUrl } = useImageUrl(image.thumbnailUrl ? '' : (image.thumbnailKey || image.key));
+  const imageUrl = image.thumbnailUrl || fetchedUrl;
   const isLoadingUrl = !imageUrl;
 
   const handleDelete = (e: React.MouseEvent) => {
@@ -931,6 +931,10 @@ function ServerImageCard({
 : (
                 <ImageIcon className="size-6 text-slate-400" />
         )}
+          {/* Processing badge when no thumbnail/url yet */}
+          {!isLoadingUrl && !image.thumbnailUrl && image.thumbnailKey && (
+            <div className="absolute left-2 top-2 rounded bg-yellow-500/90 px-2 py-0.5 text-[10px] font-medium text-white">Processing…</div>
+          )}
           {isDeleting && (
             <div className="absolute inset-0 flex items-center justify-center bg-white/70">
               <Loader2 className="size-6 animate-spin text-slate-500" />

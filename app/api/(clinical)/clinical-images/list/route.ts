@@ -1,4 +1,5 @@
-import { ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
+import { GetObjectCommand, HeadObjectCommand, ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { auth } from '@clerk/nextjs/server';
 import { getDb } from 'database/client';
 import { and, desc, eq, inArray } from 'drizzle-orm';
@@ -182,13 +183,28 @@ export async function GET(req: NextRequest) {
     }
 
     // No mass presign here; clients fetch per-tile via /api/uploads/download
-    const imagesWithData = allImages.map(image => ({
-      ...image,
-      displayName: metadataMap[image.key]?.displayName || undefined,
-      patientName: metadataMap[image.key]?.patientName || undefined,
-      identifier: metadataMap[image.key]?.identifier || undefined,
-      sessionName: image.sessionId ? sessionNameMap[image.sessionId] : undefined,
-      analysis: analysisMap[image.key] || undefined,
+    // Best-effort: attach presigned thumbnail URLs when the thumbnail object exists
+    const imagesWithData = await Promise.all(allImages.map(async (image) => {
+      let thumbnailUrl: string | undefined = undefined;
+      if (image.thumbnailKey && BUCKET_NAME) {
+        try {
+          // Check existence first to avoid generating invalid signed URLs
+          await s3Client.send(new HeadObjectCommand({ Bucket: BUCKET_NAME, Key: image.thumbnailKey }));
+          const cmd = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: image.thumbnailKey });
+          thumbnailUrl = await getSignedUrl(s3Client, cmd, { expiresIn: 1800 }); // 30 min
+        } catch {
+          thumbnailUrl = undefined;
+        }
+      }
+      return {
+        ...image,
+        displayName: metadataMap[image.key]?.displayName || undefined,
+        patientName: metadataMap[image.key]?.patientName || undefined,
+        identifier: metadataMap[image.key]?.identifier || undefined,
+        sessionName: image.sessionId ? sessionNameMap[image.sessionId] : undefined,
+        analysis: analysisMap[image.key] || undefined,
+        ...(thumbnailUrl ? { thumbnailUrl } : {}),
+      };
     }));
 
     return NextResponse.json({

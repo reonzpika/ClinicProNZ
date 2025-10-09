@@ -30,7 +30,8 @@ function SessionImageTile({
   onDownload: () => void;
   onDelete: () => void;
 }) {
-  const { data: imageUrl } = useImageUrl(image.thumbnailKey || image.key);
+  const { data: imageUrlData } = useImageUrl(image.thumbnailUrl ? '' : (image.thumbnailKey || image.key));
+  const imageUrl = image.thumbnailUrl || imageUrlData;
   const renameImage = useRenameImage();
   const baseName = (image.displayName || image.filename || '').replace(/\.[^.]+$/, '');
   const [isRenaming, setIsRenaming] = React.useState(false);
@@ -43,7 +44,7 @@ function SessionImageTile({
   };
   return (
     <div className="flex flex-col">
-      <div className="aspect-square overflow-hidden rounded-lg bg-slate-100">
+      <div className="relative aspect-square overflow-hidden rounded-lg bg-slate-100">
         {imageUrl
           ? (
             <img src={imageUrl} alt="" className="size-full object-cover" />
@@ -51,6 +52,9 @@ function SessionImageTile({
           : (
             <div className="flex size-full items-center justify-center text-xs text-slate-400">No preview</div>
           )}
+        {!imageUrl && image.thumbnailKey && (
+          <div className="absolute left-2 top-2 rounded bg-yellow-500/90 px-2 py-0.5 text-[10px] font-medium text-white">Processing…</div>
+        )}
       </div>
       <div className="mt-2 flex items-center gap-2">
         {isRenaming ? (
