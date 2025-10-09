@@ -305,7 +305,11 @@ export const ClinicalImageTab: React.FC = () => {
       const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = blobUrl;
-      a.download = image.filename || 'clinical-image';
+      {
+        const baseName = (image.displayName || image.filename || '').replace(/\.[^.]+$/, '');
+        const ext = image.filename && image.filename.includes('.') ? `.${image.filename.split('.').pop()}` : '';
+        a.download = `${baseName}${ext}`.trim() || 'clinical-image';
+      }
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
