@@ -384,7 +384,10 @@ function MobilePageContent() {
           </CardHeader>
           <CardContent className="text-center">
             <p className="mb-4 text-gray-600">Please sign in to use mobile recording</p>
-            <Button onClick={() => (window.location.href = '/auth/login')} size="lg" className="w-full">Sign In</Button>
+            <Button onClick={() => {
+              const currentUrl = typeof window !== 'undefined' ? window.location.href : '/mobile';
+              window.location.href = `/auth/login?redirect_url=${encodeURIComponent(currentUrl)}`;
+            }} size="lg" className="w-full">Sign In</Button>
           </CardContent>
         </Card>
       </div>

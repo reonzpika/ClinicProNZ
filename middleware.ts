@@ -235,6 +235,18 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
+  // Protect /image page on smartphones - require sign-in only
+  if (req.nextUrl.pathname.startsWith('/image')) {
+    const userAgent = req.headers.get('user-agent') || '';
+    const isSmartphone = /iPhone|iPod|Android.*Mobile|Windows Phone|IEMobile|BlackBerry|Opera Mini/i.test(userAgent);
+    if (isSmartphone) {
+      const resolvedAuth = await auth();
+      if (!resolvedAuth.userId) {
+        return redirectToLogin(req.url);
+      }
+    }
+  }
+
   // Create response and add rate limit headers if available
   const response = NextResponse.next();
 
@@ -276,6 +288,7 @@ export const config = {
     '/dashboard/:path*',
     '/settings/:path*',
     '/mobile/:path*',
+    '/image/:path*',
     '/search/:path*',
   ],
 };
