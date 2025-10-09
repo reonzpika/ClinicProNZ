@@ -15,6 +15,7 @@ import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
 import { resizeImageFile } from '@/src/shared/utils/image';
 import type { ClinicalImage } from '@/src/types/consultation';
+import { useToast } from '@/src/shared/components/ui/toast';
 
 function SessionImageTile({
   image,
@@ -147,6 +148,7 @@ export const ClinicalImageTab: React.FC = () => {
   const { userId } = useAuth();
   const [inFlightUploads, setInFlightUploads] = useState(0);
   const [completedUploads, setCompletedUploads] = useState(0);
+  const { show: showToast } = useToast();
   const { data: serverImages = [], isLoading: isLoadingServerImages } = useServerImages(currentPatientSessionId || undefined);
   const deleteImageMutation = useDeleteImage();
   const sessionServerImages = useMemo(() => {
@@ -169,6 +171,15 @@ export const ClinicalImageTab: React.FC = () => {
       try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') }); } catch {}
     },
   });
+
+  // Show toast when uploads complete
+  React.useEffect(() => {
+    if (inFlightUploads === 0 && completedUploads > 0) {
+      const n = completedUploads;
+      showToast({ title: 'Images added', description: `${n} image${n === 1 ? '' : 's'} added`, durationMs: 4000 });
+      setCompletedUploads(0);
+    }
+  }, [inFlightUploads, completedUploads, showToast]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentSession = getCurrentPatientSession();
@@ -552,9 +563,6 @@ export const ClinicalImageTab: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {completedUploads > 0 && inFlightUploads === 0 && (
-        <div className="rounded border border-green-200 bg-green-50 p-2 text-xs text-green-700">{completedUploads} image{completedUploads === 1 ? '' : 's'} added</div>
-      )}
       {error && (
         <div className="rounded bg-red-50 p-2 text-sm text-red-600">
           {error}
@@ -649,7 +657,10 @@ export const ClinicalImageTab: React.FC = () => {
       {(isLoadingServerImages || sessionServerImages.length > 0) && (
         <div className="border-l-2 border-blue-200 pl-3">
           <div className="mb-3 flex items-center justify-between">
-            <h4 className="text-sm font-medium text-blue-600">Session Images</h4>
+            <div className="flex items-center gap-2">
+              <h4 className="text-sm font-medium text-blue-600">Session Images</h4>
+              <span className="text-[10px] text-slate-400">Thumbnails may expire after ~30m; they refresh automatically.</span>
+            </div>
             <div className="flex items-center gap-2">
               {inFlightUploads > 0 && (
                 <span className="flex items-center gap-1 rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
