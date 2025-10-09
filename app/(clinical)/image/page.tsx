@@ -26,6 +26,7 @@ import { ImageSessionModal } from '@/src/features/clinical/session-management/co
 // Removed in-page WebRTC camera in favour of native camera capture
 import { imageQueryKeys, useAnalyzeImage, useDeleteImage, useImageUrl, useRenameImage, useSaveAnalysis, useServerImages, useUploadImages } from '@/src/hooks/useImageQueries';
 import { Container } from '@/src/shared/components/layout/Container';
+import { useToast } from '@/src/shared/components/ui/toast';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
@@ -69,6 +70,7 @@ export default function ClinicalImagePage() {
   // Local-only session selector state (does not affect global currentSessionId)
   const [selectedSessionId, setSelectedSessionId] = useState<string | 'none'>('none');
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
+  const { show: showToast } = useToast();
 
   // Track upload loading state
   const isUploading = uploadImages.isPending;
@@ -284,6 +286,7 @@ export default function ClinicalImagePage() {
     try {
       // Delete in background
       await deleteImage.mutateAsync(imageKey);
+      showToast({ title: 'Image deleted', description: 'The image has been removed.' });
       // Successfully deleted - keep it hidden
     } catch (error) {
       console.error('Delete error:', error);
