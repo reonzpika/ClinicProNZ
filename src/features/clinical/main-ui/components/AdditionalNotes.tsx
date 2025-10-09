@@ -1,7 +1,7 @@
 'use client';
 
 import { FileText } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { ExaminationChecklistButton } from '@/src/features/clinical/examination-checklist/components/ExaminationChecklistButton';
 import { PlanSafetyNettingButton } from '@/src/features/clinical/plan-safety-netting';
@@ -36,8 +36,6 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   defaultExpanded = true,
   expandedSize = 'normal',
 }) => {
-  // Track processed items to avoid duplicates
-  const processedItemIds = React.useRef(new Set<string>());
   const [isExpanded, setIsExpanded] = useState(isMinimized ? false : defaultExpanded);
 
   // Refs for keyboard focus management
@@ -134,6 +132,11 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     objectiveText,
     assessmentText,
     planText,
+    // Dirty flags (used to skip unnecessary saves)
+    problemsDirty,
+    objectiveDirty,
+    assessmentDirty,
+    planDirty,
     setProblemsText,
     setObjectiveText,
     setAssessmentText,
@@ -144,6 +147,13 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     savePlanToCurrentSession,
   } = useConsultationStores();
 
+  // Tiny per-section save status (mirrors TypedInput UX)
+  type SaveStatus = 'saved' | 'editing' | 'saving';
+  const [problemsStatus, setProblemsStatus] = useState<SaveStatus>('saved');
+  const [objectiveStatus, setObjectiveStatus] = useState<SaveStatus>('saved');
+  const [assessmentStatus, setAssessmentStatus] = useState<SaveStatus>('saved');
+  const [planStatus, setPlanStatus] = useState<SaveStatus>('saved');
+
   // Sync expansion state with defaultExpanded prop changes (input mode changes)
   useEffect(() => {
     if (!isMinimized) {
@@ -151,21 +161,29 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     }
   }, [defaultExpanded, isMinimized]);
 
-  // Save individual section on blur
+  // Save individual section on blur (skip if no changes via dirty flags)
   const handleSectionBlur = async (section: 'problems' | 'objective' | 'assessment' | 'plan') => {
     let ok = true;
     try {
       switch (section) {
         case 'problems':
+          if (!problemsDirty) { break; }
+          setProblemsStatus('saving');
           ok = await saveProblemsToCurrentSession(problemsText || '');
           break;
         case 'objective':
+          if (!objectiveDirty) { break; }
+          setObjectiveStatus('saving');
           ok = await saveObjectiveToCurrentSession(objectiveText || '');
           break;
         case 'assessment':
+          if (!assessmentDirty) { break; }
+          setAssessmentStatus('saving');
           ok = await saveAssessmentToCurrentSession(assessmentText || '');
           break;
         case 'plan':
+          if (!planDirty) { break; }
+          setPlanStatus('saving');
           ok = await savePlanToCurrentSession(planText || '');
           break;
       }
@@ -178,107 +196,34 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
         (window as any).toast[ok ? 'success' : 'error'](ok ? `${section} saved` : `Failed to save ${section}`);
       }
     } catch {}
+    // Update badges
+    if (section === 'problems') setProblemsStatus(ok ? 'saved' : 'editing');
+    if (section === 'objective') setObjectiveStatus(ok ? 'saved' : 'editing');
+    if (section === 'assessment') setAssessmentStatus(ok ? 'saved' : 'editing');
+    if (section === 'plan') setPlanStatus(ok ? 'saved' : 'editing');
   };
 
-  // Auto-append new items to appropriate sections
-  useEffect(() => {
-    const newItems = items.filter(item => !processedItemIds.current.has(item.id));
-    if (newItems.length === 0) {
-      return;
-    }
-    // Route items by type/title and avoid adding duplicates already present in sections
-    const isPlanItem = (title: string) => /plan|safety[- ]?net/i.test(title);
-    const toLine = (i: any) => `${i.title}: ${i.content}`;
-
-    const objAdds = newItems
-      .filter(i => (i.type === 'checklist' || i.type === 'other' || i.type === 'acc-code') && !isPlanItem(i.title))
-      .map(toLine)
-      .filter(line => !objectiveText.includes(line));
-    const asmtAdds = newItems
-      .filter(i => i.type === 'differential-diagnosis')
-      .map(toLine)
-      .filter(line => !assessmentText.includes(line));
-    const planAdds = newItems
-      .filter(i => isPlanItem(i.title))
-      .map(toLine)
-      .filter(line => !planText.includes(line));
-
-    if (objAdds.length === 0 && asmtAdds.length === 0 && planAdds.length === 0) {
-      // still mark processed to avoid future work
-      newItems.forEach(item => processedItemIds.current.add(item.id));
-      return;
-    }
-
-    const nextObjective = objAdds.length > 0
-      ? [objectiveText.trim(), objAdds.join('\n\n')].filter(Boolean).join('\n\n')
-      : objectiveText;
-    const nextAssessment = asmtAdds.length > 0
-      ? [assessmentText.trim(), asmtAdds.join('\n\n')].filter(Boolean).join('\n\n')
-      : assessmentText;
-    const nextPlan = planAdds.length > 0
-      ? [planText.trim(), planAdds.join('\n\n')].filter(Boolean).join('\n\n')
-      : planText;
-
-    // Mark items as processed
-    newItems.forEach(item => processedItemIds.current.add(item.id));
-
-    setObjectiveText(nextObjective);
-    setAssessmentText(nextAssessment);
-    setPlanText(nextPlan);
-    // No longer writing JSON back through onNotesChange
-  }, [items]);
-
-  // Debounced autosave per section
-  type DebounceEntry = { id: ReturnType<typeof setTimeout>; token: number };
-  const debounceTimers = useRef<Record<string, DebounceEntry>>({});
-  const debounceMs = 1200;
-
-  const enqueueSave = (section: 'problems' | 'objective' | 'assessment' | 'plan') => {
-    const key = `save-${section}`;
-    if (debounceTimers.current[key]) {
-      clearTimeout(debounceTimers.current[key].id);
-    }
-    const token = Date.now();
-    const id = setTimeout(async () => {
-      // Only commit if this timer is still the latest for this key
-      if (debounceTimers.current[key] && debounceTimers.current[key].token !== token) {
-        return;
-      }
-      try {
-        switch (section) {
-          case 'problems':
-            await saveProblemsToCurrentSession(problemsText || '');
-            break;
-          case 'objective':
-            await saveObjectiveToCurrentSession(objectiveText || '');
-            break;
-          case 'assessment':
-            await saveAssessmentToCurrentSession(assessmentText || '');
-            break;
-          case 'plan':
-            await savePlanToCurrentSession(planText || '');
-            break;
-        }
-      } catch {}
-    }, debounceMs) as unknown as ReturnType<typeof setTimeout>;
-    debounceTimers.current[key] = { id, token };
-  };
+  // Note: auto-append from consultation items has been removed by design (user preference)
 
   // Handle text changes per section
   const handleSectionChange = (section: 'problems' | 'objective' | 'assessment' | 'plan', newText: string) => {
     if (section === 'problems') {
  setProblemsText(newText);
+      setProblemsStatus('editing');
 }
     if (section === 'objective') {
  setObjectiveText(newText);
+      setObjectiveStatus('editing');
 }
     if (section === 'assessment') {
  setAssessmentText(newText);
+      setAssessmentStatus('editing');
 }
     if (section === 'plan') {
  setPlanText(newText);
+      setPlanStatus('editing');
 }
-    enqueueSave(section);
+    // Persist happens on blur and via explicit programmatic appends
     // No longer writing JSON back through onNotesChange
   };
 
@@ -385,6 +330,9 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             <div className="space-y-3">
               <div>
                 <label htmlFor="additional-notes-minimized-problems" className="mb-1 block text-xs font-medium text-slate-500">Problems</label>
+                {(problemsStatus === 'saving' || problemsStatus === 'saved') && (
+                  <span className="ml-2 text-[10px] text-slate-500">{problemsStatus === 'saving' ? 'Saving…' : '✓ Saved'}</span>
+                )}
                 <Textarea
                   id="additional-notes-minimized-problems"
                   value={problemsText}
@@ -398,7 +346,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               </div>
               <div>
                 <div className="mb-1 flex items-center justify-between">
-                  <label htmlFor="additional-notes-minimized-objective" className="block text-xs font-medium text-slate-500">Objective</label>
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="additional-notes-minimized-objective" className="block text-xs font-medium text-slate-500">Objective</label>
+                    {(objectiveStatus === 'saving' || objectiveStatus === 'saved') && (
+                      <span className="text-[10px] text-slate-500">{objectiveStatus === 'saving' ? 'Saving…' : '✓ Saved'}</span>
+                    )}
+                  </div>
                   <ExaminationChecklistButton tabIndex={-1} />
                 </div>
                 <Textarea
@@ -414,6 +367,9 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               </div>
               <div>
                 <label htmlFor="additional-notes-minimized-assessment" className="mb-1 block text-xs font-medium text-slate-500">Assessment</label>
+                {(assessmentStatus === 'saving' || assessmentStatus === 'saved') && (
+                  <span className="ml-2 text-[10px] text-slate-500">{assessmentStatus === 'saving' ? 'Saving…' : '✓ Saved'}</span>
+                )}
                 <Textarea
                   id="additional-notes-minimized-assessment"
                   value={assessmentText}
@@ -427,7 +383,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               </div>
               <div>
                 <div className="mb-1 flex items-center justify-between">
-                  <label htmlFor="additional-notes-minimized-plan" className="block text-xs font-medium text-slate-500">Plan</label>
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="additional-notes-minimized-plan" className="block text-xs font-medium text-slate-500">Plan</label>
+                    {(planStatus === 'saving' || planStatus === 'saved') && (
+                      <span className="text-[10px] text-slate-500">{planStatus === 'saving' ? 'Saving…' : '✓ Saved'}</span>
+                    )}
+                  </div>
                   <PlanSafetyNettingButton tabIndex={-1} />
                 </div>
                 <Textarea
@@ -507,7 +468,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
         <div className="flex flex-1 flex-col space-y-2" ref={containerRef} role="group" aria-label="Additional notes editor">
           <div className="grid grid-cols-1 gap-3">
             <div>
-              <label htmlFor="additional-notes-problems" className="mb-1 block text-xs font-medium text-slate-500">Main Problems Discussed</label>
+              <div className="mb-1 flex items-center gap-2">
+                <label htmlFor="additional-notes-problems" className="block text-xs font-medium text-slate-500">Main Problems Discussed</label>
+                {(problemsStatus === 'saving' || problemsStatus === 'saved') && (
+                  <span className="text-[10px] text-slate-500">{problemsStatus === 'saving' ? 'Saving…' : '✓ Saved'}</span>
+                )}
+              </div>
               <Textarea
                 id="additional-notes-problems"
                 value={problemsText}
@@ -520,7 +486,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             </div>
             <div>
               <div className="mb-1 flex items-center justify-between">
-                <label htmlFor="additional-notes-objective" className="block text-xs font-medium text-slate-500">Objective</label>
+                <div className="flex items-center gap-2">
+                  <label htmlFor="additional-notes-objective" className="block text-xs font-medium text-slate-500">Objective</label>
+                  {(objectiveStatus === 'saving' || objectiveStatus === 'saved') && (
+                    <span className="text-[10px] text-slate-500">{objectiveStatus === 'saving' ? 'Saving…' : '✓ Saved'}</span>
+                  )}
+                </div>
                 <ExaminationChecklistButton tabIndex={-1} />
               </div>
               <Textarea
@@ -534,7 +505,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               />
             </div>
             <div>
-              <label htmlFor="additional-notes-assessment" className="mb-1 block text-xs font-medium text-slate-500">Assessment</label>
+              <div className="mb-1 flex items-center gap-2">
+                <label htmlFor="additional-notes-assessment" className="block text-xs font-medium text-slate-500">Assessment</label>
+                {(assessmentStatus === 'saving' || assessmentStatus === 'saved') && (
+                  <span className="text-[10px] text-slate-500">{assessmentStatus === 'saving' ? 'Saving…' : '✓ Saved'}</span>
+                )}
+              </div>
               <Textarea
                 id="additional-notes-assessment"
                 value={assessmentText}
@@ -547,7 +523,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             </div>
             <div>
               <div className="mb-1 flex items-center justify-between">
-                <label htmlFor="additional-notes-plan" className="block text-xs font-medium text-slate-500">Plan</label>
+                <div className="flex items-center gap-2">
+                  <label htmlFor="additional-notes-plan" className="block text-xs font-medium text-slate-500">Plan</label>
+                  {(planStatus === 'saving' || planStatus === 'saved') && (
+                    <span className="text-[10px] text-slate-500">{planStatus === 'saving' ? 'Saving…' : '✓ Saved'}</span>
+                  )}
+                </div>
                 <PlanSafetyNettingButton tabIndex={-1} />
               </div>
               <Textarea
@@ -591,7 +572,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
       </div>
       <div className="grid grid-cols-1 gap-3" ref={containerRef} role="group" aria-label="Additional notes editor">
         <div>
-          <label htmlFor="additional-notes" className="mb-1 block text-xs font-medium text-slate-500">Problems</label>
+          <div className="mb-1 flex items-center gap-2">
+            <label htmlFor="additional-notes" className="block text-xs font-medium text-slate-500">Problems</label>
+            {(problemsStatus === 'saving' || problemsStatus === 'saved') && (
+              <span className="text-[10px] text-slate-500">{problemsStatus === 'saving' ? 'Saving…' : '✓ Saved'}</span>
+            )}
+          </div>
           <Textarea
             id="additional-notes"
             value={problemsText}
@@ -604,7 +590,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
         </div>
         <div>
           <div className="mb-1 flex items-center justify-between">
-            <label htmlFor="additional-notes-objective" className="block text-xs font-medium text-slate-500">Objective</label>
+            <div className="flex items-center gap-2">
+              <label htmlFor="additional-notes-objective" className="block text-xs font-medium text-slate-500">Objective</label>
+              {(objectiveStatus === 'saving' || objectiveStatus === 'saved') && (
+                <span className="text-[10px] text-slate-500">{objectiveStatus === 'saving' ? 'Saving…' : '✓ Saved'}</span>
+              )}
+            </div>
             <ExaminationChecklistButton tabIndex={-1} />
           </div>
           <Textarea
@@ -618,7 +609,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
           />
         </div>
         <div>
-          <label htmlFor="additional-notes-assessment" className="mb-1 block text-xs font-medium text-slate-500">Assessment</label>
+          <div className="mb-1 flex items-center gap-2">
+            <label htmlFor="additional-notes-assessment" className="block text-xs font-medium text-slate-500">Assessment</label>
+            {(assessmentStatus === 'saving' || assessmentStatus === 'saved') && (
+              <span className="text-[10px] text-slate-500">{assessmentStatus === 'saving' ? 'Saving…' : '✓ Saved'}</span>
+            )}
+          </div>
           <Textarea
             id="additional-notes-assessment"
             value={assessmentText}
@@ -631,7 +627,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
         </div>
         <div>
           <div className="mb-1 flex items-center justify-between">
-            <label htmlFor="additional-notes-plan" className="block text-xs font-medium text-slate-500">Plan</label>
+            <div className="flex items-center gap-2">
+              <label htmlFor="additional-notes-plan" className="block text-xs font-medium text-slate-500">Plan</label>
+              {(planStatus === 'saving' || planStatus === 'saved') && (
+                <span className="text-[10px] text-slate-500">{planStatus === 'saving' ? 'Saving…' : '✓ Saved'}</span>
+              )}
+            </div>
             <PlanSafetyNettingButton tabIndex={-1} />
           </div>
           <Textarea

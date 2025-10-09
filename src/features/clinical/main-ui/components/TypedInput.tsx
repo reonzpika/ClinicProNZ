@@ -53,9 +53,9 @@ export function TypedInput({ collapsed, onExpand, isMinimized }: { collapsed?: b
     setTypedInput(localInput);
   };
 
-  // Save typed input to session
+  // Save typed input to session (allows clearing to empty string)
   const handleSaveToSession = async () => {
-    if (localInput !== lastSavedInput && localInput.trim() !== '') {
+    if (localInput !== lastSavedInput) {
       try {
         setSaveStatus('saving');
         const success = await saveTypedInputToCurrentSession(localInput);
