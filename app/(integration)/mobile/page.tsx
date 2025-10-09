@@ -95,7 +95,7 @@ function MobilePageContent() {
 
   const currentSessionIdRef = useRef<string | null>(null);
 
-  const { isConnected, sendRecordingStatus, sendImageNotification, sendImageUploadStarted, sendImageUploaded, sendConsentRequest, sendConsentGranted, sendConsentDenied } = useSimpleAbly({
+  const { isConnected, sendRecordingStatus, sendImageUploadStarted, sendImageUploaded, sendConsentRequest, sendConsentGranted, sendConsentDenied } = useSimpleAbly({
     userId: isSignedIn ? userId : null,
     onError: (err: string) => {
       handleError(err);
