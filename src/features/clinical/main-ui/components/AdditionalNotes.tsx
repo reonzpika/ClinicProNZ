@@ -36,8 +36,6 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   defaultExpanded = true,
   expandedSize = 'normal',
 }) => {
-  // Track processed items to avoid duplicates
-  const processedItemIds = React.useRef(new Set<string>());
   const [isExpanded, setIsExpanded] = useState(isMinimized ? false : defaultExpanded);
 
   // Refs for keyboard focus management
@@ -139,10 +137,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     objectiveDirty,
     assessmentDirty,
     planDirty,
-    problemsEditedAt,
-    objectiveEditedAt,
-    assessmentEditedAt,
-    planEditedAt,
+    // EditedAt values no longer used in this component
     setProblemsText,
     setObjectiveText,
     setAssessmentText,
