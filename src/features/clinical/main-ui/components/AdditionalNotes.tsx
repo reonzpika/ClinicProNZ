@@ -1,7 +1,7 @@
 'use client';
 
 import { FileText } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { ExaminationChecklistButton } from '@/src/features/clinical/examination-checklist/components/ExaminationChecklistButton';
 import { PlanSafetyNettingButton } from '@/src/features/clinical/plan-safety-netting';
@@ -265,42 +265,6 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     // No longer writing JSON back through onNotesChange
   }, [items]);
 
-  // Debounced autosave per section
-  type DebounceEntry = { id: ReturnType<typeof setTimeout>; token: number };
-  const debounceTimers = useRef<Record<string, DebounceEntry>>({});
-  const debounceMs = 1200;
-
-  const enqueueSave = (section: 'problems' | 'objective' | 'assessment' | 'plan') => {
-    const key = `save-${section}`;
-    if (debounceTimers.current[key]) {
-      clearTimeout(debounceTimers.current[key].id);
-    }
-    const token = Date.now();
-    const id = setTimeout(async () => {
-      // Only commit if this timer is still the latest for this key
-      if (debounceTimers.current[key] && debounceTimers.current[key].token !== token) {
-        return;
-      }
-      try {
-        switch (section) {
-          case 'problems':
-            await saveProblemsToCurrentSession(problemsText || '');
-            break;
-          case 'objective':
-            await saveObjectiveToCurrentSession(objectiveText || '');
-            break;
-          case 'assessment':
-            await saveAssessmentToCurrentSession(assessmentText || '');
-            break;
-          case 'plan':
-            await savePlanToCurrentSession(planText || '');
-            break;
-        }
-      } catch {}
-    }, debounceMs) as unknown as ReturnType<typeof setTimeout>;
-    debounceTimers.current[key] = { id, token };
-  };
-
   // Handle text changes per section
   const handleSectionChange = (section: 'problems' | 'objective' | 'assessment' | 'plan', newText: string) => {
     if (section === 'problems') {
@@ -315,7 +279,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     if (section === 'plan') {
  setPlanText(newText);
 }
-    enqueueSave(section);
+    // Persist happens on blur and via explicit programmatic appends
     // No longer writing JSON back through onNotesChange
   };
 
