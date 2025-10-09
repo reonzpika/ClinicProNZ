@@ -21,7 +21,7 @@ export default function LoginPage() {
         <SignIn
           afterSignInUrl={redirectUrl}
           afterSignUpUrl={redirectUrl}
-          signUpUrl="/auth/register"
+          signUpUrl={`/auth/register?redirect_url=${encodeURIComponent(redirectUrl)}`}
           appearance={{
             elements: {
               formButtonPrimary: 'bg-blue-600 hover:bg-blue-700 text-sm normal-case',

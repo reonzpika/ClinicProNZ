@@ -415,7 +415,10 @@ export default function ClinicalImagePage() {
           </CardHeader>
           <CardContent className="text-center">
             <Button
-              onClick={() => window.location.href = '/auth/login'}
+              onClick={() => {
+                const currentUrl = typeof window !== 'undefined' ? window.location.href : '/image';
+                window.location.href = `/auth/login?redirect_url=${encodeURIComponent(currentUrl)}`;
+              }}
               size="lg"
               className="w-full"
             >

@@ -3,10 +3,13 @@ import { SignUp } from '@clerk/nextjs';
 export default async function RegisterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirect?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const resolvedSearchParams = await searchParams;
   const isUpgradeRedirect = resolvedSearchParams.redirect === 'upgrade';
+  const redirectUrlParam = Array.isArray(resolvedSearchParams.redirect_url)
+    ? resolvedSearchParams.redirect_url[0]
+    : resolvedSearchParams.redirect_url;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
@@ -22,8 +25,8 @@ export default async function RegisterPage({
           </p>
         </div>
         <SignUp
-          afterSignUpUrl={isUpgradeRedirect ? '/upgrade-checkout' : '/'}
-          signInUrl="/auth/login"
+          afterSignUpUrl={isUpgradeRedirect ? '/upgrade-checkout' : (redirectUrlParam || '/')}
+          signInUrl={redirectUrlParam ? `/auth/login?redirect_url=${encodeURIComponent(redirectUrlParam)}` : '/auth/login'}
           appearance={{
             elements: {
               formButtonPrimary: 'bg-blue-600 hover:bg-blue-700 text-sm normal-case',
