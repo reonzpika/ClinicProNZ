@@ -30,7 +30,7 @@ function SessionImageTile({
   onDownload: () => void;
   onDelete: () => void;
 }) {
-  const { data: imageUrl } = useImageUrl(image.key);
+  const { data: imageUrl } = useImageUrl(image.thumbnailKey || image.key);
   const renameImage = useRenameImage();
   const baseName = (image.displayName || image.filename || '').replace(/\.[^.]+$/, '');
   const [isRenaming, setIsRenaming] = React.useState(false);
@@ -140,6 +140,7 @@ export const ClinicalImageTab: React.FC = () => {
 
   // Server images (user scope) for session grouping
   const { userId } = useAuth();
+  const [inFlightUploads, setInFlightUploads] = useState(0);
   const { data: serverImages = [], isLoading: isLoadingServerImages } = useServerImages(currentPatientSessionId || undefined);
   const deleteImageMutation = useDeleteImage();
   const sessionServerImages = useMemo(() => {
@@ -152,10 +153,13 @@ export const ClinicalImageTab: React.FC = () => {
   useSimpleAbly({
     userId: userId ?? null,
     isMobile: false,
-    onMobileImagesUploaded: () => {
-      try {
- queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') });
-} catch {}
+    onImageUploadStarted: (count) => setInFlightUploads(prev => prev + (count || 0)),
+    onImageUploaded: () => {
+      setInFlightUploads(prev => Math.max(0, prev - 1));
+      try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') }); } catch {}
+    },
+    onImageProcessed: () => {
+      try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') }); } catch {}
     },
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -637,6 +641,12 @@ export const ClinicalImageTab: React.FC = () => {
           <div className="mb-3 flex items-center justify-between">
             <h4 className="text-sm font-medium text-blue-600">Session Images</h4>
             <div className="flex items-center gap-2">
+              {inFlightUploads > 0 && (
+                <span className="flex items-center gap-1 rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
+                  <Loader2 size={12} className="animate-spin" />
+                  Receiving {inFlightUploads}
+                </span>
+              )}
               {selectionMode && (
                 <span className="text-xs text-slate-600">{selectedKeys.size} selected</span>
               )}

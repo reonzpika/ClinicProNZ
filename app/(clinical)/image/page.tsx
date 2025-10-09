@@ -886,7 +886,7 @@ function ServerImageCard({
 }) {
   const [isDeleting, setIsDeleting] = React.useState(false);
   // Lazily fetch image URL per tile
-  const { data: fetchedUrl } = useImageUrl(image.key);
+  const { data: fetchedUrl } = useImageUrl(image.thumbnailKey || image.key);
   const imageUrl = fetchedUrl;
   const isLoadingUrl = !imageUrl;
 
