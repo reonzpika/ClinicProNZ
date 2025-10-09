@@ -134,6 +134,15 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     objectiveText,
     assessmentText,
     planText,
+    // Dirty flags and last-edited timestamps
+    problemsDirty,
+    objectiveDirty,
+    assessmentDirty,
+    planDirty,
+    problemsEditedAt,
+    objectiveEditedAt,
+    assessmentEditedAt,
+    planEditedAt,
     setProblemsText,
     setObjectiveText,
     setAssessmentText,
@@ -180,51 +189,79 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     } catch {}
   };
 
-  // Auto-append new items to appropriate sections
+  // Auto-append new items to appropriate sections with gating and persistence
+  const mountedRef = React.useRef(false);
   useEffect(() => {
+    // On first mount, treat existing items as already processed to avoid re-population on refresh
+    if (!mountedRef.current) {
+      items.forEach(item => processedItemIds.current.add(item.id));
+      mountedRef.current = true;
+      return;
+    }
+
     const newItems = items.filter(item => !processedItemIds.current.has(item.id));
     if (newItems.length === 0) {
       return;
     }
-    // Route items by type/title and avoid adding duplicates already present in sections
+
+    // Gating: skip appending into sections that were recently edited or are marked dirty
+    const now = Date.now();
+    const recentMs = 3000;
+    const canAppendObjective = !objectiveDirty && !(objectiveEditedAt && (now - objectiveEditedAt) < recentMs);
+    const canAppendAssessment = !assessmentDirty && !(assessmentEditedAt && (now - assessmentEditedAt) < recentMs);
+    const canAppendPlan = !planDirty && !(planEditedAt && (now - planEditedAt) < recentMs);
+
+    // Route items by type/title and avoid duplicates already present in sections
     const isPlanItem = (title: string) => /plan|safety[- ]?net/i.test(title);
     const toLine = (i: any) => `${i.title}: ${i.content}`;
 
-    const objAdds = newItems
-      .filter(i => (i.type === 'checklist' || i.type === 'other' || i.type === 'acc-code') && !isPlanItem(i.title))
-      .map(toLine)
-      .filter(line => !objectiveText.includes(line));
-    const asmtAdds = newItems
-      .filter(i => i.type === 'differential-diagnosis')
-      .map(toLine)
-      .filter(line => !assessmentText.includes(line));
-    const planAdds = newItems
-      .filter(i => isPlanItem(i.title))
-      .map(toLine)
-      .filter(line => !planText.includes(line));
+    const objAdds = canAppendObjective
+      ? newItems
+          .filter(i => (i.type === 'checklist' || i.type === 'other' || i.type === 'acc-code') && !isPlanItem(i.title))
+          .map(toLine)
+          .filter(line => !objectiveText.includes(line))
+      : [];
+    const asmtAdds = canAppendAssessment
+      ? newItems
+          .filter(i => i.type === 'differential-diagnosis')
+          .map(toLine)
+          .filter(line => !assessmentText.includes(line))
+      : [];
+    const planAdds = canAppendPlan
+      ? newItems
+          .filter(i => isPlanItem(i.title))
+          .map(toLine)
+          .filter(line => !planText.includes(line))
+      : [];
+
+    // Always mark these items as processed to avoid repeated attempts
+    newItems.forEach(item => processedItemIds.current.add(item.id));
 
     if (objAdds.length === 0 && asmtAdds.length === 0 && planAdds.length === 0) {
-      // still mark processed to avoid future work
-      newItems.forEach(item => processedItemIds.current.add(item.id));
       return;
     }
 
-    const nextObjective = objAdds.length > 0
-      ? [objectiveText.trim(), objAdds.join('\n\n')].filter(Boolean).join('\n\n')
-      : objectiveText;
-    const nextAssessment = asmtAdds.length > 0
-      ? [assessmentText.trim(), asmtAdds.join('\n\n')].filter(Boolean).join('\n\n')
-      : assessmentText;
-    const nextPlan = planAdds.length > 0
-      ? [planText.trim(), planAdds.join('\n\n')].filter(Boolean).join('\n\n')
-      : planText;
+    const objectiveUpdated = objAdds.length > 0 ? [objectiveText.trim(), objAdds.join('\n\n')].filter(Boolean).join('\n\n') : null;
+    const assessmentUpdated = asmtAdds.length > 0 ? [assessmentText.trim(), asmtAdds.join('\n\n')].filter(Boolean).join('\n\n') : null;
+    const planUpdated = planAdds.length > 0 ? [planText.trim(), planAdds.join('\n\n')].filter(Boolean).join('\n\n') : null;
 
-    // Mark items as processed
-    newItems.forEach(item => processedItemIds.current.add(item.id));
-
-    setObjectiveText(nextObjective);
-    setAssessmentText(nextAssessment);
-    setPlanText(nextPlan);
+    // Apply updates locally and persist immediately so they survive refresh
+    (async () => {
+      try {
+        if (objectiveUpdated !== null) {
+          setObjectiveText(objectiveUpdated);
+          await saveObjectiveToCurrentSession(objectiveUpdated);
+        }
+        if (assessmentUpdated !== null) {
+          setAssessmentText(assessmentUpdated);
+          await saveAssessmentToCurrentSession(assessmentUpdated);
+        }
+        if (planUpdated !== null) {
+          setPlanText(planUpdated);
+          await savePlanToCurrentSession(planUpdated);
+        }
+      } catch {}
+    })();
     // No longer writing JSON back through onNotesChange
   }, [items]);
 

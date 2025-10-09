@@ -634,10 +634,25 @@ export function useConsultationStores(): any {
     objectiveText: consultationStore.objectiveText,
     assessmentText: consultationStore.assessmentText,
     planText: consultationStore.planText,
+    // Per-section dirty flags (exposed for UI gating and autosave logic)
+    problemsDirty: (consultationStore as any).problemsDirty,
+    objectiveDirty: (consultationStore as any).objectiveDirty,
+    assessmentDirty: (consultationStore as any).assessmentDirty,
+    planDirty: (consultationStore as any).planDirty,
+    // Per-section last edited timestamps (ms since epoch)
+    problemsEditedAt: (consultationStore as any).problemsEditedAt,
+    objectiveEditedAt: (consultationStore as any).objectiveEditedAt,
+    assessmentEditedAt: (consultationStore as any).assessmentEditedAt,
+    planEditedAt: (consultationStore as any).planEditedAt,
     setProblemsText: consultationStore.setProblemsText,
     setObjectiveText: consultationStore.setObjectiveText,
     setAssessmentText: consultationStore.setAssessmentText,
     setPlanText: consultationStore.setPlanText,
+    // Hydration setters for programmatic updates (do not mark dirty)
+    hydrateProblemsText: (consultationStore as any).hydrateProblemsText,
+    hydrateObjectiveText: (consultationStore as any).hydrateObjectiveText,
+    hydrateAssessmentText: (consultationStore as any).hydrateAssessmentText,
+    hydratePlanText: (consultationStore as any).hydratePlanText,
 
     // Actions - last generated tracking
     setLastGeneratedInput: transcriptionStore.setLastGeneratedInput,
