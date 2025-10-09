@@ -1424,15 +1424,26 @@ function ImageEnlargeModal({
       <div className="fixed bottom-4 left-4 rounded-lg bg-black/60 px-3 py-2 text-white">
         <p className="text-sm font-medium">{image.displayName || image.filename}</p>
         <p className="text-xs opacity-75">
-          {new Date(image.uploadedAt).toLocaleDateString()}
-{' '}
-•
-{' '}
+          {(() => {
+            const date = new Date(image.uploadedAt);
+            const parts = new Intl.DateTimeFormat('en-NZ', {
+              timeZone: 'Pacific/Auckland',
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+            }).formatToParts(date);
+            const get = (type: string) => parts.find(p => p.type === type)?.value || '';
+            return `${get('day')}/${get('month')}/${get('year')} • ${get('hour')}:${get('minute')}`;
+          })()}
+          {' '}
+          •
+          {' '}
           {(() => {
             const bytes = image.size;
-            if (bytes === 0) {
- return '0 Bytes';
-}
+            if (bytes === 0) return '0 Bytes';
             const k = 1024;
             const sizes = ['Bytes', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));

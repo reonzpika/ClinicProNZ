@@ -149,6 +149,7 @@ export const ClinicalImageTab: React.FC = () => {
   const [inFlightUploads, setInFlightUploads] = useState(0);
   const [completedUploads, setCompletedUploads] = useState(0);
   const { show: showToast } = useToast();
+  const [isDragging, setIsDragging] = useState(false);
   const { data: serverImages = [], isLoading: isLoadingServerImages } = useServerImages(currentPatientSessionId || undefined);
   const deleteImageMutation = useDeleteImage();
   const sessionServerImages = useMemo(() => {
@@ -655,7 +656,26 @@ export const ClinicalImageTab: React.FC = () => {
 
       {/* Session Images (from server under clinical-images/{userId}/{sessionId}/) */}
       {(isLoadingServerImages || sessionServerImages.length > 0) && (
-        <div className="border-l-2 border-blue-200 pl-3">
+        <div
+          className="border-l-2 border-blue-200 pl-3"
+          onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+          onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+          onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
+          onDrop={async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsDragging(false);
+            try {
+              const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
+              for (const file of files) {
+                // eslint-disable-next-line no-await-in-loop
+                await handleFileUpload(file);
+              }
+            } catch {
+              setError('Failed to upload dropped files');
+            }
+          }}
+        >
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <h4 className="text-sm font-medium text-blue-600">Session Images</h4>
@@ -695,6 +715,9 @@ export const ClinicalImageTab: React.FC = () => {
             </div>
           </div>
 
+          {isDragging && (
+            <div className="mb-2 rounded border border-dashed border-blue-300 bg-blue-50 p-2 text-center text-xs text-blue-700">Drop images to upload</div>
+          )}
           {isLoadingServerImages
             ? (
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
