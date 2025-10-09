@@ -123,6 +123,8 @@ export async function GET(req: NextRequest) {
               mimeType = 'image/gif';
             }
 
+            // Derive thumbnail key by convention (best-effort): thumbnails/clinical-images/.../filename
+            const thumbKeyGuess = `thumbnails/${obj.Key!}`;
             return {
               id: `clinical-${obj.Key!.replace(/\//g, '-')}`,
               key: obj.Key!,
@@ -132,6 +134,7 @@ export async function GET(req: NextRequest) {
               uploadedAt: obj.LastModified?.toISOString() || new Date().toISOString(),
               source: 'clinical',
               ...(derivedSessionId ? { sessionId: derivedSessionId } : {}),
+              thumbnailKey: thumbKeyGuess,
             };
           });
 
