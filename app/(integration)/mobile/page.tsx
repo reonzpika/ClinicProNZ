@@ -95,7 +95,7 @@ function MobilePageContent() {
 
   const currentSessionIdRef = useRef<string | null>(null);
 
-  const { isConnected, sendRecordingStatus, sendImageNotification, sendConsentRequest, sendConsentGranted, sendConsentDenied } = useSimpleAbly({
+  const { isConnected, sendRecordingStatus, sendImageNotification, sendImageUploadStarted, sendImageUploaded, sendConsentRequest, sendConsentGranted, sendConsentDenied } = useSimpleAbly({
     userId: isSignedIn ? userId : null,
     onError: (err: string) => {
       handleError(err);
@@ -507,13 +507,13 @@ selected
                     const filesToUpload = queuedItems.map(it => it.file);
                     try {
                       // Emit started event to desktop (best effort)
-                      try { sendImageNotification(undefined, filesToUpload.length, currentSessionIdRef.current); } catch {}
+                      try { sendImageUploadStarted?.(filesToUpload.length, currentSessionIdRef.current); } catch {}
                       await uploadImages.mutateAsync({
                         files: filesToUpload,
                         names: queuedItems.map(it => ({ patientName: patientNameInput || undefined, identifier: it.identifier || undefined })),
                       });
                       // Notify desktop completion (compat path retained)
-                      try { sendImageNotification(undefined, filesToUpload.length, currentSessionIdRef.current); } catch {}
+                      try { sendImageUploaded?.(filesToUpload.length, currentSessionIdRef.current); } catch {}
                       // Clear queue and return
                       queuedItems.forEach(it => it.previewUrl && URL.revokeObjectURL(it.previewUrl));
                       setQueuedItems([]);

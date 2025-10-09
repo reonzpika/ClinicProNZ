@@ -688,11 +688,33 @@ Cancel
                     </div>
                   </div>
                 )}
-                <Button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                  className="w-full"
+                <div
+                  className={`${isDragging ? 'rounded border border-dashed border-blue-300 bg-blue-50/50 p-2' : ''}`}
+                  onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+                  onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
+                  onDrop={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDragging(false);
+                    try {
+                      const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
+                      if (files.length === 0) return;
+                      const context = selectedSessionId && selectedSessionId !== 'none' ? { sessionId: selectedSessionId } : { noSession: true };
+                      await uploadImages.mutateAsync({ files, context });
+                    } catch (err) {
+                      setError('Failed to upload dropped files');
+                    }
+                  }}
                 >
+                  {isDragging && (
+                    <div className="mb-2 text-center text-[11px] text-blue-700">Drop images to upload</div>
+                  )}
+                  <Button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="w-full"
+                  >
                   {isUploading
                     ? (
                         <>
@@ -708,7 +730,8 @@ Cancel
                           Upload Images
                         </>
                       )}
-                </Button>
+                  </Button>
+                </div>
                 <Button
                   variant="outline"
                   size="sm"

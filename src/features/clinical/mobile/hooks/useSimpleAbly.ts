@@ -661,6 +661,18 @@ export const useSimpleAbly = ({
     sendRecordingStatus,
     sendRecordingControl,
     sendImageNotification,
+    sendImageUploadStarted: (count: number, sessionId?: string | null) => publishSafe('image_upload_started', {
+      type: 'image_upload_started',
+      imageCount: count,
+      sessionId: sessionId ?? undefined,
+      timestamp: Date.now(),
+    }, { queueIfNotReady: true }),
+    sendImageUploaded: (count: number, sessionId?: string | null) => publishSafe('image_uploaded', {
+      type: 'image_uploaded',
+      imageCount: count,
+      sessionId: sessionId ?? undefined,
+      timestamp: Date.now(),
+    }, { queueIfNotReady: true }),
     sendSessionContext,
     sendConsentRequest,
     sendConsentGranted,
