@@ -7,6 +7,7 @@ import { Button } from '@/src/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
 import { Input } from '@/src/shared/components/ui/input';
 import { usePatientSessions } from '@/src/features/clinical/session-management/hooks/usePatientSessions';
+import { useToast } from '@/src/shared/components/ui/toast';
 
 export type ImageSessionModalProps = {
   isOpen: boolean;
@@ -38,6 +39,7 @@ export const ImageSessionModal: React.FC<ImageSessionModalProps> = ({ isOpen, on
   const [isCreating, setIsCreating] = useState(false);
   const [pendingName, setPendingName] = useState('');
   const [renameValues, setRenameValues] = useState<Record<string, string>>({});
+  const { show } = useToast();
 
   useEffect(() => {
     if (isOpen) refetch();
@@ -148,7 +150,17 @@ export const ImageSessionModal: React.FC<ImageSessionModalProps> = ({ isOpen, on
                       <div className="ml-4 flex gap-2">
                         <Button onClick={() => { onSessionSelected(s.id); onClose(); }} size="sm" variant="outline">Select</Button>
                         <Button
-                          onClick={async () => { try { await remove.mutateAsync(s.id); } catch {} }}
+                          onClick={async () => {
+                            const removedId = s.id;
+                            show({
+                              title: 'Session deleted',
+                              action: {
+                                label: 'Undo',
+                                onClick: () => { refetch(); },
+                              },
+                            });
+                            try { await remove.mutateAsync(removedId); } catch { /* refetch will rollback */ }
+                          }}
                           size="sm"
                           variant="outline"
                           className="text-red-600 hover:bg-red-50 hover:text-red-700"
