@@ -10,6 +10,7 @@ import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbl
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { imageQueryKeys, useDeleteImage, useImageUrl, useRenameImage, useServerImages } from '@/src/hooks/useImageQueries';
 import { Button } from '@/src/shared/components/ui/button';
+import { GalleryTileSkeleton } from '@/src/shared/components/ui/gallery-tile-skeleton';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
 import { resizeImageFile } from '@/src/shared/utils/image';
@@ -145,6 +146,7 @@ export const ClinicalImageTab: React.FC = () => {
   // Server images (user scope) for session grouping
   const { userId } = useAuth();
   const [inFlightUploads, setInFlightUploads] = useState(0);
+  const [completedUploads, setCompletedUploads] = useState(0);
   const { data: serverImages = [], isLoading: isLoadingServerImages } = useServerImages(currentPatientSessionId || undefined);
   const deleteImageMutation = useDeleteImage();
   const sessionServerImages = useMemo(() => {
@@ -161,6 +163,7 @@ export const ClinicalImageTab: React.FC = () => {
     onImageUploaded: () => {
       setInFlightUploads(prev => Math.max(0, prev - 1));
       try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') }); } catch {}
+      setCompletedUploads((c) => c + 1);
     },
     onImageProcessed: () => {
       try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') }); } catch {}
@@ -549,6 +552,9 @@ export const ClinicalImageTab: React.FC = () => {
 
   return (
     <div className="space-y-4">
+      {completedUploads > 0 && inFlightUploads === 0 && (
+        <div className="rounded border border-green-200 bg-green-50 p-2 text-xs text-green-700">{completedUploads} image{completedUploads === 1 ? '' : 's'} added</div>
+      )}
       {error && (
         <div className="rounded bg-red-50 p-2 text-sm text-red-600">
           {error}
@@ -682,10 +688,7 @@ export const ClinicalImageTab: React.FC = () => {
             ? (
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                   {Array.from({ length: 12 }).map((_, idx) => (
-                    <div key={idx} className="animate-pulse">
-                      <div className="aspect-square rounded-lg bg-slate-200" />
-                      <div className="mt-2 h-3 w-3/4 rounded bg-slate-200" />
-                    </div>
+                    <GalleryTileSkeleton key={idx} />
                   ))}
                 </div>
               )

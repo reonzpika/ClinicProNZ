@@ -30,19 +30,12 @@ import { useToast } from '@/src/shared/components/ui/toast';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { GalleryTileSkeleton } from '@/src/shared/components/ui/gallery-tile-skeleton';
 import { createAuthHeaders } from '@/src/shared/utils';
 import { isFeatureEnabled } from '@/src/shared/utils/launch-config';
 import type { AnalysisModalState, ServerImage } from '@/src/stores/imageStore';
 import { useImageStore } from '@/src/stores/imageStore';
 
-function GalleryTileSkeleton() {
-  return (
-    <div className="animate-pulse">
-      <div className="aspect-square rounded-lg bg-slate-200" />
-      <div className="mt-2 h-3 w-3/4 rounded bg-slate-200" />
-    </div>
-  );
-}
 
 export default function ClinicalImagePage() {
   const { userId, isSignedIn } = useAuth();
