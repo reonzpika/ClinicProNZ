@@ -586,7 +586,17 @@ export const ClinicalImageTab: React.FC = () => {
                         {image.filename}
                       </div>
                       <div className="text-xs text-slate-500">
-                        {new Date(image.uploadedAt).toLocaleDateString()}
+                        {(() => {
+                          const date = new Date(image.uploadedAt);
+                          const parts = new Intl.DateTimeFormat('en-NZ', {
+                            timeZone: 'Pacific/Auckland',
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                          }).formatToParts(date);
+                          const get = (t: string) => parts.find(p => p.type === t)?.value || '';
+                          return `${get('day')}/${get('month')}/${get('year')}`;
+                        })()}
                       </div>
                     </div>
                     <div className="ml-2 flex gap-1">
@@ -657,7 +667,7 @@ export const ClinicalImageTab: React.FC = () => {
       {/* Session Images (from server under clinical-images/{userId}/{sessionId}/) */}
       {(isLoadingServerImages || sessionServerImages.length > 0) && (
         <div
-          className="border-l-2 border-blue-200 pl-3"
+          className={`border-l-2 pl-3 ${isDragging ? 'border-blue-400 border-dashed bg-blue-50/50' : 'border-blue-200'}`}
           onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
           onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
           onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}

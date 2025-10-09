@@ -81,6 +81,7 @@ export default function ClinicalImagePage() {
   const isUploading = uploadImages.isPending;
   const [uploadingFileCount, setUploadingFileCount] = useState(0);
   const [inFlightUploads, setInFlightUploads] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
 
   // Enlarge modal state
   const [enlargeModal, setEnlargeModal] = useState<{
@@ -747,10 +748,13 @@ Cancel
           <Card className="h-full">
             <CardContent
               className="h-full overflow-y-auto p-6"
-              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+              onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+              onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
               onDrop={async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                setIsDragging(false);
                 try {
                   const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
                   if (files.length === 0) return;
@@ -802,7 +806,7 @@ Cancel
                     )
                   : (
                       <>
-                      <div className="mb-3 flex items-center justify-between">
+                      <div className={`mb-3 flex items-center justify-between ${isDragging ? 'rounded border border-dashed border-blue-300 bg-blue-50/50 p-2' : ''}`}>
                         <div className="text-xs text-slate-600">
                           {selectionMode ? `${selectedKeys.size} selected` : `${serverImages.length} images`}
                         </div>
