@@ -35,6 +35,15 @@ import { isFeatureEnabled } from '@/src/shared/utils/launch-config';
 import type { AnalysisModalState, ServerImage } from '@/src/stores/imageStore';
 import { useImageStore } from '@/src/stores/imageStore';
 
+function GalleryTileSkeleton() {
+  return (
+    <div className="animate-pulse">
+      <div className="aspect-square rounded-lg bg-slate-200" />
+      <div className="mt-2 h-3 w-3/4 rounded bg-slate-200" />
+    </div>
+  );
+}
+
 export default function ClinicalImagePage() {
   const { userId, isSignedIn } = useAuth();
   const { getUserTier } = useClerkMetadata();
@@ -651,6 +660,7 @@ Cancel
                   </CardTitle>
                   <CardDescription>
                     AI-powered clinical image analysis and documentation
+                    <span className="ml-2 text-[10px] text-slate-400">Thumbnails may expire after ~30m; they refresh automatically on new events.</span>
                   </CardDescription>
                 </div>
               </div>
@@ -741,10 +751,7 @@ Cancel
                 ? (
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                       {Array.from({ length: 12 }).map((_, idx) => (
-                        <div key={idx} className="animate-pulse">
-                          <div className="aspect-square rounded-lg bg-slate-200" />
-                          <div className="mt-2 h-3 w-3/4 rounded bg-slate-200" />
-                        </div>
+                        <GalleryTileSkeleton key={idx} />
                       ))}
                     </div>
                   )

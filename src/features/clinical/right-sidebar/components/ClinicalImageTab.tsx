@@ -680,21 +680,17 @@ export const ClinicalImageTab: React.FC = () => {
 
           {isLoadingServerImages
             ? (
-                <div className="grid grid-cols-2 gap-3">
-                  {Array.from({ length: 6 }).map((_, idx) => (
-                    <div key={idx} className="flex flex-col">
-                      <div className="aspect-square animate-pulse rounded-lg bg-slate-200" />
-                      <div className="mt-2 flex items-center justify-center gap-2">
-                        <div className="size-7 rounded border border-slate-200 bg-slate-100" />
-                        <div className="size-7 rounded border border-slate-200 bg-slate-100" />
-                        <div className="size-7 rounded border border-slate-200 bg-slate-100" />
-                      </div>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+                  {Array.from({ length: 12 }).map((_, idx) => (
+                    <div key={idx} className="animate-pulse">
+                      <div className="aspect-square rounded-lg bg-slate-200" />
+                      <div className="mt-2 h-3 w-3/4 rounded bg-slate-200" />
                     </div>
                   ))}
                 </div>
               )
             : (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                   {sessionServerImages.map((image: any) => {
                     const isAnalyzing = analyzingImages.has(image.id);
                     return (
