@@ -652,7 +652,25 @@ Cancel
   // Desktop interface
   return (
     <Container size="fluid" className="h-full">
-      <div className="flex h-full gap-6 py-6">
+      <div
+        className="flex h-full gap-6 py-6"
+        onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+        onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
+        onDrop={async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsDragging(false);
+          try {
+            const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
+            if (files.length === 0) return;
+            const context = selectedSessionId && selectedSessionId !== 'none' ? { sessionId: selectedSessionId } : { noSession: true };
+            await uploadImages.mutateAsync({ files, context });
+          } catch (err) {
+            setError('Failed to upload dropped files');
+          }
+        }}
+      >
         {/* Analysis Panel - Now on Left */}
         <div className="w-80">
           <Card className="h-full">
@@ -769,25 +787,7 @@ Cancel
         {/* Images Panel - Now on Right */}
         <div className="flex-1">
           <Card className="h-full">
-            <CardContent
-              className="h-full overflow-y-auto p-6"
-              onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
-              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
-              onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
-              onDrop={async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setIsDragging(false);
-                try {
-                  const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
-                  if (files.length === 0) return;
-                  const context = selectedSessionId && selectedSessionId !== 'none' ? { sessionId: selectedSessionId } : { noSession: true };
-                  await uploadImages.mutateAsync({ files, context });
-                } catch (err) {
-                  setError('Failed to upload dropped files');
-                }
-              }}
-            >
+            <CardContent className="h-full overflow-y-auto p-6">
               {error && (
                 <div className="mb-4 flex items-center space-x-2 rounded-lg bg-red-50 p-3 text-red-600">
                   <AlertCircle className="size-4" />
@@ -829,7 +829,7 @@ Cancel
                     )
                   : (
                       <>
-                      <div className={`mb-3 flex items-center justify-between ${isDragging ? 'rounded border border-dashed border-blue-300 bg-blue-50/50 p-2' : ''}`}>
+                      <div className="mb-3 flex items-center justify-between">
                         <div className="text-xs text-slate-600">
                           {selectionMode ? `${selectedKeys.size} selected` : `${serverImages.length} images`}
                         </div>
