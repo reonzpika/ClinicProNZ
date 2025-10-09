@@ -30,6 +30,7 @@ import { useToast } from '@/src/shared/components/ui/toast';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { usePatientSessions } from '@/src/features/clinical/session-management/hooks/usePatientSessions';
 import { GalleryTileSkeleton } from '@/src/shared/components/ui/gallery-tile-skeleton';
 import { createAuthHeaders } from '@/src/shared/utils';
 import { isFeatureEnabled } from '@/src/shared/utils/launch-config';
@@ -73,6 +74,8 @@ export default function ClinicalImagePage() {
   const [selectedSessionId, setSelectedSessionId] = useState<string | 'none'>('none');
   const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
   const { show: showToast } = useToast();
+  const { sessions } = usePatientSessions();
+  const invalidateTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Track upload loading state
   const isUploading = uploadImages.isPending;
@@ -202,10 +205,20 @@ export default function ClinicalImagePage() {
     },
     onImageUploaded: () => {
       setInFlightUploads((prev) => Math.max(0, prev - 1));
-      try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') }); } catch {}
+      if (!invalidateTimerRef.current) {
+        invalidateTimerRef.current = setTimeout(() => {
+          try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') }); } catch {}
+          invalidateTimerRef.current = null;
+        }, 500);
+      }
     },
     onImageProcessed: () => {
-      try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') }); } catch {}
+      if (!invalidateTimerRef.current) {
+        invalidateTimerRef.current = setTimeout(() => {
+          try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') }); } catch {}
+          invalidateTimerRef.current = null;
+        }, 500);
+      }
     },
   });
 
@@ -732,7 +745,22 @@ Cancel
         {/* Images Panel - Now on Right */}
         <div className="flex-1">
           <Card className="h-full">
-            <CardContent className="h-full overflow-y-auto p-6">
+            <CardContent
+              className="h-full overflow-y-auto p-6"
+              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+              onDrop={async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                try {
+                  const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
+                  if (files.length === 0) return;
+                  const context = selectedSessionId && selectedSessionId !== 'none' ? { sessionId: selectedSessionId } : { noSession: true };
+                  await uploadImages.mutateAsync({ files, context });
+                } catch (err) {
+                  setError('Failed to upload dropped files');
+                }
+              }}
+            >
               {error && (
                 <div className="mb-4 flex items-center space-x-2 rounded-lg bg-red-50 p-3 text-red-600">
                   <AlertCircle className="size-4" />
@@ -808,9 +836,29 @@ Cancel
                           )}
                         </div>
                       </div>
+                      {/* Quick session filter chips */}
+                      <div className="mb-3 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          className={`rounded-full border px-2 py-1 text-xs ${selectedSessionId === 'none' ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-700'}`}
+                          onClick={() => setSelectedSessionId('none')}
+                        >
+                          All
+                        </button>
+                        {sessions.map((s) => (
+                          <button
+                            key={s.id}
+                            type="button"
+                            className={`rounded-full border px-2 py-1 text-xs ${selectedSessionId === s.id ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-700'}`}
+                            onClick={() => setSelectedSessionId(s.id)}
+                          >
+                            {s.patientName}
+                          </button>
+                        ))}
+                      </div>
                       {(
                       <ImageSectionsGrid
-                        images={serverImages}
+                        images={selectedSessionId !== 'none' ? serverImages.filter(img => img.sessionId === selectedSessionId) : serverImages}
                         onAnalyze={handleOpenAnalysis}
                         onEnlarge={handleOpenEnlarge}
                         onDownload={handleDownloadImage}
