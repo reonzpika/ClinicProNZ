@@ -2,7 +2,7 @@ import * as Ably from 'ably';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 type SimpleAblyMessage = {
-  type: 'transcriptions_updated' | 'recording_status' | 'recording_control' | 'images_uploaded' | 'session_context' | 'transcription_status' | 'flush_request' | 'consent_request' | 'consent_granted' | 'consent_denied';
+  type: 'transcriptions_updated' | 'recording_status' | 'recording_control' | 'images_uploaded' | 'image_upload_started' | 'image_uploaded' | 'image_processed' | 'image_deleted' | 'session_context' | 'transcription_status' | 'flush_request' | 'consent_request' | 'consent_granted' | 'consent_denied';
   transcript?: string;
   timestamp?: number;
   // Recording status fields
@@ -18,6 +18,9 @@ type SimpleAblyMessage = {
   mobileTokenId?: string;
   imageCount?: number;
   uploadTimestamp?: string;
+  // Image events - per-file
+  key?: string;
+  displayName?: string;
   // Session context fields
   sessionId?: string | null;
   // Transcription status fields
@@ -33,6 +36,10 @@ export type UseSimpleAblyOptions = {
   isMobile?: boolean;
   onControlCommand?: (action: 'start' | 'stop') => void; // For mobile remote control
   onMobileImagesUploaded?: (mobileTokenId: string | undefined, imageCount: number, timestamp: string, sessionId?: string | null) => void; // For desktop image notification
+  onImageUploadStarted?: (count: number, sessionId?: string | null) => void;
+  onImageUploaded?: (key: string, sessionId?: string | null, displayName?: string) => void;
+  onImageProcessed?: (key: string) => void;
+  onImageDeleted?: (key: string) => void;
   onTranscriptionsUpdated?: (sessionId?: string, chunkId?: string) => void;
   onTranscriptionFlushed?: (sessionId?: string, lastChunkId?: string) => void; // Desktop waits on this
   onSessionContextChanged?: (sessionId: string | null) => void; // For mobile to receive session context
@@ -78,6 +85,10 @@ export const useSimpleAbly = ({
     onConsentRequested,
     onConsentGranted,
     onConsentDenied,
+    onImageUploadStarted,
+    onImageUploaded,
+    onImageProcessed,
+    onImageDeleted,
   });
 
   // Update callbacks without triggering reconnection
@@ -95,7 +106,7 @@ export const useSimpleAbly = ({
       onConsentGranted,
       onConsentDenied,
     } as any;
-  }, [onRecordingStatusChanged, onError, onConnectionStatusChanged, onControlCommand, onMobileImagesUploaded, onTranscriptionsUpdated, onTranscriptionFlushed, onSessionContextChanged, onConsentRequested, onConsentGranted, onConsentDenied]);
+  }, [onRecordingStatusChanged, onError, onConnectionStatusChanged, onControlCommand, onMobileImagesUploaded, onTranscriptionsUpdated, onTranscriptionFlushed, onSessionContextChanged, onConsentRequested, onConsentGranted, onConsentDenied, onImageUploadStarted, onImageUploaded, onImageProcessed, onImageDeleted]);
 
   // Connection status is updated directly to avoid unstable deps
 
@@ -403,6 +414,27 @@ export const useSimpleAbly = ({
                   data.uploadTimestamp,
                   data.sessionId,
                 );
+              }
+              break;
+
+            case 'image_upload_started':
+              if (!isMobile && typeof data.imageCount === 'number') {
+                callbacksRef.current.onImageUploadStarted?.(data.imageCount, data.sessionId ?? null);
+              }
+              break;
+            case 'image_uploaded':
+              if (!isMobile && data.key) {
+                callbacksRef.current.onImageUploaded?.(data.key, data.sessionId ?? null, (data as any).displayName);
+              }
+              break;
+            case 'image_processed':
+              if (!isMobile && data.key) {
+                callbacksRef.current.onImageProcessed?.(data.key);
+              }
+              break;
+            case 'image_deleted':
+              if (!isMobile && data.key) {
+                callbacksRef.current.onImageDeleted?.(data.key);
               }
               break;
 

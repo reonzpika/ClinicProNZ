@@ -75,6 +75,7 @@ export default function ClinicalImagePage() {
   // Track upload loading state
   const isUploading = uploadImages.isPending;
   const [uploadingFileCount, setUploadingFileCount] = useState(0);
+  const [inFlightUploads, setInFlightUploads] = useState(0);
 
   // Enlarge modal state
   const [enlargeModal, setEnlargeModal] = useState<{
@@ -189,15 +190,20 @@ export default function ClinicalImagePage() {
   // QR code URL for mobile uploads (same page with mobile detection)
   const qrCodeUrl = typeof window !== 'undefined' ? `${window.location.origin}/image` : '';
 
-  // Live refresh via Ably images_uploaded
+  // Live refresh via Ably events (uploads)
   const queryClientRef = useRef(useQueryClient());
   useSimpleAbly({
     userId: userId ?? null,
     isMobile: false,
-    onMobileImagesUploaded: () => {
-      try {
- queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') });
-} catch {}
+    onImageUploadStarted: (count) => {
+      setInFlightUploads((prev) => prev + (count || 0));
+    },
+    onImageUploaded: () => {
+      setInFlightUploads((prev) => Math.max(0, prev - 1));
+      try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') }); } catch {}
+    },
+    onImageProcessed: () => {
+      try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') }); } catch {}
     },
   });
 
@@ -657,6 +663,14 @@ Cancel
                   onSwitch={() => setIsSessionModalOpen(true)}
                   onSelectSession={(id) => setSelectedSessionId(id)}
                 />
+                {inFlightUploads > 0 && (
+                  <div className="flex items-center justify-between rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-700">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="size-3 animate-spin" />
+                      <span>Receiving {inFlightUploads} image{inFlightUploads === 1 ? '' : 's'}…</span>
+                    </div>
+                  </div>
+                )}
                 <Button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploading}

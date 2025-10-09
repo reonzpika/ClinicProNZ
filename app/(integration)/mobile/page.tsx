@@ -506,14 +506,14 @@ selected
                   onClick={async () => {
                     const filesToUpload = queuedItems.map(it => it.file);
                     try {
+                      // Emit started event to desktop (best effort)
+                      try { sendImageNotification(undefined, filesToUpload.length, currentSessionIdRef.current); } catch {}
                       await uploadImages.mutateAsync({
                         files: filesToUpload,
                         names: queuedItems.map(it => ({ patientName: patientNameInput || undefined, identifier: it.identifier || undefined })),
                       });
-                      // Notify desktop to refresh image list
-                      try {
- sendImageNotification(undefined, filesToUpload.length, undefined);
-} catch {}
+                      // Notify desktop completion (compat path retained)
+                      try { sendImageNotification(undefined, filesToUpload.length, currentSessionIdRef.current); } catch {}
                       // Clear queue and return
                       queuedItems.forEach(it => it.previewUrl && URL.revokeObjectURL(it.previewUrl));
                       setQueuedItems([]);
