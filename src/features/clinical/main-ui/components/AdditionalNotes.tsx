@@ -135,11 +135,9 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     assessmentText,
     planText,
     // Dirty flags and last-edited timestamps
-    problemsDirty,
     objectiveDirty,
     assessmentDirty,
     planDirty,
-    problemsEditedAt,
     objectiveEditedAt,
     assessmentEditedAt,
     planEditedAt,
