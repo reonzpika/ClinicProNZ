@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
+import { TranscriptionControls } from './TranscriptionControls';
 // import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
 export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _isNoteFocused, isDocumentationMode: _isDocumentationMode, isFinishing, mobileMode = false }: { onGenerate?: () => void; onFinish?: () => void; loading?: boolean; isNoteFocused?: boolean; isDocumentationMode?: boolean; isFinishing?: boolean; mobileMode?: boolean }) {
