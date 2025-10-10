@@ -7,10 +7,10 @@ import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { cn } from '@/src/lib/utils';
 
-import type { ToolSummary } from '../data/tools';
+import type { ToolDetail } from '../data/tools';
 
 export type ToolCardProps = {
-  tool: ToolSummary;
+  tool: ToolDetail;
   className?: string;
 };
 
@@ -40,10 +40,15 @@ export function ToolCard({ tool, className }: ToolCardProps) {
           <Button asChild variant="secondary" size="sm">
             <Link href={`/tools/${tool.id}`}>View details</Link>
           </Button>
-          {tool.logoUrl /* just to keep order stable */}
-          <Button asChild variant="secondary" size="sm" disabled={!tool['relatedPromptsUrl']} title={!tool['relatedPromptsUrl'] ? 'Coming soon' : undefined}>
-            {tool['relatedPromptsUrl'] ? (
-              <Link href={tool['relatedPromptsUrl']!}>View prompts</Link>
+          <Button
+            asChild
+            variant="secondary"
+            size="sm"
+            disabled={!tool.relatedPromptsUrl}
+            title={!tool.relatedPromptsUrl ? 'Coming soon' : undefined}
+          >
+            {tool.relatedPromptsUrl ? (
+              <Link href={tool.relatedPromptsUrl}>View prompts</Link>
             ) : (
               <span>View prompts</span>
             )}
