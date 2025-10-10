@@ -353,7 +353,17 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
             </div>
           )}
         </div>
-        <div className={`${mobileMode ? 'sticky bottom-0 z-10 -mx-3 mt-1 bg-white/95 px-3 pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]' : ''} flex space-x-2`}>
+        <div className={`${mobileMode ? 'sticky bottom-0 z-10 -mx-3 mt-1 bg-white/95 px-3 pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]' : ''} flex items-center space-x-2`}>
+          {mobileMode && (
+            <TranscriptionControls
+              collapsed={false}
+              isMinimized={false}
+              enableRemoteMobile={false}
+              showRecordingMethodToggle={false}
+              mobileMode
+              footerMode
+            />
+          )}
           {/* Desktop/tablet full action row */}
           {!mobileMode && (
             <>

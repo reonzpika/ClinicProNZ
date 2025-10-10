@@ -1086,20 +1086,8 @@ export default function ConsultationPage() {
                               </div>
                             )
                           : (
-                              // Pre-generation: Recording UI, Additional notes (collapsed by default), and Process CTA
+                              // Pre-generation: Additional notes (always expanded) + sticky footer controls
                               <div className="flex flex-1 flex-col space-y-4">
-                                {/* Recording UI always visible at top on mobile */}
-                                <TranscriptionControls
-                                  collapsed={false}
-                                  onExpand={() => setIsNoteFocused(false)}
-                                  isMinimized={false}
-                                  mobileIsRecording={mobileIsRecording}
-                                  defaultRecordingMethod={defaultRecordingMethod}
-                                  enableRemoteMobile={false}
-                                  showRecordingMethodToggle={false}
-                                  mobileMode
-                                />
-
                                 {/* Additional notes always expanded on mobile */}
                                 <AdditionalNotes
                                   items={consultationItems}
