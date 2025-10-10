@@ -25,6 +25,8 @@ type AdditionalNotesProps = {
   isMinimized?: boolean;
   defaultExpanded?: boolean;
   expandedSize?: 'normal' | 'large';
+  forceExpanded?: boolean;
+  hideTips?: boolean;
 };
 
 export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
@@ -35,8 +37,11 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   isMinimized = false,
   defaultExpanded = true,
   expandedSize = 'normal',
+  forceExpanded = false,
+  hideTips = false,
 }) => {
   const [isExpanded, setIsExpanded] = useState(isMinimized ? false : defaultExpanded);
+  const effectiveExpanded = forceExpanded ? true : isExpanded;
 
   // Refs for keyboard focus management
   const problemsRef = React.useRef<HTMLTextAreaElement | null>(null);
@@ -413,7 +418,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   }
 
   // Collapsed standard view
-  if (!isExpanded) {
+  if (!effectiveExpanded) {
     return (
       <div className="space-y-2">
         <div className="flex items-center justify-between">
@@ -422,19 +427,23 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               <FileText size={16} className="text-slate-600" />
               <span className="text-sm font-medium text-slate-700">Additional Notes (optional)</span>
             </div>
-            <span className="text-xs text-slate-500">Tip: Tab cycles Problems → Objective → Assessment → Plan; Shift+Tab reverses. Alt+C checklist, Alt+P safety-net.</span>
+            {!hideTips && (
+              <span className="text-xs text-slate-500">Tip: Tab cycles Problems → Objective → Assessment → Plan; Shift+Tab reverses. Alt+C checklist, Alt+P safety-net.</span>
+            )}
             {renderCharacterCount()}
           </div>
           <div className="flex items-center gap-1">
             <ExaminationChecklistButton tabIndex={-1} />
             <PlanSafetyNettingButton tabIndex={-1} />
-            <button
-              type="button"
-              className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
-              onClick={() => setIsExpanded(true)}
-            >
-              +
-            </button>
+            {!forceExpanded && (
+              <button
+                type="button"
+                className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
+                onClick={() => setIsExpanded(true)}
+              >
+                +
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -453,16 +462,20 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 Additional Notes (optional)
               </label>
             </div>
-            <span className="text-xs text-slate-500">Tip: Tab moves Problems → Objective → Assessment → Plan; Shift+Tab goes back</span>
+            {!hideTips && (
+              <span className="text-xs text-slate-500">Tip: Tab moves Problems → Objective → Assessment → Plan; Shift+Tab goes back</span>
+            )}
           </div>
           <div className="flex items-center gap-1">
-            <button
-              type="button"
-              className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
-              onClick={() => setIsExpanded(false)}
-            >
-              −
-            </button>
+            {!forceExpanded && (
+              <button
+                type="button"
+                className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
+                onClick={() => setIsExpanded(false)}
+              >
+                −
+              </button>
+            )}
           </div>
         </div>
         <div className="flex flex-1 flex-col space-y-2" ref={containerRef} role="group" aria-label="Additional notes editor">
@@ -558,16 +571,20 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               Additional Notes (optional)
             </label>
           </div>
-          <span className="text-xs text-slate-500">Tip: Tab cycles Problems → Objective → Assessment → Plan; Shift+Tab reverses. Alt+C checklist, Alt+P safety-net.</span>
+          {!hideTips && (
+            <span className="text-xs text-slate-500">Tip: Tab cycles Problems → Objective → Assessment → Plan; Shift+Tab reverses. Alt+C checklist, Alt+P safety-net.</span>
+          )}
         </div>
         <div className="flex items-center gap-1">
-          <button
-            type="button"
-            className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
-            onClick={() => setIsExpanded(false)}
-          >
-            −
-          </button>
+          {!forceExpanded && (
+            <button
+              type="button"
+              className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
+              onClick={() => setIsExpanded(false)}
+            >
+              −
+            </button>
+          )}
         </div>
       </div>
       <div className="grid grid-cols-1 gap-3" ref={containerRef} role="group" aria-label="Additional notes editor">

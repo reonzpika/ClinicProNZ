@@ -1088,35 +1088,29 @@ export default function ConsultationPage() {
                           : (
                               // Pre-generation: Recording UI, Additional notes (collapsed by default), and Process CTA
                               <div className="flex flex-1 flex-col space-y-4">
-                                {inputMode === 'audio'
-                                  ? (
-                                      <TranscriptionControls
-                                        collapsed={isNoteFocused}
-                                        onExpand={() => setIsNoteFocused(false)}
-                                        isMinimized={false}
-                                        mobileIsRecording={mobileIsRecording}
-                                        defaultRecordingMethod={defaultRecordingMethod}
-                                        enableRemoteMobile={false}
-                                        showRecordingMethodToggle={false}
-                                        mobileMode
-                                      />
-                                    )
-                                  : (
-                                      <TypedInput
-                                        collapsed={isNoteFocused}
-                                        onExpand={() => setIsNoteFocused(false)}
-                                        isMinimized={false}
-                                      />
-                                    )}
+                                {/* Recording UI always visible at top on mobile */}
+                                <TranscriptionControls
+                                  collapsed={false}
+                                  onExpand={() => setIsNoteFocused(false)}
+                                  isMinimized={false}
+                                  mobileIsRecording={mobileIsRecording}
+                                  defaultRecordingMethod={defaultRecordingMethod}
+                                  enableRemoteMobile={false}
+                                  showRecordingMethodToggle={false}
+                                  mobileMode
+                                />
 
+                                {/* Additional notes always expanded on mobile */}
                                 <AdditionalNotes
                                   items={consultationItems}
                                   onNotesChange={setConsultationNotes}
                                   notes={consultationNotes}
                                   placeholder="Additional information gathered during consultation..."
                                   isMinimized={false}
-                                  defaultExpanded={false}
+                                  defaultExpanded
                                   expandedSize="normal"
+                                  forceExpanded
+                                  hideTips
                                 />
 
                                 <div className="mt-auto flex flex-col">
