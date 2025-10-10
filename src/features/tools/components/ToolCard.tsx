@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import * as React from 'react';
 
 import { Badge } from '@/src/shared/components/ui/badge';
@@ -20,8 +21,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             {tool.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={tool.logoUrl} alt="" className="h-5 w-5 rounded-sm" />
+              <Image src={tool.logoUrl} alt="" width={20} height={20} className="rounded-sm" />
             ) : null}
             <CardTitle>{tool.name}</CardTitle>
           </div>
@@ -30,6 +30,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         <CardDescription>{tool.tagline}</CardDescription>
       </CardHeader>
       <CardContent className="mt-auto">
+        <div className="mb-2 text-[10px] text-muted-foreground">Reviewed {tool.updatedAt ? new Date(tool.updatedAt).toLocaleDateString(undefined, { month: '2-digit', year: 'numeric' }) : '—'}</div>
         <div className="flex items-center gap-2">
           <Button asChild size="sm">
             <a href={tool.tryUrl} target="_blank" rel="noopener noreferrer">Try</a>

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import * as React from 'react';
 
 import { Badge } from '@/src/shared/components/ui/badge';
@@ -12,8 +13,7 @@ export function ToolDetailHeader({ tool }: { tool: ToolDetail }) {
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           {tool.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={tool.logoUrl} alt="" className="h-8 w-8 rounded-sm" />
+            <Image src={tool.logoUrl} alt="" width={32} height={32} className="rounded-sm" />
           ) : null}
           <h1 className="text-2xl font-bold">{tool.name}</h1>
         </div>

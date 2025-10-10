@@ -40,7 +40,7 @@ export const TOOL_LIST: ToolDetail[] = [
     tryUrl: 'https://www.perplexity.ai',
     website: 'https://www.perplexity.ai',
     docsUrl: null,
-    logoUrl: 'https://logo.clearbit.com/perplexity.ai',
+    logoUrl: '/logos/perplexity.svg',
     keyInfo: { platforms: ['Web'], accountRequired: false },
     overview:
       'Perplexity provides concise answers with source citations. Useful for quick overviews; verify against local guidelines before acting clinically.',
@@ -67,7 +67,7 @@ export const TOOL_LIST: ToolDetail[] = [
     tryUrl: 'https://www.openevidence.com',
     website: 'https://www.openevidence.com',
     docsUrl: null,
-    logoUrl: 'https://logo.clearbit.com/openevidence.com',
+    logoUrl: '/logos/openevidence.svg',
     keyInfo: { platforms: ['Web'], accountRequired: true },
     overview:
       'Summarises clinical evidence with clear references. Best used for structured review; check date and applicability to NZ context.',
@@ -88,7 +88,7 @@ export const TOOL_LIST: ToolDetail[] = [
     tryUrl: 'https://elicit.com',
     website: 'https://elicit.com',
     docsUrl: null,
-    logoUrl: 'https://logo.clearbit.com/elicit.com',
+    logoUrl: '/logos/elicit.svg',
     keyInfo: { platforms: ['Web'], accountRequired: true },
     overview:
       'Finds and structures relevant papers for a topic. Helpful for getting a lay of the land before deep reading.',
@@ -106,7 +106,7 @@ export const TOOL_LIST: ToolDetail[] = [
     tryUrl: 'https://consensus.app',
     website: 'https://consensus.app',
     docsUrl: null,
-    logoUrl: 'https://logo.clearbit.com/consensus.app',
+    logoUrl: '/logos/consensus.svg',
     keyInfo: { platforms: ['Web'], accountRequired: true },
     overview:
       'Aggregates research findings to show a consensus stance. Good for quick sense-checks; still review underlying studies.',
@@ -123,7 +123,7 @@ export const TOOL_LIST: ToolDetail[] = [
     tryUrl: 'https://typeset.io',
     website: 'https://typeset.io',
     docsUrl: null,
-    logoUrl: 'https://logo.clearbit.com/typeset.io',
+    logoUrl: '/logos/scispace.svg',
     keyInfo: { platforms: ['Web'], accountRequired: true },
     overview:
       'Question-and-answer on PDFs with citations. Useful for drilling into specific papers.',
@@ -140,7 +140,7 @@ export const TOOL_LIST: ToolDetail[] = [
     tryUrl: 'https://claude.ai',
     website: 'https://claude.ai',
     docsUrl: null,
-    logoUrl: 'https://logo.clearbit.com/claude.ai',
+    logoUrl: '/logos/claude.svg',
     keyInfo: { platforms: ['Web'], accountRequired: true },
     overview:
       'General assistant useful for drafting clinical communication and summarising. Request citations when needed.',
@@ -157,7 +157,7 @@ export const TOOL_LIST: ToolDetail[] = [
     tryUrl: 'https://chat.openai.com',
     website: 'https://chat.openai.com',
     docsUrl: null,
-    logoUrl: 'https://logo.clearbit.com/openai.com',
+    logoUrl: '/logos/chatgpt.svg',
     keyInfo: { platforms: ['Web'], accountRequired: true },
     overview:
       'Drafts, summaries, and general Q&A. Include safety-netting and request citations for clinical topics.',
