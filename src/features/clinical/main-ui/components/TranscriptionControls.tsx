@@ -187,7 +187,7 @@ export function TranscriptionControls({
   }, [mobileIsRecording]);
 
   // Remote control handlers (send via global Ably bridge exposed in ConsultationPage)
-  const sendMobileControl = async (action: 'start' | 'stop') => {
+  const sendMobileControl = async (action: 'start' | 'stop'): Promise<boolean> => {
     try {
       if (!enableRemoteMobile) {
         return false;
@@ -204,7 +204,7 @@ export function TranscriptionControls({
       if (!ok) {
         setPendingControl(null);
         setControlError('Mobile not connected. Please open the mobile page and unlock the screen.');
-        return;
+        return false;
       }
 
       // Start ack timeout (3s)
@@ -213,9 +213,11 @@ export function TranscriptionControls({
         setControlError('Mobile did not respond. Ensure the phone is unlocked and the mobile page is active.');
       }, 3000);
       setControlAckTimer(t);
+      return true;
     } catch (e) {
       setPendingControl(null);
       setControlError(e instanceof Error ? e.message : 'Failed to send control command');
+      return false;
     }
   };
 
