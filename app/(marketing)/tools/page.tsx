@@ -1,3 +1,4 @@
+"use client";
 import * as React from 'react';
 
 import { Container } from '@/src/shared/components/layout/Container';
@@ -52,7 +53,7 @@ export default function ToolsPage() {
       <footer className="text-xs text-muted-foreground">
         <div className="mb-2">Last reviewed: {new Date().toLocaleDateString()}</div>
         <div>
-          Explore prompts (coming soon) · Community (coming soon)
+          <a href="/prompts" className="underline">Explore prompts</a> · Community (coming soon)
         </div>
       </footer>
     </Container>

@@ -18,7 +18,13 @@ export function ToolCard({ tool, className }: ToolCardProps) {
     <Card className={cn('flex flex-col', className)}>
       <CardHeader className="space-y-1">
         <div className="flex items-center justify-between gap-2">
-          <CardTitle>{tool.name}</CardTitle>
+          <div className="flex items-center gap-2">
+            {tool.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={tool.logoUrl} alt="" className="h-5 w-5 rounded-sm" />
+            ) : null}
+            <CardTitle>{tool.name}</CardTitle>
+          </div>
           {tool.isFree && <Badge>Free</Badge>}
         </div>
         <CardDescription>{tool.tagline}</CardDescription>
@@ -31,7 +37,14 @@ export function ToolCard({ tool, className }: ToolCardProps) {
           <Button asChild variant="secondary" size="sm">
             <Link href={`/tools/${tool.id}`}>View details</Link>
           </Button>
-          <Button variant="secondary" size="sm" disabled title="Coming soon">Copy prompts</Button>
+          {tool.logoUrl /* just to keep order stable */}
+          <Button asChild variant="secondary" size="sm" disabled={!tool['relatedPromptsUrl']} title={!tool['relatedPromptsUrl'] ? 'Coming soon' : undefined}>
+            {tool['relatedPromptsUrl'] ? (
+              <Link href={tool['relatedPromptsUrl']!}>View prompts</Link>
+            ) : (
+              <span>View prompts</span>
+            )}
+          </Button>
         </div>
       </CardContent>
     </Card>
