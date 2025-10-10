@@ -353,7 +353,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
             </div>
           )}
         </div>
-        <div className="flex space-x-2">
+        <div className={`${mobileMode ? 'sticky bottom-0 z-10 -mx-3 mt-1 bg-white/95 px-3 pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]' : ''} flex space-x-2`}>
           {/* Desktop/tablet full action row */}
           {!mobileMode && (
             <>
@@ -416,7 +416,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
               variant="default"
               onClick={handleGenerate}
               disabled={!canGenerate || loading}
-              className="h-11 w-full bg-slate-600 px-4 py-2 text-sm text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+              className="h-12 w-full rounded-full bg-slate-700 px-4 text-base text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-gray-400"
               title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
             >
               {loading ? 'Processing...' : 'Process Notes'}
@@ -431,7 +431,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
                 variant="outline"
                 onClick={handleFinish}
                 disabled={isFinishing}
-                className="h-11 flex-1 border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className="h-12 flex-1 rounded-full border-red-300 text-base text-red-600 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
                 title="Finish this session"
                 aria-label="Finish this session"
               >
@@ -443,7 +443,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
                   variant="default"
                   onClick={handleNewPatient}
                   disabled={!canCreateSession || isCreatingNewSession}
-                  className="h-11 flex-1 bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="h-12 flex-1 rounded-full bg-blue-600 text-base text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                   title="Create a new session"
                   aria-label="Create a new session"
                 >

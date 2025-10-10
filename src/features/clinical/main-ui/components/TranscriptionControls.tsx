@@ -127,6 +127,16 @@ export function TranscriptionControls({
     return `${m}:${s}`;
   };
 
+  // Simple haptic feedback (mobile only, best-effort)
+  const haptic = (durationMs = 30) => {
+    try {
+      if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+        // @ts-ignore
+        navigator.vibrate?.(durationMs);
+      }
+    } catch {}
+  };
+
   // Check for no transcript warning after 40 seconds
   useEffect(() => {
     if (isRecording && recordingStartTime && !transcript.trim()) {
@@ -536,8 +546,10 @@ export function TranscriptionControls({
                       type="button"
                       onClick={() => {
                         if (isRecording) {
+                          haptic(30);
                           stopRecording();
                         } else {
+                          haptic(30);
                           handleStartRecording();
                         }
                       }}
