@@ -359,26 +359,35 @@ export function TranscriptionControls({
   // Footer-only compact UI (for sticky bars)
   if (footerMode) {
     return (
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => {
-            if (isRecording) {
-              stopRecording();
-            } else {
-              handleStartRecording();
-            }
-          }}
-          className={`flex h-12 w-12 items-center justify-center rounded-full text-white shadow-md active:scale-95 ${isRecording ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
-          aria-label={isRecording ? 'Stop recording' : 'Start recording'}
-        >
-          {isRecording ? 'Stop' : 'Rec'}
-        </button>
-        <div className="flex flex-col">
-          <div className="text-[11px] text-slate-600">{isRecording ? 'Transcribing…' : 'Ready'}</div>
-          <div className={`text-xs tabular-nums ${isRecording ? 'text-slate-800' : 'text-slate-400'}`}>{formatElapsed(elapsedSeconds)}</div>
+      <>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              if (isRecording) {
+                stopRecording();
+              } else {
+                handleStartRecording();
+              }
+            }}
+            className={`flex h-12 w-12 items-center justify-center rounded-full text-white shadow-md active:scale-95 ${isRecording ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
+            aria-label={isRecording ? 'Stop recording' : 'Start recording'}
+          >
+            {isRecording ? 'Stop' : 'Rec'}
+          </button>
+          <div className="flex flex-col">
+            <div className="text-[11px] text-slate-600">{isRecording ? 'Transcribing…' : 'Ready'}</div>
+            <div className={`text-xs tabular-nums ${isRecording ? 'text-slate-800' : 'text-slate-400'}`}>{formatElapsed(elapsedSeconds)}</div>
+          </div>
         </div>
-      </div>
+
+        {/* Ensure consent modal renders for footer mode */}
+        <ConsentModal
+          isOpen={showConsentModal}
+          onConfirm={handleConsentConfirm}
+          onCancel={handleConsentCancel}
+        />
+      </>
     );
   }
 
