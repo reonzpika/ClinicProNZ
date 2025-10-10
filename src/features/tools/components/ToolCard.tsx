@@ -26,7 +26,7 @@ export function ToolCard({ tool, className }: ToolCardProps) {
               ) : null}
               <CardTitle>{tool.name}</CardTitle>
             </div>
-            {tool.isFree && <Badge>Free</Badge>}
+            {/* Free badge removed per request */}
           </div>
           <CardDescription className="mt-1">{tool.tagline}</CardDescription>
         </Link>
@@ -34,9 +34,6 @@ export function ToolCard({ tool, className }: ToolCardProps) {
       <CardContent className="mt-auto">
         <div className="mb-2 text-[10px] text-muted-foreground">Reviewed {tool.updatedAt ? new Date(tool.updatedAt).toLocaleDateString(undefined, { month: '2-digit', year: 'numeric' }) : '—'}</div>
         <div className="flex items-center gap-2">
-          <Button asChild size="sm">
-            <a href={tool.tryUrl} target="_blank" rel="noopener noreferrer">Try</a>
-          </Button>
           <Button asChild variant="secondary" size="sm">
             <Link href={`/tools/${tool.id}`}>View details</Link>
           </Button>

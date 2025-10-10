@@ -17,13 +17,11 @@ export function ToolDetailHeader({ tool }: { tool: ToolDetail }) {
           ) : null}
           <h1 className="text-2xl font-bold">{tool.name}</h1>
         </div>
-        {tool.isFree && <Badge>Free</Badge>}
+        {/* Free badge removed per request */}
       </div>
       {tool.subtitle && <p className="text-sm text-muted-foreground">{tool.subtitle}</p>}
       <div className="flex flex-wrap items-center gap-2">
-        <Button asChild size="sm">
-          <a href={tool.tryUrl} target="_blank" rel="noopener noreferrer">Try</a>
-        </Button>
+        {/* Try button removed per request */}
         {tool.relatedPromptsUrl ? (
           <Button asChild variant="secondary" size="sm">
             <Link href={tool.relatedPromptsUrl}>View prompts</Link>
