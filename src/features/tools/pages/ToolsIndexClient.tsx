@@ -26,7 +26,7 @@ export function ToolsIndexClient({ tools }: { tools: ToolDetail[] }) {
         </button>
       </div>
 
-      <Grid cols={4} gap="lg" className="mb-10">
+      <Grid cols={4} gap="lg" className="mb-10 grid-cols-2 lg:grid-cols-4">
         {filtered.map((tool) => (
           <ToolCard key={tool.id} tool={tool} />
         ))}

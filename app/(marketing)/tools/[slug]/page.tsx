@@ -20,11 +20,11 @@ export default async function ToolDetailPage({ params }: { params: Promise<{ slu
   return (
     <Container size="xl" className="py-8">
       <ToolDetailHeader tool={tool} />
-      <Grid cols={3} gap="lg" className="items-start">
-        <div className="col-span-2">
+      <Grid cols={3} gap="lg" className="items-start grid-cols-1 lg:grid-cols-3">
+        <div className="lg:col-span-2">
           <ToolDetailMain tool={tool} />
         </div>
-        <div className="col-span-1">
+        <div className="lg:col-span-1">
           <ToolDetailSidebar tool={tool} />
         </div>
       </Grid>
