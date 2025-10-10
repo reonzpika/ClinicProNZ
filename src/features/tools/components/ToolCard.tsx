@@ -2,7 +2,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import * as React from 'react';
 
-import { Badge } from '@/src/shared/components/ui/badge';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { cn } from '@/src/lib/utils';
