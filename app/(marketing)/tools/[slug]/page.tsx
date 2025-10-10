@@ -12,8 +12,9 @@ export function generateStaticParams() {
   return TOOL_LIST.map((t) => ({ slug: t.id }));
 }
 
-export default function ToolDetailPage({ params }: { params: { slug: string } }) {
-  const tool = getToolById(params.slug);
+export default async function ToolDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const tool = getToolById(slug);
   if (!tool) return notFound();
 
   return (
