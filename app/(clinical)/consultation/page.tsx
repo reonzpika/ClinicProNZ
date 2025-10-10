@@ -25,8 +25,8 @@ import { ContactLink } from '@/src/shared/components/ContactLink';
 import { FeatureFeedbackButton } from '@/src/shared/components/FeatureFeedbackButton';
 import { Container } from '@/src/shared/components/layout/Container';
 import { Stack } from '@/src/shared/components/layout/Stack';
-import { MobileBlockModal } from '@/src/shared/components/MobileBlockModal';
-import { RateLimitModal } from '@/src/shared/components/RateLimitModal';
+// MobileBlockModal removed for mobile access
+// RateLimitModal removed (legacy)
 import { Button } from '@/src/shared/components/ui/button';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { useResponsive } from '@/src/shared/hooks/useResponsive';
@@ -78,8 +78,7 @@ export default function ConsultationPage() {
   const [isNoteFocused, setIsNoteFocused] = useState(false);
   const [isDocumentationMode, setIsDocumentationMode] = useState(false);
   // Sidebar removed
-  const [rateLimitModalOpen, setRateLimitModalOpen] = useState(false);
-  const [rateLimitError, setRateLimitError] = useState<{ limit: number; resetIn: number; message: string } | null>(null);
+  // Rate limit modal removed; use inline error messaging instead
   const { isMobile, isTablet, isDesktop, isLargeDesktop } = useResponsive();
   // Guard to prevent doc-mode auto-toggle during clear-all flow
   const isClearingRef = useRef(false);
@@ -88,8 +87,7 @@ export default function ConsultationPage() {
   // Apply user defaults only once on initial settings load
   const hasAppliedDefaultsRef = useRef(false);
 
-  // Mobile block modal - prevent mobile access to consultation
-  const showMobileBlock = isMobile;
+  // Mobile access enabled (previously blocked)
 
   // Check for upgrade redirect
   const [showUpgradeNotification, setShowUpgradeNotification] = useState(false);
@@ -782,18 +780,10 @@ export default function ConsultationPage() {
         signal: controller.signal,
       });
 
-      // Check for rate limit error
+      // Handle rate limit error without modal (legacy removed)
       if (res.status === 429) {
-        const errorData = await res.json();
-        // Map server response format to UI format
-        const resetTime = errorData.resetTime ? new Date(errorData.resetTime) : new Date();
-        const resetIn = Math.max(0, Math.floor((resetTime.getTime() - Date.now()) / 1000));
-        setRateLimitError({
-          limit: errorData.remaining || 0, // Use remaining count from server
-          resetIn,
-          message: errorData.message || 'Rate limit exceeded',
-        });
-        setRateLimitModalOpen(true);
+        const errorData = await res.json().catch(() => ({ message: 'Rate limit exceeded' }));
+        setError(errorData.message || 'Rate limit exceeded');
         setStatus('idle');
         return;
       }
@@ -1074,24 +1064,16 @@ export default function ConsultationPage() {
                     </div>
                   )
                 : (
-                  /* Tablet/Mobile/Small Desktop Single-Column Layout (Unchanged) */
-                    <Stack spacing={isDesktop ? 'sm' : 'sm'} className="h-full">
-                      {/* Patient Session Manager - V2 Feature */}
-                      <PatientSessionManager />
-
-                      {/* Documentation Settings Badge - Always visible below session bar */}
-                      <DocumentationSettingsBadge />
-
-                      {/* Clinical Widgets - Icon-only tabs under settings for smaller screens */}
-                      <ClinicalToolsTabs fixedHeightClass="h-[400px]" />
-
-                      {/* Conditional Layout Based on Documentation Mode */}
-                      {isDocumentationMode
-                        ? (
-                            <>
-                              {/* Clinical Documentation - Top Priority */}
+                  /* Tablet/Mobile/Small Desktop */
+                  isMobile
+                    ? (
+                      // Phone-only reduced UI
+                      <Stack spacing={isDesktop ? 'sm' : 'sm'} className="h-full">
+                        {/* Conditional Layout Based on Documentation Mode (mobile) */}
+                        {isDocumentationMode
+                          ? (
+                              // Post-generation: show only the generated note and two CTAs
                               <div className="flex flex-1 flex-col">
-
                                 <GeneratedNotes
                                   onGenerate={handleGenerateNotes}
                                   onFinish={handleFinish}
@@ -1099,46 +1081,12 @@ export default function ConsultationPage() {
                                   isNoteFocused={isNoteFocused}
                                   isDocumentationMode={isDocumentationMode}
                                   isFinishing={isFinishing}
+                                  mobileMode
                                 />
                               </div>
-
-                              {/* Minimized Consultation Sections */}
-                              <div className="space-y-1">
-                                <div className="space-y-2">
-                                  {inputMode === 'audio'
-                                    ? (
-                                        <TranscriptionControls
-                                          collapsed={false}
-                                          onExpand={() => setIsNoteFocused(false)}
-                                          isMinimized
-                                          mobileIsRecording={mobileIsRecording}
-                                          defaultRecordingMethod={defaultRecordingMethod}
-                                        />
-                                      )
-                                    : (
-                                        <TypedInput
-                                          collapsed={false}
-                                          onExpand={() => setIsNoteFocused(false)}
-                                          isMinimized
-                                        />
-                                      )}
-
-                                  <AdditionalNotes
-                                    items={consultationItems}
-                                    onNotesChange={setConsultationNotes}
-                                    notes={consultationNotes}
-                                    placeholder="Additional information gathered during consultation..."
-                                    isMinimized
-                                    defaultExpanded={inputMode === 'audio'}
-                                    expandedSize={inputMode === 'audio' ? 'large' : 'normal'}
-                                  />
-                                </div>
-                              </div>
-                            </>
-                          )
-                        : (
-                            <div className="flex flex-1 flex-col space-y-4">
-                              {/* Input Components */}
+                            )
+                          : (
+                              // Pre-generation: Recording UI, Additional notes (collapsed by default), and Process CTA
                               <div className="flex flex-1 flex-col space-y-4">
                                 {inputMode === 'audio'
                                   ? (
@@ -1148,6 +1096,8 @@ export default function ConsultationPage() {
                                         isMinimized={false}
                                         mobileIsRecording={mobileIsRecording}
                                         defaultRecordingMethod={defaultRecordingMethod}
+                                        enableRemoteMobile={false}
+                                        showRecordingMethodToggle={false}
                                       />
                                     )
                                   : (
@@ -1164,26 +1114,137 @@ export default function ConsultationPage() {
                                   notes={consultationNotes}
                                   placeholder="Additional information gathered during consultation..."
                                   isMinimized={false}
-                                  defaultExpanded={inputMode === 'audio'}
-                                  expandedSize={inputMode === 'audio' ? 'large' : 'normal'}
+                                  defaultExpanded={false}
+                                  expandedSize="normal"
                                 />
+
+                                <div className="mt-auto flex flex-col">
+                                  <GeneratedNotes
+                                    onGenerate={handleGenerateNotes}
+                                    onFinish={handleFinish}
+                                    loading={loading}
+                                    isNoteFocused={isNoteFocused}
+                                    isDocumentationMode={isDocumentationMode}
+                                    isFinishing={isFinishing}
+                                    mobileMode
+                                  />
+                                </div>
                               </div>
+                            )}
+                      </Stack>
+                    )
+                    : (
+                      // Tablet/Small desktop: keep existing full UI
+                      <Stack spacing={isDesktop ? 'sm' : 'sm'} className="h-full">
+                        {/* Patient Session Manager - V2 Feature */}
+                        <PatientSessionManager />
+
+                        {/* Documentation Settings Badge - Always visible below session bar */}
+                        <DocumentationSettingsBadge />
+
+                        {/* Clinical Widgets - Icon-only tabs under settings for smaller screens */}
+                        <ClinicalToolsTabs fixedHeightClass="h-[400px]" />
+
+                        {/* Conditional Layout Based on Documentation Mode */}
+                        {isDocumentationMode
+                          ? (
+                              <>
+                                {/* Clinical Documentation - Top Priority */}
+                                <div className="flex flex-1 flex-col">
+
+                                  <GeneratedNotes
+                                    onGenerate={handleGenerateNotes}
+                                    onFinish={handleFinish}
+                                    loading={loading}
+                                    isNoteFocused={isNoteFocused}
+                                    isDocumentationMode={isDocumentationMode}
+                                    isFinishing={isFinishing}
+                                  />
+                                </div>
+
+                                {/* Minimized Consultation Sections */}
+                                <div className="space-y-1">
+                                  <div className="space-y-2">
+                                    {inputMode === 'audio'
+                                      ? (
+                                          <TranscriptionControls
+                                            collapsed={false}
+                                            onExpand={() => setIsNoteFocused(false)}
+                                            isMinimized
+                                            mobileIsRecording={mobileIsRecording}
+                                            defaultRecordingMethod={defaultRecordingMethod}
+                                          />
+                                        )
+                                      : (
+                                          <TypedInput
+                                            collapsed={false}
+                                            onExpand={() => setIsNoteFocused(false)}
+                                            isMinimized
+                                          />
+                                        )}
+
+                                    <AdditionalNotes
+                                      items={consultationItems}
+                                      onNotesChange={setConsultationNotes}
+                                      notes={consultationNotes}
+                                      placeholder="Additional information gathered during consultation..."
+                                      isMinimized
+                                      defaultExpanded={inputMode === 'audio'}
+                                      expandedSize={inputMode === 'audio' ? 'large' : 'normal'}
+                                    />
+                                  </div>
+                                </div>
+                              </>
+                            )
+                          : (
+                              <div className="flex flex-1 flex-col space-y-4">
+                                {/* Input Components */}
+                                <div className="flex flex-1 flex-col space-y-4">
+                                  {inputMode === 'audio'
+                                    ? (
+                                        <TranscriptionControls
+                                          collapsed={isNoteFocused}
+                                          onExpand={() => setIsNoteFocused(false)}
+                                          isMinimized={false}
+                                          mobileIsRecording={mobileIsRecording}
+                                          defaultRecordingMethod={defaultRecordingMethod}
+                                        />
+                                      )
+                                    : (
+                                        <TypedInput
+                                          collapsed={isNoteFocused}
+                                          onExpand={() => setIsNoteFocused(false)}
+                                          isMinimized={false}
+                                        />
+                                      )}
+
+                                  <AdditionalNotes
+                                    items={consultationItems}
+                                    onNotesChange={setConsultationNotes}
+                                    notes={consultationNotes}
+                                    placeholder="Additional information gathered during consultation..."
+                                    isMinimized={false}
+                                    defaultExpanded={inputMode === 'audio'}
+                                    expandedSize={inputMode === 'audio' ? 'large' : 'normal'}
+                                  />
+                                </div>
 
                                 {/* Clinical Documentation - Bottom */}
                                 <div className="mt-auto flex flex-col">
-                                 <GeneratedNotes
-                                   onGenerate={handleGenerateNotes}
-                                   onFinish={handleFinish}
-                                   loading={loading}
-                                   isNoteFocused={isNoteFocused}
-                                   isDocumentationMode={isDocumentationMode}
-                                   isFinishing={isFinishing}
-                                 />
+                                  <GeneratedNotes
+                                    onGenerate={handleGenerateNotes}
+                                    onFinish={handleFinish}
+                                    loading={loading}
+                                    isNoteFocused={isNoteFocused}
+                                    isDocumentationMode={isDocumentationMode}
+                                    isFinishing={isFinishing}
+                                  />
                                 </div>
-                            </div>
-                          )}
-                    </Stack>
-                  )}
+                              </div>
+                            )}
+                      </Stack>
+                    )
+                )}
             </div>
           </div>
         </Container>
@@ -1198,16 +1259,7 @@ export default function ConsultationPage() {
 
       {/* Right panel overlay removed */}
 
-      {/* Rate Limit Modal */}
-      {rateLimitError && (
-        <RateLimitModal
-          isOpen={rateLimitModalOpen}
-          onClose={() => setRateLimitModalOpen(false)}
-          error={rateLimitError}
-        />
-      )}
-
-      {/* Centered loading overlay for Delete flow */}
+      {/* Centered loading overlay for Delete/Finish flow */}
       {isFinishing && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20">
           <div className="flex items-center gap-3 rounded-md bg-white px-4 py-3 shadow">
@@ -1232,9 +1284,6 @@ export default function ConsultationPage() {
           </div>
         </div>
       )}
-
-      {/* Mobile Block Modal */}
-      <MobileBlockModal isOpen={showMobileBlock} />
 
       {/* Fixed bottom buttons removed; now placed at bottom of content */}
       </div>

@@ -7,7 +7,7 @@ import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
 // import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
-export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _isNoteFocused, isDocumentationMode: _isDocumentationMode, isFinishing }: { onGenerate?: () => void; onFinish?: () => void; loading?: boolean; isNoteFocused?: boolean; isDocumentationMode?: boolean; isFinishing?: boolean }) {
+export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _isNoteFocused, isDocumentationMode: _isDocumentationMode, isFinishing, mobileMode = false }: { onGenerate?: () => void; onFinish?: () => void; loading?: boolean; isNoteFocused?: boolean; isDocumentationMode?: boolean; isFinishing?: boolean; mobileMode?: boolean }) {
   const { isSignedIn } = useAuth();
   const {
     generatedNotes,
@@ -269,29 +269,33 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
           >
             Process Notes
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleFinish}
-            disabled={isFinishing || !hasUserContent}
-            className="h-10 border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
-            title="Delete this session"
-            aria-label="Delete this session"
-          >
-            {isFinishing ? 'Deleting…' : 'Delete'}
-          </Button>
-          {showNewPatientButton && (
-            <Button
-              type="button"
-              variant="default"
-              onClick={handleNewPatient}
-              disabled={!canCreateSession || isCreatingNewSession || !hasUserContent}
-              className="h-10 bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-              title="Create a new session"
-              aria-label="Create a new session"
-            >
-              New Session
-            </Button>
+          {!mobileMode && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleFinish}
+                disabled={isFinishing || !hasUserContent}
+                className="h-10 border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                title="Delete this session"
+                aria-label="Delete this session"
+              >
+                {isFinishing ? 'Deleting…' : 'Delete'}
+              </Button>
+              {showNewPatientButton && (
+                <Button
+                  type="button"
+                  variant="default"
+                  onClick={handleNewPatient}
+                  disabled={!canCreateSession || isCreatingNewSession || !hasUserContent}
+                  className="h-10 bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  title="Create a new session"
+                  aria-label="Create a new session"
+                >
+                  New Session
+                </Button>
+              )}
+            </>
           )}
         </div>
         {error && (
@@ -317,6 +321,20 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
       )}
       {error && <div className="text-sm text-red-600">{error}</div>}
       <div className="flex flex-1 flex-col space-y-3">
+        {/* Mobile: compact copy button above note after generation */}
+        {mobileMode && hasContent && (
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleCopy}
+              disabled={!hasContent || loading}
+              className="h-8 border-slate-300 px-3 text-xs text-slate-600 hover:bg-slate-50"
+            >
+              {copySuccess ? 'Copied!' : 'Copy'}
+            </Button>
+          </div>
+        )}
         <textarea
           value={displayNotes || ''}
           onChange={handleNotesChange}
@@ -327,55 +345,103 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
           spellCheck={false}
         />
         <div className="flex space-x-2">
-          <Button
-            type="button"
-            variant="default"
-            onClick={handleGenerate}
-            disabled={!canGenerate || loading}
-            className="h-9 bg-slate-600 px-4 py-2 text-sm text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-            title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
-          >
-            {loading && (
-              <svg className="mr-2 size-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-              </svg>
-            )}
-            {loading ? 'Processing...' : 'Process Notes'}
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={handleCopy}
-            disabled={!hasContent || loading}
-            className="h-9 border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
-          >
-            {copySuccess ? 'Copied!' : 'Copy to Clipboard'}
-          </Button>
+          {/* Desktop/tablet full action row */}
+          {!mobileMode && (
+            <>
+              <Button
+                type="button"
+                variant="default"
+                onClick={handleGenerate}
+                disabled={!canGenerate || loading}
+                className="h-9 bg-slate-600 px-4 py-2 text-sm text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
+              >
+                {loading && (
+                  <svg className="mr-2 size-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                  </svg>
+                )}
+                {loading ? 'Processing...' : 'Process Notes'}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleCopy}
+                disabled={!hasContent || loading}
+                className="h-9 border-slate-300 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
+              >
+                {copySuccess ? 'Copied!' : 'Copy to Clipboard'}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleFinish}
+                disabled={isFinishing || !hasUserContent}
+                className="h-9 border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                title="Delete this session"
+                aria-label="Delete this session"
+              >
+                {isFinishing ? 'Deleting…' : 'Delete'}
+              </Button>
+              {showNewPatientButton && (
+                <Button
+                  type="button"
+                  variant="default"
+                  onClick={handleNewPatient}
+                  disabled={!canCreateSession || isCreatingNewSession || !hasUserContent}
+                  className="h-9 bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  title="Create a new session"
+                  aria-label="Create a new session"
+                >
+                  New Session
+                </Button>
+              )}
+            </>
+          )}
 
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleFinish}
-            disabled={isFinishing || !hasUserContent}
-            className="h-9 border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
-            title="Delete this session"
-            aria-label="Delete this session"
-          >
-            {isFinishing ? 'Deleting…' : 'Delete'}
-          </Button>
-          {showNewPatientButton && (
+          {/* Mobile pre-generation: only Process CTA */}
+          {mobileMode && !hasContent && (
             <Button
               type="button"
               variant="default"
-              onClick={handleNewPatient}
-              disabled={!canCreateSession || isCreatingNewSession || !hasUserContent}
-              className="h-9 bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-              title="Create a new session"
-              aria-label="Create a new session"
+              onClick={handleGenerate}
+              disabled={!canGenerate || loading}
+              className="h-11 w-full bg-slate-600 px-4 py-2 text-sm text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+              title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
             >
-              New Session
+              {loading ? 'Processing...' : 'Process Notes'}
             </Button>
+          )}
+
+          {/* Mobile post-generation: only Finish + New Session */}
+          {mobileMode && hasContent && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleFinish}
+                disabled={isFinishing}
+                className="h-11 flex-1 border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                title="Finish this session"
+                aria-label="Finish this session"
+              >
+                {isFinishing ? 'Finishing…' : 'Finish'}
+              </Button>
+              {showNewPatientButton && (
+                <Button
+                  type="button"
+                  variant="default"
+                  onClick={handleNewPatient}
+                  disabled={!canCreateSession || isCreatingNewSession}
+                  className="h-11 flex-1 bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  title="Create a new session"
+                  aria-label="Create a new session"
+                >
+                  New Session
+                </Button>
+              )}
+            </>
           )}
         </div>
 

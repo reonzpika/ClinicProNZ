@@ -23,12 +23,16 @@ export function TranscriptionControls({
   isMinimized,
   mobileIsRecording = false,
   defaultRecordingMethod = 'desktop',
+  enableRemoteMobile = true,
+  showRecordingMethodToggle = true,
 }: {
   collapsed?: boolean;
   onExpand?: () => void;
   isMinimized?: boolean;
   mobileIsRecording?: boolean;
   defaultRecordingMethod?: 'desktop' | 'mobile';
+  enableRemoteMobile?: boolean; // disable Ably remote + QR when false
+  showRecordingMethodToggle?: boolean; // hide Desktop/Mobile toggle when false
 }) {
   const { isSignedIn } = useAuth();
 
@@ -54,12 +58,19 @@ export function TranscriptionControls({
     setIsExpanded(!isMinimized);
   }, [isMinimized]);
 
-  const useMobileV2 = true; // Mobile V2 is now enabled by default
+  const useMobileV2 = enableRemoteMobile; // Respect prop for enabling remote mobile control
   const [recordingMethod, setRecordingMethod] = useState<'desktop' | 'mobile'>(defaultRecordingMethod);
 
   useEffect(() => {
     setRecordingMethod(defaultRecordingMethod);
   }, [defaultRecordingMethod]);
+
+  // Force local mic only when toggle is hidden
+  useEffect(() => {
+    if (!showRecordingMethodToggle && recordingMethod !== 'desktop') {
+      setRecordingMethod('desktop');
+    }
+  }, [showRecordingMethodToggle, recordingMethod]);
 
   const {
     isRecording,
@@ -118,6 +129,9 @@ export function TranscriptionControls({
 
   // Observe recording status to acknowledge control
   useEffect(() => {
+    if (!enableRemoteMobile) {
+      return;
+    }
     if (pendingControl === 'start' && mobileIsRecording) {
       setPendingControl(null);
       setControlError(null);
@@ -132,7 +146,7 @@ export function TranscriptionControls({
         clearTimeout(controlAckTimer);
       }
     }
-  }, [mobileIsRecording, pendingControl, controlAckTimer]);
+  }, [mobileIsRecording, pendingControl, controlAckTimer, enableRemoteMobile]);
 
   // Clear any outstanding remote control error when mobile recording begins (late ACK)
   useEffect(() => {
@@ -143,6 +157,9 @@ export function TranscriptionControls({
   // Remote control handlers (send via global Ably bridge exposed in ConsultationPage)
   const sendMobileControl = async (action: 'start' | 'stop') => {
     try {
+      if (!enableRemoteMobile) {
+        return false;
+      }
       setControlError(null);
       setPendingControl(action);
 
@@ -194,7 +211,7 @@ export function TranscriptionControls({
     }
 
     // Mobile: initiate consent process then send remote start
-    if (recordingMethod === 'mobile') {
+    if (enableRemoteMobile && recordingMethod === 'mobile') {
       // If consent already obtained this session, skip re-request and send start
       if (consentObtained) {
         const canSend = typeof window !== 'undefined'
@@ -515,29 +532,33 @@ export function TranscriptionControls({
                 {/* Right: toggle + (conditional) Connect */}
                 <div className="flex items-center gap-2">
                   {/* Recording method toggle */}
-                  <div className="inline-flex rounded-md border border-slate-300 bg-white p-1 text-xs">
-                    <Button
-                      type="button"
-                      variant={recordingMethod === 'desktop' ? 'default' : 'ghost'}
-                      className={`h-7 px-2 ${recordingMethod === 'desktop' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-700'}`}
-                      onClick={() => setRecordingMethod('desktop')}
-                      disabled={isRecording || mobileIsRecording}
-                    >
-                      Desktop
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={recordingMethod === 'mobile' ? 'default' : 'ghost'}
-                      className={`h-7 px-2 ${recordingMethod === 'mobile' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-700'}`}
-                      onClick={() => setRecordingMethod('mobile')}
-                      disabled={isRecording || mobileIsRecording}
-                    >
-                      Mobile
-                    </Button>
-                  </div>
+                  {showRecordingMethodToggle && (
+                    <div className="inline-flex rounded-md border border-slate-300 bg-white p-1 text-xs">
+                      <Button
+                        type="button"
+                        variant={recordingMethod === 'desktop' ? 'default' : 'ghost'}
+                        className={`h-7 px-2 ${recordingMethod === 'desktop' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-700'}`}
+                        onClick={() => setRecordingMethod('desktop')}
+                        disabled={isRecording || mobileIsRecording}
+                      >
+                        Desktop
+                      </Button>
+                      {enableRemoteMobile && (
+                        <Button
+                          type="button"
+                          variant={recordingMethod === 'mobile' ? 'default' : 'ghost'}
+                          className={`h-7 px-2 ${recordingMethod === 'mobile' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-700'}`}
+                          onClick={() => setRecordingMethod('mobile')}
+                          disabled={isRecording || mobileIsRecording}
+                        >
+                          Mobile
+                        </Button>
+                      )}
+                    </div>
+                  )}
 
-                  {/* Connect Mobile small button - only when mobile selected */}
-                  {recordingMethod === 'mobile' && (
+                  {/* Connect Mobile button - only when remote enabled and mobile selected */}
+                  {enableRemoteMobile && showRecordingMethodToggle && recordingMethod === 'mobile' && (
                     <Button
                       type="button"
                       onClick={handleMobileClick}
@@ -554,7 +575,7 @@ export function TranscriptionControls({
             </div>
 
             {/* Remote control pending status */}
-            {pendingControl && (
+            {enableRemoteMobile && pendingControl && (
               <Alert className="border-blue-200 bg-blue-50 p-2 text-xs text-blue-700">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -567,7 +588,7 @@ export function TranscriptionControls({
             )}
 
             {/* Remote control warnings with CTAs */}
-            {controlError && (
+            {enableRemoteMobile && controlError && (
               <Alert className="border-yellow-200 bg-yellow-50 p-2 text-xs text-yellow-800">
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{controlError}</span>
@@ -797,10 +818,12 @@ export function TranscriptionControls({
       />
 
       {/* Mobile Recording Modal - V2 */}
-      <MobileRecordingQRV2
-        isOpen={showMobileRecordingV2}
-        onClose={() => setShowMobileRecordingV2(false)}
-      />
+      {enableRemoteMobile && (
+        <MobileRecordingQRV2
+          isOpen={showMobileRecordingV2}
+          onClose={() => setShowMobileRecordingV2(false)}
+        />
+      )}
     </div>
   );
 }
