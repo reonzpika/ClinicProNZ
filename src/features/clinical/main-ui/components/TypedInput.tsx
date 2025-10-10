@@ -12,6 +12,7 @@ export function TypedInput({ collapsed, onExpand, isMinimized }: { collapsed?: b
   const [isExpanded, setIsExpanded] = useState(!isMinimized);
   const [lastSavedInput, setLastSavedInput] = useState('');
   const [saveStatus, setSaveStatus] = useState<'saved' | 'editing' | 'saving'>('saved');
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [showHelp, setShowHelp] = useState(false);
 
   // Reset expansion state when isMinimized prop changes
@@ -62,6 +63,7 @@ export function TypedInput({ collapsed, onExpand, isMinimized }: { collapsed?: b
         if (success) {
           setLastSavedInput(localInput);
           setSaveStatus('saved');
+          setLastSavedAt(new Date());
         }
       } catch (error) {
         console.error('Failed to save typed input:', error);
@@ -205,7 +207,7 @@ export function TypedInput({ collapsed, onExpand, isMinimized }: { collapsed?: b
     <div className="flex h-full flex-col">
       <ConsultationInputHeader
         mode="typed"
-        status={saveStatus === 'saved' ? 'Saved' : saveStatus === 'editing' ? 'Editing' : 'Saving...'}
+        status={saveStatus === 'saved' ? (lastSavedAt ? `Saved • ${lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Saved') : saveStatus === 'editing' ? 'Editing' : 'Saving...'}
         onHelpToggle={() => setShowHelp(!showHelp)}
         showHelp={showHelp}
       />

@@ -25,6 +25,7 @@ export function TranscriptionControls({
   defaultRecordingMethod = 'desktop',
   enableRemoteMobile = true,
   showRecordingMethodToggle = true,
+  mobileMode = false,
 }: {
   collapsed?: boolean;
   onExpand?: () => void;
@@ -33,6 +34,7 @@ export function TranscriptionControls({
   defaultRecordingMethod?: 'desktop' | 'mobile';
   enableRemoteMobile?: boolean; // disable Ably remote + QR when false
   showRecordingMethodToggle?: boolean; // hide Desktop/Mobile toggle when false
+  mobileMode?: boolean; // render mobile-optimised controls
 }) {
   const { isSignedIn } = useAuth();
 
@@ -52,6 +54,7 @@ export function TranscriptionControls({
   const [recordingStartTime, setRecordingStartTime] = useState<number | null>(null);
   const [showNoTranscriptWarning, setShowNoTranscriptWarning] = useState(false);
   const [canCreateSession, setCanCreateSession] = useState<boolean>(true);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   // Reset expansion state when isMinimized prop changes
   useEffect(() => {
@@ -104,6 +107,25 @@ export function TranscriptionControls({
       setTranscriptExpanded(false); // Keep collapsed after recording
     }
   }, [isRecording, recordingStartTime]);
+
+  // Elapsed timer while recording
+  useEffect(() => {
+    let t: any = null;
+    if (isRecording && recordingStartTime) {
+      const compute = () => setElapsedSeconds(Math.max(0, Math.floor((Date.now() - (recordingStartTime || 0)) / 1000)));
+      compute();
+      t = setInterval(compute, 1000);
+    } else {
+      setElapsedSeconds(0);
+    }
+    return () => { if (t) clearInterval(t); };
+  }, [isRecording, recordingStartTime]);
+
+  const formatElapsed = (totalSeconds: number) => {
+    const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+    const s = (totalSeconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
 
   // Check for no transcript warning after 40 seconds
   useEffect(() => {
@@ -445,7 +467,17 @@ export function TranscriptionControls({
             {/* removed ready-for-review label */}
           </div>
         </div>
-        <div className="flex items-center gap-2" />
+        <div className="flex items-center gap-2">
+          {/* Consent pill */}
+          <button
+            type="button"
+            onClick={() => setShowConsentModal(true)}
+            className={`h-6 rounded-full px-2 text-[11px] ${consentObtained ? 'border border-green-300 bg-green-50 text-green-700' : 'border border-amber-300 bg-amber-50 text-amber-700'}`}
+            aria-label="Consent status"
+          >
+            {consentObtained ? 'Consent: Granted' : 'Consent: Required'}
+          </button>
+        </div>
       </div>
 
       <div>
@@ -495,84 +527,116 @@ export function TranscriptionControls({
               <div className="text-xs text-red-500">No audio detected—check your mic</div>
             )}
 
-            {/* Primary Recording Options - single row, toggles Record/Stop */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                {/* Left: Record/Stop button */}
-                <div>
-                  {isRecording || mobileIsRecording
-                    ? (
-                        <Button
-                          type="button"
-                          onClick={() => {
- if (mobileIsRecording) {
- sendMobileControl('stop');
-} else {
- stopRecording();
-}
-}}
-                          className="h-8 bg-red-600 px-4 text-xs text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-                        >
-                          Stop
-                        </Button>
-                      )
-                    : (
-                        <Button
-                          type="button"
-                          onClick={handleStartRecording}
-                          disabled={!canCreateSession}
-                          className="h-8 bg-green-600 px-4 text-xs text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-                          title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
-                        >
-                          Record
-                        </Button>
-                      )}
-                </div>
-
-                {/* Right: toggle + (conditional) Connect */}
-                <div className="flex items-center gap-2">
-                  {/* Recording method toggle */}
-                  {showRecordingMethodToggle && (
-                    <div className="inline-flex rounded-md border border-slate-300 bg-white p-1 text-xs">
-                      <Button
-                        type="button"
-                        variant={recordingMethod === 'desktop' ? 'default' : 'ghost'}
-                        className={`h-7 px-2 ${recordingMethod === 'desktop' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-700'}`}
-                        onClick={() => setRecordingMethod('desktop')}
-                        disabled={isRecording || mobileIsRecording}
-                      >
-                        Desktop
-                      </Button>
-                      {enableRemoteMobile && (
-                        <Button
-                          type="button"
-                          variant={recordingMethod === 'mobile' ? 'default' : 'ghost'}
-                          className={`h-7 px-2 ${recordingMethod === 'mobile' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-700'}`}
-                          onClick={() => setRecordingMethod('mobile')}
-                          disabled={isRecording || mobileIsRecording}
-                        >
-                          Mobile
-                        </Button>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Connect Mobile button - only when remote enabled and mobile selected */}
-                  {enableRemoteMobile && showRecordingMethodToggle && recordingMethod === 'mobile' && (
-                    <Button
+            {/* Primary Recording Options */}
+            {mobileMode
+              ? (
+                  <div className="flex items-center justify-between">
+                    {/* Large circular Record/Stop */}
+                    <button
                       type="button"
-                      onClick={handleMobileClick}
-                      disabled={(!isSignedIn && !canCreateSession) || isRecording || mobileIsRecording}
-                      className="h-7 bg-blue-600 px-2 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-                      title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
+                      onClick={() => {
+                        if (isRecording) {
+                          stopRecording();
+                        } else {
+                          handleStartRecording();
+                        }
+                      }}
+                      className={`flex h-16 w-16 items-center justify-center rounded-full text-white shadow-md active:scale-95 ${isRecording ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
+                      aria-label={isRecording ? 'Stop recording' : 'Start recording'}
                     >
-                      <Smartphone className="mr-1 size-3" />
-                      Connect
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
+                      {isRecording ? 'Stop' : 'Rec'}
+                    </button>
+
+                    {/* Status and timer */}
+                    <div className="flex flex-col items-end">
+                      <div className="text-xs text-slate-600">
+                        {isRecording ? 'Transcribing…' : 'Ready'}
+                      </div>
+                      <div className={`text-sm tabular-nums ${isRecording ? 'text-slate-800' : 'text-slate-400'}`}>
+                        {formatElapsed(elapsedSeconds)}
+                      </div>
+                    </div>
+                  </div>
+                )
+              : (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      {/* Left: Record/Stop button */}
+                      <div>
+                        {isRecording || mobileIsRecording
+                          ? (
+                              <Button
+                                type="button"
+                                onClick={() => {
+                                  if (mobileIsRecording) {
+                                    sendMobileControl('stop');
+                                  } else {
+                                    stopRecording();
+                                  }
+                                }}
+                                className="h-8 bg-red-600 px-4 text-xs text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                              >
+                                Stop
+                              </Button>
+                            )
+                          : (
+                              <Button
+                                type="button"
+                                onClick={handleStartRecording}
+                                disabled={!canCreateSession}
+                                className="h-8 bg-green-600 px-4 text-xs text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                                title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
+                              >
+                                Record
+                              </Button>
+                            )}
+                      </div>
+
+                      {/* Right: toggle + (conditional) Connect */}
+                      <div className="flex items-center gap-2">
+                        {/* Recording method toggle */}
+                        {showRecordingMethodToggle && (
+                          <div className="inline-flex rounded-md border border-slate-300 bg-white p-1 text-xs">
+                            <Button
+                              type="button"
+                              variant={recordingMethod === 'desktop' ? 'default' : 'ghost'}
+                              className={`h-7 px-2 ${recordingMethod === 'desktop' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-700'}`}
+                              onClick={() => setRecordingMethod('desktop')}
+                              disabled={isRecording || mobileIsRecording}
+                            >
+                              Desktop
+                            </Button>
+                            {enableRemoteMobile && (
+                              <Button
+                                type="button"
+                                variant={recordingMethod === 'mobile' ? 'default' : 'ghost'}
+                                className={`h-7 px-2 ${recordingMethod === 'mobile' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-700'}`}
+                                onClick={() => setRecordingMethod('mobile')}
+                                disabled={isRecording || mobileIsRecording}
+                              >
+                                Mobile
+                              </Button>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Connect Mobile button - only when remote enabled and mobile selected */}
+                        {enableRemoteMobile && showRecordingMethodToggle && recordingMethod === 'mobile' && (
+                          <Button
+                            type="button"
+                            onClick={handleMobileClick}
+                            disabled={(!isSignedIn && !canCreateSession) || isRecording || mobileIsRecording}
+                            className="h-7 bg-blue-600 px-2 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                            title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
+                          >
+                            <Smartphone className="mr-1 size-3" />
+                            Connect
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
             {/* Remote control pending status */}
             {enableRemoteMobile && pendingControl && (

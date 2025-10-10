@@ -39,6 +39,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
   const [isExpanded, setIsExpanded] = useState(false);
   const [lastSavedNotes, setLastSavedNotes] = useState('');
   const [_saveStatus, setSaveStatus] = useState('idle');
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [canCreateSession, setCanCreateSession] = useState<boolean>(true);
   const [isCreatingNewSession, setIsCreatingNewSession] = useState<boolean>(false);
 
@@ -138,6 +139,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
           setLastSavedNotes(generatedNotes);
           setIsManualEdit(false); // Reset manual edit flag after saving
           setSaveStatus('saved');
+          setLastSavedAt(new Date());
         }
       } catch (error) {
         console.error('Failed to save notes:', error);
@@ -339,11 +341,18 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
           value={displayNotes || ''}
           onChange={handleNotesChange}
           onBlur={handleNotesBlur}
-          className="min-h-[200px] w-full flex-1 resize-none overflow-y-auto rounded border border-slate-200 bg-white p-3 text-sm leading-relaxed text-slate-700 focus:border-slate-400 focus:ring-2 focus:ring-slate-400"
+          className={`min-h-[200px] w-full flex-1 resize-none overflow-y-auto rounded border border-slate-200 bg-white p-3 ${mobileMode ? 'text-base leading-relaxed' : 'text-sm leading-relaxed'} text-slate-800 focus:border-slate-400 focus:ring-2 focus:ring-slate-400`}
           placeholder={getPlaceholderText()}
           disabled={loading}
           spellCheck={false}
         />
+        <div className="flex items-center justify-between">
+          {hasContent && (
+            <div className="text-[11px] text-slate-500">
+              {lastSavedAt ? `Saved • ${lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
+            </div>
+          )}
+        </div>
         <div className="flex space-x-2">
           {/* Desktop/tablet full action row */}
           {!mobileMode && (

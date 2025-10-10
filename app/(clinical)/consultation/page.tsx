@@ -1098,6 +1098,7 @@ export default function ConsultationPage() {
                                         defaultRecordingMethod={defaultRecordingMethod}
                                         enableRemoteMobile={false}
                                         showRecordingMethodToggle={false}
+                                        mobileMode
                                       />
                                     )
                                   : (
