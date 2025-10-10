@@ -2,7 +2,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import * as React from 'react';
 
-import { Badge } from '@/src/shared/components/ui/badge';
 import { Button } from '@/src/shared/components/ui/button';
 
 import type { ToolDetail } from '../data/tools';
