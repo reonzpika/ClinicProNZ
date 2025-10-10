@@ -17,17 +17,19 @@ export type ToolCardProps = {
 export function ToolCard({ tool, className }: ToolCardProps) {
   return (
     <Card className={cn('flex flex-col', className)}>
-      <CardHeader className="space-y-1">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            {tool.logoUrl ? (
-              <Image src={tool.logoUrl} alt="" width={20} height={20} className="rounded-sm" />
-            ) : null}
-            <CardTitle>{tool.name}</CardTitle>
+      <CardHeader className="space-y-1 p-0">
+        <Link href={`/tools/${tool.id}`} className="block rounded-md p-3 hover:bg-accent/40 focus:outline-none focus:ring-2 focus:ring-ring">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              {tool.logoUrl ? (
+                <Image src={tool.logoUrl} alt="" width={20} height={20} className="rounded-sm" />
+              ) : null}
+              <CardTitle>{tool.name}</CardTitle>
+            </div>
+            {tool.isFree && <Badge>Free</Badge>}
           </div>
-          {tool.isFree && <Badge>Free</Badge>}
-        </div>
-        <CardDescription>{tool.tagline}</CardDescription>
+          <CardDescription className="mt-1">{tool.tagline}</CardDescription>
+        </Link>
       </CardHeader>
       <CardContent className="mt-auto">
         <div className="mb-2 text-[10px] text-muted-foreground">Reviewed {tool.updatedAt ? new Date(tool.updatedAt).toLocaleDateString(undefined, { month: '2-digit', year: 'numeric' }) : '—'}</div>
