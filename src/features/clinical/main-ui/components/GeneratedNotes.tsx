@@ -246,7 +246,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
   // Determine when to show New Patient button (only for authenticated users with content)
   const showNewPatientButton = isSignedIn; // Show New Session even in default view
 
-  // Minimal state - just the generate button
+  // Minimal state - just the generate button (mobile: fixed footer with record + process)
   if (shouldShowMinimal) {
     return (
       <div className="flex flex-col gap-2">
@@ -261,46 +261,70 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
             </div>
           </div>
         )}
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="default"
-            onClick={handleGenerate}
-            disabled={!canGenerate}
-            className="h-10 flex-1 bg-slate-600 px-4 py-2 text-sm text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-            title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
-          >
-            Process Notes
-          </Button>
-          {!mobileMode && (
-            <>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleFinish}
-                disabled={isFinishing || !hasUserContent}
-                className="h-10 border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
-                title="Delete this session"
-                aria-label="Delete this session"
-              >
-                {isFinishing ? 'Deleting…' : 'Delete'}
-              </Button>
-              {showNewPatientButton && (
+        {/* Footer fixed bar on mobile */}
+        {mobileMode
+          ? (
+              <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-3 pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+                <div className="flex items-center gap-3">
+                  <TranscriptionControls
+                    collapsed={false}
+                    isMinimized={false}
+                    enableRemoteMobile={false}
+                    showRecordingMethodToggle={false}
+                    mobileMode
+                    footerMode
+                  />
+                  <Button
+                    type="button"
+                    variant="default"
+                    onClick={handleGenerate}
+                    disabled={!canGenerate}
+                    className="h-12 flex-1 rounded-full bg-slate-700 px-4 text-base text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-gray-400"
+                    title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
+                  >
+                    Process Notes
+                  </Button>
+                </div>
+              </div>
+            )
+          : (
+              <div className="flex gap-2">
                 <Button
                   type="button"
                   variant="default"
-                  onClick={handleNewPatient}
-                  disabled={!canCreateSession || isCreatingNewSession || !hasUserContent}
-                  className="h-10 bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-                  title="Create a new session"
-                  aria-label="Create a new session"
+                  onClick={handleGenerate}
+                  disabled={!canGenerate}
+                  className="h-10 flex-1 bg-slate-600 px-4 py-2 text-sm text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                  title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
                 >
-                  New Session
+                  Process Notes
                 </Button>
-              )}
-            </>
-          )}
-        </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleFinish}
+                  disabled={isFinishing || !hasUserContent}
+                  className="h-10 border-red-300 px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  title="Delete this session"
+                  aria-label="Delete this session"
+                >
+                  {isFinishing ? 'Deleting…' : 'Delete'}
+                </Button>
+                {showNewPatientButton && (
+                  <Button
+                    type="button"
+                    variant="default"
+                    onClick={handleNewPatient}
+                    disabled={!canCreateSession || isCreatingNewSession || !hasUserContent}
+                    className="h-10 bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    title="Create a new session"
+                    aria-label="Create a new session"
+                  >
+                    New Session
+                  </Button>
+                )}
+              </div>
+            )}
         {error && (
           <div className="text-sm text-red-600">{error}</div>
         )}
@@ -354,7 +378,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
             </div>
           )}
         </div>
-        <div className={`${mobileMode ? 'sticky bottom-0 z-10 -mx-3 mt-1 bg-white/95 px-3 pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]' : ''} flex items-center space-x-2`}>
+        <div className={`${mobileMode ? 'fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-3 pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]' : ''} flex items-center space-x-2`}>
           {mobileMode && (
             <TranscriptionControls
               collapsed={false}
