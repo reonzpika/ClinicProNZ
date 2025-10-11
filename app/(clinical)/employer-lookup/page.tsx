@@ -25,7 +25,7 @@ export default function EmployerLookupPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // Debounce no longer used for cost optimisation; keep function for potential reuse
 
-  const { data: results, isFetching: isSearching, error: searchError } = useQuery<{ results: SearchResult[]; googleStatus?: string }>({
+  const { data: results, isFetching: isSearching, error: searchError } = useQuery<{ results: SearchResult[]; googleStatus?: string; error?: string; googleError?: string }>({
     queryKey: ['employer-lookup', 'search', submittedQuery],
     queryFn: async () => {
       const res = await fetch(`/api/employer-lookup/search?q=${encodeURIComponent(submittedQuery)}`);
@@ -37,7 +37,7 @@ export default function EmployerLookupPage() {
     enabled: submittedQuery.trim().length >= 2,
   });
 
-  const { data: detailsData, isFetching: isLoadingDetails } = useQuery<{ details: PlaceDetails; googleStatus?: string } | null>({
+  const { data: detailsData, isFetching: isLoadingDetails, error: detailsError } = useQuery<{ details: PlaceDetails; googleStatus?: string; error?: string; googleError?: string } | null>({
     queryKey: ['employer-lookup', 'details', selectedId],
     queryFn: async () => {
       if (!selectedId) return null;
@@ -112,7 +112,14 @@ export default function EmployerLookupPage() {
         <div className="mb-3 text-xs text-slate-500">Searching…</div>
       )}
       {searchError && (
-        <div className="mb-3 text-xs text-red-600">Search error. Please try again.</div>
+        <div className="mb-3 rounded-md border border-red-200 bg-red-50 p-2 text-xs text-red-700">
+          Search failed. Please check API key and try again.
+        </div>
+      )}
+      {!isSearching && results && results.error && (
+        <div className="mb-3 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800">
+          Google error: {results.googleStatus || 'UNKNOWN'}{results.googleError ? ` – ${results.googleError}` : ''}
+        </div>
       )}
       {!isSearching && results && results.googleStatus && (
         <div className="mb-2 text-[10px] text-slate-400">Debug: search status {results.googleStatus}</div>
@@ -181,6 +188,16 @@ export default function EmployerLookupPage() {
                 )}
                 {!isLoadingDetails && !fields && (
                   <div className="text-xs text-red-600">Failed to load details</div>
+                )}
+                {detailsError && (
+                  <div className="mt-2 rounded-md border border-red-200 bg-red-50 p-2 text-[10px] text-red-700">
+                    Details failed. Please try again.
+                  </div>
+                )}
+                {!isLoadingDetails && detailsData && (detailsData as any).error && (
+                  <div className="mt-2 rounded-md border border-amber-200 bg-amber-50 p-2 text-[10px] text-amber-800">
+                    Google error: {(detailsData as any).googleStatus || 'UNKNOWN'}{(detailsData as any).googleError ? ` – ${(detailsData as any).googleError}` : ''}
+                  </div>
                 )}
                 {!isLoadingDetails && detailsData && detailsData.googleStatus && (
                   <div className="mt-2 text-[10px] text-slate-400">Debug: details status {detailsData.googleStatus}</div>
