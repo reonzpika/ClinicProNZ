@@ -19,6 +19,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { isMobile, isTablet, isDesktop } = useResponsive();
   const mainRef = useRef<HTMLDivElement | null>(null);
   const lastScrollTopRef = useRef(0);
+  const footerObserverRef = useRef<ResizeObserver | null>(null);
 
   const toggleSidebar = () => {
     if (isMobile || isTablet) {
@@ -59,6 +60,35 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     // On mount, ensure we start at top
     try { el.scrollTop = 0; } catch {}
     return () => el.removeEventListener('scroll', onScroll as any);
+  }, [isMobile, isTablet]);
+
+  // Dynamically apply bottom padding equal to mobile footer height
+  useEffect(() => {
+    const el = mainRef.current;
+    if (!el) {
+      return;
+    }
+    const applyPadding = () => {
+      try {
+        const footerEl = document.getElementById('mobile-footer');
+        const h = footerEl ? Math.ceil(footerEl.getBoundingClientRect().height) : 0;
+        el.style.paddingBottom = h > 0 ? `${h}px` : '';
+      } catch {}
+    };
+    applyPadding();
+    const ro = new ResizeObserver(applyPadding);
+    footerObserverRef.current = ro;
+    try {
+      const footerEl = document.getElementById('mobile-footer');
+      if (footerEl) ro.observe(footerEl);
+    } catch {}
+    window.addEventListener('resize', applyPadding);
+    const id = window.setInterval(applyPadding, 400); // guard for footer mount/unmount
+    return () => {
+      try { ro.disconnect(); } catch {}
+      window.removeEventListener('resize', applyPadding);
+      window.clearInterval(id);
+    };
   }, [isMobile, isTablet]);
 
   return (
