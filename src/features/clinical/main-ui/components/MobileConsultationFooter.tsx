@@ -9,7 +9,7 @@ import { Button } from '@/src/shared/components/ui/button';
 import { TranscriptionControls } from './TranscriptionControls';
 
 export const MobileConsultationFooter: React.FC = () => {
-  const { generatedNotes, isDocumentationMode, transcription, typedInput } = useConsultationStores() as any;
+  const { generatedNotes, transcription, typedInput } = useConsultationStores() as any;
   const [mounted, setMounted] = useState(false);
   const [footerRoot, setFooterRoot] = useState<HTMLElement | null>(null);
 
