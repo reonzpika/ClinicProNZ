@@ -86,7 +86,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   }, [isMobile, isTablet]);
 
   return (
-    <div className="flex h-screen">
+    <div className="flex min-h-[100svh] md:min-h-dvh">
       {/* Mobile/Tablet Overlay Backdrop */}
       {(isMobile || isTablet) && mobileSidebarOpen && (
         <div
@@ -146,7 +146,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         {/* Footer slot row (outside scroller) - mobile only */}
         <div
           id="app-footer-slot"
-          className={`${(isMobile || isTablet) ? 'block' : 'hidden'} border-t border-slate-200 bg-white px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+var(--kb-offset,0px))] shadow-[0_-2px_8px_rgba(0,0,0,0.06)]`}
+          className={`${(isMobile || isTablet) ? 'block' : 'hidden'} sticky bottom-0 border-t border-slate-200 bg-white px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+var(--kb-offset,0px))] shadow-[0_-2px_8px_rgba(0,0,0,0.06)]`}
         />
       </div>
     </div>
