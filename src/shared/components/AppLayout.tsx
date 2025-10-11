@@ -139,14 +139,23 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         )}
 
         {/* Page Content (only scroller) */}
-        <main ref={mainRef} className="min-h-0 overflow-auto overscroll-y-contain">
+        <main
+          ref={mainRef}
+          className="min-h-0 overflow-auto overscroll-y-contain"
+          style={(isMobile || isTablet) ? ({ scrollPaddingBottom: 'var(--footer-h, 76px)' } as React.CSSProperties) : undefined}
+        >
           {children}
         </main>
 
         {/* Footer slot row (outside scroller) - mobile only */}
         <div
           id="app-footer-slot"
-          className={`${(isMobile || isTablet) ? 'block' : 'hidden'} sticky bottom-0 border-t border-slate-200 bg-white px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+var(--kb-offset,0px))] shadow-[0_-2px_8px_rgba(0,0,0,0.06)]`}
+          className={`${(isMobile || isTablet) ? 'block' : 'hidden'} sticky bottom-0 border-t border-slate-200 bg-white px-3 pt-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-2px_8px_rgba(0,0,0,0.06)]`}
+          style={{
+            // Keep footer visible above keyboard without expanding its own padding
+            transform: 'translateY(calc(-1 * var(--kb-offset, 0px)))',
+            minHeight: 'var(--footer-h, 76px)'
+          } as React.CSSProperties}
         />
       </div>
     </div>

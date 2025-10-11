@@ -347,6 +347,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
           onChange={handleNotesChange}
           onBlur={handleNotesBlur}
           className={`min-h-[200px] w-full flex-1 resize-none overflow-y-auto rounded border border-slate-200 bg-white p-3 ${mobileMode ? 'text-base leading-relaxed' : 'text-sm leading-relaxed'} text-slate-800 focus:border-slate-400 focus:ring-2 focus:ring-slate-400`}
+          style={mobileMode ? ({ scrollMarginBottom: 'var(--footer-h, 76px)' } as React.CSSProperties) : undefined}
           placeholder={getPlaceholderText()}
           disabled={loading}
           spellCheck={false}

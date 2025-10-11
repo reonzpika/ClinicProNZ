@@ -26,7 +26,7 @@ export const TranscriptViewer: React.FC<TranscriptViewerProps> = ({ showConsentP
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" style={{ scrollMarginBottom: 'var(--footer-h, 76px)' } as React.CSSProperties}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-slate-700">Live Transcript</span>
