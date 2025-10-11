@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
 
     const googleUrl = new URL(GOOGLE_API);
     googleUrl.searchParams.set('place_id', id);
-    googleUrl.searchParams.set('fields', 'name,formatted_address,address_component,geometry,url,website');
+    googleUrl.searchParams.set('fields', 'name,formatted_address,address_component,geometry,url');
     googleUrl.searchParams.set('key', key);
 
     const response = await fetch(googleUrl.toString());

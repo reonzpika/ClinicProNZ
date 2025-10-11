@@ -30,19 +30,20 @@ function useDebouncedValue<T>(value: T, delayMs: number) {
 
 export default function EmployerLookupPage() {
   const [query, setQuery] = useState('');
+  const [submittedQuery, setSubmittedQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const debouncedQuery = useDebouncedValue(query, 400);
 
   const { data: results, isFetching: isSearching, error: searchError } = useQuery<{ results: SearchResult[] }>({
-    queryKey: ['employer-lookup', 'search', debouncedQuery],
+    queryKey: ['employer-lookup', 'search', submittedQuery],
     queryFn: async () => {
-      const res = await fetch(`/api/(clinical)/employer-lookup/search?q=${encodeURIComponent(debouncedQuery)}`);
+      const res = await fetch(`/api/(clinical)/employer-lookup/search?q=${encodeURIComponent(submittedQuery)}`);
       if (!res.ok) {
         throw new Error('Search failed');
       }
       return res.json();
     },
-    enabled: debouncedQuery.trim().length >= 2,
+    enabled: submittedQuery.trim().length >= 2,
   });
 
   const { data: detailsData, isFetching: isLoadingDetails } = useQuery<{ details: PlaceDetails } | null>({
@@ -100,11 +101,20 @@ export default function EmployerLookupPage() {
       <p className="mb-4 text-sm text-slate-600">Public tool to quickly find and copy employer address fields.</p>
 
       <div className="mb-4 flex items-center gap-2">
-        <Input
-          placeholder="Search employer name (e.g., Countdown Ponsonby)"
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-        />
+        <form
+          className="flex w-full items-center gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setSubmittedQuery(query);
+          }}
+        >
+          <Input
+            placeholder="Search employer name (e.g., Countdown Ponsonby)"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+          />
+          <Button type="submit" size="sm">Search</Button>
+        </form>
       </div>
 
       {isSearching && (
