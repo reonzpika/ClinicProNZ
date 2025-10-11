@@ -150,9 +150,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         {/* Footer slot row (outside scroller) - mobile only */}
         <div
           id="app-footer-slot"
-          className={`${(isMobile || isTablet) ? 'block' : 'hidden'} fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white px-3 pt-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-2px_8px_rgba(0,0,0,0.06)]`}
+          className={`${(isMobile || isTablet) ? 'block' : 'hidden'} sticky bottom-0 border-t border-slate-200 bg-white px-3 pt-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-2px_8px_rgba(0,0,0,0.06)]`}
           style={{
-            // Lift footer above keyboard/URL bar without changing its internal padding
+            // Keep footer visible above keyboard without expanding its own padding
             transform: 'translateY(calc(-1 * var(--kb-offset, 0px)))',
             minHeight: 'var(--footer-h, 76px)'
           } as React.CSSProperties}
