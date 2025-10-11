@@ -53,7 +53,7 @@ export const TOOL_LIST: ToolDetail[] = [
       'Avoid entering identifiable patient data',
       'State uncertainties in notes; verify with guidelines',
     ],
-    relatedPromptsUrl: '/prompts/clinical-qna-with-citations',
+    relatedPromptsUrl: null,
     communityUrl: null,
     comingSoon: { prompts: true, community: true, pricingDetails: true },
     lastReviewed: new Date().toISOString(),
@@ -75,7 +75,7 @@ export const TOOL_LIST: ToolDetail[] = [
       { title: 'Evidence check', steps: ['Search topic', 'Review referenced studies', 'Note practice implications'] },
     ],
     tipsForGPs: ['Record sources in notes', 'Check publication recency'],
-    relatedPromptsUrl: '/prompts/evidence-and-guidelines',
+    relatedPromptsUrl: null,
     communityUrl: null,
     comingSoon: { prompts: true, community: true, pricingDetails: true },
     lastReviewed: new Date().toISOString(),
@@ -93,7 +93,7 @@ export const TOOL_LIST: ToolDetail[] = [
     overview:
       'Finds and structures relevant papers for a topic. Helpful for getting a lay of the land before deep reading.',
     tipsForGPs: ['Export citations for records'],
-    relatedPromptsUrl: '/prompts/evidence-and-guidelines',
+    relatedPromptsUrl: null,
     communityUrl: null,
     comingSoon: { prompts: true, community: true, pricingDetails: true },
     lastReviewed: new Date().toISOString(),
@@ -110,7 +110,7 @@ export const TOOL_LIST: ToolDetail[] = [
     keyInfo: { platforms: ['Web'], accountRequired: true },
     overview:
       'Aggregates research findings to show a consensus stance. Good for quick sense-checks; still review underlying studies.',
-    relatedPromptsUrl: '/prompts/evidence-and-guidelines',
+    relatedPromptsUrl: null,
     communityUrl: null,
     comingSoon: { prompts: true, community: true, pricingDetails: true },
     lastReviewed: new Date().toISOString(),
@@ -127,7 +127,7 @@ export const TOOL_LIST: ToolDetail[] = [
     keyInfo: { platforms: ['Web'], accountRequired: true },
     overview:
       'Question-and-answer on PDFs with citations. Useful for drilling into specific papers.',
-    relatedPromptsUrl: '/prompts/evidence-and-guidelines',
+    relatedPromptsUrl: null,
     communityUrl: null,
     comingSoon: { prompts: true, community: true, pricingDetails: true },
     lastReviewed: new Date().toISOString(),
@@ -144,7 +144,7 @@ export const TOOL_LIST: ToolDetail[] = [
     keyInfo: { platforms: ['Web'], accountRequired: true },
     overview:
       'General assistant useful for drafting clinical communication and summarising. Request citations when needed.',
-    relatedPromptsUrl: '/prompts/consult-summary-soap',
+    relatedPromptsUrl: null,
     communityUrl: null,
     comingSoon: { prompts: true, community: true, pricingDetails: true },
     lastReviewed: new Date().toISOString(),
@@ -161,7 +161,7 @@ export const TOOL_LIST: ToolDetail[] = [
     keyInfo: { platforms: ['Web'], accountRequired: true },
     overview:
       'Drafts, summaries, and general Q&A. Include safety-netting and request citations for clinical topics.',
-    relatedPromptsUrl: '/prompts/consult-summary-soap',
+    relatedPromptsUrl: null,
     communityUrl: null,
     comingSoon: { prompts: true, community: true, pricingDetails: true },
     lastReviewed: new Date().toISOString(),

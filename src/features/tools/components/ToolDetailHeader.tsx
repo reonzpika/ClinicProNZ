@@ -21,13 +21,7 @@ export function ToolDetailHeader({ tool }: { tool: ToolDetail }) {
       {tool.subtitle && <p className="text-sm text-muted-foreground">{tool.subtitle}</p>}
       <div className="flex flex-wrap items-center gap-2">
         {/* Try button removed per request */}
-        {tool.relatedPromptsUrl ? (
-          <Button asChild variant="secondary" size="sm">
-            <Link href={tool.relatedPromptsUrl}>View prompts</Link>
-          </Button>
-        ) : (
-          <Button variant="secondary" size="sm" disabled title="Coming soon">View prompts</Button>
-        )}
+        {/* View prompts removed per request */}
         <Button variant="secondary" size="sm" disabled title="Coming soon">Discuss in community</Button>
         <Button asChild variant="secondary" size="sm">
           <Link href="/tools">Back to tools</Link>

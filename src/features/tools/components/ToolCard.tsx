@@ -36,19 +36,6 @@ export function ToolCard({ tool, className }: ToolCardProps) {
           <Button asChild variant="secondary" size="sm">
             <Link href={`/tools/${tool.id}`}>View details</Link>
           </Button>
-          <Button
-            asChild
-            variant="secondary"
-            size="sm"
-            disabled={!tool.relatedPromptsUrl}
-            title={!tool.relatedPromptsUrl ? 'Coming soon' : undefined}
-          >
-            {tool.relatedPromptsUrl ? (
-              <Link href={tool.relatedPromptsUrl}>View prompts</Link>
-            ) : (
-              <span>View prompts</span>
-            )}
-          </Button>
         </div>
       </CardContent>
     </Card>
