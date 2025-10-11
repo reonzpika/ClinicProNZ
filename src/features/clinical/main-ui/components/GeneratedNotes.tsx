@@ -350,7 +350,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
       {error && <div className="text-sm text-red-600">{error}</div>}
       {mobileMode && !hasContent && (
         <div className="mb-2 rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-800">
-          Record key points, then tap Process to draft your note. You can edit before finishing.
+          Record key points, then tap Process. You can edit before finishing.
         </div>
       )}
       <div className="flex flex-1 flex-col space-y-3">
