@@ -31,7 +31,6 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         </Link>
       </CardHeader>
       <CardContent className="mt-auto">
-        <div className="mb-2 text-[10px] text-muted-foreground">Reviewed {tool.updatedAt ? new Date(tool.updatedAt).toLocaleDateString(undefined, { month: '2-digit', year: 'numeric' }) : '—'}</div>
         <div className="flex items-center gap-2">
           <Button asChild variant="secondary" size="sm">
             <Link href={`/tools/${tool.id}`}>View details</Link>
