@@ -262,33 +262,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
             </div>
           </div>
         )}
-        {/* Footer fixed bar on mobile */}
-        {mobileMode
-          ? (
-              <div id="mobile-footer" className="sticky bottom-0 z-10 border-t border-slate-200 bg-white/95 px-3 pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
-                <div className="flex items-center gap-3">
-                  <TranscriptionControls
-                    collapsed={false}
-                    isMinimized={false}
-                    enableRemoteMobile={false}
-                    showRecordingMethodToggle={false}
-                    mobileMode
-                    footerMode
-                  />
-                  <Button
-                    type="button"
-                    variant="default"
-                    onClick={handleGenerate}
-                    disabled={!canGenerate}
-                    className="h-12 flex-1 rounded-full bg-slate-700 px-4 text-base text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-gray-400"
-                    title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
-                  >
-                    Process Notes
-                  </Button>
-                </div>
-              </div>
-            )
-          : (
+        {mobileMode ? null : (
               <div className="flex gap-2">
                 <Button
                   type="button"
@@ -384,10 +358,8 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
             </div>
           )}
         </div>
-        {/* Mobile footer moved to portal; no inline footer here */}
-        <div className={`${mobileMode ? '' : ''} hidden`}></div>
-          {/* Desktop/tablet full action row */}
-          {!mobileMode && (
+        {/* Desktop/tablet full action row */}
+        {!mobileMode && (
             <>
               <Button
                 type="button"
