@@ -1103,6 +1103,7 @@ export default function ConsultationPage() {
                                   expandedSize="normal"
                                   forceExpanded
                                   hideTips
+                                  autoFocusOnExpand={false}
                                 />
 
                                 <div className="mt-auto flex flex-col">

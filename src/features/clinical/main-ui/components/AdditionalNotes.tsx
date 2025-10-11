@@ -27,6 +27,7 @@ type AdditionalNotesProps = {
   expandedSize?: 'normal' | 'large';
   forceExpanded?: boolean;
   hideTips?: boolean;
+  autoFocusOnExpand?: boolean;
 };
 
 export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
@@ -39,6 +40,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   expandedSize = 'normal',
   forceExpanded = false,
   hideTips = false,
+  autoFocusOnExpand = true,
 }) => {
   const [isExpanded, setIsExpanded] = useState(isMinimized ? false : defaultExpanded);
   const effectiveExpanded = forceExpanded ? true : isExpanded;
@@ -87,14 +89,14 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     } catch {}
   };
 
-  // Auto-focus Problems when expanding the section
+  // Auto-focus Problems when expanding the section (configurable)
   useEffect(() => {
-    if (isExpanded && problemsRef.current) {
+    if (isExpanded && autoFocusOnExpand && problemsRef.current) {
       try {
         problemsRef.current.focus();
       } catch {}
     }
-  }, [isExpanded]);
+  }, [isExpanded, autoFocusOnExpand]);
 
   // Document-level Tab trap: when editor is visible and focus is outside, Tab focuses Problems (or Plan with Shift)
   useEffect(() => {

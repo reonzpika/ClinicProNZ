@@ -56,6 +56,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       lastScrollTopRef.current = st;
     };
     el.addEventListener('scroll', onScroll, { passive: true });
+    // On mount, ensure we start at top
+    try { el.scrollTop = 0; } catch {}
     return () => el.removeEventListener('scroll', onScroll as any);
   }, [isMobile, isTablet]);
 
