@@ -10,6 +10,7 @@ import { DefaultSettings } from '@/src/features/clinical/main-ui/components/Defa
 import { DocumentationSettingsBadge } from '@/src/features/clinical/main-ui/components/DocumentationSettingsBadge';
 import { GeneratedNotes } from '@/src/features/clinical/main-ui/components/GeneratedNotes';
 import { TranscriptionControls } from '@/src/features/clinical/main-ui/components/TranscriptionControls';
+import { TranscriptViewer } from '@/src/features/clinical/main-ui/components/TranscriptViewer';
 import { TypedInput } from '@/src/features/clinical/main-ui/components/TypedInput';
 import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTranscription';
 // Removed MobileRightPanelOverlay; widgets now live in main column
@@ -1086,8 +1087,11 @@ export default function ConsultationPage() {
                               </div>
                             )
                           : (
-                              // Pre-generation: Additional notes (always expanded) + sticky footer controls
+                              // Pre-generation: Transcript viewer at top, Additional notes always expanded, sticky footer controls
                               <div className="flex flex-1 flex-col space-y-4">
+                                {/* Transcript display */}
+                                <TranscriptViewer />
+
                                 {/* Additional notes always expanded on mobile */}
                                 <AdditionalNotes
                                   items={consultationItems}
