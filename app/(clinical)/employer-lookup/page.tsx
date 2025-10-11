@@ -28,7 +28,7 @@ export default function EmployerLookupPage() {
   const { data: results, isFetching: isSearching, error: searchError } = useQuery<{ results: SearchResult[] }>({
     queryKey: ['employer-lookup', 'search', submittedQuery],
     queryFn: async () => {
-      const res = await fetch(`/api/(clinical)/employer-lookup/search?q=${encodeURIComponent(submittedQuery)}`);
+      const res = await fetch(`/api/employer-lookup/search?q=${encodeURIComponent(submittedQuery)}`);
       if (!res.ok) {
         throw new Error('Search failed');
       }
@@ -41,7 +41,7 @@ export default function EmployerLookupPage() {
     queryKey: ['employer-lookup', 'details', selectedId],
     queryFn: async () => {
       if (!selectedId) return null;
-      const res = await fetch(`/api/(clinical)/employer-lookup/details?id=${encodeURIComponent(selectedId)}`);
+      const res = await fetch(`/api/employer-lookup/details?id=${encodeURIComponent(selectedId)}`);
       if (!res.ok) {
         throw new Error('Details failed');
       }
