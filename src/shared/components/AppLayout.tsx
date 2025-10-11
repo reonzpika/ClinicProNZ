@@ -1,7 +1,7 @@
 'use client';
 
 import { Menu } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { useResponsive } from '@/src/shared/hooks/useResponsive';
 
@@ -15,7 +15,10 @@ type AppLayoutProps = {
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [headerHidden, setHeaderHidden] = useState(false);
   const { isMobile, isTablet, isDesktop } = useResponsive();
+  const mainRef = useRef<HTMLDivElement | null>(null);
+  const lastScrollTopRef = useRef(0);
 
   const toggleSidebar = () => {
     if (isMobile || isTablet) {
@@ -28,6 +31,33 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const closeMobileSidebar = () => {
     setMobileSidebarOpen(false);
   };
+
+  // Hide header on scroll down, show on scroll up (mobile/tablet)
+  useEffect(() => {
+    const el = mainRef.current;
+    if (!el || !(isMobile || isTablet)) {
+      setHeaderHidden(false);
+      return;
+    }
+    const onScroll = () => {
+      const st = el.scrollTop;
+      const last = lastScrollTopRef.current;
+      const delta = st - last;
+      // Always show near top
+      if (st < 24) {
+        setHeaderHidden(false);
+      } else if (delta > 6) {
+        // scrolling down
+        setHeaderHidden(true);
+      } else if (delta < -6) {
+        // scrolling up
+        setHeaderHidden(false);
+      }
+      lastScrollTopRef.current = st;
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll as any);
+  }, [isMobile, isTablet]);
 
   return (
     <div className="flex h-screen">
@@ -67,7 +97,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       >
         {/* Mobile Header with Menu Button */}
         {(isMobile || isTablet) && (
-          <div className="flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4">
+          <div className={`sticky top-0 z-20 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 transition-transform duration-200 will-change-transform ${headerHidden ? '-translate-y-full' : 'translate-y-0'}`}>
             <Button
               variant="ghost"
               size="sm"
@@ -84,7 +114,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         )}
 
         {/* Page Content */}
-        <main className="flex-1 overflow-auto">
+        <main ref={mainRef} className="flex-1 overflow-auto">
           {children}
         </main>
       </div>
