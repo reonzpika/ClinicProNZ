@@ -12,7 +12,11 @@ function getGoogleKey(): string | null {
 
 function getClientIp(req: NextRequest): string {
   const xff = req.headers.get('x-forwarded-for');
-  if (xff) return xff.split(',')[0].trim();
+  if (xff) {
+    const first = xff.split(',')[0] ?? '';
+    const trimmed = first.trim();
+    if (trimmed) return trimmed;
+  }
   return req.headers.get('cf-connecting-ip') || 'unknown';
 }
 
