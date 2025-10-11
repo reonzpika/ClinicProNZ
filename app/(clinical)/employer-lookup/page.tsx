@@ -32,7 +32,7 @@ export default function EmployerLookupPage() {
   const [query, setQuery] = useState('');
   const [submittedQuery, setSubmittedQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const debouncedQuery = useDebouncedValue(query, 400);
+  // Debounce no longer used for cost optimisation; keep function for potential reuse
 
   const { data: results, isFetching: isSearching, error: searchError } = useQuery<{ results: SearchResult[] }>({
     queryKey: ['employer-lookup', 'search', submittedQuery],
