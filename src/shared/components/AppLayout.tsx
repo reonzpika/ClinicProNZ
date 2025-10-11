@@ -114,7 +114,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         )}
 
         {/* Page Content */}
-        <main ref={mainRef} className="flex-1 overflow-auto">
+        <main ref={mainRef} className={`flex-1 overflow-auto ${isMobile || isTablet ? 'pb-28' : ''}`}>
           {children}
         </main>
       </div>

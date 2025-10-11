@@ -865,11 +865,11 @@ export default function ConsultationPage() {
     <RecordingAwareSessionContext.Provider value={contextValue}>
       <div className="flex h-full flex-col">
       <div className={`
-        flex h-screen flex-col transition-all duration-300 ease-in-out
+        flex min-h-dvh flex-col transition-all duration-300 ease-in-out
       `}
       >
-        <Container size="fluid" className="h-full">
-          <div className={`flex h-full flex-col ${(isMobile || isTablet) ? 'py-4' : 'py-6'}`}>
+        <Container size="fluid" className="min-h-0">
+          <div className={`flex min-h-0 flex-col ${(isMobile || isTablet) ? 'py-4' : 'py-6'}`}> 
             {/* Mobile Tools Button removed; tools embedded below settings */}
 
             {/* Upgrade Notification for users redirected from registration */}
