@@ -63,9 +63,11 @@ export function formatNzAddressForAcc45(
       const maybeCityPostal = parts[parts.length - 2] ?? '';
       const match = maybeCityPostal.match(/^(.*)\s(\d{4})$/);
       if (match) {
-        if (!city) city = match[1].trim();
+        const cityGroup = match[1] ?? '';
+        if (!city && cityGroup) city = cityGroup.trim();
         if (!postal) {
-          const code = match[2].trim();
+          const codeGroup = match[2] ?? '';
+          const code = codeGroup.trim();
           if (/^\d{4}$/.test(code)) {
             // basic NZ postal code pattern
             postal = code;
