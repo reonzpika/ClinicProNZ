@@ -72,6 +72,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       try {
         const footerEl = document.getElementById('mobile-footer');
         const h = footerEl ? Math.ceil(footerEl.getBoundingClientRect().height) : 0;
+        // Also account for header visibility: when visible, pt-14 is applied via class
+        // Ensure paddingBottom matches footer height exactly (single source of spacing)
         el.style.paddingBottom = h > 0 ? `${h}px` : '';
       } catch {}
     };

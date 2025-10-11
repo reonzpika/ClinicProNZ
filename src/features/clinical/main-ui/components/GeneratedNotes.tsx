@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
@@ -246,30 +246,6 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
   // Determine when to show New Patient button (only for authenticated users with content)
   const showNewPatientButton = isSignedIn; // Show New Session even in default view
 
-  // Dynamic footer spacer height (to avoid content being covered, without extra slack)
-  const [footerHeight, setFooterHeight] = useState<number>(80);
-  useLayoutEffect(() => {
-    if (!mobileMode) return;
-    const measure = () => {
-      try {
-        const el = document.getElementById('mobile-footer');
-        if (el) {
-          const h = el.getBoundingClientRect().height;
-          if (h && Math.abs(h - footerHeight) > 2) {
-            setFooterHeight(h);
-          }
-        }
-      } catch {}
-    };
-    measure();
-    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
-    try { ro?.observe(document.body); } catch {}
-    window.addEventListener('resize', measure);
-    return () => {
-      try { ro?.disconnect(); } catch {}
-      window.removeEventListener('resize', measure);
-    };
-  }, [mobileMode, footerHeight]);
 
   // Minimal state - just the generate button (mobile: fixed footer with record + process)
   if (shouldShowMinimal) {
@@ -285,10 +261,6 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
               <span className="text-sm text-slate-700">Creating new session...</span>
             </div>
           </div>
-        )}
-        {/* Spacer equal to footer height to prevent coverage */}
-        {mobileMode && (
-          <div aria-hidden className="pointer-events-none" style={{ height: footerHeight }} />
         )}
         {/* Footer fixed bar on mobile */}
         {mobileMode
@@ -412,10 +384,6 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
             </div>
           )}
         </div>
-        {/* Spacer equal to footer height to prevent coverage */}
-        {mobileMode && (
-          <div aria-hidden className="pointer-events-none" style={{ height: footerHeight }} />
-        )}
         <div id="mobile-footer" className={`${mobileMode ? 'fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-3 pb-[max(12px,env(safe-area-inset-bottom))] pt-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]' : ''} flex items-center space-x-2`}>
           {mobileMode && (
             <TranscriptionControls
