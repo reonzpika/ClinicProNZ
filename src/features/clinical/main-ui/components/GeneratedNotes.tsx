@@ -348,7 +348,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
         </div>
       )}
       {error && <div className="text-sm text-red-600">{error}</div>}
-      {mobileMode && (
+      {mobileMode && !hasContent && (
         <div className="mb-2 rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-800">
           Record key points, then tap Process to draft your note. You can edit before finishing.
         </div>
@@ -384,17 +384,8 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
             </div>
           )}
         </div>
-        <div id="mobile-footer" className={`${mobileMode ? 'sticky bottom-0 z-10 border-t border-slate-200 bg-white/95 px-3 pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]' : ''} flex items-center space-x-2`}>
-          {mobileMode && (
-            <TranscriptionControls
-              collapsed={false}
-              isMinimized={false}
-              enableRemoteMobile={false}
-              showRecordingMethodToggle={false}
-              mobileMode
-              footerMode
-            />
-          )}
+        {/* Mobile footer moved to portal; no inline footer here */}
+        <div className={`${mobileMode ? '' : ''} hidden`}></div>
           {/* Desktop/tablet full action row */}
           {!mobileMode && (
             <>

@@ -11,6 +11,7 @@ import { DocumentationSettingsBadge } from '@/src/features/clinical/main-ui/comp
 import { GeneratedNotes } from '@/src/features/clinical/main-ui/components/GeneratedNotes';
 import { TranscriptionControls } from '@/src/features/clinical/main-ui/components/TranscriptionControls';
 import { TranscriptViewer } from '@/src/features/clinical/main-ui/components/TranscriptViewer';
+import { MobileConsultationFooter } from '@/src/features/clinical/main-ui/components/MobileConsultationFooter';
 import { TypedInput } from '@/src/features/clinical/main-ui/components/TypedInput';
 import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTranscription';
 // Removed MobileRightPanelOverlay; widgets now live in main column
@@ -1117,6 +1118,8 @@ export default function ConsultationPage() {
                                     mobileMode
                                   />
                                 </div>
+                                {/* Mobile footer portal */}
+                                <MobileConsultationFooter />
                               </div>
                             )}
                       </Stack>
