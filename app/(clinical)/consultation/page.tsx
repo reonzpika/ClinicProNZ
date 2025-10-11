@@ -845,6 +845,29 @@ export default function ConsultationPage() {
     }
   };
 
+  // Footer action bus for portal footer
+  useEffect(() => {
+    const onProcess = () => { handleGenerateNotes(); };
+    const onFinishEv = () => { handleFinish(); };
+    const onNew = () => { /* reuse finish flow to create new session */ handleFinish(); };
+    const onCopy = () => {
+      try {
+        const text = (generatedNotes || '').toString();
+        if (text.trim()) navigator.clipboard?.writeText(text);
+      } catch {}
+    };
+    window.addEventListener('footer:process', onProcess);
+    window.addEventListener('footer:finish', onFinishEv);
+    window.addEventListener('footer:new', onNew);
+    window.addEventListener('footer:copy', onCopy);
+    return () => {
+      window.removeEventListener('footer:process', onProcess);
+      window.removeEventListener('footer:finish', onFinishEv);
+      window.removeEventListener('footer:new', onNew);
+      window.removeEventListener('footer:copy', onCopy);
+    };
+  }, [handleGenerateNotes, handleFinish, generatedNotes]);
+
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(() => ({ switchToPatientSession }), [switchToPatientSession]);
 
@@ -1074,7 +1097,7 @@ export default function ConsultationPage() {
                         {/* Conditional Layout Based on Documentation Mode (mobile) */}
                         {isDocumentationMode
                           ? (
-                              // Post-generation: show only the generated note and two CTAs
+                              // Post-generation: show only the generated note
                               <div className="flex flex-1 flex-col">
                                 <GeneratedNotes
                                   onGenerate={handleGenerateNotes}
@@ -1090,6 +1113,10 @@ export default function ConsultationPage() {
                           : (
                               // Pre-generation: Transcript viewer at top, Additional notes always expanded, sticky footer controls
                               <div className="flex flex-1 flex-col space-y-4">
+                                {/* Pre-gen instruction */}
+                                <div className="rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-800">
+                                  Record key points, then tap Process. You can edit before finishing.
+                                </div>
                                 {/* Transcript display */}
                                 <TranscriptViewer />
 
@@ -1118,10 +1145,10 @@ export default function ConsultationPage() {
                                     mobileMode
                                   />
                                 </div>
-                                {/* Mobile footer portal */}
-                                <MobileConsultationFooter />
                               </div>
                             )}
+                        {/* Mobile footer portal always mounted */}
+                        <MobileConsultationFooter />
                       </Stack>
                     )
                     : (
