@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 
@@ -18,15 +18,6 @@ type PlaceDetails = {
   formattedAddress: string;
   addressComponents: Array<{ long_name: string; short_name: string; types: string[] }>; // Google format
 };
-
-function useDebouncedValue<T>(value: T, delayMs: number) {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const t = setTimeout(() => setDebounced(value), delayMs);
-    return () => clearTimeout(t);
-  }, [value, delayMs]);
-  return debounced;
-}
 
 export default function EmployerLookupPage() {
   const [query, setQuery] = useState('');
