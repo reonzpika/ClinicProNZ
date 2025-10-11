@@ -62,26 +62,29 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     return () => el.removeEventListener('scroll', onScroll as any);
   }, [isMobile, isTablet]);
 
-  // Visual viewport awareness for keyboard — expose CSS var (--kb-offset) at documentElement
+  // Visual viewport awareness for keyboard/URL bar (mobile/tablet only)
+  const [vvOffset, setVvOffset] = useState(0);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
   useEffect(() => {
     if (!(isMobile || isTablet) || typeof window === 'undefined' || !('visualViewport' in window)) {
+      setVvOffset(0);
+      setKeyboardOpen(false);
       return;
     }
     const vv = (window as any).visualViewport as VisualViewport;
     const apply = () => {
-      try {
-        const offset = Math.max(0, Math.round((window.innerHeight - vv.height)));
-        document.documentElement.style.setProperty('--kb-offset', `${offset}px`);
-      } catch {}
+      const offset = Math.max(0, Math.round((window.innerHeight - vv.height)));
+      // Heuristic threshold for keyboard detection on Android Chrome
+      const kb = offset >= 120; // px
+      setVvOffset(offset);
+      setKeyboardOpen(kb);
     };
     apply();
     vv.addEventListener('resize', apply);
     vv.addEventListener('scroll', apply);
     return () => {
-      try {
-        vv.removeEventListener('resize', apply);
-        vv.removeEventListener('scroll', apply);
-      } catch {}
+      vv.removeEventListener('resize', apply);
+      vv.removeEventListener('scroll', apply);
     };
   }, [isMobile, isTablet]);
 
@@ -142,7 +145,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         <main
           ref={mainRef}
           className="min-h-0 overflow-auto overscroll-y-contain"
-          style={(isMobile || isTablet) ? ({ scrollPaddingBottom: 'var(--footer-h, 76px)' } as React.CSSProperties) : undefined}
+          style={(isMobile || isTablet)
+            ? ({ scrollPaddingBottom: keyboardOpen ? '0px' : 'var(--footer-h, 76px)' } as React.CSSProperties)
+            : undefined}
         >
           {children}
         </main>
@@ -152,8 +157,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           id="app-footer-slot"
           className={`${(isMobile || isTablet) ? 'block' : 'hidden'} sticky bottom-0 border-t border-slate-200 bg-white px-3 pt-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-2px_8px_rgba(0,0,0,0.06)]`}
           style={{
-            // Keep footer visible above keyboard without expanding its own padding
-            transform: 'translateY(calc(-1 * var(--kb-offset, 0px)))',
+            transform: keyboardOpen
+              ? `translateY(${vvOffset}px)`
+              : (vvOffset > 0 ? `translateY(${-vvOffset}px)` : 'translateY(0)'),
             minHeight: 'var(--footer-h, 76px)'
           } as React.CSSProperties}
         />
