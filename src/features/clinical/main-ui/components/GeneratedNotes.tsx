@@ -264,7 +264,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
         {/* Footer fixed bar on mobile */}
         {mobileMode
           ? (
-              <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-3 pb-[max(16px,env(safe-area-inset-bottom))] pt-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
+              <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-3 pb-[max(12px,env(safe-area-inset-bottom))] pt-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
                 <div className="flex items-center gap-3">
                   <TranscriptionControls
                     collapsed={false}
@@ -383,7 +383,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
             </div>
           )}
         </div>
-        <div className={`${mobileMode ? 'fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-3 pb-[max(20px,env(safe-area-inset-bottom))] pt-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]' : ''} flex items-center space-x-2`}>
+        <div className={`${mobileMode ? 'fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-3 pb-[max(12px,env(safe-area-inset-bottom))] pt-3 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]' : ''} flex items-center space-x-2`}>
           {mobileMode && (
             <TranscriptionControls
               collapsed={false}

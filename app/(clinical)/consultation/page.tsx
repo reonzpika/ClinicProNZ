@@ -1069,7 +1069,7 @@ export default function ConsultationPage() {
                   isMobile
                     ? (
                       // Phone-only reduced UI
-                      <Stack spacing={isDesktop ? 'sm' : 'sm'} className="h-full pb-28">
+                      <Stack spacing={isDesktop ? 'sm' : 'sm'} className="h-full">
                         {/* Conditional Layout Based on Documentation Mode (mobile) */}
                         {isDocumentationMode
                           ? (
