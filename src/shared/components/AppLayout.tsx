@@ -97,7 +97,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       >
         {/* Mobile Header with Menu Button */}
         {(isMobile || isTablet) && (
-          <div className={`sticky top-0 z-20 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 transition-transform duration-200 will-change-transform ${headerHidden ? '-translate-y-full' : 'translate-y-0'}`}>
+          <div className={`fixed top-0 left-0 right-0 z-20 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 transition-transform duration-200 will-change-transform ${headerHidden ? '-translate-y-full' : 'translate-y-0'}`}>
             <Button
               variant="ghost"
               size="sm"
@@ -114,7 +114,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         )}
 
         {/* Page Content */}
-        <main ref={mainRef} className="flex-1 overflow-auto">
+        <main ref={mainRef} className={`flex-1 overflow-auto overscroll-y-contain ${(isMobile || isTablet) ? (headerHidden ? '' : 'pt-14') : ''}`}>
           {children}
         </main>
       </div>
