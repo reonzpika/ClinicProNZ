@@ -50,16 +50,17 @@ export function formatNzAddressForAcc45(
     || componentValue(components, 'administrative_area_level_2')
     || '';
 
-  const postal = componentValue(components, 'postal_code');
+  let postal = componentValue(components, 'postal_code');
 
   // Fallback parsing if address components are sparse
   if ((!addressLine || !city || !postal) && formattedAddress) {
     const parts = formattedAddress.split(',').map(p => p.trim());
     // Typical NZ formatted: "123 Street, Suburb, City 1234, New Zealand"
-    if (!addressLine && parts.length >= 1) addressLine = parts[0];
+    const first = parts[0] ?? '';
+    if (!addressLine && first) addressLine = first;
     if ((!city || !postal) && parts.length >= 2) {
       // Attempt to extract postal from the second-last segment
-      const maybeCityPostal = parts[parts.length - 2];
+      const maybeCityPostal = parts[parts.length - 2] ?? '';
       const match = maybeCityPostal.match(/^(.*)\s(\d{4})$/);
       if (match) {
         if (!city) city = match[1].trim();
@@ -67,7 +68,7 @@ export function formatNzAddressForAcc45(
           const code = match[2].trim();
           if (/^\d{4}$/.test(code)) {
             // basic NZ postal code pattern
-            ({});
+            postal = code;
           }
         }
       }
