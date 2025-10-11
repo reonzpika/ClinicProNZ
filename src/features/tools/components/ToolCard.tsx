@@ -2,7 +2,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import * as React from 'react';
 
-import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { cn } from '@/src/lib/utils';
 
@@ -15,9 +14,9 @@ export type ToolCardProps = {
 
 export function ToolCard({ tool, className }: ToolCardProps) {
   return (
-    <Card className={cn('flex flex-col', className)}>
-      <CardHeader className="space-y-1 p-0">
-        <Link href={`/tools/${tool.id}`} className="block rounded-md p-3 hover:bg-accent/40 focus:outline-none focus:ring-2 focus:ring-ring">
+    <Link href={`/tools/${tool.id}`} className="block rounded-md focus:outline-none focus:ring-2 focus:ring-ring">
+      <Card className={cn('flex flex-col hover:bg-accent/40', className)}>
+        <CardHeader className="space-y-1">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               {tool.logoUrl ? (
@@ -28,15 +27,9 @@ export function ToolCard({ tool, className }: ToolCardProps) {
             {/* Free badge removed per request */}
           </div>
           <CardDescription className="mt-1">{tool.tagline}</CardDescription>
-        </Link>
-      </CardHeader>
-      <CardContent className="mt-auto">
-        <div className="flex items-center gap-2">
-          <Button asChild variant="secondary" size="sm">
-            <Link href={`/tools/${tool.id}`}>View details</Link>
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+        </CardHeader>
+        <CardContent className="mt-auto" />
+      </Card>
+    </Link>
   );
 }
