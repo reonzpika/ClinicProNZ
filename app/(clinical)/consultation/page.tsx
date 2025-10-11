@@ -1147,8 +1147,8 @@ export default function ConsultationPage() {
                                 </div>
                               </div>
                             )}
-                        {/* Mobile footer portal always mounted */}
-                        <MobileConsultationFooter />
+                        {/* Mobile footer portal always mounted (mobile only) */}
+                        { (isMobile || isTablet) && <MobileConsultationFooter /> }
                       </Stack>
                     )
                     : (

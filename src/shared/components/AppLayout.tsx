@@ -143,10 +143,11 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           {children}
         </main>
 
-        {/* Footer slot row (outside scroller) */}
-        {(isMobile || isTablet) && (
-          <div id="app-footer-slot" className="border-t border-slate-200 bg-white px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+var(--kb-offset,0px))] shadow-[0_-2px_8px_rgba(0,0,0,0.06)]" />
-        )}
+        {/* Footer slot row (outside scroller) - mobile only */}
+        <div
+          id="app-footer-slot"
+          className={`${(isMobile || isTablet) ? 'block' : 'hidden'} border-t border-slate-200 bg-white px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+var(--kb-offset,0px))] shadow-[0_-2px_8px_rgba(0,0,0,0.06)]`}
+        />
       </div>
     </div>
   );
