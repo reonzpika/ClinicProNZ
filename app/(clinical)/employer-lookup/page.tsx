@@ -25,7 +25,7 @@ export default function EmployerLookupPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // Debounce no longer used for cost optimisation; keep function for potential reuse
 
-  const { data: results, isFetching: isSearching, error: searchError } = useQuery<{ results: SearchResult[] }>({
+  const { data: results, isFetching: isSearching, error: searchError } = useQuery<{ results: SearchResult[]; googleStatus?: string }>({
     queryKey: ['employer-lookup', 'search', submittedQuery],
     queryFn: async () => {
       const res = await fetch(`/api/employer-lookup/search?q=${encodeURIComponent(submittedQuery)}`);
@@ -37,7 +37,7 @@ export default function EmployerLookupPage() {
     enabled: submittedQuery.trim().length >= 2,
   });
 
-  const { data: detailsData, isFetching: isLoadingDetails } = useQuery<{ details: PlaceDetails } | null>({
+  const { data: detailsData, isFetching: isLoadingDetails } = useQuery<{ details: PlaceDetails; googleStatus?: string } | null>({
     queryKey: ['employer-lookup', 'details', selectedId],
     queryFn: async () => {
       if (!selectedId) return null;
@@ -114,6 +114,9 @@ export default function EmployerLookupPage() {
       {searchError && (
         <div className="mb-3 text-xs text-red-600">Search error. Please try again.</div>
       )}
+      {!isSearching && results && results.googleStatus && (
+        <div className="mb-2 text-[10px] text-slate-400">Debug: search status {results.googleStatus}</div>
+      )}
 
       <div className="space-y-2">
         {results?.results?.map((r) => (
@@ -178,6 +181,9 @@ export default function EmployerLookupPage() {
                 )}
                 {!isLoadingDetails && !fields && (
                   <div className="text-xs text-red-600">Failed to load details</div>
+                )}
+                {!isLoadingDetails && detailsData && detailsData.googleStatus && (
+                  <div className="mt-2 text-[10px] text-slate-400">Debug: details status {detailsData.googleStatus}</div>
                 )}
               </div>
             )}

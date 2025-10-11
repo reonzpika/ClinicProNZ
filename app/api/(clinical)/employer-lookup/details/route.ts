@@ -61,6 +61,14 @@ export async function GET(req: NextRequest) {
     }
     const data = await response.json();
 
+    const googleStatus: string = data.status || 'UNKNOWN';
+    if (googleStatus !== 'OK') {
+      const errRes = NextResponse.json({ error: 'Google Places error', googleStatus, googleError: data.error_message || null }, { status: 502 });
+      errRes.headers.set('x-debug-google-status', googleStatus);
+      Object.entries(headers).forEach(([k, v]) => errRes.headers.set(k, v));
+      return errRes;
+    }
+
     const result = data.result || {};
     const components = (result.address_components || []) as GoogleAddressComponent[];
     const name = String(result.name || '');
@@ -73,7 +81,8 @@ export async function GET(req: NextRequest) {
       formattedAddress: formatted,
       addressComponents: components,
       fields,
-    }});
+    }, googleStatus });
+    res.headers.set('x-debug-google-status', googleStatus);
     Object.entries(headers).forEach(([k, v]) => res.headers.set(k, v));
     return res;
   } catch (e) {

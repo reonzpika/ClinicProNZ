@@ -63,6 +63,16 @@ export async function GET(req: NextRequest) {
     }
     const data = await response.json();
 
+    // Accept OK and ZERO_RESULTS; treat others as errors for clearer debugging
+    const googleStatus: string = data.status || 'UNKNOWN';
+    if (googleStatus !== 'OK' && googleStatus !== 'ZERO_RESULTS') {
+      console.warn('Employer lookup search error', { q, googleStatus, error: data.error_message });
+      const errRes = NextResponse.json({ error: 'Google Places error', googleStatus, googleError: data.error_message || null }, { status: 502 });
+      errRes.headers.set('x-debug-google-status', googleStatus);
+      Object.entries(headers).forEach(([k, v]) => errRes.headers.set(k, v));
+      return errRes;
+    }
+
     const results = Array.isArray(data.results)
       ? data.results.slice(0, 10).map((r: any) => ({
           id: r.place_id as string,
@@ -71,7 +81,8 @@ export async function GET(req: NextRequest) {
         }))
       : [];
 
-    const res = NextResponse.json({ results });
+    const res = NextResponse.json({ results, googleStatus });
+    res.headers.set('x-debug-google-status', googleStatus);
     Object.entries(headers).forEach(([k, v]) => res.headers.set(k, v));
     return res;
   } catch (e) {
