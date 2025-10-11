@@ -16,6 +16,11 @@ export type ToolDetail = ToolSummary & {
     platforms: string[]; // e.g., ["Web"]
     accountRequired: boolean;
   };
+  goodFor?: string[];
+  limits?: string[];
+  citations?: 'inline' | 'references' | 'none';
+  country?: string;
+  privacyNote?: string;
   overview?: string;
   workflows?: Array<{ title: string; steps: string[] }>;
   tipsForGPs?: string[];
@@ -42,6 +47,19 @@ export const TOOL_LIST: ToolDetail[] = [
     docsUrl: null,
     logoUrl: '/logos/perplexity.svg',
     keyInfo: { platforms: ['Web'], accountRequired: false },
+    goodFor: [
+      'Clinical Q&A (with citations)',
+      'Evidence search (NZ sources)',
+      'Web summaries of NZ guidance',
+    ],
+    limits: [
+      'Needs “NZ sources first” prompting; defaults to US/UK',
+      'Citation quality varies; verify source type',
+      'HealthPathways often gated; may miss local pathways',
+    ],
+    citations: 'inline',
+    country: 'US',
+    privacyNote: 'Do not enter identifiable patient data',
     overview:
       'Perplexity provides concise answers with source citations. Useful for quick overviews; verify against local guidelines before acting clinically.',
     workflows: [
@@ -69,6 +87,18 @@ export const TOOL_LIST: ToolDetail[] = [
     docsUrl: null,
     logoUrl: '/logos/openevidence.svg',
     keyInfo: { platforms: ['Web'], accountRequired: true },
+    goodFor: [
+      'Evidence summaries',
+      'Study comparisons',
+    ],
+    limits: [
+      'Not localised to NZ; cross‑check with bpacnz/MOH/Te Whatu Ora',
+      'May lag on very recent NZ‑specific updates',
+      'Less useful for local referral thresholds/services',
+    ],
+    citations: 'references',
+    country: 'US',
+    privacyNote: 'Do not enter identifiable patient data',
     overview:
       'Summarises clinical evidence with clear references. Best used for structured review; check date and applicability to NZ context.',
     workflows: [
