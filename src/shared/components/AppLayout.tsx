@@ -19,7 +19,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { isMobile, isTablet, isDesktop } = useResponsive();
   const mainRef = useRef<HTMLDivElement | null>(null);
   const lastScrollTopRef = useRef(0);
-  const footerObserverRef = useRef<ResizeObserver | null>(null);
+  // Footer slot managed via grid row — no dynamic padding needed when using footer row
 
   const toggleSidebar = () => {
     if (isMobile || isTablet) {
@@ -62,34 +62,26 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     return () => el.removeEventListener('scroll', onScroll as any);
   }, [isMobile, isTablet]);
 
-  // Dynamically apply bottom padding equal to mobile footer height
+  // Visual viewport awareness for keyboard — expose CSS var (--kb-offset) at documentElement
   useEffect(() => {
-    const el = mainRef.current;
-    if (!el) {
+    if (!(isMobile || isTablet) || typeof window === 'undefined' || !('visualViewport' in window)) {
       return;
     }
-    const applyPadding = () => {
+    const vv = (window as any).visualViewport as VisualViewport;
+    const apply = () => {
       try {
-        const footerEl = document.getElementById('mobile-footer');
-        const h = footerEl ? Math.ceil(footerEl.getBoundingClientRect().height) : 0;
-        // Also account for header visibility: when visible, pt-14 is applied via class
-        // Ensure paddingBottom matches footer height exactly (single source of spacing)
-        el.style.paddingBottom = h > 0 ? `${h}px` : '';
+        const offset = Math.max(0, Math.round((window.innerHeight - vv.height)));
+        document.documentElement.style.setProperty('--kb-offset', `${offset}px`);
       } catch {}
     };
-    applyPadding();
-    const ro = new ResizeObserver(applyPadding);
-    footerObserverRef.current = ro;
-    try {
-      const footerEl = document.getElementById('mobile-footer');
-      if (footerEl) ro.observe(footerEl);
-    } catch {}
-    window.addEventListener('resize', applyPadding);
-    const id = window.setInterval(applyPadding, 400); // guard for footer mount/unmount
+    apply();
+    vv.addEventListener('resize', apply);
+    vv.addEventListener('scroll', apply);
     return () => {
-      try { ro.disconnect(); } catch {}
-      window.removeEventListener('resize', applyPadding);
-      window.clearInterval(id);
+      try {
+        vv.removeEventListener('resize', apply);
+        vv.removeEventListener('scroll', apply);
+      } catch {}
     };
   }, [isMobile, isTablet]);
 
@@ -120,15 +112,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         isDesktop={isDesktop}
       />
 
-      {/* Main Content Area */}
+      {/* Main Content Area (Grid: header spacer, main scroller, footer slot) */}
       <div className={`
-        flex flex-1 flex-col transition-all duration-300 ease-in-out
-        ${isDesktop
-      ? (sidebarCollapsed ? 'ml-16' : 'ml-64')
-      : 'ml-0'
-    }
-      `}
-      >
+        flex-1 transition-all duration-300 ease-in-out
+        ${isDesktop ? (sidebarCollapsed ? 'ml-16' : 'ml-64') : 'ml-0'}
+        grid min-h-dvh grid-rows-[auto_1fr_auto]
+      `}>
+        {/* Header spacer to reserve height (constant). Header itself is fixed overlay below. */}
+        {(isMobile || isTablet) && <div className="h-14" />}
         {/* Mobile Header with Menu Button */}
         {(isMobile || isTablet) && (
           <div className={`fixed top-0 left-0 right-0 z-20 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 transition-transform duration-200 will-change-transform ${headerHidden ? '-translate-y-full' : 'translate-y-0'}`}>
@@ -147,10 +138,15 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           </div>
         )}
 
-        {/* Page Content */}
-        <main ref={mainRef} className={`flex-1 overflow-auto overscroll-y-contain ${(isMobile || isTablet) ? (headerHidden ? '' : 'pt-14') : ''}`}>
+        {/* Page Content (only scroller) */}
+        <main ref={mainRef} className="min-h-0 overflow-auto overscroll-y-contain">
           {children}
         </main>
+
+        {/* Footer slot row (outside scroller) */}
+        {(isMobile || isTablet) && (
+          <div id="app-footer-slot" className="border-t border-slate-200 bg-white px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+var(--kb-offset,0px))] shadow-[0_-2px_8px_rgba(0,0,0,0.06)]" />
+        )}
       </div>
     </div>
   );
