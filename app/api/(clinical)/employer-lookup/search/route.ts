@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { cacheGet, cacheSet, hoursToSeconds } from '@/src/lib/cache/redis';
+import { cacheGet, cacheSet } from '@/src/lib/cache/redis';
 
 const GOOGLE_API = 'https://maps.googleapis.com/maps/api/place/textsearch/json';
 
