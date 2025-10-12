@@ -312,7 +312,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
 
   // Expanded state - full interface
   return (
-    <div className="flex flex-1 min-h-0 flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       {isCreatingNewSession && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20">
           <div className="flex items-center gap-3 rounded-md bg-white px-4 py-3 shadow">
@@ -330,7 +330,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
           Record key points, then tap Process. You can edit before finishing.
         </div>
       )}
-      <div className="flex min-h-0 flex-1 flex-col space-y-2">
+      <div className="flex min-h-0 flex-1 flex-col space-y-1">
         {/* Mobile: compact copy button above note after generation */}
         {false && mobileMode && hasContent && (
           <div className="flex justify-end">
@@ -349,7 +349,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
           value={displayNotes || ''}
           onChange={handleNotesChange}
           onBlur={handleNotesBlur}
-          className={`w-full flex-1 resize-none overflow-y-auto rounded border border-slate-200 bg-white p-3 ${textareaMinHeightClass} ${mobileMode ? 'text-base leading-relaxed' : 'text-sm leading-relaxed'} text-slate-800 focus:border-slate-400 focus:ring-2 focus:ring-slate-400`}
+          className={`w-full h-0 grow resize-none overflow-y-auto rounded border border-slate-200 bg-white p-3 ${textareaMinHeightClass} ${mobileMode ? 'text-base leading-relaxed' : 'text-sm leading-relaxed'} text-slate-800 focus:border-slate-400 focus:ring-2 focus:ring-slate-400`}
           style={mobileMode ? ({ scrollMarginBottom: 'var(--footer-h, 76px)' } as React.CSSProperties) : undefined}
           placeholder={getPlaceholderText()}
           disabled={loading}
