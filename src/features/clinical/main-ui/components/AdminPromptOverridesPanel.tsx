@@ -4,6 +4,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { Button } from '@/src/shared/components/ui/button';
 import { Textarea } from '@/src/shared/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 function tokenEstimate(text: string): number {
   // rough: 4 chars/token
@@ -14,6 +16,14 @@ export function AdminPromptOverridesPanel() {
   const { hasTier } = useClerkMetadata();
   const isAdmin = hasTier('admin');
 
+  // Read current consultation data for output preview
+  const {
+    transcription,
+    typedInput,
+    getCompiledConsultationText,
+    templateId,
+  } = useConsultationStores();
+
   const [loading, setLoading] = useState(false);
   const [versions, setVersions] = useState<any[]>([]);
   const [activeSelfVersionId, setActiveSelfVersionId] = useState<string | null>(null);
@@ -23,6 +33,12 @@ export function AdminPromptOverridesPanel() {
   const [userText, setUserText] = useState('');
   const [rating, setRating] = useState<number | ''>('');
   const [feedback, setFeedback] = useState('');
+
+  // Output preview state
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+  const [previewText, setPreviewText] = useState('');
 
   const canSave = useMemo(() => {
     return systemText.includes('{{TEMPLATE}}') && userText.includes('{{DATA}}') && systemText.length <= 16000 && userText.length <= 16000;
@@ -80,6 +96,45 @@ export function AdminPromptOverridesPanel() {
     setLoading(false);
   };
 
+  const handlePreviewOutput = async () => {
+    // Build request from current consultation data; do not store to session (client-side)
+    setPreviewOpen(true);
+    setPreviewLoading(true);
+    setPreviewError(null);
+    setPreviewText('');
+    try {
+      const body: any = {
+        templateId,
+        // Use new format fields for better prompt compilation
+        additionalNotes: getCompiledConsultationText(),
+        transcription: transcription?.transcript || '',
+        typedInput: typedInput || '',
+      };
+      const res = await fetch('/api/consultation/notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok || !res.body) {
+        const err = await res.json().catch(() => ({} as any));
+        throw new Error(err?.message || err?.error || 'Failed to generate preview');
+      }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let text = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        text += decoder.decode(value, { stream: true });
+        setPreviewText(text);
+      }
+    } catch (e: any) {
+      setPreviewError(e?.message || 'Preview failed');
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
   return (
     <div className="rounded-md border border-slate-200 p-3">
       <div className="mb-2 text-sm font-semibold text-slate-700">Admin · Note Prompt Overrides</div>
@@ -102,6 +157,7 @@ export function AdminPromptOverridesPanel() {
         <div className="flex gap-2">
           <Button type="button" variant="secondary" onClick={() => { setSystemText(''); setUserText(''); setRating(''); setFeedback(''); }}>New</Button>
           <Button type="button" onClick={handleSave} disabled={!canSave || loading}>Save</Button>
+          <Button type="button" variant="outline" onClick={handlePreviewOutput} disabled={previewLoading || !templateId}>Preview Output</Button>
         </div>
       </div>
 
@@ -124,6 +180,23 @@ export function AdminPromptOverridesPanel() {
         ))}
         {versions.length === 0 && <div className="text-xs text-slate-500">No versions yet.</div>}
       </div>
+
+      {/* Output Preview Dialog */}
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-sm">Preview · Generated Note (not saved)</DialogTitle>
+          </DialogHeader>
+          <div className="mt-2">
+            {previewError && (<div className="mb-2 text-xs text-red-600">{previewError}</div>)}
+            <Textarea value={previewText} readOnly className="min-h-[320px]" placeholder={previewLoading ? 'Generating…' : 'No content'} />
+            <div className="mt-2 flex gap-2">
+              <Button type="button" variant="secondary" onClick={() => navigator.clipboard.writeText(previewText || '')} disabled={!previewText}>Copy</Button>
+              <Button type="button" onClick={() => setPreviewOpen(false)}>Close</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
