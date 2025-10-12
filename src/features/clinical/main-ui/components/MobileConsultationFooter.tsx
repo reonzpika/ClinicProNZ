@@ -57,14 +57,17 @@ export const MobileConsultationFooter: React.FC = () => {
 
   return createPortal(
     <div className="flex items-center gap-3">
-      <TranscriptionControls
-        collapsed={false}
-        isMinimized={false}
-        enableRemoteMobile={false}
-        showRecordingMethodToggle={false}
-        mobileMode
-        footerMode
-      />
+      {/* Recording control visible only pre-generation */}
+      {!hasGenerated && (
+        <TranscriptionControls
+          collapsed={false}
+          isMinimized={false}
+          enableRemoteMobile={false}
+          showRecordingMethodToggle={false}
+          mobileMode
+          footerMode
+        />
+      )}
 
       {/* CTAs */}
       {!hasGenerated && (

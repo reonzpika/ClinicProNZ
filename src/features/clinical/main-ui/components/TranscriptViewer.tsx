@@ -30,7 +30,9 @@ export const TranscriptViewer: React.FC<TranscriptViewerProps> = ({ showConsentP
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-slate-700">Live Transcript</span>
-          <span className="text-xs text-slate-500">{hasText ? 'Updated' : 'Listening / Transcribing…'}</span>
+          {hasText && (
+            <span className="text-xs text-slate-500">Updated</span>
+          )}
         </div>
         {showConsentPill && (
           <button
