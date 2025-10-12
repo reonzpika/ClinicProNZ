@@ -32,7 +32,8 @@ function SessionImageTile({
   onDownload: () => void;
   onDelete: () => void;
 }) {
-  const { data: imageUrlData } = useImageUrl(image.thumbnailUrl ? '' : (image.thumbnailKey || image.key));
+  // Prefer server-provided thumbnailUrl; otherwise request presigned URL for the full image key
+  const { data: imageUrlData } = useImageUrl(image.thumbnailUrl ? '' : image.key);
   const imageUrl = image.thumbnailUrl || imageUrlData;
   const renameImage = useRenameImage();
   const baseName = (image.displayName || image.filename || '').replace(/\.[^.]+$/, '');
@@ -54,6 +55,7 @@ function SessionImageTile({
           : (
             <div className="flex size-full items-center justify-center text-xs text-slate-400">No preview</div>
           )}
+        {/* Show processing badge only if server hinted a thumbnail (optional) */}
         {!imageUrl && image.thumbnailKey && (
           <div className="absolute left-2 top-2 rounded bg-yellow-500/90 px-2 py-0.5 text-[10px] font-medium text-white">Processing…</div>
         )}
@@ -165,11 +167,11 @@ export const ClinicalImageTab: React.FC = () => {
     onImageUploadStarted: (count) => setInFlightUploads(prev => prev + (count || 0)),
     onImageUploaded: () => {
       setInFlightUploads(prev => Math.max(0, prev - 1));
-      try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') }); } catch {}
+      try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.lists() }); } catch {}
       setCompletedUploads((c) => c + 1);
     },
     onImageProcessed: () => {
-      try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') }); } catch {}
+      try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.lists() }); } catch {}
     },
   });
 

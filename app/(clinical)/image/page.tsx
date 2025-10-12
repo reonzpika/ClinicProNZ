@@ -208,7 +208,7 @@ export default function ClinicalImagePage() {
       setInFlightUploads((prev) => Math.max(0, prev - 1));
       if (!invalidateTimerRef.current) {
         invalidateTimerRef.current = setTimeout(() => {
-          try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') }); } catch {}
+          try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.lists() }); } catch {}
           invalidateTimerRef.current = null;
         }, 500);
       }
@@ -216,7 +216,7 @@ export default function ClinicalImagePage() {
     onImageProcessed: () => {
       if (!invalidateTimerRef.current) {
         invalidateTimerRef.current = setTimeout(() => {
-          try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') }); } catch {}
+          try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.lists() }); } catch {}
           invalidateTimerRef.current = null;
         }, 500);
       }
@@ -961,7 +961,8 @@ function ServerImageCard({
 }) {
   const [isDeleting, setIsDeleting] = React.useState(false);
   // Lazily fetch image URL per tile
-  const { data: fetchedUrl } = useImageUrl(image.thumbnailUrl ? '' : (image.thumbnailKey || image.key));
+  // Prefer server-provided thumbnailUrl; otherwise request presigned URL for the full image key
+  const { data: fetchedUrl } = useImageUrl(image.thumbnailUrl ? '' : image.key);
   const imageUrl = image.thumbnailUrl || fetchedUrl;
   const isLoadingUrl = !imageUrl;
 

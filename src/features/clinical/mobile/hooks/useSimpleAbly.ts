@@ -109,6 +109,11 @@ export const useSimpleAbly = ({
       onConsentRequested,
       onConsentGranted,
       onConsentDenied,
+      // Ensure image-related callbacks remain wired after updates
+      onImageUploadStarted,
+      onImageUploaded,
+      onImageProcessed,
+      onImageDeleted,
     } as any;
   }, [onRecordingStatusChanged, onError, onConnectionStatusChanged, onControlCommand, onMobileImagesUploaded, onTranscriptionsUpdated, onTranscriptionFlushed, onSessionContextChanged, onConsentRequested, onConsentGranted, onConsentDenied, onImageUploadStarted, onImageUploaded, onImageProcessed, onImageDeleted]);
 
@@ -427,8 +432,16 @@ export const useSimpleAbly = ({
               }
               break;
             case 'image_uploaded':
-              if (!isMobile && data.key) {
-                callbacksRef.current.onImageUploaded?.(data.key, data.sessionId ?? null, (data as any).displayName);
+              if (!isMobile) {
+                if (data.key) {
+                  callbacksRef.current.onImageUploaded?.(data.key, data.sessionId ?? null, (data as any).displayName);
+                } else if (typeof (data as any).imageCount === 'number') {
+                  // Mobile may send only a count; decrement banner and trigger refresh accordingly
+                  const n = (data as any).imageCount as number;
+                  for (let i = 0; i < n; i++) {
+                    callbacksRef.current.onImageUploaded?.('', data.sessionId ?? null);
+                  }
+                }
               }
               break;
             case 'image_processed':
