@@ -144,13 +144,7 @@ export default function EmployerLookupPage() {
                 >
                   Open in Maps
                 </Link>
-                <Link
-                  href={`https://www.google.com/search?q=${encodeURIComponent('site:nzbn.govt.nz ' + r.name)}`}
-                  target="_blank"
-                  className="text-xs text-slate-600 underline"
-                >
-                  NZBN
-                </Link>
+                {/* NZBN link removed as requested */}
               </div>
             </div>
 
