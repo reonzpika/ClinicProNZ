@@ -55,10 +55,7 @@ function SessionImageTile({
           : (
             <div className="flex size-full items-center justify-center text-xs text-slate-400">No preview</div>
           )}
-        {/* Show processing badge only if server hinted a thumbnail (optional) */}
-        {!imageUrl && image.thumbnailKey && (
-          <div className="absolute left-2 top-2 rounded bg-yellow-500/90 px-2 py-0.5 text-[10px] font-medium text-white">Processing…</div>
-        )}
+        {/* Processing badge removed until real thumbnail pipeline exists */}
       </div>
       <div className="mt-2 flex items-center gap-2">
         {isRenaming ? (
