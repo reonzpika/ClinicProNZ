@@ -63,11 +63,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   }, [isMobile, isTablet]);
 
   // Visual viewport awareness for keyboard/URL bar (mobile/tablet only)
-  const [vvOffset, setVvOffset] = useState(0);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   useEffect(() => {
     if (!(isMobile || isTablet) || typeof window === 'undefined' || !('visualViewport' in window)) {
-      setVvOffset(0);
       setKeyboardOpen(false);
       return;
     }
@@ -76,7 +74,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       const offset = Math.max(0, Math.round((window.innerHeight - vv.height)));
       // Heuristic threshold for keyboard detection on Android Chrome
       const kb = offset >= 120; // px
-      setVvOffset(offset);
       setKeyboardOpen(kb);
     };
     apply();
