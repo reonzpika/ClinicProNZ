@@ -1093,12 +1093,12 @@ export default function ConsultationPage() {
                   isMobile
                     ? (
                       // Phone-only reduced UI
-                      <Stack spacing={isDesktop ? 'sm' : 'sm'} className="h-full min-h-0">
+                      <Stack spacing={isDesktop ? 'sm' : 'sm'} className="h-full">
                         {/* Conditional Layout Based on Documentation Mode (mobile) */}
                         {isDocumentationMode
                           ? (
                               // Post-generation: show only the generated note
-                              <div className="flex flex-1 flex-col min-h-0">
+                              <div className="flex h-full flex-col">
                                 <GeneratedNotes
                                   onGenerate={handleGenerateNotes}
                                   onFinish={handleFinish}
@@ -1112,7 +1112,7 @@ export default function ConsultationPage() {
                             )
                           : (
                               // Pre-generation: Transcript viewer at top, Additional notes always expanded, sticky footer controls
-                              <div className="flex flex-1 flex-col min-h-0 space-y-2">
+                              <div className="flex h-full flex-col space-y-2">
                                 {/* Pre-gen instruction */}
                                 <div className="rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-800">
                                   Record key points, then tap Process. You can edit before finishing.
