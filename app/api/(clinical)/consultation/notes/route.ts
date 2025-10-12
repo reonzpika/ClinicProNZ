@@ -9,6 +9,7 @@ import { compileTemplate } from '@/src/features/templates/utils/compileTemplate'
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 import { apiUsageCosts, patientSessions, users } from '@/db/schema';
 import { calculateDeepgramCost } from '@/src/features/admin/cost-tracking/services/costCalculator';
+import { PromptOverridesService } from '@/src/features/prompts/prompt-overrides-service';
 
 function getOpenAI(): OpenAI {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -100,8 +101,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // Compile template with consultation data
-    const { system, user } = compileTemplate(
+    // Compile template with consultation data (base prompts)
+    const { system: baseSystem, user: baseUser } = compileTemplate(
       templateId,
       template.templateBody,
       hasNewFormat
@@ -115,6 +116,54 @@ export async function POST(req: Request) {
             transcription: rawConsultationData,
           }
     );
+
+    // Build data block for overrides (user prompt data only)
+    const buildDataBlock = () => {
+      const sections: string[] = [];
+      sections.push('=== CONSULTATION DATA ===');
+      sections.push('');
+      if (hasNewFormat) {
+        if ((additionalNotes || '').trim()) {
+          sections.push('PRIMARY SOURCE: Additional Notes');
+          sections.push("(GP's clinical reasoning and problem list - use as clinical authority)");
+          sections.push('');
+          sections.push((additionalNotes || '').trim());
+          sections.push('');
+        }
+        if ((transcription || '').trim()) {
+          sections.push('SUPPLEMENTARY SOURCE: Transcription');
+          sections.push('(Doctor-patient dialogue - extract supporting details)');
+          sections.push('');
+          sections.push((transcription || '').trim());
+          sections.push('');
+        }
+        if ((typedInput || '').trim()) {
+          sections.push('SUPPLEMENTARY SOURCE: Typed Notes');
+          sections.push('(Additional observations and measurements)');
+          sections.push('');
+          sections.push((typedInput || '').trim());
+          sections.push('');
+        }
+      } else if ((rawConsultationData || '').trim()) {
+        sections.push('PRIMARY SOURCE: Transcription');
+        sections.push('(Doctor-patient dialogue - extract supporting details)');
+        sections.push('');
+        sections.push((rawConsultationData || '').trim());
+        sections.push('');
+      }
+      return sections.join('\n');
+    };
+
+    // Resolve admin prompt overrides (replace-only with placeholders)
+    const activeVersion = await PromptOverridesService.getActiveForUser(context.userId);
+
+    const system = activeVersion
+      ? activeVersion.systemText.replaceAll('{{TEMPLATE}}', template.templateBody)
+      : baseSystem;
+
+    const user = activeVersion
+      ? activeVersion.userText.replaceAll('{{DATA}}', buildDataBlock())
+      : baseUser;
 
     // Check remaining time before starting OpenAI call
     const elapsedTime = Date.now() - startTime;

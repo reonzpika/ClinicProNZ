@@ -7,6 +7,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { AdditionalNotes } from '@/src/features/clinical/main-ui/components/AdditionalNotes';
 import { DefaultSettings } from '@/src/features/clinical/main-ui/components/DefaultSettings';
+import { AdminPromptOverridesPanel } from '@/src/features/clinical/main-ui/components/AdminPromptOverridesPanel';
 import { DocumentationSettingsBadge } from '@/src/features/clinical/main-ui/components/DocumentationSettingsBadge';
 import { GeneratedNotes } from '@/src/features/clinical/main-ui/components/GeneratedNotes';
 import { TranscriptionControls } from '@/src/features/clinical/main-ui/components/TranscriptionControls';
@@ -866,6 +867,9 @@ export default function ConsultationPage() {
 
                         {/* Default Settings */}
                         <DefaultSettings />
+
+                        {/* Admin Prompt Overrides - collapsible card under DefaultSettings */}
+                        <AdminPromptOverridesPanel />
 
                         {/* Bottom helpers */}
                         <div className="mt-auto space-y-4">
