@@ -589,7 +589,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
           )}
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-3" ref={containerRef} role="group" aria-label="Additional notes editor" style={{ scrollMarginBottom: 'var(--footer-h, 76px)' } as React.CSSProperties}>
+      <div className="grid grid-cols-1 gap-2" ref={containerRef} role="group" aria-label="Additional notes editor" style={{ scrollMarginBottom: 'var(--footer-h, 64px)' } as React.CSSProperties}>
         <div>
           <div className="mb-1 flex items-center gap-2">
             <label htmlFor="additional-notes" className="block text-xs font-medium text-slate-500">Problems</label>
