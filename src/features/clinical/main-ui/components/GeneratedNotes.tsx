@@ -43,6 +43,9 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [canCreateSession, setCanCreateSession] = useState<boolean>(true);
   const [isCreatingNewSession, setIsCreatingNewSession] = useState<boolean>(false);
+  // Mobile: allow textarea to grow to container height; Desktop: keep a friendly minimum
+  const textareaMinHeightClass = mobileMode ? 'min-h-0' : 'min-h-[200px]';
+
 
   // Consent statement to append when consent was obtained
   const CONSENT_STATEMENT = '\n\nPatient informed and consented verbally to the use of digital documentation assistance during this consultation, in line with NZ Health Information Privacy Principles. The patient retains the right to pause or stop the recording at any time.';
@@ -309,7 +312,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
 
   // Expanded state - full interface
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex flex-1 min-h-0 flex-col">
       {isCreatingNewSession && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20">
           <div className="flex items-center gap-3 rounded-md bg-white px-4 py-3 shadow">
@@ -327,7 +330,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
           Record key points, then tap Process. You can edit before finishing.
         </div>
       )}
-      <div className="flex flex-1 flex-col space-y-2">
+      <div className="flex min-h-0 flex-1 flex-col space-y-2">
         {/* Mobile: compact copy button above note after generation */}
         {false && mobileMode && hasContent && (
           <div className="flex justify-end">
@@ -346,7 +349,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
           value={displayNotes || ''}
           onChange={handleNotesChange}
           onBlur={handleNotesBlur}
-          className={`min-h-[200px] w-full flex-1 resize-none overflow-y-auto rounded border border-slate-200 bg-white p-3 ${mobileMode ? 'text-base leading-relaxed' : 'text-sm leading-relaxed'} text-slate-800 focus:border-slate-400 focus:ring-2 focus:ring-slate-400`}
+          className={`w-full flex-1 resize-none overflow-y-auto rounded border border-slate-200 bg-white p-3 ${textareaMinHeightClass} ${mobileMode ? 'text-base leading-relaxed' : 'text-sm leading-relaxed'} text-slate-800 focus:border-slate-400 focus:ring-2 focus:ring-slate-400`}
           style={mobileMode ? ({ scrollMarginBottom: 'var(--footer-h, 76px)' } as React.CSSProperties) : undefined}
           placeholder={getPlaceholderText()}
           disabled={loading}

@@ -1098,7 +1098,7 @@ export default function ConsultationPage() {
                         {isDocumentationMode
                           ? (
                               // Post-generation: show only the generated note
-                              <div className="flex h-full flex-col">
+                              <div className="flex min-h-[calc(100%_-_var(--footer-h,76px))] flex-col">
                                 <GeneratedNotes
                                   onGenerate={handleGenerateNotes}
                                   onFinish={handleFinish}
