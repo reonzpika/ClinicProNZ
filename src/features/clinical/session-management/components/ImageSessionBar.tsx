@@ -42,7 +42,15 @@ export const ImageSessionBar: React.FC<ImageSessionBarProps> = ({ selectedSessio
   const [prevId, setPrevId] = useState<string | 'none'>(selectedSessionId);
   if (prevId !== selectedSessionId) {
     setPrevId(selectedSessionId);
-    setTempName(current?.patientName || '');
+    // Only update tempName when we actually have a current session name; avoid wiping to blank
+    if (current?.patientName) {
+      setTempName(current.patientName);
+    }
+  }
+
+  // When sessions refetch and current appears later, backfill tempName if it's empty
+  if (!tempName && current?.patientName) {
+    setTempName(current.patientName);
   }
 
   const nz = formatNzDate(current?.createdAt);
