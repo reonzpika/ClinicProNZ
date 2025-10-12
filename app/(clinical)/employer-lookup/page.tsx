@@ -127,13 +127,13 @@ export default function EmployerLookupPage() {
 
       <div className="space-y-2">
         {results?.results?.map((r) => (
-          <div key={r.id} className={`rounded-md border p-3`}>
+          <div key={r.id} className={`w-full overflow-hidden rounded-md border p-3`}>
             <div className="flex items-center justify-between gap-3">
-              <div>
-                <div className="text-sm font-medium text-slate-900">{r.name}</div>
-                <div className="text-xs text-slate-600">{r.formattedAddress}</div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-medium text-slate-900">{r.name}</div>
+                <div className="truncate text-xs text-slate-600">{r.formattedAddress}</div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex shrink-0 gap-2">
                 <Button size="sm" onClick={() => setSelectedId(prev => (prev === r.id ? null : r.id))}>
                   {selectedId === r.id ? 'Hide' : 'Select'}
                 </Button>
@@ -149,34 +149,34 @@ export default function EmployerLookupPage() {
             </div>
 
             {selectedId === r.id && (
-              <div className="mt-3 rounded-md bg-slate-50 p-3">
+              <div className="mt-3 overflow-hidden rounded-md bg-slate-50 p-3">
                 {isLoadingDetails && <div className="text-xs text-slate-500">Loading details…</div>}
                 {!isLoadingDetails && fields && (
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-32 text-xs font-semibold text-slate-700">Employer name</div>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-32 shrink-0 text-xs font-semibold text-slate-700">Employer name</div>
                       <div className="flex-1 truncate text-xs text-slate-800">{fields.name}</div>
-                      <Button size="sm" onClick={() => handleCopy(fields.name)}>Copy</Button>
+                      <Button className="shrink-0" size="sm" onClick={() => handleCopy(fields.name)}>Copy</Button>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-32 text-xs font-semibold text-slate-700">Address</div>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-32 shrink-0 text-xs font-semibold text-slate-700">Address</div>
                       <div className="flex-1 truncate text-xs text-slate-800">{fields.address}</div>
-                      <Button size="sm" onClick={() => handleCopy(fields.address)}>Copy</Button>
+                      <Button className="shrink-0" size="sm" onClick={() => handleCopy(fields.address)}>Copy</Button>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-32 text-xs font-semibold text-slate-700">City</div>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-32 shrink-0 text-xs font-semibold text-slate-700">City</div>
                       <div className="flex-1 truncate text-xs text-slate-800">{fields.city}</div>
-                      <Button size="sm" onClick={() => handleCopy(fields.city)}>Copy</Button>
+                      <Button className="shrink-0" size="sm" onClick={() => handleCopy(fields.city)}>Copy</Button>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-32 text-xs font-semibold text-slate-700">Postal</div>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-32 shrink-0 text-xs font-semibold text-slate-700">Postal</div>
                       <div className="flex-1 truncate text-xs text-slate-800">{fields.postal}</div>
-                      <Button size="sm" onClick={() => handleCopy(fields.postal)}>Copy</Button>
+                      <Button className="shrink-0" size="sm" onClick={() => handleCopy(fields.postal)}>Copy</Button>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-32 text-xs font-semibold text-slate-700">Country</div>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-32 shrink-0 text-xs font-semibold text-slate-700">Country</div>
                       <div className="flex-1 truncate text-xs text-slate-800">New Zealand</div>
-                      <Button size="sm" onClick={() => handleCopy('New Zealand')}>Copy</Button>
+                      <Button className="shrink-0" size="sm" onClick={() => handleCopy('New Zealand')}>Copy</Button>
                     </div>
                   </div>
                 )}
