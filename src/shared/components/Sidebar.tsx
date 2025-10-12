@@ -36,6 +36,7 @@ const mainNavItems: NavItem[] = [
   { href: '/consultation', label: 'Clinical Notes', icon: Stethoscope },
   { href: '/templates', label: 'Note Templates', icon: FileText, requiresAuth: true },
   { href: '/image', label: 'Clinical Images', icon: Camera, requiresAuth: true },
+  { href: '/employer-lookup', label: 'Employer Lookup', icon: Stethoscope },
 ];
 
 const adminNavItems: NavItem[] = [
