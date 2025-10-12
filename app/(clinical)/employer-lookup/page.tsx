@@ -87,7 +87,7 @@ export default function EmployerLookupPage() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl p-4">
+    <div className="mx-auto max-w-3xl p-4 overflow-x-hidden">
       <h1 className="mb-3 text-xl font-semibold text-slate-900">Employer Lookup (ACC45)</h1>
       <p className="mb-4 text-sm text-slate-600">Public tool to quickly find and copy employer address fields.</p>
 
@@ -127,8 +127,8 @@ export default function EmployerLookupPage() {
 
       <div className="space-y-2">
         {results?.results?.map((r) => (
-          <div key={r.id} className={`w-full overflow-hidden rounded-md border p-3`}>
-            <div className="flex items-center justify-between gap-3">
+          <div key={r.id} className={`w-full overflow-hidden rounded-md border p-3`}> 
+            <div className="flex items-center justify-between gap-3 overflow-hidden">
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-medium text-slate-900">{r.name}</div>
                 <div className="truncate text-xs text-slate-600">{r.formattedAddress}</div>

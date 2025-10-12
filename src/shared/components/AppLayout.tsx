@@ -58,7 +58,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
       {/* Main Content Area */}
       <div className={`
-        flex flex-1 flex-col transition-all duration-300 ease-in-out
+        flex flex-1 min-w-0 flex-col transition-all duration-300 ease-in-out
         ${isDesktop
       ? (sidebarCollapsed ? 'ml-16' : 'ml-64')
       : 'ml-0'
@@ -84,7 +84,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         )}
 
         {/* Page Content */}
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">
           {children}
         </main>
       </div>
