@@ -42,23 +42,27 @@ export const MobileConsultationFooter: React.FC = () => {
 
   if (!mounted || !footerRoot) return null;
 
+  const [forcePostGen, setForcePostGen] = useState(false);
+
   const onProcess = () => {
+    setForcePostGen(true);
     window.dispatchEvent(new CustomEvent('footer:process'));
   };
   const onFinish = () => {
+    setForcePostGen(false);
     window.dispatchEvent(new CustomEvent('footer:finish'));
   };
   const onNew = () => {
+    setForcePostGen(false);
     window.dispatchEvent(new CustomEvent('footer:new'));
   };
-  const onCopy = () => {
-    window.dispatchEvent(new CustomEvent('footer:copy'));
-  };
+
+  const showPostGen = forcePostGen || hasGenerated;
 
   return createPortal(
     <div className="flex items-center gap-3">
       {/* Recording control visible only pre-generation */}
-      {!hasGenerated && (
+      {!showPostGen && (
         <TranscriptionControls
           collapsed={false}
           isMinimized={false}
@@ -70,33 +74,25 @@ export const MobileConsultationFooter: React.FC = () => {
       )}
 
       {/* CTAs */}
-      {!hasGenerated && (
+      {!showPostGen && (
         <Button
           type="button"
           variant="default"
           onClick={onProcess}
           disabled={!hasUserContent}
-          className="h-12 flex-1 rounded-full bg-slate-700 px-4 text-base text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-gray-400"
+          className="h-11 flex-1 rounded-full bg-slate-700 px-4 text-base text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-gray-400"
         >
-          Process Notes
+          Process
         </Button>
       )}
 
-      {hasGenerated && (
+      {showPostGen && (
         <>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={onCopy}
-            className="h-12 flex-1 rounded-full border-slate-300 text-base text-slate-700 hover:bg-slate-50"
-          >
-            Copy
-          </Button>
           <Button
             type="button"
             variant="outline"
             onClick={onFinish}
-            className="h-12 flex-1 rounded-full border-red-300 text-base text-red-600 hover:bg-red-50 hover:text-red-700"
+            className="h-11 flex-1 rounded-full border-red-300 text-base text-red-600 hover:bg-red-50 hover:text-red-700"
           >
             Finish
           </Button>
@@ -104,7 +100,7 @@ export const MobileConsultationFooter: React.FC = () => {
             type="button"
             variant="default"
             onClick={onNew}
-            className="h-12 flex-1 rounded-full bg-blue-600 text-base text-white hover:bg-blue-700"
+            className="h-11 flex-1 rounded-full bg-blue-600 text-base text-white hover:bg-blue-700"
           >
             New
           </Button>
