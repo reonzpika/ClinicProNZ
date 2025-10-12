@@ -20,6 +20,8 @@ export const MobileConsultationFooter: React.FC = () => {
   } = useConsultationStores() as any;
   const [mounted, setMounted] = useState(false);
   const [footerRoot, setFooterRoot] = useState<HTMLElement | null>(null);
+  // Must be declared before any early return to preserve hook order
+  const [forcePostGen, setForcePostGen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -41,8 +43,6 @@ export const MobileConsultationFooter: React.FC = () => {
   }, [transcription?.transcript, typedInput, problemsText, objectiveText, assessmentText, planText]);
 
   if (!mounted || !footerRoot) return null;
-
-  const [forcePostGen, setForcePostGen] = useState(false);
 
   const onProcess = () => {
     setForcePostGen(true);
