@@ -83,14 +83,6 @@ export const MobileConsultationFooter: React.FC = () => {
         <>
           <Button
             type="button"
-            variant="outline"
-            onClick={onFinish}
-            className="h-12 flex-1 rounded-full border-red-300 text-base text-red-600 hover:bg-red-50 hover:text-red-700"
-          >
-            Finish
-          </Button>
-          <Button
-            type="button"
             variant="secondary"
             onClick={onCopy}
             className="h-12 flex-1 rounded-full border-slate-300 text-base text-slate-700 hover:bg-slate-50"
@@ -99,11 +91,19 @@ export const MobileConsultationFooter: React.FC = () => {
           </Button>
           <Button
             type="button"
+            variant="outline"
+            onClick={onFinish}
+            className="h-12 flex-1 rounded-full border-red-300 text-base text-red-600 hover:bg-red-50 hover:text-red-700"
+          >
+            Finish
+          </Button>
+          <Button
+            type="button"
             variant="default"
             onClick={onNew}
             className="h-12 flex-1 rounded-full bg-blue-600 text-base text-white hover:bg-blue-700"
           >
-            New Session
+            New
           </Button>
         </>
       )}
