@@ -1097,8 +1097,8 @@ export default function ConsultationPage() {
                         {/* Conditional Layout Based on Documentation Mode (mobile) */}
                         {isDocumentationMode
                           ? (
-                              // Post-generation: show only the generated note
-                              <div className="flex h-full min-h-0 flex-col">
+                              // Post-generation: show only the generated note (controlled mobile post-gen layout)
+                              <div className="flex h-[calc(100svh_-_56px_-_var(--footer-h,76px))] min-h-0 flex-col">
                                 <GeneratedNotes
                                   onGenerate={handleGenerateNotes}
                                   onFinish={handleFinish}
@@ -1107,6 +1107,7 @@ export default function ConsultationPage() {
                                   isDocumentationMode={isDocumentationMode}
                                   isFinishing={isFinishing}
                                   mobileMode
+                                  mobilePostGen
                                 />
                               </div>
                             )

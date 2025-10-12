@@ -8,7 +8,7 @@ import { Button } from '@/src/shared/components/ui/button';
 // import { TranscriptionControls } from './TranscriptionControls';
 // import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
-export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _isNoteFocused, isDocumentationMode: _isDocumentationMode, isFinishing, mobileMode = false }: { onGenerate?: () => void; onFinish?: () => void; loading?: boolean; isNoteFocused?: boolean; isDocumentationMode?: boolean; isFinishing?: boolean; mobileMode?: boolean }) {
+export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _isNoteFocused, isDocumentationMode: _isDocumentationMode, isFinishing, mobileMode = false, mobilePostGen = false }: { onGenerate?: () => void; onFinish?: () => void; loading?: boolean; isNoteFocused?: boolean; isDocumentationMode?: boolean; isFinishing?: boolean; mobileMode?: boolean; mobilePostGen?: boolean }) {
   const { isSignedIn } = useAuth();
   const {
     generatedNotes,
@@ -45,6 +45,42 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
   const [isCreatingNewSession, setIsCreatingNewSession] = useState<boolean>(false);
   // Mobile: allow textarea to grow to container height; Desktop: keep a friendly minimum
   const textareaMinHeightClass = mobileMode ? 'min-h-0' : 'min-h-[200px]';
+  // Controlled minimal UI for mobile post-generation: full-height textarea only
+  if (mobileMode && mobilePostGen) {
+    const hasContent = !!(displayNotes && displayNotes.trim() !== '');
+    return (
+      <div className="flex h-full min-h-0 flex-col">
+        {isCreatingNewSession && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20">
+            <div className="flex items-center gap-3 rounded-md bg-white px-4 py-3 shadow">
+              <svg className="size-4 animate-spin text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+              </svg>
+              <span className="text-sm text-slate-700">Creating new session...</span>
+            </div>
+          </div>
+        )}
+        {error && <div className="text-sm text-red-600">{error}</div>}
+        <textarea
+          value={displayNotes || ''}
+          onChange={handleNotesChange}
+          onBlur={handleNotesBlur}
+          className={`h-0 w-full grow resize-none overflow-y-auto rounded border border-slate-200 bg-white p-3 ${textareaMinHeightClass} ${mobileMode ? 'text-base leading-relaxed' : 'text-sm leading-relaxed'} text-slate-800 focus:border-slate-400 focus:ring-2 focus:ring-slate-400`}
+          style={{ scrollMarginBottom: 'var(--footer-h, 76px)' } as React.CSSProperties}
+          placeholder={getPlaceholderText()}
+          disabled={loading}
+          spellCheck={false}
+        />
+        {hasContent && (
+          <div className="pt-1 text-[10px] text-slate-500">
+            {lastSavedAt ? `Saved • ${lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
+          </div>
+        )}
+      </div>
+    );
+  }
+
 
 
   // Consent statement to append when consent was obtained
