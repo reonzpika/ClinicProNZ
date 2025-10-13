@@ -36,6 +36,9 @@ export function AdminPromptOverridesPanel() {
   const [userText, setUserText] = useState('');
   const [rating, setRating] = useState<number | ''>('');
   const [feedback, setFeedback] = useState('');
+  // Track editing existing version
+  const [editingVersionId, setEditingVersionId] = useState<string | null>(null);
+  const [editingVersionNumber, setEditingVersionNumber] = useState<number | null>(null);
   // Enlarge editor modals
   const [systemEditorOpen, setSystemEditorOpen] = useState(false);
   const [userEditorOpen, setUserEditorOpen] = useState(false);
@@ -89,6 +92,23 @@ export function AdminPromptOverridesPanel() {
     const data = await res.json();
     if (res.ok) {
       setVersions((prev: any[]) => [data.version, ...prev]);
+      setEditingVersionId(null);
+      setEditingVersionNumber(null);
+    }
+    setLoading(false);
+  };
+
+  const handleUpdate = async () => {
+    if (!editingVersionId) return;
+    setLoading(true);
+    const res = await fetch('/api/admin/prompts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'updateVersion', versionId: editingVersionId, systemText, userText, rating: rating === '' ? undefined : rating, feedback }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setVersions((prev: any[]) => prev.map((v: any) => (v.id === data.version.id ? data.version : v)));
     }
     setLoading(false);
   };
@@ -236,8 +256,11 @@ export function AdminPromptOverridesPanel() {
           <input className="col-span-1 rounded border border-slate-200 p-2 text-xs" placeholder="Rating (1-5)" value={rating} onChange={e => setRating(e.target.value ? Number(e.target.value) : '')} />
           <input className="col-span-2 rounded border border-slate-200 p-2 text-xs" placeholder="Feedback (optional)" value={feedback} onChange={e => setFeedback(e.target.value)} />
         </div>
-        <div className="flex gap-2">
-          <Button type="button" variant="secondary" onClick={() => { setSystemText(''); setUserText(''); setRating(''); setFeedback(''); }}>New</Button>
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="secondary" onClick={() => { setSystemText(''); setUserText(''); setRating(''); setFeedback(''); setEditingVersionId(null); setEditingVersionNumber(null); }}>New</Button>
+          {editingVersionId && (
+            <Button type="button" onClick={handleUpdate} disabled={!canSave || loading}>Update v{editingVersionNumber ?? ''}</Button>
+          )}
           <Button type="button" onClick={handleSave} disabled={!canSave || loading}>Save</Button>
           <Button type="button" variant="outline" onClick={handlePreviewOutput} disabled={previewLoading || !templateId}>Preview Output</Button>
         </div>
@@ -258,13 +281,14 @@ export function AdminPromptOverridesPanel() {
                     </div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => { setSystemText(v.systemText); setUserText(v.userText); setRating(v.rating ?? ''); setFeedback(v.feedback ?? ''); }}>Load into editors</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setSystemText(v.systemText); setUserText(v.userText); setRating(v.rating ?? ''); setFeedback(v.feedback ?? ''); setEditingVersionId(v.id); setEditingVersionNumber(v.versionNumber); }}>Load into editors</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => activateSelf(v.id)} disabled={activeSelfVersionId === v.id}>Activate for me</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => publishGlobal(v.id)} disabled={activeGlobalVersionId === v.id}>Publish to all</DropdownMenuItem>
                     <DropdownMenuItem onClick={async () => {
                       const res = await fetch('/api/admin/prompts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'deleteVersion', versionId: v.id }) });
                       if (res.ok) {
                         setVersions(prev => prev.filter(x => x.id !== v.id));
+                        if (editingVersionId === v.id) { setEditingVersionId(null); setEditingVersionNumber(null); }
                       }
                     }}>Delete</DropdownMenuItem>
                   </DropdownMenuContent>
