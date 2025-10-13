@@ -25,7 +25,6 @@ export type MedicineResult = {
   lines: DoseOutput[];
 };
 
-const fmtNumber = (n: number, dp = 0) => new Decimal(n).toDecimalPlaces(dp).toNumber();
 
 function roundVolume(ml: number, rounding?: { lt10ml?: number; lt20ml?: number; ge20ml?: number }) {
   const step = ml < 10 ? (rounding?.lt10ml ?? 0.1) : ml < 20 ? (rounding?.lt20ml ?? 0.5) : (rounding?.ge20ml ?? 1);
