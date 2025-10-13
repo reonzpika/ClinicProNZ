@@ -47,6 +47,10 @@ export function AdminPromptOverridesPanel() {
   const [baseSystem, setBaseSystem] = useState('');
   const [baseUser, setBaseUser] = useState('');
 
+  // Version view modal
+  const [viewOpen, setViewOpen] = useState(false);
+  const [viewVersion, setViewVersion] = useState<any | null>(null);
+
   const canSave = useMemo(() => {
     return systemText.includes('{{TEMPLATE}}') && userText.includes('{{DATA}}') && systemText.length <= 16000 && userText.length <= 16000;
   }, [systemText, userText]);
@@ -206,6 +210,7 @@ export function AdminPromptOverridesPanel() {
               <div className="text-xs font-medium">v{v.versionNumber} · {new Date(v.createdAt).toLocaleString()}</div>
               <div className="flex gap-2">
                 <Button type="button" variant="secondary" onClick={() => { setSystemText(v.systemText); setUserText(v.userText); setRating(v.rating ?? ''); setFeedback(v.feedback ?? ''); }}>Load</Button>
+                <Button type="button" variant="secondary" onClick={() => { setViewVersion(v); setViewOpen(true); }}>View</Button>
                 <Button type="button" variant="outline" onClick={() => activateSelf(v.id)} disabled={activeSelfVersionId === v.id}>Activate for me</Button>
                 <Button type="button" onClick={() => publishGlobal(v.id)} disabled={activeGlobalVersionId === v.id}>Publish to all</Button>
               </div>
@@ -258,6 +263,36 @@ export function AdminPromptOverridesPanel() {
                 <Button type="button" onClick={() => setBaseOpen(false)}>Close</Button>
               </div>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Version Dialog */}
+      <Dialog open={viewOpen} onOpenChange={setViewOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="text-sm">View Saved Version {viewVersion ? `(v${viewVersion.versionNumber})` : ''}</DialogTitle>
+          </DialogHeader>
+          <div className="mt-2 space-y-3">
+            {viewVersion && (
+              <>
+                <div>
+                  <div className="mb-1 text-xs font-medium text-slate-700">System (Saved)</div>
+                  <Textarea value={viewVersion.systemText} readOnly className="min-h-[200px]" />
+                  <div className="mt-2 flex gap-2">
+                    <Button type="button" variant="secondary" onClick={() => navigator.clipboard.writeText(viewVersion.systemText || '')}>Copy System</Button>
+                  </div>
+                </div>
+                <div>
+                  <div className="mb-1 text-xs font-medium text-slate-700">User (Saved)</div>
+                  <Textarea value={viewVersion.userText} readOnly className="min-h-[200px]" />
+                  <div className="mt-2 flex gap-2">
+                    <Button type="button" variant="secondary" onClick={() => navigator.clipboard.writeText(viewVersion.userText || '')}>Copy User</Button>
+                    <Button type="button" onClick={() => setViewOpen(false)}>Close</Button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </DialogContent>
       </Dialog>
