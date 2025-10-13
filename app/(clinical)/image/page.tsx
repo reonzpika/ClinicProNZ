@@ -1646,6 +1646,7 @@ function ImageSectionsGrid({
 
   // Partition images
   const clinical = filteredImages.filter(i => i.source === 'clinical');
+  const noSession = clinical.filter(i => !i.sessionId);
   const bySession = clinical.filter(i => i.sessionId).reduce<Record<string, ServerImage[]>>((acc, img) => {
     const key = img.sessionId as string;
     if (!acc[key]) {
@@ -1707,6 +1708,7 @@ function ImageSectionsGrid({
           <Section key={sid} title={title} items={bySession[sid] ?? []} />
         );
       })}
+      <Section title="No session" items={noSession} />
       <Section title="Legacy consultations" items={legacyConsultations} />
     </div>
   );
