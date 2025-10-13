@@ -6,7 +6,8 @@ import { paediatricMedications, type NewPaediatricMedication } from 'database/sc
 import { extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 // GET /api/admin/paediatric-medications/[id]
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
+  const params = await context.params;
   const db = getDb();
   try {
     const rows = await db.select().from(paediatricMedications).where(eq(paediatricMedications.id, params.id)).limit(1);
@@ -19,13 +20,14 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
 }
 
 // PUT /api/admin/paediatric-medications/[id]
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
-  const context = await extractRBACContext(req);
-  if (context.tier !== 'admin') {
+export async function PUT(req: Request, routeContext: { params: Promise<{ id: string }> }) {
+  const rbac = await extractRBACContext(req);
+  if (rbac.tier !== 'admin') {
     return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
   }
 
   try {
+    const params = await routeContext.params;
     const body = (await req.json()) as Partial<NewPaediatricMedication>;
     const db = getDb();
     const [updated] = await db
@@ -50,13 +52,14 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 }
 
 // DELETE /api/admin/paediatric-medications/[id]
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-  const context = await extractRBACContext(req);
-  if (context.tier !== 'admin') {
+export async function DELETE(req: Request, routeContext: { params: Promise<{ id: string }> }) {
+  const rbac = await extractRBACContext(req);
+  if (rbac.tier !== 'admin') {
     return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
   }
 
   try {
+    const params = await routeContext.params;
     const db = getDb();
     const [deleted] = await db
       .delete(paediatricMedications)
