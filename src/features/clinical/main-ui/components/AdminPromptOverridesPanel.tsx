@@ -240,7 +240,7 @@ export function AdminPromptOverridesPanel() {
             <Button type="button" variant="outline" onClick={handleShowBasePrompts} disabled={baseLoading || !templateId}>Show Base Prompts</Button>
             <select className="rounded border border-slate-200 p-1 text-xs" value={placeholdersMode} onChange={e => setPlaceholdersMode(e.target.value as any)}>
               <option value="compiled">Compiled</option>
-              <option value="placeholders">Placeholders ({{TEMPLATE}} / {{DATA}})</option>
+              <option value="placeholders">Placeholders ({'{{TEMPLATE}}'} / {'{{DATA}}'})</option>
             </select>
           </div>
           <Button type="button" variant="outline" onClick={() => handleShowCurrentPrompts('self')} disabled={baseLoading || !templateId}>Show Current (Me)</Button>
