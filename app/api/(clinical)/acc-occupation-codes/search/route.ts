@@ -1,6 +1,9 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+// Ensure Node.js runtime (needed for Neon/drizzle client env access)
+export const runtime = 'nodejs';
+
 import { getDb } from 'database/client';
 import { sql } from 'drizzle-orm';
 
@@ -45,25 +48,85 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
     }
 
-    const db = getDb();
+    let db;
+    try {
+      db = getDb();
+    } catch (err) {
+      const res = NextResponse.json({ error: 'Database not configured' }, { status: 500 });
+      res.headers.set('x-debug', 'missing-database-url');
+      Object.entries(headers).forEach(([k, v]) => res.headers.set(k, v));
+      return res;
+    }
     const like = `%${q}%`;
 
-    const result: any = await db.execute(sql`
-      SELECT code, title, anzsco_code, notes
-      FROM public.acc_occupation_codes
-      WHERE (title % ${q} OR code % ${q} OR title ILIKE ${like} OR code ILIKE ${like})
-      ORDER BY GREATEST(similarity(title, ${q}), similarity(code, ${q})) DESC, title ASC
-      LIMIT 25
+    // Check if pg_trgm is available to safely use similarity / % operator
+    let hasTrgm = false;
+    try {
+      const extResult: any = await db.execute(sql`SELECT EXISTS(SELECT 1 FROM pg_extension WHERE extname = 'pg_trgm') AS enabled`);
+      const extRows = Array.isArray(extResult?.rows) ? extResult.rows : (Array.isArray(extResult) ? extResult : []);
+      hasTrgm = Boolean(extRows?.[0]?.enabled);
+    } catch {
+      hasTrgm = false;
+    }
+
+    let rows: Array<{ code: string; title: string }> = [];
+
+    // Introspect the table to discover column names
+    const colsRes: any = await db.execute(sql`
+      SELECT column_name
+      FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = 'acc_occupation_codes'
     `);
+    const colRows = Array.isArray(colsRes?.rows) ? colsRes.rows : (Array.isArray(colsRes) ? colsRes : []);
+    const columnNames: string[] = colRows.map((r: any) => r.column_name || r.columnName).filter(Boolean);
 
-    const rows: Array<{ code: string; title: string; anzsco_code?: string | null; notes?: string | null }> = Array.isArray(result?.rows) ? result.rows : (Array.isArray(result) ? result : []);
+    // Pick code and title-like columns
+    const pick = (cands: string[]): string | null => cands.find(c => columnNames.includes(c)) || null;
+    const findByIncludes = (needle: string[]): string | null => columnNames.find(c => needle.some(n => c.toLowerCase().includes(n))) || null;
 
-    const data = rows.map(r => ({
-      code: r.code,
-      title: r.title,
-      anzscoCode: (r as any).anzsco_code ?? null,
-      notes: (r as any).notes ?? null,
-    }));
+    const codeCol = pick(['code', 'occupation_code']) || findByIncludes(['code']) || null;
+    const titleCol = pick(['title', 'occupation_title', 'name', 'occupation', 'description']) || findByIncludes(['title', 'name', 'occupation', 'desc']) || null;
+
+    if (!codeCol || !titleCol) {
+      const errRes = NextResponse.json({ error: 'Search query failed (unknown schema)' }, { status: 500 });
+      errRes.headers.set('x-debug', `unknown-columns: code=${codeCol || 'null'}, title=${titleCol || 'null'}`);
+      Object.entries(headers).forEach(([k, v]) => errRes.headers.set(k, v));
+      return errRes;
+    }
+
+    const quoteIdent = (name: string) => '"' + name.replace(/"/g, '""') + '"';
+    const codeIdent = sql.raw(quoteIdent(codeCol));
+    const titleIdent = sql.raw(quoteIdent(titleCol));
+
+    // Build and run the final query using discovered columns
+    try {
+      if (hasTrgm) {
+        const result: any = await db.execute(sql`
+          SELECT ${codeIdent} AS code, ${titleIdent} AS title
+          FROM public.acc_occupation_codes
+          WHERE (${titleIdent} % ${q} OR ${codeIdent} % ${q} OR ${titleIdent} ILIKE ${like} OR ${codeIdent} ILIKE ${like})
+          ORDER BY GREATEST(similarity(${titleIdent}, ${q}), similarity(${codeIdent}, ${q})) DESC, ${titleIdent} ASC
+          LIMIT 25
+        `);
+        rows = Array.isArray(result?.rows) ? result.rows : (Array.isArray(result) ? result : []);
+      } else {
+        const result: any = await db.execute(sql`
+          SELECT ${codeIdent} AS code, ${titleIdent} AS title
+          FROM public.acc_occupation_codes
+          WHERE (${titleIdent} ILIKE ${like} OR ${codeIdent} ILIKE ${like})
+          ORDER BY ${titleIdent} ASC
+          LIMIT 25
+        `);
+        rows = Array.isArray(result?.rows) ? result.rows : (Array.isArray(result) ? result : []);
+      }
+    } catch (err) {
+      const errRes = NextResponse.json({ error: 'Search query failed' }, { status: 500 });
+      errRes.headers.set('x-debug', 'acc-occupation-codes-dynamic-sql-error');
+      Object.entries(headers).forEach(([k, v]) => errRes.headers.set(k, v));
+      return errRes;
+    }
+
+    const data = rows.map(r => ({ code: r.code, title: r.title, anzscoCode: null as any, notes: null as any }));
 
     const res = NextResponse.json({ results: data });
     res.headers.set('Cache-Control', 'public, max-age=10, s-maxage=10');
