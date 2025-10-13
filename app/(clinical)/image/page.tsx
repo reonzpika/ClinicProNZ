@@ -26,6 +26,8 @@ import { ImageSessionModal } from '@/src/features/clinical/session-management/co
 // Removed in-page WebRTC camera in favour of native camera capture
 import { imageQueryKeys, useAnalyzeImage, useDeleteImage, useImageUrl, useRenameImage, useSaveAnalysis, useServerImages, useUploadImages } from '@/src/hooks/useImageQueries';
 import { Container } from '@/src/shared/components/layout/Container';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/src/shared/components/ui/dropdown-menu';
+import { Checkbox } from '@/src/shared/components/ui/checkbox';
 import { useToast } from '@/src/shared/components/ui/toast';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
@@ -79,6 +81,8 @@ export default function ClinicalImagePage() {
   // Popup overlay and pending new-session tracking
   const [isCreatingOverlay, setIsCreatingOverlay] = useState(false);
   const [pendingNewSessionId, setPendingNewSessionId] = useState<string | null>(null);
+  // Multi-select filter for sessions (affects grid only)
+  const [filterSessionIds, setFilterSessionIds] = useState<Set<string>>(new Set());
 
   // Track upload loading state
   const isUploading = uploadImages.isPending;
@@ -125,6 +129,15 @@ export default function ClinicalImagePage() {
 
   const selectAllVisible = useCallback((keys: string[]) => {
     setSelectedKeys(new Set(keys));
+  }, []);
+
+  // Toggle a session in the filter set
+  const toggleFilterSessionId = useCallback((id: string) => {
+    setFilterSessionIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
   }, []);
 
   // Stop overlay when the new session appears in the list
@@ -845,11 +858,50 @@ Cancel
                     )
                   : (
                       <>
-                      <div className="mb-3 flex items-center justify-between">
-                        <div className="text-xs text-slate-600">
-                          {selectionMode ? `${selectedKeys.size} selected` : `${serverImages.length} images`}
-                        </div>
+                      {(() => {
+                        const visibleImages = (() => {
+                          const list = serverImages;
+                          if (filterSessionIds.size > 0) {
+                            return list.filter(img => img.sessionId && filterSessionIds.has(img.sessionId));
+                          }
+                          return list;
+                        })();
+                        return (
+                        <div className="mb-3 flex items-center justify-between">
+                          <div className="text-xs text-slate-600">
+                            {selectionMode ? `${selectedKeys.size} selected` : `${visibleImages.length} images`}
+                          </div>
                         <div className="flex items-center gap-2">
+                          {/* Multi-session filter dropdown */}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger>
+                              <Button type="button" size="sm" variant="outline">
+                                Sessions
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <div className="max-h-64 w-64 overflow-y-auto p-2">
+                                {[...new Set(serverImages.filter(img => !!img.sessionId).map(img => img.sessionId as string))]
+                                  .map((sid) => {
+                                    const sess = sessions.find(s => s.id === sid);
+                                    const nz = sess ? new Date(sess.createdAt) : null;
+                                    const date = nz ? new Intl.DateTimeFormat('en-NZ', { timeZone: 'Pacific/Auckland', year: 'numeric', month: '2-digit', day: '2-digit' }).format(nz) : '';
+                                    const time = nz ? new Intl.DateTimeFormat('en-NZ', { timeZone: 'Pacific/Auckland', hour: '2-digit', minute: '2-digit', hour12: false }).format(nz) : '';
+                                    const label = sess ? `${sess.patientName} • ${date} ${time}` : sid;
+                                    return (
+                                      <label key={sid} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-slate-50">
+                                        <Checkbox
+                                          checked={filterSessionIds.has(sid)}
+                                          onCheckedChange={() => toggleFilterSessionId(sid)}
+                                        />
+                                        <span className="truncate">{label}</span>
+                                      </label>
+                                    );
+                                  })}
+                              </div>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+
                           <Button type="button" size="sm" variant="outline" onClick={toggleSelectionMode}>
                             {selectionMode ? 'Exit selection' : 'Select'}
                           </Button>
@@ -859,7 +911,7 @@ Cancel
                                 type="button"
                                 size="sm"
                                 variant="outline"
-                                onClick={() => selectAllVisible(serverImages.map(img => img.key))}
+                                onClick={() => selectAllVisible(visibleImages.map(img => img.key))}
                               >
                                 Select all
                               </Button>
@@ -877,31 +929,37 @@ Cancel
                               </Button>
                             </>
                           )}
+                          </div>
                         </div>
-                      </div>
-                      {/* Quick session filter chips */}
-                      <div className="mb-3 flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          className={`rounded-full border px-2 py-1 text-xs ${selectedSessionId === 'none' ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-700'}`}
-                          onClick={() => setSelectedSessionId('none')}
-                        >
-                          All
-                        </button>
-                        {sessions.map((s) => (
-                          <button
-                            key={s.id}
-                            type="button"
-                            className={`rounded-full border px-2 py-1 text-xs ${selectedSessionId === s.id ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-700'}`}
-                            onClick={() => setSelectedSessionId(s.id)}
-                          >
-                            {s.patientName}
-                          </button>
-                        ))}
-                      </div>
+                        );
+                      })()}
+                      {/* Selected sessions display (from dropdown) */}
+                      {filterSessionIds.size > 0 && (
+                        <div className="mb-3 flex flex-wrap gap-2">
+                          {[...filterSessionIds].map((sid) => {
+                            const sess = sessions.find(s => s.id === sid);
+                            if (!sess) return null;
+                            const nz = new Date(sess.createdAt);
+                            const date = new Intl.DateTimeFormat('en-NZ', { timeZone: 'Pacific/Auckland', year: 'numeric', month: '2-digit', day: '2-digit' }).format(nz);
+                            const time = new Intl.DateTimeFormat('en-NZ', { timeZone: 'Pacific/Auckland', hour: '2-digit', minute: '2-digit', hour12: false }).format(nz);
+                            return (
+                              <span key={sid} className="rounded-full border border-blue-300 bg-blue-50 px-2 py-1 text-xs text-blue-700">
+                                {sess.patientName} • {date} {time}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
                       {(
                       <ImageSectionsGrid
-                        images={selectedSessionId !== 'none' ? serverImages.filter(img => img.sessionId === selectedSessionId) : serverImages}
+                        images={(() => {
+                          // Filter: only sessions with images + selected sessions if any
+                          const list = serverImages;
+                          if (filterSessionIds.size > 0) {
+                            return list.filter(img => img.sessionId && filterSessionIds.has(img.sessionId));
+                          }
+                          return list;
+                        })()}
                         onAnalyze={handleOpenAnalysis}
                         onEnlarge={handleOpenEnlarge}
                         onDownload={handleDownloadImage}
@@ -911,6 +969,12 @@ Cancel
                         selectionMode={selectionMode}
                         selectedKeys={selectedKeys}
                         onToggleSelect={toggleSelectKey}
+                        onActivateSelection={(key) => {
+                          if (!selectionMode) {
+                            setSelectionMode(true);
+                            setSelectedKeys(new Set([key]));
+                          }
+                        }}
                       />)}
                       </>
                     )}
@@ -986,6 +1050,10 @@ function ServerImageCard({
   onDownload,
   onDelete,
   formatFileSize,
+  selectionMode,
+  selected,
+  onToggleSelect,
+  onActivateSelection,
 }: {
   image: ServerImage;
   onAnalyze: () => void;
@@ -993,8 +1061,13 @@ function ServerImageCard({
   onDownload: () => void;
   onDelete: (imageKey: string) => void;
   formatFileSize: (bytes: number) => string;
+  selectionMode: boolean;
+  selected: boolean;
+  onToggleSelect: () => void;
+  onActivateSelection: () => void;
 }) {
   const [isDeleting, setIsDeleting] = React.useState(false);
+  const [isEditingName, setIsEditingName] = React.useState(false);
   // Lazily fetch image URL per tile
   // Prefer server-provided thumbnailUrl; otherwise request presigned URL for the full image key
   const { data: fetchedUrl } = useImageUrl(image.thumbnailUrl ? '' : image.key);
@@ -1024,7 +1097,24 @@ function ServerImageCard({
   };
 
   return (
-    <Card className={`group cursor-pointer overflow-hidden transition-all hover:scale-105 hover:shadow-lg ${isDeleting ? 'opacity-50' : ''}`} onClick={onAnalyze}>
+    <Card
+      className={`group cursor-pointer overflow-hidden transition-all hover:scale-105 hover:shadow-lg ${isDeleting ? 'opacity-50' : ''}`}
+      onClick={(e) => {
+        if (selectionMode) {
+          e.preventDefault();
+          e.stopPropagation();
+          onToggleSelect();
+          return;
+        }
+        onAnalyze();
+      }}
+      onMouseDown={(e) => {
+        // Allow checkbox click to not trigger card click
+        if ((e.target as HTMLElement).closest('input[type="checkbox"]')) {
+          e.stopPropagation();
+        }
+      }}
+    >
       <div className="relative aspect-square">
         <div className="flex size-full items-center justify-center bg-slate-100">
         {isLoadingUrl
@@ -1096,11 +1186,41 @@ function ServerImageCard({
             {image.analysis ? 'View Analysis' : 'Analyze Image'}
           </div>
         </div>
+        {/* Selection checkbox appears on hover (or always in selection mode), top-left */}
+        <div className={`absolute left-2 top-2 z-10 ${selectionMode ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}>
+          <input
+            type="checkbox"
+            className="h-4 w-4"
+            checked={selected}
+            onChange={(e) => {
+              e.stopPropagation();
+              if (!selectionMode) {
+                onActivateSelection();
+              } else {
+                onToggleSelect();
+              }
+            }}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
       </div>
 
       <CardContent className="p-2">
         <div className="mb-1">
-          <InlineEditableName image={image} />
+          {isEditingName ? (
+            <InlineNameEditor image={image} onDone={() => setIsEditingName(false)} />
+          ) : (
+            <h4
+              className="truncate text-xs font-medium text-slate-900"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsEditingName(true);
+              }}
+              role="button"
+            >
+              {image.displayName || image.filename}
+            </h4>
+          )}
           <div className="flex items-center justify-between text-xs text-slate-500">
             <span className="capitalize">{image.source}</span>
             <span>{formatFileSize(image.size)}</span>
@@ -1112,65 +1232,41 @@ function ServerImageCard({
 }
 
 // Inline editable filename component for desktop cards
-function InlineEditableName({ image }: { image: ServerImage }) {
+function InlineNameEditor({ image, onDone }: { image: ServerImage; onDone: () => void }) {
   const renameImage = useRenameImage();
-  const [isEditing, setIsEditing] = React.useState(false);
   const [value, setValue] = React.useState(image.displayName || image.filename.replace(/\.[^.]+$/, ''));
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
-    if (isEditing) {
-      inputRef.current?.focus();
-      inputRef.current?.select();
-    }
-  }, [isEditing]);
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, []);
 
   const commit = () => {
     const cleaned = value.replace(/\s+/g, ' ').trim();
     if (cleaned && cleaned !== (image.displayName || image.filename.replace(/\.[^.]+$/, ''))) {
       renameImage.mutate({ imageKey: image.key, displayName: cleaned });
     }
-    setIsEditing(false);
+    onDone();
   };
 
   return (
-    <div className="flex items-center gap-2">
-      {isEditing
-? (
-        <input
-          ref={inputRef}
-          type="text"
-          value={value}
-          onChange={e => setValue(e.target.value.slice(0, 80))}
-          onBlur={commit}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
- commit();
-}
-            if (e.key === 'Escape') {
- setIsEditing(false);
-}
-          }}
-          className="w-full rounded border px-2 py-1 text-xs"
-        />
-      )
-: (
-        <h4 className="truncate text-xs font-medium text-slate-900">{image.displayName || image.filename}</h4>
-      )}
-      {!isEditing && (
-        <button
-          type="button"
-          className="rounded border px-1 text-[10px] text-slate-600 hover:bg-slate-50"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsEditing(true);
-          }}
-          title="Rename"
-        >
-          Rename
-        </button>
-      )}
-    </div>
+    <input
+      ref={inputRef}
+      type="text"
+      value={value}
+      onChange={e => setValue(e.target.value.slice(0, 80))}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          commit();
+        }
+        if (e.key === 'Escape') {
+          onDone();
+        }
+      }}
+      className="w-full rounded border px-2 py-1 text-xs"
+    />
   );
 }
 
@@ -1527,6 +1623,7 @@ function ImageSectionsGrid({
   selectionMode,
   selectedKeys,
   onToggleSelect,
+  onActivateSelection,
 }: {
   images: ServerImage[];
   onAnalyze: (img: ServerImage) => void;
@@ -1538,13 +1635,13 @@ function ImageSectionsGrid({
   selectionMode: boolean;
   selectedKeys: Set<string>;
   onToggleSelect: (key: string) => void;
+  onActivateSelection: (key: string) => void;
 }) {
   // Filter out images being deleted for optimistic UI
   const filteredImages = images.filter(img => !deletingImages.has(img.key));
 
   // Partition images
   const clinical = filteredImages.filter(i => i.source === 'clinical');
-  const noSession = clinical.filter(i => !i.sessionId);
   const bySession = clinical.filter(i => i.sessionId).reduce<Record<string, ServerImage[]>>((acc, img) => {
     const key = img.sessionId as string;
     if (!acc[key]) {
@@ -1564,15 +1661,6 @@ function ImageSectionsGrid({
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {items.map(image => (
             <div key={image.id} className="relative">
-              {selectionMode && (
-                <input
-                  type="checkbox"
-                  aria-label="Select image"
-                  className="absolute left-2 top-2 z-10 h-4 w-4"
-                  checked={selectedKeys.has(image.key)}
-                  onChange={() => onToggleSelect(image.key)}
-                />
-              )}
               <ServerImageCard
                 image={image}
                 onAnalyze={() => onAnalyze(image)}
@@ -1580,6 +1668,10 @@ function ImageSectionsGrid({
                 onDownload={() => onDownload(image)}
                 onDelete={onDelete}
                 formatFileSize={formatFileSize}
+                selectionMode={selectionMode}
+                selected={selectedKeys.has(image.key)}
+                onToggleSelect={() => onToggleSelect(image.key)}
+                onActivateSelection={() => onActivateSelection(image.key)}
               />
             </div>
           ))}
@@ -1589,6 +1681,7 @@ function ImageSectionsGrid({
   );
 
   // Order session groups by most recent image timestamp within each session
+  // Only show sessions with images: already true because bySession only contains sessions with images
   const sessionKeys = Object.keys(bySession).sort((a, b) => {
     const latestA = bySession[a]?.reduce((max, img) => Math.max(max, new Date(img.uploadedAt).getTime()), 0) || 0;
     const latestB = bySession[b]?.reduce((max, img) => Math.max(max, new Date(img.uploadedAt).getTime()), 0) || 0;
@@ -1597,10 +1690,19 @@ function ImageSectionsGrid({
 
   return (
     <div className="space-y-6">
-      {sessionKeys.map(sid => (
-        <Section key={sid} title={`Session: ${bySession[sid]?.[0]?.sessionName || sid}`} items={bySession[sid] ?? []} />
-      ))}
-      <Section title="No session" items={noSession} />
+      {sessionKeys.map(sid => {
+        // Build richer session title with name + date/time
+        const sessionName = bySession[sid]?.[0]?.sessionName;
+        // Find matching session for createdAt if available
+        const match = sessions.find(s => s.id === sid);
+        const nz = match ? new Date(match.createdAt) : null;
+        const date = nz ? new Intl.DateTimeFormat('en-NZ', { timeZone: 'Pacific/Auckland', year: 'numeric', month: '2-digit', day: '2-digit' }).format(nz) : '';
+        const time = nz ? new Intl.DateTimeFormat('en-NZ', { timeZone: 'Pacific/Auckland', hour: '2-digit', minute: '2-digit', hour12: false }).format(nz) : '';
+        const title = match ? `${match.patientName} • ${date} ${time}` : `Session: ${sessionName || sid}`;
+        return (
+          <Section key={sid} title={title} items={bySession[sid] ?? []} />
+        );
+      })}
       <Section title="Legacy consultations" items={legacyConsultations} />
     </div>
   );
