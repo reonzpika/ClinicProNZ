@@ -20,16 +20,23 @@ import { QRCodeSVG } from 'qrcode.react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
+// Session UI (local-only)
+import { ImageSessionBar } from '@/src/features/clinical/session-management/components/ImageSessionBar';
+import { ImageSessionModal } from '@/src/features/clinical/session-management/components/ImageSessionModal';
 // Removed in-page WebRTC camera in favour of native camera capture
 import { imageQueryKeys, useAnalyzeImage, useDeleteImage, useImageUrl, useRenameImage, useSaveAnalysis, useServerImages, useUploadImages } from '@/src/hooks/useImageQueries';
 import { Container } from '@/src/shared/components/layout/Container';
+import { useToast } from '@/src/shared/components/ui/toast';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { usePatientSessions } from '@/src/features/clinical/session-management/hooks/usePatientSessions';
+import { GalleryTileSkeleton } from '@/src/shared/components/ui/gallery-tile-skeleton';
 import { createAuthHeaders } from '@/src/shared/utils';
 import { isFeatureEnabled } from '@/src/shared/utils/launch-config';
 import type { AnalysisModalState, ServerImage } from '@/src/stores/imageStore';
 import { useImageStore } from '@/src/stores/imageStore';
+
 
 export default function ClinicalImagePage() {
   const { userId, isSignedIn } = useAuth();
@@ -63,9 +70,19 @@ export default function ClinicalImagePage() {
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
   const cameraFileInputRef = useRef<HTMLInputElement>(null);
 
+  // Local-only session selector state (does not affect global currentSessionId)
+  const [selectedSessionId, setSelectedSessionId] = useState<string | 'none'>('none');
+  const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
+  const { show: showToast } = useToast();
+  const { sessions } = usePatientSessions();
+  const invalidateTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   // Track upload loading state
   const isUploading = uploadImages.isPending;
   const [uploadingFileCount, setUploadingFileCount] = useState(0);
+  const [inFlightUploads, setInFlightUploads] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isCreatingSession, setIsCreatingSession] = useState(false);
 
   // Enlarge modal state
   const [enlargeModal, setEnlargeModal] = useState<{
@@ -180,15 +197,30 @@ export default function ClinicalImagePage() {
   // QR code URL for mobile uploads (same page with mobile detection)
   const qrCodeUrl = typeof window !== 'undefined' ? `${window.location.origin}/image` : '';
 
-  // Live refresh via Ably images_uploaded
+  // Live refresh via Ably events (uploads)
   const queryClientRef = useRef(useQueryClient());
   useSimpleAbly({
     userId: userId ?? null,
     isMobile: false,
-    onMobileImagesUploaded: () => {
-      try {
- queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') });
-} catch {}
+    onImageUploadStarted: (count) => {
+      setInFlightUploads((prev) => prev + (count || 0));
+    },
+    onImageUploaded: () => {
+      setInFlightUploads((prev) => Math.max(0, prev - 1));
+      if (!invalidateTimerRef.current) {
+        invalidateTimerRef.current = setTimeout(() => {
+          try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.lists() }); } catch {}
+          invalidateTimerRef.current = null;
+        }, 500);
+      }
+    },
+    onImageProcessed: () => {
+      if (!invalidateTimerRef.current) {
+        invalidateTimerRef.current = setTimeout(() => {
+          try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.lists() }); } catch {}
+          invalidateTimerRef.current = null;
+        }, 500);
+      }
     },
   });
 
@@ -243,7 +275,10 @@ export default function ClinicalImagePage() {
     // Desktop immediate upload
     setUploadingFileCount(fileArray.length);
     try {
-      await uploadImages.mutateAsync(fileArray);
+      const context = selectedSessionId && selectedSessionId !== 'none'
+        ? { sessionId: selectedSessionId }
+        : { noSession: true };
+      await uploadImages.mutateAsync({ files: fileArray, context });
     } catch (err) {
       console.error('Upload failed:', err);
     } finally {
@@ -274,6 +309,7 @@ export default function ClinicalImagePage() {
     try {
       // Delete in background
       await deleteImage.mutateAsync(imageKey);
+      showToast({ title: 'Image deleted', description: 'The image has been removed.' });
       // Successfully deleted - keep it hidden
     } catch (error) {
       console.error('Delete error:', error);
@@ -620,7 +656,25 @@ Cancel
   // Desktop interface
   return (
     <Container size="fluid" className="h-full">
-      <div className="flex h-full gap-6 py-6">
+      <div
+        className="flex h-full gap-6 py-6"
+        onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+        onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
+        onDrop={async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsDragging(false);
+          try {
+            const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
+            if (files.length === 0) return;
+            const context = selectedSessionId && selectedSessionId !== 'none' ? { sessionId: selectedSessionId } : { noSession: true };
+            await uploadImages.mutateAsync({ files, context });
+          } catch (err) {
+            setError('Failed to upload dropped files');
+          }
+        }}
+      >
         {/* Analysis Panel - Now on Left */}
         <div className="w-80">
           <Card className="h-full">
@@ -635,17 +689,55 @@ Cancel
                   </CardTitle>
                   <CardDescription>
                     AI-powered clinical image analysis and documentation
+                    <span className="ml-2 text-[10px] text-slate-400">Thumbnails may expire after ~30m; they refresh automatically on new events.</span>
                   </CardDescription>
                 </div>
               </div>
 
-              {/* Upload Controls */}
+              {/* Session Selector and Upload Controls */}
               <div className="flex flex-col gap-2">
-                <Button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                  className="w-full"
+                {/* Session Bar (local-only) */}
+                <ImageSessionBar
+                  selectedSessionId={selectedSessionId}
+                  onSwitch={() => setIsSessionModalOpen(true)}
+                  onSelectSession={(id) => setSelectedSessionId(id)}
+                  isCreating={isCreatingSession}
+                />
+                {inFlightUploads > 0 && (
+                  <div className="flex items-center justify-between rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-700">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="size-3 animate-spin" />
+                      <span>Receiving {inFlightUploads} image{inFlightUploads === 1 ? '' : 's'}…</span>
+                    </div>
+                  </div>
+                )}
+                <div
+                  className={`${isDragging ? 'rounded border border-dashed border-blue-300 bg-blue-50/50 p-2' : ''}`}
+                  onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+                  onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
+                  onDrop={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDragging(false);
+                    try {
+                      const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
+                      if (files.length === 0) return;
+                      const context = selectedSessionId && selectedSessionId !== 'none' ? { sessionId: selectedSessionId } : { noSession: true };
+                      await uploadImages.mutateAsync({ files, context });
+                    } catch (err) {
+                      setError('Failed to upload dropped files');
+                    }
+                  }}
                 >
+                  {isDragging && (
+                    <div className="mb-2 text-center text-[11px] text-blue-700">Drop images to upload</div>
+                  )}
+                  <Button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="w-full"
+                  >
                   {isUploading
                     ? (
                         <>
@@ -661,7 +753,8 @@ Cancel
                           Upload Images
                         </>
                       )}
-                </Button>
+                  </Button>
+                </div>
                 <Button
                   variant="outline"
                   size="sm"
@@ -692,13 +785,7 @@ Cancel
                 </div>
               )}
             </CardHeader>
-            <CardContent>
-              <p className="text-sm text-slate-600">
-                Upload images to get started with AI-powered clinical analysis.
-                You can select multiple images at once using Ctrl/Cmd+click.
-                Click on any image in the right panel to analyze it with Claude.
-              </p>
-            </CardContent>
+            <CardContent />
           </Card>
         </div>
 
@@ -717,10 +804,7 @@ Cancel
                 ? (
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                       {Array.from({ length: 12 }).map((_, idx) => (
-                        <div key={idx} className="animate-pulse">
-                          <div className="aspect-square rounded-lg bg-slate-200" />
-                          <div className="mt-2 h-3 w-3/4 rounded bg-slate-200" />
-                        </div>
+                        <GalleryTileSkeleton key={idx} />
                       ))}
                     </div>
                   )
@@ -784,9 +868,29 @@ Cancel
                           )}
                         </div>
                       </div>
+                      {/* Quick session filter chips */}
+                      <div className="mb-3 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          className={`rounded-full border px-2 py-1 text-xs ${selectedSessionId === 'none' ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-700'}`}
+                          onClick={() => setSelectedSessionId('none')}
+                        >
+                          All
+                        </button>
+                        {sessions.map((s) => (
+                          <button
+                            key={s.id}
+                            type="button"
+                            className={`rounded-full border px-2 py-1 text-xs ${selectedSessionId === s.id ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-700'}`}
+                            onClick={() => setSelectedSessionId(s.id)}
+                          >
+                            {s.patientName}
+                          </button>
+                        ))}
+                      </div>
                       {(
                       <ImageSectionsGrid
-                        images={serverImages}
+                        images={selectedSessionId !== 'none' ? serverImages.filter(img => img.sessionId === selectedSessionId) : serverImages}
                         onAnalyze={handleOpenAnalysis}
                         onEnlarge={handleOpenEnlarge}
                         onDownload={handleDownloadImage}
@@ -818,6 +922,14 @@ Cancel
       )}
 
       {/* Image Enlarge Modal */}
+      {/* Session Modal */}
+      <ImageSessionModal
+        isOpen={isSessionModalOpen}
+        onClose={() => setIsSessionModalOpen(false)}
+        onSessionSelected={(id) => { setSelectedSessionId(id); setIsSessionModalOpen(false); }}
+        onCreateStart={() => setIsCreatingSession(true)}
+        onCreateEnd={() => setIsCreatingSession(false)}
+      />
       {enlargeModal.isOpen && enlargeModal.image && (
         <ImageEnlargeModal
           image={enlargeModal.image}
@@ -856,8 +968,9 @@ function ServerImageCard({
 }) {
   const [isDeleting, setIsDeleting] = React.useState(false);
   // Lazily fetch image URL per tile
-  const { data: fetchedUrl } = useImageUrl(image.key);
-  const imageUrl = fetchedUrl;
+  // Prefer server-provided thumbnailUrl; otherwise request presigned URL for the full image key
+  const { data: fetchedUrl } = useImageUrl(image.thumbnailUrl ? '' : image.key);
+  const imageUrl = image.thumbnailUrl || fetchedUrl;
   const isLoadingUrl = !imageUrl;
 
   const handleDelete = (e: React.MouseEvent) => {
@@ -901,6 +1014,7 @@ function ServerImageCard({
 : (
                 <ImageIcon className="size-6 text-slate-400" />
         )}
+          {/* Processing badge removed until real thumbnail pipeline exists */}
           {isDeleting && (
             <div className="absolute inset-0 flex items-center justify-center bg-white/70">
               <Loader2 className="size-6 animate-spin text-slate-500" />
@@ -1342,15 +1456,26 @@ function ImageEnlargeModal({
       <div className="fixed bottom-4 left-4 rounded-lg bg-black/60 px-3 py-2 text-white">
         <p className="text-sm font-medium">{image.displayName || image.filename}</p>
         <p className="text-xs opacity-75">
-          {new Date(image.uploadedAt).toLocaleDateString()}
-{' '}
-•
-{' '}
+          {(() => {
+            const date = new Date(image.uploadedAt);
+            const parts = new Intl.DateTimeFormat('en-NZ', {
+              timeZone: 'Pacific/Auckland',
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: false,
+            }).formatToParts(date);
+            const get = (type: string) => parts.find(p => p.type === type)?.value || '';
+            return `${get('day')}/${get('month')}/${get('year')} • ${get('hour')}:${get('minute')}`;
+          })()}
+          {' '}
+          •
+          {' '}
           {(() => {
             const bytes = image.size;
-            if (bytes === 0) {
- return '0 Bytes';
-}
+            if (bytes === 0) return '0 Bytes';
             const k = 1024;
             const sizes = ['Bytes', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -1395,8 +1520,8 @@ function ImageSectionsGrid({
   const bySession = clinical.filter(i => i.sessionId).reduce<Record<string, ServerImage[]>>((acc, img) => {
     const key = img.sessionId as string;
     if (!acc[key]) {
- acc[key] = [];
-}
+      acc[key] = [];
+    }
     acc[key].push(img);
     return acc;
   }, {});
@@ -1435,17 +1560,17 @@ function ImageSectionsGrid({
     )
   );
 
-  const sessionKeys = Object.keys(bySession);
-  const firstSessionId = sessionKeys.length > 0 ? sessionKeys[0] : null;
-  const restSessionIds = sessionKeys.slice(1);
+  // Order session groups by most recent image timestamp within each session
+  const sessionKeys = Object.keys(bySession).sort((a, b) => {
+    const latestA = bySession[a]?.reduce((max, img) => Math.max(max, new Date(img.uploadedAt).getTime()), 0) || 0;
+    const latestB = bySession[b]?.reduce((max, img) => Math.max(max, new Date(img.uploadedAt).getTime()), 0) || 0;
+    return latestB - latestA;
+  });
 
   return (
     <div className="space-y-6">
-      {firstSessionId && (
-        <Section title="This session" items={bySession[firstSessionId] ?? []} />
-      )}
-      {restSessionIds.map(sid => (
-        <Section key={sid} title={`Other session ${sid}`} items={bySession[sid] ?? []} />
+      {sessionKeys.map(sid => (
+        <Section key={sid} title={`Session: ${bySession[sid]?.[0]?.sessionName || sid}`} items={bySession[sid] ?? []} />
       ))}
       <Section title="No session" items={noSession} />
       <Section title="Legacy consultations" items={legacyConsultations} />

@@ -9,6 +9,7 @@ import Script from 'next/script';
 import { QueryClientProvider } from '@/src/providers/QueryClientProvider';
 import { AppLayoutWrapper } from '@/src/shared/components/AppLayoutWrapper';
 import { TestUserProvider } from '@/src/shared/contexts/TestUserContext';
+import { ToastProvider } from '@/src/shared/components/ui/toast';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -71,7 +72,9 @@ export default function RootLayout({
             </head>
             <body className={`${inter.variable} ${oswald.variable} ${openSans.variable} ${inter.className}`}>
               {/* <StagewiseToolbar /> */}
-              <AppLayoutWrapper>{children}</AppLayoutWrapper>
+              <ToastProvider>
+                <AppLayoutWrapper>{children}</AppLayoutWrapper>
+              </ToastProvider>
               <Analytics />
             </body>
           </html>

@@ -10,10 +10,12 @@ import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbl
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { imageQueryKeys, useDeleteImage, useImageUrl, useRenameImage, useServerImages } from '@/src/hooks/useImageQueries';
 import { Button } from '@/src/shared/components/ui/button';
+import { GalleryTileSkeleton } from '@/src/shared/components/ui/gallery-tile-skeleton';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
 import { resizeImageFile } from '@/src/shared/utils/image';
 import type { ClinicalImage } from '@/src/types/consultation';
+import { useToast } from '@/src/shared/components/ui/toast';
 
 function SessionImageTile({
   image,
@@ -30,7 +32,9 @@ function SessionImageTile({
   onDownload: () => void;
   onDelete: () => void;
 }) {
-  const { data: imageUrl } = useImageUrl(image.key);
+  // Prefer server-provided thumbnailUrl; otherwise request presigned URL for the full image key
+  const { data: imageUrlData } = useImageUrl(image.thumbnailUrl ? '' : image.key);
+  const imageUrl = image.thumbnailUrl || imageUrlData;
   const renameImage = useRenameImage();
   const baseName = (image.displayName || image.filename || '').replace(/\.[^.]+$/, '');
   const [isRenaming, setIsRenaming] = React.useState(false);
@@ -43,7 +47,7 @@ function SessionImageTile({
   };
   return (
     <div className="flex flex-col">
-      <div className="aspect-square overflow-hidden rounded-lg bg-slate-100">
+      <div className="relative aspect-square overflow-hidden rounded-lg bg-slate-100">
         {imageUrl
           ? (
             <img src={imageUrl} alt="" className="size-full object-cover" />
@@ -51,6 +55,7 @@ function SessionImageTile({
           : (
             <div className="flex size-full items-center justify-center text-xs text-slate-400">No preview</div>
           )}
+        {/* Processing badge removed until real thumbnail pipeline exists */}
       </div>
       <div className="mt-2 flex items-center gap-2">
         {isRenaming ? (
@@ -140,6 +145,10 @@ export const ClinicalImageTab: React.FC = () => {
 
   // Server images (user scope) for session grouping
   const { userId } = useAuth();
+  const [inFlightUploads, setInFlightUploads] = useState(0);
+  const [completedUploads, setCompletedUploads] = useState(0);
+  const { show: showToast } = useToast();
+  const [isDragging, setIsDragging] = useState(false);
   const { data: serverImages = [], isLoading: isLoadingServerImages } = useServerImages(currentPatientSessionId || undefined);
   const deleteImageMutation = useDeleteImage();
   const sessionServerImages = useMemo(() => {
@@ -152,12 +161,25 @@ export const ClinicalImageTab: React.FC = () => {
   useSimpleAbly({
     userId: userId ?? null,
     isMobile: false,
-    onMobileImagesUploaded: () => {
-      try {
- queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.list(userId || '') });
-} catch {}
+    onImageUploadStarted: (count) => setInFlightUploads(prev => prev + (count || 0)),
+    onImageUploaded: () => {
+      setInFlightUploads(prev => Math.max(0, prev - 1));
+      try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.lists() }); } catch {}
+      setCompletedUploads((c) => c + 1);
+    },
+    onImageProcessed: () => {
+      try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.lists() }); } catch {}
     },
   });
+
+  // Show toast when uploads complete
+  React.useEffect(() => {
+    if (inFlightUploads === 0 && completedUploads > 0) {
+      const n = completedUploads;
+      showToast({ title: 'Images added', description: `${n} image${n === 1 ? '' : 's'} added`, durationMs: 4000 });
+      setCompletedUploads(0);
+    }
+  }, [inFlightUploads, completedUploads, showToast]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentSession = getCurrentPatientSession();
@@ -305,7 +327,11 @@ export const ClinicalImageTab: React.FC = () => {
       const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = blobUrl;
-      a.download = image.filename || 'clinical-image';
+      {
+        const baseName = (image.displayName || image.filename || '').replace(/\.[^.]+$/, '');
+        const ext = image.filename && image.filename.includes('.') ? `.${image.filename.split('.').pop()}` : '';
+        a.download = `${baseName}${ext}`.trim() || 'clinical-image';
+      }
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -559,7 +585,17 @@ export const ClinicalImageTab: React.FC = () => {
                         {image.filename}
                       </div>
                       <div className="text-xs text-slate-500">
-                        {new Date(image.uploadedAt).toLocaleDateString()}
+                        {(() => {
+                          const date = new Date(image.uploadedAt);
+                          const parts = new Intl.DateTimeFormat('en-NZ', {
+                            timeZone: 'Pacific/Auckland',
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                          }).formatToParts(date);
+                          const get = (t: string) => parts.find(p => p.type === t)?.value || '';
+                          return `${get('day')}/${get('month')}/${get('year')}`;
+                        })()}
                       </div>
                     </div>
                     <div className="ml-2 flex gap-1">
@@ -629,10 +665,38 @@ export const ClinicalImageTab: React.FC = () => {
 
       {/* Session Images (from server under clinical-images/{userId}/{sessionId}/) */}
       {(isLoadingServerImages || sessionServerImages.length > 0) && (
-        <div className="border-l-2 border-blue-200 pl-3">
+        <div
+          className={`border-l-2 pl-3 ${isDragging ? 'border-blue-400 border-dashed bg-blue-50/50' : 'border-blue-200'}`}
+          onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+          onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
+          onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
+          onDrop={async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsDragging(false);
+            try {
+              const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
+              for (const file of files) {
+                // eslint-disable-next-line no-await-in-loop
+                await handleFileUpload(file);
+              }
+            } catch {
+              setError('Failed to upload dropped files');
+            }
+          }}
+        >
           <div className="mb-3 flex items-center justify-between">
-            <h4 className="text-sm font-medium text-blue-600">Session Images</h4>
             <div className="flex items-center gap-2">
+              <h4 className="text-sm font-medium text-blue-600">Session Images</h4>
+              <span className="text-[10px] text-slate-400">Thumbnails may expire after ~30m; they refresh automatically.</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {inFlightUploads > 0 && (
+                <span className="flex items-center gap-1 rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
+                  <Loader2 size={12} className="animate-spin" />
+                  Receiving {inFlightUploads}
+                </span>
+              )}
               {selectionMode && (
                 <span className="text-xs text-slate-600">{selectedKeys.size} selected</span>
               )}
@@ -660,23 +724,19 @@ export const ClinicalImageTab: React.FC = () => {
             </div>
           </div>
 
+          {isDragging && (
+            <div className="mb-2 rounded border border-dashed border-blue-300 bg-blue-50 p-2 text-center text-xs text-blue-700">Drop images to upload</div>
+          )}
           {isLoadingServerImages
             ? (
-                <div className="grid grid-cols-2 gap-3">
-                  {Array.from({ length: 6 }).map((_, idx) => (
-                    <div key={idx} className="flex flex-col">
-                      <div className="aspect-square animate-pulse rounded-lg bg-slate-200" />
-                      <div className="mt-2 flex items-center justify-center gap-2">
-                        <div className="size-7 rounded border border-slate-200 bg-slate-100" />
-                        <div className="size-7 rounded border border-slate-200 bg-slate-100" />
-                        <div className="size-7 rounded border border-slate-200 bg-slate-100" />
-                      </div>
-                    </div>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+                  {Array.from({ length: 12 }).map((_, idx) => (
+                    <GalleryTileSkeleton key={idx} />
                   ))}
                 </div>
               )
             : (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                   {sessionServerImages.map((image: any) => {
                     const isAnalyzing = analyzingImages.has(image.id);
                     return (
