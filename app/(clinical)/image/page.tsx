@@ -33,6 +33,7 @@ import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { usePatientSessions } from '@/src/features/clinical/session-management/hooks/usePatientSessions';
+import type { PatientSession } from '@/src/features/clinical/session-management/hooks/usePatientSessions';
 import { GalleryTileSkeleton } from '@/src/shared/components/ui/gallery-tile-skeleton';
 import { createAuthHeaders } from '@/src/shared/utils';
 import { isFeatureEnabled } from '@/src/shared/utils/launch-config';
@@ -960,6 +961,7 @@ Cancel
                           }
                           return list;
                         })()}
+                        sessions={sessions}
                         onAnalyze={handleOpenAnalysis}
                         onEnlarge={handleOpenEnlarge}
                         onDownload={handleDownloadImage}
@@ -1614,6 +1616,7 @@ function ImageEnlargeModal({
 // Grouped sections by sessionId for clinical-images and legacy consultations
 function ImageSectionsGrid({
   images,
+  sessions,
   onAnalyze,
   onEnlarge,
   onDownload,
@@ -1626,6 +1629,7 @@ function ImageSectionsGrid({
   onActivateSelection,
 }: {
   images: ServerImage[];
+  sessions: PatientSession[];
   onAnalyze: (img: ServerImage) => void;
   onEnlarge: (img: ServerImage) => void;
   onDownload: (img: ServerImage) => void;
