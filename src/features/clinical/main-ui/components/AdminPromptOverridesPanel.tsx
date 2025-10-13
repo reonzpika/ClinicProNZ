@@ -51,6 +51,9 @@ export function AdminPromptOverridesPanel() {
   // Insert base placeholders into editors
   const [insertLoading, setInsertLoading] = useState<'none' | 'system' | 'user'>('none');
 
+  // Collapsible panel state
+  const [collapsed, setCollapsed] = useState(true);
+
   // Base prompts preview state (deprecated UI)
 
   // Version view modal
