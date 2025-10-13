@@ -1154,7 +1154,7 @@ export default function ConsultationPage() {
                                 })()}
                                 {/* Pre-gen instruction */}
                                 <div className="rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-800">
-                                  Record key points, then tap Process. You can edit before finishing.
+                                  Hit Record and speak clearly: findings, assessment, plan. Or type.
                                 </div>
                                 {/* Transcript display */}
                                 <TranscriptViewer />

@@ -536,7 +536,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 ref={assessmentRef}
               />
             </div>
-            <div>
+            <div className="mb-20 md:mb-0">
               <div className="mb-1 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <label htmlFor="additional-notes-plan" className="block text-xs font-medium text-slate-500">Plan</label>

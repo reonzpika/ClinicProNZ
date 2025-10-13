@@ -375,10 +375,7 @@ export function TranscriptionControls({
           >
             {isRecording ? 'Stop' : 'Rec'}
           </button>
-          <div className="flex flex-col">
-            <div className="text-[11px] text-slate-600">{isRecording ? 'Transcribing…' : 'Ready'}</div>
-            <div className={`text-xs tabular-nums ${isRecording ? 'text-slate-800' : 'text-slate-400'}`}>{formatElapsed(elapsedSeconds)}</div>
-          </div>
+          {/* removed ready + timer */}
         </div>
 
         {/* Ensure consent modal renders for footer mode */}
