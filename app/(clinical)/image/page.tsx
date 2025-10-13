@@ -87,7 +87,11 @@ export default function ClinicalImagePage() {
 
   // Track upload loading state
   const isUploading = uploadImages.isPending;
-  const [uploadingFileCount, setUploadingFileCount] = useState(0);
+  // Optimistic upload previews for desktop
+  type OptimisticImage = (ServerImage & { optimisticId: string });
+  const [optimisticImages, setOptimisticImages] = useState<OptimisticImage[]>([]);
+  const optimisticPreviewUrlsRef = useRef<Map<string, string>>(new Map());
+  const [pendingBatches, setPendingBatches] = useState<Array<{ id: string; optimisticIds: string[]; expected: number; startCount: number }>>([]);
   const [inFlightUploads, setInFlightUploads] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -298,22 +302,83 @@ export default function ClinicalImagePage() {
       return;
     }
 
-    // Desktop immediate upload
-    setUploadingFileCount(fileArray.length);
+    // Desktop immediate upload: show optimistic previews instantly
+    const context = selectedSessionId && selectedSessionId !== 'none'
+      ? { sessionId: selectedSessionId }
+      : { noSession: true };
+
+    const startCount = serverImages.length;
+    const optimisticIds: string[] = [];
+    const newOptimistics: OptimisticImage[] = fileArray.map((f) => {
+      const optimisticId = Math.random().toString(36).slice(2);
+      optimisticIds.push(optimisticId);
+      const previewUrl = URL.createObjectURL(f);
+      optimisticPreviewUrlsRef.current.set(optimisticId, previewUrl);
+      return {
+        optimisticId,
+        id: `optimistic-${optimisticId}`,
+        key: `optimistic:${optimisticId}`,
+        filename: f.name,
+        displayName: f.name.replace(/\.[^.]+$/, ''),
+        mimeType: f.type || 'image/jpeg',
+        size: f.size || 0,
+        uploadedAt: new Date().toISOString(),
+        source: 'clinical',
+        sessionId: context.sessionId,
+        thumbnailUrl: previewUrl,
+      } as OptimisticImage;
+    });
+
+    setOptimisticImages(prev => [...newOptimistics, ...prev]);
+
     try {
-      const context = selectedSessionId && selectedSessionId !== 'none'
-        ? { sessionId: selectedSessionId }
-        : { noSession: true };
-      await uploadImages.mutateAsync({ files: fileArray, context });
+      const result = await uploadImages.mutateAsync({ files: fileArray, context });
+      const expected = (result?.keys?.length ?? fileArray.length);
+      setPendingBatches(prev => [...prev, { id: Math.random().toString(36).slice(2), optimisticIds, expected, startCount }]);
     } catch (err) {
       console.error('Upload failed:', err);
+      // Remove optimistic previews on error
+      setOptimisticImages(prev => prev.filter(img => !optimisticIds.includes((img as any).optimisticId)));
+      optimisticIds.forEach(id => {
+        const url = optimisticPreviewUrlsRef.current.get(id);
+        if (url) {
+          URL.revokeObjectURL(url);
+          optimisticPreviewUrlsRef.current.delete(id);
+        }
+      });
     } finally {
-      setUploadingFileCount(0);
       if (event.target) {
         event.target.value = '';
       }
     }
   };
+
+  // When server images count reaches expected, remove the corresponding optimistic previews
+  useEffect(() => {
+    if (pendingBatches.length === 0) return;
+    setPendingBatches(prev => {
+      const remaining: typeof prev = [];
+      const toRemove = new Set<string>();
+      prev.forEach(batch => {
+        if (serverImages.length >= batch.startCount + batch.expected) {
+          batch.optimisticIds.forEach(id => toRemove.add(id));
+        } else {
+          remaining.push(batch);
+        }
+      });
+      if (toRemove.size > 0) {
+        setOptimisticImages(prevImgs => prevImgs.filter(img => !toRemove.has((img as any).optimisticId)));
+        toRemove.forEach(id => {
+          const url = optimisticPreviewUrlsRef.current.get(id);
+          if (url) {
+            URL.revokeObjectURL(url);
+            optimisticPreviewUrlsRef.current.delete(id);
+          }
+        });
+      }
+      return remaining;
+    });
+  }, [serverImages.length, pendingBatches.length]);
 
   // Analysis functions (using store actions)
   const handleOpenAnalysis = (image: ServerImage) => {
@@ -760,24 +825,10 @@ Cancel
                   )}
                   <Button
                     onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
                     className="w-full"
                   >
-                  {isUploading
-                    ? (
-                        <>
-                          <Loader2 className="mr-2 size-4 animate-spin" />
-                          {uploadingFileCount > 1
-                            ? `Uploading ${uploadingFileCount} images...`
-                            : 'Uploading...'}
-                        </>
-                      )
-                    : (
-                        <>
-                          <Upload className="mr-2 size-4" />
-                          Upload Images
-                        </>
-                      )}
+                    <Upload className="mr-2 size-4" />
+                    Upload Images
                   </Button>
                 </div>
                 <Button
@@ -955,7 +1006,7 @@ Cancel
                       <ImageSectionsGrid
                         images={(() => {
                           // Filter: only sessions with images + selected sessions if any
-                          const list = serverImages;
+                          const list = [...optimisticImages, ...serverImages];
                           if (filterSessionIds.size > 0) {
                             return list.filter(img => img.sessionId && filterSessionIds.has(img.sessionId));
                           }
@@ -1663,7 +1714,7 @@ function ImageSectionsGrid({
 : (
       <div className="mb-6">
         <div className="mb-2 text-sm font-semibold text-slate-700">{title}</div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {items.map(image => (
             <div key={image.id} className="relative">
               <ServerImageCard
