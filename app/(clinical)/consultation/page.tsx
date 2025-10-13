@@ -1112,8 +1112,17 @@ export default function ConsultationPage() {
                               </div>
                             )
                           : (
-                              // Pre-generation: Transcript viewer at top, Additional notes always expanded, sticky footer controls
+                              // Pre-generation: Session badge at top, Transcript viewer, Additional notes expanded, sticky footer controls
                               <div className="flex h-full flex-col space-y-2">
+                                {/* Session Badge (pre-gen only) */}
+                                <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
+                                  <div className="flex items-center justify-between">
+                                    <div className="truncate">
+                                      <span className="font-medium">Session:</span>
+                                      <span className="ml-1">Current patient session</span>
+                                    </div>
+                                  </div>
+                                </div>
                                 {/* Pre-gen instruction */}
                                 <div className="rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-800">
                                   Record key points, then tap Process. You can edit before finishing.
