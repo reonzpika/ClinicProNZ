@@ -697,6 +697,7 @@ Cancel
                   selectedSessionId={selectedSessionId}
                   onSwitch={() => setIsSessionModalOpen(true)}
                   onSelectSession={(id) => setSelectedSessionId(id)}
+                  isCreating={false /* toggled via modal create actions below */}
                 />
                 {inFlightUploads > 0 && (
                   <div className="flex items-center justify-between rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-700">

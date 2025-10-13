@@ -13,6 +13,8 @@ export type ImageSessionModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSessionSelected: (id: string) => void;
+  onCreateStart?: () => void; // notify parent to show creating state
+  onCreateEnd?: () => void;   // notify parent to hide creating state
 };
 
 function formatNzDate(dateString?: string) {
@@ -33,7 +35,7 @@ function formatNzDate(dateString?: string) {
   };
 }
 
-export const ImageSessionModal: React.FC<ImageSessionModalProps> = ({ isOpen, onClose, onSessionSelected }) => {
+export const ImageSessionModal: React.FC<ImageSessionModalProps> = ({ isOpen, onClose, onSessionSelected, onCreateStart, onCreateEnd }) => {
   const { sessions, create, rename, remove, refetch } = usePatientSessions();
   const [search, setSearch] = useState('');
   const [isCreating, setIsCreating] = useState(false);
@@ -81,13 +83,17 @@ export const ImageSessionModal: React.FC<ImageSessionModalProps> = ({ isOpen, on
                   const name = pendingName.trim();
                   if (!name) return;
                   setIsCreating(true);
+                  try { onCreateStart?.(); } catch {}
                   try {
                     const s = await create.mutateAsync(name);
                     setPendingName('');
                     onSessionSelected(s.id);
                     onClose();
                   } catch {}
-                  setIsCreating(false);
+                  finally {
+                    setIsCreating(false);
+                    try { onCreateEnd?.(); } catch {}
+                  }
                 }}
                 disabled={isCreating}
               >
