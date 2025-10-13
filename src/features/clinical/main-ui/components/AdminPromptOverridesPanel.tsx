@@ -339,6 +339,11 @@ export function AdminPromptOverridesPanel() {
             <Button type="button" variant="secondary" onClick={insertSystemBase} disabled={insertLoading==='system' || !templateId}>
               {insertLoading==='system' ? 'Inserting…' : 'Insert system base'}
             </Button>
+            {editingVersionId && (
+              <Button type="button" onClick={handleUpdate} disabled={!canSave || loading}>
+                Update v{editingVersionNumber ?? ''}
+              </Button>
+            )}
             <Button type="button" onClick={() => setSystemEditorOpen(false)}>Done</Button>
           </div>
         </DialogContent>
@@ -355,6 +360,11 @@ export function AdminPromptOverridesPanel() {
             <Button type="button" variant="secondary" onClick={insertUserBase} disabled={insertLoading==='user' || !templateId}>
               {insertLoading==='user' ? 'Inserting…' : 'Insert user base'}
             </Button>
+            {editingVersionId && (
+              <Button type="button" onClick={handleUpdate} disabled={!canSave || loading}>
+                Update v{editingVersionNumber ?? ''}
+              </Button>
+            )}
             <Button type="button" onClick={() => setUserEditorOpen(false)}>Done</Button>
           </div>
         </DialogContent>
