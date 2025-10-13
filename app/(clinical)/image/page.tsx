@@ -82,6 +82,7 @@ export default function ClinicalImagePage() {
   const [uploadingFileCount, setUploadingFileCount] = useState(0);
   const [inFlightUploads, setInFlightUploads] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [isCreatingSession, setIsCreatingSession] = useState(false);
 
   // Enlarge modal state
   const [enlargeModal, setEnlargeModal] = useState<{
@@ -697,7 +698,7 @@ Cancel
                   selectedSessionId={selectedSessionId}
                   onSwitch={() => setIsSessionModalOpen(true)}
                   onSelectSession={(id) => setSelectedSessionId(id)}
-                  isCreating={false /* toggled via modal create actions below */}
+                  isCreating={isCreatingSession}
                 />
                 {inFlightUploads > 0 && (
                   <div className="flex items-center justify-between rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-700">
@@ -923,6 +924,8 @@ Cancel
         isOpen={isSessionModalOpen}
         onClose={() => setIsSessionModalOpen(false)}
         onSessionSelected={(id) => { setSelectedSessionId(id); setIsSessionModalOpen(false); }}
+        onCreateStart={() => setIsCreatingSession(true)}
+        onCreateEnd={() => setIsCreatingSession(false)}
       />
       {enlargeModal.isOpen && enlargeModal.image && (
         <ImageEnlargeModal
