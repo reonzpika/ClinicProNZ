@@ -175,6 +175,36 @@ export function AdminPromptOverridesPanel() {
     }
   };
 
+  const handleShowCurrentPrompts = async (scope: 'self' | 'global') => {
+    setBaseOpen(true);
+    setBaseLoading(true);
+    setBaseError(null);
+    setBaseSystem('');
+    setBaseUser('');
+    try {
+      const body: any = {
+        templateId,
+        additionalNotes: getCompiledConsultationText(),
+        transcription: transcription?.transcript || '',
+        typedInput: typedInput || '',
+        scope, // controls whether to resolve self>global (default) or global-only
+      };
+      const res = await fetch('/api/admin/prompts/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Failed to fetch current prompts');
+      setBaseSystem(data?.effective?.system || '');
+      setBaseUser(data?.effective?.user || '');
+    } catch (e: any) {
+      setBaseError(e?.message || 'Failed to fetch current prompts');
+    } finally {
+      setBaseLoading(false);
+    }
+  };
+
   return (
     <div className="rounded-md border border-slate-200 p-3">
       <div className="mb-2 text-sm font-semibold text-slate-700">Admin · Note Prompt Overrides</div>
@@ -199,6 +229,8 @@ export function AdminPromptOverridesPanel() {
           <Button type="button" onClick={handleSave} disabled={!canSave || loading}>Save</Button>
           <Button type="button" variant="outline" onClick={handlePreviewOutput} disabled={previewLoading || !templateId}>Preview Output</Button>
           <Button type="button" variant="outline" onClick={handleShowBasePrompts} disabled={baseLoading || !templateId}>Show Base Prompts</Button>
+          <Button type="button" variant="outline" onClick={() => handleShowCurrentPrompts('self')} disabled={baseLoading || !templateId}>Show Current (Me)</Button>
+          <Button type="button" variant="outline" onClick={() => handleShowCurrentPrompts('global')} disabled={baseLoading || !templateId}>Show Current (Global)</Button>
         </div>
       </div>
 
@@ -249,14 +281,14 @@ export function AdminPromptOverridesPanel() {
           <div className="mt-2 space-y-3">
             {baseError && (<div className="text-xs text-red-600">{baseError}</div>)}
             <div>
-              <div className="mb-1 text-xs font-medium text-slate-700">System (Base)</div>
+              <div className="mb-1 text-xs font-medium text-slate-700">System</div>
               <Textarea value={baseSystem} readOnly className="min-h-[200px]" placeholder={baseLoading ? 'Loading…' : 'No content'} />
               <div className="mt-2 flex gap-2">
                 <Button type="button" variant="secondary" onClick={() => navigator.clipboard.writeText(baseSystem || '')} disabled={!baseSystem}>Copy System</Button>
               </div>
             </div>
             <div>
-              <div className="mb-1 text-xs font-medium text-slate-700">User (Base)</div>
+              <div className="mb-1 text-xs font-medium text-slate-700">User</div>
               <Textarea value={baseUser} readOnly className="min-h-[200px]" placeholder={baseLoading ? 'Loading…' : 'No content'} />
               <div className="mt-2 flex gap-2">
                 <Button type="button" variant="secondary" onClick={() => navigator.clipboard.writeText(baseUser || '')} disabled={!baseUser}>Copy User</Button>
