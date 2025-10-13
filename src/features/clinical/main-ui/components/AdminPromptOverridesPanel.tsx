@@ -141,12 +141,12 @@ export function AdminPromptOverridesPanel() {
 
       <div className="mb-3 grid grid-cols-1 gap-3">
         <div>
-          <div className="mb-1 text-xs font-medium text-slate-600">System override (replace) — must include {{TEMPLATE}}</div>
+          <div className="mb-1 text-xs font-medium text-slate-600">System override (replace) — must include {'{{TEMPLATE}}'}</div>
           <Textarea value={systemText} onChange={e => setSystemText(e.target.value)} placeholder="... include {{TEMPLATE}} ..." className="min-h-[120px]" />
           <div className="mt-1 text-[11px] text-slate-500">~{tokenEstimate(systemText)} tokens</div>
         </div>
         <div>
-          <div className="mb-1 text-xs font-medium text-slate-600">User override (replace) — must include {{DATA}}</div>
+          <div className="mb-1 text-xs font-medium text-slate-600">User override (replace) — must include {'{{DATA}}'}</div>
           <Textarea value={userText} onChange={e => setUserText(e.target.value)} placeholder="... include {{DATA}} ..." className="min-h-[120px]" />
           <div className="mt-1 text-[11px] text-slate-500">~{tokenEstimate(userText)} tokens</div>
         </div>
