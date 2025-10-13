@@ -110,22 +110,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
     return 'Clinical documentation will appear here...';
   };
 
-  // Computed value: generated notes with consent statement appended if consent was obtained
-  const displayNotes = React.useMemo(() => {
-    if (!generatedNotes) {
-      return '';
-    }
-    if (!consentObtained) {
-      return generatedNotes;
-    }
-
-    // Check if consent statement is already included to avoid duplication
-    if (generatedNotes.includes('Patient informed and consented verbally to the use of a digital assistant')) {
-      return generatedNotes;
-    }
-
-    return generatedNotes + CONSENT_STATEMENT;
-  }, [generatedNotes, consentObtained]);
+  // Removed duplicate displayNotes definition
 
   // Check authentication status
   useEffect(() => {
