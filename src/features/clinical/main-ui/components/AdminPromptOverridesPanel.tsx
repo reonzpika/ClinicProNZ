@@ -40,6 +40,13 @@ export function AdminPromptOverridesPanel() {
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [previewText, setPreviewText] = useState('');
 
+  // Base prompts preview state
+  const [baseOpen, setBaseOpen] = useState(false);
+  const [baseLoading, setBaseLoading] = useState(false);
+  const [baseError, setBaseError] = useState<string | null>(null);
+  const [baseSystem, setBaseSystem] = useState('');
+  const [baseUser, setBaseUser] = useState('');
+
   const canSave = useMemo(() => {
     return systemText.includes('{{TEMPLATE}}') && userText.includes('{{DATA}}') && systemText.length <= 16000 && userText.length <= 16000;
   }, [systemText, userText]);
@@ -135,6 +142,35 @@ export function AdminPromptOverridesPanel() {
     }
   };
 
+  const handleShowBasePrompts = async () => {
+    setBaseOpen(true);
+    setBaseLoading(true);
+    setBaseError(null);
+    setBaseSystem('');
+    setBaseUser('');
+    try {
+      const body: any = {
+        templateId,
+        additionalNotes: getCompiledConsultationText(),
+        transcription: transcription?.transcript || '',
+        typedInput: typedInput || '',
+      };
+      const res = await fetch('/api/admin/prompts/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Failed to fetch base prompts');
+      setBaseSystem(data?.base?.system || '');
+      setBaseUser(data?.base?.user || '');
+    } catch (e: any) {
+      setBaseError(e?.message || 'Failed to fetch base prompts');
+    } finally {
+      setBaseLoading(false);
+    }
+  };
+
   return (
     <div className="rounded-md border border-slate-200 p-3">
       <div className="mb-2 text-sm font-semibold text-slate-700">Admin · Note Prompt Overrides</div>
@@ -158,6 +194,7 @@ export function AdminPromptOverridesPanel() {
           <Button type="button" variant="secondary" onClick={() => { setSystemText(''); setUserText(''); setRating(''); setFeedback(''); }}>New</Button>
           <Button type="button" onClick={handleSave} disabled={!canSave || loading}>Save</Button>
           <Button type="button" variant="outline" onClick={handlePreviewOutput} disabled={previewLoading || !templateId}>Preview Output</Button>
+          <Button type="button" variant="outline" onClick={handleShowBasePrompts} disabled={baseLoading || !templateId}>Show Base Prompts</Button>
         </div>
       </div>
 
@@ -193,6 +230,33 @@ export function AdminPromptOverridesPanel() {
             <div className="mt-2 flex gap-2">
               <Button type="button" variant="secondary" onClick={() => navigator.clipboard.writeText(previewText || '')} disabled={!previewText}>Copy</Button>
               <Button type="button" onClick={() => setPreviewOpen(false)}>Close</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Base Prompts Dialog */}
+      <Dialog open={baseOpen} onOpenChange={setBaseOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="text-sm">Base Prompts (compiled from template & current data)</DialogTitle>
+          </DialogHeader>
+          <div className="mt-2 space-y-3">
+            {baseError && (<div className="text-xs text-red-600">{baseError}</div>)}
+            <div>
+              <div className="mb-1 text-xs font-medium text-slate-700">System (Base)</div>
+              <Textarea value={baseSystem} readOnly className="min-h-[200px]" placeholder={baseLoading ? 'Loading…' : 'No content'} />
+              <div className="mt-2 flex gap-2">
+                <Button type="button" variant="secondary" onClick={() => navigator.clipboard.writeText(baseSystem || '')} disabled={!baseSystem}>Copy System</Button>
+              </div>
+            </div>
+            <div>
+              <div className="mb-1 text-xs font-medium text-slate-700">User (Base)</div>
+              <Textarea value={baseUser} readOnly className="min-h-[200px]" placeholder={baseLoading ? 'Loading…' : 'No content'} />
+              <div className="mt-2 flex gap-2">
+                <Button type="button" variant="secondary" onClick={() => navigator.clipboard.writeText(baseUser || '')} disabled={!baseUser}>Copy User</Button>
+                <Button type="button" onClick={() => setBaseOpen(false)}>Close</Button>
+              </div>
             </div>
           </div>
         </DialogContent>
