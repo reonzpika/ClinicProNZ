@@ -17,6 +17,7 @@ import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTrans
 // Removed MobileRightPanelOverlay; widgets now live in main column
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 import { ConsentModal } from '@/src/features/clinical/session-management/components/ConsentModal';
+import { SessionModal } from '@/src/features/clinical/session-management/components/SessionModal';
 // Removed RightPanelFeatures; widgets embedded below settings
 import ClinicalToolsTabs from '@/src/features/clinical/right-sidebar/components/ClinicalToolsTabs';
 import { WorkflowInstructions } from '@/src/features/clinical/right-sidebar/components/WorkflowInstructions';
@@ -71,6 +72,7 @@ export default function ConsultationPage() {
     deletePatientSession,
     createPatientSession,
     resetConsultation,
+    getCurrentPatientSession,
   } = useConsultationStores();
   const { isSignedIn: _isSignedIn, userId } = useAuth();
   const { getUserTier, user } = useClerkMetadata();
@@ -104,6 +106,7 @@ export default function ConsultationPage() {
   const [bootMinDelayDone, setBootMinDelayDone] = useState(false);
   const [bootTimeoutElapsed, setBootTimeoutElapsed] = useState(false);
   const [defaultsSettled, setDefaultsSettled] = useState(false);
+  const [sessionModalOpen, setSessionModalOpen] = useState(false);
 
   // Desktop recording controls
   const { stopRecording, isRecording } = useTranscription();
@@ -888,6 +891,12 @@ export default function ConsultationPage() {
   return (
     <RecordingAwareSessionContext.Provider value={contextValue}>
       <div className="flex h-full flex-col">
+        <SessionModal
+          isOpen={sessionModalOpen}
+          onClose={() => setSessionModalOpen(false)}
+          onSessionSelected={() => setSessionModalOpen(false)}
+          onSessionCreated={() => setSessionModalOpen(false)}
+        />
       <div className={`
         flex min-h-dvh flex-col transition-all duration-300 ease-in-out
       `}
@@ -1115,14 +1124,34 @@ export default function ConsultationPage() {
                               // Pre-generation: Session badge at top, Transcript viewer, Additional notes expanded, sticky footer controls
                               <div className="flex h-full flex-col space-y-2">
                                 {/* Session Badge (pre-gen only) */}
-                                <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
-                                  <div className="flex items-center justify-between">
-                                    <div className="truncate">
-                                      <span className="font-medium">Session:</span>
-                                      <span className="ml-1">Current patient session</span>
+                                {(() => {
+                                  const s = getCurrentPatientSession?.();
+                                  const date = s?.createdAt ? new Date(s.createdAt) : new Date();
+                                  const dateStr = date.toLocaleDateString('en-GB');
+                                  const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                  return (
+                                    <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="min-w-0 truncate">
+                                          <span className="font-medium">Session:</span>
+                                          <span className="ml-1 truncate">
+                                            {s?.patientName || 'Untitled Session'}
+                                          </span>
+                                          <span className="ml-2 text-[11px] text-blue-700">{dateStr} • {timeStr}</span>
+                                        </div>
+                                        <Button
+                                          type="button"
+                                          size="sm"
+                                          variant="outline"
+                                          className="h-7 shrink-0 border-blue-300 px-2 text-[11px] text-blue-700 hover:bg-blue-100"
+                                          onClick={() => setSessionModalOpen(true)}
+                                        >
+                                          Manage
+                                        </Button>
+                                      </div>
                                     </div>
-                                  </div>
-                                </div>
+                                  );
+                                })()}
                                 {/* Pre-gen instruction */}
                                 <div className="rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-800">
                                   Record key points, then tap Process. You can edit before finishing.
