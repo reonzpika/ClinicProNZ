@@ -261,6 +261,12 @@ export function AdminPromptOverridesPanel() {
                     <DropdownMenuItem onClick={() => { setSystemText(v.systemText); setUserText(v.userText); setRating(v.rating ?? ''); setFeedback(v.feedback ?? ''); }}>Load into editors</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => activateSelf(v.id)} disabled={activeSelfVersionId === v.id}>Activate for me</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => publishGlobal(v.id)} disabled={activeGlobalVersionId === v.id}>Publish to all</DropdownMenuItem>
+                    <DropdownMenuItem onClick={async () => {
+                      const res = await fetch('/api/admin/prompts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'deleteVersion', versionId: v.id }) });
+                      if (res.ok) {
+                        setVersions(prev => prev.filter(x => x.id !== v.id));
+                      }
+                    }}>Delete</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>

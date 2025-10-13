@@ -74,8 +74,16 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Prompt text too long (16k max)' }, { status: 400 });
       }
 
-      const latest = await db.select({ v: promptVersions.versionNumber }).from(promptVersions).orderBy(desc(promptVersions.versionNumber)).limit(1);
-      const nextVersion = (latest?.[0]?.v || 0) + 1;
+      // Compute next available (fills gaps)
+      const rows = await db.select({ v: promptVersions.versionNumber }).from(promptVersions).orderBy(promptVersions.versionNumber);
+      let nextVersion = 1;
+      for (const r of rows) {
+        if (r.v === nextVersion) {
+          nextVersion += 1;
+        } else if ((r.v || 0) > nextVersion) {
+          break; // found gap
+        }
+      }
 
       const [row] = await db
         .insert(promptVersions)
@@ -90,6 +98,52 @@ export async function POST(req: Request) {
         .returning();
 
       return NextResponse.json({ version: row });
+    }
+
+    if (body.action === 'updateVersion') {
+      const { versionId, systemText, userText, rating, feedback } = body;
+      if (!versionId) {
+        return NextResponse.json({ error: 'versionId required' }, { status: 400 });
+      }
+      if (typeof systemText !== 'string' || typeof userText !== 'string') {
+        return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+      }
+      if (!systemText.includes('{{TEMPLATE}}')) {
+        return NextResponse.json({ error: 'System override must include {{TEMPLATE}}' }, { status: 400 });
+      }
+      if (!userText.includes('{{DATA}}')) {
+        return NextResponse.json({ error: 'User override must include {{DATA}}' }, { status: 400 });
+      }
+      if (systemText.length > 16000 || userText.length > 16000) {
+        return NextResponse.json({ error: 'Prompt text too long (16k max)' }, { status: 400 });
+      }
+
+      const [row] = await db
+        .update(promptVersions)
+        .set({
+          systemText,
+          userText,
+          rating: typeof rating === 'number' ? rating : null,
+          feedback: typeof feedback === 'string' ? feedback : null,
+        } as any)
+        .where(eq(promptVersions.id, versionId))
+        .returning();
+      if (!row) {
+        return NextResponse.json({ error: 'Version not found' }, { status: 404 });
+      }
+      return NextResponse.json({ version: row });
+    }
+
+    if (body.action === 'deleteVersion') {
+      const { versionId } = body;
+      if (!versionId) {
+        return NextResponse.json({ error: 'versionId required' }, { status: 400 });
+      }
+      // Remove rollouts referencing this version
+      await db.delete(promptRollouts).where(eq(promptRollouts.versionId, versionId));
+      // Delete the version itself
+      await db.delete(promptVersions).where(eq(promptVersions.id, versionId));
+      return NextResponse.json({ ok: true });
     }
 
     if (body.action === 'activateSelf') {
