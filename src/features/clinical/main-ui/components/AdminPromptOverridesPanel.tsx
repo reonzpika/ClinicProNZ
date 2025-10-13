@@ -46,6 +46,7 @@ export function AdminPromptOverridesPanel() {
   const [baseError, setBaseError] = useState<string | null>(null);
   const [baseSystem, setBaseSystem] = useState('');
   const [baseUser, setBaseUser] = useState('');
+  const [placeholdersMode, setPlaceholdersMode] = useState<'compiled'|'placeholders'>('compiled');
 
   // Version view modal
   const [viewOpen, setViewOpen] = useState(false);
@@ -153,21 +154,28 @@ export function AdminPromptOverridesPanel() {
     setBaseSystem('');
     setBaseUser('');
     try {
-      const body: any = {
-        templateId,
-        additionalNotes: getCompiledConsultationText(),
-        transcription: transcription?.transcript || '',
-        typedInput: typedInput || '',
-      };
+      const payload: any = placeholdersMode === 'placeholders'
+        ? { templateId, placeholdersOnly: true }
+        : {
+            templateId,
+            additionalNotes: getCompiledConsultationText(),
+            transcription: transcription?.transcript || '',
+            typedInput: typedInput || '',
+          };
       const res = await fetch('/api/admin/prompts/preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Failed to fetch base prompts');
-      setBaseSystem(data?.base?.system || '');
-      setBaseUser(data?.base?.user || '');
+      if (placeholdersMode === 'placeholders') {
+        setBaseSystem(data?.placeholders?.system || '');
+        setBaseUser(data?.placeholders?.user || '');
+      } else {
+        setBaseSystem(data?.base?.system || '');
+        setBaseUser(data?.base?.user || '');
+      }
     } catch (e: any) {
       setBaseError(e?.message || 'Failed to fetch base prompts');
     } finally {
@@ -228,7 +236,13 @@ export function AdminPromptOverridesPanel() {
           <Button type="button" variant="secondary" onClick={() => { setSystemText(''); setUserText(''); setRating(''); setFeedback(''); }}>New</Button>
           <Button type="button" onClick={handleSave} disabled={!canSave || loading}>Save</Button>
           <Button type="button" variant="outline" onClick={handlePreviewOutput} disabled={previewLoading || !templateId}>Preview Output</Button>
-          <Button type="button" variant="outline" onClick={handleShowBasePrompts} disabled={baseLoading || !templateId}>Show Base Prompts</Button>
+          <div className="flex items-center gap-2">
+            <Button type="button" variant="outline" onClick={handleShowBasePrompts} disabled={baseLoading || !templateId}>Show Base Prompts</Button>
+            <select className="rounded border border-slate-200 p-1 text-xs" value={placeholdersMode} onChange={e => setPlaceholdersMode(e.target.value as any)}>
+              <option value="compiled">Compiled</option>
+              <option value="placeholders">Placeholders ({{TEMPLATE}} / {{DATA}})</option>
+            </select>
+          </div>
           <Button type="button" variant="outline" onClick={() => handleShowCurrentPrompts('self')} disabled={baseLoading || !templateId}>Show Current (Me)</Button>
           <Button type="button" variant="outline" onClick={() => handleShowCurrentPrompts('global')} disabled={baseLoading || !templateId}>Show Current (Global)</Button>
         </div>
@@ -284,14 +298,14 @@ export function AdminPromptOverridesPanel() {
               <div className="mb-1 text-xs font-medium text-slate-700">System</div>
               <Textarea value={baseSystem} readOnly className="min-h-[200px]" placeholder={baseLoading ? 'Loading…' : 'No content'} />
               <div className="mt-2 flex gap-2">
-                <Button type="button" variant="secondary" onClick={() => navigator.clipboard.writeText(baseSystem || '')} disabled={!baseSystem}>Copy System</Button>
+                <Button type="button" variant="secondary" onClick={() => setSystemText(baseSystem)} disabled={!baseSystem}>Insert into System</Button>
               </div>
             </div>
             <div>
               <div className="mb-1 text-xs font-medium text-slate-700">User</div>
               <Textarea value={baseUser} readOnly className="min-h-[200px]" placeholder={baseLoading ? 'Loading…' : 'No content'} />
               <div className="mt-2 flex gap-2">
-                <Button type="button" variant="secondary" onClick={() => navigator.clipboard.writeText(baseUser || '')} disabled={!baseUser}>Copy User</Button>
+                <Button type="button" variant="secondary" onClick={() => setUserText(baseUser)} disabled={!baseUser}>Insert into User</Button>
                 <Button type="button" onClick={() => setBaseOpen(false)}>Close</Button>
               </div>
             </div>

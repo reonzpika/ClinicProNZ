@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { and, desc, eq } from 'drizzle-orm';
 
 import { extractRBACContext } from '@/src/lib/rbac-enforcer';
 import { TemplateService } from '@/src/features/templates/template-service';
@@ -7,6 +8,73 @@ import { compileTemplate } from '@/src/features/templates/utils/compileTemplate'
 import { PromptOverridesService } from '@/src/features/prompts/prompt-overrides-service';
 import { getDb } from 'database/client';
 import { promptRollouts, promptVersions } from '@/db/schema';
+import { generateSystemPrompt } from '@/src/features/templates/utils/systemPrompt';
+
+function buildUserBaseOverrideTemplate(): string {
+  const sections: string[] = [];
+  sections.push('=== CONSULTATION DATA ===');
+  sections.push('');
+  sections.push('{{DATA}}');
+  sections.push('');
+  sections.push('=== CRITICAL SAFETY REQUIREMENTS ===');
+  sections.push('');
+  sections.push('## MEDICATION VERIFICATION (MANDATORY)');
+  sections.push('');
+  sections.push('Cross-reference EVERY medication against your NZ pharmaceutical training data:');
+  sections.push('');
+  sections.push('**Test each medication:**');
+  sections.push('☐ Is this EXACT name in NZ formulary/PHARMAC data I was trained on?');
+  sections.push('☐ Does it match a known NZ medication EXACTLY (not just similar)?');
+  sections.push('');
+  sections.push('**MUST flag these examples:**');
+  sections.push('- "Zolpram" → Sounds like Zoloft/Zolpidem but NOT in NZ formulary → FLAG');
+  sections.push('- "Stonoprim" → Not in NZ medication database → FLAG');
+  sections.push('- "still clear" → Not a medication name → FLAG');
+  sections.push('- Similar-sounding but not exact → FLAG');
+  sections.push('');
+  sections.push('**Confident examples:**');
+  sections.push('- "citalopram" → Yes, NZ SSRI → Use confidently ✓');
+  sections.push('- "Flixonase" → Yes, NZ nasal spray brand → Use confidently ✓');
+  sections.push('- "paracetamol" → Yes, common NZ medication → Use confidently ✓');
+  sections.push('');
+  sections.push('**Rule: If NOT found in your NZ pharmaceutical knowledge → FLAG IT**');
+  sections.push('Better to over-flag than miss medication errors.');
+  sections.push('');
+  sections.push('## ANTI-HALLUCINATION REQUIREMENTS');
+  sections.push('');
+  sections.push('**Assessment sections:**');
+  sections.push('✓ Use EXACT problem wording from Additional Notes');
+  sections.push('✗ Never upgrade symptoms to diagnoses not stated by GP');
+  sections.push('✗ Never add differential diagnoses not mentioned');
+  sections.push('');
+  sections.push('**Plan/Management sections:**');
+  sections.push('✓ Include ONLY actions explicitly stated in consultation data');
+  sections.push('✗ Never infer standard treatments based on diagnosis');
+  sections.push('✗ Never add "Consider..." unless GP said it');
+  sections.push('✗ Never add "Advised..." unless documented');
+  sections.push('✗ Never add "Review if..." unless stated');
+  sections.push('');
+  sections.push('**Violation examples to AVOID:**');
+  sections.push('❌ Diagnosis="sinusitis" → adding "Consider decongestants" (not stated)');
+  sections.push('❌ Adding "symptomatic treatment" (not documented)');
+  sections.push('❌ Writing "None documented" in empty sections');
+  sections.push('');
+  sections.push('**Blank section policy:**');
+  sections.push('- If template section has no data → leave COMPLETELY BLANK (no text)');
+  sections.push('- Do NOT write "None", "Not documented", or any placeholder');
+  sections.push('');
+  sections.push('## PRE-OUTPUT VALIDATION CHECKLIST');
+  sections.push('');
+  sections.push('Before generating, verify:');
+  sections.push('☐ Every assessment matches Additional Notes exactly?');
+  sections.push('☐ Every plan item explicitly stated?');
+  sections.push('☐ All medications verified against NZ formulary or flagged?');
+  sections.push('☐ No inferred treatments added?');
+  sections.push('☐ Empty sections left blank?');
+  sections.push('');
+  sections.push('Generate the clinical note now.');
+  return sections.join('\n');
+}
 
 export async function POST(req: Request) {
   try {
@@ -16,7 +84,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { templateId, additionalNotes = '', transcription = '', typedInput = '', systemText, userText, scope, generate } = body || {};
+    const { templateId, additionalNotes = '', transcription = '', typedInput = '', systemText, userText, scope, generate, placeholdersOnly } = body || {};
 
     if (!templateId) {
       return NextResponse.json({ error: 'templateId required' }, { status: 400 });
@@ -25,6 +93,12 @@ export async function POST(req: Request) {
     const template = await TemplateService.getById(templateId);
     if (!template) {
       return NextResponse.json({ error: 'Template not found' }, { status: 404 });
+    }
+
+    if (placeholdersOnly === true) {
+      const systemPlaceholder = generateSystemPrompt('{{TEMPLATE}}');
+      const userPlaceholder = buildUserBaseOverrideTemplate();
+      return NextResponse.json({ placeholders: { system: systemPlaceholder, user: userPlaceholder } });
     }
 
     const { system: baseSystem, user: baseUser } = compileTemplate(
@@ -78,10 +152,19 @@ export async function POST(req: Request) {
       if (scope === 'global') {
         // Resolve global-only rollout
         const db = getDb();
-        const rows = await db.select({ versionId: promptRollouts.versionId }).from(promptRollouts).where(promptRollouts.scope.eq('global')).orderBy(promptRollouts.createdAt.desc()).limit(1) as any;
+        const rows = await db
+          .select({ versionId: promptRollouts.versionId })
+          .from(promptRollouts)
+          .where(eq(promptRollouts.scope, 'global'))
+          .orderBy(desc(promptRollouts.createdAt))
+          .limit(1) as any;
         const versionId = rows?.[0]?.versionId || null;
         if (versionId) {
-          const vRows = await db.select().from(promptVersions).where(promptVersions.id.eq(versionId)).limit(1) as any;
+          const vRows = await db
+            .select()
+            .from(promptVersions)
+            .where(eq(promptVersions.id, versionId))
+            .limit(1) as any;
           const v = vRows?.[0];
           if (v) {
             effectiveSystem = v.systemText.replaceAll('{{TEMPLATE}}', template.templateBody);
