@@ -81,12 +81,22 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
           </div>
         )}
         {error && <div className="text-sm text-red-600">{error}</div>}
+        {/* Copy button */}
         {(
           <div className="mb-1 flex justify-end">
             <Button
               type="button"
               variant="secondary"
-              onClick={handleCopy}
+              onClick={async () => {
+                if (!displayNotes) return;
+                try {
+                  await navigator.clipboard.writeText(displayNotes);
+                  setCopySuccess(true);
+                  setTimeout(() => setCopySuccess(false), 1500);
+                } catch {
+                  setCopySuccess(false);
+                }
+              }}
               disabled={!hasContent || loading}
               className="h-8 border-slate-300 px-3 text-xs text-slate-600 hover:bg-slate-50"
             >
@@ -390,7 +400,16 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
             <Button
               type="button"
               variant="secondary"
-              onClick={handleCopy}
+              onClick={async () => {
+                if (!displayNotes) return;
+                try {
+                  await navigator.clipboard.writeText(displayNotes);
+                  setCopySuccess(true);
+                  setTimeout(() => setCopySuccess(false), 1500);
+                } catch {
+                  setCopySuccess(false);
+                }
+              }}
               disabled={!hasContent || loading}
               className="h-8 border-slate-300 px-3 text-xs text-slate-600 hover:bg-slate-50"
             >
