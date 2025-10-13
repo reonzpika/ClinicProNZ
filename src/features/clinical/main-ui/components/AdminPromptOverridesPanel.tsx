@@ -45,13 +45,7 @@ export function AdminPromptOverridesPanel() {
   const [previewSystem, setPreviewSystem] = useState('');
   const [previewUser, setPreviewUser] = useState('');
 
-  // Base prompts preview state
-  const [baseOpen, setBaseOpen] = useState(false);
-  const [baseLoading, setBaseLoading] = useState(false);
-  const [baseError, setBaseError] = useState<string | null>(null);
-  const [baseSystem, setBaseSystem] = useState('');
-  const [baseUser, setBaseUser] = useState('');
-  // Always show placeholders for base prompts
+  // Base prompts preview state (deprecated UI)
 
   // Version view modal
   const [viewOpen, setViewOpen] = useState(false);
@@ -146,29 +140,7 @@ export function AdminPromptOverridesPanel() {
     }
   };
 
-  const handleShowBasePrompts = async () => {
-    setBaseOpen(true);
-    setBaseLoading(true);
-    setBaseError(null);
-    setBaseSystem('');
-    setBaseUser('');
-    try {
-      const payload: any = { templateId, placeholdersOnly: true };
-      const res = await fetch('/api/admin/prompts/preview', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || 'Failed to fetch base prompts');
-      setBaseSystem(data?.placeholders?.system || '');
-      setBaseUser(data?.placeholders?.user || '');
-    } catch (e: any) {
-      setBaseError(e?.message || 'Failed to fetch base prompts');
-    } finally {
-      setBaseLoading(false);
-    }
-  };
+  // removed legacy base prompts dialog trigger; insertion happens inside editors
 
   // removed: show current prompts (me/global) per requirements
 
@@ -201,7 +173,6 @@ export function AdminPromptOverridesPanel() {
           <Button type="button" variant="secondary" onClick={() => { setSystemText(''); setUserText(''); setRating(''); setFeedback(''); }}>New</Button>
           <Button type="button" onClick={handleSave} disabled={!canSave || loading}>Save</Button>
           <Button type="button" variant="outline" onClick={handlePreviewOutput} disabled={previewLoading || !templateId}>Preview Output</Button>
-          <Button type="button" variant="outline" onClick={handleShowBasePrompts} disabled={baseLoading || !templateId}>Show Base Prompts (Placeholders)</Button>
         </div>
       </div>
 
@@ -277,32 +248,7 @@ export function AdminPromptOverridesPanel() {
         </DialogContent>
       </Dialog>
 
-      {/* Base Prompts Dialog */}
-      <Dialog open={baseOpen} onOpenChange={setBaseOpen}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle className="text-sm">Base Prompts (compiled from template & current data)</DialogTitle>
-          </DialogHeader>
-          <div className="mt-2 space-y-3">
-            {baseError && (<div className="text-xs text-red-600">{baseError}</div>)}
-            <div>
-              <div className="mb-1 text-xs font-medium text-slate-700">System</div>
-              <Textarea value={baseSystem} readOnly className="min-h-[200px]" placeholder={baseLoading ? 'Loading…' : 'No content'} />
-              <div className="mt-2 flex gap-2">
-                <Button type="button" variant="secondary" onClick={() => setSystemText(baseSystem)} disabled={!baseSystem}>Insert into System</Button>
-              </div>
-            </div>
-            <div>
-              <div className="mb-1 text-xs font-medium text-slate-700">User</div>
-              <Textarea value={baseUser} readOnly className="min-h-[200px]" placeholder={baseLoading ? 'Loading…' : 'No content'} />
-              <div className="mt-2 flex gap-2">
-                <Button type="button" variant="secondary" onClick={() => setUserText(baseUser)} disabled={!baseUser}>Insert into User</Button>
-                <Button type="button" onClick={() => setBaseOpen(false)}>Close</Button>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Base Prompts Dialog removed per requirements */}
 
       {/* View Version Dialog */}
       <Dialog open={viewOpen} onOpenChange={setViewOpen}>
