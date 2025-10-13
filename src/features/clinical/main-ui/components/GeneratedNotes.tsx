@@ -81,6 +81,19 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
           </div>
         )}
         {error && <div className="text-sm text-red-600">{error}</div>}
+        {(
+          <div className="mb-1 flex justify-end">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleCopy}
+              disabled={!hasContent || loading}
+              className="h-8 border-slate-300 px-3 text-xs text-slate-600 hover:bg-slate-50"
+            >
+              {copySuccess ? 'Copied!' : 'Copy'}
+            </Button>
+          </div>
+        )}
         <textarea
           value={displayNotes || ''}
           onChange={(e) => {
@@ -372,7 +385,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
       )}
       <div className="flex min-h-0 flex-1 flex-col space-y-1">
         {/* Mobile: compact copy button above note after generation */}
-        {false && mobileMode && hasContent && (
+        {mobileMode && hasContent && (
           <div className="flex justify-end">
             <Button
               type="button"
