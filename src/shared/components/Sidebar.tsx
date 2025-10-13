@@ -37,6 +37,7 @@ const mainNavItems: NavItem[] = [
   { href: '/consultation', label: 'Clinical Notes', icon: Stethoscope },
   { href: '/templates', label: 'Note Templates', icon: FileText, requiresAuth: true },
   { href: '/image', label: 'Clinical Images', icon: Camera, requiresAuth: true },
+  { href: '/acc-occupation-codes', label: 'ACC Occupation Codes', icon: Search },
   { href: '/employer-lookup', label: 'Employer Lookup', icon: Search },
 ];
 
