@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import { and, desc, eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 
 import { extractRBACContext } from '@/src/lib/rbac-enforcer';
 import { TemplateService } from '@/src/features/templates/template-service';
