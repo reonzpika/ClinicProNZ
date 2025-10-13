@@ -33,12 +33,17 @@ export function AdminPromptOverridesPanel() {
   const [userText, setUserText] = useState('');
   const [rating, setRating] = useState<number | ''>('');
   const [feedback, setFeedback] = useState('');
+  // Enlarge editor modals
+  const [systemEditorOpen, setSystemEditorOpen] = useState(false);
+  const [userEditorOpen, setUserEditorOpen] = useState(false);
 
   // Output preview state
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [previewText, setPreviewText] = useState('');
+  const [previewSystem, setPreviewSystem] = useState('');
+  const [previewUser, setPreviewUser] = useState('');
 
   // Base prompts preview state
   const [baseOpen, setBaseOpen] = useState(false);
@@ -46,7 +51,7 @@ export function AdminPromptOverridesPanel() {
   const [baseError, setBaseError] = useState<string | null>(null);
   const [baseSystem, setBaseSystem] = useState('');
   const [baseUser, setBaseUser] = useState('');
-  const [placeholdersMode, setPlaceholdersMode] = useState<'compiled'|'placeholders'>('compiled');
+  // Always show placeholders for base prompts
 
   // Version view modal
   const [viewOpen, setViewOpen] = useState(false);
@@ -114,32 +119,26 @@ export function AdminPromptOverridesPanel() {
     setPreviewLoading(true);
     setPreviewError(null);
     setPreviewText('');
+    setPreviewSystem('');
+    setPreviewUser('');
     try {
       const body: any = {
         templateId,
-        // Use new format fields for better prompt compilation
         additionalNotes: getCompiledConsultationText(),
         transcription: transcription?.transcript || '',
         typedInput: typedInput || '',
+        generate: true,
       };
-      const res = await fetch('/api/consultation/notes', {
+      const res = await fetch('/api/admin/prompts/preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      if (!res.ok || !res.body) {
-        const err = await res.json().catch(() => ({} as any));
-        throw new Error(err?.message || err?.error || 'Failed to generate preview');
-      }
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let text = '';
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        text += decoder.decode(value, { stream: true });
-        setPreviewText(text);
-      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Failed to generate preview');
+      setPreviewSystem(data?.effective?.system || '');
+      setPreviewUser(data?.effective?.user || '');
+      setPreviewText(data?.note || '');
     } catch (e: any) {
       setPreviewError(e?.message || 'Preview failed');
     } finally {
@@ -154,14 +153,7 @@ export function AdminPromptOverridesPanel() {
     setBaseSystem('');
     setBaseUser('');
     try {
-      const payload: any = placeholdersMode === 'placeholders'
-        ? { templateId, placeholdersOnly: true }
-        : {
-            templateId,
-            additionalNotes: getCompiledConsultationText(),
-            transcription: transcription?.transcript || '',
-            typedInput: typedInput || '',
-          };
+      const payload: any = { templateId, placeholdersOnly: true };
       const res = await fetch('/api/admin/prompts/preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -169,13 +161,8 @@ export function AdminPromptOverridesPanel() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Failed to fetch base prompts');
-      if (placeholdersMode === 'placeholders') {
-        setBaseSystem(data?.placeholders?.system || '');
-        setBaseUser(data?.placeholders?.user || '');
-      } else {
-        setBaseSystem(data?.base?.system || '');
-        setBaseUser(data?.base?.user || '');
-      }
+      setBaseSystem(data?.placeholders?.system || '');
+      setBaseUser(data?.placeholders?.user || '');
     } catch (e: any) {
       setBaseError(e?.message || 'Failed to fetch base prompts');
     } finally {
@@ -219,12 +206,18 @@ export function AdminPromptOverridesPanel() {
 
       <div className="mb-3 grid grid-cols-1 gap-3">
         <div>
-          <div className="mb-1 text-xs font-medium text-slate-600">System override (replace) — must include {'{{TEMPLATE}}'}</div>
+          <div className="mb-1 flex items-center justify-between text-xs font-medium text-slate-600">
+            <span>System override (replace) — must include {'{{TEMPLATE}}'}</span>
+            <Button type="button" variant="secondary" className="h-7 px-2 text-[11px]" onClick={() => setSystemEditorOpen(true)}>Enlarge</Button>
+          </div>
           <Textarea value={systemText} onChange={e => setSystemText(e.target.value)} placeholder="... include {{TEMPLATE}} ..." className="min-h-[120px]" />
           <div className="mt-1 text-[11px] text-slate-500">~{tokenEstimate(systemText)} tokens</div>
         </div>
         <div>
-          <div className="mb-1 text-xs font-medium text-slate-600">User override (replace) — must include {'{{DATA}}'}</div>
+          <div className="mb-1 flex items-center justify-between text-xs font-medium text-slate-600">
+            <span>User override (replace) — must include {'{{DATA}}'}</span>
+            <Button type="button" variant="secondary" className="h-7 px-2 text-[11px]" onClick={() => setUserEditorOpen(true)}>Enlarge</Button>
+          </div>
           <Textarea value={userText} onChange={e => setUserText(e.target.value)} placeholder="... include {{DATA}} ..." className="min-h-[120px]" />
           <div className="mt-1 text-[11px] text-slate-500">~{tokenEstimate(userText)} tokens</div>
         </div>
@@ -236,15 +229,7 @@ export function AdminPromptOverridesPanel() {
           <Button type="button" variant="secondary" onClick={() => { setSystemText(''); setUserText(''); setRating(''); setFeedback(''); }}>New</Button>
           <Button type="button" onClick={handleSave} disabled={!canSave || loading}>Save</Button>
           <Button type="button" variant="outline" onClick={handlePreviewOutput} disabled={previewLoading || !templateId}>Preview Output</Button>
-          <div className="flex items-center gap-2">
-            <Button type="button" variant="outline" onClick={handleShowBasePrompts} disabled={baseLoading || !templateId}>Show Base Prompts</Button>
-            <select className="rounded border border-slate-200 p-1 text-xs" value={placeholdersMode} onChange={e => setPlaceholdersMode(e.target.value as any)}>
-              <option value="compiled">Compiled</option>
-              <option value="placeholders">Placeholders ({'{{TEMPLATE}}'} / {'{{DATA}}'})</option>
-            </select>
-          </div>
-          <Button type="button" variant="outline" onClick={() => handleShowCurrentPrompts('self')} disabled={baseLoading || !templateId}>Show Current (Me)</Button>
-          <Button type="button" variant="outline" onClick={() => handleShowCurrentPrompts('global')} disabled={baseLoading || !templateId}>Show Current (Global)</Button>
+          <Button type="button" variant="outline" onClick={handleShowBasePrompts} disabled={baseLoading || !templateId}>Show Base Prompts (Placeholders)</Button>
         </div>
       </div>
 
@@ -277,11 +262,45 @@ export function AdminPromptOverridesPanel() {
           </DialogHeader>
           <div className="mt-2">
             {previewError && (<div className="mb-2 text-xs text-red-600">{previewError}</div>)}
+            <div className="mb-2">
+              <div className="mb-1 text-xs font-medium text-slate-700">System (Effective)</div>
+              <Textarea value={previewSystem} readOnly className="min-h-[120px]" placeholder={previewLoading ? 'Loading…' : 'No content'} />
+            </div>
+            <div className="mb-2">
+              <div className="mb-1 text-xs font-medium text-slate-700">User (Effective)</div>
+              <Textarea value={previewUser} readOnly className="min-h-[120px]" placeholder={previewLoading ? 'Loading…' : 'No content'} />
+            </div>
             <Textarea value={previewText} readOnly className="min-h-[320px]" placeholder={previewLoading ? 'Generating…' : 'No content'} />
             <div className="mt-2 flex gap-2">
               <Button type="button" variant="secondary" onClick={() => navigator.clipboard.writeText(previewText || '')} disabled={!previewText}>Copy</Button>
               <Button type="button" onClick={() => setPreviewOpen(false)}>Close</Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Enlarge System Editor */}
+      <Dialog open={systemEditorOpen} onOpenChange={setSystemEditorOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="text-sm">Edit System Override ({'{{TEMPLATE}}'})</DialogTitle>
+          </DialogHeader>
+          <Textarea value={systemText} onChange={e => setSystemText(e.target.value)} className="min-h-[420px]" />
+          <div className="mt-2 flex gap-2">
+            <Button type="button" onClick={() => setSystemEditorOpen(false)}>Done</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Enlarge User Editor */}
+      <Dialog open={userEditorOpen} onOpenChange={setUserEditorOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="text-sm">Edit User Override ({'{{DATA}}'})</DialogTitle>
+          </DialogHeader>
+          <Textarea value={userText} onChange={e => setUserText(e.target.value)} className="min-h-[420px]" />
+          <div className="mt-2 flex gap-2">
+            <Button type="button" onClick={() => setUserEditorOpen(false)}>Done</Button>
           </div>
         </DialogContent>
       </Dialog>
