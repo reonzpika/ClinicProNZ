@@ -46,6 +46,9 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
   // Mobile: allow textarea to grow to container height; Desktop: keep a friendly minimum
   const textareaMinHeightClass = mobileMode ? 'min-h-0' : 'min-h-[200px]';
 
+  // Consent statement appended to generated notes when consent was obtained
+  const CONSENT_STATEMENT = '\n\nPatient informed and consented verbally to the use of digital documentation assistance during this consultation, in line with NZ Health Information Privacy Principles. The patient retains the right to pause or stop the recording at any time.';
+
 
   // Computed value: generated notes with consent statement appended if consent was obtained
   const displayNotes = React.useMemo(() => {
