@@ -170,35 +170,7 @@ export function AdminPromptOverridesPanel() {
     }
   };
 
-  const handleShowCurrentPrompts = async (scope: 'self' | 'global') => {
-    setBaseOpen(true);
-    setBaseLoading(true);
-    setBaseError(null);
-    setBaseSystem('');
-    setBaseUser('');
-    try {
-      const body: any = {
-        templateId,
-        additionalNotes: getCompiledConsultationText(),
-        transcription: transcription?.transcript || '',
-        typedInput: typedInput || '',
-        scope, // controls whether to resolve self>global (default) or global-only
-      };
-      const res = await fetch('/api/admin/prompts/preview', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || 'Failed to fetch current prompts');
-      setBaseSystem(data?.effective?.system || '');
-      setBaseUser(data?.effective?.user || '');
-    } catch (e: any) {
-      setBaseError(e?.message || 'Failed to fetch current prompts');
-    } finally {
-      setBaseLoading(false);
-    }
-  };
+  // removed: show current prompts (me/global) per requirements
 
   return (
     <div className="rounded-md border border-slate-200 p-3">
