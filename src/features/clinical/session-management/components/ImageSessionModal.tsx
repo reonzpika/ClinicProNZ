@@ -83,16 +83,21 @@ export const ImageSessionModal: React.FC<ImageSessionModalProps> = ({ isOpen, on
                   const name = pendingName.trim();
                   if (!name) return;
                   setIsCreating(true);
+                  // Notify parent and close immediately to show page-level overlay
                   try { onCreateStart?.(); } catch {}
+                  try { onClose(); } catch {}
                   try {
                     const s = await create.mutateAsync(name);
                     setPendingName('');
+                    // Auto-select new session in parent
                     onSessionSelected(s.id);
-                    onClose();
-                  } catch {}
-                  finally {
-                    setIsCreating(false);
+                    // Success: keep overlay until session list shows the new session
+                  } catch (err) {
+                    // Error: show toast and ask parent to hide overlay
+                    try { show({ title: 'Failed to create session', description: 'Please try again.' }); } catch {}
                     try { onCreateEnd?.(); } catch {}
+                  } finally {
+                    setIsCreating(false);
                   }
                 }}
                 disabled={isCreating}

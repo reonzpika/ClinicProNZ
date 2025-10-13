@@ -76,13 +76,15 @@ export default function ClinicalImagePage() {
   const { show: showToast } = useToast();
   const { sessions } = usePatientSessions();
   const invalidateTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Popup overlay and pending new-session tracking
+  const [isCreatingOverlay, setIsCreatingOverlay] = useState(false);
+  const [pendingNewSessionId, setPendingNewSessionId] = useState<string | null>(null);
 
   // Track upload loading state
   const isUploading = uploadImages.isPending;
   const [uploadingFileCount, setUploadingFileCount] = useState(0);
   const [inFlightUploads, setInFlightUploads] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [isCreatingSession, setIsCreatingSession] = useState(false);
 
   // Enlarge modal state
   const [enlargeModal, setEnlargeModal] = useState<{
@@ -124,6 +126,16 @@ export default function ClinicalImagePage() {
   const selectAllVisible = useCallback((keys: string[]) => {
     setSelectedKeys(new Set(keys));
   }, []);
+
+  // Stop overlay when the new session appears in the list
+  useEffect(() => {
+    if (!pendingNewSessionId) return;
+    const exists = sessions.some(s => s.id === pendingNewSessionId);
+    if (exists) {
+      setIsCreatingOverlay(false);
+      setPendingNewSessionId(null);
+    }
+  }, [sessions, pendingNewSessionId]);
 
   const getDownloadUrl = useCallback(async (imageKey: string): Promise<string> => {
     const res = await fetch(`/api/uploads/download?key=${encodeURIComponent(imageKey)}`, {
@@ -701,7 +713,6 @@ Cancel
                   selectedSessionId={selectedSessionId}
                   onSwitch={() => setIsSessionModalOpen(true)}
                   onSelectSession={(id) => setSelectedSessionId(id)}
-                  isCreating={isCreatingSession}
                 />
                 {inFlightUploads > 0 && (
                   <div className="flex items-center justify-between rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-700">
@@ -926,9 +937,13 @@ Cancel
       <ImageSessionModal
         isOpen={isSessionModalOpen}
         onClose={() => setIsSessionModalOpen(false)}
-        onSessionSelected={(id) => { setSelectedSessionId(id); setIsSessionModalOpen(false); }}
-        onCreateStart={() => setIsCreatingSession(true)}
-        onCreateEnd={() => setIsCreatingSession(false)}
+        onSessionSelected={(id) => {
+          setSelectedSessionId(id);
+          setPendingNewSessionId(id);
+          setIsSessionModalOpen(false);
+        }}
+        onCreateStart={() => { setIsCreatingOverlay(true); }}
+        onCreateEnd={() => { setIsCreatingOverlay(false); }}
       />
       {enlargeModal.isOpen && enlargeModal.image && (
         <ImageEnlargeModal
@@ -946,6 +961,19 @@ Cancel
         accept="image/*"
         className="hidden"
       />
+
+      {/* Creating overlay popup */}
+      {isCreatingOverlay && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20">
+          <div className="flex items-center gap-3 rounded-md bg-white px-4 py-3 shadow">
+            <svg className="size-4 animate-spin text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+            </svg>
+            <span className="text-sm text-slate-700">Creating session.</span>
+          </div>
+        </div>
+      )}
     </Container>
   );
 }
