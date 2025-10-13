@@ -45,6 +45,9 @@ export function AdminPromptOverridesPanel() {
   const [previewSystem, setPreviewSystem] = useState('');
   const [previewUser, setPreviewUser] = useState('');
 
+  // Insert base placeholders into editors
+  const [insertLoading, setInsertLoading] = useState<'none' | 'system' | 'user'>('none');
+
   // Base prompts preview state (deprecated UI)
 
   // Version view modal
@@ -140,6 +143,44 @@ export function AdminPromptOverridesPanel() {
     }
   };
 
+  const insertSystemBase = async () => {
+    if (!templateId) return;
+    setInsertLoading('system');
+    try {
+      const res = await fetch('/api/admin/prompts/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ templateId, placeholdersOnly: true }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Failed to fetch base system prompt');
+      setSystemText(data?.placeholders?.system || '');
+    } catch {
+      // no-op
+    } finally {
+      setInsertLoading('none');
+    }
+  };
+
+  const insertUserBase = async () => {
+    if (!templateId) return;
+    setInsertLoading('user');
+    try {
+      const res = await fetch('/api/admin/prompts/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ templateId, placeholdersOnly: true }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Failed to fetch base user prompt');
+      setUserText(data?.placeholders?.user || '');
+    } catch {
+      // no-op
+    } finally {
+      setInsertLoading('none');
+    }
+  };
+
   // removed legacy base prompts dialog trigger; insertion happens inside editors
 
   // removed: show current prompts (me/global) per requirements
@@ -230,6 +271,9 @@ export function AdminPromptOverridesPanel() {
           </DialogHeader>
           <Textarea value={systemText} onChange={e => setSystemText(e.target.value)} className="min-h-[420px]" />
           <div className="mt-2 flex gap-2">
+            <Button type="button" variant="secondary" onClick={insertSystemBase} disabled={insertLoading==='system' || !templateId}>
+              {insertLoading==='system' ? 'Inserting…' : 'Insert system base'}
+            </Button>
             <Button type="button" onClick={() => setSystemEditorOpen(false)}>Done</Button>
           </div>
         </DialogContent>
@@ -243,6 +287,9 @@ export function AdminPromptOverridesPanel() {
           </DialogHeader>
           <Textarea value={userText} onChange={e => setUserText(e.target.value)} className="min-h-[420px]" />
           <div className="mt-2 flex gap-2">
+            <Button type="button" variant="secondary" onClick={insertUserBase} disabled={insertLoading==='user' || !templateId}>
+              {insertLoading==='user' ? 'Inserting…' : 'Insert user base'}
+            </Button>
             <Button type="button" onClick={() => setUserEditorOpen(false)}>Done</Button>
           </div>
         </DialogContent>
