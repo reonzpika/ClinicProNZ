@@ -700,7 +700,6 @@ Cancel
                 disabled={queuedItems.length === 0 || isUploading}
                 onClick={async () => {
                   const filesToUpload = queuedItems.map(it => it.file);
-                  setUploadingFileCount(filesToUpload.length);
                   try {
                     await uploadImages.mutateAsync({ files: filesToUpload, names: queuedItems.map(it => ({ patientName: patientNameInput || undefined, identifier: it.identifier || undefined })) });
                     // Clear queue and return
@@ -709,8 +708,6 @@ Cancel
                     setMobileStep('collect');
                   } catch (err) {
                     console.error('Upload failed:', err);
-                  } finally {
-                    setUploadingFileCount(0);
                   }
                 }}
               >
