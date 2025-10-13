@@ -45,6 +45,24 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
   const [isCreatingNewSession, setIsCreatingNewSession] = useState<boolean>(false);
   // Mobile: allow textarea to grow to container height; Desktop: keep a friendly minimum
   const textareaMinHeightClass = mobileMode ? 'min-h-0' : 'min-h-[200px]';
+
+  // Consent statement to append when consent was obtained
+  const CONSENT_STATEMENT = '\n\nPatient informed and consented verbally to the use of digital documentation assistance during this consultation, in line with NZ Health Information Privacy Principles. The patient retains the right to pause or stop the recording at any time.';
+
+  // Computed value: generated notes with consent statement appended if consent was obtained
+  const displayNotes = React.useMemo(() => {
+    if (!generatedNotes) {
+      return '';
+    }
+    if (!consentObtained) {
+      return generatedNotes;
+    }
+    // Check if consent statement is already included to avoid duplication
+    if (generatedNotes.includes('Patient informed and consented verbally to the use of a digital assistant')) {
+      return generatedNotes;
+    }
+    return generatedNotes + CONSENT_STATEMENT;
+  }, [generatedNotes, consentObtained]);
   // Controlled minimal UI for mobile post-generation: full-height textarea only
   if (mobileMode && mobilePostGen) {
     const hasContent = !!(displayNotes && displayNotes.trim() !== '');
@@ -64,11 +82,14 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
         {error && <div className="text-sm text-red-600">{error}</div>}
         <textarea
           value={displayNotes || ''}
-          onChange={handleNotesChange}
-          onBlur={handleNotesBlur}
+          onChange={(e) => {
+            const value = e.target.value;
+            const cleanedValue = value.replace(CONSENT_STATEMENT, '');
+            setGeneratedNotes(cleanedValue);
+          }}
           className={`h-0 w-full grow resize-none overflow-y-auto rounded border border-slate-200 bg-white p-3 ${textareaMinHeightClass} ${mobileMode ? 'text-base leading-relaxed' : 'text-sm leading-relaxed'} text-slate-800 focus:border-slate-400 focus:ring-2 focus:ring-slate-400`}
           style={{ scrollMarginBottom: 'var(--footer-h, 76px)' } as React.CSSProperties}
-          placeholder={getPlaceholderText()}
+          placeholder={loading ? 'Processing...' : 'Clinical documentation will appear here...'}
           disabled={loading}
           spellCheck={false}
         />
