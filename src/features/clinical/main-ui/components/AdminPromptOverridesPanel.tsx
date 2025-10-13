@@ -5,6 +5,9 @@ import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { Button } from '@/src/shared/components/ui/button';
 import { Textarea } from '@/src/shared/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
+import { Card } from '@/src/shared/components/ui/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/src/shared/components/ui/dropdown-menu';
+import { ChevronDown, ChevronUp, MoreHorizontal } from 'lucide-react';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 function tokenEstimate(text: string): number {
@@ -186,8 +189,28 @@ export function AdminPromptOverridesPanel() {
   // removed: show current prompts (me/global) per requirements
 
   return (
-    <div className="rounded-md border border-slate-200 p-3">
-      <div className="mb-2 text-sm font-semibold text-slate-700">Admin · Note Prompt Overrides</div>
+    <Card
+      className="space-y-3 p-3"
+      onClick={() => { /* no-op click container */ }}
+      role="region"
+      aria-label="Admin · Note Prompt Overrides"
+    >
+      <button
+        type="button"
+        className="flex min-h-10 w-full items-center justify-between text-left"
+        onClick={(e) => { e.stopPropagation(); setCollapsed(prev => !prev); }}
+        aria-expanded={!collapsed}
+      >
+        <div className="text-sm font-medium text-slate-700">Admin · Note Prompt Overrides</div>
+        {collapsed ? (
+          <ChevronDown className="size-4 text-slate-600" />
+        ) : (
+          <ChevronUp className="size-4 text-slate-600" />
+        )}
+      </button>
+
+      {!collapsed && (
+      <>
 
       <div className="mb-3 grid grid-cols-1 gap-3">
         <div>
@@ -223,11 +246,20 @@ export function AdminPromptOverridesPanel() {
           <div key={v.id} className="rounded border border-slate-200 p-2">
             <div className="flex items-center justify-between">
               <div className="text-xs font-medium">v{v.versionNumber} · {new Date(v.createdAt).toLocaleString()}</div>
-              <div className="flex gap-2">
-                <Button type="button" variant="secondary" onClick={() => { setSystemText(v.systemText); setUserText(v.userText); setRating(v.rating ?? ''); setFeedback(v.feedback ?? ''); }}>Load</Button>
+              <div className="flex items-center gap-2">
                 <Button type="button" variant="secondary" onClick={() => { setViewVersion(v); setViewOpen(true); }}>View</Button>
-                <Button type="button" variant="outline" onClick={() => activateSelf(v.id)} disabled={activeSelfVersionId === v.id}>Activate for me</Button>
-                <Button type="button" onClick={() => publishGlobal(v.id)} disabled={activeGlobalVersionId === v.id}>Publish to all</Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <div className="inline-flex items-center rounded border border-slate-300 px-2 py-1 text-xs text-slate-700 hover:bg-slate-50">
+                      <MoreHorizontal className="mr-1 size-3" /> Actions
+                    </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => { setSystemText(v.systemText); setUserText(v.userText); setRating(v.rating ?? ''); setFeedback(v.feedback ?? ''); }}>Load into editors</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => activateSelf(v.id)} disabled={activeSelfVersionId === v.id}>Activate for me</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => publishGlobal(v.id)} disabled={activeGlobalVersionId === v.id}>Publish to all</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
             {(v.feedback || v.rating) && (
@@ -326,6 +358,8 @@ export function AdminPromptOverridesPanel() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+      </>
+      )}
+    </Card>
   );
 }
