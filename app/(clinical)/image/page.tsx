@@ -371,14 +371,17 @@ export default function ClinicalImagePage() {
     try {
       const result = await uploadImages.mutateAsync({ files: fileArray, context });
       const returnedKeys: string[] = Array.isArray((result as any)?.keys) ? (result as any).keys : [];
-      if (returnedKeys.length === fileArray.length) {
+      if (returnedKeys.length > 0) {
         setLocalPreviewByKey(prev => {
-          const updated = { ...prev };
-          for (let i = 0; i < returnedKeys.length; i++) {
+          const updated: Record<string, string> = { ...prev };
+          const limit = Math.min(returnedKeys.length, optimisticIds.length);
+          for (let i = 0; i < limit; i++) {
+            const serverKey = returnedKeys[i];
             const oid = optimisticIds[i];
+            if (!serverKey) continue;
             const url = optimisticPreviewUrlsRef.current.get(oid || '');
             if (url) {
-              updated[returnedKeys[i]] = url;
+              updated[serverKey] = url;
             }
           }
           return updated;
