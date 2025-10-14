@@ -282,6 +282,7 @@ export const ClinicalImageTab: React.FC = () => {
     setError(null);
 
     try {
+      let serverKey: string | null = null;
       // Client-side resize
       const resizedBlob = await resizeImageFile(file, 1024);
 
@@ -297,6 +298,7 @@ export const ClinicalImageTab: React.FC = () => {
       }
 
       const { uploadUrl, key } = await presignResponse.json();
+      serverKey = key;
 
       // Upload to S3
       const uploadResponse = await fetch(uploadUrl, {
@@ -355,8 +357,8 @@ export const ClinicalImageTab: React.FC = () => {
       // Persist local preview URL mapping to avoid flicker when server tile appears
       if (optimisticId) {
         const url = optimisticPreviewUrlsRef.current.get(optimisticId);
-        if (url) {
-          setLocalPreviewByKey(prev => ({ ...prev, [newImage.key]: url }));
+        if (url && typeof serverKey === 'string' && serverKey) {
+          setLocalPreviewByKey(prev => ({ ...prev, [serverKey]: url }));
         }
       }
       // Remove the optimistic placeholder that corresponds to this file
