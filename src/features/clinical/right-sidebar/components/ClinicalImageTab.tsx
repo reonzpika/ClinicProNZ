@@ -169,7 +169,7 @@ export const ClinicalImageTab: React.FC = () => {
     setObjectiveText,
     saveObjectiveToCurrentSession,
   } = useConsultationStores();
-  const [uploading, setUploading] = useState(false);
+  // removed upload spinner state
   const [error, setError] = useState<string | null>(null);
   const [analyzingImages, setAnalyzingImages] = useState<Set<string>>(new Set());
   const [analysisErrors, setAnalysisErrors] = useState<Record<string, string>>({});
@@ -249,7 +249,6 @@ export const ClinicalImageTab: React.FC = () => {
       return;
     }
 
-    setUploading(true);
     setError(null);
 
     try {
@@ -323,7 +322,7 @@ export const ClinicalImageTab: React.FC = () => {
       console.error('Upload error:', err);
       setError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
-      setUploading(false);
+      // no-op
     }
   }, [
     currentPatientSessionId,
