@@ -94,6 +94,8 @@ export default function ClinicalImagePage() {
   const [pendingBatches, setPendingBatches] = useState<Array<{ id: string; optimisticIds: string[]; expected: number; startCount: number }>>([]);
   // Map of server image key -> local preview URL to avoid flicker when server image appears
   const [localPreviewByKey, setLocalPreviewByKey] = useState<Record<string, string>>({});
+  // Map optimisticId -> serverKey to hide duplicate server tiles while optimistic exists
+  const [oidToServerKey, setOidToServerKey] = useState<Record<string, string>>({});
   const [inFlightUploads, setInFlightUploads] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -346,6 +348,34 @@ export default function ClinicalImagePage() {
 
     const startCount = serverImages.length;
     const optimisticIds: string[] = [];
+    // Helper to mirror server filename pattern when a session is selected
+    const buildServerLikeFilename = (file: File): string => {
+      const parts = new Intl.DateTimeFormat('en-NZ', {
+        timeZone: 'Pacific/Auckland',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      }).formatToParts(new Date());
+      const get = (t: string) => parts.find(p => p.type === t)?.value || '';
+      const yyyy = get('year');
+      const mm = get('month');
+      const dd = get('day');
+      const hh = get('hour');
+      const mi = get('minute');
+      const ss = get('second');
+      const ms = String(new Date().getMilliseconds()).padStart(3, '0');
+      const dateStr = `${yyyy}-${mm}-${dd}`;
+      const compactTime = `${hh}${mi}${ss}${ms}`;
+      const ext = file.name.includes('.') ? `.${file.name.split('.').pop()}` : '';
+      const session = sessions.find(s => s.id === selectedSessionId);
+      const safePatient = (session?.patientName || 'Image').replaceAll('/', '-');
+      return `${safePatient} ${dateStr} ${compactTime}${ext}`.trim();
+    };
+
     const newOptimistics: OptimisticImage[] = fileArray.map((f) => {
       const optimisticId = Math.random().toString(36).slice(2);
       optimisticIds.push(optimisticId);
@@ -355,8 +385,8 @@ export default function ClinicalImagePage() {
         optimisticId,
         id: `optimistic-${optimisticId}`,
         key: `optimistic:${optimisticId}`,
-        filename: f.name,
-        displayName: f.name.replace(/\.[^.]+$/, ''),
+        filename: buildServerLikeFilename(f),
+        displayName: undefined,
         mimeType: f.type || 'image/jpeg',
         size: f.size || 0,
         uploadedAt: new Date().toISOString(),
@@ -385,6 +415,17 @@ export default function ClinicalImagePage() {
             }
           }
           return updated;
+        });
+        // Track mapping to hide duplicate server tiles while optimistics are present
+        setOidToServerKey(prev => {
+          const next = { ...prev };
+          const limit = Math.min(returnedKeys.length, optimisticIds.length);
+          for (let i = 0; i < limit; i++) {
+            const serverKey = returnedKeys[i];
+            const oid = optimisticIds[i];
+            if (serverKey && oid) next[oid] = serverKey;
+          }
+          return next;
         });
       }
       const expected = (returnedKeys.length || fileArray.length);
@@ -422,10 +463,20 @@ export default function ClinicalImagePage() {
       });
       if (toRemove.size > 0) {
         setOptimisticImages(prevImgs => prevImgs.filter(img => !toRemove.has((img as any).optimisticId)));
+        // Clean mappings for removed optimistics
+        setOidToServerKey(prevMap => {
+          const next = { ...prevMap };
+          toRemove.forEach(oid => { delete next[oid]; });
+          return next;
+        });
+        // Revoke only if URL is not used by any server preview mapping
+        const activePreviewUrls = new Set(Object.values(localPreviewByKey));
         toRemove.forEach(id => {
           const url = optimisticPreviewUrlsRef.current.get(id);
           if (url) {
-            URL.revokeObjectURL(url);
+            if (!activePreviewUrls.has(url)) {
+              try { URL.revokeObjectURL(url); } catch {}
+            }
             optimisticPreviewUrlsRef.current.delete(id);
           }
         });
@@ -1065,9 +1116,17 @@ Cancel
                             thumbnailUrl: undefined,
                             sessionId: undefined as unknown as string | undefined,
                           }));
-                          const serverWithPreviews = serverImages.map(img => (localPreviewByKey[img.key]
-                            ? { ...img, thumbnailUrl: localPreviewByKey[img.key] }
-                            : img));
+                          // Hide server tiles that correspond to active optimistic uploads
+                          const activeOptimisticServerKeys = new Set(
+                            Object.entries(oidToServerKey)
+                              .filter(([oid]) => optimisticImages.some(o => (o as any).optimisticId === oid))
+                              .map(([, key]) => key),
+                          );
+                          const serverWithPreviews = serverImages
+                            .filter(img => !activeOptimisticServerKeys.has(img.key))
+                            .map(img => (localPreviewByKey[img.key]
+                              ? { ...img, thumbnailUrl: localPreviewByKey[img.key] }
+                              : img));
                           const list = [...mobilePlaceholders.length ? placeholderTiles : [], ...optimisticImages, ...serverWithPreviews];
                           if (filterSessionIds.size > 0) {
                             return list.filter(img => img.sessionId && filterSessionIds.has(img.sessionId));
