@@ -1131,29 +1131,30 @@ export default function ConsultationPage() {
                                   const dateStr = date.toLocaleDateString('en-GB');
                                   const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                                   return (
-                                    <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
-                                      <div className="flex items-center justify-between gap-2">
+                                    <div className="text-xs text-slate-700">
+                                      <div className="flex items-center justify-between gap-2 py-1">
                                         <div className="min-w-0 flex items-center gap-2">
-                                          <div className="flex shrink-0 items-center gap-1">
-                                            <User className="size-3 text-blue-600" />
+                                          <div className="flex shrink-0 items-center gap-1 text-slate-700">
+                                            <User className="size-3 text-slate-600" />
                                             <span className="font-medium">Session</span>
                                           </div>
                                           <div className="min-w-0 truncate">
-                                            <span className="truncate font-semibold">{s?.patientName || 'Untitled Session'}</span>
-                                            <span className="mx-1">•</span>
-                                            <span className="text-[11px] text-blue-700">{dateStr} • {timeStr}</span>
+                                            <span className="truncate font-semibold text-slate-900">{s?.patientName || 'Untitled Session'}</span>
+                                            <span className="mx-1 text-slate-400">•</span>
+                                            <span className="text-[11px] text-slate-500">{dateStr} • {timeStr}</span>
                                           </div>
                                         </div>
                                         <Button
                                           type="button"
                                           size="sm"
-                                          variant="outline"
-                                          className="h-7 shrink-0 border-blue-300 px-2 text-[11px] text-blue-700 hover:bg-blue-100"
+                                          variant="ghost"
+                                          className="h-6 shrink-0 px-2 text-[11px] text-blue-700 hover:bg-blue-50"
                                           onClick={() => setSessionModalOpen(true)}
                                         >
                                           Manage
                                         </Button>
                                       </div>
+                                      <div className="border-b border-slate-200" />
                                     </div>
                                   );
                                 })()}
