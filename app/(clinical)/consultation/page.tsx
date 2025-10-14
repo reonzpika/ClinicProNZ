@@ -1154,7 +1154,7 @@ export default function ConsultationPage() {
                                 })()}
                                 {/* Pre-gen instruction */}
                                 <div className="rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-800">
-                                  Hit Record and speak clearly: findings, assessment, plan. Or type.
+                                  Tap Record to start your consultation. For a complete note, say your findings, assessment, and plan — or type below.
                                 </div>
                                 {/* Transcript display */}
                                 <TranscriptViewer />
