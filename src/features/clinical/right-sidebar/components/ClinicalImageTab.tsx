@@ -281,8 +281,9 @@ export const ClinicalImageTab: React.FC = () => {
 
     setError(null);
 
-    try {
-      let serverKey: string | null = null;
+  // Track server key across try/finally to map preview URLs
+  let serverKey: string | null = null;
+  try {
       // Client-side resize
       const resizedBlob = await resizeImageFile(file, 1024);
 
