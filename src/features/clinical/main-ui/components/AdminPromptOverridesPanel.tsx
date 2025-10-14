@@ -273,7 +273,15 @@ export function AdminPromptOverridesPanel() {
         {versions.map(v => (
           <div key={v.id} className="rounded border border-slate-200 p-2">
             <div className="flex items-center justify-between">
-              <div className="text-xs font-medium">v{v.versionNumber} · {new Date(v.createdAt).toLocaleString()}</div>
+              <div className="text-xs font-medium flex items-center gap-2">
+                <span>v{v.versionNumber} · {new Date(v.createdAt).toLocaleString()}</span>
+                {activeSelfVersionId === v.id && (
+                  <span className="rounded border border-blue-200 bg-blue-50 px-1.5 py-0.5 text-[10px] font-normal text-blue-700">Active (me)</span>
+                )}
+                {activeGlobalVersionId === v.id && (
+                  <span className="rounded border border-purple-200 bg-purple-50 px-1.5 py-0.5 text-[10px] font-normal text-purple-700">Active (global)</span>
+                )}
+              </div>
               <div className="flex items-center gap-2">
                 <Button type="button" variant="secondary" onClick={() => { setViewVersion(v); setViewOpen(true); }}>View</Button>
                 <DropdownMenu>
