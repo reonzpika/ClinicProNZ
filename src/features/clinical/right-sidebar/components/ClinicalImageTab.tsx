@@ -282,7 +282,7 @@ export const ClinicalImageTab: React.FC = () => {
     setError(null);
 
   // Track server key across try/finally to map preview URLs
-  let serverKey: string | null = null;
+  let serverKey: string = '';
   try {
       // Client-side resize
       const resizedBlob = await resizeImageFile(file, 1024);
@@ -359,7 +359,12 @@ export const ClinicalImageTab: React.FC = () => {
       if (optimisticId) {
         const url = optimisticPreviewUrlsRef.current.get(optimisticId);
         if (url && serverKey) {
-          setLocalPreviewByKey(prev => ({ ...prev, [serverKey]: url }));
+          const keyStr = serverKey as string;
+          setLocalPreviewByKey(prev => {
+            const next: Record<string, string> = { ...prev };
+            next[keyStr] = url;
+            return next;
+          });
         }
       }
       // Remove the optimistic placeholder that corresponds to this file
