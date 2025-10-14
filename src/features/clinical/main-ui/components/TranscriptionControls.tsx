@@ -370,10 +370,10 @@ export function TranscriptionControls({
                 handleStartRecording();
               }
             }}
-            className={`flex h-12 w-12 items-center justify-center rounded-full text-white shadow-md active:scale-95 ${isRecording ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
+            className={`flex h-11 w-11 items-center justify-center rounded-full text-white shadow-sm transition active:scale-95 ${isRecording ? 'bg-red-600 hover:bg-red-700' : 'bg-red-600 hover:bg-red-700'}`}
             aria-label={isRecording ? 'Stop recording' : 'Start recording'}
           >
-            {isRecording ? 'Stop' : 'Rec'}
+            {isRecording ? '■' : '●'}
           </button>
           {/* removed ready + timer */}
         </div>
@@ -809,7 +809,7 @@ export function TranscriptionControls({
               {isRecording && transcriptExpanded && (
                 <div className="flex items-center justify-between">
                   <div className="text-xs font-medium text-slate-600">
-                    Live Transcript
+                    Transcription
                     {' '}
                     {(useMobileV2 && hasMobileDevices) && '(mobile)'}
                   </div>
@@ -829,7 +829,7 @@ export function TranscriptionControls({
               {!isRecording && transcript && transcriptExpanded && (
                 <div className="flex items-center justify-between">
                   <div className="text-xs font-medium text-slate-600">
-                    Transcribed Text — Edit as needed
+                    Transcription
                   </div>
                   <div className="flex items-center gap-1">
                     <Button
@@ -889,7 +889,7 @@ export function TranscriptionControls({
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-slate-700">Transcript available</span>
+                      <span className="text-sm text-slate-700">Transcription available</span>
                       <span className="text-xs text-slate-500">
                         (
                         {transcript.split(/\s+/).filter((w: string) => w.length > 0).length}
@@ -907,7 +907,7 @@ export function TranscriptionControls({
               {/* Empty state - No transcription message */}
               {!transcript && !isRecording && (
                 <div className="rounded-md border border-slate-200 bg-slate-50 p-2">
-                  <p className="text-sm text-slate-500">No transcription</p>
+                  <p className="text-sm text-slate-500">No transcription yet</p>
                 </div>
               )}
             </div>

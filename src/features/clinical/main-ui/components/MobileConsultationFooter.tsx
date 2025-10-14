@@ -63,14 +63,25 @@ export const MobileConsultationFooter: React.FC = () => {
     <div className="flex items-center gap-3">
       {/* Recording control visible only pre-generation */}
       {!showPostGen && (
-        <TranscriptionControls
-          collapsed={false}
-          isMinimized={false}
-          enableRemoteMobile={false}
-          showRecordingMethodToggle={false}
-          mobileMode
-          footerMode
-        />
+        <div className="flex flex-1 items-center gap-3">
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent('footer:record-toggle'))}
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition active:scale-95 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400"
+            aria-label="Record"
+          >
+            ●
+          </button>
+          <Button
+            type="button"
+            variant="default"
+            onClick={onProcess}
+            disabled={!hasUserContent}
+            className="h-11 flex-1 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-base text-white shadow-sm transition hover:from-blue-700 hover:to-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+          >
+            Process
+          </Button>
+        </div>
       )}
 
       {/* CTAs */}
@@ -87,12 +98,12 @@ export const MobileConsultationFooter: React.FC = () => {
       )}
 
       {showPostGen && (
-        <>
+        <div className="flex flex-1 items-center gap-3">
           <Button
             type="button"
             variant="outline"
             onClick={onFinish}
-            className="h-11 flex-1 rounded-full border-red-300 text-base text-red-600 hover:bg-red-50 hover:text-red-700"
+            className="h-11 flex-1 rounded-full border-red-300 text-base text-red-600 shadow-sm transition hover:bg-red-50 hover:text-red-700"
           >
             Finish
           </Button>
@@ -100,11 +111,11 @@ export const MobileConsultationFooter: React.FC = () => {
             type="button"
             variant="default"
             onClick={onNew}
-            className="h-11 flex-1 rounded-full bg-blue-600 text-base text-white hover:bg-blue-700"
+            className="h-11 flex-1 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-base text-white shadow-sm transition hover:from-blue-700 hover:to-indigo-700"
           >
             New
           </Button>
-        </>
+        </div>
       )}
     </div>,
     footerRoot,

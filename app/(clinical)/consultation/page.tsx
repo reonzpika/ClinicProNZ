@@ -1159,7 +1159,7 @@ export default function ConsultationPage() {
                                   );
                                 })()}
                                 {/* Pre-gen instruction */}
-                                <div className="rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-800">
+                                <div className="mb-4 rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-800">
                                   <div className="flex items-start gap-2">
                                     <Mic className="mt-[2px] size-3 shrink-0 text-blue-600" />
                                     <span>

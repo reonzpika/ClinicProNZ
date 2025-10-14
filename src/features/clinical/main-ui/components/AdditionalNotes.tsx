@@ -1,6 +1,6 @@
 'use client';
 
-import { FileText } from 'lucide-react';
+// Removed header icon for a cleaner UI
 import React, { useEffect, useState } from 'react';
 
 import { ExaminationChecklistButton } from '@/src/features/clinical/examination-checklist/components/ExaminationChecklistButton';
@@ -424,9 +424,8 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     return (
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
-              <FileText size={16} className="text-slate-600" />
               <span className="text-sm font-medium text-slate-700">Additional Notes (optional)</span>
             </div>
             {!hideTips && (
@@ -459,7 +458,6 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
         <div className="mb-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
-              <FileText size={16} className="text-slate-600" />
               <label htmlFor="additional-notes" className="text-sm font-medium text-slate-700">
                 Additional Notes (optional)
               </label>
@@ -566,13 +564,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1">
-            <FileText size={16} className="text-slate-600" />
-            <label htmlFor="additional-notes" className="text-sm font-medium text-slate-700">
-              Additional Notes (optional)
-            </label>
-          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <label htmlFor="additional-notes" className="text-sm font-medium text-slate-700">
+                Additional Notes (optional)
+              </label>
+            </div>
           {!hideTips && (
             <span className="text-xs text-slate-500">Tip: Tab cycles Problems → Objective → Assessment → Plan; Shift+Tab reverses. Alt+C checklist, Alt+P safety-net.</span>
           )}
