@@ -202,7 +202,15 @@ export const ClinicalImageTab: React.FC = () => {
   useSimpleAbly({
     userId: userId ?? null,
     isMobile: false,
-    onImageUploadStarted: (count) => setInFlightUploads(prev => prev + (count || 0)),
+    onImageUploadStarted: (count) => {
+      const n = Math.max(0, count || 0);
+      setInFlightUploads(prev => prev + n);
+      if (n > 0) {
+        const ids: string[] = [];
+        for (let i = 0; i < n; i++) ids.push(Math.random().toString(36).slice(2));
+        setMobilePlaceholders(prev => [...ids, ...prev]);
+      }
+    },
     onImageUploaded: () => {
       setInFlightUploads(prev => Math.max(0, prev - 1));
       try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.lists() }); } catch {}
@@ -213,14 +221,8 @@ export const ClinicalImageTab: React.FC = () => {
     },
   });
 
-  // Mobile placeholders in consultation grid
+  // Mobile placeholders in consultation grid (added via Ably events)
   const [mobilePlaceholders, setMobilePlaceholders] = useState<string[]>([]);
-  const [mobileBatches, setMobileBatches] = useState<Array<{ placeholderIds: string[]; startCount: number; expected: number }>>([]);
-  React.useEffect(() => {
-    // Enhance Ably start handler to add placeholders
-    // We can't modify the hook callbacks here, so mirror via inFlightUploads deltas is non-trivial.
-    // Instead, we infer when uploads start via completedUploads reset + inFlightUploads increments handled above, and we do placeholders on file selection/drop below.
-  }, []);
 
   // Show toast when uploads complete
   React.useEffect(() => {
@@ -838,7 +840,7 @@ export const ClinicalImageTab: React.FC = () => {
             : (
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    ...mobilePlaceholders.map((id) => ({ id: `mobile-ph-${id}`, key: `mobile-ph:${id}`, filename: 'Uploading…', thumbnailUrl: undefined, uploadedAt: new Date().toISOString(), source: 'clinical' })),
+                    ...mobilePlaceholders.map((id) => ({ id: `mobile-ph-${id}`, key: `mobile-ph:${id}`, filename: 'Uploading…', thumbnailUrl: undefined, uploadedAt: new Date().toISOString(), source: 'clinical', sessionId: currentPatientSessionId })),
                     ...optimisticImages,
                     ...sessionServerImages,
                   ].map((image: any) => {
