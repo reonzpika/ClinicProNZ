@@ -196,7 +196,7 @@ export const ClinicalImageTab: React.FC = () => {
   // Optimistic previews for immediate thumbnail display
   const [optimisticImages, setOptimisticImages] = useState<Array<any>>([]);
   const optimisticPreviewUrlsRef = useRef<Map<string, string>>(new Map());
-  const [pendingBatches, setPendingBatches] = useState<Array<{ optimisticIds: string[]; startCount: number; expected: number }>>([]);
+  // Removed pendingBatches; we rely on cache invalidation and Ably refresh to replace optimistics
   const queryClient = useQueryClient();
   const queryClientRef = useRef(queryClient);
   useSimpleAbly({
