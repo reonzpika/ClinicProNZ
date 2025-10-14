@@ -774,7 +774,7 @@ export const ClinicalImageTab: React.FC = () => {
       )}
 
       {/* Session Images (from server under clinical-images/{userId}/{sessionId}/) */}
-      {(isLoadingServerImages || sessionServerImages.length > 0) && (
+      {(isLoadingServerImages || sessionServerImages.length > 0 || optimisticImages.length > 0 || mobilePlaceholders.length > 0) && (
         <div
           className={`border-l-2 pl-3 ${isDragging ? 'border-blue-400 border-dashed bg-blue-50/50' : 'border-blue-200'}`}
           onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
