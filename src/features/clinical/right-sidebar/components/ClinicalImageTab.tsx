@@ -24,6 +24,10 @@ function SessionImageTile({
   onEnlarge,
   onDownload,
   onDelete,
+  selectionMode,
+  selected,
+  onToggleSelect,
+  onActivateSelection,
 }: {
   image: any;
   isAnalyzing: boolean;
@@ -31,6 +35,10 @@ function SessionImageTile({
   onEnlarge: () => void;
   onDownload: () => void;
   onDelete: () => void;
+  selectionMode: boolean;
+  selected: boolean;
+  onToggleSelect: () => void;
+  onActivateSelection: () => void;
 }) {
   // Prefer server-provided thumbnailUrl; otherwise request presigned URL for the full image key
   const { data: imageUrlData } = useImageUrl(image.thumbnailUrl ? '' : image.key);
@@ -47,7 +55,18 @@ function SessionImageTile({
   };
   return (
     <div className="flex flex-col">
-      <div className="relative aspect-square overflow-hidden rounded-lg bg-slate-100">
+      <div
+        className="relative aspect-square overflow-hidden rounded-lg bg-slate-100 group"
+        onClick={(e) => {
+          if (selectionMode) {
+            e.preventDefault();
+            e.stopPropagation();
+            onToggleSelect();
+            return;
+          }
+          onAnalyze();
+        }}
+      >
         {imageUrl
           ? (
             <img src={imageUrl} alt="" className="size-full object-cover" />
@@ -55,7 +74,20 @@ function SessionImageTile({
           : (
             <div className="flex size-full items-center justify-center text-xs text-slate-400">No preview</div>
           )}
-        {/* Processing badge removed until real thumbnail pipeline exists */}
+        {/* Checkbox top-left */}
+        <div className={`absolute left-2 top-2 z-10 ${selectionMode ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}>
+          <input
+            type="checkbox"
+            className="h-4 w-4"
+            checked={selected}
+            onChange={(e) => {
+              e.stopPropagation();
+              if (!selectionMode) onActivateSelection();
+              else onToggleSelect();
+            }}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
       </div>
       <div className="mt-2 flex items-center gap-2">
         {isRenaming ? (
@@ -72,12 +104,17 @@ function SessionImageTile({
           />
         ) : (
           <>
-            <div className="min-w-0 flex-1 truncate text-xs text-slate-700">{image.displayName || image.filename}</div>
-            <Button type="button" size="sm" variant="outline" className="h-6 px-2 text-[10px]" onClick={() => setIsRenaming(true)}>Rename</Button>
+            <div
+              className="min-w-0 flex-1 truncate text-xs text-slate-700 cursor-text"
+              onClick={(e) => { e.stopPropagation(); setIsRenaming(true); }}
+              role="button"
+            >
+              {image.displayName || image.filename}
+            </div>
           </>
         )}
       </div>
-      <div className="mt-2 flex items-center justify-center gap-2">
+      <div className="mt-2 flex items-center justify-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
         <Button
           size="icon"
           variant="outline"
@@ -156,6 +193,10 @@ export const ClinicalImageTab: React.FC = () => {
     // Filter out images being deleted for optimistic UI
     return filtered.filter((img: any) => !deletingImages.has(img.key));
   }, [serverImages, currentPatientSessionId, deletingImages]);
+  // Optimistic previews for immediate thumbnail display
+  const [optimisticImages, setOptimisticImages] = useState<Array<any>>([]);
+  const optimisticPreviewUrlsRef = useRef<Map<string, string>>(new Map());
+  const [pendingBatches, setPendingBatches] = useState<Array<{ optimisticIds: string[]; startCount: number; expected: number }>>([]);
   const queryClient = useQueryClient();
   const queryClientRef = useRef(queryClient);
   useSimpleAbly({
@@ -289,19 +330,48 @@ export const ClinicalImageTab: React.FC = () => {
       return;
     }
 
-    // Upload files sequentially
+    // Create optimistic previews immediately
+    const startCount = sessionServerImages.length;
+    const optimisticIds: string[] = [];
+    const toUpload: File[] = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      if (file) {
-        await handleFileUpload(file);
-      }
+      if (!file) continue;
+      const id = Math.random().toString(36).slice(2);
+      optimisticIds.push(id);
+      const url = URL.createObjectURL(file);
+      optimisticPreviewUrlsRef.current.set(id, url);
+      const optimistic = {
+        optimisticId: id,
+        id: `optimistic-${id}`,
+        key: `optimistic:${id}`,
+        filename: file.name,
+        displayName: file.name.replace(/\.[^.]+$/, ''),
+        mimeType: file.type || 'image/jpeg',
+        size: file.size || 0,
+        uploadedAt: new Date().toISOString(),
+        source: 'clinical',
+        sessionId: currentPatientSessionId,
+        thumbnailUrl: url,
+      };
+      toUpload.push(file);
+      setOptimisticImages(prev => [optimistic, ...prev]);
     }
+
+    // Upload sequentially
+    for (const file of toUpload) {
+      // eslint-disable-next-line no-await-in-loop
+      await handleFileUpload(file);
+    }
+
+    // Track batch to remove optimistics once server images appear
+    setPendingBatches(prev => [...prev, { optimisticIds, startCount, expected: toUpload.length }]);
 
     // Clear input for re-selection
     if (event.target) {
       event.target.value = '';
     }
-  }, [handleFileUpload]);
+  }, [handleFileUpload, currentPatientSessionId, sessionServerImages.length]);
 
   const handleRemoveImage = useCallback(async (imageId: string) => {
     const updatedImages = clinicalImages.filter((img: any) => img.id !== imageId);
@@ -676,20 +746,42 @@ export const ClinicalImageTab: React.FC = () => {
             setIsDragging(false);
             try {
               const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
+              const startCount = sessionServerImages.length;
+              const optimisticIds: string[] = [];
+              const toUpload: File[] = [];
               for (const file of files) {
+                const id = Math.random().toString(36).slice(2);
+                optimisticIds.push(id);
+                const url = URL.createObjectURL(file);
+                optimisticPreviewUrlsRef.current.set(id, url);
+                const optimistic = {
+                  optimisticId: id,
+                  id: `optimistic-${id}`,
+                  key: `optimistic:${id}`,
+                  filename: file.name,
+                  displayName: file.name.replace(/\.[^.]+$/, ''),
+                  mimeType: file.type || 'image/jpeg',
+                  size: file.size || 0,
+                  uploadedAt: new Date().toISOString(),
+                  source: 'clinical',
+                  sessionId: currentPatientSessionId,
+                  thumbnailUrl: url,
+                };
+                setOptimisticImages(prev => [optimistic, ...prev]);
+                toUpload.push(file);
+              }
+              for (const file of toUpload) {
                 // eslint-disable-next-line no-await-in-loop
                 await handleFileUpload(file);
               }
+              setPendingBatches(prev => [...prev, { optimisticIds, startCount, expected: toUpload.length }]);
             } catch {
               setError('Failed to upload dropped files');
             }
           }}
         >
           <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <h4 className="text-sm font-medium text-blue-600">Session Images</h4>
-              <span className="text-[10px] text-slate-400">Thumbnails may expire after ~30m; they refresh automatically.</span>
-            </div>
+            <div className="flex items-center gap-2" />
             <div className="flex items-center gap-2">
               {inFlightUploads > 0 && (
                 <span className="flex items-center gap-1 rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
@@ -729,27 +821,18 @@ export const ClinicalImageTab: React.FC = () => {
           )}
           {isLoadingServerImages
             ? (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+                <div className="grid grid-cols-2 gap-3">
                   {Array.from({ length: 12 }).map((_, idx) => (
                     <GalleryTileSkeleton key={idx} />
                   ))}
                 </div>
               )
             : (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-                  {sessionServerImages.map((image: any) => {
+                <div className="grid grid-cols-2 gap-3">
+                  {[...optimisticImages, ...sessionServerImages].map((image: any) => {
                     const isAnalyzing = analyzingImages.has(image.id);
                     return (
                       <div key={image.id} className="relative">
-                        {selectionMode && (
-                          <input
-                            type="checkbox"
-                            aria-label="Select image"
-                            className="absolute left-2 top-2 z-10 h-4 w-4"
-                            checked={selectedKeys.has(image.key)}
-                            onChange={() => toggleSelectKey(image.key)}
-                          />
-                        )}
                         <SessionImageTile
                           image={image}
                           isAnalyzing={isAnalyzing}
@@ -757,6 +840,15 @@ export const ClinicalImageTab: React.FC = () => {
                           onEnlarge={() => setEnlargeImage(image)}
                           onDownload={() => handleDownloadImage(image as any)}
                           onDelete={() => handleDeleteSessionImage(image.key)}
+                          selectionMode={selectionMode}
+                          selected={selectedKeys.has(image.key)}
+                          onToggleSelect={() => toggleSelectKey(image.key)}
+                          onActivateSelection={() => {
+                            if (!selectionMode) {
+                              setSelectionMode(true);
+                              setSelectedKeys(new Set([image.key]));
+                            }
+                          }}
                         />
                       </div>
                     );
@@ -774,12 +866,11 @@ export const ClinicalImageTab: React.FC = () => {
         <div className="flex gap-2">
           <Button
             onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
             variant="outline"
             className="flex-1 gap-2"
             size="sm"
           >
-            {uploading ? 'Uploading...' : 'Add Clinical Image'}
+            Add Clinical Image
           </Button>
           <Button
             onClick={() => setShowQR(!showQR)}
