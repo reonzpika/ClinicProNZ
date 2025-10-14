@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
-import { TranscriptionControls } from './TranscriptionControls';
+// import { TranscriptionControls } from './TranscriptionControls';
 
 export const MobileConsultationFooter: React.FC = () => {
   const {
