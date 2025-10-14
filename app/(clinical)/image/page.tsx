@@ -92,6 +92,8 @@ export default function ClinicalImagePage() {
   const [optimisticImages, setOptimisticImages] = useState<OptimisticImage[]>([]);
   const optimisticPreviewUrlsRef = useRef<Map<string, string>>(new Map());
   const [pendingBatches, setPendingBatches] = useState<Array<{ id: string; optimisticIds: string[]; expected: number; startCount: number }>>([]);
+  // Map of server image key -> local preview URL to avoid flicker when server image appears
+  const [localPreviewByKey, setLocalPreviewByKey] = useState<Record<string, string>>({});
   const [inFlightUploads, setInFlightUploads] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -368,7 +370,21 @@ export default function ClinicalImagePage() {
 
     try {
       const result = await uploadImages.mutateAsync({ files: fileArray, context });
-      const expected = (result?.keys?.length ?? fileArray.length);
+      const returnedKeys: string[] = Array.isArray((result as any)?.keys) ? (result as any).keys : [];
+      if (returnedKeys.length === fileArray.length) {
+        setLocalPreviewByKey(prev => {
+          const updated = { ...prev };
+          for (let i = 0; i < returnedKeys.length; i++) {
+            const oid = optimisticIds[i];
+            const url = optimisticPreviewUrlsRef.current.get(oid || '');
+            if (url) {
+              updated[returnedKeys[i]] = url;
+            }
+          }
+          return updated;
+        });
+      }
+      const expected = (returnedKeys.length || fileArray.length);
       setPendingBatches(prev => [...prev, { id: Math.random().toString(36).slice(2), optimisticIds, expected, startCount }]);
     } catch (err) {
       console.error('Upload failed:', err);
@@ -1049,7 +1065,10 @@ Cancel
                             thumbnailUrl: undefined,
                             sessionId: undefined as unknown as string | undefined,
                           }));
-                          const list = [...mobilePlaceholders.length ? placeholderTiles : [], ...optimisticImages, ...serverImages];
+                          const serverWithPreviews = serverImages.map(img => (localPreviewByKey[img.key]
+                            ? { ...img, thumbnailUrl: localPreviewByKey[img.key] }
+                            : img));
+                          const list = [...mobilePlaceholders.length ? placeholderTiles : [], ...optimisticImages, ...serverWithPreviews];
                           if (filterSessionIds.size > 0) {
                             return list.filter(img => img.sessionId && filterSessionIds.has(img.sessionId));
                           }

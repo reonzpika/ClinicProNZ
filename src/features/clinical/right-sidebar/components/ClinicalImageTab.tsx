@@ -196,6 +196,7 @@ export const ClinicalImageTab: React.FC = () => {
   // Optimistic previews for immediate thumbnail display
   const [optimisticImages, setOptimisticImages] = useState<Array<any>>([]);
   const optimisticPreviewUrlsRef = useRef<Map<string, string>>(new Map());
+  const [localPreviewByKey, setLocalPreviewByKey] = useState<Record<string, string>>({});
   // Removed pendingBatches; we rely on cache invalidation and Ably refresh to replace optimistics
   const queryClient = useQueryClient();
   const queryClientRef = useRef(queryClient);
@@ -351,6 +352,13 @@ export const ClinicalImageTab: React.FC = () => {
       console.error('Upload error:', err);
       setError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
+      // Persist local preview URL mapping to avoid flicker when server tile appears
+      if (optimisticId) {
+        const url = optimisticPreviewUrlsRef.current.get(optimisticId);
+        if (url) {
+          setLocalPreviewByKey(prev => ({ ...prev, [newImage.key]: url }));
+        }
+      }
       // Remove the optimistic placeholder that corresponds to this file
       if (optimisticId) {
         setOptimisticImages(prev => prev.filter(img => (img as any).optimisticId !== optimisticId));
@@ -869,7 +877,7 @@ export const ClinicalImageTab: React.FC = () => {
                   {[
                     ...mobilePlaceholders.map((id) => ({ id: `mobile-ph-${id}`, key: `mobile-ph:${id}`, filename: 'Uploading…', thumbnailUrl: undefined, uploadedAt: new Date().toISOString(), source: 'clinical', sessionId: currentPatientSessionId })),
                     ...optimisticImages,
-                    ...sessionServerImages,
+                    ...sessionServerImages.map((img: any) => (localPreviewByKey[img.key] ? { ...img, thumbnailUrl: localPreviewByKey[img.key] } : img)),
                   ].map((image: any) => {
                     const isAnalyzing = analyzingImages.has(image.id);
                     return (
