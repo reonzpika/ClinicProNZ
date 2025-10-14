@@ -84,18 +84,7 @@ export const MobileConsultationFooter: React.FC = () => {
         </div>
       )}
 
-      {/* CTAs */}
-      {!showPostGen && (
-        <Button
-          type="button"
-          variant="default"
-          onClick={onProcess}
-          disabled={!hasUserContent}
-          className="h-11 flex-1 rounded-full bg-slate-700 px-4 text-base text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-gray-400"
-        >
-          Process
-        </Button>
-      )}
+      {/* CTAs removed: duplicate darker Process button */}
 
       {showPostGen && (
         <div className="flex flex-1 items-center gap-3">
