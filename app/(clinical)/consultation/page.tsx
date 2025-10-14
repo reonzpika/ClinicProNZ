@@ -25,6 +25,7 @@ import { PatientSessionManager } from '@/src/features/clinical/session-managemen
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { RecordingAwareSessionContext } from '@/src/hooks/useRecordingAwareSession';
 import { ContactLink } from '@/src/shared/components/ContactLink';
+import { User, Mic } from 'lucide-react';
 import { FeatureFeedbackButton } from '@/src/shared/components/FeatureFeedbackButton';
 import { Container } from '@/src/shared/components/layout/Container';
 import { Stack } from '@/src/shared/components/layout/Stack';
@@ -1132,12 +1133,16 @@ export default function ConsultationPage() {
                                   return (
                                     <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800">
                                       <div className="flex items-center justify-between gap-2">
-                                        <div className="min-w-0 truncate">
-                                          <span className="font-medium">Session:</span>
-                                          <span className="ml-1 truncate">
-                                            {s?.patientName || 'Untitled Session'}
-                                          </span>
-                                          <span className="ml-2 text-[11px] text-blue-700">{dateStr} • {timeStr}</span>
+                                        <div className="min-w-0 flex items-center gap-2">
+                                          <div className="flex shrink-0 items-center gap-1">
+                                            <User className="size-3 text-blue-600" />
+                                            <span className="font-medium">Session</span>
+                                          </div>
+                                          <div className="min-w-0 truncate">
+                                            <span className="truncate font-semibold">{s?.patientName || 'Untitled Session'}</span>
+                                            <span className="mx-1">•</span>
+                                            <span className="text-[11px] text-blue-700">{dateStr} • {timeStr}</span>
+                                          </div>
                                         </div>
                                         <Button
                                           type="button"
@@ -1154,7 +1159,14 @@ export default function ConsultationPage() {
                                 })()}
                                 {/* Pre-gen instruction */}
                                 <div className="rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-800">
-                                  Tap Record to start your consultation. For a complete note, say your findings, assessment, and plan — or type below.
+                                  <div className="flex items-start gap-2">
+                                    <Mic className="mt-[2px] size-3 shrink-0 text-blue-600" />
+                                    <span>
+                                      <span className="font-semibold">Tap Record</span>
+                                      {' '}
+                                      to start your consultation. For a complete note, say your findings, assessment, and plan — or type below.
+                                    </span>
+                                  </div>
                                 </div>
                                 {/* Transcript display */}
                                 <TranscriptViewer />
