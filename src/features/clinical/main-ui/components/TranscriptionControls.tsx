@@ -23,12 +23,20 @@ export function TranscriptionControls({
   isMinimized,
   mobileIsRecording = false,
   defaultRecordingMethod = 'desktop',
+  enableRemoteMobile = true,
+  showRecordingMethodToggle = true,
+  mobileMode = false,
+  footerMode = false,
 }: {
   collapsed?: boolean;
   onExpand?: () => void;
   isMinimized?: boolean;
   mobileIsRecording?: boolean;
   defaultRecordingMethod?: 'desktop' | 'mobile';
+  enableRemoteMobile?: boolean; // disable Ably remote + QR when false
+  showRecordingMethodToggle?: boolean; // hide Desktop/Mobile toggle when false
+  mobileMode?: boolean; // render mobile-optimised controls
+  footerMode?: boolean; // compact footer-only UI (record + timer)
 }) {
   const { isSignedIn } = useAuth();
 
@@ -48,18 +56,26 @@ export function TranscriptionControls({
   const [recordingStartTime, setRecordingStartTime] = useState<number | null>(null);
   const [showNoTranscriptWarning, setShowNoTranscriptWarning] = useState(false);
   const [canCreateSession, setCanCreateSession] = useState<boolean>(true);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   // Reset expansion state when isMinimized prop changes
   useEffect(() => {
     setIsExpanded(!isMinimized);
   }, [isMinimized]);
 
-  const useMobileV2 = true; // Mobile V2 is now enabled by default
+  const useMobileV2 = enableRemoteMobile; // Respect prop for enabling remote mobile control
   const [recordingMethod, setRecordingMethod] = useState<'desktop' | 'mobile'>(defaultRecordingMethod);
 
   useEffect(() => {
     setRecordingMethod(defaultRecordingMethod);
   }, [defaultRecordingMethod]);
+
+  // Force local mic only when toggle is hidden
+  useEffect(() => {
+    if (!showRecordingMethodToggle && recordingMethod !== 'desktop') {
+      setRecordingMethod('desktop');
+    }
+  }, [showRecordingMethodToggle, recordingMethod]);
 
   const {
     isRecording,
@@ -94,6 +110,35 @@ export function TranscriptionControls({
     }
   }, [isRecording, recordingStartTime]);
 
+  // Elapsed timer while recording
+  useEffect(() => {
+    let t: any = null;
+    if (isRecording && recordingStartTime) {
+      const compute = () => setElapsedSeconds(Math.max(0, Math.floor((Date.now() - (recordingStartTime || 0)) / 1000)));
+      compute();
+      t = setInterval(compute, 1000);
+    } else {
+      setElapsedSeconds(0);
+    }
+    return () => { if (t) clearInterval(t); };
+  }, [isRecording, recordingStartTime]);
+
+  const formatElapsed = (totalSeconds: number) => {
+    const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+    const s = (totalSeconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
+  // Simple haptic feedback (mobile only, best-effort)
+  const haptic = (durationMs = 30) => {
+    try {
+      if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+        // @ts-ignore
+        navigator.vibrate?.(durationMs);
+      }
+    } catch {}
+  };
+
   // Check for no transcript warning after 40 seconds
   useEffect(() => {
     if (isRecording && recordingStartTime && !transcript.trim()) {
@@ -118,6 +163,9 @@ export function TranscriptionControls({
 
   // Observe recording status to acknowledge control
   useEffect(() => {
+    if (!enableRemoteMobile) {
+      return;
+    }
     if (pendingControl === 'start' && mobileIsRecording) {
       setPendingControl(null);
       setControlError(null);
@@ -132,7 +180,7 @@ export function TranscriptionControls({
         clearTimeout(controlAckTimer);
       }
     }
-  }, [mobileIsRecording, pendingControl, controlAckTimer]);
+  }, [mobileIsRecording, pendingControl, controlAckTimer, enableRemoteMobile]);
 
   // Clear any outstanding remote control error when mobile recording begins (late ACK)
   useEffect(() => {
@@ -141,8 +189,11 @@ export function TranscriptionControls({
   }, [mobileIsRecording]);
 
   // Remote control handlers (send via global Ably bridge exposed in ConsultationPage)
-  const sendMobileControl = async (action: 'start' | 'stop') => {
+  const sendMobileControl = async (action: 'start' | 'stop'): Promise<boolean> => {
     try {
+      if (!enableRemoteMobile) {
+        return false;
+      }
       setControlError(null);
       setPendingControl(action);
 
@@ -155,7 +206,7 @@ export function TranscriptionControls({
       if (!ok) {
         setPendingControl(null);
         setControlError('Mobile not connected. Please open the mobile page and unlock the screen.');
-        return;
+        return false;
       }
 
       // Start ack timeout (3s)
@@ -164,9 +215,11 @@ export function TranscriptionControls({
         setControlError('Mobile did not respond. Ensure the phone is unlocked and the mobile page is active.');
       }, 3000);
       setControlAckTimer(t);
+      return true;
     } catch (e) {
       setPendingControl(null);
       setControlError(e instanceof Error ? e.message : 'Failed to send control command');
+      return false;
     }
   };
 
@@ -194,7 +247,7 @@ export function TranscriptionControls({
     }
 
     // Mobile: initiate consent process then send remote start
-    if (recordingMethod === 'mobile') {
+    if (enableRemoteMobile && recordingMethod === 'mobile') {
       // If consent already obtained this session, skip re-request and send start
       if (consentObtained) {
         const canSend = typeof window !== 'undefined'
@@ -302,6 +355,38 @@ export function TranscriptionControls({
       </div>
     );
   };
+
+  // Footer-only compact UI (for sticky bars)
+  if (footerMode) {
+    return (
+      <>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              if (isRecording) {
+                stopRecording();
+              } else {
+                handleStartRecording();
+              }
+            }}
+            className={`flex h-11 w-11 items-center justify-center rounded-full text-white shadow-sm transition active:scale-95 ${isRecording ? 'bg-red-600 hover:bg-red-700' : 'bg-red-600 hover:bg-red-700'}`}
+            aria-label={isRecording ? 'Stop recording' : 'Start recording'}
+          >
+            {isRecording ? '■' : '●'}
+          </button>
+          {/* removed ready + timer */}
+        </div>
+
+        {/* Ensure consent modal renders for footer mode */}
+        <ConsentModal
+          isOpen={showConsentModal}
+          onConfirm={handleConsentConfirm}
+          onCancel={handleConsentCancel}
+        />
+      </>
+    );
+  }
 
   // Handle minimized state (in documentation mode)
   if (isMinimized) {
@@ -428,7 +513,17 @@ export function TranscriptionControls({
             {/* removed ready-for-review label */}
           </div>
         </div>
-        <div className="flex items-center gap-2" />
+        <div className="flex items-center gap-2">
+          {/* Consent pill */}
+          <button
+            type="button"
+            onClick={() => setShowConsentModal(true)}
+            className={`h-6 rounded-full px-2 text-[11px] ${consentObtained ? 'border border-green-300 bg-green-50 text-green-700' : 'border border-amber-300 bg-amber-50 text-amber-700'}`}
+            aria-label="Consent status"
+          >
+            {consentObtained ? 'Consent: Granted' : 'Consent: Required'}
+          </button>
+        </div>
       </div>
 
       <div>
@@ -478,83 +573,121 @@ export function TranscriptionControls({
               <div className="text-xs text-red-500">No audio detected—check your mic</div>
             )}
 
-            {/* Primary Recording Options - single row, toggles Record/Stop */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                {/* Left: Record/Stop button */}
-                <div>
-                  {isRecording || mobileIsRecording
-                    ? (
-                        <Button
-                          type="button"
-                          onClick={() => {
- if (mobileIsRecording) {
- sendMobileControl('stop');
-} else {
- stopRecording();
-}
-}}
-                          className="h-8 bg-red-600 px-4 text-xs text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-                        >
-                          Stop
-                        </Button>
-                      )
-                    : (
-                        <Button
-                          type="button"
-                          onClick={handleStartRecording}
-                          disabled={!canCreateSession}
-                          className="h-8 bg-green-600 px-4 text-xs text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-                          title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
-                        >
-                          Record
-                        </Button>
-                      )}
-                </div>
+            {/* Primary Recording Options */}
+            {mobileMode
+              ? (
+                  <div className="flex items-center justify-between">
+                    {/* Large circular Record/Stop */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isRecording) {
+                          haptic(30);
+                          stopRecording();
+                        } else {
+                          haptic(30);
+                          handleStartRecording();
+                        }
+                      }}
+                      className={`flex h-16 w-16 items-center justify-center rounded-full text-white shadow-md active:scale-95 ${isRecording ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
+                      aria-label={isRecording ? 'Stop recording' : 'Start recording'}
+                    >
+                      {isRecording ? 'Stop' : 'Rec'}
+                    </button>
 
-                {/* Right: toggle + (conditional) Connect */}
-                <div className="flex items-center gap-2">
-                  {/* Recording method toggle */}
-                  <div className="inline-flex rounded-md border border-slate-300 bg-white p-1 text-xs">
-                    <Button
-                      type="button"
-                      variant={recordingMethod === 'desktop' ? 'default' : 'ghost'}
-                      className={`h-7 px-2 ${recordingMethod === 'desktop' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-700'}`}
-                      onClick={() => setRecordingMethod('desktop')}
-                      disabled={isRecording || mobileIsRecording}
-                    >
-                      Desktop
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={recordingMethod === 'mobile' ? 'default' : 'ghost'}
-                      className={`h-7 px-2 ${recordingMethod === 'mobile' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-700'}`}
-                      onClick={() => setRecordingMethod('mobile')}
-                      disabled={isRecording || mobileIsRecording}
-                    >
-                      Mobile
-                    </Button>
+                    {/* Status and timer */}
+                    <div className="flex flex-col items-end">
+                      <div className="text-xs text-slate-600">
+                        {isRecording ? 'Transcribing…' : 'Ready'}
+                      </div>
+                      <div className={`text-sm tabular-nums ${isRecording ? 'text-slate-800' : 'text-slate-400'}`}>
+                        {formatElapsed(elapsedSeconds)}
+                      </div>
+                    </div>
                   </div>
+                )
+              : (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      {/* Left: Record/Stop button */}
+                      <div>
+                        {isRecording || mobileIsRecording
+                          ? (
+                              <Button
+                                type="button"
+                                onClick={() => {
+                                  if (mobileIsRecording) {
+                                    sendMobileControl('stop');
+                                  } else {
+                                    stopRecording();
+                                  }
+                                }}
+                                className="h-8 bg-red-600 px-4 text-xs text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                              >
+                                Stop
+                              </Button>
+                            )
+                          : (
+                              <Button
+                                type="button"
+                                onClick={handleStartRecording}
+                                disabled={!canCreateSession}
+                                className="h-8 bg-green-600 px-4 text-xs text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                                title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
+                              >
+                                Record
+                              </Button>
+                            )}
+                      </div>
 
-                  {/* Connect Mobile small button - only when mobile selected */}
-                  {recordingMethod === 'mobile' && (
-                    <Button
-                      type="button"
-                      onClick={handleMobileClick}
-                      disabled={(!isSignedIn && !canCreateSession) || isRecording || mobileIsRecording}
-                      className="h-7 bg-blue-600 px-2 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-                      title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
-                    >
-                      <Smartphone className="mr-1 size-3" />
-                      Connect
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
+                      {/* Right: toggle + (conditional) Connect */}
+                      <div className="flex items-center gap-2">
+                        {/* Recording method toggle */}
+                        {showRecordingMethodToggle && (
+                          <div className="inline-flex rounded-md border border-slate-300 bg-white p-1 text-xs">
+                            <Button
+                              type="button"
+                              variant={recordingMethod === 'desktop' ? 'default' : 'ghost'}
+                              className={`h-7 px-2 ${recordingMethod === 'desktop' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-700'}`}
+                              onClick={() => setRecordingMethod('desktop')}
+                              disabled={isRecording || mobileIsRecording}
+                            >
+                              Desktop
+                            </Button>
+                            {enableRemoteMobile && (
+                              <Button
+                                type="button"
+                                variant={recordingMethod === 'mobile' ? 'default' : 'ghost'}
+                                className={`h-7 px-2 ${recordingMethod === 'mobile' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-700'}`}
+                                onClick={() => setRecordingMethod('mobile')}
+                                disabled={isRecording || mobileIsRecording}
+                              >
+                                Mobile
+                              </Button>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Connect Mobile button - only when remote enabled and mobile selected */}
+                        {enableRemoteMobile && showRecordingMethodToggle && recordingMethod === 'mobile' && (
+                          <Button
+                            type="button"
+                            onClick={handleMobileClick}
+                            disabled={(!isSignedIn && !canCreateSession) || isRecording || mobileIsRecording}
+                            className="h-7 bg-blue-600 px-2 text-xs text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                            title={!isSignedIn && !canCreateSession ? 'Session limit reached - see Usage Dashboard for upgrade options' : ''}
+                          >
+                            <Smartphone className="mr-1 size-3" />
+                            Connect
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
             {/* Remote control pending status */}
-            {pendingControl && (
+            {enableRemoteMobile && pendingControl && (
               <Alert className="border-blue-200 bg-blue-50 p-2 text-xs text-blue-700">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -567,7 +700,7 @@ export function TranscriptionControls({
             )}
 
             {/* Remote control warnings with CTAs */}
-            {controlError && (
+            {enableRemoteMobile && controlError && (
               <Alert className="border-yellow-200 bg-yellow-50 p-2 text-xs text-yellow-800">
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{controlError}</span>
@@ -676,7 +809,7 @@ export function TranscriptionControls({
               {isRecording && transcriptExpanded && (
                 <div className="flex items-center justify-between">
                   <div className="text-xs font-medium text-slate-600">
-                    Live Transcript
+                    Transcription
                     {' '}
                     {(useMobileV2 && hasMobileDevices) && '(mobile)'}
                   </div>
@@ -696,7 +829,7 @@ export function TranscriptionControls({
               {!isRecording && transcript && transcriptExpanded && (
                 <div className="flex items-center justify-between">
                   <div className="text-xs font-medium text-slate-600">
-                    Transcribed Text — Edit as needed
+                    Transcription
                   </div>
                   <div className="flex items-center gap-1">
                     <Button
@@ -756,7 +889,7 @@ export function TranscriptionControls({
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-slate-700">Transcript available</span>
+                      <span className="text-sm text-slate-700">Transcription available</span>
                       <span className="text-xs text-slate-500">
                         (
                         {transcript.split(/\s+/).filter((w: string) => w.length > 0).length}
@@ -774,7 +907,7 @@ export function TranscriptionControls({
               {/* Empty state - No transcription message */}
               {!transcript && !isRecording && (
                 <div className="rounded-md border border-slate-200 bg-slate-50 p-2">
-                  <p className="text-sm text-slate-500">No transcription</p>
+                  <p className="text-sm text-slate-500">No transcription yet</p>
                 </div>
               )}
             </div>
@@ -797,10 +930,12 @@ export function TranscriptionControls({
       />
 
       {/* Mobile Recording Modal - V2 */}
-      <MobileRecordingQRV2
-        isOpen={showMobileRecordingV2}
-        onClose={() => setShowMobileRecordingV2(false)}
-      />
+      {enableRemoteMobile && (
+        <MobileRecordingQRV2
+          isOpen={showMobileRecordingV2}
+          onClose={() => setShowMobileRecordingV2(false)}
+        />
+      )}
     </div>
   );
 }

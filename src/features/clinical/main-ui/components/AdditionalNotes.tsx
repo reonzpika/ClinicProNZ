@@ -1,6 +1,6 @@
 'use client';
 
-import { FileText } from 'lucide-react';
+// Removed header icon for a cleaner UI
 import React, { useEffect, useState } from 'react';
 
 import { ExaminationChecklistButton } from '@/src/features/clinical/examination-checklist/components/ExaminationChecklistButton';
@@ -25,6 +25,9 @@ type AdditionalNotesProps = {
   isMinimized?: boolean;
   defaultExpanded?: boolean;
   expandedSize?: 'normal' | 'large';
+  forceExpanded?: boolean;
+  hideTips?: boolean;
+  autoFocusOnExpand?: boolean;
 };
 
 export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
@@ -35,8 +38,12 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   isMinimized = false,
   defaultExpanded = true,
   expandedSize = 'normal',
+  forceExpanded = false,
+  hideTips = false,
+  autoFocusOnExpand = true,
 }) => {
   const [isExpanded, setIsExpanded] = useState(isMinimized ? false : defaultExpanded);
+  const effectiveExpanded = forceExpanded ? true : isExpanded;
 
   // Refs for keyboard focus management
   const problemsRef = React.useRef<HTMLTextAreaElement | null>(null);
@@ -82,14 +89,14 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     } catch {}
   };
 
-  // Auto-focus Problems when expanding the section
+  // Auto-focus Problems when expanding the section (configurable)
   useEffect(() => {
-    if (isExpanded && problemsRef.current) {
+    if (isExpanded && autoFocusOnExpand && problemsRef.current) {
       try {
         problemsRef.current.focus();
       } catch {}
     }
-  }, [isExpanded]);
+  }, [isExpanded, autoFocusOnExpand]);
 
   // Document-level Tab trap: when editor is visible and focus is outside, Tab focuses Problems (or Plan with Shift)
   useEffect(() => {
@@ -413,28 +420,31 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   }
 
   // Collapsed standard view
-  if (!isExpanded) {
+  if (!effectiveExpanded) {
     return (
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
-              <FileText size={16} className="text-slate-600" />
               <span className="text-sm font-medium text-slate-700">Additional Notes (optional)</span>
             </div>
-            <span className="text-xs text-slate-500">Tip: Tab cycles Problems → Objective → Assessment → Plan; Shift+Tab reverses. Alt+C checklist, Alt+P safety-net.</span>
+            {!hideTips && (
+              <span className="text-xs text-slate-500">Tip: Tab cycles Problems → Objective → Assessment → Plan; Shift+Tab reverses. Alt+C checklist, Alt+P safety-net.</span>
+            )}
             {renderCharacterCount()}
           </div>
           <div className="flex items-center gap-1">
             <ExaminationChecklistButton tabIndex={-1} />
             <PlanSafetyNettingButton tabIndex={-1} />
-            <button
-              type="button"
-              className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
-              onClick={() => setIsExpanded(true)}
-            >
-              +
-            </button>
+            {!forceExpanded && (
+              <button
+                type="button"
+                className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
+                onClick={() => setIsExpanded(true)}
+              >
+                +
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -448,21 +458,24 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
         <div className="mb-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
-              <FileText size={16} className="text-slate-600" />
               <label htmlFor="additional-notes" className="text-sm font-medium text-slate-700">
                 Additional Notes (optional)
               </label>
             </div>
-            <span className="text-xs text-slate-500">Tip: Tab moves Problems → Objective → Assessment → Plan; Shift+Tab goes back</span>
+            {!hideTips && (
+              <span className="text-xs text-slate-500">Tip: Tab moves Problems → Objective → Assessment → Plan; Shift+Tab goes back</span>
+            )}
           </div>
           <div className="flex items-center gap-1">
-            <button
-              type="button"
-              className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
-              onClick={() => setIsExpanded(false)}
-            >
-              −
-            </button>
+            {!forceExpanded && (
+              <button
+                type="button"
+                className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
+                onClick={() => setIsExpanded(false)}
+              >
+                −
+              </button>
+            )}
           </div>
         </div>
         <div className="flex flex-1 flex-col space-y-2" ref={containerRef} role="group" aria-label="Additional notes editor">
@@ -521,7 +534,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 ref={assessmentRef}
               />
             </div>
-            <div>
+            <div className="mb-20 md:mb-0">
               <div className="mb-1 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <label htmlFor="additional-notes-plan" className="block text-xs font-medium text-slate-500">Plan</label>
@@ -551,26 +564,29 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1">
-            <FileText size={16} className="text-slate-600" />
-            <label htmlFor="additional-notes" className="text-sm font-medium text-slate-700">
-              Additional Notes (optional)
-            </label>
-          </div>
-          <span className="text-xs text-slate-500">Tip: Tab cycles Problems → Objective → Assessment → Plan; Shift+Tab reverses. Alt+C checklist, Alt+P safety-net.</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <label htmlFor="additional-notes" className="text-sm font-medium text-slate-700">
+                Additional Notes (optional)
+              </label>
+            </div>
+          {!hideTips && (
+            <span className="text-xs text-slate-500">Tip: Tab cycles Problems → Objective → Assessment → Plan; Shift+Tab reverses. Alt+C checklist, Alt+P safety-net.</span>
+          )}
         </div>
         <div className="flex items-center gap-1">
-          <button
-            type="button"
-            className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
-            onClick={() => setIsExpanded(false)}
-          >
-            −
-          </button>
+          {!forceExpanded && (
+            <button
+              type="button"
+              className="h-6 px-2 text-xs text-slate-600 hover:text-slate-800"
+              onClick={() => setIsExpanded(false)}
+            >
+              −
+            </button>
+          )}
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-3" ref={containerRef} role="group" aria-label="Additional notes editor">
+      <div className="grid grid-cols-1 gap-2" ref={containerRef} role="group" aria-label="Additional notes editor" style={{ scrollMarginBottom: 'var(--footer-h, 64px)' } as React.CSSProperties}>
         <div>
           <div className="mb-1 flex items-center gap-2">
             <label htmlFor="additional-notes" className="block text-xs font-medium text-slate-500">Problems</label>
