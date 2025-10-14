@@ -900,11 +900,11 @@ export default function ConsultationPage() {
           onSessionCreated={() => setSessionModalOpen(false)}
         />
       <div className={`
-        flex min-h-dvh flex-col transition-all duration-300 ease-in-out
+        flex min-h-dvh h-full flex-col transition-all duration-300 ease-in-out
       `}
       >
-        <Container size="fluid" className="min-h-0">
-          <div className={`flex min-h-0 flex-col ${(isMobile || isTablet) ? 'py-4' : 'py-6'}`}> 
+        <Container size="fluid" className="min-h-0 h-full">
+          <div className={`flex min-h-0 h-full flex-col ${(isMobile || isTablet) ? 'py-4' : 'py-6'}`}> 
             {/* Mobile Tools Button removed; tools embedded below settings */}
 
             {/* Upgrade Notification for users redirected from registration */}
