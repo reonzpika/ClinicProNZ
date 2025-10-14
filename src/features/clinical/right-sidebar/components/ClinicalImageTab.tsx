@@ -374,9 +374,6 @@ export const ClinicalImageTab: React.FC = () => {
       await handleFileUpload(file);
     }
 
-    // Track batch to remove optimistics once server images appear
-    setPendingBatches(prev => [...prev, { optimisticIds, startCount, expected: toUpload.length }]);
-
     // Clear input for re-selection
     if (event.target) {
       event.target.value = '';
@@ -784,7 +781,6 @@ export const ClinicalImageTab: React.FC = () => {
                 // eslint-disable-next-line no-await-in-loop
                 await handleFileUpload(file);
               }
-              setPendingBatches(prev => [...prev, { optimisticIds, startCount, expected: toUpload.length }]);
             } catch {
               setError('Failed to upload dropped files');
             }
