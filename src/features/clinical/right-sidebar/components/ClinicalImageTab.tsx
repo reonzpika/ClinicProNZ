@@ -340,15 +340,12 @@ export const ClinicalImageTab: React.FC = () => {
       return;
     }
 
-    // Create optimistic previews immediately
-    const startCount = sessionServerImages.length;
-    const optimisticIds: string[] = [];
+    // Create optimistic previews immediately (no count tracking)
     const toUpload: File[] = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (!file) continue;
       const id = Math.random().toString(36).slice(2);
-      optimisticIds.push(id);
       const url = URL.createObjectURL(file);
       optimisticPreviewUrlsRef.current.set(id, url);
       const optimistic = {
@@ -753,12 +750,10 @@ export const ClinicalImageTab: React.FC = () => {
             setIsDragging(false);
             try {
               const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
-              const startCount = sessionServerImages.length;
-              const optimisticIds: string[] = [];
+              // Create optimistic previews for dropped files (no count tracking)
               const toUpload: File[] = [];
               for (const file of files) {
                 const id = Math.random().toString(36).slice(2);
-                optimisticIds.push(id);
                 const url = URL.createObjectURL(file);
                 optimisticPreviewUrlsRef.current.set(id, url);
                 const optimistic = {
