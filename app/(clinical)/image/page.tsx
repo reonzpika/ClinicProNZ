@@ -233,7 +233,18 @@ export default function ClinicalImagePage() {
     userId: userId ?? null,
     isMobile: false,
     onImageUploadStarted: (count) => {
-      setInFlightUploads((prev) => prev + (count || 0));
+      const n = Math.max(0, count || 0);
+      setInFlightUploads((prev) => prev + n);
+      if (n > 0) {
+        // Create mobile placeholder tiles and batch tracking
+        const newIds: string[] = [];
+        for (let i = 0; i < n; i++) newIds.push(Math.random().toString(36).slice(2));
+        setMobilePlaceholders((prev) => [...newIds, ...prev]);
+        setMobileBatches((prev) => [
+          ...prev,
+          { id: Math.random().toString(36).slice(2), placeholderIds: newIds, startCount: serverImages.length, expected: n },
+        ]);
+      }
     },
     onImageUploaded: () => {
       setInFlightUploads((prev) => Math.max(0, prev - 1));
@@ -253,6 +264,30 @@ export default function ClinicalImagePage() {
       }
     },
   });
+
+  // Mobile placeholders state
+  const [mobilePlaceholders, setMobilePlaceholders] = useState<string[]>([]);
+  const [mobileBatches, setMobileBatches] = useState<Array<{ id: string; placeholderIds: string[]; startCount: number; expected: number }>>([]);
+
+  // Reconcile mobile placeholders when server images appear
+  useEffect(() => {
+    if (mobileBatches.length === 0) return;
+    setMobileBatches((prev) => {
+      const remaining: typeof prev = [];
+      const removeIds: string[] = [];
+      prev.forEach((b) => {
+        if (serverImages.length >= b.startCount + b.expected) {
+          removeIds.push(...b.placeholderIds);
+        } else {
+          remaining.push(b);
+        }
+      });
+      if (removeIds.length > 0) {
+        setMobilePlaceholders((prevIds) => prevIds.filter((id) => !removeIds.includes(id)));
+      }
+      return remaining;
+    });
+  }, [serverImages.length, mobileBatches.length]);
 
   // Detect mobile on mount
   useEffect(() => {
@@ -1003,7 +1038,17 @@ Cancel
                       <ImageSectionsGrid
                         images={(() => {
                           // Filter: only sessions with images + selected sessions if any
-                          const list = [...optimisticImages, ...serverImages];
+                          const placeholderTiles = mobilePlaceholders.map((id) => ({
+                            id: `mobile-placeholder-${id}`,
+                            key: `mobile-placeholder:${id}`,
+                            filename: 'Uploading…',
+                            mimeType: 'image/jpeg',
+                            size: 0,
+                            uploadedAt: new Date().toISOString(),
+                            source: 'clinical' as const,
+                            thumbnailUrl: undefined,
+                          }));
+                          const list = [...mobilePlaceholders.length ? placeholderTiles : [], ...optimisticImages, ...serverImages];
                           if (filterSessionIds.size > 0) {
                             return list.filter(img => img.sessionId && filterSessionIds.has(img.sessionId));
                           }

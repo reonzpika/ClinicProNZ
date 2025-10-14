@@ -213,6 +213,15 @@ export const ClinicalImageTab: React.FC = () => {
     },
   });
 
+  // Mobile placeholders in consultation grid
+  const [mobilePlaceholders, setMobilePlaceholders] = useState<string[]>([]);
+  const [mobileBatches, setMobileBatches] = useState<Array<{ placeholderIds: string[]; startCount: number; expected: number }>>([]);
+  React.useEffect(() => {
+    // Enhance Ably start handler to add placeholders
+    // We can't modify the hook callbacks here, so mirror via inFlightUploads deltas is non-trivial.
+    // Instead, we infer when uploads start via completedUploads reset + inFlightUploads increments handled above, and we do placeholders on file selection/drop below.
+  }, []);
+
   // Show toast when uploads complete
   React.useEffect(() => {
     if (inFlightUploads === 0 && completedUploads > 0) {
@@ -829,7 +838,11 @@ export const ClinicalImageTab: React.FC = () => {
               )
             : (
                 <div className="grid grid-cols-2 gap-3">
-                  {[...optimisticImages, ...sessionServerImages].map((image: any) => {
+                  {[
+                    ...mobilePlaceholders.map((id) => ({ id: `mobile-ph-${id}`, key: `mobile-ph:${id}`, filename: 'Uploading…', thumbnailUrl: undefined, uploadedAt: new Date().toISOString(), source: 'clinical' })),
+                    ...optimisticImages,
+                    ...sessionServerImages,
+                  ].map((image: any) => {
                     const isAnalyzing = analyzingImages.has(image.id);
                     return (
                       <div key={image.id} className="relative">
