@@ -54,7 +54,7 @@ function SessionImageTile({
     setIsRenaming(false);
   };
   return (
-    <div className="flex flex-col">
+    <div className="group flex flex-col">
       <div
         className="relative aspect-square overflow-hidden rounded-lg bg-slate-100 group"
         onClick={(e) => {
@@ -245,7 +245,34 @@ export const ClinicalImageTab: React.FC = () => {
   // Ably listener for mobile image notifications (desktop only)
   // Desktop image notifications can be re-wired later to user channel if needed
 
-  const handleFileUpload = useCallback(async (file: File) => {
+  // Build a server-like filename so optimistic tiles match the eventual server object naming
+  const buildServerLikeFilename = useCallback((file: File): string => {
+    const parts = new Intl.DateTimeFormat('en-NZ', {
+      timeZone: 'Pacific/Auckland',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }).formatToParts(new Date());
+    const get = (t: string) => parts.find(p => p.type === t)?.value || '';
+    const yyyy = get('year');
+    const mm = get('month');
+    const dd = get('day');
+    const hh = get('hour');
+    const mi = get('minute');
+    const ss = get('second');
+    const ms = String(new Date().getMilliseconds()).padStart(3, '0');
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+    const compactTime = `${hh}${mi}${ss}${ms}`;
+    const ext = file.name.includes('.') ? `.${file.name.split('.').pop()}` : '';
+    const safePatient = (currentSession?.patientName || 'Patient').replaceAll('/', '-');
+    return `${safePatient} ${dateStr} ${compactTime}${ext}`.trim();
+  }, [currentSession?.patientName]);
+
+  const handleFileUpload = useCallback(async (file: File, optimisticId?: string) => {
     if (!currentPatientSessionId) {
       setError('No active patient session');
       return;
@@ -307,7 +334,7 @@ export const ClinicalImageTab: React.FC = () => {
       const newImage: ClinicalImage = {
         id: Math.random().toString(36).substr(2, 9),
         key,
-        filename: file.name,
+        filename: buildServerLikeFilename(file),
         mimeType: file.type,
         uploadedAt: new Date().toISOString(),
       };
@@ -324,7 +351,15 @@ export const ClinicalImageTab: React.FC = () => {
       console.error('Upload error:', err);
       setError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
-      // no-op
+      // Remove the optimistic placeholder that corresponds to this file
+      if (optimisticId) {
+        setOptimisticImages(prev => prev.filter(img => (img as any).optimisticId !== optimisticId));
+        const url = optimisticPreviewUrlsRef.current.get(optimisticId);
+        if (url) {
+          URL.revokeObjectURL(url);
+          optimisticPreviewUrlsRef.current.delete(optimisticId);
+        }
+      }
     }
   }, [
     currentPatientSessionId,
@@ -332,6 +367,7 @@ export const ClinicalImageTab: React.FC = () => {
     saveClinicalImagesToCurrentSession,
     clinicalImages,
     queryClient,
+    buildServerLikeFilename,
   ]);
 
   const handleFileSelect = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -341,7 +377,7 @@ export const ClinicalImageTab: React.FC = () => {
     }
 
     // Create optimistic previews immediately (no count tracking)
-    const toUpload: File[] = [];
+    const toUpload: Array<{ file: File; optimisticId: string }> = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (!file) continue;
@@ -352,8 +388,8 @@ export const ClinicalImageTab: React.FC = () => {
         optimisticId: id,
         id: `optimistic-${id}`,
         key: `optimistic:${id}`,
-        filename: file.name,
-        displayName: file.name.replace(/\.[^.]+$/, ''),
+        filename: buildServerLikeFilename(file),
+        displayName: undefined,
         mimeType: file.type || 'image/jpeg',
         size: file.size || 0,
         uploadedAt: new Date().toISOString(),
@@ -361,14 +397,14 @@ export const ClinicalImageTab: React.FC = () => {
         sessionId: currentPatientSessionId,
         thumbnailUrl: url,
       };
-      toUpload.push(file);
+      toUpload.push({ file, optimisticId: id });
       setOptimisticImages(prev => [optimistic, ...prev]);
     }
 
     // Upload sequentially
-    for (const file of toUpload) {
+    for (const { file, optimisticId } of toUpload) {
       // eslint-disable-next-line no-await-in-loop
-      await handleFileUpload(file);
+      await handleFileUpload(file, optimisticId);
     }
 
     // Clear input for re-selection
@@ -751,7 +787,7 @@ export const ClinicalImageTab: React.FC = () => {
             try {
               const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
               // Create optimistic previews for dropped files (no count tracking)
-              const toUpload: File[] = [];
+              const toUpload: Array<{ file: File; optimisticId: string }> = [];
               for (const file of files) {
                 const id = Math.random().toString(36).slice(2);
                 const url = URL.createObjectURL(file);
@@ -760,8 +796,8 @@ export const ClinicalImageTab: React.FC = () => {
                   optimisticId: id,
                   id: `optimistic-${id}`,
                   key: `optimistic:${id}`,
-                  filename: file.name,
-                  displayName: file.name.replace(/\.[^.]+$/, ''),
+                  filename: buildServerLikeFilename(file),
+                  displayName: undefined,
                   mimeType: file.type || 'image/jpeg',
                   size: file.size || 0,
                   uploadedAt: new Date().toISOString(),
@@ -770,11 +806,11 @@ export const ClinicalImageTab: React.FC = () => {
                   thumbnailUrl: url,
                 };
                 setOptimisticImages(prev => [optimistic, ...prev]);
-                toUpload.push(file);
+                toUpload.push({ file, optimisticId: id });
               }
-              for (const file of toUpload) {
+              for (const { file, optimisticId } of toUpload) {
                 // eslint-disable-next-line no-await-in-loop
-                await handleFileUpload(file);
+                await handleFileUpload(file, optimisticId);
               }
             } catch {
               setError('Failed to upload dropped files');
