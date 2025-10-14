@@ -1,0 +1,153 @@
+'use client';
+
+import { Calendar, ChevronDown, RefreshCw, UserCheck, Trash2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+
+import { Button } from '@/src/shared/components/ui/button';
+import { Card, CardContent } from '@/src/shared/components/ui/card';
+import { Input } from '@/src/shared/components/ui/input';
+import { usePatientSessions } from '@/src/features/clinical/session-management/hooks/usePatientSessions';
+
+export type ImageSessionBarProps = {
+  selectedSessionId: string | 'none';
+  onSwitch: () => void;
+  onSelectSession: (id: string | 'none') => void;
+  isCreating?: boolean; // show loading state when creating a new session
+};
+
+function formatNzDate(dateString?: string) {
+  const date = new Date(dateString || new Date());
+  const parts = new Intl.DateTimeFormat('en-NZ', {
+    timeZone: 'Pacific/Auckland',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(date);
+  const get = (type: string) => parts.find(p => p.type === type)?.value || '';
+  return {
+    date: `${get('day')}/${get('month')}/${get('year')}`,
+    time: `${get('hour')}:${get('minute')}`,
+  };
+}
+
+export const ImageSessionBar: React.FC<ImageSessionBarProps> = ({ selectedSessionId, onSwitch, onSelectSession, isCreating = false }) => {
+  const { sessions, rename, remove } = usePatientSessions();
+  const current = useMemo(() => sessions.find(s => s.id === selectedSessionId), [sessions, selectedSessionId]);
+
+  const [tempName, setTempName] = useState(current?.patientName || '');
+
+  // Keep tempName in sync when selection changes
+  const [prevId, setPrevId] = useState<string | 'none'>(selectedSessionId);
+  if (prevId !== selectedSessionId) {
+    setPrevId(selectedSessionId);
+    // Only update tempName when we actually have a current session name; avoid wiping to blank
+    if (current?.patientName) {
+      setTempName(current.patientName);
+    }
+  }
+
+  // When sessions refetch and current appears later, backfill tempName if it's empty
+  if (!tempName && current?.patientName) {
+    setTempName(current.patientName);
+  }
+
+  const nz = formatNzDate(current?.createdAt);
+
+  return (
+    <Card className="border-blue-200 bg-blue-50 shadow-sm">
+      <CardContent className="p-3">
+        {/* Responsive three-row layout to avoid overlaps */}
+        <div className="flex flex-col gap-2">
+          {/* Row 1: patient name */}
+          <div className="flex min-w-0 items-center gap-2">
+            <UserCheck className="mt-0.5 size-4 shrink-0 text-blue-600" />
+            {current ? (
+              <Input
+                value={tempName}
+                onChange={(e) => setTempName(e.target.value)}
+                onBlur={async () => {
+                  const name = tempName.trim();
+                  if (name && name !== current.patientName) {
+                    try { await rename.mutateAsync({ sessionId: current.id, patientName: name }); } catch {}
+                  }
+                }}
+                onKeyDown={async (e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const name = tempName.trim();
+                    if (name && current && name !== current.patientName) {
+                      try { await rename.mutateAsync({ sessionId: current.id, patientName: name }); } catch {}
+                    }
+                  }
+                }}
+                className="h-8 flex-1 border-blue-300 bg-blue-50 text-sm font-medium text-blue-800 focus:border-blue-500"
+                disabled={isCreating}
+              />
+            ) : (
+              <div className="flex items-center gap-2 text-sm font-medium text-blue-800">
+                {isCreating ? (
+                  <>
+                    <RefreshCw className="size-3 animate-spin text-blue-600" />
+                    <span>Creating session…</span>
+                  </>
+                ) : (
+                  <span>No session selected</span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Row 2: date/time */}
+          <div className="flex items-center gap-2 text-xs text-blue-600">
+            {current && (
+              <>
+                <Calendar className="size-3" />
+                <span className="truncate">{nz.date} • {nz.time}</span>
+              </>
+            )}
+          </div>
+
+          {/* Row 3: actions */}
+          <div className="flex items-center justify-end gap-2">
+            <Button onClick={onSwitch} size="sm" variant="outline" className="h-8 border-blue-300 px-3 text-xs text-blue-700 hover:bg-blue-100" disabled={isCreating}>
+              <span className="mr-1">Switch Session</span>
+              <ChevronDown className="size-3" />
+            </Button>
+            {current && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 border-red-300 px-3 text-xs text-red-700 hover:bg-red-100"
+                onClick={async () => {
+                  try { await remove.mutateAsync(current.id); onSelectSession('none'); } catch {}
+                }}
+                disabled={remove.isPending || isCreating}
+              >
+                {remove.isPending ? (
+                  <span className="inline-flex items-center gap-1">
+                    <RefreshCw className="size-3 animate-spin" />
+                    Deleting...
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1">
+                    <Trash2 className="size-3" />
+                    Delete
+                  </span>
+                )}
+              </Button>
+            )}
+            {isCreating && (
+              <div className="ml-2 inline-flex items-center gap-1 text-xs text-blue-700">
+                <RefreshCw className="size-3 animate-spin" />
+                <span>Creating…</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};

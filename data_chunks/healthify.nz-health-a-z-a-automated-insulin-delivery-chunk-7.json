@@ -1,0 +1,10 @@
+{
+  "url": "https://healthify.nz/health-a-z/a/automated-insulin-delivery/",
+  "title": "Automated Insulin Delivery",
+  "content": "The insulin pump will also deliver extra insulin if glucose levels are too high. These are known as corrections.\n\n\n####  What is an automated insulin delivery (AID) system? \nAn automated insulin delivery system is made up of an insulin pump **plus** a continuous glucose monitor (CGM) **plus** an algorithm that links the 2 devices together, enabling them to “talk” to each other.\n  * An AID is like a standard insulin pump with one major difference – they have algorithms that can receive blood glucose readings from a CGM and calculate how much basal insulin to deliver based on your current and predicted glucose values.\n  * When a bolus dose is needed for a meal and/or correction, these systems also have calculators that can suggest a bolus amount.\n  * Bolus delivery is not automatic, manual programming and delivery is needed just like a standard insulin pump.\n\n\n",
+  "chunkIndex": 7,
+  "metadata": {
+    "lastUpdated": "2025-10-04T03:24:39.345570+00:00",
+    "source": "healthify"
+  }
+}

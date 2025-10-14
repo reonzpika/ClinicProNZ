@@ -22,6 +22,8 @@ export type ServerImage = {
   uploadedAt: string;
   source: 'consultation' | 'mobile' | 'clinical';
   sessionId?: string;
+  sessionName?: string; // Optional session name for grouping headers
+  thumbnailKey?: string; // Optional thumbnail key for faster loads
   tokenId?: string;
   analysis?: ImageAnalysis; // Latest analysis for this image
   thumbnailUrl?: string; // Presigned URL for thumbnail (performance optimization)

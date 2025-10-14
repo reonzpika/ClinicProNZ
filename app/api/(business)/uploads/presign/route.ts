@@ -2,12 +2,12 @@ import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { auth } from '@clerk/nextjs/server';
 import { getDb } from 'database/client';
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
-import { users } from '@/db/schema';
+import { patientSessions, users } from '@/db/schema';
 
 // Initialize S3 client for NZ region
 const s3Client = new S3Client({
@@ -33,20 +33,58 @@ export async function GET(req: NextRequest) {
     // Get file metadata from query params
     const filename = req.nextUrl.searchParams.get('filename') || 'image.jpg';
     const mimeType = req.nextUrl.searchParams.get('mimeType') || 'image/jpeg';
+    const providedSessionId = req.nextUrl.searchParams.get('sessionId');
+    const noSessionParam = req.nextUrl.searchParams.get('noSession');
 
-    // 🆕 SERVER-SIDE SESSION RESOLUTION: Auto-lookup current session from database
+    // 🆕 SERVER-SIDE SESSION RESOLUTION (feature-aware)
     let patientSessionId: string | null = null;
+    let patientNameForSession: string | null = null;
     try {
-      const userRows = await db
-        .select({ currentSessionId: users.currentSessionId })
-        .from(users)
-        .where(eq(users.id, userId))
-        .limit(1);
+      // If explicitly requested to upload without session, honour it
+      const wantsNoSession = noSessionParam === '1' || noSessionParam === 'true';
 
-      patientSessionId = userRows?.[0]?.currentSessionId || null;
+      if (!wantsNoSession && providedSessionId) {
+        // Validate the provided session belongs to the user and is not deleted
+        const rows = await db
+          .select({ id: patientSessions.id, patientName: patientSessions.patientName })
+          .from(patientSessions)
+          .where(and(eq(patientSessions.id, providedSessionId), eq(patientSessions.userId, userId), isNull(patientSessions.deletedAt)))
+          .limit(1);
+        if (rows?.[0]?.id) {
+          patientSessionId = rows[0].id;
+          patientNameForSession = rows[0].patientName || 'Patient';
+        }
+      }
+
+      // Fallback to previous behaviour (currentSessionId) only when not explicitly noSession and no valid provided session
+      if (!patientSessionId && !wantsNoSession) {
+        const userRows = await db
+          .select({ currentSessionId: users.currentSessionId })
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
+        patientSessionId = userRows?.[0]?.currentSessionId || null;
+        if (patientSessionId) {
+          try {
+            const rows = await db
+              .select({ id: patientSessions.id, patientName: patientSessions.patientName })
+              .from(patientSessions)
+              .where(and(eq(patientSessions.id, patientSessionId), eq(patientSessions.userId, userId), isNull(patientSessions.deletedAt)))
+              .limit(1);
+            if (rows?.[0]?.id) {
+              patientNameForSession = rows[0].patientName || 'Patient';
+            } else {
+              // If currentSessionId invalid, clear it
+              patientSessionId = null;
+            }
+          } catch {}
+        }
+      }
     } catch (error) {
-      console.error('Failed to lookup current session:', error);
+      console.error('Failed to resolve session context:', error);
       // Continue without session - images will be saved to user folder root
+      patientSessionId = null;
+      patientNameForSession = null;
     }
 
     // Validate file type
@@ -54,16 +92,52 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Only image files are allowed' }, { status: 400 });
     }
 
-    // Generate unique key for S3 object based on upload type
+    // Generate key for S3 object based on upload type
     const timestamp = Date.now();
-    const fileExtension = filename.split('.').pop() || 'jpg';
-    const uniqueFilename = `${timestamp}-${uuidv4()}.${fileExtension}`;
+    const fileExtension = (filename.split('.').pop() || 'jpg').toLowerCase();
 
-    // Build key under clinical-images/{userId}/ with optional session folder
+    // Helper to format NZ local date/time into desired pattern
+    const formatNzDateTime = (date: Date): { dateStr: string; timeStr: string; compactTime: string } => {
+      const parts = new Intl.DateTimeFormat('en-NZ', {
+        timeZone: 'Pacific/Auckland',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      }).formatToParts(date);
+      const get = (type: string) => parts.find(p => p.type === type)?.value || '';
+      // en-NZ gives DD/MM/YYYY; we want YYYY-MM-DD
+      const yyyy = get('year');
+      const mm = get('month');
+      const dd = get('day');
+      const hh = get('hour');
+      const min = get('minute');
+      const ss = get('second');
+      const ms = String(date.getMilliseconds()).padStart(3, '0');
+      return {
+        dateStr: `${yyyy}-${mm}-${dd}`,
+        timeStr: `${hh}${min}${ss}${ms}`,
+        compactTime: `${hh}${min}${ss}${ms}`,
+      };
+    };
+
     const basePrefix = `clinical-images/${userId}/`;
-    const key = patientSessionId
-      ? `${basePrefix}${patientSessionId}/${uniqueFilename}`
-      : `${basePrefix}${uniqueFilename}`;
+    let key: string;
+
+    if (patientSessionId && patientNameForSession) {
+      const now = new Date();
+      const { dateStr, compactTime } = formatNzDateTime(now);
+      const safePatient = (patientNameForSession || 'Patient').replaceAll('/', '-');
+      const baseName = `${safePatient} ${dateStr} ${compactTime}`.trim();
+      key = `${basePrefix}${patientSessionId}/${baseName}.${fileExtension}`;
+    } else {
+      // No session: keep existing randomised naming
+      const uniqueFilename = `${timestamp}-${uuidv4()}.${fileExtension}`;
+      key = `${basePrefix}${uniqueFilename}`;
+    }
 
     // Create presigned URL for PUT operation
     const command = new PutObjectCommand({
