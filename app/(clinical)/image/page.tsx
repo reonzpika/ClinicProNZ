@@ -1047,6 +1047,7 @@ Cancel
                             uploadedAt: new Date().toISOString(),
                             source: 'clinical' as const,
                             thumbnailUrl: undefined,
+                            sessionId: undefined as unknown as string | undefined,
                           }));
                           const list = [...mobilePlaceholders.length ? placeholderTiles : [], ...optimisticImages, ...serverImages];
                           if (filterSessionIds.size > 0) {
