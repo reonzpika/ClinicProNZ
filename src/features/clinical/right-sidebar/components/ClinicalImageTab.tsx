@@ -298,7 +298,7 @@ export const ClinicalImageTab: React.FC = () => {
       }
 
       const { uploadUrl, key } = await presignResponse.json();
-      serverKey = key;
+      serverKey = String(key || '');
 
       // Upload to S3
       const uploadResponse = await fetch(uploadUrl, {
@@ -357,7 +357,7 @@ export const ClinicalImageTab: React.FC = () => {
       // Persist local preview URL mapping to avoid flicker when server tile appears
       if (optimisticId) {
         const url = optimisticPreviewUrlsRef.current.get(optimisticId);
-        if (url && typeof serverKey === 'string' && serverKey) {
+        if (url && serverKey) {
           setLocalPreviewByKey(prev => ({ ...prev, [serverKey]: url }));
         }
       }
