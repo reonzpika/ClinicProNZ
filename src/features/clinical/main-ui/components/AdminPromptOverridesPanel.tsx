@@ -145,12 +145,14 @@ export function AdminPromptOverridesPanel() {
     setPreviewSystem('');
     setPreviewUser('');
     try {
+      const includeOverrides = systemText.includes('{{TEMPLATE}}') && userText.includes('{{DATA}}');
       const body: any = {
         templateId,
         additionalNotes: getCompiledConsultationText(),
         transcription: transcription?.transcript || '',
         typedInput: typedInput || '',
         generate: true,
+        ...(includeOverrides ? { systemText, userText } : {}),
       };
       const res = await fetch('/api/admin/prompts/preview', {
         method: 'POST',
