@@ -41,6 +41,7 @@ export default function ClinicalReferencePage() {
   const [consultationNote, setConsultationNote] = useState('');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  // RAG streaming UI removed per request. We'll rebuild from scratch later.
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
@@ -158,6 +159,8 @@ export default function ClinicalReferencePage() {
             </Button>
           </div>
         </div>
+
+        {/* RAG streaming UI removed */}
 
         {/* Main Content */}
         <div className="flex flex-1 gap-6">
@@ -380,3 +383,5 @@ export default function ClinicalReferencePage() {
     </Container>
   );
 }
+
+// Markdown renderer removed with RAG UI
