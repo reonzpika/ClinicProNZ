@@ -752,7 +752,24 @@ Cancel
             const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
             if (files.length === 0) return;
             const context = selectedSessionId && selectedSessionId !== 'none' ? { sessionId: selectedSessionId } : { noSession: true };
-            await uploadImages.mutateAsync({ files, context });
+            // Create desktop placeholders
+            const phIds = files.map(() => Math.random().toString(36).slice(2));
+            setUploadPlaceholders(prev => [...phIds.map(id => ({ id })), ...prev]);
+            const result = await uploadImages.mutateAsync({ files, context });
+            const returnedKeys: string[] = Array.isArray((result as any)?.keys) ? (result as any).keys : [];
+            if (returnedKeys.length) {
+              setUploadPlaceholders(prev => {
+                const next = [...prev];
+                const idSet = new Set(phIds);
+                let idx = 0;
+                for (let i = 0; i < next.length && idx < returnedKeys.length; i++) {
+                  if (idSet.has(next[i].id)) {
+                    next[i] = { ...next[i], expectedKey: returnedKeys[idx++] };
+                  }
+                }
+                return next;
+              });
+            }
           } catch (err) {
             setError('Failed to upload dropped files');
           }
@@ -803,7 +820,23 @@ Cancel
                       const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
                       if (files.length === 0) return;
                       const context = selectedSessionId && selectedSessionId !== 'none' ? { sessionId: selectedSessionId } : { noSession: true };
-                      await uploadImages.mutateAsync({ files, context });
+                      const phIds = files.map(() => Math.random().toString(36).slice(2));
+                      setUploadPlaceholders(prev => [...phIds.map(id => ({ id })), ...prev]);
+                      const result = await uploadImages.mutateAsync({ files, context });
+                      const returnedKeys: string[] = Array.isArray((result as any)?.keys) ? (result as any).keys : [];
+                      if (returnedKeys.length) {
+                        setUploadPlaceholders(prev => {
+                          const next = [...prev];
+                          const idSet = new Set(phIds);
+                          let idx = 0;
+                          for (let i = 0; i < next.length && idx < returnedKeys.length; i++) {
+                            if (idSet.has(next[i].id)) {
+                              next[i] = { ...next[i], expectedKey: returnedKeys[idx++] };
+                            }
+                          }
+                          return next;
+                        });
+                      }
                     } catch (err) {
                       setError('Failed to upload dropped files');
                     }
@@ -995,7 +1028,8 @@ Cancel
                       <ImageSectionsGrid
                         images={(() => {
                           // Filter: only sessions with images + selected sessions if any
-                          const placeholderTiles = mobilePlaceholders.map((id) => ({
+                          const placeholderTiles = [
+                            ...mobilePlaceholders.map((id) => ({
                             id: `mobile-placeholder-${id}`,
                             key: `mobile-placeholder:${id}`,
                             filename: 'Uploading…',
@@ -1005,7 +1039,21 @@ Cancel
                             source: 'clinical' as const,
                             thumbnailUrl: undefined,
                             sessionId: undefined as unknown as string | undefined,
-                          }));
+                            })),
+                            ...uploadPlaceholders
+                              .filter(ph => !ph.expectedKey || !serverImages.some(img => img.key === ph.expectedKey))
+                              .map(ph => ({
+                                id: `upload-placeholder-${ph.id}`,
+                                key: `upload-placeholder:${ph.id}`,
+                                filename: 'Uploading…',
+                                mimeType: 'image/jpeg',
+                                size: 0,
+                                uploadedAt: new Date().toISOString(),
+                                source: 'clinical' as const,
+                                thumbnailUrl: undefined,
+                                sessionId: undefined as unknown as string | undefined,
+                              } as ServerImage)),
+                          ];
                           // Replace placeholders that have matching server images via clientHash
                           const list = [...placeholderTiles, ...serverImages];
                           if (filterSessionIds.size > 0) {
