@@ -346,7 +346,6 @@ export default function ClinicalImagePage() {
       ? { sessionId: selectedSessionId }
       : { noSession: true };
     // Create desktop placeholders
-    const count = fileArray.length;
     const phIds = fileArray.map(() => Math.random().toString(36).slice(2));
     setUploadPlaceholders(prev => [...phIds.map(id => ({ id })), ...prev]);
     try {
