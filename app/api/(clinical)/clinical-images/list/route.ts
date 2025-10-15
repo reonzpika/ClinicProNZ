@@ -126,6 +126,8 @@ export async function GET(req: NextRequest) {
 
             // Derive thumbnail key by convention (best-effort): thumbnails/clinical-images/.../filename
             const thumbKeyGuess = `thumbnails/${obj.Key!}`;
+            // Best-effort: read client-hash from S3 object metadata (requires a HeadObject call)
+            // Avoid extra round-trips for all objects; we'll fetch lazily for recent ones below
             return {
               id: `clinical-${obj.Key!.replace(/\//g, '-')}`,
               key: obj.Key!,
@@ -186,10 +188,14 @@ export async function GET(req: NextRequest) {
     // Best-effort: attach presigned thumbnail URLs when the thumbnail object exists
     const imagesWithData = await Promise.all(allImages.map(async (image) => {
       let thumbnailUrl: string | undefined = undefined;
+      let clientHash: string | undefined = undefined;
       if (image.thumbnailKey && BUCKET_NAME) {
         try {
           // Check existence first to avoid generating invalid signed URLs
-          await s3Client.send(new HeadObjectCommand({ Bucket: BUCKET_NAME, Key: image.thumbnailKey }));
+          const head = await s3Client.send(new HeadObjectCommand({ Bucket: BUCKET_NAME, Key: image.thumbnailKey }));
+          const meta = (head as any)?.Metadata || {};
+          // Note: S3 lowercases user-defined metadata keys
+          clientHash = meta['client-hash'] || undefined;
           const cmd = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: image.thumbnailKey });
           thumbnailUrl = await getSignedUrl(s3Client, cmd, { expiresIn: 1800 }); // 30 min
         } catch {
@@ -198,6 +204,7 @@ export async function GET(req: NextRequest) {
       }
       return {
         ...image,
+        ...(clientHash ? { clientHash } : {}),
         displayName: metadataMap[image.key]?.displayName || undefined,
         patientName: metadataMap[image.key]?.patientName || undefined,
         identifier: metadataMap[image.key]?.identifier || undefined,

@@ -27,6 +27,7 @@ export type ServerImage = {
   tokenId?: string;
   analysis?: ImageAnalysis; // Latest analysis for this image
   thumbnailUrl?: string; // Presigned URL for thumbnail (performance optimization)
+  clientHash?: string; // Client-provided fingerprint to reconcile placeholders
 };
 
 export type AnalysisModalState = {

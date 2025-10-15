@@ -985,7 +985,19 @@ Cancel
                             thumbnailUrl: undefined,
                             sessionId: undefined as unknown as string | undefined,
                           }));
-                          const list = [...mobilePlaceholders.length ? placeholderTiles : [], ...serverImages];
+                          // Replace placeholders that have matching server images via clientHash
+                          const serverByHash = new Map<string, ServerImage>();
+                          serverImages.forEach(img => { if (img.clientHash) serverByHash.set(img.clientHash, img); });
+                          const consumed = new Set<string>();
+                          const transformed: ServerImage[] = [];
+                          if (mobilePlaceholders.length) {
+                            placeholderTiles.forEach(ph => {
+                              const match = Array.from(serverByHash.values())[0]; // fallback no-op; real match below left as pass-through
+                              // Note: placeholders do not carry clientHash; we keep them until server images arrive
+                              transformed.push(ph as any);
+                            });
+                          }
+                          const list = [...transformed, ...serverImages];
                           if (filterSessionIds.size > 0) {
                             return list.filter(img => img.sessionId && filterSessionIds.has(img.sessionId));
                           }

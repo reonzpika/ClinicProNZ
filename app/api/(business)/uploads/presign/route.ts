@@ -34,6 +34,7 @@ export async function GET(req: NextRequest) {
     const filename = req.nextUrl.searchParams.get('filename') || 'image.jpg';
     const mimeType = req.nextUrl.searchParams.get('mimeType') || 'image/jpeg';
     const providedSessionId = req.nextUrl.searchParams.get('sessionId');
+    const clientHash = req.nextUrl.searchParams.get('clientHash') || undefined;
     const noSessionParam = req.nextUrl.searchParams.get('noSession');
 
     // 🆕 SERVER-SIDE SESSION RESOLUTION (feature-aware)
@@ -151,6 +152,7 @@ export async function GET(req: NextRequest) {
         'uploaded-by': userId,
         'original-filename': filename,
         'upload-timestamp': timestamp.toString(),
+        ...(clientHash ? { 'client-hash': clientHash } : {}),
       },
     });
 
@@ -161,6 +163,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       uploadUrl,
       key,
+      ...(clientHash ? { clientHash } : {}),
       expiresIn: 300,
     });
   } catch (error) {

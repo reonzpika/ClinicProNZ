@@ -79,6 +79,16 @@ export function useUploadImage() {
         filename: file.name,
         mimeType: file.type,
       });
+      // Compute a lightweight client fingerprint (size + lastModified + first 128KB hash)
+      try {
+        const chunk = file.slice(0, 128 * 1024);
+        const buf = await chunk.arrayBuffer();
+        const digest = await crypto.subtle.digest('SHA-1', buf);
+        const hashArray = Array.from(new Uint8Array(digest));
+        const hex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        const clientHash = `${file.size}-${file.lastModified}-${hex}`;
+        presignParams.set('clientHash', clientHash);
+      } catch {}
       if (ctx?.sessionId) presignParams.set('sessionId', ctx.sessionId);
       if (ctx?.noSession) presignParams.set('noSession', '1');
 
