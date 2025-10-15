@@ -195,6 +195,8 @@ export const ClinicalImageTab: React.FC = () => {
   }, [serverImages, currentPatientSessionId, deletingImages]);
   // Optimistic previews for immediate thumbnail display
   // Placeholder-only flow on consultation widget
+  // Desktop placeholders with clientHash mapping
+  const [desktopPlaceholders, setDesktopPlaceholders] = useState<Array<{ id: string; clientHash: string }>>([]);
   // Removed pendingBatches; we rely on cache invalidation and Ably refresh to replace optimistics
   const queryClient = useQueryClient();
   const queryClientRef = useRef(queryClient);
@@ -271,7 +273,20 @@ export const ClinicalImageTab: React.FC = () => {
     return `${safePatient} ${dateStr} ${compactTime}${ext}`.trim();
   }, [currentSession?.patientName]);
 
-  const handleFileUpload = useCallback(async (file: File) => {
+  // Compute client fingerprint (SHA-1 of first 128KB + size + lastModified)
+  const computeClientHash = useCallback(async (file: File): Promise<string> => {
+    try {
+      const chunk = file.slice(0, 128 * 1024);
+      const buf = await chunk.arrayBuffer();
+      const digest = await crypto.subtle.digest('SHA-1', buf);
+      const hex = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+      return `${file.size}-${file.lastModified}-${hex}`;
+    } catch {
+      return `${file.size}-${file.lastModified}`;
+    }
+  }, []);
+
+  const handleFileUpload = useCallback(async (file: File, clientHash?: string) => {
     if (!currentPatientSessionId) {
       setError('No active patient session');
       return;
@@ -288,6 +303,7 @@ export const ClinicalImageTab: React.FC = () => {
         filename: file.name,
         mimeType: file.type,
       });
+      if (clientHash) presignParams.set('clientHash', clientHash);
 
       const presignResponse = await fetch(`/api/uploads/presign?${presignParams}`);
       if (!presignResponse.ok) {
@@ -367,12 +383,15 @@ export const ClinicalImageTab: React.FC = () => {
       return;
     }
 
-    // Placeholder-only: no optimistic previews here; just upload
+    // Desktop placeholders with clientHash mapping
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (!file) continue;
       // eslint-disable-next-line no-await-in-loop
-      await handleFileUpload(file);
+      const hash = await computeClientHash(file);
+      setDesktopPlaceholders(prev => [{ id: Math.random().toString(36).slice(2), clientHash: hash }, ...prev]);
+      // eslint-disable-next-line no-await-in-loop
+      await handleFileUpload(file, hash);
     }
 
     // Clear input for re-selection
@@ -754,10 +773,13 @@ export const ClinicalImageTab: React.FC = () => {
             setIsDragging(false);
             try {
               const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
-              // Placeholder-only: no optimistic previews here; just upload
+              // Desktop placeholders with clientHash mapping
               for (const file of files) {
                 // eslint-disable-next-line no-await-in-loop
-                await handleFileUpload(file);
+                const hash = await computeClientHash(file);
+                setDesktopPlaceholders(prev => [{ id: Math.random().toString(36).slice(2), clientHash: hash }, ...prev]);
+                // eslint-disable-next-line no-await-in-loop
+                await handleFileUpload(file, hash);
               }
             } catch {
               setError('Failed to upload dropped files');
@@ -813,10 +835,17 @@ export const ClinicalImageTab: React.FC = () => {
               )
             : (
                 <div className="grid grid-cols-2 gap-3">
-                  {[
-                    ...mobilePlaceholders.map((id) => ({ id: `mobile-ph-${id}`, key: `mobile-ph:${id}`, filename: 'Uploading…', thumbnailUrl: undefined, uploadedAt: new Date().toISOString(), source: 'clinical', sessionId: currentPatientSessionId })),
-                    ...sessionServerImages,
-                  ].map((image: any) => {
+                  {(() => {
+                    const serverByHash = new Map<string, any>();
+                    sessionServerImages.forEach((img: any) => { if (img.clientHash) serverByHash.set(img.clientHash, img); });
+                    const placeholderTiles: any[] = [
+                      ...mobilePlaceholders.map((id) => ({ id: `mobile-ph-${id}`, key: `mobile-ph:${id}`, filename: 'Uploading…', thumbnailUrl: undefined, uploadedAt: new Date().toISOString(), source: 'clinical', sessionId: currentPatientSessionId })),
+                      ...desktopPlaceholders
+                        .filter(ph => !serverByHash.has(ph.clientHash))
+                        .map(ph => ({ id: `desktop-ph-${ph.id}`, key: `desktop-ph:${ph.id}`, filename: 'Uploading…', thumbnailUrl: undefined, uploadedAt: new Date().toISOString(), source: 'clinical', sessionId: currentPatientSessionId })),
+                    ];
+                    return [...placeholderTiles, ...sessionServerImages];
+                  })().map((image: any) => {
                     const isAnalyzing = analyzingImages.has(image.id);
                     return (
                       <div key={image.id} className="relative">
