@@ -357,8 +357,10 @@ export default function ClinicalImagePage() {
           const idSet = new Set(phIds);
           let idx = 0;
           for (let i = 0; i < next.length && idx < returnedKeys.length; i++) {
-            if (idSet.has(next[i].id)) {
-              next[i] = { ...next[i], expectedKey: returnedKeys[idx++] };
+            const ph = next[i];
+            if (!ph) continue;
+            if (idSet.has(ph.id)) {
+              next[i] = { ...ph, expectedKey: returnedKeys[idx++] };
             }
           }
           return next;
