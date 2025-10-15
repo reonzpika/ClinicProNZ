@@ -90,6 +90,8 @@ export default function ClinicalImagePage() {
   // Placeholder-only flow: track mobile placeholders only
   const [inFlightUploads, setInFlightUploads] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  // Desktop upload placeholders with expected server key mapping
+  const [uploadPlaceholders, setUploadPlaceholders] = useState<Array<{ id: string; expectedKey?: string }>>([]);
 
   // Enlarge modal state
   const [enlargeModal, setEnlargeModal] = useState<{
@@ -285,6 +287,12 @@ export default function ClinicalImagePage() {
     });
   }, [serverImages.length, mobileBatches.length]);
 
+  // Remove desktop placeholders whose expected server key has arrived
+  useEffect(() => {
+    if (!uploadPlaceholders.length) return;
+    setUploadPlaceholders(prev => prev.filter(ph => !(ph.expectedKey && serverImages.some(img => img.key === ph.expectedKey))));
+  }, [serverImages, uploadPlaceholders.length]);
+
   // Detect mobile on mount
   useEffect(() => {
     const detectMobile = () => {
@@ -337,17 +345,30 @@ export default function ClinicalImagePage() {
     const context = selectedSessionId && selectedSessionId !== 'none'
       ? { sessionId: selectedSessionId }
       : { noSession: true };
-    // Create visual placeholders via inFlight counter (and mobilePlaceholders for consistency)
+    // Create desktop placeholders
     const count = fileArray.length;
-    setInFlightUploads(prev => prev + count);
-    const phIds = Array.from({ length: count }).map(() => Math.random().toString(36).slice(2));
-    setMobilePlaceholders(prev => [...phIds, ...prev]);
+    const phIds = fileArray.map(() => Math.random().toString(36).slice(2));
+    setUploadPlaceholders(prev => [...phIds.map(id => ({ id })), ...prev]);
     try {
-      await uploadImages.mutateAsync({ files: fileArray, context });
+      const result = await uploadImages.mutateAsync({ files: fileArray, context });
+      const returnedKeys: string[] = Array.isArray((result as any)?.keys) ? (result as any).keys : [];
+      if (returnedKeys.length) {
+        setUploadPlaceholders(prev => {
+          const next = [...prev];
+          const idSet = new Set(phIds);
+          let idx = 0;
+          for (let i = 0; i < next.length && idx < returnedKeys.length; i++) {
+            if (idSet.has(next[i].id)) {
+              next[i] = { ...next[i], expectedKey: returnedKeys[idx++] };
+            }
+          }
+          return next;
+        });
+      }
     } catch (err) {
       console.error('Upload failed:', err);
+      setUploadPlaceholders(prev => prev.filter(ph => !phIds.includes(ph.id)));
     } finally {
-      setInFlightUploads(prev => Math.max(0, prev - count));
       if (event.target) {
         event.target.value = '';
       }
@@ -986,18 +1007,7 @@ Cancel
                             sessionId: undefined as unknown as string | undefined,
                           }));
                           // Replace placeholders that have matching server images via clientHash
-                          const serverByHash = new Map<string, ServerImage>();
-                          serverImages.forEach(img => { if (img.clientHash) serverByHash.set(img.clientHash, img); });
-                          const consumed = new Set<string>();
-                          const transformed: ServerImage[] = [];
-                          if (mobilePlaceholders.length) {
-                            placeholderTiles.forEach(ph => {
-                              const match = Array.from(serverByHash.values())[0]; // fallback no-op; real match below left as pass-through
-                              // Note: placeholders do not carry clientHash; we keep them until server images arrive
-                              transformed.push(ph as any);
-                            });
-                          }
-                          const list = [...transformed, ...serverImages];
+                          const list = [...placeholderTiles, ...serverImages];
                           if (filterSessionIds.size > 0) {
                             return list.filter(img => img.sessionId && filterSessionIds.has(img.sessionId));
                           }
