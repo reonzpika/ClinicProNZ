@@ -279,8 +279,6 @@ export const ClinicalImageTab: React.FC = () => {
 
     setError(null);
 
-  // Track server key across try/finally to map preview URLs
-  let serverKey: string = '';
   try {
       // Client-side resize
       const resizedBlob = await resizeImageFile(file, 1024);
@@ -297,7 +295,6 @@ export const ClinicalImageTab: React.FC = () => {
       }
 
       const { uploadUrl, key } = await presignResponse.json();
-      serverKey = String(key || '');
 
       // Upload to S3
       const uploadResponse = await fetch(uploadUrl, {
