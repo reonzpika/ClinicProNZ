@@ -194,9 +194,7 @@ export const ClinicalImageTab: React.FC = () => {
     return filtered.filter((img: any) => !deletingImages.has(img.key));
   }, [serverImages, currentPatientSessionId, deletingImages]);
   // Optimistic previews for immediate thumbnail display
-  const [optimisticImages, setOptimisticImages] = useState<Array<any>>([]);
-  const optimisticPreviewUrlsRef = useRef<Map<string, string>>(new Map());
-  const [localPreviewByKey, setLocalPreviewByKey] = useState<Record<string, string>>({});
+  // Placeholder-only flow on consultation widget
   // Removed pendingBatches; we rely on cache invalidation and Ably refresh to replace optimistics
   const queryClient = useQueryClient();
   const queryClientRef = useRef(queryClient);
@@ -273,7 +271,7 @@ export const ClinicalImageTab: React.FC = () => {
     return `${safePatient} ${dateStr} ${compactTime}${ext}`.trim();
   }, [currentSession?.patientName]);
 
-  const handleFileUpload = useCallback(async (file: File, optimisticId?: string) => {
+  const handleFileUpload = useCallback(async (file: File) => {
     if (!currentPatientSessionId) {
       setError('No active patient session');
       return;
@@ -355,27 +353,7 @@ export const ClinicalImageTab: React.FC = () => {
       console.error('Upload error:', err);
       setError(err instanceof Error ? err.message : 'Upload failed');
     } finally {
-      // Persist local preview URL mapping to avoid flicker when server tile appears
-      if (optimisticId) {
-        const url = optimisticPreviewUrlsRef.current.get(optimisticId);
-        if (url && serverKey) {
-          const keyStr = serverKey as string;
-          setLocalPreviewByKey(prev => {
-            const next: Record<string, string> = { ...prev };
-            next[keyStr] = url;
-            return next;
-          });
-        }
-      }
-      // Remove the optimistic placeholder that corresponds to this file
-      if (optimisticId) {
-        setOptimisticImages(prev => prev.filter(img => (img as any).optimisticId !== optimisticId));
-        const url = optimisticPreviewUrlsRef.current.get(optimisticId);
-        if (url) {
-          URL.revokeObjectURL(url);
-          optimisticPreviewUrlsRef.current.delete(optimisticId);
-        }
-      }
+      // no-op; placeholders will be replaced by server tiles
     }
   }, [
     currentPatientSessionId,
@@ -392,35 +370,12 @@ export const ClinicalImageTab: React.FC = () => {
       return;
     }
 
-    // Create optimistic previews immediately (no count tracking)
-    const toUpload: Array<{ file: File; optimisticId: string }> = [];
+    // Placeholder-only: no optimistic previews here; just upload
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (!file) continue;
-      const id = Math.random().toString(36).slice(2);
-      const url = URL.createObjectURL(file);
-      optimisticPreviewUrlsRef.current.set(id, url);
-      const optimistic = {
-        optimisticId: id,
-        id: `optimistic-${id}`,
-        key: `optimistic:${id}`,
-        filename: buildServerLikeFilename(file),
-        displayName: undefined,
-        mimeType: file.type || 'image/jpeg',
-        size: file.size || 0,
-        uploadedAt: new Date().toISOString(),
-        source: 'clinical',
-        sessionId: currentPatientSessionId,
-        thumbnailUrl: url,
-      };
-      toUpload.push({ file, optimisticId: id });
-      setOptimisticImages(prev => [optimistic, ...prev]);
-    }
-
-    // Upload sequentially
-    for (const { file, optimisticId } of toUpload) {
       // eslint-disable-next-line no-await-in-loop
-      await handleFileUpload(file, optimisticId);
+      await handleFileUpload(file);
     }
 
     // Clear input for re-selection
@@ -802,31 +757,10 @@ export const ClinicalImageTab: React.FC = () => {
             setIsDragging(false);
             try {
               const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
-              // Create optimistic previews for dropped files (no count tracking)
-              const toUpload: Array<{ file: File; optimisticId: string }> = [];
+              // Placeholder-only: no optimistic previews here; just upload
               for (const file of files) {
-                const id = Math.random().toString(36).slice(2);
-                const url = URL.createObjectURL(file);
-                optimisticPreviewUrlsRef.current.set(id, url);
-                const optimistic = {
-                  optimisticId: id,
-                  id: `optimistic-${id}`,
-                  key: `optimistic:${id}`,
-                  filename: buildServerLikeFilename(file),
-                  displayName: undefined,
-                  mimeType: file.type || 'image/jpeg',
-                  size: file.size || 0,
-                  uploadedAt: new Date().toISOString(),
-                  source: 'clinical',
-                  sessionId: currentPatientSessionId,
-                  thumbnailUrl: url,
-                };
-                setOptimisticImages(prev => [optimistic, ...prev]);
-                toUpload.push({ file, optimisticId: id });
-              }
-              for (const { file, optimisticId } of toUpload) {
                 // eslint-disable-next-line no-await-in-loop
-                await handleFileUpload(file, optimisticId);
+                await handleFileUpload(file);
               }
             } catch {
               setError('Failed to upload dropped files');
@@ -884,8 +818,7 @@ export const ClinicalImageTab: React.FC = () => {
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     ...mobilePlaceholders.map((id) => ({ id: `mobile-ph-${id}`, key: `mobile-ph:${id}`, filename: 'Uploading…', thumbnailUrl: undefined, uploadedAt: new Date().toISOString(), source: 'clinical', sessionId: currentPatientSessionId })),
-                    ...optimisticImages,
-                    ...sessionServerImages.map((img: any) => (localPreviewByKey[img.key] ? { ...img, thumbnailUrl: localPreviewByKey[img.key] } : img)),
+                    ...sessionServerImages,
                   ].map((image: any) => {
                     const isAnalyzing = analyzingImages.has(image.id);
                     return (

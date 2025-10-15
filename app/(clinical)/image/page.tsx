@@ -87,15 +87,7 @@ export default function ClinicalImagePage() {
 
   // Track upload loading state
   const isUploading = uploadImages.isPending;
-  // Optimistic upload previews for desktop
-  type OptimisticImage = (ServerImage & { optimisticId: string });
-  const [optimisticImages, setOptimisticImages] = useState<OptimisticImage[]>([]);
-  const optimisticPreviewUrlsRef = useRef<Map<string, string>>(new Map());
-  const [pendingBatches, setPendingBatches] = useState<Array<{ id: string; optimisticIds: string[]; expected: number; startCount: number }>>([]);
-  // Map of server image key -> local preview URL to avoid flicker when server image appears
-  const [localPreviewByKey, setLocalPreviewByKey] = useState<Record<string, string>>({});
-  // Map optimisticId -> serverKey to hide duplicate server tiles while optimistic exists
-  const [oidToServerKey, setOidToServerKey] = useState<Record<string, string>>({});
+  // Placeholder-only flow: track mobile placeholders only
   const [inFlightUploads, setInFlightUploads] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -341,149 +333,26 @@ export default function ClinicalImagePage() {
       return;
     }
 
-    // Desktop immediate upload: show optimistic previews instantly
+    // Desktop upload: add N placeholders and upload
     const context = selectedSessionId && selectedSessionId !== 'none'
       ? { sessionId: selectedSessionId }
       : { noSession: true };
-
-    const startCount = serverImages.length;
-    const optimisticIds: string[] = [];
-    // Helper to mirror server filename pattern when a session is selected
-    const buildServerLikeFilename = (file: File): string => {
-      const parts = new Intl.DateTimeFormat('en-NZ', {
-        timeZone: 'Pacific/Auckland',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-      }).formatToParts(new Date());
-      const get = (t: string) => parts.find(p => p.type === t)?.value || '';
-      const yyyy = get('year');
-      const mm = get('month');
-      const dd = get('day');
-      const hh = get('hour');
-      const mi = get('minute');
-      const ss = get('second');
-      const ms = String(new Date().getMilliseconds()).padStart(3, '0');
-      const dateStr = `${yyyy}-${mm}-${dd}`;
-      const compactTime = `${hh}${mi}${ss}${ms}`;
-      const ext = file.name.includes('.') ? `.${file.name.split('.').pop()}` : '';
-      const session = sessions.find(s => s.id === selectedSessionId);
-      const safePatient = (session?.patientName || 'Image').replaceAll('/', '-');
-      return `${safePatient} ${dateStr} ${compactTime}${ext}`.trim();
-    };
-
-    const newOptimistics: OptimisticImage[] = fileArray.map((f) => {
-      const optimisticId = Math.random().toString(36).slice(2);
-      optimisticIds.push(optimisticId);
-      const previewUrl = URL.createObjectURL(f);
-      optimisticPreviewUrlsRef.current.set(optimisticId, previewUrl);
-      return {
-        optimisticId,
-        id: `optimistic-${optimisticId}`,
-        key: `optimistic:${optimisticId}`,
-        filename: buildServerLikeFilename(f),
-        displayName: undefined,
-        mimeType: f.type || 'image/jpeg',
-        size: f.size || 0,
-        uploadedAt: new Date().toISOString(),
-        source: 'clinical',
-        sessionId: context.sessionId,
-        thumbnailUrl: previewUrl,
-      } as OptimisticImage;
-    });
-
-    setOptimisticImages(prev => [...newOptimistics, ...prev]);
-
+    // Create visual placeholders via inFlight counter (and mobilePlaceholders for consistency)
+    const count = fileArray.length;
+    setInFlightUploads(prev => prev + count);
+    const phIds = Array.from({ length: count }).map(() => Math.random().toString(36).slice(2));
+    setMobilePlaceholders(prev => [...phIds, ...prev]);
     try {
-      const result = await uploadImages.mutateAsync({ files: fileArray, context });
-      const returnedKeys: string[] = Array.isArray((result as any)?.keys) ? (result as any).keys : [];
-      if (returnedKeys.length > 0) {
-        setLocalPreviewByKey(prev => {
-          const updated: Record<string, string> = { ...prev };
-          const limit = Math.min(returnedKeys.length, optimisticIds.length);
-          for (let i = 0; i < limit; i++) {
-            const serverKey = returnedKeys[i];
-            const oid = optimisticIds[i];
-            if (!serverKey) continue;
-            const url = optimisticPreviewUrlsRef.current.get(oid || '');
-            if (url) {
-              updated[serverKey] = url;
-            }
-          }
-          return updated;
-        });
-        // Track mapping to hide duplicate server tiles while optimistics are present
-        setOidToServerKey(prev => {
-          const next = { ...prev };
-          const limit = Math.min(returnedKeys.length, optimisticIds.length);
-          for (let i = 0; i < limit; i++) {
-            const serverKey = returnedKeys[i];
-            const oid = optimisticIds[i];
-            if (serverKey && oid) next[oid] = serverKey;
-          }
-          return next;
-        });
-      }
-      const expected = (returnedKeys.length || fileArray.length);
-      setPendingBatches(prev => [...prev, { id: Math.random().toString(36).slice(2), optimisticIds, expected, startCount }]);
+      await uploadImages.mutateAsync({ files: fileArray, context });
     } catch (err) {
       console.error('Upload failed:', err);
-      // Remove optimistic previews on error
-      setOptimisticImages(prev => prev.filter(img => !optimisticIds.includes((img as any).optimisticId)));
-      optimisticIds.forEach(id => {
-        const url = optimisticPreviewUrlsRef.current.get(id);
-        if (url) {
-          URL.revokeObjectURL(url);
-          optimisticPreviewUrlsRef.current.delete(id);
-        }
-      });
     } finally {
+      setInFlightUploads(prev => Math.max(0, prev - count));
       if (event.target) {
         event.target.value = '';
       }
     }
   };
-
-  // When server images count reaches expected, remove the corresponding optimistic previews
-  useEffect(() => {
-    if (pendingBatches.length === 0) return;
-    setPendingBatches(prev => {
-      const remaining: typeof prev = [];
-      const toRemove = new Set<string>();
-      prev.forEach(batch => {
-        if (serverImages.length >= batch.startCount + batch.expected) {
-          batch.optimisticIds.forEach(id => toRemove.add(id));
-        } else {
-          remaining.push(batch);
-        }
-      });
-      if (toRemove.size > 0) {
-        setOptimisticImages(prevImgs => prevImgs.filter(img => !toRemove.has((img as any).optimisticId)));
-        // Clean mappings for removed optimistics
-        setOidToServerKey(prevMap => {
-          const next = { ...prevMap };
-          toRemove.forEach(oid => { delete next[oid]; });
-          return next;
-        });
-        // Revoke only if URL is not used by any server preview mapping
-        const activePreviewUrls = new Set(Object.values(localPreviewByKey));
-        toRemove.forEach(id => {
-          const url = optimisticPreviewUrlsRef.current.get(id);
-          if (url) {
-            if (!activePreviewUrls.has(url)) {
-              try { URL.revokeObjectURL(url); } catch {}
-            }
-            optimisticPreviewUrlsRef.current.delete(id);
-          }
-        });
-      }
-      return remaining;
-    });
-  }, [serverImages.length, pendingBatches.length]);
 
   // Analysis functions (using store actions)
   const handleOpenAnalysis = (image: ServerImage) => {
@@ -1116,18 +985,7 @@ Cancel
                             thumbnailUrl: undefined,
                             sessionId: undefined as unknown as string | undefined,
                           }));
-                          // Hide server tiles that correspond to active optimistic uploads
-                          const activeOptimisticServerKeys = new Set(
-                            Object.entries(oidToServerKey)
-                              .filter(([oid]) => optimisticImages.some(o => (o as any).optimisticId === oid))
-                              .map(([, key]) => key),
-                          );
-                          const serverWithPreviews = serverImages
-                            .filter(img => !activeOptimisticServerKeys.has(img.key))
-                            .map(img => (localPreviewByKey[img.key]
-                              ? { ...img, thumbnailUrl: localPreviewByKey[img.key] }
-                              : img));
-                          const list = [...mobilePlaceholders.length ? placeholderTiles : [], ...optimisticImages, ...serverWithPreviews];
+                          const list = [...mobilePlaceholders.length ? placeholderTiles : [], ...serverImages];
                           if (filterSessionIds.size > 0) {
                             return list.filter(img => img.sessionId && filterSessionIds.has(img.sessionId));
                           }
