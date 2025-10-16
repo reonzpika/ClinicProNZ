@@ -14,8 +14,8 @@ export type ToolCardProps = {
 
 export function ToolCard({ tool, className }: ToolCardProps) {
   return (
-    <Link href={`/tools/${tool.id}`} className="block rounded-md focus:outline-none focus:ring-2 focus:ring-ring">
-      <Card className={cn('flex flex-col hover:bg-accent/40', className)}>
+    <Link href={`/tools/${tool.id}`} className="block h-full rounded-md focus:outline-none focus:ring-2 focus:ring-ring">
+      <Card className={cn('flex h-full flex-col hover:bg-accent/40', className)}>
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">

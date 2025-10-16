@@ -12,7 +12,7 @@ type UiCategory = 'ai-scribe' | 'search' | 'acc';
 
 const CATEGORY_OPTIONS: Array<{ id: UiCategory; label: string }> = [
   { id: 'ai-scribe', label: 'AI scribe' },
-  { id: 'search', label: 'Search' },
+  { id: 'search', label: 'AI search' },
   { id: 'acc', label: 'ACC' },
 ];
 
