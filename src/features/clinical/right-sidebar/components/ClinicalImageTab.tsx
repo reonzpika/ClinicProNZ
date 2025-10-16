@@ -195,8 +195,8 @@ export const ClinicalImageTab: React.FC = () => {
   }, [serverImages, currentPatientSessionId, deletingImages]);
   // Optimistic previews for immediate thumbnail display
   // Placeholder-only flow on consultation widget
-  // Desktop placeholders with clientHash mapping
-  const [desktopPlaceholders, setDesktopPlaceholders] = useState<Array<{ id: string; clientHash: string }>>([]);
+  // Desktop placeholders with mapping; replaced when server image with expectedKey arrives
+  const [desktopPlaceholders, setDesktopPlaceholders] = useState<Array<{ id: string; clientHash?: string; expectedKey?: string }>>([]);
   // Removed pendingBatches; we rely on cache invalidation and Ably refresh to replace optimistics
   const queryClient = useQueryClient();
   const queryClientRef = useRef(queryClient);
@@ -286,7 +286,7 @@ export const ClinicalImageTab: React.FC = () => {
     }
   }, []);
 
-  const handleFileUpload = useCallback(async (file: File, clientHash?: string) => {
+  const handleFileUpload = useCallback(async (file: File, clientHash?: string, placeholderId?: string) => {
     if (!currentPatientSessionId) {
       setError('No active patient session');
       return;
@@ -311,6 +311,10 @@ export const ClinicalImageTab: React.FC = () => {
       }
 
       const { uploadUrl, key } = await presignResponse.json();
+      // Attach expectedKey to matching desktop placeholder immediately
+      if (placeholderId && key) {
+        setDesktopPlaceholders(prev => prev.map(ph => ph.id === placeholderId ? { ...ph, expectedKey: String(key) } : ph));
+      }
 
       // Upload to S3
       const uploadResponse = await fetch(uploadUrl, {
@@ -389,9 +393,10 @@ export const ClinicalImageTab: React.FC = () => {
       if (!file) continue;
       // eslint-disable-next-line no-await-in-loop
       const hash = await computeClientHash(file);
-      setDesktopPlaceholders(prev => [{ id: Math.random().toString(36).slice(2), clientHash: hash }, ...prev]);
+      const phId = Math.random().toString(36).slice(2);
+      setDesktopPlaceholders(prev => [{ id: phId, clientHash: hash }, ...prev]);
       // eslint-disable-next-line no-await-in-loop
-      await handleFileUpload(file, hash);
+      await handleFileUpload(file, hash, phId);
     }
 
     // Clear input for re-selection
@@ -777,9 +782,10 @@ export const ClinicalImageTab: React.FC = () => {
               for (const file of files) {
                 // eslint-disable-next-line no-await-in-loop
                 const hash = await computeClientHash(file);
-                setDesktopPlaceholders(prev => [{ id: Math.random().toString(36).slice(2), clientHash: hash }, ...prev]);
+                const phId = Math.random().toString(36).slice(2);
+                setDesktopPlaceholders(prev => [{ id: phId, clientHash: hash }, ...prev]);
                 // eslint-disable-next-line no-await-in-loop
-                await handleFileUpload(file, hash);
+                await handleFileUpload(file, hash, phId);
               }
             } catch {
               setError('Failed to upload dropped files');
@@ -836,13 +842,12 @@ export const ClinicalImageTab: React.FC = () => {
             : (
                 <div className="grid grid-cols-2 gap-3">
                   {(() => {
-                    const serverByHash = new Map<string, any>();
-                    sessionServerImages.forEach((img: any) => { if (img.clientHash) serverByHash.set(img.clientHash, img); });
+                    // Remove desktop placeholders as soon as their expected server key appears
+                    const serverKeys = new Set(sessionServerImages.map((img: any) => img.key));
+                    const desktopPending = desktopPlaceholders.filter(ph => !ph.expectedKey || !serverKeys.has(ph.expectedKey));
                     const placeholderTiles: any[] = [
                       ...mobilePlaceholders.map((id) => ({ id: `mobile-ph-${id}`, key: `mobile-ph:${id}`, filename: 'Uploading…', thumbnailUrl: undefined, uploadedAt: new Date().toISOString(), source: 'clinical', sessionId: currentPatientSessionId })),
-                      ...desktopPlaceholders
-                        .filter(ph => !serverByHash.has(ph.clientHash))
-                        .map(ph => ({ id: `desktop-ph-${ph.id}`, key: `desktop-ph:${ph.id}`, filename: 'Uploading…', thumbnailUrl: undefined, uploadedAt: new Date().toISOString(), source: 'clinical', sessionId: currentPatientSessionId })),
+                      ...desktopPending.map(ph => ({ id: `desktop-ph-${ph.id}`, key: `desktop-ph:${ph.id}`, filename: 'Uploading…', thumbnailUrl: undefined, uploadedAt: new Date().toISOString(), source: 'clinical', sessionId: currentPatientSessionId })),
                     ];
                     return [...placeholderTiles, ...sessionServerImages];
                   })().map((image: any) => {
