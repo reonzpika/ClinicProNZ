@@ -169,7 +169,8 @@ export const ClinicalImageTab: React.FC = () => {
     setObjectiveText,
     saveObjectiveToCurrentSession,
   } = useConsultationStores();
-  // removed upload spinner state
+  // Upload spinner state for desktop add button
+  const [isUploadingDesktop, setIsUploadingDesktop] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [analyzingImages, setAnalyzingImages] = useState<Set<string>>(new Set());
   const [analysisErrors, setAnalysisErrors] = useState<Record<string, string>>({});
