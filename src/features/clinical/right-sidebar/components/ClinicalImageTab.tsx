@@ -894,9 +894,9 @@ export const ClinicalImageTab: React.FC = () => {
             variant="outline"
             className="flex-1 gap-2"
             size="sm"
-            disabled={isLoadingServerImages}
+            disabled={isUploadingDesktop}
           >
-            {isLoadingServerImages ? (
+            {isUploadingDesktop ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
                 Uploading...
