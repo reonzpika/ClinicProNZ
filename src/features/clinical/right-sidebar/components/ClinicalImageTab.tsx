@@ -518,6 +518,10 @@ export const ClinicalImageTab: React.FC = () => {
   const clearSelection = useCallback(() => setSelectedKeys(new Set()), []);
 
   const handleDeleteSessionImage = useCallback(async (imageKey: string) => {
+    // Guard: ignore deletes for local placeholders
+    if (imageKey.startsWith('mobile-placeholder:') || imageKey.startsWith('mobile-ph:') || imageKey.startsWith('desktop-ph:')) {
+      return;
+    }
     // Optimistic UI: immediately hide the image
     setDeletingImages(prev => new Set(prev).add(imageKey));
 

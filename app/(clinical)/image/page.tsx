@@ -390,6 +390,10 @@ export default function ClinicalImagePage() {
   }, [setAnalysisPrompt]);
 
   const handleDeleteImage = async (imageKey: string) => {
+    // Guard: ignore deletes for local placeholders
+    if (imageKey.startsWith('mobile-placeholder:') || imageKey.startsWith('mobile-ph:') || imageKey.startsWith('desktop-ph:') || imageKey.startsWith('upload-placeholder:')) {
+      return;
+    }
     // Optimistic UI: immediately hide the image
     setDeletingImages(prev => new Set(prev).add(imageKey));
 

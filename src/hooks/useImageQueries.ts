@@ -513,56 +513,13 @@ export function useDeleteImage() {
 
       return response.json();
     },
-    // Optimistic update - remove image immediately
-    onMutate: async (imageKey: string) => {
-      if (!userId) {
-        return;
-      }
-
-      // Cancel outgoing refetches so they don't overwrite optimistic update
-      await queryClient.cancelQueries({
-        queryKey: imageQueryKeys.list(userId),
-      });
-
-      // Snapshot previous list (it's an array in this app)
-      const previousImages = queryClient.getQueryData<ServerImage[]>(imageQueryKeys.list(userId));
-
-      // Optimistically update the cache - remove the image
-      if (previousImages) {
-        queryClient.setQueryData<ServerImage[]>(
-          imageQueryKeys.list(userId),
-          previousImages.filter(img => img.key !== imageKey),
-        );
-      }
-
-      // Return context for potential rollback
-      return { previousImages };
-    },
-    // Rollback on error
-    onError: (_error, _imageKey, context) => {
-      if (context?.previousImages && userId) {
-        // Restore previous data on error
-        queryClient.setQueryData(
-          imageQueryKeys.list(userId),
-          context.previousImages,
-        );
-      }
-    },
     // Ensure cache is clean on success
     onSuccess: (_data, imageKey) => {
       // Remove specific image queries from cache
-      queryClient.removeQueries({
-        queryKey: imageQueryKeys.download(imageKey),
-      });
-
-      queryClient.removeQueries({
-        queryKey: imageQueryKeys.analysis(imageKey),
-      });
-
-      // Refetch to ensure data consistency (in background)
-      queryClient.invalidateQueries({
-        queryKey: imageQueryKeys.list(userId || ''),
-      });
+      queryClient.removeQueries({ queryKey: imageQueryKeys.download(imageKey) });
+      queryClient.removeQueries({ queryKey: imageQueryKeys.analysis(imageKey) });
+      // Invalidate all image lists (covers userId+sessionId variants)
+      queryClient.invalidateQueries({ queryKey: imageQueryKeys.lists() });
     },
   });
 }
