@@ -389,6 +389,7 @@ export const ClinicalImageTab: React.FC = () => {
     }
 
     // Desktop placeholders with clientHash mapping
+    setIsUploadingDesktop(true);
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (!file) continue;
@@ -404,7 +405,8 @@ export const ClinicalImageTab: React.FC = () => {
     if (event.target) {
       event.target.value = '';
     }
-  }, [handleFileUpload, currentPatientSessionId, sessionServerImages.length]);
+    setIsUploadingDesktop(false);
+  }, [handleFileUpload, currentPatientSessionId, sessionServerImages.length, computeClientHash]);
 
   const handleRemoveImage = useCallback(async (imageId: string) => {
     const updatedImages = clinicalImages.filter((img: any) => img.id !== imageId);
