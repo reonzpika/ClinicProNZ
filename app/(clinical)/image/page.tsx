@@ -853,9 +853,19 @@ Cancel
                   <Button
                     onClick={() => fileInputRef.current?.click()}
                     className="w-full"
+                    disabled={isUploading}
                   >
-                    <Upload className="mr-2 size-4" />
-                    Upload Images
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="mr-2 size-4 animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="mr-2 size-4" />
+                        Upload Images
+                      </>
+                    )}
                   </Button>
                 </div>
                 <Button

@@ -890,8 +890,16 @@ export const ClinicalImageTab: React.FC = () => {
             variant="outline"
             className="flex-1 gap-2"
             size="sm"
+            disabled={isLoadingServerImages}
           >
-            Add Clinical Image
+            {isLoadingServerImages ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              'Add Clinical Image'
+            )}
           </Button>
           <Button
             onClick={() => setShowQR(!showQR)}
