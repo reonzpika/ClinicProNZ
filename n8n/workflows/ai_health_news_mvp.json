@@ -1,0 +1,182 @@
+{
+  "name": "AI Health News for NZ GPs - MVP",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            { "mode": "everyDay", "hour": 6, "minute": 0 }
+          ]
+        }
+      },
+      "id": "Cron",
+      "name": "Cron 6am NZ",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 2,
+      "position": [80, 300]
+    },
+    {
+      "parameters": {
+        "feedUrl": [
+          "https://www.hinz.org.nz/news/rss.aspx",
+          "https://www.health.govt.nz/about-ministry/news-media/media-releases/rss.xml",
+          "https://www.rnzcgp.org.nz/RNZCGP/Public/News/News/RNZCGP/News/News.aspx?rss=1",
+          "https://www.privacy.org.nz/blog/rss/",
+          "https://www.hdc.org.nz/news-resources/news/rss/",
+          "https://www.tewhatuora.govt.nz/news/rss.xml"
+        ],
+        "options": {"disableDotNotation": true}
+      },
+      "id": "RSS",
+      "name": "RSS Read",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 2,
+      "position": [320, 140]
+    },
+    {
+      "parameters": {
+        "download": false,
+        "options": {
+          "mailbox": "INBOX",
+          "customEmailRules": {"search": {"label": "={{$env.IMAP_LABEL}}"}}
+        }
+      },
+      "id": "IMAP",
+      "name": "Gmail IMAP (Alerts)",
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2,
+      "position": [320, 300],
+      "credentials": {"imap":{"id":"<set-in-n8n>","name":"Gmail IMAP"}}
+    },
+    {
+      "parameters": {
+        "url": "={{$env.SERPER_API_URL}}",
+        "options": {"responseFormat": "json"},
+        "queryParametersUi": {
+          "parameter": [
+            {"name": "q", "value": "site:linkedin.com/posts (AI OR 'artificial intelligence') (health OR 'primary care' OR GP) (New Zealand OR Aotearoa)"},
+            {"name": "num", "value": "50"},
+            {"name": "tbs", "value": "qdr:d"}
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {"name": "X-API-KEY", "value": "={{$env.SERPER_API_KEY}}"},
+            {"name": "Content-Type", "value": "application/json"}
+          ]
+        }
+      },
+      "id": "Serper",
+      "name": "Serper Search (LinkedIn)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [320, 460]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Normalise RSS, IMAP (Alerts), and Serper items to a common shape\n// Input may arrive on different inputs; merge by presence checks.\nconst items = [];\nfor (const item of itemsJson) {\n  // This node expects upstream Merge; placeholder.\n}\nreturn items;"
+      },
+      "id": "Normalize",
+      "name": "Normalize Items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [560, 300]
+    },
+    {
+      "parameters": {"mode": "passThrough"},
+      "id": "Merge",
+      "name": "Merge Candidates",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Compute canonical_url, content_hash, and do simple dedupe via static data\nconst crypto = require('crypto');\nconst seen = this.getWorkflowStaticData('global').seen || {};\nconst out = [];\nfor (const item of items) {\n  const title = item.json.title || item.json.headline || '';\n  const url = item.json.url || item.json.link || '';\n  const canonical = url.replace(/([?#].*)$/, '');\n  const hash = crypto.createHash('sha256').update(title + canonical).digest('hex');\n  if (!seen[hash]) {\n    seen[hash] = Date.now();\n    out.push({ json: { ...item.json, title, sourceUrl: url, canonicalUrl: canonical, contentHash: hash } });\n  }\n}\nthis.getWorkflowStaticData('global').seen = seen;\nreturn out;"
+      },
+      "id": "Dedupe",
+      "name": "Dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [760, 300]
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "operation": "create",
+        "model": "gpt-4o-mini",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Classify relevance for NZ general practice. Return JSON: {\\"isRelevant\\":bool,\\"nzSignal\\":0..1,\\"categories\\":[…]}"
+          },
+          {
+            "role": "user",
+            "content": "={{$json.title}}\n\n{{$json.snippet || ''}}\n\nURL: {{$json.canonicalUrl}}"
+          }
+        ],
+        "additionalFields": {"temperature": 0}
+      },
+      "id": "Classify",
+      "name": "LLM Classify",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 4,
+      "position": [960, 220]
+    },
+    {
+      "parameters": {
+        "conditions": {"boolean": [{"value1": "={{$json.classification.isRelevant}}", "operation": "isTrue"}]}
+      },
+      "id": "IFRelevant",
+      "name": "IF Relevant",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1160, 220]
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "operation": "create",
+        "model": "gpt-4o-mini",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Summarise in 120–160 words with NZ spelling; include what happened, why it matters for NZ GPs, risks, and an actionable takeaway."
+          },
+          {"role": "user", "content": "={{$json.title}}\n\n{{$json.snippet || ''}}\n\nURL: {{$json.canonicalUrl}}"}
+        ],
+        "additionalFields": {"temperature": 0.2}
+      },
+      "id": "Summarize",
+      "name": "LLM Summarise",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 4,
+      "position": [1360, 220]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Score and tag; mark status\nconst score = 0.5 * 1 /* recency placeholder */ + 0.25 * ($json.classification?.nzSignal || 0) + 0.25;\nconst autoPublish = score >= 0.75;\nreturn [{ json: { ...$json, score, status: autoPublish ? 'published' : 'draft' } }];"
+      },
+      "id": "Score",
+      "name": "Score & Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1560, 220]
+    }
+  ],
+  "connections": {
+    "Cron 6am NZ": {"main": [[{"node": "RSS Read", "type": "main", "index": 0}, {"node": "Gmail IMAP (Alerts)", "type": "main", "index": 0}, {"node": "Serper Search (LinkedIn)", "type": "main", "index": 0}]]},
+    "RSS Read": {"main": [[{"node": "Merge Candidates", "type": "main", "index": 0}]]},
+    "Gmail IMAP (Alerts)": {"main": [[{"node": "Merge Candidates", "type": "main", "index": 1}]]},
+    "Serper Search (LinkedIn)": {"main": [[{"node": "Merge Candidates", "type": "main", "index": 2}]]},
+    "Merge Candidates": {"main": [[{"node": "Normalize Items", "type": "main", "index": 0}]]},
+    "Normalize Items": {"main": [[{"node": "Dedupe", "type": "main", "index": 0}]]},
+    "Dedupe": {"main": [[{"node": "LLM Classify", "type": "main", "index": 0}]]},
+    "LLM Classify": {"main": [[{"node": "IF Relevant", "type": "main", "index": 0}]]},
+    "IF Relevant": {"main": [[{"node": "LLM Summarise", "type": "main", "index": 0}]]},
+    "LLM Summarise": {"main": [[{"node": "Score & Status", "type": "main", "index": 0}]]}
+  },
+  "pinData": {},
+  "staticData": {},
+  "settings": {"timezone": "={{$env.N8N_TIMEZONE || 'Pacific/Auckland'}}"}
+}

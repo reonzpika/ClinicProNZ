@@ -1,0 +1,29 @@
+{
+  "rss": [
+    "https://www.hinz.org.nz/news/rss.aspx",
+    "https://www.health.govt.nz/about-ministry/news-media/media-releases/rss.xml",
+    "https://www.rnzcgp.org.nz/RNZCGP/Public/News/News/RNZCGP/News/News.aspx?rss=1",
+    "https://www.privacy.org.nz/blog/rss/",
+    "https://www.hdc.org.nz/news-resources/news/rss/",
+    "https://www.tewhatuora.govt.nz/news/rss.xml"
+  ],
+  "googleAlerts": {
+    "label": "ai-nz-gp-alerts",
+    "queries": [
+      "site:linkedin.com/posts (AI OR 'artificial intelligence') (health OR 'primary care' OR GP) (New Zealand OR Aotearoa)",
+      "'Te Whatu Ora' (AI OR 'artificial intelligence')",
+      "RNZCGP (AI OR 'artificial intelligence')",
+      "'clinical safety' AI New Zealand",
+      "privacy AI health New Zealand"
+    ]
+  },
+  "trustedSources": [
+    "linkedin.com",
+    "hinz.org.nz",
+    "health.govt.nz",
+    "rnzcgp.org.nz",
+    "privacy.org.nz",
+    "hdc.org.nz",
+    "tewhatuora.govt.nz"
+  ]
+}
