@@ -2,9 +2,11 @@
 
 import { useAuth } from '@clerk/nextjs';
 import { useQueryClient } from '@tanstack/react-query';
+import { useImageTileManager } from '@/src/features/clinical/shared/useImageTileManager';
 import { Brain, Download, Expand, Loader2, QrCode, Trash2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
+// computeClientHash no longer used directly; handled by tile manager
 
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
@@ -13,7 +15,7 @@ import { Button } from '@/src/shared/components/ui/button';
 import { GalleryTileSkeleton } from '@/src/shared/components/ui/gallery-tile-skeleton';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
-import { resizeImageFile } from '@/src/shared/utils/image';
+// resizeImageFile is not used in this component after refactor
 import type { ClinicalImage } from '@/src/types/consultation';
 import { useToast } from '@/src/shared/components/ui/toast';
 
@@ -197,9 +199,8 @@ export const ClinicalImageTab: React.FC = () => {
     return filtered.filter((img: any) => !deletingImages.has(img.key));
   }, [serverImages, currentPatientSessionId, deletingImages]);
   // Optimistic previews for immediate thumbnail display
-  // Placeholder-only flow on consultation widget
-  // Desktop placeholders with mapping; replaced when server image with expectedKey arrives
-  const [desktopPlaceholders, setDesktopPlaceholders] = useState<Array<{ id: string; clientHash?: string; expectedKey?: string }>>([]);
+  // Unified placeholder manager for consultation session grid
+  const tileManager = useImageTileManager({ sessionId: currentPatientSessionId });
   // Removed pendingBatches; we rely on cache invalidation and Ably refresh to replace optimistics
   const queryClient = useQueryClient();
   const queryClientRef = useRef(queryClient);
@@ -209,11 +210,7 @@ export const ClinicalImageTab: React.FC = () => {
     onImageUploadStarted: (count) => {
       const n = Math.max(0, count || 0);
       setInFlightUploads(prev => prev + n);
-      if (n > 0) {
-        const ids: string[] = [];
-        for (let i = 0; i < n; i++) ids.push(Math.random().toString(36).slice(2));
-        setMobilePlaceholders(prev => [...ids, ...prev]);
-      }
+      if (n > 0) tileManager.addMobilePlaceholders(n);
     },
     onImageUploaded: () => {
       setInFlightUploads(prev => Math.max(0, prev - 1));
@@ -225,8 +222,7 @@ export const ClinicalImageTab: React.FC = () => {
     },
   });
 
-  // Mobile placeholders in consultation grid (added via Ably events)
-  const [mobilePlaceholders, setMobilePlaceholders] = useState<string[]>([]);
+  // Placeholders are managed by tileManager
 
   // Show toast when uploads complete
   React.useEffect(() => {
@@ -276,113 +272,12 @@ export const ClinicalImageTab: React.FC = () => {
     return `${safePatient} ${dateStr} ${compactTime}${ext}`.trim();
   }, [currentSession?.patientName]);
 
-  // Compute client fingerprint (SHA-1 of first 128KB + size + lastModified)
-  const computeClientHash = useCallback(async (file: File): Promise<string> => {
-    try {
-      const chunk = file.slice(0, 128 * 1024);
-      const buf = await chunk.arrayBuffer();
-      const digest = await crypto.subtle.digest('SHA-1', buf);
-      const hex = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
-      return `${file.size}-${file.lastModified}-${hex}`;
-    } catch {
-      return `${file.size}-${file.lastModified}`;
-    }
+  // Compute client fingerprint (shared util)
+
+  // Deprecated: replaced by tileManager.uploadDesktopFiles
+  const handleFileUpload = useCallback(async (_file: File, _clientHash?: string, _placeholderId?: string) => {
+    return;
   }, []);
-
-  const handleFileUpload = useCallback(async (file: File, clientHash?: string, placeholderId?: string) => {
-    if (!currentPatientSessionId) {
-      setError('No active patient session');
-      return;
-    }
-
-    setError(null);
-
-  try {
-      // Client-side resize
-      const resizedBlob = await resizeImageFile(file, 1024);
-
-      // 🆕 SERVER-SIDE SESSION RESOLUTION: No need to pass session ID, server auto-lookups from users.currentSessionId
-      const presignParams = new URLSearchParams({
-        filename: file.name,
-        mimeType: file.type,
-      });
-      if (clientHash) presignParams.set('clientHash', clientHash);
-
-      const presignResponse = await fetch(`/api/uploads/presign?${presignParams}`);
-      if (!presignResponse.ok) {
-        throw new Error('Failed to get upload URL');
-      }
-
-      const { uploadUrl, key } = await presignResponse.json();
-      // Attach expectedKey to matching desktop placeholder immediately
-      if (placeholderId && key) {
-        setDesktopPlaceholders(prev => prev.map(ph => ph.id === placeholderId ? { ...ph, expectedKey: String(key) } : ph));
-      }
-
-      // Upload to S3
-      const uploadResponse = await fetch(uploadUrl, {
-        method: 'PUT',
-        body: resizedBlob,
-        headers: {
-          'Content-Type': file.type,
-          'X-Amz-Server-Side-Encryption': 'AES256',
-        },
-      });
-
-      if (!uploadResponse.ok) {
-        console.error('S3 Upload failed:', {
-          status: uploadResponse.status,
-          statusText: uploadResponse.statusText,
-          headers: Object.fromEntries(uploadResponse.headers.entries()),
-          url: uploadUrl,
-        });
-
-        const errorText = await uploadResponse.text().catch(() => 'No error details');
-        console.error('S3 Error response:', errorText);
-
-        throw new Error(`Failed to upload image (${uploadResponse.status}: ${uploadResponse.statusText})`);
-      }
-
-      // Default naming: set displayName via metadata so /image shows correct name immediately
-      try {
-        await fetch('/api/clinical-images/metadata/batch', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ items: [{ imageKey: key, patientName: (currentSession?.patientName as string) || undefined }] }),
-        });
-      } catch {}
-
-      // Create image metadata
-      const newImage: ClinicalImage = {
-        id: Math.random().toString(36).substr(2, 9),
-        key,
-        filename: buildServerLikeFilename(file),
-        mimeType: file.type,
-        uploadedAt: new Date().toISOString(),
-      };
-
-      // Add to context and save
-      addClinicalImage(newImage);
-      await saveClinicalImagesToCurrentSession([...clinicalImages, newImage]);
-
-      // Invalidate React Query cache to refresh server images
-      queryClient.invalidateQueries({
-        queryKey: imageQueryKeys.lists(),
-      });
-    } catch (err) {
-      console.error('Upload error:', err);
-      setError(err instanceof Error ? err.message : 'Upload failed');
-    } finally {
-      // no-op; placeholders will be replaced by server tiles
-    }
-  }, [
-    currentPatientSessionId,
-    addClinicalImage,
-    saveClinicalImagesToCurrentSession,
-    clinicalImages,
-    queryClient,
-    buildServerLikeFilename,
-  ]);
 
   const handleFileSelect = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -390,17 +285,13 @@ export const ClinicalImageTab: React.FC = () => {
       return;
     }
 
-    // Desktop placeholders with clientHash mapping
+    // Desktop upload via tile manager
     setIsUploadingDesktop(true);
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      if (!file) continue;
-      // eslint-disable-next-line no-await-in-loop
-      const hash = await computeClientHash(file);
-      const phId = Math.random().toString(36).slice(2);
-      setDesktopPlaceholders(prev => [{ id: phId, clientHash: hash }, ...prev]);
-      // eslint-disable-next-line no-await-in-loop
-      await handleFileUpload(file, hash, phId);
+    try {
+      await tileManager.uploadDesktopFiles(Array.from(files), currentPatientSessionId ? { sessionId: currentPatientSessionId } : { noSession: true } as any);
+    } catch (err) {
+      console.error('Upload failed:', err);
+      setError(err instanceof Error ? err.message : 'Upload failed');
     }
 
     // Clear input for re-selection
@@ -408,7 +299,7 @@ export const ClinicalImageTab: React.FC = () => {
       event.target.value = '';
     }
     setIsUploadingDesktop(false);
-  }, [handleFileUpload, currentPatientSessionId, sessionServerImages.length, computeClientHash]);
+  }, [tileManager, currentPatientSessionId]);
 
   const handleRemoveImage = useCallback(async (imageId: string) => {
     const updatedImages = clinicalImages.filter((img: any) => img.id !== imageId);
@@ -524,7 +415,12 @@ export const ClinicalImageTab: React.FC = () => {
 
   const handleDeleteSessionImage = useCallback(async (imageKey: string) => {
     // Guard: ignore deletes for local placeholders
-    if (imageKey.startsWith('mobile-placeholder:') || imageKey.startsWith('mobile-ph:') || imageKey.startsWith('desktop-ph:')) {
+    if (
+      imageKey.startsWith('mobile-placeholder:') ||
+      imageKey.startsWith('desktop-placeholder:') ||
+      imageKey.startsWith('mobile-ph:') ||
+      imageKey.startsWith('desktop-ph:')
+    ) {
       return;
     }
     // Optimistic UI: immediately hide the image
@@ -775,7 +671,7 @@ export const ClinicalImageTab: React.FC = () => {
       )}
 
       {/* Session Images (from server under clinical-images/{userId}/{sessionId}/) */}
-      {(isLoadingServerImages || sessionServerImages.length > 0 || mobilePlaceholders.length > 0) && (
+      {(isLoadingServerImages || sessionServerImages.length > 0 || tileManager.placeholders.length > 0) && (
         <div
           className={`border-l-2 pl-3 ${isDragging ? 'border-blue-400 border-dashed bg-blue-50/50' : 'border-blue-200'}`}
           onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
@@ -787,15 +683,8 @@ export const ClinicalImageTab: React.FC = () => {
             setIsDragging(false);
             try {
               const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
-              // Desktop placeholders with clientHash mapping
-              for (const file of files) {
-                // eslint-disable-next-line no-await-in-loop
-                const hash = await computeClientHash(file);
-                const phId = Math.random().toString(36).slice(2);
-                setDesktopPlaceholders(prev => [{ id: phId, clientHash: hash }, ...prev]);
-                // eslint-disable-next-line no-await-in-loop
-                await handleFileUpload(file, hash, phId);
-              }
+              if (files.length === 0) return;
+              await tileManager.uploadDesktopFiles(files, currentPatientSessionId ? { sessionId: currentPatientSessionId } : { noSession: true } as any);
             } catch {
               setError('Failed to upload dropped files');
             }
@@ -850,16 +739,7 @@ export const ClinicalImageTab: React.FC = () => {
               )
             : (
                 <div className="grid grid-cols-2 gap-3">
-                  {(() => {
-                    // Remove desktop placeholders as soon as their expected server key appears
-                    const serverKeys = new Set(sessionServerImages.map((img: any) => img.key));
-                    const desktopPending = desktopPlaceholders.filter(ph => !ph.expectedKey || !serverKeys.has(ph.expectedKey));
-                    const placeholderTiles: any[] = [
-                      ...mobilePlaceholders.map((id) => ({ id: `mobile-ph-${id}`, key: `mobile-ph:${id}`, filename: 'Uploading…', thumbnailUrl: undefined, uploadedAt: new Date().toISOString(), source: 'clinical', sessionId: currentPatientSessionId })),
-                      ...desktopPending.map(ph => ({ id: `desktop-ph-${ph.id}`, key: `desktop-ph:${ph.id}`, filename: 'Uploading…', thumbnailUrl: undefined, uploadedAt: new Date().toISOString(), source: 'clinical', sessionId: currentPatientSessionId })),
-                    ];
-                    return [...placeholderTiles, ...sessionServerImages];
-                  })().map((image: any) => {
+                  {tileManager.deriveTiles(sessionServerImages).map((image: any) => {
                     const isAnalyzing = analyzingImages.has(image.id);
                     return (
                       <div key={image.id} className="relative">

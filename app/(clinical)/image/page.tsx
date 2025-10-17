@@ -38,6 +38,7 @@ import { GalleryTileSkeleton } from '@/src/shared/components/ui/gallery-tile-ske
 import { createAuthHeaders } from '@/src/shared/utils';
 import { isFeatureEnabled } from '@/src/shared/utils/launch-config';
 import type { AnalysisModalState, ServerImage } from '@/src/stores/imageStore';
+import { useImageTileManager } from '@/src/features/clinical/shared/useImageTileManager';
 import { useImageStore } from '@/src/stores/imageStore';
 
 
@@ -87,11 +88,10 @@ export default function ClinicalImagePage() {
 
   // Track upload loading state
   const isUploading = uploadImages.isPending;
-  // Placeholder-only flow: track mobile placeholders only
+  // Unified placeholder manager
   const [inFlightUploads, setInFlightUploads] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  // Desktop upload placeholders with expected server key mapping
-  const [uploadPlaceholders, setUploadPlaceholders] = useState<Array<{ id: string; expectedKey?: string }>>([]);
+  const tileManager = useImageTileManager({ sessionId: selectedSessionId !== 'none' ? selectedSessionId : undefined });
 
   // Enlarge modal state
   const [enlargeModal, setEnlargeModal] = useState<{
@@ -233,16 +233,7 @@ export default function ClinicalImagePage() {
     onImageUploadStarted: (count) => {
       const n = Math.max(0, count || 0);
       setInFlightUploads((prev) => prev + n);
-      if (n > 0) {
-        // Create mobile placeholder tiles and batch tracking
-        const newIds: string[] = [];
-        for (let i = 0; i < n; i++) newIds.push(Math.random().toString(36).slice(2));
-        setMobilePlaceholders((prev) => [...newIds, ...prev]);
-        setMobileBatches((prev) => [
-          ...prev,
-          { id: Math.random().toString(36).slice(2), placeholderIds: newIds, startCount: serverImages.length, expected: n },
-        ]);
-      }
+      if (n > 0) tileManager.addMobilePlaceholders(n);
     },
     onImageUploaded: () => {
       setInFlightUploads((prev) => Math.max(0, prev - 1));
@@ -263,35 +254,12 @@ export default function ClinicalImagePage() {
     },
   });
 
-  // Mobile placeholders state
-  const [mobilePlaceholders, setMobilePlaceholders] = useState<string[]>([]);
-  const [mobileBatches, setMobileBatches] = useState<Array<{ id: string; placeholderIds: string[]; startCount: number; expected: number }>>([]);
-
-  // Reconcile mobile placeholders when server images appear
+  // Reconcile placeholders when server images appear
   useEffect(() => {
-    if (mobileBatches.length === 0) return;
-    setMobileBatches((prev) => {
-      const remaining: typeof prev = [];
-      const removeIds: string[] = [];
-      prev.forEach((b) => {
-        if (serverImages.length >= b.startCount + b.expected) {
-          removeIds.push(...b.placeholderIds);
-        } else {
-          remaining.push(b);
-        }
-      });
-      if (removeIds.length > 0) {
-        setMobilePlaceholders((prevIds) => prevIds.filter((id) => !removeIds.includes(id)));
-      }
-      return remaining;
-    });
-  }, [serverImages.length, mobileBatches.length]);
+    tileManager.reconcileWithServer(serverImages);
+  }, [serverImages, tileManager]);
 
-  // Remove desktop placeholders whose expected server key has arrived
-  useEffect(() => {
-    if (!uploadPlaceholders.length) return;
-    setUploadPlaceholders(prev => prev.filter(ph => !(ph.expectedKey && serverImages.some(img => img.key === ph.expectedKey))));
-  }, [serverImages, uploadPlaceholders.length]);
+  // Desktop placeholders handled by tileManager
 
   // Detect mobile on mount
   useEffect(() => {
@@ -341,38 +309,14 @@ export default function ClinicalImagePage() {
       return;
     }
 
-    // Desktop upload: add N placeholders and upload
-    const context = selectedSessionId && selectedSessionId !== 'none'
-      ? { sessionId: selectedSessionId }
-      : { noSession: true };
-    // Create desktop placeholders
-    const phIds = fileArray.map(() => Math.random().toString(36).slice(2));
-    setUploadPlaceholders(prev => [...phIds.map(id => ({ id })), ...prev]);
+    // Desktop upload via tile manager
+    const context = selectedSessionId && selectedSessionId !== 'none' ? { sessionId: selectedSessionId } : { noSession: true };
     try {
-      const result = await uploadImages.mutateAsync({ files: fileArray, context });
-      const returnedKeys: string[] = Array.isArray((result as any)?.keys) ? (result as any).keys : [];
-      if (returnedKeys.length) {
-        setUploadPlaceholders(prev => {
-          const next = [...prev];
-          const idSet = new Set(phIds);
-          let idx = 0;
-          for (let i = 0; i < next.length && idx < returnedKeys.length; i++) {
-            const ph = next[i];
-            if (!ph) continue;
-            if (idSet.has(ph.id)) {
-              next[i] = { ...ph, expectedKey: returnedKeys[idx++] };
-            }
-          }
-          return next;
-        });
-      }
+      await tileManager.uploadDesktopFiles(fileArray, context as any);
     } catch (err) {
       console.error('Upload failed:', err);
-      setUploadPlaceholders(prev => prev.filter(ph => !phIds.includes(ph.id)));
     } finally {
-      if (event.target) {
-        event.target.value = '';
-      }
+      if (event.target) event.target.value = '';
     }
   };
 
@@ -391,7 +335,13 @@ export default function ClinicalImagePage() {
 
   const handleDeleteImage = async (imageKey: string) => {
     // Guard: ignore deletes for local placeholders
-    if (imageKey.startsWith('mobile-placeholder:') || imageKey.startsWith('mobile-ph:') || imageKey.startsWith('desktop-ph:') || imageKey.startsWith('upload-placeholder:')) {
+    if (
+      imageKey.startsWith('mobile-placeholder:') ||
+      imageKey.startsWith('desktop-placeholder:') ||
+      imageKey.startsWith('mobile-ph:') ||
+      imageKey.startsWith('desktop-ph:') ||
+      imageKey.startsWith('upload-placeholder:')
+    ) {
       return;
     }
     // Optimistic UI: immediately hide the image
@@ -757,26 +707,7 @@ Cancel
             const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
             if (files.length === 0) return;
             const context = selectedSessionId && selectedSessionId !== 'none' ? { sessionId: selectedSessionId } : { noSession: true };
-            // Create desktop placeholders
-            const phIds = files.map(() => Math.random().toString(36).slice(2));
-            setUploadPlaceholders(prev => [...phIds.map(id => ({ id })), ...prev]);
-            const result = await uploadImages.mutateAsync({ files, context });
-            const returnedKeys: string[] = Array.isArray((result as any)?.keys) ? (result as any).keys : [];
-            if (returnedKeys.length) {
-              setUploadPlaceholders(prev => {
-                const next = [...prev];
-                const idSet = new Set(phIds);
-                let idx = 0;
-                for (let i = 0; i < next.length && idx < returnedKeys.length; i++) {
-                  const ph = next[i];
-                  if (!ph) continue;
-                  if (idSet.has(ph.id)) {
-                    next[i] = { ...ph, expectedKey: returnedKeys[idx++] };
-                  }
-                }
-                return next;
-              });
-            }
+            await tileManager.uploadDesktopFiles(files, context as any);
           } catch (err) {
             setError('Failed to upload dropped files');
           }
@@ -925,7 +856,7 @@ Cancel
                       ))}
                     </div>
                   )
-                : serverImages.length === 0
+                : (serverImages.length === 0 && tileManager.placeholders.length === 0)
                   ? (
                       <div className="flex h-full items-center justify-center">
                         <div className="text-center">
@@ -1046,35 +977,7 @@ Cancel
                       {(
                       <ImageSectionsGrid
                         images={(() => {
-                          // Filter: only sessions with images + selected sessions if any
-                          const placeholderTiles = [
-                            ...mobilePlaceholders.map((id) => ({
-                            id: `mobile-placeholder-${id}`,
-                            key: `mobile-placeholder:${id}`,
-                            filename: 'Uploading…',
-                            mimeType: 'image/jpeg',
-                            size: 0,
-                            uploadedAt: new Date().toISOString(),
-                            source: 'clinical' as const,
-                            thumbnailUrl: undefined,
-                            sessionId: undefined as unknown as string | undefined,
-                            })),
-                            ...uploadPlaceholders
-                              .filter(ph => !ph.expectedKey || !serverImages.some(img => img.key === ph.expectedKey))
-                              .map(ph => ({
-                                id: `upload-placeholder-${ph.id}`,
-                                key: `upload-placeholder:${ph.id}`,
-                                filename: 'Uploading…',
-                                mimeType: 'image/jpeg',
-                                size: 0,
-                                uploadedAt: new Date().toISOString(),
-                                source: 'clinical' as const,
-                                thumbnailUrl: undefined,
-                                sessionId: undefined as unknown as string | undefined,
-                              } as ServerImage)),
-                          ];
-                          // Replace placeholders that have matching server images via clientHash
-                          const list = [...placeholderTiles, ...serverImages];
+                          const list = tileManager.deriveTiles(serverImages);
                           if (filterSessionIds.size > 0) {
                             return list.filter(img => img.sessionId && filterSessionIds.has(img.sessionId));
                           }
