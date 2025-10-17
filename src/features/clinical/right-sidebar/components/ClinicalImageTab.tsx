@@ -164,7 +164,6 @@ function SessionImageTile({
 export const ClinicalImageTab: React.FC = () => {
   const {
     getCurrentPatientSession,
-    addClinicalImage,
     removeClinicalImage,
     saveClinicalImagesToCurrentSession,
     updateImageDescription,
