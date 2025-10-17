@@ -189,13 +189,19 @@ export async function GET(req: NextRequest) {
     const imagesWithData = await Promise.all(allImages.map(async (image) => {
       let thumbnailUrl: string | undefined = undefined;
       let clientHash: string | undefined = undefined;
+      // Try reading client-hash from original object metadata first (most reliable)
+      try {
+        const headOrig = await s3Client.send(new HeadObjectCommand({ Bucket: BUCKET_NAME!, Key: image.key }));
+        const metaOrig = (headOrig as any)?.Metadata || {};
+        clientHash = metaOrig['client-hash'] || undefined;
+      } catch {}
       if (image.thumbnailKey && BUCKET_NAME) {
         try {
           // Check existence first to avoid generating invalid signed URLs
           const head = await s3Client.send(new HeadObjectCommand({ Bucket: BUCKET_NAME, Key: image.thumbnailKey }));
           const meta = (head as any)?.Metadata || {};
           // Note: S3 lowercases user-defined metadata keys
-          clientHash = meta['client-hash'] || undefined;
+          clientHash = clientHash || meta['client-hash'] || undefined;
           const cmd = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: image.thumbnailKey });
           thumbnailUrl = await getSignedUrl(s3Client, cmd, { expiresIn: 1800 }); // 30 min
         } catch {

@@ -41,8 +41,8 @@ function SessionImageTile({
   onActivateSelection: () => void;
 }) {
   // Prefer server-provided thumbnailUrl; otherwise request presigned URL for the full image key
-  const { data: imageUrlData } = useImageUrl(image.thumbnailUrl ? '' : image.key);
-  const imageUrl = image.thumbnailUrl || imageUrlData;
+  const { data: imageUrlData } = useImageUrl(image && image.thumbnailUrl ? '' : image?.key || '');
+  const imageUrl = (image && image.thumbnailUrl) || imageUrlData;
   const renameImage = useRenameImage();
   const baseName = (image.displayName || image.filename || '').replace(/\.[^.]+$/, '');
   const [isRenaming, setIsRenaming] = React.useState(false);
@@ -72,7 +72,9 @@ function SessionImageTile({
             <img src={imageUrl} alt="" className="size-full object-cover" />
           )
           : (
-            <div className="flex size-full items-center justify-center text-xs text-slate-400">No preview</div>
+            <div className="flex size-full items-center justify-center">
+              <Loader2 className="size-6 animate-spin text-slate-400" />
+            </div>
           )}
         {/* Checkbox top-left */}
         <div className={`absolute left-2 top-2 z-10 ${selectionMode ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}>
