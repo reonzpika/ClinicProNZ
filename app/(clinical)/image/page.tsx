@@ -758,25 +758,7 @@ Cancel
                       const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
                       if (files.length === 0) return;
                       const context = selectedSessionId && selectedSessionId !== 'none' ? { sessionId: selectedSessionId } : { noSession: true };
-                      const phIds = files.map(() => Math.random().toString(36).slice(2));
-                      setUploadPlaceholders(prev => [...phIds.map(id => ({ id })), ...prev]);
-                      const result = await uploadImages.mutateAsync({ files, context });
-                      const returnedKeys: string[] = Array.isArray((result as any)?.keys) ? (result as any).keys : [];
-                      if (returnedKeys.length) {
-                        setUploadPlaceholders(prev => {
-                          const next = [...prev];
-                          const idSet = new Set(phIds);
-                          let idx = 0;
-                          for (let i = 0; i < next.length && idx < returnedKeys.length; i++) {
-                            const ph = next[i];
-                            if (!ph) continue;
-                            if (idSet.has(ph.id)) {
-                              next[i] = { ...ph, expectedKey: returnedKeys[idx++] };
-                            }
-                          }
-                          return next;
-                        });
-                      }
+                      await tileManager.uploadDesktopFiles(files, context as any);
                     } catch (err) {
                       setError('Failed to upload dropped files');
                     }
