@@ -248,10 +248,7 @@ export const ClinicalImageTab: React.FC = () => {
 
   // Compute client fingerprint (shared util)
 
-  // Deprecated: replaced by tileManager.uploadDesktopFiles
-  const handleFileUpload = useCallback(async (_file: File, _clientHash?: string, _placeholderId?: string) => {
-    return;
-  }, []);
+  // Deprecated handler removed; uploads handled by tileManager.uploadDesktopFiles
 
   const handleFileSelect = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
