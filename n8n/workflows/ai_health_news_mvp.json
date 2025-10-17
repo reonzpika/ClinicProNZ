@@ -162,6 +162,40 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [1560, 220]
+    },
+    {
+      "parameters": {
+        "conditions": { "string": [ { "value1": "={{$json.status}}", "operation": "equal", "value2": "draft" } ] }
+      },
+      "id": "IFNeedsReview",
+      "name": "IF Needs Review",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1760, 220]
+    },
+    {
+      "parameters": {
+        "channel": "={{$env.SLACK_REVIEW_CHANNEL_ID}}",
+        "text": "Review needed: {{$json.title}}\\n{{$json.canonicalUrl}}"
+      },
+      "id": "SlackReview",
+      "name": "Slack: Review Request",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [1960, 160],
+      "credentials": { "slackApi": { "id": "<set-in-n8n>", "name": "Slack Bot" } }
+    },
+    {
+      "parameters": {
+        "channel": "={{$env.SLACK_SUMMARY_CHANNEL_ID}}",
+        "text": "Published: {{$json.title}} – {{$json.canonicalUrl}}"
+      },
+      "id": "SlackPublished",
+      "name": "Slack: Published",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [1960, 280],
+      "credentials": { "slackApi": { "id": "<set-in-n8n>", "name": "Slack Bot" } }
     }
   ],
   "connections": {
@@ -174,7 +208,9 @@
     "Dedupe": {"main": [[{"node": "LLM Classify", "type": "main", "index": 0}]]},
     "LLM Classify": {"main": [[{"node": "IF Relevant", "type": "main", "index": 0}]]},
     "IF Relevant": {"main": [[{"node": "LLM Summarise", "type": "main", "index": 0}]]},
-    "LLM Summarise": {"main": [[{"node": "Score & Status", "type": "main", "index": 0}]]}
+    "LLM Summarise": {"main": [[{"node": "Score & Status", "type": "main", "index": 0}]]},
+    "Score & Status": {"main": [[{"node": "IF Needs Review", "type": "main", "index": 0}]]},
+    "IF Needs Review": {"main": [[{"node": "Slack: Review Request", "type": "main", "index": 0}]], "else": [[{"node": "Slack: Published", "type": "main", "index": 0}]]}
   },
   "pinData": {},
   "staticData": {},
