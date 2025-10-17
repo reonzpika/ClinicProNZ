@@ -244,32 +244,7 @@ export const ClinicalImageTab: React.FC = () => {
   // Ably listener for mobile image notifications (desktop only)
   // Desktop image notifications can be re-wired later to user channel if needed
 
-  // Build a server-like filename so optimistic tiles match the eventual server object naming
-  const buildServerLikeFilename = useCallback((file: File): string => {
-    const parts = new Intl.DateTimeFormat('en-NZ', {
-      timeZone: 'Pacific/Auckland',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-    }).formatToParts(new Date());
-    const get = (t: string) => parts.find(p => p.type === t)?.value || '';
-    const yyyy = get('year');
-    const mm = get('month');
-    const dd = get('day');
-    const hh = get('hour');
-    const mi = get('minute');
-    const ss = get('second');
-    const ms = String(new Date().getMilliseconds()).padStart(3, '0');
-    const dateStr = `${yyyy}-${mm}-${dd}`;
-    const compactTime = `${hh}${mi}${ss}${ms}`;
-    const ext = file.name.includes('.') ? `.${file.name.split('.').pop()}` : '';
-    const safePatient = (currentSession?.patientName || 'Patient').replaceAll('/', '-');
-    return `${safePatient} ${dateStr} ${compactTime}${ext}`.trim();
-  }, [currentSession?.patientName]);
+  // Removed buildServerLikeFilename; server now controls final naming via presign
 
   // Compute client fingerprint (shared util)
 
