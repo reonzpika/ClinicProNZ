@@ -49,8 +49,12 @@ export function useServerImages(sessionId?: string) {
       return data.images || [];
     },
     enabled: !!userId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    // Heavily cache lists; rely on Ably-driven invalidations
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 60 * 60 * 1000, // 60 minutes
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: 'always',
   });
 }
 
@@ -247,6 +251,7 @@ export function useImageUrl(imageKey: string) {
         throw new Error('User not authenticated');
       }
 
+      // Prefer proxy path for thumbnails; this hook is for full image
       const response = await fetch(`/api/uploads/download?key=${encodeURIComponent(imageKey)}`, {
         headers: createAuthHeaders(userId, userTier),
       });
@@ -259,8 +264,10 @@ export function useImageUrl(imageKey: string) {
       return data.downloadUrl;
     },
     enabled: !!userId && !!imageKey,
-    staleTime: 30 * 60 * 1000, // 30 minutes (URLs expire in 1 hour)
-    gcTime: 60 * 60 * 1000, // 1 hour
+    staleTime: 60 * 60 * 1000, // 60 minutes
+    gcTime: 2 * 60 * 60 * 1000, // 2 hours
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }
 

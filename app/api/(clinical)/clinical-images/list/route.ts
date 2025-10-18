@@ -202,8 +202,8 @@ export async function GET(req: NextRequest) {
           const meta = (head as any)?.Metadata || {};
           // Note: S3 lowercases user-defined metadata keys
           clientHash = clientHash || meta['client-hash'] || undefined;
-          const cmd = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: image.thumbnailKey });
-          thumbnailUrl = await getSignedUrl(s3Client, cmd, { expiresIn: 1800 }); // 30 min
+          // Do not presign here; let client use cached proxy route
+          // Keep thumbnailUrl undefined to avoid per-tile presign churn
         } catch {
           thumbnailUrl = undefined;
         }
@@ -216,7 +216,8 @@ export async function GET(req: NextRequest) {
         identifier: metadataMap[image.key]?.identifier || undefined,
         sessionName: image.sessionId ? sessionNameMap[image.sessionId] : undefined,
         analysis: analysisMap[image.key] || undefined,
-        ...(thumbnailUrl ? { thumbnailUrl } : {}),
+        // Provide proxy path if thumbnail likely exists; client will call proxy lazily
+        ...(image.thumbnailKey ? { thumbnailUrlPath: `/api/images/thumb?key=${encodeURIComponent(image.thumbnailKey)}` } : {}),
       };
     }));
 

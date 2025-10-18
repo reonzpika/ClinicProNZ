@@ -26,7 +26,8 @@ export type ServerImage = {
   thumbnailKey?: string; // Optional thumbnail key for faster loads
   tokenId?: string;
   analysis?: ImageAnalysis; // Latest analysis for this image
-  thumbnailUrl?: string; // Presigned URL for thumbnail (performance optimization)
+  thumbnailUrl?: string; // Legacy: presigned URL for thumbnail
+  thumbnailUrlPath?: string; // Proxy path for thumbnail (preferred)
   clientHash?: string; // Client-provided fingerprint to reconcile placeholders
 };
 
