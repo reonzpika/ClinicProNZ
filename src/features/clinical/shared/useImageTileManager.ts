@@ -19,6 +19,8 @@ export function useImageTileManager(params: { sessionId?: string | null }) {
   const { sessionId } = params;
   // Placeholders across sources
   const [placeholders, setPlaceholders] = useState<PlaceholderTile[]>([]);
+  // Track batches for precise reconciliation
+  const [batches, setBatches] = useState<Array<{ id: string; expected: number; clientHashes?: string[] }>>([]);
   const uploadImages = useUploadImages();
   const queryClient = useQueryClient();
   const invalidateTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -33,6 +35,15 @@ export function useImageTileManager(params: { sessionId?: string | null }) {
     setPlaceholders(prev => [...tiles, ...prev]);
     return ids;
   }, [sessionId]);
+
+  // Add mobile placeholders with known batch and optional clientHashes
+  const addMobileBatch = useCallback((batchId: string | undefined, count: number, clientHashes?: string[]) => {
+    const ids = addMobilePlaceholders(count);
+    if (batchId) {
+      setBatches(prev => [...prev, { id: batchId, expected: count, clientHashes }]);
+    }
+    return ids;
+  }, [addMobilePlaceholders]);
 
   // Public API: reconcile when server images update (by expectedKey or clientHash)
   const reconcileWithServer = useCallback((serverImages: ServerImage[]) => {
@@ -60,6 +71,17 @@ export function useImageTileManager(params: { sessionId?: string | null }) {
       setPlaceholders(prev => {
         let remaining = [...prev];
         let toRemove = delta;
+        // Prefer batch-aware removal using clientHashes if available
+        for (const batch of batches) {
+          if (!batch.clientHashes || batch.clientHashes.length === 0) continue;
+          for (const ch of batch.clientHashes) {
+            const idx = remaining.findIndex(ph => ph.clientHash === ch);
+            if (idx >= 0 && toRemove > 0) {
+              remaining.splice(idx, 1);
+              toRemove -= 1;
+            }
+          }
+        }
         for (let i = remaining.length - 1; i >= 0 && toRemove > 0; i--) {
           const ph = remaining[i];
           if (!ph) continue;
@@ -154,8 +176,10 @@ export function useImageTileManager(params: { sessionId?: string | null }) {
   return {
     // state
     placeholders,
+    batches,
     // actions
     addMobilePlaceholders,
+    addMobileBatch,
     uploadDesktopFiles,
     reconcileWithServer,
     // selectors

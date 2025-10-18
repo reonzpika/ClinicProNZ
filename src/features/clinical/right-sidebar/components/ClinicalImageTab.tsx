@@ -220,12 +220,12 @@ export const ClinicalImageTab: React.FC = () => {
   useSimpleAbly({
     userId: userId ?? null,
     isMobile: false,
-    onImageUploadStarted: (count) => {
+    onImageUploadStarted: (count, _sessionId, batchId, clientHashes) => {
       const n = Math.max(0, count || 0);
       setInFlightUploads(prev => prev + n);
-      if (n > 0) tileManager.addMobilePlaceholders(n);
+      if (n > 0) tileManager.addMobileBatch(batchId || undefined, n, clientHashes);
     },
-    onImageUploaded: () => {
+    onImageUploaded: (_key, _sessionId, _displayName, _batchId, _clientHash) => {
       setInFlightUploads(prev => Math.max(0, prev - 1));
       try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.lists() }); } catch {}
       setCompletedUploads((c) => c + 1);
