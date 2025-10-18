@@ -1,18 +1,8 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import {
-  AlertCircle,
-  Book,
-  Bot,
-  Loader2,
-  MessageCircle,
-  Send,
-  Settings,
-  Trash2,
-  User,
-} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { AlertCircle, Book, Bot, Loader2, MessageCircle, Send, Settings, Trash2, User } from 'lucide-react';
 
 import { Container } from '@/src/shared/components/layout/Container';
 import { Button } from '@/src/shared/components/ui/button';
@@ -22,6 +12,8 @@ import { createAuthHeaders } from '@/src/shared/utils';
 
 export const dynamic = 'force-dynamic';
 
+// Types
+
 type Message = {
   id: string;
   role: 'user' | 'assistant';
@@ -29,10 +21,11 @@ type Message = {
   timestamp: Date;
 };
 
-export default function ClinicalReferencePage() {
+export default function ClinicalChatPage() {
   const { userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -41,23 +34,22 @@ export default function ClinicalReferencePage() {
   const [consultationNote, setConsultationNote] = useState('');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  // RAG streaming UI removed per request. We'll rebuild from scratch later.
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Sample consultation data for context
+  // Sample consultation data for context (for demo/testing only)
   const sampleConsultationData = {
-    transcription: 'Patient presents with chest tightness and shortness of breath. Symptoms started 3 days ago. No fever. History of asthma. Using salbutamol inhaler as needed.',
-    typedInput: '42-year-old male with asthma exacerbation. Peak flow 60% of predicted. Wheeze bilateral. No signs of pneumonia on examination.',
+    transcription:
+      'Patient presents with chest tightness and shortness of breath. Symptoms started 3 days ago. No fever. History of asthma. Using salbutamol inhaler as needed.',
+    typedInput:
+      '42-year-old male with asthma exacerbation. Peak flow 60% of predicted. Wheeze bilateral. No signs of pneumonia on examination.',
   };
 
   const sendMessage = async () => {
-    if (!inputMessage.trim() || isLoading) {
-      return;
-    }
+    if (!inputMessage.trim() || isLoading) return;
 
     const newMessage: Message = {
       id: Date.now().toString(),
@@ -76,10 +68,7 @@ export default function ClinicalReferencePage() {
         method: 'POST',
         headers: createAuthHeaders(userId, userTier),
         body: JSON.stringify({
-          messages: [...messages, newMessage].map(msg => ({
-            role: msg.role,
-            content: msg.content,
-          })),
+          messages: [...messages, newMessage].map(msg => ({ role: msg.role, content: msg.content })),
           consultationNote: useContext ? consultationNote : undefined,
           rawConsultationData: useContext ? sampleConsultationData : undefined,
           useContext,
@@ -87,7 +76,7 @@ export default function ClinicalReferencePage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || 'Failed to send message');
       }
 
@@ -102,6 +91,7 @@ export default function ClinicalReferencePage() {
       setMessages(prev => [...prev, assistantMessage]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send message');
+      // eslint-disable-next-line no-console
       console.error('Chat error:', err);
     } finally {
       setIsLoading(false);
@@ -139,28 +129,17 @@ export default function ClinicalReferencePage() {
               <Book className="size-5 text-blue-600" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">
-                Clinical Reference
-              </h1>
-              <p className="text-sm text-slate-600">
-                AI-powered clinical guidance for NZ healthcare
-              </p>
+              <h1 className="text-2xl font-bold text-slate-900">Clinical Chat</h1>
+              <p className="text-sm text-slate-600">AI-powered clinical guidance for NZ healthcare</p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={clearMessages}
-              disabled={messages.length === 0}
-            >
+            <Button variant="outline" size="sm" onClick={clearMessages} disabled={messages.length === 0}>
               <Trash2 className="mr-2 size-4" />
               Clear Chat
             </Button>
           </div>
         </div>
-
-        {/* RAG streaming UI removed */}
 
         {/* Main Content */}
         <div className="flex flex-1 gap-6">
@@ -176,9 +155,7 @@ export default function ClinicalReferencePage() {
                     </div>
                     <div>
                       <CardTitle className="text-lg">Clinical Assistant</CardTitle>
-                      <CardDescription>
-                        Ask about NZ clinical guidelines, medications, and protocols
-                      </CardDescription>
+                      <CardDescription>Ask about NZ clinical guidelines, medications, and protocols</CardDescription>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -199,64 +176,44 @@ export default function ClinicalReferencePage() {
               {/* Chat Messages */}
               <CardContent className="flex-1 overflow-y-auto p-4">
                 <div className="space-y-4">
-                  {messages.length === 0
-                    ? (
-                        <div className="py-8 text-center">
-                          <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-slate-100">
-                            <MessageCircle className="size-8 text-slate-400" />
-                          </div>
-                          <h3 className="mb-2 text-lg font-semibold text-slate-900">
-                            Ask me anything about clinical practice
-                          </h3>
-                          <p className="mb-4 text-slate-600">
-                            I can help with NZ guidelines, medications, and clinical protocols
-                          </p>
-                          <div className="mx-auto grid max-w-2xl grid-cols-1 gap-2 md:grid-cols-2">
-                            {suggestedQueries.map(query => (
-                              <button
-                                key={query}
-                                type="button"
-                                onClick={() => setInputMessage(query)}
-                                className="rounded-lg bg-slate-50 p-2 text-left text-sm transition-colors hover:bg-slate-100"
-                              >
-                                {query}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )
-                    : (
-                        messages.map(message => (
-                          <div
-                            key={message.id}
-                            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  {messages.length === 0 ? (
+                    <div className="py-8 text-center">
+                      <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-slate-100">
+                        <MessageCircle className="size-8 text-slate-400" />
+                      </div>
+                      <h3 className="mb-2 text-lg font-semibold text-slate-900">Ask me anything about clinical practice</h3>
+                      <p className="mb-4 text-slate-600">I can help with NZ guidelines, medications, and clinical protocols</p>
+                      <div className="mx-auto grid max-w-2xl grid-cols-1 gap-2 md:grid-cols-2">
+                        {suggestedQueries.map(query => (
+                          <button
+                            key={query}
+                            type="button"
+                            onClick={() => setInputMessage(query)}
+                            className="rounded-lg bg-slate-50 p-2 text-left text-sm transition-colors hover:bg-slate-100"
                           >
-                            <div
-                              className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                                message.role === 'user'
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-slate-100 text-slate-900'
-                              }`}
-                            >
-                              <div className="mb-1 flex items-center space-x-2">
-                                {message.role === 'user'
-                                  ? (
-                                      <User className="size-4" />
-                                    )
-                                  : (
-                                      <Bot className="size-4" />
-                                    )}
-                                <span className="text-xs opacity-70">
-                                  {message.timestamp.toLocaleTimeString()}
-                                </span>
-                              </div>
-                              <div className="whitespace-pre-wrap text-sm">
-                                {message.content}
-                              </div>
-                            </div>
+                            {query}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    messages.map(message => (
+                      <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div
+                          className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                            message.role === 'user' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-900'
+                          }`}
+                        >
+                          <div className="mb-1 flex items-center space-x-2">
+                            {message.role === 'user' ? <User className="size-4" /> : <Bot className="size-4" />}
+                            <span className="text-xs opacity-70">{message.timestamp.toLocaleTimeString()}</span>
                           </div>
-                        ))
-                      )}
+                          <div className="whitespace-pre-wrap text-sm">{message.content}</div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+
                   {isLoading && (
                     <div className="flex justify-start">
                       <div className="max-w-[80%] rounded-lg bg-slate-100 px-4 py-2 text-slate-900">
@@ -268,6 +225,7 @@ export default function ClinicalReferencePage() {
                       </div>
                     </div>
                   )}
+
                   <div ref={messagesEndRef} />
                 </div>
               </CardContent>
@@ -290,18 +248,8 @@ export default function ClinicalReferencePage() {
                     className="flex-1 rounded-lg border border-slate-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     disabled={isLoading}
                   />
-                  <Button
-                    onClick={sendMessage}
-                    disabled={!inputMessage.trim() || isLoading}
-                    className="px-4 py-2"
-                  >
-                    {isLoading
-                      ? (
-                          <Loader2 className="size-4 animate-spin" />
-                        )
-                      : (
-                          <Send className="size-4" />
-                        )}
+                  <Button onClick={sendMessage} disabled={!inputMessage.trim() || isLoading} className="px-4 py-2">
+                    {isLoading ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
                   </Button>
                 </div>
               </div>
@@ -331,9 +279,7 @@ export default function ClinicalReferencePage() {
                         onChange={e => setUseContext(e.target.checked)}
                         className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                       />
-                      <span className="ml-2 text-sm text-slate-700">
-                        Include current consultation in context
-                      </span>
+                      <span className="ml-2 text-sm text-slate-700">Include current consultation in context</span>
                     </label>
                   </div>
                 </div>
@@ -383,5 +329,3 @@ export default function ClinicalReferencePage() {
     </Container>
   );
 }
-
-// Markdown renderer removed with RAG UI

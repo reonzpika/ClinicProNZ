@@ -15,11 +15,11 @@ import { TranscriptViewer } from '@/src/features/clinical/main-ui/components/Tra
 import { MobileConsultationFooter } from '@/src/features/clinical/main-ui/components/MobileConsultationFooter';
 import { TypedInput } from '@/src/features/clinical/main-ui/components/TypedInput';
 import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTranscription';
-// Removed MobileRightPanelOverlay; widgets now live in main column
+// MobileRightPanelOverlay removed; widgets now live in main column
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 import { ConsentModal } from '@/src/features/clinical/session-management/components/ConsentModal';
 import { SessionModal } from '@/src/features/clinical/session-management/components/SessionModal';
-// Removed RightPanelFeatures; widgets embedded below settings
+// RightPanelFeatures removed; widgets embedded below settings
 import ClinicalToolsTabs from '@/src/features/clinical/right-sidebar/components/ClinicalToolsTabs';
 import { WorkflowInstructions } from '@/src/features/clinical/right-sidebar/components/WorkflowInstructions';
 import { PatientSessionManager } from '@/src/features/clinical/session-management/components/PatientSessionManager';
