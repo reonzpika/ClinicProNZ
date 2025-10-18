@@ -8,7 +8,7 @@ import { TOOL_LIST } from '@/src/features/tools/data/tools';
 export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
-  title: 'GP AI Toolkit – Tools for NZ GPs',
+  title: 'GP AI and Automation Tools',
   description:
     'Curated AI tools for General Practice. Fast evidence, communication, and admin helpers. Verify with guidelines; avoid PHI.',
 };
@@ -36,7 +36,7 @@ export default function ToolsPage() {
       />
       <div className="mb-6">
         <div className="mb-2 text-sm text-muted-foreground">Home / Tools</div>
-        <h1 className="mb-1 text-2xl font-bold">GP AI Toolkit</h1>
+        <h1 className="mb-1 text-2xl font-bold">GP AI and Automation Tools</h1>
         <p className="text-sm text-muted-foreground">
           Work faster, stay evidence‑based. Verify with guidelines. Don’t paste identifiable data.
         </p>
