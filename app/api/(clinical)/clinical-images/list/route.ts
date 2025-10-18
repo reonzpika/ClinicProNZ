@@ -1,4 +1,4 @@
-import { GetObjectCommand, HeadObjectCommand, ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
+import { ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { auth } from '@clerk/nextjs/server';
 import { getDb } from 'database/client';
@@ -187,36 +187,15 @@ export async function GET(req: NextRequest) {
     // No mass presign here; clients fetch per-tile via /api/uploads/download
     // Best-effort: attach presigned thumbnail URLs when the thumbnail object exists
     const imagesWithData = await Promise.all(allImages.map(async (image) => {
-      let thumbnailUrl: string | undefined = undefined;
-      let clientHash: string | undefined = undefined;
-      // Try reading client-hash from original object metadata first (most reliable)
-      try {
-        const headOrig = await s3Client.send(new HeadObjectCommand({ Bucket: BUCKET_NAME!, Key: image.key }));
-        const metaOrig = (headOrig as any)?.Metadata || {};
-        clientHash = metaOrig['client-hash'] || undefined;
-      } catch {}
-      if (image.thumbnailKey && BUCKET_NAME) {
-        try {
-          // Check existence first to avoid generating invalid signed URLs
-          const head = await s3Client.send(new HeadObjectCommand({ Bucket: BUCKET_NAME, Key: image.thumbnailKey }));
-          const meta = (head as any)?.Metadata || {};
-          // Note: S3 lowercases user-defined metadata keys
-          clientHash = clientHash || meta['client-hash'] || undefined;
-          // Do not presign here; let client use cached proxy route
-          // Keep thumbnailUrl undefined to avoid per-tile presign churn
-        } catch {
-          thumbnailUrl = undefined;
-        }
-      }
+      // No S3 HEADs in list; minimise S3 calls. ClientHash omitted unless persisted elsewhere.
       return {
         ...image,
-        ...(clientHash ? { clientHash } : {}),
         displayName: metadataMap[image.key]?.displayName || undefined,
         patientName: metadataMap[image.key]?.patientName || undefined,
         identifier: metadataMap[image.key]?.identifier || undefined,
         sessionName: image.sessionId ? sessionNameMap[image.sessionId] : undefined,
         analysis: analysisMap[image.key] || undefined,
-        // Provide proxy path if thumbnail likely exists; client will call proxy lazily
+        // Provide proxy path; client will lazy-fetch and fallback on error if missing
         ...(image.thumbnailKey ? { thumbnailUrlPath: `/api/images/thumb?key=${encodeURIComponent(image.thumbnailKey)}` } : {}),
       };
     }));
