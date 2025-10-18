@@ -2,27 +2,25 @@
 // @ts-nocheck
 'use client';
 
-import { Camera, MessageCircle } from 'lucide-react';
+import { Camera } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 
-import { ChatbotWidget } from './ChatbotWidget';
 import { ClinicalImageTab } from './ClinicalImageTab';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
-type TabId = 'chat' | 'images';
+type TabId = 'images';
 
 type ClinicalToolsTabsProps = {
   fixedHeightClass?: string;
 };
 
 export const ClinicalToolsTabs: React.FC<ClinicalToolsTabsProps> = ({ fixedHeightClass = 'h-[400px]' }) => {
-  const [activeTab, setActiveTab] = useState<TabId>('chat');
+  const [activeTab, setActiveTab] = useState<TabId>('images');
   const [isExpanded, setIsExpanded] = useState<boolean>(false); // default collapsed
   const { getUserTier } = useClerkMetadata();
   const isAdmin = getUserTier() === 'admin';
 
   const tabs = useMemo(() => ([
-    { id: 'chat' as const, icon: MessageCircle, title: 'Chat' },
     { id: 'images' as const, icon: Camera, title: 'Clinical Images' },
   ]), []);
 
@@ -30,7 +28,7 @@ export const ClinicalToolsTabs: React.FC<ClinicalToolsTabsProps> = ({ fixedHeigh
   useEffect(() => {
     const available = tabs.map(t => t.id);
     if (!available.includes(activeTab)) {
-      setActiveTab('chat');
+      setActiveTab('images');
       setIsExpanded(false);
     }
   }, [tabs, activeTab]);
@@ -67,11 +65,6 @@ export const ClinicalToolsTabs: React.FC<ClinicalToolsTabsProps> = ({ fixedHeigh
 
       {/* Content area (always mounted, visibility controlled) */}
       <div className={`${fixedHeightClass} overflow-hidden`}> {/* fixed panel height */}
-        {/* Chat */}
-        <div className={`${activeTab === 'chat' && isExpanded ? 'block' : 'hidden'} h-full`}>
-          <ChatbotWidget embedded defaultCollapsed={false} fixedHeightClass="h-full" />
-        </div>
-
         {/* Clinical Images */}
         <div className={`${activeTab === 'images' && isExpanded ? 'block' : 'hidden'} h-full overflow-y-auto pr-1`}>
           <ClinicalImageTab />
