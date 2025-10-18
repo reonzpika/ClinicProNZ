@@ -104,6 +104,7 @@ export function useImageTileManager(params: { sessionId?: string | null }) {
           let idx = 0;
           for (let i = 0; i < next.length && idx < returnedKeys.length; i++) {
             const ph = next[i];
+            if (!ph) continue;
             if (ph.type === 'desktop' && placeholderIds.includes(ph.id)) {
               next[i] = { ...ph, expectedKey: returnedKeys[idx++] };
             }
