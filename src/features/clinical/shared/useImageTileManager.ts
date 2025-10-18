@@ -62,6 +62,7 @@ export function useImageTileManager(params: { sessionId?: string | null }) {
         let toRemove = delta;
         for (let i = remaining.length - 1; i >= 0 && toRemove > 0; i--) {
           const ph = remaining[i];
+          if (!ph) continue;
           if (ph.type === 'mobile' && !ph.expectedKey && !ph.clientHash) {
             remaining.splice(i, 1);
             toRemove -= 1;
