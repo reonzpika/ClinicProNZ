@@ -46,3 +46,85 @@
 GET https://alexapiuat.medtechglobal.com/FHIR/Patient/1
 Authorization: Bearer <token>
 ```
+
+## FHIR Version & Profiles
+- ALEX exposes a FHIR R4-compatible API. Always consult the ALEX CapabilityStatement to confirm supported resources/interactions and any Medtech-specific profiles/extensions.
+- Retrieve capabilities:
+  - `GET https://alexapiuat.medtechglobal.com/FHIR/metadata`
+
+## Authentication & Tokens (Azure AD)
+- Flow: OAuth 2.0 `client_credentials` against Medtech’s Azure AD tenant. Client credentials and scopes are issued during onboarding.
+- Token lifetime: typically ~1 hour. Refresh proactively (e.g., at ≤ 55 minutes) and cache tokens server-side only.
+- Example token request (values provided by Medtech):
+```
+POST https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id=<issued-client-id>&
+client_secret=<issued-client-secret>&
+grant_type=client_credentials&
+scope=api://<alex-app-id>/.default
+```
+
+## Required Headers — Example
+- Always send required headers from the server (never the browser):
+```
+GET https://alexapiuat.medtechglobal.com/FHIR/Patient/1
+Authorization: Bearer <access_token>
+mt-facilityid: <facility-id>
+mt-correlationid: 8e2f7a2e-6d98-4c8b-9e4a-4f2b7b0b2f91
+```
+- Writes must include: `Content-Type: application/fhir+json`.
+- Recommended: propagate `mt-correlationid` end-to-end for observability.
+
+## Capability Checks (Feature Gating)
+- Use the `CapabilityStatement` to determine support for resources/interactions (e.g., `DocumentReference` create, `Binary` create, `Task` operations).
+- Cache capabilities per facility/environment; re-check on deployment or periodically.
+
+## Error Taxonomy & Retries
+- Typical categories:
+  - AuthN/AuthZ: `401/403` → refresh token, verify headers, confirm facility access.
+  - Validation/State: `400/409/422` → do not auto-retry; surface actionable error to user.
+  - Not found/Gone: `404/410` → confirm identifiers; avoid blind retries.
+  - Rate limiting: `429` → exponential backoff with jitter; honour `Retry-After` when present.
+  - Transient server: `5xx` → bounded retries with full jitter and idempotency.
+- Always include an idempotency guard on writes from your server (e.g., hash per image or request key) to prevent duplicates on retries.
+
+## Documents & Imaging — Recommended Flow
+1) Create `Binary` with the image content (stream upload server-side):
+```
+POST /FHIR/Binary
+Content-Type: image/jpeg
+
+<bytes>
+```
+→ Response includes `Binary.id` and a resolvable `Binary` URL.
+
+2) Create `DocumentReference` that references the `Binary`:
+```json
+{
+  "resourceType": "DocumentReference",
+  "status": "current",
+  "type": { "coding": [{ "system": "http://loinc.org", "code": "18748-4" }] },
+  "subject": { "reference": "Patient/<patient-id>" },
+  "content": [
+    {
+      "attachment": {
+        "contentType": "image/jpeg",
+        "url": "Binary/<binary-id>"
+      }
+    }
+  ]
+}
+```
+- Use `DiagnosticReport` when clinically appropriate (e.g., a radiology/report bundle) and reference the same `Binary`.
+
+## Image Handling Guidance
+- Client-side (mobile) compress to ~1024 px long-edge, JPEG/WebP quality ~0.8, strip EXIF; HEIC → JPEG.
+- Enforce server-side size caps and type validation; reject unexpected formats early.
+- For redactions/annotations performed on desktop, apply transformations before upload so that persisted images contain only intended pixels.
+
+## Operational Notes (Recommended)
+- Timeouts: set sensible upstream timeouts (connect/read) and expose meaningful errors to the user.
+- Observability: log `mt-correlationid`, facility, request kind, and outcome; avoid PII in logs.
+- Compatibility: certain interactions may vary by PMS/version (Medtech Evolution vs Medtech32); gate features via capabilities.
