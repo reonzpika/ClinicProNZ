@@ -2,17 +2,14 @@
 // @ts-nocheck
 'use client';
 
-import { Camera, CheckSquare, MessageCircle, Search, Stethoscope } from 'lucide-react';
+import { Camera, MessageCircle } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 
 import { ChatbotWidget } from './ChatbotWidget';
 import { ClinicalImageTab } from './ClinicalImageTab';
-import { ChecklistTab } from './ChecklistTab';
-import { DifferentialDiagnosisTab } from './DifferentialDiagnosisTab';
-import { AccCodeSuggestions } from './AccCodeSuggestions';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
-type TabId = 'chat' | 'images' | 'checklist' | 'ddx' | 'acc';
+type TabId = 'chat' | 'images';
 
 type ClinicalToolsTabsProps = {
   fixedHeightClass?: string;
@@ -27,10 +24,7 @@ export const ClinicalToolsTabs: React.FC<ClinicalToolsTabsProps> = ({ fixedHeigh
   const tabs = useMemo(() => ([
     { id: 'chat' as const, icon: MessageCircle, title: 'Chat' },
     { id: 'images' as const, icon: Camera, title: 'Clinical Images' },
-    ...(isAdmin ? [{ id: 'checklist' as const, icon: CheckSquare, title: 'Checklist' }] : []),
-    ...(isAdmin ? [{ id: 'ddx' as const, icon: Search, title: 'Differential Diagnosis' }] : []),
-    ...(isAdmin ? [{ id: 'acc' as const, icon: Stethoscope, title: 'ACC Codes' }] : []),
-  ]), [isAdmin]);
+  ]), []);
 
   // Ensure active tab remains valid when admin status changes
   useEffect(() => {
@@ -83,22 +77,7 @@ export const ClinicalToolsTabs: React.FC<ClinicalToolsTabsProps> = ({ fixedHeigh
           <ClinicalImageTab />
         </div>
 
-        {/* Checklist */}
-        <div className={`${activeTab === 'checklist' && isExpanded ? 'block' : 'hidden'} h-full overflow-y-auto pr-1`}>
-          <ChecklistTab />
-        </div>
-
-        {/* Differential Diagnosis */}
-        <div className={`${activeTab === 'ddx' && isExpanded ? 'block' : 'hidden'} h-full overflow-y-auto pr-1`}>
-          <DifferentialDiagnosisTab />
-        </div>
-
-        {/* Patient Advice removed from consultation UI */}
-
-        {/* ACC Codes */}
-        <div className={`${activeTab === 'acc' && isExpanded ? 'block' : 'hidden'} h-full overflow-y-auto pr-1`}>
-          <AccCodeSuggestions />
-        </div>
+        {/* Legacy widgets (Checklist, DDx, ACC) removed */}
       </div>
     </div>
   );
