@@ -13,8 +13,10 @@ const s3 = new S3Client({
 const BUCKET = process.env.S3_BUCKET_NAME!;
 
 // In-memory tiny LRU for ETag/Last-Modified (best-effort)
-const META_CACHE = new Map<string, { etag?: string; lastModified?: string; contentType?: string; size?: number; t: number }>();
+type MetaEntry = { etag?: string; lastModified?: string; contentType?: string; size?: number; t: number };
+const META_CACHE = new Map<string, MetaEntry>();
 const META_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const META_CACHE_MAX = 2000; // simple cap to bound memory
 
 export async function GET(req: NextRequest) {
   try {
@@ -76,7 +78,10 @@ export async function GET(req: NextRequest) {
         },
       });
     }
-    if (ifModifiedSince && meta.lastModified && new Date(ifModifiedSince).toUTCString() === meta.lastModified) {
+    if (ifModifiedSince && meta.lastModified) {
+      const ims = new Date(ifModifiedSince).getTime();
+      const lm = new Date(meta.lastModified).getTime();
+      if (!Number.isNaN(ims) && !Number.isNaN(lm) && ims >= lm) {
       return new NextResponse(null, {
         status: 304,
         headers: {
@@ -85,6 +90,7 @@ export async function GET(req: NextRequest) {
           'Cache-Control': 'public, max-age=600, stale-while-revalidate=86400',
         } as Record<string, string>,
       });
+      }
     }
 
     // Stream bytes
@@ -109,6 +115,18 @@ export async function GET(req: NextRequest) {
       size: Number(obj.ContentLength || meta.size || 0),
       t: now,
     });
+    // Enforce simple LRU cap
+    if (META_CACHE.size > META_CACHE_MAX) {
+      // Remove oldest entries until under cap
+      let overflow = META_CACHE.size - META_CACHE_MAX;
+      const entries: Array<[string, MetaEntry]> = Array.from(META_CACHE.entries());
+      entries.sort((a, b) => a[1].t - b[1].t);
+      for (const [k] of entries) {
+        if (overflow <= 0) break;
+        META_CACHE.delete(k);
+        overflow -= 1;
+      }
+    }
 
     return new NextResponse(body as any, {
       status: 200,
