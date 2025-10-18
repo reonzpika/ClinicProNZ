@@ -1075,9 +1075,10 @@ function ServerImageCard({
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [isEditingName, setIsEditingName] = React.useState(false);
   // Lazily fetch image URL per tile
-  // Prefer server-provided thumbnailUrl; otherwise request presigned URL for the full image key
-  const { data: fetchedUrl } = useImageUrl(image.thumbnailUrl ? '' : image.key);
-  const imageUrl = image.thumbnailUrl || fetchedUrl;
+  // Prefer cached proxy thumbnail path; then legacy thumbnailUrl; else fetch full image URL lazily
+  const preferProxy = image.thumbnailUrlPath;
+  const { data: fetchedUrl } = useImageUrl(preferProxy || image.thumbnailUrl ? '' : image.key);
+  const imageUrl = preferProxy || image.thumbnailUrl || fetchedUrl;
   const isLoadingUrl = !imageUrl;
 
   const handleDelete = (e: React.MouseEvent) => {
@@ -1133,6 +1134,8 @@ function ServerImageCard({
             src={imageUrl}
             alt={image.filename}
             className="size-full object-cover"
+            loading="lazy"
+            decoding="async"
           />
         )
 : (

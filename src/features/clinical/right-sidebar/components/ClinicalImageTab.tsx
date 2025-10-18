@@ -42,9 +42,10 @@ function SessionImageTile({
   onToggleSelect: () => void;
   onActivateSelection: () => void;
 }) {
-  // Prefer server-provided thumbnailUrl; otherwise request presigned URL for the full image key
-  const { data: imageUrlData } = useImageUrl(image && image.thumbnailUrl ? '' : image?.key || '');
-  const imageUrl = (image && image.thumbnailUrl) || imageUrlData;
+  // Prefer cached proxy thumbnail path; then legacy thumbnailUrl; else fetch full image URL lazily
+  const preferProxy = image?.thumbnailUrlPath;
+  const { data: imageUrlData } = useImageUrl(image && (preferProxy || image.thumbnailUrl) ? '' : image?.key || '');
+  const imageUrl = preferProxy || (image && image.thumbnailUrl) || imageUrlData;
   const renameImage = useRenameImage();
   const baseName = (image.displayName || image.filename || '').replace(/\.[^.]+$/, '');
   const [isRenaming, setIsRenaming] = React.useState(false);
@@ -71,7 +72,7 @@ function SessionImageTile({
       >
         {imageUrl
           ? (
-            <img src={imageUrl} alt="" className="size-full object-cover" />
+            <img src={imageUrl} alt="" className="size-full object-cover" loading="lazy" decoding="async" />
           )
           : (
             <div className="flex size-full items-center justify-center">
