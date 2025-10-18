@@ -89,7 +89,7 @@ export function useImageTileManager(params: { sessionId?: string | null }) {
       phWithHash.push({ id, clientHash: hash });
     }
     setPlaceholders(prev => [
-      ...phWithHash.map(ph => ({ id: ph.id, type: 'desktop', clientHash: ph.clientHash, sessionId: context?.sessionId })),
+      ...phWithHash.map(ph => ({ id: ph.id, type: 'desktop' as const, clientHash: ph.clientHash, sessionId: context?.sessionId } as PlaceholderTile)),
       ...prev,
     ]);
 
