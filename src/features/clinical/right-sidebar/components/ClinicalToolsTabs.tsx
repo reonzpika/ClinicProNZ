@@ -10,10 +10,9 @@ import { ClinicalImageTab } from './ClinicalImageTab';
 import { ChecklistTab } from './ChecklistTab';
 import { DifferentialDiagnosisTab } from './DifferentialDiagnosisTab';
 import { AccCodeSuggestions } from './AccCodeSuggestions';
-import { PatientAdviceTab } from './PatientAdviceTab';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
-type TabId = 'chat' | 'images' | 'checklist' | 'ddx' | 'acc' | 'advice';
+type TabId = 'chat' | 'images' | 'checklist' | 'ddx' | 'acc';
 
 type ClinicalToolsTabsProps = {
   fixedHeightClass?: string;
@@ -30,7 +29,6 @@ export const ClinicalToolsTabs: React.FC<ClinicalToolsTabsProps> = ({ fixedHeigh
     { id: 'images' as const, icon: Camera, title: 'Clinical Images' },
     ...(isAdmin ? [{ id: 'checklist' as const, icon: CheckSquare, title: 'Checklist' }] : []),
     ...(isAdmin ? [{ id: 'ddx' as const, icon: Search, title: 'Differential Diagnosis' }] : []),
-    { id: 'advice' as const, icon: Search, title: 'Patient Advice' },
     ...(isAdmin ? [{ id: 'acc' as const, icon: Stethoscope, title: 'ACC Codes' }] : []),
   ]), [isAdmin]);
 
@@ -95,10 +93,7 @@ export const ClinicalToolsTabs: React.FC<ClinicalToolsTabsProps> = ({ fixedHeigh
           <DifferentialDiagnosisTab />
         </div>
 
-        {/* Patient Advice */}
-        <div className={`${activeTab === 'advice' && isExpanded ? 'block' : 'hidden'} h-full overflow-y-auto pr-1`}>
-          <PatientAdviceTab />
-        </div>
+        {/* Patient Advice removed from consultation UI */}
 
         {/* ACC Codes */}
         <div className={`${activeTab === 'acc' && isExpanded ? 'block' : 'hidden'} h-full overflow-y-auto pr-1`}>
