@@ -247,6 +247,15 @@ export const ClinicalImageTab: React.FC = () => {
   }, [inFlightUploads, completedUploads, showToast]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Register Service Worker for thumbnail caching (best-effort)
+  React.useEffect(() => {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      try {
+        navigator.serviceWorker.register('/sw.js');
+      } catch {}
+    }
+  }, []);
+
   const currentSession = getCurrentPatientSession();
   const clinicalImages = useMemo(() => {
     const images = currentSession?.clinicalImages || [];

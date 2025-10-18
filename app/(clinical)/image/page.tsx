@@ -153,6 +153,15 @@ export default function ClinicalImagePage() {
     }
   }, [sessions, pendingNewSessionId]);
 
+  // Register Service Worker for thumbnail caching (best-effort)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      try {
+        navigator.serviceWorker.register('/sw.js');
+      } catch {}
+    }
+  }, []);
+
   const getDownloadUrl = useCallback(async (imageKey: string): Promise<string> => {
     const res = await fetch(`/api/uploads/download?key=${encodeURIComponent(imageKey)}`, {
       headers: createAuthHeaders(userId, userTier),
