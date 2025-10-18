@@ -29,6 +29,14 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Authorisation: only allow keys under the requesting user's namespace
+    // Allowed patterns: clinical-images/{userId}/... and thumbnails/clinical-images/{userId}/...
+    const userPrefix = `clinical-images/${userId}/`;
+    const thumbPrefix = `thumbnails/clinical-images/${userId}/`;
+    if (!(key.startsWith(userPrefix) || key.startsWith(thumbPrefix))) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const cacheKey = key;
     let meta = META_CACHE.get(cacheKey);
     const now = Date.now();
@@ -81,7 +89,11 @@ export async function GET(req: NextRequest) {
 
     // Stream bytes
     const obj = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
-    const body = obj.Body as ReadableStream<any>;
+    // Convert Node stream to Web ReadableStream if necessary
+    const nodeBody: any = obj.Body as any;
+    const body: any = typeof (nodeBody as any).transformToWebStream === 'function'
+      ? (nodeBody as any).transformToWebStream()
+      : (nodeBody as any);
     const headers: Record<string, string> = {
       'Content-Type': obj.ContentType || meta.contentType || 'image/jpeg',
       'Cache-Control': 'public, max-age=600, stale-while-revalidate=86400',

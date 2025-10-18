@@ -70,15 +70,28 @@ function SessionImageTile({
           onAnalyze();
         }}
       >
-        {imageUrl
-          ? (
-            <img src={imageUrl} alt="" className="size-full object-cover" loading="lazy" decoding="async" />
-          )
-          : (
-            <div className="flex size-full items-center justify-center">
-              <Loader2 className="size-6 animate-spin text-slate-400" />
-            </div>
-          )}
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt=""
+            className="size-full object-cover"
+            loading="lazy"
+            decoding="async"
+            onError={(e) => {
+              // Fallback: try full image URL via download API
+              const img = e.currentTarget as HTMLImageElement;
+              if (!image?.key) return;
+              fetch(`/api/uploads/download?key=${encodeURIComponent(image.key)}`)
+                .then(r => (r.ok ? r.json() : Promise.reject()))
+                .then(d => { img.src = d.downloadUrl; })
+                .catch(() => { /* keep spinner via parent re-render if needed */ });
+            }}
+          />
+        ) : (
+          <div className="flex size-full items-center justify-center">
+            <Loader2 className="size-6 animate-spin text-slate-400" />
+          </div>
+        )}
         {/* Checkbox top-left */}
         <div className={`absolute left-2 top-2 z-10 ${selectionMode ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}>
           <input

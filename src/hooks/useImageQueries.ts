@@ -54,7 +54,7 @@ export function useServerImages(sessionId?: string) {
     gcTime: 60 * 60 * 1000, // 60 minutes
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    refetchOnMount: 'always',
+    refetchOnMount: false,
   });
 }
 

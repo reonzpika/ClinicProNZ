@@ -1124,22 +1124,25 @@ function ServerImageCard({
     >
       <div className="relative aspect-square">
         <div className="flex size-full items-center justify-center bg-slate-100">
-        {isLoadingUrl
-? (
-              <Loader2 className="size-6 animate-spin text-slate-400" />
-        )
-: imageUrl
-? (
+        {isLoadingUrl ? (
+          <Loader2 className="size-6 animate-spin text-slate-400" />
+        ) : imageUrl ? (
           <img
             src={imageUrl}
             alt={image.filename}
             className="size-full object-cover"
             loading="lazy"
             decoding="async"
+            onError={(e) => {
+              const img = e.currentTarget as HTMLImageElement;
+              fetch(`/api/uploads/download?key=${encodeURIComponent(image.key)}`)
+                .then(r => (r.ok ? r.json() : Promise.reject()))
+                .then(d => { img.src = d.downloadUrl; })
+                .catch(() => { /* swallow; tile shows spinner on re-render */ });
+            }}
           />
-        )
-: (
-                <ImageIcon className="size-6 text-slate-400" />
+        ) : (
+          <ImageIcon className="size-6 text-slate-400" />
         )}
           {/* Processing badge removed until real thumbnail pipeline exists */}
           {isDeleting && (
