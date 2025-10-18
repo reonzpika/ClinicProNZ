@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import type { ServerImage } from '@/src/stores/imageStore';
 import { imageQueryKeys, useUploadImages } from '@/src/hooks/useImageQueries';
 import { computeClientHash } from '@/src/shared/utils/clientHash';
