@@ -44,7 +44,15 @@ function SessionImageTile({
 }) {
   // Prefer cached proxy thumbnail path; then legacy thumbnailUrl; else fetch full image URL lazily
   const preferProxy = image?.thumbnailUrlPath;
-  const { data: imageUrlData } = useImageUrl(image && (preferProxy || image.thumbnailUrl) ? '' : image?.key || '');
+  const isPlaceholderKey = typeof image?.key === 'string' && (
+    image.key.startsWith('desktop-placeholder:') ||
+    image.key.startsWith('upload-placeholder:') ||
+    image.key.startsWith('mobile-placeholder:') ||
+    image.key.startsWith('desktop-ph:') ||
+    image.key.startsWith('mobile-ph:')
+  );
+  const shouldFetchFull = !!(image && !preferProxy && !image.thumbnailUrl && !isPlaceholderKey && image.key);
+  const { data: imageUrlData } = useImageUrl(shouldFetchFull ? (image?.key || '') : '');
   const imageUrl = preferProxy || (image && image.thumbnailUrl) || imageUrlData;
   const renameImage = useRenameImage();
   const baseName = (image.displayName || image.filename || '').replace(/\.[^.]+$/, '');
@@ -78,12 +86,11 @@ function SessionImageTile({
             loading="lazy"
             decoding="async"
             onError={(e) => {
-              // Fallback: try full image URL via download API
+              if (!image?.key || isPlaceholderKey) return;
               const img = e.currentTarget as HTMLImageElement;
-              if (!image?.key) return;
               fetch(`/api/uploads/download?key=${encodeURIComponent(image.key)}`)
                 .then(r => (r.ok ? r.json() : Promise.reject()))
-                .then(d => { img.src = d.downloadUrl; })
+                .then(d => { if (d && d.downloadUrl) img.src = d.downloadUrl; })
                 .catch(() => { /* keep spinner via parent re-render if needed */ });
             }}
           />

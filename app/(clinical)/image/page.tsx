@@ -1086,7 +1086,15 @@ function ServerImageCard({
   // Lazily fetch image URL per tile
   // Prefer cached proxy thumbnail path; then legacy thumbnailUrl; else fetch full image URL lazily
   const preferProxy = image.thumbnailUrlPath;
-  const { data: fetchedUrl } = useImageUrl(preferProxy || image.thumbnailUrl ? '' : image.key);
+  const isPlaceholderKey = typeof image.key === 'string' && (
+    image.key.startsWith('desktop-placeholder:') ||
+    image.key.startsWith('upload-placeholder:') ||
+    image.key.startsWith('mobile-placeholder:') ||
+    image.key.startsWith('desktop-ph:') ||
+    image.key.startsWith('mobile-ph:')
+  );
+  const shouldFetchFull = !preferProxy && !image.thumbnailUrl && !isPlaceholderKey;
+  const { data: fetchedUrl } = useImageUrl(shouldFetchFull ? image.key : '');
   const imageUrl = preferProxy || image.thumbnailUrl || fetchedUrl;
   const isLoadingUrl = !imageUrl;
 
@@ -1143,10 +1151,11 @@ function ServerImageCard({
             loading="lazy"
             decoding="async"
             onError={(e) => {
+              if (isPlaceholderKey) return; // do not attempt fallback for placeholders
               const img = e.currentTarget as HTMLImageElement;
               fetch(`/api/uploads/download?key=${encodeURIComponent(image.key)}`)
                 .then(r => (r.ok ? r.json() : Promise.reject()))
-                .then(d => { img.src = d.downloadUrl; })
+                .then(d => { if (d && d.downloadUrl) img.src = d.downloadUrl; })
                 .catch(() => { /* swallow; tile shows spinner on re-render */ });
             }}
           />
