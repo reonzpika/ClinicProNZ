@@ -94,7 +94,12 @@ export async function GET(req: NextRequest) {
     }
 
     // Stream bytes
-    const obj = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
+    let obj;
+    try {
+      obj = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
+    } catch (e) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
     // Convert Node stream to Web ReadableStream if necessary
     const nodeBody: any = obj.Body as any;
     const body: any = typeof (nodeBody as any).transformToWebStream === 'function'
@@ -133,6 +138,7 @@ export async function GET(req: NextRequest) {
       headers,
     });
   } catch (err) {
+    // Avoid flapping thumbnails; surface 404 for missing keys
     return NextResponse.json({ error: 'Failed to fetch thumbnail' }, { status: 500 });
   }
 }
