@@ -1097,6 +1097,7 @@ function ServerImageCard({
   const { data: fetchedUrl } = useImageUrl(shouldFetchFull ? image.key : '');
   const imageUrl = preferProxy || image.thumbnailUrl || fetchedUrl;
   const isLoadingUrl = !imageUrl;
+  const retryRef = React.useRef(0);
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -1153,10 +1154,17 @@ function ServerImageCard({
             onError={(e) => {
               if (isPlaceholderKey) return; // do not attempt fallback for placeholders
               const img = e.currentTarget as HTMLImageElement;
-              fetch(`/api/uploads/download?key=${encodeURIComponent(image.key)}`)
-                .then(r => (r.ok ? r.json() : Promise.reject()))
-                .then(d => { if (d && d.downloadUrl) img.src = d.downloadUrl; })
-                .catch(() => { /* swallow; tile shows spinner on re-render */ });
+              const attempt = retryRef.current + 1;
+              // Backoff for proxy 404s / transient errors: 1s then 3s, max 2 attempts
+              const delay = attempt === 1 ? 1000 : 3000;
+              if (attempt > 2) return;
+              retryRef.current = attempt;
+              setTimeout(() => {
+                fetch(`/api/uploads/download?key=${encodeURIComponent(image.key)}`)
+                  .then(r => (r.ok ? r.json() : Promise.reject()))
+                  .then(d => { if (d && d.downloadUrl) img.src = d.downloadUrl; })
+                  .catch(() => { /* swallow; keep tile as spinner until server list updates */ });
+              }, delay);
             }}
           />
         ) : (

@@ -88,10 +88,18 @@ function SessionImageTile({
             onError={(e) => {
               if (!image?.key || isPlaceholderKey) return;
               const img = e.currentTarget as HTMLImageElement;
-              fetch(`/api/uploads/download?key=${encodeURIComponent(image.key)}`)
-                .then(r => (r.ok ? r.json() : Promise.reject()))
-                .then(d => { if (d && d.downloadUrl) img.src = d.downloadUrl; })
-                .catch(() => { /* keep spinner via parent re-render if needed */ });
+              // Backoff retry: 1s then 3s, max 2 attempts
+              const ref = (img as any)._retry || { n: 0 };
+              if (ref.n >= 2) return;
+              ref.n += 1;
+              (img as any)._retry = ref;
+              const delay = ref.n === 1 ? 1000 : 3000;
+              setTimeout(() => {
+                fetch(`/api/uploads/download?key=${encodeURIComponent(image.key)}`)
+                  .then(r => (r.ok ? r.json() : Promise.reject()))
+                  .then(d => { if (d && d.downloadUrl) img.src = d.downloadUrl; })
+                  .catch(() => { /* keep spinner via parent re-render if needed */ });
+              }, delay);
             }}
           />
         ) : (
