@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { S3Client, GetObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { auth } from '@clerk/nextjs/server';
 
 const s3 = new S3Client({
@@ -51,24 +51,10 @@ export async function GET(req: NextRequest) {
     const ifNoneMatch = req.headers.get('if-none-match') || undefined;
     const ifModifiedSince = req.headers.get('if-modified-since') || undefined;
 
-    if (!meta) {
-      try {
-        const head = await s3.send(new HeadObjectCommand({ Bucket: BUCKET, Key: key }));
-        meta = {
-          etag: head.ETag?.replaceAll('"', ''),
-          lastModified: head.LastModified ? new Date(head.LastModified).toUTCString() : undefined,
-          contentType: head.ContentType || 'image/jpeg',
-          size: head.ContentLength || 0,
-          t: now,
-        };
-        META_CACHE.set(cacheKey, meta);
-      } catch (e: any) {
-        return NextResponse.json({ error: 'Not found' }, { status: 404 });
-      }
-    }
+    // Skip expensive HEAD when meta is missing; we'll populate after GET
 
     // Conditional GET
-    if (ifNoneMatch && meta.etag && ifNoneMatch.replaceAll('"', '') === meta.etag) {
+    if (ifNoneMatch && meta?.etag && ifNoneMatch.replaceAll('"', '') === meta.etag) {
       return new NextResponse(null, {
         status: 304,
         headers: {
@@ -78,7 +64,7 @@ export async function GET(req: NextRequest) {
         },
       });
     }
-    if (ifModifiedSince && meta.lastModified) {
+    if (ifModifiedSince && meta?.lastModified) {
       const ims = new Date(ifModifiedSince).getTime();
       const lm = new Date(meta.lastModified).getTime();
       if (!Number.isNaN(ims) && !Number.isNaN(lm) && ims >= lm) {
@@ -97,8 +83,14 @@ export async function GET(req: NextRequest) {
     let obj;
     try {
       obj = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
-    } catch (e) {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    } catch (e: any) {
+      // Missing keys should return 404 to avoid flapping; other errors 500
+      const code = (e?.$metadata?.httpStatusCode || e?.name || '').toString();
+      const isNotFound = e?.$metadata?.httpStatusCode === 404 || /NoSuchKey|NotFound/i.test(e?.name || '');
+      if (isNotFound) {
+        return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      }
+      return NextResponse.json({ error: 'Proxy error' }, { status: 500 });
     }
     // Convert Node stream to Web ReadableStream if necessary
     const nodeBody: any = obj.Body as any;
