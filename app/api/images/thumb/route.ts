@@ -85,7 +85,6 @@ export async function GET(req: NextRequest) {
       obj = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
     } catch (e: any) {
       // Missing keys should return 404 to avoid flapping; other errors 500
-      const code = (e?.$metadata?.httpStatusCode || e?.name || '').toString();
       const isNotFound = e?.$metadata?.httpStatusCode === 404 || /NoSuchKey|NotFound/i.test(e?.name || '');
       if (isNotFound) {
         return NextResponse.json({ error: 'Not found' }, { status: 404 });
