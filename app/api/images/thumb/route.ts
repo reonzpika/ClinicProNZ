@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
       ? (nodeBody as any).transformToWebStream()
       : (nodeBody as any);
     const headers: Record<string, string> = {
-      'Content-Type': obj.ContentType || meta.contentType || 'image/jpeg',
+      'Content-Type': obj.ContentType || meta?.contentType || 'image/jpeg',
       'Cache-Control': 'public, max-age=600, stale-while-revalidate=86400',
     };
     if (obj.ETag) headers['ETag'] = obj.ETag;
@@ -106,9 +106,9 @@ export async function GET(req: NextRequest) {
     // Update meta cache
     META_CACHE.set(cacheKey, {
       etag: obj.ETag?.replaceAll('"', ''),
-      lastModified: obj.LastModified ? new Date(obj.LastModified).toUTCString() : meta.lastModified,
-      contentType: obj.ContentType || meta.contentType,
-      size: Number(obj.ContentLength || meta.size || 0),
+      lastModified: obj.LastModified ? new Date(obj.LastModified).toUTCString() : meta?.lastModified,
+      contentType: obj.ContentType || meta?.contentType,
+      size: Number(obj.ContentLength || meta?.size || 0),
       t: now,
     });
     // Enforce simple LRU cap
