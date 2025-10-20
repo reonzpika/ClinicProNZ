@@ -18,9 +18,12 @@ type SimpleAblyMessage = {
   mobileTokenId?: string;
   imageCount?: number;
   uploadTimestamp?: string;
+  batchId?: string;
+  clientHashes?: string[];
   // Image events - per-file
   key?: string;
   displayName?: string;
+  clientHash?: string;
   // Session context fields
   sessionId?: string | null;
   // Transcription status fields
@@ -36,8 +39,8 @@ export type UseSimpleAblyOptions = {
   isMobile?: boolean;
   onControlCommand?: (action: 'start' | 'stop') => void; // For mobile remote control
   onMobileImagesUploaded?: (mobileTokenId: string | undefined, imageCount: number, timestamp: string, sessionId?: string | null) => void; // For desktop image notification
-  onImageUploadStarted?: (count: number, sessionId?: string | null) => void;
-  onImageUploaded?: (key: string, sessionId?: string | null, displayName?: string) => void;
+  onImageUploadStarted?: (count: number, sessionId?: string | null, batchId?: string, clientHashes?: string[]) => void;
+  onImageUploaded?: (key: string, sessionId?: string | null, displayName?: string, batchId?: string, clientHash?: string) => void;
   onImageProcessed?: (key: string) => void;
   onImageDeleted?: (key: string) => void;
   onTranscriptionsUpdated?: (sessionId?: string, chunkId?: string) => void;
@@ -428,13 +431,24 @@ export const useSimpleAbly = ({
 
             case 'image_upload_started':
               if (!isMobile && typeof data.imageCount === 'number') {
-                callbacksRef.current.onImageUploadStarted?.(data.imageCount, data.sessionId ?? null);
+                callbacksRef.current.onImageUploadStarted?.(
+                  data.imageCount,
+                  data.sessionId ?? null,
+                  (data as any).batchId,
+                  (data as any).clientHashes,
+                );
               }
               break;
             case 'image_uploaded':
               if (!isMobile) {
                 if (data.key) {
-                  callbacksRef.current.onImageUploaded?.(data.key, data.sessionId ?? null, (data as any).displayName);
+                  callbacksRef.current.onImageUploaded?.(
+                    data.key,
+                    data.sessionId ?? null,
+                    (data as any).displayName,
+                    (data as any).batchId,
+                    (data as any).clientHash,
+                  );
                 } else if (typeof (data as any).imageCount === 'number') {
                   // Mobile may send only a count; decrement banner and trigger refresh accordingly
                   const n = (data as any).imageCount as number;

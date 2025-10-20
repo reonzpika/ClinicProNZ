@@ -1,5 +1,4 @@
-import { GetObjectCommand, HeadObjectCommand, ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
 import { auth } from '@clerk/nextjs/server';
 import { getDb } from 'database/client';
 import { and, desc, eq, inArray } from 'drizzle-orm';
@@ -126,6 +125,8 @@ export async function GET(req: NextRequest) {
 
             // Derive thumbnail key by convention (best-effort): thumbnails/clinical-images/.../filename
             const thumbKeyGuess = `thumbnails/${obj.Key!}`;
+            // Best-effort: read client-hash from S3 object metadata (requires a HeadObject call)
+            // Avoid extra round-trips for all objects; we'll fetch lazily for recent ones below
             return {
               id: `clinical-${obj.Key!.replace(/\//g, '-')}`,
               key: obj.Key!,
@@ -185,17 +186,7 @@ export async function GET(req: NextRequest) {
     // No mass presign here; clients fetch per-tile via /api/uploads/download
     // Best-effort: attach presigned thumbnail URLs when the thumbnail object exists
     const imagesWithData = await Promise.all(allImages.map(async (image) => {
-      let thumbnailUrl: string | undefined = undefined;
-      if (image.thumbnailKey && BUCKET_NAME) {
-        try {
-          // Check existence first to avoid generating invalid signed URLs
-          await s3Client.send(new HeadObjectCommand({ Bucket: BUCKET_NAME, Key: image.thumbnailKey }));
-          const cmd = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: image.thumbnailKey });
-          thumbnailUrl = await getSignedUrl(s3Client, cmd, { expiresIn: 1800 }); // 30 min
-        } catch {
-          thumbnailUrl = undefined;
-        }
-      }
+      // No S3 HEADs in list; minimise S3 calls. ClientHash omitted unless persisted elsewhere.
       return {
         ...image,
         displayName: metadataMap[image.key]?.displayName || undefined,
@@ -203,7 +194,8 @@ export async function GET(req: NextRequest) {
         identifier: metadataMap[image.key]?.identifier || undefined,
         sessionName: image.sessionId ? sessionNameMap[image.sessionId] : undefined,
         analysis: analysisMap[image.key] || undefined,
-        ...(thumbnailUrl ? { thumbnailUrl } : {}),
+        // Provide proxy path; client will lazy-fetch and fallback on error if missing
+        ...(image.thumbnailKey ? { thumbnailUrlPath: `/api/images/thumb?key=${encodeURIComponent(image.thumbnailKey)}` } : {}),
       };
     }));
 

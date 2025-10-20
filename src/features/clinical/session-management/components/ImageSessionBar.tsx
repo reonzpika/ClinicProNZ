@@ -12,7 +12,6 @@ export type ImageSessionBarProps = {
   selectedSessionId: string | 'none';
   onSwitch: () => void;
   onSelectSession: (id: string | 'none') => void;
-  isCreating?: boolean; // show loading state when creating a new session
 };
 
 function formatNzDate(dateString?: string) {
@@ -33,7 +32,7 @@ function formatNzDate(dateString?: string) {
   };
 }
 
-export const ImageSessionBar: React.FC<ImageSessionBarProps> = ({ selectedSessionId, onSwitch, onSelectSession, isCreating = false }) => {
+export const ImageSessionBar: React.FC<ImageSessionBarProps> = ({ selectedSessionId, onSwitch, onSelectSession }) => {
   const { sessions, rename, remove } = usePatientSessions();
   const current = useMemo(() => sessions.find(s => s.id === selectedSessionId), [sessions, selectedSessionId]);
 
@@ -84,18 +83,10 @@ export const ImageSessionBar: React.FC<ImageSessionBarProps> = ({ selectedSessio
                   }
                 }}
                 className="h-8 flex-1 border-blue-300 bg-blue-50 text-sm font-medium text-blue-800 focus:border-blue-500"
-                disabled={isCreating}
               />
             ) : (
               <div className="flex items-center gap-2 text-sm font-medium text-blue-800">
-                {isCreating ? (
-                  <>
-                    <RefreshCw className="size-3 animate-spin text-blue-600" />
-                    <span>Creating session…</span>
-                  </>
-                ) : (
-                  <span>No session selected</span>
-                )}
+                <span>No session selected</span>
               </div>
             )}
           </div>
@@ -112,7 +103,7 @@ export const ImageSessionBar: React.FC<ImageSessionBarProps> = ({ selectedSessio
 
           {/* Row 3: actions */}
           <div className="flex items-center justify-end gap-2">
-            <Button onClick={onSwitch} size="sm" variant="outline" className="h-8 border-blue-300 px-3 text-xs text-blue-700 hover:bg-blue-100" disabled={isCreating}>
+            <Button onClick={onSwitch} size="sm" variant="outline" className="h-8 border-blue-300 px-3 text-xs text-blue-700 hover:bg-blue-100">
               <span className="mr-1">Switch Session</span>
               <ChevronDown className="size-3" />
             </Button>
@@ -124,7 +115,7 @@ export const ImageSessionBar: React.FC<ImageSessionBarProps> = ({ selectedSessio
                 onClick={async () => {
                   try { await remove.mutateAsync(current.id); onSelectSession('none'); } catch {}
                 }}
-                disabled={remove.isPending || isCreating}
+                disabled={remove.isPending}
               >
                 {remove.isPending ? (
                   <span className="inline-flex items-center gap-1">
@@ -138,12 +129,6 @@ export const ImageSessionBar: React.FC<ImageSessionBarProps> = ({ selectedSessio
                   </span>
                 )}
               </Button>
-            )}
-            {isCreating && (
-              <div className="ml-2 inline-flex items-center gap-1 text-xs text-blue-700">
-                <RefreshCw className="size-3 animate-spin" />
-                <span>Creating…</span>
-              </div>
             )}
           </div>
         </div>

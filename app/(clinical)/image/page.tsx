@@ -26,15 +26,19 @@ import { ImageSessionModal } from '@/src/features/clinical/session-management/co
 // Removed in-page WebRTC camera in favour of native camera capture
 import { imageQueryKeys, useAnalyzeImage, useDeleteImage, useImageUrl, useRenameImage, useSaveAnalysis, useServerImages, useUploadImages } from '@/src/hooks/useImageQueries';
 import { Container } from '@/src/shared/components/layout/Container';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/src/shared/components/ui/dropdown-menu';
+import { Checkbox } from '@/src/shared/components/ui/checkbox';
 import { useToast } from '@/src/shared/components/ui/toast';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { usePatientSessions } from '@/src/features/clinical/session-management/hooks/usePatientSessions';
+import type { PatientSession } from '@/src/features/clinical/session-management/hooks/usePatientSessions';
 import { GalleryTileSkeleton } from '@/src/shared/components/ui/gallery-tile-skeleton';
 import { createAuthHeaders } from '@/src/shared/utils';
 import { isFeatureEnabled } from '@/src/shared/utils/launch-config';
 import type { AnalysisModalState, ServerImage } from '@/src/stores/imageStore';
+import { useImageTileManager } from '@/src/features/clinical/shared/useImageTileManager';
 import { useImageStore } from '@/src/stores/imageStore';
 
 
@@ -76,13 +80,18 @@ export default function ClinicalImagePage() {
   const { show: showToast } = useToast();
   const { sessions } = usePatientSessions();
   const invalidateTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Popup overlay and pending new-session tracking
+  const [isCreatingOverlay, setIsCreatingOverlay] = useState(false);
+  const [pendingNewSessionId, setPendingNewSessionId] = useState<string | null>(null);
+  // Multi-select filter for sessions (affects grid only)
+  const [filterSessionIds, setFilterSessionIds] = useState<Set<string>>(new Set());
 
   // Track upload loading state
   const isUploading = uploadImages.isPending;
-  const [uploadingFileCount, setUploadingFileCount] = useState(0);
+  // Unified placeholder manager
   const [inFlightUploads, setInFlightUploads] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [isCreatingSession, setIsCreatingSession] = useState(false);
+  const tileManager = useImageTileManager({ sessionId: selectedSessionId !== 'none' ? selectedSessionId : undefined });
 
   // Enlarge modal state
   const [enlargeModal, setEnlargeModal] = useState<{
@@ -123,6 +132,34 @@ export default function ClinicalImagePage() {
 
   const selectAllVisible = useCallback((keys: string[]) => {
     setSelectedKeys(new Set(keys));
+  }, []);
+
+  // Toggle a session in the filter set
+  const toggleFilterSessionId = useCallback((id: string) => {
+    setFilterSessionIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }, []);
+
+  // Stop overlay when the new session appears in the list
+  useEffect(() => {
+    if (!pendingNewSessionId) return;
+    const exists = sessions.some(s => s.id === pendingNewSessionId);
+    if (exists) {
+      setIsCreatingOverlay(false);
+      setPendingNewSessionId(null);
+    }
+  }, [sessions, pendingNewSessionId]);
+
+  // Register Service Worker for thumbnail caching (best-effort)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      try {
+        navigator.serviceWorker.register('/sw.js');
+      } catch {}
+    }
   }, []);
 
   const getDownloadUrl = useCallback(async (imageKey: string): Promise<string> => {
@@ -202,10 +239,12 @@ export default function ClinicalImagePage() {
   useSimpleAbly({
     userId: userId ?? null,
     isMobile: false,
-    onImageUploadStarted: (count) => {
-      setInFlightUploads((prev) => prev + (count || 0));
+    onImageUploadStarted: (count, _sessionId, batchId, clientHashes) => {
+      const n = Math.max(0, count || 0);
+      setInFlightUploads((prev) => prev + n);
+      if (n > 0) tileManager.addMobileBatch(batchId || undefined, n, clientHashes);
     },
-    onImageUploaded: () => {
+    onImageUploaded: (_key, _sessionId, _displayName, _batchId, _clientHash) => {
       setInFlightUploads((prev) => Math.max(0, prev - 1));
       if (!invalidateTimerRef.current) {
         invalidateTimerRef.current = setTimeout(() => {
@@ -223,6 +262,13 @@ export default function ClinicalImagePage() {
       }
     },
   });
+
+  // Reconcile placeholders when server images appear
+  useEffect(() => {
+    tileManager.reconcileWithServer(serverImages);
+  }, [serverImages, tileManager]);
+
+  // Desktop placeholders handled by tileManager
 
   // Detect mobile on mount
   useEffect(() => {
@@ -272,20 +318,14 @@ export default function ClinicalImagePage() {
       return;
     }
 
-    // Desktop immediate upload
-    setUploadingFileCount(fileArray.length);
+    // Desktop upload via tile manager
+    const context = selectedSessionId && selectedSessionId !== 'none' ? { sessionId: selectedSessionId } : { noSession: true };
     try {
-      const context = selectedSessionId && selectedSessionId !== 'none'
-        ? { sessionId: selectedSessionId }
-        : { noSession: true };
-      await uploadImages.mutateAsync({ files: fileArray, context });
+      await tileManager.uploadDesktopFiles(fileArray, context as any);
     } catch (err) {
       console.error('Upload failed:', err);
     } finally {
-      setUploadingFileCount(0);
-      if (event.target) {
-        event.target.value = '';
-      }
+      if (event.target) event.target.value = '';
     }
   };
 
@@ -303,6 +343,16 @@ export default function ClinicalImagePage() {
   }, [setAnalysisPrompt]);
 
   const handleDeleteImage = async (imageKey: string) => {
+    // Guard: ignore deletes for local placeholders
+    if (
+      imageKey.startsWith('mobile-placeholder:') ||
+      imageKey.startsWith('desktop-placeholder:') ||
+      imageKey.startsWith('mobile-ph:') ||
+      imageKey.startsWith('desktop-ph:') ||
+      imageKey.startsWith('upload-placeholder:')
+    ) {
+      return;
+    }
     // Optimistic UI: immediately hide the image
     setDeletingImages(prev => new Set(prev).add(imageKey));
 
@@ -609,7 +659,6 @@ Cancel
                 disabled={queuedItems.length === 0 || isUploading}
                 onClick={async () => {
                   const filesToUpload = queuedItems.map(it => it.file);
-                  setUploadingFileCount(filesToUpload.length);
                   try {
                     await uploadImages.mutateAsync({ files: filesToUpload, names: queuedItems.map(it => ({ patientName: patientNameInput || undefined, identifier: it.identifier || undefined })) });
                     // Clear queue and return
@@ -618,8 +667,6 @@ Cancel
                     setMobileStep('collect');
                   } catch (err) {
                     console.error('Upload failed:', err);
-                  } finally {
-                    setUploadingFileCount(0);
                   }
                 }}
               >
@@ -669,7 +716,7 @@ Cancel
             const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
             if (files.length === 0) return;
             const context = selectedSessionId && selectedSessionId !== 'none' ? { sessionId: selectedSessionId } : { noSession: true };
-            await uploadImages.mutateAsync({ files, context });
+            await tileManager.uploadDesktopFiles(files, context as any);
           } catch (err) {
             setError('Failed to upload dropped files');
           }
@@ -687,10 +734,7 @@ Cancel
                   <CardTitle className="text-2xl font-bold text-slate-900">
                     Clinical Images
                   </CardTitle>
-                  <CardDescription>
-                    AI-powered clinical image analysis and documentation
-                    <span className="ml-2 text-[10px] text-slate-400">Thumbnails may expire after ~30m; they refresh automatically on new events.</span>
-                  </CardDescription>
+                  
                 </div>
               </div>
 
@@ -701,7 +745,6 @@ Cancel
                   selectedSessionId={selectedSessionId}
                   onSwitch={() => setIsSessionModalOpen(true)}
                   onSelectSession={(id) => setSelectedSessionId(id)}
-                  isCreating={isCreatingSession}
                 />
                 {inFlightUploads > 0 && (
                   <div className="flex items-center justify-between rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-700">
@@ -724,7 +767,7 @@ Cancel
                       const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
                       if (files.length === 0) return;
                       const context = selectedSessionId && selectedSessionId !== 'none' ? { sessionId: selectedSessionId } : { noSession: true };
-                      await uploadImages.mutateAsync({ files, context });
+                      await tileManager.uploadDesktopFiles(files, context as any);
                     } catch (err) {
                       setError('Failed to upload dropped files');
                     }
@@ -735,24 +778,20 @@ Cancel
                   )}
                   <Button
                     onClick={() => fileInputRef.current?.click()}
-                    disabled={isUploading}
                     className="w-full"
+                    disabled={isUploading}
                   >
-                  {isUploading
-                    ? (
-                        <>
-                          <Loader2 className="mr-2 size-4 animate-spin" />
-                          {uploadingFileCount > 1
-                            ? `Uploading ${uploadingFileCount} images...`
-                            : 'Uploading...'}
-                        </>
-                      )
-                    : (
-                        <>
-                          <Upload className="mr-2 size-4" />
-                          Upload Images
-                        </>
-                      )}
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="mr-2 size-4 animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="mr-2 size-4" />
+                        Upload Images
+                      </>
+                    )}
                   </Button>
                 </div>
                 <Button
@@ -808,7 +847,7 @@ Cancel
                       ))}
                     </div>
                   )
-                : serverImages.length === 0
+                : (serverImages.length === 0 && tileManager.placeholders.length === 0)
                   ? (
                       <div className="flex h-full items-center justify-center">
                         <div className="text-center">
@@ -834,11 +873,50 @@ Cancel
                     )
                   : (
                       <>
-                      <div className="mb-3 flex items-center justify-between">
-                        <div className="text-xs text-slate-600">
-                          {selectionMode ? `${selectedKeys.size} selected` : `${serverImages.length} images`}
-                        </div>
+                      {(() => {
+                        const visibleImages = (() => {
+                          const list = serverImages;
+                          if (filterSessionIds.size > 0) {
+                            return list.filter(img => img.sessionId && filterSessionIds.has(img.sessionId));
+                          }
+                          return list;
+                        })();
+                        return (
+                        <div className="mb-3 flex items-center justify-between">
+                          <div className="text-xs text-slate-600">
+                            {selectionMode ? `${selectedKeys.size} selected` : `${visibleImages.length} images`}
+                          </div>
                         <div className="flex items-center gap-2">
+                          {/* Multi-session filter dropdown */}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger>
+                              <Button type="button" size="sm" variant="outline">
+                                Sessions
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <div className="max-h-64 w-64 overflow-y-auto p-2">
+                                {[...new Set(serverImages.filter(img => !!img.sessionId).map(img => img.sessionId as string))]
+                                  .map((sid) => {
+                                    const sess = sessions.find(s => s.id === sid);
+                                    const nz = sess ? new Date(sess.createdAt) : null;
+                                    const date = nz ? new Intl.DateTimeFormat('en-NZ', { timeZone: 'Pacific/Auckland', year: 'numeric', month: '2-digit', day: '2-digit' }).format(nz) : '';
+                                    const time = nz ? new Intl.DateTimeFormat('en-NZ', { timeZone: 'Pacific/Auckland', hour: '2-digit', minute: '2-digit', hour12: false }).format(nz) : '';
+                                    const label = sess ? `${sess.patientName} • ${date} ${time}` : sid;
+                                    return (
+                                      <label key={sid} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm hover:bg-slate-50">
+                                        <Checkbox
+                                          checked={filterSessionIds.has(sid)}
+                                          onCheckedChange={() => toggleFilterSessionId(sid)}
+                                        />
+                                        <span className="truncate">{label}</span>
+                                      </label>
+                                    );
+                                  })}
+                              </div>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+
                           <Button type="button" size="sm" variant="outline" onClick={toggleSelectionMode}>
                             {selectionMode ? 'Exit selection' : 'Select'}
                           </Button>
@@ -848,7 +926,7 @@ Cancel
                                 type="button"
                                 size="sm"
                                 variant="outline"
-                                onClick={() => selectAllVisible(serverImages.map(img => img.key))}
+                                onClick={() => selectAllVisible(visibleImages.map(img => img.key))}
                               >
                                 Select all
                               </Button>
@@ -866,31 +944,37 @@ Cancel
                               </Button>
                             </>
                           )}
+                          </div>
                         </div>
-                      </div>
-                      {/* Quick session filter chips */}
-                      <div className="mb-3 flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          className={`rounded-full border px-2 py-1 text-xs ${selectedSessionId === 'none' ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-700'}`}
-                          onClick={() => setSelectedSessionId('none')}
-                        >
-                          All
-                        </button>
-                        {sessions.map((s) => (
-                          <button
-                            key={s.id}
-                            type="button"
-                            className={`rounded-full border px-2 py-1 text-xs ${selectedSessionId === s.id ? 'border-blue-300 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-700'}`}
-                            onClick={() => setSelectedSessionId(s.id)}
-                          >
-                            {s.patientName}
-                          </button>
-                        ))}
-                      </div>
+                        );
+                      })()}
+                      {/* Selected sessions display (from dropdown) */}
+                      {filterSessionIds.size > 0 && (
+                        <div className="mb-3 flex flex-wrap gap-2">
+                          {[...filterSessionIds].map((sid) => {
+                            const sess = sessions.find(s => s.id === sid);
+                            if (!sess) return null;
+                            const nz = new Date(sess.createdAt);
+                            const date = new Intl.DateTimeFormat('en-NZ', { timeZone: 'Pacific/Auckland', year: 'numeric', month: '2-digit', day: '2-digit' }).format(nz);
+                            const time = new Intl.DateTimeFormat('en-NZ', { timeZone: 'Pacific/Auckland', hour: '2-digit', minute: '2-digit', hour12: false }).format(nz);
+                            return (
+                              <span key={sid} className="rounded-full border border-blue-300 bg-blue-50 px-2 py-1 text-xs text-blue-700">
+                                {sess.patientName} • {date} {time}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
                       {(
                       <ImageSectionsGrid
-                        images={selectedSessionId !== 'none' ? serverImages.filter(img => img.sessionId === selectedSessionId) : serverImages}
+                        images={(() => {
+                          const list = tileManager.deriveTiles(serverImages);
+                          if (filterSessionIds.size > 0) {
+                            return list.filter(img => img.sessionId && filterSessionIds.has(img.sessionId));
+                          }
+                          return list;
+                        })()}
+                        sessions={sessions}
                         onAnalyze={handleOpenAnalysis}
                         onEnlarge={handleOpenEnlarge}
                         onDownload={handleDownloadImage}
@@ -900,6 +984,12 @@ Cancel
                         selectionMode={selectionMode}
                         selectedKeys={selectedKeys}
                         onToggleSelect={toggleSelectKey}
+                        onActivateSelection={(key) => {
+                          if (!selectionMode) {
+                            setSelectionMode(true);
+                            setSelectedKeys(new Set([key]));
+                          }
+                        }}
                       />)}
                       </>
                     )}
@@ -926,9 +1016,13 @@ Cancel
       <ImageSessionModal
         isOpen={isSessionModalOpen}
         onClose={() => setIsSessionModalOpen(false)}
-        onSessionSelected={(id) => { setSelectedSessionId(id); setIsSessionModalOpen(false); }}
-        onCreateStart={() => setIsCreatingSession(true)}
-        onCreateEnd={() => setIsCreatingSession(false)}
+        onSessionSelected={(id) => {
+          setSelectedSessionId(id);
+          setPendingNewSessionId(id);
+          setIsSessionModalOpen(false);
+        }}
+        onCreateStart={() => { setIsCreatingOverlay(true); }}
+        onCreateEnd={() => { setIsCreatingOverlay(false); }}
       />
       {enlargeModal.isOpen && enlargeModal.image && (
         <ImageEnlargeModal
@@ -946,6 +1040,19 @@ Cancel
         accept="image/*"
         className="hidden"
       />
+
+      {/* Creating overlay popup */}
+      {isCreatingOverlay && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20">
+          <div className="flex items-center gap-3 rounded-md bg-white px-4 py-3 shadow">
+            <svg className="size-4 animate-spin text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+            </svg>
+            <span className="text-sm text-slate-700">Creating session.</span>
+          </div>
+        </div>
+      )}
     </Container>
   );
 }
@@ -958,6 +1065,10 @@ function ServerImageCard({
   onDownload,
   onDelete,
   formatFileSize,
+  selectionMode,
+  selected,
+  onToggleSelect,
+  onActivateSelection,
 }: {
   image: ServerImage;
   onAnalyze: () => void;
@@ -965,13 +1076,28 @@ function ServerImageCard({
   onDownload: () => void;
   onDelete: (imageKey: string) => void;
   formatFileSize: (bytes: number) => string;
+  selectionMode: boolean;
+  selected: boolean;
+  onToggleSelect: () => void;
+  onActivateSelection: () => void;
 }) {
   const [isDeleting, setIsDeleting] = React.useState(false);
+  const [isEditingName, setIsEditingName] = React.useState(false);
   // Lazily fetch image URL per tile
-  // Prefer server-provided thumbnailUrl; otherwise request presigned URL for the full image key
-  const { data: fetchedUrl } = useImageUrl(image.thumbnailUrl ? '' : image.key);
-  const imageUrl = image.thumbnailUrl || fetchedUrl;
+  // Prefer cached proxy thumbnail path; then legacy thumbnailUrl; else fetch full image URL lazily
+  const preferProxy = image.thumbnailUrlPath;
+  const isPlaceholderKey = typeof image.key === 'string' && (
+    image.key.startsWith('desktop-placeholder:') ||
+    image.key.startsWith('upload-placeholder:') ||
+    image.key.startsWith('mobile-placeholder:') ||
+    image.key.startsWith('desktop-ph:') ||
+    image.key.startsWith('mobile-ph:')
+  );
+  const shouldFetchFull = !preferProxy && !image.thumbnailUrl && !isPlaceholderKey;
+  const { data: fetchedUrl } = useImageUrl(shouldFetchFull ? image.key : '');
+  const imageUrl = preferProxy || image.thumbnailUrl || fetchedUrl;
   const isLoadingUrl = !imageUrl;
+  const retryRef = React.useRef(0);
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -996,23 +1122,53 @@ function ServerImageCard({
   };
 
   return (
-    <Card className={`group cursor-pointer overflow-hidden transition-all hover:scale-105 hover:shadow-lg ${isDeleting ? 'opacity-50' : ''}`} onClick={onAnalyze}>
+    <Card
+      className={`group cursor-pointer overflow-hidden transition-all hover:scale-105 hover:shadow-lg ${isDeleting ? 'opacity-50' : ''}`}
+      onClick={(e) => {
+        if (selectionMode) {
+          e.preventDefault();
+          e.stopPropagation();
+          onToggleSelect();
+          return;
+        }
+        onAnalyze();
+      }}
+      onMouseDown={(e) => {
+        // Allow checkbox click to not trigger card click
+        if ((e.target as HTMLElement).closest('input[type="checkbox"]')) {
+          e.stopPropagation();
+        }
+      }}
+    >
       <div className="relative aspect-square">
         <div className="flex size-full items-center justify-center bg-slate-100">
-        {isLoadingUrl
-? (
-              <Loader2 className="size-6 animate-spin text-slate-400" />
-        )
-: imageUrl
-? (
+        {isLoadingUrl ? (
+          <Loader2 className="size-6 animate-spin text-slate-400" />
+        ) : imageUrl ? (
           <img
             src={imageUrl}
             alt={image.filename}
             className="size-full object-cover"
+            loading="lazy"
+            decoding="async"
+            onError={(e) => {
+              if (isPlaceholderKey) return; // do not attempt fallback for placeholders
+              const img = e.currentTarget as HTMLImageElement;
+              const attempt = retryRef.current + 1;
+              // Backoff for proxy 404s / transient errors: 1s then 3s, max 2 attempts
+              const delay = attempt === 1 ? 1000 : 3000;
+              if (attempt > 2) return;
+              retryRef.current = attempt;
+              setTimeout(() => {
+                fetch(`/api/uploads/download?key=${encodeURIComponent(image.key)}`)
+                  .then(r => (r.ok ? r.json() : Promise.reject()))
+                  .then(d => { if (d && d.downloadUrl) img.src = d.downloadUrl; })
+                  .catch(() => { /* swallow; keep tile as spinner until server list updates */ });
+              }, delay);
+            }}
           />
-        )
-: (
-                <ImageIcon className="size-6 text-slate-400" />
+        ) : (
+          <ImageIcon className="size-6 text-slate-400" />
         )}
           {/* Processing badge removed until real thumbnail pipeline exists */}
           {isDeleting && (
@@ -1068,11 +1224,41 @@ function ServerImageCard({
             {image.analysis ? 'View Analysis' : 'Analyze Image'}
           </div>
         </div>
+        {/* Selection checkbox appears on hover (or always in selection mode), top-left */}
+        <div className={`absolute left-2 top-2 z-10 ${selectionMode ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}>
+          <input
+            type="checkbox"
+            className="h-4 w-4"
+            checked={selected}
+            onChange={(e) => {
+              e.stopPropagation();
+              if (!selectionMode) {
+                onActivateSelection();
+              } else {
+                onToggleSelect();
+              }
+            }}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
       </div>
 
       <CardContent className="p-2">
         <div className="mb-1">
-          <InlineEditableName image={image} />
+          {isEditingName ? (
+            <InlineNameEditor image={image} onDone={() => setIsEditingName(false)} />
+          ) : (
+            <h4
+              className="truncate text-xs font-medium text-slate-900"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsEditingName(true);
+              }}
+              role="button"
+            >
+              {image.displayName || image.filename}
+            </h4>
+          )}
           <div className="flex items-center justify-between text-xs text-slate-500">
             <span className="capitalize">{image.source}</span>
             <span>{formatFileSize(image.size)}</span>
@@ -1084,65 +1270,41 @@ function ServerImageCard({
 }
 
 // Inline editable filename component for desktop cards
-function InlineEditableName({ image }: { image: ServerImage }) {
+function InlineNameEditor({ image, onDone }: { image: ServerImage; onDone: () => void }) {
   const renameImage = useRenameImage();
-  const [isEditing, setIsEditing] = React.useState(false);
   const [value, setValue] = React.useState(image.displayName || image.filename.replace(/\.[^.]+$/, ''));
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
-    if (isEditing) {
-      inputRef.current?.focus();
-      inputRef.current?.select();
-    }
-  }, [isEditing]);
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, []);
 
   const commit = () => {
     const cleaned = value.replace(/\s+/g, ' ').trim();
     if (cleaned && cleaned !== (image.displayName || image.filename.replace(/\.[^.]+$/, ''))) {
       renameImage.mutate({ imageKey: image.key, displayName: cleaned });
     }
-    setIsEditing(false);
+    onDone();
   };
 
   return (
-    <div className="flex items-center gap-2">
-      {isEditing
-? (
-        <input
-          ref={inputRef}
-          type="text"
-          value={value}
-          onChange={e => setValue(e.target.value.slice(0, 80))}
-          onBlur={commit}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
- commit();
-}
-            if (e.key === 'Escape') {
- setIsEditing(false);
-}
-          }}
-          className="w-full rounded border px-2 py-1 text-xs"
-        />
-      )
-: (
-        <h4 className="truncate text-xs font-medium text-slate-900">{image.displayName || image.filename}</h4>
-      )}
-      {!isEditing && (
-        <button
-          type="button"
-          className="rounded border px-1 text-[10px] text-slate-600 hover:bg-slate-50"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsEditing(true);
-          }}
-          title="Rename"
-        >
-          Rename
-        </button>
-      )}
-    </div>
+    <input
+      ref={inputRef}
+      type="text"
+      value={value}
+      onChange={e => setValue(e.target.value.slice(0, 80))}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          commit();
+        }
+        if (e.key === 'Escape') {
+          onDone();
+        }
+      }}
+      className="w-full rounded border px-2 py-1 text-xs"
+    />
   );
 }
 
@@ -1490,6 +1652,7 @@ function ImageEnlargeModal({
 // Grouped sections by sessionId for clinical-images and legacy consultations
 function ImageSectionsGrid({
   images,
+  sessions,
   onAnalyze,
   onEnlarge,
   onDownload,
@@ -1499,8 +1662,10 @@ function ImageSectionsGrid({
   selectionMode,
   selectedKeys,
   onToggleSelect,
+  onActivateSelection,
 }: {
   images: ServerImage[];
+  sessions: PatientSession[];
   onAnalyze: (img: ServerImage) => void;
   onEnlarge: (img: ServerImage) => void;
   onDownload: (img: ServerImage) => void;
@@ -1510,6 +1675,7 @@ function ImageSectionsGrid({
   selectionMode: boolean;
   selectedKeys: Set<string>;
   onToggleSelect: (key: string) => void;
+  onActivateSelection: (key: string) => void;
 }) {
   // Filter out images being deleted for optimistic UI
   const filteredImages = images.filter(img => !deletingImages.has(img.key));
@@ -1533,18 +1699,9 @@ function ImageSectionsGrid({
 : (
       <div className="mb-6">
         <div className="mb-2 text-sm font-semibold text-slate-700">{title}</div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {items.map(image => (
             <div key={image.id} className="relative">
-              {selectionMode && (
-                <input
-                  type="checkbox"
-                  aria-label="Select image"
-                  className="absolute left-2 top-2 z-10 h-4 w-4"
-                  checked={selectedKeys.has(image.key)}
-                  onChange={() => onToggleSelect(image.key)}
-                />
-              )}
               <ServerImageCard
                 image={image}
                 onAnalyze={() => onAnalyze(image)}
@@ -1552,6 +1709,10 @@ function ImageSectionsGrid({
                 onDownload={() => onDownload(image)}
                 onDelete={onDelete}
                 formatFileSize={formatFileSize}
+                selectionMode={selectionMode}
+                selected={selectedKeys.has(image.key)}
+                onToggleSelect={() => onToggleSelect(image.key)}
+                onActivateSelection={() => onActivateSelection(image.key)}
               />
             </div>
           ))}
@@ -1561,6 +1722,7 @@ function ImageSectionsGrid({
   );
 
   // Order session groups by most recent image timestamp within each session
+  // Only show sessions with images: already true because bySession only contains sessions with images
   const sessionKeys = Object.keys(bySession).sort((a, b) => {
     const latestA = bySession[a]?.reduce((max, img) => Math.max(max, new Date(img.uploadedAt).getTime()), 0) || 0;
     const latestB = bySession[b]?.reduce((max, img) => Math.max(max, new Date(img.uploadedAt).getTime()), 0) || 0;
@@ -1569,9 +1731,19 @@ function ImageSectionsGrid({
 
   return (
     <div className="space-y-6">
-      {sessionKeys.map(sid => (
-        <Section key={sid} title={`Session: ${bySession[sid]?.[0]?.sessionName || sid}`} items={bySession[sid] ?? []} />
-      ))}
+      {sessionKeys.map(sid => {
+        // Build richer session title with name + date/time
+        const sessionName = bySession[sid]?.[0]?.sessionName;
+        // Find matching session for createdAt if available
+        const match = sessions.find(s => s.id === sid);
+        const nz = match ? new Date(match.createdAt) : null;
+        const date = nz ? new Intl.DateTimeFormat('en-NZ', { timeZone: 'Pacific/Auckland', year: 'numeric', month: '2-digit', day: '2-digit' }).format(nz) : '';
+        const time = nz ? new Intl.DateTimeFormat('en-NZ', { timeZone: 'Pacific/Auckland', hour: '2-digit', minute: '2-digit', hour12: false }).format(nz) : '';
+        const title = match ? `${match.patientName} • ${date} ${time}` : `Session: ${sessionName || sid}`;
+        return (
+          <Section key={sid} title={title} items={bySession[sid] ?? []} />
+        );
+      })}
       <Section title="No session" items={noSession} />
       <Section title="Legacy consultations" items={legacyConsultations} />
     </div>

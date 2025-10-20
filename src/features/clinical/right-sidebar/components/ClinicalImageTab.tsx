@@ -2,9 +2,11 @@
 
 import { useAuth } from '@clerk/nextjs';
 import { useQueryClient } from '@tanstack/react-query';
+import { useImageTileManager } from '@/src/features/clinical/shared/useImageTileManager';
 import { Brain, Download, Expand, Loader2, QrCode, Trash2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
+// computeClientHash no longer used directly; handled by tile manager
 
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
@@ -13,7 +15,7 @@ import { Button } from '@/src/shared/components/ui/button';
 import { GalleryTileSkeleton } from '@/src/shared/components/ui/gallery-tile-skeleton';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
-import { resizeImageFile } from '@/src/shared/utils/image';
+// resizeImageFile is not used in this component after refactor
 import type { ClinicalImage } from '@/src/types/consultation';
 import { useToast } from '@/src/shared/components/ui/toast';
 
@@ -24,6 +26,10 @@ function SessionImageTile({
   onEnlarge,
   onDownload,
   onDelete,
+  selectionMode,
+  selected,
+  onToggleSelect,
+  onActivateSelection,
 }: {
   image: any;
   isAnalyzing: boolean;
@@ -31,10 +37,23 @@ function SessionImageTile({
   onEnlarge: () => void;
   onDownload: () => void;
   onDelete: () => void;
+  selectionMode: boolean;
+  selected: boolean;
+  onToggleSelect: () => void;
+  onActivateSelection: () => void;
 }) {
-  // Prefer server-provided thumbnailUrl; otherwise request presigned URL for the full image key
-  const { data: imageUrlData } = useImageUrl(image.thumbnailUrl ? '' : image.key);
-  const imageUrl = image.thumbnailUrl || imageUrlData;
+  // Prefer cached proxy thumbnail path; then legacy thumbnailUrl; else fetch full image URL lazily
+  const preferProxy = image?.thumbnailUrlPath;
+  const isPlaceholderKey = typeof image?.key === 'string' && (
+    image.key.startsWith('desktop-placeholder:') ||
+    image.key.startsWith('upload-placeholder:') ||
+    image.key.startsWith('mobile-placeholder:') ||
+    image.key.startsWith('desktop-ph:') ||
+    image.key.startsWith('mobile-ph:')
+  );
+  const shouldFetchFull = !!(image && !preferProxy && !image.thumbnailUrl && !isPlaceholderKey && image.key);
+  const { data: imageUrlData } = useImageUrl(shouldFetchFull ? (image?.key || '') : '');
+  const imageUrl = preferProxy || (image && image.thumbnailUrl) || imageUrlData;
   const renameImage = useRenameImage();
   const baseName = (image.displayName || image.filename || '').replace(/\.[^.]+$/, '');
   const [isRenaming, setIsRenaming] = React.useState(false);
@@ -46,16 +65,62 @@ function SessionImageTile({
     setIsRenaming(false);
   };
   return (
-    <div className="flex flex-col">
-      <div className="relative aspect-square overflow-hidden rounded-lg bg-slate-100">
-        {imageUrl
-          ? (
-            <img src={imageUrl} alt="" className="size-full object-cover" />
-          )
-          : (
-            <div className="flex size-full items-center justify-center text-xs text-slate-400">No preview</div>
-          )}
-        {/* Processing badge removed until real thumbnail pipeline exists */}
+    <div className="group flex flex-col">
+      <div
+        className="relative aspect-square overflow-hidden rounded-lg bg-slate-100 group"
+        onClick={(e) => {
+          if (selectionMode) {
+            e.preventDefault();
+            e.stopPropagation();
+            onToggleSelect();
+            return;
+          }
+          onAnalyze();
+        }}
+      >
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt=""
+            className="size-full object-cover"
+            loading="lazy"
+            decoding="async"
+            onError={(e) => {
+              if (!image?.key || isPlaceholderKey) return;
+              const img = e.currentTarget as HTMLImageElement;
+              // Backoff retry: 1s then 3s, max 2 attempts
+              const ref = (img as any)._retry || { n: 0 };
+              if (ref.n >= 2) return;
+              ref.n += 1;
+              (img as any)._retry = ref;
+              const delay = ref.n === 1 ? 1000 : 3000;
+              setTimeout(() => {
+                fetch(`/api/uploads/download?key=${encodeURIComponent(image.key)}`)
+                  .then(r => (r.ok ? r.json() : Promise.reject()))
+                  .then(d => { if (d && d.downloadUrl) img.src = d.downloadUrl; })
+                  .catch(() => { /* keep spinner via parent re-render if needed */ });
+              }, delay);
+            }}
+          />
+        ) : (
+          <div className="flex size-full items-center justify-center">
+            <Loader2 className="size-6 animate-spin text-slate-400" />
+          </div>
+        )}
+        {/* Checkbox top-left */}
+        <div className={`absolute left-2 top-2 z-10 ${selectionMode ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}>
+          <input
+            type="checkbox"
+            className="h-4 w-4"
+            checked={selected}
+            onChange={(e) => {
+              e.stopPropagation();
+              if (!selectionMode) onActivateSelection();
+              else onToggleSelect();
+            }}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
       </div>
       <div className="mt-2 flex items-center gap-2">
         {isRenaming ? (
@@ -72,12 +137,17 @@ function SessionImageTile({
           />
         ) : (
           <>
-            <div className="min-w-0 flex-1 truncate text-xs text-slate-700">{image.displayName || image.filename}</div>
-            <Button type="button" size="sm" variant="outline" className="h-6 px-2 text-[10px]" onClick={() => setIsRenaming(true)}>Rename</Button>
+            <div
+              className="min-w-0 flex-1 truncate text-xs text-slate-700 cursor-text"
+              onClick={(e) => { e.stopPropagation(); setIsRenaming(true); }}
+              role="button"
+            >
+              {image.displayName || image.filename}
+            </div>
           </>
         )}
       </div>
-      <div className="mt-2 flex items-center justify-center gap-2">
+      <div className="mt-2 flex items-center justify-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
         <Button
           size="icon"
           variant="outline"
@@ -123,7 +193,6 @@ function SessionImageTile({
 export const ClinicalImageTab: React.FC = () => {
   const {
     getCurrentPatientSession,
-    addClinicalImage,
     removeClinicalImage,
     saveClinicalImagesToCurrentSession,
     updateImageDescription,
@@ -132,7 +201,8 @@ export const ClinicalImageTab: React.FC = () => {
     setObjectiveText,
     saveObjectiveToCurrentSession,
   } = useConsultationStores();
-  const [uploading, setUploading] = useState(false);
+  // Upload spinner state for desktop add button
+  const [isUploadingDesktop, setIsUploadingDesktop] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [analyzingImages, setAnalyzingImages] = useState<Set<string>>(new Set());
   const [analysisErrors, setAnalysisErrors] = useState<Record<string, string>>({});
@@ -156,13 +226,21 @@ export const ClinicalImageTab: React.FC = () => {
     // Filter out images being deleted for optimistic UI
     return filtered.filter((img: any) => !deletingImages.has(img.key));
   }, [serverImages, currentPatientSessionId, deletingImages]);
+  // Optimistic previews for immediate thumbnail display
+  // Unified placeholder manager for consultation session grid
+  const tileManager = useImageTileManager({ sessionId: currentPatientSessionId });
+  // Removed pendingBatches; we rely on cache invalidation and Ably refresh to replace optimistics
   const queryClient = useQueryClient();
   const queryClientRef = useRef(queryClient);
   useSimpleAbly({
     userId: userId ?? null,
     isMobile: false,
-    onImageUploadStarted: (count) => setInFlightUploads(prev => prev + (count || 0)),
-    onImageUploaded: () => {
+    onImageUploadStarted: (count, _sessionId, batchId, clientHashes) => {
+      const n = Math.max(0, count || 0);
+      setInFlightUploads(prev => prev + n);
+      if (n > 0) tileManager.addMobileBatch(batchId || undefined, n, clientHashes);
+    },
+    onImageUploaded: (_key, _sessionId, _displayName, _batchId, _clientHash) => {
       setInFlightUploads(prev => Math.max(0, prev - 1));
       try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.lists() }); } catch {}
       setCompletedUploads((c) => c + 1);
@@ -171,6 +249,8 @@ export const ClinicalImageTab: React.FC = () => {
       try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.lists() }); } catch {}
     },
   });
+
+  // Placeholders are managed by tileManager
 
   // Show toast when uploads complete
   React.useEffect(() => {
@@ -181,6 +261,15 @@ export const ClinicalImageTab: React.FC = () => {
     }
   }, [inFlightUploads, completedUploads, showToast]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Register Service Worker for thumbnail caching (best-effort)
+  React.useEffect(() => {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      try {
+        navigator.serviceWorker.register('/sw.js');
+      } catch {}
+    }
+  }, []);
 
   const currentSession = getCurrentPatientSession();
   const clinicalImages = useMemo(() => {
@@ -193,95 +282,11 @@ export const ClinicalImageTab: React.FC = () => {
   // Ably listener for mobile image notifications (desktop only)
   // Desktop image notifications can be re-wired later to user channel if needed
 
-  const handleFileUpload = useCallback(async (file: File) => {
-    if (!currentPatientSessionId) {
-      setError('No active patient session');
-      return;
-    }
+  // Removed buildServerLikeFilename; server now controls final naming via presign
 
-    setUploading(true);
-    setError(null);
+  // Compute client fingerprint (shared util)
 
-    try {
-      // Client-side resize
-      const resizedBlob = await resizeImageFile(file, 1024);
-
-      // 🆕 SERVER-SIDE SESSION RESOLUTION: No need to pass session ID, server auto-lookups from users.currentSessionId
-      const presignParams = new URLSearchParams({
-        filename: file.name,
-        mimeType: file.type,
-      });
-
-      const presignResponse = await fetch(`/api/uploads/presign?${presignParams}`);
-      if (!presignResponse.ok) {
-        throw new Error('Failed to get upload URL');
-      }
-
-      const { uploadUrl, key } = await presignResponse.json();
-
-      // Upload to S3
-      const uploadResponse = await fetch(uploadUrl, {
-        method: 'PUT',
-        body: resizedBlob,
-        headers: {
-          'Content-Type': file.type,
-          'X-Amz-Server-Side-Encryption': 'AES256',
-        },
-      });
-
-      if (!uploadResponse.ok) {
-        console.error('S3 Upload failed:', {
-          status: uploadResponse.status,
-          statusText: uploadResponse.statusText,
-          headers: Object.fromEntries(uploadResponse.headers.entries()),
-          url: uploadUrl,
-        });
-
-        const errorText = await uploadResponse.text().catch(() => 'No error details');
-        console.error('S3 Error response:', errorText);
-
-        throw new Error(`Failed to upload image (${uploadResponse.status}: ${uploadResponse.statusText})`);
-      }
-
-      // Default naming: set displayName via metadata so /image shows correct name immediately
-      try {
-        await fetch('/api/clinical-images/metadata/batch', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ items: [{ imageKey: key, patientName: (currentSession?.patientName as string) || undefined }] }),
-        });
-      } catch {}
-
-      // Create image metadata
-      const newImage: ClinicalImage = {
-        id: Math.random().toString(36).substr(2, 9),
-        key,
-        filename: file.name,
-        mimeType: file.type,
-        uploadedAt: new Date().toISOString(),
-      };
-
-      // Add to context and save
-      addClinicalImage(newImage);
-      await saveClinicalImagesToCurrentSession([...clinicalImages, newImage]);
-
-      // Invalidate React Query cache to refresh server images
-      queryClient.invalidateQueries({
-        queryKey: imageQueryKeys.lists(),
-      });
-    } catch (err) {
-      console.error('Upload error:', err);
-      setError(err instanceof Error ? err.message : 'Upload failed');
-    } finally {
-      setUploading(false);
-    }
-  }, [
-    currentPatientSessionId,
-    addClinicalImage,
-    saveClinicalImagesToCurrentSession,
-    clinicalImages,
-    queryClient,
-  ]);
+  // Deprecated handler removed; uploads handled by tileManager.uploadDesktopFiles
 
   const handleFileSelect = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -289,19 +294,21 @@ export const ClinicalImageTab: React.FC = () => {
       return;
     }
 
-    // Upload files sequentially
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      if (file) {
-        await handleFileUpload(file);
-      }
+    // Desktop upload via tile manager
+    setIsUploadingDesktop(true);
+    try {
+      await tileManager.uploadDesktopFiles(Array.from(files), currentPatientSessionId ? { sessionId: currentPatientSessionId } : { noSession: true } as any);
+    } catch (err) {
+      console.error('Upload failed:', err);
+      setError(err instanceof Error ? err.message : 'Upload failed');
     }
 
     // Clear input for re-selection
     if (event.target) {
       event.target.value = '';
     }
-  }, [handleFileUpload]);
+    setIsUploadingDesktop(false);
+  }, [tileManager, currentPatientSessionId]);
 
   const handleRemoveImage = useCallback(async (imageId: string) => {
     const updatedImages = clinicalImages.filter((img: any) => img.id !== imageId);
@@ -416,6 +423,15 @@ export const ClinicalImageTab: React.FC = () => {
   const clearSelection = useCallback(() => setSelectedKeys(new Set()), []);
 
   const handleDeleteSessionImage = useCallback(async (imageKey: string) => {
+    // Guard: ignore deletes for local placeholders
+    if (
+      imageKey.startsWith('mobile-placeholder:') ||
+      imageKey.startsWith('desktop-placeholder:') ||
+      imageKey.startsWith('mobile-ph:') ||
+      imageKey.startsWith('desktop-ph:')
+    ) {
+      return;
+    }
     // Optimistic UI: immediately hide the image
     setDeletingImages(prev => new Set(prev).add(imageKey));
 
@@ -664,7 +680,7 @@ export const ClinicalImageTab: React.FC = () => {
       )}
 
       {/* Session Images (from server under clinical-images/{userId}/{sessionId}/) */}
-      {(isLoadingServerImages || sessionServerImages.length > 0) && (
+      {(isLoadingServerImages || sessionServerImages.length > 0 || tileManager.placeholders.length > 0) && (
         <div
           className={`border-l-2 pl-3 ${isDragging ? 'border-blue-400 border-dashed bg-blue-50/50' : 'border-blue-200'}`}
           onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
@@ -676,20 +692,15 @@ export const ClinicalImageTab: React.FC = () => {
             setIsDragging(false);
             try {
               const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
-              for (const file of files) {
-                // eslint-disable-next-line no-await-in-loop
-                await handleFileUpload(file);
-              }
+              if (files.length === 0) return;
+              await tileManager.uploadDesktopFiles(files, currentPatientSessionId ? { sessionId: currentPatientSessionId } : { noSession: true } as any);
             } catch {
               setError('Failed to upload dropped files');
             }
           }}
         >
           <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <h4 className="text-sm font-medium text-blue-600">Session Images</h4>
-              <span className="text-[10px] text-slate-400">Thumbnails may expire after ~30m; they refresh automatically.</span>
-            </div>
+            <div className="flex items-center gap-2" />
             <div className="flex items-center gap-2">
               {inFlightUploads > 0 && (
                 <span className="flex items-center gap-1 rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
@@ -729,27 +740,18 @@ export const ClinicalImageTab: React.FC = () => {
           )}
           {isLoadingServerImages
             ? (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+                <div className="grid grid-cols-2 gap-3">
                   {Array.from({ length: 12 }).map((_, idx) => (
                     <GalleryTileSkeleton key={idx} />
                   ))}
                 </div>
               )
             : (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-                  {sessionServerImages.map((image: any) => {
+                <div className="grid grid-cols-2 gap-3">
+                  {tileManager.deriveTiles(sessionServerImages).map((image: any) => {
                     const isAnalyzing = analyzingImages.has(image.id);
                     return (
                       <div key={image.id} className="relative">
-                        {selectionMode && (
-                          <input
-                            type="checkbox"
-                            aria-label="Select image"
-                            className="absolute left-2 top-2 z-10 h-4 w-4"
-                            checked={selectedKeys.has(image.key)}
-                            onChange={() => toggleSelectKey(image.key)}
-                          />
-                        )}
                         <SessionImageTile
                           image={image}
                           isAnalyzing={isAnalyzing}
@@ -757,6 +759,15 @@ export const ClinicalImageTab: React.FC = () => {
                           onEnlarge={() => setEnlargeImage(image)}
                           onDownload={() => handleDownloadImage(image as any)}
                           onDelete={() => handleDeleteSessionImage(image.key)}
+                          selectionMode={selectionMode}
+                          selected={selectedKeys.has(image.key)}
+                          onToggleSelect={() => toggleSelectKey(image.key)}
+                          onActivateSelection={() => {
+                            if (!selectionMode) {
+                              setSelectionMode(true);
+                              setSelectedKeys(new Set([image.key]));
+                            }
+                          }}
                         />
                       </div>
                     );
@@ -774,12 +785,19 @@ export const ClinicalImageTab: React.FC = () => {
         <div className="flex gap-2">
           <Button
             onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
             variant="outline"
             className="flex-1 gap-2"
             size="sm"
+            disabled={isUploadingDesktop}
           >
-            {uploading ? 'Uploading...' : 'Add Clinical Image'}
+            {isUploadingDesktop ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              'Add Clinical Image'
+            )}
           </Button>
           <Button
             onClick={() => setShowQR(!showQR)}

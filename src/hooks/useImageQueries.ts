@@ -49,8 +49,12 @@ export function useServerImages(sessionId?: string) {
       return data.images || [];
     },
     enabled: !!userId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    // Heavily cache lists; rely on Ably-driven invalidations
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 60 * 60 * 1000, // 60 minutes
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
   });
 }
 
@@ -79,6 +83,16 @@ export function useUploadImage() {
         filename: file.name,
         mimeType: file.type,
       });
+      // Compute a lightweight client fingerprint (size + lastModified + first 128KB hash)
+      try {
+        const chunk = file.slice(0, 128 * 1024);
+        const buf = await chunk.arrayBuffer();
+        const digest = await crypto.subtle.digest('SHA-1', buf);
+        const hashArray = Array.from(new Uint8Array(digest));
+        const hex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        const clientHash = `${file.size}-${file.lastModified}-${hex}`;
+        presignParams.set('clientHash', clientHash);
+      } catch {}
       if (ctx?.sessionId) presignParams.set('sessionId', ctx.sessionId);
       if (ctx?.noSession) presignParams.set('noSession', '1');
 
@@ -237,6 +251,7 @@ export function useImageUrl(imageKey: string) {
         throw new Error('User not authenticated');
       }
 
+      // Prefer proxy path for thumbnails; this hook is for full image
       const response = await fetch(`/api/uploads/download?key=${encodeURIComponent(imageKey)}`, {
         headers: createAuthHeaders(userId, userTier),
       });
@@ -249,8 +264,10 @@ export function useImageUrl(imageKey: string) {
       return data.downloadUrl;
     },
     enabled: !!userId && !!imageKey,
-    staleTime: 30 * 60 * 1000, // 30 minutes (URLs expire in 1 hour)
-    gcTime: 60 * 60 * 1000, // 1 hour
+    staleTime: 60 * 60 * 1000, // 60 minutes
+    gcTime: 2 * 60 * 60 * 1000, // 2 hours
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }
 
@@ -503,56 +520,13 @@ export function useDeleteImage() {
 
       return response.json();
     },
-    // Optimistic update - remove image immediately
-    onMutate: async (imageKey: string) => {
-      if (!userId) {
-        return;
-      }
-
-      // Cancel outgoing refetches so they don't overwrite optimistic update
-      await queryClient.cancelQueries({
-        queryKey: imageQueryKeys.list(userId),
-      });
-
-      // Snapshot previous list (it's an array in this app)
-      const previousImages = queryClient.getQueryData<ServerImage[]>(imageQueryKeys.list(userId));
-
-      // Optimistically update the cache - remove the image
-      if (previousImages) {
-        queryClient.setQueryData<ServerImage[]>(
-          imageQueryKeys.list(userId),
-          previousImages.filter(img => img.key !== imageKey),
-        );
-      }
-
-      // Return context for potential rollback
-      return { previousImages };
-    },
-    // Rollback on error
-    onError: (_error, _imageKey, context) => {
-      if (context?.previousImages && userId) {
-        // Restore previous data on error
-        queryClient.setQueryData(
-          imageQueryKeys.list(userId),
-          context.previousImages,
-        );
-      }
-    },
     // Ensure cache is clean on success
     onSuccess: (_data, imageKey) => {
       // Remove specific image queries from cache
-      queryClient.removeQueries({
-        queryKey: imageQueryKeys.download(imageKey),
-      });
-
-      queryClient.removeQueries({
-        queryKey: imageQueryKeys.analysis(imageKey),
-      });
-
-      // Refetch to ensure data consistency (in background)
-      queryClient.invalidateQueries({
-        queryKey: imageQueryKeys.list(userId || ''),
-      });
+      queryClient.removeQueries({ queryKey: imageQueryKeys.download(imageKey) });
+      queryClient.removeQueries({ queryKey: imageQueryKeys.analysis(imageKey) });
+      // Invalidate all image lists (covers userId+sessionId variants)
+      queryClient.invalidateQueries({ queryKey: imageQueryKeys.lists() });
     },
   });
 }
