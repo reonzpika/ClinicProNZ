@@ -120,7 +120,7 @@ export async function POST(req: Request) {
       }, { status: 400 });
     }
 
-    const MAX_DIMENSION = 8000; // Claude's maximum dimension
+    const MAX_DIMENSION = 4096; // Reduce to fit safe Claude limits
     let processedImage = image;
 
     // Check if image needs resizing
@@ -147,7 +147,7 @@ export async function POST(req: Request) {
     // Convert to base64 (always as JPEG for consistency)
     let processedBuffer, base64Image;
     try {
-      processedBuffer = await processedImage.jpeg({ quality: 90 }).toBuffer();
+      processedBuffer = await processedImage.jpeg({ quality: 85 }).toBuffer();
       base64Image = processedBuffer.toString('base64');
 
       const sizeKB = Math.round(base64Image.length / 1024);
@@ -208,8 +208,7 @@ IMPORTANT: This analysis is for documentation purposes only. Clinical correlatio
           role: 'user',
           content: [
             {
-              // Anthropic vision: input_image with base64 source
-              type: 'input_image',
+              type: 'image',
               source: {
                 type: 'base64',
                 media_type: 'image/jpeg',
@@ -217,8 +216,7 @@ IMPORTANT: This analysis is for documentation purposes only. Clinical correlatio
               },
             },
             {
-              // Anthropic vision: input_text for textual prompt
-              type: 'input_text',
+              type: 'text',
               text: prompt
                 ? `Please provide a concise clinical analysis of this image with objective observations only.\n\nClinical context provided by GP: ${prompt}`
                 : 'Please provide a concise clinical analysis of this image with objective observations only.',
@@ -245,12 +243,8 @@ IMPORTANT: This analysis is for documentation purposes only. Clinical correlatio
           let description = '';
 
           for await (const chunk of stream) {
-            if (
-              chunk.type === 'content_block_delta'
-              && (chunk.delta.type === 'text_delta' || (chunk as any).delta.type === 'input_text_delta')
-            ) {
-              const deltaText = (chunk as any).delta.text || '';
-              description += deltaText;
+            if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
+              description += chunk.delta.text;
 
               // Send incremental update with safe JSON serialization
               try {
