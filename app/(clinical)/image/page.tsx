@@ -242,7 +242,7 @@ export default function ClinicalImagePage() {
     if (uploadImages.error) {
       setError(uploadImages.error instanceof Error ? uploadImages.error.message : 'Failed to upload files');
     } else if (analyzeImage.error) {
-      setError(analyzeImage.error instanceof Error ? analyzeImage.error.message : 'Failed to analyze image');
+      setError(analyzeImage.error instanceof Error ? analyzeImage.error.message : 'Failed to analyse image');
     }
   }, [uploadImages.error, analyzeImage.error, setError]);
 
@@ -379,7 +379,7 @@ export default function ClinicalImagePage() {
     }
   }, [userId, userTier, setError]);
 
-  // Analyze image with Claude (using mutation and store)
+  // Analyse image with Claude (using mutation and store)
   const handleAnalyzeImage = async () => {
     if (!analysisModal.image) {
       return;
@@ -1065,7 +1065,7 @@ function ServerImageCard({
         {/* Hover Overlay */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-colors group-hover:bg-black/10 group-hover:opacity-100">
           <div className="rounded-lg bg-white/90 px-3 py-1 text-xs font-medium text-slate-700">
-            {image.analysis ? 'View Analysis' : 'Analyze Image'}
+            {image.analysis ? 'View Analysis' : 'Analyse Image'}
           </div>
         </div>
       </div>
