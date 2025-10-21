@@ -687,10 +687,7 @@ Cancel
                   <CardTitle className="text-2xl font-bold text-slate-900">
                     Clinical Images
                   </CardTitle>
-                  <CardDescription>
-                    AI-powered clinical image analysis and documentation
-                    <span className="ml-2 text-[10px] text-slate-400">Thumbnails may expire after ~30m; they refresh automatically on new events.</span>
-                  </CardDescription>
+                  <CardDescription></CardDescription>
                 </div>
               </div>
 
