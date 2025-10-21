@@ -208,7 +208,8 @@ IMPORTANT: This analysis is for documentation purposes only. Clinical correlatio
           role: 'user',
           content: [
             {
-              type: 'image',
+              // Anthropic vision: input_image with base64 source
+              type: 'input_image',
               source: {
                 type: 'base64',
                 media_type: 'image/jpeg',
@@ -216,7 +217,8 @@ IMPORTANT: This analysis is for documentation purposes only. Clinical correlatio
               },
             },
             {
-              type: 'text',
+              // Anthropic vision: input_text for textual prompt
+              type: 'input_text',
               text: prompt
                 ? `Please provide a concise clinical analysis of this image with objective observations only.\n\nClinical context provided by GP: ${prompt}`
                 : 'Please provide a concise clinical analysis of this image with objective observations only.',
@@ -243,8 +245,12 @@ IMPORTANT: This analysis is for documentation purposes only. Clinical correlatio
           let description = '';
 
           for await (const chunk of stream) {
-            if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
-              description += chunk.delta.text;
+            if (
+              chunk.type === 'content_block_delta'
+              && (chunk.delta.type === 'text_delta' || (chunk as any).delta.type === 'input_text_delta')
+            ) {
+              const deltaText = (chunk as any).delta.text || '';
+              description += deltaText;
 
               // Send incremental update with safe JSON serialization
               try {
@@ -344,11 +350,11 @@ IMPORTANT: This analysis is for documentation purposes only. Clinical correlatio
       }, { status: 400 });
     }
 
-    // Handle invalid image format errors
+    // Handle Anthropic invalid request errors (often schema/mime issues)
     if (error instanceof Error && error.message.includes('invalid_request_error')) {
       return NextResponse.json({
-        error: 'Invalid image format. Please ensure the image is a supported format (JPEG, PNG, WebP, GIF).',
-        code: 'INVALID_IMAGE_FORMAT',
+        error: 'Image analysis request was rejected by the AI service. Please retry or try a different image.',
+        code: 'ANALYSIS_REQUEST_INVALID',
       }, { status: 400 });
     }
 
