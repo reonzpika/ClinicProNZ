@@ -1,6 +1,5 @@
 import { Buffer } from 'node:buffer';
 
-import Anthropic from '@anthropic-ai/sdk';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
@@ -8,9 +7,7 @@ import sharp from 'sharp';
 
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-});
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION || 'ap-southeast-2',
@@ -197,113 +194,59 @@ Location: Left forearm
 
 IMPORTANT: This analysis is for documentation purposes only. Clinical correlation and professional judgment are required for definitive diagnosis and treatment decisions.`;
 
-    // Call Claude Vision API with streaming
-    const stream = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 200,
-      temperature: 0.1, // Low temperature for consistent clinical observations
-      system: systemPrompt,
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: 'image/jpeg',
-                data: base64Image,
-              },
+    // Call Gemini Vision API (non-streaming) and stream chunks to client
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    if (!geminiApiKey) {
+      return NextResponse.json({ error: 'Gemini API key not configured', code: 'GEMINI_API_KEY_MISSING' }, { status: 500 });
+    }
+
+    // Gemini expects base64 image as inline data part and text prompt
+    const contents = [
+      {
+        role: 'user',
+        parts: [
+          { text: systemPrompt },
+          { text: prompt
+            ? `Please provide a concise clinical analysis of this image with objective observations only.\n\nClinical context provided by GP: ${prompt}`
+            : 'Please provide a concise clinical analysis of this image with objective observations only.' },
+          {
+            inline_data: {
+              mime_type: 'image/jpeg',
+              data: base64Image,
             },
-            {
-              type: 'text',
-              text: prompt
-                ? `Please provide a concise clinical analysis of this image with objective observations only.\n\nClinical context provided by GP: ${prompt}`
-                : 'Please provide a concise clinical analysis of this image with objective observations only.',
-            },
-          ],
-        },
-      ],
-      stream: true,
+          },
+        ],
+      },
+    ];
+
+    const geminiResponse = await fetch(`${GEMINI_API_URL}?key=${encodeURIComponent(geminiApiKey)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents, generationConfig: { temperature: 0.1, maxOutputTokens: 300 } }),
     });
 
-    // Stream the response to the client
+    if (!geminiResponse.ok) {
+      const errText = await geminiResponse.text().catch(() => '');
+      return NextResponse.json({ error: 'Gemini request failed', code: 'GEMINI_ERROR', details: errText }, { status: 502 });
+    }
+
+    const geminiJson = await geminiResponse.json();
+    const text = geminiJson?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join('') || '';
+
+    // Stream a simple SSE with one processing ping and final result
     const encoder = new TextEncoder();
     const readable = new ReadableStream({
-      async start(controller) {
-        try {
-          // Send initial status
-          const initialData = JSON.stringify({
-            imageId,
-            status: 'processing',
-            description: '',
-          });
-          controller.enqueue(encoder.encode(`data: ${initialData}\n\n`));
-
-          let description = '';
-
-          for await (const chunk of stream) {
-            if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
-              description += chunk.delta.text;
-
-              // Send incremental update with safe JSON serialization
-              try {
-                const updateData = JSON.stringify({
-                  imageId,
-                  status: 'processing',
-                  description,
-                });
-                controller.enqueue(encoder.encode(`data: ${updateData}\n\n`));
-              } catch (jsonError) {
-                console.error('Failed to serialize update data:', jsonError);
-                // Send a safe fallback
-                const safeUpdate = JSON.stringify({
-                  imageId,
-                  status: 'processing',
-                  description: '[Processing...]',
-                });
-                controller.enqueue(encoder.encode(`data: ${safeUpdate}\n\n`));
-              }
-            }
-          }
-
-          // Send completion status with safe JSON serialization
-          try {
-            const completionData = JSON.stringify({
-              imageId,
-              status: 'completed',
-              description,
-              metadata: {
-                processingTime: Date.now(),
-                modelUsed: 'claude-3-5-sonnet-20241022',
-              },
-            });
-            controller.enqueue(encoder.encode(`data: ${completionData}\n\n`));
-          } catch (jsonError) {
-            console.error('Failed to serialize completion data:', jsonError);
-            // Send error status
-            const errorData = JSON.stringify({
-              imageId,
-              status: 'error',
-              error: 'Failed to process analysis result',
-            });
-            controller.enqueue(encoder.encode(`data: ${errorData}\n\n`));
-          }
-
-          controller.close();
-        } catch (error) {
-          console.error('Streaming error:', error);
-
-          // Send error status
-          const errorData = JSON.stringify({
-            imageId,
-            status: 'error',
-            error: error instanceof Error ? error.message : 'Analysis failed',
-          });
-          controller.enqueue(encoder.encode(`data: ${errorData}\n\n`));
-
-          controller.close();
-        }
+      start(controller) {
+        const initialData = JSON.stringify({ imageId, status: 'processing', description: '' });
+        controller.enqueue(encoder.encode(`data: ${initialData}\n\n`));
+        const completionData = JSON.stringify({
+          imageId,
+          status: 'completed',
+          description: text,
+          metadata: { processingTime: Date.now(), modelUsed: 'gemini-1.5-flash' },
+        });
+        controller.enqueue(encoder.encode(`data: ${completionData}\n\n`));
+        controller.close();
       },
     });
 
