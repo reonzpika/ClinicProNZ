@@ -7,7 +7,7 @@ import sharp from 'sharp';
 
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent';
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION || 'ap-southeast-2',
@@ -200,38 +200,49 @@ IMPORTANT: This analysis is for documentation purposes only. Clinical correlatio
       return NextResponse.json({ error: 'Gemini API key not configured', code: 'GEMINI_API_KEY_MISSING' }, { status: 500 });
     }
 
-    // Gemini expects base64 image as inline data part and text prompt
-    const contents = [
-      {
-        role: 'user',
-        parts: [
-          { text: systemPrompt },
-          { text: prompt
-            ? `Please provide a concise clinical analysis of this image with objective observations only.\n\nClinical context provided by GP: ${prompt}`
-            : 'Please provide a concise clinical analysis of this image with objective observations only.' },
-          {
-            inline_data: {
-              mime_type: 'image/jpeg',
-              data: base64Image,
+    // Gemini expects base64 image as inline data part and text prompt; system as system_instruction
+    const payload = {
+      system_instruction: { parts: [{ text: systemPrompt }] },
+      contents: [
+        {
+          parts: [
+            {
+              inline_data: {
+                mime_type: 'image/jpeg',
+                data: base64Image,
+              },
             },
-          },
-        ],
-      },
-    ];
+            {
+              text: prompt
+                ? `Please provide a concise clinical analysis of this image with objective observations only.\n\nClinical context provided by GP: ${prompt}`
+                : 'Please provide a concise clinical analysis of this image with objective observations only.',
+            },
+          ],
+        },
+      ],
+      generationConfig: { temperature: 0.1, maxOutputTokens: 300 },
+    } as const;
 
     const geminiResponse = await fetch(`${GEMINI_API_URL}?key=${encodeURIComponent(geminiApiKey)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents, generationConfig: { temperature: 0.1, maxOutputTokens: 300 } }),
+      body: JSON.stringify(payload),
     });
 
     if (!geminiResponse.ok) {
       const errText = await geminiResponse.text().catch(() => '');
-      return NextResponse.json({ error: 'Gemini request failed', code: 'GEMINI_ERROR', details: errText }, { status: 502 });
+      let errMessage = 'Gemini request failed';
+      try {
+        const parsed = JSON.parse(errText);
+        if (parsed?.error?.message) errMessage = parsed.error.message as string;
+      } catch {}
+      return NextResponse.json({ error: errMessage, code: 'GEMINI_ERROR', details: errText }, { status: 502 });
     }
 
     const geminiJson = await geminiResponse.json();
-    const text = geminiJson?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join('') || '';
+    const text = (geminiJson?.candidates?.[0]?.content?.parts ?? [])
+      .map((p: any) => (p?.text ?? ''))
+      .join('');
 
     // Stream a simple SSE with one processing ping and final result
     const encoder = new TextEncoder();
