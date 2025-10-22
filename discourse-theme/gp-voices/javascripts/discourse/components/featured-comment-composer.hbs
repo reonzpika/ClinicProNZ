@@ -1,0 +1,18 @@
+<div class="gp-card p-3">
+  <div class="d-flex justify-between align-center mb-2">
+    <h3 class="m-0">Featured thread</h3>
+    <span class="gp-badge gp-badge--pinned">Pinned</span>
+  </div>
+  <div class="composer-inline">
+    <Textarea @value={{this.replyText}} @placeholder="Write a comment…" class="w-100"/>
+    <div class="d-flex justify-end mt-2 gap-2">
+      <DButton @action={{this.openFullComposer}} @label="Open composer"/>
+      <DButton @action={{this.postReply}} @label="Post comment" @class="btn-primary"/>
+    </div>
+  </div>
+  {{#if settings.deemphasise_new_topic}}
+    <div class="mt-2">
+      <a {{on "click" this.openNewTopic}} class="btn-link">Start a new post</a>
+    </div>
+  {{/if}}
+</div>

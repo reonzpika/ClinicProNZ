@@ -1,0 +1,59 @@
+featured_topic_id:
+  default: 0
+  type: integer
+  description: "Topic ID for the Featured Thread (comment-first composer)."
+
+allowed_tags:
+  default: "ai-scribe,inbox-management,general"
+  type: list
+  list_type: simple
+  description: "Admin-approved user-selectable tags."
+
+news_tag:
+  default: "news"
+  type: text
+  description: "Staff-only tag used to mark News posts."
+
+trending_tag:
+  default: "trending"
+  type: text
+  description: "Staff-only tag used to mark Trending posts."
+
+interleave_frequency:
+  default: 6
+  type: integer
+  min: 2
+  max: 20
+  description: "Insert 1 admin item per N user items in the feed."
+
+ai_summary_topic_id:
+  default: 0
+  type: integer
+  description: "Topic ID whose first post holds the weekly AI summary content."
+
+ai_summary_max_bullets:
+  default: 5
+  type: integer
+  min: 1
+  max: 10
+  description: "Maximum number of bullet lines shown to anonymous users."
+
+show_pinned_prompts:
+  default: true
+  type: bool
+  description: "Show pinned prompts carousel."
+
+enable_bottom_tab_bar_mobile:
+  default: true
+  type: bool
+  description: "Enable mobile bottom navigation bar."
+
+deemphasise_new_topic:
+  default: true
+  type: bool
+  description: "Hide or de-emphasise primary 'New Topic' CTAs."
+
+hide_category_ui:
+  default: true
+  type: bool
+  description: "Hide category chrome in navigation and lists."

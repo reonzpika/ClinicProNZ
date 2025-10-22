@@ -1,0 +1,9 @@
+<div class="gp-card p-2">
+  <div class="chips scroller-x d-flex gap-2">
+    <button class="gp-chip {{if (eq this.activeTag "") "gp-chip--active"}}" {{on "click" (fn this.selectTag "")}}>All</button>
+    {{#each this.allowedTags as |tag|}}
+      <button class="gp-chip {{if (eq this.activeTag tag) "gp-chip--active"}}" {{on "click" (fn this.selectTag tag)}}>{{tag}}</button>
+    {{/each}}
+    <button class="gp-chip" {{on "click" this.openMore}}>More</button>
+  </div>
+</div>

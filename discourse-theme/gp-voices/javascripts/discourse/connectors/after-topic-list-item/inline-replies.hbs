@@ -1,0 +1,15 @@
+<div class="gp-inline-replies">
+  {{#each this.previewReplies as |reply|}}
+    <div class="reply d-flex gap-2">
+      {{avatar reply.user imageSize="small" class="avatar"}}
+      <div class="reply-body">
+        <div class="meta">
+          <span class="username">@{{reply.user.username}}</span>
+          <span class="time">{{reply.created_at}}</span>
+        </div>
+        <div class="excerpt">{{reply.excerpt}}</div>
+      </div>
+    </div>
+  {{/each}}
+  <a class="btn-link" {{on "click" this.expandMore}}>View more replies</a>
+</div>
