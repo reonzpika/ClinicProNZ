@@ -1294,7 +1294,7 @@ function AnalysisModal({
                 rows={3}
               />
               <p className="mt-1 text-xs text-slate-500">
-                Optional: Provide additional context to help Claude analyze this image more accurately
+                Optional: Provide additional context to help Claude analyse this image more accurately
               </p>
             </div>
 
