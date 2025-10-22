@@ -222,14 +222,16 @@ IMPORTANT: This analysis is for documentation purposes only. Clinical correlatio
       generationConfig: { temperature: 0.1, maxOutputTokens: 300 },
     };
 
-    // Try primary v1 flash, then v1beta flash, then v1 pro
+    // Try Gemini 2.5 image model first, then fall back to 1.5 flash variants
     const endpoints = [
+      'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-image:generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent',
       'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent',
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
-      'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent',
     ];
 
     let geminiJson: any | null = null;
+    let usedModelId = 'unknown';
     let lastErrText = '';
     for (const url of endpoints) {
       const resp = await fetch(`${url}?key=${encodeURIComponent(geminiApiKey)}`, {
@@ -239,6 +241,11 @@ IMPORTANT: This analysis is for documentation purposes only. Clinical correlatio
       });
       if (resp.ok) {
         geminiJson = await resp.json();
+        // Extract model id from the URL
+        try {
+          const m = url.match(/models\/([^:]+):/);
+          usedModelId = m?.[1] || usedModelId;
+        } catch {}
         break;
       }
       lastErrText = await resp.text().catch(() => '');
@@ -270,7 +277,7 @@ IMPORTANT: This analysis is for documentation purposes only. Clinical correlatio
           imageId,
           status: 'completed',
           description: text,
-          metadata: { processingTime: Date.now(), modelUsed: 'gemini-1.5-flash' },
+          metadata: { processingTime: Date.now(), modelUsed: usedModelId },
         });
         controller.enqueue(encoder.encode(`data: ${completionData}\n\n`));
         controller.close();
