@@ -7,8 +7,6 @@ import sharp from 'sharp';
 
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent';
-
 const s3Client = new S3Client({
   region: process.env.AWS_REGION || 'ap-southeast-2',
   credentials: {
