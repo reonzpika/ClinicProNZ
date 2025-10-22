@@ -224,23 +224,40 @@ IMPORTANT: This analysis is for documentation purposes only. Clinical correlatio
       generationConfig: { temperature: 0.1, maxOutputTokens: 300 },
     };
 
-    const geminiResponse = await fetch(`${GEMINI_API_URL}?key=${encodeURIComponent(geminiApiKey)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    // Try primary v1 flash, then v1beta flash, then v1 pro
+    const endpoints = [
+      'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+      'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent',
+    ];
 
-    if (!geminiResponse.ok) {
-      const errText = await geminiResponse.text().catch(() => '');
-      let errMessage = 'Gemini request failed';
-      try {
-        const parsed = JSON.parse(errText);
-        if (parsed?.error?.message) errMessage = parsed.error.message as string;
-      } catch {}
-      return NextResponse.json({ error: errMessage, code: 'GEMINI_ERROR', details: errText }, { status: 502 });
+    let geminiJson: any | null = null;
+    let lastErrText = '';
+    for (const url of endpoints) {
+      const resp = await fetch(`${url}?key=${encodeURIComponent(geminiApiKey)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (resp.ok) {
+        geminiJson = await resp.json();
+        break;
+      }
+      lastErrText = await resp.text().catch(() => '');
+      // If model not found, continue; else break early for informative error
+      if (!/not found|NOT_FOUND|is not supported/i.test(lastErrText)) {
+        break;
+      }
     }
 
-    const geminiJson = await geminiResponse.json();
+    if (!geminiJson) {
+      let errMessage = 'Gemini request failed';
+      try {
+        const parsed = JSON.parse(lastErrText);
+        if (parsed?.error?.message) errMessage = parsed.error.message as string;
+      } catch {}
+      return NextResponse.json({ error: errMessage, code: 'GEMINI_ERROR', details: lastErrText }, { status: 502 });
+    }
     const first = geminiJson?.candidates?.[0];
     const parts = first?.content?.parts ?? first?.content?.[0]?.parts ?? [];
     const text = parts.map((p: any) => (p?.text ?? '')).join('');

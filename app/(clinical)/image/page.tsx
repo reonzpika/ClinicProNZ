@@ -1270,7 +1270,7 @@ function AnalysisModal({
                     <span>•</span>
                     <div className="flex items-center gap-1 text-green-600">
                       <Check className="size-3" />
-                      <span>Previously analyzed</span>
+                      <span>Previously analysed</span>
                     </div>
                   </>
                 )}
@@ -1353,9 +1353,7 @@ function AnalysisModal({
                       <div className="flex items-center gap-2">
                         <Check className="size-3 text-green-600" />
                         <span>
-                          Analyzed
-                          {' '}
-                          {new Date(modal.image.analysis.analyzedAt).toLocaleString()}
+                          Analysed {new Date(modal.image.analysis.analyzedAt).toLocaleString()}
                         </span>
                       </div>
                       {modal.image.analysis.prompt && (
