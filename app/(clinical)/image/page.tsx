@@ -242,7 +242,7 @@ export default function ClinicalImagePage() {
     if (uploadImages.error) {
       setError(uploadImages.error instanceof Error ? uploadImages.error.message : 'Failed to upload files');
     } else if (analyzeImage.error) {
-      setError(analyzeImage.error instanceof Error ? analyzeImage.error.message : 'Failed to analyze image');
+      setError(analyzeImage.error instanceof Error ? analyzeImage.error.message : 'Failed to analyse image');
     }
   }, [uploadImages.error, analyzeImage.error, setError]);
 
@@ -379,7 +379,7 @@ export default function ClinicalImagePage() {
     }
   }, [userId, userTier, setError]);
 
-  // Analyze image with Claude (using mutation and store)
+  // Analyse image with Claude (using mutation and store)
   const handleAnalyzeImage = async () => {
     if (!analysisModal.image) {
       return;
@@ -687,10 +687,7 @@ Cancel
                   <CardTitle className="text-2xl font-bold text-slate-900">
                     Clinical Images
                   </CardTitle>
-                  <CardDescription>
-                    AI-powered clinical image analysis and documentation
-                    <span className="ml-2 text-[10px] text-slate-400">Thumbnails may expire after ~30m; they refresh automatically on new events.</span>
-                  </CardDescription>
+                  <CardDescription></CardDescription>
                 </div>
               </div>
 
@@ -1065,7 +1062,7 @@ function ServerImageCard({
         {/* Hover Overlay */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-colors group-hover:bg-black/10 group-hover:opacity-100">
           <div className="rounded-lg bg-white/90 px-3 py-1 text-xs font-medium text-slate-700">
-            {image.analysis ? 'View Analysis' : 'Analyze Image'}
+            {image.analysis ? 'View Analysis' : 'Analyse Image'}
           </div>
         </div>
       </div>
@@ -1273,7 +1270,7 @@ function AnalysisModal({
                     <span>•</span>
                     <div className="flex items-center gap-1 text-green-600">
                       <Check className="size-3" />
-                      <span>Previously analyzed</span>
+                      <span>Previously analysed</span>
                     </div>
                   </>
                 )}
@@ -1297,7 +1294,7 @@ function AnalysisModal({
                 rows={3}
               />
               <p className="mt-1 text-xs text-slate-500">
-                Optional: Provide additional context to help Claude analyze this image more accurately
+                Optional: Provide additional context to help Claude analyse this image more accurately
               </p>
             </div>
 
@@ -1312,13 +1309,13 @@ function AnalysisModal({
 ? (
                 <>
                   <Loader2 className="mr-2 size-4 animate-spin" />
-                        Analyzing...
+                        Analysing...
                 </>
               )
 : (
                 <>
                   <FileText className="mr-2 size-4" />
-                        Analyze
+                        Analyse
                 </>
               )}
             </Button>
@@ -1356,9 +1353,7 @@ function AnalysisModal({
                       <div className="flex items-center gap-2">
                         <Check className="size-3 text-green-600" />
                         <span>
-                          Analyzed
-                          {' '}
-                          {new Date(modal.image.analysis.analyzedAt).toLocaleString()}
+                          Analysed {new Date(modal.image.analysis.analyzedAt).toLocaleString()}
                         </span>
                       </div>
                       {modal.image.analysis.prompt && (

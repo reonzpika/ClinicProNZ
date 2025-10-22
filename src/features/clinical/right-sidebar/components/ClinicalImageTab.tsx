@@ -466,7 +466,7 @@ export const ClinicalImageTab: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to analyze image');
+        throw new Error(errorData.error || 'Failed to analyse image');
       }
 
       if (!response.body) {

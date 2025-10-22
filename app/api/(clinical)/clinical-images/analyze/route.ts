@@ -1,16 +1,11 @@
 import { Buffer } from 'node:buffer';
 
-import Anthropic from '@anthropic-ai/sdk';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import sharp from 'sharp';
 
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-});
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION || 'ap-southeast-2',
@@ -120,7 +115,7 @@ export async function POST(req: Request) {
       }, { status: 400 });
     }
 
-    const MAX_DIMENSION = 8000; // Claude's maximum dimension
+    const MAX_DIMENSION = 4096; // Reduce to fit safe Claude limits
     let processedImage = image;
 
     // Check if image needs resizing
@@ -147,7 +142,7 @@ export async function POST(req: Request) {
     // Convert to base64 (always as JPEG for consistency)
     let processedBuffer, base64Image;
     try {
-      processedBuffer = await processedImage.jpeg({ quality: 90 }).toBuffer();
+      processedBuffer = await processedImage.jpeg({ quality: 85 }).toBuffer();
       base64Image = processedBuffer.toString('base64');
 
       const sizeKB = Math.round(base64Image.length / 1024);
@@ -197,113 +192,95 @@ Location: Left forearm
 
 IMPORTANT: This analysis is for documentation purposes only. Clinical correlation and professional judgment are required for definitive diagnosis and treatment decisions.`;
 
-    // Call Claude Vision API with streaming
-    const stream = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 200,
-      temperature: 0.1, // Low temperature for consistent clinical observations
-      system: systemPrompt,
-      messages: [
+    // Call Gemini Vision API (non-streaming) and stream chunks to client
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    if (!geminiApiKey) {
+      return NextResponse.json({ error: 'Gemini API key not configured', code: 'GEMINI_API_KEY_MISSING' }, { status: 500 });
+    }
+
+    // Gemini expects base64 image as inline data part and text prompt
+    const payload = {
+      contents: [
         {
           role: 'user',
-          content: [
+          parts: [
+            { text: systemPrompt },
             {
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: 'image/jpeg',
-                data: base64Image,
-              },
-            },
-            {
-              type: 'text',
               text: prompt
                 ? `Please provide a concise clinical analysis of this image with objective observations only.\n\nClinical context provided by GP: ${prompt}`
                 : 'Please provide a concise clinical analysis of this image with objective observations only.',
             },
+            {
+              inline_data: {
+                mime_type: 'image/jpeg',
+                data: base64Image,
+              },
+            },
           ],
         },
       ],
-      stream: true,
-    });
+      generationConfig: { temperature: 0.1, maxOutputTokens: 300 },
+    };
 
-    // Stream the response to the client
+    // Try Gemini 2.5 image model first, then fall back to 1.5 flash variants
+    const endpoints = [
+      'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-image:generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent',
+      'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+    ];
+
+    let geminiJson: any | null = null;
+    let usedModelId = 'unknown';
+    let lastErrText = '';
+    for (const url of endpoints) {
+      const resp = await fetch(`${url}?key=${encodeURIComponent(geminiApiKey)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (resp.ok) {
+        geminiJson = await resp.json();
+        // Extract model id from the URL
+        try {
+          const m = url.match(/models\/([^:]+):/);
+          usedModelId = m?.[1] || usedModelId;
+        } catch {}
+        break;
+      }
+      lastErrText = await resp.text().catch(() => '');
+      // If model not found, continue; else break early for informative error
+      if (!/not found|NOT_FOUND|is not supported/i.test(lastErrText)) {
+        break;
+      }
+    }
+
+    if (!geminiJson) {
+      let errMessage = 'Gemini request failed';
+      try {
+        const parsed = JSON.parse(lastErrText);
+        if (parsed?.error?.message) errMessage = parsed.error.message as string;
+      } catch {}
+      return NextResponse.json({ error: errMessage, code: 'GEMINI_ERROR', details: lastErrText }, { status: 502 });
+    }
+    const first = geminiJson?.candidates?.[0];
+    const parts = first?.content?.parts ?? first?.content?.[0]?.parts ?? [];
+    const text = parts.map((p: any) => (p?.text ?? '')).join('');
+
+    // Stream a simple SSE with one processing ping and final result
     const encoder = new TextEncoder();
     const readable = new ReadableStream({
-      async start(controller) {
-        try {
-          // Send initial status
-          const initialData = JSON.stringify({
-            imageId,
-            status: 'processing',
-            description: '',
-          });
-          controller.enqueue(encoder.encode(`data: ${initialData}\n\n`));
-
-          let description = '';
-
-          for await (const chunk of stream) {
-            if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
-              description += chunk.delta.text;
-
-              // Send incremental update with safe JSON serialization
-              try {
-                const updateData = JSON.stringify({
-                  imageId,
-                  status: 'processing',
-                  description,
-                });
-                controller.enqueue(encoder.encode(`data: ${updateData}\n\n`));
-              } catch (jsonError) {
-                console.error('Failed to serialize update data:', jsonError);
-                // Send a safe fallback
-                const safeUpdate = JSON.stringify({
-                  imageId,
-                  status: 'processing',
-                  description: '[Processing...]',
-                });
-                controller.enqueue(encoder.encode(`data: ${safeUpdate}\n\n`));
-              }
-            }
-          }
-
-          // Send completion status with safe JSON serialization
-          try {
-            const completionData = JSON.stringify({
-              imageId,
-              status: 'completed',
-              description,
-              metadata: {
-                processingTime: Date.now(),
-                modelUsed: 'claude-3-5-sonnet-20241022',
-              },
-            });
-            controller.enqueue(encoder.encode(`data: ${completionData}\n\n`));
-          } catch (jsonError) {
-            console.error('Failed to serialize completion data:', jsonError);
-            // Send error status
-            const errorData = JSON.stringify({
-              imageId,
-              status: 'error',
-              error: 'Failed to process analysis result',
-            });
-            controller.enqueue(encoder.encode(`data: ${errorData}\n\n`));
-          }
-
-          controller.close();
-        } catch (error) {
-          console.error('Streaming error:', error);
-
-          // Send error status
-          const errorData = JSON.stringify({
-            imageId,
-            status: 'error',
-            error: error instanceof Error ? error.message : 'Analysis failed',
-          });
-          controller.enqueue(encoder.encode(`data: ${errorData}\n\n`));
-
-          controller.close();
-        }
+      start(controller) {
+        const initialData = JSON.stringify({ imageId, status: 'processing', description: '' });
+        controller.enqueue(encoder.encode(`data: ${initialData}\n\n`));
+        const completionData = JSON.stringify({
+          imageId,
+          status: 'completed',
+          description: text,
+          metadata: { processingTime: Date.now(), modelUsed: usedModelId },
+        });
+        controller.enqueue(encoder.encode(`data: ${completionData}\n\n`));
+        controller.close();
       },
     });
 
@@ -344,11 +321,11 @@ IMPORTANT: This analysis is for documentation purposes only. Clinical correlatio
       }, { status: 400 });
     }
 
-    // Handle invalid image format errors
+    // Handle Anthropic invalid request errors (often schema/mime issues)
     if (error instanceof Error && error.message.includes('invalid_request_error')) {
       return NextResponse.json({
-        error: 'Invalid image format. Please ensure the image is a supported format (JPEG, PNG, WebP, GIF).',
-        code: 'INVALID_IMAGE_FORMAT',
+        error: 'Image analysis request was rejected by the AI service. Please retry or try a different image.',
+        code: 'ANALYSIS_REQUEST_INVALID',
       }, { status: 400 });
     }
 

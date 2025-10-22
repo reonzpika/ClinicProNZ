@@ -331,7 +331,7 @@ export function useAnalyzeImage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to analyze image');
+        throw new Error(errorData.error || 'Failed to analyse image');
       }
 
       const reader = response.body?.getReader();
