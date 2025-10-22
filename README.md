@@ -7,6 +7,19 @@
 ### Description
 ClinicPro is a full‑stack Next.js (App Router) application that provides AI‑assisted medical scribing for New Zealand GPs, including consultation note generation, clinical image analysis, and dual recording (desktop/mobile) with reliable transcription, real‑time updates, and role‑based access control.
 
+### Backend (BFF)
+
+- Repo: https://github.com/reonzpika/clinicpro-bff
+- Production base URL: https://api.clinicpro.co.nz
+- Health check:
+  - GET https://api.clinicpro.co.nz/
+  - Example: `curl -s https://api.clinicpro.co.nz`
+- Frontend configuration:
+  - Point the app to the BFF: set your API base to `https://api.clinicpro.co.nz`
+  - Example (Next.js): set `NEXT_PUBLIC_API_BASE=https://api.clinicpro.co.nz`
+- Operations & deployment:
+  - See `DEPLOYMENT_NOTES.md` in the BFF repo for server, TLS, and runbook details.
+
 ---
 
 ### Key Features
@@ -164,6 +177,7 @@ Note: Some client SDKs (e.g. Clerk) may require publishable frontend keys; add a
 - Releases/commits: `pnpm commit` (Commitizen)
 
 ## API Overview (non‑exhaustive)
+Production API base: https://api.clinicpro.co.nz (BFF)
 - **Clinical**
   - `POST /api/consultation/notes`
   - `POST /api/consultation/chat`
