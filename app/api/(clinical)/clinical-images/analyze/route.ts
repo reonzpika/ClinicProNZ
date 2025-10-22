@@ -200,28 +200,29 @@ IMPORTANT: This analysis is for documentation purposes only. Clinical correlatio
       return NextResponse.json({ error: 'Gemini API key not configured', code: 'GEMINI_API_KEY_MISSING' }, { status: 500 });
     }
 
-    // Gemini expects base64 image as inline data part and text prompt; system as system_instruction
+    // Gemini expects base64 image as inline data part and text prompt
     const payload = {
-      system_instruction: { parts: [{ text: systemPrompt }] },
       contents: [
         {
+          role: 'user',
           parts: [
+            { text: systemPrompt },
+            {
+              text: prompt
+                ? `Please provide a concise clinical analysis of this image with objective observations only.\n\nClinical context provided by GP: ${prompt}`
+                : 'Please provide a concise clinical analysis of this image with objective observations only.',
+            },
             {
               inline_data: {
                 mime_type: 'image/jpeg',
                 data: base64Image,
               },
             },
-            {
-              text: prompt
-                ? `Please provide a concise clinical analysis of this image with objective observations only.\n\nClinical context provided by GP: ${prompt}`
-                : 'Please provide a concise clinical analysis of this image with objective observations only.',
-            },
           ],
         },
       ],
       generationConfig: { temperature: 0.1, maxOutputTokens: 300 },
-    } as const;
+    };
 
     const geminiResponse = await fetch(`${GEMINI_API_URL}?key=${encodeURIComponent(geminiApiKey)}`, {
       method: 'POST',
@@ -240,9 +241,9 @@ IMPORTANT: This analysis is for documentation purposes only. Clinical correlatio
     }
 
     const geminiJson = await geminiResponse.json();
-    const text = (geminiJson?.candidates?.[0]?.content?.parts ?? [])
-      .map((p: any) => (p?.text ?? ''))
-      .join('');
+    const first = geminiJson?.candidates?.[0];
+    const parts = first?.content?.parts ?? first?.content?.[0]?.parts ?? [];
+    const text = parts.map((p: any) => (p?.text ?? '')).join('');
 
     // Stream a simple SSE with one processing ping and final result
     const encoder = new TextEncoder();
