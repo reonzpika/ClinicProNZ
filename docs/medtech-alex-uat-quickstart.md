@@ -134,16 +134,4 @@ MEDTECH_FACILITY_ID=F2N060-E
 
 ---
 
-### 11) Email template (requesting OTP)
-```
-Subject: Ready to retrieve ALEX UAT client secret — please send OTP
 
-Good afternoon Defne,
-
-I’m ready to proceed with the Logic App POST to retrieve our client secret. Could you please share the one‑time password (OTP) for the Password header when convenient?
-
-Many thanks,
-<Your Name>
-<Your Role>, ClinicPro
-<Phone> | <Email>
-```
