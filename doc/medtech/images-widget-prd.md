@@ -20,10 +20,15 @@
 - Launch from Medtech button and from Widget Launcher
 - Capture via device camera; upload from library (JPG/PNG/PDF)
 - Client‑side compress to <1 MB; strip EXIF; size meter
-- Quick annotations (crop, arrow, circle)
-- Metadata: title, body site, laterality, indication; consent toggle
+- Metadata (chips-first, coded where possible):
+  - Laterality (chips only: Right, Left, Bilateral, N/A; sticky-last)
+  - Body site (chips for common coded sites; "Other" opens inline typeahead; uncoded free text allowed if no match)
+  - View (chips: Close‑up, Dermoscopy, Other; if Other, optional text)
+  - Type (chips: Lesion, Rash, Wound, Infection, Other; if Other, optional text)
+  - Label (free text to differentiate multiple images of same site)
+  - Consent toggle
 - Save to encounter as DocumentReference (+ Binary); optional Media
-- Optional: send to Inbox (recipient selectable) and/or create Task (assignee selectable)
+- Desktop‑only actions: send to Inbox (recipient selectable) and/or create Task (assignee selectable)
 - Session list of attachments; show EMR IDs; ready‑for‑referral badge
 
 ## Out of scope (v1)
@@ -34,24 +39,23 @@
 
 ## Mobile capture flow (no PIN)
 1. Desktop shows QR (one‑time, 5‑min TTL)
-2. User scans → mobile upload page opens with encounter context
+2. User scans → mobile upload page opens with encounter context; header shows patient name and NHI
 3. Tap “Open camera” → capture (HTML Media Capture)
-4. Per‑image review: quick chips (Laterality, Body site, Modality, Indication), crop/rotate
-5. “Add another” loops capture; thumbnails grid builds up
-6. Optional routing: Inbox/Task toggles; recipient/assignee pickers; notes
-7. Batch upload: compress (<1 MB), upload in parallel, commit; success ticks
-8. Desktop updates live; token revoked after upload or TTL
+4. Per‑image review: chips for Laterality and Body site (coded); optional chips for View and Type. Selecting "Other" opens inline text input (typeahead for Body site). No crop/rotate on mobile.
+5. “Take more” loops capture; thumbnails grid builds up; sticky‑last selections apply per field until changed
+6. Batch upload: compress (<1 MB), upload in parallel, commit; success ticks
+7. Desktop updates live; token revoked after upload or TTL
 
 ## Compression policy (<1 MB)
 - Client: HEIC→JPEG, EXIF orientation applied then stripped; longest edge 1600px (fallback 1280→1024), quality auto‑tune; show size badge
 - Server: hard limit 1 MB; actionable error if exceeded
 
 ## UX — quick chips (coded)
-- Laterality: Right, Left, Bilateral, N/A (sticky)
-- Body site: Recents + common set (Face, Scalp, Trunk, Arm, Forearm, Hand, Thigh, Leg, Foot)
-- Modality: Clinical, Dermoscopy, Wound, Rash
-- Indication: Lesion, Rash, Wound, Infection
-- Apply‑to‑remaining option; per‑user Favourites; offline code cache
+- Laterality: Right, Left, Bilateral, N/A (sticky‑last; coded)
+- Body site: Common coded set (Face, Scalp, Trunk, Arm, Forearm, Hand, Thigh, Leg, Foot). "Other" opens inline typeahead to search coded sites; fallback to text if no match.
+- View: Close‑up, Dermoscopy, Other (coded internal). If Other, optional text.
+- Type: Lesion, Rash, Wound, Infection, Other (coded internal). If Other, optional text.
+- No "apply to remaining"; no recents/favourites badges. Keep taps minimal.
 
 ## Data mapping (canonical → ALEX)
 - DocumentReference (primary): content.attachment (contentType, size, hash, filename); context encounter+patient; category=clinical‑photo; metadata fields in extensions
@@ -88,17 +92,17 @@ Returns server‑authoritative feature flags, limits, and dictionaries.
           {"code":"43799004","display":"Scalp"},
           {"code":"22943007","display":"Trunk"}
         ],
-        "modalities": [
-          {"code":"clinical","display":"Clinical"},
+        "views": [
+          {"code":"close-up","display":"Close-up"},
           {"code":"dermoscopy","display":"Dermoscopy"},
-          {"code":"wound","display":"Wound"},
-          {"code":"rash","display":"Rash"}
+          {"code":"other","display":"Other"}
         ],
-        "indications": [
-          {"code":"399982007","display":"Skin lesion"},
-          {"code":"271807003","display":"Rash"},
-          {"code":"416471007","display":"Wound"},
-          {"code":"312608009","display":"Skin infection"}
+        "types": [
+          {"code":"lesion","display":"Lesion"},
+          {"code":"rash","display":"Rash"},
+          {"code":"wound","display":"Wound"},
+          {"code":"infection","display":"Infection"},
+          {"code":"other","display":"Other"}
         ]
       }
     },
@@ -157,11 +161,12 @@ Initiate signed upload URLs for client‑compressed files.
       "hash": "sha256:...",
       "clientCompression": { "longestEdgePx": 1600, "quality": 0.8, "stripExif": true },
       "proposedMeta": {
-        "title": "Left forearm lesion (dermoscopy)",
+        "title": "Left forearm lesion",
+        "label": "Lesion 1 (superior)",
         "bodySite": {"system":"http://snomed.info/sct","code":"40983000","display":"Forearm"},
         "laterality": {"system":"http://snomed.info/sct","code":"7771000","display":"Left"},
-        "modality": {"system":"clinicpro/modality","code":"dermoscopy","display":"Dermoscopy"},
-        "indication": {"system":"http://snomed.info/sct","code":"399982007","display":"Skin lesion"}
+        "view": {"system":"clinicpro/view","code":"dermoscopy","display":"Dermoscopy"},
+        "type": {"system":"clinicpro/type","code":"lesion","display":"Lesion"}
       }
     }
   ]
@@ -193,11 +198,12 @@ Create DocumentReference (+ optional Media) and optional Inbox/Task.
     {
       "fileId": "temp-xyz",
       "meta": {
-        "title": "Left forearm lesion (dermoscopy)",
+        "title": "Left forearm lesion",
+        "label": "Lesion 1 (superior)",
         "bodySite": {"system":"http://snomed.info/sct","code":"40983000","display":"Forearm"},
         "laterality": {"system":"http://snomed.info/sct","code":"7771000","display":"Left"},
-        "modality": {"system":"clinicpro/modality","code":"dermoscopy","display":"Dermoscopy"},
-        "indication": {"system":"http://snomed.info/sct","code":"399982007","display":"Skin lesion"}
+        "view": {"system":"clinicpro/view","code":"dermoscopy","display":"Dermoscopy"},
+        "type": {"system":"clinicpro/type","code":"lesion","display":"Lesion"}
       },
       "alsoInbox": { "enabled": true, "recipientId": "user:gp-123", "note": "Please review" },
       "alsoTask": { "enabled": true, "assigneeId": "user:nurse-9", "due": "2025-10-30", "note": "Prep referral" },
@@ -226,9 +232,9 @@ Response
 ## Acceptance criteria (MVP)
 - From Medtech, capture/upload and commit ≥ 3 images to the active encounter in one session; they appear in ALEX/HealthLink referral pickers.
 - Each image <1 MB; EXIF stripped; correct orientation.
-- Metadata via mobile chips is saved and visible on desktop before commit.
+- Metadata via mobile chips (and inline "Other" where used) is saved and visible on desktop before commit.
 - Duplicate uploads within an encounter are idempotent.
-- Inbox and Task flows create artefacts for the selected recipients and reference the images.
+- Inbox and Task flows are desktop‑initiated (not shown on mobile) and create artefacts referencing the images.
 - iFrame blocked → new‑tab fallback works with preserved context.
 
 ## Risks & mitigations
