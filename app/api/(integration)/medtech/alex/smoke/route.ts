@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { alexRequest } from '@/src/lib/integrations/medtech/alex/client';
 import { getMedtechAlexConfig } from '@/src/lib/integrations/medtech/alex/env';
+import { getAccessToken } from '@/src/lib/integrations/medtech/alex/token-service';
 
 // Simple smoke test to validate env + token + connectivity.
 // This calls a configurable base URL + ping path if provided.
@@ -8,15 +9,10 @@ import { getMedtechAlexConfig } from '@/src/lib/integrations/medtech/alex/env';
 export async function GET() {
   try {
     const cfg = getMedtechAlexConfig();
+    // If no base URL, at least validate we can fetch a token successfully.
     if (!cfg.alexBaseUrl) {
-      return NextResponse.json(
-        {
-          ok: false,
-          message: 'Set MEDTECH_ALEX_BASE_URL and optional MEDTECH_ALEX_PING_PATH to use smoke test.',
-          expectedEnv: ['MEDTECH_CLIENT_ID', 'MEDTECH_CLIENT_SECRET', 'MEDTECH_TENANT_ID', 'MEDTECH_API_SCOPE', 'MEDTECH_FACILITY_ID', 'MEDTECH_ALEX_BASE_URL'],
-        },
-        { status: 400 },
-      );
+      const token = await getAccessToken();
+      return NextResponse.json({ ok: true, tokenSample: token.slice(0, 12) + '...' });
     }
 
     const res = await alexRequest({
