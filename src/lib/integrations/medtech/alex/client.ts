@@ -10,7 +10,7 @@ export type AlexRequestOptions = {
   baseUrlOverride?: string; // optional override for testing
 };
 
-export async function alexRequest<T = unknown>(opts: AlexRequestOptions): Promise<Response> {
+export async function alexRequest(opts: AlexRequestOptions): Promise<Response> {
   const cfg = getMedtechAlexConfig();
   const method = opts.method || 'GET';
   const token = await getAccessToken();
