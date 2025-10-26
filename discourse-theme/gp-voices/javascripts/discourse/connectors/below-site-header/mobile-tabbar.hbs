@@ -1,3 +1,6 @@
 <div class="gp-mobile-tabbar">
-  <!-- Buttons rendered from initializer via decorateWidget for routing consistency -->
+  <button class="btn-flat" {{on "click" this.toHome}}>Home</button>
+  <button class="btn-flat" {{on "click" this.toNews}}>News</button>
+  <button class="btn-flat" {{on "click" this.toHot}}>Hot</button>
+  <button class="btn-primary" title="New Topic" {{on "click" this.newTopic}}>+</button>
 </div>
