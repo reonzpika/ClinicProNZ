@@ -48,6 +48,7 @@ html body.theme-ClinicPro-GP-Voices {
     display: flex;
     gap: 8px;
     padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
   }
   .gp-desktop-topnav .btn-flat { background: transparent; color: var(--cp-text); }
   .gp-desktop-topnav .btn-primary { background: var(--cp-accent); color: #fff; }
@@ -63,6 +64,30 @@ html body.theme-ClinicPro-GP-Voices {
   .list-controls .category-chooser,
   .list-controls .tag-chooser {
     display: none !important;
+  }
+
+  // Hide sidebar items for non-staff; keep Home, My Posts, My Messages
+  &:not(.staff) .sidebar-section,
+  &:not(.staff) .sidebar-footer,
+  &:not(.staff) .sidebar-more-section,
+  &:not(.staff) .sidebar-tags,
+  &:not(.staff) .sidebar-categories,
+  &:not(.staff) .sidebar-channels {
+    display: none !important;
+  }
+  &:not(.staff) .sidebar-section-content {
+    display: none !important;
+  }
+  &:not(.staff) .sidebar {
+    /* minimal width */
+    width: 220px;
+  }
+  /* Try to keep essential links visible by label match */
+  &:not(.staff) .sidebar .sidebar-section-link { display: none !important; }
+  &:not(.staff) .sidebar .sidebar-section-link[href*="/latest"],
+  &:not(.staff) .sidebar .sidebar-section-link[href*="/u/"][href*="activity"],
+  &:not(.staff) .sidebar .sidebar-section-link[href*="/u/"][href*="messages"] {
+    display: flex !important;
   }
 }
 

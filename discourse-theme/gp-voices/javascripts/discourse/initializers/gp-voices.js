@@ -62,18 +62,7 @@ export default apiInitializer("0.13.1", (api) => {
       return this._super(opts);
     },
   });
-
-  api.modifyClass("component:composer", {
-    pluginId: "gp-voices",
-    didInsertElement() {
-      this._super(...arguments);
-      const isStaff = site?.isStaff || site?.is_admin || site?.is_moderator;
-      if (!isStaff) {
-        const chooser = this.element.querySelector(".composer-fields .category-input");
-        if (chooser) chooser.style.display = "none";
-      }
-    },
-  });
+  // Hide composer category chooser for non-staff via CSS below
 
   // CTA moved to connector component in discovery-below
 

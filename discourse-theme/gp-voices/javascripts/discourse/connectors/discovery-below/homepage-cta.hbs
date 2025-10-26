@@ -1,5 +1,1 @@
-{{#if this.shouldShow}}
-  <div class="gp-card p-2 mt-2 mb-2 text-center">
-    <button class="btn btn-primary" {{on "click" this.startNew}}>Start a new post</button>
-  </div>
-{{/if}}
+<HomepageCta @siteSettings={{settings}} @model={{model}} />

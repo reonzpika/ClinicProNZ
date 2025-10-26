@@ -10,8 +10,8 @@ export default class HomepageCta extends Component {
     const generalId = Number(this.args.siteSettings?.general_category_id || 0);
     const insertAfter = Number(this.args.siteSettings?.general_cta_after_n || 10);
     const list = this.args?.model?.topics || [];
-    const idx = list.findIndex((t) => t?.category_id === generalId) + 1;
-    return generalId && insertAfter && idx === insertAfter;
+    const idx = list.findIndex((t, i) => i + 1 === insertAfter && t?.category_id === generalId);
+    return generalId && insertAfter && idx !== -1;
   }
 
   @action
