@@ -3,7 +3,7 @@
 ## Objectives
 - Enable GPs to capture/attach clinical photos to the active Medtech encounter in ≤ 20s.
 - Make images instantly available for HealthLink/ALEX referrals (no extra filing).
-- Keep flows simple, safe (consent/EXIF), and auditable.
+- Keep flows simple, safe (EXIF), and auditable.
 
 ## Success metrics (v1)
 - Median capture→commit ≤ 20s; p95 ≤ 45s
@@ -14,7 +14,7 @@
 ## Users / contexts
 - GPs (primary), Nurses/HCAs (optional per org policy)
 - Desktop Medtech (embedded iFrame preferred; new‑tab fallback)
-- Mobile capture via QR handoff (no PIN; 5‑min TTL)
+- Mobile capture via QR handoff (no PIN; 10‑min TTL)
 
 ## Scope (MVP)
 - Launch from Medtech button and from Widget Launcher
@@ -26,10 +26,21 @@
   - View (chips: Close‑up, Dermoscopy, Other; if Other, optional text)
   - Type (chips: Lesion, Rash, Wound, Infection, Other; if Other, optional text)
   - Label (free text to differentiate multiple images of same site)
-  - Consent toggle
 - Save to encounter as DocumentReference (+ Binary); optional Media
 - Desktop‑only actions: send to Inbox (recipient selectable) and/or create Task (assignee selectable)
-- Session list of attachments; show EMR IDs; ready‑for‑referral badge
+- Session list of attachments; show EMR IDs; status badge (orange: Not committed; green: Committed — ready for referral)
+- Desktop editing: crop, rotate, arrow annotation; non‑destructive for committed images (save as new copy)
+- Edit clinical date/time on desktop; allow backdating; disallow future dates; audit logged
+ - Image formats: normalise all images to JPEG on commit; PDFs remain PDF
+
+### Desktop widget UI (embedded)
+- Shown only when Medtech has an active patient/encounter context
+- Do not duplicate patient header (no patient name, NHI, or encounter display in widget)
+- No status pill UI; QR tile shows 10‑min countdown and Expired state
+- No "Open in new tab" control (new‑tab fallback remains if iFrame blocked)
+- Main pane: live gallery grid only (no filter or search)
+- Image card actions: Edit (crop, rotate, arrow), Change date/time, Attach, Send to Inbox/Task, More
+- Status badge on cards: green = Committed; orange = Not committed
 
 ## Out of scope (v1)
 - Scribe/notes/meds/obs
@@ -38,17 +49,27 @@
 - Advanced markup (measurements, layers)
 
 ## Mobile capture flow (no PIN)
-1. Desktop shows QR (one‑time, 5‑min TTL)
+1. Desktop shows QR (one‑time, 10‑min TTL; regenerating QR resets TTL and revokes prior token)
 2. User scans → mobile upload page opens with encounter context; header shows patient name and NHI
 3. Tap “Open camera” → capture (HTML Media Capture)
 4. Per‑image review: chips for Laterality and Body site (coded); optional chips for View and Type. Selecting "Other" opens inline text input (typeahead for Body site). No crop/rotate on mobile.
 5. “Take more” loops capture; thumbnails grid builds up; sticky‑last selections apply per field until changed
 6. Batch upload: compress (<1 MB), upload in parallel, commit; success ticks
 7. Desktop updates live; token revoked after upload or TTL
+8. If QR is regenerated on desktop, existing mobile session shows "Session expired — please rescan" and blocks further uploads
 
 ## Compression policy (<1 MB)
 - Client: HEIC→JPEG, EXIF orientation applied then stripped; longest edge 1600px (fallback 1280→1024), quality auto‑tune; show size badge
 - Server: hard limit 1 MB; actionable error if exceeded
+ - PNG uploads may be transcoded to JPEG on commit to meet size/compatibility requirements
+
+## Edits & originals policy
+- Edits on desktop use "Save as new" for committed images, creating a new JPEG while keeping the original immutable.
+- By default, only the edited copy is selected for commit; the original remains in ClinicPro (uncommitted) unless explicitly chosen.
+- The commit dialog provides an "Include original" option to also commit the source image.
+- Uncommitted originals are retained in temporary storage and auto‑purged after 24 hours.
+- If the original was already committed previously, edited copies are committed as additional images and linked via provenance; both remain available in Medtech.
+- Provenance mapping: `derivedFromDocumentReferenceId` is stored internally, and if both artefacts are in Medtech, `DocumentReference.relatesTo` is set with `code = transforms` pointing to the original.
 
 ## UX — quick chips (coded)
 - Laterality: Right, Left, Bilateral, N/A (sticky‑last; coded)
@@ -62,9 +83,20 @@
 - Binary: raw bytes upload
 - Media (optional): type=photo; bodySite/laterality; link to DocumentReference
 
+## Authentication & Security
+- Desktop (Medtech SSO):
+  - The widget is launched within Medtech. The server establishes a user session using Medtech‑provided signed context (e.g., SSO JWT or signed POST).
+  - All desktop‑initiated APIs require this session; the server derives `tenantId`, `userId`, and `encounterId` from Medtech context.
+- Mobile (QR token):
+  - No sign‑in. Mobile uses a one‑time token (10‑min TTL) obtained from the desktop QR. Pass token via `x-mobile-token` header on mobile APIs.
+  - Regenerating QR immediately revokes the previous token. Expired/revoked tokens return actionable errors.
+- Realtime sync:
+  - Desktop receives live updates (e.g., via server‑issued realtime tokens) based on the Medtech SSO session. Mobile does not require realtime credentials.
+
 ## API contracts (Integration Gateway)
 
 ### GET /capabilities
+Auth: Desktop (Medtech SSO session)
 Returns server‑authoritative feature flags, limits, and dictionaries.
 
 ```json
@@ -73,7 +105,7 @@ Returns server‑authoritative feature flags, limits, and dictionaries.
   "features": {
     "images": {
       "enabled": true,
-      "mobileHandoff": { "qr": true, "ttlSeconds": 300 },
+      "mobileHandoff": { "qr": true, "ttlSeconds": 600 },
       "inbox": { "enabled": true },
       "tasks": { "enabled": true },
       "quickChips": {
@@ -129,7 +161,8 @@ Returns server‑authoritative feature flags, limits, and dictionaries.
 ```
 
 ### POST /attachments/mobile/initiate
-Creates one‑time mobile upload session and QR.
+Auth: Desktop (Medtech SSO session)
+Creates one‑time mobile upload session and QR. Regenerating QR creates a new session and resets TTL; the previous token is revoked immediately.
 
 ```json
 {
@@ -143,11 +176,12 @@ Response
 {
   "mobileUploadUrl": "https://widget.example.com/mobile-upload?t=one-time-token",
   "qrSvg": "data:image/svg+xml;base64,...",
-  "ttlSeconds": 300
+  "ttlSeconds": 600
 }
 ```
 
 ### POST /attachments/upload-initiate
+Auth: Mobile (header `x-mobile-token: <one-time-token>`)
 Initiate signed upload URLs for client‑compressed files.
 
 ```json
@@ -189,6 +223,7 @@ Response
 ```
 
 ### POST /attachments/commit
+Auth: Desktop (Medtech SSO session)
 Create DocumentReference (+ optional Media) and optional Inbox/Task.
 
 ```json
@@ -205,6 +240,7 @@ Create DocumentReference (+ optional Media) and optional Inbox/Task.
         "view": {"system":"clinicpro/view","code":"dermoscopy","display":"Dermoscopy"},
         "type": {"system":"clinicpro/type","code":"lesion","display":"Lesion"}
       },
+      "derivedFromDocumentReferenceId": null,
       "alsoInbox": { "enabled": true, "recipientId": "user:gp-123", "note": "Please review" },
       "alsoTask": { "enabled": true, "assigneeId": "user:nurse-9", "due": "2025-10-30", "note": "Prep referral" },
       "idempotencyKey": "enc-abc:sha256:..."
@@ -236,9 +272,9 @@ Response
 - Duplicate uploads within an encounter are idempotent.
 - Inbox and Task flows are desktop‑initiated (not shown on mobile) and create artefacts referencing the images.
 - iFrame blocked → new‑tab fallback works with preserved context.
+ - Images are stored as JPEG in Medtech (PDFs preserved); edited copies are saved as new; originals remain in ClinicPro unless explicitly committed (uncommitted originals auto‑purge after 24 hours).
 
 ## Risks & mitigations
 - CSP/iFrame limits → new‑tab fallback
 - Large images/slow networks → aggressive client compression, chunked uploads
 - Vendor API variation → gateway capability negotiation; UI gating
-- Consent gaps → first‑time consent gate; audit trail
