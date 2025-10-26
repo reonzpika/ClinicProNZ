@@ -42,6 +42,30 @@
   backdrop-filter: blur(8px);
 }
 
+// Hide categories/tags/nav pills on discovery for minimal UI
+html body.theme-ClinicPro-GP-Voices {
+  .gp-desktop-topnav {
+    display: flex;
+    gap: 8px;
+    padding: 8px 0;
+  }
+  .gp-desktop-topnav .btn-flat { background: transparent; color: var(--cp-text); }
+  .gp-desktop-topnav .btn-primary { background: var(--cp-accent); color: #fff; }
+
+  .navigation-container .nav-pills,
+  .category-breadcrumb,
+  .filtered-topics .categories-boxes,
+  .category-links,
+  .navigation-container .select-kit-header,
+  .tag-info,
+  .discovery-categories,
+  .discovery-top .category-list,
+  .list-controls .category-chooser,
+  .list-controls .tag-chooser {
+    display: none !important;
+  }
+}
+
 // Hide category UI if enabled
 html body.theme-ClinicPro-GP-Voices {
   &[data-hide-category-ui="true"] .category-breadcrumb,

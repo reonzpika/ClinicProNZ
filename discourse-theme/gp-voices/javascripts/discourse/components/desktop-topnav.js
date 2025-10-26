@@ -4,7 +4,7 @@ import { action } from "@ember/object";
 import { ajax } from "discourse/lib/ajax";
 import { getOwner } from "discourse-common/lib/get-owner";
 
-export default class MobileTabbar extends Component {
+export default class DesktopTopnav extends Component {
   @service router;
   @service currentUser;
   @service siteSettings;
@@ -25,13 +25,13 @@ export default class MobileTabbar extends Component {
   }
 
   @action async toNews() {
-    const id = Number(this.args.siteSettings?.news_category_id || 0);
+    const id = Number(this.siteSettings?.news_category_id || 0);
     const slug = await this.getSlug(id);
     if (id && slug) window.location.href = `/c/${slug}/${id}`;
   }
 
   @action async toHot() {
-    const id = Number(this.args.siteSettings?.featured_category_id || 0);
+    const id = Number(this.siteSettings?.featured_category_id || 0);
     const slug = await this.getSlug(id);
     if (id && slug) window.location.href = `/c/${slug}/${id}`;
   }

@@ -13,6 +13,17 @@
     align-items: center;
     justify-content: space-around;
     z-index: 200;
+    color: var(--cp-text);
+  }
+
+  .gp-mobile-tabbar .btn-flat {
+    background: transparent;
+    color: var(--cp-text);
+  }
+
+  .gp-mobile-tabbar .btn-primary {
+    background: var(--cp-accent);
+    color: #fff;
   }
 
   .gp-ai-summary-sticky {
