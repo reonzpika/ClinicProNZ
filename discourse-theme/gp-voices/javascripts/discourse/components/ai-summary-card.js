@@ -3,7 +3,6 @@ import { inject as service } from "@ember/service";
 import { action } from "@ember/object";
 import { tracked } from "@glimmer/tracking";
 import { ajax } from "discourse/lib/ajax";
-import showLogin from "discourse/lib/show-login";
 
 export default class AiSummaryCard extends Component {
   @service router;
@@ -45,7 +44,7 @@ export default class AiSummaryCard extends Component {
   viewFull() {
     const topicId = Number(this.args.topicId || 0);
     if (!this.currentUser) {
-      showLogin();
+      this.router.transitionTo("login");
       return;
     }
     if (topicId) {

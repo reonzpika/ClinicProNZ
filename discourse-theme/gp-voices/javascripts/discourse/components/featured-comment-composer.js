@@ -2,13 +2,13 @@ import Component from "@glimmer/component";
 import { inject as service } from "@ember/service";
 import { action } from "@ember/object";
 import { tracked } from "@glimmer/tracking";
-import showLogin from "discourse/lib/show-login";
 import Composer from "discourse/models/composer";
 
 export default class FeaturedCommentComposer extends Component {
   @service currentUser;
   @service siteSettings;
   @service composer;
+  @service router;
 
   @tracked replyText = "";
 
@@ -19,7 +19,7 @@ export default class FeaturedCommentComposer extends Component {
   @action
   openFullComposer() {
     if (!this.currentUser) {
-      showLogin();
+      this.router.transitionTo("login");
       return;
     }
     if (this.featuredTopicId) {
@@ -34,7 +34,7 @@ export default class FeaturedCommentComposer extends Component {
   @action
   async postReply() {
     if (!this.currentUser) {
-      showLogin();
+      this.router.transitionTo("login");
       return;
     }
     if (!this.replyText?.trim() || !this.featuredTopicId) return;
@@ -55,7 +55,7 @@ export default class FeaturedCommentComposer extends Component {
   @action
   openNewTopic() {
     if (!this.currentUser) {
-      showLogin();
+      this.router.transitionTo("login");
       return;
     }
     this.composer.open({ action: Composer.CREATE_TOPIC });

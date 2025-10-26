@@ -11,13 +11,15 @@ allowed_tags:
 
 news_tag:
   default: "news"
-  type: text
-  description: "Staff-only tag used to mark News posts."
+  type: list
+  list_type: simple
+  description: "Staff-only tag(s) used to mark News posts."
 
 trending_tag:
   default: "trending"
-  type: text
-  description: "Staff-only tag used to mark Trending posts."
+  type: list
+  list_type: simple
+  description: "Staff-only tag(s) used to mark Trending posts."
 
 interleave_frequency:
   default: 6
