@@ -18,7 +18,7 @@ const REDIS_KEY = 'medtech:alex:token';
 
 let inMemoryToken: CachedToken | null = null;
 
-function isTokenValid(cached: CachedToken | null): boolean {
+function isTokenValid(cached: CachedToken | null): cached is CachedToken {
   if (!cached) return false;
   const nowSec = Math.floor(Date.now() / 1000);
   return cached.expiresAtEpochSec - TOKEN_SKEW_SECONDS > nowSec;
