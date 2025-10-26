@@ -44,14 +44,7 @@
 
 // Hide categories/tags/nav pills on discovery for minimal UI
 html body.theme-ClinicPro-GP-Voices {
-  .gp-desktop-topnav {
-    display: flex;
-    gap: 8px;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-  }
-  .gp-desktop-topnav .btn-flat { background: transparent; color: var(--cp-text); }
-  .gp-desktop-topnav .btn-primary { background: var(--cp-accent); color: #fff; }
+  .gp-desktop-topnav { display: none; }
 
   .navigation-container .nav-pills,
   .category-breadcrumb,
