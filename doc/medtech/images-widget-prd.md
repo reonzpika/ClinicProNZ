@@ -73,9 +73,20 @@
 - Binary: raw bytes upload
 - Media (optional): type=photo; bodySite/laterality; link to DocumentReference
 
+## Authentication & Security
+- Desktop (Medtech SSO):
+  - The widget is launched within Medtech. The server establishes a user session using Medtech‑provided signed context (e.g., SSO JWT or signed POST).
+  - All desktop‑initiated APIs require this session; the server derives `tenantId`, `userId`, and `encounterId` from Medtech context.
+- Mobile (QR token):
+  - No sign‑in. Mobile uses a one‑time token (10‑min TTL) obtained from the desktop QR. Pass token via `x-mobile-token` header on mobile APIs.
+  - Regenerating QR immediately revokes the previous token. Expired/revoked tokens return actionable errors.
+- Realtime sync:
+  - Desktop receives live updates (e.g., via server‑issued realtime tokens) based on the Medtech SSO session. Mobile does not require realtime credentials.
+
 ## API contracts (Integration Gateway)
 
 ### GET /capabilities
+Auth: Desktop (Medtech SSO session)
 Returns server‑authoritative feature flags, limits, and dictionaries.
 
 ```json
@@ -140,6 +151,7 @@ Returns server‑authoritative feature flags, limits, and dictionaries.
 ```
 
 ### POST /attachments/mobile/initiate
+Auth: Desktop (Medtech SSO session)
 Creates one‑time mobile upload session and QR. Regenerating QR creates a new session and resets TTL; the previous token is revoked immediately.
 
 ```json
@@ -159,6 +171,7 @@ Response
 ```
 
 ### POST /attachments/upload-initiate
+Auth: Mobile (header `x-mobile-token: <one-time-token>`)
 Initiate signed upload URLs for client‑compressed files.
 
 ```json
@@ -200,6 +213,7 @@ Response
 ```
 
 ### POST /attachments/commit
+Auth: Desktop (Medtech SSO session)
 Create DocumentReference (+ optional Media) and optional Inbox/Task.
 
 ```json
