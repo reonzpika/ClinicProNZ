@@ -173,7 +173,9 @@ Copy the returned value as your `MEDTECH_CLIENT_SECRET`.
 ```bash
 curl -sS https://YOUR_DOMAIN/api/medtech/alex/smoke
 ```
-Expected: `{ "ok": true, "tokenSample": "..." }`
+Expected: `{ "ok": true, "tokenSample": "..." }` — if you see this, OAuth is configured correctly on the deployed environment.
+
+Status: ✅ Completed — smoke test returned `{ ok: true, tokenSample: "eyJ0eXAiOiJK..." }`.
 
 5) Optional: add ALEX base URL when available (Postman)
 - `MEDTECH_ALEX_BASE_URL = https://<from Medtech Postman>`
@@ -185,6 +187,8 @@ Expected: `{ "ok": true, "tokenSample": "..." }`
 - `POST /api/(integration)/medtech/attachments/mobile/initiate`
 - `POST /api/(integration)/medtech/attachments/upload-initiate`
 - `POST /api/(integration)/medtech/attachments/commit`
+
+Engineering next action (in progress): implement `capabilities` endpoint and wire images workflow.
 
 ---
 
