@@ -134,4 +134,20 @@ MEDTECH_FACILITY_ID=F2N060-E
 
 ---
 
+### 11) Code map (where things live)
+- Server libs
+  - `src/lib/integrations/medtech/alex/env.ts` — load/validate `MEDTECH_*`
+  - `src/lib/integrations/medtech/alex/token-service.ts` — client‑credentials + caching
+  - `src/lib/integrations/medtech/alex/client.ts` — thin ALEX HTTP wrapper
+- API routes
+  - `app/api/(integration)/medtech/capabilities/route.ts`
+  - `app/api/(integration)/medtech/attachments/mobile/initiate/route.ts`
+  - `app/api/(integration)/medtech/attachments/upload-initiate/route.ts`
+  - `app/api/(integration)/medtech/attachments/commit/route.ts`
+  - `app/api/(integration)/medtech/alex/smoke/route.ts` (temporary, for verification)
+
+Once you have the OTP and client secret set, visit the smoke route to validate configuration end‑to‑end.
+
+---
+
 

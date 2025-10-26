@@ -160,6 +160,24 @@ Returns server‑authoritative feature flags, limits, and dictionaries.
 }
 ```
 
+---
+
+### Code map (implementation locations)
+- Server libs
+  - `src/lib/integrations/medtech/alex/env.ts`
+  - `src/lib/integrations/medtech/alex/token-service.ts`
+  - `src/lib/integrations/medtech/alex/client.ts`
+- API routes (gateway)
+  - `app/api/(integration)/medtech/capabilities/route.ts`
+  - `app/api/(integration)/medtech/attachments/mobile/initiate/route.ts`
+  - `app/api/(integration)/medtech/attachments/upload-initiate/route.ts`
+  - `app/api/(integration)/medtech/attachments/commit/route.ts`
+  - Temporary verification: `app/api/(integration)/medtech/alex/smoke/route.ts`
+
+Notes
+- Include `Facility-Id: ${MEDTECH_FACILITY_ID}` where ALEX requires it.
+- Idempotency key format: `${encounterId}:${fileHash}` (e.g., `enc-abc:sha256:...`).
+
 ### POST /attachments/mobile/initiate
 Auth: Desktop (Medtech SSO session)
 Creates one‑time mobile upload session and QR. Regenerating QR creates a new session and resets TTL; the previous token is revoked immediately.
