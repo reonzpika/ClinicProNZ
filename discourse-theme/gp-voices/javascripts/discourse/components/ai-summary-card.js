@@ -10,6 +10,8 @@ export default class AiSummaryCard extends Component {
 
   @tracked bullets = [];
   @tracked updatedAt = null;
+  @tracked latestTopicId = 0;
+  @tracked categorySlug = null;
 
   constructor() {
     super(...arguments);
@@ -18,14 +20,27 @@ export default class AiSummaryCard extends Component {
   }
 
   async loadSummary() {
-    const topicId = Number(this.args.topicId || 0);
-    if (!topicId) return;
+    const categoryId = Number(this.args.categoryId || 0);
+    if (!categoryId) return;
     try {
-      const data = await ajax(`/t/${topicId}.json`);
-      const createdAt = data?.created_at || data?.post_stream?.posts?.[0]?.created_at;
+      // Resolve category slug
+      const show = await ajax(`/c/${categoryId}/show.json`);
+      const slug = show?.category?.slug;
+      if (!slug) return;
+      this.categorySlug = slug;
+
+      // Get latest topic in category
+      const list = await ajax(`/c/${slug}/${categoryId}/l/latest.json?per_page=1`);
+      const topic = list?.topic_list?.topics?.[0];
+      if (!topic) return;
+      this.latestTopicId = topic.id;
+
+      // Fetch first post content for summary
+      const data = await ajax(`/t/${topic.id}.json`);
+      const createdAt = data?.post_stream?.posts?.[0]?.created_at || data?.created_at;
       this.updatedAt = createdAt ? new Date(createdAt).toLocaleDateString() : "";
       const cooked = data?.post_stream?.posts?.[0]?.cooked || "";
-      // Naive extraction of <li> bullets; fallback to paragraph split
+      // Extract <li> bullets; fallback to simple split
       const liMatches = cooked.match(/<li>([\s\S]*?)<\/li>/g) || [];
       let bullets = liMatches
         .map((li) => li.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim())
@@ -42,13 +57,12 @@ export default class AiSummaryCard extends Component {
 
   @action
   viewFull() {
-    const topicId = Number(this.args.topicId || 0);
     if (!this.currentUser) {
       this.router.transitionTo("login");
       return;
     }
-    if (topicId) {
-      this.router.transitionTo("topic", topicId);
+    if (this.latestTopicId) {
+      this.router.transitionTo("topic", this.latestTopicId);
     }
   }
 }

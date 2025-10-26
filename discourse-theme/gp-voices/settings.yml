@@ -1,37 +1,43 @@
-featured_topic_id:
+ai_summary_category_id:
   default: 0
   type: integer
-  description: "Topic ID for the Featured Thread (comment-first composer)."
+  description: "Category ID for AI Summary (staff post weekly summaries)."
 
-allowed_tags:
-  default: "ai-scribe,inbox-management,general"
-  type: list
-  list_type: simple
-  description: "Admin-approved user-selectable tags."
-
-news_tag:
-  default: "news"
-  type: list
-  list_type: simple
-  description: "Staff-only tag(s) used to mark News posts."
-
-trending_tag:
-  default: "trending"
-  type: list
-  list_type: simple
-  description: "Staff-only tag(s) used to mark Trending posts."
-
-interleave_frequency:
-  default: 6
-  type: integer
-  min: 2
-  max: 20
-  description: "Insert 1 admin item per N user items in the feed."
-
-ai_summary_topic_id:
+news_category_id:
   default: 0
   type: integer
-  description: "Topic ID whose first post holds the weekly AI summary content."
+  description: "Category ID for News (staff-only create)."
+
+featured_category_id:
+  default: 0
+  type: integer
+  description: "Category ID for Featured Topics (staff curated)."
+
+general_category_id:
+  default: 0
+  type: integer
+  description: "Category ID for General (user-created topics)."
+
+news_section_count:
+  default: 1
+  type: integer
+  min: 1
+  max: 10
+  description: "Number of News items to feature on homepage."
+
+featured_section_count:
+  default: 2
+  type: integer
+  min: 1
+  max: 10
+  description: "Number of Featured Topics to show on homepage."
+
+general_cta_after_n:
+  default: 10
+  type: integer
+  min: 1
+  max: 50
+  description: "Insert New Topic CTA after N General posts on homepage."
 
 ai_summary_max_bullets:
   default: 5
@@ -40,10 +46,6 @@ ai_summary_max_bullets:
   max: 10
   description: "Maximum number of bullet lines shown to anonymous users."
 
-show_pinned_prompts:
-  default: true
-  type: bool
-  description: "Show pinned prompts carousel."
 
 enable_bottom_tab_bar_mobile:
   default: true
