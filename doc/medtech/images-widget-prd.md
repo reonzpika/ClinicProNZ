@@ -3,7 +3,7 @@
 ## Objectives
 - Enable GPs to capture/attach clinical photos to the active Medtech encounter in ≤ 20s.
 - Make images instantly available for HealthLink/ALEX referrals (no extra filing).
-- Keep flows simple, safe (consent/EXIF), and auditable.
+- Keep flows simple, safe (EXIF), and auditable.
 
 ## Success metrics (v1)
 - Median capture→commit ≤ 20s; p95 ≤ 45s
@@ -26,10 +26,20 @@
   - View (chips: Close‑up, Dermoscopy, Other; if Other, optional text)
   - Type (chips: Lesion, Rash, Wound, Infection, Other; if Other, optional text)
   - Label (free text to differentiate multiple images of same site)
-  - Consent toggle
 - Save to encounter as DocumentReference (+ Binary); optional Media
 - Desktop‑only actions: send to Inbox (recipient selectable) and/or create Task (assignee selectable)
-- Session list of attachments; show EMR IDs; ready‑for‑referral badge
+- Session list of attachments; show EMR IDs; status badge (orange: Not committed; green: Committed — ready for referral)
+- Desktop editing: crop, rotate, arrow annotation; non‑destructive for committed images (save as new copy)
+- Edit clinical date/time on desktop; allow backdating; disallow future dates; audit logged
+
+### Desktop widget UI (embedded)
+- Shown only when Medtech has an active patient/encounter context
+- Do not duplicate patient header (no patient name, NHI, or encounter display in widget)
+- No status pill UI; QR tile shows 10‑min countdown and Expired state
+- No "Open in new tab" control (new‑tab fallback remains if iFrame blocked)
+- Main pane: live gallery grid only (no filter or search)
+- Image card actions: Edit (crop, rotate, arrow), Change date/time, Attach, Send to Inbox/Task, More
+- Status badge on cards: green = Committed; orange = Not committed
 
 ## Out of scope (v1)
 - Scribe/notes/meds/obs
@@ -45,6 +55,7 @@
 5. “Take more” loops capture; thumbnails grid builds up; sticky‑last selections apply per field until changed
 6. Batch upload: compress (<1 MB), upload in parallel, commit; success ticks
 7. Desktop updates live; token revoked after upload or TTL
+8. If QR is regenerated on desktop, existing mobile session shows "Session expired — please rescan" and blocks further uploads
 
 ## Compression policy (<1 MB)
 - Client: HEIC→JPEG, EXIF orientation applied then stripped; longest edge 1600px (fallback 1280→1024), quality auto‑tune; show size badge
@@ -241,4 +252,3 @@ Response
 - CSP/iFrame limits → new‑tab fallback
 - Large images/slow networks → aggressive client compression, chunked uploads
 - Vendor API variation → gateway capability negotiation; UI gating
-- Consent gaps → first‑time consent gate; audit trail
