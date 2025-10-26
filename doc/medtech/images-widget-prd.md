@@ -31,6 +31,7 @@
 - Session list of attachments; show EMR IDs; status badge (orange: Not committed; green: Committed — ready for referral)
 - Desktop editing: crop, rotate, arrow annotation; non‑destructive for committed images (save as new copy)
 - Edit clinical date/time on desktop; allow backdating; disallow future dates; audit logged
+ - Image formats: normalise all images to JPEG on commit; PDFs remain PDF
 
 ### Desktop widget UI (embedded)
 - Shown only when Medtech has an active patient/encounter context
@@ -60,6 +61,15 @@
 ## Compression policy (<1 MB)
 - Client: HEIC→JPEG, EXIF orientation applied then stripped; longest edge 1600px (fallback 1280→1024), quality auto‑tune; show size badge
 - Server: hard limit 1 MB; actionable error if exceeded
+ - PNG uploads may be transcoded to JPEG on commit to meet size/compatibility requirements
+
+## Edits & originals policy
+- Edits on desktop use "Save as new" for committed images, creating a new JPEG while keeping the original immutable.
+- By default, only the edited copy is selected for commit; the original remains in ClinicPro (uncommitted) unless explicitly chosen.
+- The commit dialog provides an "Include original" option to also commit the source image.
+- Uncommitted originals are retained in temporary storage and auto‑purged after 24 hours.
+- If the original was already committed previously, edited copies are committed as additional images and linked via provenance; both remain available in Medtech.
+- Provenance mapping: `derivedFromDocumentReferenceId` is stored internally, and if both artefacts are in Medtech, `DocumentReference.relatesTo` is set with `code = transforms` pointing to the original.
 
 ## UX — quick chips (coded)
 - Laterality: Right, Left, Bilateral, N/A (sticky‑last; coded)
@@ -230,6 +240,7 @@ Create DocumentReference (+ optional Media) and optional Inbox/Task.
         "view": {"system":"clinicpro/view","code":"dermoscopy","display":"Dermoscopy"},
         "type": {"system":"clinicpro/type","code":"lesion","display":"Lesion"}
       },
+      "derivedFromDocumentReferenceId": null,
       "alsoInbox": { "enabled": true, "recipientId": "user:gp-123", "note": "Please review" },
       "alsoTask": { "enabled": true, "assigneeId": "user:nurse-9", "due": "2025-10-30", "note": "Prep referral" },
       "idempotencyKey": "enc-abc:sha256:..."
@@ -261,6 +272,7 @@ Response
 - Duplicate uploads within an encounter are idempotent.
 - Inbox and Task flows are desktop‑initiated (not shown on mobile) and create artefacts referencing the images.
 - iFrame blocked → new‑tab fallback works with preserved context.
+ - Images are stored as JPEG in Medtech (PDFs preserved); edited copies are saved as new; originals remain in ClinicPro unless explicitly committed (uncommitted originals auto‑purge after 24 hours).
 
 ## Risks & mitigations
 - CSP/iFrame limits → new‑tab fallback
