@@ -150,4 +150,42 @@ Once you have the OTP and client secret set, visit the smoke route to validate c
 
 ---
 
+### 12) Operator checklist (deployed) — step‑by‑step
+
+1) Retrieve client secret (PowerShell on your laptop)
+```powershell
+$OTP = 'PASTE_OTP_HERE'
+$resp = Invoke-RestMethod -Method POST -Uri 'https://prod-25.australiaeast.logic.azure.com:443/workflows/4da52cb1411e441ab90604e99f57baae/triggers/manual/paths/invoke?api-version=2018-07-01-preview&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=LWXUnuARXIy8D1-xT4AJsHXf5-8mbHpGmEbK79bXGtE' -Headers @{ Password = $OTP }
+$resp
+```
+Copy the returned value as your `MEDTECH_CLIENT_SECRET`.
+
+2) Set server environment variables (hosting secrets)
+- `MEDTECH_CLIENT_ID = 7685ade3-f1ae-4e86-a398-fe7809c0fed1`
+- `MEDTECH_CLIENT_SECRET = <from step 1>`
+- `MEDTECH_TENANT_ID = 8a024e99-aba3-4b25-b875-28b0c0ca6096`
+- `MEDTECH_API_SCOPE = api://bf7945a6-e812-4121-898a-76fea7c13f4d/.default`
+- `MEDTECH_FACILITY_ID = F2N060-E`
+
+3) Redeploy/restart the app
+
+4) Verify token works (smoke test)
+```bash
+curl -sS https://YOUR_DOMAIN/api/medtech/alex/smoke
+```
+Expected: `{ "ok": true, "tokenSample": "..." }`
+
+5) Optional: add ALEX base URL when available (Postman)
+- `MEDTECH_ALEX_BASE_URL = https://<from Medtech Postman>`
+- `MEDTECH_ALEX_PING_PATH = /metadata` (or a benign GET path from Postman)
+- Redeploy, then re-run the smoke test to hit ALEX directly.
+
+6) Tell engineering “Smoke OK” → gateway endpoints will be enabled next:
+- `GET /api/(integration)/medtech/capabilities`
+- `POST /api/(integration)/medtech/attachments/mobile/initiate`
+- `POST /api/(integration)/medtech/attachments/upload-initiate`
+- `POST /api/(integration)/medtech/attachments/commit`
+
+---
+
 
