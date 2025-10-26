@@ -14,7 +14,7 @@
 ## Users / contexts
 - GPs (primary), Nurses/HCAs (optional per org policy)
 - Desktop Medtech (embedded iFrame preferred; new‑tab fallback)
-- Mobile capture via QR handoff (no PIN; 5‑min TTL)
+- Mobile capture via QR handoff (no PIN; 10‑min TTL)
 
 ## Scope (MVP)
 - Launch from Medtech button and from Widget Launcher
@@ -38,7 +38,7 @@
 - Advanced markup (measurements, layers)
 
 ## Mobile capture flow (no PIN)
-1. Desktop shows QR (one‑time, 5‑min TTL)
+1. Desktop shows QR (one‑time, 10‑min TTL; regenerating QR resets TTL and revokes prior token)
 2. User scans → mobile upload page opens with encounter context; header shows patient name and NHI
 3. Tap “Open camera” → capture (HTML Media Capture)
 4. Per‑image review: chips for Laterality and Body site (coded); optional chips for View and Type. Selecting "Other" opens inline text input (typeahead for Body site). No crop/rotate on mobile.
@@ -73,7 +73,7 @@ Returns server‑authoritative feature flags, limits, and dictionaries.
   "features": {
     "images": {
       "enabled": true,
-      "mobileHandoff": { "qr": true, "ttlSeconds": 300 },
+      "mobileHandoff": { "qr": true, "ttlSeconds": 600 },
       "inbox": { "enabled": true },
       "tasks": { "enabled": true },
       "quickChips": {
@@ -129,7 +129,7 @@ Returns server‑authoritative feature flags, limits, and dictionaries.
 ```
 
 ### POST /attachments/mobile/initiate
-Creates one‑time mobile upload session and QR.
+Creates one‑time mobile upload session and QR. Regenerating QR creates a new session and resets TTL; the previous token is revoked immediately.
 
 ```json
 {
@@ -143,7 +143,7 @@ Response
 {
   "mobileUploadUrl": "https://widget.example.com/mobile-upload?t=one-time-token",
   "qrSvg": "data:image/svg+xml;base64,...",
-  "ttlSeconds": 300
+  "ttlSeconds": 600
 }
 ```
 
