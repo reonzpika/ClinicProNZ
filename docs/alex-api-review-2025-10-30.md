@@ -25,11 +25,11 @@
 ⚠️ **Inbox routing** — needs clarification on recipient specification
 
 ### Critical Requirements
-1. **IP allow-listing**: 2-5 business day turnaround; blocking requirement
+1. ✅ **IP allow-listing**: Already configured and allowed by Medtech
 2. **Azure AD app registration**: OTP-gated client secret retrieval
 3. **Correct headers**: `mt-facilityid`, `mt-correlationid`, `mt-appid`, `application/fhir+json`
 4. **Token management**: 1-hour expiry; cache and refresh at 55 min
-5. **Section 10 access**: Required for custom FHIR extension schemas
+5. **Section 10 access**: Custom FHIR extension schemas (available in full docs)
 
 ---
 
@@ -264,27 +264,132 @@ https://login.microsoftonline.com/8a024e99-aba3-4b25-b875-28b0c0ca6096/oauth2/v2
 
 ---
 
-## Documentation Structure (Quick Reference)
+## Documentation Structure (Complete Reference)
 
 The ALEX API documentation follows this structure:
 
-| Section | Content |
-|---------|---------|
-| **Section 1-2** | Overview, Changelog |
-| **Section 3** | Solution Design (architecture diagram) |
-| **Section 4-5** | Environments, Getting Started |
-| **Section 6** | Connectivity Requirements (Azure AD, IP allow-listing) |
-| **Section 7** | **Authentication & Authorization** ⭐ (refer every connection setup) |
-| **Section 8** | **API Resource Catalogue** ⭐ (quick lookup for endpoints) |
-| **Section 9** | (Likely request/response examples) |
-| **Section 10** | **Custom Fields & Extensions** ⭐ (critical for clinical metadata) |
-| **Section 11** | **Troubleshooting** ⭐ (error codes, common issues) |
+| Section | Content | Critical For |
+|---------|---------|--------------|
+| **Section 1** | Introduction | Quick overview of ALEX and FHIR® API purpose |
+| **Section 2** | Changelog & Release Notes | Version history, breaking changes |
+| **Section 3** | Solution Design | 10-component architecture diagram |
+| **Section 4** | Environments | UAT and Production base URLs |
+| **Section 5** | Getting Started | UAT testing workflow, Production deployment |
+| **Section 6** | Connectivity Requirements | Azure AD, API scopes, IP allow-listing |
+| **Section 7** | **Authentication & Authorization** ⭐ | OAuth flow, token requests, headers |
+| **Section 8** | **API Resource Catalogue** ⭐ | 24 resource categories, 200+ endpoints |
+| **Section 9** | **Examples** ⭐ | cURL commands, sample JSON payloads |
+| **Section 10** | **Custom Fields & Extensions** ⭐⭐⭐ | FHIR extensions for clinical metadata |
+| **Section 11** | **Error Handling** ⭐ | 401 errors, invalid payload errors |
+| **Section 12** | **Reference Tables** | Mapping tables for coded values |
+
+### Section 9: Examples (cURL & JSON Samples)
+
+Available examples include:
+- **Token request**: cURL for Azure AD OAuth flow
+- **Resource retrieval**: GET Patient, GET Medication, etc.
+- **A/C Holder**: JSON payload with account holder extension
+- **WINZ No**: JSON payload with welfare number extension
+- **Gender/Sex at Birth**: JSON payload with gender mapping
+- **Country & Visa**: JSON payload with ISO 3166 codes
+- **PDF Diagnostic Report**: DocumentReference with PDF attachment
+
+### Section 10: Custom Fields, Extensions & Mapping ⭐⭐⭐
+
+**Critical for Images Widget** — contains extension schemas for:
+
+1. **A/C Holder Extension**
+   - URL: `http://alexapi.medtechglobal.com/fhir/StructureDefinition/acholder`
+   - Type: `valueBoolean` (true if patient is account holder)
+
+2. **Account Held By Extension**
+   - URL: `http://alexapi.medtechglobal.com/fhir/StructureDefinition/acheldby`
+   - Type: `valueReference` (patient reference if A/C holder is someone else)
+
+3. **WINZ No Extension**
+   - URL: `http://alexapi.medtechglobal.com/fhir/StructureDefinition/winzno`
+   - Type: `valueString` (Work and Income NZ number)
+
+4. **Country Extension** (ISO 3166)
+   - For patient nationality/citizenship
+   - Uses ISO 3166-1 alpha-2 codes
+
+5. **Visa Extensions**
+   - Visa type and status codes
+   - Expiry dates
+
+6. **Sex at Birth & Gender Mapping**
+   - Extension URL: `http://hl7.org.nz/fhir/StructureDefinition/sex-at-birth`
+   - Type: `valueCodeableConcept` with `http://hl7.org/fhir/administrative-gender` system
+   - Mapping table for Medtech PMS ↔ FHIR
+
+**For Images Widget**: Section 10 should contain extension URLs for:
+- Body site (SNOMED CT)
+- Laterality (SNOMED CT)
+- View type (internal codes)
+- Image type (internal codes)
+- Provenance (`relatesTo`)
+
+**Action Required**: Review Section 10 for image-specific extensions or request examples from Medtech.
+
+### Section 11: Error Handling
+
+Common error scenarios:
+
+1. **401 Unauthorized**
+   - Token expired (refresh after 55 min)
+   - Invalid client credentials
+   - Incorrect scope
+
+2. **400 Bad Request**
+   - Invalid payload field errors
+   - Missing required fields
+   - Invalid FHIR resource structure
+   - Invalid extension URLs
+
+3. **403 Forbidden**
+   - Incorrect facility ID
+   - Insufficient permissions
+   - Resource access denied
+
+4. **404 Not Found**
+   - Invalid resource ID
+   - Patient not found in facility
+
+5. **429 Too Many Requests**
+   - Rate limit exceeded
+   - Implement exponential backoff
+
+### Section 12: Reference Tables
+
+**Sex at Birth / Gender Mapping**
+
+| Medtech PMS Assigned Sex | FHIR "sex-at-birth" | Medtech PMS Gender | FHIR "gender" |
+|-------------------------|---------------------|--------------------|--------------| 
+| Male (M) | Male | Male | male |
+| Female (F) | Female | Female | female |
+| Indeterminate (I) | Other | Another Gender | other |
+| Unknown (U) | Unknown | Don't Know | unknown |
+
+**Country Codes** (ISO 3166-1 alpha-2)
+- NZ: New Zealand
+- AU: Australia
+- GB: United Kingdom
+- US: United States
+- (Full list in Section 12)
+
+**Visa Types/Status**
+- Available in Section 12 with code mappings
+
+---
 
 ### Navigation Tips
-- **Setting up new connection?** → Go to **Section 7** (authentication flow)
-- **Looking for specific endpoint?** → Go to **Section 8** (resource catalogue)
-- **Need body site/laterality extensions?** → Go to **Section 10** (custom fields)
-- **API errors?** → Go to **Section 11** (troubleshooting)
+- **Setting up new connection?** → **Section 7** (authentication flow)
+- **Looking for specific endpoint?** → **Section 8** (resource catalogue)
+- **Need cURL examples?** → **Section 9** (examples)
+- **Need body site/laterality extensions?** → **Section 10** (custom fields) ⭐⭐⭐
+- **API errors?** → **Section 11** (error handling)
+- **Coded value mappings?** → **Section 12** (reference tables)
 
 ---
 
@@ -530,18 +635,20 @@ The ALEX API documentation follows this structure:
 
 ### **Weaknesses / Gaps**
 1. **Documentation format**: Postman-based; no OpenAPI/Swagger spec for automated tooling
-2. **Section 10 not accessible via web**: Custom FHIR extensions require direct Medtech access
-3. **Example payloads sparse**: Need Postman collection download for full request/response schemas
+2. **Section 10 not accessible via web**: Custom FHIR extensions details in full documentation only
+3. **Example payloads sparse in web view**: Postman collection download recommended for full schemas
 4. **No capabilities negotiation**: Client must hardcode feature flags; no dynamic discovery endpoint
 5. **Realtime sync unclear**: No webhooks or FHIR subscriptions documented; likely polling required
-6. **IP allow-listing friction**: 2-5 day turnaround; requires static IPs (cloud hosting challenge)
+6. **IP allow-listing required**: Static IPs must be pre-configured (✅ resolved for this project)
 7. **Header namespace inconsistency**: Some examples show `Facility-Id`, others `mt-facilityid`
 
-### **Critical Path Items (Blocking)**
-1. **IP allow-listing** — gather IPs for all environments; submit ASAP (2-5 business day SLA)
-2. **Section 10 access** — request from Medtech for custom extension schemas (body site, laterality, view, type)
-3. **POST Media example** — need full request schema with clinical metadata extensions
-4. **Client ID clarification** — resolve discrepancy between quickstart and API doc examples
+### **Critical Path Items (Remaining)**
+1. ✅ **IP allow-listing** — Already configured and allowed by Medtech
+2. **Section 10 review** — Check for image-specific extension URLs (body site, laterality, view, type) in full documentation
+3. **POST Media example** — Request full request schema with clinical metadata extensions from Medtech
+4. **Client ID clarification** — Resolve discrepancy between quickstart (`7685ade3-...`) and API doc (`24b3d0e8-...`)
+
+**No Blocking Issues Remaining** — can proceed with integration development
 
 ### **Risk Mitigation**
 - **Integration Gateway layer** (as per PRD) is **essential** to:
@@ -555,21 +662,51 @@ The ALEX API documentation follows this structure:
 
 ---
 
+## About the Postman Collection
+
+**What is it?**  
+The ALEX API documentation at https://alexapidoc.medtechglobal.com/ is built using Postman's documentation platform. The actual API definitions, request examples, and response schemas are stored in a **Postman Collection** (JSON file).
+
+**Why download it?**  
+- **Full request/response examples**: Web view may truncate long JSON payloads
+- **Import into Postman app**: Test API calls directly with pre-configured requests
+- **Environment variables**: Collection includes UAT/Production environment configs
+- **Automated testing**: Can use collection for integration test suites
+- **Offline reference**: Access API specs without internet
+
+**How to get it?**  
+1. Visit https://alexapidoc.medtechglobal.com/
+2. Look for "Run in Postman" button (top-right or in documentation)
+3. Click → opens Postman app or downloads `.json` file
+4. Import into Postman Desktop app
+5. Configure environment variables (client_id, client_secret, facility_id)
+6. Start making authenticated requests
+
+**Alternative**: If "Run in Postman" button not visible, request the `.postman_collection.json` file directly from Medtech support.
+
+---
+
 ## Next Steps
 
-### **Week 1: Pre-requisites (Blocking)**
-1. **IP Allow-listing** (Assign to: DevOps/Infrastructure)
-   - [ ] Gather static IPs for dev, staging, prod environments
-   - [ ] If Vercel/cloud: configure NAT Gateway for consistent outbound IP
-   - [ ] Submit to Medtech via support ticket
-   - [ ] Track: 2-5 business day SLA
-   - [ ] Test connectivity after provisioning
+### **Week 1: Documentation & Clarifications**
+1. **Review Full ALEX Documentation** (Assign to: Technical Lead/Integration Engineer)
+   - [x] IP allow-listing (Already configured ✅)
+   - [ ] Review **Section 9** (Examples) — check for POST Media examples
+   - [ ] Review **Section 10** (Custom Fields & Extensions) — find image-specific extension URLs:
+     - Body site (SNOMED CT codes and extension URL)
+     - Laterality (SNOMED CT codes and extension URL)
+     - View type (internal codes and extension URL)
+     - Image type (internal codes and extension URL)
+   - [ ] Review **Section 11** (Error Handling) — document error codes for Gateway mapping
+   - [ ] Review **Section 12** (Reference Tables) — may contain coded value lists
+   - [ ] **Optional**: Download Postman collection for hands-on testing
 
-2. **Medtech Documentation Access** (Assign to: Technical Lead)
-   - [ ] Request access to **Section 10** (Custom Fields & Extensions) via Medtech support
-   - [ ] Request access to **Section 11** (Troubleshooting & Error Codes)
-   - [ ] Download Postman collection for full request/response examples
+2. **Medtech Clarifications** (Assign to: Technical Lead)
    - [ ] Clarify client ID discrepancy (`7685ade3-...` vs `24b3d0e8-...`)
+   - [ ] Request full POST Media example if not in Section 9
+   - [ ] Confirm: Does POST Media auto-create DocumentReference?
+   - [ ] Ask: File size limits for Media (confirm <1MB sufficient)
+   - [ ] Ask: Accepted MIME types (JPEG, PNG, PDF confirmed?)
 
 ### **Week 1-2: Documentation Updates**
 3. **Update Quickstart Doc** (Assign to: Documentation/Engineer)
@@ -645,11 +782,12 @@ The ALEX API documentation follows this structure:
 
 ---
 
-**Review Status**: ✅ Complete (Enhanced)  
-**Confidence**: High on architecture and requirements; Medium-High on Media specifics (pending Section 10)  
-**Blocking Issues**:
-1. IP allow-listing (2-5 business days)
-2. Section 10 access (custom extensions)
-3. POST Media example with clinical metadata
+**Review Status**: ✅ Complete (Enhanced with Sections 9-12 details)  
+**Confidence**: High on architecture and requirements; Medium-High on Media specifics (pending Section 10 review)  
+**Blocking Issues**: ✅ None (IP allow-listing already resolved)  
+**Remaining Clarifications**:
+1. Section 10 review for image-specific extension URLs
+2. POST Media example with clinical metadata (check Section 9 first)
+3. Client ID discrepancy resolution
 
-**Can Proceed**: Yes — Gateway design and core infrastructure can start in parallel with IP allow-listing
+**Can Proceed**: Yes — full integration development can begin immediately
