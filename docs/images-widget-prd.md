@@ -1,5 +1,24 @@
 # Medtech Integration — Images Widget PRD (v0.1)
 
+> **⚠️ IMPORTANT — Source of Truth**  
+> This PRD outlines the **product vision and planned architecture** for the Images Widget. Where technical integration details are concerned, the **[ALEX API Documentation](https://alexapidoc.medtechglobal.com/) is the authoritative source of truth**.  
+> 
+> **Key areas where ALEX API docs supersede this PRD**:
+> - API endpoints, request/response schemas, and FHIR resource structures
+> - Required HTTP headers (`mt-facilityid`, `mt-correlationid`, `mt-appid`, `Content-Type: application/fhir+json`)
+> - Authentication flow and token management
+> - Custom FHIR extension URLs for clinical metadata (body site, laterality, view, type)
+> - Error codes and troubleshooting guidance
+> 
+> **What this PRD provides**:
+> - Product requirements, user flows, and acceptance criteria
+> - Integration Gateway abstraction layer (simplified REST API for frontend)
+> - UI/UX specifications and clinical workflow requirements
+> 
+> **Always defer to ALEX API Documentation** (Sections 7-12) for implementation details. This PRD's API contracts may represent planned abstractions or aspirational patterns that require validation against ALEX's actual FHIR endpoints.
+
+---
+
 ## Objectives
 - Enable GPs to capture/attach clinical photos to the active Medtech encounter in ≤ 20s.
 - Make images instantly available for HealthLink/ALEX referrals (no extra filing).
@@ -94,6 +113,20 @@
   - Desktop receives live updates (e.g., via server‑issued realtime tokens) based on the Medtech SSO session. Mobile does not require realtime credentials.
 
 ## API contracts (Integration Gateway)
+
+> **Note**: These API contracts represent a **simplified REST abstraction layer** (Integration Gateway) that sits between the widget frontend and ALEX's FHIR API. The Gateway handles:
+> - OAuth token management (55-min cache, auto-refresh)
+> - FHIR ↔ REST translation
+> - Required ALEX headers injection (`mt-facilityid`, `mt-correlationid`, `mt-appid`, `Content-Type: application/fhir+json`)
+> - Error code mapping (FHIR OperationOutcome → user-friendly messages)
+> - Clinical metadata mapping (PRD schema → FHIR extensions)
+> 
+> **Implementation**: Backend must map these Gateway endpoints to actual ALEX FHIR resources:
+> - `/attachments/commit` → `POST /FHIR/Media` (+ optional `POST /FHIR/Communication` for inbox routing)
+> - Metadata fields → FHIR extensions (URLs from ALEX docs Section 10)
+> - Refer to [ALEX API Documentation](https://alexapidoc.medtechglobal.com/) Section 8 for FHIR endpoint schemas.
+
+---
 
 ### GET /capabilities
 Auth: Desktop (Medtech SSO session)
