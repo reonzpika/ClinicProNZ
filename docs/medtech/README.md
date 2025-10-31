@@ -50,6 +50,11 @@
 - Documentation consolidated
 
 ### 🔄 **In Progress**
+- ✅ **Integration Gateway OAuth Service Complete** (Oct 31)
+  - OAuth token service with 55-min cache
+  - ALEX API client with header injection
+  - Correlation ID generation
+  - Test endpoints for connectivity validation
 - Awaiting Medtech response (email sent Oct 31) on:
   - UAT testing environment access
   - Widget launch mechanism
@@ -58,10 +63,10 @@
 - Expected response: 3-5 business days
 
 ### 📋 **Next**
-- Implement Integration Gateway OAuth service (not blocked)
-- Build ALEX API client with header injection
+- Deploy to Vercel and test Gateway from production (IP allow-listed)
+- Verify GET Patient endpoint working via `/api/medtech/test`
 - Build frontend UI with mock backend (not blocked)
-- Test FHIR API calls from production environment
+- Implement POST Media endpoint (blocked until Medtech response)
 
 ---
 
