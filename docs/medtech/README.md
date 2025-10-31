@@ -42,24 +42,26 @@
 
 ### ✅ **Completed**
 - Non-commercial agreement signed with Medtech
-- IP allow-listing configured by Medtech
-- OAuth credentials received
+- IP allow-listing configured by Medtech (production Vercel environment)
+- OAuth credentials configured in Vercel env vars (Oct 26)
+- OAuth token acquisition tested and validated (Oct 31)
 - ALEX API documentation reviewed
 - POST Media endpoint confirmed (supports images)
 - Documentation consolidated
 
 ### 🔄 **In Progress**
-- Awaiting Medtech response on:
+- Awaiting Medtech response (email sent Oct 31) on:
   - UAT testing environment access
   - Widget launch mechanism
   - Clinical metadata schema (body site, laterality, view, type)
   - Full POST Media example
+- Expected response: 3-5 business days
 
 ### 📋 **Next**
-- Send support ticket to Medtech (email draft ready)
-- Test OAuth token acquisition
-- Start Integration Gateway development
-- Build frontend UI with mock backend
+- Implement Integration Gateway OAuth service (not blocked)
+- Build ALEX API client with header injection
+- Build frontend UI with mock backend (not blocked)
+- Test FHIR API calls from production environment
 
 ---
 
