@@ -326,13 +326,14 @@ Your docs folder now contains:
 docs/
 └── medtech/
     ├── README.md                                  # Overview and quick links
+    ├── DEVELOPMENT_FLOW_OVERVIEW.md               # High-level development stages
+    ├── NEXT_STEPS.md                              # This file (current action plan)
     ├── alex-api-review-2025-10-30.md              # Comprehensive ALEX API reference
     ├── medtech-alex-uat-quickstart.md             # Updated with correct headers, base URLs
     ├── images-widget-prd.md                       # PRD with ALEX source of truth disclaimer
-    ├── DEVELOPMENT_FLOW_OVERVIEW.md               # High-level development stages
-    ├── NEXT_STEPS.md                              # This file (current action plan)
-    ├── email-draft-uat-testing-access.md          # Email template for Medtech support
-    └── alex-fhir-extensions-reference.md          # (Create next: Section 10 findings)
+    ├── alex-media-api-findings.md                 # ⭐ Critical gap analysis (NEW)
+    ├── email-draft-uat-testing-access.md          # Email template (updated with 7 questions)
+    └── ORGANIZATION_SUMMARY.md                    # Folder organization summary
 ```
 
 ---

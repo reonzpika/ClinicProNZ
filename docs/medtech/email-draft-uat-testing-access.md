@@ -47,7 +47,46 @@ During UAT API testing, we can verify that our POST Media requests return succes
 
 ---
 
-### 4. Production Onboarding Process
+### 4. Clinical Metadata for Media Resources
+The ALEX Postman documentation shows a basic POST Media example, but we need to capture clinical metadata for images (body site, laterality, view type, image classification). We have questions about the schema:
+
+**Q4.1 — Body Site**:
+> Does POST Media accept the standard FHIR R4 `bodySite` field (CodeableConcept with SNOMED CT codes)? Or does ALEX require a custom extension? If custom, what is the extension URL?
+
+**Q4.2 — Laterality**:
+> How should we specify laterality (Right, Left, Bilateral, N/A)? Options:
+> - SNOMED CT qualifier within bodySite (e.g., 'Left forearm')
+> - Separate laterality field/extension
+> - HL7 NZ laterality extension
+> 
+> Please provide example JSON.
+
+**Q4.3 — View Type**:
+> Can we use the standard FHIR `Media.view` field for clinical image views (e.g., 'close-up', 'dermoscopy')? If so, what code system should we use? If not, is there a custom extension?
+
+**Q4.4 — Image Classification**:
+> How should we categorize clinical image types (e.g., Lesion, Rash, Wound, Infection)? Should we use:
+> - `Media.modality` field
+> - `Media.type` field (currently only supports photo/video/audio)
+> - Custom extension (if so, please provide extension URL and code system)
+
+**Q4.5 — Full POST Media Schema**:
+> Can you provide a complete POST Media example showing all supported optional fields, including:
+> - Body site with laterality
+> - Image type/classification
+> - View type
+> - Clinical date/time (if different from createdDateTime)
+> - Encounter linkage
+
+**Q4.6 — DocumentReference Auto-Creation**:
+> When we POST Media, does ALEX automatically create a linked DocumentReference resource, or must we POST both separately?
+
+**Q4.7 — Encounter Linkage**:
+> How do we link the Media resource to the active encounter? (Media.encounter field, extension, or implied from patient/operator context?)
+
+---
+
+### 5. Production Onboarding Process
 Looking ahead to production deployment:
 
 **Questions**:
@@ -121,7 +160,9 @@ We're developing the ClinicPro Images Widget integration with ALEX API (non-comm
 
 3. **Visual Verification**: During UAT API testing, how can we verify that images appear correctly in the Medtech UI?
 
-4. **Production Onboarding**: What's the process and timeline from UAT completion to production pilot?
+4. **Clinical Metadata Schema**: The Postman docs show basic POST Media. Can you provide examples with body site, laterality, view type, and image classification? Do we use standard FHIR R4 fields or custom extensions?
+
+5. **Production Onboarding**: What's the process and timeline from UAT completion to production pilot?
 
 **Our Status**:
 - ✅ IP allow-listing configured, OAuth credentials received
