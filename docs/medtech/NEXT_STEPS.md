@@ -324,11 +324,15 @@ Your docs folder now contains:
 
 ```
 docs/
-├── alex-api-review-2025-10-30.md          # Comprehensive ALEX API reference (source of truth guide)
-├── medtech-alex-uat-quickstart.md         # Updated with correct headers, base URLs, disclaimers
-├── images-widget-prd.md                   # Updated with ALEX source of truth disclaimer
-├── NEXT_STEPS.md                          # This file (current action plan)
-└── alex-fhir-extensions-reference.md      # (Create next: Section 10 findings)
+└── medtech/
+    ├── README.md                                  # Overview and quick links
+    ├── alex-api-review-2025-10-30.md              # Comprehensive ALEX API reference
+    ├── medtech-alex-uat-quickstart.md             # Updated with correct headers, base URLs
+    ├── images-widget-prd.md                       # PRD with ALEX source of truth disclaimer
+    ├── DEVELOPMENT_FLOW_OVERVIEW.md               # High-level development stages
+    ├── NEXT_STEPS.md                              # This file (current action plan)
+    ├── email-draft-uat-testing-access.md          # Email template for Medtech support
+    └── alex-fhir-extensions-reference.md          # (Create next: Section 10 findings)
 ```
 
 ---
@@ -346,3 +350,5 @@ docs/
 **Questions?** Review `alex-api-review-2025-10-30.md` for detailed ALEX API structure and navigation guide.
 
 **Stuck?** Refer to ALEX API Documentation (https://alexapidoc.medtechglobal.com/) Sections 7-11 as source of truth.
+
+**Need to contact Medtech?** Use `email-draft-uat-testing-access.md` as a template.

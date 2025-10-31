@@ -382,3 +382,5 @@
 **Bottom Line**: ALEX docs focus on **API integration testing** (UAT Sandbox). For **full end-to-end testing** (widget launch → commit → view in Medtech UI), you need to **ask Medtech support** if they provide a demo/virtual environment or if that only happens in production pilot.
 
 **Recommendation**: Start with **API-first approach** — get ALEX integration working in UAT, then worry about Medtech UI integration later.
+
+**Need to email Medtech?** Use the template in `email-draft-uat-testing-access.md`
