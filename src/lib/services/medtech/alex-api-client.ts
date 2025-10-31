@@ -50,20 +50,28 @@ export class AlexApiError extends Error {
 }
 
 class AlexApiClient {
-  private readonly baseUrl: string
-  private readonly facilityId: string
   private readonly appId = 'clinicpro-images-widget'
 
-  constructor() {
-    this.baseUrl = process.env.MEDTECH_API_BASE_URL || ''
-    this.facilityId = process.env.MEDTECH_FACILITY_ID || ''
-
-    if (!this.baseUrl) {
+  /**
+   * Get base URL (lazy, only when needed)
+   */
+  private getBaseUrl(): string {
+    const baseUrl = process.env.MEDTECH_API_BASE_URL
+    if (!baseUrl) {
       throw new Error('MEDTECH_API_BASE_URL environment variable not set')
     }
-    if (!this.facilityId) {
+    return baseUrl
+  }
+
+  /**
+   * Get facility ID (lazy, only when needed)
+   */
+  private getFacilityId(): string {
+    const facilityId = process.env.MEDTECH_FACILITY_ID
+    if (!facilityId) {
       throw new Error('MEDTECH_FACILITY_ID environment variable not set')
     }
+    return facilityId
   }
 
   /**
@@ -82,7 +90,9 @@ class AlexApiClient {
     } = options
 
     const startTime = Date.now()
-    const url = `${this.baseUrl}${endpoint}`
+    const baseUrl = this.getBaseUrl()
+    const facilityId = this.getFacilityId()
+    const url = `${baseUrl}${endpoint}`
 
     try {
       // Get access token (cached or fresh)
@@ -92,7 +102,7 @@ class AlexApiClient {
       const headers: Record<string, string> = {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/fhir+json',
-        'mt-facilityid': this.facilityId,
+        'mt-facilityid': facilityId,
         'mt-correlationid': correlationId,
         'mt-appid': this.appId,
         ...customHeaders,
@@ -113,7 +123,7 @@ class AlexApiClient {
         method,
         endpoint,
         correlationId,
-        facilityId: this.facilityId,
+        facilityId,
       })
 
       // Make request
