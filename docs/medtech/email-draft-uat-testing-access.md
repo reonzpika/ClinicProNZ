@@ -2,15 +2,19 @@
 
 ---
 
-**Subject**: ClinicPro Images Widget Integration — UAT Testing Environment Access
+## ✅ Status: EMAIL SENT (2025-10-31)
+
+**Email sent to**: ALEX Support Team  
+**Subject**: ClinicPro Images Widget — UAT Testing & Media Metadata Schema  
+**Questions asked**:
+1. **Medtech UI Access for Testing** — Demo Evolution instance connected to ALEX UAT for end-to-end testing
+2. **Clinical Metadata Schema for POST Media** — Body site, laterality, view type, image classification fields/extensions; example JSON; DocumentReference auto-creation; encounter linkage
+
+**Awaiting response** (expected 3-5 business days)
 
 ---
 
-Hi [Medtech Contact Name / Defne],
-
-I hope this email finds you well. I'm following up on our Medtech ALEX API integration for the ClinicPro Images Widget, for which we have a non-commercial agreement in place.
-
-We've been reviewing the ALEX API Documentation (https://alexapidoc.medtechglobal.com/) and have successfully set up our OAuth client credentials and IP allow-listing. We're now planning our development and testing approach, and I have a few questions about how to test the full integration workflow, particularly the Medtech UI components.
+## Original Email Content (For Reference)
 
 ---
 
@@ -102,11 +106,10 @@ Looking ahead to production deployment:
 - Non-commercial agreement signed
 - IP allow-listing configured
 - OAuth client credentials received
-- ALEX API Documentation reviewed (all 12 sections)
+- ALEX API Documentation reviewed
 - Integration Gateway architecture designed
 
 📋 **In Progress**:
-- Reviewing ALEX API Section 10 (Custom Fields & Extensions) for FHIR extension URLs
 - Developing Integration Gateway (OAuth token service, FHIR client)
 
 🎯 **Next Steps** (pending your guidance):

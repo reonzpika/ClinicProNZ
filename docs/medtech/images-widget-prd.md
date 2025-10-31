@@ -7,7 +7,7 @@
 > - API endpoints, request/response schemas, and FHIR resource structures
 > - Required HTTP headers (`mt-facilityid`, `mt-correlationid`, `mt-appid`, `Content-Type: application/fhir+json`)
 > - Authentication flow and token management
-> - Custom FHIR extension URLs for clinical metadata (body site, laterality, view, type)
+> - Custom FHIR extension URLs for clinical metadata (awaiting examples from Medtech support)
 > - Error codes and troubleshooting guidance
 > 
 > **What this PRD provides**:
@@ -123,8 +123,8 @@
 > 
 > **Implementation**: Backend must map these Gateway endpoints to actual ALEX FHIR resources:
 > - `/attachments/commit` → `POST /FHIR/Media` (+ optional `POST /FHIR/Communication` for inbox routing)
-> - Metadata fields → FHIR extensions (URLs from ALEX docs Section 10)
-> - Refer to [ALEX API Documentation](https://alexapidoc.medtechglobal.com/) Section 8 for FHIR endpoint schemas.
+> - Metadata fields → FHIR extensions (awaiting schema from Medtech support — email sent 2025-10-31)
+> - Refer to [ALEX API Documentation](https://alexapidoc.medtechglobal.com/) for FHIR endpoint schemas.
 
 ---
 

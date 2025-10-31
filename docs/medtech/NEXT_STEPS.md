@@ -1,8 +1,8 @@
 # Next Steps — Medtech ALEX Integration
 
-**Date**: 2025-10-30  
-**Status**: ✅ Documentation Complete | 📧 Ready to Contact Medtech  
-**Next Phase**: Week 2 — Send Support Ticket & Start Gateway Development
+**Date**: 2025-10-31  
+**Status**: ✅ OAuth Validated | 📧 Awaiting Medtech Response  
+**Next Phase**: Week 2 — Gateway OAuth Service Implementation
 
 ---
 
@@ -24,84 +24,108 @@ All documentation has been updated to reflect **ALEX API Documentation as the so
    - Documented FHIR → REST translation responsibility
 
 3. **✅ ALEX API Review** (`alex-api-review-2025-10-30.md`)
-   - Comprehensive 12-section documentation structure
+   - Comprehensive documentation structure reviewed
    - Architecture details, headers, environments
    - Error handling, reference tables, navigation guide
-   - Identified image-specific needs in Section 10
+   - Identified need for clinical metadata examples
 
-4. **✅ IP Allow-listing** — Already configured by Medtech
+4. **✅ IP Allow-listing** — Already configured by Medtech for production (Vercel)
 
----
+5. **✅ OAuth Credentials** — Stored in Vercel environment variables (Oct 26)
+   - `MEDTECH_CLIENT_ID`: 7685ade3-f1ae-4e86-a398-fe7809c0fed1
+   - `MEDTECH_CLIENT_SECRET`: Configured ✅
+   - `MEDTECH_TENANT_ID`: 8a024e99-aba3-4b25-b875-28b0c0ca6096
+   - `MEDTECH_API_SCOPE`: api://bf7945a6-e812-4121-898a-76fea7c13f4d/.default
+   - `MEDTECH_FACILITY_ID`: F2N060-E (UAT)
 
-## 📋 Week 2: ALEX API Deep Dive (Current Phase)
-
-### Priority 1: Review ALEX Documentation Sections 9-10
-
-**Objective**: Extract technical details needed for Integration Gateway implementation.
-
-**Tasks**:
-
-1. **Section 9: Examples** — Look for:
-   - [ ] POST Media request example with image
-   - [ ] cURL command for Media upload
-   - [ ] Sample JSON payloads for clinical metadata
-   - [ ] Base64 encoding examples or Binary reference pattern
-
-2. **Section 10: Custom Fields & Extensions** — Extract:
-   - [ ] **Body site extension URL** (e.g., `http://alexapi.medtechglobal.com/fhir/StructureDefinition/bodySite`)
-   - [ ] **Laterality extension URL** and SNOMED CT codes
-   - [ ] **View type extension URL** and internal codes
-   - [ ] **Image type extension URL** and internal codes
-   - [ ] **Provenance extension** (`DocumentReference.relatesTo`) support for edited images
-
-3. **Section 11: Error Handling** — Document:
-   - [ ] All error codes and descriptions
-   - [ ] Create mapping table: FHIR error code → user-friendly message
-   - [ ] Retry strategies for transient errors (429, 503)
-
-4. **Section 12: Reference Tables** — Check for:
-   - [ ] Body site SNOMED CT codes list
-   - [ ] Laterality SNOMED CT codes list
-   - [ ] Any image-related coded value lists
-
-**Deliverable**: Create `alex-fhir-extensions-reference.md` with all extension URLs and code systems.
+6. **✅ OAuth Token Test** (2025-10-31)
+   - Token acquisition: ✅ **SUCCESS** (3599s expiry)
+   - FHIR API call: ⚠️ Timeout (remote environment IP not allow-listed - expected)
+   - Production environment (Vercel) should work correctly
 
 ---
 
-### Priority 2: Medtech Support Request
+## 📋 Week 2: Gateway Development (Current Phase)
 
-**Objective**: Clarify ambiguities in ALEX documentation.
+### Priority 1: ✅ Email Sent to Medtech Support (2025-10-31)
 
-**Questions to Submit** (via Medtech support ticket):
+**Questions Submitted**:
+1. **Medtech UI Access for Testing** — Demo Evolution instance for end-to-end testing
+2. **Clinical Metadata Schema** — Complete POST Media examples with:
+   - Body site field/extension (FHIR R4 `bodySite` or custom?)
+   - Laterality specification (within bodySite or separate?)
+   - View type field/extension
+   - Image classification field/extension
+   - DocumentReference auto-creation behaviour
+   - Encounter linkage mechanism
 
-1. **Client ID Clarification**:
-   - Quickstart uses: `7685ade3-f1ae-4e86-a398-fe7809c0fed1`
-   - API Doc examples show: `24b3d0e8-9096-4763-a1e5-4a4b13257a7a`
-   - **Question**: Are these different app registrations (test vs prod)? Which should ClinicPro use?
+**Expected Response**: 3-5 business days
 
-2. **POST Media Schema** (if not in Section 9):
-   - **Request**: Full POST Media example with:
-     - Image binary (base64 inline? Separate Binary POST? Multipart?)
-     - Clinical metadata extensions (body site, laterality, view, type)
-     - Encounter context linkage
-     - Expected response structure
+**While Waiting**: Proceed with Gateway OAuth service and foundation (not blocked)
 
-3. **DocumentReference Auto-creation**:
-   - **Question**: Does POST Media automatically create a DocumentReference, or must we POST both separately?
+---
 
-4. **File Size Limits**:
-   - **Question**: What is the server-side hard limit for Media/Binary? (PRD assumes <1MB; confirm sufficient)
+### Priority 2: ✅ OAuth Token Test Complete (2025-10-31)
 
-5. **Accepted MIME Types**:
-   - **Question**: Confirm accepted types: `image/jpeg`, `image/png`, `application/pdf`? Any others?
+**Results**:
+- ✅ Token acquisition: **SUCCESS** (Bearer token, 3599s expiry)
+- ⚠️ FHIR API call: Connection timeout (remote environment IP not allow-listed)
+- ✅ Production Vercel environment IP allow-listed (configured Oct 26)
+- ✅ Credentials validated and working
 
-6. **Inbox Routing**:
-   - **Question**: Can POST Media specify inbox recipient directly, or must we POST a separate Communication resource?
+**Confirmed**:
+- OAuth client credentials flow working correctly
+- Token expiry: ~60 minutes (cache at 55 min recommended)
+- Headers validated: `mt-facilityid`, `Content-Type: application/fhir+json`
 
-7. **Provenance**:
-   - **Question**: Does ALEX support `DocumentReference.relatesTo` with `code = transforms` for linking edited images to originals?
+---
 
-**Timeline**: Submit support ticket by end of Week 2, Day 2. Allow 3-5 business days for response.
+### Priority 3: ✅ Integration Gateway OAuth Service Complete (2025-10-31)
+
+**Status**: ✅ **COMPLETE** - Deploying to BFF
+
+**Completed**:
+- ✅ OAuth Token Service with 55-min cache (`/src/lib/services/medtech/oauth-token-service.ts`)
+- ✅ ALEX API Client with header injection (`/src/lib/services/medtech/alex-api-client.ts`)
+- ✅ Correlation ID Generator (UUID v4) (`/src/lib/services/medtech/correlation-id.ts`)
+- ✅ FHIR type definitions (`/src/lib/services/medtech/types.ts`)
+- ✅ Test endpoints (`/api/medtech/test`, `/api/medtech/token-info`)
+- ✅ BFF infrastructure identified on Lightsail (`api.clinicpro.co.nz`, IP: 13.236.58.12)
+- ✅ Comprehensive documentation (`/docs/medtech/GATEWAY_IMPLEMENTATION.md`)
+
+**Current**: Deploying OAuth service to Lightsail BFF (uses allow-listed IP)
+
+---
+
+### Priority 4: ✅ BFF Deployed - ⚠️ Firewall Issue (2025-10-31)
+
+**Status**: ✅ **BFF DEPLOYED** | ⚠️ **Blocked by Medtech Firewall**
+
+**Completed**:
+- ✅ OAuth service deployed to `/home/deployer/app/services/`
+- ✅ Environment variables configured (`.env`)
+- ✅ Dependencies installed (`dotenv`)
+- ✅ Systemd service restarted (`clinicpro-bff.service`)
+- ✅ OAuth token acquisition **WORKING** (198ms, token cached 55min)
+- ❌ ALEX API calls **TIMEOUT** after 10 seconds
+
+**Root Cause Identified**:
+```
+OAuth → login.microsoftonline.com:443 → ✅ Works (token acquired)
+ALEX API → alexapiuat.medtechglobal.com:443 (20.193.16.208) → ❌ Times out
+```
+
+**Network diagnostics**:
+- ✅ DNS resolution: Works
+- ✅ ICMP ping: Works (1.3ms latency)
+- ❌ HTTPS port 443: Connection timeout
+- **Conclusion**: Medtech firewall blocking Lightsail IP (13.236.58.12) from accessing ALEX API
+
+**Action Taken**:
+- ✅ Email sent to Medtech (2025-10-31) requesting IP allow-list update for ALEX API UAT
+- ⏳ Awaiting Medtech response (expected 3-5 business days)
+
+**Once Resolved**: BFF will work immediately (no code changes needed)
 
 ---
 
@@ -175,7 +199,7 @@ Purpose: Return hardcoded ALEX feature flags and dictionaries (as per PRD).
 
 Implementation:
 - Read from config file (no dynamic ALEX API call; ALEX doesn't provide capabilities endpoint)
-- Return laterality, body site, view, type coded value lists from Section 10/12
+- Return laterality, body site, view, type coded value lists (pending Medtech response)
 
 **2. POST /api/integrations/medtech/mobile/initiate**
 
@@ -201,9 +225,9 @@ Implementation:
 Purpose: Commit images to Medtech via ALEX FHIR API.
 
 Implementation:
-- Map PRD metadata to FHIR extensions (use URLs from Section 10)
+- Map PRD metadata to FHIR extensions (awaiting Medtech response for URLs)
 - POST to `https://alexapiuat.medtechglobal.com/FHIR/Media` with:
-  - Binary content (base64 inline or Binary reference — determined from Section 9)
+  - Binary content (base64 inline or Binary reference — awaiting confirmation)
   - Clinical metadata extensions (body site, laterality, view, type)
   - Encounter context
 - If inbox routing requested: POST separate Communication resource (or include in Media if supported)
@@ -216,7 +240,7 @@ File: `src/middleware/fhir-error-mapper.ts`
 
 Requirements:
 - Catch FHIR OperationOutcome responses
-- Map to user-friendly messages using Section 11 reference
+- Map to user-friendly messages (create mapping table from ALEX docs)
 - Include correlation ID in error response
 - Log full FHIR error for debugging
 
@@ -235,16 +259,16 @@ Requirements:
 - [ ] Implement POST /mobile/initiate (QR generation)
 - [ ] Implement POST /attachments/upload-initiate (file metadata handling)
 
-**Phase 3: FHIR Integration (Week 3, Days 4-5)**
-- [ ] Map PRD metadata schema to FHIR extensions (using Section 10 URLs)
+**Phase 3: FHIR Integration (Week 3, Days 4-5)** — *Blocked until Medtech response*
+- [ ] Map PRD metadata schema to FHIR extensions (awaiting Medtech response)
 - [ ] Implement POST /attachments/commit → POST /FHIR/Media
 - [ ] Test with sample JPEG (<1MB, EXIF stripped)
-- [ ] Verify image appears in Medtech encounter
+- [ ] Verify image appears in Medtech encounter (if demo instance available)
 
 **Phase 4: Advanced Workflows (Week 4)**
 - [ ] Implement inbox routing (POST Communication if needed)
 - [ ] Implement task creation (POST Task)
-- [ ] Implement error mapping middleware (Section 11 → user messages)
+- [ ] Implement error mapping middleware (FHIR errors → user messages)
 - [ ] Add request/response logging with correlation IDs
 
 ---
@@ -253,70 +277,47 @@ Requirements:
 
 - [ ] Token service caches token for 55 min; auto-refreshes before expiry
 - [ ] All ALEX API requests include correct headers (`mt-*` namespace)
-- [ ] POST Media successfully commits image to Medtech encounter
-- [ ] Clinical metadata (body site, laterality) is preserved in FHIR extensions
+- [ ] POST Media successfully commits image to Medtech encounter (blocked until Medtech response)
+- [ ] Clinical metadata (body site, laterality) is preserved in FHIR extensions (blocked until Medtech response)
 - [ ] Committed image appears in Medtech UI (verify with Medtech support if possible)
 - [ ] Error responses include correlation ID and user-friendly messages
 - [ ] Integration Gateway provides PRD-compliant REST API to frontend
+
+**Currently Achievable (Not Blocked)**:
+- [x] OAuth credentials validated (2025-10-31)
+- [x] Token service with 55-min cache implemented (2025-10-31)
+- [x] ALEX API client with header injection implemented (2025-10-31)
+- [x] Correlation ID generation implemented (2025-10-31)
+- [ ] Error mapping middleware implemented (basic version in API client)
+- [ ] GET Patient test successful from production environment (deploy next)
 
 ---
 
 ## 🚀 Quick Start (Right Now)
 
-### 1. Review ALEX Docs Section 10
+### 1. ✅ OAuth Testing Complete
 
-**Action**: Open your ALEX API documentation and navigate to Section 10 (Custom Fields & Extensions).
+**Results** (2025-10-31):
+- ✅ Token acquisition validated
+- ✅ Credentials working correctly
+- ✅ Ready to implement OAuth service in Gateway
 
-**Look for**:
-- Extension URLs for clinical metadata (body site, laterality, view, type)
-- Example payloads showing extension usage
-- SNOMED CT code lists for body site and laterality
+**Test artifacts**:
+- `/workspace/test-oauth.sh` - OAuth token test script
+- `/workspace/test-fhir-call.sh` - FHIR API test script
+- `/workspace/TEST_OAUTH_README.md` - Testing documentation
 
-**Document findings** in: `docs/alex-fhir-extensions-reference.md`
+### 2. ✅ Medtech Support Ticket Sent
 
-### 2. Test Token Acquisition
+**Status**: Email sent 2025-10-31
+**Awaiting**: Response on clinical metadata schema (3-5 business days)
 
-**Action**: Use updated quickstart doc to acquire access token.
+### 3. Start Gateway Development (Next Action)
 
-```bash
-# From medtech-alex-uat-quickstart.md Section 4
-CLIENT_SECRET='<your-secret>'
-curl -sS -X POST \
-  'https://login.microsoftonline.com/8a024e99-aba3-4b25-b875-28b0c0ca6096/oauth2/v2.0/token' \
-  -H 'Content-Type: application/x-www-form-urlencoded' \
-  --data-urlencode 'client_id=7685ade3-f1ae-4e86-a398-fe7809c0fed1' \
-  --data-urlencode "client_secret=${CLIENT_SECRET}" \
-  --data-urlencode 'grant_type=client_credentials' \
-  --data-urlencode 'scope=api://bf7945a6-e812-4121-898a-76fea7c13f4d/.default'
-```
-
-**Verify**: Token returned with 3600-second expiry.
-
-### 3. Test Simple FHIR Call
-
-**Action**: GET Patient to confirm connectivity.
-
-```bash
-TOKEN='<your-access-token>'
-curl -sS -X GET \
-  'https://alexapiuat.medtechglobal.com/FHIR/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|ZZZ0016' \
-  -H "Authorization: Bearer ${TOKEN}" \
-  -H 'Content-Type: application/fhir+json' \
-  -H 'mt-facilityid: F2N060-E' \
-  -H "mt-correlationid: $(uuidgen)" \
-  -H 'mt-appid: clinicpro-images-widget'
-```
-
-**Verify**: Patient resource returned (FHIR Bundle with entry array).
-
-### 4. Submit Medtech Support Ticket
-
-**Action**: Prepare and submit support ticket with 7 questions (see Priority 2 above).
-
-**Include**:
-- Reference to ClinicPro Images Widget integration
-- Your client ID and facility ID
-- Specific questions about POST Media, extensions, and inbox routing
+**Ready to build**:
+- OAuth Token Service (55-min cache, auto-refresh)
+- ALEX API Client (header injection, correlation IDs)
+- Gateway API endpoints (abstracts FHIR complexity)
 
 ---
 
@@ -328,25 +329,61 @@ Your docs folder now contains:
 docs/
 └── medtech/
     ├── README.md                                  # Overview and quick links
-    ├── DEVELOPMENT_FLOW_OVERVIEW.md               # High-level development stages
     ├── NEXT_STEPS.md                              # This file (current action plan)
+    ├── GATEWAY_IMPLEMENTATION.md                  # ⭐ Gateway implementation guide (NEW - 2025-10-31)
     ├── alex-api-review-2025-10-30.md              # Comprehensive ALEX API reference
-    ├── medtech-alex-uat-quickstart.md             # Updated with correct headers, base URLs
+    ├── medtech-alex-uat-quickstart.md             # OAuth setup, headers, base URLs
     ├── images-widget-prd.md                       # PRD with ALEX source of truth disclaimer
-    ├── alex-media-api-findings.md                 # ⭐ Critical gap analysis (NEW)
-    ├── email-draft-uat-testing-access.md          # Email template (updated with 7 questions)
+    ├── email-draft-uat-testing-access.md          # Email template (✅ SENT 2025-10-31)
+    ├── OAUTH_TEST_RESULTS.md                      # OAuth test results (2025-10-31)
+    ├── CONSOLIDATION_LOG.md                       # Documentation consolidation history
     └── ORGANIZATION_SUMMARY.md                    # Folder organization summary
 ```
+
+**Implementation** (2025-10-31):
+```
+Vercel (Next.js):
+  src/lib/services/medtech/
+  ├── oauth-token-service.ts      # OAuth token caching (55-min TTL)
+  ├── alex-api-client.ts           # ALEX API client with header injection
+  ├── correlation-id.ts            # Correlation ID utilities
+  ├── types.ts                     # FHIR R4 type definitions
+  └── index.ts                     # Main exports
+
+  app/api/(integration)/medtech/
+  ├── test/route.ts                # Test endpoint (FHIR connectivity)
+  └── token-info/route.ts          # Token info endpoint (monitoring)
+
+Lightsail BFF (Node.js/Express) - Deploying:
+  /home/deployer/app/
+  ├── services/
+  │   ├── oauth-token-service.js  # OAuth service (JavaScript version)
+  │   └── alex-api-client.js       # ALEX client (JavaScript version)
+  ├── index.js                     # Express server
+  ├── .env                         # Environment variables
+  └── package.json                 # Dependencies
+
+  Domain: https://api.clinicpro.co.nz (13.236.58.12 - allow-listed)
+```
+
+**Test Scripts** (workspace root):
+- `test-oauth.sh` - OAuth token acquisition test
+- `test-fhir-call.sh` - FHIR API call test
+- `TEST_OAUTH_README.md` - Testing guide
 
 ---
 
 ## 🎯 Your Immediate Actions
 
-1. **Review Section 10** of ALEX API docs — extract extension URLs
-2. **Test token acquisition** — verify connectivity with updated headers
-3. **Submit Medtech support ticket** — clarify POST Media schema and extensions
-4. **Decide on Gateway tech stack** — Node.js/Express? Next.js API routes? Separate service?
-5. **Set up OAuth token service** — implement 55-min cache with auto-refresh
+1. ✅ **Medtech support ticket sent** (2025-10-31) — awaiting response on metadata schema
+2. ✅ **OAuth token test complete** (2025-10-31) — credentials validated
+3. ✅ **Gateway OAuth service implemented** (2025-10-31) — TypeScript/Next.js
+4. ✅ **BFF infrastructure found** (2025-10-31) — Lightsail with static IP
+5. ✅ **OAuth service deployed to BFF** (2025-10-31) — working successfully
+6. ✅ **Firewall issue identified** (2025-10-31) — ALEX API port 443 blocked
+7. ✅ **Email sent to Medtech** (2025-10-31) — requesting ALEX API firewall update
+8. ⏳ **Wait for Medtech** — IP allow-list update for ALEX API (3-5 days)
+9. **Build frontend with mock backend** — not blocked; can proceed in parallel
 
 ---
 

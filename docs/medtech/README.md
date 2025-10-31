@@ -42,24 +42,38 @@
 
 ### ✅ **Completed**
 - Non-commercial agreement signed with Medtech
-- IP allow-listing configured by Medtech
-- OAuth credentials received
+- IP allow-listing configured by Medtech (production Vercel environment)
+- OAuth credentials configured in Vercel env vars (Oct 26)
+- OAuth token acquisition tested and validated (Oct 31)
 - ALEX API documentation reviewed
 - POST Media endpoint confirmed (supports images)
 - Documentation consolidated
 
 ### 🔄 **In Progress**
-- Awaiting Medtech response on:
-  - UAT testing environment access
-  - Widget launch mechanism
-  - Clinical metadata schema (body site, laterality, view, type)
-  - Full POST Media example
+- ✅ **Integration Gateway OAuth Service Complete** (Oct 31)
+  - OAuth token service with 55-min cache
+  - ALEX API client with header injection
+  - Correlation ID generation
+  - Test endpoints for connectivity validation
+- ✅ **BFF Deployed to Lightsail** (Oct 31)
+  - Location: `api.clinicpro.co.nz` (Static IP: 13.236.58.12)
+  - Systemd service running (`clinicpro-bff.service`)
+  - OAuth working ✅ (token acquisition successful)
+  - **BLOCKED**: ALEX API port 443 times out (Medtech firewall)
+- ⏳ **Awaiting Medtech response** (emails sent Oct 31) on:
+  1. **IP allow-listing for ALEX API** (Critical - blocking BFF)
+  2. UAT testing environment access
+  3. Widget launch mechanism
+  4. Clinical metadata schema (body site, laterality, view, type)
+  5. Full POST Media example
+- Expected response: 3-5 business days
 
 ### 📋 **Next**
-- Send support ticket to Medtech (email draft ready)
-- Test OAuth token acquisition
-- Start Integration Gateway development
-- Build frontend UI with mock backend
+- ⏳ Wait for Medtech to update ALEX API firewall allow-list (IP: 13.236.58.12)
+- ✅ Once unblocked: Test BFF → ALEX API connectivity
+- Update Vercel to call BFF instead of ALEX directly
+- Build frontend UI with mock backend (not blocked)
+- Implement POST Media endpoint (blocked until Medtech response)
 
 ---
 
