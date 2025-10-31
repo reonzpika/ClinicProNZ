@@ -11,7 +11,7 @@
  */
 
 import { NextResponse } from 'next/server'
-import { oauthTokenService } from '@/lib/services/medtech'
+import { oauthTokenService } from '@/src/lib/services/medtech'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'

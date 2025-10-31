@@ -20,8 +20,8 @@ import {
   AlexApiError,
   generateCorrelationId,
   oauthTokenService,
-} from '@/lib/services/medtech'
-import type { FhirBundle, FhirPatient } from '@/lib/services/medtech/types'
+} from '@/src/lib/services/medtech'
+import type { FhirBundle, FhirPatient } from '@/src/lib/services/medtech/types'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'

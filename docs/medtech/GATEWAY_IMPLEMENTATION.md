@@ -32,7 +32,7 @@ Integration Gateway services for Medtech ALEX API integration:
 
 **Usage**:
 ```typescript
-import { oauthTokenService } from '@/lib/services/medtech'
+import { oauthTokenService } from '@/src/lib/services/medtech'
 
 // Get access token (cached or fresh)
 const token = await oauthTokenService.getAccessToken()
@@ -74,8 +74,8 @@ MEDTECH_API_SCOPE=api://bf7945a6-e812-4121-898a-76fea7c13f4d/.default
 
 **Usage**:
 ```typescript
-import { alexApiClient, AlexApiError } from '@/lib/services/medtech'
-import type { FhirBundle, FhirPatient } from '@/lib/services/medtech/types'
+import { alexApiClient, AlexApiError } from '@/src/lib/services/medtech'
+import type { FhirBundle, FhirPatient } from '@/src/lib/services/medtech/types'
 
 // GET request
 try {
@@ -131,7 +131,7 @@ MEDTECH_FACILITY_ID=F2N060-E
 
 **Usage**:
 ```typescript
-import { generateCorrelationId, getOrGenerateCorrelationId } from '@/lib/services/medtech'
+import { generateCorrelationId, getOrGenerateCorrelationId } from '@/src/lib/services/medtech'
 
 // Generate new correlation ID
 const correlationId = generateCorrelationId()
@@ -163,7 +163,7 @@ export async function GET(request: NextRequest) {
 
 **Usage**:
 ```typescript
-import type { FhirMedia, FhirCodeableConcept } from '@/lib/services/medtech/types'
+import type { FhirMedia, FhirCodeableConcept } from '@/src/lib/services/medtech/types'
 
 const bodySite: FhirCodeableConcept = {
   coding: [{
