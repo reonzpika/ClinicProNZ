@@ -785,3 +785,209 @@ The ALEX API documentation at https://alexapidoc.medtechglobal.com/ is built usi
 3. Client ID discrepancy resolution
 
 **Can Proceed**: Yes — full integration development can begin immediately
+
+---
+
+## Critical Gap Analysis: Media API & Clinical Metadata
+
+**Date**: 2025-10-30  
+**Status**: ⚠️ **Clinical metadata schema undocumented**
+
+### **✅ What ALEX Documentation Provides**
+
+**POST Media Endpoint**: `POST https://alexapiuat.medtechglobal.com/FHIR/Media`  
+**Added**: v2.2 (August 2024) - "Added image file support for POST Media operation"
+
+**Basic Example from ALEX Docs**:
+```json
+{
+  "resourceType": "Media",
+  "status": "completed",
+  "identifier": [{"value": "Media Image Document no 678999"}],
+  "subject": {"reference": "Patient/..."},
+  "createdDateTime": "2021-11-30T17:09:32+13:00",
+  "operator": {"reference": "Practitioner/..."},
+  "content": {
+    "contentType": "application/pdf",
+    "data": "<base64-encoded-binary-data>"
+  }
+}
+```
+
+**Confirmed**:
+- ✅ POST Media exists and supports images
+- ✅ Base64 inline data format
+- ✅ Patient and operator references
+- ✅ Content type specification
+
+### **❌ What's Missing from Documentation**
+
+**Clinical Metadata NOT Documented**:
+1. ❌ **Body Site** — No extension URL or field shown
+2. ❌ **Laterality** — No extension URL or field shown
+3. ❌ **View Type** (Close-up, Dermoscopy, Other) — Not shown
+4. ❌ **Image Type** (Lesion, Rash, Wound, Infection) — Not shown
+5. ❌ **Clinical Date/Time Override** — Not shown
+6. ❌ **Provenance / DocumentReference.relatesTo** — Not shown
+7. ❌ **Encounter Linkage** — Mechanism not documented
+
+**Custom Extensions Documented** (NOT image-related):
+- ✅ A/C Holder Extension (Patient resource only)
+- ✅ WINZ No Extension (Patient resource only)
+- ✅ Sex at Birth Extension (Patient resource only)
+- ✅ Country/Visa Extensions (Patient resource only)
+
+**Conclusion**: All documented custom extensions are for **Patient resource**, not Media/DocumentReference.
+
+### **💡 Key Insight: Standard FHIR R4 Fields**
+
+FHIR R4 Media resource specification (https://hl7.org/fhir/R4/media.html) includes **standard fields** that may work:
+
+```json
+{
+  "resourceType": "Media",
+  "bodySite": {  // ⬅️ STANDARD FHIR FIELD (0..1)
+    "coding": [{
+      "system": "http://snomed.info/sct",
+      "code": "40983000",
+      "display": "Forearm"
+    }]
+  },
+  "view": {  // ⬅️ STANDARD FHIR FIELD (0..1)
+    "coding": [{
+      "system": "http://snomed.info/sct",
+      "code": "...",
+      "display": "Close-up"
+    }]
+  },
+  "modality": {  // Could use for image type?
+    "coding": [{
+      "system": "...",
+      "code": "...",
+      "display": "..."
+    }]
+  }
+}
+```
+
+**Theory**: ALEX likely accepts **standard FHIR R4 fields** (`bodySite`, `view`, `modality`), not custom extensions. The Postman documentation just shows a minimal example.
+
+**Laterality**: Typically encoded within `bodySite` using SNOMED CT post-coordination (e.g., "Left forearm") or as HL7 NZ standard extension.
+
+### **🤔 Two Scenarios**
+
+**Scenario A: Standard FHIR Fields Work** (Most Likely ✅)
+- Use `Media.bodySite` (standard field)
+- Use `Media.view` (standard field)
+- Laterality: encode in bodySite coding or use HL7 NZ extension
+- Image type: use `Media.modality` or `Media.type`
+- **No custom extensions needed**
+
+**Scenario B: ALEX Requires Custom Extensions** (Less Likely ❌)
+- Medtech has custom extensions like Patient resource (`http://alexapi.medtechglobal.com/fhir/StructureDefinition/...`)
+- Need extension URLs from Medtech support
+- **Why unlikely**: Standard FHIR fields should suffice; custom extensions typically for PMS-specific data
+
+### **📋 Critical Questions for Medtech Support**
+
+**Must ask before implementing** (included in support ticket):
+
+1. **Body Site**:
+   > Does POST Media accept the standard FHIR R4 `bodySite` field (CodeableConcept with SNOMED CT codes)? Or custom extension? If custom, provide extension URL.
+
+2. **Laterality**:
+   > How to specify laterality (Right, Left, Bilateral, N/A)?
+   > - SNOMED CT qualifier within bodySite (e.g., 'Left forearm')?
+   > - Separate laterality field/extension?
+   > - HL7 NZ laterality extension?
+   > Please provide example JSON.
+
+3. **View Type**:
+   > Can we use standard FHIR `Media.view` field for clinical views (close-up, dermoscopy)? If so, what code system? If not, provide custom extension URL.
+
+4. **Image Classification**:
+   > How to categorize image types (Lesion, Rash, Wound, Infection)?
+   > - `Media.modality` field?
+   > - `Media.type` field (currently photo/video/audio)?
+   > - Custom extension (provide URL and code system)?
+
+5. **Full POST Media Schema**:
+   > Provide complete example showing all supported optional fields:
+   > - Body site with laterality
+   > - Image type/classification
+   > - View type
+   > - Clinical date/time override
+   > - Encounter linkage mechanism
+
+6. **DocumentReference Auto-Creation**:
+   > When we POST Media, does ALEX auto-create a linked DocumentReference, or must we POST both separately?
+
+7. **Encounter Linkage**:
+   > How to link Media to active encounter? (Media.encounter field, extension, or implied from context?)
+
+### **🚀 Recommended Approach**
+
+**While waiting for Medtech response** (3-5 business days):
+
+**Option 1: Test Standard FHIR Fields** (Low Risk)
+Try POST Media with standard `bodySite` to UAT:
+```json
+{
+  "resourceType": "Media",
+  "status": "completed",
+  "type": "photo",
+  "bodySite": {
+    "coding": [{
+      "system": "http://snomed.info/sct",
+      "code": "40983000",
+      "display": "Forearm"
+    }],
+    "text": "Left forearm"
+  },
+  "subject": {"reference": "Patient/<test-id>"},
+  "content": {
+    "contentType": "image/jpeg",
+    "data": "<small-test-image-base64>"
+  }
+}
+```
+
+**Expected Outcomes**:
+- ✅ **201 Created**: Standard fields accepted → proceed with implementation
+- ❌ **400 Bad Request**: Field not supported → check error, await Medtech guidance
+- ❌ **422 Unprocessable**: Validation error → may need custom approach
+
+**Option 2: Parallel Development** (Recommended)
+- ✅ Build OAuth token service (not blocked)
+- ✅ Build frontend UI with mock backend (not blocked)
+- ✅ Design metadata capture UX (not blocked)
+- ❌ Wait for Medtech response before finalizing FHIR mapping
+
+### **📊 Impact Assessment**
+
+**Not a Blocker for**:
+- Integration Gateway OAuth service
+- Frontend development
+- UX design for metadata chips
+- Image compression implementation
+- Token caching and correlation ID generation
+
+**Blocks**:
+- Final FHIR metadata mapping
+- POST Media implementation with clinical metadata
+- End-to-end testing with real images
+- Production deployment
+
+**Timeline Impact**: +3-5 days wait time for Medtech response (already factored into plan)
+
+### **✅ Action Items**
+
+1. **Send support ticket** with 7 questions (email draft ready: `email-draft-uat-testing-access.md`)
+2. **Optional**: Test standard FHIR fields in UAT after token setup
+3. **Continue**: OAuth service and frontend development in parallel
+4. **Wait**: For Medtech response before finalizing Gateway metadata mapping
+5. **Update**: PRD API contracts after Medtech confirms schema
+
+---
+
+**Conclusion**: ALEX supports POST Media for images (confirmed), but clinical metadata schema is undocumented. Standard FHIR R4 fields likely work. Medtech support ticket ready to send for confirmation.
