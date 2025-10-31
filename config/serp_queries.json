@@ -1,0 +1,10 @@
+{
+  "engine": "google",
+  "num": 50,
+  "tbs": "qdr:d",
+  "queries": [
+    "site:linkedin.com/posts (AI OR 'artificial intelligence') (health OR 'primary care' OR GP) (New Zealand OR Aotearoa)",
+    "site:linkedin.com/in (AI OR 'artificial intelligence') (RNZCGP OR 'Te Whatu Ora' OR PHO)",
+    "(AI OR 'artificial intelligence') (health OR 'primary care' OR GP) (New Zealand OR Aotearoa)"
+  ]
+}

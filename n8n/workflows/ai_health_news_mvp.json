@@ -1,0 +1,304 @@
+{
+  "name": "AI Health News for NZ GPs - MVP",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            { "mode": "everyDay", "hour": 6, "minute": 0 }
+          ]
+        }
+      },
+      "id": "Cron",
+      "name": "Cron 6am NZ",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 2,
+      "position": [80, 300]
+    },
+    {
+      "parameters": {
+        "feedUrl": [
+          "https://www.hinz.org.nz/news/rss.aspx",
+          "https://www.health.govt.nz/about-ministry/news-media/media-releases/rss.xml",
+          "https://www.rnzcgp.org.nz/RNZCGP/Public/News/News/RNZCGP/News/News.aspx?rss=1",
+          "https://www.privacy.org.nz/blog/rss/",
+          "https://www.hdc.org.nz/news-resources/news/rss/",
+          "https://www.tewhatuora.govt.nz/news/rss.xml"
+        ],
+        "options": {"disableDotNotation": true}
+      },
+      "id": "RSS",
+      "name": "RSS Read",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 2,
+      "position": [320, 140]
+    },
+    {
+      "parameters": {
+        "download": false,
+        "options": {
+          "mailbox": "INBOX",
+          "customEmailRules": {"search": {"label": "={{$env.IMAP_LABEL}}"}}
+        }
+      },
+      "id": "IMAP",
+      "name": "Gmail IMAP (Alerts)",
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2,
+      "position": [320, 300],
+      "credentials": {"imap":{"id":"<set-in-n8n>","name":"Gmail IMAP"}}
+    },
+    {
+      "parameters": {
+        "url": "={{$env.SERPER_API_URL}}",
+        "options": {"responseFormat": "json"},
+        "queryParametersUi": {
+          "parameter": [
+            {"name": "q", "value": "site:linkedin.com/posts (AI OR 'artificial intelligence') (health OR 'primary care' OR GP) (New Zealand OR Aotearoa)"},
+            {"name": "num", "value": "50"},
+            {"name": "tbs", "value": "qdr:d"}
+          ]
+        },
+        "headerParametersUi": {
+          "parameter": [
+            {"name": "X-API-KEY", "value": "={{$env.SERPER_API_KEY}}"},
+            {"name": "Content-Type", "value": "application/json"}
+          ]
+        }
+      },
+      "id": "Serper",
+      "name": "Serper Search (LinkedIn)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [320, 460]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Normalise RSS, IMAP (Alerts), and Serper items to a common shape\n// Input may arrive on different inputs; merge by presence checks.\nconst items = [];\nfor (const item of itemsJson) {\n  // This node expects upstream Merge; placeholder.\n}\nreturn items;"
+      },
+      "id": "Normalize",
+      "name": "Normalize Items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [560, 300]
+    },
+    {
+      "parameters": {"mode": "passThrough"},
+      "id": "Merge",
+      "name": "Merge Candidates",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Compute canonical_url, content_hash, and do simple dedupe via static data\nconst crypto = require('crypto');\nconst seen = this.getWorkflowStaticData('global').seen || {};\nconst out = [];\nfor (const item of items) {\n  const title = item.json.title || item.json.headline || '';\n  const url = item.json.url || item.json.link || '';\n  const canonical = url.replace(/([?#].*)$/, '');\n  const hash = crypto.createHash('sha256').update(title + canonical).digest('hex');\n  if (!seen[hash]) {\n    seen[hash] = Date.now();\n    out.push({ json: { ...item.json, title, sourceUrl: url, canonicalUrl: canonical, contentHash: hash } });\n  }\n}\nthis.getWorkflowStaticData('global').seen = seen;\nreturn out;"
+      },
+      "id": "Dedupe",
+      "name": "Dedupe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [760, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$json.canonicalUrl || $json.sourceUrl}}",
+        "options": {
+          "responseFormat": "json",
+          "fullResponse": true
+        }
+      },
+      "id": "OGFetch",
+      "name": "HTTP: Fetch OG",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [960, 360]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Parse OpenGraph tags from HTML if response is text/html\nconst res = $input.all()[0].json;\nconst body = $input.all()[0].binary ? Buffer.from($input.all()[0].binary.data, 'base64').toString('utf8') : res.body || '';\nconst og = {};\nconst meta = body.match(/<meta[^>]+>/g) || [];\nfor (const tag of meta) {\n  const prop = /property=\"([^\"]+)\"/.exec(tag)?.[1] || /name=\"([^\"]+)\"/.exec(tag)?.[1];\n  const content = /content=\"([^\"]*)\"/.exec(tag)?.[1];\n  if (prop && content && prop.startsWith('og:')) og[prop] = content;\n}\nreturn [{ json: { ...$json, ogTitle: og['og:title'], ogImage: og['og:image'], ogSite: og['og:site_name'] } }];"
+      },
+      "id": "OGParse",
+      "name": "Parse OG",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1160, 360]
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "operation": "create",
+        "model": "gpt-4o-mini",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Classify relevance for NZ general practice. Return JSON: {\\"isRelevant\\":bool,\\"nzSignal\\":0..1,\\"categories\\":[…]}"
+          },
+          {
+            "role": "user",
+            "content": "={{$json.title}}\n\n{{$json.snippet || ''}}\n\nURL: {{$json.canonicalUrl}}"
+          }
+        ],
+        "additionalFields": {"temperature": 0}
+      },
+      "id": "Classify",
+      "name": "LLM Classify",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 4,
+      "position": [960, 220]
+    },
+    {
+      "parameters": {
+        "conditions": {"boolean": [{"value1": "={{$json.classification.isRelevant}}", "operation": "isTrue"}]}
+      },
+      "id": "IFRelevant",
+      "name": "IF Relevant",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1160, 220]
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "operation": "create",
+        "model": "gpt-4o-mini",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Summarise in 120–160 words with NZ spelling; include what happened, why it matters for NZ GPs, risks, and an actionable takeaway."
+          },
+          {"role": "user", "content": "={{$json.title}}\n\n{{$json.snippet || ''}}\n\nURL: {{$json.canonicalUrl}}"}
+        ],
+        "additionalFields": {"temperature": 0.2}
+      },
+      "id": "Summarize",
+      "name": "LLM Summarise",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 4,
+      "position": [1360, 220]
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "operation": "create",
+        "model": "gpt-4o-mini",
+        "messages": [
+          {"role": "system", "content": "Return ONLY a JSON object with keys tags (3-6 items from ['clinical practice','policy/regulation','privacy','data governance','vendor tools','patient safety','workforce','equity','telehealth','PHO']) and topicFit (0..1)."},
+          {"role": "user", "content": "Title: {{$json.title}}\nSummary: {{$json.summary || ''}}"}
+        ],
+        "additionalFields": {"temperature": 0}
+      },
+      "id": "Tags",
+      "name": "LLM Tags",
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 4,
+      "position": [1360, 380]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Score and tag; mark status\nconst score = 0.5 * 1 /* recency placeholder */ + 0.25 * ($json.classification?.nzSignal || 0) + 0.25;\nconst autoPublish = score >= 0.75;\nreturn [{ json: { ...$json, score, status: autoPublish ? 'published' : 'draft' } }];"
+      },
+      "id": "Score",
+      "name": "Score & Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "conditions": { "string": [ { "value1": "={{$json.status}}", "operation": "equal", "value2": "draft" } ] }
+      },
+      "id": "IFNeedsReview",
+      "name": "IF Needs Review",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1760, 220]
+    },
+    {
+      "parameters": {
+        "owner": "={{$env.GITHUB_OWNER}}",
+        "repository": "={{$env.GITHUB_REPO}}",
+        "filePath": "={{$env.GITHUB_CONTENT_PATH}}"
+      },
+      "id": "GitHubGet",
+      "name": "GitHub: Get Feed",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 2,
+      "position": [1760, 360],
+      "credentials": {"githubApi":{"id":"<set-in-n8n>","name":"GitHub Token"}}
+    },
+    {
+      "parameters": {
+        "functionCode": "// Merge current item into existing feed JSON\nlet feed;\ntry {\n  feed = JSON.parse($json.fileContent || '{\\"lastUpdated\\":null,\\"items\\":[]}');\n} catch {\n  feed = { lastUpdated: null, items: [] };\n}\nconst item = {\n  id: $json.contentHash,\n  title: $json.title,\n  summaryMarkdown: $json.summary || $json.snippet || '',\n  sourceUrl: $json.sourceUrl,\n  canonicalUrl: $json.canonicalUrl,\n  sourceName: $json.ogSite || $json.source || '',\n  authorName: $json.author || '',\n  postedAt: $json.publishedAt || null,\n  imageUrl: $json.ogImage || null,\n  tags: ($json.tags && $json.tags.tags) || [],\n  categories: ($json.classification && $json.classification.categories) || [],\n  score: $json.score || 0,\n  nzSignal: ($json.classification && $json.classification.nzSignal) || 0,\n  status: $json.status || 'draft'\n};\nconst byId = new Map(feed.items.map(i=>[i.id,i]));\nbyId.set(item.id, item);\nfeed.items = Array.from(byId.values());\nfeed.lastUpdated = new Date().toISOString();\nreturn [{ json: { feedContent: JSON.stringify(feed, null, 2) } }];"
+      },
+      "id": "MergeFeed",
+      "name": "Merge Feed JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1960, 360]
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "owner": "={{$env.GITHUB_OWNER}}",
+        "repository": "={{$env.GITHUB_REPO}}",
+        "filePath": "={{$env.GITHUB_CONTENT_PATH}}",
+        "fileContent": "={{$json.feedContent}}",
+        "commitMessage": "AI Health News: update feed ({{$now}})"
+      },
+      "id": "GitHubPut",
+      "name": "GitHub: Commit Feed",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 2,
+      "position": [2160, 360],
+      "credentials": {"githubApi":{"id":"<set-in-n8n>","name":"GitHub Token"}}
+    }
+    {
+      "parameters": {
+        "channel": "={{$env.SLACK_REVIEW_CHANNEL_ID}}",
+        "text": "Review needed: {{$json.title}}\\n{{$json.canonicalUrl}}"
+      },
+      "id": "SlackReview",
+      "name": "Slack: Review Request",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [1960, 160],
+      "credentials": { "slackApi": { "id": "<set-in-n8n>", "name": "Slack Bot" } }
+    },
+    {
+      "parameters": {
+        "channel": "={{$env.SLACK_SUMMARY_CHANNEL_ID}}",
+        "text": "Published: {{$json.title}} – {{$json.canonicalUrl}}"
+      },
+      "id": "SlackPublished",
+      "name": "Slack: Published",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [1960, 280],
+      "credentials": { "slackApi": { "id": "<set-in-n8n>", "name": "Slack Bot" } }
+    }
+  ],
+  "connections": {
+    "Cron 6am NZ": {"main": [[{"node": "RSS Read", "type": "main", "index": 0}, {"node": "Gmail IMAP (Alerts)", "type": "main", "index": 0}, {"node": "Serper Search (LinkedIn)", "type": "main", "index": 0}]]},
+    "RSS Read": {"main": [[{"node": "Merge Candidates", "type": "main", "index": 0}]]},
+    "Gmail IMAP (Alerts)": {"main": [[{"node": "Merge Candidates", "type": "main", "index": 1}]]},
+    "Serper Search (LinkedIn)": {"main": [[{"node": "Merge Candidates", "type": "main", "index": 2}]]},
+    "Merge Candidates": {"main": [[{"node": "Normalize Items", "type": "main", "index": 0}]]},
+    "Normalize Items": {"main": [[{"node": "Dedupe", "type": "main", "index": 0}]]},
+    "Dedupe": {"main": [[{"node": "HTTP: Fetch OG", "type": "main", "index": 0}]]},
+    "HTTP: Fetch OG": {"main": [[{"node": "Parse OG", "type": "main", "index": 0}]]},
+    "Parse OG": {"main": [[{"node": "LLM Classify", "type": "main", "index": 0}]]},
+    "LLM Classify": {"main": [[{"node": "IF Relevant", "type": "main", "index": 0}]]},
+    "IF Relevant": {"main": [[{"node": "LLM Summarise", "type": "main", "index": 0}]]},
+    "LLM Summarise": {"main": [[{"node": "LLM Tags", "type": "main", "index": 0}]]},
+    "LLM Tags": {"main": [[{"node": "Score & Status", "type": "main", "index": 0}]]},
+    "Score & Status": {"main": [[{"node": "IF Needs Review", "type": "main", "index": 0}]]},
+    "IF Needs Review": {"main": [[{"node": "Slack: Review Request", "type": "main", "index": 0}]], "else": [[{"node": "Slack: Published", "type": "main", "index": 0}]]},
+    "Slack: Published": {"main": [[{"node": "GitHub: Get Feed", "type": "main", "index": 0}]]},
+    "GitHub: Get Feed": {"main": [[{"node": "Merge Feed JSON", "type": "main", "index": 0}]]},
+    "Merge Feed JSON": {"main": [[{"node": "GitHub: Commit Feed", "type": "main", "index": 0}]]}
+  },
+  "pinData": {},
+  "staticData": {},
+  "settings": {"timezone": "={{$env.N8N_TIMEZONE || 'Pacific/Auckland'}}"}
+}
