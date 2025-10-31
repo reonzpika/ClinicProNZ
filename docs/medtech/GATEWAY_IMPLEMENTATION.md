@@ -538,6 +538,11 @@ curl https://api.clinicpro.co.nz/api/medtech/test
 
 **Expected**: ✅ Success (uses allow-listed IP 13.236.58.12)
 
+**Current Status** (2025-10-31):
+- ✅ OAuth working: Token acquired successfully
+- ❌ ALEX API blocked: Port 443 timeout
+- ⏳ Awaiting Medtech firewall update
+
 ---
 
 ## Next Steps
@@ -572,14 +577,47 @@ curl https://api.clinicpro.co.nz/api/medtech/test
 
 ---
 
+## Troubleshooting
+
+### Issue: "fetch failed" / Connection Timeout
+
+**Symptoms**:
+- OAuth works (token acquired)
+- ALEX API calls timeout after 10 seconds
+- Error: "fetch failed"
+
+**Diagnosis**:
+```bash
+# Test DNS
+nslookup alexapiuat.medtechglobal.com
+
+# Test network connectivity
+ping alexapiuat.medtechglobal.com
+
+# Test HTTPS port 443
+curl -v --max-time 5 https://alexapiuat.medtechglobal.com/FHIR
+```
+
+**If ping works but curl times out**: Medtech firewall blocking your IP
+
+**Solution**: Contact Medtech to update IP allow-list for ALEX API UAT
+
+**Current Status** (2025-10-31):
+- Issue identified: Medtech firewall blocking port 443 to ALEX API
+- Email sent to Medtech requesting firewall update
+- Awaiting response (3-5 business days)
+
+---
+
 ## Security Notes
 
 ### ✅ Production Security
 
-- Credentials stored in Vercel environment variables ✅
+- Credentials stored in Lightsail `.env` file (protected) ✅
 - Tokens cached server-side only (never exposed to browser) ✅
 - Correlation IDs logged for audit trail ✅
 - Token prefix logged (first 10 chars only) ✅
+- Systemd service runs as `deployer` user (non-root) ✅
 
 ### ⚠️ Future Improvements
 

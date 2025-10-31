@@ -55,20 +55,22 @@
   - ALEX API client with header injection
   - Correlation ID generation
   - Test endpoints for connectivity validation
-- **Deploying to Lightsail BFF** (Oct 31 - Current)
-  - BFF infrastructure: `api.clinicpro.co.nz` (Static IP: 13.236.58.12)
-  - Using allow-listed IP to call ALEX API
-  - Vercel → BFF → ALEX architecture
-- Awaiting Medtech response (email sent Oct 31) on:
-  - UAT testing environment access
-  - Widget launch mechanism
-  - Clinical metadata schema (body site, laterality, view, type)
-  - Full POST Media example
+- ✅ **BFF Deployed to Lightsail** (Oct 31)
+  - Location: `api.clinicpro.co.nz` (Static IP: 13.236.58.12)
+  - Systemd service running (`clinicpro-bff.service`)
+  - OAuth working ✅ (token acquisition successful)
+  - **BLOCKED**: ALEX API port 443 times out (Medtech firewall)
+- ⏳ **Awaiting Medtech response** (emails sent Oct 31) on:
+  1. **IP allow-listing for ALEX API** (Critical - blocking BFF)
+  2. UAT testing environment access
+  3. Widget launch mechanism
+  4. Clinical metadata schema (body site, laterality, view, type)
+  5. Full POST Media example
 - Expected response: 3-5 business days
 
 ### 📋 **Next**
-- Deploy OAuth service to Lightsail BFF (uses allow-listed IP)
-- Test from BFF: `https://api.clinicpro.co.nz/api/medtech/test`
+- ⏳ Wait for Medtech to update ALEX API firewall allow-list (IP: 13.236.58.12)
+- ✅ Once unblocked: Test BFF → ALEX API connectivity
 - Update Vercel to call BFF instead of ALEX directly
 - Build frontend UI with mock backend (not blocked)
 - Implement POST Media endpoint (blocked until Medtech response)

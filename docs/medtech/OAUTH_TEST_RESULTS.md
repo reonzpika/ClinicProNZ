@@ -185,4 +185,55 @@ Created test scripts for future testing:
 
 ---
 
-**Conclusion**: OAuth testing validated credentials and authentication flow. Ready to proceed with Integration Gateway development. Production FHIR API testing will be possible after Gateway deployment to Vercel.
+**Conclusion**: OAuth testing validated credentials and authentication flow. Ready to proceed with Integration Gateway development.
+
+---
+
+## BFF Deployment Results (2025-10-31)
+
+### ✅ Deployment Successful
+
+**Location**: Lightsail `/home/deployer/app`
+**Domain**: `https://api.clinicpro.co.nz`
+**Static IP**: `13.236.58.12`
+**Service**: `clinicpro-bff.service` (systemd)
+
+**Deployed Components**:
+- OAuth Token Service (`services/oauth-token-service.js`)
+- ALEX API Client (`services/alex-api-client.js`)
+- Express server with test endpoints (`index.js`)
+- Environment variables (`.env`)
+
+### ✅ OAuth Working
+
+**Test Results**:
+```
+[OAuth] Token acquired { duration: 198, expiresIn: 3599 }
+```
+
+**Verified**:
+- ✅ Client credentials flow successful
+- ✅ Token cached for 55 minutes
+- ✅ Azure AD reachable from Lightsail
+- ✅ All environment variables loaded correctly
+
+### ❌ ALEX API Blocked
+
+**Test Results**:
+```
+[ALEX API] Request { endpoint: '/Patient?identifier=...', correlationId: '...' }
+[ALEX API] Failed { error: 'fetch failed' } (after 10 seconds)
+```
+
+**Network Diagnostics**:
+- ✅ DNS resolution: `alexapiuat.medtechglobal.com` → `20.193.16.208`
+- ✅ ICMP ping: `20.193.16.208` reachable (1.3ms latency)
+- ❌ HTTPS port 443: Connection timeout
+
+**Root Cause**: Medtech firewall not allowing Lightsail IP (13.236.58.12) to access ALEX API UAT on port 443.
+
+**Action Taken**: Email sent to Medtech (2025-10-31) requesting IP allow-list update for ALEX API.
+
+**Timeline**: Awaiting Medtech response (3-5 business days)
+
+**Impact**: BFF fully functional; will work immediately once Medtech updates firewall (no code changes needed).

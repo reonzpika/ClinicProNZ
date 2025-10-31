@@ -97,22 +97,35 @@ All documentation has been updated to reflect **ALEX API Documentation as the so
 
 ---
 
-### Priority 4: 🔄 Deploy to Lightsail BFF (Current - 2025-10-31)
+### Priority 4: ✅ BFF Deployed - ⚠️ Firewall Issue (2025-10-31)
 
-**Why**: Vercel uses dynamic IPs (not allow-listed). Lightsail has static IP `13.236.58.12` (allow-listed Oct 26).
+**Status**: ✅ **BFF DEPLOYED** | ⚠️ **Blocked by Medtech Firewall**
 
-**Architecture**:
+**Completed**:
+- ✅ OAuth service deployed to `/home/deployer/app/services/`
+- ✅ Environment variables configured (`.env`)
+- ✅ Dependencies installed (`dotenv`)
+- ✅ Systemd service restarted (`clinicpro-bff.service`)
+- ✅ OAuth token acquisition **WORKING** (198ms, token cached 55min)
+- ❌ ALEX API calls **TIMEOUT** after 10 seconds
+
+**Root Cause Identified**:
 ```
-Browser → Vercel (Frontend) → Lightsail BFF (13.236.58.12) → ALEX API
+OAuth → login.microsoftonline.com:443 → ✅ Works (token acquired)
+ALEX API → alexapiuat.medtechglobal.com:443 (20.193.16.208) → ❌ Times out
 ```
 
-**Tasks**:
-1. [ ] Add OAuth service to BFF (`/home/deployer/app/services/`)
-2. [ ] Configure environment variables (`.env`)
-3. [ ] Install dependencies (`dotenv`)
-4. [ ] Restart BFF
-5. [ ] Test from BFF: `curl https://api.clinicpro.co.nz/api/medtech/test`
-6. [ ] Verify GET Patient working via allow-listed IP
+**Network diagnostics**:
+- ✅ DNS resolution: Works
+- ✅ ICMP ping: Works (1.3ms latency)
+- ❌ HTTPS port 443: Connection timeout
+- **Conclusion**: Medtech firewall blocking Lightsail IP (13.236.58.12) from accessing ALEX API
+
+**Action Taken**:
+- ✅ Email sent to Medtech (2025-10-31) requesting IP allow-list update for ALEX API UAT
+- ⏳ Awaiting Medtech response (expected 3-5 business days)
+
+**Once Resolved**: BFF will work immediately (no code changes needed)
 
 ---
 
@@ -362,14 +375,15 @@ Lightsail BFF (Node.js/Express) - Deploying:
 
 ## 🎯 Your Immediate Actions
 
-1. ✅ **Medtech support ticket sent** (2025-10-31) — awaiting response
+1. ✅ **Medtech support ticket sent** (2025-10-31) — awaiting response on metadata schema
 2. ✅ **OAuth token test complete** (2025-10-31) — credentials validated
 3. ✅ **Gateway OAuth service implemented** (2025-10-31) — TypeScript/Next.js
-4. ✅ **BFF infrastructure found** (2025-10-31) — Lightsail with allow-listed IP
-5. **Deploy OAuth service to Lightsail BFF** — uses allow-listed IP (13.236.58.12)
-6. **Test from BFF**: `https://api.clinicpro.co.nz/api/medtech/test`
-7. **Update Vercel to call BFF** instead of ALEX directly
-8. **Build frontend with mock backend** — not blocked; can proceed in parallel
+4. ✅ **BFF infrastructure found** (2025-10-31) — Lightsail with static IP
+5. ✅ **OAuth service deployed to BFF** (2025-10-31) — working successfully
+6. ✅ **Firewall issue identified** (2025-10-31) — ALEX API port 443 blocked
+7. ✅ **Email sent to Medtech** (2025-10-31) — requesting ALEX API firewall update
+8. ⏳ **Wait for Medtech** — IP allow-list update for ALEX API (3-5 days)
+9. **Build frontend with mock backend** — not blocked; can proceed in parallel
 
 ---
 
