@@ -21,7 +21,7 @@
 ✅ **DocumentReference enhancements** with location extensions (v2.8, June 2025)  
 ✅ **Task write back** for desktop workflow actions (July 2023)  
 ✅ **Binary/Blobkey retrieval** for attachments  
-⚠️ **Clinical metadata extensions** (body site, laterality) — see Section 10 of ALEX docs  
+⚠️ **Clinical metadata extensions** (body site, laterality) — request examples from Medtech support  
 ⚠️ **Inbox routing** — needs clarification on recipient specification
 
 ### Critical Requirements
@@ -29,7 +29,6 @@
 2. **Azure AD app registration**: OTP-gated client secret retrieval
 3. **Correct headers**: `mt-facilityid`, `mt-correlationid`, `mt-appid`, `application/fhir+json`
 4. **Token management**: 1-hour expiry; cache and refresh at 55 min
-5. **Section 10 access**: Custom FHIR extension schemas (available in full docs)
 
 ---
 
@@ -264,26 +263,26 @@ https://login.microsoftonline.com/8a024e99-aba3-4b25-b875-28b0c0ca6096/oauth2/v2
 
 ---
 
-## Documentation Structure (Complete Reference)
+## Documentation Structure
 
-The ALEX API documentation follows this structure:
+The ALEX API documentation includes:
 
-| Section | Content | Critical For |
-|---------|---------|--------------|
-| **Section 1** | Introduction | Quick overview of ALEX and FHIR® API purpose |
-| **Section 2** | Changelog & Release Notes | Version history, breaking changes |
-| **Section 3** | Solution Design | 10-component architecture diagram |
-| **Section 4** | Environments | UAT and Production base URLs |
-| **Section 5** | Getting Started | UAT testing workflow, Production deployment |
-| **Section 6** | Connectivity Requirements | Azure AD, API scopes, IP allow-listing |
-| **Section 7** | **Authentication & Authorization** ⭐ | OAuth flow, token requests, headers |
-| **Section 8** | **API Resource Catalogue** ⭐ | 24 resource categories, 200+ endpoints |
-| **Section 9** | **Examples** ⭐ | cURL commands, sample JSON payloads |
-| **Section 10** | **Custom Fields & Extensions** ⭐⭐⭐ | FHIR extensions for clinical metadata |
-| **Section 11** | **Error Handling** ⭐ | 401 errors, invalid payload errors |
-| **Section 12** | **Reference Tables** | Mapping tables for coded values |
+| Topic | Content | Critical For |
+|-------|---------|--------------|
+| **Introduction** | Quick overview | ALEX and FHIR® API purpose |
+| **Changelog & Release Notes** | Version history | Breaking changes, new features |
+| **Solution Design** | Architecture | 10-component Azure solution |
+| **Environments** | Base URLs | UAT and Production endpoints |
+| **Getting Started** | Workflows | UAT testing, Production deployment |
+| **Connectivity Requirements** | Prerequisites | Azure AD, API scopes, IP allow-listing |
+| **Authentication & Authorization** ⭐ | OAuth flow | Token requests, headers |
+| **API Resource Catalogue** ⭐ | Endpoints | 24 resource categories, 200+ endpoints |
+| **Examples** ⭐ | Sample code | cURL commands, JSON payloads |
+| **Custom Fields & Extensions** ⭐⭐⭐ | Extensions | FHIR extensions for clinical metadata |
+| **Error Handling** ⭐ | Errors | 401 errors, invalid payload errors |
+| **Reference Tables** | Mappings | Coded value mappings |
 
-### Section 9: Examples (cURL & JSON Samples)
+### Examples (cURL & JSON Samples)
 
 Available examples include:
 - **Token request**: cURL for Azure AD OAuth flow
@@ -294,7 +293,7 @@ Available examples include:
 - **Country & Visa**: JSON payload with ISO 3166 codes
 - **PDF Diagnostic Report**: DocumentReference with PDF attachment
 
-### Section 10: Custom Fields, Extensions & Mapping ⭐⭐⭐
+### Custom Fields, Extensions & Mapping ⭐⭐⭐
 
 **Critical for Images Widget** — contains extension schemas for:
 
@@ -323,16 +322,16 @@ Available examples include:
    - Type: `valueCodeableConcept` with `http://hl7.org/fhir/administrative-gender` system
    - Mapping table for Medtech PMS ↔ FHIR
 
-**For Images Widget**: Section 10 should contain extension URLs for:
+**For Images Widget**: Need extension URLs for:
 - Body site (SNOMED CT)
 - Laterality (SNOMED CT)
 - View type (internal codes)
 - Image type (internal codes)
 - Provenance (`relatesTo`)
 
-**Action Required**: Review Section 10 for image-specific extensions or request examples from Medtech.
+**Action Required**: Request complete POST Media examples with clinical metadata from Medtech support.
 
-### Section 11: Error Handling
+### Error Handling
 
 Common error scenarios:
 
@@ -360,7 +359,7 @@ Common error scenarios:
    - Rate limit exceeded
    - Implement exponential backoff
 
-### Section 12: Reference Tables
+### Reference Tables
 
 **Sex at Birth / Gender Mapping**
 
@@ -384,12 +383,12 @@ Common error scenarios:
 ---
 
 ### Navigation Tips
-- **Setting up new connection?** → **Section 7** (authentication flow)
-- **Looking for specific endpoint?** → **Section 8** (resource catalogue)
-- **Need cURL examples?** → **Section 9** (examples)
-- **Need body site/laterality extensions?** → **Section 10** (custom fields) ⭐⭐⭐
-- **API errors?** → **Section 11** (error handling)
-- **Coded value mappings?** → **Section 12** (reference tables)
+- **Setting up new connection?** → Authentication & Authorization section
+- **Looking for specific endpoint?** → API Resource Catalogue
+- **Need cURL examples?** → Examples section
+- **Need body site/laterality extensions?** → Custom Fields & Extensions OR contact Medtech support ⭐⭐⭐
+- **API errors?** → Error Handling section
+- **Coded value mappings?** → Reference Tables section
 
 ---
 
@@ -503,7 +502,6 @@ Common error scenarios:
 2. **IP allow-listing requirement**: Critical for connectivity
 3. **Additional headers**: `mt-correlationid`, `mt-appid` for observability
 4. **Token refresh timing**: Suggest 55-min cache (before 60-min expiry)
-5. **Section 10 reference**: Custom extensions for clinical metadata
 
 ---
 
@@ -563,11 +561,11 @@ Common error scenarios:
    - ⚠️ Clarify client ID discrepancy (`7685ade3-...` vs `24b3d0e8-...`)
 
 2. **Request from Medtech** (Priority: High)
-   - Access to **Section 10** (Custom Fields & Extensions) for:
+   - **✅ EMAIL SENT 2025-10-31** — Requested complete examples for:
      - Body site / laterality SNOMED CT extension URLs
      - View / type internal code extension schemas
      - Provenance (`relatesTo`) support for edited images
-   - Access to **Section 11** (Troubleshooting) for error handling
+     - Full POST Media schema with all optional fields
    - Full POST Media example with:
      - Image upload mechanism (base64 inline? Binary reference? Multipart?)
      - Clinical metadata extension structure
@@ -584,7 +582,7 @@ Common error scenarios:
      - Correlation ID generation
      - App ID injection (`clinicpro-images-widget`)
      - FHIR → REST translation for frontend
-     - Error mapping (Section 11 codes → user-friendly messages)
+     - Error mapping (FHIR error codes → user-friendly messages)
 
 4. **IP Allow-listing** (Priority: High — Blocking)
    - Gather static IPs for:
@@ -599,12 +597,11 @@ Common error scenarios:
 
 **Quickstart Doc** (`medtech-alex-uat-quickstart.md`):
 - ✅ OAuth flow fundamentals correct
-- ⚠️ **Section 5** → Update headers table with corrected names and add optional headers
-- ⚠️ **Section 4** → Change `Content-Type` example to `application/fhir+json`
-- ➕ **New Section** → Add base URLs (UAT and Production)
-- ➕ **New Section** → Add IP allow-listing requirement before "Troubleshooting"
-- ➕ **Section 10** → Add reference: "For clinical metadata extensions, see ALEX API Doc Section 10"
-- ⚠️ **Section 7** (Token refresh) → Add explicit timing: cache token, refresh at 55 min
+- ✅ Headers table updated with correct names (`mt-*` namespace)
+- ✅ `Content-Type` updated to `application/fhir+json`
+- ✅ Base URLs added (UAT and Production)
+- ✅ IP allow-listing requirement documented
+- ✅ Token caching guidance added (55-min refresh)
 
 **Images PRD** (`images-widget-prd.md`):
 - ✅ Core FHIR concepts (DocumentReference, Binary, Media) align with ALEX v2.2+
@@ -613,7 +610,7 @@ Common error scenarios:
   - Option B: Expose FHIR endpoints directly (more transparent; less flexible)
 - ⚠️ **Authentication section** → Update to match ALEX requirements:
   - Add `mt-facilityid`, `mt-correlationid`, `mt-appid` headers
-  - Reference Section 7 of ALEX docs for auth flow
+  - Reference ALEX API docs for auth flow
 - ⚠️ **Signed upload URLs** → ALEX likely uses direct FHIR POST; revise or abstract in Gateway
 - ➕ **Capabilities endpoint** → Hardcode ALEX feature flags (no dynamic negotiation available)
 - ➕ **Realtime sync** → Document polling strategy (ALEX doesn't provide webhooks per current docs)
@@ -635,8 +632,8 @@ Common error scenarios:
 
 ### **Weaknesses / Gaps**
 1. **Documentation format**: Postman-based; no OpenAPI/Swagger spec for automated tooling
-2. **Section 10 not accessible via web**: Custom FHIR extensions details in full documentation only
-3. **Example payloads sparse in web view**: Postman collection download recommended for full schemas
+2. **Custom FHIR extensions**: Clinical metadata schema not fully documented; examples needed
+3. **Example payloads sparse**: Postman collection download recommended for full schemas
 4. **No capabilities negotiation**: Client must hardcode feature flags; no dynamic discovery endpoint
 5. **Realtime sync unclear**: No webhooks or FHIR subscriptions documented; likely polling required
 6. **IP allow-listing required**: Static IPs must be pre-configured (✅ resolved for this project)
@@ -644,8 +641,8 @@ Common error scenarios:
 
 ### **Critical Path Items (Remaining)**
 1. ✅ **IP allow-listing** — Already configured and allowed by Medtech
-2. **Section 10 review** — Check for image-specific extension URLs (body site, laterality, view, type) in full documentation
-3. **POST Media example** — Request full request schema with clinical metadata extensions from Medtech
+2. ✅ **Email sent to Medtech support** (2025-10-31) — Awaiting response on clinical metadata schema
+3. **POST Media schema** — Waiting for complete examples with body site, laterality, view, type extensions
 4. **Client ID clarification** — Resolve discrepancy between quickstart (`7685ade3-...`) and API doc (`24b3d0e8-...`)
 
 **No Blocking Issues Remaining** — can proceed with integration development
@@ -655,7 +652,7 @@ Common error scenarios:
   - Abstract ALEX-specific quirks (header names, `mt-*` namespace, extensions)
   - Provide simplified REST API to widget frontend (maintain PRD `/attachments/*` contracts)
   - Handle token refresh (55-min cache), correlation ID generation, app ID injection
-  - Map FHIR error codes (Section 11) to user-friendly messages
+  - Map FHIR error codes to user-friendly messages
   - Bridge direct FHIR POST to PRD's signed-URL pattern (or revise PRD to match ALEX)
   - Provide hardcoded capabilities response (no dynamic negotiation from ALEX)
   - Implement polling for realtime updates (no ALEX webhooks available)
@@ -692,13 +689,13 @@ The ALEX API documentation at https://alexapidoc.medtechglobal.com/ is built usi
 
 1. **✅ Review Full ALEX Documentation**
    - [x] IP allow-listing (Already configured ✅)
-   - [x] Documented all 12 sections of ALEX API structure in review
-   - [x] Identified Section 9 (Examples), Section 10 (Extensions), Section 11 (Errors), Section 12 (Reference Tables)
+   - [x] Documented ALEX API structure in review
+   - [x] Identified Examples, Custom Extensions, Error Handling, and Reference Tables content
    - [x] Created comprehensive reference guide in `alex-api-review-2025-10-30.md`
 
 2. **✅ Medtech Clarifications Documented**
    - [x] Documented client ID discrepancy (to be clarified with Medtech)
-   - [x] Identified need for POST Media examples (check Section 9 in full docs)
+   - [x] Identified need for POST Media examples (requested from Medtech support)
    - [x] Documented questions for Medtech in review doc
 
 3. **✅ Update Quickstart Doc**
@@ -751,7 +748,7 @@ The ALEX API documentation at https://alexapidoc.medtechglobal.com/ is built usi
    - [ ] `POST /attachments/commit` → POST Media to ALEX with extensions
 
 10. **Error Handling & Observability**
-    - [ ] Map Section 11 error codes to user-friendly messages
+    - [ ] Map FHIR error codes to user-friendly messages
     - [ ] Implement request/response logging with correlation IDs
     - [ ] Implement retry logic for transient failures (e.g., 429, 503)
     - [ ] Alerting: token refresh failures, ALEX downtime, quota exceeded
@@ -776,12 +773,12 @@ The ALEX API documentation at https://alexapidoc.medtechglobal.com/ is built usi
 
 ---
 
-**Review Status**: ✅ Complete (Enhanced with Sections 9-12 details)  
-**Confidence**: High on architecture and requirements; Medium-High on Media specifics (pending Section 10 review)  
+**Review Status**: ✅ Complete (Enhanced with full API details)  
+**Confidence**: High on architecture and requirements; Medium-High on Media specifics (awaiting Medtech response)  
 **Blocking Issues**: ✅ None (IP allow-listing already resolved)  
 **Remaining Clarifications**:
-1. Section 10 review for image-specific extension URLs
-2. POST Media example with clinical metadata (check Section 9 first)
+1. ✅ Email sent to Medtech (2025-10-31) requesting clinical metadata schema
+2. POST Media example with clinical metadata (awaiting response)
 3. Client ID discrepancy resolution
 
 **Can Proceed**: Yes — full integration development can begin immediately

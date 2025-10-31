@@ -24,84 +24,44 @@ All documentation has been updated to reflect **ALEX API Documentation as the so
    - Documented FHIR → REST translation responsibility
 
 3. **✅ ALEX API Review** (`alex-api-review-2025-10-30.md`)
-   - Comprehensive 12-section documentation structure
+   - Comprehensive documentation structure reviewed
    - Architecture details, headers, environments
    - Error handling, reference tables, navigation guide
-   - Identified image-specific needs in Section 10
+   - Identified need for clinical metadata examples
 
 4. **✅ IP Allow-listing** — Already configured by Medtech
 
 ---
 
-## 📋 Week 2: ALEX API Deep Dive (Current Phase)
+## 📋 Week 2: Awaiting Medtech Response (Current Phase)
 
-### Priority 1: Review ALEX Documentation Sections 9-10
+### Priority 1: ✅ Email Sent to Medtech Support (2025-10-31)
 
-**Objective**: Extract technical details needed for Integration Gateway implementation.
+**Questions Submitted**:
+1. **Medtech UI Access for Testing** — Demo Evolution instance for end-to-end testing
+2. **Clinical Metadata Schema** — Complete POST Media examples with:
+   - Body site field/extension (FHIR R4 `bodySite` or custom?)
+   - Laterality specification (within bodySite or separate?)
+   - View type field/extension
+   - Image classification field/extension
+   - DocumentReference auto-creation behaviour
+   - Encounter linkage mechanism
 
-**Tasks**:
+**Expected Response**: 3-5 business days
 
-1. **Section 9: Examples** — Look for:
-   - [ ] POST Media request example with image
-   - [ ] cURL command for Media upload
-   - [ ] Sample JSON payloads for clinical metadata
-   - [ ] Base64 encoding examples or Binary reference pattern
-
-2. **Section 10: Custom Fields & Extensions** — Extract:
-   - [ ] **Body site extension URL** (e.g., `http://alexapi.medtechglobal.com/fhir/StructureDefinition/bodySite`)
-   - [ ] **Laterality extension URL** and SNOMED CT codes
-   - [ ] **View type extension URL** and internal codes
-   - [ ] **Image type extension URL** and internal codes
-   - [ ] **Provenance extension** (`DocumentReference.relatesTo`) support for edited images
-
-3. **Section 11: Error Handling** — Document:
-   - [ ] All error codes and descriptions
-   - [ ] Create mapping table: FHIR error code → user-friendly message
-   - [ ] Retry strategies for transient errors (429, 503)
-
-4. **Section 12: Reference Tables** — Check for:
-   - [ ] Body site SNOMED CT codes list
-   - [ ] Laterality SNOMED CT codes list
-   - [ ] Any image-related coded value lists
-
-**Deliverable**: Create `alex-fhir-extensions-reference.md` with all extension URLs and code systems.
+**While Waiting**: Proceed with OAuth token service and Gateway foundation (see below)
 
 ---
 
-### Priority 2: Medtech Support Request
+### Priority 2: Test OAuth Token Acquisition
 
-**Objective**: Clarify ambiguities in ALEX documentation.
+**Objective**: Verify connectivity with ALEX UAT.
 
-**Questions to Submit** (via Medtech support ticket):
-
-1. **Client ID Clarification**:
-   - Quickstart uses: `7685ade3-f1ae-4e86-a398-fe7809c0fed1`
-   - API Doc examples show: `24b3d0e8-9096-4763-a1e5-4a4b13257a7a`
-   - **Question**: Are these different app registrations (test vs prod)? Which should ClinicPro use?
-
-2. **POST Media Schema** (if not in Section 9):
-   - **Request**: Full POST Media example with:
-     - Image binary (base64 inline? Separate Binary POST? Multipart?)
-     - Clinical metadata extensions (body site, laterality, view, type)
-     - Encounter context linkage
-     - Expected response structure
-
-3. **DocumentReference Auto-creation**:
-   - **Question**: Does POST Media automatically create a DocumentReference, or must we POST both separately?
-
-4. **File Size Limits**:
-   - **Question**: What is the server-side hard limit for Media/Binary? (PRD assumes <1MB; confirm sufficient)
-
-5. **Accepted MIME Types**:
-   - **Question**: Confirm accepted types: `image/jpeg`, `image/png`, `application/pdf`? Any others?
-
-6. **Inbox Routing**:
-   - **Question**: Can POST Media specify inbox recipient directly, or must we POST a separate Communication resource?
-
-7. **Provenance**:
-   - **Question**: Does ALEX support `DocumentReference.relatesTo` with `code = transforms` for linking edited images to originals?
-
-**Timeline**: Submit support ticket by end of Week 2, Day 2. Allow 3-5 business days for response.
+**Tasks**:
+1. [ ] Acquire access token using client credentials flow
+2. [ ] Test simple GET Patient request
+3. [ ] Verify correct headers (`mt-facilityid`, `Content-Type: application/fhir+json`)
+4. [ ] Document token expiry and caching behaviour
 
 ---
 
@@ -175,7 +135,7 @@ Purpose: Return hardcoded ALEX feature flags and dictionaries (as per PRD).
 
 Implementation:
 - Read from config file (no dynamic ALEX API call; ALEX doesn't provide capabilities endpoint)
-- Return laterality, body site, view, type coded value lists from Section 10/12
+- Return laterality, body site, view, type coded value lists (pending Medtech response)
 
 **2. POST /api/integrations/medtech/mobile/initiate**
 
@@ -201,9 +161,9 @@ Implementation:
 Purpose: Commit images to Medtech via ALEX FHIR API.
 
 Implementation:
-- Map PRD metadata to FHIR extensions (use URLs from Section 10)
+- Map PRD metadata to FHIR extensions (awaiting Medtech response for URLs)
 - POST to `https://alexapiuat.medtechglobal.com/FHIR/Media` with:
-  - Binary content (base64 inline or Binary reference — determined from Section 9)
+  - Binary content (base64 inline or Binary reference — awaiting confirmation)
   - Clinical metadata extensions (body site, laterality, view, type)
   - Encounter context
 - If inbox routing requested: POST separate Communication resource (or include in Media if supported)
@@ -216,7 +176,7 @@ File: `src/middleware/fhir-error-mapper.ts`
 
 Requirements:
 - Catch FHIR OperationOutcome responses
-- Map to user-friendly messages using Section 11 reference
+- Map to user-friendly messages (create mapping table from ALEX docs)
 - Include correlation ID in error response
 - Log full FHIR error for debugging
 
@@ -235,16 +195,16 @@ Requirements:
 - [ ] Implement POST /mobile/initiate (QR generation)
 - [ ] Implement POST /attachments/upload-initiate (file metadata handling)
 
-**Phase 3: FHIR Integration (Week 3, Days 4-5)**
-- [ ] Map PRD metadata schema to FHIR extensions (using Section 10 URLs)
+**Phase 3: FHIR Integration (Week 3, Days 4-5)** — *Blocked until Medtech response*
+- [ ] Map PRD metadata schema to FHIR extensions (awaiting Medtech response)
 - [ ] Implement POST /attachments/commit → POST /FHIR/Media
 - [ ] Test with sample JPEG (<1MB, EXIF stripped)
-- [ ] Verify image appears in Medtech encounter
+- [ ] Verify image appears in Medtech encounter (if demo instance available)
 
 **Phase 4: Advanced Workflows (Week 4)**
 - [ ] Implement inbox routing (POST Communication if needed)
 - [ ] Implement task creation (POST Task)
-- [ ] Implement error mapping middleware (Section 11 → user messages)
+- [ ] Implement error mapping middleware (FHIR errors → user messages)
 - [ ] Add request/response logging with correlation IDs
 
 ---
@@ -263,23 +223,12 @@ Requirements:
 
 ## 🚀 Quick Start (Right Now)
 
-### 1. Review ALEX Docs Section 10
-
-**Action**: Open your ALEX API documentation and navigate to Section 10 (Custom Fields & Extensions).
-
-**Look for**:
-- Extension URLs for clinical metadata (body site, laterality, view, type)
-- Example payloads showing extension usage
-- SNOMED CT code lists for body site and laterality
-
-**Document findings** in: `docs/alex-fhir-extensions-reference.md`
-
-### 2. Test Token Acquisition
+### 1. Test Token Acquisition
 
 **Action**: Use updated quickstart doc to acquire access token.
 
 ```bash
-# From medtech-alex-uat-quickstart.md Section 4
+# From medtech-alex-uat-quickstart.md
 CLIENT_SECRET='<your-secret>'
 curl -sS -X POST \
   'https://login.microsoftonline.com/8a024e99-aba3-4b25-b875-28b0c0ca6096/oauth2/v2.0/token' \
@@ -292,7 +241,7 @@ curl -sS -X POST \
 
 **Verify**: Token returned with 3600-second expiry.
 
-### 3. Test Simple FHIR Call
+### 2. Test Simple FHIR Call
 
 **Action**: GET Patient to confirm connectivity.
 
@@ -309,14 +258,10 @@ curl -sS -X GET \
 
 **Verify**: Patient resource returned (FHIR Bundle with entry array).
 
-### 4. Submit Medtech Support Ticket
+### 3. ✅ Medtech Support Ticket Sent
 
-**Action**: Prepare and submit support ticket with 7 questions (see Priority 2 above).
-
-**Include**:
-- Reference to ClinicPro Images Widget integration
-- Your client ID and facility ID
-- Specific questions about POST Media, extensions, and inbox routing
+**Status**: Email sent 2025-10-31
+**Awaiting**: Response on clinical metadata schema (3-5 business days)
 
 ---
 
@@ -342,11 +287,11 @@ docs/
 
 ## 🎯 Your Immediate Actions
 
-1. **Review Section 10** of ALEX API docs — extract extension URLs
+1. ✅ **Medtech support ticket sent** (2025-10-31) — awaiting response
 2. **Test token acquisition** — verify connectivity with updated headers
-3. **Submit Medtech support ticket** — clarify POST Media schema and extensions
-4. **Decide on Gateway tech stack** — Node.js/Express? Next.js API routes? Separate service?
-5. **Set up OAuth token service** — implement 55-min cache with auto-refresh
+3. **Decide on Gateway tech stack** — Node.js/Express? Next.js API routes? Separate service?
+4. **Set up OAuth token service** — implement 55-min cache with auto-refresh
+5. **Build frontend with mock backend** — not blocked; can proceed in parallel
 
 ---
 

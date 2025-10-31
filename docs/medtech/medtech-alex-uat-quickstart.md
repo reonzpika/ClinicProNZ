@@ -110,7 +110,7 @@ curl -sS -X GET \
   -H 'mt-appid: clinicpro-images-widget'
 ```
 
-**Example** (POST Media with image — see ALEX docs Section 8 for schema):
+**Example** (POST Media with image — see ALEX docs for schema):
 ```bash
 TOKEN='PASTE_ACCESS_TOKEN_HERE'
 CORRELATION_ID=$(uuidgen)
@@ -126,11 +126,11 @@ curl -sS -X POST \
 ```
 
 - For exact endpoint schemas and examples, refer to [ALEX API Documentation](https://alexapidoc.medtechglobal.com/):
-  - **Section 7**: Authentication flow
-  - **Section 8**: API resource catalogue
-  - **Section 9**: cURL examples and JSON payloads
-  - **Section 10**: Custom FHIR extensions (body site, laterality, etc.)
-  - **Section 11**: Error handling
+  - **Authentication & Authorization**: OAuth flow, token requests
+  - **API Resource Catalogue**: 200+ endpoints across 24 categories
+  - **Examples**: cURL commands and JSON payloads
+  - **Custom Fields & Extensions**: FHIR extensions for clinical metadata
+  - **Error Handling**: Error codes and troubleshooting
 
 ---
 
@@ -197,7 +197,7 @@ MEDTECH_APP_ID=clinicpro-images-widget
   - `mt-facilityid: F2N060-E` (NOT `Facility-Id`)
   - Both spellings appear in some ALEX doc examples; `mt-facilityid` is correct
 
-**For detailed error codes**, see ALEX API Documentation Section 11.
+**For detailed error codes**, see ALEX API Documentation Error Handling section.
 
 ---
 
@@ -208,7 +208,7 @@ MEDTECH_APP_ID=clinicpro-images-widget
 - Implement an **Integration Gateway** (ALEX API wrapper):
   - Inject required headers: `Authorization: Bearer <token>`, `Content-Type: application/fhir+json`, `mt-facilityid: ${MEDTECH_FACILITY_ID}`, `mt-correlationid: <uuid>`, `mt-appid: clinicpro-images-widget`
   - Translate FHIR responses to simplified REST API for frontend (as per Images Widget PRD).
-  - Map Section 11 error codes to user-friendly messages.
+  - Map FHIR error codes to user-friendly messages.
 - Add environment variables in hosting; never expose secrets to the browser.
 - Create a small **runbook** for secret rotation and operational checks.
 
@@ -216,11 +216,11 @@ MEDTECH_APP_ID=clinicpro-images-widget
 
 ### 11) Reference
 - **ALEX API Documentation**: https://alexapidoc.medtechglobal.com/ (source of truth)
-- **Section 7**: Authentication & Authorization
-- **Section 8**: API Resource Catalogue (200+ endpoints)
-- **Section 9**: cURL examples and JSON payloads
-- **Section 10**: Custom FHIR extensions for clinical metadata
-- **Section 11**: Error handling and troubleshooting
-- **Section 12**: Reference tables (gender mapping, country codes, etc.)
+- **Authentication & Authorization**: OAuth flow, token management
+- **API Resource Catalogue**: 200+ endpoints across 24 categories
+- **Examples**: cURL commands and JSON payloads
+- **Custom Fields & Extensions**: FHIR extensions for clinical metadata
+- **Error Handling**: Error codes and troubleshooting
+- **Reference Tables**: Gender mapping, country codes, etc.
 
 ---
