@@ -82,7 +82,7 @@ All documentation has been updated to reflect **ALEX API Documentation as the so
 
 ### Priority 3: ✅ Integration Gateway OAuth Service Complete (2025-10-31)
 
-**Status**: ✅ **COMPLETE** - Ready for production testing
+**Status**: ✅ **COMPLETE** - Deploying to BFF
 
 **Completed**:
 - ✅ OAuth Token Service with 55-min cache (`/src/lib/services/medtech/oauth-token-service.ts`)
@@ -90,9 +90,29 @@ All documentation has been updated to reflect **ALEX API Documentation as the so
 - ✅ Correlation ID Generator (UUID v4) (`/src/lib/services/medtech/correlation-id.ts`)
 - ✅ FHIR type definitions (`/src/lib/services/medtech/types.ts`)
 - ✅ Test endpoints (`/api/medtech/test`, `/api/medtech/token-info`)
+- ✅ BFF infrastructure identified on Lightsail (`api.clinicpro.co.nz`, IP: 13.236.58.12)
 - ✅ Comprehensive documentation (`/docs/medtech/GATEWAY_IMPLEMENTATION.md`)
 
-**Next**: Test from production environment (Vercel) where IP is allow-listed
+**Current**: Deploying OAuth service to Lightsail BFF (uses allow-listed IP)
+
+---
+
+### Priority 4: 🔄 Deploy to Lightsail BFF (Current - 2025-10-31)
+
+**Why**: Vercel uses dynamic IPs (not allow-listed). Lightsail has static IP `13.236.58.12` (allow-listed Oct 26).
+
+**Architecture**:
+```
+Browser → Vercel (Frontend) → Lightsail BFF (13.236.58.12) → ALEX API
+```
+
+**Tasks**:
+1. [ ] Add OAuth service to BFF (`/home/deployer/app/services/`)
+2. [ ] Configure environment variables (`.env`)
+3. [ ] Install dependencies (`dotenv`)
+4. [ ] Restart BFF
+5. [ ] Test from BFF: `curl https://api.clinicpro.co.nz/api/medtech/test`
+6. [ ] Verify GET Patient working via allow-listed IP
 
 ---
 
@@ -307,18 +327,30 @@ docs/
     └── ORGANIZATION_SUMMARY.md                    # Folder organization summary
 ```
 
-**Implementation** (NEW - 2025-10-31):
+**Implementation** (2025-10-31):
 ```
-src/lib/services/medtech/
-├── oauth-token-service.ts      # OAuth token caching (55-min TTL)
-├── alex-api-client.ts           # ALEX API client with header injection
-├── correlation-id.ts            # Correlation ID utilities
-├── types.ts                     # FHIR R4 type definitions
-└── index.ts                     # Main exports
+Vercel (Next.js):
+  src/lib/services/medtech/
+  ├── oauth-token-service.ts      # OAuth token caching (55-min TTL)
+  ├── alex-api-client.ts           # ALEX API client with header injection
+  ├── correlation-id.ts            # Correlation ID utilities
+  ├── types.ts                     # FHIR R4 type definitions
+  └── index.ts                     # Main exports
 
-app/api/(integration)/medtech/
-├── test/route.ts                # Test endpoint (FHIR connectivity)
-└── token-info/route.ts          # Token info endpoint (monitoring)
+  app/api/(integration)/medtech/
+  ├── test/route.ts                # Test endpoint (FHIR connectivity)
+  └── token-info/route.ts          # Token info endpoint (monitoring)
+
+Lightsail BFF (Node.js/Express) - Deploying:
+  /home/deployer/app/
+  ├── services/
+  │   ├── oauth-token-service.js  # OAuth service (JavaScript version)
+  │   └── alex-api-client.js       # ALEX client (JavaScript version)
+  ├── index.js                     # Express server
+  ├── .env                         # Environment variables
+  └── package.json                 # Dependencies
+
+  Domain: https://api.clinicpro.co.nz (13.236.58.12 - allow-listed)
 ```
 
 **Test Scripts** (workspace root):
@@ -332,11 +364,12 @@ app/api/(integration)/medtech/
 
 1. ✅ **Medtech support ticket sent** (2025-10-31) — awaiting response
 2. ✅ **OAuth token test complete** (2025-10-31) — credentials validated
-3. ✅ **Gateway OAuth service implemented** (2025-10-31) — Next.js API routes
-4. ✅ **ALEX API client built** — header injection, correlation IDs, error mapping
-5. **Deploy to Vercel** — test Gateway from production (IP allow-listed)
-6. **Test `/api/medtech/test`** — verify GET Patient working
-7. **Build frontend with mock backend** — not blocked; can proceed in parallel
+3. ✅ **Gateway OAuth service implemented** (2025-10-31) — TypeScript/Next.js
+4. ✅ **BFF infrastructure found** (2025-10-31) — Lightsail with allow-listed IP
+5. **Deploy OAuth service to Lightsail BFF** — uses allow-listed IP (13.236.58.12)
+6. **Test from BFF**: `https://api.clinicpro.co.nz/api/medtech/test`
+7. **Update Vercel to call BFF** instead of ALEX directly
+8. **Build frontend with mock backend** — not blocked; can proceed in parallel
 
 ---
 

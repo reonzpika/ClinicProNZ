@@ -441,6 +441,105 @@ curl https://your-app.vercel.app/api/medtech/token-info
 
 ---
 
+## BFF Deployment (Lightsail)
+
+### Architecture
+
+**Problem**: Vercel serverless uses dynamic IPs (not allow-listed by Medtech)
+
+**Solution**: BFF (Backend-for-Frontend) on Lightsail with static IP
+
+```
+Browser → Vercel (Frontend)
+          ↓
+          Lightsail BFF (13.236.58.12 - allow-listed) → ALEX API
+```
+
+### Current BFF Setup
+
+**Location**: `/home/deployer/app` on Lightsail
+**Domain**: `https://api.clinicpro.co.nz`
+**Static IP**: `13.236.58.12` (allow-listed with Medtech)
+**Stack**: Node.js + Express + Nginx reverse proxy
+
+**Infrastructure**:
+- ✅ Nginx: Proxies `api.clinicpro.co.nz:443` → `localhost:3000`
+- ✅ SSL: Let's Encrypt certificate configured
+- ✅ Node.js: Running on port 3000
+- ⚠️ Currently: Placeholder app (needs Medtech integration)
+
+### Deployment Files
+
+Located in `/home/deployer/app/`:
+
+**1. `.env`** - Environment variables:
+```bash
+MEDTECH_CLIENT_ID=7685ade3-f1ae-4e86-a398-fe7809c0fed1
+MEDTECH_CLIENT_SECRET=Zub8Q~oBMwpgCJzif6Nn2RpRlIbt6q6g1y3ZhcID
+MEDTECH_TENANT_ID=8a024e99-aba3-4b25-b875-28b0c0ca6096
+MEDTECH_API_SCOPE=api://bf7945a6-e812-4121-898a-76fea7c13f4d/.default
+MEDTECH_API_BASE_URL=https://alexapiuat.medtechglobal.com/FHIR
+MEDTECH_FACILITY_ID=F2N060-E
+PORT=3000
+```
+
+**2. `services/oauth-token-service.js`** - OAuth with 55-min cache
+
+**3. `services/alex-api-client.js`** - ALEX API client with header injection
+
+**4. `index.js`** - Express server with Medtech endpoints
+
+**5. `package.json`** - Dependencies (express, dotenv)
+
+### Available Endpoints
+
+**Health**:
+- `GET /health` - Health check
+
+**Medtech**:
+- `GET /api/medtech/token-info` - Token cache status
+- `GET /api/medtech/test?nhi=ZZZ0016` - Test FHIR connectivity
+
+### Deployment Process
+
+**SSH to Lightsail**:
+```bash
+ssh ubuntu@13.236.58.12
+sudo su - deployer
+cd ~/app
+```
+
+**Update code** (create/update files as needed)
+
+**Install & restart**:
+```bash
+npm install
+sudo kill $(pgrep -f "node index.js")
+nohup node index.js > server.log 2>&1 &
+```
+
+**Test**:
+```bash
+curl http://localhost:3000/health
+curl "http://localhost:3000/api/medtech/test?nhi=ZZZ0016"
+```
+
+### Testing from BFF
+
+**Internal** (from Lightsail):
+```bash
+curl http://localhost:3000/api/medtech/test
+```
+
+**External** (from anywhere):
+```bash
+curl https://api.clinicpro.co.nz/api/medtech/test
+```
+
+**Expected**: ✅ Success (uses allow-listed IP 13.236.58.12)
+
+---
+
 ## Next Steps
 
 ### ✅ Completed
@@ -448,23 +547,24 @@ curl https://your-app.vercel.app/api/medtech/token-info
 - ALEX API Client with header injection
 - Correlation ID generator
 - FHIR type definitions
-- Test endpoints
+- Test endpoints (Vercel)
+- BFF infrastructure identified (Lightsail)
 
-### 📋 Next (Week 2-3)
+### 📋 Next (Current)
 
-1. **Test from Production** (Priority 1)
-   - Deploy to Vercel
-   - Test `/api/medtech/test` endpoint
-   - Verify token caching working
+1. **Deploy to Lightsail BFF** (Priority 1 - In Progress)
+   - Add OAuth service to BFF
+   - Configure environment variables
+   - Test from BFF (uses allow-listed IP)
    - Verify GET Patient successful
 
-2. **Build Gateway API Endpoints** (Blocked until Medtech response)
-   - `POST /api/medtech/attachments/commit` - Commit images to ALEX
-   - Awaiting clinical metadata schema from Medtech
+2. **Update Vercel to Use BFF** (After BFF deployed)
+   - Change `MEDTECH_API_BASE_URL` to `https://api.clinicpro.co.nz`
+   - Vercel calls BFF, BFF calls ALEX
 
-3. **Error Mapping Middleware**
-   - Map FHIR OperationOutcome → user-friendly messages
-   - Create error message dictionary
+3. **Build Gateway API Endpoints** (Blocked until Medtech response)
+   - `POST /api/medtech/media` - Commit images to ALEX
+   - Awaiting clinical metadata schema from Medtech
 
 4. **Frontend Integration**
    - Build frontend with mock backend (not blocked)

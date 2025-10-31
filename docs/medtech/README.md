@@ -55,6 +55,10 @@
   - ALEX API client with header injection
   - Correlation ID generation
   - Test endpoints for connectivity validation
+- **Deploying to Lightsail BFF** (Oct 31 - Current)
+  - BFF infrastructure: `api.clinicpro.co.nz` (Static IP: 13.236.58.12)
+  - Using allow-listed IP to call ALEX API
+  - Vercel → BFF → ALEX architecture
 - Awaiting Medtech response (email sent Oct 31) on:
   - UAT testing environment access
   - Widget launch mechanism
@@ -63,8 +67,9 @@
 - Expected response: 3-5 business days
 
 ### 📋 **Next**
-- Deploy to Vercel and test Gateway from production (IP allow-listed)
-- Verify GET Patient endpoint working via `/api/medtech/test`
+- Deploy OAuth service to Lightsail BFF (uses allow-listed IP)
+- Test from BFF: `https://api.clinicpro.co.nz/api/medtech/test`
+- Update Vercel to call BFF instead of ALEX directly
 - Build frontend UI with mock backend (not blocked)
 - Implement POST Media endpoint (blocked until Medtech response)
 
