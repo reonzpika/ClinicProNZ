@@ -16,27 +16,27 @@
 ├────────────────────────────────────────────────────────────┤
 │  Thumbnails:                                               │
 │  [img1] [img2] [img3*] [img4] [img5]  • 5 images, 3 ready │ ← Horizontal strip
-├──────────────────────────────┬─────────────────────────────┤
-│                              │  Metadata                   │
-│   Large Image Preview        │  ─────────────              │
-│                              │  Laterality *               │
-│   (Image 3 of 5)             │  [Left] [Right] [Bilateral] │
-│                              │                             │
-│                              │  Body Site *                │
-│                              │  [Forearm ▼]                │
-│   [< Prev]  [Edit]  [Next >]│                             │
-│                              │  View                       │
-│   Zoom: [−] 100% [+] [Reset] │  [Close-up] [Dermoscopy]   │
-│                              │                             │
-│                              │  Type                       │
-│                              │  [Lesion] [Rash] [Wound]    │
-│                              │                             │
-│                              │  Label                      │
-│                              │  [____________]             │
-│                              │                             │
-│                              │  ✓ Metadata complete        │
-└──────────────────────────────┴─────────────────────────────┘
-  Image Preview (60%)            Metadata Form (40%)
+├───────────────────┬──────────────────────────────────────────┤
+│                   │  Metadata                                │
+│  Image Preview    │  ─────────────                           │
+│                   │  Laterality *                            │
+│  (Image 3 of 5)   │  [Left] [Right] [Bilateral] [Not App]   │
+│                   │                                          │
+│  [< Prev] [Next >]│  Body Site *                             │
+│  [Edit]           │  [Forearm ▼]                             │
+│                   │                                          │
+│  Zoom:            │  View                                    │
+│  [−] 100% [+]     │  [Close-up] [Dermoscopy] [Wide] [Other] │
+│                   │                                          │
+│                   │  Type                                    │
+│                   │  [Lesion] [Rash] [Wound] [Other]        │
+│                   │                                          │
+│                   │  Label                                   │
+│                   │  [________________________________]      │
+│                   │                                          │
+│                   │  ✓ Metadata complete                     │
+└───────────────────┴──────────────────────────────────────────┘
+  Image Preview (40%)  Metadata Form (60%)
 ```
 
 **Dimensions**:
@@ -243,9 +243,10 @@ Can continue with more images or close widget
 - Horizontal scroll if needed
 
 ### **Main Content Split**:
-- Image preview: `flex-[3]` (60% width)
-- Metadata form: `flex-[2]` (40% width)
+- Image preview: `flex-[2]` (40% width)
+- Metadata form: `flex-[3]` (60% width)
 - Gap: `24px`
+- **Rationale**: Metadata entry is the main bottleneck; give it more space
 
 ### **QR Panel** (when expanded):
 - Height: `auto` (collapses when hidden)

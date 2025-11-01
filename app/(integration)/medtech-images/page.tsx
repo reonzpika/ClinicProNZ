@@ -261,8 +261,8 @@ function MedtechImagesPageContent() {
       
       {/* Main Content: Image Preview + Metadata */}
       <div className="flex flex-1 gap-6 overflow-hidden p-6">
-        {/* Image Preview (60%) */}
-        <div className="flex-[3]">
+        {/* Image Preview (40%) */}
+        <div className="flex-[2]">
           <ImagePreview
             image={currentImage}
             onPrevious={handlePrevious}
@@ -276,8 +276,8 @@ function MedtechImagesPageContent() {
           />
         </div>
         
-        {/* Metadata Form (40%) */}
-        <div className="flex-[2]">
+        {/* Metadata Form (60%) */}
+        <div className="flex-[3]">
           <MetadataForm image={currentImage} />
         </div>
       </div>

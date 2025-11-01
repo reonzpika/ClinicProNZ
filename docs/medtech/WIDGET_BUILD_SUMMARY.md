@@ -421,7 +421,7 @@ npm run lint
 - ❌ Removed patient header (Medtech provides)
 - ❌ Removed ClinicPro branding (widget only)
 - ✅ Horizontal thumbnail strip (compact, 4-10 images)
-- ✅ Large image preview (60%) + Metadata form (40%)
+- ✅ Image preview (40%) + Metadata form (60%) — **metadata-first workflow**
 - ✅ Compact top bar (upload, QR, commit actions)
 - ✅ Focus on single-image workflow (navigate with Prev/Next)
 
