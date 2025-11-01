@@ -2,13 +2,15 @@
 // @ts-nocheck
 'use client';
 
-import { Camera } from 'lucide-react';
+import { Camera, FileText } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 
 import { ClinicalImageTab } from './ClinicalImageTab';
+import { ReferralLetterTab } from './ReferralLetterTab';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
-type TabId = 'images';
+type TabId = 'images' | 'referral';
 
 type ClinicalToolsTabsProps = {
   fixedHeightClass?: string;
@@ -19,10 +21,23 @@ export const ClinicalToolsTabs: React.FC<ClinicalToolsTabsProps> = ({ fixedHeigh
   const [isExpanded, setIsExpanded] = useState<boolean>(false); // default collapsed
   const { getUserTier } = useClerkMetadata();
   const isAdmin = getUserTier() === 'admin';
+  const { generatedNotes } = useConsultationStores();
+  
+  // Check if consultation note exists for referral tab
+  const hasConsultationNote = generatedNotes && generatedNotes.trim() !== '';
 
-  const tabs = useMemo(() => ([
-    { id: 'images' as const, icon: Camera, title: 'Clinical Images' },
-  ]), []);
+  const tabs = useMemo(() => {
+    const allTabs = [
+      { id: 'images' as const, icon: Camera, title: 'Clinical Images' },
+    ];
+    
+    // Only show referral tab after consultation note is generated
+    if (hasConsultationNote) {
+      allTabs.push({ id: 'referral' as const, icon: FileText, title: 'Referral Letter' });
+    }
+    
+    return allTabs;
+  }, [hasConsultationNote]);
 
   // Ensure active tab remains valid when admin status changes
   useEffect(() => {
@@ -68,6 +83,11 @@ export const ClinicalToolsTabs: React.FC<ClinicalToolsTabsProps> = ({ fixedHeigh
         {/* Clinical Images */}
         <div className={`${activeTab === 'images' && isExpanded ? 'block' : 'hidden'} h-full overflow-y-auto pr-1`}>
           <ClinicalImageTab />
+        </div>
+
+        {/* Referral Letter */}
+        <div className={`${activeTab === 'referral' && isExpanded ? 'block' : 'hidden'} h-full overflow-y-auto pr-1`}>
+          <ReferralLetterTab />
         </div>
 
         {/* Legacy widgets (Checklist, DDx, ACC) removed */}
