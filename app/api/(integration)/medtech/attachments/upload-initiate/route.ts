@@ -6,8 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { medtechAPI } from '@/src/medtech/images-widget/services/mock-medtech-api';
-import type { UploadInitiateRequest } from '@/src/medtech/images-widget/types';
+import type { UploadInitiateRequest, UploadInitiateResponse } from '@/src/medtech/images-widget/types';
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,7 +26,19 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const response = await medtechAPI.uploadInitiate(body);
+    console.log('[MOCK API] POST /api/medtech/attachments/upload-initiate', body);
+    
+    const response: UploadInitiateResponse = {
+      uploadSessionId: `mock-session-${Date.now()}`,
+      files: body.files.map(f => ({
+        clientRef: f.clientRef,
+        fileId: `mock-file-${Math.random().toString(36).slice(2)}`,
+        uploadUrl: '/api/mock-upload', // Not used in mock
+        headers: {},
+        expiresAt: new Date(Date.now() + 3600000).toISOString(),
+      })),
+    };
+    
     return NextResponse.json(response);
   } catch (error) {
     console.error('[API] POST /api/medtech/attachments/upload-initiate error:', error);
