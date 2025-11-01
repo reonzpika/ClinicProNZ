@@ -237,11 +237,20 @@ function MedtechImagesPageContent() {
   
   return (
     <div className="flex h-screen flex-col bg-slate-50">
-      {/* Compact Top Bar - No patient info */}
-      <header className="border-b border-slate-200 bg-white px-6 py-3">
-        <div className="flex items-center justify-between">
-          {/* Left: Upload Controls */}
-          <div className="flex items-center gap-2">
+      {/* Top Section: Thumbnails + Actions */}
+      <div className="border-b border-slate-200 bg-white">
+        {/* Row 1: Thumbnails + Upload/Camera/QR + Mock Badge */}
+        <div className="flex items-center justify-between px-6 py-4">
+          {/* Left: Thumbnail Strip */}
+          <div className="flex-1 overflow-x-auto">
+            <ThumbnailStrip
+              currentImageId={currentImageId}
+              onImageSelect={setCurrentImageId}
+            />
+          </div>
+          
+          {/* Right: Upload Controls + Mock Badge */}
+          <div className="ml-6 flex items-center gap-2">
             <CapturePanel />
             
             <div className="h-6 w-px bg-slate-300" />
@@ -253,16 +262,61 @@ function MedtechImagesPageContent() {
             >
               {showQR ? 'Hide QR' : 'Show QR'}
             </Button>
+            
+            {process.env.NEXT_PUBLIC_MEDTECH_USE_MOCK === 'true' && (
+              <div className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
+                MOCK
+              </div>
+            )}
           </div>
-          
-          {/* Right: Mock Mode Badge */}
-          {process.env.NEXT_PUBLIC_MEDTECH_USE_MOCK === 'true' && (
-            <div className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
-              MOCK
-            </div>
-          )}
         </div>
-      </header>
+        
+        {/* Row 2: Inbox + Task + Commit Button */}
+        <div className="flex items-center justify-end gap-4 border-t border-slate-200 px-6 py-3">
+          {/* Inbox Checkbox */}
+          <label className="flex cursor-pointer items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={inboxEnabled}
+              onChange={(e) => setInboxEnabled(e.target.checked)}
+              className="size-4 rounded border-slate-300"
+            />
+            <Inbox className="size-4 text-slate-600" />
+            <span className="text-slate-700">Inbox</span>
+          </label>
+          
+          {/* Task Checkbox */}
+          <label className="flex cursor-pointer items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={taskEnabled}
+              onChange={(e) => setTaskEnabled(e.target.checked)}
+              className="size-4 rounded border-slate-300"
+            />
+            <ListTodo className="size-4 text-slate-600" />
+            <span className="text-slate-700">Task</span>
+          </label>
+          
+          {/* Commit Button */}
+          <Button
+            onClick={handleCommit}
+            disabled={!canCommit || isCommitting}
+            size="sm"
+          >
+            {isCommitting ? (
+              <>
+                <Loader2 className="mr-2 size-4 animate-spin" />
+                Committing {uncommittedImages.length} image{uncommittedImages.length === 1 ? '' : 's'}...
+              </>
+            ) : (
+              <>
+                <Check className="mr-2 size-4" />
+                Commit All {uncommittedImages.length} Image{uncommittedImages.length === 1 ? '' : 's'}
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
       
       {/* Error Banner */}
       {error && (
@@ -307,63 +361,6 @@ function MedtechImagesPageContent() {
         {/* Metadata Form (70%) */}
         <div className="flex-[7]">
           <MetadataForm image={currentImage} />
-        </div>
-      </div>
-      
-      {/* Bottom Bar: Thumbnails + Actions */}
-      <div className="flex items-center justify-between border-t border-slate-200 bg-white px-6 py-4">
-        {/* Left: Thumbnail Strip */}
-        <div className="flex-1">
-          <ThumbnailStrip
-            currentImageId={currentImageId}
-            onImageSelect={setCurrentImageId}
-          />
-        </div>
-        
-        {/* Right: Actions */}
-        <div className="ml-6 flex items-center gap-4">
-          {/* Inbox Checkbox */}
-          <label className="flex cursor-pointer items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={inboxEnabled}
-              onChange={(e) => setInboxEnabled(e.target.checked)}
-              className="size-4 rounded border-slate-300"
-            />
-            <Inbox className="size-4 text-slate-600" />
-            <span className="text-slate-700">Inbox</span>
-          </label>
-          
-          {/* Task Checkbox */}
-          <label className="flex cursor-pointer items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={taskEnabled}
-              onChange={(e) => setTaskEnabled(e.target.checked)}
-              className="size-4 rounded border-slate-300"
-            />
-            <ListTodo className="size-4 text-slate-600" />
-            <span className="text-slate-700">Task</span>
-          </label>
-          
-          {/* Commit Button */}
-          <Button
-            onClick={handleCommit}
-            disabled={!canCommit || isCommitting}
-            size="sm"
-          >
-            {isCommitting ? (
-              <>
-                <Loader2 className="mr-2 size-4 animate-spin" />
-                Committing {uncommittedImages.length} image{uncommittedImages.length === 1 ? '' : 's'}...
-              </>
-            ) : (
-              <>
-                <Check className="mr-2 size-4" />
-                Commit All {uncommittedImages.length} Image{uncommittedImages.length === 1 ? '' : 's'}
-              </>
-            )}
-          </Button>
         </div>
       </div>
       

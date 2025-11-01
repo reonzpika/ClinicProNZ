@@ -57,20 +57,8 @@ export function ImagePreview({
   
   return (
     <div className="flex h-full flex-col">
-      {/* Image Display Area */}
-      <div className="flex-1 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
-        <div className="flex size-full items-center justify-center p-4">
-          <img
-            src={image.preview}
-            alt={image.metadata.label || 'Clinical image'}
-            className="max-h-full max-w-full object-contain"
-            style={{ transform: `scale(${zoom})`, transition: 'transform 0.2s' }}
-          />
-        </div>
-      </div>
-      
-      {/* Controls Bar */}
-      <div className="mt-3 flex items-center justify-between">
+      {/* Controls Bar - MOVED TO TOP */}
+      <div className="mb-3 flex items-center justify-between">
         {/* Navigation */}
         <div className="flex items-center gap-2">
           <Button
@@ -91,6 +79,15 @@ export function ImagePreview({
           >
             Next
             <ChevronRight className="ml-1 size-4" />
+          </Button>
+          
+          <Button
+            onClick={onEdit}
+            variant="outline"
+            size="sm"
+          >
+            <Edit2 className="mr-2 size-4" />
+            Edit
           </Button>
         </div>
         
@@ -125,19 +122,21 @@ export function ImagePreview({
             Reset
           </Button>
         </div>
-        
-        {/* Edit Button */}
-        <Button
-          onClick={onEdit}
-          variant="outline"
-          size="sm"
-        >
-          <Edit2 className="mr-2 size-4" />
-          Edit Image
-        </Button>
       </div>
       
-      {/* Image Info */}
+      {/* Image Display Area */}
+      <div className="flex-1 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+        <div className="flex size-full items-center justify-center p-4">
+          <img
+            src={image.preview}
+            alt={image.metadata.label || 'Clinical image'}
+            className="max-h-full max-w-full object-contain"
+            style={{ transform: `scale(${zoom})`, transition: 'transform 0.2s' }}
+          />
+        </div>
+      </div>
+      
+      {/* Image Info - AT BOTTOM */}
       <div className="mt-2 text-xs text-slate-500">
         {image.file.name} • {formatFileSize(image.file.size)}
         {image.metadata.label && ` • ${image.metadata.label}`}
