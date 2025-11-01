@@ -1,9 +1,7 @@
 /**
  * Commit Dialog Component
  * 
- * Confirms commit of images to encounter with options for:
- * - Inbox routing (recipient selection)
- * - Task creation (assignee, due date)
+ * Simplified form-only dialog for inbox/task details
  */
 
 'use client';
@@ -107,7 +105,6 @@ export function CommitDialog({
         </DialogHeader>
         
         <div className="space-y-6">
-          
           {/* Inbox Options */}
           {inboxEnabled && capabilities.features.images.inbox.enabled && (
             <div className="space-y-3">
