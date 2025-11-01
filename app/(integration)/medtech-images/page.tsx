@@ -97,6 +97,14 @@ function MedtechImagesPageContent() {
     (img) => selectedImageIds.includes(img.id) && img.status !== 'committed'
   );
   
+  // Check if all selected images have required metadata (laterality + body site)
+  const hasIncompleteMetadata = committableImages.some(
+    (img) => !img.metadata.laterality || !img.metadata.bodySite
+  );
+  const incompleteCount = committableImages.filter(
+    (img) => !img.metadata.laterality || !img.metadata.bodySite
+  ).length;
+  
   const currentIndex = sessionImages.findIndex(img => img.id === currentImageId);
   const hasPrevious = currentIndex > 0;
   const hasNext = currentIndex < sessionImages.length - 1;
@@ -220,9 +228,11 @@ function MedtechImagesPageContent() {
               <Button
                 onClick={() => setCommitDialogOpen(true)}
                 size="sm"
+                disabled={hasIncompleteMetadata}
               >
                 <Check className="mr-2 size-4" />
                 Commit {committableImages.length}
+                {hasIncompleteMetadata && ` (${incompleteCount} incomplete)`}
               </Button>
             )}
             

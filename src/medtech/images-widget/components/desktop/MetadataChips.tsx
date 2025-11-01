@@ -51,6 +51,7 @@ export function MetadataChips({ imageId, onMetadataChange }: MetadataChipsProps)
         selected={image.metadata.laterality}
         sticky={stickyMetadata.laterality}
         onSelect={(concept) => handleSelect('laterality', concept)}
+        required
       />
       
       {/* Body Site */}
@@ -61,6 +62,7 @@ export function MetadataChips({ imageId, onMetadataChange }: MetadataChipsProps)
         sticky={stickyMetadata.bodySite}
         onSelect={(concept) => handleSelect('bodySite', concept)}
         showOther
+        required
       />
       
       {/* View */}
@@ -107,9 +109,10 @@ interface ChipGroupProps {
   sticky?: CodeableConcept;
   onSelect: (concept: CodeableConcept) => void;
   showOther?: boolean;
+  required?: boolean;
 }
 
-function ChipGroup({ label, options, selected, sticky, onSelect, showOther }: ChipGroupProps) {
+function ChipGroup({ label, options, selected, sticky, onSelect, showOther, required }: ChipGroupProps) {
   const [showOtherInput, setShowOtherInput] = useState(false);
   const [otherValue, setOtherValue] = useState('');
   
@@ -129,6 +132,7 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showOther }: Ch
     <div>
       <label className="mb-2 block text-xs font-medium text-slate-700">
         {label}
+        {required && <span className="text-red-600"> *</span>}
         {!selected && sticky && (
           <span className="ml-2 text-xs font-normal text-slate-500">
             (last: {sticky.display})

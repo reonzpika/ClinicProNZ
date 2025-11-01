@@ -5,68 +5,68 @@
 
 ---
 
-## ✅ Completed (Phase 1 + 1.5)
+## ✅ Completed (Phase 1 + 1.5 + 2.1)
 
+### **Phase 1: Initial Build**
 - ✅ Initial build with mock backend
 - ✅ Desktop page with all components
 - ✅ Mobile page with QR handoff
 - ✅ Image compression service
 - ✅ State management (Zustand)
 - ✅ API routes (mock implementations)
+
+### **Phase 1.5: Layout Redesign**
 - ✅ Layout redesign (Option B: 40/60 preview/metadata split)
 - ✅ Horizontal thumbnail strip
 - ✅ Compact top bar
 - ✅ Navigation controls (Prev/Next)
 - ✅ Status badges (pending, committed)
-- ✅ Basic validation feedback (footer status)
 - ✅ React hooks compliance
 - ✅ TypeScript compilation
 - ✅ Vercel deployment tested
 
----
-
-## 🚧 Phase 2: Frontend Enhancements (Next)
-
-### **High Priority** — Must-have for MVP
-
-#### **1. Required Field Validation** (1-2 hours)
-**Current**: Footer shows "Missing: Laterality, Body Site" but doesn't prevent commit  
-**Goal**: Visual indicators + disabled commit for incomplete images
-
-**Tasks**:
-- [ ] Add red borders to MetadataChips when required fields empty
-- [ ] Show asterisk (*) on required field labels
-- [ ] Disable "Commit" button if any selected images missing required fields
-- [ ] Show tooltip on disabled commit: "X images missing required metadata"
-- [ ] Update CommitDialog to list incomplete images
-
-**Files to edit**:
-- `src/medtech/images-widget/components/desktop/MetadataChips.tsx` — Add `isRequired` prop, red border styling
-- `src/medtech/images-widget/components/desktop/MetadataForm.tsx` — Pass validation status to chips
-- `app/(integration)/medtech-images/page.tsx` — Check committableImages for completeness, disable button
-- `src/medtech/images-widget/components/desktop/CommitDialog.tsx` — Show incomplete image list
+### **Phase 2.1: Validation & Progress** (2025-10-31)
+- ✅ Required field validation (asterisk on Laterality*, Body Site*)
+- ✅ Disabled commit button when incomplete metadata
+- ✅ Upload progress indicator ("X images uploading...")
+- ✅ Success message ("Successfully committed X images")
+- ✅ Auto-close dialog after success (2s delay)
 
 ---
 
-#### **2. Upload Progress Indicator** (2-3 hours)
-**Current**: CommitDialog shows "Committing..." with no progress details  
-**Goal**: Show per-image upload progress during commit
+## 🚧 Phase 2: Frontend Enhancements (In Progress)
 
-**Tasks**:
-- [ ] Add progress tracking to `useCommit` hook
-- [ ] Update CommitDialog to show progress bar
-- [ ] Show list: "✓ Image 1 uploaded", "⏳ Image 2 uploading...", "⏱ Image 3 pending"
-- [ ] Disable close button while uploading
-- [ ] Show "All images committed successfully" on completion
+### **✅ Completed** (2025-10-31)
 
-**Files to edit**:
-- `src/medtech/images-widget/hooks/useCommit.ts` — Track upload state per image
-- `src/medtech/images-widget/components/desktop/CommitDialog.tsx` — Add progress UI
-- `src/medtech/images-widget/stores/imageWidgetStore.ts` — Add `uploadProgress` state
+#### **1. Required Field Validation** ✅
+**Implemented**:
+- ✅ Asterisk (*) on required field labels (Laterality*, Body Site*)
+- ✅ Disabled "Commit" button when incomplete metadata
+- ✅ Button text shows incomplete count: "Commit 3 (2 incomplete)"
+- ✅ Footer status shows "Missing: Laterality, Body Site"
+
+**Files modified**:
+- `src/medtech/images-widget/components/desktop/MetadataChips.tsx` — Added `required` prop, asterisk display
+- `src/medtech/images-widget/components/desktop/MetadataForm.tsx` — Updated header text
+- `app/(integration)/medtech-images/page.tsx` — Added validation logic, disabled button
 
 ---
 
-#### **3. Better Error Handling** (2-3 hours)
+#### **2. Upload Progress Indicator** ✅
+**Implemented**:
+- ✅ Shows "X images uploading..." text during upload
+- ✅ Replaces buttons with progress message (prevents close)
+- ✅ Success message: "Successfully committed X images"
+- ✅ Auto-closes after 2 seconds
+
+**Files modified**:
+- `src/medtech/images-widget/components/desktop/CommitDialog.tsx` — Added `showSuccess` state, conditional footer rendering
+
+---
+
+### **High Priority** — Remaining MVP tasks
+
+#### **3. Better Error Handling** (2-3 hours) — NEXT
 **Current**: Generic error banner at top, no per-image errors  
 **Goal**: Per-image error states with retry options
 

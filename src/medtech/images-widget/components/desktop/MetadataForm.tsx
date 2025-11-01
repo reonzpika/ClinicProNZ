@@ -38,7 +38,7 @@ export function MetadataForm({ image }: MetadataFormProps) {
       <div className="border-b border-slate-200 p-4">
         <h3 className="font-semibold text-slate-900">Image Metadata</h3>
         <p className="mt-1 text-xs text-slate-500">
-          Required fields: Laterality, Body Site
+          Fields marked with <span className="text-red-600">*</span> are required
         </p>
       </div>
       

@@ -36,6 +36,7 @@ export function CommitDialog({ isOpen, onClose }: CommitDialogProps) {
   } = useImageWidgetStore();
   
   const commitMutation = useCommit();
+  const [showSuccess, setShowSuccess] = useState(false);
   
   const [inboxEnabled, setInboxEnabled] = useState(false);
   const [inboxRecipientId, setInboxRecipientId] = useState('');
@@ -80,7 +81,13 @@ export function CommitDialog({ isOpen, onClose }: CommitDialogProps) {
     // Commit
     try {
       await commitMutation.mutateAsync(selectedImageIds);
-      onClose();
+      setShowSuccess(true);
+      
+      // Auto-close after 2 seconds
+      setTimeout(() => {
+        setShowSuccess(false);
+        onClose();
+      }, 2000);
     } catch (err) {
       // Error handled by mutation
     }
@@ -259,31 +266,35 @@ export function CommitDialog({ isOpen, onClose }: CommitDialogProps) {
         </div>
         
         <DialogFooter>
-          <Button
-            onClick={onClose}
-            variant="outline"
-            disabled={commitMutation.isPending}
-          >
-            <X className="mr-2 size-4" />
-            Cancel
-          </Button>
-          
-          <Button
-            onClick={handleCommit}
-            disabled={commitMutation.isPending || imagesToCommit.length === 0}
-          >
-            {commitMutation.isPending ? (
-              <>
-                <Loader2 className="mr-2 size-4 animate-spin" />
-                Committing...
-              </>
-            ) : (
-              <>
+          {commitMutation.isPending ? (
+            <div className="flex w-full items-center justify-center py-2 text-sm text-slate-600">
+              <Loader2 className="mr-2 size-4 animate-spin" />
+              {imagesToCommit.length} image{imagesToCommit.length === 1 ? '' : 's'} uploading...
+            </div>
+          ) : showSuccess ? (
+            <div className="flex w-full items-center justify-center py-2 text-sm font-medium text-green-600">
+              <Check className="mr-2 size-5" />
+              Successfully committed {imagesToCommit.length} image{imagesToCommit.length === 1 ? '' : 's'}
+            </div>
+          ) : (
+            <>
+              <Button
+                onClick={onClose}
+                variant="outline"
+              >
+                <X className="mr-2 size-4" />
+                Cancel
+              </Button>
+              
+              <Button
+                onClick={handleCommit}
+                disabled={imagesToCommit.length === 0}
+              >
                 <Check className="mr-2 size-4" />
                 Commit {imagesToCommit.length} Image{imagesToCommit.length === 1 ? '' : 's'}
-              </>
-            )}
-          </Button>
+              </Button>
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
