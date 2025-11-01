@@ -243,10 +243,16 @@ Can continue with more images or close widget
 - Horizontal scroll if needed
 
 ### **Main Content Split**:
-- Image preview: `flex-[2]` (40% width)
-- Metadata form: `flex-[3]` (60% width)
+- Image preview: `flex-[3]` (30% width)
+- Metadata form: `flex-[7]` (70% width)
 - Gap: `24px`
 - **Rationale**: Metadata entry is the main bottleneck; give it more space
+
+### **Bottom Bar**:
+- Left: Thumbnail strip (scrollable)
+- Right: Inbox checkbox, Task checkbox, Commit button
+- Height: Auto (based on thumbnails, ~140px)
+- Always visible at bottom of screen
 
 ### **QR Panel** (when expanded):
 - Height: `auto` (collapses when hidden)

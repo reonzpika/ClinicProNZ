@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic';
 
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { AlertCircle, Check, Loader2 } from 'lucide-react';
+import { AlertCircle, Check, Loader2, Inbox, ListTodo } from 'lucide-react';
 import { useImageWidgetStore } from '@/src/medtech/images-widget/stores/imageWidgetStore';
 import { useCapabilities } from '@/src/medtech/images-widget/hooks/useCapabilities';
 import { CapturePanel } from '@/src/medtech/images-widget/components/desktop/CapturePanel';
@@ -31,14 +31,14 @@ function MedtechImagesPageContent() {
   // All hooks MUST be declared before any conditional returns
   const [showQR, setShowQR] = useState(false);
   const [currentImageId, setCurrentImageId] = useState<string | null>(null);
+  const [inboxEnabled, setInboxEnabled] = useState(false);
+  const [taskEnabled, setTaskEnabled] = useState(false);
+  const [isCommitting, setIsCommitting] = useState(false);
   
   const {
     encounterContext,
     setEncounterContext,
     sessionImages,
-    selectedImageIds,
-    selectAllImages,
-    clearSelection,
     isCommitDialogOpen,
     setCommitDialogOpen,
     error,
@@ -93,17 +93,16 @@ function MedtechImagesPageContent() {
     ? sessionImages.find(img => img.id === currentImageId) || null
     : sessionImages[0] || null;
     
-  const committableImages = sessionImages.filter(
-    (img) => selectedImageIds.includes(img.id) && img.status !== 'committed'
+  // All uncommitted images
+  const uncommittedImages = sessionImages.filter(img => img.status !== 'committed');
+  
+  // Invalid images (missing required metadata)
+  const invalidImages = uncommittedImages.filter(
+    img => !img.metadata.laterality || !img.metadata.bodySite
   );
   
-  // Check if all selected images have required metadata (laterality + body site)
-  const hasIncompleteMetadata = committableImages.some(
-    (img) => !img.metadata.laterality || !img.metadata.bodySite
-  );
-  const incompleteCount = committableImages.filter(
-    (img) => !img.metadata.laterality || !img.metadata.bodySite
-  ).length;
+  const hasInvalidImages = invalidImages.length > 0;
+  const canCommit = uncommittedImages.length > 0 && !hasInvalidImages;
   
   const currentIndex = sessionImages.findIndex(img => img.id === currentImageId);
   const hasPrevious = currentIndex > 0;
@@ -125,6 +124,79 @@ function MedtechImagesPageContent() {
       if (nextImage) {
         setCurrentImageId(nextImage.id);
       }
+    }
+  };
+  
+  // Commit handler
+  const handleCommit = () => {
+    // If inbox or task enabled, show modal for details first
+    if (inboxEnabled || taskEnabled) {
+      setCommitDialogOpen(true);
+    } else {
+      // Direct commit
+      startCommit();
+    }
+  };
+  
+  const handleModalClose = () => {
+    setCommitDialogOpen(false);
+    // Auto-commit after modal closes (inbox/task details saved)
+    if (inboxEnabled || taskEnabled) {
+      startCommit();
+    }
+  };
+  
+  const startCommit = async () => {
+    setIsCommitting(true);
+    
+    try {
+      // Get all uncommitted images
+      const imageIds = uncommittedImages.map(img => img.id);
+      
+      // Use the commit mutation (this uses the API route)
+      const response = await fetch('/api/medtech/attachments/commit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          encounterId: encounterContext?.encounterId,
+          files: uncommittedImages.map(img => ({
+            fileId: img.id,
+            meta: {
+              label: img.metadata.label,
+              bodySite: img.metadata.bodySite,
+              laterality: img.metadata.laterality,
+              view: img.metadata.view,
+              type: img.metadata.type,
+            },
+            alsoInbox: img.commitOptions?.alsoInbox,
+            alsoTask: img.commitOptions?.alsoTask,
+            idempotencyKey: `${encounterContext?.encounterId}:${img.id}`,
+          })),
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Commit failed');
+      }
+      
+      const result = await response.json();
+      
+      // Update image statuses
+      const { setImageStatus, setImageResult } = useImageWidgetStore.getState();
+      result.files.forEach((fileResult: any) => {
+        if (fileResult.status === 'committed' && fileResult.documentReferenceId) {
+          setImageResult(fileResult.fileId, {
+            documentReferenceId: fileResult.documentReferenceId,
+            mediaId: fileResult.mediaId,
+            inboxMessageId: fileResult.inboxMessageId,
+            taskId: fileResult.taskId,
+          });
+        }
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to commit images');
+    } finally {
+      setIsCommitting(false);
     }
   };
   
@@ -269,18 +341,10 @@ function MedtechImagesPageContent() {
         </div>
       )}
       
-      {/* Thumbnail Strip */}
-      <div className="border-b border-slate-200 bg-white px-6 py-4">
-        <ThumbnailStrip
-          currentImageId={currentImageId}
-          onImageSelect={setCurrentImageId}
-        />
-      </div>
-      
       {/* Main Content: Image Preview + Metadata */}
       <div className="flex flex-1 gap-6 overflow-hidden p-6">
-        {/* Image Preview (40%) */}
-        <div className="flex-[2]">
+        {/* Image Preview (30%) */}
+        <div className="flex-[3]">
           <ImagePreview
             image={currentImage}
             onPrevious={handlePrevious}
@@ -294,16 +358,76 @@ function MedtechImagesPageContent() {
           />
         </div>
         
-        {/* Metadata Form (60%) */}
-        <div className="flex-[3]">
+        {/* Metadata Form (70%) */}
+        <div className="flex-[7]">
           <MetadataForm image={currentImage} />
+        </div>
+      </div>
+      
+      {/* Bottom Bar: Thumbnails + Actions */}
+      <div className="flex items-center justify-between border-t border-slate-200 bg-white px-6 py-4">
+        {/* Left: Thumbnail Strip */}
+        <div className="flex-1">
+          <ThumbnailStrip
+            currentImageId={currentImageId}
+            onImageSelect={setCurrentImageId}
+          />
+        </div>
+        
+        {/* Right: Actions */}
+        <div className="ml-6 flex items-center gap-4">
+          {/* Inbox Checkbox */}
+          <label className="flex cursor-pointer items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={inboxEnabled}
+              onChange={(e) => setInboxEnabled(e.target.checked)}
+              className="size-4 rounded border-slate-300"
+            />
+            <Inbox className="size-4 text-slate-600" />
+            <span className="text-slate-700">Inbox</span>
+          </label>
+          
+          {/* Task Checkbox */}
+          <label className="flex cursor-pointer items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={taskEnabled}
+              onChange={(e) => setTaskEnabled(e.target.checked)}
+              className="size-4 rounded border-slate-300"
+            />
+            <ListTodo className="size-4 text-slate-600" />
+            <span className="text-slate-700">Task</span>
+          </label>
+          
+          {/* Commit Button */}
+          <Button
+            onClick={handleCommit}
+            disabled={!canCommit || isCommitting}
+            size="sm"
+          >
+            {isCommitting ? (
+              <>
+                <Loader2 className="mr-2 size-4 animate-spin" />
+                Committing {uncommittedImages.length} image{uncommittedImages.length === 1 ? '' : 's'}...
+              </>
+            ) : (
+              <>
+                <Check className="mr-2 size-4" />
+                Commit All {uncommittedImages.length} Image{uncommittedImages.length === 1 ? '' : 's'}
+              </>
+            )}
+          </Button>
         </div>
       </div>
       
       {/* Commit Dialog */}
       <CommitDialog
         isOpen={isCommitDialogOpen}
-        onClose={() => setCommitDialogOpen(false)}
+        onClose={handleModalClose}
+        inboxEnabled={inboxEnabled}
+        taskEnabled={taskEnabled}
+        uncommittedCount={uncommittedImages.length}
       />
     </div>
   );

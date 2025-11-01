@@ -9,8 +9,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, Loader2, X, Inbox, ListTodo } from 'lucide-react';
-import { useCommit } from '../../hooks/useCommit';
 import { useImageWidgetStore } from '../../stores/imageWidgetStore';
 import { Button } from '@/src/shared/components/ui/button';
 import {
@@ -25,72 +23,60 @@ import {
 interface CommitDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  inboxEnabled: boolean;
+  taskEnabled: boolean;
+  uncommittedCount: number;
 }
 
-export function CommitDialog({ isOpen, onClose }: CommitDialogProps) {
+export function CommitDialog({ 
+  isOpen, 
+  onClose, 
+  inboxEnabled, 
+  taskEnabled,
+  uncommittedCount 
+}: CommitDialogProps) {
   const {
-    sessionImages,
-    selectedImageIds,
     capabilities,
     encounterContext,
   } = useImageWidgetStore();
   
-  const commitMutation = useCommit();
-  const [showSuccess, setShowSuccess] = useState(false);
-  
-  const [inboxEnabled, setInboxEnabled] = useState(false);
   const [inboxRecipientId, setInboxRecipientId] = useState('');
   const [inboxNote, setInboxNote] = useState('');
   
-  const [taskEnabled, setTaskEnabled] = useState(false);
   const [taskAssigneeId, setTaskAssigneeId] = useState('');
   const [taskDue, setTaskDue] = useState('');
   const [taskNote, setTaskNote] = useState('');
   
-  // Get images to commit
-  const imagesToCommit = sessionImages.filter((img) =>
-    selectedImageIds.includes(img.id) && img.status !== 'committed'
-  );
-  
-  const handleCommit = async () => {
-    if (imagesToCommit.length === 0) {
-      return;
-    }
-    
-    // Update commit options for selected images
-    imagesToCommit.forEach((img) => {
-      useImageWidgetStore.getState().updateCommitOptions(img.id, {
-        alsoInbox: inboxEnabled
-          ? {
-              enabled: true,
-              recipientId: inboxRecipientId,
-              note: inboxNote,
-            }
-          : undefined,
-        alsoTask: taskEnabled
-          ? {
-              enabled: true,
-              assigneeId: taskAssigneeId,
-              due: taskDue,
-              note: taskNote,
-            }
-          : undefined,
-      });
-    });
-    
-    // Commit
-    try {
-      await commitMutation.mutateAsync(selectedImageIds);
-      setShowSuccess(true);
+  const handleDone = () => {
+    // Save inbox/task options to store for the commit
+    if (inboxEnabled || taskEnabled) {
+      const uncommittedImages = useImageWidgetStore.getState().sessionImages.filter(
+        img => img.status !== 'committed'
+      );
       
-      // Auto-close after 2 seconds
-      setTimeout(() => {
-        setShowSuccess(false);
-        onClose();
-      }, 2000);
-    } catch (err) {
-      // Error handled by mutation
+      uncommittedImages.forEach((img) => {
+        useImageWidgetStore.getState().updateCommitOptions(img.id, {
+          alsoInbox: inboxEnabled
+            ? {
+                enabled: true,
+                recipientId: inboxRecipientId,
+                note: inboxNote,
+              }
+            : undefined,
+          alsoTask: taskEnabled
+            ? {
+                enabled: true,
+                assigneeId: taskAssigneeId,
+                due: taskDue,
+                note: taskNote,
+              }
+            : undefined,
+        });
+      });
     }
+    
+    // Close modal (commit will happen in main page after close)
+    onClose();
   };
   
   if (!capabilities) {
@@ -102,65 +88,29 @@ export function CommitDialog({ isOpen, onClose }: CommitDialogProps) {
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>Commit Images to Encounter</DialogTitle>
+          <DialogTitle>
+            {inboxEnabled && taskEnabled
+              ? 'Inbox & Task Details'
+              : inboxEnabled
+                ? 'Inbox Details'
+                : 'Task Details'}
+          </DialogTitle>
           <DialogDescription>
             {encounterContext && (
               <span>
-                Patient: {encounterContext.patientName || encounterContext.patientId}
-                {' • '}
-                Encounter: {encounterContext.encounterId}
+                Committing {uncommittedCount} image{uncommittedCount === 1 ? '' : 's'} to encounter {encounterContext.encounterId}
               </span>
             )}
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-6">
-          {/* Images Summary */}
-          <div>
-            <p className="mb-2 text-sm font-medium text-slate-700">
-              {imagesToCommit.length} image{imagesToCommit.length === 1 ? '' : 's'} selected
-            </p>
-            <div className="grid grid-cols-4 gap-2">
-              {imagesToCommit.slice(0, 8).map((img) => (
-                <div key={img.id} className="relative aspect-square overflow-hidden rounded border">
-                  <img
-                    src={img.thumbnail || img.preview}
-                    alt=""
-                    className="size-full object-cover"
-                  />
-                  {img.metadata.laterality && (
-                    <span className="absolute bottom-1 left-1 rounded bg-purple-500 px-1 py-0.5 text-[9px] font-medium text-white">
-                      {img.metadata.laterality.display}
-                    </span>
-                  )}
-                </div>
-              ))}
-              {imagesToCommit.length > 8 && (
-                <div className="flex aspect-square items-center justify-center rounded border bg-slate-100 text-sm text-slate-600">
-                  +{imagesToCommit.length - 8}
-                </div>
-              )}
-            </div>
-          </div>
           
           {/* Inbox Options */}
-          {capabilities.features.images.inbox.enabled && (
-            <div className="rounded-lg border border-slate-200 p-4">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={inboxEnabled}
-                  onChange={(e) => setInboxEnabled(e.target.checked)}
-                  className="size-4"
-                />
-                <Inbox className="size-5 text-slate-600" />
-                <span className="font-medium text-slate-900">Send to Inbox</span>
-              </label>
-              
-              {inboxEnabled && (
-                <div className="mt-3 space-y-3">
+          {inboxEnabled && capabilities.features.images.inbox.enabled && (
+            <div className="space-y-3">
                   <div>
                     <label htmlFor="inbox-recipient" className="mb-1 block text-xs font-medium text-slate-700">
                       Recipient
@@ -199,21 +149,8 @@ export function CommitDialog({ isOpen, onClose }: CommitDialogProps) {
           )}
           
           {/* Task Options */}
-          {capabilities.features.images.tasks.enabled && (
-            <div className="rounded-lg border border-slate-200 p-4">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={taskEnabled}
-                  onChange={(e) => setTaskEnabled(e.target.checked)}
-                  className="size-4"
-                />
-                <ListTodo className="size-5 text-slate-600" />
-                <span className="font-medium text-slate-900">Create Task</span>
-              </label>
-              
-              {taskEnabled && (
-                <div className="mt-3 space-y-3">
+          {taskEnabled && capabilities.features.images.tasks.enabled && (
+            <div className="space-y-3">
                   <div>
                     <label htmlFor="task-assignee" className="mb-1 block text-xs font-medium text-slate-700">
                       Assignee
@@ -266,35 +203,9 @@ export function CommitDialog({ isOpen, onClose }: CommitDialogProps) {
         </div>
         
         <DialogFooter>
-          {commitMutation.isPending ? (
-            <div className="flex w-full items-center justify-center py-2 text-sm text-slate-600">
-              <Loader2 className="mr-2 size-4 animate-spin" />
-              {imagesToCommit.length} image{imagesToCommit.length === 1 ? '' : 's'} uploading...
-            </div>
-          ) : showSuccess ? (
-            <div className="flex w-full items-center justify-center py-2 text-sm font-medium text-green-600">
-              <Check className="mr-2 size-5" />
-              Successfully committed {imagesToCommit.length} image{imagesToCommit.length === 1 ? '' : 's'}
-            </div>
-          ) : (
-            <>
-              <Button
-                onClick={onClose}
-                variant="outline"
-              >
-                <X className="mr-2 size-4" />
-                Cancel
-              </Button>
-              
-              <Button
-                onClick={handleCommit}
-                disabled={imagesToCommit.length === 0}
-              >
-                <Check className="mr-2 size-4" />
-                Commit {imagesToCommit.length} Image{imagesToCommit.length === 1 ? '' : 's'}
-              </Button>
-            </>
-          )}
+          <Button onClick={handleDone}>
+            Done
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

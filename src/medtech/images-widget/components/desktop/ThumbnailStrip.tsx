@@ -17,7 +17,7 @@ interface ThumbnailStripProps {
 }
 
 export function ThumbnailStrip({ currentImageId, onImageSelect }: ThumbnailStripProps) {
-  const { sessionImages, selectedImageIds, toggleImageSelection, removeImage } = useImageWidgetStore();
+  const { sessionImages, removeImage } = useImageWidgetStore();
   
   if (sessionImages.length === 0) {
     return (
@@ -33,9 +33,7 @@ export function ThumbnailStrip({ currentImageId, onImageSelect }: ThumbnailStrip
         <ThumbnailCard
           key={image.id}
           image={image}
-          isSelected={selectedImageIds.includes(image.id)}
           isCurrent={image.id === currentImageId}
-          onSelect={() => toggleImageSelection(image.id)}
           onClick={() => onImageSelect(image.id)}
           onRemove={() => {
             URL.revokeObjectURL(image.preview);
@@ -49,14 +47,18 @@ export function ThumbnailStrip({ currentImageId, onImageSelect }: ThumbnailStrip
 
 interface ThumbnailCardProps {
   image: WidgetImage;
-  isSelected: boolean;
   isCurrent: boolean;
-  onSelect: () => void;
   onClick: () => void;
   onRemove: () => void;
 }
 
-function ThumbnailCard({ image, isSelected, isCurrent, onSelect, onClick, onRemove }: ThumbnailCardProps) {
+function ThumbnailCard({ image, isCurrent, onClick, onRemove }: ThumbnailCardProps) {
+  // Badge logic: Red = invalid, Green = committed, No badge = valid ready to commit
+  const isInvalid = !image.metadata.laterality || !image.metadata.bodySite;
+  const badgeColor = 
+    image.status === 'committed' ? 'green' :
+    isInvalid ? 'red' :
+    null;
   return (
     <div
       className={`
@@ -73,23 +75,23 @@ function ThumbnailCard({ image, isSelected, isCurrent, onSelect, onClick, onRemo
         className="size-full object-cover"
       />
       
-      {/* Selection Checkbox */}
-      <div className="absolute left-1 top-1 z-10">
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={(e) => {
-            e.stopPropagation();
-            onSelect();
-          }}
-          className="size-4 rounded border-2 border-white shadow-sm"
-        />
-      </div>
-      
-      {/* Status Badge */}
-      <div className="absolute bottom-1 right-1">
-        <StatusBadge status={image.status} />
-      </div>
+      {/* Badge (Red = Invalid, Green = Committed) */}
+      {badgeColor && (
+        <div className="absolute bottom-1 right-1">
+          <div
+            className={`flex size-6 items-center justify-center rounded-full ${
+              badgeColor === 'green' ? 'bg-green-500' : 'bg-red-500'
+            }`}
+            title={badgeColor === 'green' ? 'Committed' : 'Missing required metadata'}
+          >
+            {badgeColor === 'green' ? (
+              <Check className="size-3 text-white" />
+            ) : (
+              <AlertCircle className="size-3 text-white" />
+            )}
+          </div>
+        </div>
+      )}
       
       {/* Remove Button (on hover) */}
       {image.status !== 'uploading' && (
@@ -106,42 +108,6 @@ function ThumbnailCard({ image, isSelected, isCurrent, onSelect, onClick, onRemo
         </button>
       )}
       
-      {/* Metadata Indicators (tiny chips at bottom) */}
-      {(image.metadata.laterality || image.metadata.bodySite) && (
-        <div className="absolute bottom-6 left-1 flex flex-wrap gap-0.5">
-          {image.metadata.laterality && (
-            <span className="rounded bg-purple-600 px-1 py-0.5 text-[8px] font-medium text-white">
-              {image.metadata.laterality.display.slice(0, 1)}
-            </span>
-          )}
-          {image.metadata.bodySite && (
-            <span className="rounded bg-blue-600 px-1 py-0.5 text-[8px] font-medium text-white">
-              {image.metadata.bodySite.display.slice(0, 3)}
-            </span>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function StatusBadge({ status }: { status: WidgetImage['status'] }) {
-  const badges = {
-    pending: { icon: null, bg: 'bg-orange-500', title: 'Pending' },
-    compressing: { icon: <Loader2 className="size-2 animate-spin" />, bg: 'bg-blue-500', title: 'Compressing' },
-    uploading: { icon: <Loader2 className="size-2 animate-spin" />, bg: 'bg-blue-500', title: 'Uploading' },
-    committed: { icon: <Check className="size-2" />, bg: 'bg-green-500', title: 'Committed' },
-    error: { icon: <AlertCircle className="size-2" />, bg: 'bg-red-500', title: 'Error' },
-  };
-  
-  const badge = badges[status];
-  
-  return (
-    <div
-      className={`flex items-center justify-center rounded p-1 text-white ${badge.bg}`}
-      title={badge.title}
-    >
-      {badge.icon || <div className="size-2 rounded-full bg-white" />}
     </div>
   );
 }
