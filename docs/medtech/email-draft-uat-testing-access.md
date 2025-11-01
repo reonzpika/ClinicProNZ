@@ -81,6 +81,22 @@ If widget can be added to Left Pane:
 
 ---
 
+## 📚 Medtech Evolution Documentation Reference
+
+**Medtech Evolution User Guide - Layout**:
+- **URL**: https://insight.medtechglobal.com/download/user-guide-medtech-evolution-layout/?wpdmdl=2581&refresh=69056cdf83cfc1761963231
+- **Date Added**: 2025-10-31
+- **Sections Covered**: Interface structure, navigation, Dashboards, Left Pane, Ribbon, workspace customization
+
+**Key Sections for Widget Integration**:
+- **Layout** — Interface structure overview
+- **Left Pane** — Quick launch panel for navigation
+- **Dashboards** — Clinical/CBIT/Patient dashboards, customization
+- **Workspace** — Dual monitor support, workspace customization
+- **Medtech Evolution Ribbon** — Ribbon-based navigation, role-based access
+
+---
+
 ## Original Email Content (For Reference)
 
 ---

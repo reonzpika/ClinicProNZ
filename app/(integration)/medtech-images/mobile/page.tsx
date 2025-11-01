@@ -9,7 +9,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { Camera, Upload, Check, X } from 'lucide-react';
+import { Camera, Upload, Check } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
