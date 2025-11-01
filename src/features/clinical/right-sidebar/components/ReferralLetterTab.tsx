@@ -7,7 +7,6 @@ import React, { useCallback, useState } from 'react';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
 import { Textarea } from '@/src/shared/components/ui/textarea';
-import { Input } from '@/src/shared/components/ui/input';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { createAuthHeaders } from '@/src/shared/utils';
 
