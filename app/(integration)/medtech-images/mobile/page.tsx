@@ -8,13 +8,14 @@
 
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Camera, Upload, Check } from 'lucide-react';
+import { Camera, Upload, Check, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 
-export default function MedtechImagesMobilePage() {
+function MobilePageContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get('t');
   
@@ -149,5 +150,22 @@ export default function MedtechImagesMobilePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function MedtechImagesMobilePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-slate-50">
+          <div className="text-center">
+            <Loader2 className="mx-auto mb-4 size-12 animate-spin text-purple-500" />
+            <p className="text-slate-600">Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <MobilePageContent />
+    </Suspense>
   );
 }
