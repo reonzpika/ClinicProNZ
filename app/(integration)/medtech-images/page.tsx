@@ -27,7 +27,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/component
 
 function MedtechImagesPageContent() {
   const searchParams = useSearchParams();
+  
+  // All hooks MUST be declared before any conditional returns
   const [showQR, setShowQR] = useState(false);
+  const [currentImageId, setCurrentImageId] = useState<string | null>(null);
   
   const {
     encounterContext,
@@ -78,11 +81,46 @@ function MedtechImagesPageContent() {
     }
   }, [searchParams, setEncounterContext]);
   
-  // Count committable images
+  // Auto-select first image when images added
+  useEffect(() => {
+    if (sessionImages.length > 0 && !currentImageId && sessionImages[0]) {
+      setCurrentImageId(sessionImages[0].id);
+    }
+  }, [sessionImages, currentImageId]);
+  
+  // Computed values
+  const currentImage = currentImageId 
+    ? sessionImages.find(img => img.id === currentImageId) || null
+    : sessionImages[0] || null;
+    
   const committableImages = sessionImages.filter(
     (img) => selectedImageIds.includes(img.id) && img.status !== 'committed'
   );
   
+  const currentIndex = sessionImages.findIndex(img => img.id === currentImageId);
+  const hasPrevious = currentIndex > 0;
+  const hasNext = currentIndex < sessionImages.length - 1;
+  
+  // Navigation handlers
+  const handlePrevious = () => {
+    if (hasPrevious) {
+      const prevImage = sessionImages[currentIndex - 1];
+      if (prevImage) {
+        setCurrentImageId(prevImage.id);
+      }
+    }
+  };
+  
+  const handleNext = () => {
+    if (hasNext) {
+      const nextImage = sessionImages[currentIndex + 1];
+      if (nextImage) {
+        setCurrentImageId(nextImage.id);
+      }
+    }
+  };
+  
+  // Conditional returns AFTER all hooks
   // Loading state
   if (isLoadingCapabilities || !capabilities) {
     return (
@@ -119,42 +157,6 @@ function MedtechImagesPageContent() {
       </div>
     );
   }
-  
-  // Current image state
-  const [currentImageId, setCurrentImageId] = useState<string | null>(null);
-  const currentImage = currentImageId 
-    ? sessionImages.find(img => img.id === currentImageId) || null
-    : sessionImages[0] || null;
-  
-  // Auto-select first image when images added
-  useEffect(() => {
-    if (sessionImages.length > 0 && !currentImageId && sessionImages[0]) {
-      setCurrentImageId(sessionImages[0].id);
-    }
-  }, [sessionImages, currentImageId]);
-  
-  // Navigation
-  const currentIndex = sessionImages.findIndex(img => img.id === currentImageId);
-  const hasPrevious = currentIndex > 0;
-  const hasNext = currentIndex < sessionImages.length - 1;
-  
-  const handlePrevious = () => {
-    if (hasPrevious) {
-      const prevImage = sessionImages[currentIndex - 1];
-      if (prevImage) {
-        setCurrentImageId(prevImage.id);
-      }
-    }
-  };
-  
-  const handleNext = () => {
-    if (hasNext) {
-      const nextImage = sessionImages[currentIndex + 1];
-      if (nextImage) {
-        setCurrentImageId(nextImage.id);
-      }
-    }
-  };
   
   return (
     <div className="flex h-screen flex-col bg-slate-50">
