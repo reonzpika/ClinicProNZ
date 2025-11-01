@@ -1,9 +1,8 @@
 /**
  * Capture Panel Component
  * 
- * Provides:
+ * Compact buttons for top bar:
  * - File upload (click to browse)
- * - Drag & drop
  * - Camera capture (desktop)
  * - Image compression before adding to session
  */
@@ -11,7 +10,7 @@
 'use client';
 
 import { Upload, Camera, Loader2 } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { useImageWidgetStore } from '../../stores/imageWidgetStore';
 import { useImageCompression } from '../../hooks/useImageCompression';
 import { Button } from '@/src/shared/components/ui/button';
@@ -79,26 +78,6 @@ export function CapturePanel() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to process images');
     }
-  };
-  
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    
-    handleFiles(e.dataTransfer.files);
-  };
-  
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
-  
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
   };
   
   return (
