@@ -43,6 +43,10 @@ export function useImageCompression(): UseImageCompressionResult {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         
+        if (!file) {
+          continue; // Skip if file is undefined
+        }
+        
         // Update progress
         setProgress(Math.round(((i + 0.5) / files.length) * 100));
         
