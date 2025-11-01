@@ -139,13 +139,13 @@ function MedtechImagesPageContent() {
   const hasNext = currentIndex < sessionImages.length - 1;
   
   const handlePrevious = () => {
-    if (hasPrevious) {
+    if (hasPrevious && sessionImages[currentIndex - 1]) {
       setCurrentImageId(sessionImages[currentIndex - 1].id);
     }
   };
   
   const handleNext = () => {
-    if (hasNext) {
+    if (hasNext && sessionImages[currentIndex + 1]) {
       setCurrentImageId(sessionImages[currentIndex + 1].id);
     }
   };
