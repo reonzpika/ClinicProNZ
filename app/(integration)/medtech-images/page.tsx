@@ -150,9 +150,6 @@ function MedtechImagesPageContent() {
     setIsCommitting(true);
     
     try {
-      // Get all uncommitted images
-      const imageIds = uncommittedImages.map(img => img.id);
-      
       // Use the commit mutation (this uses the API route)
       const response = await fetch('/api/medtech/attachments/commit', {
         method: 'POST',
