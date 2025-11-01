@@ -2,20 +2,27 @@
  * Metadata Form Component
  * 
  * Form for editing metadata of the current image
- * Displays in right panel (40% width)
+ * Displays in right panel (70% width)
  */
 
 'use client';
 
-import { Check, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
+import { Check, AlertCircle, CheckCheck, ImagePlus } from 'lucide-react';
+import { Button } from '@/src/shared/components/ui/button';
 import type { WidgetImage } from '../../types';
 import { MetadataChips } from './MetadataChips';
+import { ApplyMetadataModal } from './ApplyMetadataModal';
+import { useImageWidgetStore } from '../../stores/imageWidgetStore';
 
 interface MetadataFormProps {
   image: WidgetImage | null;
 }
 
 export function MetadataForm({ image }: MetadataFormProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { sessionImages, applyMetadataToImages, setError } = useImageWidgetStore();
+  
   if (!image) {
     return (
       <div className="flex h-full items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-8">
@@ -32,6 +39,39 @@ export function MetadataForm({ image }: MetadataFormProps) {
   const hasBodySite = !!image.metadata.bodySite;
   const isComplete = hasLaterality && hasBodySite;
   
+  // Calculate invalid images for "Apply to Invalid" button
+  const invalidImages = sessionImages.filter((img) => {
+    // Don't include current image
+    if (img.id === image.id) return false;
+    // Invalid = missing required fields AND not committed
+    return (!img.metadata.laterality || !img.metadata.bodySite) && img.status !== 'committed';
+  });
+  
+  // Show apply buttons only when laterality AND bodySite are selected
+  const canApply = hasLaterality && hasBodySite;
+  
+  // Handle quick apply to invalid images
+  const handleApplyToInvalid = () => {
+    const targetIds = invalidImages.map((img) => img.id);
+    applyMetadataToImages(image.id, targetIds);
+    setError(null);
+    // TODO: Add toast notification
+    console.log(`? Applied metadata to ${targetIds.length} images`);
+  };
+  
+  // Handle selective apply (opens modal)
+  const handleChooseImages = () => {
+    setIsModalOpen(true);
+  };
+  
+  // Handle apply from modal
+  const handleModalApply = (targetIds: string[]) => {
+    applyMetadataToImages(image.id, targetIds);
+    setError(null);
+    // TODO: Add toast notification
+    console.log(`? Applied metadata to ${targetIds.length} images`);
+  };
+  
   return (
     <div className="flex h-full flex-col rounded-lg border border-slate-200 bg-white">
       {/* Header */}
@@ -45,6 +85,25 @@ export function MetadataForm({ image }: MetadataFormProps) {
       {/* Form Content */}
       <div className="flex-1 overflow-y-auto p-4">
         <MetadataChips imageId={image.id} />
+        
+        {/* Apply Metadata Buttons */}
+        {canApply && (
+          <div className="mt-6 flex items-center gap-3 border-t border-slate-200 pt-4">
+            {/* Primary: Apply to Invalid */}
+            {invalidImages.length > 0 && (
+              <Button onClick={handleApplyToInvalid} size="sm">
+                <CheckCheck className="mr-2 size-4" />
+                Apply to {invalidImages.length} Invalid
+              </Button>
+            )}
+            
+            {/* Secondary: Choose Images (link style) */}
+            <Button onClick={handleChooseImages} variant="link" size="sm">
+              <ImagePlus className="mr-2 size-4" />
+              Choose Images...
+            </Button>
+          </div>
+        )}
       </div>
       
       {/* Footer */}
@@ -63,6 +122,15 @@ export function MetadataForm({ image }: MetadataFormProps) {
           </div>
         )}
       </div>
+      
+      {/* Apply Metadata Modal */}
+      <ApplyMetadataModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        sourceImage={image}
+        availableImages={sessionImages}
+        onApply={handleModalApply}
+      />
     </div>
   );
 }

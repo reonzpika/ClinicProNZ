@@ -34,6 +34,8 @@ interface ImageWidgetStore {
   
   updateMetadata: (id: string, metadata: Partial<WidgetImage['metadata']>) => void;
   
+  applyMetadataToImages: (sourceId: string, targetIds: string[]) => void;
+  
   updateCommitOptions: (id: string, options: Partial<WidgetImage['commitOptions']>) => void;
   
   setImageStatus: (id: string, status: WidgetImage['status'], error?: string) => void;
@@ -118,6 +120,29 @@ export const useImageWidgetStore = create<ImageWidgetStore>((set) => ({
         : img
     ),
   })),
+  
+  applyMetadataToImages: (sourceId, targetIds) => set((state) => {
+    // Find source image
+    const sourceImage = state.sessionImages.find((img) => img.id === sourceId);
+    if (!sourceImage) return state;
+    
+    // Copy laterality, bodySite, view, type (not label - that's image-specific)
+    const metadataToCopy = {
+      laterality: sourceImage.metadata.laterality,
+      bodySite: sourceImage.metadata.bodySite,
+      view: sourceImage.metadata.view,
+      type: sourceImage.metadata.type,
+    };
+    
+    // Apply to target images
+    return {
+      sessionImages: state.sessionImages.map((img) =>
+        targetIds.includes(img.id)
+          ? { ...img, metadata: { ...img.metadata, ...metadataToCopy } }
+          : img
+      ),
+    };
+  }),
   
   updateCommitOptions: (id, options) => set((state) => ({
     sessionImages: state.sessionImages.map((img) =>
