@@ -179,7 +179,7 @@ function MedtechImagesPageContent() {
       const result = await response.json();
       
       // Update image statuses
-      const { setImageStatus, setImageResult } = useImageWidgetStore.getState();
+      const { setImageResult } = useImageWidgetStore.getState();
       result.files.forEach((fileResult: any) => {
         if (fileResult.status === 'committed' && fileResult.documentReferenceId) {
           setImageResult(fileResult.fileId, {
