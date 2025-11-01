@@ -19,7 +19,6 @@ import { Button } from '@/src/shared/components/ui/button';
 export function CapturePanel() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
   
   const { addImage, capabilities, setError } = useImageWidgetStore();
   const { compressImages, isCompressing, progress } = useImageCompression();
