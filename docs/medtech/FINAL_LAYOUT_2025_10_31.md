@@ -9,8 +9,8 @@
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│  [🔴][🔴][✅]  [Upload] [Camera] [QR]            [MOCK]     │ ← Row 1
-│                          ☐ Inbox  ☐ Task  [Commit All 2]    │ ← Row 2
+│  [🔴][🔴][✅]           [Upload] [QR]              [MOCK]   │ ← Action panel
+│  (Thumbnails left)     ☐ Inbox  ☐ Task  [Commit All 2]     │ ← (2 lines, right)
 ├──────────────────────────────────────────────────────────────┤
 │  [Error Banner] (optional)                                   │
 ├──────────────────────────────────────────────────────────────┤
@@ -44,23 +44,25 @@
 
 ## 📐 Layout Sections
 
-### **Top Section (2 rows)**
+### **Top Section (Single row with 2-line action panel)**
 
-**Row 1** - Thumbnails + Upload Controls:
+**Layout**:
 ```
-[Thumbnails (left, scrollable)]  [Upload] [Camera] [QR] [MOCK badge]
+[Thumbnails (left, scrollable)]  |  [Upload] [QR] [MOCK]     ← Line 1
+                                 |  ☐ Inbox  ☐ Task  [Commit] ← Line 2
 ```
-- **Left**: Horizontal thumbnail strip (120x120px each)
-- **Right**: Upload/Camera/QR buttons + Mock mode badge
-- **Height**: ~140px (based on thumbnail height)
 
-**Row 2** - Commit Actions:
-```
-                                  ☐ Inbox  ☐ Task  [Commit All X]
-```
-- **Right-aligned**: Inbox checkbox, Task checkbox, Commit button
-- **Height**: ~50px
-- **Total top section**: ~190px
+**Left side**: Horizontal thumbnail strip
+- 120x120px per thumbnail
+- Scrollable horizontally
+- Badge system (🔴 invalid, ✅ committed, no badge = valid)
+
+**Right side**: 2-line action panel
+- **Line 1**: Upload button + QR toggle + Mock badge
+- **Line 2**: Inbox checkbox + Task checkbox + Commit button
+- Compact vertical stack (gap: 8px)
+
+**Height**: ~140px total (based on thumbnail height + padding)
 
 ---
 
@@ -118,13 +120,14 @@ Label (optional)
 
 ## 🎯 Key Design Decisions
 
-### **1. Top-Heavy Layout**
-**Why**: All actions (upload, commit, navigation) accessible without scrolling
+### **1. Top-Heavy Layout with 2-Line Action Panel**
+**Why**: All actions grouped in one compact area, accessible without scrolling
 
 **Benefits**:
-- ✅ Upload controls always visible
-- ✅ Commit button always visible (shows progress inline)
-- ✅ Thumbnail overview at top (see all images at once)
+- ✅ Upload + commit controls always visible
+- ✅ Thumbnails at top for quick overview
+- ✅ Compact 2-line panel saves vertical space
+- ✅ No camera button (desktop doesn't need it)
 
 ---
 
