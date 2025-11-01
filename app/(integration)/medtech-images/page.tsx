@@ -255,63 +255,12 @@ function MedtechImagesPageContent() {
             </Button>
           </div>
           
-          {/* Right: Action Controls */}
-          <div className="flex items-center gap-3">
-            {/* Status Counter */}
-            {sessionImages.length > 0 && (
-              <span className="text-sm text-slate-600">
-                {sessionImages.length} image{sessionImages.length === 1 ? '' : 's'}
-                {selectedImageIds.length > 0 && (
-                  <span className="ml-2 font-medium text-purple-600">
-                    ? {selectedImageIds.length} selected
-                  </span>
-                )}
-              </span>
-            )}
-            
-            {/* Selection Controls */}
-            {sessionImages.length > 0 && (
-              <>
-                {selectedImageIds.length > 0 ? (
-                  <Button
-                    onClick={clearSelection}
-                    variant="ghost"
-                    size="sm"
-                  >
-                    Clear
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={selectAllImages}
-                    variant="ghost"
-                    size="sm"
-                  >
-                    Select All
-                  </Button>
-                )}
-              </>
-            )}
-            
-            {/* Commit Button */}
-            {committableImages.length > 0 && (
-              <Button
-                onClick={() => setCommitDialogOpen(true)}
-                size="sm"
-                disabled={hasIncompleteMetadata}
-              >
-                <Check className="mr-2 size-4" />
-                Commit {committableImages.length}
-                {hasIncompleteMetadata && ` (${incompleteCount} incomplete)`}
-              </Button>
-            )}
-            
-            {/* Mock Mode Badge */}
-            {process.env.NEXT_PUBLIC_MEDTECH_USE_MOCK === 'true' && (
-              <div className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
-                MOCK
-              </div>
-            )}
-          </div>
+          {/* Right: Mock Mode Badge */}
+          {process.env.NEXT_PUBLIC_MEDTECH_USE_MOCK === 'true' && (
+            <div className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
+              MOCK
+            </div>
+          )}
         </div>
       </header>
       
