@@ -7,7 +7,7 @@
 
 'use client';
 
-import { Check, AlertCircle, Loader2, X } from 'lucide-react';
+import { Check, AlertCircle, X } from 'lucide-react';
 import type { WidgetImage } from '../../types';
 import { useImageWidgetStore } from '../../stores/imageWidgetStore';
 
