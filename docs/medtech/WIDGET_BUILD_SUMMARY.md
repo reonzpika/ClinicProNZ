@@ -411,13 +411,36 @@ npm run lint
 
 ---
 
-**Status**: ✅ **Ready for Testing**
+**Status**: ✅ **Layout Redesigned (Option B) - Ready for Testing**
+
+## 🎨 UI Layout (2025-10-31 Update)
+
+**Decision**: Option B - Compact Gallery + Detail Pane
+
+**Key changes from initial build**:
+- ❌ Removed patient header (Medtech provides)
+- ❌ Removed ClinicPro branding (widget only)
+- ✅ Horizontal thumbnail strip (compact, 4-10 images)
+- ✅ Large image preview (60%) + Metadata form (40%)
+- ✅ Compact top bar (upload, QR, commit actions)
+- ✅ Focus on single-image workflow (navigate with Prev/Next)
+
+**Rationale**: 
+- 4-10 images per session (doesn't need large gallery)
+- Main bottleneck: Metadata entry (1-2 min per image)
+- Focus on current image = faster workflow
+
+**Layout documentation**: See `docs/medtech/UI_LAYOUT_SPEC.md`
+
+---
 
 You can now:
 1. Start the dev server
 2. Navigate to `/medtech-images`
-3. Test full desktop flow with mock backend
-4. Generate QR and test mobile flow
-5. Refine UX based on testing
+3. Test new layout with Option B design
+4. Upload images → See horizontal thumbnail strip
+5. Click thumbnail → Large preview + metadata form
+6. Navigate with Previous/Next buttons
+7. Refine UX based on testing
 
 **When Medtech responds**: Switch `NEXT_PUBLIC_MEDTECH_USE_MOCK=false` and test with real ALEX API.

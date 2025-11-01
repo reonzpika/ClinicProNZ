@@ -103,56 +103,14 @@ export function CapturePanel() {
   };
   
   return (
-    <div className="space-y-3">
-      {/* Drag & Drop Zone */}
-      <div
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        className={`
-          relative rounded-lg border-2 border-dashed p-4 transition-colors
-          ${isDragging
-            ? 'border-purple-400 bg-purple-50'
-            : 'border-slate-300 bg-white'
-          }
-        `}
-      >
-        {isDragging && (
-          <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-purple-100/80">
-            <p className="text-sm font-medium text-purple-700">Drop images here</p>
-          </div>
-        )}
-        
-        <div className="text-center">
-          <svg
-            className="mx-auto mb-2 size-8 text-slate-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-            />
-          </svg>
-          <p className="text-sm text-slate-600">
-            Drag & drop images here
-          </p>
-          <p className="mt-1 text-xs text-slate-500">
-            or click buttons below
-          </p>
-        </div>
-      </div>
-      
-      {/* Upload Buttons */}
-      <div className="grid grid-cols-2 gap-2">
+    <>
+      {/* Compact Buttons for Top Bar */}
+      <div className="flex items-center gap-2">
         <Button
           onClick={() => fileInputRef.current?.click()}
           disabled={isCompressing}
           variant="outline"
-          className="w-full"
+          size="sm"
         >
           {isCompressing ? (
             <>
@@ -171,7 +129,7 @@ export function CapturePanel() {
           onClick={() => cameraInputRef.current?.click()}
           disabled={isCompressing}
           variant="outline"
-          className="w-full"
+          size="sm"
         >
           <Camera className="mr-2 size-4" />
           Camera
@@ -196,6 +154,6 @@ export function CapturePanel() {
         onChange={(e) => handleFiles(e.target.files)}
         className="hidden"
       />
-    </div>
+    </>
   );
 }

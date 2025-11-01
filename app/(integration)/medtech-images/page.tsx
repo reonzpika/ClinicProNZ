@@ -17,7 +17,9 @@ import { AlertCircle, Check, Loader2 } from 'lucide-react';
 import { useImageWidgetStore } from '@/src/medtech/images-widget/stores/imageWidgetStore';
 import { useCapabilities } from '@/src/medtech/images-widget/hooks/useCapabilities';
 import { CapturePanel } from '@/src/medtech/images-widget/components/desktop/CapturePanel';
-import { GalleryGrid } from '@/src/medtech/images-widget/components/desktop/GalleryGrid';
+import { ThumbnailStrip } from '@/src/medtech/images-widget/components/desktop/ThumbnailStrip';
+import { ImagePreview } from '@/src/medtech/images-widget/components/desktop/ImagePreview';
+import { MetadataForm } from '@/src/medtech/images-widget/components/desktop/MetadataForm';
 import { QRPanel } from '@/src/medtech/images-widget/components/desktop/QRPanel';
 import { CommitDialog } from '@/src/medtech/images-widget/components/desktop/CommitDialog';
 import { Button } from '@/src/shared/components/ui/button';
@@ -118,27 +120,111 @@ function MedtechImagesPageContent() {
     );
   }
   
+  // Current image state
+  const [currentImageId, setCurrentImageId] = useState<string | null>(null);
+  const currentImage = currentImageId 
+    ? sessionImages.find(img => img.id === currentImageId) || null
+    : sessionImages[0] || null;
+  
+  // Auto-select first image when images added
+  useEffect(() => {
+    if (sessionImages.length > 0 && !currentImageId) {
+      setCurrentImageId(sessionImages[0].id);
+    }
+  }, [sessionImages, currentImageId]);
+  
+  // Navigation
+  const currentIndex = sessionImages.findIndex(img => img.id === currentImageId);
+  const hasPrevious = currentIndex > 0;
+  const hasNext = currentIndex < sessionImages.length - 1;
+  
+  const handlePrevious = () => {
+    if (hasPrevious) {
+      setCurrentImageId(sessionImages[currentIndex - 1].id);
+    }
+  };
+  
+  const handleNext = () => {
+    if (hasNext) {
+      setCurrentImageId(sessionImages[currentIndex + 1].id);
+    }
+  };
+  
   return (
     <div className="flex h-screen flex-col bg-slate-50">
-      {/* Header */}
-      <header className="border-b border-slate-200 bg-white px-6 py-4">
+      {/* Compact Top Bar - No patient info */}
+      <header className="border-b border-slate-200 bg-white px-6 py-3">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-slate-900">ClinicPro Images</h1>
-            <p className="text-sm text-slate-600">
-              {encounterContext.patientName || encounterContext.patientId}
-              {encounterContext.patientNHI && (
-                <span className="ml-2 text-slate-500">NHI: {encounterContext.patientNHI}</span>
-              )}
-            </p>
+          {/* Left: Upload Controls */}
+          <div className="flex items-center gap-2">
+            <CapturePanel />
+            
+            <div className="h-6 w-px bg-slate-300" />
+            
+            <Button
+              onClick={() => setShowQR(!showQR)}
+              variant="ghost"
+              size="sm"
+            >
+              {showQR ? 'Hide QR' : 'Show QR'}
+            </Button>
           </div>
           
-          {/* Mock Mode Indicator */}
-          {process.env.NEXT_PUBLIC_MEDTECH_USE_MOCK === 'true' && (
-            <div className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
-              MOCK MODE
-            </div>
-          )}
+          {/* Right: Action Controls */}
+          <div className="flex items-center gap-3">
+            {/* Status Counter */}
+            {sessionImages.length > 0 && (
+              <span className="text-sm text-slate-600">
+                {sessionImages.length} image{sessionImages.length === 1 ? '' : 's'}
+                {selectedImageIds.length > 0 && (
+                  <span className="ml-2 font-medium text-purple-600">
+                    ? {selectedImageIds.length} selected
+                  </span>
+                )}
+              </span>
+            )}
+            
+            {/* Selection Controls */}
+            {sessionImages.length > 0 && (
+              <>
+                {selectedImageIds.length > 0 ? (
+                  <Button
+                    onClick={clearSelection}
+                    variant="ghost"
+                    size="sm"
+                  >
+                    Clear
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={selectAllImages}
+                    variant="ghost"
+                    size="sm"
+                  >
+                    Select All
+                  </Button>
+                )}
+              </>
+            )}
+            
+            {/* Commit Button */}
+            {committableImages.length > 0 && (
+              <Button
+                onClick={() => setCommitDialogOpen(true)}
+                size="sm"
+              >
+                <Check className="mr-2 size-4" />
+                Commit {committableImages.length}
+              </Button>
+            )}
+            
+            {/* Mock Mode Badge */}
+            {process.env.NEXT_PUBLIC_MEDTECH_USE_MOCK === 'true' && (
+              <div className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
+                MOCK
+              </div>
+            )}
+          </div>
         </div>
       </header>
       
@@ -158,86 +244,41 @@ function MedtechImagesPageContent() {
         </div>
       )}
       
-      {/* Main Content */}
+      {/* QR Panel (Collapsible) */}
+      {showQR && (
+        <div className="border-b border-slate-200 bg-white px-6 py-4">
+          <QRPanel />
+        </div>
+      )}
+      
+      {/* Thumbnail Strip */}
+      <div className="border-b border-slate-200 bg-white px-6 py-4">
+        <ThumbnailStrip
+          currentImageId={currentImageId}
+          onImageSelect={setCurrentImageId}
+        />
+      </div>
+      
+      {/* Main Content: Image Preview + Metadata */}
       <div className="flex flex-1 gap-6 overflow-hidden p-6">
-        {/* Left Sidebar */}
-        <div className="w-80 space-y-4 overflow-y-auto">
-          {/* Capture Panel */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Capture Images</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CapturePanel />
-            </CardContent>
-          </Card>
-          
-          {/* QR Panel (Collapsible) */}
-          {showQR ? (
-            <QRPanel />
-          ) : (
-            <Button
-              onClick={() => setShowQR(true)}
-              variant="outline"
-              className="w-full"
-            >
-              Show Mobile QR Code
-            </Button>
-          )}
+        {/* Image Preview (60%) */}
+        <div className="flex-[3]">
+          <ImagePreview
+            image={currentImage}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            onEdit={() => {
+              // TODO: Open image editor modal
+              alert('Image editor coming soon!');
+            }}
+            hasPrevious={hasPrevious}
+            hasNext={hasNext}
+          />
         </div>
         
-        {/* Main Gallery Area */}
-        <div className="flex-1 overflow-hidden">
-          <Card className="flex h-full flex-col">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">
-                  Session Images ({sessionImages.length})
-                </CardTitle>
-                
-                <div className="flex items-center gap-2">
-                  {/* Selection Actions */}
-                  {sessionImages.length > 0 && (
-                    <>
-                      {selectedImageIds.length > 0 ? (
-                        <>
-                          <Button
-                            onClick={clearSelection}
-                            variant="ghost"
-                            size="sm"
-                          >
-                            Clear ({selectedImageIds.length})
-                          </Button>
-                          
-                          {committableImages.length > 0 && (
-                            <Button
-                              onClick={() => setCommitDialogOpen(true)}
-                              size="sm"
-                            >
-                              <Check className="mr-2 size-4" />
-                              Commit {committableImages.length}
-                            </Button>
-                          )}
-                        </>
-                      ) : (
-                        <Button
-                          onClick={selectAllImages}
-                          variant="outline"
-                          size="sm"
-                        >
-                          Select All
-                        </Button>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-            </CardHeader>
-            
-            <CardContent className="flex-1 overflow-y-auto">
-              <GalleryGrid />
-            </CardContent>
-          </Card>
+        {/* Metadata Form (40%) */}
+        <div className="flex-[2]">
+          <MetadataForm image={currentImage} />
         </div>
       </div>
       
