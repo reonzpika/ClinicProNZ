@@ -10,11 +10,15 @@
 
 ### **1. Layout Changes**
 
-**Thumbnails moved to bottom**:
-- Removed from middle position
-- Now in bottom bar alongside actions
-- Left side: Horizontal scrollable thumbnail strip
-- Right side: Inbox checkbox, Task checkbox, Commit button
+**Thumbnails moved to TOP** (final decision 2025-10-31):
+- Row 1: Thumbnails (left) + Upload/Camera/QR buttons (right)
+- Row 2: Inbox/Task checkboxes + Commit button (right-aligned)
+- All actions visible at top for quick access
+
+**Image controls moved to top of preview**:
+- Prev/Next/Edit buttons at top (was bottom)
+- Zoom controls at top right
+- Image info at bottom
 
 **Layout proportions updated**:
 - Image preview: 30% (was 40%)
