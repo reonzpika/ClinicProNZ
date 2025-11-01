@@ -18,7 +18,7 @@ export function CapturePanel() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { addImage, capabilities, setError } = useImageWidgetStore();
-  const { compressImages, isCompressing, progress } = useImageCompression();
+  const { compressImages, isCompressing } = useImageCompression();
   
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) {
@@ -107,7 +107,7 @@ export function CapturePanel() {
       {isCompressing && (
         <div className="flex items-center gap-2 text-sm text-slate-600">
           <Loader2 className="size-4 animate-spin" />
-          <span>Processing {progress.current}/{progress.total}...</span>
+          <span>Processing...</span>
         </div>
       )}
     </div>
