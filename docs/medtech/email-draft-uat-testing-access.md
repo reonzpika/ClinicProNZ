@@ -14,6 +14,73 @@
 
 ---
 
+## 📋 Additional Questions for Medtech Support (2025-10-31)
+
+### Widget Placement in Medtech Evolution UI
+
+Based on Medtech Evolution User Guide documentation, we need clarification on **where/how the widget is launched**:
+
+**Available UI Areas** (from Medtech Evolution User Guide):
+1. **Left Pane** — Quick launch panel for navigation (Patient Profile, Appointments, Worklist, etc.)
+2. **Dashboards** — Clinical, CBIT, and Patient dashboards (right-click to add/remove items)
+3. **Ribbon** — Ribbon-based navigation with role-based access
+4. **Direct Module** — Launched as standalone module/tab
+
+**Questions for Defne (Support Team)**:
+
+**Q1: Widget Registration**
+- How do we register our widget URL with Medtech Evolution?
+- Is there a configuration file, admin panel, or API for widget registration?
+
+**Q2: Widget Placement Options**
+- Can our widget be launched from:
+  - ✅ Left Pane (quick launch)?
+  - ✅ Dashboard (as a dashboard widget)?
+  - ✅ Ribbon button?
+  - ✅ Direct module/tab?
+  - ✅ Multiple locations (user preference)?
+
+**Q3: Launch Mechanism**
+- **iFrame embedding** (preferred):
+  - What are the CSP (Content Security Policy) requirements?
+  - Can we use PostMessage for bidirectional communication?
+  - Are there size constraints for iframe widgets?
+- **New tab fallback**:
+  - How is encounter context passed via URL parameters?
+  - Is there a signed token mechanism?
+
+**Q4: Encounter Context Passing**
+- What information is available when widget launches:
+  - ✅ Patient ID / NHI?
+  - ✅ Encounter ID?
+  - ✅ Facility ID?
+  - ✅ Provider ID?
+  - ✅ Session token?
+- Format: JWT, URL params, PostMessage, or other?
+
+**Q5: Dashboard Widget Specific**
+If widget can be added to Dashboard:
+- Is it persistent across sessions?
+- Can users customize size/position?
+- Real-time updates supported (e.g., via SSE or WebSocket)?
+
+**Q6: Left Pane Widget Specific**
+If widget can be added to Left Pane:
+- How to add to quick launch panel?
+- Icon customization options?
+- Auto-open on encounter start?
+
+**Q7: Dual Monitor / Workspace Support**
+- Medtech Evolution supports dual monitors and workspace customization
+- Can widget open in secondary monitor automatically?
+- Workspace state persistence?
+
+---
+
+**Action Required**: Email Defne with these additional questions (separate follow-up or include in next communication)
+
+---
+
 ## Original Email Content (For Reference)
 
 ---
