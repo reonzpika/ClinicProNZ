@@ -16,8 +16,6 @@ interface MetadataFormProps {
 }
 
 export function MetadataForm({ image }: MetadataFormProps) {
-  const { updateMetadata } = useImageWidgetStore();
-  
   if (!image) {
     return (
       <div className="flex h-full items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-8">

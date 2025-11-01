@@ -10,7 +10,6 @@
 import { Check, AlertCircle, Loader2, X } from 'lucide-react';
 import type { WidgetImage } from '../../types';
 import { useImageWidgetStore } from '../../stores/imageWidgetStore';
-import { formatFileSize } from '../../services/compression';
 
 interface ThumbnailStripProps {
   currentImageId: string | null;
