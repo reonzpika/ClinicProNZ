@@ -8,6 +8,9 @@
 
 'use client';
 
+// Force dynamic rendering (required for useSearchParams)
+export const dynamic = 'force-dynamic';
+
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { AlertCircle, Check, Loader2 } from 'lucide-react';
