@@ -139,14 +139,20 @@ function MedtechImagesPageContent() {
   const hasNext = currentIndex < sessionImages.length - 1;
   
   const handlePrevious = () => {
-    if (hasPrevious && sessionImages[currentIndex - 1]) {
-      setCurrentImageId(sessionImages[currentIndex - 1].id);
+    if (hasPrevious) {
+      const prevImage = sessionImages[currentIndex - 1];
+      if (prevImage) {
+        setCurrentImageId(prevImage.id);
+      }
     }
   };
   
   const handleNext = () => {
-    if (hasNext && sessionImages[currentIndex + 1]) {
-      setCurrentImageId(sessionImages[currentIndex + 1].id);
+    if (hasNext) {
+      const nextImage = sessionImages[currentIndex + 1];
+      if (nextImage) {
+        setCurrentImageId(nextImage.id);
+      }
     }
   };
   
