@@ -40,6 +40,26 @@ All Medtech widget TypeScript files pass type checking with no errors:
 
 ## 🔧 Fixed Issues (2025-10-31)
 
+### **0. React Hooks violation (Runtime)**
+**Issue**: React Error #310 - More hooks rendered than during previous render  
+**Root cause**: Hooks declared AFTER conditional returns in `MedtechImagesPageContent`  
+**Fix**: Moved all hooks (useState, useEffect, etc.) to top of component, BEFORE any conditional returns
+```typescript
+// ✅ Correct: All hooks at top
+function Component() {
+  const [state1] = useState();
+  const [state2] = useState();
+  useEffect(() => {}, []);
+  
+  // Then conditional returns
+  if (loading) return <Loading />;
+  return <Main />;
+}
+```
+**Commit**: `8275e5da` - "Checkpoint before follow-up message"
+
+---
+
 ### **1. Type narrowing for array access**
 **Issue**: `sessionImages[0]` possibly undefined  
 **Fix**: Added null checks before accessing array elements

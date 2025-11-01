@@ -411,36 +411,40 @@ npm run lint
 
 ---
 
-**Status**: ✅ **Layout Redesigned (Option B) - Compilation Clean**
+**Status**: ✅ **Layout Complete & Tested (Option B)** — 2025-10-31
 
-## 🎨 UI Layout (2025-10-31 Update)
+## 🎨 UI Layout (Final - Option B)
 
-**Decision**: Option B - Compact Gallery + Detail Pane
+**Decision**: Compact Gallery + Detail Pane (metadata-first workflow)
 
-**Key changes from initial build**:
-- ❌ Removed patient header (Medtech provides)
-- ❌ Removed ClinicPro branding (widget only)
-- ✅ Horizontal thumbnail strip (compact, 4-10 images)
-- ✅ Image preview (40%) + Metadata form (60%) — **metadata-first workflow**
-- ✅ Compact top bar (upload, QR, commit actions)
-- ✅ Focus on single-image workflow (navigate with Prev/Next)
+**Key features**:
+- ✅ Horizontal thumbnail strip (compact, perfect for 4-10 images)
+- ✅ Image preview (40%) + Metadata form (60%) — **metadata entry prioritized**
+- ✅ Compact top bar (Upload, Camera, QR, Commit actions)
+- ✅ No patient header (Medtech Evolution provides context)
+- ✅ Focus on single-image workflow (Prev/Next navigation)
+- ✅ Real-time status badges (pending, committed)
+- ✅ Validation feedback (metadata complete/incomplete)
 
 **Rationale**: 
-- 4-10 images per session (doesn't need large gallery)
-- Main bottleneck: Metadata entry (1-2 min per image)
-- Focus on current image = faster workflow
+- 4-10 images per session → Horizontal strip is ideal
+- Main bottleneck: Metadata entry (1-2 min per image) → Form gets 60% width
+- Single-image focus → Clearer workflow, less cognitive load
 
 **Layout documentation**: See `docs/medtech/UI_LAYOUT_SPEC.md`
 
+**Testing**: ✅ Verified working on Vercel deployment
+
 ---
 
-You can now:
-1. Start the dev server
-2. Navigate to `/medtech-images`
-3. Test new layout with Option B design
-4. Upload images → See horizontal thumbnail strip
-5. Click thumbnail → Large preview + metadata form
-6. Navigate with Previous/Next buttons
-7. Refine UX based on testing
+## ✅ What You Can Do Now
 
-**When Medtech responds**: Switch `NEXT_PUBLIC_MEDTECH_USE_MOCK=false` and test with real ALEX API.
+1. **Upload images**: Upload/Camera buttons or mobile QR flow
+2. **Navigate**: Click thumbnails or use Prev/Next buttons
+3. **Add metadata**: Laterality, Body Site, View, Type, Label via chips
+4. **Review**: See status badges, validation feedback
+5. **Commit**: Select images → Commit button → Configure inbox/task
+
+**Mock mode**: All API calls use mock responses (see `app/api/(integration)/medtech/`)
+
+**Real API**: When Medtech UAT access is ready, set `NEXT_PUBLIC_MEDTECH_USE_MOCK=false`
