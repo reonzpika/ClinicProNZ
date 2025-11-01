@@ -10,8 +10,6 @@
 import { Check, AlertCircle } from 'lucide-react';
 import type { WidgetImage } from '../../types';
 import { MetadataChips } from './MetadataChips';
-import { Button } from '@/src/shared/components/ui/button';
-import { useImageWidgetStore } from '../../stores/imageWidgetStore';
 
 interface MetadataFormProps {
   image: WidgetImage | null;
