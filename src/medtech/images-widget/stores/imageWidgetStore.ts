@@ -80,7 +80,7 @@ interface ImageWidgetStore {
   setStickyMetadata: (key: keyof ImageWidgetStore['stickyMetadata'], value: CodeableConcept) => void;
 }
 
-export const useImageWidgetStore = create<ImageWidgetStore>((set, get) => ({
+export const useImageWidgetStore = create<ImageWidgetStore>((set) => ({
   // Initial state
   encounterContext: null,
   capabilities: null,
