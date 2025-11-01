@@ -240,10 +240,10 @@ http://localhost:3000/medtech-images/mobile?t=<token-from-qr>
 
 ## 🚀 Next Steps
 
-### **Phase 1: Current (Mock Backend)** ✅ Complete
+### **Phase 1: Basic Frontend (Mock Backend)** ✅ Complete (2025-10-31)
 
 - [x] Folder structure
-- [x] Mock API service
+- [x] Mock API service (server-side safe)
 - [x] Desktop UI components
 - [x] Mobile basic flow
 - [x] Image compression
@@ -252,6 +252,62 @@ http://localhost:3000/medtech-images/mobile?t=<token-from-qr>
 - [x] Commit dialog
 - [x] API route handlers
 - [x] Environment configuration
+- [x] Widget compiles and runs
+- [x] Basic capture/upload/commit flow working
+
+**Status**: Widget is functional with mock backend. Ready for UX refinements.
+
+---
+
+### **Phase 1.5: Frontend Polish** ⏳ Current (est. 2-3 days)
+
+**High Priority:**
+- [ ] **Metadata UX Improvements**
+  - [ ] Body site autocomplete/search (beyond chips)
+  - [ ] Bulk metadata application (apply to multiple images)
+  - [ ] Required field indicators (visual cues)
+  - [ ] Metadata preview in gallery (expand/collapse)
+  - [ ] Sticky metadata per session (remember last selections)
+  
+- [ ] **Image Editor Implementation**
+  - [ ] Editor modal (crop, rotate, annotations)
+  - [ ] Arrow/circle drawing tools
+  - [ ] "Save as new" workflow (non-destructive)
+  - [ ] Preview original vs edited
+  - [ ] Undo/redo support
+  
+- [ ] **Commit Flow Polish**
+  - [ ] Validation before commit (required fields)
+  - [ ] Better preview (metadata summary)
+  - [ ] Upload progress indicator
+  - [ ] Success confirmation with results
+  - [ ] Show committed DocumentReference IDs
+  
+- [ ] **Error Handling**
+  - [ ] Visual error banners (not just console)
+  - [ ] Field-level validation errors
+  - [ ] Retry mechanisms
+  - [ ] Clear error messages
+
+**Medium Priority:**
+- [ ] **Gallery Improvements**
+  - [ ] Sort by date/status/body site
+  - [ ] Filter by laterality/type
+  - [ ] Search within session
+  - [ ] Keyboard navigation (arrow keys)
+  
+- [ ] **Mobile Flow Enhancement**
+  - [ ] Per-image metadata on mobile
+  - [ ] Real-time sync indicator
+  - [ ] Upload progress per image
+  - [ ] Better camera capture UX
+
+**Low Priority (Future):**
+- [ ] Accessibility (keyboard shortcuts, screen reader)
+- [ ] Performance (lazy loading, virtual scroll)
+- [ ] Advanced features (comparison, bulk ops)
+
+---
 
 ### **Phase 2: Real API Integration** ⏳ Blocked
 
