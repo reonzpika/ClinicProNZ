@@ -1,15 +1,14 @@
 /**
  * Capture Panel Component
  * 
- * Compact buttons for top bar:
+ * Compact upload button for desktop:
  * - File upload (click to browse)
- * - Camera capture (desktop)
  * - Image compression before adding to session
  */
 
 'use client';
 
-import { Upload, Camera, Loader2 } from 'lucide-react';
+import { Upload, Loader2 } from 'lucide-react';
 import { useRef } from 'react';
 import { useImageWidgetStore } from '../../stores/imageWidgetStore';
 import { useImageCompression } from '../../hooks/useImageCompression';
@@ -17,7 +16,6 @@ import { Button } from '@/src/shared/components/ui/button';
 
 export function CapturePanel() {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
   
   const { addImage, capabilities, setError } = useImageWidgetStore();
   const { compressImages, isCompressing, progress } = useImageCompression();
@@ -80,58 +78,38 @@ export function CapturePanel() {
     }
   };
   
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFiles(e.target.files);
+  };
+  
   return (
-    <>
-      {/* Compact Buttons for Top Bar */}
-      <div className="flex items-center gap-2">
-        <Button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isCompressing}
-          variant="outline"
-          size="sm"
-        >
-          {isCompressing ? (
-            <>
-              <Loader2 className="mr-2 size-4 animate-spin" />
-              {progress}%
-            </>
-          ) : (
-            <>
-              <Upload className="mr-2 size-4" />
-              Upload
-            </>
-          )}
-        </Button>
-        
-        <Button
-          onClick={() => cameraInputRef.current?.click()}
-          disabled={isCompressing}
-          variant="outline"
-          size="sm"
-        >
-          <Camera className="mr-2 size-4" />
-          Camera
-        </Button>
-      </div>
-      
-      {/* Hidden File Inputs */}
+    <div className="flex items-center gap-2">
+      {/* Upload Button */}
       <input
         ref={fileInputRef}
         type="file"
         accept="image/*"
         multiple
-        onChange={(e) => handleFiles(e.target.files)}
         className="hidden"
+        onChange={handleFileSelect}
       />
+      <Button
+        onClick={() => fileInputRef.current?.click()}
+        disabled={isCompressing}
+        size="sm"
+        variant="default"
+      >
+        <Upload className="mr-2 size-4" />
+        Upload
+      </Button>
       
-      <input
-        ref={cameraInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        onChange={(e) => handleFiles(e.target.files)}
-        className="hidden"
-      />
-    </>
+      {/* Progress Indicator */}
+      {isCompressing && (
+        <div className="flex items-center gap-2 text-sm text-slate-600">
+          <Loader2 className="size-4 animate-spin" />
+          <span>Processing {progress.current}/{progress.total}...</span>
+        </div>
+      )}
+    </div>
   );
 }
