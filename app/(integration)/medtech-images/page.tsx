@@ -8,7 +8,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { AlertCircle, Check, Loader2 } from 'lucide-react';
 import { useImageWidgetStore } from '@/src/medtech/images-widget/stores/imageWidgetStore';
@@ -20,7 +20,7 @@ import { CommitDialog } from '@/src/medtech/images-widget/components/desktop/Com
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 
-export default function MedtechImagesPage() {
+function MedtechImagesPageContent() {
   const searchParams = useSearchParams();
   const [showQR, setShowQR] = useState(false);
   
@@ -244,5 +244,22 @@ export default function MedtechImagesPage() {
         onClose={() => setCommitDialogOpen(false)}
       />
     </div>
+  );
+}
+
+export default function MedtechImagesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center bg-slate-50">
+          <div className="text-center">
+            <Loader2 className="mx-auto mb-4 size-12 animate-spin text-purple-500" />
+            <p className="text-slate-600">Loading Medtech Images Widget...</p>
+          </div>
+        </div>
+      }
+    >
+      <MedtechImagesPageContent />
+    </Suspense>
   );
 }
