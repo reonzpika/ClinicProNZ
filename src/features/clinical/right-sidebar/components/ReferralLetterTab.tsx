@@ -17,8 +17,7 @@ export const ReferralLetterTab: React.FC = () => {
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
 
-  const [specialty, setSpecialty] = useState('');
-  const [instructions, setInstructions] = useState('');
+  const [referralReason, setReferralReason] = useState('');
   const [referralLetter, setReferralLetter] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,8 +29,8 @@ export const ReferralLetterTab: React.FC = () => {
       return;
     }
 
-    if (!specialty || specialty.trim() === '') {
-      setError('Please enter a specialty');
+    if (!referralReason || referralReason.trim() === '') {
+      setError('Please enter the reason for referring');
       return;
     }
 
@@ -45,8 +44,7 @@ export const ReferralLetterTab: React.FC = () => {
         headers: createAuthHeaders(userId, userTier),
         body: JSON.stringify({
           consultationNote: generatedNotes,
-          specialty: specialty.trim(),
-          instructions: instructions.trim() || undefined,
+          referralReason: referralReason.trim(),
         }),
       });
 
@@ -78,7 +76,7 @@ export const ReferralLetterTab: React.FC = () => {
     } finally {
       setIsGenerating(false);
     }
-  }, [generatedNotes, specialty, instructions, userId, userTier]);
+  }, [generatedNotes, referralReason, userId, userTier]);
 
   const handleCopy = useCallback(() => {
     if (referralLetter) {
@@ -115,29 +113,14 @@ export const ReferralLetterTab: React.FC = () => {
       {/* Input Form */}
       <div className="space-y-3">
         <div>
-          <label htmlFor="specialty" className="mb-1 block text-xs font-medium text-slate-700">
-            Specialty / Specialist
-          </label>
-          <Input
-            id="specialty"
-            type="text"
-            placeholder="e.g. Cardiology, Dr Smith - Orthopaedics"
-            value={specialty}
-            onChange={(e) => setSpecialty(e.target.value)}
-            disabled={isGenerating}
-            className="text-sm"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="instructions" className="mb-1 block text-xs font-medium text-slate-700">
-            Additional Context (Optional)
+          <label htmlFor="referralReason" className="mb-1 block text-xs font-medium text-slate-700">
+            Reason for Referring <span className="text-red-500">*</span>
           </label>
           <Textarea
-            id="instructions"
-            placeholder="e.g. Focus on recent ECG changes, urgent review needed"
-            value={instructions}
-            onChange={(e) => setInstructions(e.target.value)}
+            id="referralReason"
+            placeholder="e.g. Assess for surgical intervention, review management plan, confirm diagnosis"
+            value={referralReason}
+            onChange={(e) => setReferralReason(e.target.value)}
             disabled={isGenerating}
             rows={3}
             className="text-sm"
@@ -146,7 +129,7 @@ export const ReferralLetterTab: React.FC = () => {
 
         <Button
           onClick={handleGenerate}
-          disabled={isGenerating || !specialty.trim()}
+          disabled={isGenerating || !referralReason.trim()}
           className="w-full"
           size="sm"
         >

@@ -34,8 +34,7 @@ export async function POST(req: Request) {
 
     const { 
       consultationNote,
-      specialty,
-      instructions,
+      referralReason,
     } = body;
 
     // Validation
@@ -46,10 +45,10 @@ export async function POST(req: Request) {
       }, { status: 400 });
     }
 
-    if (!specialty || typeof specialty !== 'string' || specialty.trim() === '') {
+    if (!referralReason || typeof referralReason !== 'string' || referralReason.trim() === '') {
       return NextResponse.json({ 
         code: 'BAD_REQUEST', 
-        message: 'Missing specialty' 
+        message: 'Missing referral reason' 
       }, { status: 400 });
     }
 
@@ -87,11 +86,16 @@ Your task:
    - The key clinical concern or question
    - What the GP is asking the specialist to do
 
-2. Follow with the consultation note (adjusted slightly for referral context if needed)
+2. Follow with the consultation note in STRUCTURED, TELEGRAPHIC format:
+   - Use clear section headings (History:, Examination:, Assessment:, Plan:, etc.)
+   - Write in telegraphic style: short phrases, abbreviations, no complete sentences
+   - Structure the information for easy scanning
+   - Use bullet points or line breaks for clarity
 
 Guidelines:
-- Specialists read many letters daily. Make it easy to scan.
-- First paragraph should be direct and to the point.
+- Specialists read many letters daily. Make it EASY TO SCAN.
+- First paragraph: direct and to the point.
+- Consultation note: TELEGRAPHIC style (not prose paragraphs).
 - Use NZ medical terminology and abbreviations appropriately.
 - Keep professional tone suitable for specialist-to-specialist communication.
 - DO NOT add unnecessary pleasantries or verbose introductions.
@@ -100,12 +104,25 @@ Guidelines:
 Format:
 [One concise paragraph stating referral reason and question]
 
-[Consultation note - adjusted for referral context]`;
+History:
+[Telegraphic presentation - symptoms, duration, key features]
+
+Examination:
+[Key findings - telegraphic]
+
+Assessment:
+[Clinical impression - brief]
+
+Plan:
+[What's been done, what's requested]`;
 
     // Build user prompt
-    const userPrompt = `Please generate a referral letter for: ${specialty.trim()}
+    const userPrompt = `Please generate a referral letter.
 
-${instructions && instructions.trim() ? `Additional context from GP:\n${instructions.trim()}\n\n` : ''}Consultation note:
+Reason for referring:
+${referralReason.trim()}
+
+Consultation note:
 ${consultationNote.trim()}`;
 
     // Check remaining time
