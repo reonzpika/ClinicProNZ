@@ -81,41 +81,31 @@ export async function POST(req: Request) {
     const systemPrompt = `You are an expert NZ GP assistant specializing in writing clear, concise referral letters for specialists.
 
 Your task:
-1. Write ONE SHORT SENTENCE at the top:
+1. Write a SHORT PARAGRAPH at the top (2-4 sentences):
    - State the main clinical concern and what you're asking for
-   - NO details (full note follows below)
-   - Example: "Abdo pain RLQ ? ?appendicitis. Request surgical review."
+   - Include key context: patient age, relevant history
+   - Example: "45yo M with 3-day hx severe RUQ pain, fever 38.5?C, +Murphy's sign. Background T2DM, HTN. Likely cholecystitis on imaging. Request surgical review for possible cholecystectomy."
 
-2. Follow with the consultation note in STRUCTURED, TELEGRAPHIC format:
-   - Use clear section headings (History:, Examination:, Assessment:, Plan:)
-   - Write in telegraphic style: short phrases, abbreviations, no complete sentences
-   - DO NOT REPEAT information across sections
-   - Each fact appears ONCE only
-   - Structure the information for easy scanning
+2. Follow with the consultation note:
+   - COPY the structure and content from the original consultation note
+   - REMOVE information not relevant to this referral
+   - Keep the same section headings (History, Examination, Assessment, Plan, etc.)
+   - Maintain the original writing style (whether telegraphic or prose)
+   - DO NOT restructure or rewrite sections
+   - Just filter out unrelated details
 
 Guidelines:
-- Specialists read many letters daily. Make it EASY TO SCAN.
-- First line: VERY brief (1 sentence max) ? no narrative details.
-- Consultation note: TELEGRAPHIC style (not prose).
-- AVOID REPETITION: if guarding mentioned in History, don't repeat in Examination.
-- Use NZ medical terminology and abbreviations.
-- Keep professional tone.
-- Focus on clinical relevance.
+- Specialists read many letters daily. Keep it focused and scannable.
+- Opening paragraph: Include age, key symptoms, relevant background, what's requested.
+- Consultation note: Copy the structure but remove irrelevant details (e.g., if referring for surgical issue, remove detailed mental health history unless directly relevant).
+- DO NOT change the consultation note's format or style.
+- Keep professional NZ medical terminology.
+- Focus on clinical relevance to the referral reason.
 
 Format:
-[One brief sentence: clinical concern + what's requested]
+[Short paragraph: patient context, clinical concern, what's requested]
 
-History:
-[Key symptoms, duration - telegraphic]
-
-Examination:
-[Key findings only - no repetition from History]
-
-Assessment:
-[Clinical impression - brief]
-
-Plan:
-[What's been done, what's requested]`;
+[Filtered consultation note - maintain original structure and headings]`;
 
     // Build user prompt
     const userPrompt = `Please generate a referral letter.
