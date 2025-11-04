@@ -10,8 +10,8 @@
 All Medtech widget TypeScript files pass type checking with no errors:
 
 ### **Components**
-- ✅ `app/(integration)/medtech-images/page.tsx`
-- ✅ `app/(integration)/medtech-images/mobile/page.tsx`
+- ✅ `app/(medtech)/medtech-images/page.tsx`
+- ✅ `app/(medtech)/medtech-images/mobile/page.tsx`
 - ✅ `src/medtech/images-widget/components/desktop/ThumbnailStrip.tsx`
 - ✅ `src/medtech/images-widget/components/desktop/ImagePreview.tsx`
 - ✅ `src/medtech/images-widget/components/desktop/MetadataForm.tsx`
@@ -111,7 +111,7 @@ Error: @clerk/clerk-react: Missing publishableKey
 npx tsc --noEmit --project tsconfig.json
 
 # Lint Medtech files
-npx eslint "src/medtech/**/*.{ts,tsx}" "app/(integration)/medtech-images/**/*.{ts,tsx}"
+npx eslint "src/medtech/**/*.{ts,tsx}" "app/(medtech)/medtech-images/**/*.{ts,tsx}"
 
 # Build (ignores pre-existing Clerk error)
 npm run build

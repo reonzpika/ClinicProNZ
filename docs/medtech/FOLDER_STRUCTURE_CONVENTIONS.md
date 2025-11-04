@@ -14,9 +14,9 @@ Route groups like `(integration)`, `(clinical)`, `(admin)` are **organizational 
 
 **Example**:
 ```
-File path:     app/(integration)/medtech-images/page.tsx
+File path:     app/(medtech)/medtech-images/page.tsx
 URL:           /medtech-images
-Import path:   @/app/(integration)/medtech-images/page  (rarely needed)
+Import path:   @/app/(medtech)/medtech-images/page  (rarely needed)
 ```
 
 ### **When Documenting Routes**
@@ -26,10 +26,10 @@ Import path:   @/app/(integration)/medtech-images/page  (rarely needed)
 - `/medtech-images/mobile` (mobile QR handoff)
 
 ❌ **Don't use** file path with route groups in docs:
-- ~~`app/(integration)/medtech-images/page.tsx`~~ (only for file system reference)
+- ~~`app/(medtech)/medtech-images/page.tsx`~~ (only for file system reference)
 
 ✅ **Exception**: When specifically discussing file structure, use full path:
-- "The desktop page is located at `app/(integration)/medtech-images/page.tsx`"
+- "The desktop page is located at `app/(medtech)/medtech-images/page.tsx`"
 
 ---
 
@@ -38,12 +38,11 @@ Import path:   @/app/(integration)/medtech-images/page  (rarely needed)
 ```
 /workspace/
 ├── app/
-│   ├── (integration)/                    # Route group (not in URL)
-│   │   └── medtech-images/               # → URL: /medtech-images
-│   │       ├── page.tsx                  # → URL: /medtech-images
-│   │       ├── layout.tsx
-│   │       └── mobile/
-│   │           └── page.tsx              # → URL: /medtech-images/mobile
+│   └── (medtech)/                        # Route group (medtech pages)
+│       └── medtech-images/               # → URL: /medtech-images
+│           ├── page.tsx                  # → URL: /medtech-images
+│           └── mobile/
+│               └── page.tsx             # → URL: /medtech-images/mobile
 │   │
 │   └── api/
 │       └── (integration)/                # Route group (not in URL)
@@ -266,15 +265,15 @@ src/
 
 ### **When referring to routes**:
 ✅ Use URL path: `/medtech-images`, `/api/medtech/capabilities`  
-❌ Don't use file path: ~~`app/(integration)/medtech-images/page.tsx`~~
+❌ Don't use file path: ~~`app/(medtech)/medtech-images/page.tsx`~~
 
 ### **When referring to components**:
 ✅ Use import path: `@/src/medtech/images-widget/components/desktop/CapturePanel`  
 ❌ Don't use relative path: ~~`../../../medtech/images-widget/...`~~
 
 ### **When referring to file location**:
-✅ Use full file path: `app/(integration)/medtech-images/page.tsx`  
-✅ Explain route group: "Located at `app/(integration)/medtech-images/page.tsx` (route group doesn't appear in URL)"
+✅ Use full file path: `app/(medtech)/medtech-images/page.tsx`  
+✅ Explain route group: "Located at `app/(medtech)/medtech-images/page.tsx` (route group doesn't appear in URL)"
 
 ---
 
@@ -299,8 +298,8 @@ touch src/medtech/images-widget/hooks/useNewHook.ts
 
 ### **Creating a new API route**:
 ```bash
-mkdir -p app/api/(integration)/medtech/new-route
-touch app/api/(integration)/medtech/new-route/route.ts
+mkdir -p app/(medtech)/medtech-images/new-page
+touch app/(medtech)/medtech-images/new-page/page.tsx
 ```
 
 ---

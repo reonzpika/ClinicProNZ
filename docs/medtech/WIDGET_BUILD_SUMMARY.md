@@ -49,7 +49,7 @@ app/api/(integration)/medtech/
 
 **Pages**:
 ```
-app/(integration)/medtech-images/
+app/(medtech)/medtech-images/
 ├── page.tsx                           ✅ Desktop UI (main widget)
 └── mobile/page.tsx                    ✅ Mobile capture flow
 ```

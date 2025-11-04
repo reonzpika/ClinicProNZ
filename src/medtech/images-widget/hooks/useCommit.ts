@@ -6,10 +6,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { medtechAPI } from '../services/mock-medtech-api';
 import { useImageWidgetStore } from '../stores/imageWidgetStore';
 import type { CommitRequest } from '../types';
+import { useToast } from '@/src/shared/components/ui/toast';
 
 export function useCommit() {
   const queryClient = useQueryClient();
   const { encounterContext, sessionImages, setImageStatus, setImageResult } = useImageWidgetStore();
+  const { show: showToast } = useToast();
   
   return useMutation({
     mutationFn: async (imageIds: string[]) => {
@@ -50,7 +52,10 @@ export function useCommit() {
       // Commit to API
       const response = await medtechAPI.commit(request);
       
-      // Update results
+      // Update results and track successes/failures
+      let successCount = 0;
+      let errorCount = 0;
+      
       response.files.forEach((fileResult) => {
         if (fileResult.status === 'committed' && fileResult.documentReferenceId) {
           setImageResult(fileResult.fileId, {
@@ -59,10 +64,33 @@ export function useCommit() {
             inboxMessageId: fileResult.inboxMessageId,
             taskId: fileResult.taskId,
           });
+          successCount++;
         } else if (fileResult.status === 'error') {
           setImageStatus(fileResult.fileId, 'error', fileResult.error);
+          errorCount++;
         }
       });
+      
+      // Show toast notifications
+      if (successCount > 0 && errorCount === 0) {
+        showToast({
+          title: 'Success',
+          description: `Successfully committed ${successCount} image${successCount === 1 ? '' : 's'}`,
+          variant: 'default',
+        });
+      } else if (successCount > 0 && errorCount > 0) {
+        showToast({
+          title: 'Partial Success',
+          description: `Committed ${successCount} image${successCount === 1 ? '' : 's'}, ${errorCount} failed`,
+          variant: 'default',
+        });
+      } else if (errorCount > 0) {
+        showToast({
+          title: 'Commit Failed',
+          description: `Failed to commit ${errorCount} image${errorCount === 1 ? '' : 's'}. Click error badges for details.`,
+          variant: 'destructive',
+        });
+      }
       
       return response;
     },
@@ -71,13 +99,18 @@ export function useCommit() {
       queryClient.invalidateQueries({ queryKey: ['medtech', 'images'] });
     },
     onError: (error, imageIds) => {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to commit';
+      
       // Mark all images as error
       imageIds.forEach((id) => {
-        setImageStatus(
-          id,
-          'error',
-          error instanceof Error ? error.message : 'Failed to commit'
-        );
+        setImageStatus(id, 'error', errorMessage);
+      });
+      
+      // Show error toast
+      showToast({
+        title: 'Commit Failed',
+        description: `Failed to commit ${imageIds.length} image${imageIds.length === 1 ? '' : 's'}. ${errorMessage}`,
+        variant: 'destructive',
       });
     },
   });

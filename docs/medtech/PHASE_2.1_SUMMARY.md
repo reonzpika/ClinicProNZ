@@ -111,7 +111,7 @@ setTimeout(() => {
 |------|---------|
 | `src/medtech/images-widget/components/desktop/MetadataChips.tsx` | Added `required` prop, asterisk display in label |
 | `src/medtech/images-widget/components/desktop/MetadataForm.tsx` | Updated header text for required fields |
-| `app/(integration)/medtech-images/page.tsx` | Validation logic, disabled commit button |
+| `app/(medtech)/medtech-images/page.tsx` | Validation logic, disabled commit button |
 | `src/medtech/images-widget/components/desktop/CommitDialog.tsx` | Upload progress + success message logic |
 
 **Total lines changed**: ~50 lines

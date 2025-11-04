@@ -48,7 +48,7 @@
 **Files modified**:
 - `src/medtech/images-widget/components/desktop/MetadataChips.tsx` — Added `required` prop, asterisk display
 - `src/medtech/images-widget/components/desktop/MetadataForm.tsx` — Updated header text
-- `app/(integration)/medtech-images/page.tsx` — Added validation logic, disabled button
+- `app/(medtech)/medtech-images/page.tsx` — Added validation logic, disabled button
 
 ---
 
@@ -104,7 +104,7 @@
 
 **Files to edit**:
 - `src/medtech/images-widget/components/desktop/ImageEditorModal.tsx` — **NEW FILE**
-- `app/(integration)/medtech-images/page.tsx` — Open modal on edit button
+- `app/(medtech)/medtech-images/page.tsx` — Open modal on edit button
 - `src/medtech/images-widget/stores/imageWidgetStore.ts` — Add `duplicateImage()` action
 - `src/medtech/images-widget/types/index.ts` — Add `isEditedVersion?: boolean` flag
 
@@ -123,7 +123,7 @@
 - [ ] Show keyboard shortcuts in help tooltip
 
 **Files to edit**:
-- `app/(integration)/medtech-images/page.tsx` — Add `useEffect` with keyboard listener
+- `app/(medtech)/medtech-images/page.tsx` — Add `useEffect` with keyboard listener
 - `src/medtech/images-widget/components/desktop/KeyboardShortcutsHelp.tsx` — **NEW FILE** (optional)
 
 ---
@@ -139,7 +139,7 @@
 - [ ] Sync metadata back to desktop session via API
 
 **Files to edit**:
-- `app/(integration)/medtech-images/mobile/page.tsx` — Add MetadataChips to review step
+- `app/(medtech)/medtech-images/mobile/page.tsx` — Add MetadataChips to review step
 - `src/medtech/images-widget/components/mobile/MobileMetadataChips.tsx` — **NEW FILE** (simplified version)
 
 ---

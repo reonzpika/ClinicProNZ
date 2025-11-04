@@ -218,7 +218,7 @@ Upload → Metadata → Check Inbox → Commit → Fill details → Done → Aut
 ## ✅ Implementation Complete
 
 **Files modified**:
-- `app/(integration)/medtech-images/page.tsx` — Layout restructure
+- `app/(medtech)/medtech-images/page.tsx` — Layout restructure
 - `src/medtech/images-widget/components/desktop/ImagePreview.tsx` — Controls moved to top
 
 **Changes committed**: `1c274ac7`

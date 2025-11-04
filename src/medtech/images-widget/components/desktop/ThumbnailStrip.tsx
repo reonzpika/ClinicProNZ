@@ -14,9 +14,10 @@ import { useImageWidgetStore } from '../../stores/imageWidgetStore';
 interface ThumbnailStripProps {
   currentImageId: string | null;
   onImageSelect: (imageId: string) => void;
+  onErrorClick?: (imageId: string) => void;
 }
 
-export function ThumbnailStrip({ currentImageId, onImageSelect }: ThumbnailStripProps) {
+export function ThumbnailStrip({ currentImageId, onImageSelect, onErrorClick }: ThumbnailStripProps) {
   const { sessionImages, removeImage } = useImageWidgetStore();
   
   if (sessionImages.length === 0) {
@@ -29,18 +30,22 @@ export function ThumbnailStrip({ currentImageId, onImageSelect }: ThumbnailStrip
   
   return (
     <div className="flex items-center gap-2 overflow-x-auto pb-2">
-      {sessionImages.map((image) => (
-        <ThumbnailCard
-          key={image.id}
-          image={image}
-          isCurrent={image.id === currentImageId}
-          onClick={() => onImageSelect(image.id)}
-          onRemove={() => {
-            URL.revokeObjectURL(image.preview);
-            removeImage(image.id);
-          }}
-        />
-      ))}
+      {sessionImages.map((image) => {
+        const hasError = image.status === 'error' || !!image.error;
+        return (
+          <ThumbnailCard
+            key={image.id}
+            image={image}
+            isCurrent={image.id === currentImageId}
+            onClick={() => onImageSelect(image.id)}
+            onErrorClick={hasError && onErrorClick ? () => onErrorClick(image.id) : undefined}
+            onRemove={() => {
+              URL.revokeObjectURL(image.preview);
+              removeImage(image.id);
+            }}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -49,15 +54,23 @@ interface ThumbnailCardProps {
   image: WidgetImage;
   isCurrent: boolean;
   onClick: () => void;
+  onErrorClick?: () => void;
   onRemove: () => void;
 }
 
-function ThumbnailCard({ image, isCurrent, onClick, onRemove }: ThumbnailCardProps) {
-  // Badge logic: Red = invalid, Green = committed, No badge = valid ready to commit
+function ThumbnailCard({ image, isCurrent, onClick, onErrorClick, onRemove }: ThumbnailCardProps) {
+  // Badge logic: Red = error/invalid, Green = committed, No badge = valid ready to commit
   const isInvalid = !image.metadata.laterality || !image.metadata.bodySite;
+  const hasError = image.status === 'error' || !!image.error;
   const badgeColor = 
     image.status === 'committed' ? 'green' :
-    isInvalid ? 'red' :
+    hasError || isInvalid ? 'red' :
+    null;
+  
+  const badgeTitle = 
+    image.status === 'committed' ? 'Committed' :
+    hasError ? image.error || 'Error' :
+    isInvalid ? 'Missing required metadata' :
     null;
   return (
     <div
@@ -75,21 +88,27 @@ function ThumbnailCard({ image, isCurrent, onClick, onRemove }: ThumbnailCardPro
         className="size-full object-cover"
       />
       
-      {/* Badge (Red = Invalid, Green = Committed) */}
+      {/* Badge (Red = Error/Invalid, Green = Committed) */}
       {badgeColor && (
         <div className="absolute bottom-1 right-1">
-          <div
-            className={`flex size-6 items-center justify-center rounded-full ${
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (hasError && onErrorClick) {
+                onErrorClick();
+              }
+            }}
+            className={`flex size-6 items-center justify-center rounded-full transition-opacity ${
               badgeColor === 'green' ? 'bg-green-500' : 'bg-red-500'
-            }`}
-            title={badgeColor === 'green' ? 'Committed' : 'Missing required metadata'}
+            } ${hasError && onErrorClick ? 'cursor-pointer hover:opacity-80' : ''}`}
+            title={badgeTitle || undefined}
           >
             {badgeColor === 'green' ? (
               <Check className="size-3 text-white" />
             ) : (
               <AlertCircle className="size-3 text-white" />
             )}
-          </div>
+          </button>
         </div>
       )}
       

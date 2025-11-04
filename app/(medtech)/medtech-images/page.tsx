@@ -22,6 +22,7 @@ import { ImagePreview } from '@/src/medtech/images-widget/components/desktop/Ima
 import { MetadataForm } from '@/src/medtech/images-widget/components/desktop/MetadataForm';
 import { QRPanel } from '@/src/medtech/images-widget/components/desktop/QRPanel';
 import { CommitDialog } from '@/src/medtech/images-widget/components/desktop/CommitDialog';
+import { ErrorModal } from '@/src/medtech/images-widget/components/desktop/ErrorModal';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 
@@ -34,6 +35,7 @@ function MedtechImagesPageContent() {
   const [inboxEnabled, setInboxEnabled] = useState(false);
   const [taskEnabled, setTaskEnabled] = useState(false);
   const [isCommitting, setIsCommitting] = useState(false);
+  const [errorImageId, setErrorImageId] = useState<string | null>(null);
   
   const {
     encounterContext,
@@ -245,6 +247,7 @@ function MedtechImagesPageContent() {
             <ThumbnailStrip
               currentImageId={currentImageId}
               onImageSelect={setCurrentImageId}
+              onErrorClick={setErrorImageId}
             />
           </div>
           
@@ -373,6 +376,13 @@ function MedtechImagesPageContent() {
         inboxEnabled={inboxEnabled}
         taskEnabled={taskEnabled}
         uncommittedCount={uncommittedImages.length}
+      />
+      
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={errorImageId !== null}
+        onClose={() => setErrorImageId(null)}
+        image={errorImageId ? sessionImages.find(img => img.id === errorImageId) || null : null}
       />
     </div>
   );

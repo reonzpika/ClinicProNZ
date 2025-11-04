@@ -133,7 +133,7 @@ Progress shows **on the button itself** (not in modal)
 
 | File | Changes |
 |------|---------|
-| `app/(integration)/medtech-images/page.tsx` | Complete flow rewrite:<br>- Removed selection state<br>- Added inbox/task checkboxes<br>- Moved thumbnails to bottom<br>- Updated commit handler<br>- Added modal close handler<br>- Added direct commit logic<br>- Updated layout (30/70 split) |
+| `app/(medtech)/medtech-images/page.tsx` | Complete flow rewrite:<br>- Removed selection state<br>- Added inbox/task checkboxes<br>- Moved thumbnails to bottom<br>- Updated commit handler<br>- Added modal close handler<br>- Added direct commit logic<br>- Updated layout (30/70 split) |
 | `src/medtech/images-widget/components/desktop/ThumbnailStrip.tsx` | Badge system:<br>- Removed checkboxes<br>- Updated badge logic (red/green only)<br>- Removed selection props<br>- Removed status badge component |
 | `src/medtech/images-widget/components/desktop/CommitDialog.tsx` | Form-only modal:<br>- Removed image grid<br>- Removed commit button<br>- Added "Done" button<br>- Removed commit logic<br>- Updated props (inbox/task/count)<br>- Saves options to store on close |
 
