@@ -13,7 +13,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Check } from 'lucide-react';
+import { Check, AlertCircle } from 'lucide-react';
 import type { CodeableConcept } from '../../types';
 import { useImageWidgetStore } from '../../stores/imageWidgetStore';
 
