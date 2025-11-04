@@ -23,6 +23,8 @@ import { MetadataForm } from '@/src/medtech/images-widget/components/desktop/Met
 import { QRPanel } from '@/src/medtech/images-widget/components/desktop/QRPanel';
 import { CommitDialog } from '@/src/medtech/images-widget/components/desktop/CommitDialog';
 import { ErrorModal } from '@/src/medtech/images-widget/components/desktop/ErrorModal';
+import { PartialFailureDialog } from '@/src/medtech/images-widget/components/desktop/PartialFailureDialog';
+import { useCommit } from '@/src/medtech/images-widget/hooks/useCommit';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 
@@ -34,8 +36,13 @@ function MedtechImagesPageContent() {
   const [currentImageId, setCurrentImageId] = useState<string | null>(null);
   const [inboxEnabled, setInboxEnabled] = useState(false);
   const [taskEnabled, setTaskEnabled] = useState(false);
-  const [isCommitting, setIsCommitting] = useState(false);
   const [errorImageId, setErrorImageId] = useState<string | null>(null);
+  const [partialFailureData, setPartialFailureData] = useState<{
+    successIds: string[];
+    errorIds: string[];
+  } | null>(null);
+  
+  const commitMutation = useCommit();
   
   const {
     encounterContext,
@@ -149,53 +156,25 @@ function MedtechImagesPageContent() {
   };
   
   const startCommit = async () => {
-    setIsCommitting(true);
+    const imageIds = uncommittedImages.map(img => img.id);
     
     try {
-      // Use the commit mutation (this uses the API route)
-      const response = await fetch('/api/medtech/attachments/commit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          encounterId: encounterContext?.encounterId,
-          files: uncommittedImages.map(img => ({
-            fileId: img.id,
-            meta: {
-              label: img.metadata.label,
-              bodySite: img.metadata.bodySite,
-              laterality: img.metadata.laterality,
-              view: img.metadata.view,
-              type: img.metadata.type,
-            },
-            alsoInbox: img.commitOptions?.alsoInbox,
-            alsoTask: img.commitOptions?.alsoTask,
-            idempotencyKey: `${encounterContext?.encounterId}:${img.id}`,
-          })),
-        }),
-      });
+      const result = await commitMutation.mutateAsync(imageIds);
       
-      if (!response.ok) {
-        throw new Error('Commit failed');
+      // Show partial failure dialog if there are any errors (partial or complete failure)
+      if (result.errorIds.length > 0) {
+        setPartialFailureData({
+          successIds: result.successIds,
+          errorIds: result.errorIds,
+        });
       }
-      
-      const result = await response.json();
-      
-      // Update image statuses
-      const { setImageResult } = useImageWidgetStore.getState();
-      result.files.forEach((fileResult: any) => {
-        if (fileResult.status === 'committed' && fileResult.documentReferenceId) {
-          setImageResult(fileResult.fileId, {
-            documentReferenceId: fileResult.documentReferenceId,
-            mediaId: fileResult.mediaId,
-            inboxMessageId: fileResult.inboxMessageId,
-            taskId: fileResult.taskId,
-          });
-        }
-      });
+      // If all succeeded, no dialog needed - images are marked as committed
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to commit images');
-    } finally {
-      setIsCommitting(false);
+      // All images failed (network error, etc.)
+      setPartialFailureData({
+        successIds: [],
+        errorIds: imageIds,
+      });
     }
   };
   
@@ -303,10 +282,10 @@ function MedtechImagesPageContent() {
               {/* Commit Button */}
               <Button
                 onClick={handleCommit}
-                disabled={!canCommit || isCommitting}
+                disabled={!canCommit || commitMutation.isPending}
                 size="sm"
               >
-                {isCommitting ? (
+                {commitMutation.isPending ? (
                   <>
                     <Loader2 className="mr-2 size-4 animate-spin" />
                     Committing {uncommittedImages.length} image{uncommittedImages.length === 1 ? '' : 's'}...
@@ -383,6 +362,20 @@ function MedtechImagesPageContent() {
         isOpen={errorImageId !== null}
         onClose={() => setErrorImageId(null)}
         image={errorImageId ? sessionImages.find(img => img.id === errorImageId) || null : null}
+      />
+      
+      {/* Partial Failure Dialog */}
+      <PartialFailureDialog
+        isOpen={partialFailureData !== null}
+        onClose={() => setPartialFailureData(null)}
+        successIds={partialFailureData?.successIds || []}
+        errorIds={partialFailureData?.errorIds || []}
+        onRetryFailed={() => {
+          // Retry will close dialog and retry in the dialog itself
+        }}
+        onViewErrorDetails={(imageId) => {
+          setErrorImageId(imageId);
+        }}
       />
     </div>
   );

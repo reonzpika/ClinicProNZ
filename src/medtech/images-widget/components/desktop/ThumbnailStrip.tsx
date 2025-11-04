@@ -31,14 +31,14 @@ export function ThumbnailStrip({ currentImageId, onImageSelect, onErrorClick }: 
   return (
     <div className="flex items-center gap-2 overflow-x-auto pb-2">
       {sessionImages.map((image) => {
-        const hasError = image.status === 'error' || !!image.error;
+        const hasCommitError = image.status === 'error' || !!image.error;
         return (
           <ThumbnailCard
             key={image.id}
             image={image}
             isCurrent={image.id === currentImageId}
             onClick={() => onImageSelect(image.id)}
-            onErrorClick={hasError && onErrorClick ? () => onErrorClick(image.id) : undefined}
+            onErrorClick={hasCommitError && onErrorClick ? () => onErrorClick(image.id) : undefined}
             onRemove={() => {
               URL.revokeObjectURL(image.preview);
               removeImage(image.id);
@@ -59,18 +59,21 @@ interface ThumbnailCardProps {
 }
 
 function ThumbnailCard({ image, isCurrent, onClick, onErrorClick, onRemove }: ThumbnailCardProps) {
-  // Badge logic: Red = error/invalid, Green = committed, No badge = valid ready to commit
+  // Badge logic: Yellow = validation error, Red = commit error, Green = committed
   const isInvalid = !image.metadata.laterality || !image.metadata.bodySite;
-  const hasError = image.status === 'error' || !!image.error;
-  const badgeColor = 
-    image.status === 'committed' ? 'green' :
-    hasError || isInvalid ? 'red' :
+  const hasCommitError = image.status === 'error' || !!image.error;
+  
+  // Badge type: 'validation' (yellow), 'error' (red), 'committed' (green), or null
+  const badgeType = 
+    image.status === 'committed' ? 'committed' :
+    hasCommitError ? 'error' :
+    isInvalid ? 'validation' :
     null;
   
   const badgeTitle = 
-    image.status === 'committed' ? 'Committed' :
-    hasError ? image.error || 'Error' :
-    isInvalid ? 'Missing required metadata' :
+    badgeType === 'committed' ? 'Committed' :
+    badgeType === 'error' ? image.error || 'Commit error' :
+    badgeType === 'validation' ? 'Missing required metadata' :
     null;
   return (
     <div
@@ -88,25 +91,29 @@ function ThumbnailCard({ image, isCurrent, onClick, onErrorClick, onRemove }: Th
         className="size-full object-cover"
       />
       
-      {/* Badge (Red = Error/Invalid, Green = Committed) */}
-      {badgeColor && (
+      {/* Badge (Yellow = Validation, Red = Commit Error, Green = Committed) */}
+      {badgeType && (
         <div className="absolute bottom-1 right-1">
           <button
             onClick={(e) => {
               e.stopPropagation();
-              if (hasError && onErrorClick) {
+              if (badgeType === 'error' && onErrorClick) {
                 onErrorClick();
               }
             }}
             className={`flex size-6 items-center justify-center rounded-full transition-opacity ${
-              badgeColor === 'green' ? 'bg-green-500' : 'bg-red-500'
-            } ${hasError && onErrorClick ? 'cursor-pointer hover:opacity-80' : ''}`}
+              badgeType === 'committed' ? 'bg-green-500' :
+              badgeType === 'error' ? 'bg-red-500' :
+              'bg-yellow-500'
+            } ${badgeType === 'error' && onErrorClick ? 'cursor-pointer hover:opacity-80' : ''}`}
             title={badgeTitle || undefined}
           >
-            {badgeColor === 'green' ? (
+            {badgeType === 'committed' ? (
               <Check className="size-3 text-white" />
             ) : (
-              <AlertCircle className="size-3 text-white" />
+              <AlertCircle className={`size-3 ${
+                badgeType === 'error' ? 'text-white' : 'text-white'
+              }`} />
             )}
           </button>
         </div>
