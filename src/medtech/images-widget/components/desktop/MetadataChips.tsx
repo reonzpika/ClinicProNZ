@@ -128,6 +128,9 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showOther, requ
     }
   };
   
+  // Check if field is missing (for inline validation)
+  const isMissing = required && !selected;
+  
   return (
     <div>
       <label className="mb-2 block text-xs font-medium text-slate-700">
@@ -216,6 +219,14 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showOther, requ
           </div>
         )}
       </div>
+      
+      {/* Inline Validation Message */}
+      {isMissing && (
+        <p className="mt-1.5 flex items-center gap-1.5 text-xs text-red-600">
+          <AlertCircle className="size-3.5" />
+          <span>{label} is required</span>
+        </p>
+      )}
     </div>
   );
 }

@@ -6,31 +6,20 @@
 
 'use client';
 
-import { ChevronLeft, ChevronRight, Edit2, ZoomIn, ZoomOut } from 'lucide-react';
-import { useState } from 'react';
+import { Edit2 } from 'lucide-react';
 import type { WidgetImage } from '../../types';
 import { Button } from '@/src/shared/components/ui/button';
 import { formatFileSize } from '../../services/compression';
 
 interface ImagePreviewProps {
   image: WidgetImage | null;
-  onPrevious: () => void;
-  onNext: () => void;
   onEdit: () => void;
-  hasPrevious: boolean;
-  hasNext: boolean;
 }
 
 export function ImagePreview({
   image,
-  onPrevious,
-  onNext,
   onEdit,
-  hasPrevious,
-  hasNext,
 }: ImagePreviewProps) {
-  const [zoom, setZoom] = useState(1);
-  
   if (!image) {
     return (
       <div className="flex h-full items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50">
@@ -57,71 +46,16 @@ export function ImagePreview({
   
   return (
     <div className="flex h-full flex-col">
-      {/* Controls Bar - MOVED TO TOP */}
-      <div className="mb-3 flex items-center justify-between">
-        {/* Navigation */}
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={onPrevious}
-            disabled={!hasPrevious}
-            variant="outline"
-            size="sm"
-          >
-            <ChevronLeft className="mr-1 size-4" />
-            Previous
-          </Button>
-          
-          <Button
-            onClick={onNext}
-            disabled={!hasNext}
-            variant="outline"
-            size="sm"
-          >
-            Next
-            <ChevronRight className="ml-1 size-4" />
-          </Button>
-          
-          <Button
-            onClick={onEdit}
-            variant="outline"
-            size="sm"
-          >
-            <Edit2 className="mr-2 size-4" />
-            Edit
-          </Button>
-        </div>
-        
-        {/* Zoom Controls */}
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={() => setZoom(Math.max(0.5, zoom - 0.25))}
-            disabled={zoom <= 0.5}
-            variant="ghost"
-            size="sm"
-          >
-            <ZoomOut className="size-4" />
-          </Button>
-          
-          <span className="text-sm text-slate-600">{Math.round(zoom * 100)}%</span>
-          
-          <Button
-            onClick={() => setZoom(Math.min(3, zoom + 0.25))}
-            disabled={zoom >= 3}
-            variant="ghost"
-            size="sm"
-          >
-            <ZoomIn className="size-4" />
-          </Button>
-          
-          <Button
-            onClick={() => setZoom(1)}
-            disabled={zoom === 1}
-            variant="ghost"
-            size="sm"
-          >
-            Reset
-          </Button>
-        </div>
+      {/* Controls Bar - Edit Button Only */}
+      <div className="mb-3 flex items-center justify-end">
+        <Button
+          onClick={onEdit}
+          variant="outline"
+          size="sm"
+        >
+          <Edit2 className="mr-2 size-4" />
+          Edit
+        </Button>
       </div>
       
       {/* Image Display Area */}
@@ -131,7 +65,6 @@ export function ImagePreview({
             src={image.preview}
             alt={image.metadata.label || 'Clinical image'}
             className="max-h-full max-w-full object-contain"
-            style={{ transform: `scale(${zoom})`, transition: 'transform 0.2s' }}
           />
         </div>
       </div>

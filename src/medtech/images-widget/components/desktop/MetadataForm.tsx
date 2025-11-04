@@ -7,20 +7,21 @@
 
 'use client';
 
-import { useState } from 'react';
-import { Check, AlertCircle, CheckCheck, ImagePlus } from 'lucide-react';
+import { AlertCircle, CheckCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/src/shared/components/ui/button';
 import type { WidgetImage } from '../../types';
 import { MetadataChips } from './MetadataChips';
-import { ApplyMetadataModal } from './ApplyMetadataModal';
 import { useImageWidgetStore } from '../../stores/imageWidgetStore';
 
 interface MetadataFormProps {
   image: WidgetImage | null;
+  onPrevious: () => void;
+  onNext: () => void;
+  hasPrevious: boolean;
+  hasNext: boolean;
 }
 
-export function MetadataForm({ image }: MetadataFormProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+export function MetadataForm({ image, onPrevious, onNext, hasPrevious, hasNext }: MetadataFormProps) {
   const { sessionImages, applyMetadataToImages, setError } = useImageWidgetStore();
   
   if (!image) {
@@ -37,39 +38,24 @@ export function MetadataForm({ image }: MetadataFormProps) {
   // Check if required fields are filled
   const hasLaterality = !!image.metadata.laterality;
   const hasBodySite = !!image.metadata.bodySite;
-  const isComplete = hasLaterality && hasBodySite;
   
-  // Calculate invalid images for "Apply to Invalid" button
-  const invalidImages = sessionImages.filter((img) => {
+  // Calculate rest images (all other uncommitted images)
+  const restImages = sessionImages.filter((img) => {
     // Don't include current image
     if (img.id === image.id) return false;
-    // Invalid = missing required fields AND not committed
-    return (!img.metadata.laterality || !img.metadata.bodySite) && img.status !== 'committed';
+    // Only uncommitted images
+    return img.status !== 'committed';
   });
   
   // Show apply buttons only when laterality AND bodySite are selected
   const canApply = hasLaterality && hasBodySite;
   
-  // Handle quick apply to invalid images
-  const handleApplyToInvalid = () => {
-    const targetIds = invalidImages.map((img) => img.id);
+  // Handle apply to rest
+  const handleApplyToRest = () => {
+    if (restImages.length === 0) return;
+    const targetIds = restImages.map((img) => img.id);
     applyMetadataToImages(image.id, targetIds);
     setError(null);
-    // TODO: Add toast notification
-    console.log(`? Applied metadata to ${targetIds.length} images`);
-  };
-  
-  // Handle selective apply (opens modal)
-  const handleChooseImages = () => {
-    setIsModalOpen(true);
-  };
-  
-  // Handle apply from modal
-  const handleModalApply = (targetIds: string[]) => {
-    applyMetadataToImages(image.id, targetIds);
-    setError(null);
-    // TODO: Add toast notification
-    console.log(`? Applied metadata to ${targetIds.length} images`);
   };
   
   return (
@@ -86,51 +72,44 @@ export function MetadataForm({ image }: MetadataFormProps) {
       <div className="flex-1 overflow-y-auto p-4">
         <MetadataChips imageId={image.id} />
         
-        {/* Apply Metadata Buttons */}
-        {canApply && (
-          <div className="mt-6 flex items-center gap-3 border-t border-slate-200 pt-4">
-            {/* Primary: Apply to Invalid */}
-            {invalidImages.length > 0 && (
-              <Button onClick={handleApplyToInvalid} size="sm">
-                <CheckCheck className="mr-2 size-4" />
-                Apply to {invalidImages.length} Invalid
-              </Button>
-            )}
-            
-            {/* Secondary: Choose Images (link style) */}
-            <Button onClick={handleChooseImages} variant="link" size="sm">
-              <ImagePlus className="mr-2 size-4" />
-              Choose Images...
-            </Button>
-          </div>
-        )}
+        {/* Apply to Rest Button - Always Visible */}
+        <div className="mt-6 flex items-center gap-3 border-t border-slate-200 pt-4">
+          <Button 
+            onClick={handleApplyToRest} 
+            disabled={!canApply || restImages.length === 0}
+            size="sm"
+            className="w-full"
+          >
+            <CheckCheck className="mr-2 size-4" />
+            Apply to the Rest ({restImages.length})
+          </Button>
+        </div>
+        
+        {/* Navigation Buttons */}
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <Button
+            onClick={onPrevious}
+            disabled={!hasPrevious}
+            variant="outline"
+            size="sm"
+            className="flex-1"
+          >
+            <ChevronLeft className="mr-1 size-4" />
+            Previous
+          </Button>
+          
+          <Button
+            onClick={onNext}
+            disabled={!hasNext}
+            variant="outline"
+            size="sm"
+            className="flex-1"
+          >
+            Next
+            <ChevronRight className="ml-1 size-4" />
+          </Button>
+        </div>
       </div>
-      
-      {/* Footer */}
-      <div className="border-t border-slate-200 bg-slate-50 p-4">
-        {isComplete ? (
-          <div className="flex items-center gap-2 text-sm text-green-700">
-            <Check className="size-4" />
-            <span>Metadata complete</span>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2 text-sm text-orange-700">
-            <AlertCircle className="size-4" />
-            <span>
-              Missing: {!hasLaterality && 'Laterality'}{!hasLaterality && !hasBodySite && ', '}{!hasBodySite && 'Body Site'}
-            </span>
-          </div>
-        )}
-      </div>
-      
-      {/* Apply Metadata Modal */}
-      <ApplyMetadataModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        sourceImage={image}
-        availableImages={sessionImages}
-        onApply={handleModalApply}
-      />
     </div>
   );
 }

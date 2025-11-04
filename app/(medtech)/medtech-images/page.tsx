@@ -218,10 +218,31 @@ function MedtechImagesPageContent() {
   
   return (
     <div className="flex h-screen flex-col bg-slate-50">
-      {/* Top Section: Thumbnails + Actions */}
+      {/* Top Section: Actions + Thumbnails + Commit Actions */}
       <div className="border-b border-slate-200 bg-white px-6 py-4">
-        <div className="flex items-center justify-between">
-          {/* Left: Thumbnail Strip */}
+        <div className="flex items-center justify-between gap-4">
+          {/* Left: Upload + QR Buttons */}
+          <div className="flex items-center gap-2">
+            <CapturePanel />
+            
+            <div className="h-6 w-px bg-slate-300" />
+            
+            <Button
+              onClick={() => setShowQR(!showQR)}
+              variant="ghost"
+              size="sm"
+            >
+              {showQR ? 'Hide QR' : 'Show QR'}
+            </Button>
+            
+            {process.env.NEXT_PUBLIC_MEDTECH_USE_MOCK === 'true' && (
+              <div className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
+                MOCK
+              </div>
+            )}
+          </div>
+          
+          {/* Center: Thumbnail Strip */}
           <div className="flex-1 overflow-x-auto">
             <ThumbnailStrip
               currentImageId={currentImageId}
@@ -230,74 +251,50 @@ function MedtechImagesPageContent() {
             />
           </div>
           
-          {/* Right: 2-Line Action Panel */}
-          <div className="ml-6 flex flex-col gap-2">
-            {/* Line 1: Upload + QR + Mock Badge */}
-            <div className="flex items-center gap-2">
-              <CapturePanel />
-              
-              <div className="h-6 w-px bg-slate-300" />
-              
-              <Button
-                onClick={() => setShowQR(!showQR)}
-                variant="ghost"
-                size="sm"
-              >
-                {showQR ? 'Hide QR' : 'Show QR'}
-              </Button>
-              
-              {process.env.NEXT_PUBLIC_MEDTECH_USE_MOCK === 'true' && (
-                <div className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
-                  MOCK
-                </div>
-              )}
-            </div>
+          {/* Right: Inbox + Task + Commit */}
+          <div className="ml-4 flex items-center gap-4">
+            {/* Inbox Checkbox */}
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={inboxEnabled}
+                onChange={(e) => setInboxEnabled(e.target.checked)}
+                className="size-4 rounded border-slate-300"
+              />
+              <Inbox className="size-4 text-slate-600" />
+              <span className="text-slate-700">Inbox</span>
+            </label>
             
-            {/* Line 2: Inbox + Task + Commit */}
-            <div className="flex items-center gap-4">
-              {/* Inbox Checkbox */}
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={inboxEnabled}
-                  onChange={(e) => setInboxEnabled(e.target.checked)}
-                  className="size-4 rounded border-slate-300"
-                />
-                <Inbox className="size-4 text-slate-600" />
-                <span className="text-slate-700">Inbox</span>
-              </label>
-              
-              {/* Task Checkbox */}
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={taskEnabled}
-                  onChange={(e) => setTaskEnabled(e.target.checked)}
-                  className="size-4 rounded border-slate-300"
-                />
-                <ListTodo className="size-4 text-slate-600" />
-                <span className="text-slate-700">Task</span>
-              </label>
-              
-              {/* Commit Button */}
-              <Button
-                onClick={handleCommit}
-                disabled={!canCommit || commitMutation.isPending}
-                size="sm"
-              >
-                {commitMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 size-4 animate-spin" />
-                    Committing {uncommittedImages.length} image{uncommittedImages.length === 1 ? '' : 's'}...
-                  </>
-                ) : (
-                  <>
-                    <Check className="mr-2 size-4" />
-                    Commit All {uncommittedImages.length} Image{uncommittedImages.length === 1 ? '' : 's'}
-                  </>
-                )}
-              </Button>
-            </div>
+            {/* Task Checkbox */}
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={taskEnabled}
+                onChange={(e) => setTaskEnabled(e.target.checked)}
+                className="size-4 rounded border-slate-300"
+              />
+              <ListTodo className="size-4 text-slate-600" />
+              <span className="text-slate-700">Task</span>
+            </label>
+            
+            {/* Commit Button */}
+            <Button
+              onClick={handleCommit}
+              disabled={!canCommit || commitMutation.isPending}
+              size="sm"
+            >
+              {commitMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  Committing {uncommittedImages.length} image{uncommittedImages.length === 1 ? '' : 's'}...
+                </>
+              ) : (
+                <>
+                  <Check className="mr-2 size-4" />
+                  Commit All {uncommittedImages.length} Image{uncommittedImages.length === 1 ? '' : 's'}
+                </>
+              )}
+            </Button>
           </div>
         </div>
       </div>
@@ -331,20 +328,22 @@ function MedtechImagesPageContent() {
         <div className="flex-[3]">
           <ImagePreview
             image={currentImage}
-            onPrevious={handlePrevious}
-            onNext={handleNext}
             onEdit={() => {
               // TODO: Open image editor modal
               alert('Image editor coming soon!');
             }}
-            hasPrevious={hasPrevious}
-            hasNext={hasNext}
           />
         </div>
         
         {/* Metadata Form (70%) */}
         <div className="flex-[7]">
-          <MetadataForm image={currentImage} />
+          <MetadataForm 
+            image={currentImage}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            hasPrevious={hasPrevious}
+            hasNext={hasNext}
+          />
         </div>
       </div>
       
