@@ -163,8 +163,9 @@ export function PartialFailureDialog({
                 <Button
                   onClick={() => {
                     // Open error modal for first failed image
-                    if (errorIds.length > 0 && onViewErrorDetails) {
-                      onViewErrorDetails(errorIds[0]);
+                    const firstErrorId = errorIds[0];
+                    if (firstErrorId && onViewErrorDetails) {
+                      onViewErrorDetails(firstErrorId);
                       onClose();
                     }
                   }}
