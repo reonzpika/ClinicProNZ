@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic';
 
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { AlertCircle, Check, Loader2, Inbox, ListTodo } from 'lucide-react';
+import { AlertCircle, Check, Loader2, Inbox, ListTodo, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useImageWidgetStore } from '@/src/medtech/images-widget/stores/imageWidgetStore';
 import { useCapabilities } from '@/src/medtech/images-widget/hooks/useCapabilities';
 import { CapturePanel } from '@/src/medtech/images-widget/components/desktop/CapturePanel';
@@ -221,20 +221,17 @@ function MedtechImagesPageContent() {
       {/* Top Section: Actions + Thumbnails + Commit Actions */}
       <div className="border-b border-slate-200 bg-white px-6 py-4">
         <div className="flex items-center justify-between gap-4">
-          {/* Left: Upload + QR Buttons */}
-          <div className="flex items-center gap-2">
+          {/* Left: Upload + QR (Stacked) */}
+          <div className="flex flex-col gap-2">
             <CapturePanel />
-            
-            <div className="h-6 w-px bg-slate-300" />
-            
             <Button
               onClick={() => setShowQR(!showQR)}
               variant="ghost"
               size="sm"
+              className="w-fit"
             >
               {showQR ? 'Hide QR' : 'Show QR'}
             </Button>
-            
             {process.env.NEXT_PUBLIC_MEDTECH_USE_MOCK === 'true' && (
               <div className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
                 MOCK
@@ -251,31 +248,34 @@ function MedtechImagesPageContent() {
             />
           </div>
           
-          {/* Right: Inbox + Task + Commit */}
-          <div className="ml-4 flex items-center gap-4">
-            {/* Inbox Checkbox */}
-            <label className="flex cursor-pointer items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={inboxEnabled}
-                onChange={(e) => setInboxEnabled(e.target.checked)}
-                className="size-4 rounded border-slate-300"
-              />
-              <Inbox className="size-4 text-slate-600" />
-              <span className="text-slate-700">Inbox</span>
-            </label>
-            
-            {/* Task Checkbox */}
-            <label className="flex cursor-pointer items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={taskEnabled}
-                onChange={(e) => setTaskEnabled(e.target.checked)}
-                className="size-4 rounded border-slate-300"
-              />
-              <ListTodo className="size-4 text-slate-600" />
-              <span className="text-slate-700">Task</span>
-            </label>
+          {/* Right: Inbox + Task + Commit (Stacked) */}
+          <div className="ml-4 flex flex-col gap-2">
+            {/* Inbox + Task */}
+            <div className="flex items-center gap-4">
+              {/* Inbox Checkbox */}
+              <label className="flex cursor-pointer items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={inboxEnabled}
+                  onChange={(e) => setInboxEnabled(e.target.checked)}
+                  className="size-4 rounded border-slate-300"
+                />
+                <Inbox className="size-4 text-slate-600" />
+                <span className="text-slate-700">Inbox</span>
+              </label>
+              
+              {/* Task Checkbox */}
+              <label className="flex cursor-pointer items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={taskEnabled}
+                  onChange={(e) => setTaskEnabled(e.target.checked)}
+                  className="size-4 rounded border-slate-300"
+                />
+                <ListTodo className="size-4 text-slate-600" />
+                <span className="text-slate-700">Task</span>
+              </label>
+            </div>
             
             {/* Commit Button */}
             <Button
@@ -344,6 +344,31 @@ function MedtechImagesPageContent() {
             hasPrevious={hasPrevious}
             hasNext={hasNext}
           />
+        </div>
+      </div>
+      
+      {/* Navigation Buttons at Bottom */}
+      <div className="border-t border-slate-200 bg-white px-6 py-3">
+        <div className="flex items-center justify-center gap-3">
+          <Button
+            onClick={handlePrevious}
+            disabled={!hasPrevious}
+            variant="outline"
+            size="sm"
+          >
+            <ChevronLeft className="mr-1 size-4" />
+            Previous
+          </Button>
+          
+          <Button
+            onClick={handleNext}
+            disabled={!hasNext}
+            variant="outline"
+            size="sm"
+          >
+            Next
+            <ChevronRight className="ml-1 size-4" />
+          </Button>
         </div>
       </div>
       

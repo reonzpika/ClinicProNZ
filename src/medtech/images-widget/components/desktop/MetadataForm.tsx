@@ -7,11 +7,13 @@
 
 'use client';
 
-import { AlertCircle, CheckCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { AlertCircle, CheckCheck, ChevronLeft, ChevronRight, ImagePlus } from 'lucide-react';
 import { Button } from '@/src/shared/components/ui/button';
 import type { WidgetImage } from '../../types';
 import { MetadataChips } from './MetadataChips';
+import { ApplyMetadataModal } from './ApplyMetadataModal';
 import { useImageWidgetStore } from '../../stores/imageWidgetStore';
+import { useState } from 'react';
 
 interface MetadataFormProps {
   image: WidgetImage | null;
@@ -23,6 +25,7 @@ interface MetadataFormProps {
 
 export function MetadataForm({ image, onPrevious, onNext, hasPrevious, hasNext }: MetadataFormProps) {
   const { sessionImages, applyMetadataToImages, setError } = useImageWidgetStore();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   if (!image) {
     return (
@@ -47,13 +50,37 @@ export function MetadataForm({ image, onPrevious, onNext, hasPrevious, hasNext }
     return img.status !== 'committed';
   });
   
-  // Show apply buttons only when laterality AND bodySite are selected
-  const canApply = hasLaterality && hasBodySite;
-  
-  // Handle apply to rest
-  const handleApplyToRest = () => {
-    if (restImages.length === 0) return;
+  // Handle apply laterality to rest
+  const handleApplyLaterality = () => {
+    if (!hasLaterality || restImages.length === 0) return;
     const targetIds = restImages.map((img) => img.id);
+    targetIds.forEach((id) => {
+      useImageWidgetStore.getState().updateMetadata(id, {
+        laterality: image.metadata.laterality,
+      });
+    });
+    setError(null);
+  };
+  
+  // Handle apply body site to rest
+  const handleApplyBodySite = () => {
+    if (!hasBodySite || restImages.length === 0) return;
+    const targetIds = restImages.map((img) => img.id);
+    targetIds.forEach((id) => {
+      useImageWidgetStore.getState().updateMetadata(id, {
+        bodySite: image.metadata.bodySite,
+      });
+    });
+    setError(null);
+  };
+  
+  // Handle apply to selected (opens modal)
+  const handleApplyToSelected = () => {
+    setIsModalOpen(true);
+  };
+  
+  // Handle apply from modal
+  const handleModalApply = (targetIds: string[]) => {
     applyMetadataToImages(image.id, targetIds);
     setError(null);
   };
@@ -70,46 +97,41 @@ export function MetadataForm({ image, onPrevious, onNext, hasPrevious, hasNext }
       
       {/* Form Content */}
       <div className="flex-1 overflow-y-auto p-4">
-        <MetadataChips imageId={image.id} />
+        <MetadataChips 
+          imageId={image.id}
+          onApplyLaterality={handleApplyLaterality}
+          onApplyBodySite={handleApplyBodySite}
+          restImagesCount={restImages.length}
+          hasLaterality={hasLaterality}
+          hasBodySite={hasBodySite}
+        />
         
-        {/* Apply to Rest Button - Always Visible */}
-        <div className="mt-6 flex items-center gap-3 border-t border-slate-200 pt-4">
-          <Button 
-            onClick={handleApplyToRest} 
-            disabled={!canApply || restImages.length === 0}
-            size="sm"
-            className="w-full"
-          >
-            <CheckCheck className="mr-2 size-4" />
-            Apply to the Rest ({restImages.length})
-          </Button>
-        </div>
-        
-        {/* Navigation Buttons */}
-        <div className="mt-4 flex items-center justify-between gap-3">
-          <Button
-            onClick={onPrevious}
-            disabled={!hasPrevious}
-            variant="outline"
-            size="sm"
-            className="flex-1"
-          >
-            <ChevronLeft className="mr-1 size-4" />
-            Previous
-          </Button>
-          
-          <Button
-            onClick={onNext}
-            disabled={!hasNext}
-            variant="outline"
-            size="sm"
-            className="flex-1"
-          >
-            Next
-            <ChevronRight className="ml-1 size-4" />
-          </Button>
-        </div>
+        {/* Apply to Selected Button */}
+        {(hasLaterality || hasBodySite) && (
+          <div className="mt-6 flex items-center gap-3 border-t border-slate-200 pt-4">
+            <Button 
+              onClick={handleApplyToSelected}
+              variant="outline"
+              size="sm"
+              className="w-full"
+            >
+              <ImagePlus className="mr-2 size-4" />
+              Apply to Selected Images...
+            </Button>
+          </div>
+        )}
       </div>
+      
+      {/* Footer with Navigation - Moved to bottom of page */}
+      
+      {/* Apply Metadata Modal */}
+      <ApplyMetadataModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        sourceImage={image}
+        availableImages={sessionImages}
+        onApply={handleModalApply}
+      />
     </div>
   );
 }

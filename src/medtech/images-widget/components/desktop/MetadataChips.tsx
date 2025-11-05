@@ -13,16 +13,30 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, AlertCircle } from 'lucide-react';
+import { Check, AlertCircle, ArrowRight } from 'lucide-react';
 import type { CodeableConcept } from '../../types';
 import { useImageWidgetStore } from '../../stores/imageWidgetStore';
+import { Button } from '@/src/shared/components/ui/button';
 
 interface MetadataChipsProps {
   imageId: string;
   onMetadataChange?: (metadata: Partial<Record<'laterality' | 'bodySite' | 'view' | 'type', CodeableConcept>>) => void;
+  onApplyLaterality?: () => void;
+  onApplyBodySite?: () => void;
+  restImagesCount?: number;
+  hasLaterality?: boolean;
+  hasBodySite?: boolean;
 }
 
-export function MetadataChips({ imageId, onMetadataChange }: MetadataChipsProps) {
+export function MetadataChips({ 
+  imageId, 
+  onMetadataChange,
+  onApplyLaterality,
+  onApplyBodySite,
+  restImagesCount = 0,
+  hasLaterality = false,
+  hasBodySite = false,
+}: MetadataChipsProps) {
   const { capabilities, sessionImages, updateMetadata, setStickyMetadata, stickyMetadata } = useImageWidgetStore();
   
   const image = sessionImages.find((img) => img.id === imageId);
@@ -52,6 +66,9 @@ export function MetadataChips({ imageId, onMetadataChange }: MetadataChipsProps)
         sticky={stickyMetadata.laterality}
         onSelect={(concept) => handleSelect('laterality', concept)}
         required
+        onApply={onApplyLaterality}
+        restImagesCount={restImagesCount}
+        canApply={hasLaterality}
       />
       
       {/* Body Site */}
@@ -63,6 +80,9 @@ export function MetadataChips({ imageId, onMetadataChange }: MetadataChipsProps)
         onSelect={(concept) => handleSelect('bodySite', concept)}
         showOther
         required
+        onApply={onApplyBodySite}
+        restImagesCount={restImagesCount}
+        canApply={hasBodySite}
       />
       
       {/* View */}
@@ -110,9 +130,12 @@ interface ChipGroupProps {
   onSelect: (concept: CodeableConcept) => void;
   showOther?: boolean;
   required?: boolean;
+  onApply?: () => void;
+  restImagesCount?: number;
+  canApply?: boolean;
 }
 
-function ChipGroup({ label, options, selected, sticky, onSelect, showOther, required }: ChipGroupProps) {
+function ChipGroup({ label, options, selected, sticky, onSelect, showOther, required, onApply, restImagesCount = 0, canApply = false }: ChipGroupProps) {
   const [showOtherInput, setShowOtherInput] = useState(false);
   const [otherValue, setOtherValue] = useState('');
   
@@ -136,7 +159,12 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showOther, requ
       <label className="mb-2 block text-xs font-medium text-slate-700">
         {label}
         {required && <span className="text-red-600"> *</span>}
-        {!selected && sticky && (
+        {isMissing && (
+          <span className="ml-2 text-xs font-normal text-red-600">
+            (is required)
+          </span>
+        )}
+        {!selected && sticky && !isMissing && (
           <span className="ml-2 text-xs font-normal text-slate-500">
             (last: {sticky.display})
           </span>
@@ -220,12 +248,20 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showOther, requ
         )}
       </div>
       
-      {/* Inline Validation Message */}
-      {isMissing && (
-        <p className="mt-1.5 flex items-center gap-1.5 text-xs text-red-600">
-          <AlertCircle className="size-3.5" />
-          <span>{label} is required</span>
-        </p>
+      {/* Apply Button (for Laterality and Body Site only) */}
+      {required && onApply && (
+        <div className="mt-2">
+          <Button
+            onClick={onApply}
+            disabled={!canApply || restImagesCount === 0}
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs"
+          >
+            <ArrowRight className="mr-1 size-3" />
+            Apply ({restImagesCount})
+          </Button>
+        </div>
       )}
     </div>
   );
