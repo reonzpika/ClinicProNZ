@@ -17,13 +17,9 @@ import { useState } from 'react';
 
 interface MetadataFormProps {
   image: WidgetImage | null;
-  onPrevious: () => void;
-  onNext: () => void;
-  hasPrevious: boolean;
-  hasNext: boolean;
 }
 
-export function MetadataForm({ image, onPrevious, onNext, hasPrevious, hasNext }: MetadataFormProps) {
+export function MetadataForm({ image }: MetadataFormProps) {
   const { sessionImages, applyMetadataToImages, setError } = useImageWidgetStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   

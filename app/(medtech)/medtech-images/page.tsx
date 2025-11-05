@@ -337,13 +337,7 @@ function MedtechImagesPageContent() {
         
         {/* Metadata Form (70%) */}
         <div className="flex-[7]">
-          <MetadataForm 
-            image={currentImage}
-            onPrevious={handlePrevious}
-            onNext={handleNext}
-            hasPrevious={hasPrevious}
-            hasNext={hasNext}
-          />
+          <MetadataForm image={currentImage} />
         </div>
       </div>
       
