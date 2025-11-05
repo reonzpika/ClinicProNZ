@@ -92,10 +92,13 @@ function MedtechImagesPageContent() {
   
   // Auto-select first image when images added
   useEffect(() => {
-    if (sessionImages.length > 0 && !currentImageId && sessionImages[0]) {
-      setCurrentImageId(sessionImages[0].id);
+    if (sessionImages.length > 0 && !currentImageId) {
+      const firstImage = sessionImages[0];
+      if (firstImage) {
+        setCurrentImageId(firstImage.id);
+      }
     }
-  }, [sessionImages, currentImageId]);
+  }, [sessionImages.length, currentImageId]);
   
   // Computed values
   const currentImage = currentImageId 

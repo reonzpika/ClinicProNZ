@@ -28,6 +28,13 @@ export function ImagePreview({
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   
+  // Reset position when zoom changes
+  useEffect(() => {
+    if (zoom <= 1) {
+      setPosition({ x: 0, y: 0 });
+    }
+  }, [zoom]);
+  
   if (!image) {
     return (
       <div className="flex h-full items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50">
@@ -94,13 +101,6 @@ export function ImagePreview({
     setIsDragging(false);
   };
   
-  // Reset position when zoom changes
-  useEffect(() => {
-    if (zoom <= 1) {
-      setPosition({ x: 0, y: 0 });
-    }
-  }, [zoom]);
-  
   return (
     <div className="relative flex h-full flex-col">
       {/* Image Display Area */}
@@ -163,11 +163,11 @@ export function ImagePreview({
         >
           <img
             ref={imageRef}
-            src={image.preview}
-            alt={image.metadata.label || 'Clinical image'}
+            src={image?.preview || ''}
+            alt={image?.metadata.label || 'Clinical image'}
             className="max-h-full max-w-full object-contain select-none"
             style={{ 
-              transform: `scale(${zoom}) translate(${position.x / zoom}px, ${position.y / zoom}px)`,
+              transform: image ? `scale(${zoom}) translate(${position.x / zoom}px, ${position.y / zoom}px)` : 'none',
               transition: isDragging ? 'none' : 'transform 0.2s',
             }}
             draggable={false}
@@ -206,8 +206,8 @@ export function ImagePreview({
       
       {/* Image Info - AT BOTTOM */}
       <div className="mt-2 text-xs text-slate-500">
-        {image.file.name} • {formatFileSize(image.file.size)}
-        {image.metadata.label && ` • ${image.metadata.label}`}
+        {image?.file.name} • {image ? formatFileSize(image.file.size) : ''}
+        {image?.metadata.label && ` • ${image.metadata.label}`}
       </div>
     </div>
   );
