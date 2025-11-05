@@ -7,7 +7,7 @@
 
 'use client';
 
-import { AlertCircle, CheckCheck, ChevronLeft, ChevronRight, ImagePlus } from 'lucide-react';
+import { AlertCircle, ImagePlus } from 'lucide-react';
 import { Button } from '@/src/shared/components/ui/button';
 import type { WidgetImage } from '../../types';
 import { MetadataChips } from './MetadataChips';
