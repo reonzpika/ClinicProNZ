@@ -24,6 +24,7 @@ import { QRPanel } from '@/src/medtech/images-widget/components/desktop/QRPanel'
 import { CommitDialog } from '@/src/medtech/images-widget/components/desktop/CommitDialog';
 import { ErrorModal } from '@/src/medtech/images-widget/components/desktop/ErrorModal';
 import { PartialFailureDialog } from '@/src/medtech/images-widget/components/desktop/PartialFailureDialog';
+import { ImageEditModal } from '@/src/medtech/images-widget/components/desktop/ImageEditModal';
 import { useCommit } from '@/src/medtech/images-widget/hooks/useCommit';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
@@ -37,6 +38,7 @@ function MedtechImagesPageContent() {
   const [inboxEnabled, setInboxEnabled] = useState(false);
   const [taskEnabled, setTaskEnabled] = useState(false);
   const [errorImageId, setErrorImageId] = useState<string | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [partialFailureData, setPartialFailureData] = useState<{
     successIds: string[];
     errorIds: string[];
@@ -328,10 +330,7 @@ function MedtechImagesPageContent() {
         <div className="flex-[3]">
           <ImagePreview
             image={currentImage}
-            onEdit={() => {
-              // TODO: Open image editor modal
-              alert('Image editor coming soon!');
-            }}
+            onEdit={() => setIsEditModalOpen(true)}
           />
         </div>
         
@@ -346,6 +345,15 @@ function MedtechImagesPageContent() {
           />
         </div>
       </div>
+      
+      {/* Image Edit Modal */}
+      <ImageEditModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        image={currentImage}
+        allImages={sessionImages}
+        onImageSelect={setCurrentImageId}
+      />
       
       {/* Commit Dialog */}
       <CommitDialog

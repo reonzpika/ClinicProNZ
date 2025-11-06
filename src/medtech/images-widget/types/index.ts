@@ -34,6 +34,22 @@ export interface WidgetImage {
     view?: CodeableConcept;
     type?: CodeableConcept;
     label?: string; // Free text to differentiate images
+    // Edit state (non-destructive)
+    edits?: {
+      rotation?: number; // Rotation angle in degrees
+      crop?: {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+      };
+      arrows?: Array<{
+        id: string;
+        x: number; // Percentage of image width (0-100)
+        y: number; // Percentage of image height (0-100)
+        angle?: number; // Arrow rotation in degrees (default: 0 = pointing right)
+      }>;
+    };
   };
   
   // Commit options
