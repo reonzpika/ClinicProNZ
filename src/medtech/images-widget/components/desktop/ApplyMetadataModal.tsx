@@ -17,7 +17,6 @@ import {
   DialogTitle,
 } from '@/src/shared/components/ui/dialog';
 import { Button } from '@/src/shared/components/ui/button';
-import { Checkbox } from '@/src/shared/components/ui/checkbox';
 import type { WidgetImage } from '../../types';
 
 interface ApplyMetadataModalProps {
@@ -110,17 +109,24 @@ export function ApplyMetadataModal({
               return (
                 <div
                   key={image.id}
-                  className={`flex items-start gap-3 rounded-lg border p-3 transition-colors ${
+                  onClick={() => toggleImage(image.id)}
+                  className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
                     isSelected
                       ? 'border-purple-300 bg-purple-50'
                       : 'border-slate-200 hover:border-slate-300'
                   }`}
                 >
-                  <Checkbox
-                    checked={isSelected}
-                    onCheckedChange={() => toggleImage(image.id)}
-                    className="mt-1"
-                  />
+                  <div className="mt-1 flex-shrink-0">
+                    <div className={`size-4 rounded border-2 ${
+                      isSelected
+                        ? 'border-purple-500 bg-purple-500'
+                        : 'border-slate-300 bg-white'
+                    }`}>
+                      {isSelected && (
+                        <Check className="size-3 text-white" />
+                      )}
+                    </div>
+                  </div>
                   
                   <div className="flex-1">
                     {/* Thumbnail */}
@@ -138,7 +144,7 @@ export function ApplyMetadataModal({
                         </div>
                       )}
                       {isInvalid && !isCommitted && (
-                        <div className="absolute right-1 top-1 rounded-full bg-red-500 p-1">
+                        <div className="absolute right-1 top-1 rounded-full bg-yellow-500 p-1">
                           <AlertCircle className="size-3 text-white" />
                         </div>
                       )}

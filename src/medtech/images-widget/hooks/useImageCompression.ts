@@ -5,6 +5,7 @@
 import { useState, useCallback } from 'react';
 import { compressImage, createThumbnail } from '../services/compression';
 import type { CompressionOptions } from '../types';
+import { useImageWidgetStore } from '../stores/imageWidgetStore';
 
 interface UseImageCompressionResult {
   compressImages: (files: File[], options?: Partial<CompressionOptions>) => Promise<CompressedImageResult[]>;
@@ -39,6 +40,9 @@ export function useImageCompression(): UseImageCompressionResult {
     
     const results: CompressedImageResult[] = [];
     
+    // Get current counter value at start of compression
+    const startCounter = useImageWidgetStore.getState().imageCounter;
+    
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -53,16 +57,28 @@ export function useImageCompression(): UseImageCompressionResult {
         // Compress image
         const compressionResult = await compressImage(file, options);
         
+        // Generate sequential filename using counter
+        const fileExtension = file.name.split('.').pop() || 'jpg';
+        const imageNumber = startCounter + i + 1;
+        const tempFileName = `image-${imageNumber}.${fileExtension === 'jpg' || fileExtension === 'jpeg' ? 'jpg' : fileExtension}`;
+        
+        // Rename compressed file with better temp name
+        const renamedCompressedFile = new File(
+          [compressionResult.compressedFile],
+          tempFileName,
+          { type: compressionResult.compressedFile.type }
+        );
+        
         // Create preview and thumbnail
         const [preview, thumbnail] = await Promise.all([
-          URL.createObjectURL(compressionResult.compressedFile),
-          createThumbnail(compressionResult.compressedFile),
+          URL.createObjectURL(renamedCompressedFile),
+          createThumbnail(renamedCompressedFile),
         ]);
         
         results.push({
           id: `${Date.now()}-${i}-${Math.random().toString(36).slice(2)}`,
           originalFile: file,
-          compressedFile: compressionResult.compressedFile,
+          compressedFile: renamedCompressedFile,
           preview,
           thumbnail,
           originalSize: compressionResult.originalSize,

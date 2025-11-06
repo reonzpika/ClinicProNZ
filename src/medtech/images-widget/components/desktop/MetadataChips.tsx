@@ -12,7 +12,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Check, ArrowRight, ChevronDown } from 'lucide-react';
 import type { CodeableConcept } from '../../types';
 import { useImageWidgetStore } from '../../stores/imageWidgetStore';
@@ -73,6 +73,7 @@ export function MetadataChips({
         selected={image.metadata.laterality}
         sticky={stickyMetadata.laterality}
         onSelect={(concept) => handleSelect('laterality', concept)}
+        showTextInput
         required
         onApply={onApplyLaterality}
         onApplyToSelected={onApplyToSelected}
@@ -87,7 +88,7 @@ export function MetadataChips({
         selected={image.metadata.bodySite}
         sticky={stickyMetadata.bodySite}
         onSelect={(concept) => handleSelect('bodySite', concept)}
-        showOther
+        showTextInput
         required
         onApply={onApplyBodySite}
         onApplyToSelected={onApplyToSelected}
@@ -102,6 +103,8 @@ export function MetadataChips({
         selected={image.metadata.view}
         sticky={stickyMetadata.view}
         onSelect={(concept) => handleSelect('view', concept)}
+        showTextInput
+        hideOthersDropdown
       />
       
       {/* Type */}
@@ -111,6 +114,8 @@ export function MetadataChips({
         selected={image.metadata.type}
         sticky={stickyMetadata.type}
         onSelect={(concept) => handleSelect('type', concept)}
+        showTextInput
+        hideOthersDropdown
       />
       
       {/* Label (free text) */}
@@ -124,7 +129,7 @@ export function MetadataChips({
           value={image.metadata.label || ''}
           onChange={(e) => updateMetadata(imageId, { label: e.target.value })}
           placeholder="e.g., Lesion 1 (superior)"
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+          className="w-48 rounded-md border border-slate-300 px-3 py-1.5 text-xs focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
           maxLength={100}
         />
       </div>
@@ -138,7 +143,8 @@ interface ChipGroupProps {
   selected?: CodeableConcept;
   sticky?: CodeableConcept;
   onSelect: (concept: CodeableConcept) => void;
-  showOther?: boolean;
+  showTextInput?: boolean;
+  hideOthersDropdown?: boolean;
   required?: boolean;
   onApply?: () => void;
   onApplyToSelected?: () => void;
@@ -146,21 +152,30 @@ interface ChipGroupProps {
   canApply?: boolean;
 }
 
-function ChipGroup({ label, options, selected, sticky, onSelect, showOther, required, onApply, onApplyToSelected, restImagesCount = 0, canApply = false }: ChipGroupProps) {
-  const [showOtherInput, setShowOtherInput] = useState(false);
-  const [otherValue, setOtherValue] = useState('');
+function ChipGroup({ label, options, selected, sticky, onSelect, showTextInput, hideOthersDropdown, required, onApply, onApplyToSelected, restImagesCount = 0, canApply = false }: ChipGroupProps) {
+  const [textInputValue, setTextInputValue] = useState(selected?.display || '');
   
-  const handleOtherSubmit = () => {
-    if (otherValue.trim()) {
+  // Sync text input with selected value
+  useEffect(() => {
+    if (showTextInput) {
+      setTextInputValue(selected?.display || '');
+    }
+  }, [selected, showTextInput]);
+  
+  const handleTextInputChange = (value: string) => {
+    setTextInputValue(value);
+    if (value.trim()) {
       onSelect({
         system: 'clinicpro/custom',
-        code: otherValue.toLowerCase().replace(/\s+/g, '-'),
-        display: otherValue.trim(),
+        code: value.toLowerCase().replace(/\s+/g, '-'),
+        display: value.trim(),
       });
-      setOtherValue('');
-      setShowOtherInput(false);
     }
   };
+  
+  // Show only first 4 chips, rest in dropdown
+  const visibleChips = options.slice(0, 4);
+  const remainingChips = options.slice(4);
   
   // Check if field is missing (for inline validation)
   const isMissing = required && !selected;
@@ -182,8 +197,24 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showOther, requ
         )}
       </label>
       
-      <div className="flex flex-wrap gap-2">
-        {options.map((option) => {
+      {/* Text Input with Chips to the right */}
+      <div className="flex items-start gap-2">
+        {showTextInput && (
+          <input
+            type="text"
+            value={textInputValue}
+            onChange={(e) => {
+              setTextInputValue(e.target.value);
+              handleTextInputChange(e.target.value);
+            }}
+            placeholder={`Enter ${label.toLowerCase()}...`}
+            className="w-48 rounded-md border border-slate-300 px-3 py-1.5 text-xs focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+            maxLength={100}
+          />
+        )}
+        
+        <div className={`flex flex-wrap gap-1.5 ${showTextInput ? '' : 'w-full'}`}>
+        {visibleChips.map((option) => {
           const isSelected = selected?.code === option.code;
           const isSticky = !selected && sticky?.code === option.code;
           
@@ -191,101 +222,99 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showOther, requ
             <button
               key={option.code}
               type="button"
-              onClick={() => onSelect(option)}
+              onClick={() => {
+                onSelect(option);
+                if (showTextInput) {
+                  setTextInputValue(option.display);
+                }
+              }}
               className={`
-                inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium
+                inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-normal
                 transition-all
                 ${
                   isSelected
-                    ? 'border-purple-500 bg-purple-500 text-white shadow-sm'
+                    ? 'border-purple-400 bg-purple-50 text-purple-700'
                     : isSticky
-                      ? 'border-purple-300 bg-purple-50 text-purple-700'
-                      : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50'
+                      ? 'border-purple-200 bg-purple-50 text-purple-600'
+                      : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
                 }
               `}
             >
-              {isSelected && <Check className="size-3.5" />}
+              {isSelected && <Check className="size-2.5" />}
               {option.display}
             </button>
           );
         })}
         
-        {showOther && !showOtherInput && (
-          <button
-            type="button"
-            onClick={() => setShowOtherInput(true)}
-            className="rounded-full border border-dashed border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:border-slate-400 hover:bg-slate-50"
-          >
-            Other...
-          </button>
+        {/* Others dropdown if there are more than 4 chips and not hidden */}
+        {remainingChips.length > 0 && !hideOthersDropdown && (
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-normal text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+              >
+                Others
+                <ChevronDown className="size-2.5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {remainingChips.map((option) => {
+                const isSelected = selected?.code === option.code;
+                return (
+                  <DropdownMenuItem
+                    key={option.code}
+                    onClick={() => {
+                      onSelect(option);
+                      if (showTextInput) {
+                        setTextInputValue(option.display);
+                      }
+                    }}
+                  >
+                    {isSelected && <Check className="mr-2 size-3" />}
+                    {option.display}
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
-        
-        {showOtherInput && (
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={otherValue}
-              onChange={(e) => setOtherValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleOtherSubmit();
-                } else if (e.key === 'Escape') {
-                  setShowOtherInput(false);
-                  setOtherValue('');
-                }
-              }}
-              placeholder="Type body site..."
-              className="rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-              autoFocus
-            />
-            <button
-              type="button"
-              onClick={handleOtherSubmit}
-              className="rounded bg-purple-500 px-2 py-1 text-xs text-white hover:bg-purple-600"
-            >
-              Add
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setShowOtherInput(false);
-                setOtherValue('');
-              }}
-              className="text-xs text-slate-500 hover:text-slate-700"
-            >
-              Cancel
-            </button>
-          </div>
-        )}
+        </div>
       </div>
+      
       
       {/* Apply Button (for Side and Body Site only) */}
       {required && onApply && (
         <div className="mt-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                disabled={!canApply || restImagesCount === 0}
-                variant="outline"
-                size="sm"
-                className="h-7 text-xs"
-              >
-                <ArrowRight className="mr-1 size-3" />
-                Apply to Others ({restImagesCount})
-                <ChevronDown className="ml-1 size-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem onClick={onApply}>
-                <ArrowRight className="mr-2 size-3" />
-                Apply to Others ({restImagesCount})
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={onApplyToSelected}>
-                <Check className="mr-2 size-3" />
-                Apply to Selected
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="inline-flex">
+            <Button
+              disabled={!canApply || restImagesCount === 0}
+              variant="ghost"
+              size="sm"
+              className="h-6 rounded-r-none border-r-0 text-xs text-slate-600 hover:text-slate-900"
+              onClick={onApply}
+            >
+              <ArrowRight className="mr-1 size-3" />
+              Apply to All ({restImagesCount})
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <Button
+                  disabled={!canApply || restImagesCount === 0}
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 rounded-l-none px-2 text-xs text-slate-600 hover:text-slate-900"
+                >
+                  <ChevronDown className="size-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={onApplyToSelected}>
+                  Apply to Selected
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       )}
     </div>

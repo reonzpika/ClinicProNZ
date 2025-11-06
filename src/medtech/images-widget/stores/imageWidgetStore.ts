@@ -28,6 +28,8 @@ interface ImageWidgetStore {
   
   sessionImages: WidgetImage[];
   
+  imageCounter: number; // Track sequential image numbering
+  
   addImage: (image: WidgetImage) => void;
   removeImage: (id: string) => void;
   updateImage: (id: string, updates: Partial<WidgetImage>) => void;
@@ -92,6 +94,7 @@ export const useImageWidgetStore = create<ImageWidgetStore>((set) => ({
   isCommitDialogOpen: false,
   error: null,
   stickyMetadata: {},
+  imageCounter: 0, // Start at 0, will increment before use
   
   // Actions
   setEncounterContext: (context) => set({ encounterContext: context }),
@@ -100,6 +103,7 @@ export const useImageWidgetStore = create<ImageWidgetStore>((set) => ({
   
   addImage: (image) => set((state) => ({
     sessionImages: [...state.sessionImages, image],
+    imageCounter: state.imageCounter + 1,
   })),
   
   removeImage: (id) => set((state) => ({
@@ -168,7 +172,7 @@ export const useImageWidgetStore = create<ImageWidgetStore>((set) => ({
     sessionImages: state.sessionImages.filter((img) => img.status !== 'committed'),
   })),
   
-  clearAllImages: () => set({ sessionImages: [], selectedImageIds: [] }),
+  clearAllImages: () => set({ sessionImages: [], selectedImageIds: [], imageCounter: 0 }),
   
   setSelectedImageIds: (ids) => set({ selectedImageIds: ids }),
   

@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic';
 
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { AlertCircle, Check, Loader2, Inbox, ListTodo, ChevronLeft, ChevronRight } from 'lucide-react';
+import { AlertCircle, Check, Loader2, Inbox, ListTodo } from 'lucide-react';
 import { useImageWidgetStore } from '@/src/medtech/images-widget/stores/imageWidgetStore';
 import { useCapabilities } from '@/src/medtech/images-widget/hooks/useCapabilities';
 import { CapturePanel } from '@/src/medtech/images-widget/components/desktop/CapturePanel';
@@ -24,6 +24,7 @@ import { QRPanel } from '@/src/medtech/images-widget/components/desktop/QRPanel'
 import { CommitDialog } from '@/src/medtech/images-widget/components/desktop/CommitDialog';
 import { ErrorModal } from '@/src/medtech/images-widget/components/desktop/ErrorModal';
 import { PartialFailureDialog } from '@/src/medtech/images-widget/components/desktop/PartialFailureDialog';
+import { ImageEditModal } from '@/src/medtech/images-widget/components/desktop/ImageEditModal';
 import { useCommit } from '@/src/medtech/images-widget/hooks/useCommit';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
@@ -37,6 +38,7 @@ function MedtechImagesPageContent() {
   const [inboxEnabled, setInboxEnabled] = useState(false);
   const [taskEnabled, setTaskEnabled] = useState(false);
   const [errorImageId, setErrorImageId] = useState<string | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [partialFailureData, setPartialFailureData] = useState<{
     successIds: string[];
     errorIds: string[];
@@ -251,34 +253,31 @@ function MedtechImagesPageContent() {
             />
           </div>
           
-          {/* Right: Inbox + Task + Commit (Stacked) */}
-          <div className="ml-4 flex flex-col gap-2">
-            {/* Inbox + Task */}
-            <div className="flex items-center gap-4">
-              {/* Inbox Checkbox */}
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={inboxEnabled}
-                  onChange={(e) => setInboxEnabled(e.target.checked)}
-                  className="size-4 rounded border-slate-300"
-                />
-                <Inbox className="size-4 text-slate-600" />
-                <span className="text-slate-700">Inbox</span>
-              </label>
-              
-              {/* Task Checkbox */}
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={taskEnabled}
-                  onChange={(e) => setTaskEnabled(e.target.checked)}
-                  className="size-4 rounded border-slate-300"
-                />
-                <ListTodo className="size-4 text-slate-600" />
-                <span className="text-slate-700">Task</span>
-              </label>
-            </div>
+          {/* Right: Inbox + Task + Commit (Same Line) */}
+          <div className="ml-4 flex items-center gap-3">
+            {/* Inbox Checkbox */}
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={inboxEnabled}
+                onChange={(e) => setInboxEnabled(e.target.checked)}
+                className="size-4 rounded border-slate-300"
+              />
+              <Inbox className="size-4 text-slate-600" />
+              <span className="text-slate-700">Inbox</span>
+            </label>
+            
+            {/* Task Checkbox */}
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={taskEnabled}
+                onChange={(e) => setTaskEnabled(e.target.checked)}
+                className="size-4 rounded border-slate-300"
+              />
+              <ListTodo className="size-4 text-slate-600" />
+              <span className="text-slate-700">Task</span>
+            </label>
             
             {/* Commit Button */}
             <Button
@@ -331,43 +330,30 @@ function MedtechImagesPageContent() {
         <div className="flex-[3]">
           <ImagePreview
             image={currentImage}
-            onEdit={() => {
-              // TODO: Open image editor modal
-              alert('Image editor coming soon!');
-            }}
+            onEdit={() => setIsEditModalOpen(true)}
           />
         </div>
         
         {/* Metadata Form (70%) */}
         <div className="flex-[7]">
-          <MetadataForm image={currentImage} />
+          <MetadataForm 
+            image={currentImage}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            hasPrevious={hasPrevious}
+            hasNext={hasNext}
+          />
         </div>
       </div>
       
-      {/* Navigation Buttons at Bottom */}
-      <div className="border-t border-slate-200 bg-white px-6 py-3">
-        <div className="flex items-center justify-center gap-3">
-          <Button
-            onClick={handlePrevious}
-            disabled={!hasPrevious}
-            variant="outline"
-            size="sm"
-          >
-            <ChevronLeft className="mr-1 size-4" />
-            Previous
-          </Button>
-          
-          <Button
-            onClick={handleNext}
-            disabled={!hasNext}
-            variant="outline"
-            size="sm"
-          >
-            Next
-            <ChevronRight className="ml-1 size-4" />
-          </Button>
-        </div>
-      </div>
+      {/* Image Edit Modal */}
+      <ImageEditModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        image={currentImage}
+        allImages={sessionImages}
+        onImageSelect={setCurrentImageId}
+      />
       
       {/* Commit Dialog */}
       <CommitDialog

@@ -7,19 +7,23 @@
 
 'use client';
 
-import { AlertCircle, ImagePlus } from 'lucide-react';
-import { Button } from '@/src/shared/components/ui/button';
+import { AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { WidgetImage } from '../../types';
 import { MetadataChips } from './MetadataChips';
 import { ApplyMetadataModal } from './ApplyMetadataModal';
 import { useImageWidgetStore } from '../../stores/imageWidgetStore';
 import { useState } from 'react';
+import { Button } from '@/src/shared/components/ui/button';
 
 interface MetadataFormProps {
   image: WidgetImage | null;
+  onPrevious?: () => void;
+  onNext?: () => void;
+  hasPrevious?: boolean;
+  hasNext?: boolean;
 }
 
-export function MetadataForm({ image }: MetadataFormProps) {
+export function MetadataForm({ image, onPrevious, onNext, hasPrevious = false, hasNext = false }: MetadataFormProps) {
   const { sessionImages, applyMetadataToImages, setError } = useImageWidgetStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   
@@ -104,7 +108,32 @@ export function MetadataForm({ image }: MetadataFormProps) {
         />
       </div>
       
-      {/* Footer with Navigation - Moved to bottom of page */}
+      {/* Footer with Navigation */}
+      {(onPrevious || onNext) && (
+        <div className="border-t border-slate-200 p-4">
+          <div className="flex items-center justify-start gap-3">
+            <Button
+              onClick={onPrevious}
+              disabled={!hasPrevious}
+              variant="outline"
+              size="sm"
+            >
+              <ChevronLeft className="mr-1 size-4" />
+              Previous
+            </Button>
+            
+            <Button
+              onClick={onNext}
+              disabled={!hasNext}
+              variant="outline"
+              size="sm"
+            >
+              Next
+              <ChevronRight className="ml-1 size-4" />
+            </Button>
+          </div>
+        </div>
+      )}
       
       {/* Apply Metadata Modal */}
       <ApplyMetadataModal
