@@ -262,30 +262,36 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showOther, requ
       {/* Apply Button (for Side and Body Site only) */}
       {required && onApply && (
         <div className="mt-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger>
-              <Button
-                disabled={!canApply || restImagesCount === 0}
-                variant="outline"
-                size="sm"
-                className="h-7 text-xs"
-              >
-                <ArrowRight className="mr-1 size-3" />
-                Apply to Others ({restImagesCount})
-                <ChevronDown className="ml-1 size-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={onApply}>
-                <ArrowRight className="mr-2 size-3" />
-                Apply to Others ({restImagesCount})
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={onApplyToSelected}>
-                <Check className="mr-2 size-3" />
-                Apply to Selected
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="inline-flex">
+            <Button
+              disabled={!canApply || restImagesCount === 0}
+              variant="outline"
+              size="sm"
+              className="h-7 rounded-r-none border-r-0 text-xs"
+              onClick={onApply}
+            >
+              <ArrowRight className="mr-1 size-3" />
+              Apply to All ({restImagesCount})
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <Button
+                  disabled={!canApply || restImagesCount === 0}
+                  variant="outline"
+                  size="sm"
+                  className="h-7 rounded-l-none px-2 text-xs"
+                >
+                  <ChevronDown className="size-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={onApplyToSelected}>
+                  <Check className="mr-2 size-3" />
+                  Apply to Selected
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       )}
     </div>
