@@ -8,7 +8,6 @@
 'use client';
 
 import { AlertCircle } from 'lucide-react';
-import { Button } from '@/src/shared/components/ui/button';
 import type { WidgetImage } from '../../types';
 import { MetadataChips } from './MetadataChips';
 import { ApplyMetadataModal } from './ApplyMetadataModal';
