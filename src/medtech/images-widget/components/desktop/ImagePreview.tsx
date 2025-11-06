@@ -111,49 +111,6 @@ export function ImagePreview({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
-        {/* Overlay Controls */}
-        <div className="absolute inset-0 z-10 pointer-events-none">
-          {/* Edit Button - Top Right */}
-          <div className="absolute right-2 top-2 pointer-events-auto">
-            <Button
-              onClick={onEdit}
-              variant="secondary"
-              size="sm"
-              className="shadow-lg"
-            >
-              <Edit2 className="size-4" />
-            </Button>
-          </div>
-          
-          {/* Zoom Controls - Top Centre */}
-          {zoom > 1 && (
-            <div className="absolute left-1/2 top-2 -translate-x-1/2 pointer-events-auto flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 shadow-lg">
-              <Button
-                onClick={handleZoomOut}
-                disabled={zoom <= 0.5}
-                variant="ghost"
-                size="sm"
-                className="h-7 w-7 p-0"
-              >
-                <ZoomOut className="size-4" />
-              </Button>
-              
-              <span className="text-xs font-medium text-slate-700 min-w-[3rem] text-center">
-                {Math.round(zoom * 100)}%
-              </span>
-              
-              <Button
-                onClick={handleZoomIn}
-                disabled={zoom >= 3}
-                variant="ghost"
-                size="sm"
-                className="h-7 w-7 p-0"
-              >
-                <ZoomIn className="size-4" />
-              </Button>
-            </div>
-          )}
-        </div>
         
         {/* Image Container */}
         <div 

@@ -97,25 +97,11 @@ export function MetadataForm({ image }: MetadataFormProps) {
           imageId={image.id}
           onApplyLaterality={handleApplyLaterality}
           onApplyBodySite={handleApplyBodySite}
+          onApplyToSelected={handleApplyToSelected}
           restImagesCount={restImages.length}
           hasLaterality={hasLaterality}
           hasBodySite={hasBodySite}
         />
-        
-        {/* Apply to Selected Button */}
-        {(hasLaterality || hasBodySite) && (
-          <div className="mt-6 flex items-center gap-3 border-t border-slate-200 pt-4">
-            <Button 
-              onClick={handleApplyToSelected}
-              variant="outline"
-              size="sm"
-              className="w-full"
-            >
-              <ImagePlus className="mr-2 size-4" />
-              Apply to Selected Images...
-            </Button>
-          </div>
-        )}
       </div>
       
       {/* Footer with Navigation - Moved to bottom of page */}

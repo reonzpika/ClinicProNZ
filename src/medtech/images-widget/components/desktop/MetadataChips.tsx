@@ -2,7 +2,7 @@
  * Metadata Chips Component
  * 
  * Displays quick-select chips for:
- * - Laterality (Right, Left, Bilateral, N/A)
+ * - Side (Right, Left, Bilateral, N/A)
  * - Body Site (common coded sites + "Other" for search)
  * - View (Close-up, Dermoscopy, Other)
  * - Type (Lesion, Rash, Wound, Infection, Other)
@@ -29,6 +29,7 @@ interface MetadataChipsProps {
   onMetadataChange?: (metadata: Partial<Record<'laterality' | 'bodySite' | 'view' | 'type', CodeableConcept>>) => void;
   onApplyLaterality?: () => void;
   onApplyBodySite?: () => void;
+  onApplyToSelected?: () => void;
   restImagesCount?: number;
   hasLaterality?: boolean;
   hasBodySite?: boolean;
@@ -39,6 +40,7 @@ export function MetadataChips({
   onMetadataChange,
   onApplyLaterality,
   onApplyBodySite,
+  onApplyToSelected,
   restImagesCount = 0,
   hasLaterality = false,
   hasBodySite = false,
@@ -64,15 +66,16 @@ export function MetadataChips({
   
   return (
     <div className="space-y-4">
-      {/* Laterality */}
+      {/* Side */}
       <ChipGroup
-        label="Laterality"
+        label="Side"
         options={quickChips.laterality}
         selected={image.metadata.laterality}
         sticky={stickyMetadata.laterality}
         onSelect={(concept) => handleSelect('laterality', concept)}
         required
         onApply={onApplyLaterality}
+        onApplyToSelected={onApplyToSelected}
         restImagesCount={restImagesCount}
         canApply={hasLaterality}
       />
@@ -87,6 +90,7 @@ export function MetadataChips({
         showOther
         required
         onApply={onApplyBodySite}
+        onApplyToSelected={onApplyToSelected}
         restImagesCount={restImagesCount}
         canApply={hasBodySite}
       />
@@ -137,11 +141,12 @@ interface ChipGroupProps {
   showOther?: boolean;
   required?: boolean;
   onApply?: () => void;
+  onApplyToSelected?: () => void;
   restImagesCount?: number;
   canApply?: boolean;
 }
 
-function ChipGroup({ label, options, selected, sticky, onSelect, showOther, required, onApply, restImagesCount = 0, canApply = false }: ChipGroupProps) {
+function ChipGroup({ label, options, selected, sticky, onSelect, showOther, required, onApply, onApplyToSelected, restImagesCount = 0, canApply = false }: ChipGroupProps) {
   const [showOtherInput, setShowOtherInput] = useState(false);
   const [otherValue, setOtherValue] = useState('');
   
@@ -254,19 +259,33 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showOther, requ
         )}
       </div>
       
-      {/* Apply Button (for Laterality and Body Site only) */}
+      {/* Apply Button (for Side and Body Site only) */}
       {required && onApply && (
         <div className="mt-2">
-          <Button
-            onClick={onApply}
-            disabled={!canApply || restImagesCount === 0}
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs"
-          >
-            <ArrowRight className="mr-1 size-3" />
-            Apply ({restImagesCount})
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                disabled={!canApply || restImagesCount === 0}
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs"
+              >
+                <ArrowRight className="mr-1 size-3" />
+                Apply to Others ({restImagesCount})
+                <ChevronDown className="ml-1 size-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem onClick={onApply}>
+                <ArrowRight className="mr-2 size-3" />
+                Apply to Others ({restImagesCount})
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onApplyToSelected}>
+                <Check className="mr-2 size-3" />
+                Apply to Selected
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       )}
     </div>

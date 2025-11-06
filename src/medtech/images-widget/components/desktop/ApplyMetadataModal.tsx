@@ -71,7 +71,7 @@ export function ApplyMetadataModal({
   
   // Get metadata summary to show what will be copied
   const metadataSummary = [
-    sourceImage.metadata.laterality && `Laterality: ${sourceImage.metadata.laterality.display}`,
+    sourceImage.metadata.laterality && `Side: ${sourceImage.metadata.laterality.display}`,
     sourceImage.metadata.bodySite && `Body Site: ${sourceImage.metadata.bodySite.display}`,
     sourceImage.metadata.view && `View: ${sourceImage.metadata.view.display}`,
     sourceImage.metadata.type && `Type: ${sourceImage.metadata.type.display}`,
