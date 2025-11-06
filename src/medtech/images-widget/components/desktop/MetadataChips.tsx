@@ -263,7 +263,7 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showOther, requ
       {required && onApply && (
         <div className="mt-2">
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger>
               <Button
                 disabled={!canApply || restImagesCount === 0}
                 variant="outline"
@@ -275,7 +275,7 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showOther, requ
                 <ChevronDown className="ml-1 size-3" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
+            <DropdownMenuContent>
               <DropdownMenuItem onClick={onApply}>
                 <ArrowRight className="mr-2 size-3" />
                 Apply to Others ({restImagesCount})
