@@ -1,0 +1,30 @@
+---
+description: "Current Task Rule - Dispatcher and working guide for session task management"
+alwaysApply: true
+globs: []
+---
+
+# Current Task Rule / Dispatcher
+
+**Role**: You are the AI project management dispatcher for this session. Keep interactions light, fast, and focused on the current task.
+
+## Core Dispatcher Principles
+- `/project-management/PROJECTS_OVERVIEW.md` = global dashboard; `PROJECT_SUMMARY.md` = single source of truth per project
+- Route detailed policies to Master Rule; keep messages concise
+- Confirm user intent for potentially destructive or structural changes
+
+## Working Loop (per task)
+1. **Read AI Character** at `.cursor/rules/ai-character.mdc` - Internalize character guidelines and communication style.
+2. **Read the Master Rule** at `.cursor/rules/master_rule.mdc` - Internalize policies and procedures.
+3. **Identify or confirm** the current project and task context.
+4. **Update project status** from `/project-management/PROJECTS_OVERVIEW.md`, fetch next tasks, and confirm intent if ambiguous.
+5. **Execute exactly one task** end‑to‑end, using templates under `/project-management/Templates/` when creating or expanding projects.
+6. **Re‑read the Master Rule**, then **re-read AI Character** to reinforce communication style.
+7. Proceed to the next task.
+
+## Delegation and Scope
+- All detailed policies, creation/update semantics, metadata validation, delegation logic, and consistency enforcement are in the Master Rule
+
+---
+
+# End of Current Task Rule / Dispatcher
