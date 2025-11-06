@@ -215,7 +215,7 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 - Enables provider flexibility (future non-Medtech EMRs)
 - Simplifies error handling (FHIR → user-friendly messages)
 
-**Reference**: `/docs/medtech/GATEWAY_IMPLEMENTATION.md`
+**Reference**: `docs/implementation/GATEWAY_IMPLEMENTATION.md`
 
 ### BFF Deployment Strategy
 **Date**: 2025-10-31
@@ -264,13 +264,26 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 
 **Project Management**: This file (`PROJECT_SUMMARY.md`)
 
-**Technical Documentation**: `/docs/medtech/`
+**Technical Documentation**: Located in `docs/` subfolder within this project directory
+
+**Admin & Overview** (`docs/admin/`):
 - `README.md` — Overview and quick links
 - `NEXT_STEPS.md` — Current action plan
-- `GATEWAY_IMPLEMENTATION.md` — Gateway implementation guide
+- `CONSOLIDATION_LOG.md` — Documentation consolidation history
+- `email-draft-uat-testing-access.md` — Email template for Medtech support
+
+**API Documentation** (`docs/api/`):
 - `alex-api-review-2025-10-30.md` — Complete ALEX API reference
+
+**Implementation Guides** (`docs/implementation/`):
+- `GATEWAY_IMPLEMENTATION.md` — Gateway implementation guide
 - `medtech-alex-uat-quickstart.md` — OAuth setup guide
+
+**Product Requirements** (`docs/product/`):
 - `images-widget-prd.md` — Product requirements
+
+**Testing** (`docs/testing/`):
+- `OAUTH_TEST_RESULTS.md` — OAuth test results
 
 **Code References**:
 - OAuth Service: `/src/lib/services/medtech/oauth-token-service.ts`
@@ -281,9 +294,11 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 
 ## Updates History
 
-### [2025-01-15] — Project Management System Installation
+### [2025-01-15] — Project Management System Installation & Reorganization
 - Created PROJECT_SUMMARY.md
-- Consolidated medtech documentation references
+- Moved all medtech documentation from `/docs/medtech/` to `/project-management/medtech-integration/docs/`
+- Organized documentation into subfolders: `api/`, `implementation/`, `product/`, `testing/`, `admin/`
+- Updated technical documentation references
 - Added current status, blockers, and milestones
 - Documented architecture and technical details
 

@@ -94,7 +94,7 @@ tags:
   - Awaiting Medtech firewall update: In progress
 - **Status**: Active — Blocked on external dependency
 - **Link**: [View Full Summary](./medtech-integration/PROJECT_SUMMARY.md)
-- **Technical Docs**: `/docs/medtech/`
+- **Technical Docs**: `/project-management/medtech-integration/docs/`
 
 ---
 
