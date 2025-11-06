@@ -5,6 +5,7 @@
 import { useState, useCallback } from 'react';
 import { compressImage, createThumbnail } from '../services/compression';
 import type { CompressionOptions } from '../types';
+import { useImageWidgetStore } from '../stores/imageWidgetStore';
 
 interface UseImageCompressionResult {
   compressImages: (files: File[], options?: Partial<CompressionOptions>) => Promise<CompressedImageResult[]>;
@@ -28,6 +29,7 @@ export function useImageCompression(): UseImageCompressionResult {
   const [isCompressing, setIsCompressing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const { imageCounter } = useImageWidgetStore();
   
   const compressImages = useCallback(async (
     files: File[],
@@ -38,6 +40,9 @@ export function useImageCompression(): UseImageCompressionResult {
     setError(null);
     
     const results: CompressedImageResult[] = [];
+    
+    // Get current counter value at start of compression
+    const startCounter = useImageWidgetStore.getState().imageCounter;
     
     try {
       for (let i = 0; i < files.length; i++) {
@@ -53,9 +58,10 @@ export function useImageCompression(): UseImageCompressionResult {
         // Compress image
         const compressionResult = await compressImage(file, options);
         
-        // Generate better temp filename: image-1.jpg, image-2.jpg, etc.
+        // Generate sequential filename using counter
         const fileExtension = file.name.split('.').pop() || 'jpg';
-        const tempFileName = `image-${i + 1}.${fileExtension === 'jpg' || fileExtension === 'jpeg' ? 'jpg' : fileExtension}`;
+        const imageNumber = startCounter + i + 1;
+        const tempFileName = `image-${imageNumber}.${fileExtension === 'jpg' || fileExtension === 'jpeg' ? 'jpg' : fileExtension}`;
         
         // Rename compressed file with better temp name
         const renamedCompressedFile = new File(

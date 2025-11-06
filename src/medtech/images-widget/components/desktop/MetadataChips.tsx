@@ -73,6 +73,7 @@ export function MetadataChips({
         selected={image.metadata.laterality}
         sticky={stickyMetadata.laterality}
         onSelect={(concept) => handleSelect('laterality', concept)}
+        showTextInput
         required
         onApply={onApplyLaterality}
         onApplyToSelected={onApplyToSelected}
@@ -103,6 +104,7 @@ export function MetadataChips({
         sticky={stickyMetadata.view}
         onSelect={(concept) => handleSelect('view', concept)}
         showTextInput
+        hideOthersDropdown
       />
       
       {/* Type */}
@@ -113,6 +115,7 @@ export function MetadataChips({
         sticky={stickyMetadata.type}
         onSelect={(concept) => handleSelect('type', concept)}
         showTextInput
+        hideOthersDropdown
       />
       
       {/* Label (free text) */}
@@ -141,6 +144,7 @@ interface ChipGroupProps {
   sticky?: CodeableConcept;
   onSelect: (concept: CodeableConcept) => void;
   showTextInput?: boolean;
+  hideOthersDropdown?: boolean;
   required?: boolean;
   onApply?: () => void;
   onApplyToSelected?: () => void;
@@ -148,7 +152,7 @@ interface ChipGroupProps {
   canApply?: boolean;
 }
 
-function ChipGroup({ label, options, selected, sticky, onSelect, showTextInput, required, onApply, onApplyToSelected, restImagesCount = 0, canApply = false }: ChipGroupProps) {
+function ChipGroup({ label, options, selected, sticky, onSelect, showTextInput, hideOthersDropdown, required, onApply, onApplyToSelected, restImagesCount = 0, canApply = false }: ChipGroupProps) {
   const [textInputValue, setTextInputValue] = useState(selected?.display || '');
   
   // Sync text input with selected value
@@ -193,22 +197,23 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showTextInput, 
         )}
       </label>
       
-      {/* Text Input (for Body Site, View, Type) */}
-      {showTextInput && (
-        <input
-          type="text"
-          value={textInputValue}
-          onChange={(e) => {
-            setTextInputValue(e.target.value);
-            handleTextInputChange(e.target.value);
-          }}
-          placeholder={`Enter ${label.toLowerCase()}...`}
-          className="mb-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-          maxLength={100}
-        />
-      )}
-      
-      <div className="flex flex-wrap gap-2">
+      {/* Text Input with Chips to the right */}
+      <div className="flex items-start gap-2">
+        {showTextInput && (
+          <input
+            type="text"
+            value={textInputValue}
+            onChange={(e) => {
+              setTextInputValue(e.target.value);
+              handleTextInputChange(e.target.value);
+            }}
+            placeholder={`Enter ${label.toLowerCase()}...`}
+            className="flex-1 rounded-md border border-slate-300 px-3 py-1.5 text-xs focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+            maxLength={100}
+          />
+        )}
+        
+        <div className={`flex flex-wrap gap-1.5 ${showTextInput ? '' : 'w-full'}`}>
         {visibleChips.map((option) => {
           const isSelected = selected?.code === option.code;
           const isSticky = !selected && sticky?.code === option.code;
@@ -224,33 +229,33 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showTextInput, 
                 }
               }}
               className={`
-                inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium
+                inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-normal
                 transition-all
                 ${
                   isSelected
-                    ? 'border-purple-500 bg-purple-500 text-white shadow-sm'
+                    ? 'border-purple-400 bg-purple-50 text-purple-700'
                     : isSticky
-                      ? 'border-purple-300 bg-purple-50 text-purple-700'
-                      : 'border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50'
+                      ? 'border-purple-200 bg-purple-50 text-purple-600'
+                      : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
                 }
               `}
             >
-              {isSelected && <Check className="size-3.5" />}
+              {isSelected && <Check className="size-2.5" />}
               {option.display}
             </button>
           );
         })}
         
-        {/* Others dropdown if there are more than 4 chips */}
-        {remainingChips.length > 0 && (
+        {/* Others dropdown if there are more than 4 chips and not hidden */}
+        {remainingChips.length > 0 && !hideOthersDropdown && (
           <DropdownMenu>
             <DropdownMenuTrigger>
               <button
                 type="button"
-                className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-slate-400 hover:bg-slate-50"
+                className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-normal text-slate-600 hover:border-slate-300 hover:bg-slate-50"
               >
                 Others
-                <ChevronDown className="size-3" />
+                <ChevronDown className="size-2.5" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -274,6 +279,7 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showTextInput, 
             </DropdownMenuContent>
           </DropdownMenu>
         )}
+        </div>
       </div>
       
       
