@@ -12,7 +12,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Check, ArrowRight, ChevronDown } from 'lucide-react';
 import type { CodeableConcept } from '../../types';
 import { useImageWidgetStore } from '../../stores/imageWidgetStore';
@@ -87,7 +87,7 @@ export function MetadataChips({
         selected={image.metadata.bodySite}
         sticky={stickyMetadata.bodySite}
         onSelect={(concept) => handleSelect('bodySite', concept)}
-        showOther
+        showTextInput
         required
         onApply={onApplyBodySite}
         onApplyToSelected={onApplyToSelected}
@@ -102,6 +102,7 @@ export function MetadataChips({
         selected={image.metadata.view}
         sticky={stickyMetadata.view}
         onSelect={(concept) => handleSelect('view', concept)}
+        showTextInput
       />
       
       {/* Type */}
@@ -111,6 +112,7 @@ export function MetadataChips({
         selected={image.metadata.type}
         sticky={stickyMetadata.type}
         onSelect={(concept) => handleSelect('type', concept)}
+        showTextInput
       />
       
       {/* Label (free text) */}
@@ -138,7 +140,7 @@ interface ChipGroupProps {
   selected?: CodeableConcept;
   sticky?: CodeableConcept;
   onSelect: (concept: CodeableConcept) => void;
-  showOther?: boolean;
+  showTextInput?: boolean;
   required?: boolean;
   onApply?: () => void;
   onApplyToSelected?: () => void;
@@ -146,21 +148,30 @@ interface ChipGroupProps {
   canApply?: boolean;
 }
 
-function ChipGroup({ label, options, selected, sticky, onSelect, showOther, required, onApply, onApplyToSelected, restImagesCount = 0, canApply = false }: ChipGroupProps) {
-  const [showOtherInput, setShowOtherInput] = useState(false);
-  const [otherValue, setOtherValue] = useState('');
+function ChipGroup({ label, options, selected, sticky, onSelect, showTextInput, required, onApply, onApplyToSelected, restImagesCount = 0, canApply = false }: ChipGroupProps) {
+  const [textInputValue, setTextInputValue] = useState(selected?.display || '');
   
-  const handleOtherSubmit = () => {
-    if (otherValue.trim()) {
+  // Sync text input with selected value
+  useEffect(() => {
+    if (showTextInput) {
+      setTextInputValue(selected?.display || '');
+    }
+  }, [selected, showTextInput]);
+  
+  const handleTextInputChange = (value: string) => {
+    setTextInputValue(value);
+    if (value.trim()) {
       onSelect({
         system: 'clinicpro/custom',
-        code: otherValue.toLowerCase().replace(/\s+/g, '-'),
-        display: otherValue.trim(),
+        code: value.toLowerCase().replace(/\s+/g, '-'),
+        display: value.trim(),
       });
-      setOtherValue('');
-      setShowOtherInput(false);
     }
   };
+  
+  // Show only first 4 chips, rest in dropdown
+  const visibleChips = options.slice(0, 4);
+  const remainingChips = options.slice(4);
   
   // Check if field is missing (for inline validation)
   const isMissing = required && !selected;
@@ -182,8 +193,23 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showOther, requ
         )}
       </label>
       
+      {/* Text Input (for Body Site, View, Type) */}
+      {showTextInput && (
+        <input
+          type="text"
+          value={textInputValue}
+          onChange={(e) => {
+            setTextInputValue(e.target.value);
+            handleTextInputChange(e.target.value);
+          }}
+          placeholder={`Enter ${label.toLowerCase()}...`}
+          className="mb-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+          maxLength={100}
+        />
+      )}
+      
       <div className="flex flex-wrap gap-2">
-        {options.map((option) => {
+        {visibleChips.map((option) => {
           const isSelected = selected?.code === option.code;
           const isSticky = !selected && sticky?.code === option.code;
           
@@ -191,7 +217,12 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showOther, requ
             <button
               key={option.code}
               type="button"
-              onClick={() => onSelect(option)}
+              onClick={() => {
+                onSelect(option);
+                if (showTextInput) {
+                  setTextInputValue(option.display);
+                }
+              }}
               className={`
                 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium
                 transition-all
@@ -210,54 +241,41 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showOther, requ
           );
         })}
         
-        {showOther && !showOtherInput && (
-          <button
-            type="button"
-            onClick={() => setShowOtherInput(true)}
-            className="rounded-full border border-dashed border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:border-slate-400 hover:bg-slate-50"
-          >
-            Other...
-          </button>
-        )}
-        
-        {showOtherInput && (
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={otherValue}
-              onChange={(e) => setOtherValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleOtherSubmit();
-                } else if (e.key === 'Escape') {
-                  setShowOtherInput(false);
-                  setOtherValue('');
-                }
-              }}
-              placeholder="Type body site..."
-              className="rounded-md border border-slate-300 px-2 py-1 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-              autoFocus
-            />
-            <button
-              type="button"
-              onClick={handleOtherSubmit}
-              className="rounded bg-purple-500 px-2 py-1 text-xs text-white hover:bg-purple-600"
-            >
-              Add
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setShowOtherInput(false);
-                setOtherValue('');
-              }}
-              className="text-xs text-slate-500 hover:text-slate-700"
-            >
-              Cancel
-            </button>
-          </div>
+        {/* Others dropdown if there are more than 4 chips */}
+        {remainingChips.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:border-slate-400 hover:bg-slate-50"
+              >
+                Others
+                <ChevronDown className="size-3" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {remainingChips.map((option) => {
+                const isSelected = selected?.code === option.code;
+                return (
+                  <DropdownMenuItem
+                    key={option.code}
+                    onClick={() => {
+                      onSelect(option);
+                      if (showTextInput) {
+                        setTextInputValue(option.display);
+                      }
+                    }}
+                  >
+                    {isSelected && <Check className="mr-2 size-3" />}
+                    {option.display}
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
       </div>
+      
       
       {/* Apply Button (for Side and Body Site only) */}
       {required && onApply && (
@@ -265,9 +283,9 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showOther, requ
           <div className="inline-flex">
             <Button
               disabled={!canApply || restImagesCount === 0}
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="h-7 rounded-r-none border-r-0 text-xs"
+              className="h-6 rounded-r-none border-r-0 text-xs text-slate-600 hover:text-slate-900"
               onClick={onApply}
             >
               <ArrowRight className="mr-1 size-3" />
@@ -277,9 +295,9 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showOther, requ
               <DropdownMenuTrigger>
                 <Button
                   disabled={!canApply || restImagesCount === 0}
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  className="h-7 rounded-l-none px-2 text-xs"
+                  className="h-6 rounded-l-none px-2 text-xs text-slate-600 hover:text-slate-900"
                 >
                   <ChevronDown className="size-3" />
                 </Button>

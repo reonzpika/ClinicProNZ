@@ -53,16 +53,27 @@ export function useImageCompression(): UseImageCompressionResult {
         // Compress image
         const compressionResult = await compressImage(file, options);
         
+        // Generate better temp filename: image-1.jpg, image-2.jpg, etc.
+        const fileExtension = file.name.split('.').pop() || 'jpg';
+        const tempFileName = `image-${i + 1}.${fileExtension === 'jpg' || fileExtension === 'jpeg' ? 'jpg' : fileExtension}`;
+        
+        // Rename compressed file with better temp name
+        const renamedCompressedFile = new File(
+          [compressionResult.compressedFile],
+          tempFileName,
+          { type: compressionResult.compressedFile.type }
+        );
+        
         // Create preview and thumbnail
         const [preview, thumbnail] = await Promise.all([
-          URL.createObjectURL(compressionResult.compressedFile),
-          createThumbnail(compressionResult.compressedFile),
+          URL.createObjectURL(renamedCompressedFile),
+          createThumbnail(renamedCompressedFile),
         ]);
         
         results.push({
           id: `${Date.now()}-${i}-${Math.random().toString(36).slice(2)}`,
           originalFile: file,
-          compressedFile: compressionResult.compressedFile,
+          compressedFile: renamedCompressedFile,
           preview,
           thumbnail,
           originalSize: compressionResult.originalSize,

@@ -111,7 +111,7 @@ export function MetadataForm({ image, onPrevious, onNext, hasPrevious = false, h
       {/* Footer with Navigation */}
       {(onPrevious || onNext) && (
         <div className="border-t border-slate-200 p-4">
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex items-center justify-start gap-3">
             <Button
               onClick={onPrevious}
               disabled={!hasPrevious}
