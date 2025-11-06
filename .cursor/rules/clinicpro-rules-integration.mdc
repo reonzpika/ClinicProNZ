@@ -26,43 +26,39 @@ This workspace uses a **dual rule system** combining:
 **When Applied**: Always active for project management tasks
 
 ### ClinicPro Technical Rules
-**Scope**: Code development, debugging, technical output formatting
+**Scope**: Code development, debugging, technical workflows
 
 **Files**:
 - `debugging-strategy.mdc` - Disciplined error handling approach
-- `output_structure.mdc` - Output style for ClinicPro engineering (alwaysApply: true)
-- `token-optimisation.mdc` - Token optimization strategies
 
 **When Applied**: Always active for technical/code tasks
 
 ## Conflict Resolution
 
-### alwaysApply Conflicts
-Two rules have `alwaysApply: true`:
+### alwaysApply Rules
+Two NexWave rules have `alwaysApply: true`:
 - `current-task.mdc` (NexWave - dispatcher)
-- `output_structure.mdc` (ClinicPro - technical output)
+- `system-context.mdc` (NexWave - system overview)
 
 **Resolution**: 
-- `current-task.mdc` applies to project management workflow
-- `output_structure.mdc` applies to technical code output
-- Both can coexist: dispatcher handles project routing, output_structure handles code formatting
+- Both NexWave rules apply to project management workflow
+- No conflicts with ClinicPro technical rules
 
 ### Scope Clarity
 - **Project Management Tasks**: Follow NexWave rules (dispatcher, master rule, AI character)
-- **Technical/Code Tasks**: Follow ClinicPro rules (debugging, output structure, token optimization)
-- **Hybrid Tasks**: Both rule sets apply, but NexWave rules handle project context, ClinicPro rules handle code details
+- **Technical/Code Tasks**: Follow ClinicPro rules (debugging-strategy)
+- **Hybrid Tasks**: Both rule sets apply, but NexWave rules handle project context, ClinicPro rules handle debugging approach
 
 ## Recommended Workflow
 
 1. **For Project Management Tasks**:
    - Read NexWave rules first (dispatcher → master rule → AI character)
-   - Apply ClinicPro rules for any code output formatting
    - Update project documentation per NexWave master rule
 
 2. **For Technical/Code Tasks**:
-   - Read ClinicPro technical rules (debugging-strategy, output_structure, token-optimisation)
+   - Read ClinicPro technical rules (debugging-strategy)
    - Reference NexWave rules only if project context needed
-   - Focus on ClinicPro rules for code quality
+   - Focus on ClinicPro debugging approach for error handling
 
 3. **For Hybrid Tasks**:
    - Read NexWave dispatcher to understand project context
@@ -72,7 +68,7 @@ Two rules have `alwaysApply: true`:
 ## Integration Points
 
 - **Project Context**: NexWave rules provide project structure (`/project-management/`, `PROJECT_SUMMARY.md`)
-- **Code Quality**: ClinicPro rules provide technical standards (debugging, output formatting)
+- **Code Quality**: ClinicPro rules provide debugging approach (error handling strategy)
 - **Documentation**: Nexus between both - code changes documented in project `PROJECT_SUMMARY.md` per NexWave rules
 
 ## TODO: Rules Review
@@ -80,11 +76,10 @@ Two rules have `alwaysApply: true`:
 **Status**: Pending review to resolve conflicts and optimize integration
 
 **Tasks**:
-- [ ] Review `output_structure.mdc` and `current-task.mdc` coexistence
+- [x] Removed `output_structure.mdc` and `token-optimisation.mdc` (deleted)
+- [ ] Review remaining ClinicPro rules integration
 - [ ] Clarify when each rule set applies (project vs technical)
-- [ ] Optimize rule loading order and conflicts
 - [ ] Document best practices for hybrid tasks
-- [ ] Consider merging or restructuring if conflicts persist
 
 ---
 
