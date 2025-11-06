@@ -138,7 +138,7 @@ export function ApplyMetadataModal({
                         </div>
                       )}
                       {isInvalid && !isCommitted && (
-                        <div className="absolute right-1 top-1 rounded-full bg-red-500 p-1">
+                        <div className="absolute right-1 top-1 rounded-full bg-yellow-500 p-1">
                           <AlertCircle className="size-3 text-white" />
                         </div>
                       )}

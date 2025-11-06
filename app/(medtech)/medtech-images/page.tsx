@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic';
 
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { AlertCircle, Check, Loader2, Inbox, ListTodo, ChevronLeft, ChevronRight } from 'lucide-react';
+import { AlertCircle, Check, Loader2, Inbox, ListTodo } from 'lucide-react';
 import { useImageWidgetStore } from '@/src/medtech/images-widget/stores/imageWidgetStore';
 import { useCapabilities } from '@/src/medtech/images-widget/hooks/useCapabilities';
 import { CapturePanel } from '@/src/medtech/images-widget/components/desktop/CapturePanel';
@@ -340,32 +340,13 @@ function MedtechImagesPageContent() {
         
         {/* Metadata Form (70%) */}
         <div className="flex-[7]">
-          <MetadataForm image={currentImage} />
-        </div>
-      </div>
-      
-      {/* Navigation Buttons at Bottom */}
-      <div className="border-t border-slate-200 bg-white px-6 py-3">
-        <div className="flex items-center justify-center gap-3">
-          <Button
-            onClick={handlePrevious}
-            disabled={!hasPrevious}
-            variant="outline"
-            size="sm"
-          >
-            <ChevronLeft className="mr-1 size-4" />
-            Previous
-          </Button>
-          
-          <Button
-            onClick={handleNext}
-            disabled={!hasNext}
-            variant="outline"
-            size="sm"
-          >
-            Next
-            <ChevronRight className="ml-1 size-4" />
-          </Button>
+          <MetadataForm 
+            image={currentImage}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            hasPrevious={hasPrevious}
+            hasNext={hasNext}
+          />
         </div>
       </div>
       

@@ -286,7 +286,6 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showOther, requ
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuItem onClick={onApplyToSelected}>
-                  <Check className="mr-2 size-3" />
                   Apply to Selected
                 </DropdownMenuItem>
               </DropdownMenuContent>
