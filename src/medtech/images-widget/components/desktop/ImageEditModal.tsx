@@ -12,7 +12,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { X, RotateCw, RotateCcw, Crop, ArrowRight, Undo2, Redo2, Save } from 'lucide-react';
+import { RotateCw, RotateCcw, Crop, ArrowRight, Undo2, Redo2, Save } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
