@@ -29,7 +29,6 @@ export function useImageCompression(): UseImageCompressionResult {
   const [isCompressing, setIsCompressing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const { imageCounter } = useImageWidgetStore();
   
   const compressImages = useCallback(async (
     files: File[],
