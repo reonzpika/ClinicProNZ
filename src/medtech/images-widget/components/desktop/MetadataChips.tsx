@@ -129,7 +129,7 @@ export function MetadataChips({
           value={image.metadata.label || ''}
           onChange={(e) => updateMetadata(imageId, { label: e.target.value })}
           placeholder="e.g., Lesion 1 (superior)"
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+          className="w-48 rounded-md border border-slate-300 px-3 py-1.5 text-xs focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
           maxLength={100}
         />
       </div>
@@ -208,7 +208,7 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showTextInput, 
               handleTextInputChange(e.target.value);
             }}
             placeholder={`Enter ${label.toLowerCase()}...`}
-            className="flex-1 rounded-md border border-slate-300 px-3 py-1.5 text-xs focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+            className="w-48 rounded-md border border-slate-300 px-3 py-1.5 text-xs focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
             maxLength={100}
           />
         )}

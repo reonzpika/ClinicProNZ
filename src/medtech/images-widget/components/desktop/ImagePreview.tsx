@@ -130,51 +130,49 @@ export function ImagePreview({
             draggable={false}
           />
         </div>
+      </div>
+      
+      {/* Action Buttons - Bottom */}
+      <div className="mt-2 flex items-center justify-between gap-2">
+        {/* Edit Button */}
+        <Button
+          onClick={onEdit}
+          variant="secondary"
+          size="sm"
+        >
+          <Edit2 className="mr-2 size-4" />
+          Edit
+        </Button>
         
-        {/* Overlay Controls */}
-        <div className="absolute inset-0 z-10 pointer-events-none">
-          {/* Edit Button - Top Right */}
-          <div className="absolute right-2 top-2 pointer-events-auto">
-            <Button
-              onClick={onEdit}
-              variant="secondary"
-              size="sm"
-              className="shadow-lg"
-            >
-              <Edit2 className="size-4" />
-            </Button>
-          </div>
+        {/* Zoom Controls */}
+        <div className="flex items-center gap-2 bg-white rounded-lg px-2 py-1 border border-slate-200">
+          <Button
+            onClick={handleZoomOut}
+            disabled={zoom <= 0.5}
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0"
+          >
+            <ZoomOut className="size-4" />
+          </Button>
           
-          {/* Zoom Controls - Top Centre (Always Visible) */}
-          <div className="absolute left-1/2 top-2 -translate-x-1/2 pointer-events-auto flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 shadow-lg">
-            <Button
-              onClick={handleZoomOut}
-              disabled={zoom <= 0.5}
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0"
-            >
-              <ZoomOut className="size-4" />
-            </Button>
-            
-            <span className="text-xs font-medium text-slate-700 min-w-[3rem] text-center">
-              {Math.round(zoom * 100)}%
-            </span>
-            
-            <Button
-              onClick={handleZoomIn}
-              disabled={zoom >= 3}
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0"
-            >
-              <ZoomIn className="size-4" />
-            </Button>
-          </div>
+          <span className="text-xs font-medium text-slate-700 min-w-[3rem] text-center">
+            {Math.round(zoom * 100)}%
+          </span>
+          
+          <Button
+            onClick={handleZoomIn}
+            disabled={zoom >= 3}
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0"
+          >
+            <ZoomIn className="size-4" />
+          </Button>
         </div>
       </div>
       
-      {/* Image Info - AT BOTTOM */}
+      {/* Image Info */}
       <div className="mt-2 text-xs text-slate-500">
         {image?.file.name} • {image ? formatFileSize(image.file.size) : ''}
         {image?.metadata.label && ` • ${image.metadata.label}`}

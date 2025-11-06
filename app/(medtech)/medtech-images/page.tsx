@@ -251,34 +251,31 @@ function MedtechImagesPageContent() {
             />
           </div>
           
-          {/* Right: Inbox + Task + Commit (Stacked) */}
-          <div className="ml-4 flex flex-col gap-2">
-            {/* Inbox + Task */}
-            <div className="flex items-center gap-4">
-              {/* Inbox Checkbox */}
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={inboxEnabled}
-                  onChange={(e) => setInboxEnabled(e.target.checked)}
-                  className="size-4 rounded border-slate-300"
-                />
-                <Inbox className="size-4 text-slate-600" />
-                <span className="text-slate-700">Inbox</span>
-              </label>
-              
-              {/* Task Checkbox */}
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={taskEnabled}
-                  onChange={(e) => setTaskEnabled(e.target.checked)}
-                  className="size-4 rounded border-slate-300"
-                />
-                <ListTodo className="size-4 text-slate-600" />
-                <span className="text-slate-700">Task</span>
-              </label>
-            </div>
+          {/* Right: Inbox + Task + Commit (Same Line) */}
+          <div className="ml-4 flex items-center gap-3">
+            {/* Inbox Checkbox */}
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={inboxEnabled}
+                onChange={(e) => setInboxEnabled(e.target.checked)}
+                className="size-4 rounded border-slate-300"
+              />
+              <Inbox className="size-4 text-slate-600" />
+              <span className="text-slate-700">Inbox</span>
+            </label>
+            
+            {/* Task Checkbox */}
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={taskEnabled}
+                onChange={(e) => setTaskEnabled(e.target.checked)}
+                className="size-4 rounded border-slate-300"
+              />
+              <ListTodo className="size-4 text-slate-600" />
+              <span className="text-slate-700">Task</span>
+            </label>
             
             {/* Commit Button */}
             <Button
