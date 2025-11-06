@@ -91,7 +91,7 @@ All documentation has been updated to reflect **ALEX API Documentation as the so
 - ✅ FHIR type definitions (`/src/lib/services/medtech/types.ts`)
 - ✅ Test endpoints (`/api/medtech/test`, `/api/medtech/token-info`)
 - ✅ BFF infrastructure identified on Lightsail (`api.clinicpro.co.nz`, IP: 13.236.58.12)
-- ✅ Comprehensive documentation (`/docs/medtech/GATEWAY_IMPLEMENTATION.md`)
+- ✅ Comprehensive documentation (`docs/implementation/GATEWAY_IMPLEMENTATION.md`)
 
 **Current**: Deploying OAuth service to Lightsail BFF (uses allow-listed IP)
 

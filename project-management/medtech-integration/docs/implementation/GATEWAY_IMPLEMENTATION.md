@@ -632,5 +632,5 @@ curl -v --max-time 5 https://alexapiuat.medtechglobal.com/FHIR
 
 - **ALEX API Documentation**: https://alexapidoc.medtechglobal.com/
 - **FHIR R4 Spec**: https://hl7.org/fhir/R4/
-- **OAuth Test Results**: `/docs/medtech/OAUTH_TEST_RESULTS.md`
-- **Quickstart Guide**: `/docs/medtech/medtech-alex-uat-quickstart.md`
+- **OAuth Test Results**: `../testing/OAUTH_TEST_RESULTS.md`
+- **Quickstart Guide**: `medtech-alex-uat-quickstart.md` (this file)
