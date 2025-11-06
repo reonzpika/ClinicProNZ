@@ -218,9 +218,8 @@ export function ImageEditModal({
 
   // Add arrow
   const handleAddArrow = useCallback((e: React.MouseEvent) => {
-    if (!containerRef.current || !imageRef.current || activeTool !== 'arrow') return;
+    if (!imageRef.current || activeTool !== 'arrow') return;
     
-    const rect = containerRef.current.getBoundingClientRect();
     const imgRect = imageRef.current.getBoundingClientRect();
     
     const x = ((e.clientX - imgRect.left) / imgRect.width) * 100;
