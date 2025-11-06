@@ -116,19 +116,25 @@ export function ImageEditModal({
 
   // Undo
   const handleUndo = useCallback(() => {
-    if (historyIndex > 0 && history[historyIndex - 1]) {
+    if (historyIndex > 0) {
       const newIndex = historyIndex - 1;
-      setHistoryIndex(newIndex);
-      setEditState({ ...history[newIndex].state });
+      const historyItem = history[newIndex];
+      if (historyItem) {
+        setHistoryIndex(newIndex);
+        setEditState({ ...historyItem.state });
+      }
     }
   }, [history, historyIndex]);
 
   // Redo
   const handleRedo = useCallback(() => {
-    if (historyIndex < history.length - 1 && history[historyIndex + 1]) {
+    if (historyIndex < history.length - 1) {
       const newIndex = historyIndex + 1;
-      setHistoryIndex(newIndex);
-      setEditState({ ...history[newIndex].state });
+      const historyItem = history[newIndex];
+      if (historyItem) {
+        setHistoryIndex(newIndex);
+        setEditState({ ...historyItem.state });
+      }
     }
   }, [history, historyIndex]);
 
