@@ -174,9 +174,22 @@ export function ImagePreview({
           />
         </div>
         
-        {/* Zoom Controls - Bottom (when zoom <= 1) */}
-        {zoom <= 1 && (
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 pointer-events-auto flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 shadow-lg">
+        {/* Overlay Controls */}
+        <div className="absolute inset-0 z-10 pointer-events-none">
+          {/* Edit Button - Top Right */}
+          <div className="absolute right-2 top-2 pointer-events-auto">
+            <Button
+              onClick={onEdit}
+              variant="secondary"
+              size="sm"
+              className="shadow-lg"
+            >
+              <Edit2 className="size-4" />
+            </Button>
+          </div>
+          
+          {/* Zoom Controls - Top Centre (Always Visible) */}
+          <div className="absolute left-1/2 top-2 -translate-x-1/2 pointer-events-auto flex items-center gap-2 bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 shadow-lg">
             <Button
               onClick={handleZoomOut}
               disabled={zoom <= 0.5}
@@ -201,7 +214,7 @@ export function ImagePreview({
               <ZoomIn className="size-4" />
             </Button>
           </div>
-        )}
+        </div>
       </div>
       
       {/* Image Info - AT BOTTOM */}

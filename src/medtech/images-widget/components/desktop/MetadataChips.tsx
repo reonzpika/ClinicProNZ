@@ -13,10 +13,16 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, ArrowRight } from 'lucide-react';
+import { Check, ArrowRight, ChevronDown } from 'lucide-react';
 import type { CodeableConcept } from '../../types';
 import { useImageWidgetStore } from '../../stores/imageWidgetStore';
 import { Button } from '@/src/shared/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/src/shared/components/ui/dropdown-menu';
 
 interface MetadataChipsProps {
   imageId: string;
