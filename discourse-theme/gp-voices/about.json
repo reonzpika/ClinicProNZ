@@ -1,0 +1,9 @@
+{
+  "name": "ClinicPro GP Voices",
+  "about_url": "https://clinicpro.co.nz/gp-voices",
+  "license_url": "https://opensource.org/license/mit/",
+  "authors": "ClinicPro Engineering",
+  "theme_version": "0.1.0",
+  "minimum_discourse_version": "3.2.0",
+  "assets": {}
+}

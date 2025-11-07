@@ -1,0 +1,21 @@
+<div class="gp-card gp-ai-summary-sticky">
+  <div class="gp-ai-summary p-3">
+    <div class="d-flex justify-between align-center">
+      <h3 class="m-0">Weekly AI Summary</h3>
+      <span class="hint-text">Updated {{this.updatedAt}}</span>
+    </div>
+    <ul class="summary-bullets">
+      {{#each this.bullets as |bullet idx|}}
+        {{#if (lt idx settings.ai_summary_max_bullets)}}
+          <li>{{bullet}}</li>
+        {{/if}}
+      {{/each}}
+    </ul>
+    <div class="actions d-flex gap-2">
+      <DButton @label="view_full_summary" @action={{this.viewFull}}/>
+      {{#if this.categorySlug}}
+        <a href="/c/{{this.categorySlug}}/{{@categoryId}}" class="btn-link">Browse summaries</a>
+      {{/if}}
+    </div>
+  </div>
+</div>
