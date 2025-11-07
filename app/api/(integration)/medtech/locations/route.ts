@@ -16,7 +16,7 @@ import type { FhirBundle, FhirLocation } from '@/src/lib/services/medtech/types'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const correlationId = generateCorrelationId()
   const startTime = Date.now()
 
