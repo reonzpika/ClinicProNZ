@@ -31,6 +31,8 @@ Could you please confirm:
 2. Is the facility ID format alphanumeric (e.g., `F2N060-E`) or numeric (e.g., `12345678`)?
 3. Does the facility ID need to be approved/configured for my Application ID in your system?
 
+**Note:** The error is "Practice Facility not found" (not "Patient not found"), which indicates the facility ID validation is failing before the patient query is processed. The test patient NHI (`ZZZ0016`) is just used for testing - the issue is specifically with facility ID recognition.
+
 **Example request that's failing:**
 ```
 GET https://alexapiuat.medtechglobal.com/FHIR/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|ZZZ0016
@@ -40,6 +42,8 @@ Headers:
 - mt-correlationid: [uuid]
 - mt-appid: clinicpro-images-widget
 ```
+
+**Response:** 403 Forbidden - "Practice Facility not found"
 
 Thank you for your assistance.
 
@@ -64,6 +68,8 @@ I'm getting "Practice Facility not found" (403) when calling ALEX API UAT.
 OAuth and IP allow-listing are working. Could you confirm:
 1. What facility ID should I use for my Application ID?
 2. Does it need to be approved/configured in your system?
+
+**Note:** The error is "Practice Facility not found" (not "Patient not found"), indicating facility ID validation is failing. The test patient NHI (`ZZZ0016`) is just for testing - the issue is with facility ID recognition.
 
 Thanks,  
 [Your Name]
