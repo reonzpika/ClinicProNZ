@@ -1,0 +1,94 @@
+// ClinicPro GP Voices — base theme styles
+
+:root {
+  --cp-bg: #0b0c10;
+  --cp-surface: #111218;
+  --cp-surface-2: #1a1c22;
+  --cp-text: #eceff4;
+  --cp-muted: #9aa3b2;
+  --cp-accent: #4f46e5; // indigo
+  --cp-accent-2: #06b6d4; // cyan
+  --cp-danger: #ef4444;
+  --cp-warning: #f59e0b;
+}
+
+.gp-card {
+  background: var(--cp-surface);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.gp-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 12px;
+  line-height: 18px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.gp-badge--news { background: rgba(59,130,246,0.15); color: #93c5fd; border-color: rgba(59,130,246,0.25); }
+.gp-badge--trending { background: rgba(249,115,22,0.15); color: #fdba74; border-color: rgba(249,115,22,0.25); }
+.gp-badge--pinned { background: rgba(148,163,184,0.15); color: #cbd5e1; border-color: rgba(148,163,184,0.25); }
+
+// removed tag chip styles
+
+.gp-sticky-top {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+}
+
+// Hide categories/tags/nav pills on discovery for minimal UI
+html body.theme-ClinicPro-GP-Voices {
+  .gp-desktop-topnav { display: none; }
+
+  .navigation-container .nav-pills,
+  .category-breadcrumb,
+  .filtered-topics .categories-boxes,
+  .category-links,
+  .navigation-container .select-kit-header,
+  .tag-info,
+  .discovery-categories,
+  .discovery-top .category-list,
+  .list-controls .category-chooser,
+  .list-controls .tag-chooser {
+    display: none !important;
+  }
+
+  // Hide sidebar items for non-staff; keep Home, My Posts, My Messages
+  &:not(.staff) .sidebar-section,
+  &:not(.staff) .sidebar-footer,
+  &:not(.staff) .sidebar-more-section,
+  &:not(.staff) .sidebar-tags,
+  &:not(.staff) .sidebar-categories,
+  &:not(.staff) .sidebar-channels {
+    display: none !important;
+  }
+  &:not(.staff) .sidebar-section-content {
+    display: none !important;
+  }
+  &:not(.staff) .sidebar {
+    /* minimal width */
+    width: 220px;
+  }
+  /* Try to keep essential links visible by label match */
+  &:not(.staff) .sidebar .sidebar-section-link { display: none !important; }
+  &:not(.staff) .sidebar .sidebar-section-link[href*="/latest"],
+  &:not(.staff) .sidebar .sidebar-section-link[href*="/u/"][href*="activity"],
+  &:not(.staff) .sidebar .sidebar-section-link[href*="/u/"][href*="messages"] {
+    display: flex !important;
+  }
+}
+
+// Hide category UI if enabled
+html body.theme-ClinicPro-GP-Voices {
+  &[data-hide-category-ui="true"] .category-breadcrumb,
+  &[data-hide-category-ui="true"] .list-controls .category-chooser,
+  &[data-hide-category-ui="true"] .navigation-container .category-links {
+    display: none !important;
+  }
+}

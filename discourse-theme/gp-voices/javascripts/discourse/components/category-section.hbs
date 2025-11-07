@@ -1,0 +1,22 @@
+<div class="gp-card p-3">
+  <div class="d-flex justify-between align-center mb-2">
+    <h3 class="m-0">{{@title}}</h3>
+    {{#if @readMore}}
+      <a class="btn-link" href="/c/{{this.categorySlug}}/{{@categoryId}}">Read more</a>
+    {{/if}}
+  </div>
+  <div class="gp-section-list">
+    {{#each this.topics as |t|}}
+      <div class="gp-section-item d-flex gap-2">
+        {{avatar t.created_by imageSize="small" class="avatar"}}
+        <div class="body">
+          <a class="title" href="/t/{{t.id}}">{{html-safe t.fancy_title}}</a>
+          <div class="meta">
+            <span class="time">{{format-date t.created_at}}</span>
+            <span class="replies">{{t.reply_count}} replies</span>
+          </div>
+        </div>
+      </div>
+    {{/each}}
+  </div>
+</div>
