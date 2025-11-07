@@ -2,8 +2,8 @@
 project_name: ClinicPro SaaS
 project_stage: Operational
 owner: Development Team
-last_updated: "2025-01-15"
-version: "1.0.0"
+last_updated: "2025-11-07"
+version: "1.0.4"
 tags:
   - saas
   - healthcare
@@ -29,7 +29,7 @@ summary: "Full-stack Next.js SaaS application providing AI-assisted medical scri
 
 ### Production Status
 - ✅ **Deployed**: Vercel (frontend) + AWS Lightsail BFF (backend)
-- ✅ **Domain**: Production base URL: `https://api.clinicpro.co.nz`
+- ✅ **BFF URL (Medtech integration only)**: `https://api.clinicpro.co.nz`
 - ✅ **Health**: System operational
 - ✅ **Features**: Core features in production use
 
@@ -42,9 +42,9 @@ summary: "Full-stack Next.js SaaS application providing AI-assisted medical scri
 ## Key Features
 
 ### Core Clinical Features
-- **AI Clinical Notes**: OpenAI-powered templated note generation (`app/api/(clinical)/consultation/notes`)
-- **Recording Systems**: Desktop and mobile audio capture with Deepgram STT and Ably signalling
-- **Clinical Image Analysis**: Gemini vision inference over images stored in S3
+- **AI Clinical Notes**: OpenAI‑powered templated note generation (`app/api/(clinical)/consultation/notes`)
+- **Recording Systems**: Desktop and mobile audio capture with Deepgram STT (nova‑3‑medical) and Ably signalling
+- **Clinical Image Analysis**: Anthropic Claude Vision inference over images stored in S3
 - **RAG (Pilot)**: LlamaIndex/Weaviate plan; current vector search via Postgres/pgvector
 
 ### Platform Features
@@ -65,7 +65,7 @@ summary: "Full-stack Next.js SaaS application providing AI-assisted medical scri
 - **State/Data**: TanStack React Query 5, Zustand
 
 ### Backend & Infrastructure
-- **AI/LLM**: OpenAI, Gemini Vision (Google Generative Language APIs)
+- **AI/LLM**: OpenAI, Anthropic Claude Vision (vision inference)
 - **Speech-to-Text**: Deepgram SDK (nova-3-medical)
 - **Realtime**: Ably (user channels)
 - **Database**: PostgreSQL (Neon), Drizzle ORM, pgvector
@@ -73,7 +73,7 @@ summary: "Full-stack Next.js SaaS application providing AI-assisted medical scri
 - **Storage**: AWS S3, sharp for image processing
 - **Auth**: Clerk (Next.js SDK + middleware; Svix verification for Clerk webhooks)
 - **Payments**: Stripe (Checkout sessions + webhooks)
-- **Infrastructure**: Vercel serverless functions + scheduled crons, AWS Lightsail BFF
+- **Infrastructure**: Vercel serverless functions + scheduled crons; Medtech Integration BFF on AWS Lightsail (used only by Medtech flows)
 
 ### Development & Quality
 - **Tooling**: ESLint, Vitest, Commitlint + Commitizen, semantic-release
@@ -84,13 +84,19 @@ summary: "Full-stack Next.js SaaS application providing AI-assisted medical scri
 
 ### Deployment Architecture
 ```
+Standard App Flows
 User Browser
     ↓
 Vercel (Frontend - Next.js)
     ↓
+External Services (OpenAI, Deepgram, Stripe, etc.)
+
+Medtech Integration Flows (Widgets)
+User Browser (Medtech Widgets)
+    ↓
 AWS Lightsail BFF (api.clinicpro.co.nz)
     ↓
-External Services (OpenAI, Deepgram, Stripe, etc.)
+Medtech ALEX / External Services
 ```
 
 ### Key Components
@@ -98,7 +104,40 @@ External Services (OpenAI, Deepgram, Stripe, etc.)
 - **API Routes**: Serverless functions (`app/api/`)
 - **Database**: PostgreSQL with Drizzle ORM (`database/`)
 - **Services**: Feature modules (`src/`)
-- **BFF**: AWS Lightsail (`api.clinicpro.co.nz`)
+- **Medtech Integration BFF**: AWS Lightsail (`api.clinicpro.co.nz`) — only for Medtech integration widgets
+
+---
+
+## Providers & State Management
+
+- **Query Client**: TanStack React Query with custom defaults (`src/lib/react-query.ts`), provided via `QueryClientProvider` (`src/providers/QueryClientProvider.tsx`), wired in `app/layout.tsx`.
+- **Zustand Stores**: Session and UI state in:
+  - `src/stores/consultationStore.ts` — consultation session, SOAP sections, chat context, clinical images
+  - `src/stores/transcriptionStore.ts` — transcription flow state
+  - `src/stores/imageStore.ts` — image capture/annotations
+  - `src/stores/userSettingsStore.ts` — user preferences (e.g., default template, autosave)
+
+---
+
+## Routing Snapshot (high‑level)
+
+- Pages (`app/`):
+  - Marketing: `(marketing)/landing-page`, `about`, `ai-scribing`, `clinicpro`, `contact`, `roadmap`
+  - Clinical: `(clinical)/consultation`, `chat`, `image`, `templates`, `search`, `differential-diagnosis`, `acc-occupation-codes`, `employer-lookup`
+  - User: `(user)/dashboard`, `settings`, auth
+  - Business: `(business)/billing`, `pricing`
+  - Admin: `(admin)/admin`, `emergency-admin`
+  - Integration: `(integration)/mobile`; Medtech: `(medtech)/medtech-images`
+- APIs (`app/api/`): grouped under `(clinical)`, `(user)`, `(business)`, `(admin)`, `(integration)`, `(marketing)`, plus `current-session`, `maintenance`, `search`.
+
+---
+
+## Security & Access
+
+- **Authentication**: Clerk middleware protects sensitive pages and API routes (`middleware.ts`).
+- **Authorisation**: Admin‑only checks exist for `/api/admin/*` and RAG admin routes. Tier headers are forwarded to APIs for context.
+- **Current policy**: All authenticated users have access to all features; no tier gating enforced [[memory:3197347]].
+- **RBAC status**: Legacy tier headers remain for future flexibility; formal RBAC is TBD and not enforced at present.
 
 ---
 
@@ -186,44 +225,61 @@ External Services (OpenAI, Deepgram, Stripe, etc.)
 
 ---
 
-## Decisions & Learnings [2025-01-15]
+## Business & Commercialisation
 
-### Clinical Notes API Architecture
-**Date**: 2024-10-01
+- **Payments**: Stripe Checkout/webhooks configured (self‑serve billing present).
+- **Pricing**: Public pricing TBD. Candidate model is usage‑based packs (individual and clinic pooled) with rollover and overage, per commercialisation draft — see `project-management/new_to_r&d_grant/01-application-narrative/commercialization-and-market-strategy.md`.
+- **Product packaging**: Medtech integration positioned as an upsell to the base ClinicPro offering.
+- **Legal**: Draft Terms and Privacy are published but not professionally reviewed yet — Terms: `https://www.clinicpro.co.nz/terms`, Privacy: `https://www.clinicpro.co.nz/privacy`. Review by NZ legal/compliance advisors pending.
+- **Website**: Landing page reference for messaging and positioning: `https://www.clinicpro.co.nz/landing-page`.
 
-**Decision**: Multi-source data handling with priority hierarchy
+---
 
-**Rationale**:
-- GP's problem list (Additional Notes) is PRIMARY source
-- Transcription and typed input are SUPPLEMENTARY
-- Enables better clinical focus and detail extraction
+## Marketing, Growth & Monetisation [2025-11-07]
 
-**Reference**: `/PROMPT_IMPROVEMENTS_SUMMARY.md`
+### Positioning & ICP
+- **Ideal Customer Profile (NZ)**: General practices (1–10 GPs), practice managers, and GP owners prioritising quality documentation and reduced admin burden.
+- **Positioning**: "ClinicPro helps NZ GPs produce consistent, high‑quality notes in minutes — freeing time for patient care." Differentiators: clinical note quality, NZ‑context prompts, minimal setup, and Medtech upsell path.
 
-### Template-in-System-Prompt Architecture
-**Date**: 2024-10-01
+### Go‑to‑Market (GTM)
+- **Primary channels**: Direct outreach to NZ clinics; PHO partnerships; lightweight webinars/demos; GP communities (LinkedIn + GP groups); the forthcoming GP Voices community.
+- **Secondary**: Content marketing (weekly clinical documentation tips, case studies), Medtech ecosystem visibility.
+- **Funnel**:
+  1. Landing → pricing → 14‑day trial sign‑up (Clerk) → in‑app checklist → generate first note
+  2. Founder‑led demo for clinics → 2–4 week pilot → convert to paid
 
-**Decision**: Dynamic template inclusion in system prompt, cached per templateId
+### Pricing & Packaging (pilot approach)
+- **Tierless product** aligned with current access model [[memory:3197347]].
+- Start with simple, transparent pricing on site + clinic contact. Keep usage‑based packs under evaluation (individual vs pooled clinic minutes) per existing draft. Validate willingness‑to‑pay during demos; adjust iteratively.
 
-**Rationale**:
-- Better LLM comprehension by treating template as core instruction
-- Efficient caching (5 min TTL, max 10 templates)
-- Template-specific optimisation
+### Activation & Onboarding
+- In‑app checklist: connect mic, record sample, generate first note, export/download.
+- Email nudge sequence during trial: day 0, 2, 5, 10.
+- Success metric = first note generated within 24 hours of sign‑up.
+
+### Partnerships
+- PHO intros (e.g., Comprehensive Care). Medtech integration positioned as upsell; prepare 1‑pager for PHOs/Medtech.
+
+### KPIs (initial focus)
+- Top of funnel: unique visitors → trial sign‑ups.
+- Activation: % generating a note in 24h.
+- Sales: demos booked, pilots started, pilot→paid conversions.
+- Revenue: MRR, ARPA; Costs: CAC, gross margin; Retention: 30/60/90‑day.
+
+### 2‑Week Action Plan (dates are targets)
+- 2025‑11‑12: Publish pricing page (tierless, clear CTA to start trial or book demo).
+- 2025‑11‑14: Send 20 clinic outreach emails; book 5 demos (template + list).
+- 2025‑11‑18: Host 30‑minute live demo/webinar; record for reuse.
+- 2025‑11‑21: Start 3 clinic pilots; define success criteria and close plan.
+
+### Risks & Mitigations
+- Low activation → Add in‑app checklist, sample data, and 24h nudge.
+- Pricing fit unknown → Start simple, test during demos, iterate weekly.
+- Channel spread → Focus on 2 channels this month: direct outreach + demos.
 
 ---
 
 ## Updates History
-
-### [2025-01-15] — Project Management System Installation
-- Created PROJECT_SUMMARY.md
-- Documented operational status and architecture
-- Added technical references and milestones
-
-### [2024-10-01] — Clinical Notes API Improvements
-- Multi-source data handling implemented
-- Transcription error handling added
-- Anti-hallucination rules implemented
-- Template-in-system-prompt architecture
 
 ---
 

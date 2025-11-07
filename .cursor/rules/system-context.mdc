@@ -7,7 +7,8 @@ globs: []
 # System Context
 
 **System Overview**: Multi-project management system where:
-- `/project-management/PROJECTS_OVERVIEW.md` - Global dashboard
+- `/project-management/PROJECTS_OVERVIEW.md` - Global dashboard (mission control for all projects)
+- `/project-management/[project-name]/PROJECT_SUMMARY.md` - Single source of truth per project (mandatory for each project)
 
 **Rule Files**: Follow `.cursor/rules/current-task.mdc` for operational workflow. Reference `.cursor/rules/master_rule.mdc` for detailed policies. Read `.cursor/rules/ai-character.mdc` at task start/end for character guidelines.
 
