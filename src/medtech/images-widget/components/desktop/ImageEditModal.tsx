@@ -1,7 +1,7 @@
 /**
  * Image Edit Modal
  * 
- * Full-screen modal for editing images:
+ * Full-screen modal for editing images using react-konva:
  * - Rotate (90° increments)
  * - Crop (non-destructive, stores coordinates)
  * - Add arrows (click and drag to point)
@@ -20,6 +20,8 @@ import {
 import { Button } from '@/src/shared/components/ui/button';
 import type { WidgetImage } from '../../types';
 import { useImageWidgetStore } from '../../stores/imageWidgetStore';
+import { Stage, Layer, Image as KonvaImage, Rect, Arrow, Group } from 'react-konva';
+import Konva from 'konva';
 
 interface ImageEditModalProps {
   isOpen: boolean;
@@ -57,16 +59,48 @@ export function ImageEditModal({
   const [history, setHistory] = useState<HistoryState[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [activeTool, setActiveTool] = useState<'rotate' | 'crop' | 'arrow' | null>(null);
-  const [isCropMode, setIsCropMode] = useState(false);
+  const [isCropDragging, setIsCropDragging] = useState(false);
   const [cropStart, setCropStart] = useState<{ x: number; y: number } | null>(null);
   const [cropEnd, setCropEnd] = useState<{ x: number; y: number } | null>(null);
   const [isArrowDragging, setIsArrowDragging] = useState(false);
   const [arrowStart, setArrowStart] = useState<{ x: number; y: number } | null>(null);
   const [arrowEnd, setArrowEnd] = useState<{ x: number; y: number } | null>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
+  const [imageElement, setImageElement] = useState<HTMLImageElement | null>(null);
+  const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
+  const stageRef = useRef<Konva.Stage>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const currentImage = allImages.find(img => img.id === currentImageId) || image;
+
+  // Load image
+  useEffect(() => {
+    if (!currentImage) return;
+    
+    const img = new window.Image();
+    img.crossOrigin = 'anonymous';
+    img.src = currentImage.preview;
+    img.onload = () => {
+      setImageElement(img);
+    };
+  }, [currentImage]);
+
+  // Update stage size when container resizes
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    const updateSize = () => {
+      if (containerRef.current) {
+        setStageSize({
+          width: containerRef.current.clientWidth,
+          height: containerRef.current.clientHeight,
+        });
+      }
+    };
+    
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
 
   // Initialize edit state from image metadata
   useEffect(() => {
@@ -78,8 +112,6 @@ export function ImageEditModal({
         arrows: (edits.arrows || []).map(arrow => {
           // Handle legacy arrows with angle (convert to x1, y1, x2, y2)
           if ('angle' in arrow && typeof arrow.angle === 'number' && 'x' in arrow && 'y' in arrow) {
-            // Legacy format: convert angle + position to end point
-            // Assume a default length of 5% for legacy arrows
             const length = 5;
             const angleRad = (arrow.angle * Math.PI) / 180;
             const x = typeof arrow.x === 'number' ? arrow.x : 0;
@@ -102,7 +134,7 @@ export function ImageEditModal({
               y2: typeof arrow.y2 === 'number' ? arrow.y2 : 0,
             };
           }
-          // Fallback: create a default arrow if format is unknown
+          // Fallback
           return {
             id: arrow.id,
             x1: 0,
@@ -112,7 +144,6 @@ export function ImageEditModal({
           };
         }),
       });
-      // Reset history when switching images
       setHistory([]);
       setHistoryIndex(-1);
     } else {
@@ -133,7 +164,6 @@ export function ImageEditModal({
       state: { ...state },
       timestamp: Date.now(),
     });
-    // Limit history to 50 states
     if (newHistory.length > 50) {
       newHistory.shift();
     } else {
@@ -185,442 +215,181 @@ export function ImageEditModal({
     updateEditState({ rotation: (editState.rotation - 90 + 360) % 360 });
   }, [editState.rotation, updateEditState]);
 
-  // Helper function to transform mouse coordinates to natural image coordinates
-  const transformMouseToNatural = useCallback((mouseX: number, mouseY: number, img: HTMLImageElement, rotation: number) => {
-    const naturalWidth = img.naturalWidth;
-    const naturalHeight = img.naturalHeight;
-    const imgRect = img.getBoundingClientRect();
+  // Calculate image dimensions and position
+  const getImageTransform = useCallback(() => {
+    if (!imageElement) return { x: 0, y: 0, width: 0, height: 0, scale: 1 };
     
-    // Get displayed dimensions from bounding rect (accounts for rotation)
-    const displayedWidth = imgRect.width;
-    const displayedHeight = imgRect.height;
+    const naturalWidth = imageElement.width;
+    const naturalHeight = imageElement.height;
+    const containerWidth = stageSize.width;
+    const containerHeight = stageSize.height;
     
-    // When rotated 90° or 270°, the bounding box dimensions are swapped
-    // We need to determine the actual image display dimensions
-    let actualImageDisplayWidth: number;
-    let actualImageDisplayHeight: number;
+    // Calculate scale to fit (object-contain)
+    const scaleX = containerWidth / naturalWidth;
+    const scaleY = containerHeight / naturalHeight;
+    const scale = Math.min(scaleX, scaleY);
     
-    if (rotation === 90 || rotation === 270) {
-      // When rotated, the bounding box is swapped
-      // Calculate scale based on the non-rotated container
-      const containerWidth = img.offsetWidth;
-      const containerHeight = img.offsetHeight;
-      const scaleX = containerWidth / naturalWidth;
-      const scaleY = containerHeight / naturalHeight;
-      const scale = Math.min(scaleX, scaleY);
-      
-      // Actual displayed image size (before rotation)
-      actualImageDisplayWidth = naturalWidth * scale;
-      actualImageDisplayHeight = naturalHeight * scale;
-      
-      // Center offset in the container
-      const offsetX = (containerWidth - actualImageDisplayWidth) / 2;
-      const offsetY = (containerHeight - actualImageDisplayHeight) / 2;
-      
-      // Adjust mouse coordinates relative to container center
-      let x = mouseX - offsetX;
-      let y = mouseY - offsetY;
-      
-      // Convert to natural coordinates (in rotated space)
-      x = x / scale;
-      y = y / scale;
-      
-      // Apply inverse rotation
-      if (rotation === 90) {
-        // Inverse of 90°: (x, y) -> (naturalHeight - y, x)
-        const tempX = x;
-        x = naturalHeight - y;
-        y = tempX;
-      } else {
-        // Inverse of 270°: (x, y) -> (y, naturalWidth - x)
-        const tempX = x;
-        x = y;
-        y = naturalWidth - tempX;
-      }
-      
-      return { x, y };
-    } else {
-      // For 0° and 180°, use normal calculation
-      const scaleX = displayedWidth / naturalWidth;
-      const scaleY = displayedHeight / naturalHeight;
-      const scale = Math.min(scaleX, scaleY);
-      
-      actualImageDisplayWidth = naturalWidth * scale;
-      actualImageDisplayHeight = naturalHeight * scale;
-      
-      const offsetX = (displayedWidth - actualImageDisplayWidth) / 2;
-      const offsetY = (displayedHeight - actualImageDisplayHeight) / 2;
-      
-      let x = mouseX - offsetX;
-      let y = mouseY - offsetY;
-      
-      x = x / scale;
-      y = y / scale;
-      
-      if (rotation === 180) {
-        x = naturalWidth - x;
-        y = naturalHeight - y;
-      }
-      
-      return { x, y };
+    const displayWidth = naturalWidth * scale;
+    const displayHeight = naturalHeight * scale;
+    
+    // Center the image
+    const x = (containerWidth - displayWidth) / 2;
+    const y = (containerHeight - displayHeight) / 2;
+    
+    return { x, y, width: displayWidth, height: displayHeight, scale, naturalWidth, naturalHeight };
+  }, [imageElement, stageSize]);
+
+  // Convert stage coordinates to natural image coordinates
+  const stageToNatural = useCallback((stageX: number, stageY: number) => {
+    const transform = getImageTransform();
+    if (!transform.scale) return { x: 0, y: 0 };
+    
+    // Account for rotation
+    const centerX = transform.x + transform.width / 2;
+    const centerY = transform.y + transform.height / 2;
+    
+    // Translate to image center
+    let x = stageX - centerX;
+    let y = stageY - centerY;
+    
+    // Apply inverse rotation
+    const angleRad = (-editState.rotation * Math.PI) / 180;
+    const cos = Math.cos(angleRad);
+    const sin = Math.sin(angleRad);
+    const rotatedX = x * cos - y * sin;
+    const rotatedY = x * sin + y * cos;
+    
+    // Convert to natural coordinates
+    x = (rotatedX / transform.scale) + transform.naturalWidth / 2;
+    y = (rotatedY / transform.scale) + transform.naturalHeight / 2;
+    
+    return { x, y };
+  }, [getImageTransform, editState.rotation]);
+
+  // Convert natural image coordinates to stage coordinates
+  const naturalToStage = useCallback((naturalX: number, naturalY: number) => {
+    const transform = getImageTransform();
+    if (!transform.scale) return { x: 0, y: 0 };
+    
+    // Convert from natural to display coordinates
+    let x = (naturalX - transform.naturalWidth / 2) * transform.scale;
+    let y = (naturalY - transform.naturalHeight / 2) * transform.scale;
+    
+    // Apply rotation
+    const angleRad = (editState.rotation * Math.PI) / 180;
+    const cos = Math.cos(angleRad);
+    const sin = Math.sin(angleRad);
+    const rotatedX = x * cos - y * sin;
+    const rotatedY = x * sin + y * cos;
+    
+    // Translate to stage coordinates
+    const centerX = transform.x + transform.width / 2;
+    const centerY = transform.y + transform.height / 2;
+    
+    return {
+      x: rotatedX + centerX,
+      y: rotatedY + centerY,
+    };
+  }, [getImageTransform, editState.rotation]);
+
+  // Handle stage mouse down
+  const handleStageMouseDown = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
+    if (!imageElement) return;
+    
+    const stage = e.target.getStage();
+    if (!stage) return;
+    
+    const pointerPos = stage.getPointerPosition();
+    if (!pointerPos) return;
+    
+    if (activeTool === 'crop') {
+      const natural = stageToNatural(pointerPos.x, pointerPos.y);
+      setCropStart(natural);
+      setCropEnd(natural);
+      setIsCropDragging(true);
+    } else if (activeTool === 'arrow') {
+      const natural = stageToNatural(pointerPos.x, pointerPos.y);
+      setArrowStart(natural);
+      setArrowEnd(natural);
+      setIsArrowDragging(true);
     }
-  }, []);
+  }, [activeTool, imageElement, stageToNatural]);
 
-  // Start crop
-  const handleCropStart = useCallback((e: React.MouseEvent) => {
-    if (!imageRef.current || activeTool !== 'crop') return;
-    e.preventDefault();
-    e.stopPropagation();
+  // Handle stage mouse move
+  const handleStageMouseMove = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
+    if (!imageElement) return;
     
-    const img = imageRef.current;
+    const stage = e.target.getStage();
+    if (!stage) return;
     
-    // Calculate position relative to the image element's container (not bounding rect)
-    // We need coordinates relative to offsetLeft/offsetTop, not boundingClientRect
-    const containerRect = img.parentElement?.getBoundingClientRect();
-    if (!containerRect) return;
+    const pointerPos = stage.getPointerPosition();
+    if (!pointerPos) return;
     
-    // Get mouse position relative to container
-    const mouseX = e.clientX - containerRect.left;
-    const mouseY = e.clientY - containerRect.top;
-    
-    // Transform to natural image coordinates
-    const { x, y } = transformMouseToNatural(mouseX, mouseY, img, editState.rotation);
-    
-    // Only start crop if click is within image bounds
-    if (x >= 0 && x <= img.naturalWidth && y >= 0 && y <= img.naturalHeight) {
-      setCropStart({ x, y });
-      setCropEnd({ x, y });
-      setIsCropMode(true);
+    if (isCropDragging && cropStart) {
+      const natural = stageToNatural(pointerPos.x, pointerPos.y);
+      setCropEnd(natural);
+    } else if (isArrowDragging && arrowStart) {
+      const natural = stageToNatural(pointerPos.x, pointerPos.y);
+      setArrowEnd(natural);
     }
-  }, [activeTool, editState.rotation, transformMouseToNatural]);
+  }, [imageElement, isCropDragging, isArrowDragging, cropStart, arrowStart, stageToNatural]);
 
-  // Helper function to transform displayed coordinates back to natural coordinates (inverse of transformNaturalToDisplayed)
-  const transformDisplayedToNatural = useCallback((displayedX: number, displayedY: number, img: HTMLImageElement, rotation: number) => {
-    const naturalWidth = img.naturalWidth;
-    const naturalHeight = img.naturalHeight;
-    
-    if (rotation === 90 || rotation === 270) {
-      const containerWidth = img.offsetWidth;
-      const containerHeight = img.offsetHeight;
-      const scaleX = containerWidth / naturalWidth;
-      const scaleY = containerHeight / naturalHeight;
-      const scale = Math.min(scaleX, scaleY);
+  // Handle stage mouse up
+  const handleStageMouseUp = useCallback(() => {
+    if (isCropDragging && cropStart && cropEnd) {
+      const x1 = Math.min(cropStart.x, cropEnd.x);
+      const y1 = Math.min(cropStart.y, cropEnd.y);
+      const x2 = Math.max(cropStart.x, cropEnd.x);
+      const y2 = Math.max(cropStart.y, cropEnd.y);
       
-      const actualImageDisplayWidth = naturalWidth * scale;
-      const actualImageDisplayHeight = naturalHeight * scale;
+      const width = x2 - x1;
+      const height = y2 - y1;
       
-      const offsetX = (containerWidth - actualImageDisplayWidth) / 2;
-      const offsetY = (containerHeight - actualImageDisplayHeight) / 2;
-      
-      // Remove offset
-      let x = displayedX - offsetX;
-      let y = displayedY - offsetY;
-      
-      // Scale back
-      x = x / scale;
-      y = y / scale;
-      
-      // Apply inverse rotation
-      if (rotation === 90) {
-        // Inverse of (x, y) -> (y, naturalHeight - x)
-        const tempX = x;
-        x = naturalHeight - y;
-        y = tempX;
-      } else {
-        // Inverse of (x, y) -> (naturalWidth - y, x)
-        const tempX = x;
-        x = y;
-        y = naturalWidth - tempX;
+      if (width > 10 && height > 10 && imageElement) {
+        const naturalWidth = imageElement.width;
+        const naturalHeight = imageElement.height;
+        
+        updateEditState({
+          crop: {
+            x: (x1 / naturalWidth) * 100,
+            y: (y1 / naturalHeight) * 100,
+            width: (width / naturalWidth) * 100,
+            height: (height / naturalHeight) * 100,
+          },
+        });
       }
       
-      return { x, y };
-    } else {
-      const imgRect = img.getBoundingClientRect();
-      const displayedWidth = imgRect.width;
-      const displayedHeight = imgRect.height;
-      
-      const scaleX = displayedWidth / naturalWidth;
-      const scaleY = displayedHeight / naturalHeight;
-      const scale = Math.min(scaleX, scaleY);
-      
-      const actualDisplayedWidth = naturalWidth * scale;
-      const actualDisplayedHeight = naturalHeight * scale;
-      
-      const offsetX = (displayedWidth - actualDisplayedWidth) / 2;
-      const offsetY = (displayedHeight - actualDisplayedHeight) / 2;
-      
-      let x = displayedX - offsetX;
-      let y = displayedY - offsetY;
-      
-      x = x / scale;
-      y = y / scale;
-      
-      if (rotation === 180) {
-        x = naturalWidth - x;
-        y = naturalHeight - y;
-      }
-      
-      return { x, y };
-    }
-  }, []);
-
-  // Helper function to transform natural coordinates to displayed coordinates
-  const transformNaturalToDisplayed = useCallback((naturalX: number, naturalY: number, img: HTMLImageElement, rotation: number) => {
-    const naturalWidth = img.naturalWidth;
-    const naturalHeight = img.naturalHeight;
-    
-    if (rotation === 90 || rotation === 270) {
-      // When rotated, use container dimensions
-      const containerWidth = img.offsetWidth;
-      const containerHeight = img.offsetHeight;
-      const scaleX = containerWidth / naturalWidth;
-      const scaleY = containerHeight / naturalHeight;
-      const scale = Math.min(scaleX, scaleY);
-      
-      // Actual displayed image size (before rotation)
-      const actualImageDisplayWidth = naturalWidth * scale;
-      const actualImageDisplayHeight = naturalHeight * scale;
-      
-      // Center offset in container
-      const offsetX = (containerWidth - actualImageDisplayWidth) / 2;
-      const offsetY = (containerHeight - actualImageDisplayHeight) / 2;
-      
-      let x = naturalX;
-      let y = naturalY;
-      
-      // Apply rotation transformation
-      if (rotation === 90) {
-        // 90° clockwise: (x, y) -> (y, naturalHeight - x)
-        const tempX = x;
-        x = y;
-        y = naturalHeight - tempX;
-      } else {
-        // 270° clockwise: (x, y) -> (naturalWidth - y, x)
-        const tempX = x;
-        x = naturalWidth - y;
-        y = tempX;
-      }
-      
-      // Scale to displayed coordinates
-      x = x * scale;
-      y = y * scale;
-      
-      return { x: x + offsetX, y: y + offsetY };
-    } else {
-      // For 0° and 180°
-      const imgRect = img.getBoundingClientRect();
-      const displayedWidth = imgRect.width;
-      const displayedHeight = imgRect.height;
-      
-      const scaleX = displayedWidth / naturalWidth;
-      const scaleY = displayedHeight / naturalHeight;
-      const scale = Math.min(scaleX, scaleY);
-      
-      const actualDisplayedWidth = naturalWidth * scale;
-      const actualDisplayedHeight = naturalHeight * scale;
-      
-      const offsetX = (displayedWidth - actualDisplayedWidth) / 2;
-      const offsetY = (displayedHeight - actualDisplayedHeight) / 2;
-      
-      let x = naturalX;
-      let y = naturalY;
-      
-      if (rotation === 180) {
-        x = naturalWidth - x;
-        y = naturalHeight - y;
-      }
-      
-      x = x * scale;
-      y = y * scale;
-      
-      return { x: x + offsetX, y: y + offsetY };
-    }
-  }, []);
-
-  // Update crop while dragging
-  const handleCropMove = useCallback((e: React.MouseEvent) => {
-    if (!cropStart || !imageRef.current || !isCropMode) return;
-    e.preventDefault();
-    
-    const img = imageRef.current;
-    const containerRect = img.parentElement?.getBoundingClientRect();
-    if (!containerRect) return;
-    
-    // Get mouse position relative to container
-    const mouseX = e.clientX - containerRect.left;
-    const mouseY = e.clientY - containerRect.top;
-    
-    // Transform to natural image coordinates
-    const { x, y } = transformMouseToNatural(mouseX, mouseY, img, editState.rotation);
-    
-    // Clamp to natural image bounds
-    const clampedX = Math.max(0, Math.min(img.naturalWidth, x));
-    const clampedY = Math.max(0, Math.min(img.naturalHeight, y));
-    setCropEnd({ x: clampedX, y: clampedY });
-  }, [cropStart, isCropMode, editState.rotation, transformMouseToNatural]);
-
-  // End crop
-  const handleCropEnd = useCallback(() => {
-    if (!cropStart || !cropEnd || !imageRef.current || !isCropMode) {
-      setIsCropMode(false);
+      setIsCropDragging(false);
       setCropStart(null);
       setCropEnd(null);
-      return;
-    }
-
-    const img = imageRef.current;
-    const naturalWidth = img.naturalWidth;
-    const naturalHeight = img.naturalHeight;
-    
-    // Crop coordinates are already in natural image space
-    const x1 = Math.min(cropStart.x, cropEnd.x);
-    const y1 = Math.min(cropStart.y, cropEnd.y);
-    const x2 = Math.max(cropStart.x, cropEnd.x);
-    const y2 = Math.max(cropStart.y, cropEnd.y);
-
-    const width = x2 - x1;
-    const height = y2 - y1;
-
-    if (width > 10 && height > 10) {
-      // Convert to percentage of natural image dimensions
-      updateEditState({
-        crop: {
-          x: (x1 / naturalWidth) * 100,
-          y: (y1 / naturalHeight) * 100,
-          width: (width / naturalWidth) * 100,
-          height: (height / naturalHeight) * 100,
-        },
-      });
-    }
-
-    setIsCropMode(false);
-    setCropStart(null);
-    setCropEnd(null);
-  }, [cropStart, cropEnd, isCropMode, updateEditState]);
-
-  // Start arrow drag
-  const handleArrowStart = useCallback((e: React.MouseEvent) => {
-    if (!imageRef.current || activeTool !== 'arrow') return;
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const img = imageRef.current;
-    const containerRect = img.parentElement?.getBoundingClientRect();
-    if (!containerRect) return;
-    
-    // Get mouse position relative to container
-    const mouseX = e.clientX - containerRect.left;
-    const mouseY = e.clientY - containerRect.top;
-    
-    // Transform to natural image coordinates first
-    const { x: naturalX, y: naturalY } = transformMouseToNatural(mouseX, mouseY, img, editState.rotation);
-    
-    // Check if within bounds
-    if (naturalX >= 0 && naturalX <= img.naturalWidth && naturalY >= 0 && naturalY <= img.naturalHeight) {
-      // Convert back to displayed coordinates for arrow preview
-      const displayed = transformNaturalToDisplayed(naturalX, naturalY, img, editState.rotation);
+    } else if (isArrowDragging && arrowStart && arrowEnd) {
+      const dx = arrowEnd.x - arrowStart.x;
+      const dy = arrowEnd.y - arrowStart.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
       
-      setIsArrowDragging(true);
-      setArrowStart({ x: displayed.x, y: displayed.y });
-      setArrowEnd({ x: displayed.x, y: displayed.y });
-    }
-  }, [activeTool, editState.rotation, transformMouseToNatural, transformNaturalToDisplayed]);
-
-  // Update arrow while dragging
-  const handleArrowMove = useCallback((e: React.MouseEvent) => {
-    if (!arrowStart || !imageRef.current || !isArrowDragging) return;
-    e.preventDefault();
-    
-    const img = imageRef.current;
-    const containerRect = img.parentElement?.getBoundingClientRect();
-    if (!containerRect) return;
-    
-    // Get mouse position relative to container
-    const mouseX = e.clientX - containerRect.left;
-    const mouseY = e.clientY - containerRect.top;
-    
-    // Transform to natural image coordinates
-    const { x: naturalX, y: naturalY } = transformMouseToNatural(mouseX, mouseY, img, editState.rotation);
-    
-    // Clamp to natural image bounds
-    const clampedX = Math.max(0, Math.min(img.naturalWidth, naturalX));
-    const clampedY = Math.max(0, Math.min(img.naturalHeight, naturalY));
-    
-    // Convert back to displayed coordinates for arrow preview
-    const displayed = transformNaturalToDisplayed(clampedX, clampedY, img, editState.rotation);
-    
-    setArrowEnd({ x: displayed.x, y: displayed.y });
-  }, [arrowStart, isArrowDragging, editState.rotation, transformMouseToNatural, transformNaturalToDisplayed]);
-
-  // End arrow drag
-  const handleArrowEnd = useCallback(() => {
-    if (!arrowStart || !arrowEnd || !imageRef.current || !isArrowDragging) {
+      if (distance > 10 && imageElement) {
+        const naturalWidth = imageElement.width;
+        const naturalHeight = imageElement.height;
+        
+        updateEditState({
+          arrows: [
+            ...editState.arrows,
+            {
+              id: `arrow-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+              x1: (arrowStart.x / naturalWidth) * 100,
+              y1: (arrowStart.y / naturalHeight) * 100,
+              x2: (arrowEnd.x / naturalWidth) * 100,
+              y2: (arrowEnd.y / naturalHeight) * 100,
+            },
+          ],
+        });
+      }
+      
       setIsArrowDragging(false);
       setArrowStart(null);
       setArrowEnd(null);
-      return;
     }
-
-    const img = imageRef.current;
-    
-    // Convert displayed coordinates back to natural coordinates
-    // We need to reverse the transform to get natural coordinates
-    // Since arrowStart/arrowEnd are in displayed space, we need to convert them back
-    
-    // For now, let's store displayed coordinates and convert when needed
-    // Actually, we should convert displayed -> natural -> percentage
-    const containerRect = img.parentElement?.getBoundingClientRect();
-    if (!containerRect) {
-      setIsArrowDragging(false);
-      setArrowStart(null);
-      setArrowEnd(null);
-      return;
-    }
-    
-    // Convert displayed coordinates back to natural
-    // We need to reverse transformNaturalToDisplayed
-    // This is complex, so let's store natural coordinates instead
-    // Actually, let's recalculate from the last mouse position stored in arrowEnd
-    
-    // Calculate distance in displayed space
-    const dx = arrowEnd.x - arrowStart.x;
-    const dy = arrowEnd.y - arrowStart.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    
-    if (distance > 10) {
-      // Convert displayed coordinates to natural coordinates
-      // We need inverse of transformNaturalToDisplayed
-      // For simplicity, let's use the natural coordinates we calculated in handleArrowMove
-      // But we don't have them stored... Let's recalculate from displayed coords
-      
-      // Actually, a better approach: store natural coordinates in arrowStart/arrowEnd
-      // But for now, let's convert displayed back to natural
-      const naturalStart = transformDisplayedToNatural(arrowStart.x, arrowStart.y, img, editState.rotation);
-      const naturalEnd = transformDisplayedToNatural(arrowEnd.x, arrowEnd.y, img, editState.rotation);
-      
-      // Convert to percentages
-      const x1 = (naturalStart.x / img.naturalWidth) * 100;
-      const y1 = (naturalStart.y / img.naturalHeight) * 100;
-      const x2 = (naturalEnd.x / img.naturalWidth) * 100;
-      const y2 = (naturalEnd.y / img.naturalHeight) * 100;
-
-      const newArrow = {
-        id: `arrow-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        x1: Math.max(0, Math.min(100, x1)),
-        y1: Math.max(0, Math.min(100, y1)),
-        x2: Math.max(0, Math.min(100, x2)),
-        y2: Math.max(0, Math.min(100, y2)),
-      };
-
-      updateEditState({
-        arrows: [...editState.arrows, newArrow],
-      });
-    }
-
-    setIsArrowDragging(false);
-    setArrowStart(null);
-    setArrowEnd(null);
-  }, [arrowStart, arrowEnd, isArrowDragging, editState.arrows, editState.rotation, transformDisplayedToNatural, updateEditState]);
+  }, [isCropDragging, isArrowDragging, cropStart, cropEnd, arrowStart, arrowEnd, imageElement, editState.arrows, updateEditState]);
 
   // Delete arrow
   const handleDeleteArrow = useCallback((arrowId: string) => {
@@ -660,7 +429,6 @@ export function ImageEditModal({
     if (!currentImageId) return;
     const currentIndex = allImages.findIndex(img => img.id === currentImageId);
     if (currentIndex > 0) {
-      // Save current edits before switching
       if (editState) {
         updateMetadata(currentImageId, {
           edits: {
@@ -683,7 +451,6 @@ export function ImageEditModal({
     if (!currentImageId) return;
     const currentIndex = allImages.findIndex(img => img.id === currentImageId);
     if (currentIndex < allImages.length - 1) {
-      // Save current edits before switching
       if (editState) {
         updateMetadata(currentImageId, {
           edits: {
@@ -701,7 +468,7 @@ export function ImageEditModal({
     }
   }, [currentImageId, allImages, editState, updateMetadata, onImageSelect]);
 
-  if (!currentImage) {
+  if (!currentImage || !imageElement) {
     return null;
   }
 
@@ -711,6 +478,9 @@ export function ImageEditModal({
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < history.length - 1;
   const hasChanges = editState.rotation !== 0 || editState.crop !== null || editState.arrows.length > 0;
+  
+  const transform = getImageTransform();
+  const cursor = activeTool === 'crop' || activeTool === 'arrow' ? 'crosshair' : 'default';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -796,7 +566,7 @@ export function ImageEditModal({
                   onClick={() => {
                     setActiveTool(activeTool === 'crop' ? null : 'crop');
                     if (activeTool === 'crop') {
-                      setIsCropMode(false);
+                      setIsCropDragging(false);
                     }
                   }}
                   variant={activeTool === 'crop' ? 'default' : 'ghost'}
@@ -864,175 +634,138 @@ export function ImageEditModal({
           {/* Image Preview Area */}
           <div
             ref={containerRef}
-            className="flex-1 relative overflow-auto bg-slate-100 p-8"
-            onMouseMove={isCropMode ? handleCropMove : isArrowDragging ? handleArrowMove : undefined}
-            onMouseUp={isCropMode ? handleCropEnd : isArrowDragging ? handleArrowEnd : undefined}
-            onMouseLeave={isCropMode ? handleCropEnd : isArrowDragging ? handleArrowEnd : undefined}
+            className="flex-1 relative overflow-hidden bg-slate-100"
+            style={{ cursor }}
           >
-            <div className="flex items-center justify-center h-full">
-              <div className="relative inline-block">
-                <img
-                  ref={imageRef}
-                  src={currentImage.preview}
-                  alt={currentImage.metadata.label || 'Image'}
-                  className="max-w-full max-h-full object-contain"
-                  style={{
-                    transform: `rotate(${editState.rotation}deg)`,
-                    transition: 'transform 0.2s',
-                    cursor: activeTool === 'crop' ? 'crosshair' : activeTool === 'arrow' ? 'crosshair' : 'default',
-                  }}
-                  draggable={false}
-                  onMouseDown={activeTool === 'crop' ? handleCropStart : activeTool === 'arrow' ? handleArrowStart : undefined}
-                />
+            <Stage
+              ref={stageRef}
+              width={stageSize.width}
+              height={stageSize.height}
+              onMouseDown={handleStageMouseDown}
+              onMouseMove={handleStageMouseMove}
+              onMouseUp={handleStageMouseUp}
+            >
+              <Layer>
+                {/* Image */}
+                {imageElement && (
+                  <Group
+                    x={transform.x + transform.width / 2}
+                    y={transform.y + transform.height / 2}
+                    rotation={editState.rotation}
+                    offsetX={transform.width / 2}
+                    offsetY={transform.height / 2}
+                  >
+                    <KonvaImage
+                      image={imageElement}
+                      width={transform.width}
+                      height={transform.height}
+                      x={-transform.width / 2}
+                      y={-transform.height / 2}
+                    />
+                  </Group>
+                )}
 
-                {/* Crop Overlay (while dragging) */}
-                {isCropMode && cropStart && cropEnd && imageRef.current && (() => {
-                  const img = imageRef.current;
-                  
-                  // Convert natural coordinates to displayed coordinates
-                  const start = transformNaturalToDisplayed(cropStart.x, cropStart.y, img, editState.rotation);
-                  const end = transformNaturalToDisplayed(cropEnd.x, cropEnd.y, img, editState.rotation);
+                {/* Crop overlay (while dragging) */}
+                {isCropDragging && cropStart && cropEnd && imageElement && (() => {
+                  const start = naturalToStage(cropStart.x, cropStart.y);
+                  const end = naturalToStage(cropEnd.x, cropEnd.y);
+                  const x1 = Math.min(start.x, end.x);
+                  const y1 = Math.min(start.y, end.y);
+                  const x2 = Math.max(start.x, end.x);
+                  const y2 = Math.max(start.y, end.y);
                   
                   return (
-                    <div
-                      className="absolute border-2 border-blue-500 bg-blue-500/20 pointer-events-none z-10"
-                      style={{
-                        left: `${Math.min(start.x, end.x)}px`,
-                        top: `${Math.min(start.y, end.y)}px`,
-                        width: `${Math.abs(end.x - start.x)}px`,
-                        height: `${Math.abs(end.y - start.y)}px`,
-                      }}
+                    <Rect
+                      x={x1}
+                      y={y1}
+                      width={x2 - x1}
+                      height={y2 - y1}
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      fill="rgba(59, 130, 246, 0.2)"
                     />
                   );
                 })()}
 
-                {/* Arrow Preview (while dragging) */}
-                {isArrowDragging && arrowStart && arrowEnd && imageRef.current && (
-                  <svg
-                    className="absolute pointer-events-none z-10"
-                    style={{
-                      left: 0,
-                      top: 0,
-                      width: imageRef.current.offsetWidth,
-                      height: imageRef.current.offsetHeight,
-                    }}
-                  >
-                    <defs>
-                      <marker
-                        id="arrowhead-preview"
-                        markerWidth="10"
-                        markerHeight="10"
-                        refX="9"
-                        refY="3"
-                        orient="auto"
-                      >
-                        <polygon points="0 0, 10 3, 0 6" fill="#3b82f6" />
-                      </marker>
-                    </defs>
-                    <line
-                      x1={arrowStart.x}
-                      y1={arrowStart.y}
-                      x2={arrowEnd.x}
-                      y2={arrowEnd.y}
-                      stroke="#3b82f6"
-                      strokeWidth="2"
-                      markerEnd="url(#arrowhead-preview)"
-                    />
-                  </svg>
-                )}
-
-                {/* Crop Display (saved crop) */}
-                {editState.crop && !isCropMode && imageRef.current && (() => {
-                  const img = imageRef.current;
-                  const naturalWidth = img.naturalWidth;
-                  const naturalHeight = img.naturalHeight;
-                  
-                  // Convert percentage to natural coordinates
+                {/* Crop display (saved crop) */}
+                {editState.crop && !isCropDragging && imageElement && (() => {
+                  const naturalWidth = imageElement.width;
+                  const naturalHeight = imageElement.height;
                   const cropX = (editState.crop.x / 100) * naturalWidth;
                   const cropY = (editState.crop.y / 100) * naturalHeight;
                   const cropWidth = (editState.crop.width / 100) * naturalWidth;
                   const cropHeight = (editState.crop.height / 100) * naturalHeight;
                   
-                  // Convert top-left corner and bottom-right corner to displayed coordinates
-                  const topLeft = transformNaturalToDisplayed(cropX, cropY, img, editState.rotation);
-                  const bottomRight = transformNaturalToDisplayed(cropX + cropWidth, cropY + cropHeight, img, editState.rotation);
+                  const topLeft = naturalToStage(cropX, cropY);
+                  const bottomRight = naturalToStage(cropX + cropWidth, cropY + cropHeight);
                   
                   return (
-                    <div
-                      className="absolute border-2 border-dashed border-purple-500 bg-purple-500/10 pointer-events-none z-10"
-                      style={{
-                        left: `${Math.min(topLeft.x, bottomRight.x)}px`,
-                        top: `${Math.min(topLeft.y, bottomRight.y)}px`,
-                        width: `${Math.abs(bottomRight.x - topLeft.x)}px`,
-                        height: `${Math.abs(bottomRight.y - topLeft.y)}px`,
-                      }}
+                    <Rect
+                      x={Math.min(topLeft.x, bottomRight.x)}
+                      y={Math.min(topLeft.y, bottomRight.y)}
+                      width={Math.abs(bottomRight.x - topLeft.x)}
+                      height={Math.abs(bottomRight.y - topLeft.y)}
+                      stroke="#a855f7"
+                      strokeWidth={2}
+                      dash={[5, 5]}
+                      fill="rgba(168, 85, 247, 0.1)"
+                    />
+                  );
+                })()}
+
+                {/* Arrow preview (while dragging) */}
+                {isArrowDragging && arrowStart && arrowEnd && imageElement && (() => {
+                  const start = naturalToStage(arrowStart.x, arrowStart.y);
+                  const end = naturalToStage(arrowEnd.x, arrowEnd.y);
+                  
+                  return (
+                    <Arrow
+                      points={[start.x, start.y, end.x, end.y]}
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      fill="#3b82f6"
+                      pointerLength={10}
+                      pointerWidth={10}
                     />
                   );
                 })()}
 
                 {/* Arrows */}
-                {editState.arrows.length > 0 && imageRef.current && (
-                  <svg
-                    className="absolute pointer-events-none z-10"
-                    style={{
-                      left: 0,
-                      top: 0,
-                      width: imageRef.current.offsetWidth,
-                      height: imageRef.current.offsetHeight,
-                    }}
-                  >
-                    <defs>
-                      <marker
-                        id="arrowhead"
-                        markerWidth="10"
-                        markerHeight="10"
-                        refX="9"
-                        refY="3"
-                        orient="auto"
-                      >
-                        <polygon points="0 0, 10 3, 0 6" fill="#ef4444" />
-                      </marker>
-                    </defs>
-                    {editState.arrows.map((arrow) => {
-                      const imgWidth = imageRef.current!.offsetWidth;
-                      const imgHeight = imageRef.current!.offsetHeight;
-                      
-                      const x1 = (arrow.x1 / 100) * imgWidth;
-                      const y1 = (arrow.y1 / 100) * imgHeight;
-                      const x2 = (arrow.x2 / 100) * imgWidth;
-                      const y2 = (arrow.y2 / 100) * imgHeight;
-                      
-                      return (
-                        <g 
-                          key={arrow.id}
-                          className="pointer-events-auto cursor-pointer"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (activeTool === 'arrow') {
-                              handleDeleteArrow(arrow.id);
-                            }
-                          }}
-                        >
-                          {activeTool === 'arrow' && (
-                            <title>Click to delete</title>
-                          )}
-                          <line
-                            x1={x1}
-                            y1={y1}
-                            x2={x2}
-                            y2={y2}
-                            stroke="#ef4444"
-                            strokeWidth="2"
-                            markerEnd="url(#arrowhead)"
-                            className="hover:stroke-red-700"
-                          />
-                        </g>
-                      );
-                    })}
-                  </svg>
-                )}
-              </div>
-            </div>
+                {editState.arrows.map((arrow) => {
+                  if (!imageElement) return null;
+                  
+                  const naturalWidth = imageElement.width;
+                  const naturalHeight = imageElement.height;
+                  const x1 = (arrow.x1 / 100) * naturalWidth;
+                  const y1 = (arrow.y1 / 100) * naturalHeight;
+                  const x2 = (arrow.x2 / 100) * naturalWidth;
+                  const y2 = (arrow.y2 / 100) * naturalHeight;
+                  
+                  const start = naturalToStage(x1, y1);
+                  const end = naturalToStage(x2, y2);
+                  
+                  return (
+                    <Group
+                      key={arrow.id}
+                      onClick={() => {
+                        if (activeTool === 'arrow') {
+                          handleDeleteArrow(arrow.id);
+                        }
+                      }}
+                    >
+                      <Arrow
+                        points={[start.x, start.y, end.x, end.y]}
+                        stroke="#ef4444"
+                        strokeWidth={2}
+                        fill="#ef4444"
+                        pointerLength={10}
+                        pointerWidth={10}
+                      />
+                    </Group>
+                  );
+                })}
+              </Layer>
+            </Stage>
           </div>
         </div>
       </DialogContent>
