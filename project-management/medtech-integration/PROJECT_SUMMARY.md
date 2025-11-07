@@ -382,42 +382,68 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 - **Email**: See `EMAIL_MEDTECH_FACILITY_ID.md`
 - **Next**: Awaiting Medtech response
 
-## Next Steps
+## Next Steps [2025-11-07]
 
-### Immediate (This Week)
-1. ✅ **Test BFF → ALEX API connectivity** — Firewall resolved, ready to test
+### ⚠️ BLOCKED - Awaiting Medtech Response
+**Priority**: Resolve facility ID configuration
+- **Status**: Email sent to Medtech ALEX support (2025-11-07)
+- **Action**: Wait for Medtech response with correct facility ID for Application ID `7685ade3-f1ae-4e86-a398-fe7809c0fed1`
+- **Next**: Once facility ID received:
+  1. Update `MEDTECH_FACILITY_ID` in Lightsail BFF `.env` file
+  2. Restart BFF service: `sudo systemctl restart clinicpro-bff`
+  3. Test connectivity: `curl "https://api.clinicpro.co.nz/api/medtech/test?nhi=ZZZ0016"`
+  4. Verify FHIR API calls succeed (should return 200, not 403)
+
+### Immediate (After Facility ID Resolved)
+1. **Test BFF → ALEX API Connectivity** (10 minutes)
    - Test endpoint: `GET /api/medtech/test?nhi=ZZZ0016`
-   - Verify OAuth token acquisition works
-   - Verify FHIR API calls succeed
-2. ✅ **Update Facility ID** — Change from `F2N060-E` to `F99669-C` in environment variables
-3. ✅ **Test Medtech Evolution** — Verify widget can be launched from Evolution
-4. ✅ **Implement POST Media** — Now that metadata limitations are understood
+   - Verify OAuth token acquisition works ✅
+   - Verify FHIR API calls succeed (currently blocked by facility ID)
+
+2. **Complete File Upload Flow** (2-4 hours)
+   - Implement real `upload-initiate` endpoint (generate presigned S3 URLs)
+   - Update frontend to upload files to S3 before committing
+   - Ensure S3 URLs are accessible by ALEX API
+
+3. **Test POST Media Endpoint** (1-2 hours)
+   - Test with 1 image
+   - Test with multiple images
+   - Verify images appear in Medtech Evolution Inbox/Daily Record
+   - Test error scenarios
 
 ### Short-term (Next 2 Weeks)
-1. **Complete Gateway Implementation**
-   - ✅ POST Media endpoint (metadata limitation understood — embed in image or use for internal tracking)
-   - ✅ Test end-to-end: Widget → Gateway → ALEX API → Medtech Evolution
-   - ✅ Verify images appear in Medtech Inbox and Daily Record
+1. **End-to-End Testing**
+   - Launch widget from Medtech Evolution
+   - Upload images, add metadata, commit
+   - Verify images appear in Medtech Inbox and Daily Record
 
-2. **Frontend Integration**
+2. **Frontend Integration** (if not already complete)
    - Connect frontend to Gateway API
    - Replace mock backend with real Gateway calls
    - Handle metadata display (even if not stored in Medtech Inbox fields)
 
 ### Medium-term (Next 4-6 Weeks)
-1. **UAT Testing**
-   - End-to-end testing with ALEX API
-   - Image commit verification
-   - Clinical metadata validation
+1. **Prepare Customer Pitch Materials**
+   - Demo script (2-minute walkthrough)
+   - 1-pager (benefits, how it works, pricing)
+   - Technical specs
 
-2. **Production Pilot**
-   - Production credentials
-   - Deploy to production hosting
-   - 1-2 GP practices test
+2. **Pitch to Medtech Customers**
+   - Email campaign to Medtech customer base
+   - Demo requests
+   - Pilot sign-ups
+
+**Detailed Action Plan**: See `IMMEDIATE_ACTION_PLAN.md` for step-by-step instructions (4-8 hours total work once facility ID resolved).
 
 ---
 
 ## Resources & References
+
+### Project Documentation
+- **Action Plan**: [`IMMEDIATE_ACTION_PLAN.md`](./IMMEDIATE_ACTION_PLAN.md) - Step-by-step action plan (4-8 hours total work)
+- **Implementation Status**: [`IMPLEMENTATION_STATUS.md`](./IMPLEMENTATION_STATUS.md) - Current implementation status and next steps
+- **Environment Variables Guide**: [`UPDATE_ENV_VARIABLES.md`](./UPDATE_ENV_VARIABLES.md) - Step-by-step guide for updating environment variables
+- **Email to Medtech**: [`EMAIL_MEDTECH_FACILITY_ID.md`](./EMAIL_MEDTECH_FACILITY_ID.md) - Email draft sent to Medtech ALEX support regarding facility ID
 
 ### External Documentation
 - **ALEX API Documentation**: https://alexapidoc.medtechglobal.com/ (Source of Truth)

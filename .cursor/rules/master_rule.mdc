@@ -90,6 +90,14 @@ globs: []
 
 **Validation**: If missing, create immediately using template. Ensure present and current before completing work.
 
+**Document Reference Requirement**: 
+- **CRITICAL**: When creating ANY new document/file in a project directory (action plans, guides, emails, status docs, etc.), it MUST be referenced in `PROJECT_SUMMARY.md`
+- **Why**: AI reads `PROJECT_SUMMARY.md` first; unreferenced files may be missed in future sessions
+- **Where to Reference**: Add to "Resources & References" section or relevant context section (e.g., "Action Plan: See `FILENAME.md`")
+- **Format**: Use clear descriptive links: `[Description](./FILENAME.md)` or `See FILENAME.md for [purpose]`
+- **Validation**: Before completing any task that created new files, verify they're referenced in `PROJECT_SUMMARY.md`
+- **Exception**: Only code files, config files, and standard project files (package.json, etc.) don't need explicit references
+
 ## Templates
 
 ### Loading (On-Demand Only)
@@ -166,7 +174,11 @@ Each template must include: YAML (`template_type`, `keywords`, `stage`), Purpose
 8. Plan edits - prefer updating `PROJECT_SUMMARY.md` and `PROJECTS_OVERVIEW.md` directly
 9. Prompt before destructive changes
 10. Apply edits atomically, update metadata, date-stamp
-11. **MANDATORY Dashboard Update**: If `PROJECT_SUMMARY.md` was modified, update `PROJECTS_OVERVIEW.md`:
+11. **MANDATORY Document Reference Check**: If ANY new documents/files were created in project directory:
+    - Verify they are referenced in `PROJECT_SUMMARY.md` (Resources & References section or relevant context)
+    - Add reference if missing (critical for AI context awareness)
+    - Exception: Code/config files don't need explicit references
+12. **MANDATORY Dashboard Update**: If `PROJECT_SUMMARY.md` was modified, update `PROJECTS_OVERVIEW.md`:
     - Update index table (name, stage, owner, last_updated)
     - Refresh highlights (achievements, blockers, risks)
     - Update status counts
@@ -174,19 +186,22 @@ Each template must include: YAML (`template_type`, `keywords`, `stage`), Purpose
     - Update project details section (summary, key dates, status, risks)
     - Update YAML `last_updated` and bump version
     - Validate links
-12. Final validation: Ensure `PROJECT_SUMMARY.md` reflects all changes AND `PROJECTS_OVERVIEW.md` is synchronized
-13. Summarize changes (mention both files if both were updated)
+13. Final validation: Ensure `PROJECT_SUMMARY.md` reflects all changes AND `PROJECTS_OVERVIEW.md` is synchronized
+14. Summarize changes (mention both files if both were updated, mention any new documents created)
 
 ### Validation Checkpoints
 - **After Step 3**: Verify `PROJECT_SUMMARY.md` has required YAML fields (if exists)
 - **After Step 5**: Verify template was loaded correctly (if applicable)
 - **After Step 10**: Verify metadata updates are valid (semver format, ISO date, valid stage enum)
-- **After Step 11**: **CRITICAL CHECK** - If `PROJECT_SUMMARY.md` was modified, verify `PROJECTS_OVERVIEW.md` was updated:
+- **After Step 11**: **CRITICAL CHECK** - If new documents/files were created:
+  - Verify they are referenced in `PROJECT_SUMMARY.md` (Resources & References or relevant section)
+  - Add reference if missing (prevents AI missing context in future sessions)
+- **After Step 12**: **CRITICAL CHECK** - If `PROJECT_SUMMARY.md` was modified, verify `PROJECTS_OVERVIEW.md` was updated:
   - Check that index table reflects latest `last_updated` date
   - Verify project details section matches `PROJECT_SUMMARY.md` summary/metadata
   - Confirm highlights section includes recent changes
   - Validate dashboard YAML `last_updated` matches or is newer than `PROJECT_SUMMARY.md`
-- **After Step 12**: Final validation - all changes reflected, no inconsistencies between files, dashboard synchronized
+- **After Step 13**: Final validation - all changes reflected, no inconsistencies between files, dashboard synchronized, all new documents referenced
 
 ## Decision Trees for Common Scenarios
 
@@ -284,6 +299,7 @@ When consolidating scattered information into `PROJECT_SUMMARY.md`:
 ### When to Create New Document vs. Consolidate
 - **New Document**: Substantially new topic unrelated to existing content, different domain/function
 - **Consolidate**: Related information, updates, variations of same topic, refinements
+- **MANDATORY**: If creating new document, MUST reference it in `PROJECT_SUMMARY.md` (see Document Reference Requirement above)
 
 ### Template Selection Confidence
 - **High confidence (>80% keyword match)**: Auto-select immediately, explain reasoning briefly
@@ -312,7 +328,10 @@ When consolidating scattered information into `PROJECT_SUMMARY.md`:
 - Keep edits scoped - avoid cross-project edits unless explicit
 - Always update `PROJECT_SUMMARY.md` to reflect latest state - living document
 - **NEVER update `PROJECT_SUMMARY.md` without updating `PROJECTS_OVERVIEW.md`** - these files must stay synchronized
-- Before completing any task, verify: "Did I update `PROJECT_SUMMARY.md`? If yes, did I also update `PROJECTS_OVERVIEW.md`?"
+- **NEVER create new documents/files without referencing them in `PROJECT_SUMMARY.md`** - AI relies on PROJECT_SUMMARY.md for context
+- Before completing any task, verify: 
+  1. "Did I update `PROJECT_SUMMARY.md`? If yes, did I also update `PROJECTS_OVERVIEW.md`?"
+  2. "Did I create any new documents/files? If yes, are they referenced in `PROJECT_SUMMARY.md`?"
 
 ---
 
