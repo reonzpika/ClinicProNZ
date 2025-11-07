@@ -75,7 +75,10 @@ export function ImageEditModal({
       setEditState({
         rotation: edits.rotation || 0,
         crop: edits.crop || null,
-        arrows: edits.arrows || [],
+        arrows: (edits.arrows || []).map(arrow => ({
+          ...arrow,
+          angle: arrow.angle ?? 0,
+        })),
       });
       // Reset history when switching images
       setHistory([]);
