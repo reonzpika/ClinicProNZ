@@ -2,7 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { scrapeAndIngestHealthify } from '@/src/lib/scrapers/healthify-scraper';
+import { scrapeAndIngestHealthify } from '@/healthify/scrapers/healthify-scraper';
 
 export async function POST(request: NextRequest) {
   try {

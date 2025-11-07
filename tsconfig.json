@@ -45,7 +45,8 @@
       "@/app/*": ["./app/*"],
       "@/src/*": ["./src/*"],
       "@/db/*": ["./database/*"],
-      "@/public/*": ["./public/*"]
+      "@/public/*": ["./public/*"],
+      "@/healthify/*": ["./healthify/*"]
     },
 
     // Editor support

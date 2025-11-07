@@ -1,15 +1,8 @@
 import { JSDOM } from 'jsdom';
 
-import { ingestDocument } from '../rag';
-import type { DocumentToIngest } from '../rag/types';
-
-type LightScrapedArticle = {
-  title: string;
-  url: string;
-  contentSummary: string;
-  targetAudience: string;
-  categories: string[];
-};
+import { ingestDocument } from '@/src/lib/rag';
+import type { DocumentToIngest } from '@/src/lib/rag/types';
+import type { LightScrapedArticle } from '../types';
 
 export class HealthifySiteCrawler {
   private baseUrl = 'https://healthify.nz';
@@ -261,8 +254,8 @@ export class HealthifySiteCrawler {
    */
   private async checkIfArticleExists(url: string): Promise<boolean> {
     try {
-      const { getDb } = await import('../../../database/client');
-      const { ragDocuments } = await import('../../../database/schema/rag');
+      const { getDb } = await import('@/db/client');
+      const { ragDocuments } = await import('@/db/schema/rag');
       const { eq } = await import('drizzle-orm');
 
       const db = getDb();

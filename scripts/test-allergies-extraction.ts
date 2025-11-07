@@ -3,7 +3,7 @@
  * Test enhanced extraction on allergies page
  */
 
-import { EnhancedHealthifyScraper } from '../src/lib/scrapers/enhanced-healthify-scraper';
+import { EnhancedHealthifyScraper } from '../healthify/scrapers/enhanced-healthify-scraper';
 
 async function testAllergiesExtraction() {
   console.log('🧪 Testing allergies page extraction with LLM classification...\n');

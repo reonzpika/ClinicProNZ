@@ -4,7 +4,7 @@
  * This creates a basic index of all articles that can be enhanced on-demand
  */
 
-import { crawlHealthifySite } from '../src/lib/scrapers/healthify-site-crawler';
+import { crawlHealthifySite } from '../scrapers/healthify-site-crawler';
 
 async function main() {
   console.log('🚀 Starting comprehensive Healthify.nz site crawl...');

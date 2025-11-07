@@ -8,7 +8,7 @@ import { eq, isNull, or } from 'drizzle-orm';
 
 import { getDb } from '../database/client';
 import { ragDocuments } from '../database/schema/rag';
-import { EnhancedHealthifyScraper } from '../src/lib/scrapers/enhanced-healthify-scraper';
+import { EnhancedHealthifyScraper } from '../healthify/scrapers/enhanced-healthify-scraper';
 
 type EnhancementProgress = {
   total: number;
