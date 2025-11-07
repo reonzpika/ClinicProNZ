@@ -1,0 +1,105 @@
+---
+description: "Library-First Approach - Always research existing solutions before building from scratch"
+alwaysApply: true
+globs: []
+---
+
+# Library-First Approach
+
+## Core Principle
+
+**Always research and evaluate existing, well-maintained libraries before building features from scratch.**
+
+## When Building New Features
+
+### 1. Research Phase (Mandatory)
+Before implementing any new feature:
+1. **Search npm/pnpm registry** for relevant libraries
+2. **Check GitHub stars/activity** - prefer libraries with:
+   - 1,000+ stars (for popular features)
+   - Recent commits (within last 6 months)
+   - Active maintenance
+   - Good documentation
+3. **Review alternatives** - compare 2-3 options
+4. **Check bundle size** - consider impact on application size
+5. **Verify TypeScript support** - ensure type definitions available
+
+### 2. Decision Criteria
+
+**Use a library when:**
+- ✅ Library solves 80%+ of requirements
+- ✅ Well-maintained and actively developed
+- ✅ Good documentation and community support
+- ✅ TypeScript support available
+- ✅ Reasonable bundle size (< 100KB for most cases)
+- ✅ License compatible with project
+- ✅ No major security vulnerabilities
+
+**Build from scratch when:**
+- ❌ No suitable library exists
+- ❌ Library is unmaintained or deprecated
+- ❌ Library adds significant bundle size for minimal benefit
+- ❌ Requirements are highly customised and library would require extensive modification
+- ❌ Library has critical bugs or security issues
+
+### 3. Research Process
+
+1. **Search terms**: Use specific feature names (e.g., "image crop", "date picker", "chart")
+2. **Check multiple sources**:
+   - npm/pnpm registry
+   - GitHub trending repositories
+   - Awesome lists (e.g., awesome-react)
+   - Stack Overflow discussions
+3. **Evaluate top 3 options**:
+   - Compare features, API, bundle size
+   - Read recent issues/PRs for red flags
+   - Check compatibility with current tech stack
+
+### 4. Examples
+
+**Good examples:**
+- Image editing → `react-konva` (canvas-based, handles complex transformations)
+- Image cropping → `react-easy-crop` (simple, well-maintained)
+- Date picking → `react-day-picker` or `@radix-ui/react-calendar`
+- Charts → `recharts` or `victory`
+- Form validation → `react-hook-form` + `zod`
+
+**When to build custom:**
+- Highly domain-specific features (e.g., medical imaging workflows)
+- Tight performance requirements where libraries add overhead
+- Unique UI/UX requirements not met by existing solutions
+
+### 5. Implementation Guidelines
+
+When using a library:
+1. **Read documentation thoroughly** before implementation
+2. **Follow library patterns** - don't fight the library's design
+3. **Wrap if needed** - create thin wrapper components for consistency
+4. **Document why** - add comments explaining library choice
+5. **Keep updated** - stay current with library versions
+
+### 6. Communication
+
+When suggesting a library:
+- Explain why it's better than building from scratch
+- Mention key benefits (maintenance, features, community)
+- Note any trade-offs (bundle size, learning curve)
+- Provide quick example or reference
+
+## Anti-Patterns to Avoid
+
+❌ **"I'll build it quickly"** - Often takes longer than integrating a library
+❌ **"Libraries are bloated"** - Modern libraries are often tree-shakeable
+❌ **"We need full control"** - Most libraries are extensible
+❌ **"No time to research"** - 15 minutes of research saves hours of development
+
+## Exception: Learning/Prototyping
+
+Building from scratch is acceptable for:
+- Learning purposes
+- Prototyping to understand requirements
+- When explicitly requested by user for educational reasons
+
+---
+
+# End of Library-First Approach

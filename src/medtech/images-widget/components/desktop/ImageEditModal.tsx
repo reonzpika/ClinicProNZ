@@ -217,7 +217,7 @@ export function ImageEditModal({
 
   // Calculate image dimensions and position
   const getImageTransform = useCallback(() => {
-    if (!imageElement) return { x: 0, y: 0, width: 0, height: 0, scale: 1 };
+    if (!imageElement) return { x: 0, y: 0, width: 0, height: 0, scale: 1, naturalWidth: 0, naturalHeight: 0 };
     
     const naturalWidth = imageElement.width;
     const naturalHeight = imageElement.height;
@@ -242,7 +242,7 @@ export function ImageEditModal({
   // Convert stage coordinates to natural image coordinates
   const stageToNatural = useCallback((stageX: number, stageY: number) => {
     const transform = getImageTransform();
-    if (!transform.scale) return { x: 0, y: 0 };
+    if (!transform.scale || !transform.naturalWidth || !transform.naturalHeight) return { x: 0, y: 0 };
     
     // Account for rotation
     const centerX = transform.x + transform.width / 2;
@@ -269,7 +269,7 @@ export function ImageEditModal({
   // Convert natural image coordinates to stage coordinates
   const naturalToStage = useCallback((naturalX: number, naturalY: number) => {
     const transform = getImageTransform();
-    if (!transform.scale) return { x: 0, y: 0 };
+    if (!transform.scale || !transform.naturalWidth || !transform.naturalHeight) return { x: 0, y: 0 };
     
     // Convert from natural to display coordinates
     let x = (naturalX - transform.naturalWidth / 2) * transform.scale;
