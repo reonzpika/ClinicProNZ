@@ -3,8 +3,8 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-import { ingestDocument } from '../src/lib/rag';
-import type { DocumentToIngest } from '../src/lib/rag/types';
+import { ingestDocument } from '@/src/lib/rag';
+import type { DocumentToIngest } from '@/src/lib/rag/types';
 
 type ChunkJson = {
   url: string;
@@ -45,7 +45,7 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const dir = path.resolve(process.cwd(), 'data_chunks');
+  const dir = path.resolve(process.cwd(), 'healthify/data/chunks');
   console.log(`[INGEST-CHUNKS] Reading chunks from ${dir}`);
   const chunks = await readChunkFiles(dir);
   console.log(`[INGEST-CHUNKS] Found ${chunks.length} chunks`);

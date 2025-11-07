@@ -5,7 +5,7 @@
  * Run with: npm run db:populate-healthify
  */
 
-import { scrapeAndIngestHealthify } from '../src/lib/scrapers/healthify-scraper';
+import { scrapeAndIngestHealthify } from '../scrapers/healthify-scraper';
 
 // Common medical topics for initial population
 const INITIAL_QUERIES = [

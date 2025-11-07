@@ -1,19 +1,8 @@
 import { JSDOM } from 'jsdom';
 
-import { ingestDocument } from '../rag';
-import type { DocumentToIngest } from '../rag/types';
-
-type ScrapedPage = {
-  title: string;
-  content: string;
-  url: string;
-};
-
-type ScrapeResult = {
-  success: boolean;
-  pages: ScrapedPage[];
-  errors: string[];
-};
+import { ingestDocument } from '@/src/lib/rag';
+import type { DocumentToIngest } from '@/src/lib/rag/types';
+import type { ScrapedPage, ScrapeResult } from '../types';
 
 export class HealthifyScraper {
   private baseUrl = 'https://healthify.nz';

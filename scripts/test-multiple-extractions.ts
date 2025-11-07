@@ -3,7 +3,7 @@
  * Test extraction quality across different content types
  */
 
-import { EnhancedHealthifyScraper } from '../src/lib/scrapers/enhanced-healthify-scraper';
+import { EnhancedHealthifyScraper } from '../healthify/scrapers/enhanced-healthify-scraper';
 
 const TEST_URLS = [
   {

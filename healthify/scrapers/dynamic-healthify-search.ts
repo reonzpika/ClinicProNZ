@@ -1,10 +1,5 @@
 import { EnhancedHealthifyScraper } from './enhanced-healthify-scraper';
-
-type HealthifySearchResult = {
-  title: string;
-  url: string;
-  snippet: string;
-};
+import type { HealthifySearchResult } from '../types';
 
 export class DynamicHealthifySearch {
   private scraper = new EnhancedHealthifyScraper();
@@ -179,8 +174,8 @@ export class DynamicHealthifySearch {
   private async checkIfArticleExists(url: string): Promise<boolean> {
     try {
       // Import here to avoid circular dependencies
-      const { getDb } = await import('../../../database/client');
-      const { ragDocuments } = await import('../../../database/schema/rag');
+      const { getDb } = await import('@/db/client');
+      const { ragDocuments } = await import('@/db/schema/rag');
       const { eq } = await import('drizzle-orm');
 
       const db = getDb();

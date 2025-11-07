@@ -3,9 +3,9 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-import { ingestDocument } from '../src/lib/rag';
+import { ingestDocument } from '@/src/lib/rag';
 import { Document as LlamaDocument, MarkdownNodeParser, SentenceSplitter } from 'llamaindex';
-import type { DocumentToIngest } from '../src/lib/rag/types';
+import type { DocumentToIngest } from '@/src/lib/rag/types';
 
 type HealthifyJson = {
   url: string;

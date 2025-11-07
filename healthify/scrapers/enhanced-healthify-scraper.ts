@@ -1,9 +1,10 @@
 import { JSDOM } from 'jsdom';
 import OpenAI from 'openai';
 
-import { ingestDocument } from '../rag';
-import type { DocumentToIngest } from '../rag/types';
-import { classifyHeadingsHybrid } from './llm-heading-classifier';
+import { ingestDocument } from '@/src/lib/rag';
+import type { DocumentToIngest } from '@/src/lib/rag/types';
+import { classifyHeadingsHybrid } from '@/src/lib/scrapers/llm-heading-classifier';
+import type { StructuredHealthifyContent } from '../types';
 
 function getOpenAI(): OpenAI {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -13,17 +14,6 @@ function getOpenAI(): OpenAI {
   return new OpenAI({ apiKey });
 }
 
-type StructuredHealthifyContent = {
-  title: string;
-  url: string;
-  sections: Record<string, string>;
-  author?: string;
-  lastUpdated?: Date;
-  categories?: string[];
-  contentType?: string;
-  internalLinks?: Array<{ text: string; url: string }>;
-  fullContent: string;
-};
 
 export class EnhancedHealthifyScraper {
   // private baseUrl = 'https://healthify.nz'; // Currently unused
