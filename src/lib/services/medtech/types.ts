@@ -66,6 +66,29 @@ export interface FhirPatient {
   }>
 }
 
+export interface FhirEncounter {
+  resourceType: 'Encounter'
+  id?: string
+  identifier?: FhirIdentifier[]
+  status: 'planned' | 'arrived' | 'triaged' | 'in-progress' | 'onleave' | 'finished' | 'cancelled'
+  class?: {
+    system?: string
+    code?: string
+    display?: string
+  }
+  subject?: FhirReference
+  period?: {
+    start?: string
+    end?: string
+  }
+  reasonCode?: FhirCodeableConcept[]
+  diagnosis?: Array<{
+    condition?: FhirReference
+    use?: FhirCodeableConcept
+    rank?: number
+  }>
+}
+
 export interface FhirMedia {
   resourceType: 'Media'
   id?: string

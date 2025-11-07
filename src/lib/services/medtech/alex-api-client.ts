@@ -10,7 +10,7 @@
  *
  * Environment Variables Required:
  * - MEDTECH_API_BASE_URL (e.g., https://alexapiuat.medtechglobal.com/FHIR)
- * - MEDTECH_FACILITY_ID (e.g., F2N060-E for UAT)
+ * - MEDTECH_FACILITY_ID (e.g., F99669-C for UAT)
  * - MEDTECH_CLIENT_ID, MEDTECH_CLIENT_SECRET, MEDTECH_TENANT_ID, MEDTECH_API_SCOPE
  */
 
