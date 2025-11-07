@@ -77,7 +77,7 @@ export function ImageEditModal({
         crop: edits.crop || null,
         arrows: (edits.arrows || []).map(arrow => {
           // Handle legacy arrows with angle (convert to x1, y1, x2, y2)
-          if ('angle' in arrow && typeof arrow.angle === 'number') {
+          if ('angle' in arrow && typeof arrow.angle === 'number' && 'x' in arrow && 'y' in arrow) {
             // Legacy format: convert angle + position to end point
             // Assume a default length of 5% for legacy arrows
             const length = 5;
@@ -91,7 +91,23 @@ export function ImageEditModal({
             };
           }
           // New format: already has x1, y1, x2, y2
-          return arrow as { id: string; x1: number; y1: number; x2: number; y2: number };
+          if ('x1' in arrow && 'y1' in arrow && 'x2' in arrow && 'y2' in arrow) {
+            return {
+              id: arrow.id,
+              x1: arrow.x1,
+              y1: arrow.y1,
+              x2: arrow.x2,
+              y2: arrow.y2,
+            };
+          }
+          // Fallback: create a default arrow if format is unknown
+          return {
+            id: arrow.id,
+            x1: 0,
+            y1: 0,
+            x2: 5,
+            y2: 5,
+          };
         }),
       });
       // Reset history when switching images
