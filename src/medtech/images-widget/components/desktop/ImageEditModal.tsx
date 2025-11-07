@@ -185,6 +185,56 @@ export function ImageEditModal({
     updateEditState({ rotation: (editState.rotation - 90 + 360) % 360 });
   }, [editState.rotation, updateEditState]);
 
+  // Helper function to transform mouse coordinates to natural image coordinates
+  const transformMouseToNatural = useCallback((mouseX: number, mouseY: number, img: HTMLImageElement, rotation: number) => {
+    const naturalWidth = img.naturalWidth;
+    const naturalHeight = img.naturalHeight;
+    const displayedWidth = img.offsetWidth;
+    const displayedHeight = img.offsetHeight;
+    
+    // Calculate scale factor (object-contain uses the smaller scale)
+    const scaleX = displayedWidth / naturalWidth;
+    const scaleY = displayedHeight / naturalHeight;
+    const scale = Math.min(scaleX, scaleY);
+    
+    // Actual displayed image size
+    const actualDisplayedWidth = naturalWidth * scale;
+    const actualDisplayedHeight = naturalHeight * scale;
+    
+    // Center offset
+    const offsetX = (displayedWidth - actualDisplayedWidth) / 2;
+    const offsetY = (displayedHeight - actualDisplayedHeight) / 2;
+    
+    // Adjust for centering
+    let x = mouseX - offsetX;
+    let y = mouseY - offsetY;
+    
+    // Convert to natural coordinates first (before rotation)
+    x = x / scale;
+    y = y / scale;
+    
+    // Apply inverse rotation transformation
+    // For 90° clockwise forward: (x, y) -> (y, naturalHeight - x)
+    // Inverse: (x, y) -> (naturalHeight - y, x)
+    if (rotation === 90) {
+      const tempX = x;
+      x = naturalHeight - y;
+      y = tempX;
+    } else if (rotation === 270) {
+      // For 270° clockwise forward: (x, y) -> (naturalWidth - y, x)
+      // Inverse: (x, y) -> (y, naturalWidth - x)
+      const tempX = x;
+      x = y;
+      y = naturalWidth - tempX;
+    } else if (rotation === 180) {
+      x = naturalWidth - x;
+      y = naturalHeight - y;
+    }
+    // 0°: no transformation needed
+    
+    return { x, y };
+  }, []);
+
   // Start crop
   const handleCropStart = useCallback((e: React.MouseEvent) => {
     if (!imageRef.current || activeTool !== 'crop') return;
@@ -193,46 +243,69 @@ export function ImageEditModal({
     
     const imgRect = imageRef.current.getBoundingClientRect();
     const img = imageRef.current;
-    const naturalWidth = img.naturalWidth;
-    const naturalHeight = img.naturalHeight;
     
-    // Get displayed dimensions (accounting for object-contain)
-    const displayedWidth = img.offsetWidth;
-    const displayedHeight = img.offsetHeight;
+    // Calculate position relative to displayed image bounding box
+    const mouseX = e.clientX - imgRect.left;
+    const mouseY = e.clientY - imgRect.top;
     
-    // Calculate position relative to displayed image
-    let x = e.clientX - imgRect.left;
-    let y = e.clientY - imgRect.top;
-    
-    // Account for rotation: transform coordinates based on rotation
-    const rotation = editState.rotation;
-    if (rotation === 90 || rotation === 270) {
-      // For 90° and 270°, swap coordinates relative to displayed dimensions
-      const tempX = x;
-      x = y;
-      y = displayedWidth - tempX;
-      
-      // Also swap displayed dimensions for calculation
-      const tempW = displayedWidth;
-      const displayedWidthRotated = displayedHeight;
-      const displayedHeightRotated = tempW;
-      
-      // Map to natural image coordinates
-      x = (x / displayedWidthRotated) * naturalWidth;
-      y = (y / displayedHeightRotated) * naturalHeight;
-    } else {
-      // For 0° and 180°, map directly
-      x = (x / displayedWidth) * naturalWidth;
-      y = (y / displayedHeight) * naturalHeight;
-    }
+    // Transform to natural image coordinates
+    const { x, y } = transformMouseToNatural(mouseX, mouseY, img, editState.rotation);
     
     // Only start crop if click is within image bounds
-    if (x >= 0 && x <= naturalWidth && y >= 0 && y <= naturalHeight) {
+    if (x >= 0 && x <= img.naturalWidth && y >= 0 && y <= img.naturalHeight) {
       setCropStart({ x, y });
       setCropEnd({ x, y });
       setIsCropMode(true);
     }
-  }, [activeTool, editState.rotation]);
+  }, [activeTool, editState.rotation, transformMouseToNatural]);
+
+  // Helper function to transform natural coordinates to displayed coordinates
+  const transformNaturalToDisplayed = useCallback((naturalX: number, naturalY: number, img: HTMLImageElement, rotation: number) => {
+    const naturalWidth = img.naturalWidth;
+    const naturalHeight = img.naturalHeight;
+    const displayedWidth = img.offsetWidth;
+    const displayedHeight = img.offsetHeight;
+    
+    // Calculate scale factor
+    const scaleX = displayedWidth / naturalWidth;
+    const scaleY = displayedHeight / naturalHeight;
+    const scale = Math.min(scaleX, scaleY);
+    
+    // Actual displayed image size
+    const actualDisplayedWidth = naturalWidth * scale;
+    const actualDisplayedHeight = naturalHeight * scale;
+    
+    // Center offset
+    const offsetX = (displayedWidth - actualDisplayedWidth) / 2;
+    const offsetY = (displayedHeight - actualDisplayedHeight) / 2;
+    
+    let x = naturalX;
+    let y = naturalY;
+    
+    // Apply rotation transformation (forward transform)
+    // Rotation matrix for 90° clockwise: [0, 1; -1, 0]
+    if (rotation === 90) {
+      // 90° clockwise: (x, y) -> (y, naturalHeight - x)
+      const tempX = x;
+      x = y;
+      y = naturalHeight - tempX;
+    } else if (rotation === 270) {
+      // 270° clockwise: (x, y) -> (naturalWidth - y, x)
+      const tempX = x;
+      x = naturalWidth - y;
+      y = tempX;
+    } else if (rotation === 180) {
+      x = naturalWidth - x;
+      y = naturalHeight - y;
+    }
+    // 0°: no transformation needed
+    
+    // Scale to displayed coordinates
+    x = x * scale;
+    y = y * scale;
+    
+    return { x: x + offsetX, y: y + offsetY };
+  }, []);
 
   // Update crop while dragging
   const handleCropMove = useCallback((e: React.MouseEvent) => {
@@ -241,42 +314,19 @@ export function ImageEditModal({
     
     const imgRect = imageRef.current.getBoundingClientRect();
     const img = imageRef.current;
-    const naturalWidth = img.naturalWidth;
-    const naturalHeight = img.naturalHeight;
-    const displayedWidth = img.offsetWidth;
-    const displayedHeight = img.offsetHeight;
     
-    // Calculate position relative to displayed image
-    let x = e.clientX - imgRect.left;
-    let y = e.clientY - imgRect.top;
+    // Calculate position relative to displayed image bounding box
+    const mouseX = e.clientX - imgRect.left;
+    const mouseY = e.clientY - imgRect.top;
     
-    // Account for rotation: transform coordinates based on rotation
-    const rotation = editState.rotation;
-    if (rotation === 90 || rotation === 270) {
-      // For 90° and 270°, swap coordinates relative to displayed dimensions
-      const tempX = x;
-      x = y;
-      y = displayedWidth - tempX;
-      
-      // Also swap displayed dimensions for calculation
-      const tempW = displayedWidth;
-      const displayedWidthRotated = displayedHeight;
-      const displayedHeightRotated = tempW;
-      
-      // Map to natural image coordinates
-      x = (x / displayedWidthRotated) * naturalWidth;
-      y = (y / displayedHeightRotated) * naturalHeight;
-    } else {
-      // For 0° and 180°, map directly
-      x = (x / displayedWidth) * naturalWidth;
-      y = (y / displayedHeight) * naturalHeight;
-    }
+    // Transform to natural image coordinates
+    const { x, y } = transformMouseToNatural(mouseX, mouseY, img, editState.rotation);
     
     // Clamp to natural image bounds
-    x = Math.max(0, Math.min(naturalWidth, x));
-    y = Math.max(0, Math.min(naturalHeight, y));
-    setCropEnd({ x, y });
-  }, [cropStart, isCropMode, editState.rotation]);
+    const clampedX = Math.max(0, Math.min(img.naturalWidth, x));
+    const clampedY = Math.max(0, Math.min(img.naturalHeight, y));
+    setCropEnd({ x: clampedX, y: clampedY });
+  }, [cropStart, isCropMode, editState.rotation, transformMouseToNatural]);
 
   // End crop
   const handleCropEnd = useCallback(() => {
@@ -653,46 +703,19 @@ export function ImageEditModal({
                 {/* Crop Overlay (while dragging) */}
                 {isCropMode && cropStart && cropEnd && imageRef.current && (() => {
                   const img = imageRef.current;
-                  const naturalWidth = img.naturalWidth;
-                  const naturalHeight = img.naturalHeight;
-                  const displayedWidth = img.offsetWidth;
-                  const displayedHeight = img.offsetHeight;
                   
-                  // Convert natural image coordinates back to displayed coordinates
-                  let x1 = cropStart.x;
-                  let y1 = cropStart.y;
-                  let x2 = cropEnd.x;
-                  let y2 = cropEnd.y;
-                  
-                  const rotation = editState.rotation;
-                  if (rotation === 90 || rotation === 270) {
-                    // Convert from natural to displayed, accounting for rotation
-                    const scaleX = displayedHeight / naturalWidth;
-                    const scaleY = displayedWidth / naturalHeight;
-                    
-                    // Transform coordinates
-                    const tempX1 = x1;
-                    const tempX2 = x2;
-                    x1 = y1 * scaleX;
-                    y1 = (naturalWidth - tempX1) * scaleY;
-                    x2 = y2 * scaleX;
-                    y2 = (naturalWidth - tempX2) * scaleY;
-                  } else {
-                    // Direct conversion
-                    x1 = (x1 / naturalWidth) * displayedWidth;
-                    y1 = (y1 / naturalHeight) * displayedHeight;
-                    x2 = (x2 / naturalWidth) * displayedWidth;
-                    y2 = (y2 / naturalHeight) * displayedHeight;
-                  }
+                  // Convert natural coordinates to displayed coordinates
+                  const start = transformNaturalToDisplayed(cropStart.x, cropStart.y, img, editState.rotation);
+                  const end = transformNaturalToDisplayed(cropEnd.x, cropEnd.y, img, editState.rotation);
                   
                   return (
                     <div
                       className="absolute border-2 border-blue-500 bg-blue-500/20 pointer-events-none z-10"
                       style={{
-                        left: `${Math.min(x1, x2)}px`,
-                        top: `${Math.min(y1, y2)}px`,
-                        width: `${Math.abs(x2 - x1)}px`,
-                        height: `${Math.abs(y2 - y1)}px`,
+                        left: `${Math.min(start.x, end.x)}px`,
+                        top: `${Math.min(start.y, end.y)}px`,
+                        width: `${Math.abs(end.x - start.x)}px`,
+                        height: `${Math.abs(end.y - start.y)}px`,
                       }}
                     />
                   );
@@ -738,48 +761,25 @@ export function ImageEditModal({
                   const img = imageRef.current;
                   const naturalWidth = img.naturalWidth;
                   const naturalHeight = img.naturalHeight;
-                  const displayedWidth = img.offsetWidth;
-                  const displayedHeight = img.offsetHeight;
                   
-                  // Convert percentage of natural image to displayed coordinates
+                  // Convert percentage to natural coordinates
                   const cropX = (editState.crop.x / 100) * naturalWidth;
                   const cropY = (editState.crop.y / 100) * naturalHeight;
                   const cropWidth = (editState.crop.width / 100) * naturalWidth;
                   const cropHeight = (editState.crop.height / 100) * naturalHeight;
                   
-                  const rotation = editState.rotation;
-                  let x1 = cropX;
-                  let y1 = cropY;
-                  let width = cropWidth;
-                  let height = cropHeight;
-                  
-                  if (rotation === 90 || rotation === 270) {
-                    // Convert from natural to displayed, accounting for rotation
-                    const scaleX = displayedHeight / naturalWidth;
-                    const scaleY = displayedWidth / naturalHeight;
-                    
-                    // Transform coordinates
-                    const tempX = x1;
-                    x1 = y1 * scaleX;
-                    y1 = (naturalWidth - tempX - cropWidth) * scaleY;
-                    width = cropHeight * scaleX;
-                    height = cropWidth * scaleY;
-                  } else {
-                    // Direct conversion
-                    x1 = (cropX / naturalWidth) * displayedWidth;
-                    y1 = (cropY / naturalHeight) * displayedHeight;
-                    width = (cropWidth / naturalWidth) * displayedWidth;
-                    height = (cropHeight / naturalHeight) * displayedHeight;
-                  }
+                  // Convert top-left corner and bottom-right corner to displayed coordinates
+                  const topLeft = transformNaturalToDisplayed(cropX, cropY, img, editState.rotation);
+                  const bottomRight = transformNaturalToDisplayed(cropX + cropWidth, cropY + cropHeight, img, editState.rotation);
                   
                   return (
                     <div
                       className="absolute border-2 border-dashed border-purple-500 bg-purple-500/10 pointer-events-none z-10"
                       style={{
-                        left: `${x1}px`,
-                        top: `${y1}px`,
-                        width: `${width}px`,
-                        height: `${height}px`,
+                        left: `${Math.min(topLeft.x, bottomRight.x)}px`,
+                        top: `${Math.min(topLeft.y, bottomRight.y)}px`,
+                        width: `${Math.abs(bottomRight.x - topLeft.x)}px`,
+                        height: `${Math.abs(bottomRight.y - topLeft.y)}px`,
                       }}
                     />
                   );
