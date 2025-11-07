@@ -272,7 +272,6 @@ export function ImageEditModal({
     e.preventDefault();
     e.stopPropagation();
     
-    const imgRect = imageRef.current.getBoundingClientRect();
     const img = imageRef.current;
     
     // Calculate position relative to the image element's container (not bounding rect)
