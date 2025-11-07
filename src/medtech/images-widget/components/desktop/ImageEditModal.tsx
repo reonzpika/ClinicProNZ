@@ -66,7 +66,7 @@ export function ImageEditModal({
   const [arrowStart, setArrowStart] = useState<{ x: number; y: number } | null>(null);
   const [arrowEnd, setArrowEnd] = useState<{ x: number; y: number } | null>(null);
   const [imageElement, setImageElement] = useState<HTMLImageElement | null>(null);
-  const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
+  const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
   const stageRef = useRef<Konva.Stage>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -90,17 +90,34 @@ export function ImageEditModal({
     
     const updateSize = () => {
       if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
         setStageSize({
-          width: containerRef.current.clientWidth,
-          height: containerRef.current.clientHeight,
+          width: rect.width,
+          height: rect.height,
         });
       }
     };
     
+    // Initial size calculation
     updateSize();
+    
+    // Use ResizeObserver for more reliable size tracking
+    const resizeObserver = new ResizeObserver(() => {
+      updateSize();
+    });
+    
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+    
+    // Fallback to window resize
     window.addEventListener('resize', updateSize);
-    return () => window.removeEventListener('resize', updateSize);
-  }, []);
+    
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updateSize);
+    };
+  }, [isOpen]); // Re-run when modal opens
 
   // Initialize edit state from image metadata
   useEffect(() => {
@@ -217,7 +234,9 @@ export function ImageEditModal({
 
   // Calculate image dimensions and position
   const getImageTransform = useCallback(() => {
-    if (!imageElement) return { x: 0, y: 0, width: 0, height: 0, scale: 1, naturalWidth: 0, naturalHeight: 0 };
+    if (!imageElement || stageSize.width === 0 || stageSize.height === 0) {
+      return { x: 0, y: 0, width: 0, height: 0, scale: 1, naturalWidth: 0, naturalHeight: 0 };
+    }
     
     const naturalWidth = imageElement.width;
     const naturalHeight = imageElement.height;
@@ -468,8 +487,18 @@ export function ImageEditModal({
     }
   }, [currentImageId, allImages, editState, updateMetadata, onImageSelect]);
 
-  if (!currentImage || !imageElement) {
-    return null;
+  if (!currentImage || !imageElement || stageSize.width === 0 || stageSize.height === 0) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-[100vw] w-screen h-screen max-h-screen p-0 gap-0 translate-x-[-50%] translate-y-[-50%] left-1/2 top-1/2 rounded-none">
+          <div className="flex h-full items-center justify-center">
+            <div className="text-center">
+              <p className="text-slate-600">Loading...</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
   }
 
   const currentIndex = allImages.findIndex(img => img.id === currentImageId);
@@ -637,23 +666,22 @@ export function ImageEditModal({
             className="flex-1 relative overflow-hidden bg-slate-100"
             style={{ cursor }}
           >
-            <Stage
-              ref={stageRef}
-              width={stageSize.width}
-              height={stageSize.height}
-              onMouseDown={handleStageMouseDown}
-              onMouseMove={handleStageMouseMove}
-              onMouseUp={handleStageMouseUp}
-            >
+            {stageSize.width > 0 && stageSize.height > 0 && (
+              <Stage
+                ref={stageRef}
+                width={stageSize.width}
+                height={stageSize.height}
+                onMouseDown={handleStageMouseDown}
+                onMouseMove={handleStageMouseMove}
+                onMouseUp={handleStageMouseUp}
+              >
               <Layer>
                 {/* Image */}
-                {imageElement && (
+                {imageElement && stageSize.width > 0 && stageSize.height > 0 && (
                   <Group
                     x={stageSize.width / 2}
                     y={stageSize.height / 2}
                     rotation={editState.rotation}
-                    offsetX={transform.width / 2}
-                    offsetY={transform.height / 2}
                   >
                     <KonvaImage
                       image={imageElement}
@@ -766,6 +794,7 @@ export function ImageEditModal({
                 })}
               </Layer>
             </Stage>
+            )}
           </div>
         </div>
       </DialogContent>
