@@ -39,6 +39,7 @@ tags:
 ### Recent Achievements Across Projects
 *[AI will auto-populate this section based on recent milestones and updates]*
 
+- **2025-11-07**: Medtech Integration — POST Media endpoint implemented; Facility ID configuration blocker identified (403 error); Email sent to Medtech ALEX support
 - **2025-11-07**: Strategic prioritisation review — Medtech Integration identified as high ROI revenue path; ClinicPro marketing ROI questioned given competitive market
 - **2025-11-07**: Solo founder/developer context noted — limited time/resources require focus on highest ROI activities
 - **2025-01-15**: GP Voices Community project initialised — Theme components implemented, configuration and deployment pending
@@ -52,9 +53,9 @@ tags:
 ### Top Blockers & Risks
 *[AI will auto-populate this section based on identified blockers and risks]*
 
+- **Medtech ALEX Integration**: Facility ID not recognized by ALEX API UAT (403 "Practice Facility not found") - Email sent to Medtech support 2025-11-07, awaiting response
 - **R&D Grant Submission**: Market validation gaps (GP letters of interest, operational evidence depth)
 - **R&D Grant Submission**: Commercialisation strategy incomplete (pricing, projections, GTM, adoption timeline)
-- **Medtech ALEX Integration**: No active blockers — ready for end-to-end testing
 
 ### Cross-Project Themes & Dependencies
 *[AI will identify and surface themes, dependencies, or relationships across projects]*
@@ -137,7 +138,7 @@ tags:
   - OAuth service completed: Oct 31, 2024
   - BFF deployed: Oct 31, 2024
   - IP allow-listing resolved: Jan 15, 2025
-- **Status**: Active — Ready for end-to-end testing
+- **Status**: Active — Facility ID configuration blocker; Email sent to Medtech support (2025-11-07)
 - **Link**: [View Full Summary](./medtech-integration/PROJECT_SUMMARY.md)
 - **Technical Docs**: `/project-management/medtech-integration/docs/`
 

@@ -2,7 +2,7 @@
 project_name: Medtech ALEX Integration
 project_stage: Build
 owner: Development Team
-last_updated: "2025-01-15"
+last_updated: "2025-11-07"
 version: "0.6.0"
 tags:
   - integration
@@ -51,7 +51,12 @@ summary: "Clinical images widget integration with Medtech Evolution/Medtech32 vi
   - OAuth working ✅ (token acquisition successful)
 
 ### ⚠️ Blockers
-- **None** — All previous blockers resolved ✅
+- **Facility ID Configuration** [2025-11-07]
+  - **Issue**: ALEX API UAT returns 403 "Practice Facility not found"
+  - **Facility IDs tested**: `F2N060-E`, `F99669-C` (both fail)
+  - **Status**: Email sent to Medtech ALEX support - awaiting response
+  - **Impact**: Cannot test FHIR API calls until facility ID is resolved
+  - **Next**: Wait for Medtech response with correct facility ID
 
 ### ✅ Recent Updates [2025-01-15]
 1. **IP Allow-listing Resolved** ✅
@@ -365,6 +370,18 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 
 **Action Plan**: See `IMMEDIATE_ACTION_PLAN.md` for step-by-step next actions (4-8 hours to completion).
 
+## Current Blocker [2025-11-07]
+
+**Issue**: Facility ID not recognized by ALEX API UAT
+- **Error**: 403 Forbidden - "Practice Facility not found"
+- **Facility IDs tested**: `F2N060-E`, `F99669-C` (both fail)
+- **Status**: Email sent to Medtech ALEX support requesting:
+  1. Correct facility ID for Application ID `7685ade3-f1ae-4e86-a398-fe7809c0fed1`
+  2. Facility ID format requirements
+  3. Confirmation if facility ID needs approval/configuration
+- **Email**: See `EMAIL_MEDTECH_FACILITY_ID.md`
+- **Next**: Awaiting Medtech response
+
 ## Next Steps
 
 ### Immediate (This Week)
@@ -456,6 +473,26 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 ---
 
 ## Updates History
+
+### [2025-11-07] — POST Media Implementation & Facility ID Blocker
+- **POST Media Endpoint Implemented**: Replaced mock with real ALEX API integration
+  - Created `/app/api/(integration)/medtech/attachments/commit/route.ts`
+  - Added `FhirEncounter` type definition
+  - Implemented: Get encounter/patient info, create FHIR Media resources, POST to ALEX API
+  - Error handling and partial failure support added
+- **Environment Variables Updated**: Updated Facility ID references in example files (`F2N060-E` → `F99669-C`)
+- **Facility ID Blocker Identified**: 
+  - Testing revealed 403 "Practice Facility not found" error
+  - Both `F2N060-E` and `F99669-C` fail with same error
+  - OAuth and IP allow-listing working correctly
+  - Email sent to Medtech ALEX support requesting correct facility ID
+  - See `EMAIL_MEDTECH_FACILITY_ID.md` for email details
+- **Documentation Created**:
+  - `IMPLEMENTATION_STATUS.md` - Implementation status and next steps
+  - `UPDATE_ENV_VARIABLES.md` - Step-by-step guide for updating environment variables
+  - `EMAIL_MEDTECH_FACILITY_ID.md` - Email draft to Medtech support
+  - `IMMEDIATE_ACTION_PLAN.md` - Updated with current blocker status
+- **Status**: Awaiting Medtech response on facility ID configuration
 
 ### [2025-01-15] — Medtech Updates & Blocker Resolution
 - **Firewall Resolved**: Azure network security group manually added, BFF can now connect to ALEX API

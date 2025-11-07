@@ -53,58 +53,42 @@
 
 **Test Endpoint**: `GET /api/medtech/test?nhi=ZZZ0016`
 
-**How to Test**:
+**Status**: ⚠️ **BLOCKED** - Facility ID issue (2025-11-07)
 
-1. **Via Browser/curl**:
-   ```bash
-   curl "https://api.clinicpro.co.nz/api/medtech/test?nhi=ZZZ0016"
-   ```
+**Test Results**:
+- ✅ OAuth token acquisition: Working
+- ✅ IP allow-listing: Configured
+- ❌ FHIR API calls: 403 "Practice Facility not found"
+- **Facility IDs tested**: `F2N060-E`, `F99669-C` (both fail)
 
-2. **Expected Success Response**:
-   ```json
-   {
-     "success": true,
-     "correlationId": "...",
-     "duration": 1234,
-     "environment": {
-       "baseUrl": "https://alexapiuat.medtechglobal.com/FHIR",
-       "facilityId": "F99669-C",
-       "hasClientId": true,
-       "hasClientSecret": true
-     },
-     "tokenInfo": {
-       "isCached": false,
-       "expiresIn": 3599
-     },
-     "fhirResult": {
-       "resourceType": "Bundle",
-       "type": "searchset",
-       "total": 1,
-       "patientCount": 1,
-       "firstPatient": {
-         "id": "...",
-         "name": {...},
-         "gender": "...",
-         "birthDate": "..."
-       }
-     }
-   }
-   ```
+**Action Taken**: Email sent to Medtech ALEX support requesting correct facility ID for Application ID `7685ade3-f1ae-4e86-a398-fe7809c0fed1`. See `EMAIL_MEDTECH_FACILITY_ID.md`.
 
-3. **If 401/403 Error**:
-   - Check OAuth credentials are correct
-   - Verify IP allow-listing (should be resolved)
-   - Check facility ID matches Medtech Evolution test instance
+**Next Steps** (after Medtech response):
+1. Update `MEDTECH_FACILITY_ID` environment variable with correct value
+2. Restart BFF service
+3. Retest connectivity endpoint
+4. Verify FHIR API calls succeed
 
-4. **If 500 Error**:
-   - Check BFF logs: `sudo journalctl -u clinicpro-bff -f`
-   - Verify environment variables are set correctly
-   - Check OAuth token service is working
-
-**Success Criteria**: 
-- ✅ Returns 200 status
-- ✅ `fhirResult.patientCount > 0`
-- ✅ Token acquired successfully
+**Expected Success Response** (once facility ID resolved):
+```json
+{
+  "success": true,
+  "correlationId": "...",
+  "duration": 1234,
+  "environment": {
+     "baseUrl": "https://alexapiuat.medtechglobal.com/FHIR",
+     "facilityId": "[CORRECT_FACILITY_ID]",
+     "hasClientId": true,
+     "hasClientSecret": true
+  },
+  "fhirResult": {
+     "resourceType": "Bundle",
+     "type": "searchset",
+     "total": 1,
+     "patientCount": 1
+  }
+}
+```
 
 ---
 
