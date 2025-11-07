@@ -192,18 +192,47 @@ export function ImageEditModal({
     e.stopPropagation();
     
     const imgRect = imageRef.current.getBoundingClientRect();
+    const img = imageRef.current;
+    const naturalWidth = img.naturalWidth;
+    const naturalHeight = img.naturalHeight;
     
-    // Calculate position relative to image
-    const x = e.clientX - imgRect.left;
-    const y = e.clientY - imgRect.top;
+    // Get displayed dimensions (accounting for object-contain)
+    const displayedWidth = img.offsetWidth;
+    const displayedHeight = img.offsetHeight;
+    
+    // Calculate position relative to displayed image
+    let x = e.clientX - imgRect.left;
+    let y = e.clientY - imgRect.top;
+    
+    // Account for rotation: transform coordinates based on rotation
+    const rotation = editState.rotation;
+    if (rotation === 90 || rotation === 270) {
+      // For 90° and 270°, swap coordinates relative to displayed dimensions
+      const tempX = x;
+      x = y;
+      y = displayedWidth - tempX;
+      
+      // Also swap displayed dimensions for calculation
+      const tempW = displayedWidth;
+      const displayedWidthRotated = displayedHeight;
+      const displayedHeightRotated = tempW;
+      
+      // Map to natural image coordinates
+      x = (x / displayedWidthRotated) * naturalWidth;
+      y = (y / displayedHeightRotated) * naturalHeight;
+    } else {
+      // For 0° and 180°, map directly
+      x = (x / displayedWidth) * naturalWidth;
+      y = (y / displayedHeight) * naturalHeight;
+    }
     
     // Only start crop if click is within image bounds
-    if (x >= 0 && x <= imgRect.width && y >= 0 && y <= imgRect.height) {
+    if (x >= 0 && x <= naturalWidth && y >= 0 && y <= naturalHeight) {
       setCropStart({ x, y });
       setCropEnd({ x, y });
       setIsCropMode(true);
     }
-  }, [activeTool]);
+  }, [activeTool, editState.rotation]);
 
   // Update crop while dragging
   const handleCropMove = useCallback((e: React.MouseEvent) => {
@@ -211,10 +240,43 @@ export function ImageEditModal({
     e.preventDefault();
     
     const imgRect = imageRef.current.getBoundingClientRect();
-    const x = Math.max(0, Math.min(imgRect.width, e.clientX - imgRect.left));
-    const y = Math.max(0, Math.min(imgRect.height, e.clientY - imgRect.top));
+    const img = imageRef.current;
+    const naturalWidth = img.naturalWidth;
+    const naturalHeight = img.naturalHeight;
+    const displayedWidth = img.offsetWidth;
+    const displayedHeight = img.offsetHeight;
+    
+    // Calculate position relative to displayed image
+    let x = e.clientX - imgRect.left;
+    let y = e.clientY - imgRect.top;
+    
+    // Account for rotation: transform coordinates based on rotation
+    const rotation = editState.rotation;
+    if (rotation === 90 || rotation === 270) {
+      // For 90° and 270°, swap coordinates relative to displayed dimensions
+      const tempX = x;
+      x = y;
+      y = displayedWidth - tempX;
+      
+      // Also swap displayed dimensions for calculation
+      const tempW = displayedWidth;
+      const displayedWidthRotated = displayedHeight;
+      const displayedHeightRotated = tempW;
+      
+      // Map to natural image coordinates
+      x = (x / displayedWidthRotated) * naturalWidth;
+      y = (y / displayedHeightRotated) * naturalHeight;
+    } else {
+      // For 0° and 180°, map directly
+      x = (x / displayedWidth) * naturalWidth;
+      y = (y / displayedHeight) * naturalHeight;
+    }
+    
+    // Clamp to natural image bounds
+    x = Math.max(0, Math.min(naturalWidth, x));
+    y = Math.max(0, Math.min(naturalHeight, y));
     setCropEnd({ x, y });
-  }, [cropStart, isCropMode]);
+  }, [cropStart, isCropMode, editState.rotation]);
 
   // End crop
   const handleCropEnd = useCallback(() => {
@@ -225,9 +287,11 @@ export function ImageEditModal({
       return;
     }
 
-    const imgRect = imageRef.current.getBoundingClientRect();
+    const img = imageRef.current;
+    const naturalWidth = img.naturalWidth;
+    const naturalHeight = img.naturalHeight;
     
-    // Crop coordinates are already relative to image
+    // Crop coordinates are already in natural image space
     const x1 = Math.min(cropStart.x, cropEnd.x);
     const y1 = Math.min(cropStart.y, cropEnd.y);
     const x2 = Math.max(cropStart.x, cropEnd.x);
@@ -237,16 +301,13 @@ export function ImageEditModal({
     const height = y2 - y1;
 
     if (width > 10 && height > 10) {
-      // Convert to percentage of image dimensions
-      const imgWidth = imgRect.width;
-      const imgHeight = imgRect.height;
-      
+      // Convert to percentage of natural image dimensions
       updateEditState({
         crop: {
-          x: (x1 / imgWidth) * 100,
-          y: (y1 / imgHeight) * 100,
-          width: (width / imgWidth) * 100,
-          height: (height / imgHeight) * 100,
+          x: (x1 / naturalWidth) * 100,
+          y: (y1 / naturalHeight) * 100,
+          width: (width / naturalWidth) * 100,
+          height: (height / naturalHeight) * 100,
         },
       });
     }
@@ -420,9 +481,9 @@ export function ImageEditModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[100vw] w-screen h-screen max-h-screen p-0 gap-0 translate-x-[-50%] translate-y-[-50%] left-1/2 top-1/2 rounded-none">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2">
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-slate-900">Edit Image</h2>
+        <div className="flex items-center justify-between border-b border-slate-200 px-3 py-1.5">
+          <div className="flex items-center gap-1.5">
+            <h2 className="text-xs font-semibold text-slate-900">Edit Image</h2>
             {/* Previous/Next Navigation */}
             <div className="flex items-center gap-0.5">
               <Button
@@ -431,11 +492,11 @@ export function ImageEditModal({
                 size="sm"
                 disabled={!hasPrevious}
                 title="Previous image"
-                className="h-7 w-7 p-0"
+                className="h-6 w-6 p-0"
               >
-                <ChevronLeft className="size-4" />
+                <ChevronLeft className="size-3.5" />
               </Button>
-              <span className="text-xs text-slate-600 px-1.5">
+              <span className="text-[10px] text-slate-600 px-1">
                 {currentIndex + 1}/{allImages.length}
               </span>
               <Button
@@ -444,21 +505,21 @@ export function ImageEditModal({
                 size="sm"
                 disabled={!hasNext}
                 title="Next image"
-                className="h-7 w-7 p-0"
+                className="h-6 w-6 p-0"
               >
-                <ChevronRight className="size-4" />
+                <ChevronRight className="size-3.5" />
               </Button>
             </div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Button onClick={handleReset} variant="ghost" size="sm" disabled={!hasChanges} className="h-7 px-2 text-xs">
+          <div className="flex items-center gap-1">
+            <Button onClick={handleReset} variant="ghost" size="sm" disabled={!hasChanges} className="h-6 px-2 text-[10px]">
               Reset
             </Button>
-            <Button onClick={onClose} variant="ghost" size="sm" className="h-7 px-2 text-xs">
+            <Button onClick={onClose} variant="ghost" size="sm" className="h-6 px-2 text-[10px]">
               Cancel
             </Button>
-            <Button onClick={handleSave} size="sm" disabled={!hasChanges} className="h-7 px-3 text-xs">
-              <Save className="mr-1.5 size-3" />
+            <Button onClick={handleSave} size="sm" disabled={!hasChanges} className="h-6 px-2 text-[10px]">
+              <Save className="mr-1 size-3" />
               Save
             </Button>
           </div>
@@ -590,17 +651,52 @@ export function ImageEditModal({
                 />
 
                 {/* Crop Overlay (while dragging) */}
-                {isCropMode && cropStart && cropEnd && imageRef.current && (
-                  <div
-                    className="absolute border-2 border-blue-500 bg-blue-500/20 pointer-events-none z-10"
-                    style={{
-                      left: `${Math.min(cropStart.x, cropEnd.x)}px`,
-                      top: `${Math.min(cropStart.y, cropEnd.y)}px`,
-                      width: `${Math.abs(cropEnd.x - cropStart.x)}px`,
-                      height: `${Math.abs(cropEnd.y - cropStart.y)}px`,
-                    }}
-                  />
-                )}
+                {isCropMode && cropStart && cropEnd && imageRef.current && (() => {
+                  const img = imageRef.current;
+                  const naturalWidth = img.naturalWidth;
+                  const naturalHeight = img.naturalHeight;
+                  const displayedWidth = img.offsetWidth;
+                  const displayedHeight = img.offsetHeight;
+                  
+                  // Convert natural image coordinates back to displayed coordinates
+                  let x1 = cropStart.x;
+                  let y1 = cropStart.y;
+                  let x2 = cropEnd.x;
+                  let y2 = cropEnd.y;
+                  
+                  const rotation = editState.rotation;
+                  if (rotation === 90 || rotation === 270) {
+                    // Convert from natural to displayed, accounting for rotation
+                    const scaleX = displayedHeight / naturalWidth;
+                    const scaleY = displayedWidth / naturalHeight;
+                    
+                    // Transform coordinates
+                    const tempX1 = x1;
+                    const tempX2 = x2;
+                    x1 = y1 * scaleX;
+                    y1 = (naturalWidth - tempX1) * scaleY;
+                    x2 = y2 * scaleX;
+                    y2 = (naturalWidth - tempX2) * scaleY;
+                  } else {
+                    // Direct conversion
+                    x1 = (x1 / naturalWidth) * displayedWidth;
+                    y1 = (y1 / naturalHeight) * displayedHeight;
+                    x2 = (x2 / naturalWidth) * displayedWidth;
+                    y2 = (y2 / naturalHeight) * displayedHeight;
+                  }
+                  
+                  return (
+                    <div
+                      className="absolute border-2 border-blue-500 bg-blue-500/20 pointer-events-none z-10"
+                      style={{
+                        left: `${Math.min(x1, x2)}px`,
+                        top: `${Math.min(y1, y2)}px`,
+                        width: `${Math.abs(x2 - x1)}px`,
+                        height: `${Math.abs(y2 - y1)}px`,
+                      }}
+                    />
+                  );
+                })()}
 
                 {/* Arrow Preview (while dragging) */}
                 {isArrowDragging && arrowStart && arrowEnd && imageRef.current && (
@@ -638,17 +734,56 @@ export function ImageEditModal({
                 )}
 
                 {/* Crop Display (saved crop) */}
-                {editState.crop && !isCropMode && imageRef.current && (
-                  <div
-                    className="absolute border-2 border-dashed border-purple-500 bg-purple-500/10 pointer-events-none z-10"
-                    style={{
-                      left: `${editState.crop.x}%`,
-                      top: `${editState.crop.y}%`,
-                      width: `${editState.crop.width}%`,
-                      height: `${editState.crop.height}%`,
-                    }}
-                  />
-                )}
+                {editState.crop && !isCropMode && imageRef.current && (() => {
+                  const img = imageRef.current;
+                  const naturalWidth = img.naturalWidth;
+                  const naturalHeight = img.naturalHeight;
+                  const displayedWidth = img.offsetWidth;
+                  const displayedHeight = img.offsetHeight;
+                  
+                  // Convert percentage of natural image to displayed coordinates
+                  const cropX = (editState.crop.x / 100) * naturalWidth;
+                  const cropY = (editState.crop.y / 100) * naturalHeight;
+                  const cropWidth = (editState.crop.width / 100) * naturalWidth;
+                  const cropHeight = (editState.crop.height / 100) * naturalHeight;
+                  
+                  const rotation = editState.rotation;
+                  let x1 = cropX;
+                  let y1 = cropY;
+                  let width = cropWidth;
+                  let height = cropHeight;
+                  
+                  if (rotation === 90 || rotation === 270) {
+                    // Convert from natural to displayed, accounting for rotation
+                    const scaleX = displayedHeight / naturalWidth;
+                    const scaleY = displayedWidth / naturalHeight;
+                    
+                    // Transform coordinates
+                    const tempX = x1;
+                    x1 = y1 * scaleX;
+                    y1 = (naturalWidth - tempX - cropWidth) * scaleY;
+                    width = cropHeight * scaleX;
+                    height = cropWidth * scaleY;
+                  } else {
+                    // Direct conversion
+                    x1 = (cropX / naturalWidth) * displayedWidth;
+                    y1 = (cropY / naturalHeight) * displayedHeight;
+                    width = (cropWidth / naturalWidth) * displayedWidth;
+                    height = (cropHeight / naturalHeight) * displayedHeight;
+                  }
+                  
+                  return (
+                    <div
+                      className="absolute border-2 border-dashed border-purple-500 bg-purple-500/10 pointer-events-none z-10"
+                      style={{
+                        left: `${x1}px`,
+                        top: `${y1}px`,
+                        width: `${width}px`,
+                        height: `${height}px`,
+                      }}
+                    />
+                  );
+                })()}
 
                 {/* Arrows */}
                 {editState.arrows.length > 0 && imageRef.current && (
