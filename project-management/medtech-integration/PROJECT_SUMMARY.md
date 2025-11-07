@@ -363,6 +363,8 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 
 **Note**: Solo founder/developer context — technical work aligns with skills; clear revenue path makes this high ROI activity.
 
+**Action Plan**: See `IMMEDIATE_ACTION_PLAN.md` for step-by-step next actions (4-8 hours to completion).
+
 ## Next Steps
 
 ### Immediate (This Week)
