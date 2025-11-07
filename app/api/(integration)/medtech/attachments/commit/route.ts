@@ -15,7 +15,7 @@ import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 import { alexApiClient, generateCorrelationId } from '@/src/lib/services/medtech';
 import type { CommitRequest, CommitResponse } from '@/src/medtech/images-widget/types';
-import type { FhirMedia, FhirBundle, FhirEncounter, FhirPatient } from '@/src/lib/services/medtech/types';
+import type { FhirMedia, FhirEncounter, FhirPatient } from '@/src/lib/services/medtech/types';
 
 // Initialize S3 client
 const s3Client = new S3Client({
