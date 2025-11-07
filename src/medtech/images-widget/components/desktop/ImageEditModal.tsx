@@ -82,22 +82,24 @@ export function ImageEditModal({
             // Assume a default length of 5% for legacy arrows
             const length = 5;
             const angleRad = (arrow.angle * Math.PI) / 180;
+            const x = typeof arrow.x === 'number' ? arrow.x : 0;
+            const y = typeof arrow.y === 'number' ? arrow.y : 0;
             return {
               id: arrow.id,
-              x1: arrow.x,
-              y1: arrow.y,
-              x2: arrow.x + (length * Math.cos(angleRad)),
-              y2: arrow.y + (length * Math.sin(angleRad)),
+              x1: x,
+              y1: y,
+              x2: x + (length * Math.cos(angleRad)),
+              y2: y + (length * Math.sin(angleRad)),
             };
           }
           // New format: already has x1, y1, x2, y2
           if ('x1' in arrow && 'y1' in arrow && 'x2' in arrow && 'y2' in arrow) {
             return {
               id: arrow.id,
-              x1: arrow.x1,
-              y1: arrow.y1,
-              x2: arrow.x2,
-              y2: arrow.y2,
+              x1: typeof arrow.x1 === 'number' ? arrow.x1 : 0,
+              y1: typeof arrow.y1 === 'number' ? arrow.y1 : 0,
+              x2: typeof arrow.x2 === 'number' ? arrow.x2 : 0,
+              y2: typeof arrow.y2 === 'number' ? arrow.y2 : 0,
             };
           }
           // Fallback: create a default arrow if format is unknown
