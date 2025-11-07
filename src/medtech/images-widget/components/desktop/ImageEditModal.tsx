@@ -155,12 +155,11 @@ export function ImageEditModal({
 
   // Start crop
   const handleCropStart = useCallback((e: React.MouseEvent) => {
-    if (!containerRef.current || !imageRef.current || activeTool !== 'crop') return;
+    if (!imageRef.current || activeTool !== 'crop') return;
     e.preventDefault();
     e.stopPropagation();
     
     const imgRect = imageRef.current.getBoundingClientRect();
-    const containerRect = containerRef.current.getBoundingClientRect();
     
     // Calculate position relative to image
     const x = e.clientX - imgRect.left;
