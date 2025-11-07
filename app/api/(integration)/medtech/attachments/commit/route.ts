@@ -11,20 +11,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { v4 as uuidv4 } from 'uuid';
 import { alexApiClient, generateCorrelationId } from '@/src/lib/services/medtech';
 import type { CommitRequest, CommitResponse } from '@/src/medtech/images-widget/types';
 import type { FhirMedia, FhirEncounter, FhirPatient } from '@/src/lib/services/medtech/types';
-
-// Initialize S3 client
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION || 'ap-southeast-2',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-});
 
 const BUCKET_NAME = process.env.S3_BUCKET_NAME!;
 
@@ -57,47 +46,6 @@ async function getEncounterInfo(encounterId: string, correlationId: string): Pro
   );
 
   return { encounter, patient };
-}
-
-/**
- * Upload file to S3 and return URL
- * 
- * Note: For MVP, we assume files are sent as base64 data.
- * In production, files should be uploaded to S3 first via presigned URLs,
- * and this endpoint should receive S3 keys/URLs instead.
- */
-async function uploadFileToS3(
-  fileData: string, // base64 encoded
-  contentType: string,
-  filename: string,
-): Promise<string> {
-  // Decode base64
-  const buffer = Buffer.from(fileData, 'base64');
-
-  // Generate S3 key (medtech-images/encounterId/filename)
-  const timestamp = Date.now();
-  const fileExtension = filename.split('.').pop() || 'jpg';
-  const key = `medtech-images/${timestamp}-${uuidv4()}.${fileExtension}`;
-
-  // Upload to S3
-  const command = new PutObjectCommand({
-    Bucket: BUCKET_NAME,
-    Key: key,
-    Body: buffer,
-    ContentType: contentType,
-    ServerSideEncryption: 'AES256',
-    Metadata: {
-      'upload-type': 'medtech',
-      'upload-timestamp': timestamp.toString(),
-    },
-  });
-
-  await s3Client.send(command);
-
-  // Return S3 URL (public URL or presigned URL)
-  // For now, return key - caller will construct URL
-  // In production, generate presigned URL or use public bucket
-  return `s3://${BUCKET_NAME}/${key}`;
 }
 
 /**
