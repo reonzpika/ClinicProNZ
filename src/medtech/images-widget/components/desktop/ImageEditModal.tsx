@@ -16,6 +16,8 @@ import { RotateCw, RotateCcw, Crop, ArrowRight, Undo2, Redo2, Save, ChevronLeft,
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
+  DialogDescription,
 } from '@/src/shared/components/ui/dialog';
 import { Button } from '@/src/shared/components/ui/button';
 import type { WidgetImage } from '../../types';
@@ -86,35 +88,69 @@ export function ImageEditModal({
 
   // Update stage size when container resizes
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!isOpen) {
+      setStageSize({ width: 0, height: 0 });
+      return;
+    }
     
     const updateSize = () => {
       if (containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
-        setStageSize({
-          width: rect.width,
-          height: rect.height,
-        });
+        if (rect.width > 0 && rect.height > 0) {
+          setStageSize({
+            width: rect.width,
+            height: rect.height,
+          });
+        }
       }
     };
     
-    // Initial size calculation
+    let resizeObserver: ResizeObserver | null = null;
+    let timeoutId: NodeJS.Timeout | null = null;
+    let rafId: number | null = null;
+    
+    // Try immediate update
     updateSize();
     
-    // Use ResizeObserver for more reliable size tracking
-    const resizeObserver = new ResizeObserver(() => {
+    // Use requestAnimationFrame for next frame
+    rafId = requestAnimationFrame(() => {
       updateSize();
+      
+      // Set up ResizeObserver if container is available
+      if (containerRef.current) {
+        resizeObserver = new ResizeObserver(() => {
+          updateSize();
+        });
+        resizeObserver.observe(containerRef.current);
+      }
     });
     
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
-    }
+    // Also try after a small delay as fallback
+    timeoutId = setTimeout(() => {
+      updateSize();
+      
+      // Set up ResizeObserver if not already set up
+      if (containerRef.current && !resizeObserver) {
+        resizeObserver = new ResizeObserver(() => {
+          updateSize();
+        });
+        resizeObserver.observe(containerRef.current);
+      }
+    }, 100);
     
-    // Fallback to window resize
+    // Listen to window resize
     window.addEventListener('resize', updateSize);
     
     return () => {
-      resizeObserver.disconnect();
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
       window.removeEventListener('resize', updateSize);
     };
   }, [isOpen]); // Re-run when modal opens
@@ -487,13 +523,15 @@ export function ImageEditModal({
     }
   }, [currentImageId, allImages, editState, updateMetadata, onImageSelect]);
 
-  if (!currentImage || !imageElement || stageSize.width === 0 || stageSize.height === 0) {
+  if (!currentImage || !imageElement) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-[100vw] w-screen h-screen max-h-screen p-0 gap-0 translate-x-[-50%] translate-y-[-50%] left-1/2 top-1/2 rounded-none">
+          <DialogTitle className="sr-only">Edit Image</DialogTitle>
+          <DialogDescription className="sr-only">Image editing modal</DialogDescription>
           <div className="flex h-full items-center justify-center">
             <div className="text-center">
-              <p className="text-slate-600">Loading...</p>
+              <p className="text-slate-600">Loading image...</p>
             </div>
           </div>
         </DialogContent>
@@ -514,6 +552,8 @@ export function ImageEditModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[100vw] w-screen h-screen max-h-screen p-0 gap-0 translate-x-[-50%] translate-y-[-50%] left-1/2 top-1/2 rounded-none">
+        <DialogTitle className="sr-only">Edit Image</DialogTitle>
+        <DialogDescription className="sr-only">Image editing modal with rotation, crop, and arrow tools</DialogDescription>
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-200 px-3 py-1.5">
           <div className="flex items-center gap-1.5">
@@ -666,7 +706,7 @@ export function ImageEditModal({
             className="flex-1 relative overflow-hidden bg-slate-100"
             style={{ cursor }}
           >
-            {stageSize.width > 0 && stageSize.height > 0 && (
+            {stageSize.width > 0 && stageSize.height > 0 ? (
               <Stage
                 ref={stageRef}
                 width={stageSize.width}
@@ -794,6 +834,10 @@ export function ImageEditModal({
                 })}
               </Layer>
             </Stage>
+            ) : (
+              <div className="flex h-full items-center justify-center">
+                <p className="text-slate-600">Initializing...</p>
+              </div>
             )}
           </div>
         </div>
