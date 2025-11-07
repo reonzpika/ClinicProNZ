@@ -16,19 +16,6 @@ import type { FhirBundle, FhirLocation } from '@/src/lib/services/medtech/types'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-// Add FhirLocation type if not exists
-interface FhirLocation {
-  resourceType: 'Location'
-  id?: string
-  identifier?: Array<{
-    system?: string
-    value: string
-  }>
-  name?: string
-  status?: 'active' | 'suspended' | 'inactive'
-  description?: string
-}
-
 export async function GET(request: NextRequest) {
   const correlationId = generateCorrelationId()
   const startTime = Date.now()

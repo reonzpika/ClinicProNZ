@@ -112,6 +112,24 @@ export interface FhirMedia {
   }
 }
 
+export interface FhirLocation {
+  resourceType: 'Location'
+  id?: string
+  identifier?: FhirIdentifier[]
+  name?: string
+  status?: 'active' | 'suspended' | 'inactive'
+  description?: string
+  address?: {
+    use?: 'home' | 'work' | 'temp' | 'old'
+    line?: string[]
+    city?: string
+    postalCode?: string
+    country?: string
+  }
+  type?: FhirCodeableConcept
+  physicalType?: FhirCodeableConcept
+}
+
 export interface FhirTask {
   resourceType: 'Task'
   id?: string
