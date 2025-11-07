@@ -237,6 +237,13 @@ Medtech ALEX / External Services
 
 ## Marketing, Growth & Monetisation [2025-11-07]
 
+### Competitive Landscape & Market Reality [2025-11-07]
+- **Competitive Market**: Heidi offers freemium model; other paid competitors already integrated into Medtech
+- **Market Challenge**: Difficult to acquire paid customers in competitive landscape
+- **Current Status**: Product is functional and used daily by founder; helpful for own work
+- **Strategic Question**: Whether marketing/growth investment is worth ROI given competition vs. focusing on other projects
+- **Note**: Solo founder/developer context — limited time/resources; need to prioritise highest ROI activities
+
 ### Positioning & ICP
 - **Ideal Customer Profile (NZ)**: General practices (1–10 GPs), practice managers, and GP owners prioritising quality documentation and reduced admin burden.
 - **Positioning**: "ClinicPro helps NZ GPs produce consistent, high‑quality notes in minutes — freeing time for patient care." Differentiators: clinical note quality, NZ‑context prompts, minimal setup, and Medtech upsell path.

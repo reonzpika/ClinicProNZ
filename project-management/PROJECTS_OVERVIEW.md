@@ -18,17 +18,19 @@ tags:
 
 **Last Updated**: [2025-11-07]
 
+**Context Note**: Solo founder/developer — limited time/resources require prioritisation of highest ROI activities. Technical work aligns with skills; marketing/sales activities have higher opportunity cost.
+
 ---
 
 ## Active Projects Index
 
 | Project Name | Folder | Stage | Owner | Last Updated | Link to Summary |
 |--------------|--------|-------|-------|--------------|-----------------|
-| ClinicPro SaaS | `clinicpro` | Operational | Development Team | 2025-11-07 | [PROJECT_SUMMARY.md](./clinicpro/PROJECT_SUMMARY.md) |
-| Medtech ALEX Integration | `medtech-integration` | Build | Development Team | 2025-01-15 | [PROJECT_SUMMARY.md](./medtech-integration/PROJECT_SUMMARY.md) |
-| GP Voices Community Site | `gp-voices-community` | Build | ClinicPro Engineering | 2025-01-15 | [PROJECT_SUMMARY.md](./gp-voices-community/PROJECT_SUMMARY.md) |
-| R&D Grant Submission | `new_to_r&d_grant` | Validation | TBD | 2025-11-07 | [PROJECT_SUMMARY.md](./new_to_r&d_grant/PROJECT_SUMMARY.md) |
-| Project Management AI SaaS | `project-management-ai-saas` | Validation | TBD | 2025-11-06 | [PROJECT_SUMMARY.md](./project-management-ai-saas/PROJECT_SUMMARY.md) |
+| ClinicPro SaaS | `clinicpro` | Operational | Solo Founder/Developer | 2025-11-07 | [PROJECT_SUMMARY.md](./clinicpro/PROJECT_SUMMARY.md) |
+| Medtech ALEX Integration | `medtech-integration` | Build | Solo Founder/Developer | 2025-11-07 | [PROJECT_SUMMARY.md](./medtech-integration/PROJECT_SUMMARY.md) |
+| GP Voices Community Site | `gp-voices-community` | Build | Solo Founder/Developer | 2025-01-15 | [PROJECT_SUMMARY.md](./gp-voices-community/PROJECT_SUMMARY.md) |
+| R&D Grant Submission | `new_to_r&d_grant` | Validation | Solo Founder/Developer | 2025-11-07 | [PROJECT_SUMMARY.md](./new_to_r&d_grant/PROJECT_SUMMARY.md) |
+| Project Management AI SaaS | `project-management-ai-saas` | Validation | Solo Founder/Developer | 2025-11-06 | [PROJECT_SUMMARY.md](./project-management-ai-saas/PROJECT_SUMMARY.md) |
 
 ---
 
@@ -37,7 +39,8 @@ tags:
 ### Recent Achievements Across Projects
 *[AI will auto-populate this section based on recent milestones and updates]*
 
-- **2025-11-07**: ClinicPro — Marketing, Growth & Monetisation plan added; pricing/outreach/webinar scheduled (Nov 12–21)
+- **2025-11-07**: Strategic prioritisation review — Medtech Integration identified as high ROI revenue path; ClinicPro marketing ROI questioned given competitive market
+- **2025-11-07**: Solo founder/developer context noted — limited time/resources require focus on highest ROI activities
 - **2025-01-15**: GP Voices Community project initialised — Theme components implemented, configuration and deployment pending
 - **2025-01-15**: Project management system installed — NexWave system adapted for ClinicPro workspace
 - **2025-01-15**: Medtech integration gateway OAuth service completed (Oct 31)
@@ -113,9 +116,10 @@ tags:
 ### ClinicPro SaaS
 - **Folder**: `clinicpro`
 - **Stage**: Operational
-- **Owner**: Development Team
+- **Owner**: Solo Founder/Developer
 - **Last Updated**: 2025-11-07
 - **Summary**: Full-stack Next.js SaaS application providing AI-assisted medical scribing for New Zealand GPs. Includes consultation note generation, clinical image analysis, dual recording (desktop/mobile) with transcription, real-time updates, and Clerk-based authentication. Stripe billing configured. Medtech integration is positioned as an upsell. RBAC is currently not enforced beyond authentication. Note: BFF (api.clinicpro.co.nz) is used only for Medtech integration flows; core app runs on Vercel serverless.
+- **Market Context**: Competitive market (Heidi freemium, paid competitors integrated into Medtech). Product functional and used daily by founder. Marketing ROI uncertain given competition.
 - **Key Dates**: 
   - Production deployment: Active
   - Latest feature: Clinical notes API improvements (Oct 2024)
@@ -126,9 +130,9 @@ tags:
 ### Medtech ALEX Integration
 - **Folder**: `medtech-integration`
 - **Stage**: Build
-- **Owner**: Development Team
-- **Last Updated**: 2025-01-15
-- **Summary**: Clinical images widget integration with Medtech Evolution/Medtech32 via ALEX API. Enables GPs to capture/upload photos from within Medtech, saved back to patient encounters via FHIR API.
+- **Owner**: Solo Founder/Developer
+- **Last Updated**: 2025-11-07
+- **Summary**: Clinical images widget integration with Medtech Evolution/Medtech32 via ALEX API. Enables GPs to capture/upload photos from within Medtech, saved back to patient encounters via FHIR API. **Revenue Strategy**: Modular features approach — images widget is first module. Once ready, can immediately pitch to Medtech's existing customer base (3,000+ GPs) for revenue. Clear revenue path with existing customer base.
 - **Key Dates**: 
   - OAuth service completed: Oct 31, 2024
   - BFF deployed: Oct 31, 2024
@@ -140,7 +144,7 @@ tags:
 ### GP Voices Community Site
 - **Folder**: `gp-voices-community`
 - **Stage**: Build
-- **Owner**: ClinicPro Engineering
+- **Owner**: Solo Founder/Developer
 - **Last Updated**: 2025-01-15
 - **Summary**: Mobile-first Discourse community platform for ClinicPro users (New Zealand GPs). Custom Discourse theme providing comment-first UX, AI-powered weekly summaries, tag-based content organisation, and Clerk OIDC authentication integration.
 - **Key Dates**: 
@@ -155,7 +159,7 @@ tags:
 ### R&D Grant Submission
 - **Folder**: `new_to_r&d_grant`
 - **Stage**: Validation
-- **Owner**: TBD
+- **Owner**: Solo Founder/Developer
 - **Last Updated**: 2025-11-07
 - **Summary**: R&D grant proposal for building NZ-sovereign clinical LLM for GP workflows (inbox management, coding, referrals, care gaps). 12-month project seeking $42,893 grant (40%) with $64,339 co-funding. Partnership development in progress with Medtech and Comprehensive Care PHO.
 - **Key Dates**: 
@@ -171,7 +175,7 @@ tags:
 ### Project Management AI SaaS
 - **Folder**: `project-management-ai-saas`
 - **Stage**: Validation
-- **Owner**: TBD
+- **Owner**: Solo Founder/Developer
 - **Last Updated**: 2025-11-06
 - **Summary**: AI co-founder for solo founders drowning in information. Targets first-time founders and side-hustlers struggling with info overload and unclear next steps. Provides structure + AI guidance to turn overwhelm into action. Tech: Next.js 14 + PostgreSQL + ChatGPT API.
 - **Key Dates**: 
