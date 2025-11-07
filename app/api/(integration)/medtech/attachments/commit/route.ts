@@ -52,7 +52,6 @@ async function getEncounterInfo(encounterId: string, correlationId: string): Pro
  * Create FHIR Media resource from file metadata
  */
 function createMediaResource(
-  fileId: string,
   s3Url: string,
   contentType: string,
   patientId: string,
@@ -190,7 +189,6 @@ export async function POST(request: NextRequest) {
 
         // Step 3: Create Media resource
         const mediaResource = createMediaResource(
-          file.fileId,
           s3Url,
           'image/jpeg', // TODO: Get from file metadata
           patientId,
