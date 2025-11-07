@@ -32,7 +32,7 @@ interface ImageEditModalProps {
 interface EditState {
   rotation: number;
   crop: { x: number; y: number; width: number; height: number } | null;
-  arrows: Array<{ id: string; x: number; y: number; angle: number }>;
+  arrows: Array<{ id: string; x1: number; y1: number; x2: number; y2: number }>;
 }
 
 interface HistoryState {
@@ -75,10 +75,24 @@ export function ImageEditModal({
       setEditState({
         rotation: edits.rotation || 0,
         crop: edits.crop || null,
-        arrows: (edits.arrows || []).map(arrow => ({
-          ...arrow,
-          angle: arrow.angle ?? 0,
-        })),
+        arrows: (edits.arrows || []).map(arrow => {
+          // Handle legacy arrows with angle (convert to x1, y1, x2, y2)
+          if ('angle' in arrow && typeof arrow.angle === 'number') {
+            // Legacy format: convert angle + position to end point
+            // Assume a default length of 5% for legacy arrows
+            const length = 5;
+            const angleRad = (arrow.angle * Math.PI) / 180;
+            return {
+              id: arrow.id,
+              x1: arrow.x,
+              y1: arrow.y,
+              x2: arrow.x + (length * Math.cos(angleRad)),
+              y2: arrow.y + (length * Math.sin(angleRad)),
+            };
+          }
+          // New format: already has x1, y1, x2, y2
+          return arrow as { id: string; x1: number; y1: number; x2: number; y2: number };
+        }),
       });
       // Reset history when switching images
       setHistory([]);
@@ -270,18 +284,18 @@ export function ImageEditModal({
     const distance = Math.sqrt(dx * dx + dy * dy);
     
     if (distance > 10) {
-      // Calculate angle in degrees (0° = right, 90° = down)
-      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-      
-      // Convert start position to percentage
-      const x = (arrowStart.x / imgRect.width) * 100;
-      const y = (arrowStart.y / imgRect.height) * 100;
+      // Convert both start and end positions to percentages
+      const x1 = (arrowStart.x / imgRect.width) * 100;
+      const y1 = (arrowStart.y / imgRect.height) * 100;
+      const x2 = (arrowEnd.x / imgRect.width) * 100;
+      const y2 = (arrowEnd.y / imgRect.height) * 100;
 
       const newArrow = {
         id: `arrow-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-        x: Math.max(0, Math.min(100, x)),
-        y: Math.max(0, Math.min(100, y)),
-        angle,
+        x1: Math.max(0, Math.min(100, x1)),
+        y1: Math.max(0, Math.min(100, y1)),
+        x2: Math.max(0, Math.min(100, x2)),
+        y2: Math.max(0, Math.min(100, y2)),
       };
 
       updateEditState({
@@ -388,43 +402,45 @@ export function ImageEditModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[100vw] w-screen h-screen max-h-screen p-0 gap-0 translate-x-[-50%] translate-y-[-50%] left-1/2 top-1/2 rounded-none">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-          <div className="flex items-center gap-4">
-            <h2 className="text-lg font-semibold text-slate-900">Edit Image</h2>
+        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-2">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-slate-900">Edit Image</h2>
             {/* Previous/Next Navigation */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
               <Button
                 onClick={handlePrevious}
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 disabled={!hasPrevious}
                 title="Previous image"
+                className="h-7 w-7 p-0"
               >
                 <ChevronLeft className="size-4" />
               </Button>
-              <span className="text-sm text-slate-600 px-2">
-                {currentIndex + 1} / {allImages.length}
+              <span className="text-xs text-slate-600 px-1.5">
+                {currentIndex + 1}/{allImages.length}
               </span>
               <Button
                 onClick={handleNext}
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 disabled={!hasNext}
                 title="Next image"
+                className="h-7 w-7 p-0"
               >
                 <ChevronRight className="size-4" />
               </Button>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button onClick={handleReset} variant="outline" size="sm" disabled={!hasChanges}>
+          <div className="flex items-center gap-1.5">
+            <Button onClick={handleReset} variant="ghost" size="sm" disabled={!hasChanges} className="h-7 px-2 text-xs">
               Reset
             </Button>
-            <Button onClick={onClose} variant="outline" size="sm">
+            <Button onClick={onClose} variant="ghost" size="sm" className="h-7 px-2 text-xs">
               Cancel
             </Button>
-            <Button onClick={handleSave} size="sm" disabled={!hasChanges}>
-              <Save className="mr-2 size-4" />
+            <Button onClick={handleSave} size="sm" disabled={!hasChanges} className="h-7 px-3 text-xs">
+              <Save className="mr-1.5 size-3" />
               Save
             </Button>
           </div>
@@ -433,33 +449,35 @@ export function ImageEditModal({
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Toolbar */}
-          <div className="border-b border-slate-200 px-6 py-3 bg-white">
-            <div className="flex items-center gap-2">
+          <div className="border-b border-slate-200 px-4 py-2 bg-white">
+            <div className="flex items-center gap-1.5">
               {/* Rotate Tools */}
-              <div className="flex items-center gap-1 border-r border-slate-200 pr-2">
+              <div className="flex items-center gap-0.5 border-r border-slate-200 pr-1.5">
                 <Button
                   onClick={handleRotateCCW90}
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   title="Rotate 90° counter-clockwise"
+                  className="h-7 w-7 p-0"
                 >
                   <RotateCcw className="size-4" />
                 </Button>
                 <Button
                   onClick={handleRotate90}
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   title="Rotate 90° clockwise"
+                  className="h-7 w-7 p-0"
                 >
                   <RotateCw className="size-4" />
                 </Button>
                 {editState.rotation !== 0 && (
-                  <span className="text-xs text-slate-600 ml-2">{editState.rotation}°</span>
+                  <span className="text-xs text-slate-600 ml-1">{editState.rotation}°</span>
                 )}
               </div>
 
               {/* Crop Tool */}
-              <div className="flex items-center gap-1 border-r border-slate-200 pr-2">
+              <div className="flex items-center gap-0.5 border-r border-slate-200 pr-1.5">
                 <Button
                   onClick={() => {
                     setActiveTool(activeTool === 'crop' ? null : 'crop');
@@ -467,9 +485,10 @@ export function ImageEditModal({
                       setIsCropMode(false);
                     }
                   }}
-                  variant={activeTool === 'crop' ? 'default' : 'outline'}
+                  variant={activeTool === 'crop' ? 'default' : 'ghost'}
                   size="sm"
                   title="Crop"
+                  className="h-7 w-7 p-0"
                 >
                   <Crop className="size-4" />
                 </Button>
@@ -479,6 +498,7 @@ export function ImageEditModal({
                     variant="ghost"
                     size="sm"
                     title="Clear crop"
+                    className="h-7 px-2 text-xs"
                   >
                     Clear
                   </Button>
@@ -486,12 +506,13 @@ export function ImageEditModal({
               </div>
 
               {/* Arrow Tool */}
-              <div className="flex items-center gap-1 border-r border-slate-200 pr-2">
+              <div className="flex items-center gap-0.5 border-r border-slate-200 pr-1.5">
                 <Button
                   onClick={() => setActiveTool(activeTool === 'arrow' ? null : 'arrow')}
-                  variant={activeTool === 'arrow' ? 'default' : 'outline'}
+                  variant={activeTool === 'arrow' ? 'default' : 'ghost'}
                   size="sm"
                   title="Add arrow (click and drag on image)"
+                  className="h-7 w-7 p-0"
                 >
                   <ArrowRight className="size-4" />
                 </Button>
@@ -501,22 +522,24 @@ export function ImageEditModal({
               </div>
 
               {/* Undo/Redo */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5">
                 <Button
                   onClick={handleUndo}
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   disabled={!canUndo}
                   title="Undo"
+                  className="h-7 w-7 p-0"
                 >
                   <Undo2 className="size-4" />
                 </Button>
                 <Button
                   onClick={handleRedo}
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   disabled={!canRedo}
                   title="Redo"
+                  className="h-7 w-7 p-0"
                 >
                   <Redo2 className="size-4" />
                 </Button>
@@ -563,16 +586,37 @@ export function ImageEditModal({
 
                 {/* Arrow Preview (while dragging) */}
                 {isArrowDragging && arrowStart && arrowEnd && imageRef.current && (
-                  <div
-                    className="absolute pointer-events-none"
+                  <svg
+                    className="absolute pointer-events-none z-10"
                     style={{
-                      left: `${arrowStart.x}px`,
-                      top: `${arrowStart.y}px`,
-                      transform: `translate(-50%, -50%) rotate(${Math.atan2(arrowEnd.y - arrowStart.y, arrowEnd.x - arrowStart.x) * (180 / Math.PI)}deg)`,
+                      left: 0,
+                      top: 0,
+                      width: imageRef.current.offsetWidth,
+                      height: imageRef.current.offsetHeight,
                     }}
                   >
-                    <ArrowRight className="size-6 text-blue-500" />
-                  </div>
+                    <defs>
+                      <marker
+                        id="arrowhead-preview"
+                        markerWidth="10"
+                        markerHeight="10"
+                        refX="9"
+                        refY="3"
+                        orient="auto"
+                      >
+                        <polygon points="0 0, 10 3, 0 6" fill="#3b82f6" />
+                      </marker>
+                    </defs>
+                    <line
+                      x1={arrowStart.x}
+                      y1={arrowStart.y}
+                      x2={arrowEnd.x}
+                      y2={arrowEnd.y}
+                      stroke="#3b82f6"
+                      strokeWidth="2"
+                      markerEnd="url(#arrowhead-preview)"
+                    />
+                  </svg>
                 )}
 
                 {/* Crop Display (saved crop) */}
@@ -589,26 +633,61 @@ export function ImageEditModal({
                 )}
 
                 {/* Arrows */}
-                {editState.arrows.map((arrow) => (
-                  <div
-                    key={arrow.id}
-                    className="absolute pointer-events-auto cursor-pointer group"
+                {editState.arrows.length > 0 && imageRef.current && (
+                  <svg
+                    className="absolute pointer-events-none z-10"
                     style={{
-                      left: `${arrow.x}%`,
-                      top: `${arrow.y}%`,
-                      transform: `translate(-50%, -50%) rotate(${arrow.angle}deg)`,
+                      left: 0,
+                      top: 0,
+                      width: imageRef.current.offsetWidth,
+                      height: imageRef.current.offsetHeight,
                     }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (activeTool === 'arrow') {
-                        handleDeleteArrow(arrow.id);
-                      }
-                    }}
-                    title={activeTool === 'arrow' ? 'Click to delete' : ''}
                   >
-                    <ArrowRight className="size-6 text-red-500 group-hover:text-red-700" />
-                  </div>
-                ))}
+                    <defs>
+                      <marker
+                        id="arrowhead"
+                        markerWidth="10"
+                        markerHeight="10"
+                        refX="9"
+                        refY="3"
+                        orient="auto"
+                      >
+                        <polygon points="0 0, 10 3, 0 6" fill="#ef4444" />
+                      </marker>
+                    </defs>
+                    {editState.arrows.map((arrow) => {
+                      const imgWidth = imageRef.current!.offsetWidth;
+                      const imgHeight = imageRef.current!.offsetHeight;
+                      
+                      const x1 = (arrow.x1 / 100) * imgWidth;
+                      const y1 = (arrow.y1 / 100) * imgHeight;
+                      const x2 = (arrow.x2 / 100) * imgWidth;
+                      const y2 = (arrow.y2 / 100) * imgHeight;
+                      
+                      return (
+                        <g key={arrow.id}>
+                          <line
+                            x1={x1}
+                            y1={y1}
+                            x2={x2}
+                            y2={y2}
+                            stroke="#ef4444"
+                            strokeWidth="2"
+                            markerEnd="url(#arrowhead)"
+                            className="pointer-events-auto cursor-pointer hover:stroke-red-700"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (activeTool === 'arrow') {
+                                handleDeleteArrow(arrow.id);
+                              }
+                            }}
+                            title={activeTool === 'arrow' ? 'Click to delete' : ''}
+                          />
+                        </g>
+                      );
+                    })}
+                  </svg>
+                )}
               </div>
             </div>
           </div>
