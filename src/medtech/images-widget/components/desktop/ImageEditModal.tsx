@@ -683,7 +683,19 @@ export function ImageEditModal({
                       const y2 = (arrow.y2 / 100) * imgHeight;
                       
                       return (
-                        <g key={arrow.id}>
+                        <g 
+                          key={arrow.id}
+                          className="pointer-events-auto cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (activeTool === 'arrow') {
+                              handleDeleteArrow(arrow.id);
+                            }
+                          }}
+                        >
+                          {activeTool === 'arrow' && (
+                            <title>Click to delete</title>
+                          )}
                           <line
                             x1={x1}
                             y1={y1}
@@ -692,14 +704,7 @@ export function ImageEditModal({
                             stroke="#ef4444"
                             strokeWidth="2"
                             markerEnd="url(#arrowhead)"
-                            className="pointer-events-auto cursor-pointer hover:stroke-red-700"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (activeTool === 'arrow') {
-                                handleDeleteArrow(arrow.id);
-                              }
-                            }}
-                            title={activeTool === 'arrow' ? 'Click to delete' : ''}
+                            className="hover:stroke-red-700"
                           />
                         </g>
                       );
