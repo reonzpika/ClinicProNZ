@@ -244,9 +244,9 @@ export function ImageEditModal({
     const transform = getImageTransform();
     if (!transform.scale || !transform.naturalWidth || !transform.naturalHeight) return { x: 0, y: 0 };
     
-    // Account for rotation
-    const centerX = transform.x + transform.width / 2;
-    const centerY = transform.y + transform.height / 2;
+    // Image is centered at stage center
+    const centerX = stageSize.width / 2;
+    const centerY = stageSize.height / 2;
     
     // Translate to image center
     let x = stageX - centerX;
@@ -264,7 +264,7 @@ export function ImageEditModal({
     y = (rotatedY / transform.scale) + transform.naturalHeight / 2;
     
     return { x, y };
-  }, [getImageTransform, editState.rotation]);
+  }, [getImageTransform, editState.rotation, stageSize]);
 
   // Convert natural image coordinates to stage coordinates
   const naturalToStage = useCallback((naturalX: number, naturalY: number) => {
@@ -282,15 +282,15 @@ export function ImageEditModal({
     const rotatedX = x * cos - y * sin;
     const rotatedY = x * sin + y * cos;
     
-    // Translate to stage coordinates
-    const centerX = transform.x + transform.width / 2;
-    const centerY = transform.y + transform.height / 2;
+    // Translate to stage center
+    const centerX = stageSize.width / 2;
+    const centerY = stageSize.height / 2;
     
     return {
       x: rotatedX + centerX,
       y: rotatedY + centerY,
     };
-  }, [getImageTransform, editState.rotation]);
+  }, [getImageTransform, editState.rotation, stageSize]);
 
   // Handle stage mouse down
   const handleStageMouseDown = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
@@ -649,8 +649,8 @@ export function ImageEditModal({
                 {/* Image */}
                 {imageElement && (
                   <Group
-                    x={transform.x + transform.width / 2}
-                    y={transform.y + transform.height / 2}
+                    x={stageSize.width / 2}
+                    y={stageSize.height / 2}
                     rotation={editState.rotation}
                     offsetX={transform.width / 2}
                     offsetY={transform.height / 2}
