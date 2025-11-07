@@ -134,17 +134,17 @@ All credentials stored in Vercel environment variables (configured Oct 26):
 
 ## Test Artifacts
 
-Created test scripts for future testing:
+Created test scripts for future testing (located in `testing/` folder):
 
-1. **`/workspace/test-oauth.sh`**
+1. **`test-oauth.sh`**
    - Acquires OAuth access token
    - Usage: `./test-oauth.sh <CLIENT_SECRET>`
 
-2. **`/workspace/test-fhir-call.sh`**
+2. **`test-fhir-call.sh`**
    - Tests FHIR API call to ALEX UAT
    - Usage: `./test-fhir-call.sh [ACCESS_TOKEN]`
 
-3. **`/workspace/TEST_OAUTH_README.md`**
+3. **`TEST_OAUTH_README.md`**
    - Complete testing guide
    - Troubleshooting reference
    - Security best practices

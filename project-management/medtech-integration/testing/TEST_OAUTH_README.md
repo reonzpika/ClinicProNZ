@@ -225,6 +225,6 @@ Response (formatted):
 
 ## Reference
 
-- **Quickstart Guide**: `docs/medtech/medtech-alex-uat-quickstart.md`
+- **Quickstart Guide**: `../implementation/medtech-alex-uat-quickstart.md`
 - **ALEX API Docs**: https://alexapidoc.medtechglobal.com/
-- **Support**: Contact Medtech via email (template in `docs/medtech/email-draft-uat-testing-access.md`)
+- **Support**: Contact Medtech via email (template in `../admin/email-draft-uat-testing-access.md`)

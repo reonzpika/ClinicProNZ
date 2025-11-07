@@ -3,7 +3,7 @@ project_name: Medtech ALEX Integration
 project_stage: Build
 owner: Development Team
 last_updated: "2025-01-15"
-version: "0.3.0"
+version: "0.6.0"
 tags:
   - integration
   - medtech
@@ -19,9 +19,9 @@ summary: "Clinical images widget integration with Medtech Evolution/Medtech32 vi
 
 **Goal**: Build a clinical images widget that GPs launch from within Medtech Evolution/Medtech32 to capture/upload photos, which are then saved back to the patient's encounter in Medtech via ALEX API.
 
-**Current Stage**: Build — Partially blocked on external dependency
+**Current Stage**: Build — Ready for end-to-end testing
 
-**Status**: Active — OAuth infrastructure complete, awaiting Medtech firewall update
+**Status**: Active — All blockers resolved, ready for end-to-end testing
 
 ---
 
@@ -51,21 +51,58 @@ summary: "Clinical images widget integration with Medtech Evolution/Medtech32 vi
   - OAuth working ✅ (token acquisition successful)
 
 ### ⚠️ Blockers
-- **ALEX API Firewall** (Critical — blocking BFF connectivity)
-  - BFF IP (13.236.58.12) not allow-listed for ALEX API UAT
-  - Port 443 times out after 10 seconds
-  - Email sent to Medtech (Oct 31) requesting firewall update
-  - Status: Awaiting Medtech response (expected 3-5 business days)
+- **None** — All previous blockers resolved ✅
 
-### 📋 Awaiting Medtech Response
-1. **IP allow-listing for ALEX API** (Critical — blocking BFF)
-2. **UAT testing environment access** (optional — helpful for end-to-end testing)
-3. **Widget launch mechanism** documentation
-4. **Clinical metadata schema** (body site, laterality, view, type)
-5. **Full POST Media example** with clinical metadata
+### ✅ Recent Updates [2025-01-15]
+1. **IP Allow-listing Resolved** ✅
+   - Azure network security group manually added by Medtech
+   - BFF IP (13.236.58.12) now allow-listed for ALEX API UAT
+   - Status: Ready to test connectivity
+
+2. **Medtech Evolution Installed** ✅
+   - Test instance installed on desktop
+   - Login: ADM (blank password)
+   - **New Test Facility ID**: `F99669-C` (changed from `F2N060-E`)
+   - ALEX Connection: https://alexapidoc.medtechglobal.com/
+
+3. **Clinical Metadata Schema Clarified** ✅
+   - **Critical Finding**: Optional Media elements (body site, laterality, view type, image classification) **cannot be mapped** to Medtech Inbox fields
+   - **Workaround**: Embed metadata directly in JPG/PDF data if needed
+   - **Encounter Linkage**: Each Media document automatically creates a Daily Record entry
+   - **Impact**: Frontend can still capture metadata for internal use, but won't appear in Medtech Inbox fields
+
+### 📋 Remaining Questions
+1. **Widget launch mechanism** — How to launch widget from Medtech Evolution (iFrame, new tab, etc.)
+2. **Encounter context passing** — How to receive patient/encounter ID from Medtech
 
 ### 🔄 In Progress
-- Frontend widget development (can proceed with mock backend — not blocked)
+- Frontend widget development (Phase 1 complete, Phase 2 in progress — not blocked)
+
+### ✅ Frontend Widget Status [2025-10-31]
+**Phase 1: Standalone Widget** — Complete
+- Desktop UI with capture, edit, metadata entry, commit flow
+- Mobile QR handoff flow
+- Image compression service (<1MB)
+- Metadata chips (laterality, body site, view, type)
+- Required field validation with visual indicators
+- Upload progress and success feedback
+- Metadata copy feature (apply to multiple images)
+- Streamlined commit flow (commit all, no selection needed)
+- Badge system (red=invalid, green=committed)
+- Mock backend API routes
+
+**Phase 2: Frontend Enhancements** — In Progress
+- Error handling improvements (per-image errors with retry)
+- Image editor (crop, rotate, annotations) — planned
+- Keyboard shortcuts — planned
+- Mobile per-image metadata — planned
+
+**Status**: Widget functional with mock backend, ready for Gateway integration once firewall unblocked
+
+**Implementation Details**:
+- **Mock Mode**: All API routes currently return mock responses (controlled by `NEXT_PUBLIC_MEDTECH_USE_MOCK` env var)
+- **Real Infrastructure**: OAuth service and ALEX API client are fully implemented and ready to use
+- **Integration Point**: `/app/api/(integration)/medtech/attachments/commit/route.ts` is the main integration point (currently mock, ready to connect to real ALEX API)
 
 ---
 
@@ -118,16 +155,27 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 - [x] BFF infrastructure deployed (Oct 31)
 - [x] Correlation ID generation (Oct 31)
 
-### Phase 2: Gateway Development ⏳ (Week 2-3)
+### Phase 2: Gateway Development ✅ (Week 2-3) — Infrastructure Complete
+- [x] OAuth service implemented (TypeScript) (Oct 31)
 - [x] OAuth service deployed to BFF (Oct 31)
-- [ ] GET Patient test successful (blocked by firewall)
-- [ ] Clinical metadata schema confirmed (awaiting Medtech response)
-- [ ] POST Media endpoint implementation (blocked until metadata schema)
+- [x] ALEX API client implemented with header injection (Oct 31)
+- [x] Correlation ID generation implemented (Oct 31)
+- [x] Test endpoints created (`/api/medtech/test`, `/api/medtech/token-info`) (Oct 31)
+- [x] FHIR type definitions created (Oct 31)
+- [x] IP allow-listing resolved (Jan 15, 2025)
+- [x] Clinical metadata schema clarified (Jan 15, 2025)
+- [ ] GET Patient test successful (ready to test now)
+- [ ] POST Media endpoint implementation (ready to implement — metadata limitation understood)
 
-### Phase 3: Frontend Widget 🔄 (Week 3-4)
-- [ ] Frontend UI mockups (can proceed)
-- [ ] Desktop capture/edit/commit flow (not blocked)
-- [ ] Mobile QR handoff (not blocked)
+### Phase 3: Frontend Widget ✅ (Week 3-4) — Phase 1 Complete
+- [x] Frontend UI implemented (2025-10-31)
+- [x] Desktop capture/edit/commit flow (2025-10-31)
+- [x] Mobile QR handoff (2025-10-31)
+- [x] Required field validation (2025-10-31)
+- [x] Metadata copy feature (2025-10-31)
+- [x] Streamlined commit flow (2025-10-31)
+- [ ] Image editor (crop, rotate, annotations) — planned
+- [ ] Error handling improvements — planned
 - [ ] Integration with Gateway API (after Gateway complete)
 
 ### Phase 4: Testing & Launch (Week 4-6)
@@ -144,7 +192,7 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 - **Client ID**: `7685ade3-f1ae-4e86-a398-fe7809c0fed1`
 - **Tenant ID**: `8a024e99-aba3-4b25-b875-28b0c0ca6096`
 - **API Scope**: `api://bf7945a6-e812-4121-898a-76fea7c13f4d/.default`
-- **Facility ID (UAT)**: `F2N060-E`
+- **Facility ID (UAT)**: `F99669-C` (updated Jan 15, 2025 — was `F2N060-E`)
 - **Token Expiry**: 3599 seconds (~60 minutes)
 - **Cache TTL**: 55 minutes (auto-refresh before expiry)
 
@@ -153,15 +201,65 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 - **Production**: `https://alexapi.medtechglobal.com/FHIR`
 - **BFF**: `https://api.clinicpro.co.nz` (Static IP: 13.236.58.12)
 
-### Key Services
+### Key Services (Infrastructure)
 - **OAuth Token Service**: `/src/lib/services/medtech/oauth-token-service.ts`
+  - 55-minute token cache with auto-refresh
+  - Thread-safe for concurrent requests
+  - Automatic retry on 401 errors
+  - Token info endpoint for monitoring
 - **ALEX API Client**: `/src/lib/services/medtech/alex-api-client.ts`
+  - Auto-injects required headers (`mt-facilityid`, `mt-correlationid`, `mt-appid`)
+  - OAuth token management integration
+  - FHIR OperationOutcome error mapping
+  - Retry logic for transient failures (401, 429, 503)
 - **Correlation ID**: `/src/lib/services/medtech/correlation-id.ts`
+  - UUID v4 generation
+  - Header extraction support
 - **FHIR Types**: `/src/lib/services/medtech/types.ts`
+  - TypeScript definitions for FHIR R4 resources (Patient, Media, Task, Bundle, etc.)
 
-### Test Endpoints
-- `GET /api/medtech/test?nhi=ZZZ0016` — Test FHIR connectivity
-- `GET /api/medtech/token-info` — OAuth token cache status
+### API Endpoints (Next.js Routes)
+**Test & Monitoring**:
+- `GET /api/medtech/test?nhi=ZZZ0016` — Test FHIR connectivity (uses real ALEX API client)
+- `GET /api/medtech/token-info` — OAuth token cache status (monitoring)
+
+**Widget API** (currently mock implementations):
+- `GET /api/medtech/capabilities` — Feature flags and coded value lists
+- `POST /api/medtech/mobile/initiate` — Generate QR code for mobile handoff
+- `POST /api/medtech/attachments/upload-initiate` — Prepare file metadata
+- `POST /api/medtech/attachments/commit` — Commit images to encounter (mock, ready for real ALEX integration)
+
+### Frontend Widget Components
+**Location**: `/src/medtech/images-widget/`
+
+**Desktop Components**:
+- `CapturePanel.tsx` — File upload and drag & drop
+- `ThumbnailStrip.tsx` — Horizontal thumbnail navigation with badges
+- `ImagePreview.tsx` — Image display with zoom controls
+- `MetadataForm.tsx` — Metadata entry form
+- `MetadataChips.tsx` — Laterality, body site, view, type chips
+- `ApplyMetadataModal.tsx` — Bulk metadata application modal
+- `CommitDialog.tsx` — Commit confirmation with inbox/task options
+- `QRPanel.tsx` — QR code generation for mobile handoff
+- `ErrorModal.tsx` — Error display and retry
+- `PartialFailureDialog.tsx` — Partial commit failure handling
+- `ImageEditModal.tsx` — Image editing (planned)
+
+**Mobile Components**:
+- Mobile page at `/app/(medtech)/medtech-images/mobile/page.tsx`
+
+**Hooks**:
+- `useCapabilities.ts` — Fetch feature flags
+- `useCommit.ts` — Commit images to encounter
+- `useImageCompression.ts` — Compress images <1MB
+- `useQRSession.ts` — QR session management
+
+**Services**:
+- `compression.ts` — Image compression (HEIC→JPEG, EXIF stripping)
+- `mock-medtech-api.ts` — Mock API client (for development)
+
+**State Management**:
+- `imageWidgetStore.ts` — Zustand store for widget state
 
 ---
 
@@ -181,24 +279,49 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 ## Risks & Blockers
 
 ### Critical Risks
-1. **ALEX API Firewall Blocking** [BLOCKING]
-   - **Impact**: Cannot test BFF → ALEX API connectivity
-   - **Mitigation**: Email sent to Medtech (Oct 31), awaiting response
-   - **Timeline**: Expected resolution 3-5 business days
+1. ~~**ALEX API Firewall Blocking**~~ [RESOLVED ✅]
+   - **Status**: Resolved (Jan 15, 2025)
+   - **Resolution**: Azure network security group manually added by Medtech
+   - **Action**: Ready to test BFF → ALEX API connectivity
 
-2. **Clinical Metadata Schema Unknown** [BLOCKING]
-   - **Impact**: Cannot implement POST Media with metadata
-   - **Mitigation**: Email sent to Medtech (Oct 31), awaiting response
-   - **Timeline**: Expected response 3-5 business days
+2. ~~**Clinical Metadata Schema Unknown**~~ [CLARIFIED ✅]
+   - **Status**: Clarified (Jan 15, 2025)
+   - **Finding**: Optional Media elements (body site, laterality, view, type) cannot be mapped to Medtech Inbox fields
+   - **Workaround**: Embed metadata in image data if needed, or use for internal tracking only
+   - **Impact**: Frontend can still capture metadata for UX, but won't appear in Medtech Inbox
 
 ### Medium Risks
 3. **Widget Launch Mechanism Undocumented**
-   - **Impact**: Unclear how to launch widget from Medtech
-   - **Mitigation**: Email sent to Medtech, may need iterative discovery
+   - **Impact**: Unclear how to launch widget from Medtech Evolution
+   - **Status**: Medtech Evolution installed locally, can test launch mechanisms
+   - **Mitigation**: May need iterative discovery or additional Medtech support
 
-4. **UAT Environment Limitations**
-   - **Impact**: May not be able to verify images in Medtech UI during testing
-   - **Mitigation**: Asking Medtech for demo instance access
+4. ~~**UAT Environment Limitations**~~ [RESOLVED ✅]
+   - **Status**: Resolved (Jan 15, 2025)
+   - **Resolution**: Medtech Evolution test instance installed on desktop
+   - **Access**: Login ADM (blank password), Facility ID: `F99669-C`
+
+---
+
+## Important Findings [2025-01-15]
+
+### Clinical Metadata Limitation
+**Finding**: Medtech confirmed that optional Media FHIR elements (body site, laterality, view type, image classification) **cannot be mapped** to Medtech Inbox fields.
+
+**Implications**:
+- Frontend can still capture metadata for UX (chips, forms, etc.)
+- Metadata will not appear in Medtech Inbox message fields
+- Options:
+  1. **Embed in image**: Add metadata to JPG/PDF EXIF or embedded data
+  2. **Internal tracking**: Store metadata in ClinicPro database for internal use only
+  3. **Display only**: Use metadata for frontend UX but don't persist
+
+**Recommendation**: Continue capturing metadata in frontend for UX, but don't expect it to appear in Medtech. Consider embedding in image if GPs need to see it in Medtech.
+
+### Encounter Linkage
+**Finding**: Each Media document written to Inbox automatically creates a Daily Record entry against the patient's record.
+
+**Implication**: No need to separately POST DocumentReference or link to encounter — Media resource handles this automatically.
 
 ---
 
@@ -233,19 +356,24 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 ## Next Steps
 
 ### Immediate (This Week)
-1. ⏳ **Wait for Medtech response** — IP allow-listing and metadata schema
-2. ✅ **Build frontend mockups** — Not blocked (can proceed with mock backend)
-3. ✅ **Monitor BFF logs** — Check for connectivity when firewall updated
+1. ✅ **Test BFF → ALEX API connectivity** — Firewall resolved, ready to test
+   - Test endpoint: `GET /api/medtech/test?nhi=ZZZ0016`
+   - Verify OAuth token acquisition works
+   - Verify FHIR API calls succeed
+2. ✅ **Update Facility ID** — Change from `F2N060-E` to `F99669-C` in environment variables
+3. ✅ **Test Medtech Evolution** — Verify widget can be launched from Evolution
+4. ✅ **Implement POST Media** — Now that metadata limitations are understood
 
 ### Short-term (Next 2 Weeks)
-1. **Complete Gateway Implementation** (after Medtech response)
-   - POST Media endpoint with clinical metadata
-   - Inbox routing (if needed)
-   - Task creation (if needed)
+1. **Complete Gateway Implementation**
+   - ✅ POST Media endpoint (metadata limitation understood — embed in image or use for internal tracking)
+   - ✅ Test end-to-end: Widget → Gateway → ALEX API → Medtech Evolution
+   - ✅ Verify images appear in Medtech Inbox and Daily Record
 
 2. **Frontend Integration**
    - Connect frontend to Gateway API
    - Replace mock backend with real Gateway calls
+   - Handle metadata display (even if not stored in Medtech Inbox fields)
 
 ### Medium-term (Next 4-6 Weeks)
 1. **UAT Testing**
@@ -260,17 +388,36 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 
 ---
 
+## Resources & References
+
+### External Documentation
+- **ALEX API Documentation**: https://alexapidoc.medtechglobal.com/ (Source of Truth)
+- **Medtech Evolution User Guide**: https://insight.medtechglobal.com/download/user-guide-medtech-evolution-layout/ (Widget placement reference)
+
+### Key Questions for Medtech Support
+**✅ Resolved (2025-01-15)**:
+1. ✅ IP allow-listing for ALEX API — Resolved (Azure network security group added)
+2. ✅ Clinical metadata schema — Clarified (cannot map to Inbox fields, embed in image if needed)
+3. ✅ UAT testing environment access — Resolved (Medtech Evolution installed locally)
+
+**Remaining Questions**:
+- Widget launch mechanism (how to launch from Medtech Evolution)
+- Encounter context passing (JWT, URL params, PostMessage)
+- Widget placement options (Dashboard, Left Pane, Ribbon, Direct module)
+
+### Technical Conventions
+- **Folder Structure**: `src/medtech/images-widget/` for widget code, `src/lib/services/medtech/` for infrastructure
+- **Route Groups**: `app/(medtech)/` and `app/api/(integration)/medtech/` (route groups don't appear in URLs)
+- **Import Paths**: Use `@/src/medtech/...` for widget components, `@/src/lib/services/medtech/...` for infrastructure
+
 ## Technical Documentation References
 
 **Project Management**: This file (`PROJECT_SUMMARY.md`)
 
 **Technical Documentation**: Located in `docs/` subfolder within this project directory
 
-**Admin & Overview** (`docs/admin/`):
-- `README.md` — Overview and quick links
-- `NEXT_STEPS.md` — Current action plan
-- `CONSOLIDATION_LOG.md` — Documentation consolidation history
-- `email-draft-uat-testing-access.md` — Email template for Medtech support
+**Admin** (`docs/admin/`):
+- `email-draft-uat-testing-access.md` — Email template for Medtech support (if needed)
 
 **API Documentation** (`docs/api/`):
 - `alex-api-review-2025-10-30.md` — Complete ALEX API reference
@@ -284,15 +431,47 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 
 **Testing** (`docs/testing/`):
 - `OAUTH_TEST_RESULTS.md` — OAuth test results
+- `test-oauth.sh` — OAuth token acquisition test script
+- `test-fhir-call.sh` — FHIR API call test script
+- `TEST_OAUTH_README.md` — Complete testing guide and troubleshooting
 
 **Code References**:
-- OAuth Service: `/src/lib/services/medtech/oauth-token-service.ts`
-- API Client: `/src/lib/services/medtech/alex-api-client.ts`
-- Test Endpoints: `/app/api/(integration)/medtech/`
+- Infrastructure: `/src/lib/services/medtech/` (OAuth, ALEX client, correlation ID, FHIR types)
+- Widget Components: `/src/medtech/images-widget/` (components, hooks, services, stores)
+- API Routes: `/app/api/(integration)/medtech/` (test, token-info, capabilities, mobile, attachments)
+- Pages: `/app/(medtech)/medtech-images/` (desktop and mobile pages)
 
 ---
 
 ## Updates History
+
+### [2025-01-15] — Medtech Updates & Blocker Resolution
+- **Firewall Resolved**: Azure network security group manually added, BFF can now connect to ALEX API
+- **Medtech Evolution Installed**: Test instance available locally (Login: ADM, blank password)
+- **Facility ID Updated**: Changed from `F2N060-E` to `F99669-C`
+- **Clinical Metadata Clarified**: Optional Media elements cannot map to Medtech Inbox fields
+  - Workaround: Embed metadata in image data or use for internal tracking
+  - Impact: Frontend can still capture metadata for UX, but won't appear in Medtech Inbox
+- **Encounter Linkage**: Each Media document automatically creates Daily Record entry
+- Updated blockers section (all resolved)
+- Updated next steps (ready to test connectivity and implement POST Media)
+
+### [2025-01-15] — Code Review & Documentation Update
+- Reviewed all Medtech-related code and documentation
+- Confirmed all documentation files are in `medtech-integration/` folder
+- Updated PROJECT_SUMMARY.md with accurate implementation details:
+  - Complete list of API endpoints (test, token-info, capabilities, mobile, attachments)
+  - Frontend widget components inventory
+  - Infrastructure services status
+  - Mock vs real implementation status
+- Verified code structure matches documentation
+
+### [2025-01-15] — Admin Folder Cleanup & Documentation Consolidation
+- Consolidated admin folder (16 files → 1 essential file)
+- Moved important information to PROJECT_SUMMARY.md
+- Removed redundant/outdated files (README, NEXT_STEPS, task lists, session logs, etc.)
+- Kept only essential email template for Medtech support
+- Updated PROJECT_SUMMARY.md with frontend widget status and resources
 
 ### [2025-01-15] — Project Management System Installation & Reorganization
 - Created PROJECT_SUMMARY.md
