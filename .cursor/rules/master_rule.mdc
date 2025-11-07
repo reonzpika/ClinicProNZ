@@ -8,23 +8,24 @@ globs: []
 
 ## Quick Reference - Critical Rules
 1. **PROJECT_SUMMARY.md REQUIRED**: Every project MUST have `PROJECT_SUMMARY.md` - create immediately if missing
-2. **Single Source of Truth**: `/project-management/PROJECTS_OVERVIEW.md` = global dashboard; `PROJECT_SUMMARY.md` = project truth
-3. **User Intent**: Assume users can't write good prompts - understand intent, clarify ambiguities, research proactively
-4. **Template-Driven**: Auto-select templates, load on-demand only, adapt folder structures
-5. **Update Dashboard**: After major changes, update `/project-management/PROJECTS_OVERVIEW.md` with highlights and status
+2. **Single Source of Truth**: `PROJECTS_OVERVIEW.md` = global dashboard; `PROJECT_SUMMARY.md` = project truth
+3. **MANDATORY SYNC**: If `PROJECT_SUMMARY.md` is updated, `PROJECTS_OVERVIEW.md` MUST be updated in the same task - NEVER skip this
+4. **User Intent**: Assume users can't write good prompts - understand intent, clarify ambiguities, research proactively
+5. **Template-Driven**: Auto-select templates, load on-demand only, adapt folder structures
+6. **Update Dashboard**: After ANY `PROJECT_SUMMARY.md` change, update `PROJECTS_OVERVIEW.md` with highlights and status
 
 ## Core Principles
 - **PROJECT_SUMMARY.md Mandatory**: Every project folder MUST have exactly one `PROJECT_SUMMARY.md` (living source-of-truth). Create immediately if missing.
-- **Single Source of Truth**: `/project-management/PROJECTS_OVERVIEW.md` = global dashboard; `PROJECT_SUMMARY.md` = project canonical record
+- **Single Source of Truth**: `PROJECTS_OVERVIEW.md` = global dashboard; `PROJECT_SUMMARY.md` = project canonical record
 - **User Intent Understanding**: Follow guidelines in `.cursor/rules/ai-character.mdc` - understand underlying intent, clarify ambiguities, research proactively, don't assume knowledge.
 - **Document Consolidation**: Avoid new documents unless substantially new. Consolidate into `PROJECT_SUMMARY.md` with date tags.
-- **Template-First**: Use `/project-management/Templates/` for new projects. Auto-select based on stage/type. Load on-demand only.
+- **Template-First**: Use `/Templates/` for new projects. Auto-select based on stage/type. Load on-demand only.
 - **Traceability**: Date-stamp all significant changes. Update `last_updated` and bump `version` (patch).
 
 ## System Structure (Workspace/Repository Level)
 **Overall Structure**:
-- **Project Management Root**: `/project-management/PROJECTS_OVERVIEW.md` (global dashboard), `/project-management/Templates/` (templates + index)
-- **Project Level**: Each project = one directory under `/project-management/` containing `PROJECT_SUMMARY.md` (MANDATORY per project)
+- **Root Level**: `PROJECTS_OVERVIEW.md` (global dashboard), `/Templates/` (templates + index)
+- **Project Level**: Each project = one directory containing `PROJECT_SUMMARY.md` (MANDATORY per project)
 
 **Prohibited**:
 - Multiple `PROJECT_SUMMARY.md` files per project directory
@@ -36,19 +37,49 @@ globs: []
 **Optional**: `summary`, `links`, `stakeholders`, `milestones`, `risks`
 **Validation**: Ensure required fields exist, normalize stage, update `last_updated` on material edits, bump patch version.
 
-## Dashboard (`/project-management/PROJECTS_OVERVIEW.md`)
+## Dashboard (`PROJECTS_OVERVIEW.md`)
 **Purpose**: Mission control dashboard - immediate snapshot, onboarding, cross-project visibility
 
 **Structure**:
 - Active Projects Index (name, folder, stage, owner, last updated, link to `PROJECT_SUMMARY.md`)
 - AI-Generated Highlights (achievements, blockers, cross-project themes)
 - Quick Status Summary (counts by stage)
+- Schedule (upcoming and past events: meetings, appointments, deadlines, milestones, due dates)
 - Project Details (brief per project: dates, status, summary)
 - Archived Projects
 
-**Update Triggers**: New project, stage change, archiving, major milestones, blockers identified, owner change, significant status updates
+**Update Triggers**: 
+- **ALWAYS**: Any update to `PROJECT_SUMMARY.md` (metadata, content, status, milestones, risks, summary)
+- New project creation
+- Stage change
+- Archiving
+- Major milestones
+- Blockers identified
+- Owner change
+- Significant status updates
+- Project summary changes
+- Risk status changes
+- **Schedule Items**: When dates, appointments, meetings, deadlines, or due dates are mentioned in project updates, `PROJECT_SUMMARY.md`, or user communications
 
-**Update Process**: 1) Update index table, 2) Refresh highlights, 3) Update status counts, 4) Update project details, 5) Update YAML `last_updated`, 6) Validate links
+**Update Process**: 1) Update index table, 2) Refresh highlights, 3) Update status counts, 4) **Update Schedule section** (add/update/remove events), 5) Update project details, 6) Update YAML `last_updated`, 7) Validate links
+
+**Schedule Management**:
+- **When to Add**: Add to Schedule section when dates/appointments are mentioned in:
+  - Project updates or `PROJECT_SUMMARY.md` changes
+  - User communications mentioning meetings, deadlines, due dates, appointments
+  - Milestone dates, project start/end dates, submission deadlines
+  - Any time-bound commitments or events
+- **Format**: Use table format with columns: Date, Time (if applicable), Event, Project, Type (Meeting/Milestone/Deadline/Action), Notes
+- **Organization**: 
+  - "Upcoming Events" table: Future dates sorted chronologically (earliest first)
+  - "Past Events" table: Completed dates sorted chronologically (most recent first)
+  - Move items from "Upcoming" to "Past" when date has passed
+- **Types**: Meeting, Milestone, Deadline, Action, Appointment, Submission, Review, etc.
+- **Maintenance**: 
+  - Automatically extract dates from project updates
+  - Include project context (which project the event belongs to)
+  - Remove or archive past events older than 3 months (optional, keep if historically significant)
+  - Update Schedule section whenever dates are mentioned, even if not explicitly requested
 
 ## PROJECT_SUMMARY.md Management
 **Requirement**: Always required, non-negotiable. Living source-of-truth for all project info.
@@ -63,7 +94,7 @@ globs: []
 
 ### Loading (On-Demand Only)
 **Triggers**: New project with sparse metadata, user requests setup, missing folders/files detected, project matches template keywords
-**Strategy**: Load only selected template (not all), use `/project-management/Templates/Templates_Index.md` for quick reference
+**Strategy**: Load only selected template (not all), use `Templates_Index.md` for quick reference
 
 ### Selection
 - Auto-select based on: project description, metadata, stage, keywords from index
@@ -96,12 +127,12 @@ Each template must include: YAML (`template_type`, `keywords`, `stage`), Purpose
 
 ## Project Creation Workflow
 1. **Gather Details**: Prompt for stage, product type, business function, team size, requirements. Infer if sparse, ask clarifying questions.
-2. **Create Directory**: Use kebab-case naming under `/project-management/`
+2. **Create Directory**: Use kebab-case naming
 3. **Create PROJECT_SUMMARY.md**: IMMEDIATELY (mandatory)
-4. **Select Template**: Auto-select based on stage/type from `/project-management/Templates/`
+4. **Select Template**: Auto-select based on stage/type
 5. **Populate PROJECT_SUMMARY.md**: From template with required YAML
 6. **Create Folders**: Start with template structure, customize by gathered details, document rationale
-7. **Update Dashboard**: Add row to `/project-management/PROJECTS_OVERVIEW.md`
+7. **Update Dashboard**: Add row to `PROJECTS_OVERVIEW.md`
 
 ## Research and Data Gathering
 - **Follow communication principles**: Reference `.cursor/rules/ai-character.mdc` for user intent understanding guidelines
@@ -116,39 +147,52 @@ Each template must include: YAML (`template_type`, `keywords`, `stage`), Purpose
 - **Confirmations**: Prompt before overwriting/deleting significant info, renames, deletions, cross-project moves
 
 ## Consistency and Synchronization
-- Update `last_updated` and bump `version` (patch) in both `PROJECT_SUMMARY.md` and `/project-management/PROJECTS_OVERVIEW.md`
+- **MANDATORY**: When `PROJECT_SUMMARY.md` is updated, `PROJECTS_OVERVIEW.md` MUST be updated in the same task/workflow
+- Update `last_updated` and bump `version` (patch) in both `PROJECT_SUMMARY.md` and `PROJECTS_OVERVIEW.md`
 - Keep dashboard in sync with status/stage, milestones, blockers, achievements
 - Reflect decisions/milestones immediately in both files
 - Surface cross-project dependencies in dashboard highlights
 - Ensure dashboard provides accurate at-a-glance visibility
+- **Validation Check**: Before completing any task that modified `PROJECT_SUMMARY.md`, verify `PROJECTS_OVERVIEW.md` has been updated
 
 ## Operational Loop
 1. Read Master Rule
 2. Validate context - ask if unclear
 3. **PROJECT_SUMMARY.md Check**: Verify exists, create if missing (CRITICAL)
-4. **Template Selection** (if triggered): Check `/project-management/Templates/Templates_Index.md`, auto-select, load only selected file
+4. **Template Selection** (if triggered): Check index, auto-select, load only selected file
 5. **Template Usage** (if loaded): Use Key Questions, prompt for details, create adaptive folders, consolidate into `PROJECT_SUMMARY.md`
 6. **Research**: If info incomplete, research proactively
 7. Validate metadata in `PROJECT_SUMMARY.md`
-8. Plan edits - prefer updating `PROJECT_SUMMARY.md` and `/project-management/PROJECTS_OVERVIEW.md` directly
+8. Plan edits - prefer updating `PROJECT_SUMMARY.md` and `PROJECTS_OVERVIEW.md` directly
 9. Prompt before destructive changes
 10. Apply edits atomically, update metadata, date-stamp
-11. **Update Dashboard**: After major changes, update index, refresh highlights, update counts/details, update YAML in `/project-management/PROJECTS_OVERVIEW.md`
-12. Final validation: Ensure `PROJECT_SUMMARY.md` reflects all changes
-13. Summarize changes
+11. **MANDATORY Dashboard Update**: If `PROJECT_SUMMARY.md` was modified, update `PROJECTS_OVERVIEW.md`:
+    - Update index table (name, stage, owner, last_updated)
+    - Refresh highlights (achievements, blockers, risks)
+    - Update status counts
+    - **Update Schedule section** (extract and add any dates/appointments/deadlines mentioned)
+    - Update project details section (summary, key dates, status, risks)
+    - Update YAML `last_updated` and bump version
+    - Validate links
+12. Final validation: Ensure `PROJECT_SUMMARY.md` reflects all changes AND `PROJECTS_OVERVIEW.md` is synchronized
+13. Summarize changes (mention both files if both were updated)
 
 ### Validation Checkpoints
 - **After Step 3**: Verify `PROJECT_SUMMARY.md` has required YAML fields (if exists)
 - **After Step 5**: Verify template was loaded correctly (if applicable)
 - **After Step 10**: Verify metadata updates are valid (semver format, ISO date, valid stage enum)
-- **After Step 11**: Verify dashboard links are valid, highlights are formatted correctly
-- **After Step 12**: Final validation - all changes reflected, no inconsistencies between files
+- **After Step 11**: **CRITICAL CHECK** - If `PROJECT_SUMMARY.md` was modified, verify `PROJECTS_OVERVIEW.md` was updated:
+  - Check that index table reflects latest `last_updated` date
+  - Verify project details section matches `PROJECT_SUMMARY.md` summary/metadata
+  - Confirm highlights section includes recent changes
+  - Validate dashboard YAML `last_updated` matches or is newer than `PROJECT_SUMMARY.md`
+- **After Step 12**: Final validation - all changes reflected, no inconsistencies between files, dashboard synchronized
 
 ## Decision Trees for Common Scenarios
 
 ### Ambiguous Project Selection
 When user says "my project" or project name is unclear:
-1. Check `/project-management/PROJECTS_OVERVIEW.md` Active Projects Index
+1. Check `PROJECTS_OVERVIEW.md` Active Projects Index
 2. If 1 active project: Confirm project name with user ("Assuming you mean [Project Name]?")
 3. If multiple active projects: List projects with brief context (stage, last updated), ask user to specify
 4. If no active projects: Check archived projects, ask if reviving archived project
@@ -157,7 +201,7 @@ When user says "my project" or project name is unclear:
 ### Template Inference from Folder Structure
 If `PROJECT_SUMMARY.md` missing but folder exists:
 1. Analyze folder contents and file names
-2. Match against template keywords in `/project-management/Templates/Templates_Index.md`:
+2. Match against template keywords in `Templates_Index.md`:
    - Look for folder names that match template keywords
    - Check for common files (e.g., `pitch-deck.md` → Fundraising, `user-stories.md` → Product Development)
    - Identify stage indicators (e.g., `customer-interviews/` → Idea Validation)
@@ -205,7 +249,7 @@ When auto-generating template (no exact match):
 
 **Update Process**: When dependency identified:
 1. Update both projects' `PROJECT_SUMMARY.md` with dependency info
-2. Update `/project-management/PROJECTS_OVERVIEW.md` Cross-Project Themes & Dependencies section
+2. Update `PROJECTS_OVERVIEW.md` Cross-Project Themes & Dependencies section
 3. Date-stamp the dependency entry
 4. Update dashboard highlights if dependency affects project status
 
@@ -247,8 +291,9 @@ When consolidating scattered information into `PROJECT_SUMMARY.md`:
 - **Low confidence (<50%)**: Research project type first, then select or generate, explain process
 
 ### Dashboard Update Frequency
-- **Immediate**: Stage changes, major milestones, project creation/archiving, blocker identification
+- **Immediate**: Stage changes, major milestones, project creation/archiving, blocker identification, **schedule items** (dates/appointments/deadlines)
 - **Can Defer**: Minor updates can batch, update on next major change (unless user specifically requests immediate update)
+- **Schedule Updates**: Always update Schedule section immediately when dates/appointments/deadlines are mentioned - don't wait for other updates
 
 ## Error Handling
 - **Missing PROJECT_SUMMARY.md**: Critical - create immediately using template (use Decision Tree for template inference)
@@ -266,6 +311,8 @@ When consolidating scattered information into `PROJECT_SUMMARY.md`:
 - Never proceed with destructive operations without confirmation
 - Keep edits scoped - avoid cross-project edits unless explicit
 - Always update `PROJECT_SUMMARY.md` to reflect latest state - living document
+- **NEVER update `PROJECT_SUMMARY.md` without updating `PROJECTS_OVERVIEW.md`** - these files must stay synchronized
+- Before completing any task, verify: "Did I update `PROJECT_SUMMARY.md`? If yes, did I also update `PROJECTS_OVERVIEW.md`?"
 
 ---
 

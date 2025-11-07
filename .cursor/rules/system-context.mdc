@@ -8,19 +8,11 @@ globs: []
 
 **System Overview**: Multi-project management system where:
 - `/project-management/PROJECTS_OVERVIEW.md` - Global dashboard
-- `/project-management/[project]/PROJECT_SUMMARY.md` - Living source-of-truth per project (REQUIRED)
-- `/project-management/Templates/` - Template-driven project creation
 
 **Rule Files**: Follow `.cursor/rules/current-task.mdc` for operational workflow. Reference `.cursor/rules/master_rule.mdc` for detailed policies. Read `.cursor/rules/ai-character.mdc` at task start/end for character guidelines.
 
 **Technical Rules**: ClinicPro-specific technical rules coexist with project management rules:
 - `.cursor/rules/debugging-strategy.mdc` - Technical debugging approach
-- `.cursor/rules/output_structure.mdc` - Technical output style
-- `.cursor/rules/token-optimisation.mdc` - Technical token optimization
-
-**Scope Separation**: 
-- Project management rules: Multi-project tracking, documentation, templates
-- ClinicPro technical rules: Code development, debugging, output formatting
 
 ---
 
