@@ -3,7 +3,7 @@ project_name: GP Voices Community Site
 project_stage: Build
 owner: ClinicPro Engineering
 last_updated: "2025-01-15"
-version: "1.0.0"
+version: "1.0.1"
 tags:
   - community
   - discourse
@@ -171,6 +171,7 @@ discourse-theme/gp-voices/
 ### Project Documentation
 - **Theme Documentation**: `docs/gp-voices-theme.md` — Theme scope, milestones, settings, file structure
 - **Setup Guide**: `docs/gp-voices-import-setup.md` — Step-by-step installation and configuration guide
+- **LinkedIn Post**: [`linkedin-post.md`](./linkedin-post.md) — Manual LinkedIn post draft with multiple variations for community launch
 
 ### External References
 - Discourse Developer Guides: https://meta.discourse.org/t/developer-guides-index/308036
@@ -207,6 +208,12 @@ discourse-theme/gp-voices/
 ---
 
 ## Updates
+
+### [2025-01-15] LinkedIn Post Created
+- Created manual LinkedIn post draft (`linkedin-post.md`) with 3 variations for community launch
+- Post variations include: standard announcement, question hook (high engagement), problem-solution format, and feature-focused (technical audience)
+- Includes posting guidelines, optimal timing, engagement strategy, and success metrics
+- Ready for manual posting when community is ready to launch
 
 ### [2025-01-15] Project Initialisation
 - Created project folder and PROJECT_SUMMARY.md
