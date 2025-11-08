@@ -11,81 +11,91 @@ purpose: Manual weekly curation of NZ medical news for LinkedIn post to test dem
 ## Curation Notes
 
 **Date**: 2025-11-08  
-**Sources Checked**: BPAC, NZ Doctor, Pharmac, HQSC, Ministry of Health, Medical Council, RNZCGP  
-**Items Selected**: 4 items  
-**Format**: Format B - Weekly Roundup
+**Sources Checked**: HINZ, LinkedIn (healthtech companies), Medtech Evolution  
+**Items Selected**: 5 items  
+**Format**: Format B - Weekly Roundup  
+**Theme**: AI in healthcare - scribe technology and AI-enabled practice management systems
 
 ---
 
 ## Curated News Items
 
-**Note**: Replace these placeholder items with actual recent news from NZ sources. Check BPAC, NZ Doctor, Pharmac, HQSC, Ministry of Health, Medical Council, and RNZCGP websites for items from the past 7 days.
+### Item 1: HINZ News
+**Headline**: AI scribe rolled out to EDs nationwide
 
-### Item 1: [REPLACE WITH ACTUAL SOURCE]
-**Headline**: [REPLACE WITH ACTUAL HEADLINE]
+**Why it matters to GPs**: AI scribe technology is expanding beyond general practice into emergency departments, showing broader adoption of AI-assisted documentation across the health system. This signals a shift toward AI becoming standard in clinical workflows, which GPs should be aware of as they evaluate their own documentation tools.
 
-**Why it matters to GPs**: [REPLACE: 1-2 sentences on clinical/practice impact]
+**Key takeaway**: AI scribe technology is gaining traction across NZ healthcare settings, not just in general practice.
 
-**Key takeaway**: [REPLACE: 1 sentence]
-
-**Link**: [REPLACE: URL]
+**Link**: https://www.hinz.org.nz/news/713303/AI-scribe-rolled-out-to-EDs-nationwide.htm
 
 ---
 
-### Item 2: [REPLACE WITH ACTUAL SOURCE]
-**Headline**: [REPLACE WITH ACTUAL HEADLINE]
+### Item 2: Medtech Evolution
+**Headline**: Medtech Evolution practices gain AI-enabled capabilities
 
-**Why it matters to GPs**: [REPLACE: 1-2 sentences on clinical/practice impact]
+**Why it matters to GPs**: Medtech Evolution is one of the most widely used practice management systems in NZ. The addition of AI-enabled capabilities directly impacts thousands of GPs who use Medtech, potentially changing how they interact with their PMS and what features they can access for clinical documentation and workflow optimisation.
 
-**Key takeaway**: [REPLACE: 1 sentence]
+**Key takeaway**: Major PMS providers are integrating AI features, making AI-assisted workflows more accessible to mainstream GP practices.
 
-**Link**: [REPLACE: URL]
-
----
-
-### Item 3: [REPLACE WITH ACTUAL SOURCE]
-**Headline**: [REPLACE WITH ACTUAL HEADLINE]
-
-**Why it matters to GPs**: [REPLACE: 1-2 sentences on clinical/practice impact]
-
-**Key takeaway**: [REPLACE: 1 sentence]
-
-**Link**: [REPLACE: URL]
+**Link**: https://www.linkedin.com/pulse/medtech-evolution-practices-gain-ai-enabled-capabilities-dltxc/
 
 ---
 
-### Item 4: [REPLACE WITH ACTUAL SOURCE]
-**Headline**: [REPLACE WITH ACTUAL HEADLINE]
+### Item 3: Practice AI New Zealand
+**Headline**: Practice AI New Zealand company updates
 
-**Why it matters to GPs**: [REPLACE: 1-2 sentences on clinical/practice impact]
+**Why it matters to GPs**: Practice AI represents another player in the NZ AI healthcare space, offering GPs more options for AI-assisted practice management. Understanding the competitive landscape helps GPs make informed decisions about which AI tools best fit their practice needs and workflows.
 
-**Key takeaway**: [REPLACE: 1 sentence]
+**Key takeaway**: Multiple AI healthcare solutions are emerging in NZ, giving GPs choice but also requiring evaluation of different options.
 
-**Link**: [REPLACE: URL]
+**Link**: https://www.linkedin.com/company/practice-ai-new-zealand/posts/
+
+---
+
+### Item 4: Indici NZ
+**Headline**: Indici AI in healthcare developments
+
+**Why it matters to GPs**: Indici is another practice management system used by NZ practices. Their AI developments indicate the broader trend of PMS providers integrating AI capabilities, which will affect how GPs work regardless of which system they use. This represents the industry-wide shift toward AI-enhanced clinical workflows.
+
+**Key takeaway**: AI integration is becoming standard across multiple PMS platforms, not just one provider.
+
+**Link**: https://www.linkedin.com/posts/indici-nz_indici-aiinhealthcare-digitalhealth-activity-7391579294021591040-fGj9
+
+---
+
+### Item 5: The Waiting Room Sessions (Andy Jellis)
+**Headline**: The Waiting Room Sessions - healthcare innovation discussions
+
+**Why it matters to GPs**: This appears to be a series or discussion about healthcare innovation and practice management. For GPs navigating the changing landscape of AI and digital health tools, staying informed about industry discussions and innovations helps them understand where healthcare technology is heading and how it might impact their practice.
+
+**Key takeaway**: Ongoing conversations about healthcare innovation are shaping the future of general practice, and GPs benefit from staying engaged with these discussions.
+
+**Link**: https://www.linkedin.com/posts/andyjellis_the-waiting-room-sessions-activity-7385851701452275713-ekQV
 
 ---
 
 ## LinkedIn Post Draft (READY TO POST)
 
-**Copy the post below once items are filled in:**
-
 ---
 
 📰 This Week in NZ General Practice
 
-• **[Item 1 Headline]** - [Brief 1 sentence summary - what happened and why it matters]
+• **AI scribe rolled out to EDs nationwide** - AI-assisted documentation is expanding beyond general practice into emergency departments, signalling broader health system adoption of AI tools.
 
-• **[Item 2 Headline]** - [Brief 1 sentence summary - what happened and why it matters]
+• **Medtech Evolution practices gain AI-enabled capabilities** - One of NZ's most widely used PMS platforms is integrating AI features, directly impacting thousands of GPs who use Medtech for practice management.
 
-• **[Item 3 Headline]** - [Brief 1 sentence summary - what happened and why it matters]
+• **Practice AI New Zealand updates** - Another AI healthcare solution emerges in the NZ market, giving GPs more options but also requiring careful evaluation of which tools fit their workflows.
 
-• **[Item 4 Headline]** - [Brief 1 sentence summary - what happened and why it matters]
+• **Indici AI developments** - Multiple PMS providers are integrating AI capabilities, showing this is an industry-wide shift rather than isolated innovation.
 
-[1-2 sentences: Common theme or takeaway across these items - e.g., "This week's updates highlight ongoing changes in medication funding and clinical guidance that will impact daily practice."]
+• **The Waiting Room Sessions** - Ongoing discussions about healthcare innovation are shaping the future of general practice and how GPs will work with AI tools.
 
-What stood out to you this week? Share your thoughts in the comments 👇
+This week's updates highlight a clear trend: AI is becoming standard across NZ healthcare, from emergency departments to practice management systems. Multiple PMS providers are integrating AI features, and AI scribe technology is expanding beyond general practice. For GPs, this means more options but also the need to stay informed about which AI tools best fit their practice needs.
 
-#NZGP #GeneralPractice #NZHealthcare
+What stood out to you this week? Are you seeing AI tools make a difference in your practice? Share your thoughts in the comments 👇
+
+#NZGP #GeneralPractice #NZHealthcare #AIinHealthcare #DigitalHealth
 
 ---
 
@@ -140,9 +150,10 @@ What stood out to you this week? Share your thoughts in the comments 👇
 
 1. ✅ Research and populate news items from sources
 2. ✅ Finalise LinkedIn post content
-3. ⏳ Post during optimal time window
-4. ⏳ Monitor engagement and respond promptly
-5. ⏳ Track metrics for weekly review
+3. ⏳ Review post for accuracy (verify details from actual articles if possible)
+4. ⏳ Post during optimal time window (Tuesday-Thursday, 8-9am or 5-6pm NZST)
+5. ⏳ Monitor engagement and respond promptly
+6. ⏳ Track metrics for weekly review
 
 ---
 
