@@ -2,8 +2,8 @@
 project_name: GP Voices Community Site
 project_stage: Build
 owner: ClinicPro Engineering
-last_updated: "2025-01-15"
-version: "1.0.1"
+last_updated: "2025-11-08"
+version: "1.0.2"
 tags:
   - community
   - discourse
@@ -171,7 +171,7 @@ discourse-theme/gp-voices/
 ### Project Documentation
 - **Theme Documentation**: `docs/gp-voices-theme.md` — Theme scope, milestones, settings, file structure
 - **Setup Guide**: `docs/gp-voices-import-setup.md` — Step-by-step installation and configuration guide
-- **LinkedIn Post**: [`linkedin-post.md`](./linkedin-post.md) — Manual LinkedIn post draft with multiple variations for community launch
+- **Weekly LinkedIn Posts**: `weekly-linkedin-post-YYYY-MM-DD.md` — Manual weekly curation of NZ medical news for LinkedIn posts (testing demand before building AI-powered weekly summaries)
 
 ### External References
 - Discourse Developer Guides: https://meta.discourse.org/t/developer-guides-index/308036
@@ -209,11 +209,13 @@ discourse-theme/gp-voices/
 
 ## Updates
 
-### [2025-01-15] LinkedIn Post Created
-- Created manual LinkedIn post draft (`linkedin-post.md`) with 3 variations for community launch
-- Post variations include: standard announcement, question hook (high engagement), problem-solution format, and feature-focused (technical audience)
-- Includes posting guidelines, optimal timing, engagement strategy, and success metrics
-- Ready for manual posting when community is ready to launch
+### [2025-11-08] Weekly LinkedIn News Curation Started
+- Created weekly LinkedIn post curation workflow to test demand before building AI-powered weekly summaries
+- Weekly posts curate 3-5 recent NZ medical news items from BPAC, NZ Doctor, Pharmac, HQSC, Ministry of Health, Medical Council, RNZCGP
+- Format: Weekly Roundup (Format B) - posts test if GPs engage with curated news content
+- **Strategy**: Manual curation first to validate demand; automation only if manual posts prove successful (4+ weeks of good metrics)
+- **Priority Context**: Focus remains on revenue-generating projects (Medtech integration, R&D grant); LinkedIn content marketing is long-term play, not immediate revenue
+- Template created: `weekly-linkedin-post-2025-11-08.md` — ready for news items to be added
 
 ### [2025-01-15] Project Initialisation
 - Created project folder and PROJECT_SUMMARY.md
@@ -223,5 +225,5 @@ discourse-theme/gp-voices/
 
 ---
 
-*Project Last Updated: [2025-01-15]*
+*Project Last Updated: [2025-11-08]*
 
