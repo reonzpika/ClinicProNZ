@@ -587,9 +587,6 @@ export function ImageEditModal({
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <Button onClick={handleReset} variant="ghost" size="sm" disabled={!hasChanges} className="h-6 px-2 text-[10px]">
-              Reset
-            </Button>
             <Button onClick={onClose} variant="ghost" size="sm" className="h-6 px-2 text-[10px]">
               Cancel
             </Button>
@@ -606,7 +603,7 @@ export function ImageEditModal({
           <div className="border-b border-slate-200 px-4 py-2 bg-white">
             <div className="flex items-center gap-1.5">
               {/* Rotate Tools */}
-              <div className="flex items-center gap-0.5 border-r border-slate-200 pr-1.5">
+              <div className="flex items-center gap-0.5 border-r border-slate-200 pr-1">
                 <Button
                   onClick={handleRotateCCW90}
                   variant="ghost"
@@ -631,7 +628,7 @@ export function ImageEditModal({
               </div>
 
               {/* Crop Tool */}
-              <div className="flex items-center gap-0.5 border-r border-slate-200 pr-1.5">
+              <div className="flex items-center gap-0.5 border-r border-slate-200 pr-1">
                 <Button
                   onClick={() => {
                     setActiveTool(activeTool === 'crop' ? null : 'crop');
@@ -646,46 +643,31 @@ export function ImageEditModal({
                 >
                   <Crop className="size-4" />
                 </Button>
-                <div className="inline-flex">
-                  <Button
-                    disabled={!editState.crop}
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 rounded-r-none border-r-0 px-2 text-xs"
-                    onClick={() => {
-                      if (editState.crop) {
-                        updateEditState({ crop: null });
-                      }
-                    }}
-                  >
-                    Clear
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger>
-                      <Button
-                        disabled={!editState.crop}
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 rounded-l-none px-1.5"
-                        title="Clear crop options"
-                      >
-                        <ChevronDown className="size-3" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem
-                        onClick={() => updateEditState({ crop: null })}
-                        disabled={!editState.crop}
-                      >
-                        Clear
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <Button
+                      disabled={!editState.crop}
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      title="Clear crop"
+                    >
+                      <ChevronDown className="size-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem
+                      onClick={() => updateEditState({ crop: null })}
+                      disabled={!editState.crop}
+                    >
+                      Clear
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
 
               {/* Arrow Tool */}
-              <div className="flex items-center gap-0.5 border-r border-slate-200 pr-1.5">
+              <div className="flex items-center gap-0.5 border-r border-slate-200 pr-1">
                 <Button
                   onClick={() => setActiveTool(activeTool === 'arrow' ? null : 'arrow')}
                   variant={activeTool === 'arrow' ? 'default' : 'ghost'}
@@ -695,42 +677,41 @@ export function ImageEditModal({
                 >
                   <ArrowRight className="size-4" />
                 </Button>
-                <div className="inline-flex">
-                  <Button
-                    disabled={editState.arrows.length === 0}
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 rounded-r-none border-r-0 px-2 text-xs"
-                    onClick={() => {
-                      if (editState.arrows.length > 0) {
-                        updateEditState({ arrows: [] });
-                      }
-                    }}
-                  >
-                    Clear
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger>
-                      <Button
-                        disabled={editState.arrows.length === 0}
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 rounded-l-none px-1.5"
-                        title="Clear arrow options"
-                      >
-                        <ChevronDown className="size-3" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem
-                        onClick={() => updateEditState({ arrows: [] })}
-                        disabled={editState.arrows.length === 0}
-                      >
-                        Clear
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <Button
+                      disabled={editState.arrows.length === 0}
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      title="Clear arrows"
+                    >
+                      <ChevronDown className="size-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem
+                      onClick={() => updateEditState({ arrows: [] })}
+                      disabled={editState.arrows.length === 0}
+                    >
+                      Clear
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {/* Reset */}
+              <div className="flex items-center gap-0.5 border-r border-slate-200 pr-1">
+                <Button
+                  onClick={handleReset}
+                  variant="ghost"
+                  size="sm"
+                  disabled={!hasChanges}
+                  title="Reset all edits"
+                  className="h-7 px-2 text-xs"
+                >
+                  Reset
+                </Button>
               </div>
 
               {/* Undo/Redo */}
