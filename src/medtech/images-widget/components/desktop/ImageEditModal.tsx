@@ -12,7 +12,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { RotateCw, RotateCcw, Crop, ArrowRight, Undo2, Redo2, Save, ChevronLeft, ChevronRight } from 'lucide-react';
+import { RotateCw, RotateCcw, Crop, ArrowRight, Undo2, Redo2, Save, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,7 @@ import type { WidgetImage } from '../../types';
 import { useImageWidgetStore } from '../../stores/imageWidgetStore';
 import { Stage, Layer, Image as KonvaImage, Rect, Arrow, Group } from 'react-konva';
 import Konva from 'konva';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/src/shared/components/ui/dropdown-menu';
 
 interface ImageEditModalProps {
   isOpen: boolean;
@@ -645,17 +646,42 @@ export function ImageEditModal({
                 >
                   <Crop className="size-4" />
                 </Button>
-                {editState.crop && (
+                <div className="inline-flex">
                   <Button
-                    onClick={() => updateEditState({ crop: null })}
+                    disabled={!editState.crop}
                     variant="ghost"
                     size="sm"
-                    title="Clear crop"
-                    className="h-7 px-2 text-xs"
+                    className="h-7 rounded-r-none border-r-0 px-2 text-xs"
+                    onClick={() => {
+                      if (editState.crop) {
+                        updateEditState({ crop: null });
+                      }
+                    }}
                   >
                     Clear
                   </Button>
-                )}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger>
+                      <Button
+                        disabled={!editState.crop}
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 rounded-l-none px-1.5"
+                        title="Clear crop options"
+                      >
+                        <ChevronDown className="size-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem
+                        onClick={() => updateEditState({ crop: null })}
+                        disabled={!editState.crop}
+                      >
+                        Clear
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
 
               {/* Arrow Tool */}
@@ -669,9 +695,42 @@ export function ImageEditModal({
                 >
                   <ArrowRight className="size-4" />
                 </Button>
-                {editState.arrows.length > 0 && (
-                  <span className="text-xs text-slate-600">{editState.arrows.length}</span>
-                )}
+                <div className="inline-flex">
+                  <Button
+                    disabled={editState.arrows.length === 0}
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 rounded-r-none border-r-0 px-2 text-xs"
+                    onClick={() => {
+                      if (editState.arrows.length > 0) {
+                        updateEditState({ arrows: [] });
+                      }
+                    }}
+                  >
+                    Clear
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger>
+                      <Button
+                        disabled={editState.arrows.length === 0}
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 rounded-l-none px-1.5"
+                        title="Clear arrow options"
+                      >
+                        <ChevronDown className="size-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem
+                        onClick={() => updateEditState({ arrows: [] })}
+                        disabled={editState.arrows.length === 0}
+                      >
+                        Clear
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
 
               {/* Undo/Redo */}
