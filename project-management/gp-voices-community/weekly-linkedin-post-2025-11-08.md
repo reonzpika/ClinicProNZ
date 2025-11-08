@@ -79,7 +79,9 @@ purpose: Manual weekly curation of NZ medical news for LinkedIn post to test dem
 
 ---
 
-📰 This Week in NZ General Practice
+AI is reshaping NZ healthcare faster than expected. Here are 5 updates every GP should know this week:
+
+📰 **This Week in NZ General Practice**
 
 • **AI scribe rolled out to EDs nationwide** - AI-assisted documentation is expanding beyond general practice into emergency departments, signalling broader health system adoption of AI tools.
 
@@ -91,11 +93,17 @@ purpose: Manual weekly curation of NZ medical news for LinkedIn post to test dem
 
 • **The Waiting Room Sessions** - Ongoing discussions about healthcare innovation are shaping the future of general practice and how GPs will work with AI tools.
 
-This week's updates highlight a clear trend: AI is becoming standard across NZ healthcare, from emergency departments to practice management systems. Multiple PMS providers are integrating AI features, and AI scribe technology is expanding beyond general practice. For GPs, this means more options but also the need to stay informed about which AI tools best fit their practice needs.
+---
 
-What stood out to you this week? Are you seeing AI tools make a difference in your practice? Share your thoughts in the comments 👇
+**The big picture**: AI is becoming standard across NZ healthcare, from emergency departments to practice management systems. Multiple PMS providers are integrating AI features, and AI scribe technology is expanding beyond general practice. For GPs, this means more options but also the need to stay informed about which AI tools best fit their practice needs.
 
-#NZGP #GeneralPractice #NZHealthcare #AIinHealthcare #DigitalHealth
+**Are you using AI tools in your practice?** What's working — or not working — for you? Share your experience in the comments 👇
+
+---
+
+💡 **This is a weekly series** — I curate the most relevant NZ healthcare news for GPs every week. Follow me to stay updated on what matters for general practice in Aotearoa.
+
+#NZGP #GeneralPractice #NZHealthcare
 
 ---
 
