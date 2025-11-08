@@ -61,7 +61,7 @@ export function DropdownMenuContent({ children }: { children: React.ReactNode })
     return null;
   }
   return (
-    <div ref={ref} className="absolute right-0 z-50 mt-2 min-w-40 rounded-md border border-gray-200 bg-white py-1 shadow-lg">
+    <div ref={ref} className="absolute right-0 z-50 mt-2 w-auto rounded-md border border-gray-200 bg-white py-1 shadow-lg">
       {children}
     </div>
   );
@@ -72,7 +72,7 @@ export function DropdownMenuItem({ children, onClick, disabled }: { children: Re
   return (
     <button
       type="button"
-      className="w-full rounded px-2 py-1 text-left text-sm hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+      className="w-full rounded px-2 py-1.5 text-left text-sm hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 whitespace-nowrap"
       onClick={(_e) => {
         if (onClick) {
           onClick();

@@ -77,13 +77,20 @@ export function ImageEditModal({
 
   // Load image
   useEffect(() => {
-    if (!currentImage) return;
+    if (!currentImage) {
+      setImageElement(null);
+      return;
+    }
     
     const img = new window.Image();
     img.crossOrigin = 'anonymous';
     img.src = currentImage.preview;
     img.onload = () => {
       setImageElement(img);
+    };
+    img.onerror = () => {
+      console.error('Failed to load image:', currentImage.preview);
+      setImageElement(null);
     };
   }, [currentImage]);
 
@@ -482,18 +489,18 @@ export function ImageEditModal({
 
   // Handle previous image
   const handlePrevious = useCallback(() => {
-    if (!currentImageId) return;
+    if (!currentImageId || allImages.length === 0) return;
     const currentIndex = allImages.findIndex(img => img.id === currentImageId);
     if (currentIndex > 0) {
-      if (editState) {
-        updateMetadata(currentImageId, {
-          edits: {
-            rotation: editState.rotation !== 0 ? editState.rotation : undefined,
-            crop: editState.crop || undefined,
-            arrows: editState.arrows.length > 0 ? editState.arrows : undefined,
-          },
-        });
-      }
+      // Save current edits before switching
+      updateMetadata(currentImageId, {
+        edits: {
+          rotation: editState.rotation !== 0 ? editState.rotation : undefined,
+          crop: editState.crop || undefined,
+          arrows: editState.arrows.length > 0 ? editState.arrows : undefined,
+        },
+      });
+      
       const prevImage = allImages[currentIndex - 1];
       if (prevImage) {
         setCurrentImageId(prevImage.id);
@@ -504,18 +511,18 @@ export function ImageEditModal({
 
   // Handle next image
   const handleNext = useCallback(() => {
-    if (!currentImageId) return;
+    if (!currentImageId || allImages.length === 0) return;
     const currentIndex = allImages.findIndex(img => img.id === currentImageId);
     if (currentIndex < allImages.length - 1) {
-      if (editState) {
-        updateMetadata(currentImageId, {
-          edits: {
-            rotation: editState.rotation !== 0 ? editState.rotation : undefined,
-            crop: editState.crop || undefined,
-            arrows: editState.arrows.length > 0 ? editState.arrows : undefined,
-          },
-        });
-      }
+      // Save current edits before switching
+      updateMetadata(currentImageId, {
+        edits: {
+          rotation: editState.rotation !== 0 ? editState.rotation : undefined,
+          crop: editState.crop || undefined,
+          arrows: editState.arrows.length > 0 ? editState.arrows : undefined,
+        },
+      });
+      
       const nextImage = allImages[currentIndex + 1];
       if (nextImage) {
         setCurrentImageId(nextImage.id);
