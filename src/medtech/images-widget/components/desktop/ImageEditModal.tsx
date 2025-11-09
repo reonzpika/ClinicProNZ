@@ -1,26 +1,30 @@
 /**
  * Image Edit Modal
  * 
- * Full-screen modal for editing images:
- * - Rotate (90° increments + free rotation)
+ * Full-screen modal for editing images using react-konva:
+ * - Rotate (90° increments)
  * - Crop (non-destructive, stores coordinates)
- * - Add arrows (stored as metadata)
+ * - Add arrows (click and drag to point)
  * - Undo/Redo
- * - Thumbnail strip for quick switching
+ * - Previous/Next navigation
  */
 
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { RotateCw, RotateCcw, Crop, ArrowRight, Undo2, Redo2, Save } from 'lucide-react';
+import { RotateCw, RotateCcw, Crop, ArrowRight, Undo2, Redo2, Save, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
+  DialogDescription,
 } from '@/src/shared/components/ui/dialog';
 import { Button } from '@/src/shared/components/ui/button';
 import type { WidgetImage } from '../../types';
 import { useImageWidgetStore } from '../../stores/imageWidgetStore';
-import { ThumbnailStrip } from './ThumbnailStrip';
+import { Stage, Layer, Image as KonvaImage, Rect, Arrow, Group } from 'react-konva';
+import Konva from 'konva';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/src/shared/components/ui/dropdown-menu';
 
 interface ImageEditModalProps {
   isOpen: boolean;
@@ -33,7 +37,7 @@ interface ImageEditModalProps {
 interface EditState {
   rotation: number;
   crop: { x: number; y: number; width: number; height: number } | null;
-  arrows: Array<{ id: string; x: number; y: number; angle?: number }>;
+  arrows: Array<{ id: string; x1: number; y1: number; x2: number; y2: number }>;
 }
 
 interface HistoryState {
@@ -58,13 +62,106 @@ export function ImageEditModal({
   const [history, setHistory] = useState<HistoryState[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [activeTool, setActiveTool] = useState<'rotate' | 'crop' | 'arrow' | null>(null);
-  const [isCropMode, setIsCropMode] = useState(false);
+  const [isCropDragging, setIsCropDragging] = useState(false);
   const [cropStart, setCropStart] = useState<{ x: number; y: number } | null>(null);
   const [cropEnd, setCropEnd] = useState<{ x: number; y: number } | null>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
+  const [isArrowDragging, setIsArrowDragging] = useState(false);
+  const [arrowStart, setArrowStart] = useState<{ x: number; y: number } | null>(null);
+  const [arrowEnd, setArrowEnd] = useState<{ x: number; y: number } | null>(null);
+  const [imageElement, setImageElement] = useState<HTMLImageElement | null>(null);
+  const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
+  const stageRef = useRef<Konva.Stage>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const currentImage = allImages.find(img => img.id === currentImageId) || image;
+
+  // Load image
+  useEffect(() => {
+    if (!currentImage) {
+      setImageElement(null);
+      return;
+    }
+    
+    const img = new window.Image();
+    img.crossOrigin = 'anonymous';
+    img.src = currentImage.preview;
+    img.onload = () => {
+      setImageElement(img);
+    };
+    img.onerror = () => {
+      console.error('Failed to load image:', currentImage.preview);
+      setImageElement(null);
+    };
+  }, [currentImage]);
+
+  // Update stage size when container resizes
+  useEffect(() => {
+    if (!isOpen) {
+      setStageSize({ width: 0, height: 0 });
+      return;
+    }
+    
+    const updateSize = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          setStageSize({
+            width: rect.width,
+            height: rect.height,
+          });
+        }
+      }
+    };
+    
+    let resizeObserver: ResizeObserver | null = null;
+    let timeoutId: NodeJS.Timeout | null = null;
+    let rafId: number | null = null;
+    
+    // Try immediate update
+    updateSize();
+    
+    // Use requestAnimationFrame for next frame
+    rafId = requestAnimationFrame(() => {
+      updateSize();
+      
+      // Set up ResizeObserver if container is available
+      if (containerRef.current) {
+        resizeObserver = new ResizeObserver(() => {
+          updateSize();
+        });
+        resizeObserver.observe(containerRef.current);
+      }
+    });
+    
+    // Also try after a small delay as fallback
+    timeoutId = setTimeout(() => {
+      updateSize();
+      
+      // Set up ResizeObserver if not already set up
+      if (containerRef.current && !resizeObserver) {
+        resizeObserver = new ResizeObserver(() => {
+          updateSize();
+        });
+        resizeObserver.observe(containerRef.current);
+      }
+    }, 100);
+    
+    // Listen to window resize
+    window.addEventListener('resize', updateSize);
+    
+    return () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+      window.removeEventListener('resize', updateSize);
+    };
+  }, [isOpen]); // Re-run when modal opens
 
   // Initialize edit state from image metadata
   useEffect(() => {
@@ -73,9 +170,41 @@ export function ImageEditModal({
       setEditState({
         rotation: edits.rotation || 0,
         crop: edits.crop || null,
-        arrows: edits.arrows || [],
+        arrows: (edits.arrows || []).map(arrow => {
+          // Handle legacy arrows with angle (convert to x1, y1, x2, y2)
+          if ('angle' in arrow && typeof arrow.angle === 'number' && 'x' in arrow && 'y' in arrow) {
+            const length = 5;
+            const angleRad = (arrow.angle * Math.PI) / 180;
+            const x = typeof arrow.x === 'number' ? arrow.x : 0;
+            const y = typeof arrow.y === 'number' ? arrow.y : 0;
+            return {
+              id: arrow.id,
+              x1: x,
+              y1: y,
+              x2: x + (length * Math.cos(angleRad)),
+              y2: y + (length * Math.sin(angleRad)),
+            };
+          }
+          // New format: already has x1, y1, x2, y2
+          if ('x1' in arrow && 'y1' in arrow && 'x2' in arrow && 'y2' in arrow) {
+            return {
+              id: arrow.id,
+              x1: typeof arrow.x1 === 'number' ? arrow.x1 : 0,
+              y1: typeof arrow.y1 === 'number' ? arrow.y1 : 0,
+              x2: typeof arrow.x2 === 'number' ? arrow.x2 : 0,
+              y2: typeof arrow.y2 === 'number' ? arrow.y2 : 0,
+            };
+          }
+          // Fallback
+          return {
+            id: arrow.id,
+            x1: 0,
+            y1: 0,
+            x2: 5,
+            y2: 5,
+          };
+        }),
       });
-      // Reset history when switching images
       setHistory([]);
       setHistoryIndex(-1);
     } else {
@@ -96,7 +225,6 @@ export function ImageEditModal({
       state: { ...state },
       timestamp: Date.now(),
     });
-    // Limit history to 50 states
     if (newHistory.length > 50) {
       newHistory.shift();
     } else {
@@ -148,94 +276,183 @@ export function ImageEditModal({
     updateEditState({ rotation: (editState.rotation - 90 + 360) % 360 });
   }, [editState.rotation, updateEditState]);
 
-  // Free rotation slider
-  const handleRotationChange = useCallback((degrees: number) => {
-    updateEditState({ rotation: degrees });
-  }, [updateEditState]);
+  // Calculate image dimensions and position
+  const getImageTransform = useCallback(() => {
+    if (!imageElement || stageSize.width === 0 || stageSize.height === 0) {
+      return { x: 0, y: 0, width: 0, height: 0, scale: 1, naturalWidth: 0, naturalHeight: 0 };
+    }
+    
+    const naturalWidth = imageElement.width;
+    const naturalHeight = imageElement.height;
+    const containerWidth = stageSize.width;
+    const containerHeight = stageSize.height;
+    
+    // Calculate scale to fit (object-contain)
+    const scaleX = containerWidth / naturalWidth;
+    const scaleY = containerHeight / naturalHeight;
+    const scale = Math.min(scaleX, scaleY);
+    
+    const displayWidth = naturalWidth * scale;
+    const displayHeight = naturalHeight * scale;
+    
+    // Center the image
+    const x = (containerWidth - displayWidth) / 2;
+    const y = (containerHeight - displayHeight) / 2;
+    
+    return { x, y, width: displayWidth, height: displayHeight, scale, naturalWidth, naturalHeight };
+  }, [imageElement, stageSize]);
 
-  // Start crop
-  const handleCropStart = useCallback((e: React.MouseEvent) => {
-    if (!containerRef.current || !imageRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setCropStart({ x, y });
-    setCropEnd({ x, y });
-    setIsCropMode(true);
-    setActiveTool('crop');
-  }, []);
+  // Convert stage coordinates to natural image coordinates
+  const stageToNatural = useCallback((stageX: number, stageY: number) => {
+    const transform = getImageTransform();
+    if (!transform.scale || !transform.naturalWidth || !transform.naturalHeight) return { x: 0, y: 0 };
+    
+    // Image is centered at stage center
+    const centerX = stageSize.width / 2;
+    const centerY = stageSize.height / 2;
+    
+    // Translate to image center
+    let x = stageX - centerX;
+    let y = stageY - centerY;
+    
+    // Apply inverse rotation
+    const angleRad = (-editState.rotation * Math.PI) / 180;
+    const cos = Math.cos(angleRad);
+    const sin = Math.sin(angleRad);
+    const rotatedX = x * cos - y * sin;
+    const rotatedY = x * sin + y * cos;
+    
+    // Convert to natural coordinates
+    x = (rotatedX / transform.scale) + transform.naturalWidth / 2;
+    y = (rotatedY / transform.scale) + transform.naturalHeight / 2;
+    
+    return { x, y };
+  }, [getImageTransform, editState.rotation, stageSize]);
 
-  // Update crop while dragging
-  const handleCropMove = useCallback((e: React.MouseEvent) => {
-    if (!cropStart || !containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setCropEnd({ x, y });
-  }, [cropStart]);
+  // Convert natural image coordinates to stage coordinates
+  const naturalToStage = useCallback((naturalX: number, naturalY: number) => {
+    const transform = getImageTransform();
+    if (!transform.scale || !transform.naturalWidth || !transform.naturalHeight) return { x: 0, y: 0 };
+    
+    // Convert from natural to display coordinates
+    let x = (naturalX - transform.naturalWidth / 2) * transform.scale;
+    let y = (naturalY - transform.naturalHeight / 2) * transform.scale;
+    
+    // Apply rotation
+    const angleRad = (editState.rotation * Math.PI) / 180;
+    const cos = Math.cos(angleRad);
+    const sin = Math.sin(angleRad);
+    const rotatedX = x * cos - y * sin;
+    const rotatedY = x * sin + y * cos;
+    
+    // Translate to stage center
+    const centerX = stageSize.width / 2;
+    const centerY = stageSize.height / 2;
+    
+    return {
+      x: rotatedX + centerX,
+      y: rotatedY + centerY,
+    };
+  }, [getImageTransform, editState.rotation, stageSize]);
 
-  // End crop
-  const handleCropEnd = useCallback(() => {
-    if (!cropStart || !cropEnd || !containerRef.current || !imageRef.current) {
-      setIsCropMode(false);
+  // Handle stage mouse down
+  const handleStageMouseDown = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
+    if (!imageElement) return;
+    
+    const stage = e.target.getStage();
+    if (!stage) return;
+    
+    const pointerPos = stage.getPointerPosition();
+    if (!pointerPos) return;
+    
+    if (activeTool === 'crop') {
+      const natural = stageToNatural(pointerPos.x, pointerPos.y);
+      setCropStart(natural);
+      setCropEnd(natural);
+      setIsCropDragging(true);
+    } else if (activeTool === 'arrow') {
+      const natural = stageToNatural(pointerPos.x, pointerPos.y);
+      setArrowStart(natural);
+      setArrowEnd(natural);
+      setIsArrowDragging(true);
+    }
+  }, [activeTool, imageElement, stageToNatural]);
+
+  // Handle stage mouse move
+  const handleStageMouseMove = useCallback((e: Konva.KonvaEventObject<MouseEvent>) => {
+    if (!imageElement) return;
+    
+    const stage = e.target.getStage();
+    if (!stage) return;
+    
+    const pointerPos = stage.getPointerPosition();
+    if (!pointerPos) return;
+    
+    if (isCropDragging && cropStart) {
+      const natural = stageToNatural(pointerPos.x, pointerPos.y);
+      setCropEnd(natural);
+    } else if (isArrowDragging && arrowStart) {
+      const natural = stageToNatural(pointerPos.x, pointerPos.y);
+      setArrowEnd(natural);
+    }
+  }, [imageElement, isCropDragging, isArrowDragging, cropStart, arrowStart, stageToNatural]);
+
+  // Handle stage mouse up
+  const handleStageMouseUp = useCallback(() => {
+    if (isCropDragging && cropStart && cropEnd) {
+      const x1 = Math.min(cropStart.x, cropEnd.x);
+      const y1 = Math.min(cropStart.y, cropEnd.y);
+      const x2 = Math.max(cropStart.x, cropEnd.x);
+      const y2 = Math.max(cropStart.y, cropEnd.y);
+      
+      const width = x2 - x1;
+      const height = y2 - y1;
+      
+      if (width > 10 && height > 10 && imageElement) {
+        const naturalWidth = imageElement.width;
+        const naturalHeight = imageElement.height;
+        
+        updateEditState({
+          crop: {
+            x: (x1 / naturalWidth) * 100,
+            y: (y1 / naturalHeight) * 100,
+            width: (width / naturalWidth) * 100,
+            height: (height / naturalHeight) * 100,
+          },
+        });
+      }
+      
+      setIsCropDragging(false);
       setCropStart(null);
       setCropEnd(null);
-      return;
-    }
-
-    const rect = containerRef.current.getBoundingClientRect();
-    const imgRect = imageRef.current.getBoundingClientRect();
-    
-    // Calculate crop relative to image
-    const x1 = Math.min(cropStart.x, cropEnd.x) - (imgRect.left - rect.left);
-    const y1 = Math.min(cropStart.y, cropEnd.y) - (imgRect.top - rect.top);
-    const x2 = Math.max(cropStart.x, cropEnd.x) - (imgRect.left - rect.left);
-    const y2 = Math.max(cropStart.y, cropEnd.y) - (imgRect.top - rect.top);
-
-    const width = x2 - x1;
-    const height = y2 - y1;
-
-    if (width > 10 && height > 10) {
-      // Convert to percentage of image dimensions
-      const imgWidth = imgRect.width;
-      const imgHeight = imgRect.height;
+    } else if (isArrowDragging && arrowStart && arrowEnd) {
+      const dx = arrowEnd.x - arrowStart.x;
+      const dy = arrowEnd.y - arrowStart.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
       
-      updateEditState({
-        crop: {
-          x: (x1 / imgWidth) * 100,
-          y: (y1 / imgHeight) * 100,
-          width: (width / imgWidth) * 100,
-          height: (height / imgHeight) * 100,
-        },
-      });
+      if (distance > 10 && imageElement) {
+        const naturalWidth = imageElement.width;
+        const naturalHeight = imageElement.height;
+        
+        updateEditState({
+          arrows: [
+            ...editState.arrows,
+            {
+              id: `arrow-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+              x1: (arrowStart.x / naturalWidth) * 100,
+              y1: (arrowStart.y / naturalHeight) * 100,
+              x2: (arrowEnd.x / naturalWidth) * 100,
+              y2: (arrowEnd.y / naturalHeight) * 100,
+            },
+          ],
+        });
+      }
+      
+      setIsArrowDragging(false);
+      setArrowStart(null);
+      setArrowEnd(null);
     }
-
-    setIsCropMode(false);
-    setCropStart(null);
-    setCropEnd(null);
-    setActiveTool(null);
-  }, [cropStart, cropEnd, updateEditState]);
-
-  // Add arrow
-  const handleAddArrow = useCallback((e: React.MouseEvent) => {
-    if (!imageRef.current || activeTool !== 'arrow') return;
-    
-    const imgRect = imageRef.current.getBoundingClientRect();
-    
-    const x = ((e.clientX - imgRect.left) / imgRect.width) * 100;
-    const y = ((e.clientY - imgRect.top) / imgRect.height) * 100;
-
-    const newArrow = {
-      id: `arrow-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      x: Math.max(0, Math.min(100, x)),
-      y: Math.max(0, Math.min(100, y)),
-      angle: 0,
-    };
-
-    updateEditState({
-      arrows: [...editState.arrows, newArrow],
-    });
-  }, [activeTool, editState.arrows, updateEditState]);
+  }, [isCropDragging, isArrowDragging, cropStart, cropEnd, arrowStart, arrowEnd, imageElement, editState.arrows, updateEditState]);
 
   // Delete arrow
   const handleDeleteArrow = useCallback((arrowId: string) => {
@@ -270,10 +487,12 @@ export function ImageEditModal({
     onClose();
   }, [currentImageId, editState, updateMetadata, onClose]);
 
-  // Handle image selection from thumbnail strip
-  const handleThumbnailSelect = useCallback((imageId: string) => {
-    // Save current edits before switching
-    if (currentImageId && editState) {
+  // Handle previous image
+  const handlePrevious = useCallback(() => {
+    if (!currentImageId || allImages.length === 0) return;
+    const currentIndex = allImages.findIndex(img => img.id === currentImageId);
+    if (currentIndex > 0) {
+      // Save current edits before switching
       updateMetadata(currentImageId, {
         edits: {
           rotation: editState.rotation !== 0 ? editState.rotation : undefined,
@@ -281,141 +500,246 @@ export function ImageEditModal({
           arrows: editState.arrows.length > 0 ? editState.arrows : undefined,
         },
       });
+      
+      const prevImage = allImages[currentIndex - 1];
+      if (prevImage) {
+        setCurrentImageId(prevImage.id);
+        onImageSelect?.(prevImage.id);
+      }
     }
-    setCurrentImageId(imageId);
-    onImageSelect?.(imageId);
-  }, [currentImageId, editState, updateMetadata, onImageSelect]);
+  }, [currentImageId, allImages, editState, updateMetadata, onImageSelect]);
 
-  if (!currentImage) {
-    return null;
+  // Handle next image
+  const handleNext = useCallback(() => {
+    if (!currentImageId || allImages.length === 0) return;
+    const currentIndex = allImages.findIndex(img => img.id === currentImageId);
+    if (currentIndex < allImages.length - 1) {
+      // Save current edits before switching
+      updateMetadata(currentImageId, {
+        edits: {
+          rotation: editState.rotation !== 0 ? editState.rotation : undefined,
+          crop: editState.crop || undefined,
+          arrows: editState.arrows.length > 0 ? editState.arrows : undefined,
+        },
+      });
+      
+      const nextImage = allImages[currentIndex + 1];
+      if (nextImage) {
+        setCurrentImageId(nextImage.id);
+        onImageSelect?.(nextImage.id);
+      }
+    }
+  }, [currentImageId, allImages, editState, updateMetadata, onImageSelect]);
+
+  if (!currentImage || !imageElement) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-[100vw] w-screen h-screen max-h-screen p-0 gap-0 translate-x-[-50%] translate-y-[-50%] left-1/2 top-1/2 rounded-none">
+          <DialogTitle className="sr-only">Edit Image</DialogTitle>
+          <DialogDescription className="sr-only">Image editing modal</DialogDescription>
+          <div className="flex h-full items-center justify-center">
+            <div className="text-center">
+              <p className="text-slate-600">Loading image...</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
   }
 
+  const currentIndex = allImages.findIndex(img => img.id === currentImageId);
+  const hasPrevious = currentIndex > 0;
+  const hasNext = currentIndex < allImages.length - 1;
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < history.length - 1;
   const hasChanges = editState.rotation !== 0 || editState.crop !== null || editState.arrows.length > 0;
+  
+  const transform = getImageTransform();
+  const cursor = activeTool === 'crop' || activeTool === 'arrow' ? 'crosshair' : 'default';
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-[100vw] w-screen h-screen max-h-screen p-0 gap-0 translate-x-[-50%] translate-y-[-50%] left-1/2 top-1/2 rounded-none">
+        <DialogTitle className="sr-only">Edit Image</DialogTitle>
+        <DialogDescription className="sr-only">Image editing modal with rotation, crop, and arrow tools</DialogDescription>
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-          <h2 className="text-lg font-semibold text-slate-900">Edit Image</h2>
-          <div className="flex items-center gap-2">
-            <Button onClick={handleReset} variant="outline" size="sm" disabled={!hasChanges}>
-              Reset
-            </Button>
-            <Button onClick={onClose} variant="outline" size="sm">
+        <div className="flex items-center justify-between border-b border-slate-200 px-3 py-1.5">
+          <div className="flex items-center gap-1.5">
+            <h2 className="text-xs font-semibold text-slate-900">Edit Image</h2>
+            {/* Previous/Next Navigation */}
+            <div className="flex items-center gap-0.5">
+              <Button
+                onClick={handlePrevious}
+                variant="ghost"
+                size="sm"
+                disabled={!hasPrevious}
+                title="Previous image"
+                className="h-6 w-6 p-0"
+              >
+                <ChevronLeft className="size-3.5" />
+              </Button>
+              <span className="text-[10px] text-slate-600 px-1">
+                {currentIndex + 1}/{allImages.length}
+              </span>
+              <Button
+                onClick={handleNext}
+                variant="ghost"
+                size="sm"
+                disabled={!hasNext}
+                title="Next image"
+                className="h-6 w-6 p-0"
+              >
+                <ChevronRight className="size-3.5" />
+              </Button>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button onClick={onClose} variant="ghost" size="sm" className="h-6 px-2 text-[10px]">
               Cancel
             </Button>
-            <Button onClick={handleSave} size="sm" disabled={!hasChanges}>
-              <Save className="mr-2 size-4" />
+            <Button onClick={handleSave} size="sm" disabled={!hasChanges} className="h-6 px-2 text-[10px]">
+              <Save className="mr-1 size-3" />
               Save
             </Button>
           </div>
         </div>
 
-        {/* Thumbnail Strip */}
-        <div className="border-b border-slate-200 px-6 py-3 bg-slate-50">
-          <ThumbnailStrip
-            currentImageId={currentImageId}
-            onImageSelect={handleThumbnailSelect}
-          />
-        </div>
-
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Toolbar */}
-          <div className="border-b border-slate-200 px-6 py-3 bg-white">
-            <div className="flex items-center gap-2">
+          <div className="border-b border-slate-200 px-4 py-2 bg-white">
+            <div className="flex items-center gap-1.5">
               {/* Rotate Tools */}
-              <div className="flex items-center gap-1 border-r border-slate-200 pr-2">
+              <div className="flex items-center gap-0.5 border-r border-slate-200 pr-1">
                 <Button
                   onClick={handleRotateCCW90}
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   title="Rotate 90° counter-clockwise"
+                  className="h-7 w-7 p-0"
                 >
                   <RotateCcw className="size-4" />
                 </Button>
                 <Button
                   onClick={handleRotate90}
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   title="Rotate 90° clockwise"
+                  className="h-7 w-7 p-0"
                 >
                   <RotateCw className="size-4" />
                 </Button>
-                <input
-                  type="range"
-                  min="0"
-                  max="360"
-                  value={editState.rotation}
-                  onChange={(e) => handleRotationChange(Number(e.target.value))}
-                  className="w-24 ml-2"
-                  title={`Rotation: ${editState.rotation}°`}
-                />
-                <span className="text-xs text-slate-600 w-12">{editState.rotation}°</span>
+                {editState.rotation !== 0 && (
+                  <span className="text-xs text-slate-600 ml-1">{editState.rotation}°</span>
+                )}
               </div>
 
               {/* Crop Tool */}
-              <div className="flex items-center gap-1 border-r border-slate-200 pr-2">
+              <div className="flex items-center gap-0.5 border-r border-slate-200 pr-1">
                 <Button
                   onClick={() => {
                     setActiveTool(activeTool === 'crop' ? null : 'crop');
                     if (activeTool === 'crop') {
-                      setIsCropMode(false);
+                      setIsCropDragging(false);
                     }
                   }}
-                  variant={activeTool === 'crop' ? 'default' : 'outline'}
+                  variant={activeTool === 'crop' ? 'default' : 'ghost'}
                   size="sm"
                   title="Crop"
+                  className="h-7 w-7 p-0"
                 >
                   <Crop className="size-4" />
                 </Button>
-                {editState.crop && (
-                  <Button
-                    onClick={() => updateEditState({ crop: null })}
-                    variant="ghost"
-                    size="sm"
-                    title="Clear crop"
-                  >
-                    Clear
-                  </Button>
-                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <Button
+                      disabled={!editState.crop}
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      title="Clear crop"
+                    >
+                      <ChevronDown className="size-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem
+                      onClick={() => updateEditState({ crop: null })}
+                      disabled={!editState.crop}
+                    >
+                      Clear
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
 
               {/* Arrow Tool */}
-              <div className="flex items-center gap-1 border-r border-slate-200 pr-2">
+              <div className="flex items-center gap-0.5 border-r border-slate-200 pr-1">
                 <Button
                   onClick={() => setActiveTool(activeTool === 'arrow' ? null : 'arrow')}
-                  variant={activeTool === 'arrow' ? 'default' : 'outline'}
+                  variant={activeTool === 'arrow' ? 'default' : 'ghost'}
                   size="sm"
-                  title="Add arrow (click on image)"
+                  title="Add arrow (click and drag on image)"
+                  className="h-7 w-7 p-0"
                 >
                   <ArrowRight className="size-4" />
                 </Button>
-                {editState.arrows.length > 0 && (
-                  <span className="text-xs text-slate-600">{editState.arrows.length}</span>
-                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <Button
+                      disabled={editState.arrows.length === 0}
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      title="Clear arrows"
+                    >
+                      <ChevronDown className="size-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem
+                      onClick={() => updateEditState({ arrows: [] })}
+                      disabled={editState.arrows.length === 0}
+                    >
+                      Clear
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {/* Reset */}
+              <div className="flex items-center gap-0.5 border-r border-slate-200 pr-1">
+                <Button
+                  onClick={handleReset}
+                  variant="ghost"
+                  size="sm"
+                  disabled={!hasChanges}
+                  title="Reset all edits"
+                  className="h-7 px-2 text-xs"
+                >
+                  Reset
+                </Button>
               </div>
 
               {/* Undo/Redo */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5">
                 <Button
                   onClick={handleUndo}
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   disabled={!canUndo}
                   title="Undo"
+                  className="h-7 w-7 p-0"
                 >
                   <Undo2 className="size-4" />
                 </Button>
                 <Button
                   onClick={handleRedo}
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   disabled={!canRedo}
                   title="Redo"
+                  className="h-7 w-7 p-0"
                 >
                   <Redo2 className="size-4" />
                 </Button>
@@ -426,75 +750,142 @@ export function ImageEditModal({
           {/* Image Preview Area */}
           <div
             ref={containerRef}
-            className="flex-1 relative overflow-auto bg-slate-100 p-8"
-            onMouseMove={isCropMode ? handleCropMove : undefined}
-            onMouseUp={isCropMode ? handleCropEnd : undefined}
-            onClick={activeTool === 'arrow' ? handleAddArrow : undefined}
+            className="flex-1 relative overflow-hidden bg-slate-100"
+            style={{ cursor }}
           >
-            <div className="flex items-center justify-center h-full">
-              <div className="relative inline-block">
-                <img
-                  ref={imageRef}
-                  src={currentImage.preview}
-                  alt={currentImage.metadata.label || 'Image'}
-                  className="max-w-full max-h-full object-contain"
-                  style={{
-                    transform: `rotate(${editState.rotation}deg)`,
-                    transition: 'transform 0.2s',
-                  }}
-                  draggable={false}
-                  onMouseDown={activeTool === 'crop' ? handleCropStart : undefined}
-                />
-
-                {/* Crop Overlay (while dragging) */}
-                {isCropMode && cropStart && cropEnd && imageRef.current && (
-                  <div
-                    className="absolute border-2 border-blue-500 bg-blue-500/20 pointer-events-none"
-                    style={{
-                      left: `${Math.min(cropStart.x, cropEnd.x)}px`,
-                      top: `${Math.min(cropStart.y, cropEnd.y)}px`,
-                      width: `${Math.abs(cropEnd.x - cropStart.x)}px`,
-                      height: `${Math.abs(cropEnd.y - cropStart.y)}px`,
-                    }}
-                  />
+            {stageSize.width > 0 && stageSize.height > 0 ? (
+              <Stage
+                ref={stageRef}
+                width={stageSize.width}
+                height={stageSize.height}
+                onMouseDown={handleStageMouseDown}
+                onMouseMove={handleStageMouseMove}
+                onMouseUp={handleStageMouseUp}
+              >
+              <Layer>
+                {/* Image */}
+                {imageElement && stageSize.width > 0 && stageSize.height > 0 && (
+                  <Group
+                    x={stageSize.width / 2}
+                    y={stageSize.height / 2}
+                    rotation={editState.rotation}
+                  >
+                    <KonvaImage
+                      image={imageElement}
+                      width={transform.width}
+                      height={transform.height}
+                      x={-transform.width / 2}
+                      y={-transform.height / 2}
+                    />
+                  </Group>
                 )}
 
-                {/* Crop Display (saved crop) */}
-                {editState.crop && !isCropMode && imageRef.current && (
-                  <div
-                    className="absolute border-2 border-dashed border-purple-500 bg-purple-500/10 pointer-events-none"
-                    style={{
-                      left: `${editState.crop.x}%`,
-                      top: `${editState.crop.y}%`,
-                      width: `${editState.crop.width}%`,
-                      height: `${editState.crop.height}%`,
-                    }}
-                  />
-                )}
+                {/* Crop overlay (while dragging) */}
+                {isCropDragging && cropStart && cropEnd && imageElement && (() => {
+                  const start = naturalToStage(cropStart.x, cropStart.y);
+                  const end = naturalToStage(cropEnd.x, cropEnd.y);
+                  const x1 = Math.min(start.x, end.x);
+                  const y1 = Math.min(start.y, end.y);
+                  const x2 = Math.max(start.x, end.x);
+                  const y2 = Math.max(start.y, end.y);
+                  
+                  return (
+                    <Rect
+                      x={x1}
+                      y={y1}
+                      width={x2 - x1}
+                      height={y2 - y1}
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      fill="rgba(59, 130, 246, 0.2)"
+                    />
+                  );
+                })()}
+
+                {/* Crop display (saved crop) */}
+                {editState.crop && !isCropDragging && imageElement && (() => {
+                  const naturalWidth = imageElement.width;
+                  const naturalHeight = imageElement.height;
+                  const cropX = (editState.crop.x / 100) * naturalWidth;
+                  const cropY = (editState.crop.y / 100) * naturalHeight;
+                  const cropWidth = (editState.crop.width / 100) * naturalWidth;
+                  const cropHeight = (editState.crop.height / 100) * naturalHeight;
+                  
+                  const topLeft = naturalToStage(cropX, cropY);
+                  const bottomRight = naturalToStage(cropX + cropWidth, cropY + cropHeight);
+                  
+                  return (
+                    <Rect
+                      x={Math.min(topLeft.x, bottomRight.x)}
+                      y={Math.min(topLeft.y, bottomRight.y)}
+                      width={Math.abs(bottomRight.x - topLeft.x)}
+                      height={Math.abs(bottomRight.y - topLeft.y)}
+                      stroke="#a855f7"
+                      strokeWidth={2}
+                      dash={[5, 5]}
+                      fill="rgba(168, 85, 247, 0.1)"
+                    />
+                  );
+                })()}
+
+                {/* Arrow preview (while dragging) */}
+                {isArrowDragging && arrowStart && arrowEnd && imageElement && (() => {
+                  const start = naturalToStage(arrowStart.x, arrowStart.y);
+                  const end = naturalToStage(arrowEnd.x, arrowEnd.y);
+                  
+                  return (
+                    <Arrow
+                      points={[start.x, start.y, end.x, end.y]}
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      fill="#3b82f6"
+                      pointerLength={10}
+                      pointerWidth={10}
+                    />
+                  );
+                })()}
 
                 {/* Arrows */}
-                {editState.arrows.map((arrow) => (
-                  <div
-                    key={arrow.id}
-                    className="absolute pointer-events-auto cursor-pointer group"
-                    style={{
-                      left: `${arrow.x}%`,
-                      top: `${arrow.y}%`,
-                      transform: `translate(-50%, -50%) rotate(${arrow.angle || 0}deg)`,
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (activeTool === 'arrow') {
-                        handleDeleteArrow(arrow.id);
-                      }
-                    }}
-                    title={activeTool === 'arrow' ? 'Click to delete' : ''}
-                  >
-                    <ArrowRight className="size-6 text-red-500 group-hover:text-red-700" />
-                  </div>
-                ))}
+                {editState.arrows.map((arrow) => {
+                  if (!imageElement) return null;
+                  
+                  const naturalWidth = imageElement.width;
+                  const naturalHeight = imageElement.height;
+                  const x1 = (arrow.x1 / 100) * naturalWidth;
+                  const y1 = (arrow.y1 / 100) * naturalHeight;
+                  const x2 = (arrow.x2 / 100) * naturalWidth;
+                  const y2 = (arrow.y2 / 100) * naturalHeight;
+                  
+                  const start = naturalToStage(x1, y1);
+                  const end = naturalToStage(x2, y2);
+                  
+                  return (
+                    <Group
+                      key={arrow.id}
+                      onClick={() => {
+                        if (activeTool === 'arrow') {
+                          handleDeleteArrow(arrow.id);
+                        }
+                      }}
+                    >
+                      <Arrow
+                        points={[start.x, start.y, end.x, end.y]}
+                        stroke="#ef4444"
+                        strokeWidth={2}
+                        fill="#ef4444"
+                        pointerLength={10}
+                        pointerWidth={10}
+                      />
+                    </Group>
+                  );
+                })}
+              </Layer>
+            </Stage>
+            ) : (
+              <div className="flex h-full items-center justify-center">
+                <p className="text-slate-600">Initializing...</p>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </DialogContent>
