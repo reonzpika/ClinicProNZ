@@ -11,8 +11,8 @@ purpose: Manual weekly curation of NZ medical news for LinkedIn post to test dem
 ## Curation Notes
 
 **Date**: 2025-11-08  
-**Sources Checked**: HINZ, LinkedIn (healthtech companies), Medtech Evolution  
-**Items Selected**: 5 items  
+**Sources Checked**: New Zealand Government (Beehive), LinkedIn (healthtech companies), Medtech Evolution, Indici  
+**Items Selected**: 4 items  
 **Format**: Format B - Weekly Roundup  
 **Theme**: AI in healthcare - scribe technology and AI-enabled practice management systems
 
@@ -20,47 +20,52 @@ purpose: Manual weekly curation of NZ medical news for LinkedIn post to test dem
 
 ## Curated News Items
 
-### Item 1: HINZ News
-**Headline**: AI scribe rolled out to EDs nationwide
+### Item 1: New Zealand Government (Beehive)
+**Headline**: AI scribe to speed emergency care for patients
 
-**Why it matters to GPs**: AI scribe technology is expanding beyond general practice into emergency departments, showing broader adoption of AI-assisted documentation across the health system. This signals a shift toward AI becoming standard in clinical workflows, which GPs should be aware of as they evaluate their own documentation tools.
+**Why it matters to GPs**: AI scribe technology is expanding beyond general practice into emergency departments nationwide, showing broader adoption of AI-assisted documentation across the health system. This signals a shift toward AI becoming standard in clinical workflows, which GPs should be aware of as they evaluate their own documentation tools.
 
 **Key takeaway**: AI scribe technology is gaining traction across NZ healthcare settings, not just in general practice.
 
-**Link**: https://www.hinz.org.nz/news/713303/AI-scribe-rolled-out-to-EDs-nationwide.htm
+**Link**: https://www.beehive.govt.nz/release/ai-scribe-speed-emergency-care-patients
 
 ---
 
-### Item 2: Medtech Evolution
-**Headline**: Medtech Evolution practices gain AI-enabled capabilities
+### Item 2: Medtech Evolution + IntelliTek Health
+**Headline**: Medtech Evolution practices gain AI-enabled capabilities with IntelliTek Health's Clinical Virtual Assistant
 
-**Why it matters to GPs**: Medtech Evolution is one of the most widely used practice management systems in NZ. The addition of AI-enabled capabilities directly impacts thousands of GPs who use Medtech, potentially changing how they interact with their PMS and what features they can access for clinical documentation and workflow optimisation.
+**Why it matters to GPs**: Medtech Evolution is one of the most widely used practice management systems in NZ. IntelliTek Health's Clinical Virtual Assistant integration directly impacts thousands of GPs who use Medtech, offering real-time ambient documentation. Notably, this tool was recently endorsed by Health NZ's National AI and Algorithm Expert Advisory Group, adding credibility to AI-assisted workflows.
 
-**Key takeaway**: Major PMS providers are integrating AI features, making AI-assisted workflows more accessible to mainstream GP practices.
+**Key takeaway**: Major PMS providers are integrating AI features, making AI-assisted workflows more accessible to mainstream GP practices, with government endorsement adding validation.
 
-**Link**: https://www.linkedin.com/pulse/medtech-evolution-practices-gain-ai-enabled-capabilities-dltxc/
+**Links**: 
+- Product: https://www.intellitekhealth.com/products/clinical-virtual-assistant
+- Announcement: https://www.linkedin.com/pulse/medtech-evolution-practices-gain-ai-enabled-capabilities-dltxc/
+- Health NZ endorsement: https://www.linkedin.com/posts/intellitekhealth_aotearoahealth-healthtech-aihealth-activity-7390124503936266240-d38R/
 
 ---
 
 ### Item 3: Practice AI New Zealand
-**Headline**: Practice AI New Zealand company updates
+**Headline**: Practice AI New Zealand - AI healthcare solution
 
 **Why it matters to GPs**: Practice AI represents another player in the NZ AI healthcare space, offering GPs more options for AI-assisted practice management. Understanding the competitive landscape helps GPs make informed decisions about which AI tools best fit their practice needs and workflows.
 
 **Key takeaway**: Multiple AI healthcare solutions are emerging in NZ, giving GPs choice but also requiring evaluation of different options.
 
-**Link**: https://www.linkedin.com/company/practice-ai-new-zealand/posts/
+**Link**: https://www.practiceai.co.nz/
 
 ---
 
-### Item 4: Indici NZ
-**Headline**: Indici AI in healthcare developments
+### Item 4: Indici + Octans Care
+**Headline**: Indici PMS integrates Octans Care AI capabilities
 
-**Why it matters to GPs**: Indici is another practice management system used by NZ practices. Their AI developments indicate the broader trend of PMS providers integrating AI capabilities, which will affect how GPs work regardless of which system they use. This represents the industry-wide shift toward AI-enhanced clinical workflows.
+**Why it matters to GPs**: Indici is another practice management system used by NZ practices. The integration of Octans Care AI features indicates the broader trend of PMS providers integrating AI capabilities, which will affect how GPs work regardless of which system they use. This represents the industry-wide shift toward AI-enhanced clinical workflows.
 
 **Key takeaway**: AI integration is becoming standard across multiple PMS platforms, not just one provider.
 
-**Link**: https://www.linkedin.com/posts/indici-nz_indici-aiinhealthcare-digitalhealth-activity-7391579294021591040-fGj9
+**Links**:
+- Octans Care: https://www.octanscare.co.nz/
+- Indici announcement: https://www.linkedin.com/posts/indici-nz_indici-aiinhealthcare-digitalhealth-activity-7391579294021591040-fGj9
 
 ---
 
@@ -79,19 +84,18 @@ purpose: Manual weekly curation of NZ medical news for LinkedIn post to test dem
 
 ---
 
-AI is reshaping NZ healthcare faster than expected. Here are 5 updates every GP should know this week:
+AI is reshaping NZ healthcare faster than expected. Here are 4 updates every GP should know this week:
 
 📰 **This Week in NZ General Practice**
 
-• **AI scribe rolled out to EDs nationwide** - AI-assisted documentation is expanding beyond general practice into emergency departments, signalling broader health system adoption of AI tools.
+• **AI scribe rolled out to EDs nationwide** - The government announced AI scribe technology is expanding to emergency departments nationwide, signalling broader health system adoption of AI-assisted documentation beyond general practice.
 
-• **PMS providers integrating AI features** - Medtech Evolution and Indici are both adding AI capabilities to their practice management systems, making AI-assisted workflows accessible to thousands of NZ GPs.
+• **PMS providers integrating AI features** - Medtech Evolution (with IntelliTek Health's Clinical Virtual Assistant) and Indici (with Octans Care) are both adding AI capabilities to their practice management systems, making AI-assisted workflows accessible to thousands of NZ GPs. Notably, IntelliTek Health was recently endorsed by Health NZ's National AI and Algorithm Expert Advisory Group.
 
 • **Recently launched AI tools in NZ**:
-  - IntelliTek Health (Clinical Virtual Assistant - integrated with Medtech Evolution)
-  - Practice AI New Zealand
-  - Octans Care
-  - [Additional tools from articles - need verification]
+  - **IntelliTek Health** - Clinical Virtual Assistant (on Medtech Evolution) - https://www.intellitekhealth.com/products/clinical-virtual-assistant
+  - **Practice AI New Zealand** - https://www.practiceai.co.nz/
+  - **Octans Care** - AI features (on Indici) - https://www.octanscare.co.nz/
 
 • **The Waiting Room Sessions** - Ongoing discussions about healthcare innovation are shaping the future of general practice and how GPs will work with AI tools.
 
