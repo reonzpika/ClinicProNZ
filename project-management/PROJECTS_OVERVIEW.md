@@ -2,8 +2,8 @@
 project_name: Projects Overview - Mission Control
 project_stage: Operational
 owner: AI Assistant
-last_updated: "2025-11-07"
-version: "1.0.3"
+last_updated: "2025-11-09"
+version: "1.0.4"
 tags:
   - dashboard
   - portfolio
@@ -39,6 +39,7 @@ tags:
 ### Recent Achievements Across Projects
 *[AI will auto-populate this section based on recent milestones and updates]*
 
+- **2025-11-09**: Medtech Integration — FHIR MCP Server installed for FHIR development (learning/prototyping tool); Cannot connect directly to ALEX (requires custom headers); Continue using BFF for ALEX testing
 - **2025-11-07**: Medtech Integration — POST Media endpoint implemented; Facility ID configuration blocker identified (403 error); Email sent to Medtech ALEX support
 - **2025-11-07**: Strategic prioritisation review — Medtech Integration identified as high ROI revenue path; ClinicPro marketing ROI questioned given competitive market
 - **2025-11-07**: Solo founder/developer context noted — limited time/resources require focus on highest ROI activities
@@ -132,13 +133,14 @@ tags:
 - **Folder**: `medtech-integration`
 - **Stage**: Build
 - **Owner**: Solo Founder/Developer
-- **Last Updated**: 2025-11-07
+- **Last Updated**: 2025-11-09
 - **Summary**: Clinical images widget integration with Medtech Evolution/Medtech32 via ALEX API. Enables GPs to capture/upload photos from within Medtech, saved back to patient encounters via FHIR API. **Revenue Strategy**: Modular features approach — images widget is first module. Once ready, can immediately pitch to Medtech's existing customer base (3,000+ GPs) for revenue. Clear revenue path with existing customer base.
 - **Key Dates**: 
   - OAuth service completed: Oct 31, 2024
   - BFF deployed: Oct 31, 2024
   - IP allow-listing resolved: Jan 15, 2025
-- **Status**: Active — Facility ID configuration blocker; Email sent to Medtech support (2025-11-07)
+  - FHIR MCP Server installed: Nov 9, 2025 (for FHIR learning, not direct ALEX testing)
+- **Status**: Active — Facility ID configuration blocker; Email sent to Medtech support (2025-11-07). FHIR MCP Server installed for development support (HAPI test server).
 - **Link**: [View Full Summary](./medtech-integration/PROJECT_SUMMARY.md)
 - **Technical Docs**: `/project-management/medtech-integration/docs/`
 
@@ -204,4 +206,4 @@ tags:
 
 ---
 
-*Dashboard Last Updated: [2025-11-07] - ClinicPro GTM plan added; schedule updated*
+*Dashboard Last Updated: [2025-11-09] - Medtech Integration: FHIR MCP Server setup completed*

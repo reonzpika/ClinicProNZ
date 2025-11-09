@@ -58,5 +58,15 @@
     "postcss",
     "github-actions-workflow"
   ],
-  "testing.automaticallyOpenTestResults": "neverOpen"
+  "testing.automaticallyOpenTestResults": "neverOpen",
+
+  // FHIR MCP Server Configuration
+  "mcp": {
+    "servers": {
+      "fhir": {
+        "type": "http",
+        "url": "http://localhost:8000/mcp"
+      }
+    }
+  }
 }

@@ -2,8 +2,8 @@
 project_name: Medtech ALEX Integration
 project_stage: Build
 owner: Development Team
-last_updated: "2025-11-07"
-version: "0.6.0"
+last_updated: "2025-11-09"
+version: "0.6.1"
 tags:
   - integration
   - medtech
@@ -444,6 +444,7 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 - **Implementation Status**: [`IMPLEMENTATION_STATUS.md`](./IMPLEMENTATION_STATUS.md) - Current implementation status and next steps
 - **Environment Variables Guide**: [`UPDATE_ENV_VARIABLES.md`](./UPDATE_ENV_VARIABLES.md) - Step-by-step guide for updating environment variables
 - **Email to Medtech**: [`EMAIL_MEDTECH_FACILITY_ID.md`](./EMAIL_MEDTECH_FACILITY_ID.md) - Email draft sent to Medtech ALEX support regarding facility ID
+- **FHIR MCP Server Setup**: [`docs/FHIR_MCP_SERVER_SETUP.md`](./docs/FHIR_MCP_SERVER_SETUP.md) - FHIR development tool setup guide (for FHIR learning, not direct ALEX testing)
 
 ### External Documentation
 - **ALEX API Documentation**: https://alexapidoc.medtechglobal.com/ (Source of Truth)
@@ -490,6 +491,9 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 - `test-fhir-call.sh` — FHIR API call test script
 - `TEST_OAUTH_README.md` — Complete testing guide and troubleshooting
 
+**Development Tools** (`docs/`):
+- `FHIR_MCP_SERVER_SETUP.md` — FHIR MCP Server setup guide for FHIR learning and prototyping (not for direct ALEX testing)
+
 **Code References**:
 - Infrastructure: `/src/lib/services/medtech/` (OAuth, ALEX client, correlation ID, FHIR types)
 - Widget Components: `/src/medtech/images-widget/` (components, hooks, services, stores)
@@ -499,6 +503,19 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 ---
 
 ## Updates History
+
+### [2025-11-09] — FHIR MCP Server Setup
+- **FHIR MCP Server Installed**: Development tool for FHIR learning and prototyping
+  - Configured with public HAPI FHIR test server (https://hapi.fhir.org/baseR4)
+  - VS Code integration added (`.vscode/settings.json`)
+  - Environment configuration created (`.fhir-mcp-server.env`)
+  - Documentation created (`docs/FHIR_MCP_SERVER_SETUP.md`)
+- **Important Limitation Identified**: MCP server cannot connect directly to ALEX API
+  - ALEX requires custom headers (mt-facilityid, mt-correlationid, mt-appid) that MCP server doesn't inject
+  - MCP server is useful for FHIR learning and prototyping, not for direct ALEX testing
+  - Continue using BFF (api.clinicpro.co.nz) for ALEX API testing
+- **Use Cases**: FHIR resource exploration, query prototyping, learning FHIR operations
+- **Status**: Ready for use with HAPI test server; documented limitations for ALEX
 
 ### [2025-11-07] — POST Media Implementation & Facility ID Blocker
 - **POST Media Endpoint Implemented**: Replaced mock with real ALEX API integration
