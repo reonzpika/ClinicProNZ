@@ -54,9 +54,16 @@ curl http://localhost:8000/health
 pkill -f fhir-mcp-server
 ```
 
-### Use in VS Code
+### Use in Cursor AI
 
-Once the server is running, ask VS Code Copilot (or in Cursor, ask me):
+**Auto-activation**: The rule file `.cursor/rules/fhir-medtech-development.mdc` automatically activates when you open FHIR/Medtech files.
+
+**Triggers on**:
+- Files in `src/medtech/`, `app/api/(integration)/medtech/`
+- Files with `medtech`, `fhir`, or `alex` in the name
+- Medtech project documentation
+
+Once the server is running, just open a Medtech file and ask:
 
 ```
 "Search for Patient resources with family name 'Simpson'"

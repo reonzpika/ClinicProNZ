@@ -1,0 +1,377 @@
+---
+description: "FHIR & Medtech ALEX API Development - Use MCP server for FHIR resources, follow Medtech conventions"
+alwaysApply: false
+globs:
+  - "**/medtech/**/*.{ts,tsx,js,jsx}"
+  - "**/api/**/medtech/**/*.{ts,tsx}"
+  - "**/services/medtech/**/*.{ts,tsx}"
+  - "**/lib/services/medtech/**/*.{ts,tsx}"
+  - "**/*medtech*.{ts,tsx}"
+  - "**/*fhir*.{ts,tsx}"
+  - "**/*alex*.{ts,tsx}"
+  - "**/project-management/medtech-integration/**/*.md"
+---
+
+# FHIR & Medtech Development Rule
+
+**Context**: You are working on FHIR-related code or Medtech ALEX API integration.
+
+---
+
+## FHIR MCP Server Available
+
+**Status**: ✅ FHIR MCP Server is running on http://localhost:8000
+
+**Use the FHIR MCP Server tools** to help with development:
+- `get_capabilities` - Explore FHIR resource types and search parameters
+- `search` - Search for FHIR resources on test server
+- `read` - Read specific FHIR resources by ID
+- `create` - Create test FHIR resources
+- `update` - Update test FHIR resources
+- `delete` - Delete test FHIR resources
+
+**When to use MCP tools**:
+- User asks about FHIR resource structure
+- User needs to understand FHIR search parameters
+- User wants to see example FHIR resources
+- User is prototyping FHIR queries
+- User asks "how do I query X in FHIR?"
+- User asks "what fields are required for resource Y?"
+
+**Example interactions**:
+```
+User: "What fields are required for a FHIR Media resource?"
+AI: [Uses get_capabilities tool to fetch Media resource definition]
+
+User: "Show me an example Patient resource"
+AI: [Uses search tool to find Patient resources on HAPI test server]
+
+User: "What search parameters does Observation support?"
+AI: [Uses get_capabilities('Observation') to show search params]
+```
+
+---
+
+## Important: Medtech ALEX API Limitation
+
+⚠️ **CRITICAL**: The FHIR MCP Server **CANNOT connect directly to Medtech ALEX API** because:
+- ALEX requires custom HTTP headers (`mt-facilityid`, `mt-correlationid`, `mt-appid`)
+- The MCP server doesn't inject these headers
+- ALEX uses Azure AD OAuth2 that requires specific handling
+
+**What this means**:
+- ✅ Use MCP server for **learning FHIR** (connected to HAPI public test server)
+- ✅ Use MCP server for **prototyping queries** before implementing in BFF
+- ❌ Do NOT try to connect MCP server directly to ALEX API (won't work)
+- ✅ For **ALEX testing**, use the BFF at `api.clinicpro.co.nz`
+
+---
+
+## Medtech ALEX API Requirements
+
+When implementing code that calls the Medtech ALEX API, **always include these headers**:
+
+```typescript
+const headers = {
+  'Authorization': `Bearer ${accessToken}`,
+  'mt-facilityid': process.env.MEDTECH_FACILITY_ID!, // e.g., 'F99669-C'
+  'mt-correlationid': uuidv4(),
+  'mt-appid': 'ClinicPro',
+  'Content-Type': 'application/fhir+json',
+};
+```
+
+**Never make ALEX API calls without these headers** - they will fail with 400/403 errors.
+
+---
+
+## Code Architecture Standards
+
+### Use Existing Services
+
+**OAuth & API Client**: Use existing infrastructure, don't recreate:
+- **OAuth Token Service**: `/src/lib/services/medtech/oauth-token-service.ts`
+  - Handles Azure AD OAuth2 token acquisition
+  - 55-minute token cache with auto-refresh
+  - Thread-safe for concurrent requests
+- **ALEX API Client**: `/src/lib/services/medtech/alex-api-client.ts`
+  - Auto-injects required headers
+  - FHIR OperationOutcome error mapping
+  - Retry logic for transient failures
+
+**Example usage**:
+```typescript
+import { getAlexApiClient } from '@/src/lib/services/medtech/alex-api-client';
+
+const client = getAlexApiClient();
+const patient = await client.get(`/Patient/${patientId}`);
+```
+
+### FHIR Type Definitions
+
+Use TypeScript types from `/src/lib/services/medtech/types.ts`:
+- `FhirPatient`
+- `FhirMedia`
+- `FhirObservation`
+- `FhirBundle`
+- `FhirOperationOutcome`
+- etc.
+
+**Don't create duplicate type definitions** - use existing ones.
+
+---
+
+## Development Workflow
+
+### 1. Learning Phase (Use MCP Server)
+
+When implementing a new FHIR resource type:
+
+1. **Understand the resource structure**:
+   ```
+   Ask: "Show me the structure of a FHIR [ResourceType] resource"
+   AI will use: get_capabilities('[ResourceType]')
+   ```
+
+2. **See example data**:
+   ```
+   Ask: "Show me an example [ResourceType] resource"
+   AI will use: search(type='[ResourceType]', searchParam={...})
+   ```
+
+3. **Understand search parameters**:
+   ```
+   Ask: "What search parameters does [ResourceType] support?"
+   AI will use: get_capabilities('[ResourceType]')
+   ```
+
+### 2. Prototyping Phase (Use MCP Server)
+
+Test FHIR queries on HAPI before implementing:
+
+```
+Ask: "Search for Observations with code 'blood-pressure'"
+AI will use: search(type='Observation', searchParam={'code': 'blood-pressure'})
+```
+
+Once query works on HAPI, implement in your BFF with ALEX-specific headers.
+
+### 3. Implementation Phase (Use BFF)
+
+Implement in Next.js API routes using existing services:
+
+```typescript
+// app/api/(integration)/medtech/[feature]/route.ts
+import { getAlexApiClient } from '@/src/lib/services/medtech/alex-api-client';
+
+export async function GET(request: Request) {
+  const client = getAlexApiClient();
+  const response = await client.get('/Patient/example');
+  return Response.json(response);
+}
+```
+
+### 4. Testing Phase (Use BFF Test Endpoints)
+
+Test against ALEX UAT:
+- `GET /api/medtech/test?nhi=ZZZ0016` - Test FHIR connectivity
+- `GET /api/medtech/token-info` - Check OAuth token status
+
+---
+
+## FHIR Best Practices
+
+### 1. Always Handle FHIR Errors
+
+FHIR returns `OperationOutcome` for errors:
+
+```typescript
+import { FhirOperationOutcome } from '@/src/lib/services/medtech/types';
+
+if (response.resourceType === 'OperationOutcome') {
+  const outcome = response as FhirOperationOutcome;
+  // Handle FHIR error
+  console.error('FHIR Error:', outcome.issue);
+}
+```
+
+### 2. Use FHIR Search Parameters Correctly
+
+FHIR search uses specific parameter syntax:
+- `patient=Patient/123` - Reference
+- `date=ge2024-01-01` - Date comparison (ge=greater or equal)
+- `code=http://loinc.org|8480-6` - Coded value with system
+- `_count=10` - Limit results
+- `_sort=-date` - Sort by date descending
+
+### 3. Handle FHIR Bundles
+
+Search results return `Bundle` resources:
+
+```typescript
+import { FhirBundle } from '@/src/lib/services/medtech/types';
+
+const bundle = response as FhirBundle<FhirPatient>;
+const patients = bundle.entry?.map(e => e.resource) || [];
+```
+
+### 4. Use FHIR References Correctly
+
+FHIR uses references like `Patient/123`, not just IDs:
+
+```typescript
+// Correct
+subject: { reference: 'Patient/123' }
+
+// Incorrect
+subject: { reference: '123' }
+```
+
+---
+
+## Medtech-Specific Conventions
+
+### Widget Development
+
+Widgets are located in:
+- **Components**: `/src/medtech/images-widget/components/`
+- **Hooks**: `/src/medtech/images-widget/hooks/`
+- **Stores**: `/src/medtech/images-widget/stores/`
+- **Services**: `/src/medtech/images-widget/services/`
+
+### API Routes
+
+Medtech API routes use route groups (don't appear in URL):
+- **Integration APIs**: `/app/api/(integration)/medtech/`
+- **Widget Pages**: `/app/(medtech)/medtech-[feature]/`
+
+### Import Paths
+
+Use path aliases consistently:
+```typescript
+import { Component } from '@/src/medtech/images-widget/components/Component';
+import { getAlexApiClient } from '@/src/lib/services/medtech/alex-api-client';
+```
+
+---
+
+## Environment Variables
+
+### Local Development (.env.local)
+
+```bash
+# Medtech ALEX API (for local testing via BFF)
+MEDTECH_CLIENT_ID=7685ade3-f1ae-4e86-a398-fe7809c0fed1
+MEDTECH_CLIENT_SECRET=Zub8Q~oBMwpgCJzif6Nn2RpRlIbt6q6g1y3ZhcID
+MEDTECH_TENANT_ID=8a024e99-aba3-4b25-b875-28b0c0ca6096
+MEDTECH_API_SCOPE=api://bf7945a6-e812-4121-898a-76fea7c13f4d/.default
+MEDTECH_API_BASE_URL=https://alexapiuat.medtechglobal.com/FHIR
+MEDTECH_FACILITY_ID=F99669-C
+
+# Feature flags
+NEXT_PUBLIC_MEDTECH_USE_MOCK=false
+```
+
+### BFF (.env on Lightsail)
+
+Same variables, but deployed to `api.clinicpro.co.nz` (Static IP: 13.236.58.12)
+
+---
+
+## Documentation References
+
+**Project Management**:
+- `/project-management/medtech-integration/PROJECT_SUMMARY.md` - Project overview and status
+
+**Technical Documentation**:
+- `/project-management/medtech-integration/docs/FHIR_MCP_SERVER_SETUP.md` - MCP server setup guide
+- `/project-management/medtech-integration/docs/api/alex-api-review-2025-10-30.md` - ALEX API reference
+- `/project-management/medtech-integration/docs/implementation/GATEWAY_IMPLEMENTATION.md` - Gateway implementation guide
+- `/project-management/medtech-integration/docs/testing/TEST_OAUTH_README.md` - Testing guide
+
+**Quick Reference**:
+- `/FHIR_MCP_QUICKSTART.md` - MCP server quick start guide (workspace root)
+
+**External Resources**:
+- ALEX API Docs: https://alexapidoc.medtechglobal.com/
+- FHIR R4 Spec: https://hl7.org/fhir/R4/
+- HAPI Test Server: https://hapi.fhir.org/baseR4
+
+---
+
+## Common Tasks
+
+### "I need to implement a new FHIR resource type"
+
+1. Ask AI: "Show me the structure of FHIR [ResourceType]" (uses MCP)
+2. Ask AI: "What are the required fields?" (uses MCP)
+3. Add TypeScript type to `/src/lib/services/medtech/types.ts` if missing
+4. Implement in BFF API route using `getAlexApiClient()`
+5. Test with `/api/medtech/test` endpoint
+
+### "I need to search for FHIR resources"
+
+1. Ask AI: "What search parameters does [ResourceType] support?" (uses MCP)
+2. Prototype query: "Search for [ResourceType] with [parameters]" (uses MCP on HAPI)
+3. Implement in BFF using same query with ALEX headers
+4. Test against ALEX UAT
+
+### "I'm getting a FHIR error"
+
+1. Check if it's an `OperationOutcome` response
+2. Log the `issue` array for details
+3. Common ALEX errors:
+   - 400: Missing required headers (mt-facilityid, etc.)
+   - 401: OAuth token expired (check `/api/medtech/token-info`)
+   - 403: Facility ID not recognized (contact Medtech support)
+   - 404: Resource not found
+
+### "I need to debug ALEX API calls"
+
+1. Check OAuth token: `curl https://api.clinicpro.co.nz/api/medtech/token-info`
+2. Test connectivity: `curl "https://api.clinicpro.co.nz/api/medtech/test?nhi=ZZZ0016"`
+3. Check BFF logs: `ssh into Lightsail, check systemd logs`
+4. Verify headers are being sent (mt-facilityid, mt-correlationid, mt-appid)
+
+---
+
+## AI Assistant Instructions
+
+When user is working on FHIR/Medtech code:
+
+1. **Proactively use MCP tools** when user asks about FHIR resources, search parameters, or examples
+2. **Remind user of ALEX limitations** if they try to connect MCP server to ALEX
+3. **Reference existing services** instead of suggesting new implementations
+4. **Follow architecture standards** (use services, types, conventions documented above)
+5. **Suggest MCP server exploration** when user is learning a new FHIR resource
+6. **Use TypeScript types** from `/src/lib/services/medtech/types.ts`
+7. **Include required ALEX headers** in all code examples that call ALEX API
+
+---
+
+## Example AI Responses
+
+**User asks about FHIR resource**:
+> "Let me check the FHIR Media resource structure for you..."
+> [Uses get_capabilities('Media') tool]
+> "Here's what the Media resource looks like. The required fields are..."
+
+**User implements ALEX API call**:
+> "I notice you're calling the ALEX API. Make sure to include the required headers..."
+> ```typescript
+> const headers = {
+>   'Authorization': `Bearer ${token}`,
+>   'mt-facilityid': process.env.MEDTECH_FACILITY_ID!,
+>   'mt-correlationid': uuidv4(),
+>   'mt-appid': 'ClinicPro',
+> };
+> ```
+
+**User asks to test FHIR query**:
+> "Let me test that query on the HAPI server first..."
+> [Uses search tool]
+> "The query works! Here's how to implement it in your BFF with ALEX headers..."
+
+---
+
+# End of FHIR & Medtech Development Rule

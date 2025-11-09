@@ -14,6 +14,7 @@ globs: []
 
 **Technical Rules**: ClinicPro-specific technical rules coexist with project management rules:
 - `.cursor/rules/debugging-strategy.mdc` - Technical debugging approach
+- `.cursor/rules/fhir-medtech-development.mdc` - FHIR & Medtech development (auto-activates on FHIR/Medtech files)
 
 ---
 

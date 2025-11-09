@@ -494,6 +494,9 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 **Development Tools** (`docs/`):
 - `FHIR_MCP_SERVER_SETUP.md` — FHIR MCP Server setup guide for FHIR learning and prototyping (not for direct ALEX testing)
 
+**Cursor AI Rules** (`/.cursor/rules/`):
+- `fhir-medtech-development.mdc` — Context-aware rule that auto-activates on FHIR/Medtech files, instructs AI to use MCP tools
+
 **Code References**:
 - Infrastructure: `/src/lib/services/medtech/` (OAuth, ALEX client, correlation ID, FHIR types)
 - Widget Components: `/src/medtech/images-widget/` (components, hooks, services, stores)
@@ -510,12 +513,17 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
   - VS Code integration added (`.vscode/settings.json`)
   - Environment configuration created (`.fhir-mcp-server.env`)
   - Documentation created (`docs/FHIR_MCP_SERVER_SETUP.md`)
+- **Context-Aware Rule Created**: `.cursor/rules/fhir-medtech-development.mdc`
+  - Auto-activates when working on FHIR/Medtech files (triggers on file patterns)
+  - Instructs AI to use MCP tools for FHIR questions
+  - Provides ALEX API requirements and architecture standards
+  - References existing services and documentation
 - **Important Limitation Identified**: MCP server cannot connect directly to ALEX API
   - ALEX requires custom headers (mt-facilityid, mt-correlationid, mt-appid) that MCP server doesn't inject
   - MCP server is useful for FHIR learning and prototyping, not for direct ALEX testing
   - Continue using BFF (api.clinicpro.co.nz) for ALEX API testing
 - **Use Cases**: FHIR resource exploration, query prototyping, learning FHIR operations
-- **Status**: Ready for use with HAPI test server; documented limitations for ALEX
+- **Status**: Ready for use with HAPI test server; context-aware rule active; documented limitations for ALEX
 
 ### [2025-11-07] — POST Media Implementation & Facility ID Blocker
 - **POST Media Endpoint Implemented**: Replaced mock with real ALEX API integration

@@ -77,7 +77,9 @@ FHIR_MCP_PORT=8000
 FHIR_MCP_REQUEST_TIMEOUT=30
 ```
 
-### VS Code Integration
+### Cursor AI Integration
+
+### MCP Server Configuration
 
 The MCP server is configured in `.vscode/settings.json`:
 
@@ -93,6 +95,35 @@ The MCP server is configured in `.vscode/settings.json`:
   }
 }
 ```
+
+### Context-Aware Rule File
+
+**Location**: `.cursor/rules/fhir-medtech-development.mdc`
+
+**Purpose**: Automatically activates when working on FHIR/Medtech files, instructing AI to use MCP tools
+
+**Triggers on these file patterns**:
+- `**/medtech/**/*.{ts,tsx,js,jsx}` - Medtech components/services
+- `**/api/**/medtech/**/*.{ts,tsx}` - Medtech API routes
+- `**/services/medtech/**/*.{ts,tsx}` - Medtech services
+- `**/*medtech*.{ts,tsx}` - Any file with "medtech" in name
+- `**/*fhir*.{ts,tsx}` - Any file with "fhir" in name
+- `**/*alex*.{ts,tsx}` - Any file with "alex" in name
+- `**/project-management/medtech-integration/**/*.md` - Medtech docs
+
+**What it does**:
+- Tells AI to use FHIR MCP tools when you ask about FHIR resources
+- Provides ALEX API header requirements
+- References existing services (OAuth, API client)
+- Enforces architecture standards
+- Reminds about ALEX limitation (can't use MCP directly)
+
+**Example**: Open any file in `src/medtech/` or `app/api/(integration)/medtech/` and ask:
+```
+"What fields are required for a FHIR Media resource?"
+```
+
+AI will automatically use the MCP server to fetch the answer.
 
 ---
 
