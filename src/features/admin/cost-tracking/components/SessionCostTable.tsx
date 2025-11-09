@@ -67,7 +67,10 @@ export const SessionCostTable: React.FC<SessionCostTableProps> = ({ sessions, lo
               return (
                 <tr key={s.sessionId} className="hover:bg-gray-50">
                   <td className="whitespace-nowrap px-6 py-4">
-                    <div className="font-mono text-sm text-gray-700">{s.sessionId.substring(0, 8)}…</div>
+                    <div className="font-mono text-sm text-gray-700">
+{s.sessionId.substring(0, 8)}
+…
+                    </div>
                     <div className="text-xs text-gray-500">{new Date(s.createdAt).toLocaleString()}</div>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4">
@@ -83,14 +86,22 @@ export const SessionCostTable: React.FC<SessionCostTableProps> = ({ sessions, lo
                     <div className="flex items-center text-sm text-gray-900">
                       <span className="mr-2">{providerIcons[topProvider[0] as keyof typeof providerIcons]}</span>
                       <span className="capitalize">{topProvider[0]}</span>
-                      <span className="ml-2 text-gray-500">({formatCost(topProvider[1])})</span>
+                      <span className="ml-2 text-gray-500">
+(
+{formatCost(topProvider[1])}
+)
+                      </span>
                     </div>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4">
                     <div className="flex items-center text-sm text-gray-900">
                       <span className="mr-2">{functionIcons[topFunction[0] as keyof typeof functionIcons]}</span>
                       <span className="capitalize">{topFunction[0].replace('_', ' ')}</span>
-                      <span className="ml-2 text-gray-500">({formatCost(topFunction[1])})</span>
+                      <span className="ml-2 text-gray-500">
+(
+{formatCost(topFunction[1])}
+)
+                      </span>
                     </div>
                   </td>
                 </tr>
@@ -102,4 +113,3 @@ export const SessionCostTable: React.FC<SessionCostTableProps> = ({ sessions, lo
     </div>
   );
 };
-

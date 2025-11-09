@@ -1,8 +1,8 @@
 /**
  * POST /api/medtech/attachments/commit
- * 
+ *
  * Commit images to encounter via ALEX FHIR API
- * 
+ *
  * Flow:
  * 1. Get encounter and patient info from ALEX API
  * 2. Upload files to S3 (if needed)
@@ -10,10 +10,12 @@
  * 4. POST to ALEX API
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+
 import { alexApiClient, generateCorrelationId } from '@/src/lib/services/medtech';
+import type { FhirEncounter, FhirMedia, FhirPatient } from '@/src/lib/services/medtech/types';
 import type { CommitRequest, CommitResponse } from '@/src/medtech/images-widget/types';
-import type { FhirMedia, FhirEncounter, FhirPatient } from '@/src/lib/services/medtech/types';
 
 const BUCKET_NAME = process.env.S3_BUCKET_NAME!;
 
@@ -90,33 +92,39 @@ function createMediaResource(
   // Add optional metadata (won't appear in Medtech Inbox, but included for completeness)
   if (metadata.bodySite) {
     media.bodySite = {
-      coding: metadata.bodySite.system ? [{
+      coding: metadata.bodySite.system
+? [{
         system: metadata.bodySite.system,
         code: metadata.bodySite.code,
         display: metadata.bodySite.display,
-      }] : undefined,
+      }]
+: undefined,
       text: metadata.bodySite.display,
     };
   }
 
   if (metadata.laterality) {
     media.modality = {
-      coding: metadata.laterality.system ? [{
+      coding: metadata.laterality.system
+? [{
         system: metadata.laterality.system,
         code: metadata.laterality.code,
         display: metadata.laterality.display,
-      }] : undefined,
+      }]
+: undefined,
       text: metadata.laterality.display,
     };
   }
 
   if (metadata.view) {
     media.view = {
-      coding: metadata.view.system ? [{
+      coding: metadata.view.system
+? [{
         system: metadata.view.system,
         code: metadata.view.code,
         display: metadata.view.display,
-      }] : undefined,
+      }]
+: undefined,
       text: metadata.view.display,
     };
   }
@@ -159,7 +167,7 @@ export async function POST(request: NextRequest) {
     // Step 1: Get encounter and patient info
     const { encounter, patient } = await getEncounterInfo(body.encounterId, correlationId);
     const patientId = patient.id || encounter.subject?.reference?.split('/')[1];
-    
+
     if (!patientId) {
       throw new Error('Unable to determine patient ID from encounter');
     }
@@ -181,7 +189,7 @@ export async function POST(request: NextRequest) {
         // For now, we'll construct S3 key from fileId.
         // In production, upload-initiate should return S3 keys that map to fileIds.
         const s3Key = `medtech-images/${body.encounterId}/${file.fileId}.jpg`;
-        
+
         // Generate presigned URL for S3 object (read access)
         // Note: ALEX API needs to access this URL, so it should be publicly accessible
         // or we need to configure ALEX API with S3 access credentials

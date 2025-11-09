@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
-import fs from 'fs/promises';
-import path from 'path';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
 import { ingestDocument } from '@/src/lib/rag';
 import type { DocumentToIngest } from '@/src/lib/rag/types';
@@ -18,8 +18,8 @@ async function readChunkFiles(dir: string): Promise<ChunkJson[]> {
   try {
     const entries = await fs.readdir(dir, { withFileTypes: true });
     const files = entries
-      .filter((e) => e.isFile() && e.name.toLowerCase().endsWith('.json'))
-      .map((e) => path.join(dir, e.name));
+      .filter(e => e.isFile() && e.name.toLowerCase().endsWith('.json'))
+      .map(e => path.join(dir, e.name));
     const results: ChunkJson[] = [];
     for (const file of files) {
       try {
@@ -86,4 +86,3 @@ if (require.main === module) {
     process.exit(1);
   });
 }
-

@@ -4,6 +4,7 @@ import OpenAI from 'openai';
 import { ingestDocument } from '@/src/lib/rag';
 import type { DocumentToIngest } from '@/src/lib/rag/types';
 import { classifyHeadingsHybrid } from '@/src/lib/scrapers/llm-heading-classifier';
+
 import type { StructuredHealthifyContent } from '../types';
 
 function getOpenAI(): OpenAI {
@@ -13,7 +14,6 @@ function getOpenAI(): OpenAI {
   }
   return new OpenAI({ apiKey });
 }
-
 
 export class EnhancedHealthifyScraper {
   // private baseUrl = 'https://healthify.nz'; // Currently unused

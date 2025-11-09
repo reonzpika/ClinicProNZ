@@ -259,7 +259,9 @@ IMPORTANT: This analysis is for documentation purposes only. Clinical correlatio
       let errMessage = 'Gemini request failed';
       try {
         const parsed = JSON.parse(lastErrText);
-        if (parsed?.error?.message) errMessage = parsed.error.message as string;
+        if (parsed?.error?.message) {
+ errMessage = parsed.error.message as string;
+}
       } catch {}
       return NextResponse.json({ error: errMessage, code: 'GEMINI_ERROR', details: lastErrText }, { status: 502 });
     }

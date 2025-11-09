@@ -120,7 +120,11 @@ export function TranscriptionControls({
     } else {
       setElapsedSeconds(0);
     }
-    return () => { if (t) clearInterval(t); };
+    return () => {
+ if (t) {
+ clearInterval(t);
+}
+};
   }, [isRecording, recordingStartTime]);
 
   const formatElapsed = (totalSeconds: number) => {
@@ -370,7 +374,7 @@ export function TranscriptionControls({
                 handleStartRecording();
               }
             }}
-            className={`flex h-11 w-11 items-center justify-center rounded-full text-white shadow-sm transition active:scale-95 ${isRecording ? 'bg-red-600 hover:bg-red-700' : 'bg-red-600 hover:bg-red-700'}`}
+            className={`flex size-11 items-center justify-center rounded-full text-white shadow-sm transition active:scale-95 ${isRecording ? 'bg-red-600 hover:bg-red-700' : 'bg-red-600 hover:bg-red-700'}`}
             aria-label={isRecording ? 'Stop recording' : 'Start recording'}
           >
             {isRecording ? '■' : '●'}
@@ -589,7 +593,7 @@ export function TranscriptionControls({
                           handleStartRecording();
                         }
                       }}
-                      className={`flex h-16 w-16 items-center justify-center rounded-full text-white shadow-md active:scale-95 ${isRecording ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
+                      className={`flex size-16 items-center justify-center rounded-full text-white shadow-md active:scale-95 ${isRecording ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
                       aria-label={isRecording ? 'Stop recording' : 'Start recording'}
                     >
                       {isRecording ? 'Stop' : 'Rec'}

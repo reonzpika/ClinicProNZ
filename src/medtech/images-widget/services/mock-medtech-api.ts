@@ -1,17 +1,17 @@
 /**
  * Mock Medtech API Service
- * 
+ *
  * Simulates Integration Gateway API responses while ALEX API is blocked.
  * Switch to real API by setting NEXT_PUBLIC_MEDTECH_USE_MOCK=false
  */
 
 import type {
   Capabilities,
+  CommitRequest,
+  CommitResponse,
   MobileSessionResponse,
   UploadInitiateRequest,
   UploadInitiateResponse,
-  CommitRequest,
-  CommitResponse,
 } from '../types';
 
 const MOCK_DELAY = 800; // Simulate network latency (ms)
@@ -31,9 +31,9 @@ export const mockMedtechAPI = {
    */
   async getCapabilities(): Promise<Capabilities> {
     await delay(MOCK_DELAY);
-    
+
     console.log('[MOCK API] GET /api/medtech/capabilities');
-    
+
     return {
       provider: {
         name: 'alex',
@@ -113,14 +113,14 @@ export const mockMedtechAPI = {
    */
   async initiateMobile(encounterId: string): Promise<MobileSessionResponse> {
     await delay(MOCK_DELAY);
-    
+
     console.log('[MOCK API] POST /api/medtech/mobile/initiate', { encounterId });
-    
+
     const token = `mock-token-${Date.now()}`;
     const mobileUrl = typeof window !== 'undefined'
       ? `${window.location.origin}/medtech-images/mobile?t=${token}`
       : `/medtech-images/mobile?t=${token}`;
-    
+
     // Generate simple QR code SVG (in real app, use qrcode.react or similar)
     const qrSvg = `data:image/svg+xml;base64,${btoa(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
@@ -133,7 +133,7 @@ export const mockMedtechAPI = {
         </text>
       </svg>
     `)}`;
-    
+
     return {
       mobileUploadUrl: mobileUrl,
       qrSvg,
@@ -147,9 +147,9 @@ export const mockMedtechAPI = {
    */
   async uploadInitiate(request: UploadInitiateRequest): Promise<UploadInitiateResponse> {
     await delay(MOCK_DELAY);
-    
+
     console.log('[MOCK API] POST /api/medtech/attachments/upload-initiate', request);
-    
+
     return {
       uploadSessionId: `mock-session-${Date.now()}`,
       files: request.files.map(f => ({
@@ -168,7 +168,7 @@ export const mockMedtechAPI = {
    */
   async commit(request: CommitRequest): Promise<CommitResponse> {
     await delay(MOCK_DELAY * 2); // Longer for "upload"
-    
+
     console.log('[MOCK API] POST /api/medtech/attachments/commit');
     console.log('Encounter ID:', request.encounterId);
     console.log('Files:', request.files.map(f => ({
@@ -177,7 +177,7 @@ export const mockMedtechAPI = {
       inbox: f.alsoInbox,
       task: f.alsoTask,
     })));
-    
+
     // Simulate success
     return {
       files: request.files.map(f => ({
@@ -215,11 +215,11 @@ export const realMedtechAPI = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ encounterId }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Failed to initiate mobile session: ${response.statusText}`);
     }
-    
+
     return response.json();
   },
 
@@ -229,11 +229,11 @@ export const realMedtechAPI = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(request),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Failed to initiate upload: ${response.statusText}`);
     }
-    
+
     return response.json();
   },
 
@@ -243,11 +243,11 @@ export const realMedtechAPI = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(request),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Failed to commit: ${response.statusText}`);
     }
-    
+
     return response.json();
   },
 };

@@ -1,5 +1,5 @@
-import { EnhancedHealthifyScraper } from './enhanced-healthify-scraper';
 import type { HealthifySearchResult } from '../types';
+import { EnhancedHealthifyScraper } from './enhanced-healthify-scraper';
 
 export class DynamicHealthifySearch {
   private scraper = new EnhancedHealthifyScraper();

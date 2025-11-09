@@ -32,23 +32,23 @@ export async function POST(req: Request) {
       'Request parsing timeout',
     );
 
-    const { 
+    const {
       consultationNote,
       referralReason,
     } = body;
 
     // Validation
     if (!consultationNote || typeof consultationNote !== 'string' || consultationNote.trim() === '') {
-      return NextResponse.json({ 
-        code: 'BAD_REQUEST', 
-        message: 'Missing consultation note' 
+      return NextResponse.json({
+        code: 'BAD_REQUEST',
+        message: 'Missing consultation note',
       }, { status: 400 });
     }
 
     if (!referralReason || typeof referralReason !== 'string' || referralReason.trim() === '') {
-      return NextResponse.json({ 
-        code: 'BAD_REQUEST', 
-        message: 'Missing referral reason' 
+      return NextResponse.json({
+        code: 'BAD_REQUEST',
+        message: 'Missing referral reason',
       }, { status: 400 });
     }
 

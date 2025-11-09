@@ -22,7 +22,9 @@ export function usePatientSessions() {
   const list = useQuery({
     queryKey: qs.list(userId || ''),
     queryFn: async (): Promise<PatientSession[]> => {
-      if (!userId) return [];
+      if (!userId) {
+ return [];
+}
       const res = await fetch('/api/patient-sessions?status=active&limit=100', {
         headers: createAuthHeaders(userId),
       });
@@ -44,7 +46,9 @@ export function usePatientSessions() {
 
   const create = useMutation({
     mutationFn: async (patientName: string): Promise<PatientSession> => {
-      if (!userId) throw new Error('Not authenticated');
+      if (!userId) {
+ throw new Error('Not authenticated');
+}
       const res = await fetch('/api/patient-sessions?suppressSetCurrent=1', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...createAuthHeaders(userId) },
@@ -65,7 +69,9 @@ export function usePatientSessions() {
 
   const rename = useMutation({
     mutationFn: async ({ sessionId, patientName }: { sessionId: string; patientName: string }): Promise<void> => {
-      if (!userId) throw new Error('Not authenticated');
+      if (!userId) {
+ throw new Error('Not authenticated');
+}
       const res = await fetch('/api/patient-sessions', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', ...createAuthHeaders(userId) },
@@ -83,9 +89,11 @@ export function usePatientSessions() {
 
   const remove = useMutation({
     mutationFn: async (sessionId: string): Promise<void> => {
-      if (!userId) throw new Error('Not authenticated');
+      if (!userId) {
+ throw new Error('Not authenticated');
+}
       // Optimistic removal: update cache immediately
-      queryClient.setQueryData<PatientSession[]>(qs.list(userId), (prev) => (prev || []).filter(s => s.id !== sessionId));
+      queryClient.setQueryData<PatientSession[]>(qs.list(userId), prev => (prev || []).filter(s => s.id !== sessionId));
       const res = await fetch('/api/patient-sessions', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json', ...createAuthHeaders(userId) },
@@ -102,7 +110,7 @@ export function usePatientSessions() {
     onError: () => {
       // Rollback by refetching if delete failed
       queryClient.invalidateQueries({ queryKey: qs.list(userId || '') });
-    }
+    },
   });
 
   return {

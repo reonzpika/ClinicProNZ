@@ -185,7 +185,7 @@ export async function GET(req: NextRequest) {
     // No mass presign here; clients fetch per-tile via /api/uploads/download
     // Best-effort: attach presigned thumbnail URLs when the thumbnail object exists
     const imagesWithData = await Promise.all(allImages.map(async (image) => {
-      let thumbnailUrl: string | undefined = undefined;
+      let thumbnailUrl: string | undefined;
       if (image.thumbnailKey && BUCKET_NAME) {
         try {
           // Check existence first to avoid generating invalid signed URLs

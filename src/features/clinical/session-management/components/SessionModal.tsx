@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, Plus, Search, Trash2, User, RefreshCw } from 'lucide-react';
+import { Calendar, Plus, RefreshCw, Search, Trash2, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';

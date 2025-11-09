@@ -49,7 +49,6 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
   // Consent statement appended to generated notes when consent was obtained
   const CONSENT_STATEMENT = '\n\nPatient informed and consented verbally to the use of digital documentation assistance during this consultation, in line with NZ Health Information Privacy Principles. The patient retains the right to pause or stop the recording at any time.';
 
-
   // Computed value: generated notes with consent statement appended if consent was obtained
   const displayNotes = React.useMemo(() => {
     if (!generatedNotes) {
@@ -82,13 +81,14 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
         )}
         {error && <div className="text-sm text-red-600">{error}</div>}
         {/* Copy button */}
-        {(
-          <div className="mb-1 flex justify-end">
+        <div className="mb-1 flex justify-end">
             <Button
               type="button"
               variant="secondary"
               onClick={async () => {
-                if (!displayNotes) return;
+                if (!displayNotes) {
+ return;
+}
                 try {
                   await navigator.clipboard.writeText(displayNotes);
                   setCopySuccess(true);
@@ -102,8 +102,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
             >
               {copySuccess ? 'Copied!' : 'Copy'}
             </Button>
-          </div>
-        )}
+        </div>
         <textarea
           value={displayNotes || ''}
           onChange={(e) => {
@@ -125,8 +124,6 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
       </div>
     );
   }
-
-
 
   // Dynamic placeholder text based on processing status
   const getPlaceholderText = () => {
@@ -312,7 +309,6 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
   // Determine when to show New Patient button (only for authenticated users with content)
   const showNewPatientButton = isSignedIn; // Show New Session even in default view
 
-
   // Minimal state - just the generate button (mobile: fixed footer with record + process)
   if (shouldShowMinimal) {
     return (
@@ -328,7 +324,9 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
             </div>
           </div>
         )}
-        {mobileMode ? null : (
+        {mobileMode
+? null
+: (
               <div className="flex gap-2">
                 <Button
                   type="button"
@@ -401,7 +399,9 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
               type="button"
               variant="secondary"
               onClick={async () => {
-                if (!displayNotes) return;
+                if (!displayNotes) {
+ return;
+}
                 try {
                   await navigator.clipboard.writeText(displayNotes);
                   setCopySuccess(true);
@@ -421,7 +421,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
           value={displayNotes || ''}
           onChange={handleNotesChange}
           onBlur={handleNotesBlur}
-          className={`w-full h-0 grow resize-none overflow-y-auto rounded border border-slate-200 bg-white p-3 ${textareaMinHeightClass} ${mobileMode ? 'text-base leading-relaxed' : 'text-sm leading-relaxed'} text-slate-800 focus:border-slate-400 focus:ring-2 focus:ring-slate-400`}
+          className={`h-0 w-full grow resize-none overflow-y-auto rounded border border-slate-200 bg-white p-3 ${textareaMinHeightClass} ${mobileMode ? 'text-base leading-relaxed' : 'text-sm leading-relaxed'} text-slate-800 focus:border-slate-400 focus:ring-2 focus:ring-slate-400`}
           style={mobileMode ? ({ scrollMarginBottom: 'var(--footer-h, 76px)' } as React.CSSProperties) : undefined}
           placeholder={getPlaceholderText()}
           disabled={loading}

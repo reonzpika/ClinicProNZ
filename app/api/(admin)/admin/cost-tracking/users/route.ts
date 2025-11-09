@@ -47,18 +47,18 @@ export async function GET(req: Request) {
       .groupBy(apiUsageCosts.userId, apiUsageCosts.apiFunction);
 
     const response = userSummaries.map((user: any) => {
-      const byProvider = { deepgram: 0, openai: 0, perplexity: 0 } as Record<'deepgram'|'openai'|'perplexity', number>;
+      const byProvider = { deepgram: 0, openai: 0, perplexity: 0 } as Record<'deepgram' | 'openai' | 'perplexity', number>;
       providerBreakdowns
         .filter((p: any) => p.userId === user.userId && p.provider)
         .forEach((p: any) => {
-          byProvider[p.provider as 'deepgram'|'openai'|'perplexity'] = Number(p.totalCost);
+          byProvider[p.provider as 'deepgram' | 'openai' | 'perplexity'] = Number(p.totalCost);
         });
 
-      const byFunction = { transcription: 0, note_generation: 0, chat: 0 } as Record<'transcription'|'note_generation'|'chat', number>;
+      const byFunction = { transcription: 0, note_generation: 0, chat: 0 } as Record<'transcription' | 'note_generation' | 'chat', number>;
       functionBreakdowns
         .filter((f: any) => f.userId === user.userId && f.func)
         .forEach((f: any) => {
-          byFunction[f.func as 'transcription'|'note_generation'|'chat'] = Number(f.totalCost);
+          byFunction[f.func as 'transcription' | 'note_generation' | 'chat'] = Number(f.totalCost);
         });
 
       return {
@@ -78,4 +78,3 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-

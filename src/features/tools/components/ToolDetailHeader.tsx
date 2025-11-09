@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link';
 import * as React from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
@@ -11,9 +11,11 @@ export function ToolDetailHeader({ tool }: { tool: ToolDetail }) {
     <header className="mb-6 space-y-2">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          {tool.logoUrl ? (
+          {tool.logoUrl
+? (
             <Image src={tool.logoUrl} alt="" width={32} height={32} className="rounded-sm" />
-          ) : null}
+          )
+: null}
           <h1 className="text-2xl font-bold">{tool.name}</h1>
         </div>
         {/* Free badge removed per request */}

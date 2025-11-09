@@ -6,15 +6,15 @@ export type RetryOptions = {
 };
 
 function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 function isAbortError(error: unknown): boolean {
   return (
-    typeof error === 'object' &&
-    error !== null &&
+    typeof error === 'object'
+    && error !== null
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ((error as any).name === 'AbortError' || (error as any).code === 'ABORT_ERR')
+    && ((error as any).name === 'AbortError' || (error as any).code === 'ABORT_ERR')
   );
 }
 
@@ -44,7 +44,7 @@ export async function fetchWithRetry(
       const response = await fetch(input, init);
       if (!response.ok && retryOnStatus(response.status) && attempt < attempts - 1) {
         // Exponential backoff with jitter
-        const delay = Math.min(baseDelayMs * Math.pow(2, attempt), maxDelayMs) + Math.floor(Math.random() * 250);
+        const delay = Math.min(baseDelayMs * 2 ** attempt, maxDelayMs) + Math.floor(Math.random() * 250);
         await sleep(delay);
         continue;
       }
@@ -56,7 +56,7 @@ export async function fetchWithRetry(
       }
       lastError = error;
       if (attempt < attempts - 1) {
-        const delay = Math.min(baseDelayMs * Math.pow(2, attempt), maxDelayMs) + Math.floor(Math.random() * 250);
+        const delay = Math.min(baseDelayMs * 2 ** attempt, maxDelayMs) + Math.floor(Math.random() * 250);
         await sleep(delay);
         continue;
       }
@@ -70,4 +70,3 @@ export async function fetchWithRetry(
 }
 
 export default fetchWithRetry;
-

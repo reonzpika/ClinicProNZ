@@ -40,14 +40,18 @@ export async function GET(req: Request) {
       .from(apiUsageCosts)
       .groupBy(apiUsageCosts.apiFunction);
 
-    const byProvider = { deepgram: 0, openai: 0, perplexity: 0 } as Record<'deepgram'|'openai'|'perplexity', number>;
+    const byProvider = { deepgram: 0, openai: 0, perplexity: 0 } as Record<'deepgram' | 'openai' | 'perplexity', number>;
     byProviderRows.forEach((row: any) => {
-      if (row.provider) byProvider[row.provider as 'deepgram'|'openai'|'perplexity'] = Number(row.totalCost);
+      if (row.provider) {
+ byProvider[row.provider as 'deepgram' | 'openai' | 'perplexity'] = Number(row.totalCost);
+}
     });
 
-    const byFunction = { transcription: 0, note_generation: 0, chat: 0 } as Record<'transcription'|'note_generation'|'chat', number>;
+    const byFunction = { transcription: 0, note_generation: 0, chat: 0 } as Record<'transcription' | 'note_generation' | 'chat', number>;
     byFunctionRows.forEach((row: any) => {
-      if (row.func) byFunction[row.func as 'transcription'|'note_generation'|'chat'] = Number(row.totalCost);
+      if (row.func) {
+ byFunction[row.func as 'transcription' | 'note_generation' | 'chat'] = Number(row.totalCost);
+}
     });
 
     const total = totals[0] ?? {
@@ -69,4 +73,3 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-

@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import * as React from 'react';
 
-import { Container } from '@/src/shared/components/layout/Container';
-import { ToolsIndexClient } from '@/src/features/tools/pages/ToolsIndexClient';
 import { TOOL_LIST } from '@/src/features/tools/data/tools';
+import { ToolsIndexClient } from '@/src/features/tools/pages/ToolsIndexClient';
+import { Container } from '@/src/shared/components/layout/Container';
 
 export const dynamic = 'force-static';
 
@@ -25,11 +25,11 @@ export default function ToolsPage() {
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'ItemList',
-            itemListElement: filtered.map((t, i) => ({
+            'itemListElement': filtered.map((t, i) => ({
               '@type': 'ListItem',
-              position: i + 1,
-              url: `https://clinicpro.nz/tools/${t.id}`,
-              name: t.name,
+              'position': i + 1,
+              'url': `https://clinicpro.nz/tools/${t.id}`,
+              'name': t.name,
             })),
           }),
         }}
@@ -50,11 +50,15 @@ export default function ToolsPage() {
       </section>
 
       <footer className="text-xs text-muted-foreground">
-        <div className="mb-2">Last reviewed: {new Date().toLocaleDateString()}</div>
+        <div className="mb-2">
+Last reviewed:
+{new Date().toLocaleDateString()}
+        </div>
         <div>
           <a href="/prompts" className="underline">
             Explore prompts
-          </a>{' '}
+          </a>
+{' '}
           · Community (coming soon)
         </div>
       </footer>

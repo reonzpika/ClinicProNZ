@@ -1,63 +1,62 @@
 ai_summary_category_id:
   default: 0
   type: integer
-  description: "Category ID for AI Summary (staff post weekly summaries)."
+  description: Category ID for AI Summary (staff post weekly summaries).
 
 news_category_id:
   default: 0
   type: integer
-  description: "Category ID for News (staff-only create)."
+  description: Category ID for News (staff-only create).
 
 featured_category_id:
   default: 0
   type: integer
-  description: "Category ID for Featured Topics (staff curated)."
+  description: Category ID for Featured Topics (staff curated).
 
 general_category_id:
   default: 0
   type: integer
-  description: "Category ID for General (user-created topics)."
+  description: Category ID for General (user-created topics).
 
 news_section_count:
   default: 1
   type: integer
   min: 1
   max: 10
-  description: "Number of News items to feature on homepage."
+  description: Number of News items to feature on homepage.
 
 featured_section_count:
   default: 2
   type: integer
   min: 1
   max: 10
-  description: "Number of Featured Topics to show on homepage."
+  description: Number of Featured Topics to show on homepage.
 
 general_cta_after_n:
   default: 10
   type: integer
   min: 1
   max: 50
-  description: "Insert New Topic CTA after N General posts on homepage."
+  description: Insert New Topic CTA after N General posts on homepage.
 
 ai_summary_max_bullets:
   default: 5
   type: integer
   min: 1
   max: 10
-  description: "Maximum number of bullet lines shown to anonymous users."
-
+  description: Maximum number of bullet lines shown to anonymous users.
 
 enable_bottom_tab_bar_mobile:
   default: true
   type: bool
-  description: "Enable mobile bottom navigation bar."
+  description: Enable mobile bottom navigation bar.
 
 deemphasise_new_topic:
   default: true
   type: bool
-  description: "Hide or de-emphasise primary 'New Topic' CTAs."
+  description: 'Hide or de-emphasise primary ''New Topic'' CTAs.'
 
 hide_category_ui:
   default: true
   type: bool
-  description: "Hide category chrome in navigation and lists."
+  description: Hide category chrome in navigation and lists.

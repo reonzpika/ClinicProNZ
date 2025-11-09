@@ -1,21 +1,20 @@
 /**
  * Metadata Chips Component
- * 
+ *
  * Displays quick-select chips for:
  * - Side (Right, Left, Bilateral, N/A)
  * - Body Site (common coded sites + "Other" for search)
  * - View (Close-up, Dermoscopy, Other)
  * - Type (Lesion, Rash, Wound, Infection, Other)
- * 
+ *
  * Implements "sticky-last" behavior: last selected value is highlighted
  */
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Check, ArrowRight, ChevronDown } from 'lucide-react';
-import type { CodeableConcept } from '../../types';
-import { useImageWidgetStore } from '../../stores/imageWidgetStore';
+import { ArrowRight, Check, ChevronDown } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
 import { Button } from '@/src/shared/components/ui/button';
 import {
   DropdownMenu,
@@ -24,7 +23,10 @@ import {
   DropdownMenuTrigger,
 } from '@/src/shared/components/ui/dropdown-menu';
 
-interface MetadataChipsProps {
+import { useImageWidgetStore } from '../../stores/imageWidgetStore';
+import type { CodeableConcept } from '../../types';
+
+type MetadataChipsProps = {
   imageId: string;
   onMetadataChange?: (metadata: Partial<Record<'laterality' | 'bodySite' | 'view' | 'type', CodeableConcept>>) => void;
   onApplyLaterality?: () => void;
@@ -33,10 +35,10 @@ interface MetadataChipsProps {
   restImagesCount?: number;
   hasLaterality?: boolean;
   hasBodySite?: boolean;
-}
+};
 
-export function MetadataChips({ 
-  imageId, 
+export function MetadataChips({
+  imageId,
   onMetadataChange,
   onApplyLaterality,
   onApplyBodySite,
@@ -46,24 +48,24 @@ export function MetadataChips({
   hasBodySite = false,
 }: MetadataChipsProps) {
   const { capabilities, sessionImages, updateMetadata, setStickyMetadata, stickyMetadata } = useImageWidgetStore();
-  
-  const image = sessionImages.find((img) => img.id === imageId);
-  
+
+  const image = sessionImages.find(img => img.id === imageId);
+
   if (!capabilities || !image) {
     return null;
   }
-  
+
   const quickChips = capabilities.features.images.quickChips;
-  
+
   const handleSelect = (
     key: 'laterality' | 'bodySite' | 'view' | 'type',
-    concept: CodeableConcept
+    concept: CodeableConcept,
   ) => {
     updateMetadata(imageId, { [key]: concept });
     setStickyMetadata(key, concept);
     onMetadataChange?.({ [key]: concept });
   };
-  
+
   return (
     <div className="space-y-4">
       {/* Side */}
@@ -72,7 +74,7 @@ export function MetadataChips({
         options={quickChips.laterality}
         selected={image.metadata.laterality}
         sticky={stickyMetadata.laterality}
-        onSelect={(concept) => handleSelect('laterality', concept)}
+        onSelect={concept => handleSelect('laterality', concept)}
         showTextInput
         required
         onApply={onApplyLaterality}
@@ -80,14 +82,14 @@ export function MetadataChips({
         restImagesCount={restImagesCount}
         canApply={hasLaterality}
       />
-      
+
       {/* Body Site */}
       <ChipGroup
         label="Body Site"
         options={quickChips.bodySitesCommon}
         selected={image.metadata.bodySite}
         sticky={stickyMetadata.bodySite}
-        onSelect={(concept) => handleSelect('bodySite', concept)}
+        onSelect={concept => handleSelect('bodySite', concept)}
         showTextInput
         required
         onApply={onApplyBodySite}
@@ -95,39 +97,41 @@ export function MetadataChips({
         restImagesCount={restImagesCount}
         canApply={hasBodySite}
       />
-      
+
       {/* View */}
       <ChipGroup
         label="View"
         options={quickChips.views}
         selected={image.metadata.view}
         sticky={stickyMetadata.view}
-        onSelect={(concept) => handleSelect('view', concept)}
+        onSelect={concept => handleSelect('view', concept)}
         showTextInput
         hideOthersDropdown
       />
-      
+
       {/* Type */}
       <ChipGroup
         label="Type"
         options={quickChips.types}
         selected={image.metadata.type}
         sticky={stickyMetadata.type}
-        onSelect={(concept) => handleSelect('type', concept)}
+        onSelect={concept => handleSelect('type', concept)}
         showTextInput
         hideOthersDropdown
       />
-      
+
       {/* Label (free text) */}
       <div>
         <label htmlFor={`label-${imageId}`} className="mb-2 block text-xs font-medium text-slate-700">
-          Label <span className="text-slate-500">(optional)</span>
+          Label
+{' '}
+<span className="text-slate-500">(optional)</span>
         </label>
         <input
           id={`label-${imageId}`}
           type="text"
           value={image.metadata.label || ''}
-          onChange={(e) => updateMetadata(imageId, { label: e.target.value })}
+          onChange={e => updateMetadata(imageId, { label: e.target.value })}
           placeholder="e.g., Lesion 1 (superior)"
           className="w-48 rounded-md border border-slate-300 px-3 py-1.5 text-xs focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
           maxLength={100}
@@ -137,7 +141,7 @@ export function MetadataChips({
   );
 }
 
-interface ChipGroupProps {
+type ChipGroupProps = {
   label: string;
   options: CodeableConcept[];
   selected?: CodeableConcept;
@@ -150,18 +154,18 @@ interface ChipGroupProps {
   onApplyToSelected?: () => void;
   restImagesCount?: number;
   canApply?: boolean;
-}
+};
 
 function ChipGroup({ label, options, selected, sticky, onSelect, showTextInput, hideOthersDropdown, required, onApply, onApplyToSelected, restImagesCount = 0, canApply = false }: ChipGroupProps) {
   const [textInputValue, setTextInputValue] = useState(selected?.display || '');
-  
+
   // Sync text input with selected value
   useEffect(() => {
     if (showTextInput) {
       setTextInputValue(selected?.display || '');
     }
   }, [selected, showTextInput]);
-  
+
   const handleTextInputChange = (value: string) => {
     setTextInputValue(value);
     if (value.trim()) {
@@ -172,14 +176,14 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showTextInput, 
       });
     }
   };
-  
+
   // Show only first 4 chips, rest in dropdown
   const visibleChips = options.slice(0, 4);
   const remainingChips = options.slice(4);
-  
+
   // Check if field is missing (for inline validation)
   const isMissing = required && !selected;
-  
+
   return (
     <div>
       <label className="mb-2 block text-xs font-medium text-slate-700">
@@ -192,11 +196,14 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showTextInput, 
         )}
         {!selected && sticky && !isMissing && (
           <span className="ml-2 text-xs font-normal text-slate-500">
-            (last: {sticky.display})
+            (last:
+{' '}
+{sticky.display}
+)
           </span>
         )}
       </label>
-      
+
       {/* Text Input with Chips to the right */}
       <div className="flex items-start gap-2">
         {showTextInput && (
@@ -212,12 +219,12 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showTextInput, 
             maxLength={100}
           />
         )}
-        
+
         <div className={`flex flex-wrap gap-1.5 ${showTextInput ? '' : 'w-full'}`}>
         {visibleChips.map((option) => {
           const isSelected = selected?.code === option.code;
           const isSticky = !selected && sticky?.code === option.code;
-          
+
           return (
             <button
               key={option.code}
@@ -245,7 +252,7 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showTextInput, 
             </button>
           );
         })}
-        
+
         {/* Others dropdown if there are more than 4 chips and not hidden */}
         {remainingChips.length > 0 && !hideOthersDropdown && (
           <DropdownMenu>
@@ -281,8 +288,7 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showTextInput, 
         )}
         </div>
       </div>
-      
-      
+
       {/* Apply Button (for Side and Body Site only) */}
       {required && onApply && (
         <div className="mt-2">
@@ -295,7 +301,9 @@ function ChipGroup({ label, options, selected, sticky, onSelect, showTextInput, 
               onClick={onApply}
             >
               <ArrowRight className="mr-1 size-3" />
-              Apply to All ({restImagesCount})
+              Apply to All (
+{restImagesCount}
+)
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger>

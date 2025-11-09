@@ -1,21 +1,23 @@
 /**
  * Image Preview Component
- * 
+ *
  * Large image display with draggable zoom and overlay controls
  */
 
 'use client';
 
 import { Edit2, ZoomIn, ZoomOut } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
-import type { WidgetImage } from '../../types';
-import { Button } from '@/src/shared/components/ui/button';
-import { formatFileSize } from '../../services/compression';
+import { useEffect, useRef, useState } from 'react';
 
-interface ImagePreviewProps {
+import { Button } from '@/src/shared/components/ui/button';
+
+import { formatFileSize } from '../../services/compression';
+import type { WidgetImage } from '../../types';
+
+type ImagePreviewProps = {
   image: WidgetImage | null;
   onEdit: () => void;
-}
+};
 
 export function ImagePreview({
   image,
@@ -27,14 +29,14 @@ export function ImagePreview({
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
-  
+
   // Reset position when zoom changes
   useEffect(() => {
     if (zoom <= 1) {
       setPosition({ x: 0, y: 0 });
     }
   }, [zoom]);
-  
+
   if (!image) {
     return (
       <div className="flex h-full items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50">
@@ -58,62 +60,66 @@ export function ImagePreview({
       </div>
     );
   }
-  
+
   const handleZoomIn = () => {
-    setZoom((prev) => Math.min(prev + 0.25, 3));
+    setZoom(prev => Math.min(prev + 0.25, 3));
   };
-  
+
   const handleZoomOut = () => {
-    setZoom((prev) => Math.max(prev - 0.25, 0.5));
+    setZoom(prev => Math.max(prev - 0.25, 0.5));
   };
-  
+
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (zoom <= 1) return; // Only allow drag when zoomed
+    if (zoom <= 1) {
+ return;
+} // Only allow drag when zoomed
     setIsDragging(true);
     setDragStart({
       x: e.clientX - position.x,
       y: e.clientY - position.y,
     });
   };
-  
+
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || zoom <= 1) return;
-    
+    if (!isDragging || zoom <= 1) {
+ return;
+}
+
     const newX = e.clientX - dragStart.x;
     const newY = e.clientY - dragStart.y;
-    
+
     // Constrain to container bounds
     if (containerRef.current && imageRef.current) {
       const containerRect = containerRef.current.getBoundingClientRect();
       const imageRect = imageRef.current.getBoundingClientRect();
-      
+
       const maxX = (imageRect.width - containerRect.width) / 2;
       const maxY = (imageRect.height - containerRect.height) / 2;
-      
+
       setPosition({
         x: Math.max(-maxX, Math.min(maxX, newX)),
         y: Math.max(-maxY, Math.min(maxY, newY)),
       });
     }
   };
-  
+
   const handleMouseUp = () => {
     setIsDragging(false);
   };
-  
+
   return (
     <div className="relative flex h-full flex-col">
       {/* Image Display Area */}
-      <div 
+      <div
         ref={containerRef}
         className="relative flex-1 overflow-hidden rounded-lg border border-slate-200 bg-slate-100"
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
-        
+
         {/* Image Container */}
-        <div 
+        <div
           className="flex size-full items-center justify-center p-4"
           style={{ cursor: zoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
           onMouseDown={handleMouseDown}
@@ -122,8 +128,8 @@ export function ImagePreview({
             ref={imageRef}
             src={image?.preview || ''}
             alt={image?.metadata.label || 'Clinical image'}
-            className="max-h-full max-w-full object-contain select-none"
-            style={{ 
+            className="max-h-full max-w-full select-none object-contain"
+            style={{
               transform: image ? `scale(${zoom}) translate(${position.x / zoom}px, ${position.y / zoom}px)` : 'none',
               transition: isDragging ? 'none' : 'transform 0.2s',
             }}
@@ -131,7 +137,7 @@ export function ImagePreview({
           />
         </div>
       </div>
-      
+
       {/* Action Buttons - Bottom */}
       <div className="mt-2 flex items-center justify-between gap-2">
         {/* Edit Button */}
@@ -143,38 +149,42 @@ export function ImagePreview({
           <Edit2 className="mr-2 size-4" />
           Edit
         </Button>
-        
+
         {/* Zoom Controls */}
-        <div className="flex items-center gap-2 bg-white rounded-lg px-2 py-1 border border-slate-200">
+        <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1">
           <Button
             onClick={handleZoomOut}
             disabled={zoom <= 0.5}
             variant="ghost"
             size="sm"
-            className="h-7 w-7 p-0"
+            className="size-7 p-0"
           >
             <ZoomOut className="size-4" />
           </Button>
-          
-          <span className="text-xs font-medium text-slate-700 min-w-[3rem] text-center">
-            {Math.round(zoom * 100)}%
+
+          <span className="min-w-12 text-center text-xs font-medium text-slate-700">
+            {Math.round(zoom * 100)}
+%
           </span>
-          
+
           <Button
             onClick={handleZoomIn}
             disabled={zoom >= 3}
             variant="ghost"
             size="sm"
-            className="h-7 w-7 p-0"
+            className="size-7 p-0"
           >
             <ZoomIn className="size-4" />
           </Button>
         </div>
       </div>
-      
+
       {/* Image Info */}
       <div className="mt-2 text-xs text-slate-500">
-        {image?.file.name} • {image ? formatFileSize(image.file.size) : ''}
+        {image?.file.name}
+{' '}
+•
+{image ? formatFileSize(image.file.size) : ''}
         {image?.metadata.label && ` • ${image.metadata.label}`}
       </div>
     </div>

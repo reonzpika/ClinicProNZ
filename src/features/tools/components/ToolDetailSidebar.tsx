@@ -20,9 +20,11 @@ export function ToolDetailSidebar({ tool }: { tool: ToolDetail }) {
             <div className="flex items-center justify-between gap-4">
               <dt className="text-muted-foreground">Website</dt>
               <dd>
-                {tool.website ? (
+                {tool.website
+? (
                   <a className="underline" href={tool.website} target="_blank" rel="noopener noreferrer">Visit</a>
-                ) : (
+                )
+: (
                   <span>—</span>
                 )}
               </dd>

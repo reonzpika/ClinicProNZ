@@ -2,6 +2,7 @@ import { JSDOM } from 'jsdom';
 
 import { ingestDocument } from '@/src/lib/rag';
 import type { DocumentToIngest } from '@/src/lib/rag/types';
+
 import type { LightScrapedArticle } from '../types';
 
 export class HealthifySiteCrawler {

@@ -6,9 +6,9 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
+  Search,
   ShieldCheck,
   Stethoscope,
-  Search,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';

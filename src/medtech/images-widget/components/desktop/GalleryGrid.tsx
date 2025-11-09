@@ -1,6 +1,6 @@
 /**
  * Gallery Grid Component
- * 
+ *
  * Displays session images in grid layout with:
  * - Status badges (pending/uploading/committed/error)
  * - Metadata preview
@@ -10,20 +10,21 @@
 
 'use client';
 
-import { Check, AlertCircle, Loader2, X, Edit2 } from 'lucide-react';
-import type { WidgetImage } from '../../types';
-import { useImageWidgetStore } from '../../stores/imageWidgetStore';
-import { formatFileSize } from '../../services/compression';
+import { AlertCircle, Check, Edit2, Loader2, X } from 'lucide-react';
 import { useState } from 'react';
+
+import { formatFileSize } from '../../services/compression';
+import { useImageWidgetStore } from '../../stores/imageWidgetStore';
+import type { WidgetImage } from '../../types';
 import { MetadataChips } from './MetadataChips';
 
-interface GalleryGridProps {
+type GalleryGridProps = {
   onImageClick?: (imageId: string) => void;
-}
+};
 
 export function GalleryGrid({ onImageClick }: GalleryGridProps) {
   const { sessionImages, selectedImageIds, toggleImageSelection } = useImageWidgetStore();
-  
+
   if (sessionImages.length === 0) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -51,10 +52,10 @@ export function GalleryGrid({ onImageClick }: GalleryGridProps) {
       </div>
     );
   }
-  
+
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-      {sessionImages.map((image) => (
+      {sessionImages.map(image => (
         <ImageCard
           key={image.id}
           image={image}
@@ -67,17 +68,17 @@ export function GalleryGrid({ onImageClick }: GalleryGridProps) {
   );
 }
 
-interface ImageCardProps {
+type ImageCardProps = {
   image: WidgetImage;
   isSelected: boolean;
   onSelect: () => void;
   onClick: () => void;
-}
+};
 
 function ImageCard({ image, isSelected, onSelect, onClick }: ImageCardProps) {
-  const removeImage = useImageWidgetStore((state) => state.removeImage);
+  const removeImage = useImageWidgetStore(state => state.removeImage);
   const [showMetadata, setShowMetadata] = useState(false);
-  
+
   return (
     <div className="group relative overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md">
       {/* Image */}
@@ -90,10 +91,10 @@ function ImageCard({ image, isSelected, onSelect, onClick }: ImageCardProps) {
           alt={image.metadata.label || 'Clinical image'}
           className="size-full object-cover"
         />
-        
+
         {/* Status Badge */}
         <StatusBadge status={image.status} error={image.error} />
-        
+
         {/* Selection Checkbox */}
         <div className="absolute left-2 top-2 z-10">
           <input
@@ -106,7 +107,7 @@ function ImageCard({ image, isSelected, onSelect, onClick }: ImageCardProps) {
             className="size-5 rounded border-2 border-white shadow-sm"
           />
         </div>
-        
+
         {/* Remove Button */}
         {image.status !== 'uploading' && (
           <button
@@ -123,7 +124,7 @@ function ImageCard({ image, isSelected, onSelect, onClick }: ImageCardProps) {
           </button>
         )}
       </div>
-      
+
       {/* Metadata Preview */}
       <div className="p-2">
         <div className="mb-1 flex items-center justify-between">
@@ -141,7 +142,7 @@ function ImageCard({ image, isSelected, onSelect, onClick }: ImageCardProps) {
             <Edit2 className="size-3" />
           </button>
         </div>
-        
+
         {/* Metadata Tags */}
         <div className="flex flex-wrap gap-1">
           {image.metadata.laterality && (
@@ -160,12 +161,12 @@ function ImageCard({ image, isSelected, onSelect, onClick }: ImageCardProps) {
             </span>
           )}
         </div>
-        
+
         {image.metadata.label && (
           <p className="mt-1 truncate text-xs text-slate-600">{image.metadata.label}</p>
         )}
       </div>
-      
+
       {/* Metadata Editor (Collapsible) */}
       {showMetadata && (
         <div className="border-t border-slate-200 bg-slate-50 p-3">
@@ -204,9 +205,9 @@ function StatusBadge({ status, error }: { status: WidgetImage['status']; error?:
       text: error || 'Error',
     },
   };
-  
+
   const badge = badges[status];
-  
+
   return (
     <div
       className={`absolute bottom-2 right-2 flex items-center gap-1 rounded px-2 py-1 text-xs font-medium text-white ${badge.bg}`}

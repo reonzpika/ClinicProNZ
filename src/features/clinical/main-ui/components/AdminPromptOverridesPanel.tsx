@@ -1,14 +1,15 @@
-"use client";
+'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
-import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
-import { Button } from '@/src/shared/components/ui/button';
-import { Textarea } from '@/src/shared/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
-import { Card } from '@/src/shared/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/src/shared/components/ui/dropdown-menu';
 import { ChevronDown, ChevronUp, MoreHorizontal } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
+import { Button } from '@/src/shared/components/ui/button';
+import { Card } from '@/src/shared/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/src/shared/components/ui/dropdown-menu';
+import { Textarea } from '@/src/shared/components/ui/textarea';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
 function tokenEstimate(text: string): number {
   // rough: 4 chars/token
@@ -68,11 +69,13 @@ export function AdminPromptOverridesPanel() {
   }, [systemText, userText]);
 
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!isAdmin) {
+ return;
+}
     setLoading(true);
     fetch('/api/admin/prompts', { method: 'GET' })
       .then(async r => r.json())
-      .then(data => {
+      .then((data) => {
         setVersions(data.versions || []);
         setActiveSelfVersionId(data.activeSelfVersionId || null);
         setActiveGlobalVersionId(data.activeGlobalVersionId || null);
@@ -80,7 +83,9 @@ export function AdminPromptOverridesPanel() {
       .finally(() => setLoading(false));
   }, [isAdmin]);
 
-  if (!isAdmin) return null;
+  if (!isAdmin) {
+ return null;
+}
 
   const handleSave = async () => {
     setLoading(true);
@@ -99,7 +104,9 @@ export function AdminPromptOverridesPanel() {
   };
 
   const handleUpdate = async () => {
-    if (!editingVersionId) return;
+    if (!editingVersionId) {
+ return;
+}
     setLoading(true);
     const res = await fetch('/api/admin/prompts', {
       method: 'POST',
@@ -120,19 +127,25 @@ export function AdminPromptOverridesPanel() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'activateSelf', versionId }),
     });
-    if (res.ok) setActiveSelfVersionId(versionId);
+    if (res.ok) {
+ setActiveSelfVersionId(versionId);
+}
     setLoading(false);
   };
 
   const publishGlobal = async (versionId: string) => {
-    if (!confirm('Publish this version to all users?')) return;
+    if (!confirm('Publish this version to all users?')) {
+ return;
+}
     setLoading(true);
     const res = await fetch('/api/admin/prompts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'publishGlobal', versionId }),
     });
-    if (res.ok) setActiveGlobalVersionId(versionId);
+    if (res.ok) {
+ setActiveGlobalVersionId(versionId);
+}
     setLoading(false);
   };
 
@@ -160,7 +173,9 @@ export function AdminPromptOverridesPanel() {
         body: JSON.stringify(body),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || 'Failed to generate preview');
+      if (!res.ok) {
+ throw new Error(data?.error || 'Failed to generate preview');
+}
       setPreviewSystem(data?.effective?.system || '');
       setPreviewUser(data?.effective?.user || '');
       setPreviewText(data?.note || '');
@@ -172,7 +187,9 @@ export function AdminPromptOverridesPanel() {
   };
 
   const insertSystemBase = async () => {
-    if (!templateId) return;
+    if (!templateId) {
+ return;
+}
     setInsertLoading('system');
     try {
       const res = await fetch('/api/admin/prompts/preview', {
@@ -181,7 +198,9 @@ export function AdminPromptOverridesPanel() {
         body: JSON.stringify({ templateId, placeholdersOnly: true }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || 'Failed to fetch base system prompt');
+      if (!res.ok) {
+ throw new Error(data?.error || 'Failed to fetch base system prompt');
+}
       setSystemText(data?.placeholders?.system || '');
     } catch {
       // no-op
@@ -191,7 +210,9 @@ export function AdminPromptOverridesPanel() {
   };
 
   const insertUserBase = async () => {
-    if (!templateId) return;
+    if (!templateId) {
+ return;
+}
     setInsertLoading('user');
     try {
       const res = await fetch('/api/admin/prompts/preview', {
@@ -200,7 +221,9 @@ export function AdminPromptOverridesPanel() {
         body: JSON.stringify({ templateId, placeholdersOnly: true }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || 'Failed to fetch base user prompt');
+      if (!res.ok) {
+ throw new Error(data?.error || 'Failed to fetch base user prompt');
+}
       setUserText(data?.placeholders?.user || '');
     } catch {
       // no-op
@@ -223,13 +246,17 @@ export function AdminPromptOverridesPanel() {
       <button
         type="button"
         className="flex min-h-10 w-full items-center justify-between text-left"
-        onClick={(e) => { e.stopPropagation(); setCollapsed(prev => !prev); }}
+        onClick={(e) => {
+ e.stopPropagation(); setCollapsed(prev => !prev);
+}}
         aria-expanded={!collapsed}
       >
         <div className="text-sm font-medium text-slate-700">Admin · Note Prompt Overrides</div>
-        {collapsed ? (
+        {collapsed
+? (
           <ChevronDown className="size-4 text-slate-600" />
-        ) : (
+        )
+: (
           <ChevronUp className="size-4 text-slate-600" />
         )}
       </button>
@@ -240,28 +267,55 @@ export function AdminPromptOverridesPanel() {
       <div className="mb-3 grid grid-cols-1 gap-3">
         <div>
           <div className="mb-1 flex items-center justify-between text-xs font-medium text-slate-600">
-            <span>System override (replace) — must include {'{{TEMPLATE}}'}</span>
+            <span>
+System override (replace) — must include
+{'{{TEMPLATE}}'}
+            </span>
             <Button type="button" variant="secondary" className="h-7 px-2 text-[11px]" onClick={() => setSystemEditorOpen(true)}>Enlarge</Button>
           </div>
           <Textarea value={systemText} onChange={e => setSystemText(e.target.value)} placeholder="... include {{TEMPLATE}} ..." className="min-h-[120px]" />
-          <div className="mt-1 text-[11px] text-slate-500">~{tokenEstimate(systemText)} tokens</div>
+          <div className="mt-1 text-[11px] text-slate-500">
+~
+{tokenEstimate(systemText)}
+{' '}
+tokens
+          </div>
         </div>
         <div>
           <div className="mb-1 flex items-center justify-between text-xs font-medium text-slate-600">
-            <span>User override (replace) — must include {'{{DATA}}'}</span>
+            <span>
+User override (replace) — must include
+{'{{DATA}}'}
+            </span>
             <Button type="button" variant="secondary" className="h-7 px-2 text-[11px]" onClick={() => setUserEditorOpen(true)}>Enlarge</Button>
           </div>
           <Textarea value={userText} onChange={e => setUserText(e.target.value)} placeholder="... include {{DATA}} ..." className="min-h-[120px]" />
-          <div className="mt-1 text-[11px] text-slate-500">~{tokenEstimate(userText)} tokens</div>
+          <div className="mt-1 text-[11px] text-slate-500">
+~
+{tokenEstimate(userText)}
+{' '}
+tokens
+          </div>
         </div>
         <div className="grid grid-cols-3 gap-2">
           <input className="col-span-1 rounded border border-slate-200 p-2 text-xs" placeholder="Rating (1-5)" value={rating} onChange={e => setRating(e.target.value ? Number(e.target.value) : '')} />
           <input className="col-span-2 rounded border border-slate-200 p-2 text-xs" placeholder="Feedback (optional)" value={feedback} onChange={e => setFeedback(e.target.value)} />
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="secondary" onClick={() => { setSystemText(''); setUserText(''); setRating(''); setFeedback(''); setEditingVersionId(null); setEditingVersionNumber(null); }}>New</Button>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => {
+ setSystemText(''); setUserText(''); setRating(''); setFeedback(''); setEditingVersionId(null); setEditingVersionNumber(null);
+}}
+          >
+New
+          </Button>
           {editingVersionId && (
-            <Button type="button" onClick={handleUpdate} disabled={!canSave || loading}>Update v{editingVersionNumber ?? ''}</Button>
+            <Button type="button" onClick={handleUpdate} disabled={!canSave || loading}>
+Update v
+{editingVersionNumber ?? ''}
+            </Button>
           )}
           <Button type="button" onClick={handleSave} disabled={!canSave || loading}>Save</Button>
           <Button type="button" variant="outline" onClick={handlePreviewOutput} disabled={previewLoading || !templateId}>Preview Output</Button>
@@ -273,8 +327,14 @@ export function AdminPromptOverridesPanel() {
         {versions.map(v => (
           <div key={v.id} className="rounded border border-slate-200 p-2">
             <div className="flex items-center justify-between">
-              <div className="text-xs font-medium flex items-center gap-2">
-                <span>v{v.versionNumber} · {new Date(v.createdAt).toLocaleString()}</span>
+              <div className="flex items-center gap-2 text-xs font-medium">
+                <span>
+v
+{v.versionNumber}
+{' '}
+·
+{new Date(v.createdAt).toLocaleString()}
+                </span>
                 {activeSelfVersionId === v.id && (
                   <span className="rounded border border-blue-200 bg-blue-50 px-1.5 py-0.5 text-[10px] font-normal text-blue-700">Active (me)</span>
                 )}
@@ -283,30 +343,54 @@ export function AdminPromptOverridesPanel() {
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <Button type="button" variant="secondary" onClick={() => { setViewVersion(v); setViewOpen(true); }}>View</Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => {
+ setViewVersion(v); setViewOpen(true);
+}}
+                >
+View
+                </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger>
                     <div className="inline-flex items-center rounded border border-slate-300 px-2 py-1 text-xs text-slate-700 hover:bg-slate-50">
-                      <MoreHorizontal className="mr-1 size-3" /> Actions
+                      <MoreHorizontal className="mr-1 size-3" />
+{' '}
+Actions
                     </div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => { setSystemText(v.systemText); setUserText(v.userText); setRating(v.rating ?? ''); setFeedback(v.feedback ?? ''); setEditingVersionId(v.id); setEditingVersionNumber(v.versionNumber); }}>Load into editors</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => {
+ setSystemText(v.systemText); setUserText(v.userText); setRating(v.rating ?? ''); setFeedback(v.feedback ?? ''); setEditingVersionId(v.id); setEditingVersionNumber(v.versionNumber);
+}}
+                    >
+Load into editors
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => activateSelf(v.id)} disabled={activeSelfVersionId === v.id}>Activate for me</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => publishGlobal(v.id)} disabled={activeGlobalVersionId === v.id}>Publish to all</DropdownMenuItem>
                     <DropdownMenuItem onClick={async () => {
                       const res = await fetch('/api/admin/prompts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'deleteVersion', versionId: v.id }) });
                       if (res.ok) {
                         setVersions(prev => prev.filter(x => x.id !== v.id));
-                        if (editingVersionId === v.id) { setEditingVersionId(null); setEditingVersionNumber(null); }
+                        if (editingVersionId === v.id) {
+ setEditingVersionId(null); setEditingVersionNumber(null);
+}
                       }
-                    }}>Delete</DropdownMenuItem>
+                    }}
+                    >
+Delete
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
             </div>
             {(v.feedback || v.rating) && (
-              <div className="mt-1 text-[11px] text-slate-600">{v.rating ? `Rating: ${v.rating}` : ''} {v.feedback ? `· ${v.feedback}` : ''}</div>
+              <div className="mt-1 text-[11px] text-slate-600">
+{v.rating ? `Rating: ${v.rating}` : ''}
+{' '}
+{v.feedback ? `· ${v.feedback}` : ''}
+              </div>
             )}
           </div>
         ))}
@@ -342,16 +426,21 @@ export function AdminPromptOverridesPanel() {
       <Dialog open={systemEditorOpen} onOpenChange={setSystemEditorOpen}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle className="text-sm">Edit System Override ({'{{TEMPLATE}}'})</DialogTitle>
+            <DialogTitle className="text-sm">
+Edit System Override (
+{'{{TEMPLATE}}'}
+)
+            </DialogTitle>
           </DialogHeader>
           <Textarea value={systemText} onChange={e => setSystemText(e.target.value)} className="min-h-[420px]" />
           <div className="mt-2 flex gap-2">
-            <Button type="button" variant="secondary" onClick={insertSystemBase} disabled={insertLoading==='system' || !templateId}>
-              {insertLoading==='system' ? 'Inserting…' : 'Insert system base'}
+            <Button type="button" variant="secondary" onClick={insertSystemBase} disabled={insertLoading === 'system' || !templateId}>
+              {insertLoading === 'system' ? 'Inserting…' : 'Insert system base'}
             </Button>
             {editingVersionId && (
               <Button type="button" onClick={handleUpdate} disabled={!canSave || loading}>
-                Update v{editingVersionNumber ?? ''}
+                Update v
+{editingVersionNumber ?? ''}
               </Button>
             )}
             <Button type="button" onClick={() => setSystemEditorOpen(false)}>Done</Button>
@@ -363,16 +452,21 @@ export function AdminPromptOverridesPanel() {
       <Dialog open={userEditorOpen} onOpenChange={setUserEditorOpen}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle className="text-sm">Edit User Override ({'{{DATA}}'})</DialogTitle>
+            <DialogTitle className="text-sm">
+Edit User Override (
+{'{{DATA}}'}
+)
+            </DialogTitle>
           </DialogHeader>
           <Textarea value={userText} onChange={e => setUserText(e.target.value)} className="min-h-[420px]" />
           <div className="mt-2 flex gap-2">
-            <Button type="button" variant="secondary" onClick={insertUserBase} disabled={insertLoading==='user' || !templateId}>
-              {insertLoading==='user' ? 'Inserting…' : 'Insert user base'}
+            <Button type="button" variant="secondary" onClick={insertUserBase} disabled={insertLoading === 'user' || !templateId}>
+              {insertLoading === 'user' ? 'Inserting…' : 'Insert user base'}
             </Button>
             {editingVersionId && (
               <Button type="button" onClick={handleUpdate} disabled={!canSave || loading}>
-                Update v{editingVersionNumber ?? ''}
+                Update v
+{editingVersionNumber ?? ''}
               </Button>
             )}
             <Button type="button" onClick={() => setUserEditorOpen(false)}>Done</Button>
@@ -386,7 +480,10 @@ export function AdminPromptOverridesPanel() {
       <Dialog open={viewOpen} onOpenChange={setViewOpen}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle className="text-sm">View Saved Version {viewVersion ? `(v${viewVersion.versionNumber})` : ''}</DialogTitle>
+            <DialogTitle className="text-sm">
+View Saved Version
+{viewVersion ? `(v${viewVersion.versionNumber})` : ''}
+            </DialogTitle>
           </DialogHeader>
           <div className="mt-2 space-y-3">
             {viewVersion && (

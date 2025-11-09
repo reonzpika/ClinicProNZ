@@ -1,13 +1,15 @@
 /**
  * Apply Metadata Modal
- * 
+ *
  * Allows GP to select which images to apply metadata to
  */
 
 'use client';
 
-import { useState, useMemo } from 'react';
-import { CheckCheck, AlertCircle, Check } from 'lucide-react';
+import { AlertCircle, Check, CheckCheck } from 'lucide-react';
+import { useMemo, useState } from 'react';
+
+import { Button } from '@/src/shared/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -16,16 +18,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/src/shared/components/ui/dialog';
-import { Button } from '@/src/shared/components/ui/button';
+
 import type { WidgetImage } from '../../types';
 
-interface ApplyMetadataModalProps {
+type ApplyMetadataModalProps = {
   isOpen: boolean;
   onClose: () => void;
   sourceImage: WidgetImage;
   availableImages: WidgetImage[];
   onApply: (targetImageIds: string[]) => void;
-}
+};
 
 export function ApplyMetadataModal({
   isOpen,
@@ -39,15 +41,17 @@ export function ApplyMetadataModal({
     return availableImages
       .filter((img) => {
         // Don't include source image
-        if (img.id === sourceImage.id) return false;
+        if (img.id === sourceImage.id) {
+ return false;
+}
         // Invalid = missing required fields
         return !img.metadata.laterality || !img.metadata.bodySite;
       })
-      .map((img) => img.id);
+      .map(img => img.id);
   }, [availableImages, sourceImage.id]);
-  
+
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set(defaultSelected));
-  
+
   const toggleImage = (imageId: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -59,15 +63,15 @@ export function ApplyMetadataModal({
       return next;
     });
   };
-  
+
   const handleApply = () => {
     onApply(Array.from(selectedIds));
     onClose();
   };
-  
+
   // Filter out source image from available images
-  const selectableImages = availableImages.filter((img) => img.id !== sourceImage.id);
-  
+  const selectableImages = availableImages.filter(img => img.id !== sourceImage.id);
+
   // Get metadata summary to show what will be copied
   const metadataSummary = [
     sourceImage.metadata.laterality && `Side: ${sourceImage.metadata.laterality.display}`,
@@ -75,7 +79,7 @@ export function ApplyMetadataModal({
     sourceImage.metadata.view && `View: ${sourceImage.metadata.view.display}`,
     sourceImage.metadata.type && `Type: ${sourceImage.metadata.type.display}`,
   ].filter(Boolean);
-  
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
@@ -85,19 +89,24 @@ export function ApplyMetadataModal({
             Select which images to apply this metadata to
           </DialogDescription>
         </DialogHeader>
-        
+
         {/* Source metadata summary */}
         <div className="rounded-lg bg-slate-50 p-4">
           <div className="mb-2 text-sm font-medium text-slate-700">
-            Copying from: {sourceImage.file.name}
+            Copying from:
+{' '}
+{sourceImage.file.name}
           </div>
           <div className="space-y-1 text-sm text-slate-600">
             {metadataSummary.map((item, i) => (
-              <div key={i}>• {item}</div>
+              <div key={i}>
+•
+{item}
+              </div>
             ))}
           </div>
         </div>
-        
+
         {/* Image selection grid */}
         <div className="max-h-96 overflow-y-auto rounded-lg border border-slate-200 p-4">
           <div className="grid grid-cols-2 gap-4">
@@ -105,7 +114,7 @@ export function ApplyMetadataModal({
               const isSelected = selectedIds.has(image.id);
               const isInvalid = !image.metadata.laterality || !image.metadata.bodySite;
               const isCommitted = image.status === 'committed';
-              
+
               return (
                 <div
                   key={image.id}
@@ -116,27 +125,28 @@ export function ApplyMetadataModal({
                       : 'border-slate-200 hover:border-slate-300'
                   }`}
                 >
-                  <div className="mt-1 flex-shrink-0">
+                  <div className="mt-1 shrink-0">
                     <div className={`size-4 rounded border-2 ${
                       isSelected
                         ? 'border-purple-500 bg-purple-500'
                         : 'border-slate-300 bg-white'
-                    }`}>
+                    }`}
+                    >
                       {isSelected && (
                         <Check className="size-3 text-white" />
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="flex-1">
                     {/* Thumbnail */}
-                    <div className="relative mb-2 h-20 w-20 overflow-hidden rounded border border-slate-200">
+                    <div className="relative mb-2 size-20 overflow-hidden rounded border border-slate-200">
                       <img
                         src={image.thumbnail}
                         alt={image.file.name}
                         className="size-full object-cover"
                       />
-                      
+
                       {/* Status badge */}
                       {isCommitted && (
                         <div className="absolute right-1 top-1 rounded-full bg-green-500 p-1">
@@ -149,12 +159,12 @@ export function ApplyMetadataModal({
                         </div>
                       )}
                     </div>
-                    
+
                     {/* Filename */}
                     <div className="text-sm font-medium text-slate-700">
                       {image.file.name}
                     </div>
-                    
+
                     {/* Status text */}
                     <div className="text-xs text-slate-500">
                       {isCommitted && 'Committed'}
@@ -167,19 +177,29 @@ export function ApplyMetadataModal({
             })}
           </div>
         </div>
-        
+
         {/* Selected count */}
         <div className="text-sm text-slate-600">
-          {selectedIds.size} image{selectedIds.size === 1 ? '' : 's'} selected
+          {selectedIds.size}
+{' '}
+image
+{selectedIds.size === 1 ? '' : 's'}
+{' '}
+selected
         </div>
-        
+
         <DialogFooter>
           <Button onClick={onClose} variant="outline">
             Cancel
           </Button>
           <Button onClick={handleApply} disabled={selectedIds.size === 0}>
             <CheckCheck className="mr-2 size-4" />
-            Apply to {selectedIds.size} Image{selectedIds.size === 1 ? '' : 's'}
+            Apply to
+{' '}
+{selectedIds.size}
+{' '}
+Image
+{selectedIds.size === 1 ? '' : 's'}
           </Button>
         </DialogFooter>
       </DialogContent>

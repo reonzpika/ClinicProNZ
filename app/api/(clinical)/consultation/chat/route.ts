@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
 import { getDb } from 'database/client';
 import { and, desc, eq, isNull } from 'drizzle-orm';
+import { NextResponse } from 'next/server';
 
+import { patientSessions, users } from '@/db/schema';
 import { trackPerplexityUsage } from '@/src/features/admin/cost-tracking/services/costTracker';
 import { extractRBACContext } from '@/src/lib/rbac-enforcer';
-import { patientSessions, users } from '@/db/schema';
 
 // Perplexity API configuration
 const PPLX_API_URL = 'https://api.perplexity.ai/chat/completions';

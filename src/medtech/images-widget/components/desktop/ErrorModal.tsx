@@ -1,12 +1,13 @@
 /**
  * Error Modal Component
- * 
+ *
  * Shows error details for a failed image with retry option
  */
 
 'use client';
 
 import { AlertCircle, RefreshCw, X } from 'lucide-react';
+
 import { Button } from '@/src/shared/components/ui/button';
 import {
   Dialog,
@@ -14,24 +15,29 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/src/shared/components/ui/dialog';
-import type { WidgetImage } from '../../types';
-import { useImageWidgetStore } from '../../stores/imageWidgetStore';
-import { useCommit } from '../../hooks/useCommit';
 
-interface ErrorModalProps {
+import { useCommit } from '../../hooks/useCommit';
+import { useImageWidgetStore } from '../../stores/imageWidgetStore';
+import type { WidgetImage } from '../../types';
+
+type ErrorModalProps = {
   isOpen: boolean;
   onClose: () => void;
   image: WidgetImage | null;
-}
+};
 
 export function ErrorModal({ isOpen, onClose, image }: ErrorModalProps) {
   const { setImageStatus } = useImageWidgetStore();
   const commitMutation = useCommit();
 
-  if (!image) return null;
+  if (!image) {
+ return null;
+}
 
   const handleRetry = async () => {
-    if (!image.error) return;
+    if (!image.error) {
+ return;
+}
 
     // Clear error status
     setImageStatus(image.id, 'pending');
@@ -85,10 +91,21 @@ export function ErrorModal({ isOpen, onClose, image }: ErrorModalProps) {
           <div className="rounded-lg bg-slate-50 p-4 text-sm">
             <p className="font-medium text-slate-900">Image Information:</p>
             <ul className="mt-2 space-y-1 text-slate-600">
-              <li>File: {image.file.name}</li>
-              <li>Size: {(image.file.size / 1024).toFixed(1)} KB</li>
+              <li>
+File:
+{image.file.name}
+              </li>
+              <li>
+Size:
+{(image.file.size / 1024).toFixed(1)}
+{' '}
+KB
+              </li>
               {image.metadata.label && (
-                <li>Label: {image.metadata.label}</li>
+                <li>
+Label:
+{image.metadata.label}
+                </li>
               )}
             </ul>
           </div>

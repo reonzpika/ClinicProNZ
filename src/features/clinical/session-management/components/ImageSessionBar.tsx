@@ -1,12 +1,12 @@
 'use client';
 
-import { Calendar, ChevronDown, RefreshCw, UserCheck, Trash2 } from 'lucide-react';
+import { Calendar, ChevronDown, RefreshCw, Trash2, UserCheck } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
+import { usePatientSessions } from '@/src/features/clinical/session-management/hooks/usePatientSessions';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
 import { Input } from '@/src/shared/components/ui/input';
-import { usePatientSessions } from '@/src/features/clinical/session-management/hooks/usePatientSessions';
 
 export type ImageSessionBarProps = {
   selectedSessionId: string | 'none';
@@ -64,14 +64,17 @@ export const ImageSessionBar: React.FC<ImageSessionBarProps> = ({ selectedSessio
           {/* Row 1: patient name */}
           <div className="flex min-w-0 items-center gap-2">
             <UserCheck className="mt-0.5 size-4 shrink-0 text-blue-600" />
-            {current ? (
+            {current
+? (
               <Input
                 value={tempName}
-                onChange={(e) => setTempName(e.target.value)}
+                onChange={e => setTempName(e.target.value)}
                 onBlur={async () => {
                   const name = tempName.trim();
                   if (name && name !== current.patientName) {
-                    try { await rename.mutateAsync({ sessionId: current.id, patientName: name }); } catch {}
+                    try {
+ await rename.mutateAsync({ sessionId: current.id, patientName: name });
+} catch {}
                   }
                 }}
                 onKeyDown={async (e) => {
@@ -79,21 +82,26 @@ export const ImageSessionBar: React.FC<ImageSessionBarProps> = ({ selectedSessio
                     e.preventDefault();
                     const name = tempName.trim();
                     if (name && current && name !== current.patientName) {
-                      try { await rename.mutateAsync({ sessionId: current.id, patientName: name }); } catch {}
+                      try {
+ await rename.mutateAsync({ sessionId: current.id, patientName: name });
+} catch {}
                     }
                   }
                 }}
                 className="h-8 flex-1 border-blue-300 bg-blue-50 text-sm font-medium text-blue-800 focus:border-blue-500"
                 disabled={isCreating}
               />
-            ) : (
+            )
+: (
               <div className="flex items-center gap-2 text-sm font-medium text-blue-800">
-                {isCreating ? (
+                {isCreating
+? (
                   <>
                     <RefreshCw className="size-3 animate-spin text-blue-600" />
                     <span>Creating session…</span>
                   </>
-                ) : (
+                )
+: (
                   <span>No session selected</span>
                 )}
               </div>
@@ -105,7 +113,13 @@ export const ImageSessionBar: React.FC<ImageSessionBarProps> = ({ selectedSessio
             {current && (
               <>
                 <Calendar className="size-3" />
-                <span className="truncate">{nz.date} • {nz.time}</span>
+                <span className="truncate">
+{nz.date}
+{' '}
+•
+{' '}
+{nz.time}
+                </span>
               </>
             )}
           </div>
@@ -122,16 +136,20 @@ export const ImageSessionBar: React.FC<ImageSessionBarProps> = ({ selectedSessio
                 variant="outline"
                 className="h-8 border-red-300 px-3 text-xs text-red-700 hover:bg-red-100"
                 onClick={async () => {
-                  try { await remove.mutateAsync(current.id); onSelectSession('none'); } catch {}
+                  try {
+ await remove.mutateAsync(current.id); onSelectSession('none');
+} catch {}
                 }}
                 disabled={remove.isPending || isCreating}
               >
-                {remove.isPending ? (
+                {remove.isPending
+? (
                   <span className="inline-flex items-center gap-1">
                     <RefreshCw className="size-3 animate-spin" />
                     Deleting...
                   </span>
-                ) : (
+                )
+: (
                   <span className="inline-flex items-center gap-1">
                     <Trash2 className="size-3" />
                     Delete

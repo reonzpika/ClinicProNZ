@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
 
 import { sql } from 'drizzle-orm';
+
 import { getDb } from '../database/client';
 
 async function main(): Promise<void> {
@@ -39,4 +40,3 @@ if (require.main === module) {
     process.exit(1);
   });
 }
-

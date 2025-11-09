@@ -1,15 +1,15 @@
-import { NextResponse } from 'next/server';
 import { getDb } from 'database/client';
 import { and, eq } from 'drizzle-orm';
+import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
+import { apiUsageCosts, patientSessions, users } from '@/db/schema';
+import { calculateDeepgramCost } from '@/src/features/admin/cost-tracking/services/costCalculator';
 import { trackOpenAIUsage } from '@/src/features/admin/cost-tracking/services/costTracker';
+import { PromptOverridesService } from '@/src/features/prompts/prompt-overrides-service';
 import { TemplateService } from '@/src/features/templates/template-service';
 import { compileTemplate } from '@/src/features/templates/utils/compileTemplate';
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
-import { apiUsageCosts, patientSessions, users } from '@/db/schema';
-import { calculateDeepgramCost } from '@/src/features/admin/cost-tracking/services/costCalculator';
-import { PromptOverridesService } from '@/src/features/prompts/prompt-overrides-service';
 
 function getOpenAI(): OpenAI {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -41,12 +41,12 @@ export async function POST(req: Request) {
       'Request parsing timeout',
     );
 
-    const { 
-      rawConsultationData,  // Keep for backward compatibility
+    const {
+      rawConsultationData, // Keep for backward compatibility
       additionalNotes,
-      transcription, 
+      transcription,
       typedInput,
-      templateId 
+      templateId,
     } = body;
 
     // Quick validation first
@@ -56,14 +56,14 @@ export async function POST(req: Request) {
 
     // Accept either old format (rawConsultationData) or new format (split sources)
     const hasOldFormat = rawConsultationData && typeof rawConsultationData === 'string' && rawConsultationData.trim() !== '';
-    const hasNewFormat = (additionalNotes && additionalNotes.trim() !== '') || 
-                         (transcription && transcription.trim() !== '') || 
-                         (typedInput && typedInput.trim() !== '');
+    const hasNewFormat = (additionalNotes && additionalNotes.trim() !== '')
+      || (transcription && transcription.trim() !== '')
+      || (typedInput && typedInput.trim() !== '');
 
     if (!hasOldFormat && !hasNewFormat) {
-      return NextResponse.json({ 
-        code: 'BAD_REQUEST', 
-        message: 'Missing consultation data (provide additionalNotes, transcription, typedInput, or rawConsultationData)' 
+      return NextResponse.json({
+        code: 'BAD_REQUEST',
+        message: 'Missing consultation data (provide additionalNotes, transcription, typedInput, or rawConsultationData)',
       }, { status: 400 });
     }
 
@@ -114,7 +114,7 @@ export async function POST(req: Request) {
         : {
             // Backward compatibility: treat rawConsultationData as transcription
             transcription: rawConsultationData,
-          }
+          },
     );
 
     // Build data block for overrides (user prompt data only)
@@ -125,7 +125,7 @@ export async function POST(req: Request) {
       if (hasNewFormat) {
         if ((additionalNotes || '').trim()) {
           sections.push('PRIMARY SOURCE: Additional Notes');
-          sections.push("(GP's clinical reasoning and problem list - use as clinical authority)");
+          sections.push('(GP\'s clinical reasoning and problem list - use as clinical authority)');
           sections.push('');
           sections.push((additionalNotes || '').trim());
           sections.push('');
@@ -278,7 +278,9 @@ export async function POST(req: Request) {
         }
       }
     } catch (err) {
-      try { console.warn('[Notes] Failed to aggregate Deepgram cost on process note:', err); } catch {}
+      try {
+ console.warn('[Notes] Failed to aggregate Deepgram cost on process note:', err);
+} catch {}
     }
 
     // Stream the final content to the client (single-chunk stream)

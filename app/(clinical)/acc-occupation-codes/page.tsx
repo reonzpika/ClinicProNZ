@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import React, { useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
 import { Input } from '@/src/shared/components/ui/input';
-
 
 type OccupationCode = {
   code: string;
@@ -29,7 +28,7 @@ export default function AccOccupationCodesPage() {
         return res.json();
       },
       enabled: submittedQuery.trim().length >= 2,
-    }
+    },
   );
 
   const handleCopy = async (text: string) => {
@@ -72,12 +71,16 @@ export default function AccOccupationCodesPage() {
       )}
 
       <div className="space-y-2">
-        {data?.results?.map((r) => (
+        {data?.results?.map(r => (
           <div key={r.code} className="w-full overflow-hidden rounded-md border p-3">
             <div className="flex items-center justify-between gap-3 overflow-hidden">
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-medium text-slate-900">{r.title}</div>
-                <div className="truncate text-xs text-slate-600">Code: {r.code}{r.anzscoCode ? ` · ANZSCO: ${r.anzscoCode}` : ''}</div>
+                <div className="truncate text-xs text-slate-600">
+Code:
+{r.code}
+{r.anzscoCode ? ` · ANZSCO: ${r.anzscoCode}` : ''}
+                </div>
                 {r.notes && <div className="truncate text-[11px] text-slate-500">{r.notes}</div>}
               </div>
               <div className="flex shrink-0 gap-2">

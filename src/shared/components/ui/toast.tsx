@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import * as React from "react";
+import * as React from 'react';
 
 type Toast = {
   id: string;
   title?: string;
   description?: string;
   action?: { label: string; onClick: () => void } | null;
-  variant?: "default" | "destructive";
+  variant?: 'default' | 'destructive';
 };
 
 type ToastContextValue = {
   toasts: Toast[];
-  show: (toast: Omit<Toast, "id"> & { durationMs?: number }) => void;
+  show: (toast: Omit<Toast, 'id'> & { durationMs?: number }) => void;
   dismiss: (id: string) => void;
 };
 
@@ -25,7 +25,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
 
-  const show = React.useCallback((toast: Omit<Toast, "id"> & { durationMs?: number }) => {
+  const show = React.useCallback((toast: Omit<Toast, 'id'> & { durationMs?: number }) => {
     const id = Math.random().toString(36).slice(2);
     setToasts(prev => [...prev, { ...toast, id }]);
     const duration = toast.durationMs ?? 4000;
@@ -45,7 +45,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               {t.description && <div className="text-sm opacity-80">{t.description}</div>}
             </div>
             {t.action && (
-              <button className="rounded border px-2 py-1 text-xs" onClick={() => { t.action?.onClick(); dismiss(t.id); }}>
+              <button
+                className="rounded border px-2 py-1 text-xs"
+                onClick={() => {
+ t.action?.onClick(); dismiss(t.id);
+}}
+              >
                 {t.action.label}
               </button>
             )}
@@ -59,6 +64,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
 export function useToast() {
   const ctx = React.useContext(ToastContext);
-  if (!ctx) throw new Error("useToast must be used within ToastProvider");
+  if (!ctx) {
+ throw new Error('useToast must be used within ToastProvider');
+}
   return ctx;
 }

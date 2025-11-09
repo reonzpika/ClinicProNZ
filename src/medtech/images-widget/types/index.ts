@@ -1,6 +1,6 @@
 /**
  * Medtech Images Widget - Type Definitions
- * 
+ *
  * These types represent the simplified REST API from the Integration Gateway,
  * NOT the underlying FHIR resources.
  */
@@ -9,11 +9,11 @@
 // Coded Concepts (SNOMED CT or internal codes)
 // ============================================================================
 
-export interface CodeableConcept {
+export type CodeableConcept = {
   system?: string;
   code: string;
   display: string;
-}
+};
 
 // ============================================================================
 // Widget Image State
@@ -21,12 +21,12 @@ export interface CodeableConcept {
 
 export type ImageStatus = 'pending' | 'compressing' | 'uploading' | 'committed' | 'error';
 
-export interface WidgetImage {
+export type WidgetImage = {
   id: string;
   file: File;
   preview: string; // Blob URL for preview
   thumbnail?: string; // Compressed preview
-  
+
   // Metadata
   metadata: {
     bodySite?: CodeableConcept;
@@ -52,7 +52,7 @@ export interface WidgetImage {
             x2: number; // End point X as percentage (0-100)
             y2: number; // End point Y as percentage (0-100)
           }
-        | {
+          | {
             // Legacy format: position and angle (for backward compatibility when reading)
             id: string;
             x: number; // Position X as percentage (0-100)
@@ -62,7 +62,7 @@ export interface WidgetImage {
       >;
     };
   };
-  
+
   // Commit options
   commitOptions?: {
     alsoInbox?: {
@@ -77,11 +77,11 @@ export interface WidgetImage {
       note?: string;
     };
   };
-  
+
   // State
   status: ImageStatus;
   error?: string;
-  
+
   // Result after commit
   result?: {
     documentReferenceId: string;
@@ -89,18 +89,18 @@ export interface WidgetImage {
     inboxMessageId?: string;
     taskId?: string;
   };
-}
+};
 
 // ============================================================================
 // Capabilities Response (from GET /api/medtech/capabilities)
 // ============================================================================
 
-export interface Capabilities {
+export type Capabilities = {
   provider: {
     name: string;
     environment: 'sandbox' | 'production' | 'mock';
   };
-  
+
   features: {
     images: {
       enabled: boolean;
@@ -122,7 +122,7 @@ export interface Capabilities {
       };
     };
   };
-  
+
   limits: {
     attachments: {
       acceptedTypes: string[];
@@ -131,34 +131,34 @@ export interface Capabilities {
       maxTotalBytesPerEncounter?: number;
     };
   };
-  
+
   recipients?: {
     inbox: Recipient[];
     tasks: Recipient[];
   };
-}
+};
 
-export interface Recipient {
+export type Recipient = {
   id: string;
   type: 'user' | 'team';
   display: string;
-}
+};
 
 // ============================================================================
 // Mobile Session (QR Handoff)
 // ============================================================================
 
-export interface MobileSessionResponse {
+export type MobileSessionResponse = {
   mobileUploadUrl: string;
   qrSvg: string; // SVG data URI
   ttlSeconds: number;
-}
+};
 
 // ============================================================================
 // Upload Initiate (File Metadata)
 // ============================================================================
 
-export interface UploadInitiateRequest {
+export type UploadInitiateRequest = {
   encounterId: string;
   files: Array<{
     clientRef: string; // Client-side unique ID
@@ -179,9 +179,9 @@ export interface UploadInitiateRequest {
       type?: CodeableConcept;
     };
   }>;
-}
+};
 
-export interface UploadInitiateResponse {
+export type UploadInitiateResponse = {
   uploadSessionId: string;
   files: Array<{
     clientRef: string;
@@ -190,13 +190,13 @@ export interface UploadInitiateResponse {
     headers?: Record<string, string>;
     expiresAt?: string;
   }>;
-}
+};
 
 // ============================================================================
 // Commit Request/Response
 // ============================================================================
 
-export interface CommitRequest {
+export type CommitRequest = {
   encounterId: string;
   files: Array<{
     fileId: string;
@@ -222,9 +222,9 @@ export interface CommitRequest {
     };
     idempotencyKey?: string;
   }>;
-}
+};
 
-export interface CommitResponse {
+export type CommitResponse = {
   files: Array<{
     fileId: string;
     status: 'committed' | 'error';
@@ -235,13 +235,13 @@ export interface CommitResponse {
     warnings?: string[];
     error?: string;
   }>;
-}
+};
 
 // ============================================================================
 // Encounter Context (from Medtech Evolution)
 // ============================================================================
 
-export interface EncounterContext {
+export type EncounterContext = {
   encounterId: string;
   patientId: string;
   patientName?: string;
@@ -250,22 +250,22 @@ export interface EncounterContext {
   providerId?: string;
   providerName?: string;
   encounterDate?: string;
-}
+};
 
 // ============================================================================
 // Compression Options
 // ============================================================================
 
-export interface CompressionOptions {
+export type CompressionOptions = {
   maxSizeBytes: number;
   longestEdgePx: number;
   quality: number;
   stripExif: boolean;
-}
+};
 
-export interface CompressionResult {
+export type CompressionResult = {
   compressedFile: File;
   originalSize: number;
   compressedSize: number;
   compressionRatio: number;
-}
+};

@@ -10,11 +10,11 @@ const userPromptCache = new Map<string, { compiled: string; timestamp: number }>
 const USER_PROMPT_CACHE_TTL = 30000; // 30 seconds
 const MAX_USER_CACHE_SIZE = 100;
 
-interface ConsultationDataSources {
+type ConsultationDataSources = {
   additionalNotes?: string;
   transcription?: string;
   typedInput?: string;
-}
+};
 
 // Generate cache key for user prompt
 function generateUserPromptCacheKey(data: ConsultationDataSources): string {
@@ -30,10 +30,10 @@ function generateUserPromptCacheKey(data: ConsultationDataSources): string {
 function cleanupCache<T>(
   cache: Map<string, T & { timestamp: number }>,
   ttl: number,
-  maxSize: number
+  maxSize: number,
 ) {
   const now = Date.now();
-  
+
   // Remove expired entries
   for (const [key, value] of cache.entries()) {
     if (now - value.timestamp > ttl) {
@@ -45,7 +45,7 @@ function cleanupCache<T>(
   if (cache.size > maxSize) {
     const entries = Array.from(cache.entries())
       .sort((a, b) => a[1].timestamp - b[1].timestamp);
-    
+
     const toRemove = entries.slice(0, cache.size - maxSize);
     toRemove.forEach(([key]) => cache.delete(key));
   }
@@ -62,7 +62,7 @@ function getCachedSystemPrompt(templateId: string, templateBody: string): string
 
   // Generate new system prompt with template embedded
   const systemPrompt = generateSystemPrompt(templateBody);
-  
+
   systemPromptCache.set(templateId, {
     prompt: systemPrompt,
     timestamp: now,
@@ -88,7 +88,7 @@ function buildUserPrompt(data: ConsultationDataSources): string {
 
   // Build sections with consultation data
   const sections: string[] = [];
-  
+
   sections.push('=== CONSULTATION DATA ===');
   sections.push('');
 

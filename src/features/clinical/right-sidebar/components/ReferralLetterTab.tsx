@@ -113,13 +113,15 @@ export const ReferralLetterTab: React.FC = () => {
       <div className="space-y-3">
         <div>
           <label htmlFor="referralReason" className="mb-1 block text-xs font-medium text-slate-700">
-            Reason for Referring <span className="text-red-500">*</span>
+            Reason for Referring
+{' '}
+<span className="text-red-500">*</span>
           </label>
           <Textarea
             id="referralReason"
             placeholder="e.g. Assess for surgical intervention, review management plan, confirm diagnosis"
             value={referralReason}
-            onChange={(e) => setReferralReason(e.target.value)}
+            onChange={e => setReferralReason(e.target.value)}
             disabled={isGenerating}
             rows={3}
             className="text-sm"
@@ -132,12 +134,14 @@ export const ReferralLetterTab: React.FC = () => {
           className="w-full"
           size="sm"
         >
-          {isGenerating ? (
+          {isGenerating
+? (
             <>
               <Loader2 className="mr-2 size-4 animate-spin" />
               Generating...
             </>
-          ) : (
+          )
+: (
             'Generate Referral Letter'
           )}
         </Button>

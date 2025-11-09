@@ -1,26 +1,26 @@
+import { getDb } from 'database/client';
+import { sql } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { cacheGet, cacheSet } from '@/src/lib/cache/redis';
+
 // Ensure Node.js runtime (needed for Neon/drizzle client env access)
 export const runtime = 'nodejs';
-
-import { getDb } from 'database/client';
-import { sql } from 'drizzle-orm';
-
-import { cacheGet, cacheSet } from '@/src/lib/cache/redis';
 
 function getClientIp(req: NextRequest): string {
   const xff = req.headers.get('x-forwarded-for');
   if (xff) {
     const first = xff.split(',')[0] ?? '';
     const trimmed = first.trim();
-    if (trimmed) return trimmed;
+    if (trimmed) {
+ return trimmed;
+}
   }
   return req.headers.get('cf-connecting-ip') || 'unknown';
 }
 
-async function rateLimit(req: NextRequest, bucket: string, limitPerMinute: number): Promise<{ allowed: boolean; headers: Record<string, string> }>
-{
+async function rateLimit(req: NextRequest, bucket: string, limitPerMinute: number): Promise<{ allowed: boolean; headers: Record<string, string> }> {
   const ip = getClientIp(req);
   const now = new Date();
   const key = `ratelimit:${bucket}:${ip}:${now.getUTCFullYear()}${now.getUTCMonth()}${now.getUTCDate()}${now.getUTCHours()}${now.getUTCMinutes()}`;
@@ -94,7 +94,7 @@ export async function GET(req: NextRequest) {
       return errRes;
     }
 
-    const quoteIdent = (name: string) => '"' + name.replace(/"/g, '""') + '"';
+    const quoteIdent = (name: string) => `"${name.replace(/"/g, '""')}"`;
     const codeIdent = sql.raw(quoteIdent(codeCol));
     const titleIdent = sql.raw(quoteIdent(titleCol));
 

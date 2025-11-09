@@ -1,6 +1,6 @@
-import Component from "@glimmer/component";
-import { tracked } from "@glimmer/tracking";
-import { ajax } from "discourse/lib/ajax";
+import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
+import { ajax } from 'discourse/lib/ajax';
 
 export default class CategorySection extends Component {
   @tracked topics = [];
@@ -14,17 +14,21 @@ export default class CategorySection extends Component {
   async load() {
     const categoryId = Number(this.args.categoryId || 0);
     const count = Number(this.args.count || 1);
-    if (!categoryId) return;
+    if (!categoryId) {
+ return;
+}
     try {
       const show = await ajax(`/c/${categoryId}/show.json`);
       const slug = show?.category?.slug;
-      if (!slug) return;
+      if (!slug) {
+ return;
+}
       this.categorySlug = slug;
 
       const list = await ajax(`/c/${slug}/${categoryId}/l/latest.json?per_page=${count}`);
       const items = list?.topic_list?.topics || [];
       // Shape minimal data for rendering
-      this.topics = items.slice(0, count).map((t) => ({
+      this.topics = items.slice(0, count).map(t => ({
         id: t.id,
         fancy_title: t.fancy_title || t.title,
         created_at: t.created_at || t.last_posted_at,

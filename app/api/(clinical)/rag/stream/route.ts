@@ -1,20 +1,18 @@
 import { auth } from '@clerk/nextjs/server';
 import type { NextRequest } from 'next/server';
-
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
-
 // HYBRID STACK NOTE:
 // Use LlamaIndex for everything else in the pipeline:
 // - Chunking (semantic, markdown-aware), retrievers, rerankers
 // - Query/chat engines, memory, agents
 // - Provider adapters/integration
 // We only use streaming here; response format is SSE with {type:'response.delta', delta}.
-
 import OpenAI from 'openai';
 
 import { formatContextForRag, searchSimilarDocuments } from '@/src/lib/rag';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   try {
@@ -67,8 +65,8 @@ ${context}`;
     // Prepare source metadata for client UI
     const sources = Array.from(
       new Map(
-        relevantDocs.map(d => [d.source, { title: d.title, url: d.source }])
-      ).values()
+        relevantDocs.map(d => [d.source, { title: d.title, url: d.source }]),
+      ).values(),
     ).slice(0, 8);
 
     // Early heartbeat to keep connection active
@@ -108,7 +106,7 @@ ${context}`;
       headers: {
         'Content-Type': 'text/event-stream; charset=utf-8',
         'Cache-Control': 'no-cache, no-transform',
-        Connection: 'keep-alive',
+        'Connection': 'keep-alive',
         'X-Accel-Buffering': 'no',
       },
     });
@@ -117,4 +115,3 @@ ${context}`;
     return new Response('Internal server error', { status: 500 });
   }
 }
-
