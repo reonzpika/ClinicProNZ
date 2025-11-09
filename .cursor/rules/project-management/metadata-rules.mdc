@@ -1,0 +1,77 @@
+---
+description: "YAML metadata validation and management"
+alwaysApply: false
+globs: 
+  - "**/*.md"
+version: "1.0.0"
+last_updated: "2025-11-09"
+---
+
+# Metadata Rules (YAML Front Matter)
+
+## System Structure (Workspace/Repository Level)
+
+**Overall Structure**:
+- **Root Level**: `PROJECTS_OVERVIEW.md` (global dashboard), `/Templates/` (templates + index)
+- **Project Level**: Each project = one directory containing `PROJECT_SUMMARY.md` (MANDATORY per project)
+
+**Prohibited**:
+- Multiple `PROJECT_SUMMARY.md` files per project directory
+- Project directories without `PROJECT_SUMMARY.md`
+- Storing authoritative project data outside the project's `PROJECT_SUMMARY.md`
+
+## Required Fields
+
+Every project `PROJECT_SUMMARY.md` must have:
+- `project_name`: Full project name
+- `project_stage`: One of: Ideation | Validation | Build | Operational | Archived
+- `owner`: Project owner/lead
+- `last_updated`: ISO 8601 date format (YYYY-MM-DD)
+- `version`: Semantic versioning (semver) format (e.g., "1.2.3")
+- `tags`: Array of relevant keywords/tags
+
+## Optional Fields
+
+May include:
+- `summary`: Brief project description
+- `links`: External links (repo, docs, production URL)
+- `stakeholders`: Key stakeholders or team members
+- `milestones`: Upcoming or completed milestones
+- `risks`: Current risks or concerns
+
+## Validation Rules
+
+**Field Validation**:
+- Ensure all required fields exist
+- Normalize `project_stage` to exact enum values (case-sensitive)
+- Validate `last_updated` is ISO 8601 format
+- Validate `version` follows semver pattern (X.Y.Z)
+- Ensure `tags` is an array
+
+**Update Rules**:
+- Update `last_updated` on material edits (set to today's date)
+- Bump `version` on material edits (increment patch version, e.g., 1.2.3 → 1.2.4)
+- Minor changes don't require version bump (typos, formatting)
+- Major changes bump minor version (1.2.3 → 1.3.0)
+- Complete restructure bumps major version (1.2.3 → 2.0.0)
+
+## Version Bumping Guidelines
+
+**Patch (0.0.X)**: 
+- Content updates (new sections, progress updates)
+- Metadata updates (stage change, owner change)
+- Minor corrections
+
+**Minor (0.X.0)**:
+- Major restructuring of content
+- New major sections
+- Significant milestone completion
+
+**Major (X.0.0)**:
+- Complete project overhaul
+- Change in project direction
+- Moving to new stage (e.g., Validation → Build)
+
+---
+
+# End of Metadata Rules

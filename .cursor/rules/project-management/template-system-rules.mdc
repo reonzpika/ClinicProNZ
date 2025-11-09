@@ -1,0 +1,85 @@
+---
+description: "Template selection, loading, and composition strategy"
+alwaysApply: false
+globs: 
+  - "**/Templates/*.md"
+  - "**/Templates_Index.md"
+version: "1.0.0"
+last_updated: "2025-11-09"
+---
+
+# Template System Rules
+
+## Loading (On-Demand Only)
+
+**Triggers**: New project with sparse metadata, user requests setup, missing folders/files detected, project matches template keywords
+
+**Strategy**: Load only selected template (not all), use `Templates_Index.md` for quick reference
+
+## Selection
+
+- Auto-select based on: project description, metadata, stage, keywords from index
+- Don't ask users to pick - make selection automatically
+- If no match: research project type, auto-generate template, update index
+
+## Structure Standards
+
+Each template must include: YAML (`template_type`, `keywords`, `stage`), Purpose, Key Questions, Common Documents, Recommended Folder Structure, Milestones, Pitfalls, Example Prompts, Date-stamped footer
+
+## Usage During Setup
+
+1. Use Key Questions as conversation scaffold
+2. AI-Guided Consultation: Prompt for missing details (stage, product type, function, requirements)
+3. Adaptive Folder Creation: Start with template structure, customize by project type/model/stage, document rationale
+4. Reference Common Documents, track Milestones, heed Pitfalls
+5. Consolidate all info into `PROJECT_SUMMARY.md`
+
+## AI-Guided Folder Creation
+
+### Process
+1. **Gather Context**: Review metadata, prompt for missing details (stage, product type, business function, team size, requirements), analyze description, ask clarifying questions
+2. **Select Template**: Match by stage/type, review recommended structure
+3. **Customize**: Start with template, add folders by product type (SaaS: `/api/`, `/frontend/`), business model (marketplace: `/seller-onboarding/`, `/payment-processing/`), compliance (`/compliance/`, `/dpia/`), grants (`/grant-proposals/`), partnerships (`/partner-contracts/`). Remove/defer irrelevant folders.
+4. **Document**: Note rationale in `PROJECT_SUMMARY.md`, reference template, explain adaptations
+5. **Future-Proof**: Flexible structure, anticipate needs but don't over-engineer, add folders as project evolves
+
+### Evolution
+- **Stage-Based**: Ideation→Validation (add research), Validation→Build (add development), Build→Operational (add operations)
+- **Business Model**: SaaS (dev/deploy/ops), Marketplace (buyer/seller/payments/trust), Hardware (manufacturing/supply/certs), Research/Grants (proposals/compliance/reporting), Consulting (clients/proposals/deliverables)
+- **Continuous**: Detect gaps, suggest folders, adapt structure, update documentation
+
+## Template Inference from Folder Structure
+
+If `PROJECT_SUMMARY.md` missing but folder exists:
+1. Analyze folder contents and file names
+2. Match against template keywords in `Templates_Index.md`:
+   - Look for folder names that match template keywords
+   - Check for common files (e.g., `pitch-deck.md` → Fundraising, `user-stories.md` → Product Development)
+   - Identify stage indicators (e.g., `customer-interviews/` → Idea Validation)
+3. Select best-fit template based on folder structure analysis
+4. If cannot infer: Prompt user for project stage and type to select template
+
+## Template Composition Strategy
+
+When auto-generating template (no exact match):
+1. **Identify Primary Template**: Best match based on stage or primary function
+2. **Identify Secondary Templates**: Additional templates that contribute relevant elements
+3. **YAML Front Matter**: Use primary template as base, merge unique tags/fields from secondary
+4. **Key Questions**: Combine unique questions, remove duplicates, maintain logical flow
+5. **Folder Structure**: 
+   - Merge structures from all templates
+   - Resolve conflicts by priority: Current stage > Product type > General
+   - Remove duplicates, keep most specific recommendations
+6. **Milestones**: Merge chronologically, remove duplicates, ensure logical progression
+7. **Pitfalls**: Combine all unique pitfalls from all templates
+8. **Common Documents**: Merge lists, remove duplicates
+9. **Conflict Resolution**: If conflicting guidance (e.g., different approaches):
+   - Document both approaches with explanations
+   - Explain trade-offs
+   - Default to primary template's approach
+   - Note conflict resolution in template rationale
+10. **Documentation**: In template, note which templates were combined and why
+
+---
+
+# End of Template System Rules

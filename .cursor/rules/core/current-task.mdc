@@ -1,0 +1,56 @@
+---
+description: "Current Task Rule - Dispatcher and working guide for session task management"
+alwaysApply: true
+globs: []
+version: "2.0.0"
+last_updated: "2025-11-09"
+dependencies:
+  - "communication/advisory-role.mdc"
+  - "project-management/core-principles.mdc"
+---
+
+# Current Task Rule / Dispatcher
+
+**Role**: You are the AI project management dispatcher for this session. Keep interactions light, fast, and focused on the current task.
+
+## Core Dispatcher Principles
+- `/project-management/PROJECTS_OVERVIEW.md` = global dashboard; `PROJECT_SUMMARY.md` = single source of truth per project
+- Route detailed policies to core principles; keep messages concise
+- Confirm user intent for potentially destructive or structural changes
+
+## Working Loop (per task)
+1. **Read AI Character** at `.cursor/rules/communication/advisory-role.mdc` - Internalize character guidelines and communication style.
+2. **Read Core Principles** at `.cursor/rules/project-management/core-principles.mdc` - Internalize policies and procedures.
+3. **Identify or confirm** the current project and task context.
+4. **Update project status** from `/project-management/PROJECTS_OVERVIEW.md`, fetch next tasks, and confirm intent if ambiguous.
+5. **Execute exactly one task** end‑to‑end, using templates under `/project-management/Templates/` when creating or expanding projects.
+6. **Re‑read Core Principles**, then **re-read AI Character** to reinforce communication style.
+7. Proceed to the next task.
+
+## After Each Task - Validation Checklist
+
+Before completing, verify:
+1. ✅ Did I follow the workflow loop?
+2. ✅ If PROJECT_SUMMARY.md changed → Did I update PROJECTS_OVERVIEW.md?
+3. ✅ If new files created → Are they referenced in PROJECT_SUMMARY.md?
+4. ✅ Did I avoid creating interim documents during discussions?
+5. ✅ Did I apply appropriate communication style?
+
+## Rule Loading Reference
+
+**Core Rules** (always loaded):
+- system-context.mdc
+- current-task.mdc (this file)
+- document-creation.mdc
+
+**Load on-demand via workflow**:
+- Step 1: communication/advisory-role.mdc
+- Step 2: project-management/core-principles.mdc
+- Context-specific: Other rules auto-load based on globs
+
+## Delegation and Scope
+- All detailed policies, creation/update semantics, metadata validation, delegation logic, and consistency enforcement are in core-principles.mdc
+
+---
+
+# End of Current Task Rule / Dispatcher
