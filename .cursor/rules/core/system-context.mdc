@@ -12,7 +12,7 @@ last_updated: "2025-11-09"
 - `/project-management/PROJECTS_OVERVIEW.md` - Global dashboard (mission control for all projects)
 - `/project-management/[project-name]/PROJECT_SUMMARY.md` - Single source of truth per project (mandatory for each project)
 
-**Rule Files**: Follow `.cursor/rules/core/current-task.mdc` for operational workflow. Reference `.cursor/rules/project-management/core-principles.mdc` for detailed policies. Read `.cursor/rules/communication/advisory-role.mdc` at task start/end for character guidelines.
+**Rule Files**: Follow `.cursor/rules/core/current-task.mdc` for operational workflow. Reference `.cursor/rules/project-management/core-principles.mdc` for detailed policies. Communication fundamentals (style, NZ localization, user intent) are always active.
 
 **Technical Rules**: ClinicPro-specific technical rules coexist with project management rules:
 - `.cursor/rules/technical/debugging-strategy.mdc` - Technical debugging approach

@@ -2,7 +2,7 @@
 description: "Current Task Rule - Dispatcher and working guide for session task management"
 alwaysApply: true
 globs: []
-version: "2.0.0"
+version: "2.1.0"
 last_updated: "2025-11-09"
 dependencies:
   - "communication/advisory-role.mdc"
@@ -19,13 +19,15 @@ dependencies:
 - Confirm user intent for potentially destructive or structural changes
 
 ## Working Loop (per task)
-1. **Read AI Character** at `.cursor/rules/communication/advisory-role.mdc` - Internalize character guidelines and communication style.
+1. **Read Advisory Role** at `.cursor/rules/communication/advisory-role.mdc` - Internalize strategic advisory approach when needed for guidance.
 2. **Read Core Principles** at `.cursor/rules/project-management/core-principles.mdc` - Internalize policies and procedures.
 3. **Identify or confirm** the current project and task context.
 4. **Update project status** from `/project-management/PROJECTS_OVERVIEW.md`, fetch next tasks, and confirm intent if ambiguous.
 5. **Execute exactly one task** end‑to‑end, using templates under `/project-management/Templates/` when creating or expanding projects.
-6. **Re‑read Core Principles**, then **re-read AI Character** to reinforce communication style.
+6. **Re‑read Core Principles** to reinforce policies.
 7. Proceed to the next task.
+
+**Note**: Communication fundamentals (style, NZ localization, user intent understanding) are always loaded - no need to read separately.
 
 ## After Each Task - Validation Checklist
 
@@ -39,13 +41,16 @@ Before completing, verify:
 ## Rule Loading Reference
 
 **Core Rules** (always loaded):
-- system-context.mdc
-- current-task.mdc (this file)
-- document-creation.mdc
+- system-context.mdc - System orientation
+- current-task.mdc (this file) - Workflow dispatcher
+- document-creation.mdc - When to create files
+- communication-style.mdc - How to communicate
+- nz-localization.mdc - NZ English everywhere
+- user-intent-understanding.mdc - Understanding user intent
 
 **Load on-demand via workflow**:
-- Step 1: communication/advisory-role.mdc
-- Step 2: project-management/core-principles.mdc
+- Step 1: communication/advisory-role.mdc (strategic advice)
+- Step 2: project-management/core-principles.mdc (PM policies)
 - Context-specific: Other rules auto-load based on globs
 
 ## Delegation and Scope

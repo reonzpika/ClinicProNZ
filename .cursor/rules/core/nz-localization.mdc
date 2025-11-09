@@ -1,12 +1,10 @@
 ---
 description: "New Zealand English localization rules"
-alwaysApply: false
-globs: 
-  - "**/*.md"
-  - "**/*.tsx"
-  - "**/*.ts"
-version: "1.0.0"
+alwaysApply: true
+globs: []
+version: "1.1.0"
 last_updated: "2025-11-09"
+priority: CRITICAL
 ---
 
 # New Zealand Localisation

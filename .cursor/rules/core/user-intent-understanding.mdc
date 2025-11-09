@@ -1,9 +1,10 @@
 ---
 description: "Understanding user intent and context-aware clarification"
-alwaysApply: false
+alwaysApply: true
 globs: []
-version: "1.0.0"
+version: "1.1.0"
 last_updated: "2025-11-09"
+priority: CRITICAL
 ---
 
 # User Intent Understanding
