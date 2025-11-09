@@ -2,16 +2,16 @@
  * Medtech ALEX API Client
  *
  * Base HTTP client for all ALEX FHIR API requests
- * - Auto-injects required headers (Authorization, mt-*, Content-Type)
+ * - Auto-injects required headers (Authorization, Content-Type, mt-facilityid)
  * - Handles OAuth token management (55-min cache with auto-refresh)
- * - Correlation ID generation and propagation
+ * - Correlation ID generation (for logging/tracing only)
  * - FHIR OperationOutcome error mapping
  * - Retry logic for transient failures (429, 503)
  *
  * Environment Variables Required:
  * - MEDTECH_API_BASE_URL (e.g., https://alexapiuat.medtechglobal.com/FHIR)
  * - MEDTECH_FACILITY_ID (e.g., F99669-C for UAT)
- * - MEDTECH_CLIENT_ID, MEDTECH_CLIENT_SECRET, MEDTECH_TENANT_ID, MEDTECH_API_SCOPE
+ * - MEDTECH_CLIENT_ID, MEDTECH_CLIENT_SECRET, MEDTECH_TENANT_ID, MEDTECH_API_SCOPE (OAuth)
  */
 
 import { oauthTokenService } from './oauth-token-service'
@@ -50,8 +50,6 @@ export class AlexApiError extends Error {
 }
 
 class AlexApiClient {
-  private readonly appId = 'clinicpro-images-widget'
-
   /**
    * Get base URL (lazy, only when needed)
    */
@@ -98,13 +96,11 @@ class AlexApiClient {
       // Get access token (cached or fresh)
       const accessToken = await oauthTokenService.getAccessToken()
 
-      // Prepare headers
+      // Prepare headers (only required headers per Medtech support)
       const headers: Record<string, string> = {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/fhir+json',
         'mt-facilityid': facilityId,
-        'mt-correlationid': correlationId,
-        'mt-appid': this.appId,
         ...customHeaders,
       }
 

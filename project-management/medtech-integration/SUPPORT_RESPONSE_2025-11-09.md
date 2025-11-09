@@ -28,7 +28,7 @@ Medtech support tested our credentials and confirmed:
 
 ## Header Configuration
 
-### ✅ Correct Headers (What We're Using)
+### ✅ Required Headers (Per Support Team)
 
 ```
 Authorization: Bearer <access_token>
@@ -36,39 +36,57 @@ Content-Type: application/fhir+json
 mt-facilityid: F2N060-E  (or F99669-C)
 ```
 
-**Optional headers** (we also send, no issues):
-- `mt-correlationid`: For request tracking
-- `mt-appid`: Application identifier
+**These are the ONLY headers needed** as shown in the Postman screenshot.
 
-### ❌ Incorrect (What We're NOT Using)
+### ❌ Removed Headers
 
-Support clarified we should **NOT** use:
-- `mt-locationid` (not needed)
-- Any other location-related headers
+We previously sent these headers, but they are **not required**:
+- `mt-correlationid` - Removed from headers (still generated for logging)
+- `mt-appid` - Removed from headers
+- `mt-locationid` - Never used (and not needed)
 
 ## Implementation Review
 
-### ✅ Code is Already Correct
+### ✅ Code Updated to Match Postman Example
 
-Reviewed `src/lib/services/medtech/alex-api-client.ts`:
+Updated `src/lib/services/medtech/alex-api-client.ts`:
 
-```typescript:102:109:src/lib/services/medtech/alex-api-client.ts
-// Prepare headers
+```typescript:99:105:src/lib/services/medtech/alex-api-client.ts
+// Prepare headers (only required headers per Medtech support)
 const headers: Record<string, string> = {
   'Authorization': `Bearer ${accessToken}`,
   'Content-Type': 'application/fhir+json',
   'mt-facilityid': facilityId,
-  'mt-correlationid': correlationId,
-  'mt-appid': this.appId,
   ...customHeaders,
 }
 ```
 
-✅ Implementation matches support team's requirements exactly.
+✅ Now sends only the three required headers shown in support's Postman screenshot.
 
 ## Changes Made
 
-### 1. Updated Test Page Defaults
+### 1. Simplified Headers (Match Postman Example)
+**File**: `src/lib/services/medtech/alex-api-client.ts`
+
+**Removed**:
+- ❌ `mt-correlationid` header (still generated for logging, just not sent in request)
+- ❌ `mt-appid` header (not required)
+- ❌ `appId` class property (no longer needed)
+
+**Now sends only**:
+- ✅ `Authorization: Bearer <token>`
+- ✅ `Content-Type: application/fhir+json`
+- ✅ `mt-facilityid: <facility>`
+
+**Rationale**: Support's Postman screenshot only showed these three headers. Simplified to match exactly.
+
+### 2. Updated Environment File
+**File**: `.env.local.example`
+
+Removed:
+- ❌ `MEDTECH_APP_ID` (no longer used)
+
+### 3. Updated Test Page Defaults
 **File**: `app/(medtech)/medtech-images/page.tsx`
 
 Changed hardcoded defaults from `F2N060-E` to `F99669-C` to match `.env.local.example`:
@@ -76,9 +94,6 @@ Changed hardcoded defaults from `F2N060-E` to `F99669-C` to match `.env.local.ex
 - Line 88: Mock encounter context facility ID
 
 **Rationale**: While both facilities work, F99669-C is documented in our environment files as the standard UAT facility.
-
-### 2. No Code Changes Required
-The implementation was already correct. Only updated default values for consistency.
 
 ## Testing Validation
 
