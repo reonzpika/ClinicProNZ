@@ -131,12 +131,10 @@ Response (formatted):
 - Token authorization works
 - IP allow-listing configured correctly
 - Base URL correct (`alexapiuat.medtechglobal.com`)
-- Required headers accepted:
+- Required headers accepted (per Medtech support, only mt-facilityid is needed):
   - `Authorization: Bearer <token>`
   - `Content-Type: application/fhir+json`
   - `mt-facilityid: F2N060-E`
-  - `mt-correlationid: <uuid>`
-  - `mt-appid: clinicpro-images-widget`
 - FHIR Bundle response format
 
 ---

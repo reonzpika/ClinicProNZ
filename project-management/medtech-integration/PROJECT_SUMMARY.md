@@ -213,7 +213,7 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
   - Automatic retry on 401 errors
   - Token info endpoint for monitoring
 - **ALEX API Client**: `/src/lib/services/medtech/alex-api-client.ts`
-  - Auto-injects required headers (`mt-facilityid`, `mt-correlationid`, `mt-appid`)
+  - Auto-injects required headers (`mt-facilityid`, `Authorization`, `Content-Type`) - per Medtech support, only mt-facilityid is needed
   - OAuth token management integration
   - FHIR OperationOutcome error mapping
   - Retry logic for transient failures (401, 429, 503)

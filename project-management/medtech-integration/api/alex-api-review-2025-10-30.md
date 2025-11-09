@@ -4,6 +4,8 @@
 **Format**: Postman Collection Documentation  
 **Version**: Current (v2.9, Sept 2025)
 
+> **⚠️ UPDATE (Nov 2025)**: Per Medtech support feedback, only `mt-facilityid` header is required (along with `Authorization` and `Content-Type`). Headers `mt-correlationid` and `mt-appid` are not needed. This document contains historical references to these headers that should be ignored.
+
 ---
 
 ## Executive Summary
@@ -27,7 +29,7 @@
 ### Critical Requirements
 1. ✅ **IP allow-listing**: Already configured and allowed by Medtech
 2. **Azure AD app registration**: OTP-gated client secret retrieval
-3. **Correct headers**: `mt-facilityid`, `mt-correlationid`, `mt-appid`, `application/fhir+json`
+3. **Correct headers**: `mt-facilityid`, `Authorization`, `Content-Type` (per Medtech support Nov 2025, only mt-facilityid is needed)
 4. **Token management**: 1-hour expiry; cache and refresh at 55 min
 
 ---

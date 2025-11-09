@@ -65,9 +65,9 @@ MEDTECH_API_SCOPE=api://bf7945a6-e812-4121-898a-76fea7c13f4d/.default
 **Location**: `/src/lib/services/medtech/alex-api-client.ts`
 
 **Features**:
-- ✅ Auto-injects required headers (`Authorization`, `mt-facilityid`, `mt-correlationid`, `mt-appid`, `Content-Type`)
+- ✅ Auto-injects required headers (`Authorization`, `mt-facilityid`, `Content-Type`) - per Medtech support, only mt-facilityid is needed
 - ✅ OAuth token management (uses token service)
-- ✅ Correlation ID generation and propagation
+- ✅ Correlation ID generation (for logging, not sent as header)
 - ✅ FHIR OperationOutcome error mapping
 - ✅ Automatic retry on 401 Unauthorized
 - ✅ Structured error responses

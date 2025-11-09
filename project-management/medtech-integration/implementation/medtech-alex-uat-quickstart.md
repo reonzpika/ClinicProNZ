@@ -89,39 +89,28 @@ curl -sS -X POST \
 | `Content-Type` | `application/fhir+json` | FHIR-specific content type |
 | `mt-facilityid` | `F2N060-E` | UAT facility ID (production differs) |
 
-**Optional Headers** (recommended for observability):
-
-| Header | Value | Purpose |
-|--------|-------|---------|
-| `mt-correlationid` | UUID (e.g., `550e8400-e29b-...`) | Request tracing across systems |
-| `mt-appid` | `clinicpro-images-widget` | Application identifier for audit logs |
+**Note**: Per Medtech support (Nov 2025), only `mt-facilityid` header is required. Other headers like `mt-correlationid` and `mt-appid` are not needed.
 
 **Example** (GET Patient):
 ```bash
 TOKEN='PASTE_ACCESS_TOKEN_HERE'
-CORRELATION_ID=$(uuidgen) # or use any UUID generator
 
 curl -sS -X GET \
   'https://alexapiuat.medtechglobal.com/FHIR/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|ZZZ0016' \
   -H "Authorization: Bearer ${TOKEN}" \
   -H 'Content-Type: application/fhir+json' \
-  -H 'mt-facilityid: F2N060-E' \
-  -H "mt-correlationid: ${CORRELATION_ID}" \
-  -H 'mt-appid: clinicpro-images-widget'
+  -H 'mt-facilityid: F2N060-E'
 ```
 
 **Example** (POST Media with image — see ALEX docs for schema):
 ```bash
 TOKEN='PASTE_ACCESS_TOKEN_HERE'
-CORRELATION_ID=$(uuidgen)
 
 curl -sS -X POST \
   'https://alexapiuat.medtechglobal.com/FHIR/Media' \
   -H "Authorization: Bearer ${TOKEN}" \
   -H 'Content-Type: application/fhir+json' \
   -H 'mt-facilityid: F2N060-E' \
-  -H "mt-correlationid: ${CORRELATION_ID}" \
-  -H 'mt-appid: clinicpro-images-widget' \
   -d @media-payload.json
 ```
 
@@ -206,7 +195,7 @@ MEDTECH_APP_ID=clinicpro-images-widget
   - Client‑credentials flow; cache the token (55-min TTL); refresh before 60-min expiry; retry once on 401.
   - Generate correlation ID (UUID) per request for tracing.
 - Implement an **Integration Gateway** (ALEX API wrapper):
-  - Inject required headers: `Authorization: Bearer <token>`, `Content-Type: application/fhir+json`, `mt-facilityid: ${MEDTECH_FACILITY_ID}`, `mt-correlationid: <uuid>`, `mt-appid: clinicpro-images-widget`
+  - Inject required headers: `Authorization: Bearer <token>`, `Content-Type: application/fhir+json`, `mt-facilityid: ${MEDTECH_FACILITY_ID}` (per Medtech support, only mt-facilityid is needed)
   - Translate FHIR responses to simplified REST API for frontend (as per Images Widget PRD).
   - Map FHIR error codes to user-friendly messages.
 - Add environment variables in hosting; never expose secrets to the browser.
