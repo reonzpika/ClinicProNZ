@@ -2,7 +2,7 @@
 description: "Understanding user intent and context-aware clarification"
 alwaysApply: true
 globs: []
-version: "1.3.0"
+version: "1.4.0"
 last_updated: "2025-11-09"
 priority: CRITICAL
 ---
@@ -21,14 +21,13 @@ priority: CRITICAL
 
 When requests are vague or ambiguous:
 
-1. **ONE SEARCH RULE - Do Minimal Context Gathering**:
-   - **MAXIMUM ONE lightweight search** to check for obvious context
-   - Options (pick ONE):
-     - Read `PROJECTS_OVERVIEW.md` if project unclear
-     - Check current git branch name if relevant
-     - Read `PROJECT_SUMMARY.md` if project is clear from context
-   - **If that ONE search doesn't immediately clarify intent → ASK USER**
-   - **NEVER do multiple searches, greps, or extensive codebase exploration for vague queries**
+1. **SMART CASCADE - Follow Project Hierarchy for Context**:
+   - **Start at the top**: Read `PROJECTS_OVERVIEW.md` to check for relevant projects
+   - **If relevant project found**: Read that project's `PROJECT_SUMMARY.md`
+   - **If implementation details needed**: Read specific related code files mentioned in project summary
+   - **If PROJECTS_OVERVIEW doesn't clarify → ASK USER immediately**
+   - **NEVER do blind searching**: No multiple greps, no searching everywhere, no exploratory codebase traversal
+   - **Key principle**: Follow the documented hierarchy (Overview → Project Summary → Specific code), don't search blindly
 
 2. **Challenge Vagueness Directly**: 
    - Call out why request is unclear ("This request is too vague to act on effectively")
@@ -55,17 +54,21 @@ When requests are vague or ambiguous:
 
 When user request is vague or could mean multiple things:
 1. **STOP IMMEDIATELY**: Do not create files, do not make assumptions, do not proceed with any action
-2. **ONE Search Only**: Do ONE lightweight context check (git branch, PROJECTS_OVERVIEW.md, or PROJECT_SUMMARY.md)
-3. **If Still Unclear → ASK**: If the one search didn't clarify intent, ask immediately. DO NOT do more searches.
-4. **Challenge First**: "This request is too vague. Let me explain why clarity matters..."
-5. **Structured Options**: Provide 2-3 most likely interpretations based on minimal context
-6. **Targeted Questions**: Ask 2-3 specific questions to disambiguate
-7. **WAIT**: Do not proceed until user clarifies intent
-8. **THEN Act**: Only after clarification, proceed with appropriate action
+2. **Smart Cascade Context Check**:
+   - Read `PROJECTS_OVERVIEW.md` first
+   - If relevant project identified → Read that `PROJECT_SUMMARY.md`
+   - If specific code mentioned in summary → Read those specific files
+   - **If Overview doesn't clarify → ASK immediately**
+3. **Challenge First**: "This request is too vague. Let me explain why clarity matters..."
+4. **Structured Options**: Provide 2-3 most likely interpretations based on context found
+5. **Targeted Questions**: Ask 2-3 specific questions to disambiguate
+6. **WAIT**: Do not proceed until user clarifies intent
+7. **THEN Act**: Only after clarification, proceed with appropriate action
 
 **CRITICAL RULES**: 
 - Vague queries require clarification BEFORE any file creation, editing, or other actions
-- **MAXIMUM ONE search/read operation for vague queries, then ASK**
+- **Follow documented hierarchy** (Overview → Project Summary → Specific code), don't search blindly
+- **NO blind searching**: No multiple greps, no exploratory searching, no "let me look everywhere"
 - Never guess user intent and create files based on assumptions
 - Don't waste user's time with extensive searching when intent is unclear
 
