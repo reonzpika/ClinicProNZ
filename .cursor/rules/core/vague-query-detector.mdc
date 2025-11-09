@@ -1,0 +1,317 @@
+---
+description: "Vague Query Detection - Pattern matching and response protocol"
+alwaysApply: true
+globs: []
+version: "1.0.0"
+last_updated: "2025-11-09"
+priority: CRITICAL
+load_order: 0
+---
+
+# Vague Query Detector
+
+**Purpose**: Explicitly identify vague queries and enforce the ASK-FIRST pattern before any exploratory actions.
+
+**Load Order**: This rule has `load_order: 0` - it should be the FIRST rule consulted when receiving a user query.
+
+---
+
+## 🚨 VAGUE QUERY DETECTION PATTERNS 🚨
+
+### Pattern Categories
+
+#### 1. Single Words or Short Titles
+**Pattern**: Query is ≤3 words, no clear action verb
+
+**Examples**:
+- ❌ "Nov Week 3"
+- ❌ "Title Nov Week 3"
+- ❌ "Week 3"
+- ❌ "November"
+- ❌ "Project management"
+- ❌ "Rules"
+
+**Response**: STOP → ASK → WAIT
+
+---
+
+#### 2. Ambiguous Short Phrases
+**Pattern**: Short phrase without sufficient context, could mean multiple things
+
+**Examples**:
+- ❌ "Improve rules"
+- ❌ "Fix this"
+- ❌ "Handle it"
+- ❌ "Do the thing"
+- ❌ "Update system"
+- ❌ "Check status"
+
+**Response**: STOP → ASK → WAIT
+
+---
+
+#### 3. Exploratory/Open-Ended Questions
+**Pattern**: Research-oriented questions without specific action or deliverable
+
+**Examples**:
+- ❌ "What is...?"
+- ❌ "Tell me about..."
+- ❌ "How does...?"
+- ❌ "Explain..."
+- ⚠️ "What should I do?" (borderline - may need clarification)
+
+**Response**: Usually respond in chat, but check if user expects file creation
+
+---
+
+#### 4. Unclear Pronouns/References
+**Pattern**: References to "this", "that", "it" without clear antecedent
+
+**Examples**:
+- ❌ "Update this"
+- ❌ "Fix that bug"
+- ❌ "Process it"
+- ❌ "Handle these"
+
+**Response**: STOP → ASK → WAIT
+
+---
+
+#### 5. Context-Dependent Phrases
+**Pattern**: Phrases that heavily depend on unstated context
+
+**Examples**:
+- ❌ "Based on the projects overview, what..."
+- ❌ "According to..."
+- ❌ "Looking at the system..."
+- ⚠️ These may be clear if followed by specific question
+
+**Response**: Evaluate if query is sufficiently specific; if not → ASK
+
+---
+
+## 🛑 MANDATORY RESPONSE PROTOCOL 🛑
+
+### When Vague Query Detected:
+
+**Step 1: STOP IMMEDIATELY**
+```
+⛔ Do NOT search
+⛔ Do NOT read files
+⛔ Do NOT run commands
+⛔ Do NOT make assumptions
+⛔ Do NOT try to "figure it out" through exploration
+```
+
+**Step 2: ASK FOR CLARIFICATION**
+
+Use this template:
+
+```markdown
+## Why This Request Needs Clarification
+
+"[Quote user query]" is too vague to act on effectively. [Explain why - what's ambiguous about it]
+
+## Possible Interpretations
+
+Based on [your system knowledge OR context from previous conversation], you might mean:
+
+1. **[Interpretation 1]** - [Brief description]
+2. **[Interpretation 2]** - [Brief description]
+3. **[Interpretation 3]** - [Brief description]
+
+## Clarifying Questions
+
+1. [Specific question 1]
+2. [Specific question 2]
+
+Please clarify what you'd like me to help with, and I'll get started right away.
+```
+
+**Step 3: WAIT**
+- Do NOT proceed until user responds
+- Do NOT "prepare" by reading files
+- Do NOT make assumptions about which interpretation is correct
+
+**Step 4: AFTER CLARIFICATION → Proceed Normally**
+- Now you can use Smart Cascade (if context needed)
+- Read PROJECTS_OVERVIEW.md if relevant
+- Take appropriate action based on clarified intent
+
+---
+
+## ✅ CLEAR QUERY PATTERNS (Proceed Normally)
+
+### What Makes a Query Clear:
+
+1. **Specific Action Verb**
+   - ✅ "Create a LinkedIn post for November Week 3"
+   - ✅ "Update PROJECT_SUMMARY.md with the blocker"
+   - ✅ "List all active projects"
+
+2. **Clear Subject + Action**
+   - ✅ "Review the R&D Grant submission timeline"
+   - ✅ "Show me the ClinicPro marketing plan"
+   - ✅ "What are the next action items for Medtech integration?"
+
+3. **Sufficient Context in Query**
+   - ✅ "Based on PROJECTS_OVERVIEW.md, what is my most important priority today?"
+   - ✅ "I finished the auth system for ClinicPro - update the project"
+
+4. **Explicit File Reference**
+   - ✅ "Read the PROJECT_SUMMARY for R&D Grant"
+   - ✅ "Update the PROJECTS_OVERVIEW with new milestone"
+
+### For Clear Queries:
+- Proceed with normal workflow
+- Use Smart Cascade if context needed
+- Follow standard operating procedures
+
+---
+
+## 🎯 DECISION TREE
+
+```
+User Query Received
+    ↓
+Is query ≤3 words?
+    YES → VAGUE → ASK
+    NO → Continue
+        ↓
+Does query have clear action verb?
+    NO → VAGUE → ASK
+    YES → Continue
+        ↓
+Is subject/object clear?
+    NO → VAGUE → ASK
+    YES → CLEAR QUERY → Proceed
+```
+
+---
+
+## 📊 VAGUE vs CLEAR EXAMPLES
+
+| Vague Query | Why Vague | Clear Alternative |
+|-------------|-----------|-------------------|
+| "Nov Week 3" | No action, unclear intent | "Create action plan for November Week 3" |
+| "Update system" | Which system? How? | "Update PROJECTS_OVERVIEW.md with milestone" |
+| "Fix this" | What is 'this'? | "Fix the vague query handling in user-intent-understanding.mdc" |
+| "Handle it" | What is 'it'? | "Process the Medtech integration blocker" |
+| "Check status" | Status of what? | "Check status of R&D Grant submission" |
+| "What should I do?" | Depends heavily on context | "Based on my projects, what is the highest priority task today?" |
+
+---
+
+## 🔧 INTEGRATION WITH OTHER RULES
+
+This rule works as the FIRST checkpoint:
+
+```
+Vague Query Detector (load_order: 0)
+    ↓ If VAGUE → ASK, STOP
+    ↓ If CLEAR → Continue
+    ↓
+User Intent Understanding (load_order: 1)
+    ↓ Smart Cascade for context
+    ↓
+Current Task (load_order: 2)
+    ↓ Session workflow
+    ↓
+Other Rules
+```
+
+---
+
+## 🎓 LEARNING EXAMPLES
+
+### ❌ BAD: What NOT To Do
+
+**User**: "Nov Week 3"
+
+**Wrong AI Response**:
+```
+Let me check your projects...
+[Searches files]
+[Reads PROJECTS_OVERVIEW]
+[Reads PROJECT_SUMMARY]
+[Makes assumption]
+"I see you have several items scheduled. Let me create an action plan..."
+[Creates file]
+```
+
+**Why Wrong**: 
+- Searched before asking
+- Made assumptions
+- Created file without clarification
+
+---
+
+### ✅ GOOD: Correct Response
+
+**User**: "Nov Week 3"
+
+**Correct AI Response**:
+```
+## Why This Request Needs Clarification
+
+"Nov Week 3" is too vague to act on effectively. This could mean multiple different things, and proceeding without clarification risks wasting your time on the wrong work.
+
+## Possible Interpretations
+
+Based on your project management system, you might mean:
+
+1. **Create action plan** - Generate a detailed task breakdown for November Week 3
+2. **Review schedule** - Show what's scheduled for this week
+3. **Update status** - Update project summaries with Week 3 progress
+4. **Something else** - A different aspect of November Week 3 planning
+
+## Clarifying Questions
+
+1. What specific outcome do you want? (e.g., "Create action plan", "Show schedule")
+2. Which project(s) are you focusing on?
+
+Please clarify what you'd like me to help with regarding November Week 3.
+```
+
+**Why Right**:
+- Stopped immediately
+- Asked before searching
+- Provided clear options
+- Waited for clarification
+
+---
+
+## 📈 SUCCESS METRICS
+
+**System is working when**:
+- Vague queries get clarification requests immediately
+- No exploratory searching before clarification
+- User confirms AI understood intent before action
+- Fewer "that's not what I meant" corrections
+
+**System needs tuning when**:
+- AI still searches/reads before asking on vague queries
+- AI creates files from ambiguous requests
+- User frequently corrects misunderstandings
+- Multiple rounds of clarification needed (questions weren't specific enough)
+
+---
+
+## 🚨 ENFORCEMENT PRIORITY
+
+This is a **CRITICAL** rule with **load_order: 0**.
+
+**Violation examples that MUST be caught**:
+- Any search/read/command BEFORE asking on vague query
+- File creation from ambiguous request
+- Making assumptions about vague queries
+- "Let me explore to understand" pattern on vague queries
+
+**Expected behavior**:
+- First action on vague query = Ask clarifying questions
+- Zero exploratory actions before clarification
+- User confirms understanding before proceeding
+
+---
+
+# End of Vague Query Detector

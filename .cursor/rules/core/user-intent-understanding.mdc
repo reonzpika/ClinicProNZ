@@ -2,12 +2,36 @@
 description: "Understanding user intent and context-aware clarification"
 alwaysApply: true
 globs: []
-version: "1.4.0"
+version: "2.0.0"
 last_updated: "2025-11-09"
 priority: CRITICAL
+load_order: 1
 ---
 
 # User Intent Understanding
+
+## 🚨 CRITICAL: FIRST ACTION ON VAGUE QUERIES 🚨
+
+**Before ANY exploratory actions (searches, reads, commands), check if query is vague:**
+
+### Vague Query Indicators:
+- Single words or short titles (e.g., "Title Nov Week 3", "Week 3", "November")
+- Short phrases without context (e.g., "Improve rules", "Fix this", "Handle it")
+- Ambiguous requests where intent is unclear
+- Queries that could mean multiple different things
+- Exploratory/research questions without specific action
+
+### If Query is Vague → STOP IMMEDIATELY:
+1. ⛔ **DO NOT search** (no grep, no glob, no file exploration)
+2. ⛔ **DO NOT read files** (not even PROJECTS_OVERVIEW.md yet)
+3. ⛔ **DO NOT run commands**
+4. ✅ **ASK CLARIFYING QUESTIONS FIRST**
+5. ✅ **WAIT for user response**
+6. ✅ **THEN proceed with Smart Cascade**
+
+**Only proceed to Smart Cascade if query is clear and unambiguous.**
+
+---
 
 ## User Intent Principles
 
@@ -16,10 +40,15 @@ priority: CRITICAL
 - **Don't assume user knowledge**: Don't assume users know everything about project management, best practices, or available options. Provide context and explanations when helpful.
 - **Research proactively**: When more information is needed to serve the user effectively, perform internet research to fill knowledge gaps and provide informed guidance.
 - **Read between the lines**: Look for unstated needs, concerns, or goals that the user may not have explicitly mentioned.
+- **Vague = ASK FIRST**: Vagueness is a signal to ask, not a puzzle to solve through exploration
 
-## Context-Aware Clarification
+---
 
-When requests are vague or ambiguous:
+## Context-Aware Clarification (For CLEAR Queries Only)
+
+**PREREQUISITE: Query must be clear and unambiguous to use Smart Cascade.**
+
+When requests are clear but need context:
 
 1. **SMART CASCADE - Follow Project Hierarchy for Context**:
    - **Start at the top**: Read `PROJECTS_OVERVIEW.md` to check for relevant projects
@@ -53,24 +82,38 @@ When requests are vague or ambiguous:
 ## Vague Request Handling Pattern
 
 When user request is vague or could mean multiple things:
-1. **STOP IMMEDIATELY**: Do not create files, do not make assumptions, do not proceed with any action
-2. **Smart Cascade Context Check**:
-   - Read `PROJECTS_OVERVIEW.md` first
+
+### PHASE 1: DETECTION & STOP (Before ANY Actions)
+1. ⛔ **STOP IMMEDIATELY**: Do not create files, do not search, do not read files, do not make assumptions
+2. ✅ **ASK FIRST**: Request clarification before any exploratory actions
+3. ⏸️ **WAIT**: Do not proceed until user clarifies intent
+
+### PHASE 2: CLARIFICATION
+4. **Challenge First**: "This request is too vague. Let me explain why clarity matters..."
+5. **Provide Options**: Based on your knowledge of the system (not searches), suggest 2-3 likely interpretations
+6. **Targeted Questions**: Ask 2-3 specific questions to disambiguate
+
+### PHASE 3: ACTION (Only After Clarification)
+7. **THEN Proceed with Smart Cascade**:
+   - Now read `PROJECTS_OVERVIEW.md` if needed
    - If relevant project identified → Read that `PROJECT_SUMMARY.md`
    - If specific code mentioned in summary → Read those specific files
-   - **If Overview doesn't clarify → ASK immediately**
-3. **Challenge First**: "This request is too vague. Let me explain why clarity matters..."
-4. **Structured Options**: Provide 2-3 most likely interpretations based on context found
-5. **Targeted Questions**: Ask 2-3 specific questions to disambiguate
-6. **WAIT**: Do not proceed until user clarifies intent
-7. **THEN Act**: Only after clarification, proceed with appropriate action
+   - **If Overview doesn't clarify → ASK again**
+8. **Execute**: Only after full clarification, proceed with appropriate action
 
 **CRITICAL RULES**: 
-- Vague queries require clarification BEFORE any file creation, editing, or other actions
-- **Follow documented hierarchy** (Overview → Project Summary → Specific code), don't search blindly
-- **NO blind searching**: No multiple greps, no exploratory searching, no "let me look everywhere"
-- Never guess user intent and create files based on assumptions
-- Don't waste user's time with extensive searching when intent is unclear
+- ⛔ **Vague queries = ASK FIRST, search NEVER**
+- ⛔ **NO blind searching EVER**: No multiple greps, no exploratory searching, no "let me look everywhere"
+- ⛔ **Don't optimize for exploration, optimize for clarity**
+- ✅ **Default behavior for vague queries: ASK immediately, don't search**
+- ✅ **Follow documented hierarchy ONLY AFTER query is clear** (Overview → Project Summary → Specific code)
+- ✅ **Smart Cascade is for CLEAR queries that need context, not for VAGUE queries**
+
+**Correct behavior flow:**
+```
+Vague Query → ASK → Get Clarity → Smart Cascade (if needed) → Act
+NOT: Vague Query → Search → Search → Search → Read → Ask
+```
 
 ---
 

@@ -2,11 +2,12 @@
 description: "Current Task Rule - Dispatcher and working guide for session task management"
 alwaysApply: true
 globs: []
-version: "2.1.0"
+version: "2.2.0"
 last_updated: "2025-11-09"
 dependencies:
   - "communication/advisory-role.mdc"
   - "project-management/core-principles.mdc"
+load_order: 2
 ---
 
 # Current Task Rule / Dispatcher
@@ -18,15 +19,44 @@ dependencies:
 - Route detailed policies to core principles; keep messages concise
 - Confirm user intent for potentially destructive or structural changes
 
+## 🚨 MANDATORY: Session Start Checklist 🚨
+
+**BEFORE RESPONDING TO FIRST USER QUERY:**
+
+### Step 1: Query Vagueness Check (FIRST!)
+- [ ] **Is the user query clear and specific?**
+  - If NO → Follow user-intent-understanding.mdc: STOP, ASK, WAIT
+  - If YES → Proceed to Step 2
+
+### Step 2: Load Always-Applied Rules (in order)
+These are already loaded, but verify understanding:
+- [ ] `user-intent-understanding.mdc` (load_order: 1) - Vague query handling
+- [ ] `current-task.mdc` (this file, load_order: 2) - Session workflow
+- [ ] `document-creation.mdc` - File creation timing
+- [ ] `autonomous-updates.mdc` - Continuous documentation
+- [ ] `communication-style.mdc` - Direct communication
+- [ ] `nz-localization.mdc` - NZ English
+- [ ] `system-context.mdc` - System overview
+
+### Step 3: Load Session-Specific Rules (for clear queries only)
+- [ ] **Read Advisory Role** at `.cursor/rules/communication/advisory-role.mdc`
+- [ ] **Read Core Principles** at `.cursor/rules/project-management/core-principles.mdc`
+
+### Step 4: Load Project Context (if query is project-specific)
+- [ ] Check `/project-management/PROJECTS_OVERVIEW.md` for active projects
+- [ ] If discussing specific project → Read that project's `PROJECT_SUMMARY.md`
+- [ ] Understand current state: stage, milestones, blockers, recent progress
+
+**CRITICAL**: If Step 1 fails (vague query), STOP at Step 1 and ask for clarification. Do NOT proceed to Steps 2-4 until query is clear.
+
+---
+
 ## Working Loop (Conversation-Driven)
 
 ### Session Start:
-1. **Read Advisory Role** at `.cursor/rules/communication/advisory-role.mdc` - Internalize strategic advisory approach
-2. **Read Core Principles** at `.cursor/rules/project-management/core-principles.mdc` - Internalize policies and autonomous update behavior
-3. **Load Project Context**: 
-   - Check `/project-management/PROJECTS_OVERVIEW.md` for active projects
-   - If discussing specific project, read that project's `PROJECT_SUMMARY.md`
-   - Understand current state: stage, milestones, blockers, recent progress
+1. **Run Session Start Checklist** (see above) - Enforce proper loading order
+2. **Verify Query Clarity** - If vague, ask immediately before any other actions
+3. **Load Context** (only for clear queries) - Follow Smart Cascade if needed
 
 ### During Conversation:
 4. **Listen Actively**: Throughout conversation, listen for trackable information:
