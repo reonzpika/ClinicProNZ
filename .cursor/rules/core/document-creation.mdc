@@ -9,7 +9,25 @@ priority: CRITICAL
 
 # Document Creation Timing - CRITICAL RULE
 
+**🚨 MANDATORY CHECKLIST BEFORE ANY FILE CREATION 🚨**
+
+Before using ANY file creation tool (write, edit_file, etc.), you MUST answer ALL of these questions:
+
+1. ✅ **Is the task/work COMPLETE and FINALIZED?** → If NO, respond in chat only
+2. ✅ **Did the user EXPLICITLY ask to save/create a document?** → If NO, respond in chat only  
+3. ✅ **Is this a FINAL DELIVERABLE that needs to be saved?** → If NO, respond in chat only
+4. ✅ **Is this for FUTURE REFERENCE (not just current discussion)?** → If NO, respond in chat only
+
+**If ANY answer is NO → RESPOND IN CHAT ONLY. DO NOT CREATE FILES.**
+
 **PRINCIPLE**: Only create documents/files when a task is accomplished/finished OR when something needs to be saved for future reference. During discussions, planning, or iterative work, respond in chat only - DO NOT create interim/working documents.
+
+**⚠️ COMMON VIOLATIONS TO AVOID:**
+- Vague/exploratory queries ("Title: Nov Week 3", "What is X?") → Chat response only
+- Planning/organizing tasks → Chat response only  
+- Research findings during discussion → Chat response only
+- Action plans/checklists for future work → Chat response only
+- Any query that doesn't explicitly request document creation → Chat response only
 
 ## When to CREATE Documents:
 
@@ -47,27 +65,39 @@ priority: CRITICAL
 
 ## Decision Framework:
 
-Before creating ANY document, ask:
-1. **Is the task/work complete?** → If NO, respond in chat
-2. **Does this need to be saved for future reference?** → If NO, respond in chat
-3. **Did the user explicitly ask to save/create?** → If NO, respond in chat
-4. **Is this a final deliverable?** → If NO, respond in chat
+**⚠️ STOP AND CHECK BEFORE ANY FILE CREATION ⚠️**
+
+The checklist above is MANDATORY. If you're about to create a file, pause and verify ALL 4 questions pass.
 
 **Default Behavior**: When in doubt, respond in chat. Only create documents when clearly needed for future reference or when work is complete.
 
+**Red Flags That Mean "Respond in Chat Only":**
+- User query is vague or exploratory ("What is...?", "Tell me about...", single word/title)
+- User is asking questions or exploring options
+- Content is not finalized or is work-in-progress
+- This is planning/organizing, not a completed deliverable
+- User hasn't explicitly said "save", "create", "document", or similar
+
 ## Examples:
 
-**❌ WRONG**: User says "What are some title options?" → AI creates `title-options.md`
+**❌ WRONG**: User says "Title: Nov Week 3" → AI creates `week-3-action-plan.md`  
+**✅ CORRECT**: User says "Title: Nov Week 3" → AI explains what Week 3 is in chat response
+
+**❌ WRONG**: User says "What are some title options?" → AI creates `title-options.md`  
 **✅ CORRECT**: User says "What are some title options?" → AI lists options in chat response
 
-**❌ WRONG**: User says "Help me draft a LinkedIn post" → AI immediately creates `linkedin-post-draft.md`
+**❌ WRONG**: User says "Help me draft a LinkedIn post" → AI immediately creates `linkedin-post-draft.md`  
 **✅ CORRECT**: User says "Help me draft a LinkedIn post" → AI writes draft in chat. Only create file when user says "Save this" or "I'm done"
 
-**❌ WRONG**: User says "Let's improve the post" → AI creates `improvements.md`
+**❌ WRONG**: User says "Let's improve the post" → AI creates `improvements.md`  
 **✅ CORRECT**: User says "Let's improve the post" → AI discusses improvements in chat
 
-**✅ CORRECT**: User says "I'm done with this week's post" → AI creates final post file
-**✅ CORRECT**: User says "Create a reusable workflow" → AI creates workflow document
+**❌ WRONG**: User says "What needs to be done for Week 3?" → AI creates action plan document  
+**✅ CORRECT**: User says "What needs to be done for Week 3?" → AI lists tasks in chat response
+
+**✅ CORRECT**: User says "I'm done with this week's post" → AI creates final post file  
+**✅ CORRECT**: User says "Create a reusable workflow" → AI creates workflow document  
+**✅ CORRECT**: User says "Save this as a document" → AI creates document  
 **✅ CORRECT**: Task complete (e.g., post published) → AI updates PROJECT_SUMMARY.md
 
 ---
