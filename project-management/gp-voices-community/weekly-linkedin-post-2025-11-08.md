@@ -69,14 +69,19 @@ purpose: Manual weekly curation of NZ medical news for LinkedIn post to test dem
 
 ---
 
-### Item 5: The Waiting Room Sessions (Andy Jellis)
-**Headline**: The Waiting Room Sessions - healthcare innovation discussions
+### Item 5: The Waiting Room Sessions (Andy Ellis)
+**Headline**: The Waiting Room Sessions - healthcare innovation meetup series
 
-**Why it matters to GPs**: This appears to be a series or discussion about healthcare innovation and practice management. For GPs navigating the changing landscape of AI and digital health tools, staying informed about industry discussions and innovations helps them understand where healthcare technology is heading and how it might impact their practice.
+**What it is**: A new meetup series bringing together people who are building, shaping, and reimagining the future of healthcare across Aotearoa. Organised by Andy Ellis with teams at CyberTeam, Talent Army, and Propagator. Features lightning talks, food, drinks, and conversations about digital health, data, interoperability, patient experience, security, and new models of care.
+
+**Why it matters to GPs**: For GPs navigating the changing landscape of AI and digital health tools, staying informed about industry discussions and innovations helps them understand where healthcare technology is heading and how it might impact their practice. These in-person meetups provide opportunities to connect with others building healthcare solutions in NZ.
 
 **Key takeaway**: Ongoing conversations about healthcare innovation are shaping the future of general practice, and GPs benefit from staying engaged with these discussions.
 
-**Link**: https://www.linkedin.com/posts/andyjellis_the-waiting-room-sessions-activity-7385851701452275713-ekQV
+**Where to find it**: 
+- Registration: https://events.humanitix.com/the-waiting-room-sessions
+- LinkedIn: https://www.linkedin.com/posts/andyjellis_the-waiting-room-sessions-activity-7385851701452275713-ekQV
+- Note: Event was postponed until November 2025 - check LinkedIn for updates
 
 ---
 
@@ -97,7 +102,7 @@ AI is reshaping NZ healthcare faster than expected. Here are 4 updates every GP 
   - **Practice AI New Zealand** - https://www.practiceai.co.nz/
   - **Octans Care** - AI features (on Indici) - https://www.octanscare.co.nz/
 
-• **The Waiting Room Sessions** - Ongoing discussions about healthcare innovation are shaping the future of general practice and how GPs will work with AI tools.
+• **The Waiting Room Sessions** - A new meetup series bringing together people building, shaping, and reimagining the future of healthcare across Aotearoa. Features lightning talks and conversations about digital health, interoperability, patient experience, and new models of care. Register at events.humanitix.com/the-waiting-room-sessions (postponed until November - check LinkedIn for updates).
 
 ---
 
@@ -119,6 +124,7 @@ AI is reshaping NZ healthcare faster than expected. Here are 4 updates every GP 
 5. Practice AI: https://www.practiceai.co.nz/
 6. Octans Care: https://www.octanscare.co.nz/
 7. Indici announcement: https://www.linkedin.com/posts/indici-nz_indici-aiinhealthcare-digitalhealth-activity-7391579294021591040-fGj9
+8. The Waiting Room Sessions: https://events.humanitix.com/the-waiting-room-sessions
 
 @Medtech Global @Health New Zealand - Te Whatu Ora @Health Informatics New Zealand (HiNZ) @RNZCGP
 
