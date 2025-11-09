@@ -1,0 +1,94 @@
+---
+description: FHIR and Medtech Development Guidelines with MCP Tools
+globs:
+  - "app/(medtech)/**"
+  - "src/components/medtech/**"
+  - "src/lib/fhir/**"
+  - "src/hooks/fhir/**"
+  - "**/*fhir*.{ts,tsx}"
+  - "**/*medtech*.{ts,tsx}"
+  - "project-management/medtech-integration/**"
+---
+
+# FHIR and Medtech Development Guidelines
+
+This rule auto-activates when working with FHIR or Medtech-related files.
+
+## MCP Tools Integration
+
+When working with FHIR resources:
+
+1. **Use MCP FHIR Tools**: You have access to the FHIR MCP server configured with the HAPI test server
+   - Use MCP tools to explore FHIR resources, schemas, and capabilities
+   - Query patient data, observations, and other FHIR resources
+   - Validate FHIR resource structures before implementation
+
+2. **FHIR Server Configuration**:
+   - Test/Development: HAPI FHIR Test Server (http://hapi.fhir.org/baseR4)
+   - Production: ALEX API (requires custom authentication headers)
+
+## ALEX API Standards
+
+When developing for the ALEX API integration:
+
+1. **Authentication**:
+   - ALEX API uses custom authentication headers
+   - Standard FHIR MCP server cannot connect directly to ALEX due to custom header requirements
+   - Use the HAPI test server for FHIR learning and prototyping
+   - Implement custom gateway for ALEX API production calls
+
+2. **FHIR Resource Handling**:
+   - Follow FHIR R4 specification
+   - Validate all resources against FHIR schemas
+   - Handle FHIR Bundle responses appropriately
+   - Implement proper error handling for FHIR operations
+
+3. **Data Transformation**:
+   - Transform ALEX API responses to match application data models
+   - Preserve FHIR resource references and relationships
+   - Handle FHIR extensions and custom fields properly
+
+4. **Widget Development**:
+   - Each medtech widget should be self-contained
+   - Implement proper loading states for FHIR API calls
+   - Handle FHIR pagination for large datasets
+   - Cache FHIR resources appropriately
+
+## Code Structure
+
+```typescript
+// Example FHIR resource fetching pattern
+interface FHIRResource {
+  resourceType: string;
+  id: string;
+  // ... FHIR-specific fields
+}
+
+// Use proper TypeScript types for FHIR resources
+import type { Patient, Observation } from 'fhir/r4';
+
+// Implement error boundaries for FHIR components
+// Handle network failures gracefully
+// Validate FHIR responses before processing
+```
+
+## Testing
+
+1. Use HAPI test server for integration testing
+2. Mock FHIR responses for unit testing
+3. Validate against FHIR R4 schemas
+4. Test error scenarios (network failures, invalid data)
+
+## Documentation
+
+- Document any custom FHIR extensions
+- Explain ALEX API-specific requirements
+- Provide examples of FHIR resource transformations
+- Document authentication flows
+
+## Infrastructure Notes
+
+- FHIR MCP Server setup is an infrastructure investment for multi-widget development
+- Saves time on FHIR exploration and prototyping
+- Cannot connect directly to ALEX API due to custom header requirements
+- Use MCP tools during development, implement custom gateway for production
