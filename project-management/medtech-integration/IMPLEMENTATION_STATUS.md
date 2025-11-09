@@ -1,7 +1,19 @@
 # Medtech Integration - Implementation Status
 
-**Last Updated**: 2025-11-07  
-**Status**: POST Media endpoint implemented, ready for testing
+**Last Updated**: 2025-11-09  
+**Status**: ✅ Medtech support confirmed implementation is correct, both facilities now working
+
+---
+
+## 🎉 Latest Update (2025-11-09)
+
+**Medtech Support Response**: 
+- ✅ Implementation confirmed CORRECT (headers, credentials, environment)
+- ✅ **F2N060-E** facility working (was already mapped)
+- ✅ **F99669-C** facility now working (just mapped by support)
+- ✅ Only need `mt-facilityid` header (our implementation already correct)
+
+See: [`SUPPORT_RESPONSE_2025-11-09.md`](./SUPPORT_RESPONSE_2025-11-09.md)
 
 ---
 

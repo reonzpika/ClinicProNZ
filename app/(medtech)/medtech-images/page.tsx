@@ -64,7 +64,7 @@ function MedtechImagesPageContent() {
     const patientId = searchParams.get('patientId');
     const patientName = searchParams.get('patientName');
     const patientNHI = searchParams.get('patientNHI');
-    const facilityId = searchParams.get('facilityId') || 'F2N060-E'; // Default to UAT facility
+    const facilityId = searchParams.get('facilityId') || 'F99669-C'; // Default to UAT facility
     const providerId = searchParams.get('providerId');
     const providerName = searchParams.get('providerName');
     
@@ -85,7 +85,7 @@ function MedtechImagesPageContent() {
         patientId: 'mock-patient-456',
         patientName: 'John Smith',
         patientNHI: 'ABC1234',
-        facilityId: 'F2N060-E',
+        facilityId: 'F99669-C',
         providerId: 'mock-provider-789',
         providerName: 'Dr Mock',
       });
