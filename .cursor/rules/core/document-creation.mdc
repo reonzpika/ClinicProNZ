@@ -1,35 +1,36 @@
 ---
-description: "Document Creation Timing - When to create files vs respond in chat"
+description: "Document Creation/Editing Timing - When to create or edit files vs respond in chat"
 alwaysApply: true
 globs: []
 version: "1.0.0"
-last_updated: "2025-11-09"
+last_updated: "2025-11-XX"
 priority: CRITICAL
 ---
 
-# Document Creation Timing - CRITICAL RULE
+# Document Creation/Editing Timing - CRITICAL RULE
 
-**🚨 MANDATORY CHECKLIST BEFORE ANY FILE CREATION 🚨**
+**🚨 MANDATORY CHECKLIST BEFORE ANY FILE CREATION OR EDITING 🚨**
 
-Before using ANY file creation tool (write, edit_file, etc.), you MUST answer ALL of these questions:
+Before using ANY file creation/editing tool (write, edit_file, search_replace, etc.), you MUST answer ALL of these questions:
 
 1. ✅ **Is the task/work COMPLETE and FINALIZED?** → If NO, respond in chat only
-2. ✅ **Did the user EXPLICITLY ask to save/create a document?** → If NO, respond in chat only  
+2. ✅ **Did the user EXPLICITLY ask to save/create/edit a document?** → If NO, respond in chat only  
 3. ✅ **Is this a FINAL DELIVERABLE that needs to be saved?** → If NO, respond in chat only
 4. ✅ **Is this for FUTURE REFERENCE (not just current discussion)?** → If NO, respond in chat only
 
-**If ANY answer is NO → RESPOND IN CHAT ONLY. DO NOT CREATE FILES.**
+**If ANY answer is NO → RESPOND IN CHAT ONLY. DO NOT CREATE OR EDIT FILES.**
 
-**PRINCIPLE**: Only create documents/files when a task is accomplished/finished OR when something needs to be saved for future reference. During discussions, planning, or iterative work, respond in chat only - DO NOT create interim/working documents.
+**PRINCIPLE**: Only create or edit documents/files when a task is accomplished/finished OR when something needs to be saved for future reference. During discussions, planning, or iterative work, respond in chat only - DO NOT create or edit interim/working documents.
 
 **⚠️ COMMON VIOLATIONS TO AVOID:**
 - Vague/exploratory queries ("Title: Nov Week 3", "What is X?") → Chat response only
 - Planning/organizing tasks → Chat response only  
 - Research findings during discussion → Chat response only
 - Action plans/checklists for future work → Chat response only
-- Any query that doesn't explicitly request document creation → Chat response only
+- Any query that doesn't explicitly request document creation/editing → Chat response only
+- Discussion questions ("Why did you...?", "What needs to change?") → Chat response only, don't edit files
 
-## When to CREATE Documents:
+## When to CREATE or EDIT Documents:
 
 ✅ **Task Accomplished**: Work is complete and needs to be saved
   - Example: Weekly LinkedIn post is finalized → create post file
@@ -45,15 +46,15 @@ Before using ANY file creation tool (write, edit_file, etc.), you MUST answer AL
   - Example: "Save this as a document" → create document
   - Example: "Create a template for this" → create template
 
-## When NOT to Create Documents (Respond in Chat Instead):
+## When NOT to Create or Edit Documents (Respond in Chat Instead):
 
 ❌ **During Discussion**: User is asking questions, exploring options, getting feedback
   - Example: "What do you think about X?" → Answer in chat, don't create doc
   - Example: "Show me options" → List options in chat
 
 ❌ **Planning/Iterating**: Still working through ideas, refining approach
-  - Example: "Let's improve this" → Discuss improvements in chat
-  - Example: "What should we change?" → Provide suggestions in chat
+  - Example: "Let's improve this" → Discuss improvements in chat, don't edit files yet
+  - Example: "What should we change?" → Provide suggestions in chat, don't edit files yet
 
 ❌ **Draft/Work-in-Progress**: Content is not finalized
   - Example: "Draft a post" → Show draft in chat response
@@ -65,18 +66,19 @@ Before using ANY file creation tool (write, edit_file, etc.), you MUST answer AL
 
 ## Decision Framework:
 
-**⚠️ STOP AND CHECK BEFORE ANY FILE CREATION ⚠️**
+**⚠️ STOP AND CHECK BEFORE ANY FILE CREATION OR EDITING ⚠️**
 
-The checklist above is MANDATORY. If you're about to create a file, pause and verify ALL 4 questions pass.
+The checklist above is MANDATORY. If you're about to create or edit a file, pause and verify ALL 4 questions pass.
 
-**Default Behavior**: When in doubt, respond in chat. Only create documents when clearly needed for future reference or when work is complete.
+**Default Behavior**: When in doubt, respond in chat. Only create or edit documents when clearly needed for future reference or when work is complete.
 
 **Red Flags That Mean "Respond in Chat Only":**
 - User query is vague or exploratory ("What is...?", "Tell me about...", single word/title)
-- User is asking questions or exploring options
+- User is asking questions or exploring options ("Why did you...?", "What needs to change?")
 - Content is not finalized or is work-in-progress
 - This is planning/organizing, not a completed deliverable
-- User hasn't explicitly said "save", "create", "document", or similar
+- User hasn't explicitly said "save", "create", "edit", "update", "document", or similar
+- User is discussing/exploring before deciding what to change
 
 ## Examples:
 
@@ -92,6 +94,12 @@ The checklist above is MANDATORY. If you're about to create a file, pause and ve
 **❌ WRONG**: User says "Let's improve the post" → AI creates `improvements.md`  
 **✅ CORRECT**: User says "Let's improve the post" → AI discusses improvements in chat
 
+**❌ WRONG**: User says "What needs to change so it won't happen again?" → AI edits rule file  
+**✅ CORRECT**: User says "What needs to change so it won't happen again?" → AI discusses changes in chat
+
+**❌ WRONG**: User says "Why did you create the doc?" → AI edits rule file  
+**✅ CORRECT**: User says "Why did you create the doc?" → AI explains in chat, discusses improvements
+
 **❌ WRONG**: User says "What needs to be done for Week 3?" → AI creates action plan document  
 **✅ CORRECT**: User says "What needs to be done for Week 3?" → AI lists tasks in chat response
 
@@ -102,4 +110,4 @@ The checklist above is MANDATORY. If you're about to create a file, pause and ve
 
 ---
 
-# End of Document Creation Rule
+# End of Document Creation/Editing Rule
