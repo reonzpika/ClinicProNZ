@@ -2,8 +2,8 @@
 description: "Document Creation/Editing Timing - When to create or edit files vs respond in chat"
 alwaysApply: true
 globs: []
-version: "1.0.0"
-last_updated: "2025-11-XX"
+version: "1.1.0"
+last_updated: "2025-11-21"
 priority: CRITICAL
 ---
 
@@ -13,17 +13,21 @@ priority: CRITICAL
 
 Before using ANY file creation/editing tool (write, edit_file, search_replace, etc.), you MUST answer ALL of these questions:
 
+0. ✅ **Is the user query CLEAR and UNAMBIGUOUS?** → If NO, ASK CLARIFYING QUESTIONS FIRST. DO NOT CREATE FILES.
 1. ✅ **Is the task/work COMPLETE and FINALIZED?** → If NO, respond in chat only
 2. ✅ **Did the user EXPLICITLY ask to save/create/edit a document?** → If NO, respond in chat only  
 3. ✅ **Is this a FINAL DELIVERABLE that needs to be saved?** → If NO, respond in chat only
 4. ✅ **Is this for FUTURE REFERENCE (not just current discussion)?** → If NO, respond in chat only
 
-**If ANY answer is NO → RESPOND IN CHAT ONLY. DO NOT CREATE OR EDIT FILES.**
+**If question 0 is NO → ASK CLARIFYING QUESTIONS. DO NOT CREATE OR EDIT FILES.**
+**If ANY other answer is NO → RESPOND IN CHAT ONLY. DO NOT CREATE OR EDIT FILES.**
 
 **PRINCIPLE**: Only create or edit documents/files when a task is accomplished/finished OR when something needs to be saved for future reference. During discussions, planning, or iterative work, respond in chat only - DO NOT create or edit interim/working documents.
 
 **⚠️ COMMON VIOLATIONS TO AVOID:**
-- Vague/exploratory queries ("Title: Nov Week 3", "What is X?") → Chat response only
+- Vague/exploratory queries ("Title: Nov Week 3", "What is X?") → **ASK CLARIFYING QUESTIONS FIRST**, then respond in chat only
+- Single words or short phrases without context → **ASK CLARIFYING QUESTIONS FIRST**
+- Ambiguous requests that could mean multiple things → **ASK CLARIFYING QUESTIONS FIRST**
 - Planning/organizing tasks → Chat response only  
 - Research findings during discussion → Chat response only
 - Action plans/checklists for future work → Chat response only
@@ -68,22 +72,42 @@ Before using ANY file creation/editing tool (write, edit_file, search_replace, e
 
 **⚠️ STOP AND CHECK BEFORE ANY FILE CREATION OR EDITING ⚠️**
 
-The checklist above is MANDATORY. If you're about to create or edit a file, pause and verify ALL 4 questions pass.
+The checklist above is MANDATORY. If you're about to create or edit a file, pause and verify ALL 5 questions pass (especially question 0 about query clarity).
 
 **Default Behavior**: When in doubt, respond in chat. Only create or edit documents when clearly needed for future reference or when work is complete.
 
+**Red Flags That Mean "ASK CLARIFYING QUESTIONS FIRST, Then Respond in Chat Only":**
+- User query is vague or exploratory ("What is...?", "Tell me about...", single word/title like "Title Nov Week 3")
+- Single words or short phrases without sufficient context
+- Ambiguous requests that could be interpreted multiple ways
+- Query lacks clear action or intent
+
 **Red Flags That Mean "Respond in Chat Only":**
-- User query is vague or exploratory ("What is...?", "Tell me about...", single word/title)
 - User is asking questions or exploring options ("Why did you...?", "What needs to change?")
 - Content is not finalized or is work-in-progress
 - This is planning/organizing, not a completed deliverable
 - User hasn't explicitly said "save", "create", "edit", "update", "document", or similar
 - User is discussing/exploring before deciding what to change
 
+## Vague Query Handling - CRITICAL:
+
+**When user query is vague, ambiguous, or unclear:**
+1. **STOP** - Do not create files, do not make assumptions
+2. **ASK** - Request clarification with specific questions
+3. **WAIT** - Get user's response before proceeding
+4. **THEN** - Act based on clarified intent
+
+**Examples of vague queries that require clarification:**
+- Single words or titles: "Title Nov Week 3", "Week 3", "November"
+- Short phrases without context: "Improve rules", "Fix this"
+- Ambiguous requests: "Do the thing", "Handle it"
+- Unclear intent: Queries where you're guessing what the user wants
+
 ## Examples:
 
 **❌ WRONG**: User says "Title: Nov Week 3" → AI creates `week-3-action-plan.md`  
-**✅ CORRECT**: User says "Title: Nov Week 3" → AI explains what Week 3 is in chat response
+**❌ ALSO WRONG**: User says "Title: Nov Week 3" → AI assumes intent and explains in chat  
+**✅ CORRECT**: User says "Title: Nov Week 3" → AI asks: "I need clarification - are you asking me to: (1) create a LinkedIn post template for November Week 3, (2) update an existing document, (3) something else? Please clarify what you'd like me to do."
 
 **❌ WRONG**: User says "What are some title options?" → AI creates `title-options.md`  
 **✅ CORRECT**: User says "What are some title options?" → AI lists options in chat response

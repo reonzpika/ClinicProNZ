@@ -2,8 +2,8 @@
 description: "Understanding user intent and context-aware clarification"
 alwaysApply: true
 globs: []
-version: "1.1.0"
-last_updated: "2025-11-09"
+version: "1.2.0"
+last_updated: "2025-11-21"
 priority: CRITICAL
 ---
 
@@ -45,15 +45,21 @@ When requests are vague or ambiguous:
 5. **Don't Guess**: 
    - If context doesn't clarify intent, ask user directly rather than assuming
    - Better to clarify than proceed with wrong assumption
+   - **NEVER create files or take actions based on assumptions from vague queries**
+   - If query is vague (single words, short phrases, ambiguous), ask clarifying questions FIRST
 
 ## Vague Request Handling Pattern
 
 When user request is vague or could mean multiple things:
-1. **Challenge First**: "This request is too vague. Let me explain why clarity matters..."
-2. **Context Check**: Use existing project context to inform clarification
-3. **Structured Options**: Provide 2-3 most likely interpretations based on context
-4. **Targeted Questions**: Ask 2-3 specific questions to disambiguate
-5. **Don't Proceed**: Wait for clarity before acting
+1. **STOP IMMEDIATELY**: Do not create files, do not make assumptions, do not proceed with any action
+2. **Challenge First**: "This request is too vague. Let me explain why clarity matters..."
+3. **Context Check**: Use existing project context to inform clarification (but don't act on assumptions)
+4. **Structured Options**: Provide 2-3 most likely interpretations based on context
+5. **Targeted Questions**: Ask 2-3 specific questions to disambiguate
+6. **WAIT**: Do not proceed until user clarifies intent
+7. **THEN Act**: Only after clarification, proceed with appropriate action
+
+**CRITICAL**: Vague queries require clarification BEFORE any file creation, editing, or other actions. Never guess user intent and create files based on assumptions.
 
 ---
 
