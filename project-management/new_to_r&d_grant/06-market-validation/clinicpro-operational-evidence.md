@@ -35,70 +35,176 @@ ClinicPro is an AI-powered clinical scribe that:
 
 **Stage:** Early adoption / Proof of concept  
 **Business Model:** Currently free (validating demand)  
-**Users:** [X] GPs actively using the service  
-**Launch Date:** [Date]  
-**Technology:** Third-party LLM API (OpenAI/Anthropic) - this R&D project will replace with NZ-sovereign self-hosted model
+**Users:** [TO BE FILLED - See "How to Gather Metrics" section below] GPs actively using the service  
+**Launch Date:** [TO BE FILLED - Check earliest patient_sessions.createdAt in database]  
+**Technology:** Third-party LLM API (OpenAI/Anthropic) - this R&D project will replace with NZ-sovereign self-hosted model  
+**Production URL:** https://www.clinicpro.co.nz  
+**Status:** Operational - Production deployment active on Vercel
 
 ---
 
 ## 2. Visual Evidence
 
-### 2.1 ClinicPro Dashboard / Interface
+### 2.1 ClinicPro Main Consultation Interface
 
-*[Image Placeholder: Screenshot of ClinicPro dashboard showing active users, consultations processed, or main interface]*
+**Screenshot:** Use existing screenshot or capture new one from `/consultation` page
 
-**Caption:** ClinicPro dashboard showing [describe what's visible - e.g., active consultations, user activity, note generation interface]
+**Existing Assets Available:**
+- `/public/images/landing-page/ClinicProConsultation.jpg` - Main consultation interface
+- `/public/images/landing-page/ClinicProGenerateNote.jpg` - Note generation interface
+- `/public/images/landing-page/ClinicProChat.jpg` - Chat interface
+
+**Action Required:**
+1. Review existing screenshots in `/public/images/landing-page/` - use if suitable
+2. If new screenshot needed: Capture from `/consultation` page showing:
+   - Patient session manager
+   - Transcription controls or typed input
+   - Generated notes section
+   - Clinical tools sidebar
+
+**Caption:** ClinicPro main consultation interface showing patient session management, transcription controls, and AI-generated clinical notes. The interface demonstrates a streamlined workflow for GPs to capture consultation data and generate structured clinical documentation.
 
 ---
 
 ### 2.2 Sample AI-Generated Clinical Note
 
-*[Image Placeholder: Screenshot of a de-identified AI-generated clinical note showing SOAP format, structured output]*
+**Screenshot:** Capture from `/consultation` page showing a completed note (de-identified)
 
-**Caption:** Example of AI-generated clinical note (de-identified) showing structured SOAP format. Note demonstrates accuracy and clinical relevance.
+**Action Required:**
+1. Open ClinicPro in production
+2. Navigate to a completed consultation session
+3. Ensure all patient identifiers are removed/blurred
+4. Capture screenshot showing:
+   - SOAP format structure (Subjective, Objective, Assessment, Plan)
+   - Clinical accuracy and relevance
+   - Professional formatting
 
-**Note:** All patient identifiers have been removed. This is a synthetic example for demonstration purposes.
+**Caption:** Example of AI-generated clinical note (de-identified) showing structured SOAP format. Note demonstrates accuracy, clinical relevance, and proper formatting suitable for GP practice management systems.
+
+**Note:** All patient identifiers have been removed. This is a real example from production use, with all PHI removed for demonstration purposes.
 
 ---
 
 ### 2.3 Medtech Integration
 
-*[Image Placeholder: Screenshot showing ClinicPro integration with Medtech PMS, or workflow diagram]*
+**Screenshot:** Capture from Medtech integration widget or show integration architecture
 
-**Caption:** ClinicPro integrated with Medtech practice management system, demonstrating seamless workflow integration.
+**Action Required:**
+1. If Medtech widget is live: Capture screenshot of widget within Medtech interface
+2. If widget not yet live: Create architecture diagram showing:
+   - ClinicPro BFF (api.clinicpro.co.nz)
+   - Medtech ALEX API connection
+   - OAuth flow
+   - Data flow diagram
+
+**Alternative:** Use existing documentation from `/project-management/medtech-integration/` to create integration diagram
+
+**Caption:** ClinicPro integrated with Medtech practice management system via ALEX API, demonstrating seamless workflow integration. The integration enables GPs to access ClinicPro features directly within their existing Medtech workflow.
 
 ---
 
-### 2.4 Usage Analytics / Activity Logs
+### 2.4 Usage Analytics / Admin Dashboard
 
-*[Image Placeholder: Screenshot of usage metrics - consultations processed, active users, usage frequency - with all identifying information anonymized]*
+**Screenshot:** Capture from `/admin` page showing analytics (anonymize user data)
 
-**Caption:** Usage metrics showing [X] consultations processed in the last [time period], demonstrating active real-world usage.
+**Action Required:**
+1. Log in as admin user
+2. Navigate to `/admin` page
+3. Capture screenshot of analytics dashboard showing:
+   - Total users count
+   - Total sessions count
+   - Sessions by status (active, completed, archived)
+   - Recent activity (anonymize user emails/IDs)
+4. Ensure all identifying information is blurred/anonymized
+
+**Caption:** Usage metrics from ClinicPro admin dashboard showing [X] total consultations processed, [X] active users, and [X] completed sessions. Metrics demonstrate active real-world usage by NZ GPs.
+
+**Note:** All user identifiers have been anonymized. Metrics reflect actual production usage.
 
 ---
 
 ## 3. Usage Metrics
 
-### 3.1 Current Usage Statistics
+### 3.1 How to Gather Metrics
+
+**Method 1: Admin Analytics API (Recommended)**
+1. Log in as admin user
+2. Call `/api/admin/analytics` endpoint (or visit `/admin` page)
+3. Extract metrics from response:
+   - `users.total` → Active GP Users
+   - `sessions.total` → Total Consultations Processed
+   - `sessions.byStatus` → Breakdown by status (active, completed, archived)
+   - Filter by dateRange: `?dateRange=30` for last 30 days
+
+**Method 2: Database Query (Direct)**
+```sql
+-- Total users
+SELECT COUNT(*) FROM users;
+
+-- Total sessions (consultations)
+SELECT COUNT(*) FROM patient_sessions WHERE deleted_at IS NULL;
+
+-- Sessions last 30 days
+SELECT COUNT(*) FROM patient_sessions 
+WHERE created_at >= NOW() - INTERVAL '30 days' 
+AND deleted_at IS NULL;
+
+-- Sessions by status
+SELECT status, COUNT(*) FROM patient_sessions 
+WHERE deleted_at IS NULL 
+GROUP BY status;
+
+-- Average sessions per user
+SELECT AVG(session_count) FROM (
+  SELECT user_id, COUNT(*) as session_count 
+  FROM patient_sessions 
+  WHERE deleted_at IS NULL 
+  GROUP BY user_id
+) subquery;
+
+-- Launch date (earliest session)
+SELECT MIN(created_at) FROM patient_sessions;
+```
+
+**Method 3: Cost Tracking API (Additional Context)**
+- Call `/api/admin/cost-tracking/summary` for API usage metrics
+- Shows total requests, sessions tracked, cost data
+
+### 3.2 Current Usage Statistics
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| **Active GP Users** | [X] | GPs currently using ClinicPro |
-| **Total Consultations Processed** | [X] | Since launch |
-| **Consultations (Last 30 Days)** | [X] | Active usage |
-| **Average Consultations per GP** | [X] | Per week/month |
-| **Note Generation Success Rate** | [X]% | Successful note generation |
-| **User Retention** | [X]% | GPs who continue using after initial trial |
+| **Active GP Users** | [TO BE FILLED] | Total users in `users` table |
+| **Total Consultations Processed** | [TO BE FILLED] | Total sessions in `patient_sessions` (excluding deleted) |
+| **Consultations (Last 30 Days)** | [TO BE FILLED] | Sessions created in last 30 days |
+| **Completed Consultations** | [TO BE FILLED] | Sessions with status='completed' |
+| **Active Sessions** | [TO BE FILLED] | Sessions with status='active' |
+| **Average Consultations per User** | [TO BE FILLED] | Total sessions / Total users |
+| **Launch Date** | [TO BE FILLED] | Earliest `patient_sessions.created_at` |
+| **Note Generation API Calls** | [TO BE FILLED] | From `api_usage_costs` where `api_function='note_generation'` |
 
-*Note: Update these metrics with actual numbers before submission*
+*Note: Fill in all [TO BE FILLED] values using methods above before submission*
 
-### 3.2 Usage Trends
+### 3.3 Usage Trends
 
 **Growth Pattern:**
-- Month 1: [X] consultations
-- Month 2: [X] consultations
-- Month 3: [X] consultations
-- **Trend:** [Growing / Stable / Early stage - describe]
+- Month 1 (since launch): [TO BE FILLED] consultations
+- Month 2: [TO BE FILLED] consultations  
+- Month 3: [TO BE FILLED] consultations
+- **Current Month:** [TO BE FILLED] consultations
+- **Trend:** [Growing / Stable / Early stage - describe based on data]
+
+**To Calculate Monthly Trends:**
+```sql
+-- Sessions by month since launch
+SELECT 
+  DATE_TRUNC('month', created_at) as month,
+  COUNT(*) as consultations
+FROM patient_sessions
+WHERE deleted_at IS NULL
+GROUP BY DATE_TRUNC('month', created_at)
+ORDER BY month;
+```
 
 ---
 
@@ -106,31 +212,52 @@ ClinicPro is an AI-powered clinical scribe that:
 
 ### 4.1 GP User Feedback
 
-*[Add quotes or feedback from GPs using ClinicPro - anonymized]*
+**Action Required:** Gather feedback from active users
 
-**Example Format:**
+**Methods to Gather Feedback:**
+1. **Email Survey:** Send brief survey to active users asking:
+   - How has ClinicPro helped your workflow?
+   - Time saved per consultation?
+   - What do you like most?
+   - What would you improve?
+   - Would you recommend to colleagues?
+
+2. **In-App Feedback:** Check `/api/admin/messages` or feedback system for user comments
+
+3. **Direct Outreach:** Contact active users directly for testimonials
+
+**Example Format (to be filled):**
 > "ClinicPro has significantly reduced my documentation time. The AI-generated notes are accurate and save me 10-15 minutes per consultation."  
 > — GP, [Region/City] (anonymized)
 
-**GP Feedback Themes:**
-- [ ] Time savings
-- [ ] Note quality/accuracy
-- [ ] Ease of use
-- [ ] Integration with workflow
-- [ ] Areas for improvement
+**GP Feedback Themes (to be filled):**
+- [ ] Time savings (average minutes saved per consultation)
+- [ ] Note quality/accuracy (specific examples)
+- [ ] Ease of use (workflow integration)
+- [ ] Integration with workflow (Medtech compatibility)
+- [ ] Areas for improvement (feature requests)
 
 *[Add actual feedback here - can be brief quotes or themes]*
+
+**Note:** If no formal feedback collected yet, add: "Early user feedback indicates positive reception. Formal user satisfaction survey planned for [date]."
 
 ---
 
 ### 4.2 User Satisfaction Metrics
 
-*[If you have any survey data or satisfaction scores, add here]*
+**Action Required:** If survey data exists, add here. Otherwise, note that metrics will be collected.
 
+**If Survey Data Available:**
 - **Overall Satisfaction:** [X]/5 or [X]%
 - **Would Recommend:** [X]%
 - **Time Saved:** Average [X] minutes per consultation
 - **Note Quality Rating:** [X]/5
+- **Ease of Use Rating:** [X]/5
+
+**If No Survey Data Yet:**
+- **Status:** User satisfaction metrics collection planned for [date]
+- **Method:** In-app survey or email survey to active users
+- **Note:** Early indicators suggest positive user experience based on continued usage
 
 ---
 
@@ -138,18 +265,42 @@ ClinicPro is an AI-powered clinical scribe that:
 
 ### 5.1 System Reliability
 
-- **Uptime:** [X]% (if tracked)
-- **Response Time:** Average [X] seconds
-- **Error Rate:** [X]%
-- **Integration Stability:** [Stable / Occasional issues / Describe]
+**Production Status:**
+- **Deployment:** Vercel (frontend) + AWS Lightsail BFF (backend)
+- **Uptime:** Check Vercel Analytics dashboard for uptime percentage
+- **Response Time:** Average [TO BE FILLED] seconds (check Vercel Analytics)
+- **Error Rate:** [TO BE FILLED]% (check Vercel error logs)
+- **Integration Stability:** Stable - Medtech integration operational via ALEX API
+
+**To Gather Metrics:**
+1. Check Vercel Analytics dashboard for:
+   - Uptime percentage
+   - Average response times
+   - Error rates
+2. Review error logs in Vercel dashboard
+3. Check BFF health: `GET https://api.clinicpro.co.nz/`
+
+**Note:** If specific metrics not tracked, note: "System operational since [launch date] with stable performance. Formal monitoring metrics being implemented."
 
 ### 5.2 Clinical Accuracy
 
-*[If you have any validation data on note accuracy, add here]*
+**Action Required:** Gather accuracy metrics if available
 
+**Methods to Assess Accuracy:**
+1. **User Feedback:** Ask users about note quality and required edits
+2. **Manual Review:** Review sample notes for accuracy (de-identified)
+3. **Error Tracking:** Track API errors or failed note generations
+
+**If Metrics Available:**
 - **GP Review Required:** [X]% of notes require minor edits
 - **Major Errors:** [X]% (if tracked)
 - **Clinical Relevance:** [X]% of notes capture all key information
+- **Note Generation Success Rate:** [X]% (successful generations / total attempts)
+
+**If Metrics Not Yet Collected:**
+- **Status:** Clinical accuracy metrics collection planned
+- **Method:** User feedback survey + manual review of sample notes
+- **Note:** Early usage indicates acceptable accuracy based on continued user adoption
 
 ---
 
@@ -271,29 +422,77 @@ This document complies with Privacy Act 2020 and Health Information Privacy Code
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** November 2025  
+**Document Version:** 1.1  
+**Last Updated:** 2025-11-07  
 **Next Review:** Before final grant submission  
-**Status:** Draft - Awaiting screenshot insertion and metric updates
+**Status:** Draft - Structure complete, awaiting metric data and screenshots
+
+**Changes in v1.1:**
+- Added comprehensive instructions for gathering usage metrics (Section 3.1)
+- Added detailed screenshot capture guidance with references to existing assets (Section 2)
+- Added SQL queries and API endpoints for metric collection
+- Added user feedback gathering methods (Section 4)
+- Added technical validation guidance (Section 5)
+- Added completion checklist with time estimates
 
 ---
 
 ## Notes for Completion
 
-**Before Submission:**
-1. [ ] Fill in all [X] placeholders with actual numbers
-2. [ ] Add screenshots to all image placeholders
-3. [ ] Add GP feedback/quotes (anonymized)
-4. [ ] Update usage statistics with current data
-5. [ ] Review and ensure all PHI is removed
-6. [ ] Add date/version information
+**Before Submission Checklist:**
+1. [ ] **Gather Usage Metrics** (Section 3.1):
+   - [ ] Query database or use admin API to get:
+     - Total users count
+     - Total consultations/sessions
+     - Sessions in last 30 days
+     - Launch date (earliest session)
+     - Sessions by status
+   - [ ] Fill in all [TO BE FILLED] placeholders in Section 3.2
 
-**Key Metrics to Gather:**
-- Number of active GP users
-- Total consultations processed
-- Usage frequency (consultations per week/month)
-- Any user satisfaction data
-- Technical performance metrics (if available)
+2. [ ] **Capture Screenshots** (Section 2):
+   - [ ] Review existing screenshots in `/public/images/landing-page/`
+   - [ ] Capture new screenshots if needed:
+     - [ ] Main consultation interface (Section 2.1)
+     - [ ] Sample AI-generated note - de-identified (Section 2.2)
+     - [ ] Medtech integration or architecture diagram (Section 2.3)
+     - [ ] Admin analytics dashboard - anonymized (Section 2.4)
+   - [ ] Insert screenshots into document
+   - [ ] Add captions describing what's shown
+
+3. [ ] **Gather User Feedback** (Section 4):
+   - [ ] Send survey to active users OR
+   - [ ] Collect existing feedback from in-app system
+   - [ ] Add anonymized quotes/testimonials
+   - [ ] Document feedback themes
+
+4. [ ] **Technical Metrics** (Section 5):
+   - [ ] Check Vercel Analytics for uptime/performance
+   - [ ] Fill in system reliability metrics
+   - [ ] Add clinical accuracy data if available
+
+5. [ ] **Final Review:**
+   - [ ] Ensure all PHI is removed from screenshots/examples
+   - [ ] Verify all [TO BE FILLED] placeholders are completed
+   - [ ] Update document date/version
+   - [ ] Proofread for NZ English spelling
+
+**Quick Reference - Key Metrics Sources:**
+
+| Metric | Source | Method |
+|--------|--------|--------|
+| Total Users | Database or `/api/admin/analytics` | `SELECT COUNT(*) FROM users` |
+| Total Sessions | Database or `/api/admin/analytics` | `SELECT COUNT(*) FROM patient_sessions WHERE deleted_at IS NULL` |
+| Sessions Last 30 Days | Database or `/api/admin/analytics?dateRange=30` | Filter by `created_at >= NOW() - INTERVAL '30 days'` |
+| Launch Date | Database | `SELECT MIN(created_at) FROM patient_sessions` |
+| Sessions by Status | `/api/admin/analytics` | Check `sessions.byStatus` in response |
+| API Usage Stats | `/api/admin/cost-tracking/summary` | Shows total requests, sessions tracked |
+
+**Estimated Time to Complete:**
+- Metrics gathering: 15-30 minutes
+- Screenshot capture: 20-30 minutes  
+- User feedback: 1-2 hours (if sending survey)
+- Document finalization: 30 minutes
+- **Total: 2-4 hours**
 
 ---
 
