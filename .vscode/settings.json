@@ -58,5 +58,16 @@
     "postcss",
     "github-actions-workflow"
   ],
-  "testing.automaticallyOpenTestResults": "neverOpen"
+  "testing.automaticallyOpenTestResults": "neverOpen",
+
+  // MCP Server Configuration
+  "mcp.servers": {
+    "fhir": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-fhir"],
+      "env": {
+        "FHIR_BASE_URL": "http://hapi.fhir.org/baseR4"
+      }
+    }
+  }
 }
