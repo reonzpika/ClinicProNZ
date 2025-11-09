@@ -2,8 +2,8 @@
 description: "Understanding user intent and context-aware clarification"
 alwaysApply: true
 globs: []
-version: "1.2.0"
-last_updated: "2025-11-21"
+version: "1.3.0"
+last_updated: "2025-11-09"
 priority: CRITICAL
 ---
 
@@ -21,21 +21,24 @@ priority: CRITICAL
 
 When requests are vague or ambiguous:
 
-1. **Gather Context First**:
-   - Read `PROJECT_SUMMARY.md` to understand current project state
-   - Check `PROJECTS_OVERVIEW.md` for project context (if project name unclear)
-   - Review recent milestones, blockers, or status from project files
-   - Understand project stage and type
+1. **ONE SEARCH RULE - Do Minimal Context Gathering**:
+   - **MAXIMUM ONE lightweight search** to check for obvious context
+   - Options (pick ONE):
+     - Read `PROJECTS_OVERVIEW.md` if project unclear
+     - Check current git branch name if relevant
+     - Read `PROJECT_SUMMARY.md` if project is clear from context
+   - **If that ONE search doesn't immediately clarify intent → ASK USER**
+   - **NEVER do multiple searches, greps, or extensive codebase exploration for vague queries**
 
 2. **Challenge Vagueness Directly**: 
    - Call out why request is unclear ("This request is too vague to act on effectively")
    - Explain opportunity cost of vague requests (wrong assumptions, wasted effort)
    - Show specific examples of what could be misinterpreted
 
-3. **Provide Context-Informed Options**: 
-   - Based on gathered context, suggest 2-3 most likely interpretations
-   - Reference current project state ("Based on your project being in Validation stage, you might mean...")
-   - Use template milestones to suggest common next steps
+3. **Provide Context-Informed Options** (based on single search only): 
+   - Based on minimal context gathered, suggest 2-3 most likely interpretations
+   - Reference current project state if you found it ("Based on your project being in Validation stage, you might mean...")
+   - If no clear context found, say so and provide generic options
 
 4. **Ask Targeted Questions**: 
    - Use context to ask specific, non-leading questions
@@ -52,14 +55,19 @@ When requests are vague or ambiguous:
 
 When user request is vague or could mean multiple things:
 1. **STOP IMMEDIATELY**: Do not create files, do not make assumptions, do not proceed with any action
-2. **Challenge First**: "This request is too vague. Let me explain why clarity matters..."
-3. **Context Check**: Use existing project context to inform clarification (but don't act on assumptions)
-4. **Structured Options**: Provide 2-3 most likely interpretations based on context
-5. **Targeted Questions**: Ask 2-3 specific questions to disambiguate
-6. **WAIT**: Do not proceed until user clarifies intent
-7. **THEN Act**: Only after clarification, proceed with appropriate action
+2. **ONE Search Only**: Do ONE lightweight context check (git branch, PROJECTS_OVERVIEW.md, or PROJECT_SUMMARY.md)
+3. **If Still Unclear → ASK**: If the one search didn't clarify intent, ask immediately. DO NOT do more searches.
+4. **Challenge First**: "This request is too vague. Let me explain why clarity matters..."
+5. **Structured Options**: Provide 2-3 most likely interpretations based on minimal context
+6. **Targeted Questions**: Ask 2-3 specific questions to disambiguate
+7. **WAIT**: Do not proceed until user clarifies intent
+8. **THEN Act**: Only after clarification, proceed with appropriate action
 
-**CRITICAL**: Vague queries require clarification BEFORE any file creation, editing, or other actions. Never guess user intent and create files based on assumptions.
+**CRITICAL RULES**: 
+- Vague queries require clarification BEFORE any file creation, editing, or other actions
+- **MAXIMUM ONE search/read operation for vague queries, then ASK**
+- Never guess user intent and create files based on assumptions
+- Don't waste user's time with extensive searching when intent is unclear
 
 ---
 
