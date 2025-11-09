@@ -2,7 +2,7 @@
  * Correlation ID Generator for Medtech ALEX API
  *
  * Generates UUID v4 correlation IDs for request tracing
- * - Used in `mt-correlationid` header for all ALEX API calls
+ * - Used for logging and error tracking (not sent as header per Medtech support)
  * - Enables end-to-end request tracing across systems
  * - Included in logs and error responses
  */

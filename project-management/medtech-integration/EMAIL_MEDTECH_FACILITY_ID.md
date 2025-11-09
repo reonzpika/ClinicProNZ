@@ -23,7 +23,7 @@ I'm integrating with ALEX API UAT and encountering a "Practice Facility not foun
 **What's working:**
 - ✅ OAuth token acquisition successful
 - ✅ IP allow-listing configured (13.236.58.12)
-- ✅ Headers correctly formatted (`mt-facilityid`, `mt-correlationid`, `mt-appid`)
+- ✅ Headers correctly formatted (`mt-facilityid` - per Medtech support, only this header is needed)
 
 **Question:**
 Could you please confirm:
@@ -38,9 +38,8 @@ Could you please confirm:
 GET https://alexapiuat.medtechglobal.com/FHIR/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|ZZZ0016
 Headers:
 - Authorization: Bearer [token]
+- Content-Type: application/fhir+json
 - mt-facilityid: F2N060-E (or F99669-C)
-- mt-correlationid: [uuid]
-- mt-appid: clinicpro-images-widget
 ```
 
 **Response:** 403 Forbidden - "Practice Facility not found"

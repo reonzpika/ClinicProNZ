@@ -92,7 +92,7 @@ All credentials stored in Vercel environment variables (configured Oct 26):
 2. **Header Validation**
    - Cannot fully test headers until production deployment
    - Structure validated from documentation
-   - Headers: `mt-facilityid`, `mt-correlationid`, `mt-appid`, `Content-Type: application/fhir+json`
+   - Headers: `mt-facilityid`, `Authorization`, `Content-Type` (per Medtech support, only mt-facilityid is needed)
 
 ---
 
@@ -111,7 +111,7 @@ All credentials stored in Vercel environment variables (configured Oct 26):
 2. **Implement ALEX API Client**
    - Location: `src/services/medtech/alex-api-client.ts`
    - Features:
-     - Auto-inject required headers (`Authorization`, `mt-facilityid`, `mt-correlationid`, `mt-appid`, `Content-Type`)
+     - Auto-inject required headers (`Authorization`, `mt-facilityid`, `Content-Type`) - per Medtech support, only mt-facilityid is needed
      - Correlation ID generation (UUID v4 per request)
      - Error handling (FHIR OperationOutcome mapping)
      - Retry logic (exponential backoff for 429, 503)

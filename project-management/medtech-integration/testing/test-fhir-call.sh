@@ -24,21 +24,17 @@ echo "Query: identifier=https://standards.digital.health.nz/ns/nhi-id|ZZZ0016"
 echo "Facility: F2N060-E (UAT)"
 echo ""
 
-CORRELATION_ID=$(uuidgen 2>/dev/null || echo "550e8400-e29b-41d4-a716-446655440000")
-
+# Per Medtech support: only mt-facilityid header is needed (along with Authorization and Content-Type)
 RESPONSE=$(curl -sS -w "\nHTTP_STATUS:%{http_code}" -X GET \
   "https://alexapiuat.medtechglobal.com/FHIR/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|ZZZ0016" \
   -H "Authorization: Bearer ${TOKEN}" \
   -H 'Content-Type: application/fhir+json' \
-  -H 'mt-facilityid: F2N060-E' \
-  -H "mt-correlationid: ${CORRELATION_ID}" \
-  -H 'mt-appid: clinicpro-images-widget')
+  -H 'mt-facilityid: F2N060-E')
 
 HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS:" | cut -d':' -f2)
 BODY=$(echo "$RESPONSE" | sed '/HTTP_STATUS:/d')
 
 echo "HTTP Status: $HTTP_STATUS"
-echo "Correlation ID: $CORRELATION_ID"
 echo ""
 
 if [ "$HTTP_STATUS" = "200" ]; then

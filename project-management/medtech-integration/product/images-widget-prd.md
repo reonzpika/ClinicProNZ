@@ -5,7 +5,7 @@
 > 
 > **Key areas where ALEX API docs supersede this PRD**:
 > - API endpoints, request/response schemas, and FHIR resource structures
-> - Required HTTP headers (`mt-facilityid`, `mt-correlationid`, `mt-appid`, `Content-Type: application/fhir+json`)
+> - Required HTTP headers (`mt-facilityid`, `Authorization`, `Content-Type`) - per Medtech support, only mt-facilityid is needed
 > - Authentication flow and token management
 > - Custom FHIR extension URLs for clinical metadata (awaiting examples from Medtech support)
 > - Error codes and troubleshooting guidance
@@ -117,7 +117,7 @@
 > **Note**: These API contracts represent a **simplified REST abstraction layer** (Integration Gateway) that sits between the widget frontend and ALEX's FHIR API. The Gateway handles:
 > - OAuth token management (55-min cache, auto-refresh)
 > - FHIR ↔ REST translation
-> - Required ALEX headers injection (`mt-facilityid`, `mt-correlationid`, `mt-appid`, `Content-Type: application/fhir+json`)
+> - Required ALEX headers injection (`mt-facilityid`, `Authorization`, `Content-Type`) - per Medtech support, only mt-facilityid is needed
 > - Error code mapping (FHIR OperationOutcome → user-friendly messages)
 > - Clinical metadata mapping (PRD schema → FHIR extensions)
 > 

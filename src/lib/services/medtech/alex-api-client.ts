@@ -2,9 +2,9 @@
  * Medtech ALEX API Client
  *
  * Base HTTP client for all ALEX FHIR API requests
- * - Auto-injects required headers (Authorization, mt-*, Content-Type)
+ * - Auto-injects required headers (Authorization, mt-facilityid, Content-Type)
  * - Handles OAuth token management (55-min cache with auto-refresh)
- * - Correlation ID generation and propagation
+ * - Correlation ID generation (for logging, not sent as header)
  * - FHIR OperationOutcome error mapping
  * - Retry logic for transient failures (429, 503)
  *
@@ -50,8 +50,6 @@ export class AlexApiError extends Error {
 }
 
 class AlexApiClient {
-  private readonly appId = 'clinicpro-images-widget'
-
   /**
    * Get base URL (lazy, only when needed)
    */
@@ -99,12 +97,11 @@ class AlexApiClient {
       const accessToken = await oauthTokenService.getAccessToken()
 
       // Prepare headers
+      // Per Medtech support: only mt-facilityid header is needed (along with Authorization and Content-Type)
       const headers: Record<string, string> = {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/fhir+json',
         'mt-facilityid': facilityId,
-        'mt-correlationid': correlationId,
-        'mt-appid': this.appId,
         ...customHeaders,
       }
 
