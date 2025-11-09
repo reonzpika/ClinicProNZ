@@ -172,6 +172,7 @@ discourse-theme/gp-voices/
 - **Theme Documentation**: `docs/gp-voices-theme.md` — Theme scope, milestones, settings, file structure
 - **Setup Guide**: `docs/gp-voices-import-setup.md` — Step-by-step installation and configuration guide
 - **Weekly LinkedIn Posts**: `weekly-linkedin-post-YYYY-MM-DD.md` — Manual weekly curation of NZ medical news for LinkedIn posts (testing demand before building AI-powered weekly summaries)
+- **LinkedIn Mentions & Hashtags**: [`linkedin-mentions-hashtags.md`](./linkedin-mentions-hashtags.md) — Reference library of @mentions and #hashtags for LinkedIn posts
 
 ### External References
 - Discourse Developer Guides: https://meta.discourse.org/t/developer-guides-index/308036

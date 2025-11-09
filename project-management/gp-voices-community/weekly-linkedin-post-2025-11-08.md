@@ -109,7 +109,20 @@ AI is reshaping NZ healthcare faster than expected. Here are 4 updates every GP 
 
 💡 **This is a weekly series** — I curate the most relevant NZ healthcare news for GPs every week. Follow me to stay updated on what matters for general practice in Aotearoa.
 
-#NZGP #GeneralPractice #NZHealthcare
+---
+
+**References:**
+1. AI scribe ED rollout: https://www.beehive.govt.nz/release/ai-scribe-speed-emergency-care-patients
+2. IntelliTek Health: https://www.intellitekhealth.com/products/clinical-virtual-assistant
+3. Medtech Evolution integration: https://www.linkedin.com/pulse/medtech-evolution-practices-gain-ai-enabled-capabilities-dltxc/
+4. Health NZ endorsement: https://www.linkedin.com/posts/intellitekhealth_aotearoahealth-healthtech-aihealth-activity-7390124503936266240-d38R/
+5. Practice AI: https://www.practiceai.co.nz/
+6. Octans Care: https://www.octanscare.co.nz/
+7. Indici announcement: https://www.linkedin.com/posts/indici-nz_indici-aiinhealthcare-digitalhealth-activity-7391579294021591040-fGj9
+
+@Medtech Global @Health New Zealand - Te Whatu Ora @Health Informatics New Zealand (HiNZ) @RNZCGP
+
+#AIinHealth #DigitalHealthNZ #HealthTechNZ #PrimaryCareNZ #GeneralPractice #AotearoaHealth #HealthInnovation #MedTechInnovation #FutureOfHealth
 
 ---
 
