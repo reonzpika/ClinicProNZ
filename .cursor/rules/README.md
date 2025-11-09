@@ -1,8 +1,8 @@
 # Cursor AI Rules System
 
-**Version**: 2.0.0 (Modular)  
+**Version**: 2.1.0 (Autonomous + Modular)  
 **Last Updated**: 2025-11-09  
-**Architecture**: 15 modular files, context-aware loading
+**Architecture**: 15 modular files, conversation-driven, autonomous updates
 
 ---
 
@@ -10,20 +10,21 @@
 
 ```
 .cursor/rules/
-├── core/                    [Always Loaded]
+├── core/                    [Always Loaded - Autonomous]
 │   ├── system-context.mdc
-│   ├── current-task.mdc
-│   └── document-creation.mdc
+│   ├── current-task.mdc (conversation-driven workflow)
+│   ├── document-creation.mdc
+│   ├── autonomous-updates.mdc ⭐ NEW - Conversational triggers
+│   ├── communication-style.mdc
+│   ├── nz-localization.mdc
+│   └── user-intent-understanding.mdc
 │
 ├── communication/           [On-Demand]
 │   ├── advisory-role.mdc
-│   ├── communication-style.mdc
-│   ├── user-intent-understanding.mdc
-│   ├── analysis-paralysis-detection.mdc
-│   └── nz-localization.mdc
+│   └── analysis-paralysis-detection.mdc
 │
 ├── project-management/      [Context-Aware]
-│   ├── core-principles.mdc
+│   ├── core-principles.mdc (updated with autonomy)
 │   ├── project-summary-rules.mdc
 │   ├── dashboard-sync-rules.mdc
 │   ├── template-system-rules.mdc
@@ -40,10 +41,14 @@
 
 ### When Rules Load
 
-**Always (Every Session)**:
+**Always (Every Session - Autonomous Core)**:
 - `core/system-context.mdc`
-- `core/current-task.mdc`
+- `core/current-task.mdc` (conversation-driven workflow)
 - `core/document-creation.mdc`
+- `core/autonomous-updates.mdc` ⭐ Continuous project updates
+- `core/communication-style.mdc`
+- `core/nz-localization.mdc`
+- `core/user-intent-understanding.mdc`
 
 **When Editing Specific Files**:
 - `PROJECT_SUMMARY.md` → `project-summary-rules.mdc`
@@ -61,21 +66,31 @@
 
 ## 🔑 Critical Rules
 
-### 1. Document Creation Timing (ALWAYS ENFORCED)
+### 1. Autonomous Updates (CONVERSATION-DRIVEN) ⭐ NEW
+**Rule**: AI continuously updates project files from natural conversation.
+
+**User never needs to**:
+- Say "update the project"
+- Manually edit PROJECT_SUMMARY.md
+- Think about documentation
+
+**AI automatically**:
+- Listens for trackable information
+- Updates files in background
+- Syncs dashboard
+- Provides session summaries
+
+### 2. Document Creation Timing (ALWAYS ENFORCED)
 **Rule**: Only create files when task is complete OR needs future reference.
 
 **During discussions/planning**: Respond in chat only.
 
-**Examples**:
-- ❌ "What do you think about X?" → Don't create `thoughts.md`
-- ✅ "I'm done, save this" → Create file
-
-### 2. PROJECT_SUMMARY.md ↔ PROJECTS_OVERVIEW.md Sync (MANDATORY)
+### 3. PROJECT_SUMMARY.md ↔ PROJECTS_OVERVIEW.md Sync (MANDATORY)
 **Rule**: When `PROJECT_SUMMARY.md` changes, `PROJECTS_OVERVIEW.md` MUST update in same task.
 
-**Never skip this sync.**
+**Happens automatically in autonomous mode.**
 
-### 3. Document References (CRITICAL)
+### 4. Document References (CRITICAL)
 **Rule**: New files in project directory MUST be referenced in `PROJECT_SUMMARY.md`.
 
 **Why**: AI reads `PROJECT_SUMMARY.md` first. Unreferenced files = missed in future.
@@ -120,9 +135,10 @@ Ask for feedback on decisions
 | Metric | Value |
 |--------|-------|
 | Total Files | 15 |
-| Total Lines | 1,001 |
-| Always-Loaded | 153 lines (~750 tokens) |
-| Context-Aware | 848 lines (loads on-demand) |
+| Total Lines | ~1,500 |
+| Always-Loaded (Autonomous Core) | 843 lines (~4,200 tokens) |
+| Context-Aware | Remaining lines (load on-demand) |
+| System Mode | Conversation-Driven (Autonomous) |
 
 ---
 

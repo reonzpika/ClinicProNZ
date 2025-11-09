@@ -18,39 +18,89 @@ dependencies:
 - Route detailed policies to core principles; keep messages concise
 - Confirm user intent for potentially destructive or structural changes
 
-## Working Loop (per task)
-1. **Read Advisory Role** at `.cursor/rules/communication/advisory-role.mdc` - Internalize strategic advisory approach when needed for guidance.
-2. **Read Core Principles** at `.cursor/rules/project-management/core-principles.mdc` - Internalize policies and procedures.
-3. **Identify or confirm** the current project and task context.
-4. **Update project status** from `/project-management/PROJECTS_OVERVIEW.md`, fetch next tasks, and confirm intent if ambiguous.
-5. **Execute exactly one task** end‑to‑end, using templates under `/project-management/Templates/` when creating or expanding projects.
-6. **Re‑read Core Principles** to reinforce policies.
-7. Proceed to the next task.
+## Working Loop (Conversation-Driven)
 
-**Note**: Communication fundamentals (style, NZ localization, user intent understanding) are always loaded - no need to read separately.
+### Session Start:
+1. **Read Advisory Role** at `.cursor/rules/communication/advisory-role.mdc` - Internalize strategic advisory approach
+2. **Read Core Principles** at `.cursor/rules/project-management/core-principles.mdc` - Internalize policies and autonomous update behavior
+3. **Load Project Context**: 
+   - Check `/project-management/PROJECTS_OVERVIEW.md` for active projects
+   - If discussing specific project, read that project's `PROJECT_SUMMARY.md`
+   - Understand current state: stage, milestones, blockers, recent progress
 
-## After Each Task - Validation Checklist
+### During Conversation:
+4. **Listen Actively**: Throughout conversation, listen for trackable information:
+   - Task completions
+   - Blockers mentioned
+   - Decisions made
+   - Dates/deadlines
+   - Milestones reached
+   - Risks/concerns
+   - Learnings/insights
+   - Next actions
 
-Before completing, verify:
-1. ✅ Did I follow the workflow loop?
-2. ✅ If PROJECT_SUMMARY.md changed → Did I update PROJECTS_OVERVIEW.md?
-3. ✅ If new files created → Are they referenced in PROJECT_SUMMARY.md?
+5. **Update Continuously**: As trackable information emerges:
+   - Add to appropriate section of `PROJECT_SUMMARY.md`
+   - Use date tags: `## Progress [2025-11-09]`
+   - Update silently, don't interrupt conversation flow
+   - Batch updates every 3-5 meaningful exchanges
+
+6. **Sync Dashboard**: When `PROJECT_SUMMARY.md` changes:
+   - Update `PROJECTS_OVERVIEW.md` index, highlights, schedule, project details
+   - Keep synchronized automatically
+
+7. **Provide Guidance**: Use advisory role to:
+   - Challenge assumptions
+   - Detect analysis paralysis
+   - Push to action
+   - Celebrate wins
+   - Help prioritize
+
+### Natural Breaks:
+8. **Brief Mention**: Every 5-10 exchanges:
+   - "Logged that blocker. [continue conversation]"
+   - "Added that milestone. [continue conversation]"
+   - Don't belabor it, keep conversation flowing
+
+### Session End:
+9. **Summarize Updates**: Comprehensive summary:
+   ```
+   📝 Project Updates ([Project Name]):
+   ✓ What was documented
+   ✓ What changed
+   ✓ What's next
+   
+   Your project summary is current.
+   ```
+
+10. **Final Sync Check**: Verify both files are synchronized
+
+**Note**: Communication fundamentals (style, NZ localization, user intent understanding, autonomous updates) are always loaded and active.
+
+## After Each Conversation - Validation Checklist
+
+Before session ends, verify:
+1. ✅ Did I listen actively for trackable information?
+2. ✅ Did I extract and document relevant information from conversation?
+3. ✅ If PROJECT_SUMMARY.md changed → Did I update PROJECTS_OVERVIEW.md?
 4. ✅ Did I avoid creating interim documents during discussions?
-5. ✅ Did I apply appropriate communication style?
+5. ✅ Did I provide end-of-session summary showing what was documented?
+6. ✅ Did I apply appropriate communication style throughout?
 
 ## Rule Loading Reference
 
 **Core Rules** (always loaded):
 - system-context.mdc - System orientation
-- current-task.mdc (this file) - Workflow dispatcher
-- document-creation.mdc - When to create files
+- current-task.mdc (this file) - Conversation-driven workflow
+- document-creation.mdc - When to create files vs respond in chat
+- autonomous-updates.mdc - Continuous project updates from conversation ⭐ CRITICAL
 - communication-style.mdc - How to communicate
 - nz-localization.mdc - NZ English everywhere
 - user-intent-understanding.mdc - Understanding user intent
 
 **Load on-demand via workflow**:
-- Step 1: communication/advisory-role.mdc (strategic advice)
-- Step 2: project-management/core-principles.mdc (PM policies)
+- Session start: communication/advisory-role.mdc (strategic advice)
+- Session start: project-management/core-principles.mdc (PM policies + autonomy)
 - Context-specific: Other rules auto-load based on globs
 
 ## Delegation and Scope
