@@ -172,7 +172,6 @@ discourse-theme/gp-voices/
 - **Theme Documentation**: `docs/gp-voices-theme.md` — Theme scope, milestones, settings, file structure
 - **Setup Guide**: `docs/gp-voices-import-setup.md` — Step-by-step installation and configuration guide
 - **LinkedIn Weekly Workflow**: [`linkedin-weekly-workflow.md`](./linkedin-weekly-workflow.md) — Reusable workflow for creating weekly LinkedIn posts (includes template, mentions, hashtags, image prompt)
-- **LinkedIn Mentions & Hashtags**: [`linkedin-mentions-hashtags.md`](./linkedin-mentions-hashtags.md) — Reference library of @mentions and #hashtags
 - **LinkedIn Post Log**: [`linkedin-post-log.md`](./linkedin-post-log.md) — Track posts, metrics, and learnings
 - **Weekly Post Template**: [`weekly-linkedin-post-template.md`](./weekly-linkedin-post-template.md) — Template to copy each week
 

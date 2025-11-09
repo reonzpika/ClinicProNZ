@@ -133,8 +133,15 @@ Use 2-4 mentions per post. Tag when content directly relates to them.
 - @General Practice New Zealand (GPNZ) (primary care policy)
 - @HealthTech Activator (HTA) (healthtech innovation)
 - @New Zealand Doctor / Rata Aotearoa (medical media)
+- @HealthPathways (clinical pathways)
+- @The Royal New Zealand College of Urgent Care (RNZCUC) (urgent care)
+- @Collaborative Aotearoa (health collaboration)
+- @GenPro (practice ownership/business)
 
-**Full list**: See `linkedin-mentions-hashtags.md` for complete reference.
+**Usage Guidelines**:
+- Only tag when content directly relates to them
+- Don't over-tag (can look spammy)
+- Tag in context (e.g., "As @Medtech Global integrates AI features...")
 
 ---
 
@@ -144,13 +151,21 @@ Use 5-8 hashtags per post. Mix evergreen + trending + NZ-specific.
 
 **Recommended Mix** (pick 2-3 from each):
 
-**Evergreen**: #PrimaryCare #GeneralPractice #NZHealth
+**Evergreen**: #PrimaryCare #GeneralPractice #NZHealth #Healthcare
 
-**Trending**: #AIinHealth #DigitalHealth #HealthTech #HealthInnovation
+**Trending**: #AIinHealth #DigitalHealth #HealthTech #HealthInnovation #MedTech
 
-**NZ-specific**: #AotearoaHealth #GPsNZ #HealthTechNZ #PrimaryCareNZ
+**NZ-specific**: #AotearoaHealth #GPsNZ #HealthTechNZ #PrimaryCareNZ #DigitalHealthNZ
 
-**Full list**: See `linkedin-mentions-hashtags.md` for complete reference.
+**Full List**:
+
+**General/Evergreen**: #PrimaryCare #GeneralPractice #Healthcare #HealthEquity #PatientCentredCare #HealthInnovation #DigitalHealth #HealthTech #HealthInformatics #MedTech #HealthPolicy #ClinicalExcellence #CareIntegration #HealthSystems
+
+**NZ/Local**: #AotearoaHealth #NZHealth #TeWhatuOra #HealthNZ #GPsNZ #PrimaryCareNZ #HealthTechNZ #DigitalHealthNZ #InnovationNZ #HealthEquityNZ #KiwiHealth
+
+**Trending/Topical**: #AIinHealth #Telehealth #DataAnalytics #Interoperability #HealthTransformation #InnovationEcosystem #SustainableHealthcare #FutureOfHealth #PrecisionMedicine #MedTechInnovation #StartupsInHealth
+
+**Best Practice**: Don't repeat similar hashtags (#HealthTech and #HealthTechNZ are redundant - pick one). Place hashtags at the end of the post.
 
 ---
 
