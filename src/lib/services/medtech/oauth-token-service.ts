@@ -31,7 +31,16 @@ class OAuthTokenService {
   // Token cache TTL: 55 minutes (refresh before 60-min expiry)
   private readonly TOKEN_CACHE_TTL_MS = 55 * 60 * 1000;
 
-  private readonly AZURE_AD_TOKEN_ENDPOINT = `https://login.microsoftonline.com/${process.env.MEDTECH_TENANT_ID}/oauth2/v2.0/token`;
+  /**
+   * Get Azure AD token endpoint (lazy evaluation to ensure env vars are loaded)
+   */
+  private getTokenEndpoint(): string {
+    const tenantId = process.env.MEDTECH_TENANT_ID;
+    if (!tenantId) {
+      throw new Error('MEDTECH_TENANT_ID environment variable not set');
+    }
+    return `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
+  }
 
   /**
    * Get valid access token (cached or fresh)
@@ -96,7 +105,8 @@ class OAuthTokenService {
       });
 
       // Request token from Azure AD
-      const response = await fetch(this.AZURE_AD_TOKEN_ENDPOINT, {
+      const tokenEndpoint = this.getTokenEndpoint();
+      const response = await fetch(tokenEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
