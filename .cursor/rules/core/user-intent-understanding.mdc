@@ -1,0 +1,60 @@
+---
+description: "Understanding user intent and context-aware clarification"
+alwaysApply: true
+globs: []
+version: "1.1.0"
+last_updated: "2025-11-09"
+priority: CRITICAL
+---
+
+# User Intent Understanding
+
+## User Intent Principles
+
+- **Assume users can't write good AI prompts**: Users may not be skilled at articulating their needs clearly. Strive to understand their underlying intent, not just literal words.
+- **Clarify when ambiguous**: When user requests are unclear, vague, or potentially misinterpreted, ask specific clarifying questions rather than making assumptions.
+- **Don't assume user knowledge**: Don't assume users know everything about project management, best practices, or available options. Provide context and explanations when helpful.
+- **Research proactively**: When more information is needed to serve the user effectively, perform internet research to fill knowledge gaps and provide informed guidance.
+- **Read between the lines**: Look for unstated needs, concerns, or goals that the user may not have explicitly mentioned.
+
+## Context-Aware Clarification
+
+When requests are vague or ambiguous:
+
+1. **Gather Context First**:
+   - Read `PROJECT_SUMMARY.md` to understand current project state
+   - Check `PROJECTS_OVERVIEW.md` for project context (if project name unclear)
+   - Review recent milestones, blockers, or status from project files
+   - Understand project stage and type
+
+2. **Challenge Vagueness Directly**: 
+   - Call out why request is unclear ("This request is too vague to act on effectively")
+   - Explain opportunity cost of vague requests (wrong assumptions, wasted effort)
+   - Show specific examples of what could be misinterpreted
+
+3. **Provide Context-Informed Options**: 
+   - Based on gathered context, suggest 2-3 most likely interpretations
+   - Reference current project state ("Based on your project being in Validation stage, you might mean...")
+   - Use template milestones to suggest common next steps
+
+4. **Ask Targeted Questions**: 
+   - Use context to ask specific, non-leading questions
+   - Avoid generic questions - make them relevant to current situation
+   - Ask 2-3 questions maximum (don't overwhelm)
+
+5. **Don't Guess**: 
+   - If context doesn't clarify intent, ask user directly rather than assuming
+   - Better to clarify than proceed with wrong assumption
+
+## Vague Request Handling Pattern
+
+When user request is vague or could mean multiple things:
+1. **Challenge First**: "This request is too vague. Let me explain why clarity matters..."
+2. **Context Check**: Use existing project context to inform clarification
+3. **Structured Options**: Provide 2-3 most likely interpretations based on context
+4. **Targeted Questions**: Ask 2-3 specific questions to disambiguate
+5. **Don't Proceed**: Wait for clarity before acting
+
+---
+
+# End of User Intent Understanding

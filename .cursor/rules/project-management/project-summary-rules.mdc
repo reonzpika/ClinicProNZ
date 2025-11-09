@@ -1,0 +1,94 @@
+---
+description: "PROJECT_SUMMARY.md management and requirements"
+alwaysApply: false
+globs: 
+  - "**/PROJECT_SUMMARY.md"
+version: "1.0.0"
+last_updated: "2025-11-09"
+---
+
+# PROJECT_SUMMARY.md Management
+
+## Requirement
+Always required, non-negotiable. Living source-of-truth for all project info.
+
+## Content
+Overview, goals, milestones, tasks, decisions, links, status, insights, learnings, progress updates
+
+## Maintenance
+Update atomically, use date tags (`## Updates [2024-01-15]`), consolidate related info, prompt before overwriting/deleting significant info
+
+## Validation
+If missing, create immediately using template. Ensure present and current before completing work.
+
+## Document Reference Requirement
+
+**CRITICAL**: When creating ANY new document/file in a project directory (action plans, guides, emails, status docs, etc.), it MUST be referenced in `PROJECT_SUMMARY.md`
+
+**Why**: AI reads `PROJECT_SUMMARY.md` first; unreferenced files may be missed in future sessions
+
+**Where to Reference**: Add to "Resources & References" section or relevant context section (e.g., "Action Plan: See `FILENAME.md`")
+
+**Format**: Use clear descriptive links: `[Description](./FILENAME.md)` or `See FILENAME.md for [purpose]`
+
+**Validation**: Before completing any task that created new files, verify they're referenced in `PROJECT_SUMMARY.md`
+
+**Exception**: Only code files, config files, and standard project files (package.json, etc.) don't need explicit references
+
+## File and Folder Updates
+- **Missing PROJECT_SUMMARY.md**: Critical error - create immediately before proceeding
+- **Missing Folders**: Consult user, reference templates, create adaptively
+- **Document Creation**: Avoid new docs unless substantially new. Consolidate into `PROJECT_SUMMARY.md` when in doubt.
+- **Updates**: Minimal diffs, consolidate with date tags, use kebab-case naming
+- **Confirmations**: Prompt before overwriting/deleting significant info, renames, deletions, cross-project moves
+
+## Standard Documentation Formats
+
+### Cross-Project Dependencies
+**Location**: Document in both projects' `PROJECT_SUMMARY.md` under `## Dependencies` section
+
+**Format**:
+```markdown
+## Dependencies [2024-01-15]
+
+### Outgoing Dependencies
+- **[Project Name]** - [Type: Data/Resource/Integration/API] - [Description] - [Status: Active/Blocked/Resolved]
+
+### Incoming Dependencies  
+- **[Project Name]** depends on this project for [Description] - [Status: Active/Blocked/Resolved]
+
+### Notes
+[Any additional context about dependencies]
+```
+
+**Update Process**: When dependency identified:
+1. Update both projects' `PROJECT_SUMMARY.md` with dependency info
+2. Update `PROJECTS_OVERVIEW.md` Cross-Project Themes & Dependencies section
+3. Date-stamp the dependency entry
+4. Update dashboard highlights if dependency affects project status
+
+### Consolidated Information Structure
+When consolidating scattered information into `PROJECT_SUMMARY.md`:
+
+**Format**: `## [Topic] [Date]`
+
+**Organization**:
+- Group by topic: Goals, Decisions, Learnings, Risks, Blockers, Insights, Updates
+- Date-stamp each entry
+- Maintain chronological order within sections
+- Preserve original context/source if relevant: `[Source: filename.md]`
+
+**Example Structure**:
+```markdown
+## Decisions [2024-01-15]
+
+### Technology Stack Decision [2024-01-10]
+[Decision details] - [Rationale] - [Source: tech-meeting-notes.md]
+
+### Pricing Model Decision [2024-01-12]
+[Decision details] - [Rationale] - [Source: business-planning.md]
+```
+
+---
+
+# End of PROJECT_SUMMARY.md Rules

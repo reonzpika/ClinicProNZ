@@ -1,9 +1,20 @@
 ---
-description: Debugging strategy: disciplined error handling. Use this file when a user present any kinds of errors.
-globs: 
+description: "Debugging strategy: disciplined error handling"
 alwaysApply: false
+globs: 
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.py"
+  - "**/*.java"
+version: "1.1.0"
+last_updated: "2025-11-09"
 ---
-# Rule: When user provides an error or stack trace…
+
+# Debugging Strategy
+
+## Rule: When user provides an error or stack trace…
 
 1. Do not rush to fix. Do not start with code changes.
 2. Instead, go through this 3-step debug triage process:
@@ -22,13 +33,15 @@ alwaysApply: false
   - Error is clearly diagnosed, or  
   - Fix is simple, safe, and reversible.
 
-# Output Style  
+## Output Style  
 - Bullet points only.  
 - No changes to codebase unless explicitly approved.  
-- Ask: “Want me to apply a fix or dig deeper?”
+- Ask: "Want me to apply a fix or dig deeper?"
 
-# Philosophy  
+## Philosophy  
 - Prioritise: understanding > acting.  
 - Often, the real fix is much simpler than expected.  
 
+---
 
+# End of Debugging Strategy

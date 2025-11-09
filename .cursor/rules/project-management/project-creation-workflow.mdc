@@ -1,0 +1,84 @@
+---
+description: "Complete workflow for creating new projects"
+alwaysApply: false
+globs: []
+version: "1.0.0"
+last_updated: "2025-11-09"
+dependencies:
+  - "project-management/template-system-rules.mdc"
+  - "project-management/project-summary-rules.mdc"
+  - "project-management/dashboard-sync-rules.mdc"
+---
+
+# Project Creation Workflow
+
+## Project Creation Steps
+
+1. **Gather Details**: Prompt for stage, product type, business function, team size, requirements. Infer if sparse, ask clarifying questions.
+2. **Create Directory**: Use kebab-case naming
+3. **Create PROJECT_SUMMARY.md**: IMMEDIATELY (mandatory)
+4. **Select Template**: Auto-select based on stage/type
+5. **Populate PROJECT_SUMMARY.md**: From template with required YAML
+6. **Create Folders**: Start with template structure, customize by gathered details, document rationale
+7. **Update Dashboard**: Add row to `PROJECTS_OVERVIEW.md`
+
+## Research and Data Gathering
+
+- **Follow communication principles**: Reference communication rules for user intent understanding guidelines
+- **Research proactively**: Conduct internet research to fill gaps, inform decisions
+- **When researching**: Indicate sources, date-stamp findings
+
+## Operational Loop
+
+1. Validate context - ask if unclear
+2. **Document Creation Check**: Before creating ANY document, verify it meets "When to CREATE Documents" criteria. If not, respond in chat instead.
+3. **PROJECT_SUMMARY.md Check**: Verify exists, create if missing (CRITICAL)
+4. **Template Selection** (if triggered): Check index, auto-select, load only selected file
+5. **Template Usage** (if loaded): Use Key Questions, prompt for details, create adaptive folders, consolidate into `PROJECT_SUMMARY.md`
+6. **Research**: If info incomplete, research proactively
+7. Validate metadata in `PROJECT_SUMMARY.md`
+8. Plan edits - prefer updating `PROJECT_SUMMARY.md` and `PROJECTS_OVERVIEW.md` directly
+9. Prompt before destructive changes
+10. Apply edits atomically, update metadata, date-stamp
+11. **MANDATORY Document Reference Check**: If ANY new documents/files were created in project directory:
+    - Verify they are referenced in `PROJECT_SUMMARY.md` (Resources & References section or relevant context)
+    - Add reference if missing (critical for AI context awareness)
+    - Exception: Code/config files don't need explicit references
+12. **MANDATORY Dashboard Update**: If `PROJECT_SUMMARY.md` was modified, update `PROJECTS_OVERVIEW.md`:
+    - Update index table (name, stage, owner, last_updated)
+    - Refresh highlights (achievements, blockers, risks)
+    - Update status counts
+    - **Update Schedule section** (extract and add any dates/appointments/deadlines mentioned)
+    - Update project details section (summary, key dates, status, risks)
+    - Update YAML `last_updated` and bump version
+    - Validate links
+13. Final validation: Ensure `PROJECT_SUMMARY.md` reflects all changes AND `PROJECTS_OVERVIEW.md` is synchronized
+14. Summarize changes (mention both files if both were updated, mention any new documents created)
+
+## Validation Checkpoints
+
+- **After Step 7**: Verify `PROJECT_SUMMARY.md` has required YAML fields (if exists)
+- **After Step 4**: Verify template was loaded correctly (if applicable)
+- **After Step 10**: Verify metadata updates are valid (semver format, ISO date, valid stage enum)
+- **After Step 11**: **CRITICAL CHECK** - If new documents/files were created:
+  - Verify they are referenced in `PROJECT_SUMMARY.md` (Resources & References or relevant section)
+  - Add reference if missing (prevents AI missing context in future sessions)
+- **After Step 12**: **CRITICAL CHECK** - If `PROJECT_SUMMARY.md` was modified, verify `PROJECTS_OVERVIEW.md` was updated:
+  - Check that index table reflects latest `last_updated` date
+  - Verify project details section matches `PROJECT_SUMMARY.md` summary/metadata
+  - Confirm highlights section includes recent changes
+  - Validate dashboard YAML `last_updated` matches or is newer than `PROJECT_SUMMARY.md`
+- **After Step 13**: Final validation - all changes reflected, no inconsistencies between files, dashboard synchronized, all new documents referenced
+
+## Decision Tree: Ambiguous Project Selection
+
+When user says "my project" or project name is unclear:
+1. Check `PROJECTS_OVERVIEW.md` Active Projects Index
+2. If 1 active project: Confirm project name with user ("Assuming you mean [Project Name]?")
+3. If multiple active projects: List projects with brief context (stage, last updated), ask user to specify
+4. If no active projects: Check archived projects, ask if reviving archived project
+5. If still unclear: Ask for project folder name or key identifier
+
+---
+
+# End of Project Creation Workflow

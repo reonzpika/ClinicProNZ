@@ -1,0 +1,523 @@
+---
+description: "Autonomous project updates from natural conversation"
+alwaysApply: true
+globs: []
+version: "1.0.0"
+last_updated: "2025-11-09"
+priority: CRITICAL
+---
+
+# Autonomous Project Updates
+
+## Principle
+
+**AI continuously extracts trackable information from conversation and updates project files in the background. User never needs to manually edit project files.**
+
+**Philosophy**: Documentation is a byproduct of conversation, not a separate activity.
+
+---
+
+## Conversational Triggers (Auto-Update)
+
+### 1. Task Completion Mentioned
+
+**User says**: "I finished implementing auth", "Built the landing page", "Completed the design", "Shipped to production"
+
+**AI action**: 
+- Add to PROJECT_SUMMARY.md under `## Progress [DATE]`
+- Check if it's a milestone → update milestone status
+- Update PROJECTS_OVERVIEW.md highlights
+- Celebrate the achievement in response
+
+**Format**:
+```markdown
+## Progress [2025-11-09]
+- ✅ Auth system implementation complete
+- ✅ Landing page built and deployed
+```
+
+---
+
+### 2. Blocker Mentioned
+
+**User says**: "Can't get the API working", "Stuck on deployment", "Waiting for approval", "Hit rate limits", "Dependencies not working"
+
+**AI action**:
+- Add to PROJECT_SUMMARY.md under `## Blockers [DATE]`
+- Update PROJECTS_OVERVIEW.md Top Blockers & Risks section
+- Suggest solutions or next steps in response
+- Track for follow-up
+
+**Format**:
+```markdown
+## Blockers [2025-11-09]
+- ⚠️ API rate limiting preventing bulk operations - investigating caching solution
+- ⚠️ Waiting for Medtech approval (emailed 2025-11-07, awaiting response)
+```
+
+---
+
+### 3. Decision Made
+
+**User says**: "I'm going with PostgreSQL", "Decided to target SMBs first", "Pricing will be $29/month", "Dropping feature X from MVP"
+
+**AI action**:
+- Add to PROJECT_SUMMARY.md under `## Decisions [DATE]`
+- Document rationale from conversation context
+- Update relevant sections (tech stack, target audience, pricing, scope)
+- Reference decision in future guidance
+
+**Format**:
+```markdown
+## Decisions [2025-11-09]
+
+### Technology Stack: PostgreSQL over MySQL
+**Rationale**: Better JSON support, more familiar to team, stronger ecosystem for our use case
+**Impact**: Database design, hosting requirements
+```
+
+---
+
+### 4. Date/Deadline/Meeting Mentioned
+
+**User says**: "Meeting on Tuesday", "Launch by end of month", "Demo next Friday at 2pm", "Grant due mid-December", "Meeting with mentor Nov 12"
+
+**AI action**:
+- Add to PROJECTS_OVERVIEW.md Schedule section (Upcoming Events table)
+- Extract: date, time, event, project context, event type
+- Set as upcoming event
+- Reminder in future conversations if approaching
+
+**Format** (in PROJECTS_OVERVIEW.md):
+```markdown
+| Date | Time | Event | Project | Type | Notes |
+|------|------|-------|---------|------|-------|
+| 2025-11-12 | 2:00pm | Demo session | MVP | Meeting | First user demo |
+```
+
+---
+
+### 5. Milestone Reached
+
+**User says**: "Got first paying customer!", "Reached 100 users", "MVP is live", "Validated with 10 customers", "Grant approved!"
+
+**AI action**:
+- Add to PROJECT_SUMMARY.md under `## Milestones [DATE]`
+- Update PROJECTS_OVERVIEW.md achievements
+- Update project stage if appropriate (e.g., Validation → Build when MVP starts)
+- Celebrate the win enthusiastically in response
+
+**Format**:
+```markdown
+## Milestones [2025-11-09]
+- 🎉 First paying customer: $29/month subscription
+- 🎉 MVP deployed to production
+- 🎉 Validation complete: 10 customer interviews, 8 positive responses
+```
+
+---
+
+### 6. Risk/Concern Raised
+
+**User says**: "Worried about competition", "Not sure if market is big enough", "Might run out of runway", "Team capacity is limited", "Competitor launched similar feature"
+
+**AI action**:
+- Add to PROJECT_SUMMARY.md under `## Risks [DATE]`
+- Flag in PROJECTS_OVERVIEW.md Top Blockers & Risks
+- Offer strategic guidance in response
+- Track severity (High/Medium/Low based on user's tone/context)
+
+**Format**:
+```markdown
+## Risks [2025-11-09]
+- 🔴 High: Competition from Heidi Health (freemium model, established brand)
+  - Mitigation: Focus on unique integration features, target underserved segment
+- 🟡 Medium: Limited runway (3 months remaining)
+  - Mitigation: Focus on revenue-generating features, consider grant funding
+```
+
+---
+
+### 7. Learning/Insight Shared
+
+**User says**: "Users don't actually want feature X", "Discovered the real problem is Y", "This approach isn't working", "Customer feedback showed...", "Failed experiment taught me..."
+
+**AI action**:
+- Add to PROJECT_SUMMARY.md under `## Learnings [DATE]`
+- Update strategy/roadmap if relevant
+- Reference in future guidance
+- Help pivot based on learning
+
+**Format**:
+```markdown
+## Learnings [2025-11-09]
+- Users care more about integration speed than UI polish
+  - Source: 5 customer interviews
+  - Action: Prioritizing API performance over design iteration
+- Cold email outreach has 2% response rate (too low)
+  - Pivoting to: Community engagement, content marketing
+```
+
+---
+
+### 8. Next Action Identified
+
+**User says**: "I need to talk to 5 more users", "Going to build the API next", "Will deploy tomorrow", "Planning to reach out to...", "Need to research..."
+
+**AI action**:
+- Add to PROJECT_SUMMARY.md under `## Next Actions [DATE]`
+- Track for follow-up in next session
+- Ask about progress in future conversations
+- Help prioritise if multiple actions
+
+**Format**:
+```markdown
+## Next Actions [2025-11-09]
+- [ ] Complete 5 additional customer validation interviews (target: end of week)
+- [ ] Build API endpoints for auth flow (started, 60% complete)
+- [ ] Deploy MVP to staging environment (scheduled: 2025-11-10)
+```
+
+---
+
+### 9. Stage Transition Indicators
+
+**AI detects patterns that suggest stage change**:
+
+**Ideation → Validation**: User starts talking to customers, validating assumptions
+**Validation → Build**: User says "starting to build", "MVP in progress", "coding started"
+**Build → Operational**: "Launched", "in production", "have paying customers"
+**Operational → Archived**: "Shutting down", "project complete", "no longer active"
+
+**AI action**:
+- Update `project_stage` in PROJECT_SUMMARY.md YAML
+- Update PROJECTS_OVERVIEW.md stage column
+- Mention stage transition explicitly: "I've moved your project to Build stage since you started coding"
+
+---
+
+## Update Confirmation Pattern
+
+### Default Behavior: Silent + Summary
+
+**During conversation**: Update silently in background, don't interrupt flow
+
+**At natural breaks** (every 5-10 exchanges): Brief mention
+```
+AI: "I've logged that blocker and the new decision on tech stack. [continues conversation]"
+```
+
+**End of session**: Comprehensive summary
+```
+AI: "Great session! Here's what I documented:
+
+📝 Project Updates (ClinicPro SaaS):
+✓ Added milestone: Auth system complete
+✓ Logged blocker: API rate limiting issue  
+✓ Recorded decision: Using PostgreSQL over MySQL
+✓ Added schedule: Demo meeting Friday 2pm
+✓ Flagged risk: Competition from Heidi Health
+
+Your project summary is current. Next time we chat, I'll have this context.
+
+What should we focus on next session?"
+```
+
+### Never Ask Permission Unless:
+
+❌ **Don't ask**: "Should I update the project?" (always yes)
+❌ **Don't ask**: "Can I add this to milestones?" (always yes)
+❌ **Don't ask**: "Would you like me to document this?" (always yes)
+
+✅ **DO ask**: "Should I archive this project?" (destructive)
+✅ **DO ask**: "Should I delete this milestone?" (destructive)
+✅ **DO ask**: "Should I change project owner to X?" (significant)
+
+**Principle**: Freely ADD, rarely ASK.
+
+---
+
+## When NOT to Update
+
+### ❌ Don't Update If:
+
+1. **Casual/Hypothetical Mentions**
+   - "I might try X someday"
+   - "What if we did Y?"
+   - "Thinking about Z" (unless strong commitment)
+
+2. **Questions (Not Statements)**
+   - "Should I build feature X?" → Not a decision yet
+   - "What do you think about Y?" → Exploring, not committing
+
+3. **Past Projects (Unless Explicitly Current)**
+   - "Last year I built..." → Historical, not current
+   - "I used to work on..." → Not active
+
+4. **Other People's Projects**
+   - "My friend is building X" → Not user's project
+
+5. **Unclear Context**
+   - Can't determine which project
+   - Can't determine if it's a fact or speculation
+   - Ambiguous whether action was taken or planned
+
+### ✅ DO Update When:
+
+- User states facts about current work
+- User reports completed actions
+- User makes clear decisions
+- User identifies concrete blockers
+- User mentions specific dates
+- User shares measurable progress
+
+---
+
+## Ambiguity Handling
+
+### If Unclear Which Project:
+
+**Pattern**:
+```
+User: "I finished the auth system"
+AI: [checks PROJECTS_OVERVIEW.md, sees 3 active projects]
+
+If 1 active project: Assume that one, update
+If multiple: "Great! Is that for ClinicPro or the GP Voices project?"
+```
+
+**Don't belabor it**: Quick clarification, move on.
+
+---
+
+### If Unclear If Decision vs Idea:
+
+**Default**: Treat as "under consideration" until user commits
+
+```
+User: "I'm thinking PostgreSQL might be better"
+AI adds: 
+## Decisions Under Consideration [2025-11-09]
+- PostgreSQL vs MySQL (leaning toward PostgreSQL)
+
+User later: "Yeah, going with PostgreSQL"
+AI moves to:
+## Decisions [2025-11-09]
+- PostgreSQL selected [rationale]
+```
+
+---
+
+### If Unclear If Task is Complete:
+
+**Ask briefly**:
+```
+User: "I worked on the landing page"
+AI: "Nice! Is that complete or still in progress?"
+User: "Still working on it"
+AI: Logs as in-progress, not milestone
+```
+
+---
+
+## Batch Updates Strategy
+
+### During Active Conversation:
+- Update after every 3-5 meaningful exchanges
+- Silent updates (no interruption)
+- Focus on conversation flow
+
+### At Natural Breaks:
+- Topic changes
+- User pauses for 30+ seconds
+- Transition between activities
+
+**Brief mention**: "Logged that decision. [continue conversation]"
+
+### End of Session:
+- Comprehensive summary
+- All updates listed
+- Next steps highlighted
+- Opportunity for user to correct
+
+---
+
+## File Update Mechanics
+
+### PROJECT_SUMMARY.md Updates:
+
+**Append, don't overwrite**:
+```markdown
+## Progress [2025-11-09]
+- Existing progress item
+- New item from today's conversation ← Added
+
+## Blockers [2025-11-09]
+- New blocker from conversation ← Added section if didn't exist
+```
+
+**Update metadata**:
+- `last_updated: "2025-11-09"`
+- Bump `version` (patch increment)
+
+**Consolidate when appropriate**:
+- If multiple similar items, group them
+- If resolving blockers, move to completed section
+- If decision supersedes old decision, note the change
+
+---
+
+### PROJECTS_OVERVIEW.md Updates:
+
+**Always sync when PROJECT_SUMMARY.md changes**:
+1. Update index table (last_updated, stage if changed)
+2. Update Highlights section (recent achievements, blockers)
+3. Update Schedule section (dates mentioned)
+4. Update Project Details section (summary, status)
+5. Update YAML metadata
+
+**Minimal diffs**: Only change what needs changing
+
+---
+
+## Error Recovery
+
+### If Wrong Project Updated:
+- Easy reversal (git history)
+- User will notice in session summary
+- Correct in next session: "Sorry, I updated wrong project. Fixing now."
+
+### If Misunderstood Information:
+- User will correct: "No, that's not what I meant"
+- AI: "Got it, updating. You meant [corrected version]?"
+- Update with correction immediately
+
+### If Over-Updating:
+- User can say: "Stop updating, just discuss"
+- AI: Switches to consultation mode, no background updates
+- Resume updates when user says "ok, back to normal"
+
+---
+
+## Proactive Behavior
+
+### Reference Past Context:
+
+```
+User: "I'm thinking about the pricing model"
+AI: "Good timing. Last week you mentioned $29/month was your target 
+     (I have that documented). What's making you revisit?"
+```
+
+### Connect Dots Across Sessions:
+
+```
+User: "Still stuck on that API issue"
+AI: "The rate limiting blocker from 3 days ago? Have you tried the 
+     caching approach we discussed?"
+```
+
+### Celebrate Progress:
+
+```
+User: "Deployed to production"
+AI: "HUGE milestone! 🎉 That's your first production deployment. 
+     I've logged this. How does it feel to be live?"
+```
+
+### Flag Inconsistencies:
+
+```
+User: "I'm going to add 5 more features to MVP"
+AI: "Hold on. Your MVP scope was 7 features, nearly done. Adding 5 more 
+     = scope creep and 3+ week delay. Is this really necessary, or can 
+     we ship MVP first then iterate?"
+```
+
+---
+
+## Success Metrics
+
+**System is working well when**:
+- User never says "update the project"
+- User never manually edits PROJECT_SUMMARY.md
+- Session summaries are accurate
+- User trusts AI captured everything important
+- Documentation stays current without effort
+
+**System needs tuning when**:
+- User frequently corrects misunderstandings
+- User says "you're logging too much" or "too little"
+- User manually edits files (AI missed something)
+- Session summaries are wrong
+
+---
+
+## Examples of Good Autonomous Behavior
+
+### Example 1: Task Completion
+
+```
+User: "Finally got the Medtech API integration working"
+AI: "Excellent! That was a major blocker. What was the issue?
+     [continues conversation, logs completion in background]
+     
+     [5 exchanges later]
+     Logged that win. You've now completed 8/10 MVP features."
+```
+
+### Example 2: Decision Making
+
+```
+User: "I've decided to focus on solo founders first, expand to teams later"
+AI: "Smart. Narrower target = clearer messaging. That changes your MVP scope—
+     you can drop team features for v1. Save 2 weeks. Want me to help 
+     re-prioritise?
+     
+     [logs decision with rationale]"
+```
+
+### Example 3: Blocker Identification
+
+```
+User: "I can't get anyone to respond to my cold emails"
+AI: "What's your response rate?
+     
+User: "Like 2%, sent 100 emails"
+AI: "That's too low to be viable. Cold email might not be your channel.
+     [logs blocker]
+     
+     Let's find a better acquisition channel. What else have you tried?"
+```
+
+### Example 4: Milestone + Stage Transition
+
+```
+User: "I launched the MVP yesterday!"
+AI: "🎉 MASSIVE milestone! Your first production launch. Congratulations!
+     
+     I've updated your project to Operational stage since you're now live.
+     
+     How's it going? Any users yet?"
+     
+[logs milestone, updates stage, syncs dashboard]
+```
+
+---
+
+## Integration with Other Rules
+
+### Works With:
+- **user-intent-understanding.mdc**: Understand what user means, then update accordingly
+- **communication-style.mdc**: Direct, action-oriented responses while updating
+- **advisory-role.mdc**: Challenge decisions while documenting them
+- **analysis-paralysis-detection.mdc**: Log when user is procrastinating, push to action
+- **document-creation.mdc**: Don't create new files, update existing PROJECT_SUMMARY.md
+
+### Overrides:
+- **Old pattern**: Wait for user to say "update project"
+- **New pattern**: Update automatically from conversation
+
+---
+
+# End of Autonomous Project Updates

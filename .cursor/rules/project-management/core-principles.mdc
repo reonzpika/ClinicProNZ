@@ -1,0 +1,79 @@
+---
+description: "Core principles for project management system"
+alwaysApply: false
+globs: 
+  - "**/project-management/**"
+version: "1.0.0"
+last_updated: "2025-11-09"
+---
+
+# Core Principles
+
+## Quick Reference - Critical Rules
+1. **PROJECT_SUMMARY.md REQUIRED**: Every project MUST have `PROJECT_SUMMARY.md` - create immediately if missing
+2. **Single Source of Truth**: `PROJECTS_OVERVIEW.md` = global dashboard; `PROJECT_SUMMARY.md` = project truth
+3. **MANDATORY SYNC**: If `PROJECT_SUMMARY.md` is updated, `PROJECTS_OVERVIEW.md` MUST be updated in the same task - NEVER skip this
+4. **Document Creation Timing**: Only create documents when task is complete OR future reference needed. During discussions/planning, respond in chat only - DO NOT create interim/working documents.
+5. **User Intent**: Assume users can't write good prompts - understand intent, clarify ambiguities, research proactively
+6. **Template-Driven**: Auto-select templates, load on-demand only, adapt folder structures
+7. **Update Dashboard**: After ANY `PROJECT_SUMMARY.md` change, update `PROJECTS_OVERVIEW.md` with highlights and status
+
+## Core Principles
+- **PROJECT_SUMMARY.md Mandatory**: Every project folder MUST have exactly one `PROJECT_SUMMARY.md` (living source-of-truth). Create immediately if missing.
+- **Single Source of Truth**: `PROJECTS_OVERVIEW.md` = global dashboard; `PROJECT_SUMMARY.md` = project canonical record
+- **Autonomous Updates**: AI continuously updates PROJECT_SUMMARY.md from natural conversation. User talks about project → AI extracts trackable info → Updates happen in background. User never needs to manually edit project files. Documentation is a byproduct of conversation, not a separate activity.
+- **Conversational Listening**: AI actively listens for: task completions, blockers, decisions, dates, milestones, risks, learnings, next actions. Extract and document automatically from natural conversation flow.
+- **User Intent Understanding**: Follow guidelines in communication rules - understand underlying intent, clarify ambiguities, research proactively, don't assume knowledge.
+- **Document Consolidation**: Avoid new documents unless substantially new. Consolidate into `PROJECT_SUMMARY.md` with date tags.
+- **Template-First**: Use `/Templates/` for new projects. Auto-select based on stage/type. Load on-demand only.
+- **Traceability**: Date-stamp all significant changes. Update `last_updated` and bump `version` (patch).
+
+## Rules of Thumb
+
+### When to Research vs. Ask User
+- **Research**: Industry standards, best practices, common patterns, typical approaches, market data
+- **Ask User**: Project-specific details, preferences, constraints, team capabilities, business context
+
+### When to Create New Document vs. Consolidate
+- **New Document**: Substantially new topic unrelated to existing content, different domain/function
+- **Consolidate**: Related information, updates, variations of same topic, refinements
+- **MANDATORY**: If creating new document, MUST reference it in `PROJECT_SUMMARY.md`
+
+### Template Selection Confidence
+- **High confidence (>80% keyword match)**: Auto-select immediately, explain reasoning briefly
+- **Medium confidence (50-80%)**: Auto-select but explain reasoning, offer to adjust if needed
+- **Low confidence (<50%)**: Research project type first, then select or generate, explain process
+
+### Dashboard Update Frequency
+- **Immediate**: Stage changes, major milestones, project creation/archiving, blocker identification, **schedule items** (dates/appointments/deadlines)
+- **Can Defer**: Minor updates can batch, update on next major change (unless user specifically requests immediate update)
+- **Schedule Updates**: Always update Schedule section immediately when dates/appointments/deadlines are mentioned - don't wait for other updates
+
+## Error Handling
+- **Missing PROJECT_SUMMARY.md**: Critical - create immediately using template
+- **Unclear user intent**: Follow communication guidelines - don't assume, use context-aware clarification, research context
+- **Ambiguous project selection**: Check PROJECTS_OVERVIEW.md, list options, ask user to specify
+- **Missing/invalid metadata**: Prompt for exact fields needed, don't assume users know requirements
+- **Conflicting information**: Surface conflict, ask for resolution, update `PROJECT_SUMMARY.md`
+- **Template not found**: Auto-generate template, update index
+- **Information scattered**: Consolidate into `PROJECT_SUMMARY.md` using standard formats
+- **Knowledge gaps**: Research proactively rather than asking user
+
+## Safeguards
+- Never work on project without `PROJECT_SUMMARY.md` - verify first, create if missing
+- Never create multiple sources of truth - `PROJECT_SUMMARY.md` is single source per project
+- Freely ADD information from conversation (not destructive, always safe)
+- Freely CONSOLIDATE information (safe operation, improves organization)
+- Only CONFIRM when truly destructive: deleting milestones, archiving projects, removing decisions, changing project ownership
+- Keep edits scoped - avoid cross-project edits unless explicit
+- Always update `PROJECT_SUMMARY.md` to reflect latest state - living document updated continuously from conversation
+- **NEVER update `PROJECT_SUMMARY.md` without updating `PROJECTS_OVERVIEW.md`** - these files must stay synchronized
+- **NEVER create new documents/files without referencing them in `PROJECT_SUMMARY.md`** - AI relies on PROJECT_SUMMARY.md for context
+- After conversations, verify: 
+  1. "Did I extract trackable information from conversation?"
+  2. "Did I update `PROJECT_SUMMARY.md`? If yes, did I also update `PROJECTS_OVERVIEW.md`?"
+  3. "Did I summarize updates at end of session?"
+
+---
+
+# End of Core Principles

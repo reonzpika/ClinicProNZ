@@ -1,0 +1,75 @@
+---
+description: "Document Creation Timing - When to create files vs respond in chat"
+alwaysApply: true
+globs: []
+version: "1.0.0"
+last_updated: "2025-11-09"
+priority: CRITICAL
+---
+
+# Document Creation Timing - CRITICAL RULE
+
+**PRINCIPLE**: Only create documents/files when a task is accomplished/finished OR when something needs to be saved for future reference. During discussions, planning, or iterative work, respond in chat only - DO NOT create interim/working documents.
+
+## When to CREATE Documents:
+
+✅ **Task Accomplished**: Work is complete and needs to be saved
+  - Example: Weekly LinkedIn post is finalized → create post file
+  - Example: Feature implementation complete → update PROJECT_SUMMARY.md
+  - Example: Meeting notes that need future reference → create notes file
+
+✅ **Future Reference Needed**: Information must be preserved for later use
+  - Example: Reusable workflow/template → create workflow document
+  - Example: Configuration that will be reused → save config file
+  - Example: Reference library (mentions, hashtags, etc.) → create reference doc
+
+✅ **User Explicitly Requests**: User asks to save/create a document
+  - Example: "Save this as a document" → create document
+  - Example: "Create a template for this" → create template
+
+## When NOT to Create Documents (Respond in Chat Instead):
+
+❌ **During Discussion**: User is asking questions, exploring options, getting feedback
+  - Example: "What do you think about X?" → Answer in chat, don't create doc
+  - Example: "Show me options" → List options in chat
+
+❌ **Planning/Iterating**: Still working through ideas, refining approach
+  - Example: "Let's improve this" → Discuss improvements in chat
+  - Example: "What should we change?" → Provide suggestions in chat
+
+❌ **Draft/Work-in-Progress**: Content is not finalized
+  - Example: "Draft a post" → Show draft in chat response
+  - Example: "Help me write X" → Write content in chat, don't save until finalized
+
+❌ **Interim Steps**: Part of a larger workflow, not the final output
+  - Example: Research findings during discussion → Present in chat
+  - Example: Options/alternatives → Show in chat
+
+## Decision Framework:
+
+Before creating ANY document, ask:
+1. **Is the task/work complete?** → If NO, respond in chat
+2. **Does this need to be saved for future reference?** → If NO, respond in chat
+3. **Did the user explicitly ask to save/create?** → If NO, respond in chat
+4. **Is this a final deliverable?** → If NO, respond in chat
+
+**Default Behavior**: When in doubt, respond in chat. Only create documents when clearly needed for future reference or when work is complete.
+
+## Examples:
+
+**❌ WRONG**: User says "What are some title options?" → AI creates `title-options.md`
+**✅ CORRECT**: User says "What are some title options?" → AI lists options in chat response
+
+**❌ WRONG**: User says "Help me draft a LinkedIn post" → AI immediately creates `linkedin-post-draft.md`
+**✅ CORRECT**: User says "Help me draft a LinkedIn post" → AI writes draft in chat. Only create file when user says "Save this" or "I'm done"
+
+**❌ WRONG**: User says "Let's improve the post" → AI creates `improvements.md`
+**✅ CORRECT**: User says "Let's improve the post" → AI discusses improvements in chat
+
+**✅ CORRECT**: User says "I'm done with this week's post" → AI creates final post file
+**✅ CORRECT**: User says "Create a reusable workflow" → AI creates workflow document
+**✅ CORRECT**: Task complete (e.g., post published) → AI updates PROJECT_SUMMARY.md
+
+---
+
+# End of Document Creation Rule
