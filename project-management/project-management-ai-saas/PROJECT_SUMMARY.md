@@ -1,9 +1,9 @@
-git ---
+---
 project_name: Project Management AI SaaS
 project_stage: Validation
 owner: TBD
-last_updated: "2025-11-06"
-version: "0.6.0"
+last_updated: "2025-11-08"
+version: "0.6.1"
 tags:
   - saas
   - ai
@@ -691,5 +691,47 @@ Milestone { id, project_id, title, description, target_date, status }
 
 ---
 
+## Project Management System Improvements [2025-11-08]
+
+**Context**: This SaaS product is based on the project management system currently in use (this repository). Improvements made to the underlying system will inform the SaaS product design.
+
+### Document Creation Timing Rule Added
+
+**Problem Identified**: AI was creating too many interim/working documents during discussions and planning phases, cluttering the workspace and interrupting conversation flow.
+
+**Solution Implemented**: Added "Document Creation Timing - CRITICAL RULE" to `.cursor/rules/master_rule.mdc`:
+
+**When to CREATE Documents**:
+- ✅ Task is accomplished/finished
+- ✅ Future reference needed (reusable workflows, templates, configs)
+- ✅ User explicitly requests document creation
+
+**When NOT to Create Documents** (respond in chat instead):
+- ❌ During discussion/exploration
+- ❌ Planning/iterating on ideas
+- ❌ Draft/work-in-progress content
+- ❌ Interim steps in workflow
+
+**Decision Framework**: Before creating any document, verify:
+1. Is the task/work complete? → If NO, respond in chat
+2. Does this need to be saved for future reference? → If NO, respond in chat
+3. Did the user explicitly ask to save/create? → If NO, respond in chat
+4. Is this a final deliverable? → If NO, respond in chat
+
+**Default Behavior**: When in doubt, respond in chat. Only create documents when clearly needed for future reference or when work is complete.
+
+**Impact on SaaS Product**: This rule will inform the SaaS product's document creation UX:
+- Users should be able to iterate/discuss without creating permanent artifacts
+- Only save/create documents when user explicitly requests or work is complete
+- Provide "draft mode" vs "saved document" distinction
+- Allow users to work in chat/conversation without forcing document creation
+
+**Files Updated**:
+- `.cursor/rules/master_rule.mdc` - Added Document Creation Timing section
+- Updated Operational Loop to include document creation check as step 3
+- Updated Quick Reference to include rule #4
+
+---
+
 *Project Created: [2025-11-06]*
-*Last Updated: [2025-11-06]*
+*Last Updated: [2025-11-08]*

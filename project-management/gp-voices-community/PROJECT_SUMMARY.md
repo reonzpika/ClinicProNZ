@@ -2,8 +2,8 @@
 project_name: GP Voices Community Site
 project_stage: Build
 owner: ClinicPro Engineering
-last_updated: "2025-01-15"
-version: "1.0.0"
+last_updated: "2025-11-08"
+version: "1.0.2"
 tags:
   - community
   - discourse
@@ -171,6 +171,9 @@ discourse-theme/gp-voices/
 ### Project Documentation
 - **Theme Documentation**: `docs/gp-voices-theme.md` — Theme scope, milestones, settings, file structure
 - **Setup Guide**: `docs/gp-voices-import-setup.md` — Step-by-step installation and configuration guide
+- **LinkedIn Weekly Workflow**: [`linkedin-weekly-workflow.md`](./linkedin-weekly-workflow.md) — Reusable workflow for creating weekly LinkedIn posts (includes template, mentions, hashtags, image prompt)
+- **LinkedIn Post Log**: [`linkedin-post-log.md`](./linkedin-post-log.md) — Track posts, metrics, and learnings
+- **Weekly Post Template**: [`weekly-linkedin-post-template.md`](./weekly-linkedin-post-template.md) — Template to copy each week
 
 ### External References
 - Discourse Developer Guides: https://meta.discourse.org/t/developer-guides-index/308036
@@ -208,6 +211,14 @@ discourse-theme/gp-voices/
 
 ## Updates
 
+### [2025-11-08] Weekly LinkedIn News Curation Started
+- Created weekly LinkedIn post curation workflow to test demand before building AI-powered weekly summaries
+- Weekly posts curate 3-5 recent NZ medical news items from BPAC, NZ Doctor, Pharmac, HQSC, Ministry of Health, Medical Council, RNZCGP
+- Format: Weekly Roundup (Format B) - posts test if GPs engage with curated news content
+- **Strategy**: Manual curation first to validate demand; automation only if manual posts prove successful (4+ weeks of good metrics)
+- **Priority Context**: Focus remains on revenue-generating projects (Medtech integration, R&D grant); LinkedIn content marketing is long-term play, not immediate revenue
+- Template created: `weekly-linkedin-post-2025-11-08.md` — ready for news items to be added
+
 ### [2025-01-15] Project Initialisation
 - Created project folder and PROJECT_SUMMARY.md
 - Reviewed existing theme implementation in `discourse-theme/gp-voices/`
@@ -216,5 +227,5 @@ discourse-theme/gp-voices/
 
 ---
 
-*Project Last Updated: [2025-01-15]*
+*Project Last Updated: [2025-11-08]*
 

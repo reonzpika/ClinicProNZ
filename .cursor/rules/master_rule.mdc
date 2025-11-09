@@ -10,9 +10,10 @@ globs: []
 1. **PROJECT_SUMMARY.md REQUIRED**: Every project MUST have `PROJECT_SUMMARY.md` - create immediately if missing
 2. **Single Source of Truth**: `PROJECTS_OVERVIEW.md` = global dashboard; `PROJECT_SUMMARY.md` = project truth
 3. **MANDATORY SYNC**: If `PROJECT_SUMMARY.md` is updated, `PROJECTS_OVERVIEW.md` MUST be updated in the same task - NEVER skip this
-4. **User Intent**: Assume users can't write good prompts - understand intent, clarify ambiguities, research proactively
-5. **Template-Driven**: Auto-select templates, load on-demand only, adapt folder structures
-6. **Update Dashboard**: After ANY `PROJECT_SUMMARY.md` change, update `PROJECTS_OVERVIEW.md` with highlights and status
+4. **Document Creation Timing**: Only create documents when task is complete OR future reference needed. During discussions/planning, respond in chat only - DO NOT create interim/working documents.
+5. **User Intent**: Assume users can't write good prompts - understand intent, clarify ambiguities, research proactively
+6. **Template-Driven**: Auto-select templates, load on-demand only, adapt folder structures
+7. **Update Dashboard**: After ANY `PROJECT_SUMMARY.md` change, update `PROJECTS_OVERVIEW.md` with highlights and status
 
 ## Core Principles
 - **PROJECT_SUMMARY.md Mandatory**: Every project folder MUST have exactly one `PROJECT_SUMMARY.md` (living source-of-truth). Create immediately if missing.
@@ -154,6 +155,66 @@ Each template must include: YAML (`template_type`, `keywords`, `stage`), Purpose
 - **Updates**: Minimal diffs, consolidate with date tags, use kebab-case naming
 - **Confirmations**: Prompt before overwriting/deleting significant info, renames, deletions, cross-project moves
 
+## Document Creation Timing - CRITICAL RULE
+
+**PRINCIPLE**: Only create documents/files when a task is accomplished/finished OR when something needs to be saved for future reference. During discussions, planning, or iterative work, respond in chat only - DO NOT create interim/working documents.
+
+### When to CREATE Documents:
+✅ **Task Accomplished**: Work is complete and needs to be saved
+  - Example: Weekly LinkedIn post is finalized → create post file
+  - Example: Feature implementation complete → update PROJECT_SUMMARY.md
+  - Example: Meeting notes that need future reference → create notes file
+
+✅ **Future Reference Needed**: Information must be preserved for later use
+  - Example: Reusable workflow/template → create workflow document
+  - Example: Configuration that will be reused → save config file
+  - Example: Reference library (mentions, hashtags, etc.) → create reference doc
+
+✅ **User Explicitly Requests**: User asks to save/create a document
+  - Example: "Save this as a document" → create document
+  - Example: "Create a template for this" → create template
+
+### When NOT to Create Documents (Respond in Chat Instead):
+❌ **During Discussion**: User is asking questions, exploring options, getting feedback
+  - Example: "What do you think about X?" → Answer in chat, don't create doc
+  - Example: "Show me options" → List options in chat
+
+❌ **Planning/Iterating**: Still working through ideas, refining approach
+  - Example: "Let's improve this" → Discuss improvements in chat
+  - Example: "What should we change?" → Provide suggestions in chat
+
+❌ **Draft/Work-in-Progress**: Content is not finalized
+  - Example: "Draft a post" → Show draft in chat response
+  - Example: "Help me write X" → Write content in chat, don't save until finalized
+
+❌ **Interim Steps**: Part of a larger workflow, not the final output
+  - Example: Research findings during discussion → Present in chat
+  - Example: Options/alternatives → Show in chat
+
+### Decision Framework:
+Before creating ANY document, ask:
+1. **Is the task/work complete?** → If NO, respond in chat
+2. **Does this need to be saved for future reference?** → If NO, respond in chat
+3. **Did the user explicitly ask to save/create?** → If NO, respond in chat
+4. **Is this a final deliverable?** → If NO, respond in chat
+
+**Default Behavior**: When in doubt, respond in chat. Only create documents when clearly needed for future reference or when work is complete.
+
+### Examples:
+
+**❌ WRONG**: User says "What are some title options?" → AI creates `title-options.md`
+**✅ CORRECT**: User says "What are some title options?" → AI lists options in chat response
+
+**❌ WRONG**: User says "Help me draft a LinkedIn post" → AI immediately creates `linkedin-post-draft.md`
+**✅ CORRECT**: User says "Help me draft a LinkedIn post" → AI writes draft in chat. Only create file when user says "Save this" or "I'm done"
+
+**❌ WRONG**: User says "Let's improve the post" → AI creates `improvements.md`
+**✅ CORRECT**: User says "Let's improve the post" → AI discusses improvements in chat
+
+**✅ CORRECT**: User says "I'm done with this week's post" → AI creates final post file
+**✅ CORRECT**: User says "Create a reusable workflow" → AI creates workflow document
+**✅ CORRECT**: Task complete (e.g., post published) → AI updates PROJECT_SUMMARY.md
+
 ## Consistency and Synchronization
 - **MANDATORY**: When `PROJECT_SUMMARY.md` is updated, `PROJECTS_OVERVIEW.md` MUST be updated in the same task/workflow
 - Update `last_updated` and bump `version` (patch) in both `PROJECT_SUMMARY.md` and `PROJECTS_OVERVIEW.md`
@@ -166,19 +227,20 @@ Each template must include: YAML (`template_type`, `keywords`, `stage`), Purpose
 ## Operational Loop
 1. Read Master Rule
 2. Validate context - ask if unclear
-3. **PROJECT_SUMMARY.md Check**: Verify exists, create if missing (CRITICAL)
-4. **Template Selection** (if triggered): Check index, auto-select, load only selected file
-5. **Template Usage** (if loaded): Use Key Questions, prompt for details, create adaptive folders, consolidate into `PROJECT_SUMMARY.md`
-6. **Research**: If info incomplete, research proactively
-7. Validate metadata in `PROJECT_SUMMARY.md`
-8. Plan edits - prefer updating `PROJECT_SUMMARY.md` and `PROJECTS_OVERVIEW.md` directly
-9. Prompt before destructive changes
-10. Apply edits atomically, update metadata, date-stamp
-11. **MANDATORY Document Reference Check**: If ANY new documents/files were created in project directory:
+3. **Document Creation Check**: Before creating ANY document, verify it meets "When to CREATE Documents" criteria. If not, respond in chat instead.
+4. **PROJECT_SUMMARY.md Check**: Verify exists, create if missing (CRITICAL)
+5. **Template Selection** (if triggered): Check index, auto-select, load only selected file
+6. **Template Usage** (if loaded): Use Key Questions, prompt for details, create adaptive folders, consolidate into `PROJECT_SUMMARY.md`
+7. **Research**: If info incomplete, research proactively
+8. Validate metadata in `PROJECT_SUMMARY.md`
+9. Plan edits - prefer updating `PROJECT_SUMMARY.md` and `PROJECTS_OVERVIEW.md` directly
+10. Prompt before destructive changes
+11. Apply edits atomically, update metadata, date-stamp
+12. **MANDATORY Document Reference Check**: If ANY new documents/files were created in project directory:
     - Verify they are referenced in `PROJECT_SUMMARY.md` (Resources & References section or relevant context)
     - Add reference if missing (critical for AI context awareness)
     - Exception: Code/config files don't need explicit references
-12. **MANDATORY Dashboard Update**: If `PROJECT_SUMMARY.md` was modified, update `PROJECTS_OVERVIEW.md`:
+13. **MANDATORY Dashboard Update**: If `PROJECT_SUMMARY.md` was modified, update `PROJECTS_OVERVIEW.md`:
     - Update index table (name, stage, owner, last_updated)
     - Refresh highlights (achievements, blockers, risks)
     - Update status counts
@@ -186,8 +248,8 @@ Each template must include: YAML (`template_type`, `keywords`, `stage`), Purpose
     - Update project details section (summary, key dates, status, risks)
     - Update YAML `last_updated` and bump version
     - Validate links
-13. Final validation: Ensure `PROJECT_SUMMARY.md` reflects all changes AND `PROJECTS_OVERVIEW.md` is synchronized
-14. Summarize changes (mention both files if both were updated, mention any new documents created)
+14. Final validation: Ensure `PROJECT_SUMMARY.md` reflects all changes AND `PROJECTS_OVERVIEW.md` is synchronized
+15. Summarize changes (mention both files if both were updated, mention any new documents created)
 
 ### Validation Checkpoints
 - **After Step 3**: Verify `PROJECT_SUMMARY.md` has required YAML fields (if exists)
