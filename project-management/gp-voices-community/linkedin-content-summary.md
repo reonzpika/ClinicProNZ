@@ -103,6 +103,20 @@
 - RNZCGP: https://www.rnzcgp.org.nz/
 - HINZ: https://www.hinz.org.nz/
 
+**News Gathering Method**:
+- **Google Alerts** (Weekly digests) - Set up 2025-11-10
+  
+  **NZ-Focused Alerts (5 alerts)**:
+  - Primary keywords: AI, healthtech, artificial intelligence, IT
+  - Secondary keywords: GP, general practice, hospital, primary care, Medtech, Indici
+  - Region filter: New Zealand
+  
+  **International GP AI Alerts (5 alerts)**:
+  - Topics: AI GP innovation, AI clinical tools (US/UK/AU), AI adoption studies, AI GP use cases, healthtech funding
+  - Region: Global (any region)
+  
+  **Settings**: Weekly email digests, "Only the best results" to reduce noise
+
 ---
 
 ## Next Steps
@@ -125,4 +139,4 @@
 
 ---
 
-*Last Updated: 2025-11-10*
+*Last Updated: 2025-11-10 - Google Alerts setup documented*
