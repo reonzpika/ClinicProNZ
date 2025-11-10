@@ -93,7 +93,7 @@ Adapt based on specific needs. Start minimal, add folders as project evolves.
 
 ---
 
-## Part 3: Documentation Management
+## Part 2: Documentation Management
 
 ### When to Create/Edit Files
 
@@ -194,7 +194,7 @@ tags:
 
 ---
 
-## Part 4: Technical Guidelines
+## Part 3: Technical Guidelines
 
 ### Code Changes
 
@@ -279,7 +279,7 @@ When user reports error:
 
 ---
 
-## Part 6: Project-Specific Rules
+## Part 5: Project-Specific Rules
 
 Projects can have their own rule files for unique requirements:
 - Create `[project-folder]/PROJECT_RULES.mdc`
