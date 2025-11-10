@@ -1,13 +1,45 @@
 ---
 description: "Core principles for project management system"
-alwaysApply: false
+alwaysApply: true
 globs: 
   - "**/project-management/**"
-version: "1.0.0"
-last_updated: "2025-11-09"
+version: "2.1.0"
+last_updated: "2025-11-10"
+priority: CRITICAL
 ---
 
 # Core Principles
+
+## 🚨 PROJECT NAME REGISTRY 🚨
+
+**CRITICAL: When user mentions these terms, they are referring to PROJECTS (not just code features).**
+
+**Active Projects** (each has PROJECT_SUMMARY.md that MUST be read before any work):
+
+| User Says | Project Folder | Action Required |
+|-----------|----------------|------------------|
+| "medtech" / "medtech integration" / "ALEX" | `medtech-integration` | Read `/project-management/medtech-integration/PROJECT_SUMMARY.md` |
+| "clinicpro" / "clinic pro" / "saas" | `clinicpro` | Read `/project-management/clinicpro/PROJECT_SUMMARY.md` |
+| "gp voices" / "community" / "discourse" | `gp-voices-community` | Read `/project-management/gp-voices-community/PROJECT_SUMMARY.md` |
+| "r&d grant" / "grant" / "callaghan" | `new_to_r&d_grant` | Read `/project-management/new_to_r&d_grant/PROJECT_SUMMARY.md` |
+| "project management saas" / "pm saas" | `project-management-ai-saas` | Read `/project-management/project-management-ai-saas/PROJECT_SUMMARY.md` |
+
+**Rule: Before touching ANY files related to these projects, you MUST:**
+1. Read `/project-management/PROJECTS_OVERVIEW.md` first
+2. Read the relevant `PROJECT_SUMMARY.md` second
+3. Understand project context (stage, goals, blockers, progress)
+4. THEN discuss or implement (based on user intent)
+
+**❌ NEVER do this:**
+- Hear "medtech" → immediately explore codebase
+- Hear "improve X" → immediately implement changes
+- Touch project files without reading PROJECT_SUMMARY.md first
+
+**✅ ALWAYS do this:**
+- Hear "medtech" → Read PROJECTS_OVERVIEW.md + medtech-integration/PROJECT_SUMMARY.md → Then discuss/act
+- Hear "work on X" → Read project context → Discuss scope/problems → Wait for approval → Then implement
+
+---
 
 ## Quick Reference - Critical Rules
 1. **PROJECT_SUMMARY.md REQUIRED**: Every project MUST have `PROJECT_SUMMARY.md` - create immediately if missing
@@ -15,14 +47,30 @@ last_updated: "2025-11-09"
 3. **MANDATORY SYNC**: If `PROJECT_SUMMARY.md` is updated, `PROJECTS_OVERVIEW.md` MUST be updated in the same task - NEVER skip this
 4. **Document Creation Timing**: Only create documents when task is complete OR future reference needed. During discussions/planning, respond in chat only - DO NOT create interim/working documents.
 5. **User Intent**: Assume users can't write good prompts - understand intent, clarify ambiguities, research proactively
-6. **Template-Driven**: Auto-select templates, load on-demand only, adapt folder structures
-7. **Update Dashboard**: After ANY `PROJECT_SUMMARY.md` change, update `PROJECTS_OVERVIEW.md` with highlights and status
+6. **DISCUSS-FIRST Default**: Unless explicitly told to implement/build, ALWAYS discuss before acting. "Work on", "improve", "enhance", "fix" = discuss first.
+7. **Template-Driven**: Auto-select templates, load on-demand only, adapt folder structures
+8. **Update Dashboard**: After ANY `PROJECT_SUMMARY.md` change, update `PROJECTS_OVERVIEW.md` with highlights and status
 
 ## Core Principles
+
+### Two-Area System
+**Area 1: Project Documentation** (`/project-management/` folder)
+- Files: `PROJECT_SUMMARY.md`, `PROJECTS_OVERVIEW.md`, major project files
+- Behavior: **Autonomous updates** (no approval needed)
+- Timing: After plans finalized OR after implementation complete
+- User never manually edits these files
+
+**Area 2: Codebase** (rest of repository)
+- Files: `.ts`, `.tsx`, `.py`, components, configs, etc.
+- Behavior: **Discuss → Suggest → Approve → Implement**
+- Timing: Only after user explicitly approves
+- After implementation → Update PROJECT_SUMMARY.md automatically
+
+### Core Principles
 - **PROJECT_SUMMARY.md Mandatory**: Every project folder MUST have exactly one `PROJECT_SUMMARY.md` (living source-of-truth). Create immediately if missing.
 - **Single Source of Truth**: `PROJECTS_OVERVIEW.md` = global dashboard; `PROJECT_SUMMARY.md` = project canonical record
-- **Autonomous Updates**: AI continuously updates PROJECT_SUMMARY.md from natural conversation. User talks about project → AI extracts trackable info → Updates happen in background. User never needs to manually edit project files. Documentation is a byproduct of conversation, not a separate activity.
-- **Conversational Listening**: AI actively listens for: task completions, blockers, decisions, dates, milestones, risks, learnings, next actions. Extract and document automatically from natural conversation flow.
+- **Autonomous Updates (After Completion)**: AI updates PROJECT_SUMMARY.md AFTER work is complete (plan finalized or implementation done). Updates happen after completion, not during discussion. Documentation is a byproduct of work completion.
+- **Update Timing**: Project docs update after: (1) Implementation complete, or (2) Plan finalized (even if deferred). NOT during active discussion.
 - **User Intent Understanding**: Follow guidelines in communication rules - understand underlying intent, clarify ambiguities, research proactively, don't assume knowledge.
 - **Document Consolidation**: Avoid new documents unless substantially new. Consolidate into `PROJECT_SUMMARY.md` with date tags.
 - **Template-First**: Use `/Templates/` for new projects. Auto-select based on stage/type. Load on-demand only.

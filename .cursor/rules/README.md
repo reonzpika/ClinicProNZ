@@ -1,8 +1,8 @@
 # Cursor AI Rules System
 
-**Version**: 2.1.0 (Autonomous + Modular)  
-**Last Updated**: 2025-11-09  
-**Architecture**: 15 modular files, conversation-driven, autonomous updates
+**Version**: 3.1.0 (Autonomous + Enforced + After-Completion)  
+**Last Updated**: 2025-11-10  
+**Architecture**: 15 modular files, conversation-driven, updates after completion, strict enforcement
 
 ---
 
@@ -19,12 +19,12 @@
 │   ├── nz-localization.mdc
 │   └── user-intent-understanding.mdc
 │
-├── communication/           [On-Demand]
-│   ├── advisory-role.mdc
-│   └── analysis-paralysis-detection.mdc
+├── communication/           [Mixed]
+│   ├── advisory-role.mdc ⭐ NOW ALWAYS LOADED
+│   └── analysis-paralysis-detection.mdc [On-Demand]
 │
-├── project-management/      [Context-Aware]
-│   ├── core-principles.mdc (updated with autonomy)
+├── project-management/      [Mixed]
+│   ├── core-principles.mdc ⭐ NOW ALWAYS LOADED (project registry + context priority)
 │   ├── project-summary-rules.mdc
 │   ├── dashboard-sync-rules.mdc
 │   ├── template-system-rules.mdc
@@ -41,14 +41,16 @@
 
 ### When Rules Load
 
-**Always (Every Session - Autonomous Core)**:
+**Always (Every Session - Enforced Core)**:
 - `core/system-context.mdc`
-- `core/current-task.mdc` (conversation-driven workflow)
+- `core/user-intent-understanding.mdc` ⭐ Vague query detection + DISCUSS vs EXECUTE intent
+- `core/current-task.mdc` (conversation-driven workflow with 🛑 STOP enforcement)
+- `communication/advisory-role.mdc` ⭐ NOW ALWAYS-LOADED - Discuss-first mindset
+- `project-management/core-principles.mdc` ⭐ NOW ALWAYS-LOADED - Project registry + context priority
 - `core/document-creation.mdc`
 - `core/autonomous-updates.mdc` ⭐ Continuous project updates
 - `core/communication-style.mdc`
 - `core/nz-localization.mdc`
-- `core/user-intent-understanding.mdc`
 
 **When Editing Specific Files**:
 - `PROJECT_SUMMARY.md` → `project-summary-rules.mdc`
@@ -58,39 +60,56 @@
 - `*.md, *.tsx, *.ts` → `nz-localization.mdc`
 
 **When Needed (Workflow)**:
-- Advisory conversations → `communication/advisory-role.mdc`
-- Vague requests → `communication/user-intent-understanding.mdc`
 - Procrastination detected → `communication/analysis-paralysis-detection.mdc`
+
+**Note**: advisory-role and user-intent-understanding are now always-loaded (v3.0)
 
 ---
 
 ## 🔑 Critical Rules
 
-### 1. Autonomous Updates (CONVERSATION-DRIVEN) ⭐ NEW
-**Rule**: AI continuously updates project files from natural conversation.
+### 1. Intent Detection (DISCUSS vs EXECUTE) ⭐ NEW in v3.0
+**Rule**: AI determines if user wants discussion or implementation BEFORE acting.
+
+**DISCUSS-FIRST triggers** (always discuss before implementing):
+- "work on", "improve", "enhance", "fix", "look at"
+- Any questions
+- Default: Unless explicitly told to implement, discuss first
+
+**EXECUTE triggers** (may proceed with implementation):
+- "implement [specific thing]", "build [specific thing]"
+- Must verify scope is clear
+
+**AI behavior**: Detects intent → Reads project context → Discusses (if DISCUSS-FIRST) or implements (if EXECUTE with clear scope)
+
+### 2. Autonomous Updates (AFTER COMPLETION) ⭐ Updated v3.1
+**Rule**: AI updates project documentation AFTER work is complete.
+
+**Two areas**:
+- **Project docs** (`/project-management/`): Autonomous updates, no approval needed
+- **Codebase**: Discuss → Suggest → Approve → Implement → Update docs
+
+**Update timing**:
+- After implementation complete → Update PROJECT_SUMMARY.md
+- After plan finalized (even if deferred) → Update PROJECT_SUMMARY.md
+- NOT during discussion → Stay in chat
 
 **User never needs to**:
 - Say "update the project"
 - Manually edit PROJECT_SUMMARY.md
 - Think about documentation
 
-**AI automatically**:
-- Listens for trackable information
-- Updates files in background
-- Syncs dashboard
-- Provides session summaries
-
-### 2. Document Creation Timing (ALWAYS ENFORCED)
+### 3. Document Creation Timing (ALWAYS ENFORCED)
 **Rule**: Only create files when task is complete OR needs future reference.
 
 **During discussions/planning**: Respond in chat only.
 
-### 3. PROJECT_SUMMARY.md ↔ PROJECTS_OVERVIEW.md Sync (MANDATORY)
+### 4. PROJECT_SUMMARY.md ↔ PROJECTS_OVERVIEW.md Sync (MANDATORY)
 **Rule**: When `PROJECT_SUMMARY.md` changes, `PROJECTS_OVERVIEW.md` MUST update in same task.
 
 **Happens automatically in autonomous mode.**
 
-### 4. Document References (CRITICAL)
+### 5. Document References (CRITICAL)
 **Rule**: New files in project directory MUST be referenced in `PROJECT_SUMMARY.md`.
 
 **Why**: AI reads `PROJECT_SUMMARY.md` first. Unreferenced files = missed in future.
@@ -135,10 +154,14 @@ Ask for feedback on decisions
 | Metric | Value |
 |--------|-------|
 | Total Files | 15 |
-| Total Lines | ~1,500 |
-| Always-Loaded (Autonomous Core) | 843 lines (~4,200 tokens) |
+| Total Lines | ~1,700 |
+| Always-Loaded (Enforced Core) | ~1,200 lines (~6,000 tokens) |
 | Context-Aware | Remaining lines (load on-demand) |
-| System Mode | Conversation-Driven (Autonomous) |
+| System Mode | Conversation-Driven (Autonomous + Enforced) |
+
+**v3.0 Changes**: Added 2 rules to always-loaded (advisory-role, core-principles) + strengthened enforcement with 🛑 STOP points and intent detection. Token cost increased by ~1,800 tokens but eliminates AI discretion and ensures correct behavior.
+
+**v3.1 Changes**: Changed autonomous updates from "during conversation" to "after completion". Code workflow: Discuss → Suggest → Approve → Implement → Update docs. Plans documented even if deferred. Explicit doc override phrases added.
 
 ---
 
@@ -149,16 +172,22 @@ Ask for feedback on decisions
 1. Ask: "What system am I in?"
    → Should know project management structure
 
-2. Ask: "What do you think about X?"
+2. Ask: "I want to work on medtech integration improvements"
+   → Should read PROJECTS_OVERVIEW.md + PROJECT_SUMMARY.md FIRST
+   → Should DISCUSS (not implement): "What specific problems?" "What needs improving?"
+   → Should NOT explore codebase or make changes without explicit approval
+
+3. Ask: "What do you think about X?"
    → Should respond in chat (not create file)
 
-3. Update PROJECT_SUMMARY.md
+4. Update PROJECT_SUMMARY.md
    → Should also update PROJECTS_OVERVIEW.md
 
-4. Show code error
-   → Should follow 3-step debug triage
+5. Ask: "Implement drag-and-drop in medtech widget"
+   → Should read project context first
+   → Should proceed with implementation (EXECUTE trigger with clear scope)
 
-5. Create new project
+6. Create new project
    → Should follow complete workflow
 ```
 
@@ -293,9 +322,9 @@ This rule system is a **working prototype** for your Project Management AI SaaS:
 
 ---
 
-**Version**: 2.0.0  
+**Version**: 3.1.0  
 **Status**: ✅ Production Ready  
-**Last Validated**: 2025-11-09
+**Last Validated**: 2025-11-10
 
 ---
 

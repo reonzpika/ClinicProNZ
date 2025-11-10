@@ -1,38 +1,69 @@
 # Autonomous Project Management System
 
-**Version**: 2.1.0 (Conversation-Driven)  
-**Last Updated**: 2025-11-09  
+**Version**: 3.1.0 (After-Completion Updates)  
+**Last Updated**: 2025-11-10  
 **Status**: ✅ Active
 
 ---
 
 ## What Changed
 
-### From Command-Driven → Conversation-Driven
+### Version History
 
-**Old Pattern (Manual)**:
+**v1.0 (Manual)**:
+- User must manually update PROJECT_SUMMARY.md
+- AI suggests updates but doesn't execute
+
+**v2.0 (Autonomous - During Conversation)**:
+- AI updates files during conversation
+- Continuous background updates
+- Issue: Updated during discussion, not after completion
+
+**v3.0 (Enforced)**:
+- Added intent detection (DISCUSS vs EXECUTE)
+- Added 🛑 STOP enforcement
+- Project name registry
+- Advisory role always-loaded
+
+**v3.1 (After-Completion) - CURRENT**:
+- Updates happen AFTER work complete, not during
+- Two-area system: Project docs (autonomous) vs Code (discuss → approve → implement)
+- Plans documented even if deferred
+- Explicit doc override phrases
+
+### Current Pattern (v3.1)
+
+**Code Improvement Request**:
 ```
-User: "I finished implementing auth"
-AI: "Great! Would you like me to update the project?"
-User: "Yes, please update PROJECT_SUMMARY.md"
-AI: Updates files
+User: "I want to work on medtech UI improvement"
+AI: [Reads project context]
+    "Let's discuss what needs improving. What specific problems?"
+    [Discussion in chat - NO file updates yet]
+    
+User: "Upload is confusing, needs drag-drop"
+AI: "I can add drag-and-drop with visual feedback. Would you like me to implement?"
+
+User: "Yes, let's do it"
+AI: [Implements code changes]
+    [After complete: Updates PROJECT_SUMMARY.md]
+    
+    "✓ Implemented drag-and-drop
+     ✓ Updated project summary"
 ```
 
-**New Pattern (Autonomous)**:
+**Plan but Defer Implementation**:
 ```
-User: "I finished implementing auth"
-AI: "Excellent work! That was a critical milestone. How did it go?
+User: "Let's plan the mobile app improvements for next week"
+AI: [Discusses approach]
+    "Here's what we agreed:
+     1. Responsive layout
+     2. Touch gestures
+     3. Offline support"
      
-     [Background: Logs completion in PROJECT_SUMMARY.md, syncs dashboard]
-     
-     What's next on your list?"
-
-[Later, at session end]
-AI: "📝 Project Updates (ClinicPro SaaS):
-     ✓ Added milestone: Auth system complete
-     ✓ Updated project progress (8/10 MVP features done)
-     
-     Your project summary is current."
+User: "Perfect, but let's do this next week"
+AI: [Updates PROJECT_SUMMARY.md with plan]
+    "✓ Documented plan in project summary
+     Implementation scheduled: Next week"
 ```
 
 ---
@@ -127,20 +158,23 @@ What should we focus on next session?
 
 ---
 
-## Always-Loaded Rules (843 lines, ~4,200 tokens)
+## Always-Loaded Rules (~1,200 lines, ~6,000 tokens)
 
 ```
-Core Rules (7 files):
+Core Rules (9 files - 2 new in v3.0):
 ├── system-context.mdc (22 lines)
-├── current-task.mdc (111 lines) - Conversation-driven workflow
-├── document-creation.mdc (75 lines)
-├── autonomous-updates.mdc (523 lines) ⭐ NEW - Conversational triggers
+├── user-intent-understanding.mdc (140 lines) ⭐ Enhanced with intent detection
+├── current-task.mdc (160 lines) ⭐ Enhanced with 🛑 STOP enforcement
+├── advisory-role.mdc (46 lines) ⭐ NOW ALWAYS-LOADED - Discuss-first mindset
+├── core-principles.mdc (110 lines) ⭐ NOW ALWAYS-LOADED - Project registry
+├── document-creation.mdc (163 lines)
+├── autonomous-updates.mdc (523 lines) - Conversational triggers
 ├── communication-style.mdc (33 lines)
-├── nz-localization.mdc (19 lines)
-└── user-intent-understanding.mdc (60 lines)
+└── nz-localization.mdc (19 lines)
 ```
 
-**Token Cost**: ~4,200 tokens (excellent efficiency for autonomous system)
+**Token Cost**: ~6,000 tokens (increased by ~1,800 tokens in v3.0)
+**Trade-off**: Higher token cost, but eliminates AI discretion and ensures correct behavior
 
 ---
 
@@ -386,12 +420,19 @@ Show value ("Look what I captured for you"). Build trust and transparency.
 
 ## Implementation Status
 
-**✅ Complete**:
-- Autonomous updates rule created (523 lines)
-- Core principles updated with autonomy
-- Conversation-driven workflow implemented
-- Communication fundamentals always-loaded
-- Session-end summaries specified
+**✅ Complete (v3.1)**:
+- After-completion updates (not during discussion)
+- Two-area system (project docs vs codebase)
+- Code workflow: Discuss → Suggest → Approve → Implement → Update docs
+- Plans documented even if implementation deferred
+- Explicit doc override phrases ("update project summary", "log this decision")
+- Intent detection (DISCUSS vs EXECUTE)
+- 🛑 STOP enforcement at critical checkpoints
+- Project name registry in core-principles
+- Advisory role always-loaded (discuss-first mindset)
+- Core principles always-loaded (project context priority)
+- Strengthened vague query detection
+- Session-end summaries
 
 **⏳ Next Phase** (Future):
 - Context retention across sessions
