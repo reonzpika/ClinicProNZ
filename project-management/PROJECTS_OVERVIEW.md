@@ -2,15 +2,72 @@
 project_name: Projects Overview - Mission Control
 project_stage: Operational
 owner: AI Assistant
-last_updated: "2025-11-09"
-version: "1.0.5"
+last_updated: "2025-11-10"
+version: "4.0.0"
 tags:
   - dashboard
   - portfolio
   - mission-control
+
+# Project Keyword Registry - AI uses this to match queries to projects
+project_keywords:
+  medtech-integration:
+    keywords: ["medtech", "ALEX", "integration", "medical records", "clinical images", "widget"]
+    description: "Medical record integration with Medtech Evolution via ALEX API"
+  clinicpro:
+    keywords: ["clinicpro", "saas", "clinic", "scribing", "consultation notes"]
+    description: "Main SaaS product for GP medical scribing"
+  gp-voices-community:
+    keywords: ["community", "gp voices", "discourse", "forum", "theme"]
+    description: "GP community platform with Discourse"
+  new_to_r&d_grant:
+    keywords: ["grant", "r&d", "callaghan", "funding", "clinical llm"]
+    description: "R&D grant application for NZ clinical LLM"
+  project-management-ai-saas:
+    keywords: ["pm saas", "project management", "ai pm", "conversation", "autonomous"]
+    description: "Conversation-driven AI project management SaaS"
 ---
 
 # Projects Overview - Mission Control
+
+## 🤖 AI Navigation Instructions
+
+**You just read this overview because `mandatory-overview-first.mdc` told you to. Good.**
+
+Now determine what to do next:
+
+### 1. Match Query to Project
+
+Check the `project_keywords` in YAML frontmatter above:
+- **Scan user query** for keyword matches against all projects
+- **If EXACT MATCH found** → Go to Step 2
+- **If MULTIPLE MATCHES** → Ask user: "Which project: [list matching options]?"
+- **If NO MATCH** → Go to Step 3
+
+### 2. Load Project Context
+
+If project keyword matched:
+- Read `/project-management/[project-folder]/PROJECT_SUMMARY.md`
+- Opening PROJECT_SUMMARY.md will auto-load `project-work-rules.mdc`
+- Now you have full context - follow the workflow in that rule file
+
+### 3. Is This a New Project?
+
+If no keywords matched:
+- Ask: "I don't see an existing project for this. Is this:
+  - (A) A new project to create?
+  - (B) Related to an existing project listed below?
+  - (C) A general question (not project-related)?"
+
+### 4. General Questions (Not Project-Related)
+
+If user query is clearly not about projects:
+- Answer the question directly and helpfully
+- Keep response focused
+- **Then briefly mention**: "This might be relevant to [project name] - want to discuss in that context?"
+- Don't force project context where it doesn't naturally fit
+
+---
 
 **Purpose**: This document serves as the central "mission control" dashboard providing an immediate snapshot of all ongoing projects. It enables quick onboarding, status updates, high-level planning, and cross-project visibility for both humans and AI.
 

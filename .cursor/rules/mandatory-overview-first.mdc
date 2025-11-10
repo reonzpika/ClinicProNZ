@@ -1,0 +1,47 @@
+---
+description: "Mandatory first action - read overview before anything"
+alwaysApply: true
+globs: []
+version: "4.0.0"
+priority: CRITICAL
+load_order: 0
+last_updated: "2025-11-10"
+---
+
+# Mandatory First Action
+
+Before responding to any user query, you must:
+
+1. **Read `/project-management/PROJECTS_OVERVIEW.md`**
+2. **Follow the "AI Navigation Instructions" at the top of that file**
+3. **Do not search codebase, read code files, or make assumptions**
+
+The overview file contains all navigation logic and project keywords.
+
+---
+
+## Why This Rule Exists
+
+Users expect AI to understand project context before acting. Reading the overview first ensures:
+- You know which projects exist
+- You understand project relationships
+- You match queries to the right project
+- You ask clarifying questions when needed
+
+---
+
+## No Exceptions
+
+Even for seemingly non-project queries, read the overview first. The navigation instructions in that file tell you what to do for:
+- Project-related queries
+- New project requests
+- General questions
+- Ambiguous requests
+
+---
+
+**Trust the overview. It's your roadmap.**
+
+---
+
+# End of Mandatory First Action
