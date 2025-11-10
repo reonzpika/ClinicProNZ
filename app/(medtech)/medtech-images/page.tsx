@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Medtech Images Widget - Desktop Page
  *
@@ -24,8 +26,6 @@ import { useCommit } from '@/src/medtech/images-widget/hooks/useCommit';
 import { useImageWidgetStore } from '@/src/medtech/images-widget/stores/imageWidgetStore';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
-
-'use client';
 
 // Force dynamic rendering (required for useSearchParams)
 export const dynamic = 'force-dynamic';

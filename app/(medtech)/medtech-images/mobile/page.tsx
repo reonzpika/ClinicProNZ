@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Medtech Images Widget - Mobile Page
  *
@@ -12,8 +14,6 @@ import { Suspense, useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
-
-'use client';
 
 // Force dynamic rendering (required for useSearchParams)
 export const dynamic = 'force-dynamic';
