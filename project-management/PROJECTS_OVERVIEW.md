@@ -48,8 +48,57 @@ Check the `project_keywords` in YAML frontmatter above:
 
 If project keyword matched:
 - Read `/project-management/[project-folder]/PROJECT_SUMMARY.md`
-- Opening PROJECT_SUMMARY.md will auto-load `project-work-rules.mdc`
-- Now you have full context - follow the workflow in that rule file
+- Now you have full context - follow the workflow rules below
+
+#### Project Work Rules
+
+**Context**: You've loaded a project context. These rules guide how to work on projects.
+
+**The Pattern: Discuss → Approve → Implement → Update**
+
+**Step 1: Discuss First**
+- User says "work on X", "improve Y", "fix Z" → DISCUSS, don't implement yet
+- Ask about current problems, goals, priorities
+- Understand scope and constraints
+- Stay in chat, don't touch code yet
+
+**Step 2: Suggest Approach**
+- When plan is clear, suggest specific implementation
+- Explain trade-offs if relevant
+- Keep it concise - 2-3 options max
+
+**Step 3: Wait for Approval**
+- User says "yes, do it", "go ahead", "implement" → Proceed
+- User says "let me think" or asks more questions → Back to discussion
+- Don't implement on assumption
+
+**Step 4: Implement Changes**
+- Make the agreed changes
+- Stay focused on approved plan
+- Don't add extras without asking
+
+**Step 5: Update Documentation**
+- After implementation complete → Update PROJECT_SUMMARY.md
+- Log what was done, decisions made, learnings
+- Update PROJECTS_OVERVIEW.md if significant
+
+**Exception: Explicit Instructions**
+
+If user says "implement X", "build Y", "create Z" with clear specific scope:
+- Read project context first
+- Briefly confirm what you'll do
+- Proceed with implementation
+- Update docs after completion
+
+**Validation Checklist**
+
+Before ending session, verify:
+- ✅ Did I discuss before implementing code changes?
+- ✅ Did I wait for approval before implementing?
+- ✅ Did I update PROJECT_SUMMARY.md after completion?
+- ✅ If PROJECT_SUMMARY.md changed, did I update PROJECTS_OVERVIEW.md?
+- ✅ Did I avoid creating interim documents during discussions?
+- ✅ Are all new files referenced in PROJECT_SUMMARY.md?
 
 ### 3. Is This a New Project?
 
