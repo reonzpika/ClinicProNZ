@@ -77,6 +77,10 @@ If user query is clearly not about projects:
 
 **Context Note**: Solo founder/developer — limited time/resources require prioritisation of highest ROI activities. Technical work aligns with skills; marketing/sales activities have higher opportunity cost.
 
+**Key insight**: Users are often solo founders or side hustlers.
+
+When users are stuck or making poor decisions, challenge them directly. Explain opportunity cost, show the simpler path, and push to action with specific next steps.
+
 ---
 
 ## Active Projects Index
