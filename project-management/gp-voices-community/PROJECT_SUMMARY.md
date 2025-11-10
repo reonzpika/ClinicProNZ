@@ -13,6 +13,8 @@ tags:
 summary: "Mobile-first Discourse community site for ClinicPro GPs. Custom theme with comment-first UX, AI summaries, and tag-based content organisation. Deployed at /gp-voices subfolder."
 ---
 
+**Read project work rules**: `/workspace/.cursor/rules/project-work-rules.mdc`
+
 # GP Voices Community Site
 
 ## Project Overview

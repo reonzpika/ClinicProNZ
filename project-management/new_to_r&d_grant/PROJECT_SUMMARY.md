@@ -56,6 +56,8 @@ risks:
     status: identified
 ---
 
+**Read project work rules**: `/workspace/.cursor/rules/project-work-rules.mdc`
+
 # Project Overview: NZ-Sovereign Clinical LLM for GP Workflow
 
 **Project Name:** ClinicPro: NZ-Sovereign Clinical LLM (assist-only)  

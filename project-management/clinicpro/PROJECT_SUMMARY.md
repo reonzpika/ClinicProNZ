@@ -13,6 +13,8 @@ tags:
 summary: "Full-stack Next.js SaaS application providing AI-assisted medical scribing for New Zealand GPs. Includes consultation note generation, clinical image analysis, dual recording (desktop/mobile) with transcription, real-time updates, and role-based access control."
 ---
 
+**Read project work rules**: `/workspace/.cursor/rules/project-work-rules.mdc`
+
 # ClinicPro SaaS
 
 ## Project Overview
