@@ -13,6 +13,8 @@ tags:
 summary: "Clinical images widget integration with Medtech Evolution/Medtech32 via ALEX API. Enables GPs to capture/upload photos from within Medtech, saved back to patient encounters via FHIR API."
 ---
 
+**Read project work rules**: `/workspace/.cursor/rules/project-work-rules.mdc`
+
 # Medtech ALEX Integration
 
 ## Project Overview

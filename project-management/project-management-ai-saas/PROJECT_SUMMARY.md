@@ -16,6 +16,8 @@ tags:
 summary: "Conversation-driven AI project management for solo founders. Documentation happens automatically from natural conversation. Working prototype (modular rule system) now operational and being dogfooded."
 ---
 
+**Read project work rules**: `/workspace/.cursor/rules/project-work-rules.mdc`
+
 # Project Management AI SaaS
 
 ## Project Overview
