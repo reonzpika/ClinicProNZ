@@ -24,6 +24,32 @@ Before using ANY file creation/editing tool (write, edit_file, search_replace, e
 
 **PRINCIPLE**: Only create or edit documents/files when a task is accomplished/finished OR when something needs to be saved for future reference. During discussions, planning, or iterative work, respond in chat only - DO NOT create or edit interim/working documents.
 
+**🛑 MANDATORY: USE THINKING BLOCK BEFORE FILE OPERATIONS 🛑**
+
+Before ANY file creation/editing tool call, you MUST:
+1. Open a thinking block
+2. Explicitly answer all 5 checklist questions
+3. Write out your reasoning  
+4. Only proceed if ALL answers pass
+
+**🚨 RED FLAG: MULTIPLE FILES IN ONE SESSION 🚨**
+
+If you're about to create FILE #2 or more in a single conversation:
+- STOP IMMEDIATELY - This is likely a violation
+- Ask yourself: "Am I documenting an active process instead of a completed task?"
+- Pattern: Creating multiple docs during testing/exploration = WRONG
+- Correct: Do the work, report in chat, create ONE summary doc when complete
+- Exception: Only create multiple files if user explicitly requests each one separately
+
+**⚠️ SPECIAL CASE: TESTING & EXPLORATION MODE ⚠️**
+
+When user says "test X", "explore Y", "investigate Z":
+- DO NOT create test reports, status docs, or working documents
+- DO the testing/exploration and REPORT results in chat
+- ONLY create docs when user says "update project summary" or "save this"
+- Example violation: User says "test medtech integration" → You create 8 status documents ❌
+- Correct: User says "test medtech integration" → You test, report in chat, wait for "update docs" ✅
+
 **⚠️ COMMON VIOLATIONS TO AVOID:**
 - Vague/exploratory queries ("Title: Nov Week 3", "What is X?") → **ASK CLARIFYING QUESTIONS FIRST**, then respond in chat only
 - Single words or short phrases without context → **ASK CLARIFYING QUESTIONS FIRST**
