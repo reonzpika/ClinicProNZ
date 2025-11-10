@@ -103,6 +103,14 @@
 - RNZCGP: https://www.rnzcgp.org.nz/
 - HINZ: https://www.hinz.org.nz/
 
+**News Gathering Method**:
+- **Google Alerts** (Weekly digests) - Set up 2025-11-10
+  - Primary keywords: AI, healthtech, artificial intelligence, IT
+  - Secondary keywords: GP, general practice, hospital, primary care, Medtech, Indici
+  - All alerts filtered to "New Zealand" region
+  - Delivery: Weekly email digests
+  - Settings: "Only the best results" to reduce noise
+
 ---
 
 ## Next Steps
@@ -125,4 +133,4 @@
 
 ---
 
-*Last Updated: 2025-11-10*
+*Last Updated: 2025-11-10 - Google Alerts setup documented*

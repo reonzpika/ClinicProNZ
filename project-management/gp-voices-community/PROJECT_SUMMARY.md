@@ -3,7 +3,7 @@ project_name: GP Voices Community Site
 project_stage: Build
 owner: ClinicPro Engineering
 last_updated: "2025-11-10"
-version: "1.0.3"
+version: "1.0.4"
 tags:
   - community
   - discourse
@@ -220,6 +220,7 @@ discourse-theme/gp-voices/
 - **Validation Criteria Established**: 4-6 week test; success = GP/practice manager engagement (not vendor engagement)
 - **Next Steps**: Collect news for Week 2 post; analyse follower/commenter profiles (GP vs vendor ratio)
 - **Decision Rule**: If GP engagement proven after 4-6 weeks → build automation. If not → stop weekly posts.
+- **Google Alerts Setup**: Configured weekly email digests for AI/healthtech news in NZ medical area (primary: AI, healthtech, IT; secondary: GP, hospital, primary care, Medtech, Indici)
 - See `linkedin-content-summary.md` for full validation strategy and criteria
 
 ### [2025-11-08] Weekly LinkedIn News Curation Started
@@ -238,5 +239,5 @@ discourse-theme/gp-voices/
 
 ---
 
-*Project Last Updated: [2025-11-10]*
+*Project Last Updated: [2025-11-10] - Google Alerts setup documented*
 
