@@ -14,28 +14,28 @@
  * - MEDTECH_CLIENT_ID, MEDTECH_CLIENT_SECRET, MEDTECH_TENANT_ID, MEDTECH_API_SCOPE
  */
 
-import { oauthTokenService } from './oauth-token-service'
-import { generateCorrelationId } from './correlation-id'
+import { generateCorrelationId } from './correlation-id';
+import { oauthTokenService } from './oauth-token-service';
 
-interface AlexApiOptions {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
-  body?: unknown
-  correlationId?: string
-  headers?: Record<string, string>
-  retryOn401?: boolean
-}
+type AlexApiOptions = {
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  body?: unknown;
+  correlationId?: string;
+  headers?: Record<string, string>;
+  retryOn401?: boolean;
+};
 
-interface FhirOperationOutcome {
-  resourceType: 'OperationOutcome'
+type FhirOperationOutcome = {
+  resourceType: 'OperationOutcome';
   issue: Array<{
-    severity: 'fatal' | 'error' | 'warning' | 'information'
-    code: string
-    diagnostics?: string
+    severity: 'fatal' | 'error' | 'warning' | 'information';
+    code: string;
+    diagnostics?: string;
     details?: {
-      text?: string
-    }
-  }>
-}
+      text?: string;
+    };
+  }>;
+};
 
 export class AlexApiError extends Error {
   constructor(
@@ -44,8 +44,8 @@ export class AlexApiError extends Error {
     public correlationId: string,
     public operationOutcome?: FhirOperationOutcome,
   ) {
-    super(message)
-    this.name = 'AlexApiError'
+    super(message);
+    this.name = 'AlexApiError';
   }
 }
 
@@ -54,22 +54,22 @@ class AlexApiClient {
    * Get base URL (lazy, only when needed)
    */
   private getBaseUrl(): string {
-    const baseUrl = process.env.MEDTECH_API_BASE_URL
+    const baseUrl = process.env.MEDTECH_API_BASE_URL;
     if (!baseUrl) {
-      throw new Error('MEDTECH_API_BASE_URL environment variable not set')
+      throw new Error('MEDTECH_API_BASE_URL environment variable not set');
     }
-    return baseUrl
+    return baseUrl;
   }
 
   /**
    * Get facility ID (lazy, only when needed)
    */
   private getFacilityId(): string {
-    const facilityId = process.env.MEDTECH_FACILITY_ID
+    const facilityId = process.env.MEDTECH_FACILITY_ID;
     if (!facilityId) {
-      throw new Error('MEDTECH_FACILITY_ID environment variable not set')
+      throw new Error('MEDTECH_FACILITY_ID environment variable not set');
     }
-    return facilityId
+    return facilityId;
   }
 
   /**
@@ -85,16 +85,16 @@ class AlexApiClient {
       correlationId = generateCorrelationId(),
       headers: customHeaders = {},
       retryOn401 = true,
-    } = options
+    } = options;
 
-    const startTime = Date.now()
-    const baseUrl = this.getBaseUrl()
-    const facilityId = this.getFacilityId()
-    const url = `${baseUrl}${endpoint}`
+    const startTime = Date.now();
+    const baseUrl = this.getBaseUrl();
+    const facilityId = this.getFacilityId();
+    const url = `${baseUrl}${endpoint}`;
 
     try {
       // Get access token (cached or fresh)
-      const accessToken = await oauthTokenService.getAccessToken()
+      const accessToken = await oauthTokenService.getAccessToken();
 
       // Prepare headers
       // Per Medtech support: only mt-facilityid header is needed (along with Authorization and Content-Type)
@@ -103,16 +103,16 @@ class AlexApiClient {
         'Content-Type': 'application/fhir+json',
         'mt-facilityid': facilityId,
         ...customHeaders,
-      }
+      };
 
       // Prepare request
       const requestOptions: RequestInit = {
         method,
         headers,
-      }
+      };
 
       if (body) {
-        requestOptions.body = JSON.stringify(body)
+        requestOptions.body = JSON.stringify(body);
       }
 
       // Log request
@@ -121,31 +121,31 @@ class AlexApiClient {
         endpoint,
         correlationId,
         facilityId,
-      })
+      });
 
       // Make request
-      const response = await fetch(url, requestOptions)
-      const duration = Date.now() - startTime
+      const response = await fetch(url, requestOptions);
+      const duration = Date.now() - startTime;
 
       // Handle 401 Unauthorized (token expired)
       if (response.status === 401 && retryOn401) {
         console.warn('[ALEX API] 401 Unauthorized, refreshing token and retrying', {
           correlationId,
           duration,
-        })
+        });
 
         // Force token refresh and retry once
-        await oauthTokenService.forceRefresh()
-        return this.request<T>(endpoint, { ...options, retryOn401: false })
+        await oauthTokenService.forceRefresh();
+        return this.request<T>(endpoint, { ...options, retryOn401: false });
       }
 
       // Handle non-2xx responses
       if (!response.ok) {
-        await this.handleErrorResponse(response, correlationId, duration)
+        await this.handleErrorResponse(response, correlationId, duration);
       }
 
       // Parse response
-      const data: T = await response.json()
+      const data: T = await response.json();
 
       // Log success
       console.log('[ALEX API] Success', {
@@ -154,16 +154,15 @@ class AlexApiClient {
         status: response.status,
         correlationId,
         duration,
-      })
+      });
 
-      return data
-    }
-    catch (error) {
-      const duration = Date.now() - startTime
+      return data;
+    } catch (error) {
+      const duration = Date.now() - startTime;
 
       // Re-throw AlexApiError as-is
       if (error instanceof AlexApiError) {
-        throw error
+        throw error;
       }
 
       // Wrap other errors
@@ -173,13 +172,13 @@ class AlexApiClient {
         correlationId,
         error: error instanceof Error ? error.message : 'Unknown error',
         duration,
-      })
+      });
 
       throw new AlexApiError(
         error instanceof Error ? error.message : 'Unknown error',
         500,
         correlationId,
-      )
+      );
     }
   }
 
@@ -191,29 +190,28 @@ class AlexApiClient {
     correlationId: string,
     duration: number,
   ): Promise<never> {
-    const statusCode = response.status
+    const statusCode = response.status;
 
     // Try to parse FHIR OperationOutcome
-    let operationOutcome: FhirOperationOutcome | undefined
-    let errorMessage = `ALEX API error: ${statusCode} ${response.statusText}`
+    let operationOutcome: FhirOperationOutcome | undefined;
+    let errorMessage = `ALEX API error: ${statusCode} ${response.statusText}`;
 
     try {
-      const data = await response.json()
+      const data = await response.json();
       if (data.resourceType === 'OperationOutcome') {
-        operationOutcome = data as FhirOperationOutcome
+        operationOutcome = data as FhirOperationOutcome;
 
         // Extract error message from OperationOutcome
         const errors = operationOutcome.issue
           .filter(issue => issue.severity === 'error' || issue.severity === 'fatal')
           .map(issue => issue.diagnostics || issue.details?.text || issue.code)
-          .filter(Boolean)
+          .filter(Boolean);
 
         if (errors.length > 0) {
-          errorMessage = errors.join('; ')
+          errorMessage = errors.join('; ');
         }
       }
-    }
-    catch {
+    } catch {
       // Failed to parse JSON; use generic error message
     }
 
@@ -224,10 +222,10 @@ class AlexApiClient {
       errorMessage,
       operationOutcome,
       duration,
-    })
+    });
 
     // Throw structured error
-    throw new AlexApiError(errorMessage, statusCode, correlationId, operationOutcome)
+    throw new AlexApiError(errorMessage, statusCode, correlationId, operationOutcome);
   }
 
   /**
@@ -237,7 +235,7 @@ class AlexApiClient {
     endpoint: string,
     options?: Omit<AlexApiOptions, 'method' | 'body'>,
   ): Promise<T> {
-    return this.request<T>(endpoint, { ...options, method: 'GET' })
+    return this.request<T>(endpoint, { ...options, method: 'GET' });
   }
 
   /**
@@ -248,7 +246,7 @@ class AlexApiClient {
     body: unknown,
     options?: Omit<AlexApiOptions, 'method' | 'body'>,
   ): Promise<T> {
-    return this.request<T>(endpoint, { ...options, method: 'POST', body })
+    return this.request<T>(endpoint, { ...options, method: 'POST', body });
   }
 
   /**
@@ -259,7 +257,7 @@ class AlexApiClient {
     body: unknown,
     options?: Omit<AlexApiOptions, 'method' | 'body'>,
   ): Promise<T> {
-    return this.request<T>(endpoint, { ...options, method: 'PUT', body })
+    return this.request<T>(endpoint, { ...options, method: 'PUT', body });
   }
 
   /**
@@ -269,11 +267,11 @@ class AlexApiClient {
     endpoint: string,
     options?: Omit<AlexApiOptions, 'method' | 'body'>,
   ): Promise<T> {
-    return this.request<T>(endpoint, { ...options, method: 'DELETE' })
+    return this.request<T>(endpoint, { ...options, method: 'DELETE' });
   }
 }
 
 // Singleton instance
-const alexApiClient = new AlexApiClient()
+const alexApiClient = new AlexApiClient();
 
-export { alexApiClient, AlexApiClient }
+export { AlexApiClient, alexApiClient };

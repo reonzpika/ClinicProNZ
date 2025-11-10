@@ -58,7 +58,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     };
     el.addEventListener('scroll', onScroll, { passive: true });
     // On mount, ensure we start at top
-    try { el.scrollTop = 0; } catch {}
+    try {
+ el.scrollTop = 0;
+} catch {}
     return () => el.removeEventListener('scroll', onScroll as any);
   }, [isMobile, isTablet]);
 
@@ -86,7 +88,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   }, [isMobile, isTablet]);
 
   return (
-    <div className="flex min-h-[100svh] md:min-h-dvh">
+    <div className="flex min-h-svh md:min-h-dvh">
       {/* Mobile/Tablet Overlay Backdrop */}
       {(isMobile || isTablet) && mobileSidebarOpen && (
         <div
@@ -117,12 +119,13 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         flex-1 transition-all duration-300 ease-in-out
         ${isDesktop ? (sidebarCollapsed ? 'ml-16' : 'ml-64') : 'ml-0'}
         grid min-h-dvh grid-rows-[auto_1fr_auto]
-      `}>
+      `}
+      >
         {/* Header spacer to reserve height (constant). Header itself is fixed overlay below. */}
         {(isMobile || isTablet) && <div className="h-14" />}
         {/* Mobile Header with Menu Button */}
         {(isMobile || isTablet) && (
-          <div className={`fixed top-0 left-0 right-0 z-20 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 transition-transform duration-200 will-change-transform ${headerHidden ? '-translate-y-full' : 'translate-y-0'}`}>
+          <div className={`fixed inset-x-0 top-0 z-20 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 transition-transform duration-200 will-change-transform ${headerHidden ? '-translate-y-full' : 'translate-y-0'}`}>
             <Button
               variant="ghost"
               size="sm"
@@ -152,7 +155,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         {/* Footer slot row (outside scroller) - mobile only */}
         <div
           id="app-footer-slot"
-          className={`${(isMobile || isTablet) ? (keyboardOpen ? 'hidden' : 'block') : 'hidden'} fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white px-3 pt-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-2px_8px_rgba(0,0,0,0.06)]`}
+          className={`${(isMobile || isTablet) ? (keyboardOpen ? 'hidden' : 'block') : 'hidden'} fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white px-3 pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-2px_8px_rgba(0,0,0,0.06)]`}
           style={{ minHeight: 'var(--footer-h, 76px)' } as React.CSSProperties}
         />
       </div>

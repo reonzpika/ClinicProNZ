@@ -1,14 +1,14 @@
+import { getDb } from 'database/client';
+import { desc, eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import { desc, eq } from 'drizzle-orm';
 
-import { extractRBACContext } from '@/src/lib/rbac-enforcer';
+import { promptRollouts, promptVersions } from '@/db/schema';
+import { PromptOverridesService } from '@/src/features/prompts/prompt-overrides-service';
 import { TemplateService } from '@/src/features/templates/template-service';
 import { compileTemplate } from '@/src/features/templates/utils/compileTemplate';
-import { PromptOverridesService } from '@/src/features/prompts/prompt-overrides-service';
-import { getDb } from 'database/client';
-import { promptRollouts, promptVersions } from '@/db/schema';
 import { generateSystemPrompt } from '@/src/features/templates/utils/systemPrompt';
+import { extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 function buildUserBaseOverrideTemplate(): string {
   const sections: string[] = [];
@@ -113,7 +113,7 @@ export async function POST(req: Request) {
       parts.push('');
       if (additionalNotes?.trim()) {
         parts.push('PRIMARY SOURCE: Additional Notes');
-        parts.push("(GP's clinical reasoning and problem list - use as clinical authority)");
+        parts.push('(GP\'s clinical reasoning and problem list - use as clinical authority)');
         parts.push('');
         parts.push(additionalNotes.trim());
         parts.push('');
@@ -182,7 +182,9 @@ export async function POST(req: Request) {
     if (generate === true) {
       // Non-streaming generation using effective prompts
       const apiKey = process.env.OPENAI_API_KEY;
-      if (!apiKey) return NextResponse.json({ error: 'Missing OPENAI_API_KEY' }, { status: 500 });
+      if (!apiKey) {
+ return NextResponse.json({ error: 'Missing OPENAI_API_KEY' }, { status: 500 });
+}
       const openai = new OpenAI({ apiKey, timeout: 45000 });
       const completion: any = await openai.chat.completions.create({
         model: 'gpt-4.1-mini',

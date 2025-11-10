@@ -3,37 +3,38 @@
  */
 
 import { useMutation } from '@tanstack/react-query';
+import { useCallback, useEffect, useState } from 'react';
+
 import { medtechAPI } from '../services/mock-medtech-api';
 import { useImageWidgetStore } from '../stores/imageWidgetStore';
-import { useState, useEffect, useCallback } from 'react';
 
-interface QRSessionState {
+type QRSessionState = {
   mobileUrl: string | null;
   qrSvg: string | null;
   expiresAt: number | null; // Timestamp
   isExpired: boolean;
-}
+};
 
 export function useQRSession() {
-  const encounterContext = useImageWidgetStore((state) => state.encounterContext);
+  const encounterContext = useImageWidgetStore(state => state.encounterContext);
   const [sessionState, setSessionState] = useState<QRSessionState>({
     mobileUrl: null,
     qrSvg: null,
     expiresAt: null,
     isExpired: false,
   });
-  
+
   const mutation = useMutation({
     mutationFn: async () => {
       if (!encounterContext) {
         throw new Error('No encounter context available');
       }
-      
+
       return medtechAPI.initiateMobile(encounterContext.encounterId);
     },
     onSuccess: (data) => {
       const expiresAt = Date.now() + data.ttlSeconds * 1000;
-      
+
       setSessionState({
         mobileUrl: data.mobileUploadUrl,
         qrSvg: data.qrSvg,
@@ -42,42 +43,42 @@ export function useQRSession() {
       });
     },
   });
-  
+
   // Check expiration
   useEffect(() => {
     if (!sessionState.expiresAt) {
       return;
     }
-    
+
     const checkExpiration = () => {
       if (Date.now() >= sessionState.expiresAt!) {
-        setSessionState((prev) => ({ ...prev, isExpired: true }));
+        setSessionState(prev => ({ ...prev, isExpired: true }));
       }
     };
-    
+
     // Check immediately
     checkExpiration();
-    
+
     // Check every second
     const interval = setInterval(checkExpiration, 1000);
-    
+
     return () => clearInterval(interval);
   }, [sessionState.expiresAt]);
-  
+
   // Calculate remaining time
   const getRemainingTime = useCallback(() => {
     if (!sessionState.expiresAt || sessionState.isExpired) {
       return 0;
     }
-    
+
     return Math.max(0, Math.floor((sessionState.expiresAt - Date.now()) / 1000));
   }, [sessionState.expiresAt, sessionState.isExpired]);
-  
+
   // Regenerate session
   const regenerate = useCallback(() => {
     mutation.mutate();
   }, [mutation]);
-  
+
   return {
     ...sessionState,
     isGenerating: mutation.isPending,

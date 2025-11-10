@@ -5,10 +5,11 @@
 import { Camera, FileText } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
+
 import { ClinicalImageTab } from './ClinicalImageTab';
 import { ReferralLetterTab } from './ReferralLetterTab';
-import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 type TabId = 'images' | 'referral';
 
@@ -22,7 +23,7 @@ export const ClinicalToolsTabs: React.FC<ClinicalToolsTabsProps> = ({ fixedHeigh
   const { getUserTier } = useClerkMetadata();
   const isAdmin = getUserTier() === 'admin';
   const { generatedNotes } = useConsultationStores();
-  
+
   // Check if consultation note exists for referral tab
   const hasConsultationNote = generatedNotes && generatedNotes.trim() !== '';
 
@@ -30,12 +31,12 @@ export const ClinicalToolsTabs: React.FC<ClinicalToolsTabsProps> = ({ fixedHeigh
     const allTabs = [
       { id: 'images' as const, icon: Camera, title: 'Clinical Images' },
     ];
-    
+
     // Only show referral tab after consultation note is generated
     if (hasConsultationNote) {
       allTabs.push({ id: 'referral' as const, icon: FileText, title: 'Referral Letter' });
     }
-    
+
     return allTabs;
   }, [hasConsultationNote]);
 
@@ -79,7 +80,9 @@ export const ClinicalToolsTabs: React.FC<ClinicalToolsTabsProps> = ({ fixedHeigh
       </div>
 
       {/* Content area (always mounted, visibility controlled) */}
-      <div className={`${fixedHeightClass} overflow-hidden`}> {/* fixed panel height */}
+      <div className={`${fixedHeightClass} overflow-hidden`}>
+{' '}
+{/* fixed panel height */}
         {/* Clinical Images */}
         <div className={`${activeTab === 'images' && isExpanded ? 'block' : 'hidden'} h-full overflow-y-auto pr-1`}>
           <ClinicalImageTab />
@@ -97,4 +100,3 @@ export const ClinicalToolsTabs: React.FC<ClinicalToolsTabsProps> = ({ fixedHeigh
 };
 
 export default ClinicalToolsTabs;
-

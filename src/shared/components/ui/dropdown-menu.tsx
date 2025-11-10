@@ -72,7 +72,7 @@ export function DropdownMenuItem({ children, onClick, disabled }: { children: Re
   return (
     <button
       type="button"
-      className="w-full rounded px-2 py-1.5 text-left text-sm hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50 whitespace-nowrap"
+      className="w-full whitespace-nowrap rounded px-2 py-1.5 text-left text-sm hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
       onClick={(_e) => {
         if (onClick) {
           onClick();

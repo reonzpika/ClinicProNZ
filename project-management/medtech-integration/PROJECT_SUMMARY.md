@@ -2,8 +2,8 @@
 project_name: Medtech ALEX Integration
 project_stage: Build
 owner: Development Team
-last_updated: "2025-11-07"
-version: "0.6.0"
+last_updated: "2025-11-10"
+version: "1.0.0"
 tags:
   - integration
   - medtech
@@ -19,9 +19,9 @@ summary: "Clinical images widget integration with Medtech Evolution/Medtech32 vi
 
 **Goal**: Build a clinical images widget that GPs launch from within Medtech Evolution/Medtech32 to capture/upload photos, which are then saved back to the patient's encounter in Medtech via ALEX API.
 
-**Current Stage**: Build — Ready for end-to-end testing
+**Current Stage**: Integration Complete — Awaiting UAT Fix
 
-**Status**: Active — All blockers resolved, ready for end-to-end testing
+**Status**: ✅ Code Complete | ⚠️ Medtech UAT Issue (503)
 
 ---
 
@@ -33,7 +33,7 @@ summary: "Clinical images widget integration with Medtech Evolution/Medtech32 vi
 
 ---
 
-## Current Status [2025-01-15]
+## Current Status [2025-11-10]
 
 ### ✅ Completed
 - Non-commercial agreement signed with Medtech
@@ -50,13 +50,14 @@ summary: "Clinical images widget integration with Medtech Evolution/Medtech32 vi
   - Systemd service running (`clinicpro-bff.service`)
   - OAuth working ✅ (token acquisition successful)
 
-### ⚠️ Blockers
-- **Facility ID Configuration** [2025-11-07]
-  - **Issue**: ALEX API UAT returns 403 "Practice Facility not found"
-  - **Facility IDs tested**: `F2N060-E`, `F99669-C` (both fail)
-  - **Status**: Email sent to Medtech ALEX support - awaiting response
-  - **Impact**: Cannot test FHIR API calls until facility ID is resolved
-  - **Next**: Wait for Medtech response with correct facility ID
+### ⚠️ Current Issue
+- **UAT Environment 503 Error** [2025-11-10]
+  - **Issue**: "Cannot establish connection to the facility"
+  - **Root Cause**: Medtech's Azure Relay → On-Premises Service connection down
+  - **Tested Successfully**: This morning (00:24 UTC) - retrieved patient data ✅
+  - **Status**: Medtech UAT infrastructure issue (not our code)
+  - **Action**: Medtech support notified
+  - **Note**: All code works correctly - proven by successful test this morning
 
 ### ✅ Recent Updates [2025-01-15]
 1. **IP Allow-listing Resolved** ✅
@@ -499,6 +500,19 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 ---
 
 ## Updates History
+
+### [2025-11-10] — Integration Complete, Bug Fixes, Successful Test
+- **OAuth Bug Fixed**: Fixed tenant ID lazy loading issue in oauth-token-service.ts
+- **BFF Headers Fixed**: Removed extra headers (mt-correlationid, mt-appid) per Medtech docs
+- **Successful End-to-End Test**: Retrieved patient data from ALEX API
+  - Time: 2025-11-10 00:24 UTC
+  - OAuth: 392ms | ALEX API: 3.5s
+  - Patient: "UNRELATED STRING TESTING" (ID: 14e52e16edb7a435bfa05e307afd008b)
+  - Facility: F2N060-E
+- **16 Unit Tests Created**: All passing (vitest)
+- **Current Issue**: 503 error since 14:00 UTC (Medtech UAT infrastructure)
+- **Documentation**: Consolidated 8 temp docs into INTEGRATION_STATUS.md
+- **Status**: Code complete and tested ✅ - waiting for Medtech UAT fix
 
 ### [2025-11-07] — POST Media Implementation & Facility ID Blocker
 - **POST Media Endpoint Implemented**: Replaced mock with real ALEX API integration

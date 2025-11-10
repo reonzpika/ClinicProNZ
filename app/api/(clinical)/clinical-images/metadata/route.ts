@@ -1,19 +1,23 @@
 import { auth } from '@clerk/nextjs/server';
+import { getDb } from 'database/client';
 import { eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { getDb } from 'database/client';
 import { clinicalImageMetadata } from '@/db/schema';
 import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 function sanitizePart(part?: string): string | undefined {
-  if (!part) return undefined;
+  if (!part) {
+ return undefined;
+}
   const cleaned = part
-    .replace(/[^A-Za-z0-9 _-]/g, ' ')
+    .replace(/[^\w -]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
-  if (!cleaned) return undefined;
+  if (!cleaned) {
+ return undefined;
+}
   return cleaned.slice(0, 80);
 }
 

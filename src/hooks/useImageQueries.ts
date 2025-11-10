@@ -79,8 +79,12 @@ export function useUploadImage() {
         filename: file.name,
         mimeType: file.type,
       });
-      if (ctx?.sessionId) presignParams.set('sessionId', ctx.sessionId);
-      if (ctx?.noSession) presignParams.set('noSession', '1');
+      if (ctx?.sessionId) {
+ presignParams.set('sessionId', ctx.sessionId);
+}
+      if (ctx?.noSession) {
+ presignParams.set('noSession', '1');
+}
 
       const presignResponse = await fetch(`/api/uploads/presign?${presignParams}`, {
         method: 'GET',
@@ -164,8 +168,12 @@ export function useUploadImages() {
           const items = results.map((r, idx) => {
             const entry = names[idx] || {};
             const parts: string[] = [];
-            if (entry.patientName && entry.patientName.trim()) parts.push(entry.patientName.trim());
-            if (entry.identifier && entry.identifier.trim()) parts.push(entry.identifier.trim());
+            if (entry.patientName && entry.patientName.trim()) {
+ parts.push(entry.patientName.trim());
+}
+            if (entry.identifier && entry.identifier.trim()) {
+ parts.push(entry.identifier.trim());
+}
             let displayName: string | undefined;
             if (parts.length > 0) {
               // Provide a client-side displayName with date + time (HH:mm)

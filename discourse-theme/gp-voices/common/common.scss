@@ -15,8 +15,8 @@
 .gp-card {
   background: var(--cp-surface);
   border-radius: 12px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.25);
-  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .gp-badge {
@@ -26,12 +26,24 @@
   border-radius: 9999px;
   font-size: 12px;
   line-height: 18px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.gp-badge--news { background: rgba(59,130,246,0.15); color: #93c5fd; border-color: rgba(59,130,246,0.25); }
-.gp-badge--trending { background: rgba(249,115,22,0.15); color: #fdba74; border-color: rgba(249,115,22,0.25); }
-.gp-badge--pinned { background: rgba(148,163,184,0.15); color: #cbd5e1; border-color: rgba(148,163,184,0.25); }
+.gp-badge--news {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.25);
+}
+.gp-badge--trending {
+  background: rgba(249, 115, 22, 0.15);
+  color: #fdba74;
+  border-color: rgba(249, 115, 22, 0.25);
+}
+.gp-badge--pinned {
+  background: rgba(148, 163, 184, 0.15);
+  color: #cbd5e1;
+  border-color: rgba(148, 163, 184, 0.25);
+}
 
 // removed tag chip styles
 
@@ -44,7 +56,9 @@
 
 // Hide categories/tags/nav pills on discovery for minimal UI
 html body.theme-ClinicPro-GP-Voices {
-  .gp-desktop-topnav { display: none; }
+  .gp-desktop-topnav {
+    display: none;
+  }
 
   .navigation-container .nav-pills,
   .category-breadcrumb,
@@ -76,19 +90,21 @@ html body.theme-ClinicPro-GP-Voices {
     width: 220px;
   }
   /* Try to keep essential links visible by label match */
-  &:not(.staff) .sidebar .sidebar-section-link { display: none !important; }
-  &:not(.staff) .sidebar .sidebar-section-link[href*="/latest"],
-  &:not(.staff) .sidebar .sidebar-section-link[href*="/u/"][href*="activity"],
-  &:not(.staff) .sidebar .sidebar-section-link[href*="/u/"][href*="messages"] {
+  &:not(.staff) .sidebar .sidebar-section-link {
+    display: none !important;
+  }
+  &:not(.staff) .sidebar .sidebar-section-link[href*='/latest'],
+  &:not(.staff) .sidebar .sidebar-section-link[href*='/u/'][href*='activity'],
+  &:not(.staff) .sidebar .sidebar-section-link[href*='/u/'][href*='messages'] {
     display: flex !important;
   }
 }
 
 // Hide category UI if enabled
 html body.theme-ClinicPro-GP-Voices {
-  &[data-hide-category-ui="true"] .category-breadcrumb,
-  &[data-hide-category-ui="true"] .list-controls .category-chooser,
-  &[data-hide-category-ui="true"] .navigation-container .category-links {
+  &[data-hide-category-ui='true'] .category-breadcrumb,
+  &[data-hide-category-ui='true'] .list-controls .category-chooser,
+  &[data-hide-category-ui='true'] .navigation-container .category-links {
     display: none !important;
   }
 }

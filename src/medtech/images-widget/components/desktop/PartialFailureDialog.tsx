@@ -1,12 +1,13 @@
 /**
  * Partial Failure Dialog Component
- * 
+ *
  * Shows results after commit with options for managing failed images
  */
 
 'use client';
 
 import { AlertCircle, Check, RefreshCw, X } from 'lucide-react';
+
 import { Button } from '@/src/shared/components/ui/button';
 import {
   Dialog,
@@ -14,17 +15,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/src/shared/components/ui/dialog';
-import { useImageWidgetStore } from '../../stores/imageWidgetStore';
-import { useCommit } from '../../hooks/useCommit';
 
-interface PartialFailureDialogProps {
+import { useCommit } from '../../hooks/useCommit';
+import { useImageWidgetStore } from '../../stores/imageWidgetStore';
+
+type PartialFailureDialogProps = {
   isOpen: boolean;
   onClose: () => void;
   successIds: string[];
   errorIds: string[];
   onRetryFailed?: () => void;
   onViewErrorDetails?: (imageId: string) => void;
-}
+};
 
 export function PartialFailureDialog({
   isOpen,
@@ -41,8 +43,10 @@ export function PartialFailureDialog({
   const errorImages = sessionImages.filter(img => errorIds.includes(img.id));
 
   const handleRetryFailed = async () => {
-    if (errorIds.length === 0) return;
-    
+    if (errorIds.length === 0) {
+ return;
+}
+
     try {
       await commitMutation.mutateAsync(errorIds);
       // If retry succeeds, close dialog
@@ -61,7 +65,7 @@ export function PartialFailureDialog({
 
   const handleRemoveFailed = () => {
     const { removeImage } = useImageWidgetStore.getState();
-    errorIds.forEach(id => {
+    errorIds.forEach((id) => {
       const image = sessionImages.find(img => img.id === id);
       if (image) {
         URL.revokeObjectURL(image.preview);
@@ -76,17 +80,21 @@ export function PartialFailureDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {errorIds.length > 0 && successIds.length > 0 ? (
+            {errorIds.length > 0 && successIds.length > 0
+? (
               <>
                 <AlertCircle className="size-5 text-yellow-600" />
                 Partial Success
               </>
-            ) : errorIds.length > 0 ? (
+            )
+: errorIds.length > 0
+? (
               <>
                 <AlertCircle className="size-5 text-red-600" />
                 Commit Failed
               </>
-            ) : (
+            )
+: (
               <>
                 <Check className="size-5 text-green-600" />
                 Success
@@ -102,14 +110,21 @@ export function PartialFailureDialog({
               <div className="flex items-center gap-2 text-green-900">
                 <Check className="size-5" />
                 <p className="font-medium">
-                  Successfully committed {successIds.length} image{successIds.length === 1 ? '' : 's'}
+                  Successfully committed
+{' '}
+{successIds.length}
+{' '}
+image
+{successIds.length === 1 ? '' : 's'}
                 </p>
               </div>
               {successImages.length > 0 && successImages.length <= 5 && (
                 <ul className="mt-2 space-y-1 text-sm text-green-700">
                   {successImages.map(img => (
                     <li key={img.id}>
-                      • {img.metadata.label || img.file.name}
+                      •
+{' '}
+{img.metadata.label || img.file.name}
                     </li>
                   ))}
                 </ul>
@@ -123,7 +138,12 @@ export function PartialFailureDialog({
               <div className="flex items-center gap-2 text-red-900">
                 <AlertCircle className="size-5" />
                 <p className="font-medium">
-                  Failed to commit {errorIds.length} image{errorIds.length === 1 ? '' : 's'}
+                  Failed to commit
+{' '}
+{errorIds.length}
+{' '}
+image
+{errorIds.length === 1 ? '' : 's'}
                 </p>
               </div>
               <ul className="mt-2 space-y-2 text-sm text-red-700">
@@ -146,7 +166,7 @@ export function PartialFailureDialog({
           {errorIds.length > 0 && (
             <div className="space-y-3">
               <p className="text-sm font-medium text-slate-900">What would you like to do?</p>
-              
+
               <div className="flex flex-col gap-2">
                 <Button
                   onClick={handleRetryFailed}
@@ -157,9 +177,11 @@ export function PartialFailureDialog({
                   <RefreshCw
                     className={`mr-2 size-4 ${commitMutation.isPending ? 'animate-spin' : ''}`}
                   />
-                  Retry Failed Images ({errorIds.length})
+                  Retry Failed Images (
+{errorIds.length}
+)
                 </Button>
-                
+
                 <Button
                   onClick={() => {
                     // Open error modal for first failed image
@@ -175,7 +197,7 @@ export function PartialFailureDialog({
                   <AlertCircle className="mr-2 size-4" />
                   View Error Details
                 </Button>
-                
+
                 <Button
                   onClick={handleRemoveFailed}
                   variant="outline"

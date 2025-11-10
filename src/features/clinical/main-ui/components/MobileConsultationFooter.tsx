@@ -27,7 +27,9 @@ export const MobileConsultationFooter: React.FC = () => {
     setMounted(true);
     const tryAttach = () => {
       const el = document.getElementById('app-footer-slot');
-      if (el && el !== footerRoot) setFooterRoot(el);
+      if (el && el !== footerRoot) {
+ setFooterRoot(el);
+}
     };
     tryAttach();
     const id = window.setInterval(tryAttach, 300);
@@ -42,7 +44,9 @@ export const MobileConsultationFooter: React.FC = () => {
     return !!(t || ti || anySoap);
   }, [transcription?.transcript, typedInput, problemsText, objectiveText, assessmentText, planText]);
 
-  if (!mounted || !footerRoot) return null;
+  if (!mounted || !footerRoot) {
+ return null;
+}
 
   const onProcess = () => {
     setForcePostGen(true);
@@ -67,7 +71,7 @@ export const MobileConsultationFooter: React.FC = () => {
           <button
             type="button"
             onClick={() => window.dispatchEvent(new CustomEvent('footer:record-toggle'))}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition active:scale-95 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400"
+            className="flex size-11 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400 active:scale-95"
             aria-label="Record"
           >
             ●

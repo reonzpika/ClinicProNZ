@@ -1,7 +1,7 @@
-"use client";
-import * as React from 'react';
-import { useParams } from 'next/navigation';
+'use client';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import * as React from 'react';
 
 import { Container } from '@/src/shared/components/layout/Container';
 import { Button } from '@/src/shared/components/ui/button';
@@ -52,9 +52,9 @@ export default function PromptDetailPage() {
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Article',
-            headline: prompt?.title ?? 'Prompt',
-            about: 'AI prompts for General Practice',
-            mainEntityOfPage: `https://clinicpro.nz/prompts/${slug}`,
+            'headline': prompt?.title ?? 'Prompt',
+            'about': 'AI prompts for General Practice',
+            'mainEntityOfPage': `https://clinicpro.nz/prompts/${slug}`,
           }),
         }}
       />
@@ -66,24 +66,28 @@ export default function PromptDetailPage() {
 
       <div className="mb-4 whitespace-pre-wrap rounded-md border bg-muted p-4 text-sm">{prompt?.text ?? 'Coming soon'}</div>
 
-      {prompt?.bestTools?.length ? (
+      {prompt?.bestTools?.length
+? (
         <div className="mb-4 text-sm">
           <div className="mb-1 font-medium">Best tool(s) to run this</div>
           <div className="flex flex-wrap gap-2">
-            {prompt.bestTools.map((t) => (
+            {prompt.bestTools.map(t => (
               <Link key={t.id} href={`/tools/${t.id}`} className="underline">
                 {t.name}
               </Link>
             ))}
           </div>
         </div>
-      ) : null}
+      )
+: null}
 
       <div className="flex items-center gap-2">
         <Button
           size="sm"
           onClick={() => {
-            if (prompt?.text) navigator.clipboard?.writeText(prompt.text);
+            if (prompt?.text) {
+ navigator.clipboard?.writeText(prompt.text);
+}
           }}
           disabled={!prompt?.text}
         >

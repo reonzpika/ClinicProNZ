@@ -3,10 +3,10 @@
 import { Calendar, Plus, RefreshCw, Search, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
+import { usePatientSessions } from '@/src/features/clinical/session-management/hooks/usePatientSessions';
 import { Button } from '@/src/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/src/shared/components/ui/dialog';
 import { Input } from '@/src/shared/components/ui/input';
-import { usePatientSessions } from '@/src/features/clinical/session-management/hooks/usePatientSessions';
 import { useToast } from '@/src/shared/components/ui/toast';
 
 export type ImageSessionModalProps = {
@@ -14,7 +14,7 @@ export type ImageSessionModalProps = {
   onClose: () => void;
   onSessionSelected: (id: string) => void;
   onCreateStart?: () => void; // notify parent to show creating state
-  onCreateEnd?: () => void;   // notify parent to hide creating state
+  onCreateEnd?: () => void; // notify parent to hide creating state
 };
 
 function formatNzDate(dateString?: string) {
@@ -44,7 +44,9 @@ export const ImageSessionModal: React.FC<ImageSessionModalProps> = ({ isOpen, on
   const { show } = useToast();
 
   useEffect(() => {
-    if (isOpen) refetch();
+    if (isOpen) {
+ refetch();
+}
   }, [isOpen, refetch]);
 
   const filtered = useMemo(() => sessions.filter(s => (s.patientName || '').toLowerCase().includes(search.toLowerCase())), [sessions, search]);
@@ -81,28 +83,35 @@ export const ImageSessionModal: React.FC<ImageSessionModalProps> = ({ isOpen, on
               <Button
                 onClick={async () => {
                   const name = pendingName.trim();
-                  if (!name) return;
+                  if (!name) {
+ return;
+}
                   setIsCreating(true);
-                  try { onCreateStart?.(); } catch {}
+                  try {
+ onCreateStart?.();
+} catch {}
                   try {
                     const s = await create.mutateAsync(name);
                     setPendingName('');
                     onSessionSelected(s.id);
                     onClose();
-                  } catch {}
-                  finally {
+                  } catch {} finally {
                     setIsCreating(false);
-                    try { onCreateEnd?.(); } catch {}
+                    try {
+ onCreateEnd?.();
+} catch {}
                   }
                 }}
                 disabled={isCreating}
               >
-                {isCreating ? (
+                {isCreating
+? (
                   <span className="inline-flex items-center gap-1">
                     <RefreshCw className="size-3 animate-spin" />
                     Creating...
                   </span>
-                ) : (
+                )
+: (
                   <span className="inline-flex items-center gap-1">
                     <Plus className="size-4" />
                     Create
@@ -126,11 +135,13 @@ export const ImageSessionModal: React.FC<ImageSessionModalProps> = ({ isOpen, on
                         <div className="mb-1 flex items-center gap-2">
                           <Input
                             value={(renameValues[s.id] ?? s.patientName) ?? ''}
-                            onChange={(e) => setRenameValues(prev => ({ ...prev, [s.id]: e.target.value }))}
+                            onChange={e => setRenameValues(prev => ({ ...prev, [s.id]: e.target.value }))}
                             onBlur={async () => {
                               const name = ((renameValues[s.id] ?? s.patientName) ?? '').trim();
                               if (name && name !== s.patientName) {
-                                try { await rename.mutateAsync({ sessionId: s.id, patientName: name }); } catch {}
+                                try {
+ await rename.mutateAsync({ sessionId: s.id, patientName: name });
+} catch {}
                               }
                             }}
                             onKeyDown={async (e) => {
@@ -138,7 +149,9 @@ export const ImageSessionModal: React.FC<ImageSessionModalProps> = ({ isOpen, on
                                 e.preventDefault();
                                 const name = ((renameValues[s.id] ?? s.patientName) ?? '').trim();
                                 if (name && name !== s.patientName) {
-                                  try { await rename.mutateAsync({ sessionId: s.id, patientName: name }); } catch {}
+                                  try {
+ await rename.mutateAsync({ sessionId: s.id, patientName: name });
+} catch {}
                                 }
                               }
                             }}
@@ -154,7 +167,15 @@ export const ImageSessionModal: React.FC<ImageSessionModalProps> = ({ isOpen, on
                         </div>
                       </div>
                       <div className="ml-4 flex gap-2">
-                        <Button onClick={() => { onSessionSelected(s.id); onClose(); }} size="sm" variant="outline">Select</Button>
+                        <Button
+                          onClick={() => {
+ onSessionSelected(s.id); onClose();
+}}
+                          size="sm"
+                          variant="outline"
+                        >
+Select
+                        </Button>
                         <Button
                           onClick={async () => {
                             const removedId = s.id;
@@ -162,10 +183,14 @@ export const ImageSessionModal: React.FC<ImageSessionModalProps> = ({ isOpen, on
                               title: 'Session deleted',
                               action: {
                                 label: 'Undo',
-                                onClick: () => { refetch(); },
+                                onClick: () => {
+ refetch();
+},
                               },
                             });
-                            try { await remove.mutateAsync(removedId); } catch { /* refetch will rollback */ }
+                            try {
+ await remove.mutateAsync(removedId);
+} catch { /* refetch will rollback */ }
                           }}
                           size="sm"
                           variant="outline"
@@ -184,4 +209,4 @@ export const ImageSessionModal: React.FC<ImageSessionModalProps> = ({ isOpen, on
       </DialogContent>
     </Dialog>
   );
-}
+};

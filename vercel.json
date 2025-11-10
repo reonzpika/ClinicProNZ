@@ -17,8 +17,7 @@
     {
       "path": "/api/maintenance/cleanup-mobile-tokens",
       "schedule": "0 13 * * *"
-    }
-    ,
+    },
     {
       "path": "/api/maintenance/cleanup-empty-sessions?token=${CRON_SECRET}",
       "schedule": "0 3 * * *"

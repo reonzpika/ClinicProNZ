@@ -300,5 +300,5 @@ export const TOOL_LIST: ToolDetail[] = [
 ];
 
 export function getToolById(slug: string): ToolDetail | undefined {
-  return TOOL_LIST.find((t) => t.id === slug);
+  return TOOL_LIST.find(t => t.id === slug);
 }

@@ -1,10 +1,11 @@
 /**
  * GET /api/medtech/capabilities
- * 
+ *
  * Returns feature flags and coded value lists
  */
 
 import { NextResponse } from 'next/server';
+
 import type { Capabilities } from '@/src/medtech/images-widget/types';
 
 export async function GET() {
@@ -81,13 +82,13 @@ export async function GET() {
         ],
       },
     };
-    
+
     return NextResponse.json(capabilities);
   } catch (error) {
     console.error('[API] GET /api/medtech/capabilities error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch capabilities' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

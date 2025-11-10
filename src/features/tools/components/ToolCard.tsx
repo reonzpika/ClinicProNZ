@@ -1,9 +1,9 @@
-import Link from 'next/link';
 import Image from 'next/image';
+import Link from 'next/link';
 import * as React from 'react';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { cn } from '@/src/lib/utils';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 
 import type { ToolDetail } from '../data/tools';
 
@@ -19,9 +19,11 @@ export function ToolCard({ tool, className }: ToolCardProps) {
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              {tool.logoUrl ? (
+              {tool.logoUrl
+? (
                 <Image src={tool.logoUrl} alt="" width={20} height={20} className="rounded-sm" />
-              ) : null}
+              )
+: null}
               <CardTitle>{tool.name}</CardTitle>
             </div>
             {/* Free badge removed per request */}

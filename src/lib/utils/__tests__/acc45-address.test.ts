@@ -12,6 +12,7 @@ describe('formatNzAddressForAcc45', () => {
       { long_name: 'New Zealand', short_name: 'NZ', types: ['country', 'political'] },
     ];
     const out = formatNzAddressForAcc45('Acme Ltd', components, '12 Queen Street, Auckland 1010, New Zealand');
+
     expect(out).toEqual({
       name: 'Acme Ltd',
       address: '12 Queen Street',
@@ -30,6 +31,7 @@ describe('formatNzAddressForAcc45', () => {
       { long_name: '6011', short_name: '6011', types: ['postal_code'] },
     ];
     const out = formatNzAddressForAcc45('Beta Clinic', components);
+
     expect(out.address.startsWith('Unit 5')).toBe(true);
     expect(out.city).toBe('Wellington');
     expect(out.postal).toBe('6011');

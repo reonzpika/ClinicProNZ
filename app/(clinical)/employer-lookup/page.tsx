@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
+import React, { useMemo, useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
 import { Input } from '@/src/shared/components/ui/input';
@@ -40,7 +40,9 @@ export default function EmployerLookupPage() {
   const { data: detailsData, isFetching: isLoadingDetails, error: detailsError } = useQuery<{ details: PlaceDetails; googleStatus?: string; error?: string; googleError?: string } | null>({
     queryKey: ['employer-lookup', 'details', selectedId],
     queryFn: async () => {
-      if (!selectedId) return null;
+      if (!selectedId) {
+ return null;
+}
       const res = await fetch(`/api/employer-lookup/details?id=${encodeURIComponent(selectedId)}`);
       if (!res.ok) {
         throw new Error('Details failed');
@@ -52,12 +54,16 @@ export default function EmployerLookupPage() {
 
   // Derived fields for copy once details loaded
   const fields = useMemo(() => {
-    if (!detailsData?.details) return null;
+    if (!detailsData?.details) {
+ return null;
+}
     const d = detailsData.details;
     const byType = (type: string) => d.addressComponents.find(c => c.types.includes(type));
     const part = (type: string, preferShort = false) => {
       const c = byType(type);
-      if (!c) return '';
+      if (!c) {
+ return '';
+}
       return preferShort ? c.short_name : c.long_name;
     };
 
@@ -87,7 +93,7 @@ export default function EmployerLookupPage() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl p-4 overflow-x-hidden">
+    <div className="mx-auto max-w-3xl overflow-x-hidden p-4">
       <h1 className="mb-3 text-xl font-semibold text-slate-900">Employer Lookup (ACC45)</h1>
       <p className="mb-4 text-sm text-slate-600">Public tool to quickly find and copy employer address fields.</p>
 
@@ -118,16 +124,22 @@ export default function EmployerLookupPage() {
       )}
       {!isSearching && results && results.error && (
         <div className="mb-3 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800">
-          Google error: {results.googleStatus || 'UNKNOWN'}{results.googleError ? ` – ${results.googleError}` : ''}
+          Google error:
+{' '}
+{results.googleStatus || 'UNKNOWN'}
+{results.googleError ? ` – ${results.googleError}` : ''}
         </div>
       )}
       {!isSearching && results && results.googleStatus && (
-        <div className="mb-2 text-[10px] text-slate-400">Debug: search status {results.googleStatus}</div>
+        <div className="mb-2 text-[10px] text-slate-400">
+Debug: search status
+{results.googleStatus}
+        </div>
       )}
 
       <div className="space-y-2">
-        {results?.results?.map((r) => (
-          <div key={r.id} className={`w-full overflow-hidden rounded-md border p-3`}> 
+        {results?.results?.map(r => (
+          <div key={r.id} className="w-full overflow-hidden rounded-md border p-3">
             <div className="flex items-center justify-between gap-3 overflow-hidden">
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-medium text-slate-900">{r.name}</div>
@@ -138,7 +150,7 @@ export default function EmployerLookupPage() {
                   {selectedId === r.id ? 'Hide' : 'Select'}
                 </Button>
                 <Link
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.name + ' ' + r.formattedAddress)}`}
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${r.name} ${r.formattedAddress}`)}`}
                   target="_blank"
                   className="text-xs text-slate-600 underline"
                 >
@@ -153,27 +165,27 @@ export default function EmployerLookupPage() {
                 {isLoadingDetails && <div className="text-xs text-slate-500">Loading details…</div>}
                 {!isLoadingDetails && fields && (
                   <div className="space-y-2">
-                    <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex min-w-0 items-center gap-2">
                       <div className="w-32 shrink-0 text-xs font-semibold text-slate-700">Employer name</div>
                       <div className="flex-1 truncate text-xs text-slate-800">{fields.name}</div>
                       <Button className="shrink-0" size="sm" onClick={() => handleCopy(fields.name)}>Copy</Button>
                     </div>
-                    <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex min-w-0 items-center gap-2">
                       <div className="w-32 shrink-0 text-xs font-semibold text-slate-700">Address</div>
                       <div className="flex-1 truncate text-xs text-slate-800">{fields.address}</div>
                       <Button className="shrink-0" size="sm" onClick={() => handleCopy(fields.address)}>Copy</Button>
                     </div>
-                    <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex min-w-0 items-center gap-2">
                       <div className="w-32 shrink-0 text-xs font-semibold text-slate-700">City</div>
                       <div className="flex-1 truncate text-xs text-slate-800">{fields.city}</div>
                       <Button className="shrink-0" size="sm" onClick={() => handleCopy(fields.city)}>Copy</Button>
                     </div>
-                    <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex min-w-0 items-center gap-2">
                       <div className="w-32 shrink-0 text-xs font-semibold text-slate-700">Postal</div>
                       <div className="flex-1 truncate text-xs text-slate-800">{fields.postal}</div>
                       <Button className="shrink-0" size="sm" onClick={() => handleCopy(fields.postal)}>Copy</Button>
                     </div>
-                    <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex min-w-0 items-center gap-2">
                       <div className="w-32 shrink-0 text-xs font-semibold text-slate-700">Country</div>
                       <div className="flex-1 truncate text-xs text-slate-800">New Zealand</div>
                       <Button className="shrink-0" size="sm" onClick={() => handleCopy('New Zealand')}>Copy</Button>
@@ -190,11 +202,17 @@ export default function EmployerLookupPage() {
                 )}
                 {!isLoadingDetails && detailsData && (detailsData as any).error && (
                   <div className="mt-2 rounded-md border border-amber-200 bg-amber-50 p-2 text-[10px] text-amber-800">
-                    Google error: {(detailsData as any).googleStatus || 'UNKNOWN'}{(detailsData as any).googleError ? ` – ${(detailsData as any).googleError}` : ''}
+                    Google error:
+{' '}
+{(detailsData as any).googleStatus || 'UNKNOWN'}
+{(detailsData as any).googleError ? ` – ${(detailsData as any).googleError}` : ''}
                   </div>
                 )}
                 {!isLoadingDetails && detailsData && detailsData.googleStatus && (
-                  <div className="mt-2 text-[10px] text-slate-400">Debug: details status {detailsData.googleStatus}</div>
+                  <div className="mt-2 text-[10px] text-slate-400">
+Debug: details status
+{detailsData.googleStatus}
+                  </div>
                 )}
               </div>
             )}

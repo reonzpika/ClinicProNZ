@@ -3,7 +3,7 @@ import { getDb } from 'database/client';
 import { and, eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
-import { apiUsageCosts, patientSessions, type NewApiUsageCost } from '@/db/schema';
+import { apiUsageCosts, type NewApiUsageCost, patientSessions } from '@/db/schema';
 import { calculateDeepgramCost } from '@/src/features/admin/cost-tracking/services/costCalculator';
 import { extractRBACContext } from '@/src/lib/rbac-enforcer';
 

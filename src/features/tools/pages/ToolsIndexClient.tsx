@@ -1,12 +1,12 @@
-"use client";
-import * as React from 'react';
+'use client';
 import Link from 'next/link';
+import * as React from 'react';
 
-import { Grid } from '@/src/shared/components/layout/Grid';
-import { Input } from '@/src/shared/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 import { ToolCard } from '@/src/features/tools/components/ToolCard';
 import type { ToolDetail } from '@/src/features/tools/data/tools';
+import { Grid } from '@/src/shared/components/layout/Grid';
+import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
+import { Input } from '@/src/shared/components/ui/input';
 
 type UiCategory = 'ai-scribe' | 'search' | 'acc';
 
@@ -23,33 +23,46 @@ export function ToolsIndexClient({ tools }: { tools: ToolDetail[] }) {
   const toggleCategory = (id: UiCategory) => {
     setSelected((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(id)) {
+ next.delete(id);
+} else {
+ next.add(id);
+}
       return next;
     });
   };
 
   const activeToolCategories = React.useMemo(() => {
-    const onlyAcc = selected.size > 0 && [...selected].every((c) => c === 'acc');
-    if (onlyAcc) return new Set<string>();
+    const onlyAcc = selected.size > 0 && [...selected].every(c => c === 'acc');
+    if (onlyAcc) {
+ return new Set<string>();
+}
     const set = new Set<string>();
-    if (selected.size === 0 || selected.has('ai-scribe')) set.add('ai-scribe');
-    if (selected.size === 0 || selected.has('search')) set.add('search');
+    if (selected.size === 0 || selected.has('ai-scribe')) {
+ set.add('ai-scribe');
+}
+    if (selected.size === 0 || selected.has('search')) {
+ set.add('search');
+}
     return set;
   }, [selected]);
 
   const showAcc = selected.size === 0 || selected.has('acc');
-  const onlyAccSelected = selected.size > 0 && [...selected].every((c) => c === 'acc');
+  const onlyAccSelected = selected.size > 0 && [...selected].every(c => c === 'acc');
 
   const filteredTools = React.useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (onlyAccSelected) return [] as ToolDetail[];
+    if (onlyAccSelected) {
+ return [] as ToolDetail[];
+}
     return tools
-      .filter((t) => activeToolCategories.has(t.category))
+      .filter(t => activeToolCategories.has(t.category))
       .filter((t) => {
-        if (!q) return true;
+        if (!q) {
+ return true;
+}
         return [t.name, t.tagline, t.id]
-          .some((v) => v?.toLowerCase().includes(q));
+          .some(v => v?.toLowerCase().includes(q));
       });
   }, [query, tools, activeToolCategories, onlyAccSelected]);
 
@@ -57,9 +70,9 @@ export function ToolsIndexClient({ tools }: { tools: ToolDetail[] }) {
     <>
       <div className="mb-6 flex items-center gap-3">
         <div className="flex-1">
-          <Input placeholder="Search tools…" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <Input placeholder="Search tools…" value={query} onChange={e => setQuery(e.target.value)} />
         </div>
-        <button className="text-sm text-muted-foreground cursor-not-allowed" title="Coming soon">
+        <button className="cursor-not-allowed text-sm text-muted-foreground" title="Coming soon">
           Submit a tool (coming soon)
         </button>
       </div>
@@ -76,10 +89,10 @@ export function ToolsIndexClient({ tools }: { tools: ToolDetail[] }) {
                   aria-pressed={isActive}
                   onClick={() => toggleCategory(cat.id)}
                   className={
-                    `whitespace-nowrap rounded-full border px-3 py-1 text-sm transition-colors ` +
-                    (isActive
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'hover:bg-accent')
+                    `whitespace-nowrap rounded-full border px-3 py-1 text-sm transition-colors ${
+                    isActive
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'hover:bg-accent'}`
                   }
                 >
                   {cat.label}
@@ -92,7 +105,7 @@ export function ToolsIndexClient({ tools }: { tools: ToolDetail[] }) {
       </div>
 
       <Grid cols={4} gap="lg" className="mb-10 grid-cols-2 lg:grid-cols-4">
-        {filteredTools.map((tool) => (
+        {filteredTools.map(tool => (
           <ToolCard key={tool.id} tool={tool} />
         ))}
       </Grid>
@@ -101,7 +114,7 @@ export function ToolsIndexClient({ tools }: { tools: ToolDetail[] }) {
         <section className="mb-12">
           <h2 className="mb-3 text-lg font-semibold">ACC utilities</h2>
           <Grid cols={3} gap="lg" className="grid-cols-1 md:grid-cols-3">
-            <Link href="/employer-lookup" className="block focus:outline-none focus:ring-2 focus:ring-ring rounded-md">
+            <Link href="/employer-lookup" className="block rounded-md focus:outline-none focus:ring-2 focus:ring-ring">
               <Card className="hover:bg-accent/40">
                 <CardHeader>
                   <CardTitle>Employer lookup</CardTitle>
@@ -110,7 +123,7 @@ export function ToolsIndexClient({ tools }: { tools: ToolDetail[] }) {
               </Card>
             </Link>
 
-            <Link href="/acc-occupation-codes" className="block focus:outline-none focus:ring-2 focus:ring-ring rounded-md">
+            <Link href="/acc-occupation-codes" className="block rounded-md focus:outline-none focus:ring-2 focus:ring-ring">
               <Card className="hover:bg-accent/40">
                 <CardHeader>
                   <CardTitle>ACC occupation codes</CardTitle>
@@ -119,7 +132,7 @@ export function ToolsIndexClient({ tools }: { tools: ToolDetail[] }) {
               </Card>
             </Link>
 
-            <a href="https://readcode.tubo.nz/" target="_blank" rel="noopener noreferrer" className="block focus:outline-none focus:ring-2 focus:ring-ring rounded-md">
+            <a href="https://readcode.tubo.nz/" target="_blank" rel="noopener noreferrer" className="block rounded-md focus:outline-none focus:ring-2 focus:ring-ring">
               <Card className="hover:bg-accent/40">
                 <CardHeader>
                   <CardTitle>Read code browser</CardTitle>

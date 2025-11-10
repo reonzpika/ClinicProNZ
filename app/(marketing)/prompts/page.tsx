@@ -20,10 +20,10 @@ export default function PromptsPage() {
           __html: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'ItemList',
-            itemListElement: [
-              { '@type': 'ListItem', position: 1, url: 'https://clinicpro.nz/prompts/evidence-and-guidelines', name: 'Evidence & guidelines' },
-              { '@type': 'ListItem', position: 2, url: 'https://clinicpro.nz/prompts/clinical-qna-with-citations', name: 'Clinical Q&A with citations' },
-              { '@type': 'ListItem', position: 3, url: 'https://clinicpro.nz/prompts/consult-summary-soap', name: 'Consult summary (SOAP)' },
+            'itemListElement': [
+              { '@type': 'ListItem', 'position': 1, 'url': 'https://clinicpro.nz/prompts/evidence-and-guidelines', 'name': 'Evidence & guidelines' },
+              { '@type': 'ListItem', 'position': 2, 'url': 'https://clinicpro.nz/prompts/clinical-qna-with-citations', 'name': 'Clinical Q&A with citations' },
+              { '@type': 'ListItem', 'position': 3, 'url': 'https://clinicpro.nz/prompts/consult-summary-soap', 'name': 'Consult summary (SOAP)' },
             ],
           }),
         }}

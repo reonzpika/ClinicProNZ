@@ -1,13 +1,14 @@
 // @ts-nocheck
-import { sql } from 'drizzle-orm';
-
 import { getDb } from 'database/client';
+import { sql } from 'drizzle-orm';
 
 export const runtime = 'nodejs';
 
 function isAuthorized(req: Request, url: URL): boolean {
   const secret = ((globalThis as any).process?.env?.CRON_SECRET as string) || '';
-  if (!secret) return false;
+  if (!secret) {
+ return false;
+}
 
   const token = url.searchParams.get('token') || '';
   const isVercelCron = req.headers.get('x-vercel-cron') === '1';
@@ -74,4 +75,3 @@ RETURNING ps.id;`;
     });
   }
 }
-

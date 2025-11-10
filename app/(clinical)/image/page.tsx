@@ -23,20 +23,19 @@ import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbl
 // Session UI (local-only)
 import { ImageSessionBar } from '@/src/features/clinical/session-management/components/ImageSessionBar';
 import { ImageSessionModal } from '@/src/features/clinical/session-management/components/ImageSessionModal';
+import { usePatientSessions } from '@/src/features/clinical/session-management/hooks/usePatientSessions';
 // Removed in-page WebRTC camera in favour of native camera capture
 import { imageQueryKeys, useAnalyzeImage, useDeleteImage, useImageUrl, useRenameImage, useSaveAnalysis, useServerImages, useUploadImages } from '@/src/hooks/useImageQueries';
 import { Container } from '@/src/shared/components/layout/Container';
-import { useToast } from '@/src/shared/components/ui/toast';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
-import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
-import { usePatientSessions } from '@/src/features/clinical/session-management/hooks/usePatientSessions';
 import { GalleryTileSkeleton } from '@/src/shared/components/ui/gallery-tile-skeleton';
+import { useToast } from '@/src/shared/components/ui/toast';
+import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { createAuthHeaders } from '@/src/shared/utils';
 import { isFeatureEnabled } from '@/src/shared/utils/launch-config';
 import type { AnalysisModalState, ServerImage } from '@/src/stores/imageStore';
 import { useImageStore } from '@/src/stores/imageStore';
-
 
 export default function ClinicalImagePage() {
   const { userId, isSignedIn } = useAuth();
@@ -98,7 +97,7 @@ export default function ClinicalImagePage() {
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
 
   const toggleSelectionMode = useCallback(() => {
-    setSelectionMode(prev => {
+    setSelectionMode((prev) => {
       const next = !prev;
       if (!next) {
         setSelectedKeys(new Set());
@@ -108,7 +107,7 @@ export default function ClinicalImagePage() {
   }, []);
 
   const toggleSelectKey = useCallback((key: string) => {
-    setSelectedKeys(prev => {
+    setSelectedKeys((prev) => {
       const next = new Set(prev);
       if (next.has(key)) {
         next.delete(key);
@@ -141,7 +140,7 @@ export default function ClinicalImagePage() {
       return;
     }
     // Step 1: fetch URLs with concurrency limit 10
-    const urls: Array<{ url: string; name: string } | null> = new Array(images.length).fill(null);
+    const urls: Array<{ url: string; name: string } | null> = Array.from({ length: images.length }, () => null);
     for (let i = 0; i < images.length; i += 10) {
       const slice = images.slice(i, i + 10);
       const results = await Promise.all(slice.map(async (img) => {
@@ -159,12 +158,15 @@ export default function ClinicalImagePage() {
     // Step 2: fetch blobs and trigger downloads sequentially to avoid popup blockers
     for (let i = 0; i < urls.length; i++) {
       const item = urls[i];
-      if (!item) continue;
+      if (!item) {
+ continue;
+}
       try {
-        // eslint-disable-next-line no-await-in-loop
         const resp = await fetch(item.url);
-        if (!resp.ok) continue;
-        // eslint-disable-next-line no-await-in-loop
+        if (!resp.ok) {
+ continue;
+}
+
         const blob = await resp.blob();
         const blobUrl = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -177,7 +179,7 @@ export default function ClinicalImagePage() {
         URL.revokeObjectURL(blobUrl);
       } catch {}
       // Small delay between downloads
-      // eslint-disable-next-line no-await-in-loop
+
       await new Promise(resolve => setTimeout(resolve, 150));
     }
   }, [getDownloadUrl]);
@@ -203,13 +205,15 @@ export default function ClinicalImagePage() {
     userId: userId ?? null,
     isMobile: false,
     onImageUploadStarted: (count) => {
-      setInFlightUploads((prev) => prev + (count || 0));
+      setInFlightUploads(prev => prev + (count || 0));
     },
     onImageUploaded: () => {
-      setInFlightUploads((prev) => Math.max(0, prev - 1));
+      setInFlightUploads(prev => Math.max(0, prev - 1));
       if (!invalidateTimerRef.current) {
         invalidateTimerRef.current = setTimeout(() => {
-          try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.lists() }); } catch {}
+          try {
+ queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.lists() });
+} catch {}
           invalidateTimerRef.current = null;
         }, 500);
       }
@@ -217,7 +221,9 @@ export default function ClinicalImagePage() {
     onImageProcessed: () => {
       if (!invalidateTimerRef.current) {
         invalidateTimerRef.current = setTimeout(() => {
-          try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.lists() }); } catch {}
+          try {
+ queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.lists() });
+} catch {}
           invalidateTimerRef.current = null;
         }, 500);
       }
@@ -658,16 +664,24 @@ Cancel
     <Container size="fluid" className="h-full">
       <div
         className="flex h-full gap-6 py-6"
-        onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
-        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
-        onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
+        onDragEnter={(e) => {
+ e.preventDefault(); e.stopPropagation(); setIsDragging(true);
+}}
+        onDragOver={(e) => {
+ e.preventDefault(); e.stopPropagation(); setIsDragging(true);
+}}
+        onDragLeave={(e) => {
+ e.preventDefault(); e.stopPropagation(); setIsDragging(false);
+}}
         onDrop={async (e) => {
           e.preventDefault();
           e.stopPropagation();
           setIsDragging(false);
           try {
             const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
-            if (files.length === 0) return;
+            if (files.length === 0) {
+ return;
+}
             const context = selectedSessionId && selectedSessionId !== 'none' ? { sessionId: selectedSessionId } : { noSession: true };
             await uploadImages.mutateAsync({ files, context });
           } catch (err) {
@@ -697,29 +711,44 @@ Cancel
                 <ImageSessionBar
                   selectedSessionId={selectedSessionId}
                   onSwitch={() => setIsSessionModalOpen(true)}
-                  onSelectSession={(id) => setSelectedSessionId(id)}
+                  onSelectSession={id => setSelectedSessionId(id)}
                   isCreating={isCreatingSession}
                 />
                 {inFlightUploads > 0 && (
                   <div className="flex items-center justify-between rounded border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-700">
                     <div className="flex items-center gap-2">
                       <Loader2 className="size-3 animate-spin" />
-                      <span>Receiving {inFlightUploads} image{inFlightUploads === 1 ? '' : 's'}…</span>
+                      <span>
+Receiving
+{inFlightUploads}
+{' '}
+image
+{inFlightUploads === 1 ? '' : 's'}
+…
+                      </span>
                     </div>
                   </div>
                 )}
                 <div
                   className={`${isDragging ? 'rounded border border-dashed border-blue-300 bg-blue-50/50 p-2' : ''}`}
-                  onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
-                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
-                  onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
+                  onDragEnter={(e) => {
+ e.preventDefault(); e.stopPropagation(); setIsDragging(true);
+}}
+                  onDragOver={(e) => {
+ e.preventDefault(); e.stopPropagation(); setIsDragging(true);
+}}
+                  onDragLeave={(e) => {
+ e.preventDefault(); e.stopPropagation(); setIsDragging(false);
+}}
                   onDrop={async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     setIsDragging(false);
                     try {
                       const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
-                      if (files.length === 0) return;
+                      if (files.length === 0) {
+ return;
+}
                       const context = selectedSessionId && selectedSessionId !== 'none' ? { sessionId: selectedSessionId } : { noSession: true };
                       await uploadImages.mutateAsync({ files, context });
                     } catch (err) {
@@ -874,7 +903,7 @@ Cancel
                         >
                           All
                         </button>
-                        {sessions.map((s) => (
+                        {sessions.map(s => (
                           <button
                             key={s.id}
                             type="button"
@@ -885,7 +914,6 @@ Cancel
                           </button>
                         ))}
                       </div>
-                      {(
                       <ImageSectionsGrid
                         images={selectedSessionId !== 'none' ? serverImages.filter(img => img.sessionId === selectedSessionId) : serverImages}
                         onAnalyze={handleOpenAnalysis}
@@ -897,7 +925,7 @@ Cancel
                         selectionMode={selectionMode}
                         selectedKeys={selectedKeys}
                         onToggleSelect={toggleSelectKey}
-                      />)}
+                      />
                       </>
                     )}
             </CardContent>
@@ -923,7 +951,9 @@ Cancel
       <ImageSessionModal
         isOpen={isSessionModalOpen}
         onClose={() => setIsSessionModalOpen(false)}
-        onSessionSelected={(id) => { setSelectedSessionId(id); setIsSessionModalOpen(false); }}
+        onSessionSelected={(id) => {
+ setSelectedSessionId(id); setIsSessionModalOpen(false);
+}}
         onCreateStart={() => setIsCreatingSession(true)}
         onCreateEnd={() => setIsCreatingSession(false)}
       />
@@ -1353,7 +1383,9 @@ function AnalysisModal({
                       <div className="flex items-center gap-2">
                         <Check className="size-3 text-green-600" />
                         <span>
-                          Analysed {new Date(modal.image.analysis.analyzedAt).toLocaleString()}
+                          Analysed
+{' '}
+{new Date(modal.image.analysis.analyzedAt).toLocaleString()}
                         </span>
                       </div>
                       {modal.image.analysis.prompt && (
@@ -1470,7 +1502,9 @@ function ImageEnlargeModal({
           {' '}
           {(() => {
             const bytes = image.size;
-            if (bytes === 0) return '0 Bytes';
+            if (bytes === 0) {
+ return '0 Bytes';
+}
             const k = 1024;
             const sizes = ['Bytes', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -1535,7 +1569,7 @@ function ImageSectionsGrid({
                 <input
                   type="checkbox"
                   aria-label="Select image"
-                  className="absolute left-2 top-2 z-10 h-4 w-4"
+                  className="absolute left-2 top-2 z-10 size-4"
                   checked={selectedKeys.has(image.key)}
                   onChange={() => onToggleSelect(image.key)}
                 />

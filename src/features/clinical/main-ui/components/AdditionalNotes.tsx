@@ -174,22 +174,30 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     try {
       switch (section) {
         case 'problems':
-          if (!problemsDirty) { break; }
+          if (!problemsDirty) {
+ break;
+}
           setProblemsStatus('saving');
           ok = await saveProblemsToCurrentSession(problemsText || '');
           break;
         case 'objective':
-          if (!objectiveDirty) { break; }
+          if (!objectiveDirty) {
+ break;
+}
           setObjectiveStatus('saving');
           ok = await saveObjectiveToCurrentSession(objectiveText || '');
           break;
         case 'assessment':
-          if (!assessmentDirty) { break; }
+          if (!assessmentDirty) {
+ break;
+}
           setAssessmentStatus('saving');
           ok = await saveAssessmentToCurrentSession(assessmentText || '');
           break;
         case 'plan':
-          if (!planDirty) { break; }
+          if (!planDirty) {
+ break;
+}
           setPlanStatus('saving');
           ok = await savePlanToCurrentSession(planText || '');
           break;
@@ -204,10 +212,18 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
       }
     } catch {}
     // Update badges
-    if (section === 'problems') setProblemsStatus(ok ? 'saved' : 'editing');
-    if (section === 'objective') setObjectiveStatus(ok ? 'saved' : 'editing');
-    if (section === 'assessment') setAssessmentStatus(ok ? 'saved' : 'editing');
-    if (section === 'plan') setPlanStatus(ok ? 'saved' : 'editing');
+    if (section === 'problems') {
+ setProblemsStatus(ok ? 'saved' : 'editing');
+}
+    if (section === 'objective') {
+ setObjectiveStatus(ok ? 'saved' : 'editing');
+}
+    if (section === 'assessment') {
+ setAssessmentStatus(ok ? 'saved' : 'editing');
+}
+    if (section === 'plan') {
+ setPlanStatus(ok ? 'saved' : 'editing');
+}
   };
 
   // Note: auto-append from consultation items has been removed by design (user preference)
@@ -432,7 +448,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               <span className="text-xs text-slate-500">Tip: Tab cycles Problems → Objective → Assessment → Plan; Shift+Tab reverses. Alt+C checklist, Alt+P safety-net.</span>
             )}
             {renderCharacterCount()}
-          </div>
+            </div>
           <div className="flex items-center gap-1">
             <ExaminationChecklistButton tabIndex={-1} />
             <PlanSafetyNettingButton tabIndex={-1} />
@@ -573,7 +589,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
           {!hideTips && (
             <span className="text-xs text-slate-500">Tip: Tab cycles Problems → Objective → Assessment → Plan; Shift+Tab reverses. Alt+C checklist, Alt+P safety-net.</span>
           )}
-        </div>
+          </div>
         <div className="flex items-center gap-1">
           {!forceExpanded && (
             <button

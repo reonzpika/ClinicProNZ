@@ -3,8 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
-import { createAuthHeadersForFormData } from '@/src/shared/utils';
-import { fetchWithRetry } from '@/src/shared/utils';
+import { createAuthHeadersForFormData, fetchWithRetry } from '@/src/shared/utils';
 
 type TranscriptionState = {
   isRecording: boolean;
@@ -209,8 +208,8 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     try {
       const inputStream = destinationNodeRef.current?.stream || audioStreamRef.current;
 
-      let preferredMime = 'audio/webm;codecs=opus';
-      let fallbackMime = 'audio/webm';
+      const preferredMime = 'audio/webm;codecs=opus';
+      const fallbackMime = 'audio/webm';
       let useMime: string | null = preferredMime;
       try {
         const checker = (MediaRecorder as any)?.isTypeSupported;
@@ -456,7 +455,9 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
           gainNodeRef.current.connect(analyserRef.current as unknown as AudioNode);
           gainNodeRef.current.connect(destinationNodeRef.current);
         } catch {
-          try { sourceNodeRef.current.connect(analyserRef.current as unknown as AudioNode); } catch {}
+          try {
+ sourceNodeRef.current.connect(analyserRef.current as unknown as AudioNode);
+} catch {}
         }
       }
 
@@ -481,17 +482,23 @@ export const useTranscription = (options: UseTranscriptionOptions = {}) => {
     }
 
     if (highPassFilterRef.current) {
-      try { highPassFilterRef.current.disconnect(); } catch {}
+      try {
+ highPassFilterRef.current.disconnect();
+} catch {}
       highPassFilterRef.current = null;
     }
 
     if (compressorNodeRef.current) {
-      try { compressorNodeRef.current.disconnect(); } catch {}
+      try {
+ compressorNodeRef.current.disconnect();
+} catch {}
       compressorNodeRef.current = null;
     }
 
     if (gainNodeRef.current) {
-      try { gainNodeRef.current.disconnect(); } catch {}
+      try {
+ gainNodeRef.current.disconnect();
+} catch {}
       gainNodeRef.current = null;
     }
 

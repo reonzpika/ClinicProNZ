@@ -14,42 +14,44 @@
  * - 500: Internal error
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+
 import {
   alexApiClient,
   AlexApiError,
   generateCorrelationId,
   oauthTokenService,
-} from '@/src/lib/services/medtech'
-import type { FhirBundle, FhirPatient } from '@/src/lib/services/medtech/types'
+} from '@/src/lib/services/medtech';
+import type { FhirBundle, FhirPatient } from '@/src/lib/services/medtech/types';
 
-export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function GET(request: NextRequest) {
-  const correlationId = generateCorrelationId()
-  const startTime = Date.now()
+  const correlationId = generateCorrelationId();
+  const startTime = Date.now();
 
   try {
     // Get query parameters
-    const searchParams = request.nextUrl.searchParams
-    const nhi = searchParams.get('nhi') || 'ZZZ0016'
+    const searchParams = request.nextUrl.searchParams;
+    const nhi = searchParams.get('nhi') || 'ZZZ0016';
 
     console.log('[Medtech Test] Starting test', {
       correlationId,
       nhi,
-    })
+    });
 
     // Step 1: Get token info (for diagnostics)
-    const tokenInfo = oauthTokenService.getTokenInfo()
+    const tokenInfo = oauthTokenService.getTokenInfo();
 
     // Step 2: Test FHIR API call (GET Patient by NHI)
     const patientBundle = await alexApiClient.get<FhirBundle<FhirPatient>>(
       `/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|${nhi}`,
       { correlationId },
-    )
+    );
 
-    const duration = Date.now() - startTime
+    const duration = Date.now() - startTime;
 
     // Success response
     return NextResponse.json({
@@ -80,16 +82,15 @@ export async function GET(request: NextRequest) {
             }
           : null,
       },
-    })
-  }
-  catch (error) {
-    const duration = Date.now() - startTime
+    });
+  } catch (error) {
+    const duration = Date.now() - startTime;
 
     console.error('[Medtech Test] Failed', {
       correlationId,
       error: error instanceof Error ? error.message : 'Unknown error',
       duration,
-    })
+    });
 
     // Handle ALEX API errors
     if (error instanceof AlexApiError) {
@@ -103,7 +104,7 @@ export async function GET(request: NextRequest) {
           duration,
         },
         { status: error.statusCode === 401 || error.statusCode === 403 ? error.statusCode : 500 },
-      )
+      );
     }
 
     // Handle other errors
@@ -115,6 +116,6 @@ export async function GET(request: NextRequest) {
         duration,
       },
       { status: 500 },
-    )
+    );
   }
 }

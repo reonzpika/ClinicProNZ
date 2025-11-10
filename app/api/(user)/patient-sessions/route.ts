@@ -1,6 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
 import { getDb } from 'database/client';
-import { and, desc, eq, isNull, gt } from 'drizzle-orm';
+import { and, desc, eq, gt, isNull } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 

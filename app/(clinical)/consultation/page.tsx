@@ -2,31 +2,30 @@
 
 import { useAuth } from '@clerk/nextjs';
 import { useQueryClient } from '@tanstack/react-query';
-import { Crown } from 'lucide-react';
+import { Crown, Mic, User } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { AdditionalNotes } from '@/src/features/clinical/main-ui/components/AdditionalNotes';
-import { DefaultSettings } from '@/src/features/clinical/main-ui/components/DefaultSettings';
 import { AdminPromptOverridesPanel } from '@/src/features/clinical/main-ui/components/AdminPromptOverridesPanel';
+import { DefaultSettings } from '@/src/features/clinical/main-ui/components/DefaultSettings';
 import { DocumentationSettingsBadge } from '@/src/features/clinical/main-ui/components/DocumentationSettingsBadge';
 import { GeneratedNotes } from '@/src/features/clinical/main-ui/components/GeneratedNotes';
+import { MobileConsultationFooter } from '@/src/features/clinical/main-ui/components/MobileConsultationFooter';
 import { TranscriptionControls } from '@/src/features/clinical/main-ui/components/TranscriptionControls';
 import { TranscriptViewer } from '@/src/features/clinical/main-ui/components/TranscriptViewer';
-import { MobileConsultationFooter } from '@/src/features/clinical/main-ui/components/MobileConsultationFooter';
 import { TypedInput } from '@/src/features/clinical/main-ui/components/TypedInput';
 import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTranscription';
 // MobileRightPanelOverlay removed; widgets now live in main column
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
-import { ConsentModal } from '@/src/features/clinical/session-management/components/ConsentModal';
-import { SessionModal } from '@/src/features/clinical/session-management/components/SessionModal';
 // RightPanelFeatures removed; widgets embedded below settings
 import ClinicalToolsTabs from '@/src/features/clinical/right-sidebar/components/ClinicalToolsTabs';
 import { WorkflowInstructions } from '@/src/features/clinical/right-sidebar/components/WorkflowInstructions';
+import { ConsentModal } from '@/src/features/clinical/session-management/components/ConsentModal';
 import { PatientSessionManager } from '@/src/features/clinical/session-management/components/PatientSessionManager';
+import { SessionModal } from '@/src/features/clinical/session-management/components/SessionModal';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { RecordingAwareSessionContext } from '@/src/hooks/useRecordingAwareSession';
 import { ContactLink } from '@/src/shared/components/ContactLink';
-import { User, Mic } from 'lucide-react';
 import { FeatureFeedbackButton } from '@/src/shared/components/FeatureFeedbackButton';
 import { Container } from '@/src/shared/components/layout/Container';
 import { Stack } from '@/src/shared/components/layout/Stack';
@@ -173,9 +172,11 @@ export default function ConsultationPage() {
     }
     let raf1: number | null = null;
     let t: any = null;
-    raf1 = typeof window !== 'undefined' ? window.requestAnimationFrame(() => {
+    raf1 = typeof window !== 'undefined'
+? window.requestAnimationFrame(() => {
       t = setTimeout(() => setDefaultsSettled(true), 120);
-    }) : null;
+    })
+: null;
     return () => {
       if (raf1 && typeof window !== 'undefined') {
         window.cancelAnimationFrame(raf1);
@@ -225,7 +226,9 @@ export default function ConsultationPage() {
       // If consent already obtained for this session, auto-grant and skip modal
       const isSameSession = !!(sessionId && currentPatientSessionId && sessionId === currentPatientSessionId);
       if (consentObtained && isSameSession) {
-        try { sendConsentGranted?.(requestId, 'desktop', currentPatientSessionId || undefined); } catch {}
+        try {
+ sendConsentGranted?.(requestId, 'desktop', currentPatientSessionId || undefined);
+} catch {}
         return;
       }
       // Otherwise, show desktop consent modal
@@ -236,7 +239,9 @@ export default function ConsultationPage() {
         clearTimeout(desktopConsentTimerRef.current);
       }
       desktopConsentTimerRef.current = setTimeout(() => {
-        try { sendConsentDenied?.(requestId, 'desktop', 'timeout', currentPatientSessionId || undefined); } catch {}
+        try {
+ sendConsentDenied?.(requestId, 'desktop', 'timeout', currentPatientSessionId || undefined);
+} catch {}
         setDesktopConsentOpen(false);
         setPendingConsentRequestId(null);
       }, 30000);
@@ -244,7 +249,9 @@ export default function ConsultationPage() {
     onConsentGranted: ({ requestId }) => {
       // Close modal if matching and mark consent in store
       if (pendingConsentRequestId && requestId === pendingConsentRequestId) {
-        try { setConsentObtained(true); } catch {}
+        try {
+ setConsentObtained(true);
+} catch {}
         setDesktopConsentOpen(false);
         setPendingConsentRequestId(null);
         if (desktopConsentTimerRef.current) {
@@ -454,7 +461,9 @@ export default function ConsultationPage() {
     try {
       setConsentObtained(false);
     } catch {}
-    try { sendSessionContext?.(sessionId); } catch {}
+    try {
+ sendSessionContext?.(sessionId);
+} catch {}
   }, [isRecording, mobileIsRecording, stopRecording, sendRecordingControl, originalSwitchToPatientSession]);
 
   useEffect(() => {
@@ -468,8 +477,6 @@ export default function ConsultationPage() {
       window.history.replaceState(null, '', newUrl);
     }
   }, []);
-
-  
 
   // Direct upgrade handler
   const handleDirectUpgrade = async () => {
@@ -529,8 +536,12 @@ export default function ConsultationPage() {
   useEffect(() => {
     setIsNoteFocused(false);
     // Reset consent state locally and broadcast session context on session change
-    try { setConsentObtained(false); } catch {}
-    try { sendSessionContext?.(currentPatientSessionId || null); } catch {}
+    try {
+ setConsentObtained(false);
+} catch {}
+    try {
+ sendSessionContext?.(currentPatientSessionId || null);
+} catch {}
   }, [currentPatientSessionId]);
 
   // Reset mobile recording status when connection drops
@@ -568,7 +579,9 @@ export default function ConsultationPage() {
       setConsentObtained(true);
     } catch {}
     // Persist a client-side flag so mobile can skip subsequent prompts during this session lifecycle
-    try { (window as any).__clinicproConsentObtained = true; } catch {}
+    try {
+ (window as any).__clinicproConsentObtained = true;
+} catch {}
     try {
       sendConsentGranted?.(pendingConsentRequestId, 'desktop', currentPatientSessionId || undefined);
     } catch {}
@@ -578,7 +591,9 @@ export default function ConsultationPage() {
 
   const handleDesktopConsentCancel = () => {
     if (pendingConsentRequestId) {
-      try { sendConsentDenied?.(pendingConsentRequestId, 'desktop', 'user', currentPatientSessionId || undefined); } catch {}
+      try {
+ sendConsentDenied?.(pendingConsentRequestId, 'desktop', 'user', currentPatientSessionId || undefined);
+} catch {}
     }
     setDesktopConsentOpen(false);
     setPendingConsentRequestId(null);
@@ -607,8 +622,7 @@ export default function ConsultationPage() {
             } catch {}
           }
         }
-      } catch {}
-      finally {
+      } catch {} finally {
         setEnsureSessionLoading(false);
       }
     };
@@ -852,13 +866,21 @@ export default function ConsultationPage() {
 
   // Footer action bus for portal footer
   useEffect(() => {
-    const onProcess = () => { handleGenerateNotes(); };
-    const onFinishEv = () => { handleFinish(); };
-    const onNew = () => { /* reuse finish flow to create new session */ handleFinish(); };
+    const onProcess = () => {
+ handleGenerateNotes();
+};
+    const onFinishEv = () => {
+ handleFinish();
+};
+    const onNew = () => {
+ /* reuse finish flow to create new session */ handleFinish();
+};
     const onCopy = () => {
       try {
         const text = (generatedNotes || '').toString();
-        if (text.trim()) navigator.clipboard?.writeText(text);
+        if (text.trim()) {
+ navigator.clipboard?.writeText(text);
+}
       } catch {}
     };
     window.addEventListener('footer:process', onProcess);
@@ -900,11 +922,11 @@ export default function ConsultationPage() {
           onSessionCreated={() => setSessionModalOpen(false)}
         />
       <div className={`
-        flex min-h-dvh h-full flex-col transition-all duration-300 ease-in-out
+        flex h-full min-h-dvh flex-col transition-all duration-300 ease-in-out
       `}
       >
-        <Container size="fluid" className="min-h-0 h-full">
-          <div className={`flex min-h-0 h-full flex-col ${(isMobile || isTablet) ? 'py-4' : 'py-6'}`}> 
+        <Container size="fluid" className="h-full min-h-0">
+          <div className={`flex h-full min-h-0 flex-col ${(isMobile || isTablet) ? 'py-4' : 'py-6'}`}>
             {/* Mobile Tools Button removed; tools embedded below settings */}
 
             {/* Upgrade Notification for users redirected from registration */}
@@ -1137,7 +1159,7 @@ export default function ConsultationPage() {
                                   return (
                                     <div className="text-xs text-slate-700">
                                       <div className="flex items-center justify-between gap-2 py-1">
-                                        <div className="min-w-0 flex items-center gap-2">
+                                        <div className="flex min-w-0 items-center gap-2">
                                           <div className="flex shrink-0 items-center gap-1 text-slate-700">
                                             <User className="size-3 text-slate-600" />
                                             <span className="font-medium">Session</span>
@@ -1145,7 +1167,13 @@ export default function ConsultationPage() {
                                           <div className="min-w-0 truncate">
                                             <span className="truncate font-semibold text-slate-900">{s?.patientName || 'Untitled Session'}</span>
                                             <span className="mx-1 text-slate-400">•</span>
-                                            <span className="text-[11px] text-slate-500">{dateStr} • {timeStr}</span>
+                                            <span className="text-[11px] text-slate-500">
+{dateStr}
+{' '}
+•
+{' '}
+{timeStr}
+                                            </span>
                                           </div>
                                         </div>
                                         <Button

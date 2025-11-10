@@ -6,12 +6,13 @@
 
 import React, { useEffect, useState } from 'react';
 
+import { Button } from '@/src/shared/components/ui/button';
+
 import { useCostSummary, useSessionCostDetails, useUserCostSummaries } from '../hooks/useCostTracking';
 import { CostBreakdown } from './CostBreakdown';
 import { CostMetrics } from './CostMetrics';
-import { UserCostTable } from './UserCostTable';
 import { SessionCostTable } from './SessionCostTable';
-import { Button } from '@/src/shared/components/ui/button';
+import { UserCostTable } from './UserCostTable';
 
 type CostView = 'overview' | 'users' | 'sessions';
 
@@ -122,10 +123,12 @@ export const CostTab: React.FC = () => {
         </div>
         <div className="flex items-center space-x-2">
           {(summaryFetching || usersFetching || sessionsFetching) && (
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-transparent" aria-label="Refreshing" />
+            <span className="size-4 animate-spin rounded-full border-2 border-gray-300 border-t-transparent" aria-label="Refreshing" />
           )}
           <Button
-            onClick={() => { refetchSummary(); refetchUsers(); refetchSessions(); }}
+            onClick={() => {
+ refetchSummary(); refetchUsers(); refetchSessions();
+}}
             variant="outline"
             size="sm"
             disabled={summaryFetching || usersFetching || sessionsFetching}
@@ -155,14 +158,16 @@ export const CostTab: React.FC = () => {
       </div>
 
       {/* Content */}
-      {currentView === 'users' ? (
+      {currentView === 'users'
+? (
         <div className="space-y-6">
           <div className="rounded-lg border border-gray-200 bg-white p-6">
             <h3 className="mb-4 text-lg font-medium text-gray-900">Cost by User</h3>
             <UserCostTable users={userSummaries || []} loading={usersLoading || usersFetching} />
           </div>
         </div>
-      ) : (
+      )
+: (
         renderCurrentView()
       )}
     </div>

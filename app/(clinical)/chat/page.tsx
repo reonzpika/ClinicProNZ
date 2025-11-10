@@ -1,8 +1,8 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { useEffect, useRef, useState } from 'react';
 import { AlertCircle, Book, Bot, Loader2, MessageCircle, Send, Settings, Trash2, User } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Container } from '@/src/shared/components/layout/Container';
 import { Button } from '@/src/shared/components/ui/button';
@@ -49,7 +49,9 @@ export default function ClinicalChatPage() {
   };
 
   const sendMessage = async () => {
-    if (!inputMessage.trim() || isLoading) return;
+    if (!inputMessage.trim() || isLoading) {
+ return;
+}
 
     const newMessage: Message = {
       id: Date.now().toString(),
@@ -91,7 +93,7 @@ export default function ClinicalChatPage() {
       setMessages(prev => [...prev, assistantMessage]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send message');
-      // eslint-disable-next-line no-console
+
       console.error('Chat error:', err);
     } finally {
       setIsLoading(false);
@@ -176,7 +178,8 @@ export default function ClinicalChatPage() {
               {/* Chat Messages */}
               <CardContent className="flex-1 overflow-y-auto p-4">
                 <div className="space-y-4">
-                  {messages.length === 0 ? (
+                  {messages.length === 0
+? (
                     <div className="py-8 text-center">
                       <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-slate-100">
                         <MessageCircle className="size-8 text-slate-400" />
@@ -196,7 +199,8 @@ export default function ClinicalChatPage() {
                         ))}
                       </div>
                     </div>
-                  ) : (
+                  )
+: (
                     messages.map(message => (
                       <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <div

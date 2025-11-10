@@ -1,6 +1,6 @@
-import Component from "@glimmer/component";
-import { action } from "@ember/object";
-import { service } from "@ember/service";
+import { action } from '@ember/object';
+import { service } from '@ember/service';
+import Component from '@glimmer/component';
 
 export default class HomepageCta extends Component {
   @service currentUser;
@@ -18,11 +18,11 @@ export default class HomepageCta extends Component {
   startNew() {
     const generalId = Number(this.args.siteSettings?.general_category_id || 0);
     if (!this.currentUser) {
-      this.router.transitionTo("login");
+      this.router.transitionTo('login');
       return;
     }
     // openComposer available via api only; route to new-topic composer
-    this.router.transitionTo("discovery.latest");
-    window.Discourse?.__container__?.lookup("controller:composer")?.open({ action: "createTopic", categoryId: generalId });
+    this.router.transitionTo('discovery.latest');
+    window.Discourse?.__container__?.lookup('controller:composer')?.open({ action: 'createTopic', categoryId: generalId });
   }
 }

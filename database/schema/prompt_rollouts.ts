@@ -1,7 +1,7 @@
 import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
-import { users } from './users';
 import { promptVersions } from './prompt_versions';
+import { users } from './users';
 
 // Scope: 'self' applies only to a specific admin (userId). 'global' applies to all users.
 export const promptRollouts = pgTable('prompt_rollouts', {

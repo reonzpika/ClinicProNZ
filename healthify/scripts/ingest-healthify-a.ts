@@ -1,10 +1,11 @@
 #!/usr/bin/env tsx
 
-import fs from 'fs/promises';
-import path from 'path';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
+import { Document as LlamaDocument, MarkdownNodeParser, SentenceSplitter } from 'llamaindex';
 
 import { ingestDocument } from '@/src/lib/rag';
-import { Document as LlamaDocument, MarkdownNodeParser, SentenceSplitter } from 'llamaindex';
 import type { DocumentToIngest } from '@/src/lib/rag/types';
 
 type HealthifyJson = {
@@ -24,8 +25,8 @@ async function readHealthifyFiles(dataDir: string): Promise<HealthifyJson[]> {
   try {
     const entries = await fs.readdir(dataDir, { withFileTypes: true });
     const files = entries
-      .filter((e) => e.isFile() && e.name.toLowerCase().endsWith('.json'))
-      .map((e) => path.join(dataDir, e.name));
+      .filter(e => e.isFile() && e.name.toLowerCase().endsWith('.json'))
+      .map(e => path.join(dataDir, e.name));
 
     const results: HealthifyJson[] = [];
     for (const file of files) {
@@ -48,11 +49,15 @@ async function readHealthifyFiles(dataDir: string): Promise<HealthifyJson[]> {
 }
 
 function coerceDate(meta?: HealthifyJson['metadata']): Date | null {
-  if (!meta) return null;
+  if (!meta) {
+ return null;
+}
   const candidates = [meta.crawledAt, meta.crawled_at, meta.lastModified, meta.date].filter(Boolean) as string[];
   for (const c of candidates) {
     const d = new Date(c as string);
-    if (!isNaN(d.getTime())) return d;
+    if (!isNaN(d.getTime())) {
+ return d;
+}
   }
   return null;
 }
@@ -127,4 +132,3 @@ if (require.main === module) {
     process.exit(1);
   });
 }
-

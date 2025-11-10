@@ -8,8 +8,8 @@ import Script from 'next/script';
 
 import { QueryClientProvider } from '@/src/providers/QueryClientProvider';
 import { AppLayoutWrapper } from '@/src/shared/components/AppLayoutWrapper';
-import { TestUserProvider } from '@/src/shared/contexts/TestUserContext';
 import { ToastProvider } from '@/src/shared/components/ui/toast';
+import { TestUserProvider } from '@/src/shared/contexts/TestUserContext';
 
 const inter = Inter({
   subsets: ['latin'],

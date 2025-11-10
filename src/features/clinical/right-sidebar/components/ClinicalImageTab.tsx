@@ -10,12 +10,12 @@ import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbl
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { imageQueryKeys, useDeleteImage, useImageUrl, useRenameImage, useServerImages } from '@/src/hooks/useImageQueries';
 import { Button } from '@/src/shared/components/ui/button';
-import { GalleryTileSkeleton } from '@/src/shared/components/ui/gallery-tile-skeleton';
 import { Card, CardContent } from '@/src/shared/components/ui/card';
+import { GalleryTileSkeleton } from '@/src/shared/components/ui/gallery-tile-skeleton';
 import { Input } from '@/src/shared/components/ui/input';
+import { useToast } from '@/src/shared/components/ui/toast';
 import { resizeImageFile } from '@/src/shared/utils/image';
 import type { ClinicalImage } from '@/src/types/consultation';
-import { useToast } from '@/src/shared/components/ui/toast';
 
 function SessionImageTile({
   image,
@@ -41,7 +41,9 @@ function SessionImageTile({
   const [nameValue, setNameValue] = React.useState(image.displayName || baseName);
   const commitRename = () => {
     const cleaned = nameValue.trim();
-    if (!cleaned) { setIsRenaming(false); return; }
+    if (!cleaned) {
+ setIsRenaming(false); return;
+}
     renameImage.mutate({ imageKey: image.key, displayName: cleaned });
     setIsRenaming(false);
   };
@@ -58,19 +60,25 @@ function SessionImageTile({
         {/* Processing badge removed until real thumbnail pipeline exists */}
       </div>
       <div className="mt-2 flex items-center gap-2">
-        {isRenaming ? (
+        {isRenaming
+? (
           <input
             type="text"
             value={nameValue}
-            onChange={(e) => setNameValue(e.target.value)}
+            onChange={e => setNameValue(e.target.value)}
             onBlur={commitRename}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') commitRename();
-              if (e.key === 'Escape') setIsRenaming(false);
+              if (e.key === 'Enter') {
+ commitRename();
+}
+              if (e.key === 'Escape') {
+ setIsRenaming(false);
+}
             }}
             className="w-full rounded-md border px-2 py-1 text-xs"
           />
-        ) : (
+        )
+: (
           <>
             <div className="min-w-0 flex-1 truncate text-xs text-slate-700">{image.displayName || image.filename}</div>
             <Button type="button" size="sm" variant="outline" className="h-6 px-2 text-[10px]" onClick={() => setIsRenaming(true)}>Rename</Button>
@@ -161,14 +169,18 @@ export const ClinicalImageTab: React.FC = () => {
   useSimpleAbly({
     userId: userId ?? null,
     isMobile: false,
-    onImageUploadStarted: (count) => setInFlightUploads(prev => prev + (count || 0)),
+    onImageUploadStarted: count => setInFlightUploads(prev => prev + (count || 0)),
     onImageUploaded: () => {
       setInFlightUploads(prev => Math.max(0, prev - 1));
-      try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.lists() }); } catch {}
-      setCompletedUploads((c) => c + 1);
+      try {
+ queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.lists() });
+} catch {}
+      setCompletedUploads(c => c + 1);
     },
     onImageProcessed: () => {
-      try { queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.lists() }); } catch {}
+      try {
+ queryClientRef.current.invalidateQueries({ queryKey: imageQueryKeys.lists() });
+} catch {}
     },
   });
 
@@ -345,15 +357,19 @@ export const ClinicalImageTab: React.FC = () => {
   // Bulk download helpers
   const getDownloadUrl = useCallback(async (key: string): Promise<string> => {
     const res = await fetch(`/api/uploads/download?key=${encodeURIComponent(key)}`);
-    if (!res.ok) throw new Error('Failed to get download URL');
+    if (!res.ok) {
+ throw new Error('Failed to get download URL');
+}
     const data = await res.json();
     return data.downloadUrl as string;
   }, []);
 
   const bulkDownload = useCallback(async (images: Array<{ key: string; filename: string; displayName?: string }>) => {
-    if (!images || images.length === 0) return;
+    if (!images || images.length === 0) {
+ return;
+}
     // Fetch URLs with concurrency 10 (batching)
-    const results: Array<{ url: string; name: string } | null> = new Array(images.length).fill(null);
+    const results: Array<{ url: string; name: string } | null> = Array.from({ length: images.length }, () => null);
     for (let i = 0; i < images.length; i += 10) {
       const slice = images.slice(i, i + 10);
       const urls = await Promise.all(slice.map(async (img) => {
@@ -370,12 +386,15 @@ export const ClinicalImageTab: React.FC = () => {
     // Trigger downloads sequentially using blob URLs to force save
     for (let i = 0; i < results.length; i++) {
       const item = results[i];
-      if (!item) continue;
+      if (!item) {
+ continue;
+}
       try {
-        // eslint-disable-next-line no-await-in-loop
         const resp = await fetch(item.url);
-        if (!resp.ok) continue;
-        // eslint-disable-next-line no-await-in-loop
+        if (!resp.ok) {
+ continue;
+}
+
         const blob = await resp.blob();
         const blobUrl = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -387,24 +406,29 @@ export const ClinicalImageTab: React.FC = () => {
         document.body.removeChild(a);
         URL.revokeObjectURL(blobUrl);
       } catch {}
-      // eslint-disable-next-line no-await-in-loop
+
       await new Promise(resolve => setTimeout(resolve, 150));
     }
   }, [getDownloadUrl]);
 
   const toggleSelectionMode = useCallback(() => {
-    setSelectionMode(prev => {
+    setSelectionMode((prev) => {
       const next = !prev;
-      if (!next) setSelectedKeys(new Set());
+      if (!next) {
+ setSelectedKeys(new Set());
+}
       return next;
     });
   }, []);
 
   const toggleSelectKey = useCallback((key: string) => {
-    setSelectedKeys(prev => {
+    setSelectedKeys((prev) => {
       const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
+      if (next.has(key)) {
+ next.delete(key);
+} else {
+ next.add(key);
+}
       return next;
     });
   }, []);
@@ -666,10 +690,16 @@ export const ClinicalImageTab: React.FC = () => {
       {/* Session Images (from server under clinical-images/{userId}/{sessionId}/) */}
       {(isLoadingServerImages || sessionServerImages.length > 0) && (
         <div
-          className={`border-l-2 pl-3 ${isDragging ? 'border-blue-400 border-dashed bg-blue-50/50' : 'border-blue-200'}`}
-          onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
-          onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
-          onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
+          className={`border-l-2 pl-3 ${isDragging ? 'border-dashed border-blue-400 bg-blue-50/50' : 'border-blue-200'}`}
+          onDragEnter={(e) => {
+ e.preventDefault(); e.stopPropagation(); setIsDragging(true);
+}}
+          onDragOver={(e) => {
+ e.preventDefault(); e.stopPropagation(); setIsDragging(true);
+}}
+          onDragLeave={(e) => {
+ e.preventDefault(); e.stopPropagation(); setIsDragging(false);
+}}
           onDrop={async (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -677,7 +707,6 @@ export const ClinicalImageTab: React.FC = () => {
             try {
               const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
               for (const file of files) {
-                // eslint-disable-next-line no-await-in-loop
                 await handleFileUpload(file);
               }
             } catch {
@@ -694,11 +723,17 @@ export const ClinicalImageTab: React.FC = () => {
               {inFlightUploads > 0 && (
                 <span className="flex items-center gap-1 rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
                   <Loader2 size={12} className="animate-spin" />
-                  Receiving {inFlightUploads}
+                  Receiving
+{' '}
+{inFlightUploads}
                 </span>
               )}
               {selectionMode && (
-                <span className="text-xs text-slate-600">{selectedKeys.size} selected</span>
+                <span className="text-xs text-slate-600">
+{selectedKeys.size}
+{' '}
+selected
+                </span>
               )}
               <Button type="button" size="sm" variant="outline" onClick={toggleSelectionMode}>
                 {selectionMode ? 'Exit selection' : 'Select'}
@@ -745,7 +780,7 @@ export const ClinicalImageTab: React.FC = () => {
                           <input
                             type="checkbox"
                             aria-label="Select image"
-                            className="absolute left-2 top-2 z-10 h-4 w-4"
+                            className="absolute left-2 top-2 z-10 size-4"
                             checked={selectedKeys.has(image.key)}
                             onChange={() => toggleSelectKey(image.key)}
                           />

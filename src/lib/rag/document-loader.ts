@@ -1,6 +1,7 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
 import { Document } from 'llamaindex';
-import fs from 'fs/promises';
-import path from 'path';
 
 /**
  * Reads Healthify crawl outputs from the `data` directory and converts them into LlamaIndex Documents.
@@ -19,8 +20,8 @@ export default async function parseHealthifyData(): Promise<Document[]> {
   try {
     const entries = await fs.readdir(dataDir, { withFileTypes: true });
     filePaths = entries
-      .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith('.json'))
-      .map((entry) => path.join(dataDir, entry.name));
+      .filter(entry => entry.isFile() && entry.name.toLowerCase().endsWith('.json'))
+      .map(entry => path.join(dataDir, entry.name));
   } catch (error: any) {
     if (error && error.code === 'ENOENT') {
       console.warn(`[Healthify] Data directory not found at ${dataDir}. Returning 0 documents.`);
@@ -41,8 +42,8 @@ export default async function parseHealthifyData(): Promise<Document[]> {
         const url: string | undefined = typeof parsed?.url === 'string' ? parsed.url : undefined;
         const title: string | undefined = typeof parsed?.title === 'string' ? parsed.title : undefined;
 
-        const markdown: string | undefined =
-          typeof parsed?.markdown === 'string' && parsed.markdown.trim().length > 0
+        const markdown: string | undefined
+          = typeof parsed?.markdown === 'string' && parsed.markdown.trim().length > 0
             ? parsed.markdown
             : undefined;
         const content: string | undefined = typeof parsed?.content === 'string' ? parsed.content : undefined;
@@ -50,7 +51,7 @@ export default async function parseHealthifyData(): Promise<Document[]> {
 
         if (!text) {
           console.warn(
-            `[Healthify] Skipping ${path.basename(filePath)}: missing 'markdown' or 'content' fields.`
+            `[Healthify] Skipping ${path.basename(filePath)}: missing 'markdown' or 'content' fields.`,
           );
           return null;
         }
@@ -93,11 +94,10 @@ export default async function parseHealthifyData(): Promise<Document[]> {
         console.warn(`[Healthify] Skipping ${path.basename(filePath)} due to error: ${message}`);
         return null;
       }
-    })
+    }),
   );
 
   const documents: Document[] = results.filter((d): d is Document => d !== null);
   console.log(`[Healthify] Loaded ${documents.length}/${filePaths.length} documents from Healthify`);
   return documents;
 }
-

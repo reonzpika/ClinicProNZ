@@ -15,13 +15,14 @@ function getClientIp(req: NextRequest): string {
   if (xff) {
     const first = xff.split(',')[0] ?? '';
     const trimmed = first.trim();
-    if (trimmed) return trimmed;
+    if (trimmed) {
+ return trimmed;
+}
   }
   return req.headers.get('cf-connecting-ip') || 'unknown';
 }
 
-async function rateLimit(req: NextRequest, bucket: string, limitPerMinute: number): Promise<{ allowed: boolean; headers: Record<string, string> }>
-{
+async function rateLimit(req: NextRequest, bucket: string, limitPerMinute: number): Promise<{ allowed: boolean; headers: Record<string, string> }> {
   const ip = getClientIp(req);
   const key = `ratelimit:${bucket}:${ip}:${new Date().getUTCFullYear()}${new Date().getUTCMonth()}${new Date().getUTCDate()}${new Date().getUTCHours()}${new Date().getUTCMinutes()}`;
   const current = (await cacheGet<number>(key)) || 0;

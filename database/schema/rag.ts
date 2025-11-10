@@ -1,4 +1,4 @@
-import { integer, jsonb, pgTable, text, timestamp, uuid, vector, uniqueIndex, index } from 'drizzle-orm/pg-core';
+import { index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid, vector } from 'drizzle-orm/pg-core';
 
 export const ragDocuments = pgTable('rag_documents', {
   id: uuid('id').primaryKey().defaultRandom(),

@@ -105,7 +105,9 @@ function MobilePageContent() {
     onSessionContextChanged: (sessionId) => {
       currentSessionIdRef.current = sessionId || null;
       // Reset per-session consent when session context changes
-      try { (window as any).__clinicproConsentObtained = false; } catch {}
+      try {
+ (window as any).__clinicproConsentObtained = false;
+} catch {}
       setConsentOpen(false);
       pendingRequestIdRef.current = null;
     },
@@ -127,7 +129,9 @@ function MobilePageContent() {
           pendingRequestIdRef.current = requestId;
           sendConsentRequest?.(requestId, 'desktop', currentSessionIdRef.current);
           // Delay opening modal briefly to allow auto-grant to arrive
-          if (consentOpenDelayRef.current) { clearTimeout(consentOpenDelayRef.current); }
+          if (consentOpenDelayRef.current) {
+ clearTimeout(consentOpenDelayRef.current);
+}
           consentOpenDelayRef.current = setTimeout(() => setConsentOpen(true), 200);
           return;
         }
@@ -143,7 +147,9 @@ function MobilePageContent() {
       // If consent already granted this session on mobile, auto-grant and skip modal
       const alreadyConsented = typeof window !== 'undefined' && (window as any).__clinicproConsentObtained === true;
       if (alreadyConsented) {
-        try { sendConsentGranted?.(requestId, 'mobile', currentSessionIdRef.current); } catch {}
+        try {
+ sendConsentGranted?.(requestId, 'mobile', currentSessionIdRef.current);
+} catch {}
         return;
       }
       // When local user taps start, we'll emit, but also if desktop emits, show modal
@@ -160,7 +166,9 @@ function MobilePageContent() {
           }
         } catch {}
         // Cancel delayed open if pending; otherwise close if visible
-        if (consentOpenDelayRef.current) { clearTimeout(consentOpenDelayRef.current); consentOpenDelayRef.current = null; }
+        if (consentOpenDelayRef.current) {
+ clearTimeout(consentOpenDelayRef.current); consentOpenDelayRef.current = null;
+}
         setConsentOpen(false);
         pendingRequestIdRef.current = null;
       }, 30000);
@@ -168,7 +176,9 @@ function MobilePageContent() {
     onConsentGranted: async ({ requestId }) => {
       if (pendingRequestIdRef.current && requestId === pendingRequestIdRef.current) {
         // Cancel delayed open if pending; otherwise close if visible
-        if (consentOpenDelayRef.current) { clearTimeout(consentOpenDelayRef.current); consentOpenDelayRef.current = null; }
+        if (consentOpenDelayRef.current) {
+ clearTimeout(consentOpenDelayRef.current); consentOpenDelayRef.current = null;
+}
         setConsentOpen(false);
         if (consentTimerRef.current) {
           clearTimeout(consentTimerRef.current);
@@ -181,7 +191,9 @@ function MobilePageContent() {
         }
         pendingRequestIdRef.current = null;
         // Persist consent flag locally for this session lifecycle
-        try { (window as any).__clinicproConsentObtained = true; } catch {}
+        try {
+ (window as any).__clinicproConsentObtained = true;
+} catch {}
       }
     },
     onConsentDenied: ({ requestId }) => {
@@ -342,7 +354,9 @@ function MobilePageContent() {
     pendingRequestIdRef.current = requestId;
     sendConsentRequest?.(requestId, 'mobile', currentSessionIdRef.current);
     // Delay opening to allow potential auto-grant from desktop
-    if (consentOpenDelayRef.current) { clearTimeout(consentOpenDelayRef.current); }
+    if (consentOpenDelayRef.current) {
+ clearTimeout(consentOpenDelayRef.current);
+}
     consentOpenDelayRef.current = setTimeout(() => setConsentOpen(true), 200);
   }, [mobileState, sendConsentRequest]);
 
@@ -384,10 +398,16 @@ function MobilePageContent() {
           </CardHeader>
           <CardContent className="text-center">
             <p className="mb-4 text-gray-600">Please sign in to use mobile recording</p>
-            <Button onClick={() => {
+            <Button
+              onClick={() => {
               const currentUrl = typeof window !== 'undefined' ? window.location.href : '/mobile';
               window.location.href = `/auth/login?redirect_url=${encodeURIComponent(currentUrl)}`;
-            }} size="lg" className="w-full">Sign In</Button>
+            }}
+              size="lg"
+              className="w-full"
+            >
+Sign In
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -510,13 +530,17 @@ selected
                     const filesToUpload = queuedItems.map(it => it.file);
                     try {
                       // Emit started event to desktop (best effort)
-                      try { sendImageUploadStarted?.(filesToUpload.length, currentSessionIdRef.current); } catch {}
+                      try {
+ sendImageUploadStarted?.(filesToUpload.length, currentSessionIdRef.current);
+} catch {}
                       await uploadImages.mutateAsync({
                         files: filesToUpload,
                         names: queuedItems.map(it => ({ patientName: patientNameInput || undefined, identifier: it.identifier || undefined })),
                       });
                       // Notify desktop completion (compat path retained)
-                      try { sendImageUploaded?.(filesToUpload.length, currentSessionIdRef.current); } catch {}
+                      try {
+ sendImageUploaded?.(filesToUpload.length, currentSessionIdRef.current);
+} catch {}
                       // Clear queue and return
                       queuedItems.forEach(it => it.previewUrl && URL.revokeObjectURL(it.previewUrl));
                       setQueuedItems([]);
@@ -594,7 +618,9 @@ selected
  sendConsentGranted?.(id, 'mobile');
 } catch {}
             }
-            if (consentOpenDelayRef.current) { clearTimeout(consentOpenDelayRef.current); consentOpenDelayRef.current = null; }
+            if (consentOpenDelayRef.current) {
+ clearTimeout(consentOpenDelayRef.current); consentOpenDelayRef.current = null;
+}
             setConsentOpen(false);
           }}
           onCancel={() => {
@@ -604,7 +630,9 @@ selected
  sendConsentDenied?.(id, 'mobile', 'user');
 } catch {}
             }
-            if (consentOpenDelayRef.current) { clearTimeout(consentOpenDelayRef.current); consentOpenDelayRef.current = null; }
+            if (consentOpenDelayRef.current) {
+ clearTimeout(consentOpenDelayRef.current); consentOpenDelayRef.current = null;
+}
             setConsentOpen(false);
           }}
         />

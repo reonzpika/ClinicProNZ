@@ -1,7 +1,7 @@
 /**
  * Dynamic system prompt generation for template-specific clinical documentation
  * Embeds template structure directly in system prompt for better LLM comprehension
- * 
+ *
  * Structure: Goal → Input Types → Template (middle) → Processing Rules → Notes Format
  */
 
@@ -163,4 +163,4 @@ You are ready to receive the consultation data.
 }
 
 // Backward compatibility: export without template parameter (will need to be updated at call sites)
-export const SYSTEM_PROMPT = generateSystemPrompt('');  // Deprecated - use generateSystemPrompt(template) instead
+export const SYSTEM_PROMPT = generateSystemPrompt(''); // Deprecated - use generateSystemPrompt(template) instead

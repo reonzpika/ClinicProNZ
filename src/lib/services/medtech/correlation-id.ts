@@ -7,13 +7,13 @@
  * - Included in logs and error responses
  */
 
-import { randomUUID } from 'node:crypto'
+import { randomUUID } from 'node:crypto';
 
 /**
  * Generate new correlation ID (UUID v4)
  */
 export function generateCorrelationId(): string {
-  return randomUUID()
+  return randomUUID();
 }
 
 /**
@@ -24,25 +24,25 @@ export function extractCorrelationId(headers: Headers): string | undefined {
   // Try common correlation ID headers
   const correlationId
     = headers.get('x-correlation-id')
-    ?? headers.get('x-request-id')
-    ?? headers.get('correlation-id')
+      ?? headers.get('x-request-id')
+      ?? headers.get('correlation-id');
 
   if (correlationId) {
-    return correlationId
+    return correlationId;
   }
 
   // Try W3C Trace Context (traceparent)
-  const traceparent = headers.get('traceparent')
+  const traceparent = headers.get('traceparent');
   if (traceparent) {
     // traceparent format: version-traceId-spanId-flags
     // Extract traceId (32 hex chars)
-    const parts = traceparent.split('-')
+    const parts = traceparent.split('-');
     if (parts.length >= 2) {
-      return parts[1]
+      return parts[1];
     }
   }
 
-  return undefined
+  return undefined;
 }
 
 /**
@@ -50,5 +50,5 @@ export function extractCorrelationId(headers: Headers): string | undefined {
  * Reuses existing correlation ID if present, otherwise generates new one
  */
 export function getOrGenerateCorrelationId(headers: Headers): string {
-  return extractCorrelationId(headers) ?? generateCorrelationId()
+  return extractCorrelationId(headers) ?? generateCorrelationId();
 }

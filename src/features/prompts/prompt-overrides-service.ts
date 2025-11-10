@@ -22,7 +22,9 @@ export class PromptOverridesService {
     const key = cacheKey(userId);
     const now = Date.now();
     const hit = cache.get(key);
-    if (hit && now - hit.ts < TTL_MS) return hit.v;
+    if (hit && now - hit.ts < TTL_MS) {
+ return hit.v;
+}
 
     const db = getDb();
 
@@ -79,7 +81,9 @@ export class PromptOverridesService {
   }
 
   static invalidate(userId?: string | null) {
-    if (userId) cache.delete(cacheKey(userId));
+    if (userId) {
+ cache.delete(cacheKey(userId));
+}
     cache.delete(cacheKey(null));
   }
 }

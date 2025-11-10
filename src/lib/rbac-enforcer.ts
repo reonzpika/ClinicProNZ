@@ -1,5 +1,5 @@
-import { and, eq } from 'drizzle-orm';
 import { auth } from '@clerk/nextjs/server';
+import { and, eq } from 'drizzle-orm';
 
 import { getDb } from '../../database/client';
 import { mobileTokens } from '../../database/schema';

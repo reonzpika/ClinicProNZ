@@ -101,7 +101,9 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       try {
-        if (debugEnabled) console.error('[Transcribe][dg:error]', { reqId, dgMs, error });
+        if (debugEnabled) {
+ console.error('[Transcribe][dg:error]', { reqId, dgMs, error });
+}
       } catch {}
       return NextResponse.json({ error: 'Transcription failed' }, { status: 500 });
     }
@@ -204,7 +206,9 @@ export async function POST(req: NextRequest) {
         await db.update(users).set({ currentSessionId }).where(eq(users.id, userId));
       } catch {}
       if (debugEnabled) {
-        try { console.log('[Transcribe][session:new]', { reqId, sessionId: currentSessionId }); } catch {}
+        try {
+ console.log('[Transcribe][session:new]', { reqId, sessionId: currentSessionId });
+} catch {}
       }
     }
 
@@ -236,7 +240,9 @@ export async function POST(req: NextRequest) {
     // Skip empty chunks to avoid noisy updates
     if (!transcript || !transcript.trim()) {
       if (debugEnabled) {
-        try { console.log('[Transcribe][persist:skip-empty]', { reqId, sessionId: currentSessionId }); } catch {}
+        try {
+ console.log('[Transcribe][persist:skip-empty]', { reqId, sessionId: currentSessionId });
+} catch {}
       }
       return NextResponse.json({ persisted: false, chunkId: null, sessionId: currentSessionId });
     }
@@ -258,7 +264,9 @@ export async function POST(req: NextRequest) {
       .set({ transcriptions: JSON.stringify(updatedTranscriptions), updatedAt: new Date() })
       .where(and(eq(patientSessions.id, currentSessionId), eq(patientSessions.userId, userId)));
     if (debugEnabled) {
-      try { console.log('[Transcribe][persist:ok]', { reqId, sessionId: currentSessionId, chunkId, textLen: newEntry.text.length, durationSec: newEntry.durationSec }); } catch {}
+      try {
+ console.log('[Transcribe][persist:ok]', { reqId, sessionId: currentSessionId, chunkId, textLen: newEntry.text.length, durationSec: newEntry.durationSec });
+} catch {}
     }
 
     // Aggregate Deepgram cost per session by summing durations and upserting single row
@@ -317,7 +325,9 @@ export async function POST(req: NextRequest) {
     });
   } catch (err: any) {
     try {
-      if (((globalThis as any).process?.env?.DEBUG_TRANSCRIBE) === '1') console.error('[Transcribe][fatal]', { err: err?.message || String(err) });
+      if (((globalThis as any).process?.env?.DEBUG_TRANSCRIBE) === '1') {
+ console.error('[Transcribe][fatal]', { err: err?.message || String(err) });
+}
     } catch {}
     return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
   }

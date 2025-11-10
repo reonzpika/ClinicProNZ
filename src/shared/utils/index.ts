@@ -69,5 +69,5 @@ export { checkTierFromSessionClaims, TIER_HIERARCHY } from './roles';
 export { BILLING_CONFIG, getPlanByTier, getTierByStripePriceId } from './billing-config';
 
 // Other utilities
-export { LAUNCH_CONFIG } from './launch-config';
 export { fetchWithRetry } from './fetchWithRetry';
+export { LAUNCH_CONFIG } from './launch-config';

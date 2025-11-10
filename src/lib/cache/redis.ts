@@ -49,4 +49,3 @@ export function hoursToSeconds(hours: number): number {
   const h = Number.isFinite(hours) && hours > 0 ? hours : 72;
   return Math.round(h * 3600);
 }
-

@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
-import { and, desc, eq } from 'drizzle-orm';
-
 import { getDb } from 'database/client';
+import { and, desc, eq } from 'drizzle-orm';
+import { NextResponse } from 'next/server';
+
 import { promptRollouts, promptVersions, users } from '@/db/schema';
-import { extractRBACContext } from '@/src/lib/rbac-enforcer';
 import { PromptOverridesService } from '@/src/features/prompts/prompt-overrides-service';
+import { extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 function ensureAdmin(context: any) {
   const isAdmin = context?.tier === 'admin';
