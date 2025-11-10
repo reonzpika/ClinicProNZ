@@ -1,0 +1,131 @@
+# Weekly LinkedIn Post - Week 2
+
+**Week Ending**: 2025-11-17  
+**Date Created**: 2025-11-10  
+**Status**: Collecting Articles
+
+---
+
+## Curated News Items
+
+### Item 1: Reseller News
+**Headline**: NZ govt rolls out AI scribe tool to doctors, despite concerns
+
+**Summary**: [To be written - Government deploying AI medical scribe despite concerns]
+
+**Link**: https://www.reseller.co.nz/article/4087164/nz-govt-rolls-out-ai-scribe-tool-to-doctors-despite-concerns.html
+
+**Notes**: AI scribe rollout by NZ government - likely high relevance for GPs using or considering scribe tools
+
+---
+
+### Item 2: NZ City
+**Headline**: [Headline to be extracted from article]
+
+**Summary**: [To be written]
+
+**Link**: https://home.nzcity.co.nz/news/article.aspx?id=433630
+
+**Notes**: [To be reviewed]
+
+---
+
+### Item 3: EurekAlert
+**Headline**: [Headline to be extracted from article]
+
+**Summary**: [To be written]
+
+**Link**: https://www.eurekalert.org/news-releases/1104853
+
+**Notes**: International research/news source - need to evaluate NZ relevance
+
+---
+
+[Additional items to be added as you find more articles]
+
+---
+
+## Content Theme (Draft)
+
+**Theme**: [To be determined once all articles collected - possibly AI in healthcare, scribe technology, etc.]
+
+**Hook Ideas**:
+- [To be written once theme is clear]
+
+---
+
+## LinkedIn Post Draft
+
+```
+[Draft to be written once all articles collected and theme is clear]
+
+📰 **This Week in NZ General Practice**
+
+• **[Item 1 Headline]** - [Brief 1 sentence summary]
+
+• **[Item 2 Headline]** - [Brief 1 sentence summary]
+
+• **[Item 3 Headline]** - [Brief 1 sentence summary]
+
+---
+
+**The big picture**: [1-2 sentences: Common theme or takeaway]
+
+**[Engagement question for GPs]** Share your experience in the comments 👇
+
+---
+
+💡 **This is a weekly series** — I curate the most relevant NZ healthcare news for GPs every week. Follow me to stay updated on what matters for general practice in Aotearoa.
+
+---
+
+**References:**
+1. NZ govt AI scribe rollout: https://www.reseller.co.nz/article/4087164/nz-govt-rolls-out-ai-scribe-tool-to-doctors-despite-concerns.html
+2. [Item 2]: https://home.nzcity.co.nz/news/article.aspx?id=433630
+3. [Item 3]: https://www.eurekalert.org/news-releases/1104853
+
+[@Mentions - to be selected]
+
+[#Hashtags - to be selected]
+```
+
+---
+
+## Image Details
+
+**Title**: "This Week in NZ General Practice: [Theme] Edition"
+
+**Nano Banana Prompt**: See `linkedin-weekly-workflow.md` section 3.
+
+---
+
+## Article Evaluation Notes
+
+**Status**: Articles collected, not yet evaluated
+
+**Next Steps**:
+1. Continue collecting articles through the week
+2. Use article evaluation prompt (created 2025-11-10) to assess quality
+3. Select top 3-5 articles for final post
+4. Draft post content
+5. Create image
+6. Post Tuesday-Thursday, 8-9am or 5-6pm NZST
+
+---
+
+## Posting Checklist
+
+- [ ] Article collection complete (aim for 5-7 articles, select best 3-5)
+- [ ] Articles evaluated using quality assessment prompt
+- [ ] Post content finalized
+- [ ] Image created
+- [ ] References verified
+- [ ] Mentions selected (2-4)
+- [ ] Hashtags selected (5-8)
+- [ ] Post scheduled/posted (Tuesday-Thursday, 8-9am or 5-6pm NZST)
+- [ ] Engagement monitoring set up
+- [ ] Metrics logged in `linkedin-post-log.md`
+
+---
+
+*Week 2 LinkedIn post - collecting articles*
