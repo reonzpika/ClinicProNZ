@@ -2,8 +2,8 @@
 project_name: GP Voices Community Site
 project_stage: Build
 owner: ClinicPro Engineering
-last_updated: "2025-11-08"
-version: "1.0.2"
+last_updated: "2025-11-10"
+version: "1.0.3"
 tags:
   - community
   - discourse
@@ -171,6 +171,9 @@ discourse-theme/gp-voices/
 ### Project Documentation
 - **Theme Documentation**: `docs/gp-voices-theme.md` — Theme scope, milestones, settings, file structure
 - **Setup Guide**: `docs/gp-voices-import-setup.md` — Step-by-step installation and configuration guide
+
+### LinkedIn Content Validation (Active Experiment)
+- **LinkedIn Content Summary**: [`linkedin-content-summary.md`](./linkedin-content-summary.md) — Validation experiment tracking, strategy, criteria (4-6 week test)
 - **LinkedIn Weekly Workflow**: [`linkedin-weekly-workflow.md`](./linkedin-weekly-workflow.md) — Reusable workflow for creating weekly LinkedIn posts (includes template, mentions, hashtags, image prompt)
 - **LinkedIn Post Log**: [`linkedin-post-log.md`](./linkedin-post-log.md) — Track posts, metrics, and learnings
 - **Weekly Post Template**: [`weekly-linkedin-post-template.md`](./weekly-linkedin-post-template.md) — Template to copy each week
@@ -211,6 +214,14 @@ discourse-theme/gp-voices/
 
 ## Updates
 
+### [2025-11-10] Week 1 LinkedIn Results & Validation Strategy
+- **Week 1 Results**: 8 new followers, 8 comments, 2 saves - BUT most engagement from AI tool vendors, not GPs/practice managers
+- **Critical Insight**: Engagement volume ≠ validation. Audience quality matters more than total reactions.
+- **Validation Criteria Established**: 4-6 week test; success = GP/practice manager engagement (not vendor engagement)
+- **Next Steps**: Collect news for Week 2 post; analyse follower/commenter profiles (GP vs vendor ratio)
+- **Decision Rule**: If GP engagement proven after 4-6 weeks → build automation. If not → stop weekly posts.
+- See `linkedin-content-summary.md` for full validation strategy and criteria
+
 ### [2025-11-08] Weekly LinkedIn News Curation Started
 - Created weekly LinkedIn post curation workflow to test demand before building AI-powered weekly summaries
 - Weekly posts curate 3-5 recent NZ medical news items from BPAC, NZ Doctor, Pharmac, HQSC, Ministry of Health, Medical Council, RNZCGP
@@ -227,5 +238,5 @@ discourse-theme/gp-voices/
 
 ---
 
-*Project Last Updated: [2025-11-08]*
+*Project Last Updated: [2025-11-10]*
 
