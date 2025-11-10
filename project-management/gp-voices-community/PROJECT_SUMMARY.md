@@ -220,7 +220,7 @@ discourse-theme/gp-voices/
 - **Validation Criteria Established**: 4-6 week test; success = GP/practice manager engagement (not vendor engagement)
 - **Next Steps**: Collect news for Week 2 post; analyse follower/commenter profiles (GP vs vendor ratio)
 - **Decision Rule**: If GP engagement proven after 4-6 weeks → build automation. If not → stop weekly posts.
-- **Google Alerts Setup**: Configured weekly email digests for AI/healthtech news in NZ medical area (primary: AI, healthtech, IT; secondary: GP, hospital, primary care, Medtech, Indici)
+- **Google Alerts Setup**: Configured 10 weekly email digests - 5 for NZ medical AI/healthtech news (primary: AI, healthtech, IT; secondary: GP, hospital, primary care, Medtech, Indici) + 5 for international GP AI innovations (global coverage)
 - See `linkedin-content-summary.md` for full validation strategy and criteria
 
 ### [2025-11-08] Weekly LinkedIn News Curation Started

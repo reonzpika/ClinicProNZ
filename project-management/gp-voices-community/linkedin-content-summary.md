@@ -105,11 +105,17 @@
 
 **News Gathering Method**:
 - **Google Alerts** (Weekly digests) - Set up 2025-11-10
+  
+  **NZ-Focused Alerts (5 alerts)**:
   - Primary keywords: AI, healthtech, artificial intelligence, IT
   - Secondary keywords: GP, general practice, hospital, primary care, Medtech, Indici
-  - All alerts filtered to "New Zealand" region
-  - Delivery: Weekly email digests
-  - Settings: "Only the best results" to reduce noise
+  - Region filter: New Zealand
+  
+  **International GP AI Alerts (5 alerts)**:
+  - Topics: AI GP innovation, AI clinical tools (US/UK/AU), AI adoption studies, AI GP use cases, healthtech funding
+  - Region: Global (any region)
+  
+  **Settings**: Weekly email digests, "Only the best results" to reduce noise
 
 ---
 
