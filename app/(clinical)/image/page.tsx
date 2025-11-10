@@ -140,7 +140,7 @@ export default function ClinicalImagePage() {
       return;
     }
     // Step 1: fetch URLs with concurrency limit 10
-    const urls: Array<{ url: string; name: string } | null> = Array.from({ length: images.length }).fill(null);
+    const urls: Array<{ url: string; name: string } | null> = Array.from({ length: images.length }, () => null);
     for (let i = 0; i < images.length; i += 10) {
       const slice = images.slice(i, i + 10);
       const results = await Promise.all(slice.map(async (img) => {

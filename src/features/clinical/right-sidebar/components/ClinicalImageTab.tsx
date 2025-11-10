@@ -369,7 +369,7 @@ export const ClinicalImageTab: React.FC = () => {
  return;
 }
     // Fetch URLs with concurrency 10 (batching)
-    const results: Array<{ url: string; name: string } | null> = Array.from({ length: images.length }).fill(null);
+    const results: Array<{ url: string; name: string } | null> = Array.from({ length: images.length }, () => null);
     for (let i = 0; i < images.length; i += 10) {
       const slice = images.slice(i, i + 10);
       const urls = await Promise.all(slice.map(async (img) => {
