@@ -109,7 +109,7 @@ Ask specific, contextual questions:
 When creating a new project:
 1. Ask about stage (Ideation/Validation/Build/Operational) and project type (SaaS/marketplace/research/grant/etc)
 2. Generate folder structure ad-hoc based on answers
-3. Create PROJECT_SUMMARY.md immediately (mandatory)
+3. Create PROJECT_SUMMARY.md immediately (mandatory) - use template: [`PROJECT_SUMMARY_TEMPLATE.md`](./PROJECT_SUMMARY_TEMPLATE.md)
 4. Use kebab-case for folder name
 5. Update PROJECTS_OVERVIEW.md with new project
 
