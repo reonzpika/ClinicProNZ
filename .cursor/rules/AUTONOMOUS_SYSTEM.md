@@ -1,7 +1,7 @@
 # Autonomous Project Management System
 
-**Version**: 2.1.0 (Conversation-Driven)  
-**Last Updated**: 2025-11-09  
+**Version**: 3.0.0 (Conversation-Driven + Enforced)  
+**Last Updated**: 2025-11-10  
 **Status**: ✅ Active
 
 ---
@@ -127,20 +127,23 @@ What should we focus on next session?
 
 ---
 
-## Always-Loaded Rules (843 lines, ~4,200 tokens)
+## Always-Loaded Rules (~1,200 lines, ~6,000 tokens)
 
 ```
-Core Rules (7 files):
+Core Rules (9 files - 2 new in v3.0):
 ├── system-context.mdc (22 lines)
-├── current-task.mdc (111 lines) - Conversation-driven workflow
-├── document-creation.mdc (75 lines)
-├── autonomous-updates.mdc (523 lines) ⭐ NEW - Conversational triggers
+├── user-intent-understanding.mdc (140 lines) ⭐ Enhanced with intent detection
+├── current-task.mdc (160 lines) ⭐ Enhanced with 🛑 STOP enforcement
+├── advisory-role.mdc (46 lines) ⭐ NOW ALWAYS-LOADED - Discuss-first mindset
+├── core-principles.mdc (110 lines) ⭐ NOW ALWAYS-LOADED - Project registry
+├── document-creation.mdc (163 lines)
+├── autonomous-updates.mdc (523 lines) - Conversational triggers
 ├── communication-style.mdc (33 lines)
-├── nz-localization.mdc (19 lines)
-└── user-intent-understanding.mdc (60 lines)
+└── nz-localization.mdc (19 lines)
 ```
 
-**Token Cost**: ~4,200 tokens (excellent efficiency for autonomous system)
+**Token Cost**: ~6,000 tokens (increased by ~1,800 tokens in v3.0)
+**Trade-off**: Higher token cost, but eliminates AI discretion and ensures correct behavior
 
 ---
 
@@ -386,12 +389,16 @@ Show value ("Look what I captured for you"). Build trust and transparency.
 
 ## Implementation Status
 
-**✅ Complete**:
-- Autonomous updates rule created (523 lines)
-- Core principles updated with autonomy
-- Conversation-driven workflow implemented
-- Communication fundamentals always-loaded
-- Session-end summaries specified
+**✅ Complete (v3.0)**:
+- Autonomous updates rule (523 lines)
+- Intent detection (DISCUSS vs EXECUTE)
+- 🛑 STOP enforcement at critical checkpoints
+- Project name registry in core-principles
+- Advisory role always-loaded (discuss-first mindset)
+- Core principles always-loaded (project context priority)
+- Strengthened vague query detection
+- Conversation-driven workflow with mandatory context loading
+- Session-end summaries
 
 **⏳ Next Phase** (Future):
 - Context retention across sessions

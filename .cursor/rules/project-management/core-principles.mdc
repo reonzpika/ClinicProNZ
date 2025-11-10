@@ -1,13 +1,45 @@
 ---
 description: "Core principles for project management system"
-alwaysApply: false
+alwaysApply: true
 globs: 
   - "**/project-management/**"
-version: "1.0.0"
-last_updated: "2025-11-09"
+version: "2.0.0"
+last_updated: "2025-11-10"
+priority: CRITICAL
 ---
 
 # Core Principles
+
+## 🚨 PROJECT NAME REGISTRY 🚨
+
+**CRITICAL: When user mentions these terms, they are referring to PROJECTS (not just code features).**
+
+**Active Projects** (each has PROJECT_SUMMARY.md that MUST be read before any work):
+
+| User Says | Project Folder | Action Required |
+|-----------|----------------|------------------|
+| "medtech" / "medtech integration" / "ALEX" | `medtech-integration` | Read `/project-management/medtech-integration/PROJECT_SUMMARY.md` |
+| "clinicpro" / "clinic pro" / "saas" | `clinicpro` | Read `/project-management/clinicpro/PROJECT_SUMMARY.md` |
+| "gp voices" / "community" / "discourse" | `gp-voices-community` | Read `/project-management/gp-voices-community/PROJECT_SUMMARY.md` |
+| "r&d grant" / "grant" / "callaghan" | `new_to_r&d_grant` | Read `/project-management/new_to_r&d_grant/PROJECT_SUMMARY.md` |
+| "project management saas" / "pm saas" | `project-management-ai-saas` | Read `/project-management/project-management-ai-saas/PROJECT_SUMMARY.md` |
+
+**Rule: Before touching ANY files related to these projects, you MUST:**
+1. Read `/project-management/PROJECTS_OVERVIEW.md` first
+2. Read the relevant `PROJECT_SUMMARY.md` second
+3. Understand project context (stage, goals, blockers, progress)
+4. THEN discuss or implement (based on user intent)
+
+**❌ NEVER do this:**
+- Hear "medtech" → immediately explore codebase
+- Hear "improve X" → immediately implement changes
+- Touch project files without reading PROJECT_SUMMARY.md first
+
+**✅ ALWAYS do this:**
+- Hear "medtech" → Read PROJECTS_OVERVIEW.md + medtech-integration/PROJECT_SUMMARY.md → Then discuss/act
+- Hear "work on X" → Read project context → Discuss scope/problems → Wait for approval → Then implement
+
+---
 
 ## Quick Reference - Critical Rules
 1. **PROJECT_SUMMARY.md REQUIRED**: Every project MUST have `PROJECT_SUMMARY.md` - create immediately if missing
@@ -15,8 +47,9 @@ last_updated: "2025-11-09"
 3. **MANDATORY SYNC**: If `PROJECT_SUMMARY.md` is updated, `PROJECTS_OVERVIEW.md` MUST be updated in the same task - NEVER skip this
 4. **Document Creation Timing**: Only create documents when task is complete OR future reference needed. During discussions/planning, respond in chat only - DO NOT create interim/working documents.
 5. **User Intent**: Assume users can't write good prompts - understand intent, clarify ambiguities, research proactively
-6. **Template-Driven**: Auto-select templates, load on-demand only, adapt folder structures
-7. **Update Dashboard**: After ANY `PROJECT_SUMMARY.md` change, update `PROJECTS_OVERVIEW.md` with highlights and status
+6. **DISCUSS-FIRST Default**: Unless explicitly told to implement/build, ALWAYS discuss before acting. "Work on", "improve", "enhance", "fix" = discuss first.
+7. **Template-Driven**: Auto-select templates, load on-demand only, adapt folder structures
+8. **Update Dashboard**: After ANY `PROJECT_SUMMARY.md` change, update `PROJECTS_OVERVIEW.md` with highlights and status
 
 ## Core Principles
 - **PROJECT_SUMMARY.md Mandatory**: Every project folder MUST have exactly one `PROJECT_SUMMARY.md` (living source-of-truth). Create immediately if missing.

@@ -2,8 +2,8 @@
 description: "Understanding user intent and context-aware clarification"
 alwaysApply: true
 globs: []
-version: "2.0.0"
-last_updated: "2025-11-09"
+version: "2.1.0"
+last_updated: "2025-11-10"
 priority: CRITICAL
 load_order: 1
 ---
@@ -20,6 +20,7 @@ load_order: 1
 - Ambiguous requests where intent is unclear
 - Queries that could mean multiple different things
 - Exploratory/research questions without specific action
+- **Ambiguous action phrases without scope** (e.g., "work on X", "improve X", "enhance X", "fix X")
 
 ### If Query is Vague → STOP IMMEDIATELY:
 1. ⛔ **DO NOT search** (no grep, no glob, no file exploration)
@@ -113,6 +114,89 @@ When user request is vague or could mean multiple things:
 ```
 Vague Query → ASK → Get Clarity → Smart Cascade (if needed) → Act
 NOT: Vague Query → Search → Search → Search → Read → Ask
+```
+
+---
+
+## 🚨 INTENT DETECTION: DISCUSS vs EXECUTE 🚨
+
+**CRITICAL: Determine if user wants discussion or implementation BEFORE taking action.**
+
+### DISCUSS-FIRST Triggers (Always Discuss Before Acting):
+
+These phrases mean "let's talk about this first, don't implement yet":
+- **"work on"** (e.g., "work on X") → DISCUSS scope, problems, approach
+- **"improve"** (e.g., "improve X") → DISCUSS what's wrong, what needs improving
+- **"enhance"** (e.g., "enhance X") → DISCUSS goals, priorities
+- **"fix"** (e.g., "fix X" without specific error) → DISCUSS what's broken, why
+- **"look at"** (e.g., "look at X") → DISCUSS what to examine, why
+- **Any question** (e.g., "What about X?") → ANSWER, don't implement
+- **Exploratory phrases** (e.g., "thoughts on", "ideas for") → DISCUSS only
+
+**Default rule: Unless explicitly told to implement/build, ALWAYS discuss first.**
+
+### EXECUTE Triggers (May Proceed with Implementation):
+
+These phrases mean "go ahead and implement" (but still verify scope is clear):
+- **"implement [specific thing]"** → May execute if scope is clear
+- **"build [specific thing]"** → May execute if scope is clear
+- **"create [specific thing]"** → May execute if scope is clear
+- **"add [specific feature/code]"** → May execute if scope is clear
+
+**Critical: Even with EXECUTE triggers, verify scope is clear before proceeding.**
+
+### Handling Pattern:
+
+**When DISCUSS-FIRST trigger detected:**
+1. 🛑 **STOP**: Do NOT explore codebase, do NOT implement
+2. 📖 **READ**: Read PROJECTS_OVERVIEW.md + relevant PROJECT_SUMMARY.md for context
+3. 💬 **DISCUSS**: Ask about current problems, goals, priorities
+4. 🎯 **CLARIFY**: Get explicit scope and approval before any implementation
+5. ⏸️ **WAIT**: Don't implement until user explicitly says "let's do this" or "implement this"
+
+**When EXECUTE trigger detected:**
+1. ✅ **VERIFY**: Check if scope is clear and specific
+2. 📖 **READ**: Read PROJECTS_OVERVIEW.md + relevant PROJECT_SUMMARY.md for context
+3. 🎯 **CONFIRM**: Brief confirmation of what will be implemented
+4. 🚀 **EXECUTE**: Proceed with implementation
+
+### Examples:
+
+❌ **WRONG**:
+```
+User: "I want to work on medtech integration UI/UX improvement"
+AI: [explores codebase, implements changes]
+```
+
+✅ **CORRECT**:
+```
+User: "I want to work on medtech integration UI/UX improvement"
+AI: "Let's discuss this first. I've reviewed the project context.
+     
+     What specific UI/UX problems are you experiencing? 
+     What user feedback prompted this? 
+     Which workflows feel clunky?"
+```
+
+❌ **WRONG**:
+```
+User: "Improve the error handling"
+AI: [starts implementing error handling improvements]
+```
+
+✅ **CORRECT**:
+```
+User: "Improve the error handling"
+AI: "What errors are you seeing? What's not working well?
+     Let's identify the problems first, then prioritize improvements."
+```
+
+✅ **CORRECT** (with EXECUTE trigger):
+```
+User: "Implement drag-and-drop file upload in the medtech widget"
+AI: "Got it - adding drag-and-drop to the medtech image widget.
+     I'll implement dropzone with visual feedback and file validation.
+     [proceeds with implementation]"
 ```
 
 ---
