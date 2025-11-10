@@ -17,6 +17,12 @@ last_updated: "2025-11-09"
 **Technical Rules**: ClinicPro-specific technical rules coexist with project management rules:
 - `.cursor/rules/technical/debugging-strategy.mdc` - Technical debugging approach
 
+**🛑 FILE OPERATIONS - CRITICAL REMINDER 🛑**
+Before ANY Write/Edit/Delete tool:
+1. Use `<thinking>` block to check `.cursor/rules/core/document-creation.mdc` checklist
+2. Creating FILE #2+ in one session? → STOP - likely violation (unless user explicitly requested each)
+3. During testing/exploration? → Report in chat, DON'T create interim docs
+
 ---
 
 # End of System Context
