@@ -48,7 +48,7 @@ Check the `project_keywords` in YAML frontmatter above:
 
 If project keyword matched:
 - Read `/project-management/[project-folder]/PROJECT_SUMMARY.md`
-- Opening PROJECT_SUMMARY.md will auto-load `project-work-rules.mdc`
+- **Read project work rules**: `/workspace/.cursor/rules/project-work-rules.mdc`
 - Now you have full context - follow the workflow in that rule file
 
 ### 3. Is This a New Project?
