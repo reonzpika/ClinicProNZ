@@ -3,7 +3,7 @@ project_name: Projects Overview - Mission Control
 project_stage: Operational
 owner: AI Assistant
 last_updated: "2025-11-10"
-version: "4.0.0"
+version: "4.0.1"
 tags:
   - dashboard
   - portfolio
@@ -103,6 +103,7 @@ If user query is clearly not about projects:
 - **2025-01-15**: Project management system installed — NexWave system adapted for ClinicPro workspace
 - **2025-01-15**: Medtech integration gateway OAuth service completed (Oct 31)
 - **2025-01-15**: ClinicPro SaaS production deployment operational
+- **2025-11-10**: GP Voices Community - Week 1 LinkedIn validation results: 8 new followers, but most engagement from AI vendors (not GPs). Validation criteria established: 4-6 week test tracking GP engagement quality vs quantity. Automation only if GP demand proven.
 - **2025-11-09**: Project Management AI SaaS - 🎉 MAJOR MILESTONE: Working prototype complete! Modular rule system (15 files), autonomous updates system (523 lines), conversation-driven workflow implemented. System now operational and being dogfooded. Stage moved Validation → Build.
 - **2025-11-08**: Project Management AI SaaS - PM system improvements documented. Added "Document Creation Timing" rule to prevent creating interim documents during discussions. Rule will inform SaaS product UX design (draft mode vs saved documents, explicit save actions).
 - **2025-11-07**: ClinicPro project summary synced to codebase; tech stack verified; security/route docs added
@@ -205,13 +206,15 @@ If user query is clearly not about projects:
 - **Folder**: `gp-voices-community`
 - **Stage**: Build
 - **Owner**: Solo Founder/Developer
-- **Last Updated**: 2025-01-15
-- **Summary**: Mobile-first Discourse community platform for ClinicPro users (New Zealand GPs). Custom Discourse theme providing comment-first UX, AI-powered weekly summaries, tag-based content organisation, and Clerk OIDC authentication integration.
+- **Last Updated**: 2025-11-10
+- **Summary**: Mobile-first Discourse community platform for ClinicPro users (New Zealand GPs). Custom Discourse theme providing comment-first UX, AI-powered weekly summaries, tag-based content organisation, and Clerk OIDC authentication integration. **Active LinkedIn validation experiment** (Week 1/6 complete) testing demand for curated NZ healthcare news before building automation.
 - **Key Dates**: 
   - Project initialised: 2025-01-15
   - Theme components implemented: 2025-01-15
+  - LinkedIn validation started: 2025-11-08
+  - LinkedIn validation decision: ~2025-12-20 (after 4-6 weeks)
   - Configuration and deployment: Pending
-- **Status**: Active — Theme development in progress
+- **Status**: Active — Theme development in progress; LinkedIn content validation in progress (Week 1: vendor engagement > GP engagement)
 - **Link**: [View Full Summary](./gp-voices-community/PROJECT_SUMMARY.md)
 - **Technical Docs**: `/docs/gp-voices-theme.md`, `/docs/gp-voices-import-setup.md`
 - **Theme Location**: `/discourse-theme/gp-voices/`
@@ -265,4 +268,4 @@ If user query is clearly not about projects:
 
 ---
 
-*Dashboard Last Updated: [2025-11-09] - Project Management AI SaaS: Working prototype complete, autonomous system operational*
+*Dashboard Last Updated: [2025-11-10] - GP Voices: LinkedIn validation Week 1 results tracked; audience quality vs quantity insight established*
