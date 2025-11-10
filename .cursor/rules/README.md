@@ -1,331 +1,339 @@
 # Cursor AI Rules System
 
-**Version**: 3.1.0 (Autonomous + Enforced + After-Completion)  
+**Version**: 4.0.0 (Simplified Multi-Level)  
 **Last Updated**: 2025-11-10  
-**Architecture**: 15 modular files, conversation-driven, updates after completion, strict enforcement
+**Architecture**: 2 core files + embedded navigation
 
 ---
 
-## 📁 Directory Structure
+## What Changed in v4.0
+
+**Problem in v3.x**: 15 files, 1,200+ lines always-loaded, AI overwhelmed with competing instructions, would bypass "read overview first" checkpoint.
+
+**Solution in v4.0**: Radical simplification with hard-gated multi-level system.
+
+---
+
+## System Architecture
+
+### Level 0: The Gate (Always-Loaded)
+
+**File**: `mandatory-overview-first.mdc` (~50 lines, ~250 tokens)
+
+**Purpose**: Single instruction - read PROJECTS_OVERVIEW.md before anything else.
+
+**Why it works**: So simple AI can't misinterpret. No competing instructions, no escape hatches.
+
+---
+
+### Level 1: Navigation (Embedded in Overview)
+
+**File**: `/project-management/PROJECTS_OVERVIEW.md`
+
+**Contains**:
+1. **YAML keyword registry** - Maps keywords to project folders
+2. **AI Navigation Instructions** - What to do after reading overview:
+   - Match query to project via keywords
+   - Load that project's PROJECT_SUMMARY.md
+   - Handle new projects, general queries, ambiguous requests
+
+**Why embedded**: Instructions are IN the file AI must read. Can't skip navigation logic.
+
+---
+
+### Level 2: Work Rules (Auto-Loads on Context)
+
+**File**: `project-work-rules.mdc` (~800 lines, ~4,000 tokens)
+
+**Loads when**: Any PROJECT_SUMMARY.md opens (via glob pattern)
+
+**Contains everything**:
+- Communication principles (advisory role, NZ English, directness)
+- Work workflow (discuss → approve → implement → update)
+- Documentation management (when to create files, autonomous updates)
+- Dashboard sync rules (PROJECT_SUMMARY ↔ PROJECTS_OVERVIEW)
+- Technical guidelines (debugging, code patterns)
+- Validation checklist
+
+**Why consolidated**: One place for all work rules. Loads only when doing project work.
+
+---
+
+## Token Efficiency
+
+| Version | Always-Loaded | Context-Loaded | Total |
+|---------|---------------|----------------|-------|
+| v3.1 | ~1,200 lines (~6,000 tokens) | ~500 lines | ~1,700 lines |
+| v4.0 | ~50 lines (~250 tokens) | ~800 lines | ~850 lines |
+
+**Reduction**: 97% fewer always-loaded tokens, 50% fewer total lines.
+
+---
+
+## How It Works
+
+### Example 1: Project Query
+
+```
+User: "I want to work on medtech"
+
+AI Process:
+1. Reads mandatory-overview-first.mdc → "Read overview"
+2. Reads PROJECTS_OVERVIEW.md
+3. Sees navigation instructions
+4. Checks keyword registry: "medtech" → medtech-integration folder
+5. Reads /project-management/medtech-integration/PROJECT_SUMMARY.md
+6. Opening PROJECT_SUMMARY.md triggers glob → project-work-rules.mdc loads
+7. Now has full context + all work rules
+8. Follows workflow: Discuss → Approve → Implement → Update
+```
+
+### Example 2: General Query
+
+```
+User: "What's 2+2?"
+
+AI Process:
+1. Reads mandatory-overview-first.mdc → "Read overview"
+2. Reads PROJECTS_OVERVIEW.md
+3. Sees navigation instructions: "Not project-related? Answer directly"
+4. Responds: "4"
+5. Adds: "Not related to your projects, but let me know if you need anything else!"
+```
+
+### Example 3: New Project
+
+```
+User: "Create new mobile app project"
+
+AI Process:
+1. Reads mandatory-overview-first.mdc → "Read overview"
+2. Reads PROJECTS_OVERVIEW.md
+3. Checks keywords: No match for "mobile app"
+4. Navigation says: "Ask if new project"
+5. AI asks: "Is this: (A) New project, (B) Related to existing, (C) General?"
+6. User: "New project"
+7. AI asks details, creates PROJECT_SUMMARY.md, updates overview
+```
+
+---
+
+## File Structure
 
 ```
 .cursor/rules/
-├── core/                    [Always Loaded - Autonomous]
-│   ├── system-context.mdc
-│   ├── current-task.mdc (conversation-driven workflow)
-│   ├── document-creation.mdc
-│   ├── autonomous-updates.mdc ⭐ NEW - Conversational triggers
-│   ├── communication-style.mdc
-│   ├── nz-localization.mdc
-│   └── user-intent-understanding.mdc
-│
-├── communication/           [Mixed]
-│   ├── advisory-role.mdc ⭐ NOW ALWAYS LOADED
-│   └── analysis-paralysis-detection.mdc [On-Demand]
-│
-├── project-management/      [Mixed]
-│   ├── core-principles.mdc ⭐ NOW ALWAYS LOADED (project registry + context priority)
-│   ├── project-summary-rules.mdc
-│   ├── dashboard-sync-rules.mdc
-│   ├── template-system-rules.mdc
-│   ├── metadata-rules.mdc
-│   └── project-creation-workflow.mdc
-│
-└── technical/               [File-Scoped]
-    └── debugging-strategy.mdc
+├── mandatory-overview-first.mdc (Always-loaded, Level 0)
+├── project-work-rules.mdc (Auto-loads on PROJECT_SUMMARY.md, Level 2)
+├── library-first-approach.mdc (Workspace rule, always-loaded)
+├── fhir-medtech-development.mdc (Technical FHIR rules, on-demand)
+└── README.md (This file)
+
+/project-management/
+├── PROJECTS_OVERVIEW.md (Contains navigation + keyword registry, Level 1)
+├── [project-name]/
+│   ├── PROJECT_SUMMARY.md (Required for each project)
+│   └── PROJECT_RULES.mdc (Optional project-specific rules)
+└── ...
 ```
 
 ---
 
-## 🎯 Quick Reference
+## Key Rules
 
-### When Rules Load
+### 1. Overview First (Always)
 
-**Always (Every Session - Enforced Core)**:
-- `core/system-context.mdc`
-- `core/user-intent-understanding.mdc` ⭐ Vague query detection + DISCUSS vs EXECUTE intent
-- `core/current-task.mdc` (conversation-driven workflow with 🛑 STOP enforcement)
-- `communication/advisory-role.mdc` ⭐ NOW ALWAYS-LOADED - Discuss-first mindset
-- `project-management/core-principles.mdc` ⭐ NOW ALWAYS-LOADED - Project registry + context priority
-- `core/document-creation.mdc`
-- `core/autonomous-updates.mdc` ⭐ Continuous project updates
-- `core/communication-style.mdc`
-- `core/nz-localization.mdc`
+Before responding to ANY query, AI must read PROJECTS_OVERVIEW.md. No exceptions.
 
-**When Editing Specific Files**:
-- `PROJECT_SUMMARY.md` → `project-summary-rules.mdc`
-- `PROJECTS_OVERVIEW.md` → `dashboard-sync-rules.mdc`
-- `Templates/*.md` → `template-system-rules.mdc`
-- `*.ts, *.tsx, *.py` → `debugging-strategy.mdc`
-- `*.md, *.tsx, *.ts` → `nz-localization.mdc`
+### 2. Navigation is Embedded
 
-**When Needed (Workflow)**:
-- Procrastination detected → `communication/analysis-paralysis-detection.mdc`
+All navigation logic lives in the overview file itself:
+- Keyword registry (YAML)
+- Matching instructions
+- What to do for new projects, general queries, ambiguous requests
 
-**Note**: advisory-role and user-intent-understanding are now always-loaded (v3.0)
+### 3. Work Rules Load on Context
 
----
+project-work-rules.mdc only loads when PROJECT_SUMMARY.md opens. This ensures:
+- AI has project context before seeing work rules
+- No wasted tokens when not doing project work
+- Rules are relevant to current task
 
-## 🔑 Critical Rules
+### 4. Discuss Before Implementing
 
-### 1. Intent Detection (DISCUSS vs EXECUTE) ⭐ NEW in v3.0
-**Rule**: AI determines if user wants discussion or implementation BEFORE acting.
+"Work on X", "improve Y", "fix Z" → Discuss first, get approval, then implement.
 
-**DISCUSS-FIRST triggers** (always discuss before implementing):
-- "work on", "improve", "enhance", "fix", "look at"
-- Any questions
-- Default: Unless explicitly told to implement, discuss first
+"Implement X", "build Y" → Verify scope, then proceed.
 
-**EXECUTE triggers** (may proceed with implementation):
-- "implement [specific thing]", "build [specific thing]"
-- Must verify scope is clear
+### 5. Dashboard Sync is Mandatory
 
-**AI behavior**: Detects intent → Reads project context → Discusses (if DISCUSS-FIRST) or implements (if EXECUTE with clear scope)
+When PROJECT_SUMMARY.md changes, PROJECTS_OVERVIEW.md MUST update:
+- Active Projects Index (dates, stage)
+- Highlights (achievements, blockers)
+- Schedule (upcoming/past events)
+- Project Details (summary, status)
 
-### 2. Autonomous Updates (AFTER COMPLETION) ⭐ Updated v3.1
-**Rule**: AI updates project documentation AFTER work is complete.
+### 6. Ad-Hoc Templates
 
-**Two areas**:
-- **Project docs** (`/project-management/`): Autonomous updates, no approval needed
-- **Codebase**: Discuss → Suggest → Approve → Implement → Update docs
-
-**Update timing**:
-- After implementation complete → Update PROJECT_SUMMARY.md
-- After plan finalized (even if deferred) → Update PROJECT_SUMMARY.md
-- NOT during discussion → Stay in chat
-
-**User never needs to**:
-- Say "update the project"
-- Manually edit PROJECT_SUMMARY.md
-- Think about documentation
-
-### 3. Document Creation Timing (ALWAYS ENFORCED)
-**Rule**: Only create files when task is complete OR needs future reference.
-
-**During discussions/planning**: Respond in chat only.
-
-### 4. PROJECT_SUMMARY.md ↔ PROJECTS_OVERVIEW.md Sync (MANDATORY)
-**Rule**: When `PROJECT_SUMMARY.md` changes, `PROJECTS_OVERVIEW.md` MUST update in same task.
-
-**Happens automatically in autonomous mode.**
-
-### 5. Document References (CRITICAL)
-**Rule**: New files in project directory MUST be referenced in `PROJECT_SUMMARY.md`.
-
-**Why**: AI reads `PROJECT_SUMMARY.md` first. Unreferenced files = missed in future.
+No template files. Generate project structures on-the-fly based on:
+- Project stage (Ideation/Validation/Build/Operational)
+- Project type (SaaS/marketplace/research/grant)
+- Specific needs (discussed with user)
 
 ---
 
-## 🚀 Common Tasks
+## Project-Specific Rules
 
-### Create New Project
-```
-AI follows project-creation-workflow.mdc:
-1. Gather details
-2. Create directory (kebab-case)
-3. Create PROJECT_SUMMARY.md IMMEDIATELY
-4. Select template
-5. Create folders
-6. Update PROJECTS_OVERVIEW.md
-```
+Projects can have unique rules in `[project-folder]/PROJECT_RULES.mdc`:
 
-### Update Project
-```
-AI follows validation checklist:
-1. Update PROJECT_SUMMARY.md
-2. Update PROJECTS_OVERVIEW.md (mandatory sync)
-3. Bump version
-4. Update last_updated
-5. Reference any new files
-```
-
-### Get Advisory Feedback
-```
-Ask for feedback on decisions
-→ advisory-role.mdc loads
-→ Brutal honesty, challenges assumptions
-→ Action bias (build over plan)
-```
-
----
-
-## 📊 Stats
-
-| Metric | Value |
-|--------|-------|
-| Total Files | 15 |
-| Total Lines | ~1,700 |
-| Always-Loaded (Enforced Core) | ~1,200 lines (~6,000 tokens) |
-| Context-Aware | Remaining lines (load on-demand) |
-| System Mode | Conversation-Driven (Autonomous + Enforced) |
-
-**v3.0 Changes**: Added 2 rules to always-loaded (advisory-role, core-principles) + strengthened enforcement with 🛑 STOP points and intent detection. Token cost increased by ~1,800 tokens but eliminates AI discretion and ensures correct behavior.
-
-**v3.1 Changes**: Changed autonomous updates from "during conversation" to "after completion". Code workflow: Discuss → Suggest → Approve → Implement → Update docs. Plans documented even if deferred. Explicit doc override phrases added.
-
----
-
-## 🧪 Testing
-
-**Quick Smoke Test**:
-```
-1. Ask: "What system am I in?"
-   → Should know project management structure
-
-2. Ask: "I want to work on medtech integration improvements"
-   → Should read PROJECTS_OVERVIEW.md + PROJECT_SUMMARY.md FIRST
-   → Should DISCUSS (not implement): "What specific problems?" "What needs improving?"
-   → Should NOT explore codebase or make changes without explicit approval
-
-3. Ask: "What do you think about X?"
-   → Should respond in chat (not create file)
-
-4. Update PROJECT_SUMMARY.md
-   → Should also update PROJECTS_OVERVIEW.md
-
-5. Ask: "Implement drag-and-drop in medtech widget"
-   → Should read project context first
-   → Should proceed with implementation (EXECUTE trigger with clear scope)
-
-6. Create new project
-   → Should follow complete workflow
-```
-
-**Full Test Plan**: See `TEST_PLAN.md`
-
----
-
-## 🔧 Maintenance
-
-### Adding New Rules
-1. Create file in appropriate folder
-2. Add YAML frontmatter with `alwaysApply` and `globs`
-3. Set `version` and `last_updated`
-4. Declare `dependencies` if needed
-5. Test loading behavior
-
-### Modifying Existing Rules
-1. Update file content
-2. Bump `version` (patch/minor/major)
-3. Update `last_updated`
-4. Test for regressions
-5. Update dependencies if hierarchy changes
-
-### Disabling Rules
+**Example**: `medtech-integration/PROJECT_RULES.mdc`
 ```yaml
-# Temporarily disable
+---
 alwaysApply: false
-globs: []  # Remove auto-loading
-
-# Or move to /disabled/ folder
-```
-
----
-
-## 📝 YAML Frontmatter Template
-
-```yaml
----
-description: "Brief description of what this rule does"
-alwaysApply: false  # true = always loaded, false = on-demand
 globs: 
-  - "**/*.ts"  # Auto-load when editing these files
-  - "**/*.tsx"
-version: "1.0.0"  # Semantic versioning
-last_updated: "2025-11-09"  # ISO 8601 date
-dependencies:  # Optional: other rules this depends on
-  - "path/to/other-rule.mdc"
-priority: CRITICAL  # Optional: HIGH, MEDIUM, LOW
+  - "**/medtech-integration/PROJECT_SUMMARY.md"
 ---
+
+# Medtech Integration Specific Rules
+
+- Always validate FHIR compliance
+- Check API rate limits before bulk operations
+- Medical data requires extra security validation
 ```
 
----
-
-## 🐛 Troubleshooting
-
-### Rule Not Loading
-1. Check `alwaysApply` setting
-2. Check `globs` pattern matches file
-3. Verify YAML frontmatter is valid
-4. Check Cursor console for errors
-
-### Rules Conflicting
-1. Check for circular dependencies
-2. Verify hierarchy (core → domain → data)
-3. Check if multiple rules claim same responsibility
-
-### Token Limits Hit
-1. Check which rules are always-loaded
-2. Move non-critical rules to on-demand
-3. Use more specific globs for auto-loading
+**When to use**: Only when project has unique requirements not covered by general rules.
 
 ---
 
-## 📚 Documentation
+## Testing the System
 
-- **MIGRATION_SUMMARY.md**: What changed, why, and how
-- **TEST_PLAN.md**: Comprehensive testing checklist
-- **README.md**: This file - quick reference
+### Quick Test
 
----
+**Test 1**: Project query
+- Say: "work on medtech"
+- Expected: AI reads overview → matches keyword → loads project summary → discusses (doesn't implement immediately)
 
-## 🎓 Best Practices
+**Test 2**: New project
+- Say: "create new project for X"
+- Expected: AI reads overview → no keyword match → asks if new project → creates after details gathered
 
-1. **Always-Load Only Essentials**: Keep always-loaded rules minimal (<200 lines total)
-2. **Use File-Scoped Globs**: Auto-load rules when editing specific files
-3. **Single Responsibility**: One concern per file
-4. **No Circular Refs**: Clear hierarchy (core → domain → data)
-5. **Version Everything**: Track changes with semver
-6. **Test After Changes**: Run smoke test minimum
+**Test 3**: General query
+- Say: "what's React hooks?"
+- Expected: AI reads overview → determines not project-related → answers briefly → mentions if relevant to projects
 
----
-
-## 🏆 Success Metrics
-
-**System is working well if**:
-- ✅ Token usage is efficient (only relevant rules loaded)
-- ✅ Rules auto-load without manual prompting
-- ✅ Validation checklists catch errors
-- ✅ No circular loading issues
-- ✅ Easy to maintain and update
-- ✅ Clear which rule governs which behavior
+**Test 4**: Dashboard sync
+- Edit any PROJECT_SUMMARY.md
+- Expected: PROJECTS_OVERVIEW.md also updates (index, highlights, schedule, details)
 
 ---
 
-## 💡 For Your SaaS Product
+## Success Metrics
 
-This rule system is a **working prototype** for your Project Management AI SaaS:
+**System is working when**:
+- ✅ AI always reads overview first (no codebase exploration before context)
+- ✅ AI matches queries to projects via keywords accurately
+- ✅ AI discusses before implementing code changes
+- ✅ Dashboard stays synchronized with project summaries
+- ✅ No unnecessary files created during discussions
 
-1. **Modular Architecture** → Feature modules in SaaS
-2. **Context-Aware Loading** → Smart UI based on user context
-3. **File-Scoped Triggers** → Workflow automation
-4. **Validation Checklists** → User guidance/onboarding
-5. **Rule Hierarchy** → System architecture
-
-**You're dogfooding your product right now.** Learn from what works/doesn't work.
-
----
-
-## 📞 Support
-
-**Questions?** 
-1. Check MIGRATION_SUMMARY.md for detailed explanation
-2. Check TEST_PLAN.md for testing guidance
-3. Review specific rule file (they're well-documented)
-4. Ask in next Cursor session
-
-**Issues?**
-1. Check Cursor console for errors
-2. Verify YAML frontmatter is valid
-3. Run smoke test to isolate issue
-4. Rollback if critical (see MIGRATION_SUMMARY.md)
+**System needs tuning when**:
+- ❌ AI explores codebase before reading overview
+- ❌ AI implements changes without discussion/approval
+- ❌ Dashboard gets out of sync with project summaries
+- ❌ AI creates test reports or interim docs during exploration
 
 ---
 
-**Version**: 3.1.0  
+## Maintenance
+
+### Adding New Project
+
+1. User requests new project
+2. AI reads overview (per Level 0 rule)
+3. AI asks details: stage, type, needs
+4. AI creates folder + PROJECT_SUMMARY.md
+5. AI adds to PROJECTS_OVERVIEW.md:
+   - Add to project_keywords in YAML
+   - Add row to Active Projects Index
+   - Add to Project Details section
+
+### Updating Rules
+
+**For general rules**: Edit `project-work-rules.mdc`
+
+**For project-specific rules**: Create/edit `[project-folder]/PROJECT_RULES.mdc`
+
+**For navigation logic**: Edit PROJECTS_OVERVIEW.md navigation instructions section
+
+### Keywords Not Matching
+
+If AI doesn't match query to project:
+1. Check PROJECTS_OVERVIEW.md YAML `project_keywords`
+2. Add missing keywords to relevant project
+3. Save and test
+
+---
+
+## Philosophy
+
+**v4.0 Design Principles**:
+
+1. **Simplicity over completeness** - Fewer rules, clearer behavior
+2. **Instructions as data** - Navigation in overview file, not separate rules
+3. **Context before rules** - Load rules only when context is loaded
+4. **Hard gates over soft reminders** - Make it impossible to bypass, not just discouraged
+5. **Trust the overview** - Single source of truth for navigation
+
+---
+
+## Comparison to v3.x
+
+| Aspect | v3.x | v4.0 |
+|--------|------|------|
+| Always-loaded rules | 9 files, ~1,200 lines | 1 file, ~50 lines |
+| Navigation logic | Scattered across multiple files | Embedded in overview |
+| Enforcement | Soft (🛑 emojis, "MANDATORY" labels) | Hard (technical gates) |
+| Context loading | AI discretion | Forced by system |
+| Complexity | High (load order, dependencies) | Low (read overview, that's it) |
+| Maintainability | 15 files to manage | 2 core files + overview |
+
+---
+
+## Migration from v3.x
+
+**What was deleted**:
+- All `/core/` rules (9 files)
+- All `/communication/` rules (5 files)
+- All `/project-management/` rules (6 files)
+- All `/technical/` rules (1 file)
+- All meta-documentation (5 files)
+- All template files (10 files)
+
+**What was consolidated**:
+- Everything merged into `project-work-rules.mdc`
+- Navigation moved to PROJECTS_OVERVIEW.md
+- Project registry moved to PROJECTS_OVERVIEW.md YAML
+
+**What survived**:
+- `library-first-approach.mdc` (workspace-level rule)
+- `fhir-medtech-development.mdc` (technical FHIR rules)
+
+---
+
+## Questions?
+
+The system is now simple enough to understand in one read:
+1. Read overview first (mandatory-overview-first.mdc)
+2. Follow navigation in overview (PROJECTS_OVERVIEW.md)
+3. Load work rules when project summary opens (project-work-rules.mdc)
+
+That's it. No complex dependencies, no load orders, no competing instructions.
+
+---
+
+**Version**: 4.0.0  
 **Status**: ✅ Production Ready  
-**Last Validated**: 2025-11-10
+**Last Updated**: 2025-11-10
 
 ---
 
-*Built with ❤️ by a brutally honest AI advisor who practices what it preaches.*
+*Built for clarity, maintained for simplicity.*
