@@ -1,6 +1,6 @@
 # Autonomous Project Management System
 
-**Version**: 3.0.0 (Conversation-Driven + Enforced)  
+**Version**: 3.1.0 (After-Completion Updates)  
 **Last Updated**: 2025-11-10  
 **Status**: ✅ Active
 
@@ -8,31 +8,62 @@
 
 ## What Changed
 
-### From Command-Driven → Conversation-Driven
+### Version History
 
-**Old Pattern (Manual)**:
+**v1.0 (Manual)**:
+- User must manually update PROJECT_SUMMARY.md
+- AI suggests updates but doesn't execute
+
+**v2.0 (Autonomous - During Conversation)**:
+- AI updates files during conversation
+- Continuous background updates
+- Issue: Updated during discussion, not after completion
+
+**v3.0 (Enforced)**:
+- Added intent detection (DISCUSS vs EXECUTE)
+- Added 🛑 STOP enforcement
+- Project name registry
+- Advisory role always-loaded
+
+**v3.1 (After-Completion) - CURRENT**:
+- Updates happen AFTER work complete, not during
+- Two-area system: Project docs (autonomous) vs Code (discuss → approve → implement)
+- Plans documented even if deferred
+- Explicit doc override phrases
+
+### Current Pattern (v3.1)
+
+**Code Improvement Request**:
 ```
-User: "I finished implementing auth"
-AI: "Great! Would you like me to update the project?"
-User: "Yes, please update PROJECT_SUMMARY.md"
-AI: Updates files
+User: "I want to work on medtech UI improvement"
+AI: [Reads project context]
+    "Let's discuss what needs improving. What specific problems?"
+    [Discussion in chat - NO file updates yet]
+    
+User: "Upload is confusing, needs drag-drop"
+AI: "I can add drag-and-drop with visual feedback. Would you like me to implement?"
+
+User: "Yes, let's do it"
+AI: [Implements code changes]
+    [After complete: Updates PROJECT_SUMMARY.md]
+    
+    "✓ Implemented drag-and-drop
+     ✓ Updated project summary"
 ```
 
-**New Pattern (Autonomous)**:
+**Plan but Defer Implementation**:
 ```
-User: "I finished implementing auth"
-AI: "Excellent work! That was a critical milestone. How did it go?
+User: "Let's plan the mobile app improvements for next week"
+AI: [Discusses approach]
+    "Here's what we agreed:
+     1. Responsive layout
+     2. Touch gestures
+     3. Offline support"
      
-     [Background: Logs completion in PROJECT_SUMMARY.md, syncs dashboard]
-     
-     What's next on your list?"
-
-[Later, at session end]
-AI: "📝 Project Updates (ClinicPro SaaS):
-     ✓ Added milestone: Auth system complete
-     ✓ Updated project progress (8/10 MVP features done)
-     
-     Your project summary is current."
+User: "Perfect, but let's do this next week"
+AI: [Updates PROJECT_SUMMARY.md with plan]
+    "✓ Documented plan in project summary
+     Implementation scheduled: Next week"
 ```
 
 ---
@@ -389,15 +420,18 @@ Show value ("Look what I captured for you"). Build trust and transparency.
 
 ## Implementation Status
 
-**✅ Complete (v3.0)**:
-- Autonomous updates rule (523 lines)
+**✅ Complete (v3.1)**:
+- After-completion updates (not during discussion)
+- Two-area system (project docs vs codebase)
+- Code workflow: Discuss → Suggest → Approve → Implement → Update docs
+- Plans documented even if implementation deferred
+- Explicit doc override phrases ("update project summary", "log this decision")
 - Intent detection (DISCUSS vs EXECUTE)
 - 🛑 STOP enforcement at critical checkpoints
 - Project name registry in core-principles
 - Advisory role always-loaded (discuss-first mindset)
 - Core principles always-loaded (project context priority)
 - Strengthened vague query detection
-- Conversation-driven workflow with mandatory context loading
 - Session-end summaries
 
 **⏳ Next Phase** (Future):

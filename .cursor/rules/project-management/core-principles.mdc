@@ -3,7 +3,7 @@ description: "Core principles for project management system"
 alwaysApply: true
 globs: 
   - "**/project-management/**"
-version: "2.0.0"
+version: "2.1.0"
 last_updated: "2025-11-10"
 priority: CRITICAL
 ---
@@ -52,10 +52,25 @@ priority: CRITICAL
 8. **Update Dashboard**: After ANY `PROJECT_SUMMARY.md` change, update `PROJECTS_OVERVIEW.md` with highlights and status
 
 ## Core Principles
+
+### Two-Area System
+**Area 1: Project Documentation** (`/project-management/` folder)
+- Files: `PROJECT_SUMMARY.md`, `PROJECTS_OVERVIEW.md`, major project files
+- Behavior: **Autonomous updates** (no approval needed)
+- Timing: After plans finalized OR after implementation complete
+- User never manually edits these files
+
+**Area 2: Codebase** (rest of repository)
+- Files: `.ts`, `.tsx`, `.py`, components, configs, etc.
+- Behavior: **Discuss → Suggest → Approve → Implement**
+- Timing: Only after user explicitly approves
+- After implementation → Update PROJECT_SUMMARY.md automatically
+
+### Core Principles
 - **PROJECT_SUMMARY.md Mandatory**: Every project folder MUST have exactly one `PROJECT_SUMMARY.md` (living source-of-truth). Create immediately if missing.
 - **Single Source of Truth**: `PROJECTS_OVERVIEW.md` = global dashboard; `PROJECT_SUMMARY.md` = project canonical record
-- **Autonomous Updates**: AI continuously updates PROJECT_SUMMARY.md from natural conversation. User talks about project → AI extracts trackable info → Updates happen in background. User never needs to manually edit project files. Documentation is a byproduct of conversation, not a separate activity.
-- **Conversational Listening**: AI actively listens for: task completions, blockers, decisions, dates, milestones, risks, learnings, next actions. Extract and document automatically from natural conversation flow.
+- **Autonomous Updates (After Completion)**: AI updates PROJECT_SUMMARY.md AFTER work is complete (plan finalized or implementation done). Updates happen after completion, not during discussion. Documentation is a byproduct of work completion.
+- **Update Timing**: Project docs update after: (1) Implementation complete, or (2) Plan finalized (even if deferred). NOT during active discussion.
 - **User Intent Understanding**: Follow guidelines in communication rules - understand underlying intent, clarify ambiguities, research proactively, don't assume knowledge.
 - **Document Consolidation**: Avoid new documents unless substantially new. Consolidate into `PROJECT_SUMMARY.md` with date tags.
 - **Template-First**: Use `/Templates/` for new projects. Auto-select based on stage/type. Load on-demand only.

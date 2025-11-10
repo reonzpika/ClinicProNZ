@@ -1,8 +1,8 @@
 # Cursor AI Rules System
 
-**Version**: 3.0.0 (Autonomous + Enforced)  
+**Version**: 3.1.0 (Autonomous + Enforced + After-Completion)  
 **Last Updated**: 2025-11-10  
-**Architecture**: 15 modular files, conversation-driven, autonomous updates, strict enforcement
+**Architecture**: 15 modular files, conversation-driven, updates after completion, strict enforcement
 
 ---
 
@@ -82,19 +82,22 @@
 
 **AI behavior**: Detects intent → Reads project context → Discusses (if DISCUSS-FIRST) or implements (if EXECUTE with clear scope)
 
-### 2. Autonomous Updates (CONVERSATION-DRIVEN)
-**Rule**: AI continuously updates project files from natural conversation.
+### 2. Autonomous Updates (AFTER COMPLETION) ⭐ Updated v3.1
+**Rule**: AI updates project documentation AFTER work is complete.
+
+**Two areas**:
+- **Project docs** (`/project-management/`): Autonomous updates, no approval needed
+- **Codebase**: Discuss → Suggest → Approve → Implement → Update docs
+
+**Update timing**:
+- After implementation complete → Update PROJECT_SUMMARY.md
+- After plan finalized (even if deferred) → Update PROJECT_SUMMARY.md
+- NOT during discussion → Stay in chat
 
 **User never needs to**:
 - Say "update the project"
 - Manually edit PROJECT_SUMMARY.md
 - Think about documentation
-
-**AI automatically**:
-- Listens for trackable information
-- Updates files in background
-- Syncs dashboard
-- Provides session summaries
 
 ### 3. Document Creation Timing (ALWAYS ENFORCED)
 **Rule**: Only create files when task is complete OR needs future reference.
@@ -157,6 +160,8 @@ Ask for feedback on decisions
 | System Mode | Conversation-Driven (Autonomous + Enforced) |
 
 **v3.0 Changes**: Added 2 rules to always-loaded (advisory-role, core-principles) + strengthened enforcement with 🛑 STOP points and intent detection. Token cost increased by ~1,800 tokens but eliminates AI discretion and ensures correct behavior.
+
+**v3.1 Changes**: Changed autonomous updates from "during conversation" to "after completion". Code workflow: Discuss → Suggest → Approve → Implement → Update docs. Plans documented even if deferred. Explicit doc override phrases added.
 
 ---
 
@@ -317,7 +322,7 @@ This rule system is a **working prototype** for your Project Management AI SaaS:
 
 ---
 
-**Version**: 3.0.0  
+**Version**: 3.1.0  
 **Status**: ✅ Production Ready  
 **Last Validated**: 2025-11-10
 

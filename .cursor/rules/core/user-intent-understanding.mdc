@@ -2,7 +2,7 @@
 description: "Understanding user intent and context-aware clarification"
 alwaysApply: true
 globs: []
-version: "2.1.0"
+version: "3.0.0"
 last_updated: "2025-11-10"
 priority: CRITICAL
 load_order: 1
@@ -122,7 +122,19 @@ NOT: Vague Query → Search → Search → Search → Read → Ask
 
 **CRITICAL: Determine if user wants discussion or implementation BEFORE taking action.**
 
-### DISCUSS-FIRST Triggers (Always Discuss Before Acting):
+### Two-Area System (Hybrid Approach)
+
+**Area 1: Project Documentation** (`/project-management/` folder)
+- Files: `PROJECT_SUMMARY.md`, `PROJECTS_OVERVIEW.md`, major project files
+- Behavior: **Autonomous updates** after completion/plan finalization
+- No approval needed for updates
+
+**Area 2: Codebase** (rest of repository)
+- Files: `.ts`, `.tsx`, `.py`, components, configs, etc.
+- Behavior: **Discuss → Suggest → Approve → Implement**
+- Always requires approval before code changes
+
+### DISCUSS-FIRST Triggers (Code Area):
 
 These phrases mean "let's talk about this first, don't implement yet":
 - **"work on"** (e.g., "work on X") → DISCUSS scope, problems, approach
@@ -135,7 +147,7 @@ These phrases mean "let's talk about this first, don't implement yet":
 
 **Default rule: Unless explicitly told to implement/build, ALWAYS discuss first.**
 
-### EXECUTE Triggers (May Proceed with Implementation):
+### EXECUTE Triggers (Code Area):
 
 These phrases mean "go ahead and implement" (but still verify scope is clear):
 - **"implement [specific thing]"** → May execute if scope is clear
@@ -145,43 +157,77 @@ These phrases mean "go ahead and implement" (but still verify scope is clear):
 
 **Critical: Even with EXECUTE triggers, verify scope is clear before proceeding.**
 
+### EXPLICIT DOC UPDATE Triggers (Override - Force Immediate Update):
+
+These phrases force immediate PROJECT_SUMMARY.md updates:
+- **"update project summary"** → Update PROJECT_SUMMARY.md immediately
+- **"log this as a decision"** → Add to Decisions section immediately
+- **"log this as a blocker"** → Add to Blockers section immediately
+- **"document this learning"** → Add to Learnings section immediately
+- **"add this to the project"** → Update PROJECT_SUMMARY.md immediately
+
+**Use case**: User wants to ensure something is documented now, not wait for completion
+
 ### Handling Pattern:
 
-**When DISCUSS-FIRST trigger detected:**
+**When DISCUSS-FIRST trigger detected (Code Area):**
 1. 🛑 **STOP**: Do NOT explore codebase, do NOT implement
 2. 📖 **READ**: Read PROJECTS_OVERVIEW.md + relevant PROJECT_SUMMARY.md for context
-3. 💬 **DISCUSS**: Ask about current problems, goals, priorities
-4. 🎯 **CLARIFY**: Get explicit scope and approval before any implementation
-5. ⏸️ **WAIT**: Don't implement until user explicitly says "let's do this" or "implement this"
+3. 💬 **DISCUSS**: Ask about current problems, goals, priorities (stay in chat)
+4. 🎯 **SUGGEST**: When plan is clear, suggest implementation approach
+5. ⏸️ **WAIT**: Wait for user approval ("yes, let's do it", "go ahead", "implement this")
+6. 🚀 **IMPLEMENT**: After approval, implement code changes
+7. 📝 **UPDATE**: After implementation complete, update PROJECT_SUMMARY.md
 
-**When EXECUTE trigger detected:**
+**When EXECUTE trigger detected (Code Area):**
 1. ✅ **VERIFY**: Check if scope is clear and specific
 2. 📖 **READ**: Read PROJECTS_OVERVIEW.md + relevant PROJECT_SUMMARY.md for context
 3. 🎯 **CONFIRM**: Brief confirmation of what will be implemented
-4. 🚀 **EXECUTE**: Proceed with implementation
+4. 🚀 **IMPLEMENT**: Proceed with implementation
+5. 📝 **UPDATE**: After implementation complete, update PROJECT_SUMMARY.md
+
+**When EXPLICIT DOC UPDATE trigger detected:**
+1. 📝 **UPDATE IMMEDIATELY**: Update PROJECT_SUMMARY.md right away
+2. No approval needed (project documentation area)
 
 ### Examples:
 
 ❌ **WRONG**:
 ```
 User: "I want to work on medtech integration UI/UX improvement"
-AI: [explores codebase, implements changes]
+AI: [explores codebase, implements changes immediately]
 ```
 
 ✅ **CORRECT**:
 ```
 User: "I want to work on medtech integration UI/UX improvement"
-AI: "Let's discuss this first. I've reviewed the project context.
+AI: [Reads PROJECTS_OVERVIEW.md + medtech-integration/PROJECT_SUMMARY.md]
+    
+    "I've reviewed the medtech project context. Let's discuss what needs improving.
      
      What specific UI/UX problems are you experiencing? 
      What user feedback prompted this? 
      Which workflows feel clunky?"
+
+User: "Upload is confusing, no drag-drop, errors are unclear"
+
+AI: "Got it. I can add:
+     1. Drag-and-drop file upload with visual feedback
+     2. Improved error messages with actionable suggestions
+     3. Upload progress indicators
+     
+     Would you like me to implement these improvements?"
+
+User: "Yes, let's do it"
+
+AI: [Implements changes]
+    [After implementation complete: Updates PROJECT_SUMMARY.md]
 ```
 
 ❌ **WRONG**:
 ```
 User: "Improve the error handling"
-AI: [starts implementing error handling improvements]
+AI: [starts implementing error handling improvements immediately]
 ```
 
 ✅ **CORRECT**:
@@ -194,9 +240,18 @@ AI: "What errors are you seeing? What's not working well?
 ✅ **CORRECT** (with EXECUTE trigger):
 ```
 User: "Implement drag-and-drop file upload in the medtech widget"
-AI: "Got it - adding drag-and-drop to the medtech image widget.
+AI: [Reads project context]
+    "Got it - adding drag-and-drop to the medtech image widget.
      I'll implement dropzone with visual feedback and file validation.
-     [proceeds with implementation]"
+     [proceeds with implementation]
+     [After complete: Updates PROJECT_SUMMARY.md]"
+```
+
+✅ **CORRECT** (EXPLICIT DOC UPDATE):
+```
+User: "Log this decision: we're deferring mobile app to Q2"
+AI: [Immediately updates PROJECT_SUMMARY.md under Decisions]
+    "Logged decision to defer mobile app to Q2 in your project summary."
 ```
 
 ---
