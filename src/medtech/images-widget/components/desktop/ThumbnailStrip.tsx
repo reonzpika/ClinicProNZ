@@ -84,18 +84,30 @@ function ThumbnailCard({ image, isCurrent, onClick, onErrorClick, onRemove }: Th
     : null;
   return (
     <div
+      role="button"
+      tabIndex={0}
+      aria-label={`Select image ${image.metadata.label || image.file.name}`}
+      aria-current={isCurrent ? 'true' : 'false'}
       className={`
         group relative shrink-0 cursor-pointer overflow-hidden rounded-lg border-2 transition-all
         ${isCurrent ? 'border-purple-500 ring-2 ring-purple-200' : 'border-slate-200 hover:border-slate-300'}
+        focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2
       `}
       style={{ width: 120, height: 120 }}
       onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
     >
       {/* Image */}
       <img
         src={image.thumbnail || image.preview}
-        alt={image.metadata.label || 'Image'}
+        alt={image.metadata.label || `Image ${image.file.name}`}
         className="size-full object-cover"
+        loading="lazy"
       />
 
       {/* Badge (Yellow = Validation, Red = Commit Error, Green = Committed) */}
@@ -108,12 +120,13 @@ function ThumbnailCard({ image, isCurrent, onClick, onErrorClick, onRemove }: Th
                 onErrorClick();
               }
             }}
-            className={`flex size-6 items-center justify-center rounded-full transition-opacity ${
+            aria-label={badgeTitle || 'Image status'}
+            className={`flex size-6 items-center justify-center rounded-full transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-1 ${
               badgeType === 'committed'
-? 'bg-green-500'
+? 'bg-green-500 focus:ring-green-500'
               : badgeType === 'error'
-? 'bg-red-500'
-              : 'bg-yellow-500'
+? 'bg-red-500 focus:ring-red-500'
+              : 'bg-yellow-500 focus:ring-yellow-500'
             } ${badgeType === 'error' && onErrorClick ? 'cursor-pointer hover:opacity-80' : ''}`}
             title={badgeTitle || undefined}
           >
@@ -140,7 +153,8 @@ function ThumbnailCard({ image, isCurrent, onClick, onErrorClick, onRemove }: Th
               onRemove();
             }
           }}
-          className="absolute right-1 top-1 z-10 rounded-full bg-red-500 p-1 text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100"
+          aria-label={`Remove image ${image.metadata.label || image.file.name}`}
+          className="absolute right-1 top-1 z-10 rounded-full bg-red-500 p-1 text-white opacity-0 transition-opacity hover:bg-red-600 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 group-hover:opacity-100"
         >
           <X className="size-3" />
         </button>

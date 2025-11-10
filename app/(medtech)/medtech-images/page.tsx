@@ -8,9 +8,9 @@
  * URL: /medtech-images?encounterId=enc-123&patientId=pat-456&...
  */
 
-import { AlertCircle, Check, Inbox, ListTodo, Loader2 } from 'lucide-react';
+import { AlertCircle, Check, Inbox, ListTodo, Loader2, Upload } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 
 import { CapturePanel } from '@/src/medtech/images-widget/components/desktop/CapturePanel';
 import { CommitDialog } from '@/src/medtech/images-widget/components/desktop/CommitDialog';
@@ -23,6 +23,7 @@ import { QRPanel } from '@/src/medtech/images-widget/components/desktop/QRPanel'
 import { ThumbnailStrip } from '@/src/medtech/images-widget/components/desktop/ThumbnailStrip';
 import { useCapabilities } from '@/src/medtech/images-widget/hooks/useCapabilities';
 import { useCommit } from '@/src/medtech/images-widget/hooks/useCommit';
+import { useImageCompression } from '@/src/medtech/images-widget/hooks/useImageCompression';
 import { useImageWidgetStore } from '@/src/medtech/images-widget/stores/imageWidgetStore';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
@@ -44,6 +45,8 @@ function MedtechImagesPageContent() {
     successIds: string[];
     errorIds: string[];
   } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const dropZoneRef = useRef<HTMLDivElement>(null);
 
   const commitMutation = useCommit();
 
@@ -55,9 +58,12 @@ function MedtechImagesPageContent() {
     setCommitDialogOpen,
     error,
     setError,
+    addImage,
+    capabilities,
   } = useImageWidgetStore();
 
-  const { data: capabilities, isLoading: isLoadingCapabilities } = useCapabilities();
+  const { data: capabilitiesData, isLoading: isLoadingCapabilities } = useCapabilities();
+  const { compressImages, isCompressing } = useImageCompression();
 
   // Parse encounter context from URL params
   useEffect(() => {
@@ -102,6 +108,157 @@ function MedtechImagesPageContent() {
       }
     }
   }, [sessionImages.length, currentImageId]);
+
+  // Global drag and drop handlers
+  useEffect(() => {
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!isCompressing && capabilitiesData) {
+        setIsDragging(true);
+      }
+    };
+
+    const handleDragLeave = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // Only hide if we're leaving the window
+      if (e.clientX === 0 && e.clientY === 0) {
+        setIsDragging(false);
+      }
+    };
+
+    const handleDrop = async (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragging(false);
+
+      if (isCompressing || !capabilitiesData) {
+        return;
+      }
+
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        const fileArray = Array.from(files);
+        const limits = capabilitiesData.limits.attachments;
+
+        // Validate file types
+        const invalidFiles = fileArray.filter(
+          file => !limits.acceptedTypes.some((type) => {
+            if (type.endsWith('/*')) {
+              return file.type.startsWith(type.replace('/*', ''));
+            }
+            return file.type === type;
+          }),
+        );
+
+        if (invalidFiles.length > 0) {
+          setError(`Invalid file types: ${invalidFiles.map(f => f.name).join(', ')}`);
+          return;
+        }
+
+        // Validate count
+        if (fileArray.length > limits.maxPerRequest) {
+          setError(`Maximum ${limits.maxPerRequest} images per upload`);
+          return;
+        }
+
+        try {
+          // Compress images
+          const compressed = await compressImages(fileArray, {
+            maxSizeBytes: limits.maxSizeBytes,
+          });
+
+          // Add to store
+          compressed.forEach((result) => {
+            addImage({
+              id: result.id,
+              file: result.compressedFile,
+              preview: result.preview,
+              thumbnail: result.thumbnail,
+              metadata: {},
+              status: 'pending',
+            });
+          });
+
+          setError(null);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Failed to process images');
+        }
+      }
+    };
+
+    window.addEventListener('dragover', handleDragOver);
+    window.addEventListener('dragleave', handleDragLeave);
+    window.addEventListener('drop', handleDrop);
+
+    return () => {
+      window.removeEventListener('dragover', handleDragOver);
+      window.removeEventListener('dragleave', handleDragLeave);
+      window.removeEventListener('drop', handleDrop);
+    };
+  }, [isCompressing, capabilitiesData, compressImages, addImage, setError]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't handle shortcuts when typing in inputs
+      if (
+        e.target instanceof HTMLInputElement
+        || e.target instanceof HTMLTextAreaElement
+        || e.target instanceof HTMLSelectElement
+      ) {
+        return;
+      }
+
+      // Arrow keys for navigation
+      if (e.key === 'ArrowLeft' && hasPrevious) {
+        e.preventDefault();
+        handlePrevious();
+      } else if (e.key === 'ArrowRight' && hasNext) {
+        e.preventDefault();
+        handleNext();
+      }
+
+      // Enter to commit
+      if (e.key === 'Enter' && canCommit && !commitMutation.isPending) {
+        e.preventDefault();
+        handleCommit();
+      }
+
+      // Esc to close modals
+      if (e.key === 'Escape') {
+        if (isCommitDialogOpen) {
+          setCommitDialogOpen(false);
+        }
+        if (isEditModalOpen) {
+          setIsEditModalOpen(false);
+        }
+        if (errorImageId !== null) {
+          setErrorImageId(null);
+        }
+        if (partialFailureData !== null) {
+          setPartialFailureData(null);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [
+    hasPrevious,
+    hasNext,
+    canCommit,
+    commitMutation.isPending,
+    isCommitDialogOpen,
+    isEditModalOpen,
+    errorImageId,
+    partialFailureData,
+    handlePrevious,
+    handleNext,
+    handleCommit,
+    setCommitDialogOpen,
+  ]);
 
   // Computed values
   const currentImage = currentImageId
@@ -186,7 +343,7 @@ function MedtechImagesPageContent() {
 
   // Conditional returns AFTER all hooks
   // Loading state
-  if (isLoadingCapabilities || !capabilities) {
+  if (isLoadingCapabilities || !capabilitiesData) {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-50">
         <div className="text-center">
@@ -224,9 +381,68 @@ function MedtechImagesPageContent() {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-slate-50">
+    <div
+      ref={dropZoneRef}
+      className={`relative flex h-screen flex-col bg-slate-50 ${isDragging ? 'bg-purple-50' : ''}`}
+    >
+      {/* Global Drag Overlay */}
+      {isDragging && (
+        <div className="pointer-events-none absolute inset-0 z-50 flex items-center justify-center bg-purple-500/10 backdrop-blur-sm">
+          <div className="rounded-lg border-2 border-dashed border-purple-500 bg-white px-12 py-8 shadow-xl">
+            <div className="flex flex-col items-center gap-3">
+              <Upload className="size-12 text-purple-600" />
+              <p className="text-lg font-semibold text-purple-900">Drop images here to upload</p>
+              <p className="text-sm text-purple-700">Release to add images to this encounter</p>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Patient/Encounter Context Header */}
+      {encounterContext && (
+        <div className="border-b border-slate-200 bg-gradient-to-r from-purple-50 to-blue-50 px-6 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div>
+                <p className="text-xs font-medium text-slate-600">Patient</p>
+                <p className="text-sm font-semibold text-slate-900">
+                  {encounterContext.patientName || 'Unknown'}
+                  {encounterContext.patientNHI && (
+                    <span className="ml-2 text-xs font-normal text-slate-500">
+                      (NHI: {encounterContext.patientNHI})
+                    </span>
+                  )}
+                </p>
+              </div>
+              <div className="h-8 w-px bg-slate-300" />
+              <div>
+                <p className="text-xs font-medium text-slate-600">Encounter</p>
+                <p className="text-sm font-semibold text-slate-900">
+                  {encounterContext.encounterId}
+                </p>
+              </div>
+              {encounterContext.providerName && (
+                <>
+                  <div className="h-8 w-px bg-slate-300" />
+                  <div>
+                    <p className="text-xs font-medium text-slate-600">Provider</p>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {encounterContext.providerName}
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+            {process.env.NEXT_PUBLIC_MEDTECH_USE_MOCK === 'true' && (
+              <div className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
+                MOCK MODE
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Top Section: Actions + Thumbnails + Commit Actions */}
-      <div className="border-b border-slate-200 bg-white px-6 py-4">
+      <div className="border-b border-slate-200 bg-white px-6 py-4 shadow-sm">
         <div className="flex items-center justify-between gap-4">
           {/* Left: Upload + QR (Stacked) */}
           <div className="flex flex-col gap-2">
@@ -239,11 +455,6 @@ function MedtechImagesPageContent() {
             >
               {showQR ? 'Hide QR' : 'Show QR'}
             </Button>
-            {process.env.NEXT_PUBLIC_MEDTECH_USE_MOCK === 'true' && (
-              <div className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
-                MOCK
-              </div>
-            )}
           </div>
 
           {/* Center: Thumbnail Strip */}
@@ -258,34 +469,42 @@ function MedtechImagesPageContent() {
           {/* Right: Inbox + Task + Commit (Same Line) */}
           <div className="ml-4 flex items-center gap-3">
             {/* Inbox Checkbox */}
-            <label className="flex cursor-pointer items-center gap-2 text-sm">
+            <label className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-slate-50">
               <input
                 type="checkbox"
                 checked={inboxEnabled}
                 onChange={e => setInboxEnabled(e.target.checked)}
-                className="size-4 rounded border-slate-300"
+                className="size-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
               />
-              <Inbox className="size-4 text-slate-600" />
-              <span className="text-slate-700">Inbox</span>
+              <Inbox className={`size-4 ${inboxEnabled ? 'text-purple-600' : 'text-slate-600'}`} />
+              <span className={`font-medium ${inboxEnabled ? 'text-purple-700' : 'text-slate-700'}`}>
+                Inbox
+              </span>
             </label>
 
             {/* Task Checkbox */}
-            <label className="flex cursor-pointer items-center gap-2 text-sm">
+            <label className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-slate-50">
               <input
                 type="checkbox"
                 checked={taskEnabled}
                 onChange={e => setTaskEnabled(e.target.checked)}
-                className="size-4 rounded border-slate-300"
+                className="size-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
               />
-              <ListTodo className="size-4 text-slate-600" />
-              <span className="text-slate-700">Task</span>
+              <ListTodo className={`size-4 ${taskEnabled ? 'text-purple-600' : 'text-slate-600'}`} />
+              <span className={`font-medium ${taskEnabled ? 'text-purple-700' : 'text-slate-700'}`}>
+                Task
+              </span>
             </label>
+
+            {/* Divider */}
+            <div className="h-6 w-px bg-slate-300" />
 
             {/* Commit Button */}
             <Button
               onClick={handleCommit}
               disabled={!canCommit || commitMutation.isPending}
               size="sm"
+              className="min-w-[140px] font-semibold"
             >
               {commitMutation.isPending
 ? (
@@ -318,13 +537,14 @@ Image
 
       {/* Error Banner */}
       {error && (
-        <div className="border-b border-red-200 bg-red-50 px-6 py-3">
+        <div className="border-b border-red-200 bg-red-50 px-6 py-3 shadow-sm">
           <div className="flex items-center gap-2 text-sm text-red-800">
-            <AlertCircle className="size-4" />
-            <span>{error}</span>
+            <AlertCircle className="size-5 shrink-0" />
+            <span className="flex-1 font-medium">{error}</span>
             <button
               onClick={() => setError(null)}
-              className="ml-auto text-red-600 hover:text-red-800"
+              className="rounded-md px-2 py-1 text-red-600 transition-colors hover:bg-red-100 hover:text-red-900"
+              aria-label="Dismiss error"
             >
               Dismiss
             </button>
@@ -340,26 +560,67 @@ Image
       )}
 
       {/* Main Content: Image Preview + Metadata */}
-      <div className="flex flex-1 gap-6 overflow-hidden p-6">
-        {/* Image Preview (30%) */}
-        <div className="flex-[3]">
-          <ImagePreview
-            image={currentImage}
-            onEdit={() => setIsEditModalOpen(true)}
-          />
+      {sessionImages.length === 0 ? (
+        <div className="flex flex-1 items-center justify-center p-12">
+          <div className="text-center">
+            <div className="mx-auto mb-4 flex size-20 items-center justify-center rounded-full bg-purple-100">
+              <Upload className="size-10 text-purple-600" />
+            </div>
+            <h3 className="mb-2 text-lg font-semibold text-slate-900">No images uploaded yet</h3>
+            <p className="mb-6 text-sm text-slate-600">
+              Upload images or drag and drop them here to get started
+            </p>
+            <CapturePanel />
+            <p className="mt-4 text-xs text-slate-500">
+              Supported formats: JPG, PNG, GIF
+              {' • '}
+              Maximum file size: {capabilitiesData ? `${(capabilitiesData.limits.attachments.maxSizeBytes / 1024 / 1024).toFixed(0)}MB` : 'N/A'}
+            </p>
+          </div>
         </div>
+      ) : (
+        <div className="flex flex-1 gap-6 overflow-hidden p-6">
+          {/* Image Preview (30%) */}
+          <div className="flex-[3]">
+            <ImagePreview
+              image={currentImage}
+              onEdit={() => setIsEditModalOpen(true)}
+            />
+          </div>
 
-        {/* Metadata Form (70%) */}
-        <div className="flex-[7]">
-          <MetadataForm
-            image={currentImage}
-            onPrevious={handlePrevious}
-            onNext={handleNext}
-            hasPrevious={hasPrevious}
-            hasNext={hasNext}
-          />
+          {/* Metadata Form (70%) */}
+          <div className="flex-[7]">
+            <MetadataForm
+              image={currentImage}
+              onPrevious={handlePrevious}
+              onNext={handleNext}
+              hasPrevious={hasPrevious}
+              hasNext={hasNext}
+            />
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Keyboard Shortcuts Hint */}
+      {sessionImages.length > 0 && (
+        <div className="border-t border-slate-200 bg-slate-50 px-6 py-2">
+          <p className="text-xs text-slate-500">
+            <kbd className="rounded bg-white px-1.5 py-0.5 font-mono text-xs shadow-sm">←</kbd>
+            {' '}
+            <kbd className="rounded bg-white px-1.5 py-0.5 font-mono text-xs shadow-sm">→</kbd>
+            {' '}
+            Navigate
+            {' • '}
+            <kbd className="rounded bg-white px-1.5 py-0.5 font-mono text-xs shadow-sm">Enter</kbd>
+            {' '}
+            Commit
+            {' • '}
+            <kbd className="rounded bg-white px-1.5 py-0.5 font-mono text-xs shadow-sm">Esc</kbd>
+            {' '}
+            Close modals
+          </p>
+        </div>
+      )}
 
       {/* Image Edit Modal */}
       <ImageEditModal

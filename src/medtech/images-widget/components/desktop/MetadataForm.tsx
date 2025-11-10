@@ -93,18 +93,36 @@ export function MetadataForm({ image, onPrevious, onNext, hasPrevious = false, h
     setError(null);
   };
 
+  const isValid = hasLaterality && hasBodySite;
+
   return (
-    <div className="flex h-full flex-col rounded-lg border border-slate-200 bg-white">
+    <div className="flex h-full flex-col rounded-lg border border-slate-200 bg-white shadow-sm">
       {/* Header */}
-      <div className="border-b border-slate-200 p-4">
-        <h3 className="font-semibold text-slate-900">Image Metadata</h3>
-        <p className="mt-1 text-xs text-slate-500">
-          Fields marked with
+      <div className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-slate-900">Image Metadata</h3>
+            <p className="mt-1 text-xs text-slate-500">
+              Fields marked with
 {' '}
-<span className="text-red-600">*</span>
+              <span className="text-red-600">*</span>
 {' '}
-are required
-        </p>
+              are required
+            </p>
+          </div>
+          {isValid && (
+            <div className="flex items-center gap-1.5 rounded-full bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700">
+              <svg className="size-3" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Complete
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Form Content */}
@@ -122,27 +140,36 @@ are required
 
       {/* Footer with Navigation */}
       {(onPrevious || onNext) && (
-        <div className="border-t border-slate-200 p-4">
-          <div className="flex items-center justify-start gap-3">
-            <Button
-              onClick={onPrevious}
-              disabled={!hasPrevious}
-              variant="outline"
-              size="sm"
-            >
-              <ChevronLeft className="mr-1 size-4" />
-              Previous
-            </Button>
+        <div className="border-t border-slate-200 bg-slate-50 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={onPrevious}
+                disabled={!hasPrevious}
+                variant="outline"
+                size="sm"
+                className="font-medium"
+              >
+                <ChevronLeft className="mr-1 size-4" />
+                Previous
+              </Button>
 
-            <Button
-              onClick={onNext}
-              disabled={!hasNext}
-              variant="outline"
-              size="sm"
-            >
-              Next
-              <ChevronRight className="ml-1 size-4" />
-            </Button>
+              <Button
+                onClick={onNext}
+                disabled={!hasNext}
+                variant="outline"
+                size="sm"
+                className="font-medium"
+              >
+                Next
+                <ChevronRight className="ml-1 size-4" />
+              </Button>
+            </div>
+            {!isValid && (
+              <p className="text-xs text-amber-600">
+                Complete required fields to commit
+              </p>
+            )}
           </div>
         </div>
       )}

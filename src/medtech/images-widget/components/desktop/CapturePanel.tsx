@@ -9,7 +9,7 @@
 'use client';
 
 import { Loader2, Upload } from 'lucide-react';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
 
@@ -18,6 +18,7 @@ import { useImageWidgetStore } from '../../stores/imageWidgetStore';
 
 export function CapturePanel() {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const { addImage, capabilities, setError } = useImageWidgetStore();
   const { compressImages, isCompressing } = useImageCompression();
@@ -84,6 +85,35 @@ export function CapturePanel() {
     handleFiles(e.target.files);
   };
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isCompressing) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    if (isCompressing) {
+      return;
+    }
+
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handleFiles(files);
+    }
+  };
+
   return (
     <div className="flex items-center gap-2">
       {/* Upload Button */}
@@ -95,15 +125,23 @@ export function CapturePanel() {
         className="hidden"
         onChange={handleFileSelect}
       />
-      <Button
-        onClick={() => fileInputRef.current?.click()}
-        disabled={isCompressing}
-        size="sm"
-        variant="default"
+      <div
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className="relative"
       >
-        <Upload className="mr-2 size-4" />
-        Upload
-      </Button>
+        <Button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isCompressing}
+          size="sm"
+          variant="default"
+          className={isDragging ? 'ring-2 ring-purple-500 ring-offset-2' : ''}
+        >
+          <Upload className="mr-2 size-4" />
+          {isDragging ? 'Drop Images' : 'Upload'}
+        </Button>
+      </div>
 
       {/* Progress Indicator */}
       {isCompressing && (
