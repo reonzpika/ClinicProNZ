@@ -110,7 +110,26 @@ Inbox management is a new NZ-specific application; a robust, sector-ready soluti
 
 ## Overseas Labour Resources
 
-**None.** All R&D labour is performed in NZ. AU is used only for transient inference with no persistent PHI outside NZ.
+**None.** All R&D labour is performed in NZ by founder and local contractor. AU is used only for transient inference with no persistent PHI outside NZ.
+
+---
+
+## R&D Team
+
+**Founder (Shareholder-employee):** 1,329 hours @ $96/hr = $127,584
+- GP clinician + full-stack developer
+- Clinical domain expertise for NZ-specific use cases
+- Technical leadership for LLM development
+- 25 hrs/week commitment throughout project
+
+**Local Developer (Contractor):** 390 hours @ $72/hr = $28,080
+- Recruited Month 1, starts Month 4
+- Frontend development (GP mobile interface)
+- FHIR integration testing (Medtech sandbox)
+- Synthetic data generation and test automation
+- 10 hrs/week (Months 4-12)
+
+**Rationale for team structure:** Founder's dual GP/technical expertise enables rapid clinical workflow iteration. Local developer enables parallel workstreams (founder focuses on clinical domain adaptation, developer handles non-clinical implementation). This structure maintains GP practice income for co-funding while accelerating R&D delivery.
 
 ---
 
@@ -199,6 +218,54 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 - MLflow + DVC configured
 - Safety dashboard
 - Transparency SOP and page v1
+
+---
+
+### CD-C: Professional Services & IP Protection (Months 2-10)
+
+**IP Work:** $6,000
+- Freedom-to-Operate (FTO) Analysis ($2,500, Months 2-4): Patent search to verify assist-only enforcement architecture and NZ-specific fine-tuning methods don't infringe existing patents
+- Provisional Patent Filing ($2,000, Months 6-8): Protect novel safety scaffolding techniques and domain adaptation methods developed during O2-O3
+- IP Strategy for Model Outputs ($1,500, Month 10): Legal consultation on model weight ownership, licensing frameworks for commercialisation
+
+**Rationale:** IP protection is essential for commercialisation. FTO analysis de-risks infringement before significant R&D investment. Provisional patent filing secures priority date for novel techniques. IP strategy consultation enables confident market entry.
+
+---
+
+### CD-D: Conference Attendance & Knowledge Transfer (Months 5, 7)
+
+**Conferences:** $3,200 + 24 hours labour
+
+**HealthTech Week Auckland** (June 2026, Month 5): $1,000 + 8 hours
+- Local ecosystem engagement
+- Early validation of NZ-sovereign LLM approach
+- Stakeholder feedback during O2 domain adaptation phase
+
+**HIC 2026 Melbourne** (August 2026, Month 7): $2,200 + 16 hours
+- Regional health informatics community
+- Peer review of safety enforcement mechanisms (O3)
+- AU/NZ healthcare AI research collaboration
+
+**Rationale:** Conference attendance provides access to cutting-edge clinical LLM safety research and validates NZ-specific use cases with regional health tech community. Timing aligns with key R&D phases (O2 domain adaptation, O3 safety work) for maximum learning impact.
+
+---
+
+### Hardware & Equipment (Months 1, 4)
+
+**Capital Equipment:** $5,750 (Year 1 depreciation: $1,567)
+- RTX 4090 GPU Workstation ($3,500, Month 4): Local safety regression testing, rapid iteration on refusal scaffolds, latency profiling
+- Samsung Galaxy Z Fold 5 ($1,200, Month 4): Mobile testing (GP workflow validation, folded/unfolded modes)
+
+**Immediate Hardware:** $1,050
+- RAM Upgrade 128GB ($500, Month 1): Large synthetic dataset loading
+- NVMe SSD 2TB ($250, Month 1): Model checkpoint storage
+- iPhone SE ($300, Month 1): iOS cross-platform testing
+
+**Total Year 1 Hardware Eligible:** $2,617 (depreciation + immediate)
+
+**Rationale:** GPU workstation enables rapid local iteration during O3 safety testing without cloud spinup delays. Local inference testing validates P95 latency targets before production deployment. Mobile testing devices validate real-world GP workflows (inbox triage on tablets/phones). Hardware purchases deferred to Month 4 (after first grant) to optimize cashflow.
+
+**Cloud GPU Strategy:** Primary training/fine-tuning uses cloud GPU (Lambda Labs/AWS). Local workstation supplements for rapid testing cycles, not replaces cloud infrastructure.
 
 ---
 

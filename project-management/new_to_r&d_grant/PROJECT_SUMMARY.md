@@ -62,9 +62,9 @@ risks:
 **Organisation:** NexWave Solutions Ltd  
 **Grant Type:** Callaghan Innovation - New to R&D Grant  
 **Project Duration:** 27 Jan 2026 - 26 Jan 2027 (12 months)  
-**Total Eligible Costs:** $107,232 (excl. GST)  
-**Grant Request:** $42,893 (40%)  
-**Co-Funding:** $64,339 (60% from GP clinical work income)
+**Total Eligible Costs:** $175,065 (excl. GST)  
+**Grant Request:** $70,026 (40%)  
+**Co-Funding:** $105,039 (60% from GP clinical work income)
 
 ---
 
@@ -103,8 +103,8 @@ The project is organized into 6 main directories:
 - `commercialization-and-market-strategy.md` - Pricing model, GTM, adoption, competitive positioning
 
 ### 02-financials/
-- `cashflow-12-month.md` - Monthly cashflow forecast showing positive cash throughout ($5k opening → $73k closing)
-- `cost-template/cost-template.md` - Detailed cost breakdown by Objective (R&D + CapDev)
+- `cashflow-12-month.md` - Monthly cashflow forecast showing positive cash throughout ($5k opening → $32k closing)
+- `cost-template/cost-template.md` - Detailed cost breakdown by Objective (R&D + CapDev + IP + Conferences + Hardware)
 
 ### 03-capability-development/
 - `capability-development-evidence-pack.md` - CapDev courses, one-off setups, evidence requirements
@@ -166,11 +166,13 @@ The project is organized into 6 main directories:
 - **Targets:** All success criteria met (see Success Criteria section)
 - **Hours:** 122 | **Cost:** $11,712
 
-**Total R&D Hours:** 1,062 | **Total R&D Cost:** $101,952
+**Founder R&D Hours:** 1,329 @ $96/hr | **Cost:** $127,584  
+**Developer R&D Hours:** 390 @ $72/hr (starts Month 4) | **Cost:** $28,080  
+**Total R&D Hours:** 1,719 | **Total R&D Cost:** $155,664
 
 ---
 
-## Capability Development (3 Streams)
+## Capability Development (4 Streams)
 
 ### CD-A: Regulatory & Compliance (27 Jan - 31 Mar 2026)
 - 3 privacy certificate courses (OPC Privacy Act, OPC HIPC, Ko Awatea)
@@ -189,7 +191,15 @@ The project is organized into 6 main directories:
 - Create risk register, change log, release checklist
 - **Hours:** 8 | **Cost:** $768
 
-**Total CapDev Hours:** 30 | **Total CapDev Cost:** $2,880 (6.7% of grant ✓)
+### CD-D: IP Protection & Conference Attendance (Months 2-10)
+- Freedom-to-Operate Analysis ($2,500)
+- Provisional Patent Filing ($2,000)
+- IP Strategy for Model Outputs ($1,500)
+- HealthTech Week Auckland (Month 5, 8 hours + $1,000)
+- HIC 2026 Melbourne (Month 7, 16 hours + $2,200)
+- **Hours:** 24 | **Labour Cost:** $2,304 | **Other Costs:** $9,200
+
+**Total CapDev Hours:** 54 | **Total CapDev Labour:** $5,184 (7.4% of grant ✓)
 
 ---
 
@@ -197,25 +207,30 @@ The project is organized into 6 main directories:
 
 | Category | Amount (NZD excl. GST) |
 |----------|------------------------|
-| **R&D Internal Labour** (1,062 hours @ $96/hr) | $101,952 |
-| **Capability Development** (30 hours @ $96/hr) | $2,880 |
+|| **R&D Labour - Founder** (1,329 hours @ $96/hr) | $127,584 |
+|| **R&D Labour - Developer** (390 hours @ $72/hr) | $28,080 |
+|| **Capability Development Labour** (54 hours @ $96/hr) | $5,184 |
 | **Materials & Consumables** ($200/month × 12) | $2,400 |
-| **Total Eligible Costs** | **$107,232** |
+|| **Professional Services (IP)** | $6,000 |
+|| **Conference Travel** (HIC + HealthTech Week) | $3,200 |
+|| **Hardware** (Year 1 depreciation + immediate) | $2,617 |
+|| **Total Eligible Costs** | **$175,065** |
 | | |
-| **Grant (40%)** | **$42,893** |
-| **Co-Funding (60%)** | **$64,339** |
+|| **Grant (40%)** | **$70,026** |
+|| **Co-Funding (60%)** | **$105,039** |
 
 **Cashflow:** Positive throughout project
 - Opening cash: $5,000
-- Minimum cash position: $8,216 (Month 1)
-- Closing cash: $73,461 (Month 13)
+- Minimum cash position: $1,879 (Month 6)
+- Closing cash: $32,213 (Month 13)
+- Monthly co-funding: ~$8,753 average
 - Co-funding source: GP clinical work income ($11k/month)
 
 **Quarterly Grant Receipts:**
-- Q1 claim (Month 3) → Grant received Month 4: $9,027
-- Q2 claim (Month 6) → Grant received Month 7: $10,224
-- Q3 claim (Month 9) → Grant received Month 10: $12,221
-- Q4 claim (Month 12) → Grant received Month 13: $12,221
+- Q1 claim (Month 3) → Grant received Month 4: $16,973
+- Q2 claim (Month 6) → Grant received Month 7: $16,858
+- Q3 claim (Month 9) → Grant received Month 10: $18,298
+- Q4 claim (Month 12) → Grant received Month 13: $17,898
 
 ---
 
