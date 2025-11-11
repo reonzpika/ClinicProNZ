@@ -459,8 +459,9 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 ## Resources & References
 
 ### Project Documentation
-- **FHIR API Test Results**: [`docs/FHIR_API_TEST_RESULTS.md`](./docs/FHIR_API_TEST_RESULTS.md) - **NEW** Complete test results from 2025-11-11 testing session (POST Media validated!)
-- **Widget Implementation Requirements**: [`docs/WIDGET_IMPLEMENTATION_REQUIREMENTS.md`](./docs/WIDGET_IMPLEMENTATION_REQUIREMENTS.md) - **NEW** Technical requirements for implementing widget based on test findings
+- **🚀 READY TO START**: [`READY_TO_START.md`](./READY_TO_START.md) - **START HERE** Quick start guide for next development session
+- **FHIR API Test Results**: [`docs/FHIR_API_TEST_RESULTS.md`](./docs/FHIR_API_TEST_RESULTS.md) - Complete test results from 2025-11-11 testing session (POST Media validated!)
+- **Widget Implementation Requirements**: [`docs/WIDGET_IMPLEMENTATION_REQUIREMENTS.md`](./docs/WIDGET_IMPLEMENTATION_REQUIREMENTS.md) - Technical requirements for implementing widget based on test findings
 - **Architecture & Testing Guide**: [`docs/ARCHITECTURE_AND_TESTING_GUIDE.md`](./docs/ARCHITECTURE_AND_TESTING_GUIDE.md) - Complete guide to architecture, facility IDs, and testing approaches
 - **Lightsail BFF Setup**: [`docs/LIGHTSAIL_BFF_SETUP.md`](./docs/LIGHTSAIL_BFF_SETUP.md) - Complete Lightsail server configuration, operations, and troubleshooting guide
 - **Testing Guide (Postman & BFF)**: [`docs/TESTING_GUIDE_POSTMAN_AND_BFF.md`](./docs/TESTING_GUIDE_POSTMAN_AND_BFF.md) - Step-by-step testing instructions for Postman and Lightsail BFF
