@@ -147,6 +147,7 @@ Start minimal, add folders as project evolves.
 - **2025-01-15**: Project management system installed — NexWave system adapted for ClinicPro workspace
 - **2025-01-15**: Medtech integration gateway OAuth service completed (Oct 31)
 - **2025-01-15**: ClinicPro SaaS production deployment operational
+- **2025-11-11**: Medtech Integration — 503 error resolved! Changed facility ID from F99669-C to F2N060-E. BFF now successfully connecting to ALEX API (OAuth: 249ms, Patient query: 200 OK). Lightsail configuration verified and documented. Ready for next testing phase.
 - **2025-11-10**: GP Voices Community - Week 1 LinkedIn validation results: 8 new followers, but most engagement from AI vendors (not GPs). Validation criteria established: 4-6 week test tracking GP engagement quality vs quantity. Automation only if GP demand proven.
 - **2025-11-09**: Project Management AI SaaS - 🎉 MAJOR MILESTONE: Working prototype complete! Modular rule system (15 files), autonomous updates system (523 lines), conversation-driven workflow implemented. System now operational and being dogfooded. Stage moved Validation → Build.
 - **2025-11-08**: Project Management AI SaaS - PM system improvements documented. Added "Document Creation Timing" rule to prevent creating interim documents during discussions. Rule will inform SaaS product UX design (draft mode vs saved documents, explicit save actions).
@@ -157,7 +158,6 @@ Start minimal, add folders as project evolves.
 ### Top Blockers & Risks
 *[AI will auto-populate this section based on identified blockers and risks]*
 
-- **Medtech ALEX Integration**: Facility ID not recognized by ALEX API UAT (403 "Practice Facility not found") - Email sent to Medtech support 2025-11-07, awaiting response
 - **R&D Grant Submission**: Market validation gaps (GP letters of interest, operational evidence depth)
 - **R&D Grant Submission**: Commercialisation strategy incomplete (pricing, projections, GTM, adoption timeline)
 
@@ -236,15 +236,16 @@ Start minimal, add folders as project evolves.
 - **Folder**: `medtech-integration`
 - **Stage**: Build
 - **Owner**: Solo Founder/Developer
-- **Last Updated**: 2025-11-07
+- **Last Updated**: 2025-11-11
 - **Summary**: Clinical images widget integration with Medtech Evolution/Medtech32 via ALEX API. Enables GPs to capture/upload photos from within Medtech, saved back to patient encounters via FHIR API. **Revenue Strategy**: Modular features approach — images widget is first module. Once ready, can immediately pitch to Medtech's existing customer base (3,000+ GPs) for revenue. Clear revenue path with existing customer base.
 - **Key Dates**: 
   - OAuth service completed: Oct 31, 2024
   - BFF deployed: Oct 31, 2024
   - IP allow-listing resolved: Jan 15, 2025
-- **Status**: Active — Facility ID configuration blocker; Email sent to Medtech support (2025-11-07)
+  - 503 error resolved: Nov 11, 2025
+- **Status**: Active — BFF verified and operational; ALEX API connectivity confirmed (OAuth + FHIR queries working)
 - **Link**: [View Full Summary](./medtech-integration/PROJECT_SUMMARY.md)
-- **Technical Docs**: `/project-management/medtech-integration/docs/`
+- **Technical Docs**: `/project-management/medtech-integration/docs/` (Architecture guide, Lightsail setup, testing guide)
 
 ### GP Voices Community Site
 - **Folder**: `gp-voices-community`
@@ -312,4 +313,4 @@ Start minimal, add folders as project evolves.
 
 ---
 
-*Dashboard Last Updated: [2025-11-10] - GP Voices: LinkedIn validation Week 1 results tracked; audience quality vs quantity insight established*
+*Dashboard Last Updated: [2025-11-11] - Medtech: BFF verified operational, 503 error resolved, ready for next phase*
