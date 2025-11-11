@@ -93,15 +93,49 @@ journalctl -u clinicpro-bff -f
 
 ## Phase 1: Testing via Postman
 
+⚠️ **IMPORTANT: IP Whitelisting Limitation**
+
+**Postman will NOT work from your personal computer** because only your Lightsail BFF IP (13.236.58.12) is whitelisted by Medtech.
+
+**What happens**:
+- ✅ OAuth token acquisition works (Azure AD doesn't require IP whitelisting)
+- ❌ FHIR API calls timeout (ALEX API requires whitelisted IP)
+
+**Two options for Postman testing**:
+1. **Skip to Phase 2** (Recommended) - Test via BFF endpoints instead
+2. **SSH into Lightsail and use curl** (See Option B below) - Same effect as Postman but from whitelisted IP
+
+---
+
 **Purpose**: Validate ALEX API connectivity without deploying code
 
 **Facility to Use**: `F2N060-E` (Medtech's test facility)
 
-**Why Postman First**: Proves that API calls work before testing your code
+**Why Test from Lightsail**: Only IP 13.236.58.12 is whitelisted by Medtech
 
 ---
 
-### Step 1: Get OAuth Token
+### Option A: Skip Postman Testing (Recommended)
+
+**Why**: Your personal computer's IP isn't whitelisted, so FHIR API calls will timeout.
+
+**Solution**: Go directly to [Phase 2: Testing via Lightsail BFF](#phase-2-testing-via-lightsail-bff)
+
+---
+
+### Option B: Test from Lightsail Server via curl
+
+**Why**: Lightsail server has whitelisted IP, so API calls work.
+
+**Steps**: See [Testing from Lightsail Server](#testing-from-lightsail-server-curl) section below.
+
+---
+
+### Option C: Postman from Personal Computer (Will Not Work)
+
+⚠️ **This will timeout on FHIR API calls** (OAuth token will work though)
+
+Only documented for reference. Skip to Phase 2 for actual testing.
 
 #### Setup Collection Variable
 
@@ -239,6 +273,45 @@ mt-facilityid: {{facility_id}}
 
 **Note**: NHI `ZZZ0016` is a test patient in Medtech's UAT environment
 
+⚠️ **This request will timeout from your personal computer** - IP not whitelisted
+
+---
+
+### Testing from Lightsail Server (curl)
+
+**Why this works**: Lightsail server IP (13.236.58.12) is whitelisted.
+
+```bash
+# 1. SSH into Lightsail
+ssh -i /path/to/your-key.pem ubuntu@13.236.58.12
+
+# 2. Get OAuth token and save to variable
+TOKEN=$(curl -s -X POST \
+  "https://login.microsoftonline.com/8a024e99-aba3-4b25-b875-28b0c0ca6096/oauth2/v2.0/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=client_credentials" \
+  -d "client_id=7685ade3-f1ae-4e86-a398-fe7809c0fed1" \
+  -d "client_secret=YOUR_SECRET_HERE" \
+  -d "scope=api://bf7945a6-e812-4121-898a-76fea7c13f4d/.default" \
+  | jq -r '.access_token')
+
+echo "Token acquired: ${TOKEN:0:20}..."
+
+# 3. Test Get Location
+curl "https://alexapiuat.medtechglobal.com/FHIR/Location" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Accept: application/fhir+json" \
+  -H "mt-facilityid: F2N060-E"
+
+# 4. Test Get Patient
+curl "https://alexapiuat.medtechglobal.com/FHIR/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|ZZZ0016" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Accept: application/fhir+json" \
+  -H "mt-facilityid: F2N060-E"
+```
+
+**Expected**: All requests return 200 OK with FHIR Bundle responses.
+
 ---
 
 ### Step 4: Test Get Encounter
@@ -282,17 +355,17 @@ mt-facilityid: {{facility_id}}
 
 ---
 
-### Postman Success Criteria
+### Phase 1 Success Criteria
 
-✅ **All 4 requests return 200 OK**
+✅ **Testing from Lightsail server (curl)**:
 - OAuth token acquired
-- Location retrieved
-- Patient retrieved
-- Encounter retrieved
+- Location retrieved (200 OK)
+- Patient retrieved (200 OK)
+- Encounter retrieved (200 OK)
 
-**If all pass**: ALEX API is working correctly. Your setup is good.
+**If all pass**: ALEX API connectivity confirmed from whitelisted IP.
 
-**Next**: Test via your Lightsail BFF code
+**Next**: Test via your Lightsail BFF code (Phase 2)
 
 ---
 
