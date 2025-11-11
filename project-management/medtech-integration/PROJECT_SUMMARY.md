@@ -51,13 +51,15 @@ summary: "Clinical images widget integration with Medtech Evolution/Medtech32 vi
   - OAuth working ✅ (token acquisition successful)
 
 ### ⚠️ Current Issue
-- **UAT Environment 503 Error** [2025-11-10]
-  - **Issue**: "Cannot establish connection to the facility"
-  - **Root Cause**: Medtech's Azure Relay → On-Premises Service connection down
+- **503 Error Resolved - Ready for Testing** [2025-11-10]
+  - **Previous Issue**: "Cannot establish connection to the facility" (503 error)
+  - **Root Cause Identified**: 
+    - `F99669-C`: Hybrid Connection Manager service stopped on local PC (needs restart)
+    - `F2N060-E`: Transient error (now working per Medtech)
   - **Tested Successfully**: This morning (00:24 UTC) - retrieved patient data ✅
-  - **Status**: Medtech UAT infrastructure issue (not our code)
-  - **Action**: Medtech support notified
-  - **Note**: All code works correctly - proven by successful test this morning
+  - **Status**: Code working correctly, ready to test with `F2N060-E`
+  - **Action**: Use `F2N060-E` for testing (no Hybrid Connection Manager needed)
+  - **Note**: `F99669-C` requires Hybrid Connection Manager setup (deferred)
 
 ### ✅ Recent Updates [2025-01-15]
 1. **IP Allow-listing Resolved** ✅
@@ -441,6 +443,8 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 ## Resources & References
 
 ### Project Documentation
+- **Architecture & Testing Guide**: [`docs/ARCHITECTURE_AND_TESTING_GUIDE.md`](./docs/ARCHITECTURE_AND_TESTING_GUIDE.md) - Complete guide to architecture, facility IDs, and testing approaches
+- **Testing Guide (Postman & BFF)**: [`docs/TESTING_GUIDE_POSTMAN_AND_BFF.md`](./docs/TESTING_GUIDE_POSTMAN_AND_BFF.md) - Step-by-step testing instructions for Postman and Lightsail BFF
 - **Action Plan**: [`IMMEDIATE_ACTION_PLAN.md`](./IMMEDIATE_ACTION_PLAN.md) - Step-by-step action plan (4-8 hours total work)
 - **Implementation Status**: [`IMPLEMENTATION_STATUS.md`](./IMPLEMENTATION_STATUS.md) - Current implementation status and next steps
 - **Environment Variables Guide**: [`UPDATE_ENV_VARIABLES.md`](./UPDATE_ENV_VARIABLES.md) - Step-by-step guide for updating environment variables
