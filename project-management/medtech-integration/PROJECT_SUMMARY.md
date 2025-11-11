@@ -50,14 +50,25 @@ summary: "Clinical images widget integration with Medtech Evolution/Medtech32 vi
   - Systemd service running (`clinicpro-bff.service`)
   - OAuth working ✅ (token acquisition successful)
 
-### ⚠️ Current Issue
-- **UAT Environment 503 Error** [2025-11-10]
-  - **Issue**: "Cannot establish connection to the facility"
-  - **Root Cause**: Medtech's Azure Relay → On-Premises Service connection down
-  - **Tested Successfully**: This morning (00:24 UTC) - retrieved patient data ✅
-  - **Status**: Medtech UAT infrastructure issue (not our code)
-  - **Action**: Medtech support notified
-  - **Note**: All code works correctly - proven by successful test this morning
+### ✅ Current Status
+- **🎉 MAJOR MILESTONE: POST Media Validated!** [2025-11-11]
+  - **Status**: Widget can upload images to Medtech! ✅✅✅
+  - **Critical Success**: POST Media endpoint working (201 Created)
+  - **Test Results**: 
+    - OAuth token acquisition: 249ms ✅
+    - FHIR Patient query (by NHI): 200 OK ✅
+    - FHIR Location query: 200 OK ✅
+    - FHIR Practitioner query: 200 OK (4 practitioners) ✅
+    - **POST Media (image upload): 201 Created** ✅🎉
+    - Media ID received: `73ab84f149f0683443434e2d51f93278`
+  - **Configuration Confirmed**:
+    - Code location: `/home/deployer/app`
+    - Environment variables: Verified and updated
+    - Service status: Running and healthy
+    - Facility ID: Set to `F2N060-E` (Medtech's test facility)
+  - **Permissions Verified**: OAuth token includes `patient.media.write` ✅
+  - **Previous 503 Error**: Resolved by switching from `F99669-C` to `F2N060-E`
+  - **Next**: Integrate with frontend widget, test full upload flow
 
 ### ✅ Recent Updates [2025-01-15]
 1. **IP Allow-listing Resolved** ✅
@@ -371,42 +382,49 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 
 **Action Plan**: See `IMMEDIATE_ACTION_PLAN.md` for step-by-step next actions (4-8 hours to completion).
 
-## Current Blocker [2025-11-07]
+## Previous Blockers (Resolved)
 
-**Issue**: Facility ID not recognized by ALEX API UAT
-- **Error**: 403 Forbidden - "Practice Facility not found"
-- **Facility IDs tested**: `F2N060-E`, `F99669-C` (both fail)
-- **Status**: Email sent to Medtech ALEX support requesting:
-  1. Correct facility ID for Application ID `7685ade3-f1ae-4e86-a398-fe7809c0fed1`
-  2. Facility ID format requirements
-  3. Confirmation if facility ID needs approval/configuration
-- **Email**: See `EMAIL_MEDTECH_FACILITY_ID.md`
-- **Next**: Awaiting Medtech response
+### ✅ 503 Service Unavailable [2025-11-10 - RESOLVED 2025-11-11]
+- **Issue**: "Cannot establish connection to the facility"
+- **Root Cause**: 
+  - Facility ID `F99669-C` requires Hybrid Connection Manager (not set up)
+  - Facility ID `F2N060-E` had transient error (now working)
+- **Resolution**: Changed facility ID to `F2N060-E` in Lightsail BFF `.env` file
+- **Result**: BFF now successfully connecting to ALEX API (OAuth + FHIR queries working)
+- **Date Resolved**: 2025-11-11
 
-## Next Steps [2025-11-07]
+### ✅ Facility ID Configuration [2025-11-07 - RESOLVED 2025-11-11]
+- **Issue**: Confusion about which facility ID to use
+- **Resolution**: 
+  - `F2N060-E` - Medtech's test facility (works without Hybrid Connection Manager)
+  - `F99669-C` - Local facility (requires Hybrid Connection Manager setup)
+- **Action Taken**: Using `F2N060-E` for testing, `F99669-C` deferred for full E2E testing
+- **Date Resolved**: 2025-11-11
 
-### ⚠️ BLOCKED - Awaiting Medtech Response
-**Priority**: Resolve facility ID configuration
-- **Status**: Email sent to Medtech ALEX support (2025-11-07)
-- **Action**: Wait for Medtech response with correct facility ID for Application ID `7685ade3-f1ae-4e86-a398-fe7809c0fed1`
-- **Next**: Once facility ID received:
-  1. Update `MEDTECH_FACILITY_ID` in Lightsail BFF `.env` file
-  2. Restart BFF service: `sudo systemctl restart clinicpro-bff`
-  3. Test connectivity: `curl "https://api.clinicpro.co.nz/api/medtech/test?nhi=ZZZ0016"`
-  4. Verify FHIR API calls succeed (should return 200, not 403)
+## Next Steps [2025-11-11]
 
-### Immediate (After Facility ID Resolved)
-1. **Test BFF → ALEX API Connectivity** (10 minutes)
-   - Test endpoint: `GET /api/medtech/test?nhi=ZZZ0016`
-   - Verify OAuth token acquisition works ✅
-   - Verify FHIR API calls succeed (currently blocked by facility ID)
+### ✅ Blocker Resolved - Ready for Next Phase
+**Status**: Lightsail BFF verified and operational with `F2N060-E` facility
 
-2. **Complete File Upload Flow** (2-4 hours)
-   - Implement real `upload-initiate` endpoint (generate presigned S3 URLs)
-   - Update frontend to upload files to S3 before committing
-   - Ensure S3 URLs are accessible by ALEX API
+### Immediate (Next Development Session)
+1. **✅ COMPLETED: Test FHIR Endpoints** [2025-11-11]
+   - ✅ GET Location: Working (200 OK)
+   - ✅ GET Patient (by NHI): Working (200 OK)
+   - ✅ GET Practitioner: Working (200 OK, 4 practitioners)
+   - ✅ POST Media: Working (201 Created) 🎉
+   - ❌ GET Encounter: Not available (404)
+   - ❌ GET Media: Forbidden (write-only)
+   - Documentation: Complete test results in `docs/FHIR_API_TEST_RESULTS.md`
 
-3. **Test POST Media Endpoint** (1-2 hours)
+2. **Integrate POST Media into BFF** (2-3 hours) ✅ READY
+   - Update `/app/api/(integration)/medtech/attachments/commit/route.ts`
+   - Add identifier field generation (UUID)
+   - Convert images to base64
+   - POST to ALEX API via alexApiClient
+   - Handle 201 Created response
+   - Return Media IDs to frontend
+
+3. **Test with Real Images** (1-2 hours)
    - Test with 1 image
    - Test with multiple images
    - Verify images appear in Medtech Evolution Inbox/Daily Record
@@ -441,6 +459,12 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 ## Resources & References
 
 ### Project Documentation
+- **🚀 READY TO START**: [`READY_TO_START.md`](./READY_TO_START.md) - **START HERE** Quick start guide for next development session
+- **FHIR API Test Results**: [`docs/FHIR_API_TEST_RESULTS.md`](./docs/FHIR_API_TEST_RESULTS.md) - Complete test results from 2025-11-11 testing session (POST Media validated!)
+- **Widget Implementation Requirements**: [`docs/WIDGET_IMPLEMENTATION_REQUIREMENTS.md`](./docs/WIDGET_IMPLEMENTATION_REQUIREMENTS.md) - Technical requirements for implementing widget based on test findings
+- **Architecture & Testing Guide**: [`docs/ARCHITECTURE_AND_TESTING_GUIDE.md`](./docs/ARCHITECTURE_AND_TESTING_GUIDE.md) - Complete guide to architecture, facility IDs, and testing approaches
+- **Lightsail BFF Setup**: [`docs/LIGHTSAIL_BFF_SETUP.md`](./docs/LIGHTSAIL_BFF_SETUP.md) - Complete Lightsail server configuration, operations, and troubleshooting guide
+- **Testing Guide (Postman & BFF)**: [`docs/TESTING_GUIDE_POSTMAN_AND_BFF.md`](./docs/TESTING_GUIDE_POSTMAN_AND_BFF.md) - Step-by-step testing instructions for Postman and Lightsail BFF
 - **Action Plan**: [`IMMEDIATE_ACTION_PLAN.md`](./IMMEDIATE_ACTION_PLAN.md) - Step-by-step action plan (4-8 hours total work)
 - **Implementation Status**: [`IMPLEMENTATION_STATUS.md`](./IMPLEMENTATION_STATUS.md) - Current implementation status and next steps
 - **Environment Variables Guide**: [`UPDATE_ENV_VARIABLES.md`](./UPDATE_ENV_VARIABLES.md) - Step-by-step guide for updating environment variables
@@ -500,6 +524,52 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 ---
 
 ## Updates History
+
+### [2025-11-11] — 🎉 MAJOR MILESTONE: POST Media Validated, Widget Can Upload Images!
+- **CRITICAL SUCCESS**: POST Media endpoint working (201 Created) ✅
+  - Successfully uploaded test image to ALEX API
+  - Received Media ID: `73ab84f149f0683443434e2d51f93278`
+  - Image linked to patient ZZZ0016
+  - Identifier field validated as mandatory
+- **Complete FHIR API Testing Session**:
+  - 7 endpoints tested (4 working, 3 forbidden/unavailable)
+  - OAuth token verified with `patient.media.write` permission
+  - Patient queries working (by NHI identifier)
+  - Location queries working (facility info)
+  - Practitioner queries working (4 practitioners found)
+  - Media GET forbidden (write-only endpoint - acceptable)
+  - Encounter endpoint not available (404)
+- **Key Findings**:
+  - Widget **can** upload images (primary objective achieved!)
+  - Widget **must** receive patient context (cannot browse patients)
+  - Widget **must** include identifier field in Media resources
+  - OAuth permissions sufficient for image upload
+- **Documentation Created**:
+  - `docs/FHIR_API_TEST_RESULTS.md` - Complete 13-page test report with all requests/responses
+  - Test results, required fields, permissions, error handling, next steps documented
+- **Status**: Widget functionality validated ✅ - Ready for frontend integration
+- **Next**: Integrate POST Media into BFF commit endpoint, test with real images
+
+### [2025-11-11] — Lightsail BFF Verified, 503 Error Resolved, Testing Complete
+- **Lightsail BFF Configuration Verified**: 
+  - Location: `/home/deployer/app`
+  - Service: `clinicpro-bff.service` running correctly
+  - Environment variables: Verified and documented
+  - Port: 3000 (internal), proxied via `api.clinicpro.co.nz`
+- **503 Error Resolved**: 
+  - Root cause: Facility ID was `F99669-C` (requires Hybrid Connection Manager)
+  - Fix: Changed to `F2N060-E` (Medtech's test facility)
+  - Result: BFF now successfully connecting to ALEX API
+- **Test Results**: 
+  - OAuth token acquisition: ✅ Working (249ms)
+  - FHIR Patient query: ✅ Working (200 OK)
+  - Logs: Clean, no errors
+- **Documentation Created**:
+  - `docs/LIGHTSAIL_BFF_SETUP.md` - Complete server setup and operations guide
+  - `docs/ARCHITECTURE_AND_TESTING_GUIDE.md` - Architecture overview and testing approaches
+  - `docs/TESTING_GUIDE_POSTMAN_AND_BFF.md` - Step-by-step testing instructions (updated with IP whitelisting notes)
+- **Status**: BFF infrastructure verified and operational ✅
+- **Next**: Test full widget flow and POST Media endpoint
 
 ### [2025-11-10] — Integration Complete, Bug Fixes, Successful Test
 - **OAuth Bug Fixed**: Fixed tenant ID lazy loading issue in oauth-token-service.ts

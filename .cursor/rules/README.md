@@ -1,8 +1,21 @@
 # Cursor AI Rules System
 
-**Version**: 4.0.0 (Simplified Multi-Level)  
+**Version**: 5.0.0 (Always-Loaded Rules)  
 **Last Updated**: 2025-11-10  
-**Architecture**: 2 core files + embedded navigation
+**Architecture**: 3 always-loaded files + embedded navigation
+
+---
+
+## What Changed in v5.0
+
+**Change from v4.0**: Moved `project-work-rules.mdc` from context-loaded (via glob pattern) to always-loaded.
+
+**Why**: Core workflow rules (discuss → approve → implement → update) should be consistently available across all interactions. The file is lightweight (~70 lines, ~350 tokens) and contains essential patterns that apply to all project work.
+
+**Impact**: 
+- ✅ More consistent behavior across all interactions
+- ✅ No need to wait for PROJECT_SUMMARY.md to open
+- ✅ Simplified architecture (3 always-loaded files instead of 2 + conditional loading)
 
 ---
 
@@ -41,21 +54,17 @@
 
 ---
 
-### Level 2: Work Rules (Auto-Loads on Context)
+### Level 2: Work Rules (Always-Loaded)
 
-**File**: `project-work-rules.mdc` (~800 lines, ~4,000 tokens)
+**File**: `project-work-rules.mdc` (~70 lines, ~350 tokens)
 
-**Loads when**: Any PROJECT_SUMMARY.md opens (via glob pattern)
+**Loads when**: Always (alwaysApply: true)
 
-**Contains everything**:
-- Communication principles (advisory role, NZ English, directness)
+**Contains**:
 - Work workflow (discuss → approve → implement → update)
-- Documentation management (when to create files, autonomous updates)
-- Dashboard sync rules (PROJECT_SUMMARY ↔ PROJECTS_OVERVIEW)
-- Technical guidelines (debugging, code patterns)
 - Validation checklist
 
-**Why consolidated**: One place for all work rules. Loads only when doing project work.
+**Why always-loaded**: Core workflow rules should be available at all times to ensure consistent behavior across all interactions.
 
 ---
 
@@ -65,8 +74,9 @@
 |---------|---------------|----------------|-------|
 | v3.1 | ~1,200 lines (~6,000 tokens) | ~500 lines | ~1,700 lines |
 | v4.0 | ~50 lines (~250 tokens) | ~800 lines | ~850 lines |
+| v5.0 | ~120 lines (~600 tokens) | ~0 lines | ~120 lines |
 
-**Reduction**: 97% fewer always-loaded tokens, 50% fewer total lines.
+**Reduction (v5.0)**: 90% fewer always-loaded tokens vs v3.1, simplified to 2 always-loaded rules.
 
 ---
 
@@ -123,7 +133,7 @@ AI Process:
 ```
 .cursor/rules/
 ├── mandatory-overview-first.mdc (Always-loaded, Level 0)
-├── project-work-rules.mdc (Auto-loads on PROJECT_SUMMARY.md, Level 2)
+├── project-work-rules.mdc (Always-loaded, Level 2)
 ├── library-first-approach.mdc (Workspace rule, always-loaded)
 ├── fhir-medtech-development.mdc (Technical FHIR rules, on-demand)
 └── README.md (This file)
@@ -151,12 +161,9 @@ All navigation logic lives in the overview file itself:
 - Matching instructions
 - What to do for new projects, general queries, ambiguous requests
 
-### 3. Work Rules Load on Context
+### 3. Work Rules Always Available
 
-project-work-rules.mdc only loads when PROJECT_SUMMARY.md opens. This ensures:
-- AI has project context before seeing work rules
-- No wasted tokens when not doing project work
-- Rules are relevant to current task
+project-work-rules.mdc is always loaded to ensure consistent workflow behavior. The rules are lightweight (~70 lines) and contain essential workflow patterns (discuss → approve → implement → update) that should apply to all interactions.
 
 ### 4. Discuss Before Implementing
 
@@ -324,13 +331,13 @@ If AI doesn't match query to project:
 The system is now simple enough to understand in one read:
 1. Read overview first (mandatory-overview-first.mdc)
 2. Follow navigation in overview (PROJECTS_OVERVIEW.md)
-3. Load work rules when project summary opens (project-work-rules.mdc)
+3. Apply work rules consistently (project-work-rules.mdc - always loaded)
 
 That's it. No complex dependencies, no load orders, no competing instructions.
 
 ---
 
-**Version**: 4.0.0  
+**Version**: 5.0.0  
 **Status**: ✅ Production Ready  
 **Last Updated**: 2025-11-10
 
