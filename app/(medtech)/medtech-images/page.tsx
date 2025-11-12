@@ -84,10 +84,10 @@ function MedtechImagesPageContent() {
   // Note: sendBeacon doesn't support DELETE method, so we use synchronous XHR
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (qrToken) {
+      if (qrSession.token) {
         // Use synchronous XHR to ensure DELETE request completes before page unloads
         // Synchronous XHR blocks page unload but ensures the request is sent
-        const url = `/api/medtech/mobile/session/${qrToken}`;
+        const url = `/api/medtech/mobile/session/${qrSession.token}`;
         const xhr = new XMLHttpRequest();
         xhr.open('DELETE', url, false); // false = synchronous
         try {
@@ -102,7 +102,7 @@ function MedtechImagesPageContent() {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [qrToken]);
+  }, [qrSession.token]);
 
   // Parse encounter context from URL params
   useEffect(() => {
