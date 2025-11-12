@@ -9,6 +9,7 @@ import { medtechAPI } from '../services/mock-medtech-api';
 import { useImageWidgetStore } from '../stores/imageWidgetStore';
 
 type QRSessionState = {
+  token: string | null;
   mobileUrl: string | null;
   qrSvg: string | null;
   expiresAt: number | null; // Timestamp
@@ -18,6 +19,7 @@ type QRSessionState = {
 export function useQRSession() {
   const encounterContext = useImageWidgetStore(state => state.encounterContext);
   const [sessionState, setSessionState] = useState<QRSessionState>({
+    token: null,
     mobileUrl: null,
     qrSvg: null,
     expiresAt: null,
@@ -30,12 +32,20 @@ export function useQRSession() {
         throw new Error('No encounter context available');
       }
 
-      return medtechAPI.initiateMobile(encounterContext.encounterId);
+      return medtechAPI.initiateMobile(
+        encounterContext.encounterId,
+        encounterContext.patientId,
+        encounterContext.facilityId,
+      );
     },
     onSuccess: (data) => {
       const expiresAt = Date.now() + data.ttlSeconds * 1000;
+      // Extract token from mobile URL
+      const tokenMatch = data.mobileUploadUrl.match(/[?&]t=([^&]+)/);
+      const token = tokenMatch ? tokenMatch[1] : null;
 
       setSessionState({
+        token,
         mobileUrl: data.mobileUploadUrl,
         qrSvg: data.qrSvg,
         expiresAt,

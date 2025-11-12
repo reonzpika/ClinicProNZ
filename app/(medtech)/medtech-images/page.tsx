@@ -23,6 +23,8 @@ import { QRPanel } from '@/src/medtech/images-widget/components/desktop/QRPanel'
 import { ThumbnailStrip } from '@/src/medtech/images-widget/components/desktop/ThumbnailStrip';
 import { useCapabilities } from '@/src/medtech/images-widget/hooks/useCapabilities';
 import { useCommit } from '@/src/medtech/images-widget/hooks/useCommit';
+import { useMobileSessionWebSocket } from '@/src/medtech/images-widget/hooks/useMobileSessionWebSocket';
+import { useQRSession } from '@/src/medtech/images-widget/hooks/useQRSession';
 import { useImageWidgetStore } from '@/src/medtech/images-widget/stores/imageWidgetStore';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
@@ -58,6 +60,36 @@ function MedtechImagesPageContent() {
   } = useImageWidgetStore();
 
   const { data: capabilities, isLoading: isLoadingCapabilities } = useCapabilities();
+  const { token: qrToken } = useQRSession();
+  const { isConnected: isWebSocketConnected } = useMobileSessionWebSocket(qrToken);
+
+  // Connect WebSocket when QR token is available
+  useEffect(() => {
+    if (qrToken) {
+      console.log('[Desktop] QR session token:', qrToken);
+    }
+  }, [qrToken]);
+
+  // Cleanup session on widget close (beforeunload)
+  useEffect(() => {
+    const handleBeforeUnload = async () => {
+      if (qrToken) {
+        // Close session
+        try {
+          await fetch(`/api/medtech/mobile/session/${qrToken}`, {
+            method: 'DELETE',
+          });
+        } catch {
+          // Ignore errors on page unload
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [qrToken]);
 
   // Parse encounter context from URL params
   useEffect(() => {
