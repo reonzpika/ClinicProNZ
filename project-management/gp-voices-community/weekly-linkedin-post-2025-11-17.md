@@ -41,25 +41,25 @@
 
 ---
 
-### Item 4: Pharmacy Today
+### Item 4: Pharmacy Today ⚠️ PAYWALLED
 **Headline**: Putting an AI policy in place protects you and your practice
 
 **Summary**: Health IT expert Sanjeewa Samaraweera discusses why implementing an AI policy and reviewing it regularly is essential for healthcare practices.
 
 **Link**: https://www.pharmacytoday.co.nz/article/opinion/putting-ai-policy-place-protects-you-and-your-practice
 
-**Notes**: Opinion piece on AI governance - highly relevant for GPs adopting AI tools. Timely and actionable content.
+**Notes**: ⚠️ **PAYWALLED** - Article is behind a subscription paywall. Not suitable for LinkedIn post (readers can't access). Topic is relevant but need alternative article or discussion-only post (see Standalone Posts section for alternative).
 
 ---
 
-### Item 5: NZ Doctor
+### Item 5: NZ Doctor ⚠️ PAYWALLED
 **Headline**: ProCare wins 2025 Cooperative Business New Zealand Innovation Award
 
 **Summary**: Leading healthcare provider ProCare recognised for transforming primary care through technology, partnerships, and smarter systems.
 
 **Link**: https://www.nzdoctor.co.nz/article/undoctored/procare-wins-2025-cooperative-business-new-zealand-innovation-award
 
-**Notes**: Innovation award for NZ primary care transformation - shows sector momentum and relevance to GPs.
+**Notes**: ⚠️ **PAYWALLED** - Article is behind a subscription paywall. Not suitable for LinkedIn post (readers can't access). Good news story but need alternative or mention without link.
 
 ---
 
@@ -113,44 +113,78 @@
 
 ## Standalone Posts (Between Weekly Roundups)
 
-### Standalone Post 1: AI Policy Article
+### Standalone Post 1: AI Scribe Rollout & Practice Policies
 
-**Article**: Item 4 - Putting an AI policy in place protects you and your practice  
-**Post Type**: Deep dive / Opinion  
-**Target Post Date**: [Choose date - space out from weekly roundup]
+**Article**: Item 1 - NZ govt rolls out AI scribe tool to doctors, despite concerns  
+**Post Type**: Breaking news / Policy discussion  
+**Target Post Date**: [Choose date - space out from weekly roundup]  
+**Status**: ✅ Article accessible (not paywalled)
 
 **LinkedIn Post Draft**:
 
 ```
-Do you have an AI policy in your practice?
+The NZ government is rolling out AI scribe tools to doctors—but are practices ready?
 
-As more GPs adopt AI tools for scribing, inbox management, and clinical decision support, Health IT expert Sanjeewa Samaraweera makes a compelling case: implementing an AI policy isn't optional—it's essential protection.
+This week's news: AI medical scribes are being deployed across NZ healthcare, despite some concerns about implementation and oversight.
 
-Why this matters: AI tools are becoming standard in NZ general practice, but many practices are using them without clear guidelines on data privacy, clinical oversight, or staff training. An AI policy protects your practice, your patients, and your team.
+Here's what this means for GP practices: As AI tools become standard, practices need clear policies on:
+• When and how AI-generated notes are used
+• Clinical oversight and review processes  
+• Data privacy and patient consent
+• Staff training and competency
 
-Key points from the article:
-• Define acceptable AI use cases in your practice
-• Establish data privacy and security protocols
-• Set clear clinical oversight requirements
-• Regular policy review as AI evolves
+The rollout is happening—but many practices are still figuring out the governance side.
 
-**Do you have an AI policy? What's included in yours?** Share your experience or questions in the comments 👇
+**If your practice is using (or considering) AI scribe tools, what policies have you put in place?** How are you handling clinical oversight and data privacy? Share your experience in the comments 👇
 
-Read the full article: https://www.pharmacytoday.co.nz/article/opinion/putting-ai-policy-place-protects-you-and-your-practice
+Read more: https://www.reseller.co.nz/article/4087164/nz-govt-rolls-out-ai-scribe-tool-to-doctors-despite-concerns.html
 
 #PrimaryCareNZ #AIinHealth #GeneralPractice #DigitalHealthNZ #HealthTechNZ #GPsNZ
 ```
 
 **Mentions** (Optional - only if directly relevant):
-- [Consider: @Pharmacy Today if they're active on LinkedIn]
+- [Consider: @Health New Zealand - Te Whatu Ora if relevant to the rollout]
 
 **Hashtags**: #PrimaryCareNZ #AIinHealth #GeneralPractice #DigitalHealthNZ #HealthTechNZ #GPsNZ
 
 **Posting Notes**:
 - Post on different day from weekly roundup (e.g., if roundup is Tuesday, post this Thursday)
-- Monitor for GP comments about their AI policies
-- Engage with commenters asking follow-up questions
+- Frame as policy/governance discussion (connects to AI policy topic)
+- Monitor for GP comments about their AI policies and implementation
+- Engage with commenters asking follow-up questions about practice policies
 - Track if this generates more GP engagement vs vendor engagement
+
+---
+
+### Alternative: AI Policy Discussion (No Paywall Article)
+
+**Note**: The Pharmacy Today AI policy article is behind a paywall. If you want to discuss AI policies without linking to a paywalled article, use this version:
+
+**LinkedIn Post Draft (No Article Link)**:
+
+```
+Do you have an AI policy in your practice?
+
+As AI tools become standard in NZ general practice—from scribing to inbox management—many practices are using them without clear governance frameworks.
+
+Why this matters: AI tools require policies covering:
+• Acceptable use cases and limitations
+• Data privacy and security protocols
+• Clinical oversight and review requirements
+• Staff training and competency standards
+• Regular policy review as AI evolves
+
+Without clear policies, practices risk compliance issues, data breaches, and clinical safety concerns.
+
+**Do you have an AI policy? What's included in yours?** Share your experience or questions in the comments 👇
+
+#PrimaryCareNZ #AIinHealth #GeneralPractice #DigitalHealthNZ #HealthTechNZ #GPsNZ
+```
+
+**Posting Notes**:
+- No article link needed - discussion-driven post
+- Focus on getting GPs to share their policies
+- Can reference the concept without linking to paywalled content
 
 ---
 
