@@ -2,8 +2,8 @@
 project_name: Medtech ALEX Integration
 project_stage: Build
 owner: Development Team
-last_updated: "2025-11-10"
-version: "1.0.0"
+last_updated: "2025-11-12"
+version: "1.1.0"
 tags:
   - integration
   - medtech
@@ -401,74 +401,65 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 - **Action Taken**: Using `F2N060-E` for testing, `F99669-C` deferred for full E2E testing
 - **Date Resolved**: 2025-11-11
 
-## Next Steps [2025-11-11]
+## Next Steps [2025-11-12]
 
-### ✅ Blocker Resolved - Ready for Next Phase
-**Status**: Lightsail BFF verified and operational with `F2N060-E` facility
+### 📋 Active Development Roadmap
 
-### Immediate (Next Development Session)
-1. **✅ COMPLETED: Test FHIR Endpoints** [2025-11-11]
-   - ✅ GET Location: Working (200 OK)
-   - ✅ GET Patient (by NHI): Working (200 OK)
-   - ✅ GET Practitioner: Working (200 OK, 4 practitioners)
-   - ✅ POST Media: Working (201 Created) 🎉
-   - ❌ GET Encounter: Not available (404)
-   - ❌ GET Media: Forbidden (write-only)
-   - Documentation: Complete test results in `docs/FHIR_API_TEST_RESULTS.md`
+**See**: [`DEVELOPMENT_ROADMAP.md`](./DEVELOPMENT_ROADMAP.md) for complete 3-phase plan (12-18 hours total)
 
-2. **Integrate POST Media into BFF** (2-3 hours) ✅ READY
-   - Update `/app/api/(integration)/medtech/attachments/commit/route.ts`
-   - Add identifier field generation (UUID)
-   - Convert images to base64
-   - POST to ALEX API via alexApiClient
-   - Handle 201 Created response
-   - Return Media IDs to frontend
+**Current Phase**: Phase 1 - Frontend Enhancements (60% target)
 
-3. **Test with Real Images** (1-2 hours)
-   - Test with 1 image
-   - Test with multiple images
-   - Verify images appear in Medtech Evolution Inbox/Daily Record
-   - Test error scenarios
+### Phase 1: Frontend Enhancements (4-6 hours)
+- Enhanced error handling with per-image retry
+- Basic image editor (crop + rotate)
+- Better UX for failures and corrections
 
-### Short-term (Next 2 Weeks)
-1. **End-to-End Testing**
-   - Launch widget from Medtech Evolution
-   - Upload images, add metadata, commit
-   - Verify images appear in Medtech Inbox and Daily Record
+### Phase 2: Complete Integration (4-6 hours)
+- Update BFF commit endpoint (real FHIR Media POST)
+- Test with real images (JPEG, PNG, multiple)
+- Connect frontend to real backend (switch from mock)
 
-2. **Frontend Integration** (if not already complete)
-   - Connect frontend to Gateway API
-   - Replace mock backend with real Gateway calls
-   - Handle metadata display (even if not stored in Medtech Inbox fields)
+### Phase 3: Widget Launch Mechanism (3-5 hours)
+- Determine launch method (iFrame, new tab, etc.)
+- Implement context passing (patient ID, facility ID)
+- Test launch from Medtech Evolution
 
-### Medium-term (Next 4-6 Weeks)
-1. **Prepare Customer Pitch Materials**
-   - Demo script (2-minute walkthrough)
-   - 1-pager (benefits, how it works, pricing)
-   - Technical specs
+**Target Completion**: End of Week (Nov 17, 2025)
 
-2. **Pitch to Medtech Customers**
-   - Email campaign to Medtech customer base
-   - Demo requests
-   - Pilot sign-ups
+---
 
-**Detailed Action Plan**: See `IMMEDIATE_ACTION_PLAN.md` for step-by-step instructions (4-8 hours total work once facility ID resolved).
+### Immediate (This Session)
+1. Review DEVELOPMENT_ROADMAP.md
+2. Confirm phase order and scope
+3. Start Phase 1: Enhanced error handling
+
+### This Week
+1. Complete all 3 phases
+2. End-to-end testing
+3. Prepare for demos
+
+### Next Week
+1. Demo to Medtech (if needed)
+2. Prepare customer pitch materials
+3. Launch pilots with GP practices
 
 ---
 
 ## Resources & References
 
 ### Project Documentation
-- **🚀 READY TO START**: [`READY_TO_START.md`](./READY_TO_START.md) - **START HERE** Quick start guide for next development session
+- **📋 DEVELOPMENT ROADMAP**: [`DEVELOPMENT_ROADMAP.md`](./DEVELOPMENT_ROADMAP.md) - **START HERE** Complete 3-phase plan (12-18 hours total)
+- **🚀 Quick Start**: [`READY_TO_START.md`](./READY_TO_START.md) - Quick start guide for next development session
 - **FHIR API Test Results**: [`docs/FHIR_API_TEST_RESULTS.md`](./docs/FHIR_API_TEST_RESULTS.md) - Complete test results from 2025-11-11 testing session (POST Media validated!)
 - **Widget Implementation Requirements**: [`docs/WIDGET_IMPLEMENTATION_REQUIREMENTS.md`](./docs/WIDGET_IMPLEMENTATION_REQUIREMENTS.md) - Technical requirements for implementing widget based on test findings
 - **Architecture & Testing Guide**: [`docs/ARCHITECTURE_AND_TESTING_GUIDE.md`](./docs/ARCHITECTURE_AND_TESTING_GUIDE.md) - Complete guide to architecture, facility IDs, and testing approaches
 - **Lightsail BFF Setup**: [`docs/LIGHTSAIL_BFF_SETUP.md`](./docs/LIGHTSAIL_BFF_SETUP.md) - Complete Lightsail server configuration, operations, and troubleshooting guide
 - **Testing Guide (Postman & BFF)**: [`docs/TESTING_GUIDE_POSTMAN_AND_BFF.md`](./docs/TESTING_GUIDE_POSTMAN_AND_BFF.md) - Step-by-step testing instructions for Postman and Lightsail BFF
-- **Action Plan**: [`IMMEDIATE_ACTION_PLAN.md`](./IMMEDIATE_ACTION_PLAN.md) - Step-by-step action plan (4-8 hours total work)
-- **Implementation Status**: [`IMPLEMENTATION_STATUS.md`](./IMPLEMENTATION_STATUS.md) - Current implementation status and next steps
+- **Implementation Status**: [`IMPLEMENTATION_STATUS.md`](./IMPLEMENTATION_STATUS.md) - Current implementation status and next steps (archived)
 - **Environment Variables Guide**: [`UPDATE_ENV_VARIABLES.md`](./UPDATE_ENV_VARIABLES.md) - Step-by-step guide for updating environment variables
 - **Email to Medtech**: [`EMAIL_MEDTECH_FACILITY_ID.md`](./EMAIL_MEDTECH_FACILITY_ID.md) - Email draft sent to Medtech ALEX support regarding facility ID
+
+**Note**: `IMMEDIATE_ACTION_PLAN.md` superseded by `DEVELOPMENT_ROADMAP.md` (2025-11-12)
 
 ### External Documentation
 - **ALEX API Documentation**: https://alexapidoc.medtechglobal.com/ (Source of Truth)
@@ -524,6 +515,29 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 ---
 
 ## Updates History
+
+### [2025-11-12] — 📋 Development Roadmap Created (3-Phase Plan)
+- **Comprehensive Roadmap Documented**: Created `DEVELOPMENT_ROADMAP.md` with complete 3-phase development plan
+  - Phase 1: Frontend Enhancements (60% target) - 4-6 hours
+    - Enhanced error handling with per-image retry
+    - Basic image editor (crop + rotate)
+  - Phase 2: Complete Integration - 4-6 hours
+    - Update BFF commit endpoint (real FHIR Media POST)
+    - Test with real images
+    - Connect frontend to real backend
+  - Phase 3: Widget Launch Mechanism - 3-5 hours
+    - Determine launch method (iFrame, new tab, etc.)
+    - Implement context passing (patient ID, facility ID)
+    - Test launch from Medtech Evolution
+- **Total Time Estimate**: 12-18 hours
+- **Target Completion**: Nov 17, 2025
+- **Rationale**: Frontend enhancements first (UX polish), then backend integration (core functionality), then launch mechanism (production polish)
+- **Status**: Ready to start Phase 1
+- **Documentation Updates**:
+  - Created DEVELOPMENT_ROADMAP.md (comprehensive plan)
+  - Updated PROJECT_SUMMARY.md (references new roadmap)
+  - Updated PROJECTS_OVERVIEW.md (current status and timeline)
+  - Note: IMMEDIATE_ACTION_PLAN.md superseded by DEVELOPMENT_ROADMAP.md
 
 ### [2025-11-11] — 🎉 MAJOR MILESTONE: POST Media Validated, Widget Can Upload Images!
 - **CRITICAL SUCCESS**: POST Media endpoint working (201 Created) ✅
@@ -653,5 +667,5 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 ---
 
 *Project Created: [2025-01-15]*  
-*Last Updated: [2025-01-15]*
-*Version: 0.3.0*
+*Last Updated: [2025-11-12]*
+*Version: 1.1.0*
