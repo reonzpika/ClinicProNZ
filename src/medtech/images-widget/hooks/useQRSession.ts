@@ -3,7 +3,7 @@
  */
 
 import { useMutation } from '@tanstack/react-query';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { medtechAPI } from '../services/mock-medtech-api';
 import { useImageWidgetStore } from '../stores/imageWidgetStore';
@@ -103,12 +103,13 @@ export function useQRSession() {
     }
   }, [sessionState.token]);
 
-  return {
+  // Memoize return value to ensure token changes are detected
+  return useMemo(() => ({
     ...sessionState,
     isGenerating: mutation.isPending,
     error: mutation.error,
     generateSession: mutation.mutate,
     regenerateSession: regenerate,
     getRemainingTime,
-  };
+  }), [sessionState, mutation.isPending, mutation.error, mutation.mutate, regenerate, getRemainingTime]);
 }
