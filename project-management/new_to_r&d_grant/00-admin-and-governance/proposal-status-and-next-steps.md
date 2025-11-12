@@ -63,8 +63,8 @@
 ? **What's strong:**
 - Plain language; LLM explained in Section 2.1
 - Technical terms defined (assist-only, IPP 12, HIPC, HISO)
-- Measurable success criteria (Section 10): 85% coding accuracy, 90% referral acceptance, 5s latency
-- 4 use cases clearly described with "What it does" + "Why it's R&D" + "Success metrics"
+- Measurable success criteria (Section 10): 90% inbox classification, 85% care gap detection, 5s latency
+- 2 use cases clearly described with "What it does" + "Why it's R&D" + "Success metrics"
 
 ?? **What's missing:**
 - Nothing major?this section is strong
@@ -74,7 +74,7 @@
 ### **5. Credible Support (7/10)**
 ? **What's strong:**
 - Data-driven cost estimates ($96/hr ? 1,062 hrs = $101,952; $200/month M&C)
-- Realistic timeline (12 months for 4 use cases; stepped objectives)
+- Realistic timeline (12 months for 2 use cases; stepped objectives)
 - Cashflow forecast (Section 6.2) shows positive cash throughout ($5k ? $73k)
 - Co-funding from GP clinical work income ($11k/month)
 
@@ -254,7 +254,7 @@
 1. **MENTOR-PROPOSAL.md** (10 sections, 25-30 pages)
    - Section 1: Executive Summary
    - Section 2: The Opportunity
-   - Section 3: Our Solution (4 use cases)
+   - Section 3: Our Solution (2 use cases)
    - Section 4: Why Not Azure OpenAI?
    - Section 5: Privacy & Compliance
    - Section 6: Financials & Feasibility
@@ -307,7 +307,7 @@
 ## ?? **Key Changes Made Today (2025-11-01)**
 
 ### **Structural:**
-- ? Replaced 3 use cases (scribe, inbox, history) with **4 strong NZ-specific use cases** (inbox, coding, referrals, care gaps)
+- ✓ Narrowed from 4 use cases to **2 high-impact use cases** (inbox management, care gap monitoring) for deeper quality and achievability
 - ? Updated all documents to reflect new use cases
 - ? Removed Section 11 (Questions for Feedback) and Appendices from mentor proposal
 
@@ -325,8 +325,8 @@
 - ? Updated all cashflow tables with "GP Clinical Income" terminology
 
 ### **Metrics:**
-- ? Simplified performance: **Response time P95 ? 5.0s for all use cases** (not separate scribe/inbox targets)
-- ? Updated success metrics: Inbox triage time (-30%), coding accuracy (85%), referral acceptance (90%), care gap detection (85%)
+- ✓ Simplified performance: **Response time P95 ≤ 5.0s for both use cases** (inbox management and care gap monitoring)
+- ✓ Updated success metrics: Inbox triage time (-30%), inbox classification (90%), care gap detection (85%), PHO quality indicators (+10%)
 
 ---
 

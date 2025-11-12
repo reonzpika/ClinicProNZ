@@ -232,10 +232,10 @@ Contact:
 
 | Metric | Target | Current | Status |
 |--------|--------|---------|--------|
-| Inbox triage time reduction | ? 30% (Month 10) | [%] | [On/Off track] |
-| Coding accuracy | ? 85% | [%] | [On/Off track] |
-| Referral acceptance rate | ? 90% | [%] | [On/Off track] |
-| Care gap detection accuracy | ? 85% | [%] | [On/Off track] |
+| Inbox triage time reduction | ≥ 30% (Month 10) | [%] | [On/Off track] |
+| Inbox classification accuracy | ≥ 90% | [%] | [On/Off track] |
+| Care gap detection accuracy | ≥ 85% | [%] | [On/Off track] |
+| PHO quality indicator improvement | ≥ 10% | [%] | [On/Off track] |
 | Clinician usefulness | ≥ 80% (both use cases: inbox + care gaps) | [%] | [On/Off track] |
 | Refusal appropriateness | ? 95% | [%] | [On/Off track] |
 | Prohibited-claim rate | ? 0.5% | [%] | [On/Off track] |

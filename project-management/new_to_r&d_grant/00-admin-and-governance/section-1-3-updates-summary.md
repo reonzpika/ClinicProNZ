@@ -56,12 +56,10 @@
 - Key capabilities (classification, summaries, routing, high volume)
 - Impact statement
 
-**3.2 Multifunctional Design for Maximum Clinical Impact**
-- Brief overview of 4 use cases with specific benefits:
-  1. Inbox Management (30%+ time reduction)
-  2. Clinical Coding (reduce revenue leakage)
-  3. Referral Quality Checking (reduce bounce-backs)
-  4. Care Gap Monitoring (improve PHO outcomes)
+**3.2 Dual-Function Design for Maximum Clinical Impact**
+- Brief overview of 2 use cases with specific benefits:
+  1. Inbox Management (Reactive): 30%+ time reduction, saves 1-2 hrs/day
+  2. Care Gap Monitoring (Proactive): Improve PHO outcomes, ≥10% quality indicator improvement
 
 **3.3 NZ-Tuned and Privacy-First**
 - Local training and knowledge (ACC, Pharmac, HealthPathways)

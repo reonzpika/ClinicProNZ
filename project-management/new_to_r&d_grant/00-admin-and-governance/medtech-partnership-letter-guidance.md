@@ -14,7 +14,7 @@ Hi Alex,
 
 Thanks for the quick response! Really appreciate you taking this on.
 
-For context, **inbox management** is one of the four key use cases in our R&D grant application (alongside clinical coding, referral quality checking, and care gap monitoring). I watched your recent webinar where you mentioned that lots of GPs are wanting AI inbox management - if that's something you could briefly mention in the letter, it would really strengthen our market validation section.
+For context, **inbox management** is one of the two key use cases in our R&D grant application (alongside care gap monitoring). I watched your recent webinar where you mentioned that lots of GPs are wanting AI inbox management - if that's something you could briefly mention in the letter, it would really strengthen our market validation section.
 
 **What would be helpful to include** (if appropriate):
 - Medtech supports this R&D project
