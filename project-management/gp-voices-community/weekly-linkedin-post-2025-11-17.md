@@ -63,6 +63,39 @@
 
 ---
 
+### Item 6: Medical Council of New Zealand
+**Headline**: MCNZ Statement: Using AI in Patient Care
+
+**Summary**: Medical Council of New Zealand's policy draft sets out expectations for how doctors should approach the use of artificial intelligence in clinical settings. Key themes include robust legislative and policy frameworks, mandatory informed consent when AI tools affect patient care decisions, protections for patient privacy and data security, equitable outcomes for all patient populations (including specific consideration for Māori), and requirements that GPs understand AI limitations to ensure clinical safety.
+
+**Link**: [MCNZ Statement URL - to be added]
+
+**Notes**: ✅ Official guidance - authoritative source. Policy draft from regulatory body. Highly relevant for GPs. Used in Standalone Post 2.
+
+---
+
+### Item 7: Pinnacle Practices
+**Headline**: AI Tools in General Practice Guidance
+
+**Summary**: Pinnacle Practices' April 2025 guidance provides practical steps for safely integrating AI into GP workflows. Four principles: Consent (patients explicitly informed, language adapted to local needs), Check (carefully review all AI outputs for accuracy), Privacy (never upload identifiable patient data without consent), and Secure (ensure all platforms comply with data protection standards). Includes detailed recommendations for adjusting patient forms and internal protocols.
+
+**Link**: [Pinnacle Practices Guidance URL - to be added]
+
+**Notes**: ✅ Official guidance - practical and actionable. April 2025 guidance from major PHO. Highly relevant for GP practices. Used in Standalone Post 2.
+
+---
+
+### Item 8: Te Whatu Ora / NAIAEAG
+**Headline**: Generative AI and Large Language Models Guidance
+
+**Summary**: National guidance from Te Whatu Ora, supported by its AI advisory group (NAIAEAG), cautions that generative AI and large language models (LLMs) should not be used for clinical decision-making or management of sensitive health data without explicit approval. Recommendations include registering applications and consulting NAIAEAG prior to implementation, ensuring rigorous validation for privacy and safety before use. Specific restrictions for clinical use, emphasizing regulatory compliance and organisational review.
+
+**Link**: [Te Whatu Ora / NAIAEAG Guidance URL - to be added]
+
+**Notes**: ✅ Official guidance - national health authority. Critical restrictions on clinical use of generative AI. Highly relevant for GPs considering AI tools. Used in Standalone Post 2.
+
+---
+
 ## Content Theme (Draft)
 
 **Theme**: [To be determined once all articles collected - possibly AI in healthcare, scribe technology, etc.]
@@ -185,6 +218,73 @@ Without clear policies, practices risk compliance issues, data breaches, and cli
 - No article link needed - discussion-driven post
 - Focus on getting GPs to share their policies
 - Can reference the concept without linking to paywalled content
+
+---
+
+### Standalone Post 2: Official AI Guidance for NZ GPs
+
+**Articles**: Three official guidance documents on AI in general practice  
+**Post Type**: Policy summary / Guidance  
+**Target Post Date**: [Choose date - space out from other posts]  
+**Status**: ✅ Official guidance documents (accessible)
+
+**Sources**:
+1. Medical Council of New Zealand (MCNZ) - Policy draft on using AI in patient care
+2. Pinnacle Practices - AI Tools in General Practice Guidance (April 2025)
+3. Te Whatu Ora / NAIAEAG - Generative AI and Large Language Models Guidance
+
+**LinkedIn Post Draft**:
+
+```
+Clear guidance on AI in general practice is finally here—and it's coming from multiple authoritative sources.
+
+Three major NZ healthcare organisations have released guidance on using AI in GP settings:
+
+**Medical Council of New Zealand** (policy draft):
+• Mandatory informed consent when AI affects patient care decisions
+• Robust legislative and policy frameworks required
+• Protections for patient privacy and data security
+• Equitable outcomes for all populations (including specific Māori considerations)
+• GPs must understand AI limitations to ensure clinical safety
+
+**Pinnacle Practices** (April 2025 guidance):
+Four practical principles: Consent, Check, Privacy, Secure
+• Consent: Explicitly inform patients, adapt language to local needs
+• Check: Carefully review all AI outputs for accuracy
+• Privacy: Never upload identifiable patient data without consent
+• Secure: Ensure all platforms comply with data protection standards
+
+**Te Whatu Ora / NAIAEAG** (national guidance):
+• Generative AI/LLMs should NOT be used for clinical decision-making without explicit approval
+• Register applications and consult NAIAEAG before implementation
+• Rigorous validation for privacy and safety required
+• Regulatory compliance and organisational review mandatory
+
+**The common themes?** Patient safety, rigorous consent, privacy protection, and regulatory compliance. Caution and oversight are essential.
+
+**Is your practice following these guidelines?** What's working—or what challenges are you facing—as you implement AI tools? Share your experience in the comments 👇
+
+#PrimaryCareNZ #AIinHealth #GeneralPractice #DigitalHealthNZ #HealthTechNZ #GPsNZ #MedicalCouncilNZ #TeWhatuOra
+```
+
+**Mentions** (Consider tagging):
+- @Medical Council of New Zealand (if they have LinkedIn)
+- @Health New Zealand - Te Whatu Ora
+- @Pinnacle Practices (if they have LinkedIn)
+
+**Hashtags**: #PrimaryCareNZ #AIinHealth #GeneralPractice #DigitalHealthNZ #HealthTechNZ #GPsNZ #MedicalCouncilNZ #TeWhatuOra #HealthPolicyNZ
+
+**Posting Notes**:
+- This is authoritative guidance - positions you as informed about official policies
+- Multiple sources show comprehensive coverage of the topic
+- Practical and actionable - GPs can use this to evaluate their own practices
+- Monitor for GP comments about implementation challenges
+- Track engagement quality (GP vs vendor)
+
+**Article Links** (to add if available):
+- [MCNZ Statement URL - to be added]
+- [Pinnacle Practices Guidance URL - to be added]
+- [Te Whatu Ora / NAIAEAG Guidance URL - to be added]
 
 ---
 
