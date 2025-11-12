@@ -3,7 +3,7 @@
  */
 
 import { useMutation } from '@tanstack/react-query';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { medtechAPI } from '../services/mock-medtech-api';
 import { useImageWidgetStore } from '../stores/imageWidgetStore';
@@ -103,13 +103,14 @@ export function useQRSession() {
     }
   }, [sessionState.token]);
 
-  // Memoize return value to ensure token changes are detected
-  return useMemo(() => ({
+  // Return session state directly - don't memoize to ensure React detects token changes
+  // The object reference changes when sessionState changes, which React will detect
+  return {
     ...sessionState,
     isGenerating: mutation.isPending,
     error: mutation.error,
     generateSession: mutation.mutate,
     regenerateSession: regenerate,
     getRemainingTime,
-  }), [sessionState, mutation.isPending, mutation.error, mutation.mutate, regenerate, getRemainingTime]);
+  };
 }
