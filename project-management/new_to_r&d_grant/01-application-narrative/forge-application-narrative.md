@@ -1,7 +1,7 @@
 # Forge Application Narrative and Objectives
 
 ## Application Title
-**NZ-Sovereign Clinical LLM (assist-only) for GP workflow: inbox management, clinical coding, referral quality, and care gap monitoring**
+**NZ-Sovereign Clinical LLM (assist-only) for GP workflow: inbox management and care gap monitoring**
 
 ## Proposed Dates
 - **Start:** 27 Jan 2026
@@ -17,10 +17,8 @@
 
 NexWave Solutions Ltd develops privacy-preserving AI tools for NZ general practice. We will build a NZ-sovereign clinical LLM to improve work efficiency in four areas:
 
-- **Inbox management:** classify, summarise and route items to reduce triage time
-- **Clinical coding assistant:** suggest NZ billing codes (ACC, PHO, Care Plus)
-- **Referral quality checker:** flag missing HealthPathways criteria before sending
-- **Chronic care gap identifier:** alert overdue NZ-guideline monitoring
+- **Inbox management:** classify, summarise and route hundreds of daily items to reduce triage time (saves 1-2 hours/day per GP)
+- **Care gap monitoring:** proactively identify and alert overdue NZ-guideline chronic disease monitoring (HbA1c, BP checks, medication reviews)
 
 The system is strictly assist-only. It never provides diagnostic or treatment directives. Development uses synthetic and de-identified data only; no production PHI is used for model training.
 
@@ -43,10 +41,15 @@ Initial integration is Medtech-first using synthetic workloads. Any pilot will r
 
 Build a small NZ-tuned LLM (7B-13B parameters) with task adapters for:
 
-- **Inbox management:** safe classification/summarisation/routing of labs, letters, referrals
-- **Clinical coding:** suggest ACC codes, PHO subsidies, Care Plus eligibility from consultation notes
-- **Referral quality:** check against 10 regional Community HealthPathways criteria
-- **Care gap monitoring:** track NZ-guideline chronic disease monitoring (NZGG, PHO indicators)
+- **Inbox management (Reactive):** safe classification/summarisation/routing of labs, letters, referrals, discharge summaries
+  - Triage hundreds of daily items (urgent vs routine)
+  - Extract key findings and action items
+  - Smart routing to appropriate GP
+  
+- **Care gap monitoring (Proactive):** track NZ-guideline chronic disease monitoring (NZGG, BPAC, PHO indicators)
+  - Scan patient records for overdue monitoring (HbA1c, BP checks, lipids, medication reviews)
+  - Surface gaps before/during consultations
+  - Support PHO quality indicator compliance
 
 **Domain adaptation:** continual pretraining and instruction tuning on NZ public clinical sources (as permitted) and synthetic/de-identified corpora. No training on production PHI.
 
@@ -159,12 +162,12 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 ### O2: NZ GP Domain Adaptation (10 Feb ? 30 May 2026)
 
 **Deliverables:**
-- Continual pretraining and instruction tuning for 4 use cases (inbox, coding, referrals, care gaps)
+- Continual pretraining and instruction tuning for 2 use cases (inbox management, care gap monitoring)
 - Model v0.1
 
 **Targets:**
-- Inbox classification accuracy ? 70% (baseline)
-- Clinical coding accuracy ? 60% (baseline)
+- Inbox classification accuracy ≥ 70% (baseline)
+- Care gap detection accuracy ≥ 70% (baseline)
 
 ---
 
@@ -272,10 +275,10 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 ## Success Metrics (for Internal Tracking)
 
 ### Utility
-- ? 30% reduction in inbox triage time by Month 10
-- Clinician-rated usefulness ? 80% for all 4 use cases
-- ? 5% appropriate billing revenue uplift (coding assistant)
-- Referral acceptance rate ? 90% (reduced bounce-backs)
+- ≥ 30% reduction in inbox triage time by Month 10
+- Clinician-rated usefulness ≥ 80% for both use cases (inbox management + care gap monitoring)
+- Care gap monitoring completion rate ≥ 80%
+- PHO quality indicator improvement ≥ 10%
 
 ### Safety
 - Prohibited-claim rate ? 0.5%

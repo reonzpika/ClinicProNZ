@@ -6,7 +6,7 @@
 ## Project Overview
 
 ### Project Name
-**ClinicPro NZ GP clinical LLM (assist-only)** ? inbox management, clinical coding, referral quality, and care gap monitoring
+**ClinicPro NZ GP clinical LLM (assist-only)** – inbox management and care gap monitoring
 
 ### Organisation
 **NexWave Solutions Ltd (ClinicPro)**
@@ -485,7 +485,7 @@ Quarterly; earlier on material change (new regions, new sub-processors, new data
 - Named sub-processors listed in annex
 
 ### Purpose Limitation and Instructions
-- Processing solely to deliver assist-only inbox management, clinical coding, referral quality checking, and care gap monitoring
+- Processing solely to deliver assist-only inbox management and care gap monitoring
 - Follow documented Controller instructions
 - Notify if instructions conflict with law
 

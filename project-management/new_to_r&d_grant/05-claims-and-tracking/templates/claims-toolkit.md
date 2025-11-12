@@ -236,7 +236,7 @@ Contact:
 | Coding accuracy | ? 85% | [%] | [On/Off track] |
 | Referral acceptance rate | ? 90% | [%] | [On/Off track] |
 | Care gap detection accuracy | ? 85% | [%] | [On/Off track] |
-| Clinician usefulness | ? 80% (all 4 use cases) | [%] | [On/Off track] |
+| Clinician usefulness | ≥ 80% (both use cases: inbox + care gaps) | [%] | [On/Off track] |
 | Refusal appropriateness | ? 95% | [%] | [On/Off track] |
 | Prohibited-claim rate | ? 0.5% | [%] | [On/Off track] |
 | Response time P95 | ? 5.0 s (all use cases) | [s] | [On/Off track] |

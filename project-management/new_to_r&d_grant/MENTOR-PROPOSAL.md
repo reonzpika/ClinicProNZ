@@ -18,7 +18,7 @@ As a practicing GP, I see hundreds of inbox items daily: lab results, hospital l
 
 **Here's the gap:** Current AI tools focus on documentation (AI scribes) but don't address the biggest time sink—inbox management and admin workflows. And there's no dedicated LLM trained for NZ healthcare: our local lab formats, Pharmac formulary, ACC codes, health system structures, and local guidelines.
 
-**I'm building the solution:** A small, NZ-tuned LLM that handles 4 critical workflows—inbox management, clinical coding, referral checking, care gaps—for $5-10k/month, self-hosted in New Zealand (vs $140k/month for commercial APIs at scale).
+**I'm building the solution:** A small, NZ-tuned LLM that handles 2 critical workflows—inbox management and care gap monitoring—for $5-10k/month, self-hosted in New Zealand (vs $140k/month for commercial APIs at scale).
 
 **Why I can deliver:**
 - **GP clinician** experiencing the problem daily in practice
@@ -32,14 +32,20 @@ This R&D will prove a small, self-hosted model can match GPT-4 quality for these
 
 ### **What We're Building**
 
-**Four AI assistants in one model:**
+**Two AI assistants in one model:**
 
-1. **Inbox Management** - Triage, classify, summarize hundreds of daily items (hospital letters, lab results, referrals)
-2. **Clinical Coding** - Suggest NZ billing codes (ACC, PHO, Care Plus eligibility)
-3. **Referral Quality** - Check local guideline criteria before sending referrals
-4. **Care Gap Monitoring** - Alert overdue chronic disease monitoring per NZ clinical guidelines
+1. **Inbox Management** (Reactive) - Triage, classify, and summarize hundreds of daily items (hospital letters, lab results, referrals, discharge summaries)
+   - Urgent vs routine classification
+   - Key findings extraction
+   - Action items identification
+   - Smart routing to appropriate GP
+   
+2. **Care Gap Monitoring** (Proactive) - Identify and alert overdue chronic disease monitoring per NZ clinical guidelines
+   - Scan patient records for overdue monitoring (HbA1c, BP checks, lipids, medication reviews)
+   - Surface gaps before/during consultations
+   - PHO quality indicator compliance
 
-**Key innovation:** ONE small model (7B-13B parameters) doing ALL four tasks, not four separate systems.
+**Key innovation:** ONE small model (7B-13B parameters) handling BOTH reactive admin automation AND proactive clinical decision support.
 
 ---
 
@@ -59,10 +65,10 @@ This R&D will prove a small, self-hosted model can match GPT-4 quality for these
 
 We need to systematically test:
 - **Continual pretraining** on NZ clinical sources (Pharmac, BPAC, local guidelines, lab report formats)
-- **Multi-task instruction tuning** - ONE model for 4 use cases (inbox, coding, referrals, care gaps), not 4 separate systems
-- **NZ-specific evaluation** - Does it correctly interpret local lab results? Suggest accurate ACC codes? Understand DHB referral pathways?
+- **Dual-task instruction tuning** - ONE model for 2 distinct workflows (reactive inbox + proactive care gaps), not 2 separate systems
+- **NZ-specific evaluation** - Does it correctly interpret local lab results? Accurately triage inbox items? Identify care gaps per NZ guidelines?
 - **Safety scaffolds** - Assist-only policy engine, refusal of diagnostic/treatment advice
-- **Real-world latency** - P95 <5.0s for GP workflows (hundreds of requests/day per clinic)
+- **Real-world latency** - P95 <5.0s for inbox workflows (hundreds of requests/day per clinic)
 
 **This is genuine R&D.** No published solution exists for NZ healthcare inbox management. We're proving it can be done accurately, safely, and cost-effectively.
 
@@ -81,11 +87,11 @@ We need to systematically test:
   - Test automation and synthetic data generation
 
 **5 R&D Objectives:**
-- **O1:** Baseline & dataset curation (synthetic NZ GP data)
-- **O2:** NZ domain adaptation (train on Pharmac, ACC, local labs, guidelines)
+- **O1:** Baseline & dataset curation (synthetic NZ GP inbox data, care gap scenarios)
+- **O2:** NZ domain adaptation (train on Pharmac, BPAC, local labs, NZ clinical guidelines)
 - **O3:** Safety enforcement (assist-only policy engine, refusal scaffolds)
-- **O4:** Medtech sandbox integration (synthetic workloads, FHIR testing)
-- **O5:** Pilot-readiness & evaluation (telemetry, incident procedures)
+- **O4:** Medtech sandbox integration (synthetic inbox workloads, patient record analysis, FHIR testing)
+- **O5:** Pilot-readiness & evaluation (telemetry, incident procedures, GP evaluation framework)
 
 **Capability Development:**
 - **IP protection** ($6k): Freedom-to-Operate analysis, provisional patent filing, IP strategy
@@ -117,14 +123,15 @@ We need to systematically test:
 ✅ **NZ-first approach** - Training on Pharmac, ACC, local lab formats, health system from Day 1  
 ✅ **Clear commercialization path** - Medtech rollout post-R&D; exportable to AU/Pacific markets
 
-**Impact:** Keeps GPs in the workforce longer, improves patient care quality, and creates NZ-sovereign health tech capability. Addresses root causes of burnout (admin overload) identified in national workforce surveys.
+**Impact:** Reduces GP burnout (inbox automation saves 1-2 hours/day) while improving patient outcomes (proactive care gap monitoring). Addresses both workforce sustainability and care quality - the dual crises facing NZ primary care.
 
 ---
 
 ### **Key Differentiators**
 
-✓ **First dedicated LLM for NZ healthcare** (trained on local Pharmac, ACC, lab formats, guidelines)  
-✓ **Beyond scribing** (tackles inbox management and admin workflows, not just documentation)  
+✓ **First dedicated LLM for NZ healthcare** (trained on local Pharmac, BPAC, lab formats, NZ clinical guidelines)  
+✓ **Beyond scribing** (tackles inbox automation AND proactive care monitoring, not just documentation)  
+✓ **Dual capability** (reactive admin relief + proactive clinical decision support in one model)  
 ✓ **NZ data sovereignty** (self-hosted in NZ/AU, NZ-held keys, no offshore PHI)  
 ✓ **Cost-effective at scale** ($5-10k/month vs $140k/month for commercial APIs)  
 ✓ **Medtech integration** (NZ's largest PMS = rapid adoption across existing customer base)  
@@ -183,7 +190,7 @@ AI can address the most urgent pain points in New Zealand general practice:
 
 **Failure to address core administrative burden (inbox management, non-visit tasks):**
 - Most tools only support scribing/note-taking, leaving the largest pain points untouched
-- No tools exist for inbox triage, clinical coding, referral checking, or care gap monitoring
+- No tools exist for inbox triage and care gap monitoring - the two highest-impact workflows for GP workload and patient outcomes
 
 **Local privacy and sovereignty concerns:**
 - Sending patient data offshore is not acceptable, especially for Māori data sovereignty
@@ -203,12 +210,11 @@ AI can address the most urgent pain points in New Zealand general practice:
 
 ### **2.4 Market Gap**
 
-**Four Unmet Needs in NZ General Practice:**
+**Two Critical Unmet Needs in NZ General Practice:**
 
-1. **Inbox Management:** No AI solution for NZ GP inboxes (region-specific lab formats, DHB letter structures)
-2. **Clinical Coding:** No NZ-specific coding assistant (ACC, PHO, Care Plus rules)
-3. **Referral Quality:** No tool checks HealthPathways criteria before sending referrals
-4. **Care Gap Monitoring:** No AI tracks NZ-guideline chronic disease monitoring gaps
+1. **Inbox Management (Reactive):** No AI solution for NZ GP inboxes - region-specific lab formats, DHB letter structures, hundreds of items daily consuming 1-2 hours per GP
+
+2. **Care Gap Monitoring (Proactive):** No AI tracks NZ-guideline chronic disease monitoring gaps - HbA1c checks, BP monitoring, medication reviews, PHO quality indicators
 
 **Market Size:**
 - ~5,000 GPs in NZ
@@ -247,30 +253,28 @@ The AI model will triage, prioritise, and summarise clinical inbox items - inclu
 
 ---
 
-### **3.2 Multifunctional Design for Maximum Clinical Impact**
+### **3.2 Dual-Function Design for Maximum Clinical Impact**
 
-Unlike existing solutions limited to note-taking, our model is purpose-built to automate and assist with four critical workflows:
+Unlike existing solutions limited to note-taking, our model is purpose-built to handle two distinct, high-impact workflows:
 
-**1. Inbox Management**
-- Triage and summarise hospital letters, lab results, referrals, patient messages
-- Reduce time spent on daily inbox processing by 30%+
+**1. Inbox Management (Reactive Admin Relief)**
+- **Triage** hundreds of daily items: urgent vs routine
+- **Classify** by type: lab results, hospital letters, referrals, discharge summaries
+- **Extract** key findings and action items
+- **Route** to appropriate GP for action
+- **Impact:** Reduce inbox processing time by 30-50% (saves 1-2 hours/day per GP)
 
-**2. Clinical Coding (including ACC, Pharmac)**
-- Extract billable codes from consultation notes
-- Identify ACC eligibility, PHO subsidies, Care Plus criteria
-- Reduce revenue leakage from missed billing codes
+**2. Care Gap Monitoring (Proactive Clinical Support)**
+- **Scan** patient records for overdue chronic disease monitoring
+- **Identify** gaps: HbA1c checks, BP monitoring, lipids, medication reviews
+- **Alert** GPs before/during consultations
+- **Support** PHO quality indicator compliance
+- **Impact:** Improve chronic disease outcomes, increase PHO funding capture, reduce GP anxiety about "missing things"
 
-**3. Referral Quality Checking**
-- Ensure HealthPathways criteria are met before submission
-- Reduce referral bounce-backs and patient care delays
-- Regional variation support (10 Community HealthPathways sites)
-
-**4. Care Gap Monitoring**
-- Track chronic disease and preventive care requirements
-- Alert overdue NZ-guideline monitoring (NZGG, BPAC, PHO indicators)
-- Improve PHO quality outcomes and funding
-
-This broad feature set directly addresses the functions NZ GPs have identified as most problematic.
+**Why these two workflows:**
+- **Complementary capabilities:** Reactive (handle what comes in) + Proactive (surface what's missing)
+- **Maximum impact:** Address burnout (admin overload) AND patient outcomes (quality monitoring)
+- **Achievable depth:** Get both to 90%+ accuracy in 12 months vs 70% on multiple features
 
 ---
 
@@ -372,55 +376,7 @@ Our solution stands apart from existing AI tools:
 
 ---
 
-#### **Use Case 2: Clinical Coding Assistant**
-
-**What it does:**
-- Reads consultation note
-- Suggests NZ billing codes:
-  - **ACC codes** (ACC45, soft tissue injury, gradual process)
-  - **PHO codes** (consultation types, age bands)
-  - **Care Plus eligibility** (3+ chronic conditions with specific criteria)
-  - **Consultation complexity** (Standard vs Long vs Complex)
-- Flags potential underbilling (e.g., "Patient has diabetes + hypertension + COPD → eligible for Care Plus")
-
-**Why it's R&D:**
-- **NZ-unique rules:** ACC codes, PHO subsidies, Care Plus criteria don't exist in GPT-4/5 training data
-- **Complex logic:** Care Plus requires specific combinations of chronic conditions (not just "3+ conditions")
-- **Extraction challenge:** Pull billable elements from unstructured notes
-- **Limited training data:** Few thousand NZ billing examples vs GPT-4/5's billions of tokens
-- **Uncertainty:** Can a small model learn these rules from limited data?
-
-**Success metrics:**
-- Coding accuracy ≥85% (compared to expert coder)
-- Revenue uplift: ≥5% increase in appropriate billing
-- GP acceptance: ≥75% accept AI suggestions
-
----
-
-#### **Use Case 3: Referral Quality Checker**
-
-**What it does:**
-- Reviews outgoing specialist referrals before sending
-- Cross-checks against regional HealthPathways criteria (Canterbury, Auckland, Wellington, etc.)
-- Flags missing information:
-  - Example (Cardiology): Missing ECG, lipid panel, smoking status, CVD risk score
-  - Example (Dermatology): Missing photo, lesion duration, prior treatments
-- Suggests additions: "⚠️ HealthPathways Cardiology (Canterbury) requires: ECG, lipids, BP, smoking status. Missing: ECG."
-
-**Why it's R&D:**
-- **Regional variation:** 10 regional Community HealthPathways sites with different criteria for each specialty
-- **Unstructured referral letters:** Extract structured fields from free-text narratives
-- **Dynamic requirements:** HealthPathways updates quarterly
-- **Uncertainty:** Can small model track region-specific, evolving criteria and extract required fields?
-
-**Success metrics:**
-- Referral acceptance rate: ≥90% (reduce bounce-backs from specialists)
-- Completeness: ≥80% of flagged missing items are genuinely required
-- Time savings: ≥20% reduction in referral rework time
-
----
-
-#### **Use Case 4: Chronic Disease Care Gap Identifier**
+#### **Use Case 2: Care Gap Monitoring**
 
 **What it does:**
 - Flags patients overdue for NZ-guideline chronic disease monitoring
@@ -454,8 +410,8 @@ Our solution stands apart from existing AI tools:
 **NZ-Specific Fine-Tuning:**
 - **Domain adaptation:** Continual pretraining on NZ public clinical sources (BPAC, NZGG, Pharmac formulary, NZMA journals, HealthPathways criteria)
 - **NZ health system knowledge:** Train on NZ-specific entities (ACC codes, PHO subsidies, Care Plus criteria, regional lab formats, available tests per region)
-- **Task-specific tuning:** Instruction tuning for 4 use cases using synthetic/de-identified NZ data
-- **Multi-task architecture:** ONE model handles all 4 use cases (shared knowledge, cost-efficient)
+- **Task-specific tuning:** Instruction tuning for 2 distinct use cases using synthetic/de-identified NZ data
+- **Dual-task architecture:** ONE model handles both reactive (inbox) and proactive (care gaps) workflows (shared knowledge, cost-efficient)
 
 **Safety Guardrails:**
 - **Assist-only policy:** Model refuses diagnostic/treatment directives
@@ -681,7 +637,7 @@ Beyond cost:
 - **O1:** Baseline and dataset curation
   - Curate NZ public corpus (BPAC, NZGG, Pharmac)
   - Generate synthetic/de-identified datasets (inbox items, SOAP notes, billing scenarios)
-  - Build evaluation harness (test suites for 4 use cases)
+  - Build evaluation harness (test suites for inbox management and care gap monitoring)
   - Select and quantize base model (7B-13B params)
   - **Deliverables:** Baseline metrics, datasets versioned in DVC
 - **CD-A:** Regulatory & Compliance
@@ -699,11 +655,11 @@ Beyond cost:
 **Q2 (Apr-Jun 2026): NZ Domain Adaptation**
 - **O2:** NZ GP domain adaptation
   - Continual pretraining on NZ public clinical sources
-  - Instruction tuning for 4 use cases (inbox, coding, referrals, care gaps)
+  - Instruction tuning for 2 use cases (inbox management, care gap monitoring)
   - **Deliverables:** Model v0.1
-  - **Targets:** 
+  - **Targets:**
     - Inbox classification accuracy ≥70% (baseline)
-    - Clinical coding accuracy ≥60% (baseline)
+    - Care gap detection accuracy ≥70% (baseline)
 - **CD-B:** R&D Information Management
   - Set up MLflow (experiment tracking), DVC (dataset versioning)
   - Build safety dashboard (track metrics over time)
@@ -745,7 +701,7 @@ Beyond cost:
   - **Deliverables:** Pilot-ready system, evaluation framework
   - **Targets:**
     - Inbox classification accuracy ≥90%
-    - Clinical coding accuracy ≥85%
+    - Care gap detection accuracy ≥85%
     - Referral completeness check ≥80%
     - Care gap detection accuracy ≥85%
     - Clinician-rated usefulness ≥80%
@@ -886,7 +842,7 @@ Beyond existing expertise, this project builds **formal compliance and R&D manag
 - Iterate fast without regulatory constraints
 
 **2. Medtech Sandbox Testing (Months 4-9)**
-- Test 4 use cases with **fake patient data** in Medtech sandbox
+- Test 2 use cases (inbox management + care gap monitoring) with **fake patient data** in Medtech sandbox
 - Least-privilege scopes (only access fields we need)
 - Latency/throughput benchmarks
 - Catch integration issues before touching real data
@@ -944,7 +900,6 @@ Disciplined scope prevents mission creep:
 |--------|--------|--------------|
 | **Inbox triage time savings** | ≥30% reduction | Time study: before/after AI summaries |
 | **Coding revenue uplift** | ≥5% increase | Compare billing pre/post AI suggestions |
-| **Referral acceptance rate** | ≥90% | Track bounce-backs from specialists |
 | **Care gap monitoring completion** | ≥80% | PHO QOF score improvement ≥10% |
 | **Clinician usefulness rating** | ≥80% | Post-task surveys: "Was this useful?" (1-5 scale) |
 
@@ -977,7 +932,7 @@ Disciplined scope prevents mission creep:
 **We DO NOT need to match GPT-4/5 100%.** Success = achieving **70-80% of GPT-4/5 quality at 20-50x lower cost**.
 
 **Example:**
-- If GPT-4/5 gets 95% coding accuracy, we need ≥70% accuracy (acceptable for assist-only use)
+- If GPT-4/5 gets 95% accuracy on these tasks, we need to match it for inbox triage and get ≥85% for care gap detection (acceptable for assist-only use)
 - If GPT-4/5 costs $0.019/request (Azure), we need ?$0.0005/request (self-hosted: 20-50x cheaper)
 
 **This trade-off is the R&D question:** Is 70-80% quality sufficient for clinical utility? Unknown - requires pilot evaluation.

@@ -11,7 +11,7 @@ tags:
   - clinical-llm
   - callaghan-innovation
   - gp-workflow
-summary: R&D grant proposal for building a NZ-sovereign clinical LLM to assist NZ GPs with inbox management, clinical coding, referral quality checking, and care gap monitoring. 12-month project seeking $42,893 grant (40%) with $64,339 co-funding.
+summary: R&D grant proposal for building a NZ-sovereign clinical LLM to assist NZ GPs with inbox management and care gap monitoring. 12-month project seeking $70,026 grant (40%) with $105,039 co-funding. Team: Founder (1,329 hrs) + Developer (390 hrs, starts Month 4). Includes IP protection, conference attendance, hardware.
 links:
   - name: Master Proposal
     path: MENTOR-PROPOSAL.md
@@ -70,12 +70,11 @@ risks:
 
 ## Executive Summary
 
-This project proposes building a New Zealand-sovereign clinical LLM to address critical workload and burnout issues facing NZ general practitioners. The AI system will assist GPs with four high-impact workflows:
+This project proposes building a New Zealand-sovereign clinical LLM to address critical workload and burnout issues facing NZ general practitioners. The AI system will assist GPs with two high-impact workflows:
 
-1. **Inbox Management** - Triage, classify, and summarise hospital letters, lab results, referrals
-2. **Clinical Coding** - Suggest NZ billing codes (ACC, PHO, Care Plus eligibility)
-3. **Referral Quality Checking** - Flag missing HealthPathways criteria before sending referrals
-4. **Care Gap Monitoring** - Alert overdue NZ-guideline chronic disease monitoring
+1. **Inbox Management (Reactive)** - Triage, classify, and summarise hundreds of daily items (hospital letters, lab results, referrals, discharge summaries). Saves 1-2 hours/day per GP.
+
+2. **Care Gap Monitoring (Proactive)** - Proactively identify and alert overdue chronic disease monitoring per NZ clinical guidelines (HbA1c, BP checks, lipids, medication reviews). Supports PHO quality indicators.
 
 **Key Differentiators:**
 - ✓ NZ data sovereignty (self-hosted in NZ/AU, NZ-held keys)
@@ -133,10 +132,10 @@ The project is organized into 6 main directories:
 - **Hours:** 180 | **Cost:** $17,280
 
 ### O2: NZ GP Domain Adaptation (10 Feb - 30 May 2026)
-- Continual pretraining on NZ public clinical sources
-- Instruction tuning for 4 use cases
+- Continual pretraining on NZ public clinical sources (Pharmac, BPAC, local guidelines)
+- Instruction tuning for 2 use cases (inbox management, care gap monitoring)
 - **Deliverables:** Model v0.1
-- **Targets:** Inbox classification ≥70%, Clinical coding ≥60%
+- **Targets:** Inbox classification ≥70%, Care gap detection ≥70%
 - **Hours:** 290 | **Cost:** $27,840
 
 ### O3: Safety and Assist-Only Enforcement (01 Mar - 30 Jul 2026)
@@ -150,7 +149,7 @@ The project is organized into 6 main directories:
 
 ### O4: Medtech Sandbox and Synthetic Workloads (01 Mar - 30 Sep 2026)
 - Connect to Medtech sandbox (least-privilege scopes)
-- Generate synthetic inbox, referral, patient data
+- Generate synthetic inbox data and patient records for care gap testing
 - Run latency/throughput tests
 - Publish transparency page v1
 - **Deliverables:** Sandbox integration, transparency page live
@@ -237,11 +236,10 @@ The project is organized into 6 main directories:
 ## Success Criteria
 
 ### Utility Targets
-- Inbox triage time savings: ≥30% reduction
-- Coding revenue uplift: ≥5% increase
-- Referral acceptance rate: ≥90%
+- Inbox triage time savings: ≥30% reduction (saves 1-2 hours/day per GP)
 - Care gap monitoring completion: ≥80%
-- Clinician usefulness rating: ≥80%
+- PHO quality indicator improvement: ≥10%
+- Clinician usefulness rating: ≥80% for both use cases
 
 ### Safety Targets
 - Prohibited-claim rate: ≤0.5%
@@ -390,7 +388,7 @@ The project is organized into 6 main directories:
 - **Status:** Active engagement phase - seeking feedback and guidance from mentor and Callaghan Innovation
 
 ### [2025-11-01] Major Restructuring
-- Replaced 3 use cases with 4 strong NZ-specific use cases (inbox, coding, referrals, care gaps)
+- Focused on 2 high-impact use cases (inbox management, care gap monitoring) for deeper quality vs 4 features
 - Updated cost comparison: "20-50x cheaper" (accurate Azure calculation)
 - Updated Azure costs: $140-170k/month for 5,000 GPs
 - Fixed HealthPathways: 10 regional Community HealthPathways sites

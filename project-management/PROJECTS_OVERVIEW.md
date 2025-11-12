@@ -271,7 +271,7 @@ Start minimal, add folders as project evolves.
 - **Stage**: Validation
 - **Owner**: Solo Founder/Developer
 - **Last Updated**: 2025-11-11
-- **Summary**: R&D grant proposal for building NZ-sovereign clinical LLM for GP workflows (inbox management, coding, referrals, care gaps). 12-month project seeking $70,026 grant (40%) with $105,039 co-funding. Team structure: Founder (1,329 hours @ 25 hrs/week) + Developer (390 hours, starts Month 4). Includes IP protection ($6k), conference attendance ($3.2k), GPU workstation + testing devices ($2.6k Year 1). Partnership development in progress with Medtech and Comprehensive Care PHO.
+- **Summary**: R&D grant proposal for building NZ-sovereign clinical LLM for GP workflows focusing on 2 high-impact use cases: inbox management (reactive admin relief) and care gap monitoring (proactive clinical support). 12-month project seeking $70,026 grant (40%) with $105,039 co-funding. Team: Founder (1,329 hours @ 25 hrs/week) + Developer (390 hours, starts Month 4). Includes IP protection ($6k), conference attendance ($3.2k), GPU workstation + testing devices ($2.6k Year 1). Partnership development in progress with Medtech and Comprehensive Care PHO.
 - **Key Dates**: 
   - Mentor meeting: 2025-11-12
   - Callaghan Innovation meeting: 2025-11-13

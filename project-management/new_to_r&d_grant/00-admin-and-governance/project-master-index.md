@@ -11,7 +11,7 @@
 
 ### Project Name
 **ClinicPro: NZ-Sovereign Clinical LLM (assist-only)**  
-Inbox management, clinical coding, referral quality, and care gap monitoring
+Inbox management and care gap monitoring
 
 ### Organisation
 **NexWave Solutions Ltd**
@@ -57,7 +57,7 @@ Inbox management, clinical coding, referral quality, and care gap monitoring
 - 5 R&D Objectives (O1?O5) with deliverables and targets
 - 3 Capability Development streams (CD-A, CD-B, CD-C)
 - Success metrics (utility, safety, performance)
-- **4 Use Cases:** Inbox management, clinical coding, referral quality, care gap monitoring
+- **2 Use Cases:** Inbox management (reactive admin relief), care gap monitoring (proactive clinical support)
 
 ---
 
