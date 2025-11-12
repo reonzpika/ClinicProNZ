@@ -60,18 +60,20 @@ function MedtechImagesPageContent() {
   } = useImageWidgetStore();
 
   const { data: capabilities, isLoading: isLoadingCapabilities } = useCapabilities();
-  const { token: qrToken } = useQRSession();
+  const qrSession = useQRSession();
+  const qrToken = qrSession.token; // Get token from session state
   useMobileSessionWebSocket(qrToken);
 
   // Connect WebSocket when QR token is available
   useEffect(() => {
+    console.log('[Desktop] QR session state:', { token: qrToken, hasToken: !!qrToken, sessionState: qrSession });
     if (qrToken) {
       console.log('[Desktop] QR session token available:', qrToken);
       console.log('[Desktop] WebSocket hook should be connecting...');
     } else {
       console.log('[Desktop] No QR token available yet');
     }
-  }, [qrToken]);
+  }, [qrToken, qrSession]);
 
   // Cleanup session on widget close (beforeunload)
   // Use synchronous XHR for reliable delivery during page unload (async fetch is cancelled)

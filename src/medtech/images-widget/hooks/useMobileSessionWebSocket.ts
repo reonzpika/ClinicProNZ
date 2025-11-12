@@ -44,7 +44,9 @@ export function useMobileSessionWebSocket(token: string | null) {
   }, []);
 
   useEffect(() => {
+    console.log('[WebSocket Hook] Effect running, token:', token);
     if (!token) {
+      console.log('[WebSocket Hook] No token, skipping connection');
       return;
     }
 
