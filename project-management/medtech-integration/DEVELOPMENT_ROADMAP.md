@@ -14,96 +14,167 @@ This roadmap outlines the 3-phase development plan to complete the Medtech integ
 **Current Status**: 
 - ✅ Infrastructure complete (OAuth, BFF, ALEX API connectivity)
 - ✅ POST Media validated (widget can upload images)
-- ✅ Frontend Phase 1 complete (capture, edit, metadata, commit flow)
-- ⏳ Frontend enhancements needed (60% target)
-- ⏳ Backend integration needed (connect real API)
+- ✅ Desktop complete (capture, edit, metadata, commit flow, error handling)
+- ⏳ Mobile upload needs real implementation (currently alert())
+- ⏳ Mobile → Desktop dataflow not implemented
+- ⏳ Dataflow review needed (Desktop/Mobile → Medtech)
+- ⏳ Backend integration needed (connect real ALEX API)
 - ⏳ Widget launch mechanism needed
 
 ---
 
-## Phase 1: Frontend Enhancements (60% Target)
+## Phase 1: Mobile Upload & Dataflow Review
 
-**Goal**: Polish frontend UX before connecting to real backend  
+**Goal**: Complete mobile upload flow and review dataflow from desktop/mobile → Medtech  
 **Time Estimate**: 4-6 hours  
-**Priority**: High (improves UX and reduces post-launch issues)
+**Priority**: High (mobile handoff is core feature, dataflow must be correct)
 
-### 1.1 Enhanced Error Handling (Critical) - 2-3 hours
-
-**Current State**: Basic error handling, no per-image retry  
-**Target State**: Granular error handling with per-image status and retry
-
-**Tasks**:
-- [ ] **Per-image error states** (1 hour)
-  - Add error state to imageWidgetStore for each image
-  - Display error icon/message on thumbnail
-  - Show detailed error in modal
-  - File: `src/medtech/images-widget/store/imageWidgetStore.ts`
-
-- [ ] **Retry mechanism** (1 hour)
-  - Add "Retry" button for failed images
-  - Implement retry counter (max 3 attempts)
-  - Exponential backoff for 503 errors
-  - File: `src/medtech/images-widget/hooks/useCommit.ts`
-
-- [ ] **Partial failure handling** (1 hour)
-  - Show success count vs. failed count
-  - Allow resubmit of failed images only
-  - Keep successful uploads (don't re-upload)
-  - File: `src/medtech/images-widget/components/PartialFailureDialog.tsx` (already exists, needs enhancement)
-
-**Success Criteria**:
-- ✅ User sees which specific images failed
-- ✅ User can retry individual images without re-uploading all
-- ✅ Clear error messages (not technical FHIR errors)
+**Current State**:
+- ✅ Desktop error handling complete
+- ✅ Desktop image editor complete
+- ✅ Desktop QR panel generates mobile URL
+- ⏳ Mobile UI is basic (capture/review only)
+- ❌ Mobile upload uses alert(), not real implementation
+- ❌ Mobile → Desktop dataflow not implemented
+- ❌ Dataflow Desktop/Mobile → Medtech needs review
 
 ---
 
-### 1.2 Basic Image Editor (High Value) - 2-3 hours
+### 1.1 Mobile Upload UI/UX Review & Implementation - 2-3 hours
 
-**Current State**: No image editing capability  
-**Target State**: Basic crop and rotate (60% = skip annotations for now)
+**Current State**: Basic mobile page with alert() for upload  
+**Target State**: Complete mobile upload flow with real backend integration
+
+**File**: `/app/(medtech)/medtech-images/mobile/page.tsx`
 
 **Tasks**:
-- [ ] **Image crop tool** (1.5 hours)
-  - Integrate existing library (e.g., `react-easy-crop`)
-  - Add crop UI in ImageEditModal
-  - Apply crop before commit
-  - File: `src/medtech/images-widget/components/ImageEditModal.tsx`
+- [ ] **Review mobile UI** (30 minutes)
+  - Check capture flow (camera vs. gallery)
+  - Review image preview grid
+  - Identify UX improvements needed
+  - Decision: Add metadata entry on mobile? Or desktop only?
 
-- [ ] **Image rotate** (0.5 hour)
-  - Add rotate buttons (90° increments)
-  - Apply rotation before commit
-  - File: `src/medtech/images-widget/components/ImageEditModal.tsx`
+- [ ] **Implement real upload** (1.5 hours)
+  - Replace alert() with real API call
+  - Upload images to session (via token)
+  - Show upload progress per image
+  - Handle upload errors
+  - Success state with confirmation
 
-- [ ] **Edit workflow** (1 hour)
-  - Add "Edit" button on ImagePreview
-  - Open ImageEditModal with current image
-  - Apply changes to image in store
-  - Re-compress after edit
+- [ ] **Add loading/error states** (30 minutes)
+  - Upload progress indicator (per image)
+  - Error display (network failure, etc.)
+  - Retry failed uploads
+  - Success confirmation
+
+- [ ] **Image compression on mobile** (30 minutes)
+  - Compress images before upload (< 1MB target)
+  - Show compression progress
+  - Use existing compression service
 
 **Success Criteria**:
-- ✅ User can crop images to focus on clinical area
-- ✅ User can rotate images (landscape → portrait)
-- ✅ Edits persist until commit
-- ❌ Annotations deferred to post-launch (out of scope for 60%)
+- ✅ Mobile can capture/select images
+- ✅ Images upload to backend (not just alert)
+- ✅ Upload progress visible to user
+- ✅ Errors handled gracefully
+- ✅ Success confirmation shown
 
-**Libraries to Use** (per workspace rules):
-- `react-easy-crop` - Well-maintained, 2.5k+ stars, TypeScript support
-- Alternative: `react-image-crop` - 3.8k+ stars, simpler API
+**Questions to Answer**:
+1. Does mobile need metadata entry? Or desktop only?
+2. Should mobile compress before upload or after?
+3. How long should QR session last? (currently mock)
+
+---
+
+### 1.2 Mobile → Desktop Dataflow Implementation - 1-2 hours
+
+**Current State**: Mobile and desktop are disconnected  
+**Target State**: Images uploaded from mobile appear on desktop automatically
+
+**How it should work**:
+```
+1. Desktop generates QR with session token
+2. Mobile scans QR, gets token
+3. Mobile uploads images → backend with token
+4. Backend associates images with session
+5. Desktop polls/websocket for new images
+6. Images appear in desktop store automatically
+```
+
+**Tasks**:
+- [ ] **Backend session API** (1 hour)
+  - POST /api/medtech/mobile/initiate - Create session with token
+  - POST /api/medtech/mobile/upload - Upload images to session
+  - GET /api/medtech/mobile/session/:token - Get session images
+  - File: `/app/api/(integration)/medtech/mobile/` routes
+
+- [ ] **Desktop polling/websocket** (1 hour)
+  - Poll for new images every 2-3 seconds (simple approach)
+  - Or: WebSocket connection for real-time updates (better UX)
+  - Add new images to imageWidgetStore automatically
+  - Show notification when images arrive
+
+**Success Criteria**:
+- ✅ Mobile uploads appear on desktop automatically
+- ✅ No manual refresh needed
+- ✅ Images appear within 3 seconds of mobile upload
+- ✅ Multiple mobile devices can upload to same session
+
+**Implementation Decision**:
+- **Simple**: Polling every 2-3 seconds (easier to implement)
+- **Better**: WebSocket for real-time (better UX, more complex)
+- **Recommendation**: Start with polling, upgrade to WebSocket later if needed
+
+---
+
+### 1.3 Desktop/Mobile → Medtech Dataflow Review - 1 hour
+
+**Goal**: Document and verify complete dataflow from capture to Medtech
+
+**Tasks**:
+- [ ] **Map desktop flow** (20 minutes)
+  ```
+  Desktop capture → imageWidgetStore → Commit button → 
+  POST /api/medtech/attachments/commit → BFF → 
+  POST /Media (FHIR) → ALEX API → Medtech DB
+  ```
+
+- [ ] **Map mobile flow** (20 minutes)
+  ```
+  Mobile capture → Upload → POST /api/medtech/mobile/upload → 
+  Session storage → Desktop polls → imageWidgetStore → 
+  (same commit flow as desktop)
+  ```
+
+- [ ] **Identify gaps/issues** (20 minutes)
+  - Where does compression happen? (frontend or BFF)
+  - Where is base64 conversion? (frontend or BFF)
+  - How are commit errors reported back to user?
+  - What happens if BFF is down?
+  - What happens if ALEX API is down?
+
+**Deliverable**: Dataflow diagram document (text or mermaid)
+
+**Success Criteria**:
+- ✅ Complete dataflow documented
+- ✅ All transformation points identified
+- ✅ Error handling points mapped
+- ✅ Ready for Phase 2 implementation
 
 ---
 
 ### Phase 1 Outcome
 
 **Deliverables**:
-- Enhanced error handling with per-image retry
-- Basic image editing (crop + rotate)
-- Better UX for failures and corrections
+- ✅ Mobile upload UI complete with real backend
+- ✅ Mobile → Desktop dataflow working (real-time or near-real-time)
+- ✅ Desktop/Mobile → Medtech dataflow documented and reviewed
+- ✅ Ready to connect real ALEX API in Phase 2
 
-**Not Included** (deferred to post-launch):
-- Keyboard shortcuts
-- Mobile per-image metadata
-- Advanced annotations (arrows, text, shapes)
+**Not Included** (deferred):
+- ❌ Mobile metadata entry (if not needed)
+- ❌ WebSocket implementation (if using polling)
+- ❌ Advanced mobile features (edit, crop on mobile)
 
 ---
 
@@ -364,7 +435,7 @@ if (!patientId) {
 
 | Phase | Tasks | Time Estimate | Priority |
 |-------|-------|---------------|----------|
-| **Phase 1: Frontend Enhancements** | Error handling + Image editor (60%) | 4-6 hours | High |
+| **Phase 1: Mobile Upload & Dataflow** | Mobile UI + Mobile→Desktop sync + Dataflow review | 4-6 hours | High |
 | **Phase 2: Complete Integration** | BFF commit endpoint + Testing | 4-6 hours | Critical |
 | **Phase 3: Widget Launch Mechanism** | Launch method + Context passing | 3-5 hours | Medium |
 | **Total** | | **12-18 hours** | |
@@ -375,12 +446,12 @@ if (!patientId) {
 
 ## Phase Order Rationale
 
-### Why Phase 1 First (Frontend Enhancements)?
+### Why Phase 1 First (Mobile Upload & Dataflow)?
 
-1. **UX improvements reduce post-launch issues** - Better error handling = fewer support requests
-2. **Image editing is easier to test with mock backend** - Can iterate quickly without BFF dependency
-3. **Builds confidence in frontend quality** - Polish first, then connect real backend
-4. **60% target = focus on high-value features** - Crop/rotate/error handling, skip nice-to-haves
+1. **Mobile handoff is core differentiator** - QR code workflow is key selling point
+2. **Dataflow must be correct before backend integration** - Need to understand full flow before connecting ALEX API
+3. **Mobile → Desktop sync is complex** - Better to solve this early, test thoroughly
+4. **Desktop polish already done** - Error handling and editor complete, focus on mobile gap
 
 ### Why Phase 2 Second (Backend Integration)?
 
@@ -401,9 +472,9 @@ if (!patientId) {
 ## Success Criteria (Overall)
 
 ### Phase 1 Complete ✅
-- Enhanced error handling with per-image retry
-- Basic image editor (crop + rotate)
-- Better UX for failures
+- Mobile upload UI complete with real backend
+- Mobile → Desktop dataflow working
+- Desktop/Mobile → Medtech dataflow documented and reviewed
 
 ### Phase 2 Complete ✅
 - Images upload to real ALEX API
