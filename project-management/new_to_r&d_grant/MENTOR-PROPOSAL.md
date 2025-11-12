@@ -582,13 +582,17 @@ Beyond cost:
 
 | Category | Amount (NZD excl. GST) |
 |----------|------------------------|
-| **R&D Internal Labour** (1,062 hours @ $96/hr) | $101,952 |
-| **Capability Development** (30 hours @ $96/hr) | $2,880 |
+| **Founder R&D Labour** (1,329 hours @ $96/hr) | $127,584 |
+| **Developer R&D Labour** (390 hours @ $72/hr, starts Month 4) | $28,080 |
+| **Capability Development** (54 hours @ $96/hr) | $5,184 |
 | **Materials & Consumables** ($200/month × 12) | $2,400 |
-| **Total Eligible Costs** | **$107,232** |
+| **Professional Services (IP)** | $6,000 |
+| **Conference Travel** (HIC + HealthTech Week) | $3,200 |
+| **Hardware & Depreciation** (Year 1) | $2,617 |
+| **Total Eligible Costs** | **$175,065** |
 | | |
-| **Grant (40%)** | **$42,893** |
-| **Co-Funding (60%)** | **$64,339** |
+| **Grant (40%)** | **$70,026** |
+| **Co-Funding (60%)** | **$105,039** |
 
 **Capability Development Breakdown:**
 - CD-A: Privacy & compliance (12 hours + 3 free courses) = $1,152
@@ -606,15 +610,15 @@ Beyond cost:
 - ✓ **Income from GP clinical work** (shareholder-director compensated via PAYE for R&D labour)
 - ✓ **Consistent income stream** (~$11k/month) exceeds R&D costs throughout the project
 - ✓ **Cash position remains positive throughout** 12-month project:
-  - Opening cash: $10,000
+  - Opening cash: $5,000
   - Minimum cash position: $1,879 (Month 6)
   - Closing cash: $32,213 (Month 13)
 
 **Quarterly Grant Receipts:**
-- Q1 claim (Month 3) → Grant received Month 4: $19,085
-- Q2 claim (Month 6) → Grant received Month 7: $17,397
-- Q3 claim (Month 9) → Grant received Month 10: $16,772
-- Q4 claim (Month 12) → Grant received Month 13: $16,772
+- Q1 claim (Month 3) → Grant received Month 4: $16,973
+- Q2 claim (Month 6) → Grant received Month 7: $16,858
+- Q3 claim (Month 9) → Grant received Month 10: $18,298
+- Q4 claim (Month 12) → Grant received Month 13: $17,898
 
 **Cashflow Strategy:**
 - Hardware purchases deferred to Month 4 (after first grant receipt)

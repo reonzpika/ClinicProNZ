@@ -157,7 +157,7 @@ This document tracks:
 - **Likelihood:** Low (with planning)
 - **Impact:** Medium (claim rejection, grant reduction)
 - **Mitigations:**
-  - 30 hours CapDev labour locked ($2,880 = 6.7% of grant ?)
+  - 54 hours CapDev labour locked ($5,184 = 7.4% of grant ✓)
   - Adjust up slightly before Q1 claim if total costs change
   - Quarterly review of CapDev % in cost template
 - **Owner:** NexWave Director

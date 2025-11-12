@@ -318,9 +318,9 @@ Contact:
 
 **Pitfall:** CapDev falls below 5% of grant
 **Solution:**
-- Keep 30 hours of one-off set-ups ($2,880)
+- Keep 54 hours of CapDev ($5,184: 30h setup + 24h conferences)
 - Adjust up before Q1 claim if needed
-- Current allocation: 6.7% ?
+- Current allocation: 7.4% ✓ (exceeds 5% minimum)
 
 ### 5. Overseas Labour
 

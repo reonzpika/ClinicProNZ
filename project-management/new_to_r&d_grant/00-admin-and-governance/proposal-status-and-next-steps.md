@@ -21,7 +21,7 @@
 - 5 R&D Objectives (O1-O5) with specific dates, deliverables, and targets
 - 3 Capability Development streams (CD-A/B/C)
 - Clear milestones table with dates
-- Detailed cost breakdown ($107,232) by objective, labour rates ($96/hr), M&C ($200/month)
+- Detailed cost breakdown ($175,065) by objective, labour rates (founder $96/hr, developer $72/hr), M&C, IP, conferences, hardware
 
 ?? **What's missing:**
 - **No long-term vision beyond Year 1** (What happens in Year 2-5?)
@@ -161,7 +161,7 @@
 
 > **Why Grant Funding is Essential:**
 > 
-> Grant funding is critical because commercial investors are risk-averse to early-stage R&D with uncertain technical outcomes. The cost/quality trade-off for small models under NZ constraints is unproven?no investor will fund systematic experimentation without guaranteed ROI. The 40% grant de-risks this R&D, enabling us to afford the 1,062 hours of systematic experimentation (O1-O5) required to resolve technical uncertainties. Without it, we would need to use expensive Azure OpenAI ($140k/month at scale), which is commercially unviable for NZ's 5,000 GP market. This grant makes a sovereign, cost-effective solution possible.
+> Grant funding is critical because commercial investors are risk-averse to early-stage R&D with uncertain technical outcomes. The cost/quality trade-off for small models under NZ constraints is unproven—no investor will fund systematic experimentation without guaranteed ROI. The 40% grant de-risks this R&D, enabling us to afford the 1,719 hours of systematic experimentation (O1-O5: 1,329 founder + 390 developer) required to resolve technical uncertainties. Without it, we would need to use expensive Azure OpenAI ($140k/month at scale), which is commercially unviable for NZ's 5,000 GP market. This grant makes a sovereign, cost-effective solution possible.
 
 **Action needed:** Add 1 paragraph to **Section 6.2 (Cashflow Confidence)** or **Section 1 (Executive Summary)**
 

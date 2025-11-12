@@ -304,9 +304,9 @@ Build enduring capability in:
 **Requirement:** CapDev ? 5% of grant ? $2,145
 
 **Mitigation:**
-- Keep 30 hours CapDev labour ($2,880)
+- Keep 54 hours CapDev labour ($5,184: 30h setup + 24h conferences)
 - Adjust up slightly before first claim if needed
-- Current allocation: $2,880 / $42,893 = 6.7% ?
+- Current allocation: $5,184 / $70,026 = 7.4% ✓ (exceeds 5% minimum of $3,501)
 
 ### Risk: Transparency Not Updated
 
