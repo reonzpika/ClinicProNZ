@@ -1,16 +1,30 @@
 # Update Environment Variables - Step by Step Guide
 
-**Date**: 2025-11-07  
-**Change Required**: Update `MEDTECH_FACILITY_ID` from `F2N060-E` to `F99669-C`
+**Last Updated**: 2025-11-12  
+**For Facility ID Guidance**: See ARCHITECTURE_AND_TESTING_GUIDE.md - "The Two Facility IDs Explained" section
+
+---
+
+## Facility ID Overview
+
+**Current Working Configuration**: `F2N060-E` (Medtech's test facility)
+
+**Two Facility IDs Available**:
+- **`F2N060-E`**: Medtech's test facility (no Hybrid Connection Manager needed) ✅ **Use for API testing**
+- **`F99669-C`**: Your local facility (requires Hybrid Connection Manager) ⚠️ **Use for full E2E testing** (deferred)
+
+**Current Recommendation**: Use `F2N060-E` for all current testing. Switch to `F99669-C` only when Hybrid Connection Manager is set up for full end-to-end testing with your local Medtech Evolution instance.
+
+**For detailed guidance on when to use which facility ID**, see ARCHITECTURE_AND_TESTING_GUIDE.md section "The Two Facility IDs Explained".
 
 ---
 
 ## What Needs to Change
 
-**Single Variable**:
-- `MEDTECH_FACILITY_ID`: `F2N060-E` → `F99669-C`
+**Variable to Update**:
+- `MEDTECH_FACILITY_ID`: Should be set to `F2N060-E` for current API testing
 
-**Why**: Medtech Evolution test instance now uses Facility ID `F99669-C` (changed from `F2N060-E`)
+**Note**: This guide shows how to update the variable. The actual value depends on your testing needs (see Facility ID Overview above).
 
 ---
 
@@ -35,7 +49,7 @@
 
 5. **Update the Value**:
    - Click the **pencil/edit icon** next to `MEDTECH_FACILITY_ID`
-   - Change value from `F2N060-E` to `F99669-C`
+   - Set value to `F2N060-E` (for API testing) or `F99669-C` (for E2E testing with Hybrid Connection Manager)
    - Click **Save**
 
 6. **Redeploy** (if needed):
@@ -56,17 +70,17 @@ vercel login
 # Update environment variable for production
 vercel env rm MEDTECH_FACILITY_ID production
 vercel env add MEDTECH_FACILITY_ID production
-# When prompted, enter: F99669-C
+# When prompted, enter: F2N060-E (or F99669-C if Hybrid Connection Manager is set up)
 
 # Update for preview (optional)
 vercel env rm MEDTECH_FACILITY_ID preview
 vercel env add MEDTECH_FACILITY_ID preview
-# When prompted, enter: F99669-C
+# When prompted, enter: F2N060-E (or F99669-C if Hybrid Connection Manager is set up)
 
 # Update for development (optional)
 vercel env rm MEDTECH_FACILITY_ID development
 vercel env add MEDTECH_FACILITY_ID development
-# When prompted, enter: F99669-C
+# When prompted, enter: F2N060-E (or F99669-C if Hybrid Connection Manager is set up)
 
 # Redeploy
 vercel --prod
@@ -88,8 +102,8 @@ The BFF (Backend-for-Frontend) runs on AWS Lightsail at `api.clinicpro.co.nz`.
 
 2. **Navigate to BFF Directory**:
    ```bash
-   cd /opt/clinicpro-bff
-   # Or wherever your BFF is installed
+   cd /home/deployer/app
+   # BFF location on Lightsail
    ```
 
 3. **Edit .env File**:
@@ -99,8 +113,8 @@ The BFF (Backend-for-Frontend) runs on AWS Lightsail at `api.clinicpro.co.nz`.
    ```
 
 4. **Update the Variable**:
-   - Find line: `MEDTECH_FACILITY_ID=F2N060-E`
-   - Change to: `MEDTECH_FACILITY_ID=F99669-C`
+   - Find line: `MEDTECH_FACILITY_ID=...`
+   - Set to: `MEDTECH_FACILITY_ID=F2N060-E` (for API testing) or `F99669-C` (for E2E testing)
    - Save and exit (Ctrl+X, then Y, then Enter for nano)
 
 5. **Restart the Service**:
@@ -128,8 +142,8 @@ The BFF (Backend-for-Frontend) runs on AWS Lightsail at `api.clinicpro.co.nz`.
    ```
 
 3. **Update Environment Variable**:
-   - Find `Environment="MEDTECH_FACILITY_ID=F2N060-E"`
-   - Change to: `Environment="MEDTECH_FACILITY_ID=F99669-C"`
+   - Find `Environment="MEDTECH_FACILITY_ID=..."`
+   - Set to: `Environment="MEDTECH_FACILITY_ID=F2N060-E"` (for API testing) or `F99669-C` (for E2E testing)
    - Save and exit
 
 4. **Reload Systemd and Restart**:
@@ -172,8 +186,8 @@ If you're testing locally:
    ```
 
 2. **Update the Variable**:
-   - Find: `MEDTECH_FACILITY_ID=F2N060-E`
-   - Change to: `MEDTECH_FACILITY_ID=F99669-C`
+   - Find: `MEDTECH_FACILITY_ID=...`
+   - Set to: `MEDTECH_FACILITY_ID=F2N060-E` (for API testing) or `F99669-C` (for E2E testing)
    - Save
 
 3. **Restart Dev Server** (if running):
@@ -201,7 +215,7 @@ If you're testing locally:
    {
      "success": true,
      "environment": {
-       "facilityId": "F99669-C"  // Should show new value
+       "facilityId": "F2N060-E"  // Should match your configured value
      }
    }
    ```
@@ -246,7 +260,7 @@ If you're testing locally:
 1. **Restart Service**: `sudo systemctl restart clinicpro-bff`
 2. **Check Service Status**: `sudo systemctl status clinicpro-bff`
 3. **Check Logs**: `sudo journalctl -u clinicpro-bff -n 50`
-4. **Verify .env File**: `cat /opt/clinicpro-bff/.env | grep MEDTECH_FACILITY_ID`
+4. **Verify .env File**: `cat /home/deployer/app/.env | grep MEDTECH_FACILITY_ID`
 
 ### Test Endpoint Failing
 
@@ -254,9 +268,10 @@ If you're testing locally:
 
 **Check**:
 1. **OAuth Credentials**: Verify `MEDTECH_CLIENT_ID`, `MEDTECH_CLIENT_SECRET` are correct
-2. **Facility ID**: Verify it's `F99669-C` (not `F2N060-E`)
+2. **Facility ID**: Verify it's `F2N060-E` (for API testing) or `F99669-C` (for E2E testing with Hybrid Connection Manager)
 3. **API Base URL**: Should be `https://alexapiuat.medtechglobal.com/FHIR`
 4. **IP Allow-listing**: Should be resolved (Azure network security group added)
+5. **If using F99669-C**: Ensure Hybrid Connection Manager is running on your local Medtech Evolution machine
 
 ---
 
@@ -273,7 +288,7 @@ MEDTECH_API_SCOPE=api://bf7945a6-e812-4121-898a-76fea7c13f4d/.default
 
 # API Configuration
 MEDTECH_API_BASE_URL=https://alexapiuat.medtechglobal.com/FHIR
-MEDTECH_FACILITY_ID=F99669-C  # ← THIS IS WHAT WE'RE CHANGING
+MEDTECH_FACILITY_ID=F2N060-E  # Use F2N060-E for API testing, F99669-C for E2E (requires Hybrid Connection Manager)
 MEDTECH_APP_ID=clinicpro-images-widget
 
 # Mock Mode (for development)

@@ -370,7 +370,10 @@ All documentation is in: `/project-management/medtech-integration/`
 ### Reference Documents
 5. `docs/LIGHTSAIL_BFF_SETUP.md` - Server setup and operations
 6. `docs/ARCHITECTURE_AND_TESTING_GUIDE.md` - Architecture overview
-7. `docs/TESTING_GUIDE_POSTMAN_AND_BFF.md` - Testing instructions
+7. `docs/TESTING_GUIDE_POSTMAN_AND_BFF.md` - Testing instructions (includes OAuth testing)
+8. `docs/STATUS_DETAILED.md` - Detailed component-by-component status
+9. `docs/TECHNICAL_CONFIG.md` - Technical configuration reference
+10. `implementation/GATEWAY_IMPLEMENTATION.md` - Gateway implementation (includes OAuth setup)
 
 ### Project Management
 8. `/project-management/PROJECTS_OVERVIEW.md` - Dashboard (updated with milestone)

@@ -386,10 +386,10 @@ If using a FHIR server that requires standard OAuth:
 
 ## Related Documentation
 
-- [FHIR MCP Quickstart](../../../FHIR_MCP_QUICKSTART.md) - Quick reference guide
-- [ALEX API Review](../api/alex-api-review-2025-10-30.md) - ALEX API specifics
-- [Medtech Integration Summary](../PROJECT_SUMMARY.md) - Overall project status
-- [Gateway Implementation](../implementation/GATEWAY_IMPLEMENTATION.md) - Production gateway guide
+- FHIR MCP Quickstart - Quick reference guide
+- ALEX API Review - ALEX API specifics
+- Medtech Integration Summary - Overall project status
+- Gateway Implementation - Production gateway guide
 
 ## Resources
 

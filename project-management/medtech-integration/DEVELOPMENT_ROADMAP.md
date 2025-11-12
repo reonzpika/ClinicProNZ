@@ -1,9 +1,47 @@
 # Medtech Integration - Development Roadmap
 
 **Created**: 2025-11-12  
+**Last Updated**: 2025-11-12  
 **Status**: Active Development  
 **Estimated Total Time**: 12-18 hours  
-**Current Phase**: Phase 1 (Frontend Enhancements)
+**Current Phase**: Phase 1 - Mobile Upload & Dataflow Review
+
+---
+
+## Quick Start - Next Development Session
+
+**Current Status**: ✅ POST Media Validated! Widget can upload images to Medtech ALEX API (201 Created)
+
+**What's Ready**:
+- ✅ Infrastructure complete (OAuth, BFF, ALEX API connectivity)
+- ✅ POST Media validated (widget can upload images)
+- ✅ Desktop widget complete (capture, edit, metadata, commit flow)
+- ⏳ Mobile upload needs real implementation (currently alert())
+- ⏳ Backend integration needed (connect real ALEX API)
+
+**Test Environment**:
+- BFF URL: https://api.clinicpro.co.nz
+- BFF IP: 13.236.58.12 (whitelisted)
+- ALEX API: https://alexapiuat.medtechglobal.com/FHIR
+- Test Patient ID: `14e52e16edb7a435bfa05e307afd008b` (NHI: ZZZ0016)
+- Facility ID: `F2N060-E`
+
+**Quick Commands**:
+```bash
+# SSH into Lightsail BFF
+ssh -i /path/to/your-key.pem ubuntu@13.236.58.12
+
+# Check BFF status
+sudo systemctl status clinicpro-bff
+
+# View logs
+sudo journalctl -u clinicpro-bff -f
+
+# Restart if needed
+sudo systemctl restart clinicpro-bff
+```
+
+**Next Immediate Task**: Start Phase 1.1 - Mobile Upload UI/UX Review & Implementation
 
 ---
 
@@ -241,9 +279,47 @@ const response = await alexApiClient.post('/Media', mediaResource, {
 });
 ```
 
-**Reference Documents**:
-- `docs/WIDGET_IMPLEMENTATION_REQUIREMENTS.md` - Section 3 (complete code examples)
-- `docs/FHIR_API_TEST_RESULTS.md` - Section 4 (POST Media test results)
+**Implementation Details**:
+
+**Code Example**:
+```typescript
+// For each image:
+const mediaResource = {
+  resourceType: 'Media',
+  identifier: [{
+    system: 'https://clinicpro.co.nz/image-id',
+    value: crypto.randomUUID(),
+  }],
+  status: 'completed',
+  type: {
+    coding: [{
+      system: 'http://terminology.hl7.org/CodeSystem/media-type',
+      code: 'image',
+      display: 'Image',
+    }],
+  },
+  subject: {
+    reference: `Patient/${patientId}`,
+  },
+  createdDateTime: new Date().toISOString(),
+  content: {
+    contentType: imageFile.contentType,
+    data: base64Data,
+    title: imageTitle,
+  },
+};
+
+const response = await alexApiClient.post('/Media', mediaResource);
+```
+
+**Required Media Fields** (Validated):
+- ✅ `resourceType: "Media"`
+- ✅ `identifier` (with system and value) — Must be unique per image
+- ✅ `status: "completed"`
+- ✅ `type` (image coding)
+- ✅ `subject` (patient reference)
+- ✅ `content.data` (base64 image)
+- ✅ `content.contentType` (image/png, image/jpeg, etc.)
 
 ---
 
@@ -501,49 +577,17 @@ if (!patientId) {
 
 ---
 
-## Resources & References
+## Code Locations
 
-### Documentation
-- **FHIR API Test Results**: `docs/FHIR_API_TEST_RESULTS.md` (13 pages)
-- **Widget Implementation Requirements**: `docs/WIDGET_IMPLEMENTATION_REQUIREMENTS.md` (10 pages)
-- **Lightsail BFF Setup**: `docs/LIGHTSAIL_BFF_SETUP.md`
-- **Architecture Guide**: `docs/ARCHITECTURE_AND_TESTING_GUIDE.md`
-
-### Code Locations
 - Frontend Widget: `/src/medtech/images-widget/`
 - BFF Commit Endpoint: `/app/api/(integration)/medtech/attachments/commit/route.ts`
 - Widget Page: `/app/(medtech)/medtech-images/page.tsx`
+- Mobile Page: `/app/(medtech)/medtech-images/mobile/page.tsx`
 - Store: `/src/medtech/images-widget/store/imageWidgetStore.ts`
-
-### Test Environment
-- BFF URL: https://api.clinicpro.co.nz
-- BFF IP: 13.236.58.12 (whitelisted)
-- ALEX API: https://alexapiuat.medtechglobal.com/FHIR
-- Test Patient ID: `14e52e16edb7a435bfa05e307afd008b` (NHI: ZZZ0016)
-- Facility ID: `F2N060-E`
-
----
-
-## Next Actions
-
-### Immediate (This Session)
-1. Read this roadmap
-2. Confirm phase order and 60% frontend scope
-3. Start Phase 1: Enhanced error handling
-
-### This Week
-1. Complete Phase 1 (4-6 hours)
-2. Complete Phase 2 (4-6 hours)
-3. Complete Phase 3 (3-5 hours)
-
-### Next Week
-1. Demo to Medtech (if needed)
-2. Prepare customer pitch materials
-3. Launch pilots with GP practices
 
 ---
 
 **Document Status**: Active Development Roadmap  
 **Last Updated**: 2025-11-12  
-**Version**: 1.0  
-**Supersedes**: IMMEDIATE_ACTION_PLAN.md (archived)
+**Version**: 2.0  
+**Note**: Consolidated with READY_TO_START.md (2025-11-12)

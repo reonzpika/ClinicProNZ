@@ -1,5 +1,11 @@
 # Medtech Integration Status
 
+**⚠️ ARCHIVED**: 2025-11-12  
+**Reason**: 503 errors mentioned in this doc were resolved on 2025-11-11. Status information consolidated into `PROJECT_SUMMARY.md` updates history.  
+**For current status**: See `PROJECT_SUMMARY.md` (Current Status section)
+
+---
+
 **Last Updated:** 2025-11-10  
 **Status:** ✅ Integration Complete | ⚠️ UAT Environment Issue
 
@@ -395,3 +401,4 @@ All code is production-ready and follows Medtech's specifications exactly. The c
 - ✅ Architecture ready for production
 
 **Next:** Wait for Medtech UAT fix, then test end-to-end with Next.js app.
+
