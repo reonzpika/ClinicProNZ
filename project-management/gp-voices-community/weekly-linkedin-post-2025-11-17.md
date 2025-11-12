@@ -111,6 +111,49 @@
 
 ---
 
+## Standalone Posts (Between Weekly Roundups)
+
+### Standalone Post 1: AI Policy Article
+
+**Article**: Item 4 - Putting an AI policy in place protects you and your practice  
+**Post Type**: Deep dive / Opinion  
+**Target Post Date**: [Choose date - space out from weekly roundup]
+
+**LinkedIn Post Draft**:
+
+```
+Do you have an AI policy in your practice?
+
+As more GPs adopt AI tools for scribing, inbox management, and clinical decision support, Health IT expert Sanjeewa Samaraweera makes a compelling case: implementing an AI policy isn't optional—it's essential protection.
+
+Why this matters: AI tools are becoming standard in NZ general practice, but many practices are using them without clear guidelines on data privacy, clinical oversight, or staff training. An AI policy protects your practice, your patients, and your team.
+
+Key points from the article:
+• Define acceptable AI use cases in your practice
+• Establish data privacy and security protocols
+• Set clear clinical oversight requirements
+• Regular policy review as AI evolves
+
+**Do you have an AI policy? What's included in yours?** Share your experience or questions in the comments 👇
+
+Read the full article: https://www.pharmacytoday.co.nz/article/opinion/putting-ai-policy-place-protects-you-and-your-practice
+
+#PrimaryCareNZ #AIinHealth #GeneralPractice #DigitalHealthNZ #HealthTechNZ #GPsNZ
+```
+
+**Mentions** (Optional - only if directly relevant):
+- [Consider: @Pharmacy Today if they're active on LinkedIn]
+
+**Hashtags**: #PrimaryCareNZ #AIinHealth #GeneralPractice #DigitalHealthNZ #HealthTechNZ #GPsNZ
+
+**Posting Notes**:
+- Post on different day from weekly roundup (e.g., if roundup is Tuesday, post this Thursday)
+- Monitor for GP comments about their AI policies
+- Engage with commenters asking follow-up questions
+- Track if this generates more GP engagement vs vendor engagement
+
+---
+
 ## Image Details
 
 **Title**: "This Week in NZ General Practice: [Theme] Edition"
