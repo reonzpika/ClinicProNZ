@@ -10,7 +10,7 @@ import { NextResponse } from 'next/server';
 import { deleteMobileSession } from '@/src/lib/services/medtech/mobile-session-storage';
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ token: string }> },
 ) {
   try {

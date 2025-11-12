@@ -42,7 +42,7 @@ export function useQRSession() {
       const expiresAt = Date.now() + data.ttlSeconds * 1000;
       // Extract token from mobile URL
       const tokenMatch = data.mobileUploadUrl.match(/[?&]t=([^&]+)/);
-      const token = tokenMatch ? tokenMatch[1] : null;
+      const token: string | null = tokenMatch && tokenMatch[1] ? tokenMatch[1] : null;
 
       setSessionState({
         token,

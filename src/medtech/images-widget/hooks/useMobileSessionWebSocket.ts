@@ -36,7 +36,7 @@ export function useMobileSessionWebSocket(token: string | null) {
   const lastHeartbeatRef = useRef<number>(Date.now());
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { addImage, encounterContext } = useImageWidgetStore();
+  const { addImage } = useImageWidgetStore();
 
   useEffect(() => {
     if (!token) {

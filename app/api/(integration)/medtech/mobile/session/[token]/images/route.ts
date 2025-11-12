@@ -10,7 +10,7 @@ import { NextResponse } from 'next/server';
 import { getSessionImages } from '@/src/lib/services/medtech/mobile-session-storage';
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ token: string }> },
 ) {
   try {

@@ -55,15 +55,17 @@ function MobilePageContent() {
   const { data: capabilities } = useCapabilities();
 
   // Load offline queue on mount
+  // Note: Retry logic would need to reconstruct File objects from stored data
+  // For now, failed uploads are handled in the upload function with retry
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const queue = localStorage.getItem(OFFLINE_QUEUE_KEY);
       if (queue) {
         try {
           const parsed = JSON.parse(queue);
-          if (parsed.token === token && parsed.images.length > 0) {
-            // Retry uploads
-            handleUploadQueue(parsed.images);
+          if (parsed.token === token && parsed.images && parsed.images.length > 0) {
+            // TODO: Implement retry logic to reconstruct File objects and retry uploads
+            console.log('[Mobile] Found offline queue with', parsed.images.length, 'images');
           }
         } catch {
           // Invalid queue data, clear it
@@ -96,11 +98,8 @@ function MobilePageContent() {
   };
 
   // Retry uploads from offline queue
-  const handleUploadQueue = async (queuedImages: ImageWithMetadata[]) => {
-    // Implementation for retry logic
-    // This would need to reconstruct File objects from stored data
-    // For now, we'll handle this in the upload function
-  };
+  // Note: This would need to reconstruct File objects from stored data
+  // For now, failed uploads are handled in the upload function
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) {
@@ -150,6 +149,10 @@ function MobilePageContent() {
           const result = reader.result as string;
           // Remove data URL prefix
           const base64 = result.split(',')[1];
+          if (!base64) {
+            reject(new Error('Failed to convert image to base64'));
+            return;
+          }
           resolve(base64);
         };
         reader.onerror = reject;
@@ -218,7 +221,7 @@ function MobilePageContent() {
       // Upload all pending images
       const pendingImages = images.filter(img => img.uploadStatus === 'pending');
 
-      const uploadPromises = pendingImages.map(async (image, index) => {
+      const uploadPromises = pendingImages.map(async (image) => {
         const actualIndex = images.findIndex(img => img.id === image.id);
         setImages(prev => prev.map((img, i) => (i === actualIndex ? { ...img, uploadStatus: 'uploading' } : img)));
 

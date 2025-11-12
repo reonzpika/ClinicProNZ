@@ -61,7 +61,7 @@ function MedtechImagesPageContent() {
 
   const { data: capabilities, isLoading: isLoadingCapabilities } = useCapabilities();
   const { token: qrToken } = useQRSession();
-  const { isConnected: isWebSocketConnected } = useMobileSessionWebSocket(qrToken);
+  useMobileSessionWebSocket(qrToken);
 
   // Connect WebSocket when QR token is available
   useEffect(() => {
