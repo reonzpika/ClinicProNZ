@@ -49,26 +49,44 @@ export async function GET(
 
       // Poll for new images every 2 seconds
       let lastImageCount = 0;
+      let isPolling = false; // Flag to prevent concurrent polls
       pollInterval = setInterval(async () => {
-        if (!isConnected) {
-          if (pollInterval) {
-            clearInterval(pollInterval);
-            pollInterval = null;
-          }
+        // Prevent concurrent poll iterations
+        if (!isConnected || isPolling) {
           return;
         }
+
+        isPolling = true;
 
         try {
           const session = await getMobileSession(token);
 
+          // Check connection state again after async operation
+          if (!isConnected) {
+            isPolling = false;
+            return;
+          }
+
           if (!session) {
-            send({ type: 'session_expired' });
+            // Session expired - cleanup atomically
             isConnected = false;
+            isPolling = false;
             if (pollInterval) {
               clearInterval(pollInterval);
               pollInterval = null;
             }
-            controller.close();
+            try {
+              send({ type: 'session_expired' });
+              controller.close();
+            } catch {
+              // Ignore errors if stream already closed
+            }
+            return;
+          }
+
+          // Double-check connection before sending
+          if (!isConnected) {
+            isPolling = false;
             return;
           }
 
@@ -77,28 +95,57 @@ export async function GET(
           // If new images detected, send them
           if (currentImageCount > lastImageCount) {
             const newImages = session.images.slice(lastImageCount);
-            send({
-              type: 'images_received',
-              images: newImages.map(img => ({
-                id: img.id,
-                contentType: img.contentType,
-                sizeBytes: img.sizeBytes,
-                metadata: img.metadata,
-                uploadedAt: img.uploadedAt,
-              })),
-            });
-            lastImageCount = currentImageCount;
+            try {
+              send({
+                type: 'images_received',
+                images: newImages.map(img => ({
+                  id: img.id,
+                  contentType: img.contentType,
+                  sizeBytes: img.sizeBytes,
+                  metadata: img.metadata,
+                  uploadedAt: img.uploadedAt,
+                })),
+              });
+              lastImageCount = currentImageCount;
+            } catch {
+              // Stream closed, stop polling
+              isConnected = false;
+              isPolling = false;
+              if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+              }
+              return;
+            }
           }
 
           // Send heartbeat only if still connected
           if (isConnected) {
-            send({ type: 'heartbeat', timestamp: Date.now() });
+            try {
+              send({ type: 'heartbeat', timestamp: Date.now() });
+            } catch {
+              // Stream closed, stop polling
+              isConnected = false;
+              isPolling = false;
+              if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+              }
+              return;
+            }
           }
         } catch (error) {
           console.error('[SSE] Error polling session:', error);
           if (isConnected) {
-            send({ type: 'error', message: 'Failed to poll session' });
+            try {
+              send({ type: 'error', message: 'Failed to poll session' });
+            } catch {
+              // Stream closed, stop polling
+              isConnected = false;
+            }
           }
+        } finally {
+          isPolling = false;
         }
       }, 2000); // Poll every 2 seconds
 

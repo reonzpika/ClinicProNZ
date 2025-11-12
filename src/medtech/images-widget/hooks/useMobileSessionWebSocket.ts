@@ -75,6 +75,12 @@ export function useMobileSessionWebSocket(token: string | null) {
           setError(null);
           reconnectAttempts = 0;
           lastHeartbeatRef.current = Date.now();
+          
+          // Clear any pending reconnect timeout to prevent duplicate connections
+          if (reconnectTimeoutRef.current) {
+            clearTimeout(reconnectTimeoutRef.current);
+            reconnectTimeoutRef.current = null;
+          }
         };
 
         eventSource.onmessage = (event) => {

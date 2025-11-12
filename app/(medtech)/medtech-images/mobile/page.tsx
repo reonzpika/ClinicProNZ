@@ -11,7 +11,7 @@
 
 import { Camera, Check, ChevronDown, ChevronUp, Loader2, Upload, X } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
@@ -75,6 +75,24 @@ function MobilePageContent() {
       }
     }
   }, [token]);
+
+  // Cleanup: Revoke preview URLs when component unmounts
+  // Use a ref to track images so cleanup always has latest state
+  const imagesRef = useRef<ImageWithMetadata[]>([]);
+  useEffect(() => {
+    imagesRef.current = images;
+  }, [images]);
+
+  useEffect(() => {
+    return () => {
+      // Revoke all preview URLs on unmount (using ref to get latest state)
+      imagesRef.current.forEach(image => {
+        if (image.preview && image.preview.startsWith('blob:')) {
+          URL.revokeObjectURL(image.preview);
+        }
+      });
+    };
+  }, []); // Only run on unmount
 
   // Save to offline queue if upload fails (stores base64 for retry)
   const saveToOfflineQueue = async (imagesToQueue: ImageWithMetadata[]) => {
@@ -301,6 +319,13 @@ function MobilePageContent() {
       if (failedImages.length > 0) {
         await saveToOfflineQueue(failedImages);
       }
+
+      // Revoke preview URLs before clearing images
+      images.forEach(image => {
+        if (image.preview && image.preview.startsWith('blob:')) {
+          URL.revokeObjectURL(image.preview);
+        }
+      });
 
       // Reset to start state
       setImages([]);

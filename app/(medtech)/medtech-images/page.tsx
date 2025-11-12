@@ -71,16 +71,20 @@ function MedtechImagesPageContent() {
   }, [qrToken]);
 
   // Cleanup session on widget close (beforeunload)
+  // Use synchronous XHR for reliable delivery during page unload (async fetch is cancelled)
+  // Note: sendBeacon doesn't support DELETE method, so we use synchronous XHR
   useEffect(() => {
-    const handleBeforeUnload = async () => {
+    const handleBeforeUnload = () => {
       if (qrToken) {
-        // Close session
+        // Use synchronous XHR to ensure DELETE request completes before page unloads
+        // Synchronous XHR blocks page unload but ensures the request is sent
+        const url = `/api/medtech/mobile/session/${qrToken}`;
+        const xhr = new XMLHttpRequest();
+        xhr.open('DELETE', url, false); // false = synchronous
         try {
-          await fetch(`/api/medtech/mobile/session/${qrToken}`, {
-            method: 'DELETE',
-          });
+          xhr.send();
         } catch {
-          // Ignore errors on page unload
+          // Ignore errors during unload (network errors, etc.)
         }
       }
     };
