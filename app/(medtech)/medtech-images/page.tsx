@@ -61,30 +61,35 @@ function MedtechImagesPageContent() {
 
   const { data: capabilities, isLoading: isLoadingCapabilities } = useCapabilities();
   const qrSession = useQRSession();
-  const qrToken = qrSession.token; // Get token from session state
   
   // Connect WebSocket when QR token is available
+  // Use qrSession.token directly in the hook call so it's reactive
+  useMobileSessionWebSocket(qrSession.token);
+  
+  // Debug logging
   useEffect(() => {
-    console.log('[Desktop] QR session state changed:', { token: qrToken, hasToken: !!qrToken });
-    if (qrToken) {
-      console.log('[Desktop] QR session token available:', qrToken);
-      console.log('[Desktop] WebSocket hook should be connecting...');
+    console.log('[Desktop] QR session state changed:', { 
+      token: qrSession.token, 
+      hasToken: !!qrSession.token,
+      tokenValue: qrSession.token 
+    });
+    if (qrSession.token) {
+      console.log('[Desktop] QR session token available:', qrSession.token);
+      console.log('[Desktop] WebSocket hook should be connecting with token:', qrSession.token);
     } else {
       console.log('[Desktop] No QR token available yet');
     }
-  }, [qrToken]); // Only depend on qrToken, not the whole session object
-  
-  useMobileSessionWebSocket(qrToken);
+  }, [qrSession.token]); // Depend on qrSession.token directly
 
   // Cleanup session on widget close (beforeunload)
   // Use synchronous XHR for reliable delivery during page unload (async fetch is cancelled)
   // Note: sendBeacon doesn't support DELETE method, so we use synchronous XHR
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (qrToken) {
+      if (qrSession.token) {
         // Use synchronous XHR to ensure DELETE request completes before page unloads
         // Synchronous XHR blocks page unload but ensures the request is sent
-        const url = `/api/medtech/mobile/session/${qrToken}`;
+        const url = `/api/medtech/mobile/session/${qrSession.token}`;
         const xhr = new XMLHttpRequest();
         xhr.open('DELETE', url, false); // false = synchronous
         try {
@@ -99,7 +104,7 @@ function MedtechImagesPageContent() {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [qrToken]);
+  }, [qrSession.token]);
 
   // Parse encounter context from URL params
   useEffect(() => {
