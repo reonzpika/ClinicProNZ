@@ -50,6 +50,7 @@ function MobilePageContent() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isMetadataExpanded, setIsMetadataExpanded] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const { compressImages, isCompressing } = useImageCompression();
   const { data: capabilities } = useCapabilities();
@@ -75,23 +76,42 @@ function MobilePageContent() {
     }
   }, [token]);
 
-  // Save to offline queue if upload fails
-  const saveToOfflineQueue = (imagesToQueue: ImageWithMetadata[]) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(
-        OFFLINE_QUEUE_KEY,
-        JSON.stringify({
-          token,
-          images: imagesToQueue.map(img => ({
+  // Save to offline queue if upload fails (stores base64 for retry)
+  const saveToOfflineQueue = async (imagesToQueue: ImageWithMetadata[]) => {
+    if (typeof window !== 'undefined' && imagesToQueue.length > 0) {
+      // Convert files to base64 for storage
+      const queuedImages = await Promise.all(
+        imagesToQueue.map(async (img) => {
+          const base64Data = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const result = reader.result as string;
+              const base64 = result.split(',')[1];
+              resolve(base64 || '');
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(img.file);
+          });
+
+          return {
             id: img.id,
             file: {
               name: img.file.name,
               type: img.file.type,
               size: img.file.size,
             },
+            base64Data, // Store base64 for retry
             metadata: img.metadata,
-            preview: img.preview,
-          })),
+            preview: img.preview, // Keep preview URL (will be regenerated on retry)
+          };
+        }),
+      );
+
+      localStorage.setItem(
+        OFFLINE_QUEUE_KEY,
+        JSON.stringify({
+          token,
+          images: queuedImages,
         }),
       );
     }
@@ -108,20 +128,31 @@ function MobilePageContent() {
 
     const files = Array.from(e.target.files);
 
-    // Compress images
-    const compressedResults = await compressImages(files);
+    try {
+      // Compress images
+      const compressedResults = await compressImages(files);
 
-    // Create image objects with previews
-    const newImages: ImageWithMetadata[] = compressedResults.map((result) => ({
-      id: result.id,
-      file: result.compressedFile,
-      preview: result.preview,
-      uploadStatus: 'pending' as const,
-    }));
+      // Create image objects with previews
+      const newImages: ImageWithMetadata[] = compressedResults.map((result) => ({
+        id: result.id,
+        file: result.compressedFile,
+        preview: result.preview,
+        uploadStatus: 'pending' as const,
+      }));
 
-    setImages(prev => [...prev, ...newImages]);
-    setCurrentImageIndex(images.length); // Set to first new image
-    setStep('review');
+      // Use functional update to ensure we have latest state
+      setImages(prev => {
+        const updated = [...prev, ...newImages];
+        // Set current index to first new image
+        setCurrentImageIndex(prev.length);
+        return updated;
+      });
+      setStep('review');
+    } catch (error) {
+      console.error('Failed to compress images:', error);
+      // Show error to user (could add toast/alert here)
+      setError('Failed to process images. Please try again.');
+    }
   };
 
   const updateImageMetadata = (index: number, metadata: Partial<ImageWithMetadata['metadata']>) => {
@@ -192,19 +223,25 @@ function MobilePageContent() {
     }
 
     // Upload current image in background
-    const currentImage = images[currentImageIndex];
-    if (currentImage && currentImage.uploadStatus === 'pending') {
-      setImages(prev => prev.map((img, i) => (i === currentImageIndex ? { ...img, uploadStatus: 'uploading' } : img)));
-
-      const success = await uploadImage(currentImage);
-
-      setImages(prev => prev.map((img, i) => (i === currentImageIndex
-        ? { ...img, uploadStatus: success ? 'uploaded' : 'error', error: success ? undefined : 'Upload failed' }
+    const currentImageId = images[currentImageIndex]?.id;
+    if (currentImageId) {
+      // Use functional update with image ID to avoid index issues
+      setImages(prev => prev.map((img) => (img.id === currentImageId && img.uploadStatus === 'pending'
+        ? { ...img, uploadStatus: 'uploading' }
         : img)));
 
-      // If failed, save to offline queue
-      if (!success) {
-        saveToOfflineQueue([currentImage]);
+      const currentImage = images.find(img => img.id === currentImageId);
+      if (currentImage) {
+        const success = await uploadImage(currentImage);
+
+        setImages(prev => prev.map((img) => (img.id === currentImageId
+          ? { ...img, uploadStatus: success ? 'uploaded' : 'error', error: success ? undefined : 'Upload failed' }
+          : img)));
+
+        // If failed, save to offline queue
+        if (!success) {
+          await saveToOfflineQueue([currentImage]);
+        }
       }
     }
 
@@ -218,28 +255,51 @@ function MobilePageContent() {
     setIsUploading(true);
 
     try {
-      // Upload all pending images
-      const pendingImages = images.filter(img => img.uploadStatus === 'pending');
+      // Get pending images snapshot (use current state)
+      const pendingImageIds = images
+        .filter(img => img.uploadStatus === 'pending')
+        .map(img => img.id);
 
-      const uploadPromises = pendingImages.map(async (image) => {
-        const actualIndex = images.findIndex(img => img.id === image.id);
-        setImages(prev => prev.map((img, i) => (i === actualIndex ? { ...img, uploadStatus: 'uploading' } : img)));
+      if (pendingImageIds.length === 0) {
+        // No pending images, just reset
+        setImages([]);
+        setStep('capture');
+        setCurrentImageIndex(0);
+        setIsMetadataExpanded(false);
+        return;
+      }
+
+      // Mark all as uploading
+      setImages(prev => prev.map((img) => (pendingImageIds.includes(img.id)
+        ? { ...img, uploadStatus: 'uploading' }
+        : img)));
+
+      // Upload all pending images (use IDs to avoid stale closures)
+      const uploadPromises = pendingImageIds.map(async (imageId) => {
+        const image = images.find(img => img.id === imageId);
+        if (!image) {
+          return { imageId, success: false };
+        }
 
         const success = await uploadImage(image);
 
-        setImages(prev => prev.map((img, i) => (i === actualIndex
+        // Update state using ID (functional update)
+        setImages(prev => prev.map((img) => (img.id === imageId
           ? { ...img, uploadStatus: success ? 'uploaded' : 'error', error: success ? undefined : 'Upload failed' }
           : img)));
 
-        return { image, success };
+        return { imageId, image, success };
       });
 
       const results = await Promise.all(uploadPromises);
-      const failedImages = results.filter(r => !r.success).map(r => r.image);
+      const failedImages = results
+        .filter(r => !r.success && r.image)
+        .map(r => r.image!)
+        .filter(Boolean);
 
       // Save failed images to offline queue
       if (failedImages.length > 0) {
-        saveToOfflineQueue(failedImages);
+        await saveToOfflineQueue(failedImages);
       }
 
       // Reset to start state
@@ -247,6 +307,9 @@ function MobilePageContent() {
       setStep('capture');
       setCurrentImageIndex(0);
       setIsMetadataExpanded(false);
+    } catch (error) {
+      console.error('Error during finish upload:', error);
+      // Don't reset state if there was an error - let user retry
     } finally {
       setIsUploading(false);
     }
@@ -330,6 +393,12 @@ function MobilePageContent() {
                 <div className="flex items-center justify-center gap-2 text-sm text-slate-600">
                   <Loader2 className="size-4 animate-spin" />
                   Compressing images...
+                </div>
+              )}
+
+              {error && (
+                <div className="rounded-lg bg-red-50 p-3 text-sm text-red-800">
+                  {error}
                 </div>
               )}
 

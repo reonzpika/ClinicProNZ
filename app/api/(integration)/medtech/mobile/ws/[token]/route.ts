@@ -24,24 +24,50 @@ export async function GET(
   const stream = new ReadableStream({
     async start(controller) {
       const encoder = new TextEncoder();
+      let isConnected = true;
+      let pollInterval: NodeJS.Timeout | null = null;
 
       // Send initial connection message
       const send = (data: object) => {
-        const message = `data: ${JSON.stringify(data)}\n\n`;
-        controller.enqueue(encoder.encode(message));
+        if (!isConnected) {
+          return; // Don't send if disconnected
+        }
+        try {
+          const message = `data: ${JSON.stringify(data)}\n\n`;
+          controller.enqueue(encoder.encode(message));
+        } catch (error) {
+          // Client disconnected, stop sending
+          isConnected = false;
+          if (pollInterval) {
+            clearInterval(pollInterval);
+            pollInterval = null;
+          }
+        }
       };
 
       send({ type: 'connected', token });
 
       // Poll for new images every 2 seconds
       let lastImageCount = 0;
-      const pollInterval = setInterval(async () => {
+      pollInterval = setInterval(async () => {
+        if (!isConnected) {
+          if (pollInterval) {
+            clearInterval(pollInterval);
+            pollInterval = null;
+          }
+          return;
+        }
+
         try {
           const session = await getMobileSession(token);
 
           if (!session) {
             send({ type: 'session_expired' });
-            clearInterval(pollInterval);
+            isConnected = false;
+            if (pollInterval) {
+              clearInterval(pollInterval);
+              pollInterval = null;
+            }
             controller.close();
             return;
           }
@@ -64,21 +90,41 @@ export async function GET(
             lastImageCount = currentImageCount;
           }
 
-          // Send heartbeat
-          send({ type: 'heartbeat', timestamp: Date.now() });
+          // Send heartbeat only if still connected
+          if (isConnected) {
+            send({ type: 'heartbeat', timestamp: Date.now() });
+          }
         } catch (error) {
           console.error('[SSE] Error polling session:', error);
-          send({ type: 'error', message: 'Failed to poll session' });
+          if (isConnected) {
+            send({ type: 'error', message: 'Failed to poll session' });
+          }
         }
       }, 2000); // Poll every 2 seconds
 
       // Cleanup on client disconnect
-      if (request.signal) {
-        request.signal.addEventListener('abort', () => {
+      const cleanup = () => {
+        isConnected = false;
+        if (pollInterval) {
           clearInterval(pollInterval);
+          pollInterval = null;
+        }
+        try {
           controller.close();
-        });
+        } catch {
+          // Ignore errors during cleanup
+        }
+      };
+
+      if (request.signal) {
+        request.signal.addEventListener('abort', cleanup);
       }
+
+      // Also handle stream errors
+      stream.cancel = () => {
+        cleanup();
+        return Promise.resolve();
+      };
     },
   });
 

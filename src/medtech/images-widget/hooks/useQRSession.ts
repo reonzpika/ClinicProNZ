@@ -40,9 +40,11 @@ export function useQRSession() {
     },
     onSuccess: (data) => {
       const expiresAt = Date.now() + data.ttlSeconds * 1000;
-      // Extract token from mobile URL
-      const tokenMatch = data.mobileUploadUrl.match(/[?&]t=([^&]+)/);
-      const token: string | null = tokenMatch && tokenMatch[1] ? tokenMatch[1] : null;
+      // Use token directly from API response (fallback to URL extraction for backward compatibility)
+      const token: string | null = data.token || (() => {
+        const tokenMatch = data.mobileUploadUrl.match(/[?&]t=([^&]+)/);
+        return tokenMatch && tokenMatch[1] ? tokenMatch[1] : null;
+      })();
 
       setSessionState({
         token,

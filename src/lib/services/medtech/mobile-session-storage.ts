@@ -87,6 +87,7 @@ export async function getMobileSession(token: string): Promise<MobileSession | n
 
 /**
  * Add image to session
+ * Extends session TTL when adding images to keep session alive
  */
 export async function addImageToSession(
   token: string,
@@ -107,12 +108,13 @@ export async function addImageToSession(
 
   session.images.push(newImage);
 
-  // Update session in Redis
+  // Extend session expiration when adding images (keeps session alive)
+  // Use full TTL to ensure session doesn't expire during active use
+  session.expiresAt = Date.now() + SESSION_TTL_SECONDS * 1000;
+
+  // Update session in Redis with extended TTL
   const key = `${SESSION_PREFIX}${token}`;
-  const remainingTTL = Math.floor((session.expiresAt - Date.now()) / 1000);
-  if (remainingTTL > 0) {
-    await cacheSet(key, session, remainingTTL);
-  }
+  await cacheSet(key, session, SESSION_TTL_SECONDS);
 
   return imageId;
 }

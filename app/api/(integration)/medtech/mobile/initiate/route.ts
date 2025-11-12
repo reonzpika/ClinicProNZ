@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
     const qrSvgDataUri = `data:image/svg+xml;base64,${Buffer.from(qrSvg).toString('base64')}`;
 
     const response: MobileSessionResponse = {
+      token, // Return token directly
       mobileUploadUrl: mobileUrl,
       qrSvg: qrSvgDataUri,
       ttlSeconds: 3600, // 1 hour (session lasts until desktop closes)

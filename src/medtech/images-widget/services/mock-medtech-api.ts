@@ -139,6 +139,7 @@ export const mockMedtechAPI = {
     `)}`;
 
     return {
+      token, // Return token directly
       mobileUploadUrl: mobileUrl,
       qrSvg,
       ttlSeconds: 3600,
