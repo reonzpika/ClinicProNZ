@@ -1,7 +1,7 @@
 # Forge Application Narrative and Objectives
 
 ## Application Title
-**NZ-Sovereign Clinical LLM (assist-only) for GP workflow: inbox management, clinical coding, referral quality, and care gap monitoring**
+**NZ-Sovereign Clinical LLM (assist-only) for GP workflow: inbox management and care gap monitoring**
 
 ## Proposed Dates
 - **Start:** 27 Jan 2026
@@ -17,10 +17,8 @@
 
 NexWave Solutions Ltd develops privacy-preserving AI tools for NZ general practice. We will build a NZ-sovereign clinical LLM to improve work efficiency in four areas:
 
-- **Inbox management:** classify, summarise and route items to reduce triage time
-- **Clinical coding assistant:** suggest NZ billing codes (ACC, PHO, Care Plus)
-- **Referral quality checker:** flag missing HealthPathways criteria before sending
-- **Chronic care gap identifier:** alert overdue NZ-guideline monitoring
+- **Inbox management:** classify, summarise and route hundreds of daily items to reduce triage time (saves 1-2 hours/day per GP)
+- **Care gap monitoring:** proactively identify and alert overdue NZ-guideline chronic disease monitoring (HbA1c, BP checks, medication reviews)
 
 The system is strictly assist-only. It never provides diagnostic or treatment directives. Development uses synthetic and de-identified data only; no production PHI is used for model training.
 
@@ -43,10 +41,15 @@ Initial integration is Medtech-first using synthetic workloads. Any pilot will r
 
 Build a small NZ-tuned LLM (7B-13B parameters) with task adapters for:
 
-- **Inbox management:** safe classification/summarisation/routing of labs, letters, referrals
-- **Clinical coding:** suggest ACC codes, PHO subsidies, Care Plus eligibility from consultation notes
-- **Referral quality:** check against 10 regional Community HealthPathways criteria
-- **Care gap monitoring:** track NZ-guideline chronic disease monitoring (NZGG, PHO indicators)
+- **Inbox management (Reactive):** safe classification/summarisation/routing of labs, letters, referrals, discharge summaries
+  - Triage hundreds of daily items (urgent vs routine)
+  - Extract key findings and action items
+  - Smart routing to appropriate GP
+  
+- **Care gap monitoring (Proactive):** track NZ-guideline chronic disease monitoring (NZGG, BPAC, PHO indicators)
+  - Scan patient records for overdue monitoring (HbA1c, BP checks, lipids, medication reviews)
+  - Surface gaps before/during consultations
+  - Support PHO quality indicator compliance
 
 **Domain adaptation:** continual pretraining and instruction tuning on NZ public clinical sources (as permitted) and synthetic/de-identified corpora. No training on production PHI.
 
@@ -110,7 +113,26 @@ Inbox management is a new NZ-specific application; a robust, sector-ready soluti
 
 ## Overseas Labour Resources
 
-**None.** All R&D labour is performed in NZ. AU is used only for transient inference with no persistent PHI outside NZ.
+**None.** All R&D labour is performed in NZ by founder and local contractor. AU is used only for transient inference with no persistent PHI outside NZ.
+
+---
+
+## R&D Team
+
+**Founder (Shareholder-employee):** 1,329 hours @ $96/hr = $127,584
+- GP clinician + full-stack developer
+- Clinical domain expertise for NZ-specific use cases
+- Technical leadership for LLM development
+- 25 hrs/week commitment throughout project
+
+**Local Developer (Contractor):** 390 hours @ $72/hr = $28,080
+- Recruited Month 1, starts Month 4
+- Frontend development (GP mobile interface)
+- FHIR integration testing (Medtech sandbox)
+- Synthetic data generation and test automation
+- 10 hrs/week (Months 4-12)
+
+**Rationale for team structure:** Founder's dual GP/technical expertise enables rapid clinical workflow iteration. Local developer enables parallel workstreams (founder focuses on clinical domain adaptation, developer handles non-clinical implementation). This structure maintains GP practice income for co-funding while accelerating R&D delivery.
 
 ---
 
@@ -140,12 +162,12 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 ### O2: NZ GP Domain Adaptation (10 Feb ? 30 May 2026)
 
 **Deliverables:**
-- Continual pretraining and instruction tuning for 4 use cases (inbox, coding, referrals, care gaps)
+- Continual pretraining and instruction tuning for 2 use cases (inbox management, care gap monitoring)
 - Model v0.1
 
 **Targets:**
-- Inbox classification accuracy ? 70% (baseline)
-- Clinical coding accuracy ? 60% (baseline)
+- Inbox classification accuracy ≥ 70% (baseline)
+- Care gap detection accuracy ≥ 70% (baseline)
 
 ---
 
@@ -202,13 +224,92 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 
 ---
 
+### CD-C: Project Management Set-up (27 Jan – 29 Feb 2026)
+
+**Deliverables:**
+- Stage-gate definitions (O1-O5 entry/exit criteria)
+- Risk register and change log
+- Release checklist and governance framework
+
+**Hours:** 8 | **Cost:** $768
+
+**Rationale:** Establishes systematic governance for R&D project tracking, risk management, and quality gates.
+
+---
+
+### CD-D: Conference Attendance & Knowledge Acquisition (Months 5, 7)
+
+**Hours:** 24 | **Labour Cost:** $2,304
+
+**HealthTech Week Auckland** (June 2026, Month 5): 8 hours
+- Local ecosystem engagement
+- Early validation of NZ-sovereign LLM approach
+- Stakeholder feedback during O2 domain adaptation phase
+
+**HIC 2026 Melbourne** (August 2026, Month 7): 16 hours
+- Regional health informatics community
+- Peer review of safety enforcement mechanisms (O3)
+- AU/NZ healthcare AI research collaboration
+
+**Rationale:** Conference attendance provides access to cutting-edge clinical LLM safety research and validates NZ-specific use cases with regional health tech community. Timing aligns with key R&D phases (O2 domain adaptation, O3 safety work) for maximum learning impact.
+
+**Total CapDev Hours:** 54 | **Total CapDev Labour:** $5,184 (7.4% of grant ✓)
+
+---
+
+### Professional Services – IP Protection (Separate Eligible Cost, NOT CapDev)
+
+**IP Work:** $6,000
+- Freedom-to-Operate (FTO) Analysis ($2,500, Months 2-4): Patent search to verify assist-only enforcement architecture and NZ-specific fine-tuning methods don't infringe existing patents
+- Provisional Patent Filing ($2,000, Months 6-8): Protect novel safety scaffolding techniques and domain adaptation methods developed during O2-O3
+- IP Strategy for Model Outputs ($1,500, Month 10): Legal consultation on model weight ownership, licensing frameworks for commercialisation
+
+**Rationale:** IP protection is essential for commercialisation. FTO analysis de-risks infringement before significant R&D investment. Provisional patent filing secures priority date for novel techniques. IP strategy consultation enables confident market entry.
+
+---
+
+### Conference Travel (Separate Eligible Cost, NOT CapDev)
+
+**Conference Travel Costs:** $3,200
+
+**HealthTech Week Auckland** (June 2026, Month 5): $1,000
+- Accommodation (1 night): $300
+- Registration: $600
+- Transport/meals: $100
+
+**HIC 2026 Melbourne** (August 2026, Month 7): $2,200
+- Flights (AKL → MEL return): $600
+- Accommodation (3 nights): $800
+- Registration: $800
+
+---
+
+### Hardware & Equipment (Separate Eligible Cost, NOT CapDev)
+
+**Capital Equipment:** $5,750 (Year 1 depreciation: $1,567)
+- RTX 4090 GPU Workstation ($3,500, Month 4): Local safety regression testing, rapid iteration on refusal scaffolds, latency profiling
+- Samsung Galaxy Z Fold 5 ($1,200, Month 4): Mobile testing (GP workflow validation, folded/unfolded modes)
+
+**Immediate Hardware:** $1,050
+- RAM Upgrade 128GB ($500, Month 1): Large synthetic dataset loading
+- NVMe SSD 2TB ($250, Month 1): Model checkpoint storage
+- iPhone SE ($300, Month 1): iOS cross-platform testing
+
+**Total Year 1 Hardware Eligible:** $2,617 (depreciation + immediate)
+
+**Rationale:** GPU workstation enables rapid local iteration during O3 safety testing without cloud spinup delays. Local inference testing validates P95 latency targets before production deployment. Mobile testing devices validate real-world GP workflows (inbox triage on tablets/phones). Hardware purchases deferred to Month 4 (after first grant) to optimize cashflow.
+
+**Cloud GPU Strategy:** Primary training/fine-tuning uses cloud GPU (Lambda Labs/AWS). Local workstation supplements for rapid testing cycles, not replaces cloud infrastructure.
+
+---
+
 ## Success Metrics (for Internal Tracking)
 
 ### Utility
-- ? 30% reduction in inbox triage time by Month 10
-- Clinician-rated usefulness ? 80% for all 4 use cases
-- ? 5% appropriate billing revenue uplift (coding assistant)
-- Referral acceptance rate ? 90% (reduced bounce-backs)
+- ≥ 30% reduction in inbox triage time by Month 10
+- Clinician-rated usefulness ≥ 80% for both use cases (inbox management + care gap monitoring)
+- Care gap monitoring completion rate ≥ 80%
+- PHO quality indicator improvement ≥ 10%
 
 ### Safety
 - Prohibited-claim rate ? 0.5%

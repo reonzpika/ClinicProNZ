@@ -11,7 +11,7 @@
 
 ### Project Name
 **ClinicPro: NZ-Sovereign Clinical LLM (assist-only)**  
-Inbox management, clinical coding, referral quality, and care gap monitoring
+Inbox management and care gap monitoring
 
 ### Organisation
 **NexWave Solutions Ltd**
@@ -20,9 +20,9 @@ Inbox management, clinical coding, referral quality, and care gap monitoring
 - **ANZSIC Code:** J5420 Software Publishing (alt: M7000 Computer System Design)
 - **Project Duration:** 27 Jan 2026 ? 26 Jan 2027 (12 months)
 - **Grant Type:** New to R&D Grant (Callaghan Innovation)
-- **Total Eligible Costs:** $107,232 (excl. GST)
-- **Grant (40%):** $42,893
-- **Co-funding (60%):** $64,339 (from GP clinical work income)
+- **Total Eligible Costs:** $175,065 (excl. GST)
+- **Grant (40%):** $70,026
+- **Co-funding (60%):** $105,039 (from GP clinical work income)
 
 ### Contacts
 - **NexWave Director:** [insert name/email/phone]
@@ -57,7 +57,7 @@ Inbox management, clinical coding, referral quality, and care gap monitoring
 - 5 R&D Objectives (O1?O5) with deliverables and targets
 - 3 Capability Development streams (CD-A, CD-B, CD-C)
 - Success metrics (utility, safety, performance)
-- **4 Use Cases:** Inbox management, clinical coding, referral quality, care gap monitoring
+- **2 Use Cases:** Inbox management (reactive admin relief), care gap monitoring (proactive clinical support)
 
 ---
 
@@ -67,8 +67,12 @@ Inbox management, clinical coding, referral quality, and care gap monitoring
 **Purpose:** Cost breakdown by Objective (R&D + CapDev)  
 **When to use:** Reference during claims; verify cost allocation  
 **Key sections:**
-- Internal labour: 1,062 hours @ $96/hr = $101,952
-- CapDev: 30 hours @ $96/hr = $2,880 (6.7% of grant ?)
+- Founder R&D labour: 1,329 hours @ $96/hr = $127,584
+- Developer R&D labour: 390 hours @ $72/hr = $28,080 (starts Month 4)
+- CapDev: 54 hours @ $96/hr = $5,184 (7.4% of grant ✓)
+- Professional Services (IP): $6,000
+- Conference Travel: $3,200
+- Hardware & Depreciation: $2,617
 - M&C: $200/month ? 12 = $2,400
 - Quarterly claims schedule (Q1?Q4)
 
@@ -208,7 +212,8 @@ Inbox management, clinical coding, referral quality, and care gap monitoring
 | **CD-A** | Regulatory & Compliance | 27 Jan ? 31 Mar 2026 | 12 | $1,152 |
 | **CD-B** | R&D Information Management | 27 Jan ? 30 Apr 2026 | 10 | $960 |
 | **CD-C** | Project Management set-up | 27 Jan ? 29 Feb 2026 | 8 | $768 |
-| | **Total CapDev** | | **30** | **$2,880** |
+| **CD-D** | Conference Attendance | Months 5, 7 | 24 | $2,304 |
+| | **Total CapDev** | | **54** | **$5,184** |
 
 ---
 
@@ -308,7 +313,7 @@ See `00-admin-and-governance/risk-and-change-management.md` for all document ver
 4. **If Q1 claim**: `03-capability-development/capability-development-evidence-pack.md`
 
 **Always check:**
-- CapDev ? 5% of grant ($2,880 ? $2,145 ?)
+- CapDev ≥ 5% of grant ($5,184 = 7.4% ✓ exceeds $3,501 minimum)
 - Cashflow remains positive (minimum $8,216 in Month 1)
 - All costs linked to Objectives in cost-template.md
 
@@ -353,7 +358,7 @@ See `00-admin-and-governance/risk-and-change-management.md` for all document ver
 
 **Always check:**
 - Certificates dated within Months 1-2
-- One-off setups sum to 30 hours ($2,880)
+- CapDev streams: CD-A (12h) + CD-B (10h) + CD-C (8h) + CD-D (24h) = 54 hours ($5,184)
 - Evidence naming follows conventions
 
 ---

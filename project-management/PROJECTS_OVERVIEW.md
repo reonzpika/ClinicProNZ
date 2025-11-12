@@ -152,6 +152,7 @@ Start minimal, add folders as project evolves.
 - **2025-11-09**: Project Management AI SaaS - 🎉 MAJOR MILESTONE: Working prototype complete! Modular rule system (15 files), autonomous updates system (523 lines), conversation-driven workflow implemented. System now operational and being dogfooded. Stage moved Validation → Build.
 - **2025-11-08**: Project Management AI SaaS - PM system improvements documented. Added "Document Creation Timing" rule to prevent creating interim documents during discussions. Rule will inform SaaS product UX design (draft mode vs saved documents, explicit save actions).
 - **2025-11-07**: ClinicPro project summary synced to codebase; tech stack verified; security/route docs added
+- **2025-11-11**: R&D Grant Submission - Budget expanded to $175k total costs ($70k grant): Added developer (390 hrs, starts Month 4), IP protection ($6k), HIC Melbourne + HealthTech Week conferences ($3.2k), GPU workstation + mobile testing devices ($2.6k). Cashflow positive throughout (minimum $1,879 Month 6).
 - **2025-11-07**: R&D Grant Submission - Partnership development progress: Medtech partnership letter confirmed (expected ~20 Nov). Comprehensive Care PHO approach prepared (email scheduled Monday 11 Nov - 42+ practices, 400+ GPs). Submission timeline established: mid-December 2025 target.
 - **2025-11-06**: Project Management AI SaaS - PLANNING COMPLETE. Target locked: solo founders/side-hustlers with info overload. Competitor analysis done (no one doing exactly what we're building). AI rules enhanced for accountability. 7 key lessons documented. Next session = START building (Week 1: setup + auth + deploy).
 
@@ -269,8 +270,8 @@ Start minimal, add folders as project evolves.
 - **Folder**: `new_to_r&d_grant`
 - **Stage**: Validation
 - **Owner**: Solo Founder/Developer
-- **Last Updated**: 2025-11-07
-- **Summary**: R&D grant proposal for building NZ-sovereign clinical LLM for GP workflows (inbox management, coding, referrals, care gaps). 12-month project seeking $42,893 grant (40%) with $64,339 co-funding. Partnership development in progress with Medtech and Comprehensive Care PHO.
+- **Last Updated**: 2025-11-11
+- **Summary**: R&D grant proposal for building NZ-sovereign clinical LLM for GP workflows focusing on 2 high-impact use cases: inbox management (reactive admin relief) and care gap monitoring (proactive clinical support). 12-month project seeking $70,026 grant (40%) with $105,039 co-funding. Team: Founder (1,329 hours @ 25 hrs/week) + Developer (390 hours, starts Month 4). Includes IP protection ($6k), conference attendance ($3.2k), GPU workstation + testing devices ($2.6k Year 1). Partnership development in progress with Medtech and Comprehensive Care PHO.
 - **Key Dates**: 
   - Mentor meeting: 2025-11-12
   - Callaghan Innovation meeting: 2025-11-13

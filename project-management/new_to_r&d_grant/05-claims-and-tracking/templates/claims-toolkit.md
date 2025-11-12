@@ -232,11 +232,11 @@ Contact:
 
 | Metric | Target | Current | Status |
 |--------|--------|---------|--------|
-| Inbox triage time reduction | ? 30% (Month 10) | [%] | [On/Off track] |
-| Coding accuracy | ? 85% | [%] | [On/Off track] |
-| Referral acceptance rate | ? 90% | [%] | [On/Off track] |
-| Care gap detection accuracy | ? 85% | [%] | [On/Off track] |
-| Clinician usefulness | ? 80% (all 4 use cases) | [%] | [On/Off track] |
+| Inbox triage time reduction | ≥ 30% (Month 10) | [%] | [On/Off track] |
+| Inbox classification accuracy | ≥ 90% | [%] | [On/Off track] |
+| Care gap detection accuracy | ≥ 85% | [%] | [On/Off track] |
+| PHO quality indicator improvement | ≥ 10% | [%] | [On/Off track] |
+| Clinician usefulness | ≥ 80% (both use cases: inbox + care gaps) | [%] | [On/Off track] |
 | Refusal appropriateness | ? 95% | [%] | [On/Off track] |
 | Prohibited-claim rate | ? 0.5% | [%] | [On/Off track] |
 | Response time P95 | ? 5.0 s (all use cases) | [s] | [On/Off track] |
@@ -318,9 +318,9 @@ Contact:
 
 **Pitfall:** CapDev falls below 5% of grant
 **Solution:**
-- Keep 30 hours of one-off set-ups ($2,880)
+- Keep 54 hours of CapDev ($5,184: 30h setup + 24h conferences)
 - Adjust up before Q1 claim if needed
-- Current allocation: 6.7% ?
+- Current allocation: 7.4% ✓ (exceeds 5% minimum)
 
 ### 5. Overseas Labour
 

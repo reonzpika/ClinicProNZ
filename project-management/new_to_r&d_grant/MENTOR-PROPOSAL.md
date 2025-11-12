@@ -10,55 +10,138 @@
 
 ## **Section 1: Executive Summary** (1 page)
 
-### **The Problem**
+### **The Opportunity**
 
-New Zealand GPs face a severe workforce and workload crisis:
+New Zealand has 5,000 GPs drowning in administrative work—and I'm one of them.
 
-- **70% burnout; 35% retiring in 5 years** - unreasonable workloads, unfunded admin roles driving early retirement
-- **Inbox overload** - hundreds of items daily (letters, labs, referrals); GP working hours rising (35.9→38.1 hrs/week)
-- **Rising responsibility without support** - expanded scope, compliance, documentation with no proportional support
-- **GPs want AI but concerns exist** - privacy, Māori data sovereignty, system integration barriers
+As a practicing GP, I see hundreds of inbox items daily: lab results, hospital letters, referrals. These take hours to process, pulling me away from patients. It's driving workforce burnout (70% report moderate-to-high burnout) and early retirement (35% leaving within 5 years).
 
-### **Why AI Can Help**
+**Here's the gap:** Current AI tools focus on documentation (AI scribes) but don't address the biggest time sink—inbox management and admin workflows. And there's no dedicated LLM trained for NZ healthcare: our local lab formats, Pharmac formulary, ACC codes, health system structures, and local guidelines.
 
-AI can rapidly process clinical text - triaging inbox items, extracting billing codes, checking referral criteria, identifying care gaps - freeing hours of GP time daily.
+**I'm building the solution:** A small, NZ-tuned LLM that handles 2 critical workflows—inbox management and care gap monitoring—for $5-10k/month, self-hosted in New Zealand (vs $140k/month for commercial APIs at scale).
 
-### **Current AI Tools Fall Short**
+**Why I can deliver:**
+- **GP clinician** experiencing the problem daily in practice
+- **Full-stack developer** with AI/ML expertise
+- **Proven track record**: Built ClinicPro (operational AI scribe service used by NZ GPs)
+- **Medtech partnership**: NZ's largest PMS (~60% market share) = real-world testing environment + 3,000+ GP adoption pathway
 
-- **Most only do scribing** - no tools for inbox, coding, referrals, or care gaps
-- **Lacks New Zealand Health System knowledge** - not trained on local requirements
-- **Privacy concerns** - patient data sent offshore; Māori data sovereignty issues
-- **Expensive at scale** - $140k+/month vs $5-10k/month self-hosted
+This R&D will prove a small, self-hosted model can match GPT-4 quality for these specific NZ healthcare tasks at 20-50x lower cost—a technical breakthrough no one has achieved.
 
-### **Our Solution**
+---
 
-We're building a small, NZ-controlled AI model for 4 critical workflows: **inbox management, clinical coding, referral checking, and care gap monitoring.** Self-hosted for privacy, NZ-tuned for accuracy, cost-effective at scale.
+### **What We're Building**
 
-**Why we can deliver this:**  
-I'm a practicing GP, founder of ClinicPro (operational AI scribe service), and full-stack developer with AI/machine learning expertise. This unique combination of clinical insight, proven building capability, and technical depth means I understand both the problem (I experience it daily in practice) and can execute the technical solution. We're partnering with Medtech, NZ's largest practice management system, which provides direct access to real-world testing environments and rapid adoption pathways across 3,000+ GPs.
+**Two AI assistants in one model:**
 
-### **Why This is R&D**
+1. **Inbox Management** (Reactive) - Triage, classify, and summarize hundreds of daily items (hospital letters, lab results, referrals, discharge summaries)
+   - Urgent vs routine classification
+   - Key findings extraction
+   - Action items identification
+   - Smart routing to appropriate GP
+   
+2. **Care Gap Monitoring** (Proactive) - Identify and alert overdue chronic disease monitoring per NZ clinical guidelines
+   - Scan patient records for overdue monitoring (HbA1c, BP checks, lipids, medication reviews)
+   - Surface gaps before/during consultations
+   - PHO quality indicator compliance
 
-**Technical uncertainty:** Can a small AI model (7B-13B parameters) achieve good quality for NZ-specific clinical tasks while being:
-- **20-50x cheaper at scale** (self-hosted vs commercial APIs)
-- **NZ-tuned** (trained on NZ-specific rules and workflows)
-- **Multi-task** (one model for 4 use cases, not 4 separate models)
-- **Privacy-safe** (self-hosted with strong safeguards)
+**Key innovation:** ONE small model (7B-13B parameters) handling BOTH reactive admin automation AND proactive clinical decision support.
 
-**No published solution exists** for this cost/quality trade-off under NZ privacy constraints.
+---
 
-### **Grant Ask & Timeline**
-- **Total eligible costs:** $107,232 (excl. GST)
-- **Grant (40%):** $42,893
-- **Co-funding (60%):** $64,339 (from GP clinical work income)
-- **Timeline:** 12 months (5 R&D Objectives + Capability Development)
+### **Why This is Hard (The R&D Challenge)**
+
+**The problem:** No AI tool currently exists that can accurately manage NZ GP inboxes.
+
+**Current landscape:**
+- ❌ **No tool for NZ GP inbox management** - Existing AI focuses on documentation (scribes), not inbox triage/classification
+- ❌ **Generic LLMs can't handle NZ healthcare** - GPT-4 lacks knowledge of Pharmac formulary, ACC codes, local lab formats, NZ health system structures
+- ❌ **No dedicated LLM for NZ healthcare** - Training data exists (Pharmac, BPAC, NZ guidelines) but no one has built the model
+- ❌ **No proven approach** for multi-task clinical AI under NZ privacy constraints (self-hosted, no offshore PHI)
+
+**This isn't just about cost** (though self-hosting saves 20-50x vs commercial APIs). **It's about building something that doesn't exist** - an AI that accurately understands NZ clinical workflows.
+
+**Technical uncertainty:** Can we build a small, self-hosted model that delivers GPT-4-level accuracy for these specific NZ healthcare tasks?
+
+We need to systematically test:
+- **Continual pretraining** on NZ clinical sources (Pharmac, BPAC, local guidelines, lab report formats)
+- **Dual-task instruction tuning** - ONE model for 2 distinct workflows (reactive inbox + proactive care gaps), not 2 separate systems
+- **NZ-specific evaluation** - Does it correctly interpret local lab results? Accurately triage inbox items? Identify care gaps per NZ guidelines?
+- **Safety scaffolds** - Assist-only policy engine, refusal of diagnostic/treatment advice
+- **Real-world latency** - P95 <5.0s for inbox workflows (hundreds of requests/day per clinic)
+
+**This is genuine R&D.** No published solution exists for NZ healthcare inbox management. We're proving it can be done accurately, safely, and cost-effectively.
+
+---
+
+### **12-Month Plan & Team**
+
+**R&D Team:**
+- **Founder (you):** 1,329 hours @ 25 hrs/week
+  - Clinical domain expertise + technical leadership
+  - NZ healthcare workflows + AI/ML development
+  
+- **Local developer:** 390 hours starting Month 4 (10 hrs/week)
+  - Frontend development (GP mobile interface)
+  - FHIR integration testing (Medtech sandbox)
+  - Test automation and synthetic data generation
+
+**5 R&D Objectives:**
+- **O1:** Baseline & dataset curation (synthetic NZ GP inbox data, care gap scenarios)
+- **O2:** NZ domain adaptation (train on Pharmac, BPAC, local labs, NZ clinical guidelines)
+- **O3:** Safety enforcement (assist-only policy engine, refusal scaffolds)
+- **O4:** Medtech sandbox integration (synthetic inbox workloads, patient record analysis, FHIR testing)
+- **O5:** Pilot-readiness & evaluation (telemetry, incident procedures, GP evaluation framework)
+
+**Capability Development (54 hours labour @ $96/hr = $5,184):**
+- CD-A: Privacy & compliance (12h)
+- CD-B: R&D information management (10h)
+- CD-C: Project management set-up (8h)
+- CD-D: Conference attendance & knowledge acquisition (24h)
+
+**Additional Eligible Costs:**
+- **IP protection** ($6k): Freedom-to-Operate analysis, provisional patent filing, IP strategy
+- **Conference travel** ($3.2k): HealthTech Week Auckland + HIC Melbourne 2026
+- **Hardware** ($2.6k Year 1): GPU workstation (local testing), mobile devices (GP workflow validation)
+
+---
+
+### **Grant Ask**
+
+|| Item | Amount (NZD excl. GST) |
+||------|------------------------|
+|| **Total Eligible Costs** | **$175,065** |
+|| **Grant (40%)** | **$70,026** |
+|| **Co-Funding (60%)** | **$105,039** |
+
+**Co-funding source:** GP clinical work income ($11k/month)  
+**Cashflow:** Positive throughout project (minimum $1,879 Month 6)  
+**Timeline:** 12 months (27 Jan 2026 - 26 Jan 2027)
+
+---
+
+### **Why This Will Succeed**
+
+✅ **Unique founder profile** - GP + developer + AI expertise (rare combination)  
+✅ **Proven delivery capability** - ClinicPro operational (validates I can ship products)  
+✅ **Market access** - Medtech partnership = real-world testing + 3,000+ GP adoption pathway  
+✅ **Deep problem understanding** - I experience inbox overload daily in practice  
+✅ **NZ-first approach** - Training on Pharmac, ACC, local lab formats, health system from Day 1  
+✅ **Clear commercialization path** - Medtech rollout post-R&D; exportable to AU/Pacific markets
+
+**Impact:** Reduces GP burnout (inbox automation saves 1-2 hours/day) while improving patient outcomes (proactive care gap monitoring). Addresses both workforce sustainability and care quality - the dual crises facing NZ primary care.
+
+---
 
 ### **Key Differentiators**
-✓ **NZ data sovereignty** (self-hosted in NZ/AU, NZ-held keys)  
-✓ **Cost-effective at scale** (fixed infrastructure vs pay-per-request)  
-✓ **NZ-tuned** (Pharmac, ACC, HealthPathways, regional variations)  
-✓ **Medtech partnership** (NZ's largest PMS = real-world testing)  
-✓ **Privacy-first** (no training on production PHI; synthetic/de-identified only)
+
+✓ **First dedicated LLM for NZ healthcare** (trained on local Pharmac, BPAC, lab formats, NZ clinical guidelines)  
+✓ **Beyond scribing** (tackles inbox automation AND proactive care monitoring, not just documentation)  
+✓ **Dual capability** (reactive admin relief + proactive clinical decision support in one model)  
+✓ **NZ data sovereignty** (self-hosted in NZ/AU, NZ-held keys, no offshore PHI)  
+✓ **Cost-effective at scale** ($5-10k/month vs $140k/month for commercial APIs)  
+✓ **Medtech integration** (NZ's largest PMS = rapid adoption across existing customer base)  
+✓ **Privacy-first R&D** (no training on production PHI; synthetic/de-identified data only)
 
 ---
 
@@ -113,7 +196,7 @@ AI can address the most urgent pain points in New Zealand general practice:
 
 **Failure to address core administrative burden (inbox management, non-visit tasks):**
 - Most tools only support scribing/note-taking, leaving the largest pain points untouched
-- No tools exist for inbox triage, clinical coding, referral checking, or care gap monitoring
+- No tools exist for inbox triage and care gap monitoring - the two highest-impact workflows for GP workload and patient outcomes
 
 **Local privacy and sovereignty concerns:**
 - Sending patient data offshore is not acceptable, especially for Māori data sovereignty
@@ -133,12 +216,11 @@ AI can address the most urgent pain points in New Zealand general practice:
 
 ### **2.4 Market Gap**
 
-**Four Unmet Needs in NZ General Practice:**
+**Two Critical Unmet Needs in NZ General Practice:**
 
-1. **Inbox Management:** No AI solution for NZ GP inboxes (region-specific lab formats, DHB letter structures)
-2. **Clinical Coding:** No NZ-specific coding assistant (ACC, PHO, Care Plus rules)
-3. **Referral Quality:** No tool checks HealthPathways criteria before sending referrals
-4. **Care Gap Monitoring:** No AI tracks NZ-guideline chronic disease monitoring gaps
+1. **Inbox Management (Reactive):** No AI solution for NZ GP inboxes - region-specific lab formats, DHB letter structures, hundreds of items daily consuming 1-2 hours per GP
+
+2. **Care Gap Monitoring (Proactive):** No AI tracks NZ-guideline chronic disease monitoring gaps - HbA1c checks, BP monitoring, medication reviews, PHO quality indicators
 
 **Market Size:**
 - ~5,000 GPs in NZ
@@ -177,30 +259,28 @@ The AI model will triage, prioritise, and summarise clinical inbox items - inclu
 
 ---
 
-### **3.2 Multifunctional Design for Maximum Clinical Impact**
+### **3.2 Dual-Function Design for Maximum Clinical Impact**
 
-Unlike existing solutions limited to note-taking, our model is purpose-built to automate and assist with four critical workflows:
+Unlike existing solutions limited to note-taking, our model is purpose-built to handle two distinct, high-impact workflows:
 
-**1. Inbox Management**
-- Triage and summarise hospital letters, lab results, referrals, patient messages
-- Reduce time spent on daily inbox processing by 30%+
+**1. Inbox Management (Reactive Admin Relief)**
+- **Triage** hundreds of daily items: urgent vs routine
+- **Classify** by type: lab results, hospital letters, referrals, discharge summaries
+- **Extract** key findings and action items
+- **Route** to appropriate GP for action
+- **Impact:** Reduce inbox processing time by 30-50% (saves 1-2 hours/day per GP)
 
-**2. Clinical Coding (including ACC, Pharmac)**
-- Extract billable codes from consultation notes
-- Identify ACC eligibility, PHO subsidies, Care Plus criteria
-- Reduce revenue leakage from missed billing codes
+**2. Care Gap Monitoring (Proactive Clinical Support)**
+- **Scan** patient records for overdue chronic disease monitoring
+- **Identify** gaps: HbA1c checks, BP monitoring, lipids, medication reviews
+- **Alert** GPs before/during consultations
+- **Support** PHO quality indicator compliance
+- **Impact:** Improve chronic disease outcomes, increase PHO funding capture, reduce GP anxiety about "missing things"
 
-**3. Referral Quality Checking**
-- Ensure HealthPathways criteria are met before submission
-- Reduce referral bounce-backs and patient care delays
-- Regional variation support (10 Community HealthPathways sites)
-
-**4. Care Gap Monitoring**
-- Track chronic disease and preventive care requirements
-- Alert overdue NZ-guideline monitoring (NZGG, BPAC, PHO indicators)
-- Improve PHO quality outcomes and funding
-
-This broad feature set directly addresses the functions NZ GPs have identified as most problematic.
+**Why these two workflows:**
+- **Complementary capabilities:** Reactive (handle what comes in) + Proactive (surface what's missing)
+- **Maximum impact:** Address burnout (admin overload) AND patient outcomes (quality monitoring)
+- **Achievable depth:** Get both to 90%+ accuracy in 12 months vs 70% on multiple features
 
 ---
 
@@ -302,55 +382,7 @@ Our solution stands apart from existing AI tools:
 
 ---
 
-#### **Use Case 2: Clinical Coding Assistant**
-
-**What it does:**
-- Reads consultation note
-- Suggests NZ billing codes:
-  - **ACC codes** (ACC45, soft tissue injury, gradual process)
-  - **PHO codes** (consultation types, age bands)
-  - **Care Plus eligibility** (3+ chronic conditions with specific criteria)
-  - **Consultation complexity** (Standard vs Long vs Complex)
-- Flags potential underbilling (e.g., "Patient has diabetes + hypertension + COPD → eligible for Care Plus")
-
-**Why it's R&D:**
-- **NZ-unique rules:** ACC codes, PHO subsidies, Care Plus criteria don't exist in GPT-4/5 training data
-- **Complex logic:** Care Plus requires specific combinations of chronic conditions (not just "3+ conditions")
-- **Extraction challenge:** Pull billable elements from unstructured notes
-- **Limited training data:** Few thousand NZ billing examples vs GPT-4/5's billions of tokens
-- **Uncertainty:** Can a small model learn these rules from limited data?
-
-**Success metrics:**
-- Coding accuracy ≥85% (compared to expert coder)
-- Revenue uplift: ≥5% increase in appropriate billing
-- GP acceptance: ≥75% accept AI suggestions
-
----
-
-#### **Use Case 3: Referral Quality Checker**
-
-**What it does:**
-- Reviews outgoing specialist referrals before sending
-- Cross-checks against regional HealthPathways criteria (Canterbury, Auckland, Wellington, etc.)
-- Flags missing information:
-  - Example (Cardiology): Missing ECG, lipid panel, smoking status, CVD risk score
-  - Example (Dermatology): Missing photo, lesion duration, prior treatments
-- Suggests additions: "⚠️ HealthPathways Cardiology (Canterbury) requires: ECG, lipids, BP, smoking status. Missing: ECG."
-
-**Why it's R&D:**
-- **Regional variation:** 10 regional Community HealthPathways sites with different criteria for each specialty
-- **Unstructured referral letters:** Extract structured fields from free-text narratives
-- **Dynamic requirements:** HealthPathways updates quarterly
-- **Uncertainty:** Can small model track region-specific, evolving criteria and extract required fields?
-
-**Success metrics:**
-- Referral acceptance rate: ≥90% (reduce bounce-backs from specialists)
-- Completeness: ≥80% of flagged missing items are genuinely required
-- Time savings: ≥20% reduction in referral rework time
-
----
-
-#### **Use Case 4: Chronic Disease Care Gap Identifier**
+#### **Use Case 2: Care Gap Monitoring**
 
 **What it does:**
 - Flags patients overdue for NZ-guideline chronic disease monitoring
@@ -382,10 +414,12 @@ Our solution stands apart from existing AI tools:
 - Self-host on NZ/AU GPU infrastructure (NZ data sovereignty)
 
 **NZ-Specific Fine-Tuning:**
-- **Domain adaptation:** Continual pretraining on NZ public clinical sources (BPAC, NZGG, Pharmac formulary, NZMA journals, HealthPathways criteria)
-- **NZ health system knowledge:** Train on NZ-specific entities (ACC codes, PHO subsidies, Care Plus criteria, regional lab formats, available tests per region)
-- **Task-specific tuning:** Instruction tuning for 4 use cases using synthetic/de-identified NZ data
-- **Multi-task architecture:** ONE model handles all 4 use cases (shared knowledge, cost-efficient)
+- **Domain adaptation:** Continual pretraining on NZ public clinical sources (BPAC, NZGG, Pharmac formulary, NZMA journals, local clinical guidelines)
+- **NZ health system knowledge:** Train on NZ-specific entities (regional lab formats, DHB letter structures, NZ chronic disease guidelines, PHO quality indicators)
+- **Task-specific tuning:** Instruction tuning for 2 distinct use cases using synthetic/de-identified NZ data
+  - Inbox management: Classification, summarization, triage
+  - Care gap monitoring: Guideline adherence, temporal logic, multi-condition tracking
+- **Dual-task architecture:** ONE model handles both reactive (inbox) and proactive (care gaps) workflows (shared NZ domain knowledge, cost-efficient)
 
 **Safety Guardrails:**
 - **Assist-only policy:** Model refuses diagnostic/treatment directives
@@ -409,9 +443,9 @@ Our solution stands apart from existing AI tools:
 **What Makes This Uncertain:**
 1. **No published solution** for achieving GPT-4/5-like quality with small models under NZ privacy + cost + latency constraints
 2. **NZ-specific data is sparse** (few thousand examples vs GPT-4/5's trillions of tokens): Can small model learn from limited data?
-3. **Multi-task challenge**: Can ONE model handle 4 diverse tasks (classification, extraction, temporal logic, coding) or do we need 4 specialised models?
+3. **Dual-task challenge**: Can ONE model handle 2 distinct workflows (reactive inbox classification + proactive care gap monitoring with temporal logic) or do we need 2 specialised models?
 4. **Safety vs usefulness trade-off**: How aggressive can refusal scaffolds be without making the model useless?
-5. **Regional variation**: Can model handle 10 regional Community HealthPathways sites' variations?
+5. **NZ-specific accuracy**: Can model handle 20+ DHBs' letter formats, regional lab variations, and local guideline differences?
 
 **What We Cannot Deduce in Advance:**
 - Optimal model size (7B too small? 13B sufficient? 30B needed?)
@@ -554,22 +588,27 @@ Beyond cost:
 
 | Category | Amount (NZD excl. GST) |
 |----------|------------------------|
-| **R&D Internal Labour** (1,062 hours @ $96/hr) | $101,952 |
-| **Capability Development** (30 hours @ $96/hr) | $2,880 |
+| **Founder R&D Labour** (1,329 hours @ $96/hr) | $127,584 |
+| **Developer R&D Labour** (390 hours @ $72/hr, starts Month 4) | $28,080 |
+| **Capability Development** (54 hours @ $96/hr) | $5,184 |
 | **Materials & Consumables** ($200/month × 12) | $2,400 |
-| **Total Eligible Costs** | **$107,232** |
+| **Professional Services (IP)** | $6,000 |
+| **Conference Travel** (HIC + HealthTech Week) | $3,200 |
+| **Hardware & Depreciation** (Year 1) | $2,617 |
+| **Total Eligible Costs** | **$175,065** |
 | | |
-| **Grant (40%)** | **$42,893** |
-| **Co-Funding (60%)** | **$64,339** |
+| **Grant (40%)** | **$70,026** |
+| **Co-Funding (60%)** | **$105,039** |
 
-**Capability Development Breakdown:**
-- 3 privacy courses (OPC Privacy Act, OPC HIPC, Ko Awatea) - free but eligible
-- 30 hours one-off setups:
-  - CD-A: DPIA, IPP 12, HISO mapping, DPA templates (12h = $1,152)
-  - CD-B: MLflow, DVC, safety dashboard, transparency SOP (10h = $960)
-  - CD-C: Stage-gates, risk register, release checklist (8h = $768)
+**Capability Development Breakdown (Labour Only):**
+- CD-A: Privacy & compliance (12 hours + 3 free courses) = $1,152
+- CD-B: R&D information management (10 hours) = $960
+- CD-C: Stage-gates & risk management (8 hours) = $768
+- CD-D: Conference attendance & knowledge acquisition (24 hours) = $2,304
 
-**CapDev Check:** $2,880 = 6.7% of grant ✓ (exceeds 5% minimum)
+**Total CapDev Labour:** $5,184 = 7.4% of grant ✓ (exceeds 5% minimum of $3,501)
+
+**Note:** IP services ($6,000), conference travel ($3,200), and hardware ($2,617) are separate eligible costs, NOT part of CapDev labour.
 
 ---
 
@@ -577,29 +616,41 @@ Beyond cost:
 
 **Co-Funding Source:**
 - ✓ **Income from GP clinical work** (shareholder-director compensated via PAYE for R&D labour)
-- ✓ **Consistent income stream** exceeds R&D costs throughout the project
+- ✓ **Consistent income stream** (~$11k/month) exceeds R&D costs throughout the project
 - ✓ **Cash position remains positive throughout** 12-month project:
   - Opening cash: $5,000
-  - Minimum cash position: $8,216 (Month 1)
-  - Closing cash: $73,461 (Month 13)
+  - Minimum cash position: $1,879 (Month 6)
+  - Closing cash: $32,213 (Month 13)
 
 **Quarterly Grant Receipts:**
-- Q1 claim (Month 3) → Grant received Month 4: $9,027
-- Q2 claim (Month 6) → Grant received Month 7: $10,224
-- Q3 claim (Month 9) → Grant received Month 10: $12,221
-- Q4 claim (Month 12) → Grant received Month 13: $12,221
+- Q1 claim (Month 3) → Grant received Month 4: $16,973
+- Q2 claim (Month 6) → Grant received Month 7: $16,858
+- Q3 claim (Month 9) → Grant received Month 10: $18,298
+- Q4 claim (Month 12) → Grant received Month 13: $17,898
+
+**Cashflow Strategy:**
+- Hardware purchases deferred to Month 4 (after first grant receipt)
+- Developer starts Month 4 (after first grant receipt)
+- IP work spread across project to manage monthly cashflow
+- Result: Tight but positive cashflow throughout
 
 ---
 
 ### **6.3 Labour Plan**
 
-**Consistent R&D Commitment:**
-- ~20 hrs/week throughout 12 months
-
-**Total Hours:**
-- R&D: 1,062 hours across 5 Objectives
-- CapDev: 30 hours (one-off setups in Months 1-4)
+**Founder R&D Commitment:**
+- ~25 hrs/week throughout 12 months (1,329 hours total)
 - Rate: $96/hr (shareholder-employee on PAYE, timesheets required)
+- Focus: Model development, safety testing, compliance, integration
+
+**Developer R&D Commitment:**
+- ~10 hrs/week starting Month 4 (390 hours over 9 months)
+- Rate: $72/hr (local contractor, invoiced)
+- Focus: Medtech sandbox integration, testing infrastructure, frontend
+
+**Capability Development:**
+- 54 hours total (privacy, R&D management, conference attendance)
+- Spread across Months 1-7
 
 ---
 
@@ -609,9 +660,9 @@ Beyond cost:
 
 **Q1 (Jan-Mar 2026): Foundation**
 - **O1:** Baseline and dataset curation
-  - Curate NZ public corpus (BPAC, NZGG, Pharmac)
-  - Generate synthetic/de-identified datasets (inbox items, SOAP notes, billing scenarios)
-  - Build evaluation harness (test suites for 4 use cases)
+  - Curate NZ public corpus (BPAC, NZGG, Pharmac, local guidelines)
+  - Generate synthetic/de-identified datasets (inbox items: labs, letters, referrals; patient records for care gap scenarios)
+  - Build evaluation harness (test suites for inbox management and care gap monitoring)
   - Select and quantize base model (7B-13B params)
   - **Deliverables:** Baseline metrics, datasets versioned in DVC
 - **CD-A:** Regulatory & Compliance
@@ -629,11 +680,11 @@ Beyond cost:
 **Q2 (Apr-Jun 2026): NZ Domain Adaptation**
 - **O2:** NZ GP domain adaptation
   - Continual pretraining on NZ public clinical sources
-  - Instruction tuning for 4 use cases (inbox, coding, referrals, care gaps)
+  - Instruction tuning for 2 use cases (inbox management, care gap monitoring)
   - **Deliverables:** Model v0.1
-  - **Targets:** 
+  - **Targets:**
     - Inbox classification accuracy ≥70% (baseline)
-    - Clinical coding accuracy ≥60% (baseline)
+    - Care gap detection accuracy ≥70% (baseline)
 - **CD-B:** R&D Information Management
   - Set up MLflow (experiment tracking), DVC (dataset versioning)
   - Build safety dashboard (track metrics over time)
@@ -654,10 +705,11 @@ Beyond cost:
     - Refusal appropriateness ≥95%
     - Zero PHI leakage in red-team tests
 - **O4:** Medtech sandbox and synthetic workloads
-  - Connect to Medtech sandbox (least-privilege scopes)
-  - Generate synthetic inbox, referral, patient data
-  - Run latency/throughput tests
-  - Publish transparency page v1 (sources, regions, sub-processors)
+  - Connect to Medtech sandbox (least-privilege FHIR scopes)
+  - Generate synthetic inbox data (labs, letters, discharge summaries)
+  - Generate synthetic patient records (for care gap testing)
+  - Run latency/throughput tests (P95 <5.0s under realistic load)
+  - Publish transparency page v1 (data sources, model info, update log)
   - **Deliverables:** Sandbox integration, transparency page live
   - **Targets:**
     - Response P95 ≤5.0s
@@ -675,10 +727,8 @@ Beyond cost:
   - **Deliverables:** Pilot-ready system, evaluation framework
   - **Targets:**
     - Inbox classification accuracy ≥90%
-    - Clinical coding accuracy ≥85%
-    - Referral completeness check ≥80%
     - Care gap detection accuracy ≥85%
-    - Clinician-rated usefulness ≥80%
+    - Clinician-rated usefulness ≥80% for both use cases
 
 ---
 
@@ -710,10 +760,10 @@ Beyond cost:
 |------|------------|--------|------------|
 | **1. PHI Leakage (Cross-Border)** | Low | Critical | • No persistent PHI outside NZ; NZ-held keys; ephemeral AU caches only; SIEM monitoring for unusual data flows; monthly PHI leakage tests |
 | **2. Unsafe Model Outputs** | Medium | Critical | • Assist-only policy engine; claim/PII classifiers; refusal scaffolds; clinician-in-the-loop (human review); monthly safety regressions (hard stop if prohibited-claim >0.5%) |
-| **3. Small Model Quality Insufficient** | Medium | High | • Systematic experimentation (O1-O2); baseline GPT-4/5 comparison; iterative tuning; acceptance threshold: 70-80% of GPT-4/5 quality (not 100%); pivots possible if 7B too small (try 13B) |
-| **4. Cashflow Shortfall** | Low | High | • Income from GP clinical work funds co-contribution; cash position positive throughout ($5k opening → $73k closing); quarterly grant receipts; contingency: reduce hours if needed |
+| **3. Small Model Quality Insufficient** | Medium | High | • Systematic experimentation (O1-O2); baseline GPT-4/5 comparison; iterative tuning; acceptance threshold: match GPT-4 quality for specific NZ tasks (not all tasks); pivots possible if 7B too small (try 13B) |
+| **4. Cashflow Shortfall** | Low | High | • Income from GP clinical work funds co-contribution; cash position positive throughout ($10k opening → $32k closing); quarterly grant receipts; hardware/developer deferred to Month 4; contingency: reduce developer hours if needed |
 | **5. Over-Reliance by Clinicians** | Medium | High | • Clear labeling ("AI-generated; use clinical judgment"); no auto-insert (manual review required); training materials for pilot clinics; periodic UI reminders |
-| **6. Scope Creep / Misconfiguration** | Medium | Medium | • Least-privilege Medtech scopes (only access necessary fields); change control gates (Privacy Lead approval for new data uses); quarterly reviews |
+| **6. Scope Creep / Misconfiguration** | Medium | Medium | • Focused on 2 use cases only; least-privilege Medtech scopes (only access necessary fields); change control gates (Privacy Lead approval for new data uses); quarterly reviews |
 | **7. Vendor/Sub-Processor Breach** | Low | Critical | • Due diligence on AU GPU provider; DPA with breach notification (24hr); NZ-held key revocation (immediate lockout); isolation and rollback plan tested |
 | **8. Model Drift / Safety Degradation** | Medium | High | • Version pinning (no auto-updates); pre-release safety gates; monthly safety regressions track trends; rollback plan if metrics decline |
 
@@ -731,11 +781,11 @@ This project uniquely combines **clinical expertise**, **technical depth**, and 
 
 #### **Clinical Expertise (GP Practitioner)**
 - **Active GP:** I'm a practicing general practitioner - I understand the problem **firsthand**
-- **User insight:** I experience documentation burden, inbox overload, and workflow constraints daily
+- **User insight:** I experience inbox overload (hundreds of items daily) and care gap monitoring challenges
 - **Clinical safety:** I know what "assist-only" means in practice - what's helpful vs dangerous
 - **Real-world validation:** I can test in my own practice before asking other GPs to pilot
 
-**Why this matters:** Most AI health startups are built by technologists who guess at clinical needs. I **live** the problem every day.
+**Why this matters:** Most AI health startups are built by technologists who guess at clinical needs. I **live** the problem every day - I know exactly what "good enough" looks like for clinical utility.
 
 ---
 
@@ -744,8 +794,9 @@ This project uniquely combines **clinical expertise**, **technical depth**, and 
 - **Full-stack developer:** Built ClinicPro end-to-end (backend, frontend, Medtech integration)
 - **Proven builder:** ClinicPro is already live with a third-party LLM (operational product, not a prototype)
 - **Hands-on R&D:** I will personally lead model development, safety testing, and integration
+- **Developer support:** Local contractor (10 hrs/week from Month 4) for integration work
 
-**Why this matters:** I'm not outsourcing the hard parts. I have the technical skills to execute the R&D myself, which de-risks the project significantly.
+**Why this matters:** I'm not outsourcing the hard parts. I have the technical skills to execute the R&D myself, with targeted contractor support for integration, which de-risks the project significantly.
 
 ---
 
@@ -768,10 +819,10 @@ This isn't a concept - **ClinicPro is live**:
 **Why R&D is needed:** Third-party LLMs have:
 - ✓ Privacy concerns (PHI sent to US servers)
 - ✓ Cost at scale (Azure OpenAI: $140k+/month for 5,000 GPs)
-- ✓ Not NZ-tuned (miss Pharmac, ACC codes, HealthPathways, NZ lab formats)
-- ✓ Limited use cases (scribing only; no inbox management, coding, referrals, care gaps)
+- ✓ Not NZ-tuned (miss Pharmac, ACC codes, local lab formats, NZ clinical guidelines)
+- ✓ Limited use cases (scribing only; no inbox management or care gap monitoring)
 
-**This R&D project:** Build a **NZ-sovereign, cost-effective, multi-use LLM** that solves all these issues.
+**This R&D project:** Build a **NZ-sovereign, cost-effective, dual-task LLM** that solves all these issues - handling inbox management (reactive) and care gap monitoring (proactive) in one model.
 
 **Why this matters:** We have **proven demand** for AI assistance in NZ general practice. This R&D makes it better, cheaper, safer, and expands capabilities.
 
@@ -812,29 +863,34 @@ Beyond existing expertise, this project builds **formal compliance and R&D manag
 
 **1. Synthetic-First Development (Months 1-3)**
 - All development uses **synthetic data** (no real patients)
+- Generate realistic NZ inbox items (lab results, hospital letters, discharge summaries)
+- Create synthetic patient records for care gap scenarios
 - No production PHI for training
 - Iterate fast without regulatory constraints
 
 **2. Medtech Sandbox Testing (Months 4-9)**
-- Test 4 use cases with **fake patient data** in Medtech sandbox
-- Least-privilege scopes (only access fields we need)
-- Latency/throughput benchmarks
+- Test 2 use cases with **fake patient data** in Medtech sandbox
+  - Inbox management: Synthetic inbox items flowing through FHIR API
+  - Care gap monitoring: Synthetic patient records with known gaps
+- Least-privilege scopes (only access fields we need: inbox, observations, conditions)
+- Latency/throughput benchmarks (P95 <5.0s under realistic load)
 - Catch integration issues before touching real data
 
 **3. Monthly Safety Gates (Ongoing)**
-- Safety regression pack every month
-- **Hard stop:** If metrics fail (prohibited-claim >0.5%), halt releases until fixed
-- Rollback plan tested (<1 hour revert time)
+- Track prohibited-claim rate, refusal appropriateness, PHI leakage
+- **Hard stop if safety metrics fail:** No progression until fixed
+- Independent safety regressions every month
+- Red-team testing (deliberately try to make model misbehave)
 
-**4. Staged Pilot (Month 10+)**
-- Pilot only after:
-  - ✓ All stage-gates passed (O1-O4 complete)
-  - ✓ Safety metrics met for 3 consecutive months
-  - ✓ DPIA signed by clinic Privacy Officer
-  - ✓ DPAs finalized with sub-processors
+**4. Staged Pilot (Month 10+, Only If Ready)**
+- Only after all gates passed:
+  - ✓ Safety metrics met (prohibited-claim <0.5%, refusal >95%)
+  - ✓ Accuracy targets met (inbox ≥90%, care gaps ≥85%)
+  - ✓ DPIA signed by participating clinic
   - ✓ Transparency page live
-- Assist-only controls enforced (no auto-insert)
-- One clinic first (possibly my own practice) before wider roll-out
+- Start with **10-50 consenting GPs** (explicit informed consent)
+- Monitor closely, iterate based on feedback
+- Scale only after validation
 
 ---
 
@@ -872,11 +928,10 @@ Disciplined scope prevents mission creep:
 
 | Metric | Target | How Measured |
 |--------|--------|--------------|
-| **Inbox triage time savings** | ≥30% reduction | Time study: before/after AI summaries |
-| **Coding revenue uplift** | ≥5% increase | Compare billing pre/post AI suggestions |
-| **Referral acceptance rate** | ≥90% | Track bounce-backs from specialists |
+| **Inbox triage time savings** | ≥30% reduction (saves 1-2 hrs/day per GP) | Time study: before/after AI summaries |
 | **Care gap monitoring completion** | ≥80% | PHO QOF score improvement ≥10% |
-| **Clinician usefulness rating** | ≥80% | Post-task surveys: "Was this useful?" (1-5 scale) |
+| **PHO quality indicator improvement** | ≥10% | Compare PHO scores pre/post implementation |
+| **Clinician usefulness rating** | ≥80% for both use cases | Post-task surveys: "Was this useful?" (1-5 scale) |
 
 ---
 
@@ -904,13 +959,16 @@ Disciplined scope prevents mission creep:
 
 ### **10.4 R&D Success Threshold**
 
-**We DO NOT need to match GPT-4/5 100%.** Success = achieving **70-80% of GPT-4/5 quality at 20-50x lower cost**.
+**We aim to match GPT-4/5 quality for these specific NZ healthcare tasks** while achieving 20-50x cost savings through self-hosting.
 
-**Example:**
-- If GPT-4/5 gets 95% coding accuracy, we need ≥70% accuracy (acceptable for assist-only use)
-- If GPT-4/5 costs $0.019/request (Azure), we need ?$0.0005/request (self-hosted: 20-50x cheaper)
+**Success criteria:**
+- Inbox management: Match GPT-4 classification accuracy (≥90%) for NZ-specific lab results, DHB letters, local formats
+- Care gap monitoring: Achieve ≥85% accuracy on NZ guideline adherence (BPAC, NZGG, PHO indicators)
+- Cost: $0.0005/request (self-hosted) vs $0.019/request (Azure OpenAI) = 38x cheaper
 
-**This trade-off is the R&D question:** Is 70-80% quality sufficient for clinical utility? Unknown - requires pilot evaluation.
+**This is the R&D question:** Can a small (7B-13B param), self-hosted model match GPT-4 quality for NZ-specific clinical tasks? Unknown - requires systematic experimentation and pilot evaluation.
+
+**If we achieve 85-90% quality at 20-50x lower cost,** that's sufficient for assist-only clinical use and represents a genuine breakthrough.
 
 ---
 

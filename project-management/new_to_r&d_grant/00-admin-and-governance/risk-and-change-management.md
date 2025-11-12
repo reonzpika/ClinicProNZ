@@ -157,7 +157,7 @@ This document tracks:
 - **Likelihood:** Low (with planning)
 - **Impact:** Medium (claim rejection, grant reduction)
 - **Mitigations:**
-  - 30 hours CapDev labour locked ($2,880 = 6.7% of grant ?)
+  - 54 hours CapDev labour locked ($5,184 = 7.4% of grant ✓)
   - Adjust up slightly before Q1 claim if total costs change
   - Quarterly review of CapDev % in cost template
 - **Owner:** NexWave Director
@@ -284,9 +284,9 @@ Each Objective has entry/exit criteria and safety gates to ensure quality and co
 ### Exit Criteria
 - [ ] NZ public corpus curated (with source register)
 - [ ] Synthetic/de-identified datasets created and tagged in DVC
-- [ ] Eval harness built (inbox classification, coding accuracy, referral completeness, care gap detection, latency)
+- [ ] Eval harness built (inbox classification, care gap detection, latency)
 - [ ] Baseline model selected and quantized
-- [ ] Baseline metrics measured: latency P95, inbox classification accuracy, coding accuracy baseline
+- [ ] Baseline metrics measured: latency P95, inbox classification accuracy, care gap detection baseline
 
 ### Safety Gates
 - [ ] No production PHI used in datasets
@@ -303,9 +303,9 @@ Each Objective has entry/exit criteria and safety gates to ensure quality and co
 
 ### Exit Criteria
 - [ ] Continual pretraining on NZ public sources completed
-- [ ] Instruction tuning for 4 use cases (inbox, coding, referrals, care gaps) completed
+- [ ] Instruction tuning for 2 use cases (inbox management, care gap monitoring) completed
 - [ ] Model v0.1 released
-- [ ] ? 70% inbox classification accuracy (baseline); ? 60% coding accuracy (baseline)
+- [ ] ≥ 70% inbox classification accuracy (baseline); ≥ 70% care gap detection accuracy (baseline)
 - [ ] Template conformity ? 90%
 
 ### Safety Gates
@@ -378,7 +378,7 @@ Each Objective has entry/exit criteria and safety gates to ensure quality and co
   - [ ] Transparency page live
   - [ ] Safety regressions up-to-date (last 3 months)
   - [ ] Rollback plan tested
-- [ ] Utility targets met: ?30% inbox triage time reduction; ?85% coding accuracy; ?80% usefulness (all 4 use cases)
+- [ ] Utility targets met: ≥30% inbox triage time reduction; ≥80% care gap completion; ≥80% usefulness (both use cases)
 - [ ] Safety targets met: prohibited-claim ?0.5%; refusal ?95%; zero PHI leakage
 
 ### Safety Gates (Pre-Pilot)

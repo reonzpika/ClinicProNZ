@@ -196,7 +196,13 @@ Build enduring capability in:
 | Write release checklist; add rollback and approvals | 2.0 |
 | **Total CD-C** | **8.0 hours** |
 
-**Total CapDev Labour:** 30.0 hours @ $96/hr = **$2,880**
+**Total CapDev Labour:** 54 hours @ $96/hr = **$5,184**
+
+**Breakdown:**
+- CD-A: Privacy & compliance (12h) = $1,152
+- CD-B: R&D information management (10h) = $960
+- CD-C: Project management set-up (8h) = $768
+- CD-D: Conference attendance (24h) = $2,304
 
 ---
 
@@ -297,16 +303,18 @@ Build enduring capability in:
 - OPC and Ko Awatea are NZ-recognised government/health sector providers
 - Include all certificates with dates
 - Emphasise DPIA/HISO artefacts for credibility
-- $2,880 of internal labour demonstrates substantive capability building
+- $5,184 of internal labour (54 hours) demonstrates substantive capability building
 
 ### Risk: CapDev < 5% of Grant Due to Changes
 
 **Requirement:** CapDev ? 5% of grant ? $2,145
 
 **Mitigation:**
-- Keep 30 hours CapDev labour ($2,880)
+- Keep 54 hours CapDev labour ($5,184)
+  - CD-A, CD-B, CD-C: 30h setup
+  - CD-D: 24h conference attendance
 - Adjust up slightly before first claim if needed
-- Current allocation: $2,880 / $42,893 = 6.7% ?
+- Current allocation: $5,184 / $70,026 = 7.4% ✓ (exceeds 5% minimum of $3,501)
 
 ### Risk: Transparency Not Updated
 
@@ -322,12 +330,13 @@ Build enduring capability in:
 
 | Category | Hours | Cost @ $96/hr | Courses |
 |----------|-------|---------------|---------|
-| **Regulatory & Compliance** | 12 | $1,152 | 3 (free) |
-| **R&D Information Management** | 10 | $960 | - |
-| **Project Management** | 8 | $768 | - |
-| **Total** | **30** | **$2,880** | **3** |
+| **CD-A: Regulatory & Compliance** | 12 | $1,152 | 3 (free) |
+| **CD-B: R&D Information Management** | 10 | $960 | - |
+| **CD-C: Project Management** | 8 | $768 | - |
+| **CD-D: Conference Attendance** | 24 | $2,304 | - |
+| **Total** | **54** | **$5,184** | **3** |
 
-**Percentage of Grant:** 6.7% (exceeds 5% minimum requirement) ?
+**Percentage of Grant:** $5,184 / $70,026 = 7.4% ✓ (exceeds 5% minimum requirement of $3,501)
 
 ---
 
