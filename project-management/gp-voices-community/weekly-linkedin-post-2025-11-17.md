@@ -41,7 +41,25 @@
 
 ---
 
-[Additional items to be added as you find more articles]
+### Item 4: Pharmacy Today
+**Headline**: Putting an AI policy in place protects you and your practice
+
+**Summary**: Health IT expert Sanjeewa Samaraweera discusses why implementing an AI policy and reviewing it regularly is essential for healthcare practices.
+
+**Link**: https://www.pharmacytoday.co.nz/article/opinion/putting-ai-policy-place-protects-you-and-your-practice
+
+**Notes**: Opinion piece on AI governance - highly relevant for GPs adopting AI tools. Timely and actionable content.
+
+---
+
+### Item 5: NZ Doctor
+**Headline**: ProCare wins 2025 Cooperative Business New Zealand Innovation Award
+
+**Summary**: Leading healthcare provider ProCare recognised for transforming primary care through technology, partnerships, and smarter systems.
+
+**Link**: https://www.nzdoctor.co.nz/article/undoctored/procare-wins-2025-cooperative-business-new-zealand-innovation-award
+
+**Notes**: Innovation award for NZ primary care transformation - shows sector momentum and relevance to GPs.
 
 ---
 
@@ -83,6 +101,8 @@
 1. NZ govt AI scribe rollout: https://www.reseller.co.nz/article/4087164/nz-govt-rolls-out-ai-scribe-tool-to-doctors-despite-concerns.html
 2. [Item 2]: https://home.nzcity.co.nz/news/article.aspx?id=433630
 3. [Item 3]: https://www.eurekalert.org/news-releases/1104853
+4. AI policy for practices: https://www.pharmacytoday.co.nz/article/opinion/putting-ai-policy-place-protects-you-and-your-practice
+5. ProCare innovation award: https://www.nzdoctor.co.nz/article/undoctored/procare-wins-2025-cooperative-business-new-zealand-innovation-award
 
 [@Mentions - to be selected]
 
