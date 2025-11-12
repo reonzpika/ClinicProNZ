@@ -266,7 +266,7 @@ export function useMobileSessionWebSocket(token: string | null) {
       // Reset last image ID on disconnect
       lastImageIdRef.current = null;
     };
-  }, [token]); // Removed addImage from dependencies (using ref instead)
+  }, [token]); // Re-run when token changes from null to actual value
 
   return {
     isConnected,
