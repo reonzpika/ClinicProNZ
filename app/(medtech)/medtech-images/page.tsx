@@ -64,20 +64,23 @@ function MedtechImagesPageContent() {
   
   // Connect WebSocket ONLY when QR panel is shown AND token is available
   // This ensures we only connect when user explicitly wants mobile upload
-  const shouldConnect = showQR && qrSession.token;
-  useMobileSessionWebSocket(shouldConnect ? qrSession.token : null);
+  // Pass condition directly to hook so it's reactive to both showQR and token changes
+  const webSocketToken = showQR && qrSession.token ? qrSession.token : null;
+  useMobileSessionWebSocket(webSocketToken);
   
   // Debug logging
   useEffect(() => {
+    const shouldConnect = showQR && !!qrSession.token;
     console.log('[Desktop] QR state:', { 
       showQR, 
       token: qrSession.token, 
-      shouldConnect 
+      shouldConnect,
+      webSocketToken 
     });
-    if (shouldConnect) {
+    if (shouldConnect && qrSession.token) {
       console.log('[Desktop] Connecting WebSocket with token:', qrSession.token);
     }
-  }, [showQR, qrSession.token, shouldConnect]);
+  }, [showQR, qrSession.token, webSocketToken]);
 
   // Cleanup session on widget close (beforeunload)
   // Use synchronous XHR for reliable delivery during page unload (async fetch is cancelled)
