@@ -208,6 +208,8 @@ function MobilePageContent() {
         reader.readAsDataURL(image.file);
       });
 
+      console.log('[Mobile] Uploading image:', { token, contentType: image.file.type, sizeBytes: image.file.size });
+
       const response = await fetch('/api/medtech/mobile/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -224,13 +226,19 @@ function MobilePageContent() {
         }),
       });
 
+      console.log('[Mobile] Upload response status:', response.status, response.statusText);
+
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[Mobile] Upload failed:', response.status, errorText);
         throw new Error(`Upload failed: ${response.statusText}`);
       }
 
+      const result = await response.json();
+      console.log('[Mobile] Upload success:', result);
       return true;
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error('[Mobile] Upload error:', error);
       return false;
     }
   };
@@ -270,6 +278,7 @@ function MobilePageContent() {
   };
 
   const handleFinish = async () => {
+    console.log('[Mobile] handleFinish called, images:', images.length);
     setIsUploading(true);
 
     try {
@@ -278,8 +287,11 @@ function MobilePageContent() {
         .filter(img => img.uploadStatus === 'pending')
         .map(img => img.id);
 
+      console.log('[Mobile] Pending images to upload:', pendingImageIds.length);
+
       if (pendingImageIds.length === 0) {
         // No pending images, just reset
+        console.log('[Mobile] No pending images, resetting');
         setImages([]);
         setStep('capture');
         setCurrentImageIndex(0);
@@ -296,10 +308,13 @@ function MobilePageContent() {
       const uploadPromises = pendingImageIds.map(async (imageId) => {
         const image = images.find(img => img.id === imageId);
         if (!image) {
+          console.warn('[Mobile] Image not found for ID:', imageId);
           return { imageId, success: false };
         }
 
+        console.log('[Mobile] Starting upload for image:', imageId);
         const success = await uploadImage(image);
+        console.log('[Mobile] Upload result for image:', imageId, success);
 
         // Update state using ID (functional update)
         setImages(prev => prev.map((img) => (img.id === imageId
@@ -310,6 +325,8 @@ function MobilePageContent() {
       });
 
       const results = await Promise.all(uploadPromises);
+      console.log('[Mobile] All uploads completed:', results);
+      
       const failedImages = results
         .filter(r => !r.success && r.image)
         .map(r => r.image!)
@@ -317,6 +334,7 @@ function MobilePageContent() {
 
       // Save failed images to offline queue
       if (failedImages.length > 0) {
+        console.log('[Mobile] Saving', failedImages.length, 'failed images to offline queue');
         await saveToOfflineQueue(failedImages);
       }
 

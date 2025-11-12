@@ -46,6 +46,9 @@ export function useQRSession() {
         return tokenMatch && tokenMatch[1] ? tokenMatch[1] : null;
       })();
 
+      console.log('[QR Session] Mobile session initiated, token:', token);
+      console.log('[QR Session] Mobile URL:', data.mobileUploadUrl);
+
       setSessionState({
         token,
         mobileUrl: data.mobileUploadUrl,
@@ -90,6 +93,15 @@ export function useQRSession() {
   const regenerate = useCallback(() => {
     mutation.mutate();
   }, [mutation]);
+
+  // Log token changes
+  useEffect(() => {
+    if (sessionState.token) {
+      console.log('[QR Session] Token available:', sessionState.token);
+    } else {
+      console.log('[QR Session] No token available');
+    }
+  }, [sessionState.token]);
 
   return {
     ...sessionState,

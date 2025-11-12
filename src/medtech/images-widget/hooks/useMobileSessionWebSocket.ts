@@ -66,11 +66,13 @@ export function useMobileSessionWebSocket(token: string | null) {
       }
 
       try {
-        const eventSource = new EventSource(`/api/medtech/mobile/ws/${token}`);
+        const sseUrl = `/api/medtech/mobile/ws/${token}`;
+        console.log('[WebSocket] Connecting to SSE:', sseUrl);
+        const eventSource = new EventSource(sseUrl);
         eventSourceRef.current = eventSource;
 
         eventSource.onopen = () => {
-          console.log('[WebSocket] Connected to mobile session');
+          console.log('[WebSocket] Connected to mobile session, token:', token);
           setIsConnected(true);
           setError(null);
           reconnectAttempts = 0;

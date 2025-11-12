@@ -66,7 +66,10 @@ function MedtechImagesPageContent() {
   // Connect WebSocket when QR token is available
   useEffect(() => {
     if (qrToken) {
-      console.log('[Desktop] QR session token:', qrToken);
+      console.log('[Desktop] QR session token available:', qrToken);
+      console.log('[Desktop] WebSocket hook should be connecting...');
+    } else {
+      console.log('[Desktop] No QR token available yet');
     }
   }, [qrToken]);
 

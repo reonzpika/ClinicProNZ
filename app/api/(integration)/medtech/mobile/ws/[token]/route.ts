@@ -16,7 +16,10 @@ export async function GET(
 ) {
   const { token } = await params;
 
+  console.log('[SSE] GET request received for token:', token);
+
   if (!token) {
+    console.error('[SSE] No token provided');
     return new Response('token is required', { status: 400 });
   }
 
@@ -45,6 +48,7 @@ export async function GET(
         }
       };
 
+      console.log('[SSE] Sending connected message for token:', token);
       send({ type: 'connected', token });
 
       // Poll for new images every 2 seconds
@@ -95,6 +99,7 @@ export async function GET(
           // If new images detected, send them
           if (currentImageCount > lastImageCount) {
             const newImages = session.images.slice(lastImageCount);
+            console.log('[SSE] New images detected:', newImages.length, 'sending to client');
             try {
               send({
                 type: 'images_received',
