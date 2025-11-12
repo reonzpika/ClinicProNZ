@@ -45,21 +45,26 @@ This R&D will prove a small, self-hosted model can match GPT-4 quality for these
 
 ### **Why This is Hard (The R&D Challenge)**
 
-**Technical uncertainty:** Can a small, self-hosted model deliver GPT-4-level quality for these specific NZ healthcare tasks?
+**The problem:** No AI tool currently exists that can accurately manage NZ GP inboxes.
 
-Current landscape:
-- ❌ **GPT-4 works but costs $140k/month** at national scale (5,000 GPs × 50 requests/day)
-- ❌ **Small models exist but lack NZ domain knowledge** (Pharmac, ACC, local lab formats, health system structures)
-- ❌ **No dedicated LLM for NZ healthcare** exists
-- ❌ **No one has proven this cost/quality trade-off** under NZ privacy constraints
+**Current landscape:**
+- ❌ **No tool for NZ GP inbox management** - Existing AI focuses on documentation (scribes), not inbox triage/classification
+- ❌ **Generic LLMs can't handle NZ healthcare** - GPT-4 lacks knowledge of Pharmac formulary, ACC codes, local lab formats, NZ health system structures
+- ❌ **No dedicated LLM for NZ healthcare** - Training data exists (Pharmac, BPAC, NZ guidelines) but no one has built the model
+- ❌ **No proven approach** for multi-task clinical AI under NZ privacy constraints (self-hosted, no offshore PHI)
+
+**This isn't just about cost** (though self-hosting saves 20-50x vs commercial APIs). **It's about building something that doesn't exist** - an AI that accurately understands NZ clinical workflows.
+
+**Technical uncertainty:** Can we build a small, self-hosted model that delivers GPT-4-level accuracy for these specific NZ healthcare tasks?
 
 We need to systematically test:
-- Continual pretraining on NZ clinical sources (Pharmac, local guidelines, lab formats)
-- Multi-task instruction tuning (4 use cases in one model)
-- Safety scaffolds (assist-only, no diagnostic/treatment advice)
-- Latency optimization (P95 <5.0s for real-world GP workflows)
+- **Continual pretraining** on NZ clinical sources (Pharmac, BPAC, local guidelines, lab report formats)
+- **Multi-task instruction tuning** - ONE model for 4 use cases (inbox, coding, referrals, care gaps), not 4 separate systems
+- **NZ-specific evaluation** - Does it correctly interpret local lab results? Suggest accurate ACC codes? Understand DHB referral pathways?
+- **Safety scaffolds** - Assist-only policy engine, refusal of diagnostic/treatment advice
+- **Real-world latency** - P95 <5.0s for GP workflows (hundreds of requests/day per clinic)
 
-**This is genuine R&D.** No published solution exists.
+**This is genuine R&D.** No published solution exists for NZ healthcare inbox management. We're proving it can be done accurately, safely, and cost-effectively.
 
 ---
 
