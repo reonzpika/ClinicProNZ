@@ -10,55 +10,120 @@
 
 ## **Section 1: Executive Summary** (1 page)
 
-### **The Problem**
+### **The Opportunity**
 
-New Zealand GPs face a severe workforce and workload crisis:
+New Zealand has 5,000 GPs drowning in administrative work—and I'm one of them.
 
-- **70% burnout; 35% retiring in 5 years** - unreasonable workloads, unfunded admin roles driving early retirement
-- **Inbox overload** - hundreds of items daily (letters, labs, referrals); GP working hours rising (35.9→38.1 hrs/week)
-- **Rising responsibility without support** - expanded scope, compliance, documentation with no proportional support
-- **GPs want AI but concerns exist** - privacy, Māori data sovereignty, system integration barriers
+As a practicing GP, I see hundreds of inbox items daily: lab results, hospital letters, referrals. These take hours to process, pulling me away from patients. It's driving workforce burnout (70% report moderate-to-high burnout) and early retirement (35% leaving within 5 years).
 
-### **Why AI Can Help**
+**Here's the gap:** Current AI tools focus on documentation (AI scribes) but don't address the biggest time sink—inbox management and admin workflows. And there's no dedicated LLM trained for NZ healthcare: our local lab formats, Pharmac formulary, ACC codes, health system structures, and local guidelines.
 
-AI can rapidly process clinical text - triaging inbox items, extracting billing codes, checking referral criteria, identifying care gaps - freeing hours of GP time daily.
+**I'm building the solution:** A small, NZ-tuned LLM that handles 4 critical workflows—inbox management, clinical coding, referral checking, care gaps—for $5-10k/month, self-hosted in New Zealand (vs $140k/month for commercial APIs at scale).
 
-### **Current AI Tools Fall Short**
+**Why I can deliver:**
+- **GP clinician** experiencing the problem daily in practice
+- **Full-stack developer** with AI/ML expertise
+- **Proven track record**: Built ClinicPro (operational AI scribe service used by NZ GPs)
+- **Medtech partnership**: NZ's largest PMS (~60% market share) = real-world testing environment + 3,000+ GP adoption pathway
 
-- **Most only do scribing** - no tools for inbox, coding, referrals, or care gaps
-- **Lacks New Zealand Health System knowledge** - not trained on local requirements
-- **Privacy concerns** - patient data sent offshore; Māori data sovereignty issues
-- **Expensive at scale** - $140k+/month vs $5-10k/month self-hosted
+This R&D will prove a small, self-hosted model can match GPT-4 quality for these specific NZ healthcare tasks at 20-50x lower cost—a technical breakthrough no one has achieved.
 
-### **Our Solution**
+---
 
-We're building a small, NZ-controlled AI model for 4 critical workflows: **inbox management, clinical coding, referral checking, and care gap monitoring.** Self-hosted for privacy, NZ-tuned for accuracy, cost-effective at scale.
+### **What We're Building**
 
-**Why we can deliver this:**  
-I'm a practicing GP, founder of ClinicPro (operational AI scribe service), and full-stack developer with AI/machine learning expertise. This unique combination of clinical insight, proven building capability, and technical depth means I understand both the problem (I experience it daily in practice) and can execute the technical solution. We're partnering with Medtech, NZ's largest practice management system, which provides direct access to real-world testing environments and rapid adoption pathways across 3,000+ GPs.
+**Four AI assistants in one model:**
 
-### **Why This is R&D**
+1. **Inbox Management** - Triage, classify, summarize hundreds of daily items (hospital letters, lab results, referrals)
+2. **Clinical Coding** - Suggest NZ billing codes (ACC, PHO, Care Plus eligibility)
+3. **Referral Quality** - Check local guideline criteria before sending referrals
+4. **Care Gap Monitoring** - Alert overdue chronic disease monitoring per NZ clinical guidelines
 
-**Technical uncertainty:** Can a small AI model (7B-13B parameters) achieve good quality for NZ-specific clinical tasks while being:
-- **20-50x cheaper at scale** (self-hosted vs commercial APIs)
-- **NZ-tuned** (trained on NZ-specific rules and workflows)
-- **Multi-task** (one model for 4 use cases, not 4 separate models)
-- **Privacy-safe** (self-hosted with strong safeguards)
+**Key innovation:** ONE small model (7B-13B parameters) doing ALL four tasks, not four separate systems.
 
-**No published solution exists** for this cost/quality trade-off under NZ privacy constraints.
+---
 
-### **Grant Ask & Timeline**
-- **Total eligible costs:** $107,232 (excl. GST)
-- **Grant (40%):** $42,893
-- **Co-funding (60%):** $64,339 (from GP clinical work income)
-- **Timeline:** 12 months (5 R&D Objectives + Capability Development)
+### **Why This is Hard (The R&D Challenge)**
+
+**Technical uncertainty:** Can a small, self-hosted model deliver GPT-4-level quality for these specific NZ healthcare tasks?
+
+Current landscape:
+- ❌ **GPT-4 works but costs $140k/month** at national scale (5,000 GPs × 50 requests/day)
+- ❌ **Small models exist but lack NZ domain knowledge** (Pharmac, ACC, local lab formats, health system structures)
+- ❌ **No dedicated LLM for NZ healthcare** exists
+- ❌ **No one has proven this cost/quality trade-off** under NZ privacy constraints
+
+We need to systematically test:
+- Continual pretraining on NZ clinical sources (Pharmac, local guidelines, lab formats)
+- Multi-task instruction tuning (4 use cases in one model)
+- Safety scaffolds (assist-only, no diagnostic/treatment advice)
+- Latency optimization (P95 <5.0s for real-world GP workflows)
+
+**This is genuine R&D.** No published solution exists.
+
+---
+
+### **12-Month Plan & Team**
+
+**R&D Team:**
+- **Founder (you):** 1,329 hours @ 25 hrs/week
+  - Clinical domain expertise + technical leadership
+  - NZ healthcare workflows + AI/ML development
+  
+- **Local developer:** 390 hours starting Month 4 (10 hrs/week)
+  - Frontend development (GP mobile interface)
+  - FHIR integration testing (Medtech sandbox)
+  - Test automation and synthetic data generation
+
+**5 R&D Objectives:**
+- **O1:** Baseline & dataset curation (synthetic NZ GP data)
+- **O2:** NZ domain adaptation (train on Pharmac, ACC, local labs, guidelines)
+- **O3:** Safety enforcement (assist-only policy engine, refusal scaffolds)
+- **O4:** Medtech sandbox integration (synthetic workloads, FHIR testing)
+- **O5:** Pilot-readiness & evaluation (telemetry, incident procedures)
+
+**Capability Development:**
+- **IP protection** ($6k): Freedom-to-Operate analysis, provisional patent filing, IP strategy
+- **Conference attendance** ($3.2k): HealthTech Week Auckland + HIC Melbourne 2026
+- **Hardware** ($2.6k Year 1): GPU workstation (local testing), mobile devices (GP workflow validation)
+
+---
+
+### **Grant Ask**
+
+|| Item | Amount (NZD excl. GST) |
+||------|------------------------|
+|| **Total Eligible Costs** | **$175,065** |
+|| **Grant (40%)** | **$70,026** |
+|| **Co-Funding (60%)** | **$105,039** |
+
+**Co-funding source:** GP clinical work income ($11k/month)  
+**Cashflow:** Positive throughout project (minimum $1,879 Month 6)  
+**Timeline:** 12 months (27 Jan 2026 - 26 Jan 2027)
+
+---
+
+### **Why This Will Succeed**
+
+✅ **Unique founder profile** - GP + developer + AI expertise (rare combination)  
+✅ **Proven delivery capability** - ClinicPro operational (validates I can ship products)  
+✅ **Market access** - Medtech partnership = real-world testing + 3,000+ GP adoption pathway  
+✅ **Deep problem understanding** - I experience inbox overload daily in practice  
+✅ **NZ-first approach** - Training on Pharmac, ACC, local lab formats, health system from Day 1  
+✅ **Clear commercialization path** - Medtech rollout post-R&D; exportable to AU/Pacific markets
+
+**Impact:** Keeps GPs in the workforce longer, improves patient care quality, and creates NZ-sovereign health tech capability. Addresses root causes of burnout (admin overload) identified in national workforce surveys.
+
+---
 
 ### **Key Differentiators**
-✓ **NZ data sovereignty** (self-hosted in NZ/AU, NZ-held keys)  
-✓ **Cost-effective at scale** (fixed infrastructure vs pay-per-request)  
-✓ **NZ-tuned** (Pharmac, ACC, HealthPathways, regional variations)  
-✓ **Medtech partnership** (NZ's largest PMS = real-world testing)  
-✓ **Privacy-first** (no training on production PHI; synthetic/de-identified only)
+
+✓ **First dedicated LLM for NZ healthcare** (trained on local Pharmac, ACC, lab formats, guidelines)  
+✓ **Beyond scribing** (tackles inbox management and admin workflows, not just documentation)  
+✓ **NZ data sovereignty** (self-hosted in NZ/AU, NZ-held keys, no offshore PHI)  
+✓ **Cost-effective at scale** ($5-10k/month vs $140k/month for commercial APIs)  
+✓ **Medtech integration** (NZ's largest PMS = rapid adoption across existing customer base)  
+✓ **Privacy-first R&D** (no training on production PHI; synthetic/de-identified data only)
 
 ---
 
