@@ -190,15 +190,14 @@ The project is organized into 6 main directories:
 - Create risk register, change log, release checklist
 - **Hours:** 8 | **Cost:** $768
 
-### CD-D: IP Protection & Conference Attendance (Months 2-10)
-- Freedom-to-Operate Analysis ($2,500)
-- Provisional Patent Filing ($2,000)
-- IP Strategy for Model Outputs ($1,500)
-- HealthTech Week Auckland (Month 5, 8 hours + $1,000)
-- HIC 2026 Melbourne (Month 7, 16 hours + $2,200)
-- **Hours:** 24 | **Labour Cost:** $2,304 | **Other Costs:** $9,200
+### CD-D: Conference Attendance & Knowledge Acquisition (Months 5-7)
+- HealthTech Week Auckland (Month 5): 8 hours attendance/networking
+- HIC 2026 Melbourne (Month 7): 16 hours attendance/presentations
+- **Hours:** 24 | **Labour Cost:** $2,304
 
 **Total CapDev Hours:** 54 | **Total CapDev Labour:** $5,184 (7.4% of grant ✓)
+
+**Note:** Conference travel costs ($3,200) and IP services ($6,000) are separate budget lines, NOT part of CapDev labour.
 
 ---
 

@@ -212,7 +212,8 @@ Inbox management and care gap monitoring
 | **CD-A** | Regulatory & Compliance | 27 Jan ? 31 Mar 2026 | 12 | $1,152 |
 | **CD-B** | R&D Information Management | 27 Jan ? 30 Apr 2026 | 10 | $960 |
 | **CD-C** | Project Management set-up | 27 Jan ? 29 Feb 2026 | 8 | $768 |
-| | **Total CapDev** | | **30** | **$2,880** |
+| **CD-D** | Conference Attendance | Months 5, 7 | 24 | $2,304 |
+| | **Total CapDev** | | **54** | **$5,184** |
 
 ---
 
@@ -312,7 +313,7 @@ See `00-admin-and-governance/risk-and-change-management.md` for all document ver
 4. **If Q1 claim**: `03-capability-development/capability-development-evidence-pack.md`
 
 **Always check:**
-- CapDev ? 5% of grant ($2,880 ? $2,145 ?)
+- CapDev ≥ 5% of grant ($5,184 = 7.4% ✓ exceeds $3,501 minimum)
 - Cashflow remains positive (minimum $8,216 in Month 1)
 - All costs linked to Objectives in cost-template.md
 

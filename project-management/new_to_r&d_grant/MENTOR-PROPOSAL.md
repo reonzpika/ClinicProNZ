@@ -93,9 +93,15 @@ We need to systematically test:
 - **O4:** Medtech sandbox integration (synthetic inbox workloads, patient record analysis, FHIR testing)
 - **O5:** Pilot-readiness & evaluation (telemetry, incident procedures, GP evaluation framework)
 
-**Capability Development:**
+**Capability Development (54 hours labour @ $96/hr = $5,184):**
+- CD-A: Privacy & compliance (12h)
+- CD-B: R&D information management (10h)
+- CD-C: Project management set-up (8h)
+- CD-D: Conference attendance & knowledge acquisition (24h)
+
+**Additional Eligible Costs:**
 - **IP protection** ($6k): Freedom-to-Operate analysis, provisional patent filing, IP strategy
-- **Conference attendance** ($3.2k): HealthTech Week Auckland + HIC Melbourne 2026
+- **Conference travel** ($3.2k): HealthTech Week Auckland + HIC Melbourne 2026
 - **Hardware** ($2.6k Year 1): GPU workstation (local testing), mobile devices (GP workflow validation)
 
 ---
@@ -594,13 +600,15 @@ Beyond cost:
 | **Grant (40%)** | **$70,026** |
 | **Co-Funding (60%)** | **$105,039** |
 
-**Capability Development Breakdown:**
+**Capability Development Breakdown (Labour Only):**
 - CD-A: Privacy & compliance (12 hours + 3 free courses) = $1,152
 - CD-B: R&D information management (10 hours) = $960
 - CD-C: Stage-gates & risk management (8 hours) = $768
 - CD-D: Conference attendance & knowledge acquisition (24 hours) = $2,304
 
-**CapDev Check:** $5,184 = 7.4% of grant ✓ (exceeds 5% minimum)
+**Total CapDev Labour:** $5,184 = 7.4% of grant ✓ (exceeds 5% minimum of $3,501)
+
+**Note:** IP services ($6,000), conference travel ($3,200), and hardware ($2,617) are separate eligible costs, NOT part of CapDev labour.
 
 ---
 

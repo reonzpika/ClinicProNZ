@@ -224,7 +224,40 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 
 ---
 
-### CD-C: Professional Services & IP Protection (Months 2-10)
+### CD-C: Project Management Set-up (27 Jan – 29 Feb 2026)
+
+**Deliverables:**
+- Stage-gate definitions (O1-O5 entry/exit criteria)
+- Risk register and change log
+- Release checklist and governance framework
+
+**Hours:** 8 | **Cost:** $768
+
+**Rationale:** Establishes systematic governance for R&D project tracking, risk management, and quality gates.
+
+---
+
+### CD-D: Conference Attendance & Knowledge Acquisition (Months 5, 7)
+
+**Hours:** 24 | **Labour Cost:** $2,304
+
+**HealthTech Week Auckland** (June 2026, Month 5): 8 hours
+- Local ecosystem engagement
+- Early validation of NZ-sovereign LLM approach
+- Stakeholder feedback during O2 domain adaptation phase
+
+**HIC 2026 Melbourne** (August 2026, Month 7): 16 hours
+- Regional health informatics community
+- Peer review of safety enforcement mechanisms (O3)
+- AU/NZ healthcare AI research collaboration
+
+**Rationale:** Conference attendance provides access to cutting-edge clinical LLM safety research and validates NZ-specific use cases with regional health tech community. Timing aligns with key R&D phases (O2 domain adaptation, O3 safety work) for maximum learning impact.
+
+**Total CapDev Hours:** 54 | **Total CapDev Labour:** $5,184 (7.4% of grant ✓)
+
+---
+
+### Professional Services – IP Protection (Separate Eligible Cost, NOT CapDev)
 
 **IP Work:** $6,000
 - Freedom-to-Operate (FTO) Analysis ($2,500, Months 2-4): Patent search to verify assist-only enforcement architecture and NZ-specific fine-tuning methods don't infringe existing patents
@@ -235,25 +268,23 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 
 ---
 
-### CD-D: Conference Attendance & Knowledge Transfer (Months 5, 7)
+### Conference Travel (Separate Eligible Cost, NOT CapDev)
 
-**Conferences:** $3,200 + 24 hours labour
+**Conference Travel Costs:** $3,200
 
-**HealthTech Week Auckland** (June 2026, Month 5): $1,000 + 8 hours
-- Local ecosystem engagement
-- Early validation of NZ-sovereign LLM approach
-- Stakeholder feedback during O2 domain adaptation phase
+**HealthTech Week Auckland** (June 2026, Month 5): $1,000
+- Accommodation (1 night): $300
+- Registration: $600
+- Transport/meals: $100
 
-**HIC 2026 Melbourne** (August 2026, Month 7): $2,200 + 16 hours
-- Regional health informatics community
-- Peer review of safety enforcement mechanisms (O3)
-- AU/NZ healthcare AI research collaboration
-
-**Rationale:** Conference attendance provides access to cutting-edge clinical LLM safety research and validates NZ-specific use cases with regional health tech community. Timing aligns with key R&D phases (O2 domain adaptation, O3 safety work) for maximum learning impact.
+**HIC 2026 Melbourne** (August 2026, Month 7): $2,200
+- Flights (AKL → MEL return): $600
+- Accommodation (3 nights): $800
+- Registration: $800
 
 ---
 
-### Hardware & Equipment (Months 1, 4)
+### Hardware & Equipment (Separate Eligible Cost, NOT CapDev)
 
 **Capital Equipment:** $5,750 (Year 1 depreciation: $1,567)
 - RTX 4090 GPU Workstation ($3,500, Month 4): Local safety regression testing, rapid iteration on refusal scaffolds, latency profiling
