@@ -96,12 +96,80 @@
 
 ---
 
+### Item 9: BMC Primary Care ✅ RECOMMENDED
+**Headline**: Clinical decision support increases primary care clinician confidence in managing cognitive impairment care but not confidence to diagnose
+
+**Summary**: Study in 38 primary care clinics shows CDS tools increase GP confidence in managing cognitive impairment care (though not diagnosis confidence). 32% remembered the tool, 65% of those used it, and 97% of users said it helped provide better CI care.
+
+**Link**: https://bmcprimcare.biomedcentral.com/articles/10.1186/s12875-025-03053-z
+
+**Notes**: ✅ Highly GP-relevant — Primary care focus, clinical decision support, common GP issue. Not vendor-focused. High engagement potential.
+
+---
+
+### Item 10: Medscape ✅ RECOMMENDED
+**Headline**: Clinical Decision Support Tool May Improve ACEI and ARB Use in CKD
+
+**Summary**: CDS tool may improve underutilized ACEI/ARB prescribing in chronic kidney disease. ACEI and ARB use in CKD has been available for over three decades but is still underutilized.
+
+**Link**: https://www.medscape.com/viewarticle/clinical-decision-support-tool-may-improve-acei-and-arb-use-2025a1000vje
+
+**Notes**: ✅ Highly GP-relevant — CKD management is common in GP practice; ACEI/ARB prescribing is routine GP work. Clinical focus, not vendor-focused. High engagement potential. Note: Medscape may require login.
+
+---
+
+### Item 11: The Post ❌ EXCLUDED
+**Headline**: Long and short of it: Investors are turning to healthcare as economic clouds gather
+
+**Link**: https://www.thepost.co.nz/business/360884363/long-and-short-it-investors-are-turning-healthcare-economic-clouds-gather
+
+**Notes**: ❌ Investment/finance focused, not GP-relevant. Won't generate GP engagement.
+
+---
+
+### Item 12: IT Brief ❌ EXCLUDED
+**Headline**: Exclusive: Accenture NZ's Dr Will Reedy reveals how AI is reshaping healthcare
+
+**Link**: https://itbrief.co.nz/story/exclusive-accenture-nz-s-dr-will-reedy-reveals-how-ai-is-reshaping-healthcare
+
+**Notes**: ❌ VENDOR-FOCUSED — Accenture consultancy promoting AI services. HIGH RISK — Will attract AI tool vendors (exactly what Week 1 showed to avoid).
+
+---
+
+### Item 13: Yahoo News ❌ EXCLUDED
+**Headline**: Founder admits AI transcription startup...
+
+**Link**: https://nz.news.yahoo.com/founder-admits-ai-transcription-startup-162025214.html
+
+**Notes**: ❌ VENDOR-FOCUSED — Startup founder discussing product. HIGH RISK — Will attract vendors, not GPs.
+
+---
+
+### Item 14: MedTechIQ ⚠️ BORDERLINE
+**Headline**: Preserving our Heritage in the Light of Innovation: Pacific Data Sovereignty and AI
+
+**Link**: https://www.medtechiq.co.nz/news/preserving-our-heritage-in-the-light-of-innovation-pacific-data-sovereignty-and-ai
+
+**Notes**: ⚠️ Important topic but not directly GP practice-relevant. SKIP unless need filler content.
+
+---
+
+### Item 15: NZ Herald ⚠️ BORDERLINE
+**Headline**: Space tech, smart sensors and AI drive new hope for cerebral palsy
+
+**Link**: https://www.nzherald.co.nz/nz/space-tech-smart-sensors-and-ai-drive-new-hope-for-cerebral-palsy/UOINB5GR6VEOVJ5IJBSYPLQARA/
+
+**Notes**: ⚠️ Interesting innovation story but not directly GP practice-relevant. SKIP unless need 4th-5th item.
+
+---
+
 ## Content Theme (Draft)
 
-**Theme**: [To be determined once all articles collected - possibly AI in healthcare, scribe technology, etc.]
+**Theme**: "Clinical Decision Support Tools in Primary Care" (recommended based on new article evaluation)
 
 **Hook Ideas**:
-- [To be written once theme is clear]
+- "Two new studies show how clinical decision support tools can help GPs manage common conditions — but are they working in your practice?"
+- "Clinical decision support tools are showing promise for cognitive impairment and CKD management. Are they making a difference in your practice?"
 
 ---
 
@@ -298,15 +366,79 @@ Four practical principles: Consent, Check, Privacy, Secure
 
 ## Article Evaluation Notes
 
-**Status**: Articles collected, not yet evaluated
+**Status**: Articles evaluated 2025-11-15
+
+### New Articles Evaluated (2025-11-15)
+
+#### ✅ **INCLUDE** (2 articles):
+
+**1. BMC Primary Care: Clinical Decision Support for Cognitive Impairment**
+- **URL**: https://bmcprimcare.biomedcentral.com/articles/10.1186/s12875-025-03053-z
+- **Headline**: Clinical decision support increases primary care clinician confidence in managing cognitive impairment
+- **Summary**: Study shows CDS tools increase GP confidence in managing cognitive impairment care (though not diagnosis confidence). Highly relevant to primary care practice.
+- **GP Relevance**: HIGH — Cognitive impairment is common in GP practice; CDS tools directly relevant
+- **Engagement Potential**: High — GPs can discuss their experience with CDS tools, cognitive screening
+- **Risk**: Low — Research-focused but primary care context makes it accessible
+
+**2. Medscape: Clinical Decision Support for ACEI/ARB in CKD**
+- **URL**: https://www.medscape.com/viewarticle/clinical-decision-support-tool-may-improve-acei-and-arb-use-2025a1000vje
+- **Headline**: Clinical Decision Support Tool May Improve ACEI and ARB Use in CKD
+- **Summary**: CDS tool may improve underutilized ACEI/ARB prescribing in chronic kidney disease. CKD management is routine GP work.
+- **GP Relevance**: HIGH — ACEI/ARB prescribing is routine GP work; underutilization is a known issue
+- **Engagement Potential**: High — GPs can discuss prescribing patterns, CDS tools, barriers to optimal prescribing
+- **Risk**: Low — Clinical focus, not vendor-focused
+- **Note**: Medscape may require login, but content is highly relevant
+
+#### ❌ **EXCLUDE** (3 articles):
+
+**1. The Post: Investment Trends in Healthcare**
+- **URL**: https://www.thepost.co.nz/business/360884363/long-and-short-it-investors-are-turning-healthcare-economic-clouds-gather
+- **Reason**: Investment/finance focused, not directly relevant to GP practice
+- **Risk**: Won't generate GP engagement; attracts wrong audience
+
+**2. IT Brief: Accenture AI in Healthcare**
+- **URL**: https://itbrief.co.nz/story/exclusive-accenture-nz-s-dr-will-reedy-reveals-how-ai-is-reshaping-healthcare
+- **Reason**: VENDOR-FOCUSED — Accenture is a consultancy promoting AI services
+- **Risk**: HIGH — Will attract AI tool vendors (exactly what Week 1 showed we need to avoid)
+
+**3. Yahoo News: AI Transcription Startup**
+- **URL**: https://nz.news.yahoo.com/founder-admits-ai-transcription-startup-162025214.html
+- **Reason**: VENDOR-FOCUSED — Startup founder discussing their product
+- **Risk**: HIGH — Will attract AI tool vendors and startup founders, not GPs
+
+#### ⚠️ **BORDERLINE** (2 articles):
+
+**1. MedTechIQ: Pacific Data Sovereignty and AI**
+- **URL**: https://www.medtechiq.co.nz/news/preserving-our-heritage-in-the-light-of-innovation-pacific-data-sovereignty-and-ai
+- **Reason**: Important topic but not directly GP practice-relevant
+- **Recommendation**: SKIP unless you need filler content
+
+**2. NZ Herald: Cerebral Palsy Research**
+- **URL**: https://www.nzherald.co.nz/nz/space-tech-smart-sensors-and-ai-drive-new-hope-for-cerebral-palsy/UOINB5GR6VEOVJ5IJBSYPLQARA/
+- **Reason**: Interesting innovation story but not directly GP practice-relevant
+- **Recommendation**: SKIP unless you need a 4th-5th item
+
+### Recommended Articles for This Week's Post
+
+**Theme**: "Clinical Decision Support Tools in Primary Care"
+
+**Include 2 articles**:
+1. BMC Primary Care (cognitive impairment CDS)
+2. Medscape (ACEI/ARB CDS for CKD)
+
+**Why these two**:
+- Both are highly GP-relevant (primary care, clinical decision support)
+- Both address common GP practice issues
+- Both are not vendor-focused (research/clinical focus)
+- Both have high engagement potential
+- Thematic coherence — both about clinical decision support tools
 
 **Next Steps**:
-1. Continue collecting articles through the week
-2. Use article evaluation prompt (created 2025-11-10) to assess quality
-3. Select top 3-5 articles for final post
-4. Draft post content
-5. Create image
-6. Post Tuesday-Thursday, 8-9am or 5-6pm NZST
+1. ✅ Articles evaluated (2025-11-15)
+2. Select final 2-3 articles for post (recommend: the 2 CDS articles above)
+3. Draft post content with theme: "Clinical Decision Support Tools in Primary Care"
+4. Create image
+5. Post Tuesday-Thursday, 8-9am or 5-6pm NZST
 
 ---
 
