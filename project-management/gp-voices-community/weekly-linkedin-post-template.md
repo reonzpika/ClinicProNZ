@@ -80,7 +80,7 @@
 
 **Title**: "This Week in NZ General Practice: [Theme] Edition"
 
-**Nano Banana Prompt**: See `linkedin-weekly-workflow.md` section 3.
+**Nano Banana Prompt**: See `linkedin-content-strategy.md` section "3. Create Image (Nano Banana)".
 
 ---
 

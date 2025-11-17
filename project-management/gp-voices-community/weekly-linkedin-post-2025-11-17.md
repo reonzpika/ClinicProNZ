@@ -2,42 +2,38 @@
 
 **Week Ending**: 2025-11-17  
 **Date Created**: 2025-11-10  
-**Status**: Collecting Articles
+**Status**: Ready to Post
 
 ---
 
 ## Curated News Items
 
-### Item 1: Reseller News
+### Item 1: Reseller News ✅ INCLUDED (MAIN FOCUS)
 **Headline**: NZ govt rolls out AI scribe tool to doctors, despite concerns
 
-**Summary**: [To be written - Government deploying AI medical scribe despite concerns]
+**Summary**: The New Zealand government is rolling out an AI scribe tool to 1,000 doctors and frontline staff in emergency departments nationwide. Health Minister Simeon Brown says this initiative aims to reduce time spent on paperwork, enabling clinicians to focus on patient care. The AI scribe securely records consultations and generates draft clinical notes, referrals, and follow-up summaries tailored to NZ's clinical language and systems, meeting privacy standards with strong security protections. Positive results from pilots in Hawke's Bay and Whanganui led to the nationwide rollout. The technology has already been used in some primary care settings, with most healthcare providers reporting it is helpful and saves significant time (30 minutes to 2 hours per day for many users). However, some users found the editing and correction of AI-generated notes time-consuming and expressed concerns about note accuracy, completeness, and conciseness. Criticisms include deployment while regulations and guidelines are still evolving, data privacy/security risks—especially with international cloud storage—and Māori data sovereignty concerns. Only 66% of surveyed providers read the software's terms and conditions, and just 59% sought patient consent.
 
 **Link**: https://www.reseller.co.nz/article/4087164/nz-govt-rolls-out-ai-scribe-tool-to-doctors-despite-concerns.html
 
-**Notes**: AI scribe rollout by NZ government - likely high relevance for GPs using or considering scribe tools
+**Notes**: ✅ MAIN FOCUS - Follow-up from last week's news. Highly relevant for GPs using or considering scribe tools. Includes both positives and concerns.
 
 ---
 
-### Item 2: NZ City
-**Headline**: [Headline to be extracted from article]
-
-**Summary**: [To be written]
+### Item 2: NZ City ❌ EXCLUDED
+**Headline**: AI is beating doctors at empathy – because we've turned doctors into robots
 
 **Link**: https://home.nzcity.co.nz/news/article.aspx?id=433630
 
-**Notes**: [To be reviewed]
+**Notes**: ❌ EXCLUDED - User decided not to include empathy article. Article discusses burnout and system issues but less directly actionable than other items.
 
 ---
 
-### Item 3: EurekAlert
-**Headline**: [Headline to be extracted from article]
-
-**Summary**: [To be written]
+### Item 3: EurekAlert ❌ EXCLUDED
+**Headline**: [Could not access - request blocked]
 
 **Link**: https://www.eurekalert.org/news-releases/1104853
 
-**Notes**: International research/news source - need to evaluate NZ relevance
+**Notes**: ❌ EXCLUDED - Could not access article (request blocked). Unable to evaluate.
 
 ---
 
@@ -96,25 +92,25 @@
 
 ---
 
-### Item 9: BMC Primary Care ✅ RECOMMENDED
+### Item 9: BMC Primary Care ✅ INCLUDED
 **Headline**: Clinical decision support increases primary care clinician confidence in managing cognitive impairment care but not confidence to diagnose
 
 **Summary**: Study in 38 primary care clinics shows CDS tools increase GP confidence in managing cognitive impairment care (though not diagnosis confidence). 32% remembered the tool, 65% of those used it, and 97% of users said it helped provide better CI care.
 
 **Link**: https://bmcprimcare.biomedcentral.com/articles/10.1186/s12875-025-03053-z
 
-**Notes**: ✅ Highly GP-relevant — Primary care focus, clinical decision support, common GP issue. Not vendor-focused. High engagement potential.
+**Notes**: ✅ INCLUDED - Highly GP-relevant — Primary care focus, clinical decision support, common GP issue. Not vendor-focused. High engagement potential. [International]
 
 ---
 
-### Item 10: Medscape ✅ RECOMMENDED
+### Item 10: Medscape ✅ INCLUDED
 **Headline**: Clinical Decision Support Tool May Improve ACEI and ARB Use in CKD
 
 **Summary**: CDS tool may improve underutilized ACEI/ARB prescribing in chronic kidney disease. ACEI and ARB use in CKD has been available for over three decades but is still underutilized.
 
 **Link**: https://www.medscape.com/viewarticle/clinical-decision-support-tool-may-improve-acei-and-arb-use-2025a1000vje
 
-**Notes**: ✅ Highly GP-relevant — CKD management is common in GP practice; ACEI/ARB prescribing is routine GP work. Clinical focus, not vendor-focused. High engagement potential. Note: Medscape may require login.
+**Notes**: ✅ INCLUDED - Highly GP-relevant — CKD management is common in GP practice; ACEI/ARB prescribing is routine GP work. Clinical focus, not vendor-focused. High engagement potential. Note: Medscape may require login. [International]
 
 ---
 
@@ -163,34 +159,64 @@
 
 ---
 
-## Content Theme (Draft)
+## Content Theme
 
-**Theme**: "Clinical Decision Support Tools in Primary Care" (recommended based on new article evaluation)
+**Theme**: "AI Tools Reshaping NZ General Practice" 
 
-**Hook Ideas**:
-- "Two new studies show how clinical decision support tools can help GPs manage common conditions — but are they working in your practice?"
-- "Clinical decision support tools are showing promise for cognitive impairment and CKD management. Are they making a difference in your practice?"
+**Hook**: "🇳🇿 **BREAKING: NZ government rolls out AI scribe to 1,000 doctors nationwide** — Follow-up from last week's news"
 
 ---
 
-## LinkedIn Post Draft
+## LinkedIn Post Draft (FINAL)
 
 ```
-[Draft to be written once all articles collected and theme is clear]
+🇳🇿 **BREAKING: NZ government rolls out AI scribe to 1,000 doctors nationwide** — Follow-up from last week's news
 
 📰 **This Week in NZ General Practice**
 
-• **[Item 1 Headline]** - [Brief 1 sentence summary]
+🇳🇿 **NZ government rolls out AI scribe tool to 1,000 doctors and frontline staff in emergency departments nationwide**
 
-• **[Item 2 Headline]** - [Brief 1 sentence summary]
+Health Minister Simeon Brown says this initiative aims to reduce time spent on paperwork, enabling clinicians to focus on patient care.
 
-• **[Item 3 Headline]** - [Brief 1 sentence summary]
+✅ **The positives**: 
+• Secure recording of consultations with draft clinical notes, referrals, and follow-up summaries tailored to NZ's clinical language and systems
+• Strong security protections meeting privacy standards
+• Positive results from pilots in Hawke's Bay and Whanganui led to nationwide rollout
+• Already used in some primary care settings — most providers report it's helpful and saves 30 minutes to 2 hours per day
+
+⚠️ **The concerns**:
+• Some users found editing and correcting AI-generated notes time-consuming
+• Concerns about note accuracy, completeness, and conciseness
+• Deployment happening while regulations and guidelines are still evolving
+• Data privacy/security risks — especially with international cloud storage
+• Māori data sovereignty concerns
+• Only 66% of surveyed providers read the software's terms and conditions
+• Just 59% sought patient consent
+
+The government will continue exploring further digital opportunities to support healthcare.
 
 ---
 
-**The big picture**: [1-2 sentences: Common theme or takeaway]
+🌍 **Clinical decision support increases GP confidence in managing cognitive impairment** 
+Study in 38 primary care clinics found CDS tools increased confidence in managing cognitive impairment care. 97% of users said it helped provide better care. Are CDS tools making a difference in your practice?
 
-**[Engagement question for GPs]** Share your experience in the comments 👇
+🌍 **CDS tool may improve ACEI/ARB prescribing in chronic kidney disease** 
+Despite being available for over three decades, ACEI and ARB use in CKD is still underutilized. A new clinical decision support tool aims to address this gap. What barriers are you seeing to optimal prescribing?
+
+🇳🇿 **Medtech ALEX webinars now available on demand** 
+Medtech Global has released a series of webinars featuring their ALEX API Integration Partners, covering innovations like clinical documentation, SR Referrals integration, and mobile access. Useful for GPs using Medtech systems.
+
+🇳🇿 **Official AI guidance for NZ GPs released** 
+Three organisations have released guidance:
+  ✅ **Medical Council of New Zealand**: Mandatory informed consent when AI affects patient care, robust frameworks, privacy protections, equitable outcomes (including Māori considerations)
+  ✅ **Pinnacle Practices**: Four principles — Consent, Check, Privacy, Secure — with practical recommendations
+  ✅ **Te Whatu Ora / NAIAEAG**: Generative AI/LLMs should NOT be used for clinical decision-making without explicit approval
+
+---
+
+💡 **The big picture**: The AI scribe rollout is happening now — 1,000 doctors are getting access. While it saves time for many, concerns about accuracy, consent, and data sovereignty need addressing. International research shows CDS tools can help, while NZ-specific guidance provides the framework for safe implementation. The key? Clear policies, clinical oversight, and protecting both patient safety and the human element of care.
+
+❓ **Are you using AI scribe tools or clinical decision support in your practice?** What's working — or not working — for you? How are you handling patient consent and ensuring note accuracy? Share your experience 👇
 
 ---
 
@@ -199,15 +225,15 @@
 ---
 
 **References:**
-1. NZ govt AI scribe rollout: https://www.reseller.co.nz/article/4087164/nz-govt-rolls-out-ai-scribe-tool-to-doctors-despite-concerns.html
-2. [Item 2]: https://home.nzcity.co.nz/news/article.aspx?id=433630
-3. [Item 3]: https://www.eurekalert.org/news-releases/1104853
-4. AI policy for practices: https://www.pharmacytoday.co.nz/article/opinion/putting-ai-policy-place-protects-you-and-your-practice
-5. ProCare innovation award: https://www.nzdoctor.co.nz/article/undoctored/procare-wins-2025-cooperative-business-new-zealand-innovation-award
+1. 🇳🇿 NZ govt AI scribe rollout: https://www.reseller.co.nz/article/4087164/nz-govt-rolls-out-ai-scribe-tool-to-doctors-despite-concerns.html
+2. 🌍 Cognitive impairment CDS study: https://bmcprimcare.biomedcentral.com/articles/10.1186/s12875-025-03053-z
+3. 🌍 ACEI/ARB CDS for CKD: https://www.medscape.com/viewarticle/clinical-decision-support-tool-may-improve-acei-and-arb-use-2025a1000vje
+4. 🇳🇿 Medtech ALEX webinars: https://www.linkedin.com/posts/medtech-global_medtechglobal-medtechalex-healthcareinnovation-activity-7394163120484782080-7lPy
+5. 🇳🇿 Official AI guidance: Medical Council of New Zealand, Pinnacle Practices (April 2025), Te Whatu Ora / NAIAEAG
 
-[@Mentions - to be selected]
+[@Mentions - consider: @RNZCGP, @BPAC NZ, @Medical Council of New Zealand, @Health New Zealand - Te Whatu Ora, @Pinnacle Practices, @Medtech Global if they have LinkedIn]
 
-[#Hashtags - to be selected]
+#PrimaryCareNZ #GeneralPractice #AIinHealth #AIScribe #ClinicalDecisionSupport #DigitalHealthNZ #GPsNZ #HealthTechNZ #CKD #CognitiveImpairment #MedicalCouncilNZ #TeWhatuOra #MedtechALEX
 ```
 
 ---
@@ -360,7 +386,7 @@ Four practical principles: Consent, Check, Privacy, Secure
 
 **Title**: "This Week in NZ General Practice: [Theme] Edition"
 
-**Nano Banana Prompt**: See `linkedin-weekly-workflow.md` section 3.
+**Nano Banana Prompt**: See `linkedin-content-strategy.md` section "3. Create Image (Nano Banana)".
 
 ---
 
@@ -444,17 +470,25 @@ Four practical principles: Consent, Check, Privacy, Secure
 
 ## Posting Checklist
 
-- [ ] Article collection complete (aim for 5-7 articles, select best 3-5)
-- [ ] Articles evaluated using quality assessment prompt
-- [ ] Post content finalized
+- [x] Article collection complete (5 articles selected)
+- [x] Articles evaluated using quality assessment prompt
+- [x] Post content finalized
 - [ ] Image created
-- [ ] References verified
-- [ ] Mentions selected (2-4)
-- [ ] Hashtags selected (5-8)
+- [x] References verified
+- [x] Mentions selected (6 suggested)
+- [x] Hashtags selected (12 hashtags)
 - [ ] Post scheduled/posted (Tuesday-Thursday, 8-9am or 5-6pm NZST)
 - [ ] Engagement monitoring set up
 - [ ] Metrics logged in `linkedin-post-log.md`
 
+## Articles Included in Final Post
+
+1. 🇳🇿 NZ govt AI scribe rollout (MAIN FOCUS - follow-up from last week)
+2. 🌍 Cognitive impairment CDS study (International)
+3. 🌍 ACEI/ARB CDS for CKD (International)
+4. 🇳🇿 Medtech ALEX webinars (NZ)
+5. 🇳🇿 Official AI guidance summary (NZ - MCNZ, Pinnacle Practices, Te Whatu Ora)
+
 ---
 
-*Week 2 LinkedIn post - collecting articles*
+*Week 2 LinkedIn post - Ready to post. Final post created 2025-11-15*
