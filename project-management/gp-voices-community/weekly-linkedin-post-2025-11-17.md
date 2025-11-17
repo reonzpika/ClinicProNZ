@@ -8,14 +8,14 @@
 
 ## Curated News Items
 
-### Item 1: Reseller News ✅ INCLUDED (MAIN FOCUS)
+### Item 1: Reseller News ❌ EXCLUDED
 **Headline**: NZ govt rolls out AI scribe tool to doctors, despite concerns
 
 **Summary**: The New Zealand government is rolling out an AI scribe tool to 1,000 doctors and frontline staff in emergency departments nationwide. Health Minister Simeon Brown says this initiative aims to reduce time spent on paperwork, enabling clinicians to focus on patient care. The AI scribe securely records consultations and generates draft clinical notes, referrals, and follow-up summaries tailored to NZ's clinical language and systems, meeting privacy standards with strong security protections. Positive results from pilots in Hawke's Bay and Whanganui led to the nationwide rollout. The technology has already been used in some primary care settings, with most healthcare providers reporting it is helpful and saves significant time (30 minutes to 2 hours per day for many users). However, some users found the editing and correction of AI-generated notes time-consuming and expressed concerns about note accuracy, completeness, and conciseness. Criticisms include deployment while regulations and guidelines are still evolving, data privacy/security risks—especially with international cloud storage—and Māori data sovereignty concerns. Only 66% of surveyed providers read the software's terms and conditions, and just 59% sought patient consent.
 
 **Link**: https://www.reseller.co.nz/article/4087164/nz-govt-rolls-out-ai-scribe-tool-to-doctors-despite-concerns.html
 
-**Notes**: ✅ MAIN FOCUS - Follow-up from last week's news. Highly relevant for GPs using or considering scribe tools. Includes both positives and concerns.
+**Notes**: ❌ EXCLUDED - User requested removal. Was follow-up from last week's Beehive announcement.
 
 ---
 
@@ -48,14 +48,14 @@
 
 ---
 
-### Item 5: NZ Doctor ⚠️ PAYWALLED
+### Item 5: NZ Doctor ✅ INCLUDED
 **Headline**: ProCare wins 2025 Cooperative Business New Zealand Innovation Award
 
-**Summary**: Leading healthcare provider ProCare recognised for transforming primary care through technology, partnerships, and smarter systems.
+**Summary**: Leading healthcare provider ProCare has been named the winner of the 2025 Cooperative Business New Zealand Innovation Award, recognising its bold approach to transforming primary care through technology, partnerships, and smarter systems.
 
 **Link**: https://www.nzdoctor.co.nz/article/undoctored/procare-wins-2025-cooperative-business-new-zealand-innovation-award
 
-**Notes**: ⚠️ **PAYWALLED** - Article is behind a subscription paywall. Not suitable for LinkedIn post (readers can't access). Good news story but need alternative or mention without link.
+**Notes**: ✅ INCLUDED - Not paywalled. ProCare recognised for innovation in primary care transformation through technology. Relevant to GPs interested in practice innovation. [NZ]
 
 ---
 
@@ -161,28 +161,24 @@
 
 ## Content Theme
 
-**Theme**: "Specialist AI Tools vs General Tools - Watch the Space" 
+**Theme**: "Specialist AI Tools Showing Promise" 
 
-**Hook**: "Last week's AI scribe announcement is rolling out — but are specialist AI tools the better path for GPs?"
+**Hook**: "Are specialist AI tools the better path for GPs? Evidence is emerging."
 
 ---
 
 ## LinkedIn Post Draft (FINAL)
 
 ```
-Last week's AI scribe announcement is rolling out — but are specialist AI tools the better path for GPs?
+Are specialist AI tools the better path for GPs? Evidence is emerging.
 
 📰 **This Week in NZ General Practice**
 
-🇳🇿 **AI scribe rollout update: Mixed results as 1,000 doctors get access**
+🇳🇿 **ProCare wins Innovation Award for transforming primary care through technology**
 
-Last week's announcement: https://www.beehive.govt.nz/release/ai-scribe-speed-emergency-care-patients
+Leading healthcare provider ProCare has been named winner of the 2025 Cooperative Business New Zealand Innovation Award. Recognised for transforming primary care through technology, partnerships, and smarter systems. Shows how innovation in primary care can deliver real results.
 
-This week's follow-up: https://www.reseller.co.nz/article/4087164/nz-govt-rolls-out-ai-scribe-tool-to-doctors-despite-concerns.html
-
-✅ **Positives**: Most providers report it saves 30 minutes to 2 hours per day. Positive pilot results led to nationwide rollout.
-
-⚠️ **Concerns**: Editing AI notes is time-consuming. Note accuracy issues. Only 66% read terms, 59% sought consent. Data privacy/sovereignty risks. Deployment while regulations still evolving.
+https://www.nzdoctor.co.nz/article/undoctored/procare-wins-2025-cooperative-business-new-zealand-innovation-award
 
 ---
 
@@ -202,7 +198,7 @@ https://www.medscape.com/viewarticle/clinical-decision-support-tool-may-improve-
 
 ---
 
-💡 **The big picture**: General-purpose AI scribe shows mixed results. Specialist tools for specific tasks (cognitive impairment, CKD prescribing) show stronger outcomes. Pattern? Tools built for specific workflows perform better. **Specialist AI tools may be the way to go — watch this space.**
+💡 **The big picture**: Specialist AI tools for specific clinical tasks (cognitive impairment, CKD prescribing) show stronger outcomes than general-purpose tools. Pattern? Tools built for specific workflows perform better. **Specialist AI tools may be the way to go — watch this space.**
 
 ❓ **Using AI tools in your practice?** General-purpose or specialist? What's working? Share your experience 👇
 
@@ -210,7 +206,7 @@ https://www.medscape.com/viewarticle/clinical-decision-support-tool-may-improve-
 
 💡 **Weekly series** — Curating the most relevant NZ healthcare news for GPs. Follow for updates on general practice in Aotearoa.
 
-#PrimaryCareNZ #GeneralPractice #AIinHealth #AIScribe #ClinicalDecisionSupport #DigitalHealthNZ #GPsNZ #HealthTechNZ #CKD #CognitiveImpairment #SpecialistAI
+#PrimaryCareNZ #GeneralPractice #AIinHealth #ClinicalDecisionSupport #DigitalHealthNZ #GPsNZ #HealthTechNZ #CKD #CognitiveImpairment #SpecialistAI #InnovationNZ
 ```
 
 ---
@@ -460,11 +456,11 @@ Four practical principles: Consent, Check, Privacy, Secure
 
 ## Articles Included in Final Post
 
-1. 🇳🇿 NZ govt AI scribe rollout (MAIN FOCUS - follow-up to Beehive announcement from last week)
+1. 🇳🇿 ProCare Innovation Award (NZ) - Primary care innovation recognition
 2. 🌍 Cognitive impairment CDS study (International) - Specialist tool example
 3. 🌍 ACEI/ARB CDS for CKD (International) - Specialist tool example
 
-**Theme**: Specialist AI tools vs general-purpose tools - watch the space
+**Theme**: Specialist AI tools showing promise - watch the space
 
 ---
 
