@@ -161,62 +161,62 @@
 
 ## Content Theme
 
-**Theme**: "AI Tools Reshaping NZ General Practice" 
+**Theme**: "Specialist AI Tools vs General Tools - Watch the Space" 
 
-**Hook**: "🇳🇿 **BREAKING: NZ government rolls out AI scribe to 1,000 doctors nationwide** — Follow-up from last week's news"
+**Hook**: "Last week's AI scribe announcement is rolling out — but are specialist AI tools the better path for GPs?"
 
 ---
 
 ## LinkedIn Post Draft (FINAL)
 
 ```
-🇳🇿 **BREAKING: NZ government rolls out AI scribe to 1,000 doctors nationwide** — Follow-up from last week's news
+Last week's AI scribe announcement is rolling out — but are specialist AI tools the better path for GPs?
 
 📰 **This Week in NZ General Practice**
 
-🇳🇿 **NZ government rolls out AI scribe tool to 1,000 doctors and frontline staff in emergency departments nationwide**
+🇳🇿 **AI scribe rollout update: Concerns emerge as 1,000 doctors get access**
 
-Health Minister Simeon Brown says this initiative aims to reduce time spent on paperwork, enabling clinicians to focus on patient care.
+Last week, Health Minister Simeon Brown announced the AI scribe rollout to speed up emergency care (see original announcement below). This week, details are emerging — and it's a mixed picture.
 
 ✅ **The positives**: 
-• Secure recording of consultations with draft clinical notes, referrals, and follow-up summaries tailored to NZ's clinical language and systems
-• Strong security protections meeting privacy standards
+• Most providers report it's helpful and saves 30 minutes to 2 hours per day
+• Secure recording with draft notes tailored to NZ's clinical language and systems
 • Positive results from pilots in Hawke's Bay and Whanganui led to nationwide rollout
-• Already used in some primary care settings — most providers report it's helpful and saves 30 minutes to 2 hours per day
 
 ⚠️ **The concerns**:
 • Some users found editing and correcting AI-generated notes time-consuming
 • Concerns about note accuracy, completeness, and conciseness
-• Deployment happening while regulations and guidelines are still evolving
-• Data privacy/security risks — especially with international cloud storage
-• Māori data sovereignty concerns
 • Only 66% of surveyed providers read the software's terms and conditions
 • Just 59% sought patient consent
+• Data privacy/security risks — especially with international cloud storage
+• Māori data sovereignty concerns
+• Deployment happening while regulations and guidelines are still evolving
 
-The government will continue exploring further digital opportunities to support healthcare.
+**Original announcement**: https://www.beehive.govt.nz/release/ai-scribe-speed-emergency-care-patients
 
----
-
-🌍 **Clinical decision support increases GP confidence in managing cognitive impairment** 
-Study in 38 primary care clinics found CDS tools increased confidence in managing cognitive impairment care. 97% of users said it helped provide better care. Are CDS tools making a difference in your practice?
-
-🌍 **CDS tool may improve ACEI/ARB prescribing in chronic kidney disease** 
-Despite being available for over three decades, ACEI and ARB use in CKD is still underutilized. A new clinical decision support tool aims to address this gap. What barriers are you seeing to optimal prescribing?
-
-🇳🇿 **Medtech ALEX webinars now available on demand** 
-Medtech Global has released a series of webinars featuring their ALEX API Integration Partners, covering innovations like clinical documentation, SR Referrals integration, and mobile access. Useful for GPs using Medtech systems.
-
-🇳🇿 **Official AI guidance for NZ GPs released** 
-Three organisations have released guidance:
-  ✅ **Medical Council of New Zealand**: Mandatory informed consent when AI affects patient care, robust frameworks, privacy protections, equitable outcomes (including Māori considerations)
-  ✅ **Pinnacle Practices**: Four principles — Consent, Check, Privacy, Secure — with practical recommendations
-  ✅ **Te Whatu Ora / NAIAEAG**: Generative AI/LLMs should NOT be used for clinical decision-making without explicit approval
+**Follow-up coverage**: https://www.reseller.co.nz/article/4087164/nz-govt-rolls-out-ai-scribe-tool-to-doctors-despite-concerns.html
 
 ---
 
-💡 **The big picture**: The AI scribe rollout is happening now — 1,000 doctors are getting access. While it saves time for many, concerns about accuracy, consent, and data sovereignty need addressing. International research shows CDS tools can help, while NZ-specific guidance provides the framework for safe implementation. The key? Clear policies, clinical oversight, and protecting both patient safety and the human element of care.
+🌍 **Specialist AI tools showing promise: Clinical decision support for cognitive impairment**
 
-❓ **Are you using AI scribe tools or clinical decision support in your practice?** What's working — or not working — for you? How are you handling patient consent and ensuring note accuracy? Share your experience 👇
+While general-purpose AI scribes face challenges, specialist AI tools designed for specific clinical tasks are showing strong results. A study in 38 primary care clinics found CDS tools increased GP confidence in managing cognitive impairment care. 97% of users said it helped provide better care. The difference? These tools are purpose-built for a specific clinical workflow, not trying to do everything.
+
+**Study**: https://bmcprimcare.biomedcentral.com/articles/10.1186/s12875-025-03053-z
+
+---
+
+🌍 **Another specialist tool: CDS for ACEI/ARB prescribing in CKD**
+
+Despite being available for over three decades, ACEI and ARB use in CKD is still underutilized. A new clinical decision support tool specifically designed for this prescribing decision aims to address this gap. Specialist tools focus on one problem well, rather than trying to solve everything.
+
+**Study**: https://www.medscape.com/viewarticle/clinical-decision-support-tool-may-improve-acei-and-arb-use-2025a1000vje
+
+---
+
+💡 **The big picture**: The general-purpose AI scribe rollout is happening — but early feedback shows mixed results. Meanwhile, specialist AI tools designed for specific clinical tasks (like cognitive impairment management or CKD prescribing) are showing strong outcomes. The pattern? Tools built for a specific workflow perform better than tools trying to do everything. **Specialist AI tools may be the way to go — but we need to watch this space.**
+
+❓ **Are you using AI tools in your practice?** General-purpose scribes or specialist tools? What's working — or not working — for you? Share your experience 👇
 
 ---
 
@@ -225,15 +225,14 @@ Three organisations have released guidance:
 ---
 
 **References:**
-1. 🇳🇿 NZ govt AI scribe rollout: https://www.reseller.co.nz/article/4087164/nz-govt-rolls-out-ai-scribe-tool-to-doctors-despite-concerns.html
-2. 🌍 Cognitive impairment CDS study: https://bmcprimcare.biomedcentral.com/articles/10.1186/s12875-025-03053-z
-3. 🌍 ACEI/ARB CDS for CKD: https://www.medscape.com/viewarticle/clinical-decision-support-tool-may-improve-acei-and-arb-use-2025a1000vje
-4. 🇳🇿 Medtech ALEX webinars: https://www.linkedin.com/posts/medtech-global_medtechglobal-medtechalex-healthcareinnovation-activity-7394163120484782080-7lPy
-5. 🇳🇿 Official AI guidance: Medical Council of New Zealand, Pinnacle Practices (April 2025), Te Whatu Ora / NAIAEAG
+1. 🇳🇿 Original AI scribe announcement: https://www.beehive.govt.nz/release/ai-scribe-speed-emergency-care-patients
+2. 🇳🇿 AI scribe rollout concerns: https://www.reseller.co.nz/article/4087164/nz-govt-rolls-out-ai-scribe-tool-to-doctors-despite-concerns.html
+3. 🌍 Cognitive impairment CDS study: https://bmcprimcare.biomedcentral.com/articles/10.1186/s12875-025-03053-z
+4. 🌍 ACEI/ARB CDS for CKD: https://www.medscape.com/viewarticle/clinical-decision-support-tool-may-improve-acei-and-arb-use-2025a1000vje
 
-[@Mentions - consider: @RNZCGP, @BPAC NZ, @Medical Council of New Zealand, @Health New Zealand - Te Whatu Ora, @Pinnacle Practices, @Medtech Global if they have LinkedIn]
+[@Mentions - consider: @RNZCGP, @BPAC NZ, @Health New Zealand - Te Whatu Ora if they have LinkedIn]
 
-#PrimaryCareNZ #GeneralPractice #AIinHealth #AIScribe #ClinicalDecisionSupport #DigitalHealthNZ #GPsNZ #HealthTechNZ #CKD #CognitiveImpairment #MedicalCouncilNZ #TeWhatuOra #MedtechALEX
+#PrimaryCareNZ #GeneralPractice #AIinHealth #AIScribe #ClinicalDecisionSupport #DigitalHealthNZ #GPsNZ #HealthTechNZ #CKD #CognitiveImpairment #SpecialistAI
 ```
 
 ---
@@ -483,11 +482,11 @@ Four practical principles: Consent, Check, Privacy, Secure
 
 ## Articles Included in Final Post
 
-1. 🇳🇿 NZ govt AI scribe rollout (MAIN FOCUS - follow-up from last week)
-2. 🌍 Cognitive impairment CDS study (International)
-3. 🌍 ACEI/ARB CDS for CKD (International)
-4. 🇳🇿 Medtech ALEX webinars (NZ)
-5. 🇳🇿 Official AI guidance summary (NZ - MCNZ, Pinnacle Practices, Te Whatu Ora)
+1. 🇳🇿 NZ govt AI scribe rollout (MAIN FOCUS - follow-up to Beehive announcement from last week)
+2. 🌍 Cognitive impairment CDS study (International) - Specialist tool example
+3. 🌍 ACEI/ARB CDS for CKD (International) - Specialist tool example
+
+**Theme**: Specialist AI tools vs general-purpose tools - watch the space
 
 ---
 
