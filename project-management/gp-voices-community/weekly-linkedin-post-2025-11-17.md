@@ -51,11 +51,11 @@
 ### Item 5: NZ Doctor ✅ INCLUDED
 **Headline**: ProCare wins 2025 Cooperative Business New Zealand Innovation Award
 
-**Summary**: Leading healthcare provider ProCare has been named the winner of the 2025 Cooperative Business New Zealand Innovation Award, recognising its bold approach to transforming primary care through technology, partnerships, and smarter systems.
+**Summary**: ProCare has been named winner of the 2025 Cooperative Business New Zealand Innovation Award. The organisation is integrating AI tools, particularly an AI-powered medical scribe from Heidi Health, to ease GP workload and improve patient care. Key initiatives include: partnership with Heidi Health for AI medical scribe technology; Health Accelerator joint venture with Pegasus, Pinnacle, and Tū Ora Compass Health to fast-track AI solutions across 500+ practices; innovation award recognition; and "Using AI in Primary Care" online course for professional development.
 
 **Link**: https://www.nzdoctor.co.nz/article/undoctored/procare-wins-2025-cooperative-business-new-zealand-innovation-award
 
-**Notes**: ✅ INCLUDED - Not paywalled. ProCare recognised for innovation in primary care transformation through technology. Relevant to GPs interested in practice innovation. [NZ]
+**Notes**: ✅ INCLUDED - Not paywalled. ProCare recognised for innovation in primary care transformation through technology, including AI partnerships. Relevant to GPs interested in practice innovation and AI tools. [NZ]
 
 ---
 
@@ -174,9 +174,15 @@ Are specialist AI tools the better path for GPs? Evidence is emerging.
 
 📰 **This Week in NZ General Practice**
 
-🇳🇿 **ProCare wins Innovation Award for transforming primary care through technology**
+🇳🇿 **ProCare wins Innovation Award — integrating AI tools to transform primary care**
 
-Leading healthcare provider ProCare has been named winner of the 2025 Cooperative Business New Zealand Innovation Award. Recognised for transforming primary care through technology, partnerships, and smarter systems. Shows how innovation in primary care can deliver real results.
+ProCare has been named winner of the 2025 Cooperative Business New Zealand Innovation Award. The organisation is integrating AI tools, particularly an AI-powered medical scribe from Heidi Health, to ease GP workload and improve patient care.
+
+**Key initiatives**:
+• Partnership with Heidi Health: AI medical scribe transcribes patient-clinician conversations into clinical notes and referral letters, reducing administrative burden
+• Health Accelerator: Joint venture with Pegasus, Pinnacle, and Tū Ora Compass Health to fast-track AI and digital solutions across 500+ practices serving 2+ million patients
+• Innovation Award: Recognised for technology partnerships and digital platforms transforming primary care
+• Education: Provides "Using AI in Primary Care" online course for professional development
 
 https://www.nzdoctor.co.nz/article/undoctored/procare-wins-2025-cooperative-business-new-zealand-innovation-award
 
