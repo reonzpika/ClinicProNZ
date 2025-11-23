@@ -429,23 +429,73 @@ Build **modular foundation** supporting all approaches:
 
 ---
 
-## Objective 2: Admin Automation (Low Complexity / Low Risk)
+## Objective 2: Admin Automation + Lightweight Architecture Validation (Low Complexity / Low Risk)
 
 **Timeline:** Months 6-14 (Jun 2026 - Feb 2027)
 
-**Rationale:** Start with high-value, low-risk features to prove AI system works on simple tasks before tackling safety-critical clinical features. Build confidence and momentum.
+**Rationale:** Start with high-value, low-risk features to prove AI system works on simple tasks before tackling safety-critical clinical features. **Validate O1 hypothesis:** Simple classifiers sufficient for admin tasks. Build confidence and momentum.
 
 ---
 
-### **Core R&D Uncertainty**
+### **Core R&D Uncertainties**
 
-> Can AI accurately classify and process heterogeneous NZ administrative data (inbox items, hospital letters, normal results) with sufficient reliability for autonomous filing and triage?
+**Primary Uncertainty:**
+> Can AI accurately classify and process heterogeneous NZ administrative data (inbox items, hospital letters, normal results) with sufficient reliability for autonomous filing and triage using lightweight (cost-effective) architectures?
+
+**Secondary Uncertainties:**
+1. **Is simple classifier sufficient?** (O1 predicted BERT ≥90% - validate in production features)
+2. **What confidence threshold for auto-filing?** (95%? 98%? 99% - safety vs workload trade-off)
+3. **Do regional lab variations require format-specific models?** (or can one model handle all?)
+4. **Does auto-filing reduce cognitive load or create anxiety?** ("Did AI miss something?")
 
 **Why this is R&D:**
-- Regional variations in data formats (LabTests Auckland ≠ SCL ≠ Medlab)
-- Unstructured text from 20+ DHBs with different letter templates
-- Unknown: What confidence threshold is safe for auto-filing vs GP review?
-- Unknown: Can AI handle NZ-specific admin workflows (ACC forms, HealthPathways referrals)?
+- Unknown: Can lightweight approach scale from O1 PoC to full production features
+- Unknown: Real-world accuracy vs O1 synthetic data (expect 5-10pp drop)
+- Unknown: Optimal confidence thresholds for autonomous actions (not established in literature)
+- Unknown: GP acceptance of AI autonomous filing (human factors, not just technical)
+
+---
+
+### **Hypothesis-Driven Approach**
+
+**Primary Hypothesis (From O1):**
+> "Simple classifiers (BERT/DistilBERT) can achieve ≥90% accuracy for admin classification tasks at $0.002/request, making expensive LLMs unnecessary for low-risk features."
+
+**O2-Specific Hypotheses:**
+- **H1:** Inbox classification: BERT achieves ≥90% accuracy on real production inbox data (vs O1 synthetic)
+- **H2:** Auto-filing safety: 98% confidence threshold prevents inappropriate auto-filing (≤1% error rate)
+- **H3:** Regional normalization: Single model handles all NZ lab formats with <5% accuracy degradation
+- **H4:** Letter extraction: Rule-based parsing ≥85% accurate for NZ hospital letters (DHB templates are structured)
+
+**Architecture Validation in O2:**
+**Test:** Does O1's recommendation (simple classifiers) hold in production features?
+- Week 6-8: Deploy BERT for inbox triage
+- Week 9-10: Measure accuracy, cost, latency vs O1 predictions
+- Decision: If <90%, escalate to LLM; if ≥90%, confirm hypothesis
+
+---
+
+### **Technical Unknowns (O2 Will Resolve)**
+
+1. **Unknown:** Accuracy degradation from synthetic (O1) to real data (O2)?
+   - O1 used clean synthetic data → O2 uses messy real inbox items
+   - Hypothesis: 5-10pp drop expected
+   - How we'll find out: Compare O1 BERT (on synthetic) vs O2 BERT (on real Medtech sandbox data)
+
+2. **Unknown:** Optimal auto-filing confidence threshold?
+   - Too high (99%): Saves little GP time (most items flagged for review)
+   - Too low (90%): Risk of inappropriate filing (miss urgent items)
+   - How we'll find out: A/B test thresholds (95%, 97%, 99%) in sandbox, measure false positives vs workload reduction
+
+3. **Unknown:** DHB letter format coverage?
+   - O1 tested 3 major labs → O2 adds 20+ DHB letter formats
+   - Some DHBs use unstructured letters (harder to parse)
+   - How we'll find out: Collect letter templates from all DHBs, test extraction accuracy per DHB
+
+4. **Unknown:** GP trust in auto-filing?
+   - Technical accuracy ≠ GP acceptance
+   - GPs may distrust AI, review all auto-filed items anyway (defeats purpose)
+   - How we'll find out: Sandbox usability testing with 5 GPs, measure actual review rates
 
 ---
 
@@ -617,14 +667,57 @@ Build **modular foundation** supporting all approaches:
 
 ---
 
+### **Failure Modes & Pivot Plans**
+
+**Failure 1: BERT accuracy <90% on real data (O1 hypothesis fails)**
+- **Diagnosis:** Which inbox types failing? (Letters vs labs vs referrals?)
+- **Pivot A:** Add contextual features (sender, subject line, patient history)
+- **Pivot B:** Escalate to small LLM (7B) - still cheaper than GPT-4
+- **Pivot C:** Use BERT for simple types (labs), LLM for complex (letters) - hybrid within O2
+
+**Failure 2: Auto-filing creates GP anxiety (technical success, human failure)**
+- **Diagnosis:** GP interviews reveal distrust despite 98% accuracy
+- **Pivot A:** Change to "suggested filing" (GP one-click approve, not autonomous)
+- **Pivot B:** Add explanation ("Filed as normal because HbA1c 38, within range 20-42")
+- **Pivot C:** Limit to specific item types (normal screening only, not all results)
+
+**Failure 3: Regional lab variations too extreme (>10% accuracy drop)**
+- **Diagnosis:** Which regions causing failures?
+- **Pivot A:** Build lab-specific parsers (one model per major lab)
+- **Pivot B:** Partner with labs to standardize formats (political solution)
+- **Pivot C:** Fallback to manual review for unknown formats, auto-file known only
+
+**Failure 4: DHB letter extraction <85% accurate**
+- **Diagnosis:** Structured vs unstructured letter analysis
+- **Pivot A:** Use rule-based parsing for structured DHBs (template-based)
+- **Pivot B:** Use LLM only for unstructured DHBs (minority of cases)
+- **Pivot C:** Extract key phrases only (not full structured data)
+
+---
+
+### **Learnings Feed Forward to O3/O4**
+
+**O2 → O3 (Clinical Intelligence):**
+- **If BERT worked:** Lightweight classifiers proven for simple tasks → O3 uses for screening eligibility (rule-based)
+- **If confidence threshold = 98%:** Same threshold for O3 care gap alerts (consistent user experience)
+- **If regional normalization succeeded:** Apply same approach to clinical data variations in O3
+- **If GPs wanted explanations:** O3 must provide clinical rationale for all suggestions (not just classification)
+
+**O2 → O4 (Clinical Decision Support + Pilot):**
+- **GP trust findings:** If O2 reveals distrust issues → O4 pilot includes trust-building measures (transparency, explanations)
+- **Auto-filing learnings:** If autonomous actions accepted → O4 can be more autonomous; if rejected → O4 stays assist-only
+- **Workflow integration:** If O2 discovers optimal UI patterns → O4 applies to prescription validation interface
+
+---
+
 ### **Risk Mitigation**
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|------------|--------|------------|
-| **Regional lab formats more varied than expected** | Medium | Medium | O1 already covers 3 major labs; expand dataset if needed; fallback to manual review for unknown formats |
-| **Auto-filing confidence threshold unclear** | Medium | High | Start conservative (high confidence required); iteratively lower threshold as safety proven |
+| **Regional lab formats more varied than expected** | Medium | Medium | O1 already covers 3 major labs; expand dataset if needed; fallback to manual review for unknown formats; see Pivot Plans above |
+| **Auto-filing confidence threshold unclear** | Medium | High | Start conservative (high confidence required); A/B test thresholds; iteratively lower as safety proven |
 | **Medtech API limitations discovered** | Low | High | Early integration (Month 10) catches issues; Medtech partnership for support |
-| **GP sandbox feedback reveals workflow mismatch** | Medium | Medium | Iterative testing with 5 GPs throughout development; adjust UI based on feedback |
+| **GP sandbox feedback reveals workflow mismatch** | Medium | Medium | Iterative testing with 5 GPs throughout development; adjust UI based on feedback; Pivot Plans documented |
 
 ---
 
