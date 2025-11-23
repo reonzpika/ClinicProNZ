@@ -1730,19 +1730,137 @@ Year 2 (2027):
 
 ---
 
-## Next Steps
+---
 
-1. ✅ Objective 1 drafted and finalized
-2. ⏳ Draft Objective 2 (Reactive Intelligence)
-3. ⏳ Draft Objective 3 (Proactive Support)
-4. ⏳ Draft Objective 4 (Intelligent Presentation & Pilot)
-5. ⏳ Calculate 24-month budget (maximize to $200k)
-6. ⏳ Review all 4 objectives holistically
-7. ⏳ Adjust as needed based on full picture
-8. ⏳ Update all existing proposal documents
+### **Programme-Wide Technical Risk Register**
+
+**Purpose:** Track technical risks across all objectives, systematically manage mitigation strategies, and document learnings.
+
+**Initial Risks Identified (O1):**
+
+| Risk ID | Risk Description | Objective | Likelihood | Impact | Mitigation Strategy | Status |
+|---------|------------------|-----------|------------|--------|---------------------|--------|
+| R001 | Small models can't match GPT-4 quality (H4 fails) | O1 | Medium | High | Range test models; compare to GPT-4 baseline; pivot to larger model if needed | Active |
+| R002 | Regional lab format variations >10% accuracy drop | O1-O2 | Medium | Medium | Comprehensive format testing; build lab-specific parsers if needed | Active |
+| R003 | LLM hallucination on clinical calculations | O1-O3 | High | Critical | Hybrid architecture (LLM+Rules); validation layers; hard stops | Mitigated (O1 design) |
+| R004 | Temporal logic too complex for rule engine | O3 | Medium | Medium | Start simple; incremental complexity; pivot to decision trees if needed | Active |
+| R005 | Multi-condition interactions unmodelable | O3 | Medium | Medium | Focus on common dyads; use risk scores; flag complex cases for GP review | Active |
+| R006 | Prescription error detection <95% | O4 | Medium | Critical | Multi-layer validation; rules→LLM→hard stops; extensive testing | Active |
+| R007 | Alert fatigue in pilot (>3 alerts/patient) | O4 | Medium | High | Intelligent prioritization; adaptive thresholds; weekly GP feedback | Active |
+| R008 | Real-world accuracy drop >10pp from sandbox | O2-O4 | Medium | High | Expect 5-10pp drop; rapid data collection; weekly model updates | Active |
+| R009 | GP trust/adoption issues despite technical success | O4 | Medium | High | Explanations; transparency; GP co-design; pilot measures trust explicitly | Active |
+| R010 | System performance degradation with 50+ tools | O4 | Low | High | Modular architecture; load testing; feature gating if needed | Active |
+
+**Risk Management Process:**
+- **Monthly review:** Update likelihood/impact based on new data from current objective
+- **Add risks:** As new technical unknowns discovered during O2/O3/O4
+- **Close risks:** When fully mitigated or objective complete
+- **Escalation:** If any risk becomes High Likelihood + Critical Impact → Immediate review with mentor
+
+**Living Document:** Risk register updated quarterly in project management docs.
 
 ---
 
-**Document Version:** 1.0 (Draft)  
+### **Model Cards & Technical Documentation Framework**
+
+**Purpose:** Systematically document all AI model components for transparency, reproducibility, and post-grant handover.
+
+**Model Card Template (Created in O1, Applied Throughout):**
+
+For each major model component, document:
+
+**1. Model Details**
+- **Name & Version:** e.g., "Inbox Classifier v2.3"
+- **Model Type:** BERT, LLM (7B), Hybrid LLM+Rules, Rule Engine
+- **Training Date:** When model was last trained/updated
+- **Developed By:** Founder + Developer names
+- **Objective:** Which R&D objective produced this model
+
+**2. Intended Use**
+- **Primary Use:** e.g., "Classify NZ GP inbox items into 8 categories"
+- **Out-of-Scope:** e.g., "Not for use outside NZ, not for specialist care"
+- **Users:** NZ GPs using Medtech
+- **Safety-Critical?** Yes/No (if yes, requires extra validation)
+
+**3. Training Data**
+- **Dataset Size:** e.g., "10,000 synthetic + 2,000 real inbox items"
+- **Data Sources:** BPAC, NZGG, Pharmac, synthetic generation
+- **Data Versioning:** DVC commit hash
+- **Regional Coverage:** Which NZ regions/labs/DHBs included
+
+**4. Performance Metrics**
+- **Accuracy:** % correct on holdout test set
+- **Precision/Recall:** Per category if applicable
+- **Latency:** P95 response time
+- **Cost:** $ per 1,000 requests
+- **Comparative Baseline:** vs GPT-4 (if tested)
+
+**5. Limitations & Failures**
+- **Known Failure Modes:** e.g., "Struggles with Canterbury DHB letters (unstructured format)"
+- **Edge Cases:** e.g., "Low accuracy for Māori health terms (underrepresented in training)"
+- **Accuracy Degradation:** e.g., "5pp drop from synthetic (90%) to real data (85%)"
+- **Not Validated For:** e.g., "Paediatric prescriptions (training data was adults)"
+
+**6. Ethical & Safety Considerations**
+- **Bias Risks:** e.g., "Lower accuracy for Pacific ethnicity patients (training data imbalance)"
+- **Safety Mechanisms:** Hard stops, prohibited-claim classifiers, validation layers
+- **Incident History:** Any safety violations or near-misses during development/pilot
+
+**7. Maintenance & Updates**
+- **Update Frequency:** e.g., "Monthly retraining with new data"
+- **Monitoring:** What metrics tracked in production (accuracy, latency, safety)
+- **Deprecation Plan:** When to retire this model version
+
+**Model Cards Created:**
+- **O1:** Foundation components (data layer, safety layer, initial classifiers)
+- **O2:** Admin automation models (inbox, filing, letters)
+- **O3:** Clinical intelligence models (CVDRA, care gaps, screening)
+- **O4:** Clinical decision support models (prescriptions, guidelines, dashboard)
+- **O4 Pilot:** Updated model cards with real-world performance data
+
+**Deliverable:** Comprehensive model card library by end of O4 (24 months) for post-grant team handover.
+
+---
+
+## Next Steps
+
+1. ✅ **All 4 objectives drafted with strong R&D narrative**
+   - O1: Flexible foundation + range testing (architecture validation per risk level)
+   - O2: Admin automation + lightweight architecture validation
+   - O3: Clinical intelligence + hybrid architecture validation
+   - O4: Clinical decision support + multi-layer safety validation + system pilot
+
+2. ✅ **R&D narrative strengthened across all objectives:**
+   - Hypothesis-driven approach (explicit H1-H5 per objective)
+   - Technical unknowns documented (what we DON'T know, how we'll find out)
+   - Architecture validation per objective (not assuming one-size-fits-all)
+   - Failure modes & pivot plans (4-6 scenarios per objective with 3 pivots each)
+   - Learnings feed forward between objectives (explicit knowledge transfer)
+   - Comparative baselines (vs GPT-4, Azure costs)
+   - Pilot as systematic research study (5 research questions, data protocol)
+
+3. ✅ **Programme-wide R&D management:**
+   - Technical risk register (10 initial risks tracked)
+   - Model card framework (systematic documentation for all AI components)
+
+4. ⏳ **Budget adjustment needed:**
+   - Current: $235,920 total eligible costs (over target)
+   - Target: ~$200,000 (maximize grant request ~$80k)
+   - Options: Reduce labour hours, adjust objective scope, or justify higher budget
+
+5. ⏳ **Review all 4 objectives holistically:**
+   - Ensure architecture validation flow makes sense (O1→O2→O3→O4)
+   - Verify learnings feed forward is comprehensive
+   - Check budget allocations are reasonable per objective
+
+6. ⏳ **Update all existing proposal documents:**
+   - `PROJECT_SUMMARY.md`: Update with final 4 objectives, budget
+   - `MENTOR-PROPOSAL.md`: Update with full narrative, remove revision status
+   - `cost-template.md`: Finalize 24-month budget
+   - Other docs as needed
+
+---
+
+**Document Version:** 2.0 (Major Revision - R&D Narrative Strengthened)  
 **Last Updated:** 23 Nov 2025  
-**Status:** Objective 1 finalized, Objectives 2-4 to be drafted
+**Status:** All 4 objectives drafted with comprehensive R&D narrative; ready for budget adjustment & final review
