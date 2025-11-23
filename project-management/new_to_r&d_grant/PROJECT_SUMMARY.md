@@ -61,10 +61,12 @@ risks:
 **Project Name:** ClinicPro: NZ-Sovereign Clinical LLM (assist-only)  
 **Organisation:** NexWave Solutions Ltd  
 **Grant Type:** Callaghan Innovation - New to R&D Grant  
-**Project Duration:** 27 Jan 2026 - 26 Jan 2027 (12 months)  
-**Total Eligible Costs:** $175,065 (excl. GST)  
-**Grant Request:** $70,026 (40%)  
-**Co-Funding:** $105,039 (60% from GP clinical work income)
+**Project Duration:** 27 Jan 2026 - 26 Jan 2028 (24 months - up to 2 years)  
+**Total Eligible Costs:** TBD (targeting ~$200k opening cash capacity)  
+**Grant Request:** TBD (40%)  
+**Co-Funding:** TBD (60% from GP clinical work income)
+
+**Status:** Under revision following mentor meeting with Paula (23 Nov 2025)
 
 ---
 
@@ -367,6 +369,35 @@ The project is organized into 6 main directories:
 ---
 
 ## Updates
+
+### [2025-11-23] Paula Mentor Meeting Feedback - Major Revision Required
+
+**Meeting with Paula:** Proposal received positive feedback ("really good, good chance of getting approved") but requires improvements:
+
+**Paula's Key Feedback:**
+1. **Long-term R&D vision (2 years):** Grant can be up to 2 years. Need to show both immediate goals AND long-term R&D goals. Callaghan is looking for long-term R&D performers.
+2. **Company growth intention:** Need to mention intention to hire more people down the track (demonstrates growth mindset and commitment).
+3. **Competitor mention:** Briefly mention competitors (reviewers want to know) - not in detail, just acknowledge landscape.
+4. **Objectives:** Max 4 objectives (currently have 5). Need to consolidate and span over 2 years.
+5. **Conference specificity:** Can't be generic conference attendance. Must be specific workshops/sessions directly linked to R&D activities.
+6. **Maximise grant request:** Request as much as possible at beginning - can't change this later. Use full opening cash capacity (~$200k).
+
+**Decisions Made:**
+1. **Expand AI features:** Not limiting to just inbox management and care gap monitoring. Will build broader AI capabilities over 2-year R&D programme.
+2. **Reduce to 4 objectives** spanning 24 months (not 5 objectives over 12 months).
+3. **Increase total eligible costs** to maximise grant (have $200k NZD opening cash capacity).
+4. **Position as long-term R&D performer:** Show this is the start of sustained R&D capability, not a one-off project.
+5. **Include hiring plan:** Developer hiring timeline to demonstrate growth intention.
+
+**Next Steps:**
+- [x] Document Paula's feedback in PROJECT_SUMMARY.md
+- [ ] Brainstorm full AI feature set for 2-year R&D programme
+- [ ] Restructure to 4 objectives over 24 months
+- [ ] Calculate new budget targeting ~$200k total eligible costs
+- [ ] Add competitor landscape section (brief)
+- [ ] Identify specific conference workshops (not generic attendance)
+- [ ] Add long-term R&D vision (Year 3-5)
+- [ ] Include hiring plan and growth intentions
 
 ### [2025-11-07] Partnership Development & Submission Timeline
 - **Medtech Partnership Letter Update:** Alex Cauble-Chantrenne responded positively - will draft letter and get approval, expects to deliver "next week" (~20 Nov 2025)
