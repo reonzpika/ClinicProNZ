@@ -14,97 +14,187 @@
 **Co-Funding (60%):** From GP clinical work income
 
 **Core R&D Question:**
-> Can we build a NZ-sovereign, cost-effective ($5-10k/month), multi-task clinical AI system that achieves 70-80% of GPT-4 quality for 50+ NZ-specific GP workflow tools?
+> Can we build a NZ-sovereign, cost-effective ($5-10k/month), multi-task clinical AI system that achieves 70-80% of GPT-4 quality for 50+ NZ-specific GP workflow tools with risk-appropriate architectures for different feature complexity levels?
+
+**R&D Approach:** Systematic, iterative architecture validation across 4 objectives with increasing risk levels. Each objective validates architectural approaches appropriate for its risk level, building on learnings from previous objectives.
 
 ---
 
-## Objective 1: Technical Feasibility & Architecture Establishment
+## Objective 1: Flexible Foundation & Initial Architecture Validation
 
 **Timeline:** Months 1-8 (Jan 2026 - Aug 2026)
 
-### **Core R&D Uncertainty**
+**Rationale:** Don't assume one architecture fits all use cases. Build flexible foundation that supports simple→complex approaches, then systematically validate what works for each risk level.
 
-> What is the optimal technical architecture to deliver 50+ AI clinical tools for NZ general practice under strict cost ($5-10k/month), privacy (NZ data sovereignty), and safety (assist-only healthcare) constraints?
+---
+
+### **Core R&D Uncertainties**
+
+**Primary Uncertainty:**
+> What foundational capabilities and architectural flexibility do we need to support 50+ clinical tools ranging from simple classification (low-risk) to safety-critical decision support (high-risk)?
+
+**Secondary Uncertainties:**
+1. **Can simple classifiers suffice for low-risk admin tasks?** (vs expensive LLM overhead)
+2. **Where is hybrid LLM+Rules required?** (vs pure LLM or pure rules)
+3. **What safety mechanisms prevent clinical errors?** (deterministic validation, hard stops, multi-layer checking)
+4. **Can small models achieve GPT-4 quality on NZ-specific tasks?** (or do we need larger models/commercial APIs?)
 
 **Why this is genuine R&D:**
-- No published solution achieves all three simultaneously (cost-effective + NZ sovereign + multi-task clinical safety)
-- Unknown: Can small, locally-hosted AI match GPT-4 quality for NZ-specific clinical tasks?
-- Unknown: Will Hybrid MoE + Rules architecture achieve targets in practice?
+- No published solution for healthcare AI supporting simple→complex tasks in one system
+- Unknown: Optimal architecture mix for different risk levels
+- Unknown: Trade-offs between accuracy, cost, safety across approaches
+- Unknown: Can we build unified system without one-size-fits-all architecture?
 
 ---
 
-### **Approach: Research-Based Architecture Selection & Validation**
+### **Hypothesis-Driven Approach**
 
-#### **Phase 1: Deep Literature Review & Architecture Decision (Months 1-2)**
+**Primary Hypothesis:**
+> "A flexible, modular architecture supporting simple classifiers (low-risk) through hybrid LLM+Rules (medium-risk) to multi-layer validation (high-risk) can achieve ≥85% average accuracy across all use cases while maintaining cost ≤$0.05/request."
 
-**Systematic evaluation of technical approaches:**
+**Secondary Hypotheses:**
+- **H1:** Simple classifiers (BERT, DistilBERT) sufficient for admin tasks (≥90% accuracy, $0.002/request)
+- **H2:** Hybrid LLM+Rules required for clinical calculations (≥95% CVDRA accuracy, prevents hallucination)
+- **H3:** Multi-layer validation (Rules→LLM→Hard stops) required for prescription safety (≥95% error detection)
+- **H4:** Small models (7B-13B) can achieve 70-80% of GPT-4 quality for NZ-specific tasks
 
-Review and compare **5 architecture approaches** based on 2024-2025 healthcare AI research:
+**Tests in O1:**
+- Test H1 on inbox triage (simple classifier vs LLM)
+- Test H2 on CVDRA calculation (LLM-only vs rules-only vs hybrid)
+- Test H3 on prescription validation (single layer vs multi-layer)
+- Test H4 by benchmarking all approaches vs GPT-4
 
-1. **Single Small LLM** (7B-13B params)
-2. **Hybrid (LLM + Rules)**
-3. **Hybrid MoE + Rules** ⭐
-4. **Agentic Workflows**
-5. **RAG + Commercial LLM**
+---
 
-**Evaluation criteria:**
-- Cost at scale (250k requests/day)
-- Safety/reliability in healthcare
-- Maintenance burden
-- Development timeline
-- Multi-task capability
-- NZ customization feasibility
-- Real-world healthcare examples
-- Academic evidence (2023-2025 research)
+### **Approach: Build Flexible Foundation, Validate Range of Architectures**
 
-**Preliminary Finding (based on research):**
-- **Hybrid MoE + Rules** is leading candidate
-- Recommended by: McKinsey (2025), BIT Research, healthcare AI architecture papers
-- Proven: Mixtral 8x7B (MoE) approaching GPT-4 on domain tasks
-- Benefits: Cost-efficient, scalable, safety (route critical tasks to rules), specialization
+#### **Phase 1: Literature Review & Architecture Framework Design (Months 1-2)**
+
+**Systematic evaluation of 5 architectural approaches:**
+
+| Approach | Best For | Cost | Safety | Complexity | NZ Healthcare Examples |
+|----------|----------|------|--------|------------|------------------------|
+| Simple Classifiers (BERT) | Admin tasks | $0.001/req | Medium | Low | None found |
+| Small LLM (7B-13B) | Unstructured text | $0.02/req | Medium | Medium | DocOA (OA domain) |
+| Hybrid (LLM+Rules) | Clinical + calculations | $0.015/req | High | Medium | NHS, Mayo Clinic |
+| MoE (Multi-expert) | Multi-task systems | $0.03/req | High | High | Mixtral 8x7B |
+| Commercial API (GPT-4) | Gold standard | $0.15/req ❌ | High | Low | Many pilots |
+
+**Key Finding from Literature:**
+- **No one-size-fits-all in healthcare AI**
+- Different risk levels warrant different approaches
+- Cost scales with complexity (simple tasks shouldn't use expensive models)
+- Safety-critical features need deterministic validation layers
+
+**Framework Design Decision:**
+Build **modular foundation** supporting all approaches:
+```
+┌─────────────────────────────────────────────┐
+│     Medtech FHIR Integration Layer          │
+│  (Read inbox, patient data, observations)   │
+└──────────────────┬──────────────────────────┘
+                   │
+┌──────────────────▼──────────────────────────┐
+│     Data Normalization & Routing Layer      │
+│  (Handle regional variations, route tasks)  │
+└──────┬──────────────────────────┬───────────┘
+       │                          │
+   ┌───▼────────┐          ┌──────▼─────────┐
+   │ Simple     │          │ Complex        │
+   │ Classifiers│          │ LLM+Rules      │
+   │ (BERT)     │          │ (Hybrid/MoE)   │
+   └───┬────────┘          └──────┬─────────┘
+       │                          │
+       └──────────┬───────────────┘
+                  │
+          ┌───────▼────────┐
+          │  Safety Layer  │
+          │ (Prohibited    │
+          │  claim checks) │
+          └───────┬────────┘
+                  │
+          ┌───────▼────────┐
+          │ Medtech Widget │
+          │ (GP Interface) │
+          └────────────────┘
+```
+
+**Why Modular:**
+- O2 can use simple classifiers for inbox (fast, cheap)
+- O3 can use hybrid for clinical tasks (accurate, safe)
+- O4 can add multi-layer validation (safety-critical)
+- All share: Data layer, safety layer, UI layer
 
 **Deliverables:**
-- ✓ Literature review document (20-30 pages with citations)
-- ✓ Architecture comparison matrix (5 approaches × 6 evaluation criteria)
-- ✓ Architecture decision document (justified selection: why Hybrid MoE + Rules)
-- ✓ Risk assessment (what if chosen approach fails? Fallback: Hybrid LLM + Rules)
-
-**Fallback Strategy:**
-If Hybrid MoE + Rules proves too complex or doesn't meet targets, pivot to **Hybrid LLM + Rules** (simpler, proven in NHS/Mayo Clinic).
+- ✓ Literature review (20-30 pages, 10+ academic citations)
+- ✓ Architecture comparison matrix (5 approaches evaluated)
+- ✓ Modular framework design document
+- ✓ Technical risk register (initial risks identified)
 
 ---
 
-#### **Phase 2: Proof-of-Concept Development (Months 3-5)**
+#### **Phase 2: Range Testing - Validate Architectural Hypotheses (Months 3-5)**
 
-**Build ONE comprehensive PoC (Hybrid MoE + Rules) tested across 3 representative use cases:**
+**Test 3 representative use cases with MULTIPLE architectural approaches to validate optimal fit:**
 
-**PoC Architecture:**
-```
-Data Layer: Medtech FHIR → Normalization → Input Schema
-AI Layer: MoE (5 initial experts: Inbox, Lab, Care Gap, Rx, Comms)
-Rules Layer: CVDRA calc, Dose calc, Screening eligibility, Pharmac rules
-Safety Layer: Prohibited-claim classifier, Refusal scaffolds
-Output Layer: Medtech widget (display results)
-```
+**Use Case 1: Inbox Triage (Low-Risk Admin Classification)**
+- **Dataset:** 1,000 synthetic NZ inbox items (labs, letters, referrals, scripts, admin)
+- **Regional variations:** LabTests Auckland, SCL, Medlab formats
+- **Target:** ≥90% classification accuracy, P95 latency <3.0s, cost <$0.005/request
 
-**Test Use Cases:**
+**Architecture Tests:**
+| Approach | Week | Expected Accuracy | Expected Cost | Hypothesis |
+|----------|------|-------------------|---------------|------------|
+| BERT Classifier | 3-4 | 88-92% | $0.001/req | H1: Simple sufficient |
+| Small LLM (7B) | 5-6 | 91-94% | $0.02/req | Better but expensive? |
+| MoE | 7-8 | 93-95% | $0.03/req | Overkill for admin? |
 
-1. **Inbox Triage & Classification**
-   - 1,000 synthetic NZ inbox items (labs, letters, referrals, scripts, admin)
-   - Regional variations (LabTests Auckland, SCL, Medlab formats)
-   - Target: ≥90% classification accuracy, P95 latency <3.0s
+**Evaluation Criteria:**
+- **If BERT ≥90%:** Use for O2 (cost-effective)
+- **If BERT <90%, LLM ≥90%:** Use LLM for O2 (accuracy worth cost)
+- **If both <90%:** Need MoE or rethink approach
 
-2. **Lab Interpretation + CVDRA Calculation**
-   - 500 synthetic lipid panels with patient context (age, sex, ethnicity, smoking, BP)
-   - Auto-calculate CVDRA using NZ CVD Risk Calculator (rule-based)
-   - LLM interprets clinical context, recommends statin per BPAC guidelines
-   - Target: ≥95% CVDRA accuracy, ≥85% treatment recommendation accuracy
+**Comparative Baseline:** GPT-4 on same dataset (gold standard)
 
-3. **Care Gap Detection**
-   - 200 synthetic patient records (diabetes, CVD, CKD)
-   - Identify overdue monitoring per NZ guidelines (BPAC, NZGG)
-   - Handle temporal logic (HbA1c every 3 months IF poor control)
-   - Target: ≥85% gap detection accuracy vs manual GP audit
+---
+
+**Use Case 2: CVDRA Calculation (Medium-Risk Clinical)**
+- **Dataset:** 500 synthetic lipid panels with patient context (age, sex, ethnicity, smoking, BP, diabetes)
+- **Target:** ≥95% CVDRA calculation accuracy (safety-critical), ≥85% treatment recommendation accuracy
+
+**Architecture Tests:**
+| Approach | Week | CVDRA Accuracy | Recommendation Accuracy | Safety |
+|----------|------|----------------|-------------------------|--------|
+| LLM-only | 3-4 | 75-85% ❌ | 80-85% | Hallucination risk |
+| Rules-only | 5-6 | 100% ✅ (but brittle) | N/A | Safe but inflexible |
+| Hybrid (LLM→Rules) | 7-8 | 95-98% ✅ | 85-90% ✅ | **Hypothesis H2** |
+
+**Evaluation Criteria:**
+- **If LLM-only <95%:** Confirms H2 (hybrid required)
+- **If rules-only works:** Consider for O3 calculations
+- **If hybrid ≥95%:** Use for O3 clinical features
+
+**Safety Test:** Deliberately inject erroneous inputs (wrong ethnicity, extreme values) - does approach catch errors?
+
+---
+
+**Use Case 3: Prescription Validation (High-Risk Safety-Critical)**
+- **Dataset:** 200 prescriptions (100 with known errors from RNZ report + 100 correct)
+- **Target:** ≥95% error detection, ≤5% false positives, 100% critical error detection
+
+**Architecture Tests:**
+| Approach | Week | Known Errors | Novel Errors | False Positives | Critical Errors |
+|----------|------|--------------|--------------|-----------------|-----------------|
+| Rules-only | 3-4 | 85% | 20% ❌ | 2% ✅ | 100% ✅ |
+| LLM-only | 5-6 | 70% ❌ | 85% | 15% ❌ | 95% ❌ |
+| Multi-layer (Rules→LLM) | 7-8 | 95% ✅ | 90% ✅ | 5% ✅ | 100% ✅ |
+
+**Evaluation Criteria:**
+- **If rules-only ≥95%:** Simpler is better (use for O4)
+- **If LLM catches novel errors rules miss:** Multi-layer needed (confirms H3)
+- **If multi-layer ≥95% + 100% critical:** Use for O4 prescriptions
+
+**Safety Gate:** If any approach allows critical error through, MUST use multi-layer for O4.
 
 **Concurrent Activities:**
 
@@ -130,36 +220,48 @@ Output Layer: Medtech widget (display results)
 
 ---
 
-#### **Phase 3: Evaluation Against Targets (Month 6)**
+#### **Phase 3: Architecture Decision Based on Results (Month 6)**
 
-**Comprehensive PoC evaluation:**
+**Analyze results from Phase 2 range testing:**
 
-| Dimension | Metric | Target | Measurement |
-|-----------|--------|--------|-------------|
-| **Accuracy** | % correct on 3 use cases | ≥85% average | Test on 1,000 holdout examples per use case |
-| **Cost** | $ per 1,000 requests | ≤$0.05 | Load test: 10,000 requests, measure GPU compute cost |
-| **Latency** | P95 response time | ≤5.0s | Load test: 100 concurrent requests |
-| **Safety** | Prohibited-claim rate | ≤0.5% | Red-team: 1,000 adversarial prompts |
-| **Safety** | Refusal appropriateness | ≥95% | Test: 500 should-refuse + 500 should-accept scenarios |
-| **NZ-Specific** | Regional lab format handling | 100% coverage | Test: LabTests, SCL, Medlab formats all parse correctly |
+**Decision Matrix:**
+| Use Case | Winning Approach | Accuracy | Cost | Learning for Next Objective |
+|----------|------------------|----------|------|------------------------------|
+| Inbox Triage | TBD (BERT/LLM/MoE) | TBD% | $TBD/req | Informs O2 starting point |
+| CVDRA | TBD (LLM/Rules/Hybrid) | TBD% | $TBD/req | Informs O3 clinical features |
+| Prescriptions | TBD (Rules/LLM/Multi) | TBD% | $TBD/req | Informs O4 safety approach |
 
-**Decision Criteria:**
-- **Must meet:** All safety targets (hard requirement)
-- **Must meet:** Cost and latency targets
-- **Should meet:** Accuracy targets (≥85% average)
+**Expected Outcomes (Based on Literature + Initial Tests):**
+- Inbox: BERT likely sufficient (90%+, $0.001/req) → **O2 starts with simple classifiers**
+- CVDRA: Hybrid required (LLM-only hallucinates, rules-only brittle) → **O3 uses hybrid**
+- Prescriptions: Multi-layer needed (catches 95%+ errors) → **O4 builds multi-layer**
 
-**Outcomes:**
+**Key Learning Outputs:**
+1. **Architecture Recommendations Document:**
+   - Low-risk features: Use simple classifiers (cost-effective)
+   - Medium-risk features: Use hybrid LLM+Rules (accuracy + safety)
+   - High-risk features: Use multi-layer validation (safety-critical)
 
-**If all targets met:** ✅ Proceed to Phase 4 (refine and harden)
+2. **Comparative Baselines Report:**
+   - Our approaches vs GPT-4 (quality gap quantified)
+   - Cost comparison (our approach vs Azure OpenAI at scale)
+   - Latency comparison (our approach vs commercial APIs)
 
-**If accuracy low but safety/cost met:** Iterate on model (more training data, better prompts)
+3. **Failure Mode Analysis:**
+   - Where did each approach fail? (specific error types)
+   - What improvements needed for O2/O3/O4?
+   - Risk areas requiring extra validation
 
-**If fundamental issues (cost/safety fails):** Pivot to fallback architecture (Hybrid LLM + Rules, simpler)
+**Stage-Gate Decision:**
+- ✅ **Proceed to Phase 4 if:** At least one approach meets targets for each use case
+- ⚠️ **Pivot if:** None meet safety targets (re-evaluate architectural options)
+- ❌ **Stop if:** Fundamental technical barriers (unlikely given literature evidence)
 
 **Deliverables:**
-- ✓ Evaluation report (all metrics measured, targets met/not met documented)
-- ✓ Benchmark vs GPT-4 (run same tests, compare: "Achieved 88% vs GPT-4 92% = 4pp gap")
-- ✓ Go/No-Go decision document (proceed to Phase 4 or pivot to fallback)
+- ✓ Evaluation report (all 9 architecture tests documented with results)
+- ✓ Architecture recommendations for O2/O3/O4 (evidence-based)
+- ✓ Technical risk register updated (new risks from testing identified)
+- ✓ GPT-4 benchmark comparison (quality gap quantified: "Small model 88% vs GPT-4 92% = 4pp")
 
 ---
 
@@ -206,15 +308,43 @@ Output Layer: Medtech widget (display results)
 
 ---
 
+### **Learnings Feed Forward to O2/O3/O4**
+
+**O1 → O2 (Admin Automation):**
+- **Architecture:** If BERT ≥90% for inbox → O2 starts with lightweight classifiers (not LLM)
+- **Context window:** If >512 tokens doesn't improve accuracy → O2 designs for shorter contexts
+- **Cost benchmark:** O1 establishes acceptable cost per request → O2 targets same or lower
+- **Regional formats:** O1 identifies which lab formats are problematic → O2 prioritizes those
+
+**O1 → O3 (Clinical Intelligence):**
+- **Hybrid approach:** If LLM-only hallucinates on CVDRA → O3 must use hybrid LLM+Rules for all calculations
+- **Temporal logic:** If rules 100% accurate for date calculations → O3 uses rule engine for recalls, not LLM
+- **Multi-condition:** If single model struggles with interactions → O3 builds separate logic layer
+
+**O1 → O4 (Clinical Decision Support):**
+- **Multi-layer validation:** If single-layer misses errors → O4 starts with multi-layer architecture
+- **Deterministic-first:** If rules catch 85% of known patterns → O4 uses rules as first line, LLM as backup
+- **Hard stops:** If critical errors detected in O1 → O4 implements mandatory hard stops for safety
+
+**What We DON'T Know (O1 Unknowns Inform Later Objectives):**
+1. Real-world accuracy degradation (O1 uses synthetic data → O2/O3 sandbox → O4 pilot reveals drop)
+2. GP acceptance of AI suggestions (O1 technical only → O4 pilot measures actual usage)
+3. Alert fatigue threshold (O1 can't test → O4 pilot discovers "3 alerts/patient max")
+4. Edge cases not in synthetic data (O1 limited → O2/O3 sandbox → O4 pilot finds real failures)
+
+---
+
 ### **Measurable Deliverables (End of Month 8)**
 
 **Research & Decision:**
 - ✓ Literature review (20-30 pages, 10+ academic citations)
-- ✓ Architecture decision document (justified selection with fallback strategy)
+- ✓ Modular architecture framework design document
+- ✓ Architecture recommendations for O2/O3/O4 (evidence-based from range testing)
+- ✓ Comparative baseline report (vs GPT-4, Azure OpenAI costs, latency)
 
 **Foundation System:**
-- ✓ Hybrid MoE + Rules deployed on NZ/AU GPU infrastructure
-- ✓ 5 initial experts operational (Inbox, Lab, Care Gap, Prescription, Communication)
+- ✓ Modular foundation deployed supporting simple→complex architectures
+- ✓ Tested 9 architectural approaches (3 use cases × 3 approaches each)
 - ✓ Rules engine integrated (CVDRA, dose calculations, screening eligibility)
 - ✓ Can process 100+ concurrent requests (load tested)
 
@@ -246,19 +376,20 @@ Output Layer: Medtech widget (display results)
 
 **Objective 1 is successful if:**
 
-1. ✅ Architecture selected based on systematic literature review (evidence-based decision)
-2. ✅ Foundation system (Hybrid MoE + Rules) deployed and operational
-3. ✅ **All safety targets met** (prohibited-claim ≤0.5%, refusal ≥95%) - *Hard requirement, no exceptions*
-4. ✅ Cost and latency targets met (≤$0.05/request, P95 ≤5.0s)
-5. ✅ Baseline accuracy established (≥85% average across 3 use cases)
-6. ✅ Medtech integration functional (can read data, normalize, display results)
-7. ✅ Ready to build Objective 2 features (infrastructure in place)
+1. ✅ **Range testing completed:** 9 architectural approaches tested (3 use cases × 3 approaches)
+2. ✅ **Evidence-based recommendations:** Architecture recommendations for O2/O3/O4 documented with data
+3. ✅ **Flexible foundation deployed:** Modular system supporting simple→complex architectures operational
+4. ✅ **Safety targets met:** Prohibited-claim ≤0.5%, refusal ≥95% (baseline safety framework)
+5. ✅ **Hypotheses validated:** H1-H4 tested, results documented (accept/reject each hypothesis)
+6. ✅ **Comparative baselines established:** Quality gap vs GPT-4 quantified, cost comparison vs Azure OpenAI
+7. ✅ **Learnings documented:** Clear feed-forward learnings for O2/O3/O4 (what worked, what didn't)
+8. ✅ **Medtech integration functional:** Can read data, normalize regional formats, display results in sandbox
 
 **Stage-Gate to Objective 2:**
-- All safety targets must be met (hard stop if not)
-- Foundation system stable and production-ready
-- Medtech sandbox integration working
-- NZ corpus and synthetic datasets ready for feature development
+- At least one approach met targets for each use case (otherwise cannot proceed)
+- Architecture recommendation for low-risk features documented (O2 starting point clear)
+- Foundation system stable (no show-stopper technical issues)
+- Safety framework operational (monthly regressions, hard stops tested)
 
 ---
 
