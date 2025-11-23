@@ -117,14 +117,14 @@
 - Overdue screening identification
 - BreastScreen Aotearoa referral generation
 
-#### **Normal Screening Auto-Filing & Recall**
-- Normal result identification (within reference ranges + clinical context)
-- Auto-filing with templated comments
+#### **Normal Screening Result Auto-Filing & Recall**
+- Normal screening result identification (cervical, breast, bowel screening)
+- Auto-filing with templated comments ("Cervical screening normal - due in 3 years")
 - Intelligent recall scheduling:
-  - HbA1c recalls (3/6/12 months based on control)
-  - Renal function recalls (annual for CKD, 6-monthly for declining)
-  - TFT recalls (annual for stable hypothyroid)
-- Patient notification generation ("Your results are normal")
+  - Cervical screening: 3 years
+  - Bowel screening (FIT): 2 years
+  - Breast screening: 2 years
+- Patient notification generation ("Your screening result is normal")
 
 ### R&D Uncertainty:
 - Can AI track eligibility across multiple screening programmes simultaneously?
