@@ -1,10 +1,27 @@
 # New to R&D Grant Proposal - ClinicPro
 ## NZ-Sovereign Clinical AI for General Practice
 
-**Prepared for:** [Mentor Name]  
-**Date:** November 2025  
+**Prepared for:** Paula (Mentor)  
+**Date:** November 2025 (Under Revision - 23 Nov 2025)  
 **Applicant:** NexWave Solutions Ltd  
-**Project Duration:** 27 Jan 2026 - 26 Jan 2027 (12 months)
+**Project Duration:** 27 Jan 2026 - 26 Jan 2028 (24 months)
+
+---
+
+## ⚠️ REVISION STATUS (23 Nov 2025)
+
+**Paula's Meeting Feedback Summary:**
+- ✅ Proposal is "really good" with "good chance of getting approved"
+- 🔄 Requires improvements before final submission:
+  1. **Extend to 2 years** - Show long-term R&D commitment (Callaghan seeks long-term performers)
+  2. **Expand AI features** - Not just 2 use cases; broader capabilities over 24 months
+  3. **Reduce to 4 objectives** (currently 5) spanning 2 years
+  4. **Add competitor mention** - Brief acknowledgment (reviewers want to know landscape)
+  5. **Specify conference workshops** - Not generic attendance; link to R&D activities
+  6. **Maximise grant request** - Use full cash capacity (~$200k); can't change later
+  7. **Show growth intention** - Mention hiring plans (demonstrates company growth mindset)
+
+**This document is being revised to incorporate feedback.**
 
 ---
 
