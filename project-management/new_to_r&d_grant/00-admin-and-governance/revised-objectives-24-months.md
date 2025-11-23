@@ -723,24 +723,74 @@ Build **modular foundation** supporting all approaches:
 
 ---
 
-## Objective 3: Clinical Intelligence (Medium Complexity / Medium Risk)
+## Objective 3: Clinical Intelligence + Hybrid Architecture Validation (Medium Complexity / Medium Risk)
 
 **Timeline:** Months 12-20 (Dec 2026 - Aug 2027)
 
-**Rationale:** Build on O2 foundation to add clinical interpretation, calculations, and temporal logic. Medium risk - wrong answer misses opportunities (care gaps, screening) but GP remains clinically responsible.
+**Rationale:** Build on O2 foundation to add clinical interpretation, calculations, and temporal logic. Medium risk - wrong answer misses opportunities (care gaps, screening) but GP remains clinically responsible. **Validate O1 hypothesis:** Hybrid LLM+Rules required for clinical calculations.
 
 ---
 
-### **Core R&D Uncertainty**
+### **Core R&D Uncertainties**
 
-> Can AI safely interpret NZ lab results, calculate clinical risk scores (CVDRA), and track complex temporal logic (care gaps, screening intervals) with sufficient accuracy for clinical decision support?
+**Primary Uncertainty:**
+> Can AI safely interpret NZ lab results, calculate clinical risk scores (CVDRA), and track complex temporal logic (care gaps, screening intervals) using hybrid LLM+Rules architecture while preventing clinical errors?
+
+**Secondary Uncertainties:**
+1. **Does hybrid architecture prevent CVDRA hallucination?** (O1 predicted yes - validate in production)
+2. **Can temporal logic be deterministic?** (rule-engine vs LLM for recall date calculations)
+3. **How to handle multi-condition interactions?** (diabetes+CKD ≠ simple rule, may need separate logic layer)
+4. **Clinical context extraction from unstructured notes?** (LLM reliability for parameter extraction)
 
 **Why this is R&D:**
-- Lab interpretation requires clinical context (HbA1c 50 is different in diabetic vs pre-diabetic)
-- CVDRA calculation from unstructured clinical data (not just clean inputs)
-- Temporal logic complexity (HbA1c every 3 months IF poor control, 6 months IF stable)
-- Multi-condition interactions (diabetes + CKD = different monitoring than diabetes alone)
-- Unknown: Can small model handle NZ-specific clinical guidelines with 85%+ accuracy?
+- Unknown: Can LLM reliably extract CVDRA parameters from messy clinical notes (not just structured fields)
+- Unknown: Temporal logic for NZ guidelines (complex intervals, condition-dependent)
+- Unknown: Multi-condition interaction logic (no published approach for NZ primary care)
+- Unknown: Safety of hybrid approach in production (O1 tested on synthetic only)
+
+---
+
+### **Hypothesis-Driven Approach**
+
+**Primary Hypothesis (From O1):**
+> "Hybrid architecture (LLM for context understanding + Rules for calculations) achieves ≥95% CVDRA accuracy while preventing hallucination, versus LLM-only <85% with hallucination risk."
+
+**O3-Specific Hypotheses:**
+- **H1:** CVDRA calculation: Hybrid (LLM→Rules) achieves ≥95% accuracy, LLM-only <85%
+- **H2:** Temporal logic: Rule engine 100% accurate for NZ guideline recall intervals (LLM unreliable for date math)
+- **H3:** Care gap detection: Combined approach (LLM for clinical context + Rules for intervals) ≥85% accuracy
+- **H4:** Multi-condition logic: Requires separate logic layer (single LLM can't handle interactions reliably)
+
+**Architecture Validation in O3:**
+**Test:** Does O1's recommendation (hybrid LLM+Rules) work for clinical features?
+- Week 12-14: Test LLM-only for CVDRA → Expect <85%, hallucination
+- Week 14-16: Test hybrid (LLM→Rules) → Expect ≥95%
+- Decision: If hybrid ≥95%, confirm O1 hypothesis; if not, escalate to larger model or more validation layers
+
+---
+
+### **Technical Unknowns (O3 Will Resolve)**
+
+1. **Unknown:** LLM reliability for parameter extraction from unstructured notes?
+   - Clean inputs: ethnicity, age, sex (structured fields) → Easy
+   - Messy inputs: smoking status from free text ("social: occasional smoker", "smokes 5/day") → Hard
+   - How we'll find out: Test LLM extraction on 500 real clinical notes, measure accuracy vs structured data
+
+2. **Unknown:** Temporal logic complexity for NZ guidelines?
+   - Simple: HbA1c every 6 months (fixed interval)
+   - Complex: HbA1c every 3 months IF HbA1c >64, every 6 months IF 53-64, annual IF <53 (condition-dependent)
+   - How we'll find out: Implement rule engine for all NZ guideline intervals, test on 200 patient scenarios
+
+3. **Unknown:** Multi-condition interaction handling?
+   - Diabetes alone: HbA1c 3-6 months, ACR annual
+   - CKD alone: eGFR 6-12 months, ACR annual
+   - Diabetes+CKD: Different monitoring schedule (more frequent, tighter targets)
+   - How we'll find out: Build logic layer for common combinations, test accuracy vs manual GP audit
+
+4. **Unknown:** Clinical context understanding for care gaps?
+   - Example: HbA1c done 4 months ago (overdue for poor control), but patient recently hospitalized (defer recall)
+   - LLM must understand clinical reasoning, not just dates
+   - How we'll find out: Test on edge cases with clinical context, measure false positive rate
 
 ---
 
@@ -955,37 +1005,156 @@ Build **modular foundation** supporting all approaches:
 
 ---
 
+### **Failure Modes & Pivot Plans**
+
+**Failure 1: Hybrid architecture CVDRA accuracy <95% (O1 hypothesis fails)**
+- **Diagnosis:** LLM parameter extraction failing? Or rule calculation errors?
+- **Pivot A:** Use structured fields only (don't extract from free text) - safer but less coverage
+- **Pivot B:** Add validation layer (sanity checks on extracted parameters before calculation)
+- **Pivot C:** Escalate to larger model (13B→30B) for better extraction, keep rules for calculation
+
+**Failure 2: Temporal logic too complex for rule engine**
+- **Diagnosis:** Which conditions causing failures? (Diabetes simple, COPD complex?)
+- **Pivot A:** Start with simple conditions only (diabetes, hypertension - fixed intervals)
+- **Pivot B:** Use decision tree for complex cases (not LLM, but structured logic)
+- **Pivot C:** Hybrid temporal logic (simple conditions = rules, complex = GP review with suggestion)
+
+**Failure 3: Multi-condition interactions can't be modeled**
+- **Diagnosis:** Too many combinations? (Diabetes+CKD+CVD = exponential complexity)
+- **Pivot A:** Focus on common dyads only (Diabetes+CKD, CVD+CKD, not triples)
+- **Pivot B:** Use clinical risk scores (combine conditions into single risk score, monitor based on score)
+- **Pivot C:** Flag complex patients for manual GP review (AI identifies, doesn't recommend)
+
+**Failure 4: Care gap false positive rate too high (>20%)**
+- **Diagnosis:** LLM not understanding clinical context (hospitalizations, patient refusals)
+- **Pivot A:** Add context layer (check recent hospital admissions, patient declined flags)
+- **Pivot B:** Lower sensitivity (miss some gaps but fewer false positives)
+- **Pivot C:** Change to "suggested recalls" not "overdue alerts" (softer language)
+
+---
+
+### **Learnings Feed Forward to O4**
+
+**O3 → O4 (Clinical Decision Support + Pilot):**
+- **If hybrid prevented hallucination:** O4 uses same approach for prescription dosing (LLM extracts, rules validate)
+- **If temporal logic needed rules:** O4 uses deterministic logic for all date calculations (prescription durations, follow-up timing)
+- **If multi-condition complexity discovered:** O4 builds comprehensive interaction checker (drug-drug, drug-condition, condition-condition)
+- **If care gap false positives high:** O4 implements context-aware filtering (reduce alert fatigue)
+- **If GPs wanted clinical rationale:** O4 provides explanations for ALL suggestions (not just classifications)
+
+**O3 Informs Pilot Design:**
+- If O3 reveals specific failure modes → O4 pilot specifically tests those scenarios
+- If O3 discovers GP preferences → O4 pilot uses same UI patterns
+- If O3 identifies accuracy degradation patterns → O4 pilot measures same metrics
+
+---
+
 ### **Risk Mitigation**
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|------------|--------|------------|
-| **Clinical accuracy below target** | Medium | High | Iterative refinement; expand training data; add rule-based validation for critical calculations (CVDRA) |
-| **Temporal logic too complex** | Medium | Medium | Start with simple intervals; add complexity incrementally; use rule engine for date calculations |
-| **Multi-condition interactions missed** | Medium | Medium | Systematic testing of condition combinations; GP review of edge cases |
-| **CVDRA calculation from unstructured data fails** | Low | High | Fallback: Prompt GP to enter CVDRA manually; AI extracts from structured fields first |
+| **Clinical accuracy below target** | Medium | High | Iterative refinement; expand training data; add rule-based validation for critical calculations (CVDRA); see Pivot Plans above |
+| **Temporal logic too complex** | Medium | Medium | Start with simple intervals; add complexity incrementally; use rule engine for date calculations; Pivot Plans documented |
+| **Multi-condition interactions missed** | Medium | Medium | Systematic testing of condition combinations; GP review of edge cases; Pivot to common dyads if triples too complex |
+| **CVDRA calculation from unstructured data fails** | Low | High | Fallback: Prompt GP to enter CVDRA manually; AI extracts from structured fields first; Pivot Plans above |
 
 ---
 
 ---
 
-## Objective 4: Clinical Decision Support + System Validation (High Complexity / High Risk)
+## Objective 4: Clinical Decision Support + Multi-Layer Safety Validation + System Pilot (High Complexity / High Risk)
 
 **Timeline:** Months 18-24 (Jun 2027 - Dec 2027)
 
-**Rationale:** Add highest-risk clinical decision support features (prescriptions, guidelines), complete system integration, validate entire system with real GPs in pilot, and prepare for production deployment.
+**Rationale:** Add highest-risk clinical decision support features (prescriptions, guidelines), complete system integration, validate entire system with real GPs in pilot, and prepare for production deployment. **Validate O1 hypothesis:** Multi-layer validation required for safety-critical features. **Test entire system** (O2+O3+O4) in real-world pilot.
 
 ---
 
-### **Core R&D Uncertainty**
+### **Core R&D Uncertainties**
 
-> Can AI provide safe, accurate clinical decision support for high-stakes tasks (prescription validation, drug dosing, guideline recommendations) while preventing alert fatigue through intelligent prioritization? And does the integrated system perform safely and effectively in real-world GP workflows?
+**Primary Uncertainty:**
+> Can AI provide safe, accurate clinical decision support for high-stakes tasks (prescription validation, drug dosing, guideline recommendations) using multi-layer validation while preventing alert fatigue through intelligent prioritization? And does the integrated system (all O2+O3+O4 features) perform safely and effectively in real-world GP workflows?
+
+**Secondary Uncertainties:**
+1. **Does multi-layer architecture catch ≥95% prescription errors?** (O1 predicted yes - validate in production)
+2. **What's optimal alert prioritization to prevent fatigue?** (how many alerts before GPs ignore all?)
+3. **Do real GPs use AI suggestions in wild?** (O1-O3 tested in sandbox only)
+4. **What's real-world accuracy degradation?** (O1 synthetic → O2/O3 sandbox → O4 pilot with messy real data)
 
 **Why this is R&D:**
-- Prescription errors are safety-critical (dosing mistakes = patient harm)
-- Unknown: Can AI catch 95%+ prescription errors before pharmacy submission?
-- Unknown: How to present 50+ AI tools without causing alert fatigue?
-- Unknown: Will real GPs use AI suggestions, or ignore them?
-- Unknown: What is optimal balance between AI autonomy vs human oversight?
+- Unknown: Safety of multi-layer architecture in production (O1 tested on limited scenarios)
+- Unknown: Real-world prescription error detection rate (1,257 errors from RNZ are just known patterns)
+- Unknown: GP acceptance and usage patterns (technical accuracy ≠ clinical adoption)
+- Unknown: System performance with 50+ tools integrated (interaction effects, performance degradation)
+- Unknown: Alert fatigue threshold in practice (literature says varies 3-10 alerts, but NZ GPs?)
+
+---
+
+### **Hypothesis-Driven Approach**
+
+**Primary Hypothesis (From O1):**
+> "Multi-layer validation (Rules→LLM→Hard stops) achieves ≥95% prescription error detection with 100% critical error detection, versus single-layer <90% with critical errors missed."
+
+**O4-Specific Hypotheses:**
+- **H1:** Multi-layer prescription validation: ≥95% error detection, 100% critical error detection
+- **H2:** Alert fatigue threshold: ≤3 alerts/patient before GP dismissal rates spike
+- **H3:** Real-world accuracy: 5-10pp degradation from sandbox (O3: 85% → O4 pilot: 75-80%)
+- **H4:** GP usage: ≥70% of GPs use at least 50% of features daily (not all features, but core ones)
+- **H5:** Iterative refinement: Weekly model updates during pilot improve accuracy by ≥5pp over 8 weeks
+
+**Architecture Validation in O4:**
+**Test:** Does O1's recommendation (multi-layer for safety-critical) work in production?
+- Week 18-20: Test rules-only on 1,257 known errors → Expect 85% detection
+- Week 20-21: Add LLM layer → Expect 95%+ detection
+- Week 22-24 (Pilot): Validate in wild with real prescriptions
+
+---
+
+### **Technical Unknowns (O4 Will Resolve)**
+
+1. **Unknown:** Real-world prescription error detection rate?
+   - RNZ report: 1,257 errors in one week (known patterns)
+   - But: How many novel error types in wild? (not in 1,257 training set)
+   - How we'll find out: Pilot with 10-20 GPs, log all AI flags vs GP final decisions, measure sensitivity/specificity
+
+2. **Unknown:** Alert fatigue threshold for NZ GPs?
+   - Literature: Varies 3-10 alerts before dismissal
+   - But: NZ GP context different (smaller practices, less support staff)
+   - How we'll find out: Pilot tracks alert counts per patient, GP dismissal rates, correlate to find threshold
+
+3. **Unknown:** Which features get used vs ignored?
+   - O2/O3: All features tested in sandbox → All "work"
+   - But: Real GPs may ignore features that slow workflow
+   - How we'll find out: Pilot tracks feature usage rates, GP interviews reveal why some ignored
+
+4. **Unknown:** System performance with all features integrated?
+   - O2: 4 features → Widget v1.0
+   - O3: +3 features → Widget v2.0
+   - O4: +4 features = 11 total → Does widget become slow/buggy?
+   - How we'll find out: Pilot measures latency, crash rates, GP complaints about performance
+
+---
+
+### **Pilot as Research Study (Months 22-24)**
+
+**Treat pilot as systematic R&D validation, not just "try it with users":**
+
+**Research Questions:**
+- **RQ1:** Real-world accuracy vs sandbox? (Hypothesis: 5-10pp drop)
+- **RQ2:** Which features used vs ignored? (Hypothesis: Auto-filing used 80%, guidelines ignored 50%)
+- **RQ3:** Alert fatigue threshold? (Hypothesis: >3 alerts/patient = spike in dismissals)
+- **RQ4:** Safety violations in wild? (Hypothesis: 0 critical violations if multi-layer works)
+- **RQ5:** GP trust and adoption? (Hypothesis: ≥75% would continue using post-pilot)
+
+**Data Collection Protocol:**
+- **Quantitative:** Log every AI suggestion + GP decision (accept/reject/modify), time metrics, error logs
+- **Qualitative:** Weekly 10-min GP interviews, critical incident reports, end-of-pilot focus group
+- **Safety:** Weekly safety audit (manual review 50 random outputs), incident reporting system
+
+**Analysis Plan:**
+- Week 22-23 (Week 1-2): Rapid review → Fix critical bugs
+- Week 24-25 (Week 3-4): Interim analysis → Adjust thresholds based on data
+- Week 26 (Week 8+): Final analysis → Document learnings for post-grant rollout
 
 ---
 
@@ -1365,14 +1534,80 @@ Build **modular foundation** supporting all approaches:
 
 ---
 
+### **Failure Modes & Pivot Plans**
+
+**Failure 1: Multi-layer architecture <95% error detection (O1 hypothesis fails)**
+- **Diagnosis:** Which error types missed? (Novel vs known patterns?)
+- **Pivot A:** Add third validation layer (Rules→LLM→Clinical reasoning LLM)
+- **Pivot B:** Reduce scope (detect critical errors only, not all 1,257 types)
+- **Pivot C:** Hybrid approach (multi-layer for critical, single-layer for minor errors)
+
+**Failure 2: Alert fatigue in pilot (>3 alerts/patient → high dismissal)**
+- **Diagnosis:** Which features causing most alerts? (All features or specific ones?)
+- **Pivot A:** Disable high-noise features (keep only high-value, low-false-positive tools)
+- **Pivot B:** Implement intelligent batching (group related alerts, present once daily)
+- **Pivot C:** Change to "on-demand" (GP clicks to see suggestions, not automatic alerts)
+
+**Failure 3: GP pilot dropout rate >20%**
+- **Diagnosis:** Why dropping out? (Too complex? Too slow? Not useful?)
+- **Pivot A:** Simplify UI (reduce features shown simultaneously)
+- **Pivot B:** Increase incentives (higher stipends, more support)
+- **Pivot C:** Change pilot model (shorter duration, more iterative feedback loops)
+
+**Failure 4: Safety violation in pilot (prohibited claim or critical error)**
+- **Emergency Response:**
+  - **Immediate:** Halt feature causing violation (hard stop)
+  - **Within 24h:** Root cause analysis (why did safety layer fail?)
+  - **Within 48h:** Fix deployed and validated (safety audit before restart)
+  - **Post-incident:** Update safety test suite (prevent recurrence)
+- **Pivot:** If safety violations persist → Reduce scope to O2+O3 only (postpone O4 high-risk features)
+
+**Failure 5: Real-world accuracy <70% (>10pp degradation from O3)**
+- **Diagnosis:** Where is degradation? (Which features? Which data types?)
+- **Pivot A:** Rapid data collection (use pilot to build real-world training set)
+- **Pivot B:** Weekly model updates (fine-tune on pilot data, iterative improvement)
+- **Pivot C:** Focus on high-accuracy features only (disable low-performing features)
+
+**Failure 6: System performance degradation (latency >10s, crashes >1/day)**
+- **Diagnosis:** Which features causing bottlenecks?
+- **Pivot A:** Feature gating (load features on-demand, not all upfront)
+- **Pivot B:** Infrastructure scaling (more GPUs, better caching)
+- **Pivot C:** Reduce feature set (O4 advanced features optional, not default)
+
+---
+
+### **Learnings Feed Forward (Post-Grant Rollout)**
+
+**O4 Pilot Informs Future Rollout:**
+- **If multi-layer worked:** Use for all safety-critical features in wider rollout
+- **If alert fatigue discovered:** Set thresholds based on pilot data (not assumptions)
+- **If specific features loved:** Prioritize those in marketing/onboarding
+- **If specific features ignored:** Deprioritize or remove post-grant
+- **If GPs wanted training:** Build comprehensive training program pre-rollout
+- **If accuracy degradation quantified:** Set realistic expectations with future users
+
+**Programme-Wide Learnings (O1→O2→O3→O4):**
+1. **Architecture learnings:** Which approaches worked for which risk levels (documented for future features)
+2. **Integration learnings:** Medtech API patterns, widget design principles (reusable for future integrations)
+3. **Safety learnings:** Which safety mechanisms critical vs nice-to-have (inform future safety framework)
+4. **User experience learnings:** GP preferences, workflow integration patterns (inform future UX design)
+
+**Systematic Documentation for Post-Grant:**
+- **Model Cards:** Performance metrics, limitations, intended use for each major model component
+- **Technical Architecture Guide:** Decisions made, rationale, alternatives considered
+- **Safety Framework:** Incident reports, near-misses, safety audit results
+- **Pilot Study Report:** Full research findings, raw data, analysis (publishable as research paper?)
+
+---
+
 ### **Risk Mitigation**
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|------------|--------|------------|
-| **Prescription validation accuracy below 95%** | Medium | Critical | Start with hard stops only (critical errors); expand gradually; add rule-based validation for known error patterns |
-| **Alert fatigue in pilot** | Medium | High | Adaptive learning from Day 1; weekly GP feedback; aggressive threshold tuning; can disable features if causing fatigue |
-| **Pilot GPs drop out** | Low | Medium | GP stipends; weekly check-ins; responsive to feedback; keep pilot short (2-3 months) |
-| **Safety violation in pilot** | Low | Critical | Hard stops remain; weekly safety audits; incident response <15 min; can halt pilot immediately |
+| **Prescription validation accuracy below 95%** | Medium | Critical | Start with hard stops only (critical errors); expand gradually; add rule-based validation for known error patterns; see Pivot Plans above |
+| **Alert fatigue in pilot** | Medium | High | Adaptive learning from Day 1; weekly GP feedback; aggressive threshold tuning; can disable features if causing fatigue; Pivot Plans documented |
+| **Pilot GPs drop out** | Low | Medium | GP stipends; weekly check-ins; responsive to feedback; keep pilot short (2-3 months); Pivot Plans if >20% dropout |
+| **Safety violation in pilot** | Low | Critical | Hard stops remain; weekly safety audits; incident response <15 min; can halt pilot immediately; Emergency Response Protocol documented |
 | **Production deployment infrastructure fails** | Low | High | Thorough testing during pilot; staged rollout post-grant; fallback to sandbox environment |
 
 ---
