@@ -1,8 +1,8 @@
 # Comprehensive AI Tools List for 2-Year R&D Programme
 
-**Document Status:** Draft for discussion (23 Nov 2025)  
+**Document Status:** Draft for finalization (23 Nov 2025)  
 **Purpose:** Detailed breakdown of all AI capabilities to be built over 24-month R&D grant period  
-**Total Feature Areas:** 11 major areas, ~50 specific tools
+**Total Feature Areas:** 10 major areas, ~45 specific tools
 
 ---
 
@@ -11,10 +11,8 @@
 ### Core Capabilities:
 - **Inbox triage and classification**
   - Urgency flagging (critical/urgent/routine)
-  - Type classification (labs/letters/referrals/scripts/admin)
+  - Type classification (labs/letters/referrals/scripts/admin/patient messages)
   - Action identification (urgent review/follow-up/no action/file)
-  - Smart routing to appropriate GP
-  - Batch processing (summarise 50 items at once)
 
 ### R&D Uncertainty:
 - Can AI accurately classify heterogeneous NZ inbox items (regional lab formats, DHB letter variations)?
@@ -22,15 +20,17 @@
 
 ---
 
-## **2. Lab Result Interpretation (High-Yield Focus)**
+## **2. Lab Result Interpretation**
+
+**Initial Focus (Year 1-2):** Three high-yield lab panels  
+**Future Expansion:** TFT (thyroid function), iron studies, liver function tests, etc.
 
 ### **2A: Lipid Panel Intelligence**
 - Abnormal lipid detection and flagging
-- CVDRA auto-calculation (NZ CVD Risk Calculator)
 - Statin indication assessment (per BPAC guidelines)
 - Lipid target achievement monitoring (for patients on statins)
 - Lifestyle vs medication recommendation
-- Specialist referral triggers (familial hyperlipidaemia)
+- Specialist referral triggers (familial hyperlipidaemia: LDL >5.0 + family history)
 
 ### **2B: HbA1c & Diabetes Monitoring**
 - HbA1c trend analysis (improving/stable/worsening)
@@ -41,34 +41,38 @@
 
 ### **2C: Renal Function Intelligence**
 - eGFR trend tracking and rate of decline calculation
-- CKD stage classification (Stage 1-5)
+- CKD stage classification (Stage 1-5 per NZ renal guidelines)
 - Nephrotoxic medication identification
-- Nephrology referral triggers (per NZ renal guidelines)
+- Nephrology referral triggers (eGFR <30, rapid decline, ACR >30 with declining eGFR)
 - Dose adjustment recommendations (medication dosing in renal impairment)
 - ACR (albumin-creatinine ratio) interpretation
 
 ### R&D Uncertainty:
 - Can AI safely interpret NZ lab results with regional variations (LabTests Auckland ≠ SCL ≠ Medlab)?
-- Can small model calculate CVDRA accurately from unstructured clinical data?
 - How to handle multi-condition interactions (diabetes + CKD = different interpretation)?
 
 ---
 
-## **3. Normal Screening Auto-Filing & Recall**
+## **3. Cardiovascular Risk Assessment (CVDRA)**
 
 ### Core Capabilities:
-- Normal result identification (within reference ranges + clinical context)
-- Auto-filing with templated comments
-- Intelligent recall scheduling:
-  - Lipid recalls (5 years for low risk, annual for CVD patients)
-  - HbA1c recalls (3/6/12 months based on control)
-  - Renal function recalls (annual for CKD, 6-monthly for declining)
-  - Thyroid recalls (annual for stable hypothyroid)
-- Patient notification generation ("Your results are normal")
+- **CVDRA auto-calculation** (NZ CVD Risk Calculator)
+  - Extract parameters from patient data (age, sex, ethnicity, smoking, diabetes, BP, lipids)
+  - Calculate 5-year CVD risk
+  - Interpret risk level and treatment thresholds
+- **Treatment recommendations** (per BPAC guidelines)
+  - CVDRA >15%: "Consider statin therapy"
+  - CVDRA 10-15%: "Discuss lifestyle + consider statin"
+  - CVDRA <10%: "Lifestyle advice, recheck 5 years"
+- **Intelligent recall scheduling**
+  - 5 years for low risk (<10%)
+  - Annual for moderate risk (10-15%)
+  - 6-monthly for high risk (>15%) or CVD patients
 
 ### R&D Uncertainty:
-- When is it safe to auto-file without GP review?
-- How to detect clinical context that changes "normal" interpretation (e.g., "normal" HbA1c in pre-diabetic)?
+- Can AI accurately extract CVDRA parameters from unstructured clinical notes?
+- Can hybrid architecture (LLM for extraction + Rules for calculation) prevent hallucination?
+- How to handle missing parameters (e.g., smoking status not documented)?
 
 ---
 
@@ -113,9 +117,20 @@
 - Overdue screening identification
 - BreastScreen Aotearoa referral generation
 
+#### **Normal Screening Result Auto-Filing & Recall**
+- Normal screening result identification (cervical, breast, bowel screening)
+- Auto-filing with templated comments ("Cervical screening normal - due in 3 years")
+- Intelligent recall scheduling:
+  - Cervical screening: 3 years
+  - Bowel screening (FIT): 2 years
+  - Breast screening: 2 years
+- Patient notification generation ("Your screening result is normal")
+
 ### R&D Uncertainty:
 - Can AI track eligibility across multiple screening programmes simultaneously?
 - How to prioritize multiple overdue screenings (bowel vs cervical vs breast)?
+- When is it safe to auto-file without GP review?
+- How to detect clinical context that changes "normal" interpretation?
 
 ---
 
@@ -184,52 +199,63 @@
 
 ---
 
-## **8. ACC & Injury Management**
+## **8. ACC & Unclaimed Revenue Identification**
 
 ### Core Capabilities:
-- ACC code suggestion (based on consultation notes)
-- ACC claim documentation assistance
-- ACC-funded treatment identification
-- Occupational injury classification (ACC45 vs ACC32)
+- **Unclaimed ACC consult identification**
+  - Scan consultation notes for injury-related consultations
+  - Flag consults that appear ACC-claimable but not coded as ACC
+  - Suggest ACC code (based on injury description)
+- **ACC-funded treatment identification**
+  - Identify treatments/procedures that could be ACC-funded
+  - Flag revenue opportunities (non-ACC billed when ACC-fundable)
+- **ACC claim documentation assistance**
+  - Extract injury details from consultation notes
+  - Pre-populate ACC claim forms
 
 ### R&D Uncertainty:
-- Can AI match injury descriptions to correct ACC codes (900+ ACC Read codes)?
-- How to differentiate ACC-fundable vs non-fundable conditions from consultation notes?
+- Can AI reliably detect injury-related consultations from unstructured notes?
+- Can AI differentiate ACC-fundable vs non-fundable conditions accurately?
+- What's the false positive rate (flagging non-ACC consults as ACC)?
 
-**Note:** Health Accelerators ACC Digital Assistant is an existing competitor (180k milestone) - we differentiate by comprehensive clinical AI suite vs standalone ACC tool.
+**Differentiation from Health Accelerators ACC Digital Assistant:** We focus on proactive revenue identification (finding unclaimed ACC cases) vs their reactive coding assistant. Integrated within comprehensive clinical AI suite.
 
 ---
 
-## **9. Clinical Guideline Assistant**
+## **9. NZ Medical Answer Engine**
+
+**Inspiration:** Similar to Australia's medlo.com.au - "Australia's Leading Medical Answer Engine"
 
 ### Core Capabilities:
-- Context-aware guideline surfacing (BPAC, NZGG during consultations)
-- NZ-specific treatment pathways (HealthPathways integration)
-- Vaccine schedule reminders (flu, COVID, childhood immunisations)
-- Antibiotic prescribing guidelines (per BPAC recommendations)
+- **NZ-specific medical question answering**
+  - Natural language queries from GPs (e.g., "What's first-line treatment for hypertension in CKD?")
+  - Answers grounded in NZ clinical guidelines (BPAC, NZGG, HealthPathways)
+  - Citations and references for all answers
+- **Guideline synthesis**
+  - Synthesize multiple NZ guidelines into coherent answers
+  - Handle guideline conflicts (when BPAC vs NZGG differ)
+  - Regional variations (DHB-specific HealthPathways)
+- **Clinical decision support**
+  - Treatment pathway recommendations (NZ-specific)
+  - Medication dosing guidance (Pharmac formulary context)
+  - Vaccine schedules (NZ immunization schedule)
+  - Antibiotic prescribing (per BPAC, local antibiograms)
+- **Integration within Medtech widget**
+  - Ask questions within clinical workflow (not separate app)
+  - Context-aware (can reference current patient data if needed)
 
 ### R&D Uncertainty:
-- Can AI surface relevant guidelines without context from consultation?
-- How to prevent guideline overload (showing 10 guidelines = none read)?
+- Can NZ-sovereign clinical LLM match quality of commercial models (GPT-4, Claude) for medical Q&A?
+- How to ensure answers are always grounded in NZ guidelines (prevent hallucination)?
+- Can small model (7B-13B) handle complex multi-step medical reasoning?
+- How to maintain currency (guidelines update, model needs retraining)?
+- What's optimal UX for medical Q&A within clinical workflow (not disruptive)?
+
+**Differentiation from medlo.com.au:** NZ-specific (not Australian), integrated within Medtech (not standalone), built on sovereign infrastructure (data stays in NZ), part of comprehensive clinical AI suite.
 
 ---
 
-## **10. Patient Communication Tools**
-
-### Core Capabilities:
-- Patient-friendly result explanations (translate medical jargon)
-- After-visit summary generation (consultation summary for patient)
-- Medication instruction sheets (literacy-appropriate)
-- Follow-up instruction generation ("Return if X happens")
-- Screening invitation letters (automated outreach for overdue screening)
-
-### R&D Uncertainty:
-- Can AI generate health-literacy-appropriate text for NZ diverse population (Māori, Pacific, migrant)?
-- How to maintain accuracy while simplifying medical terminology?
-
----
-
-## **11. Clinical AI Dashboard & Integration**
+## **10. Clinical AI Dashboard & Integration**
 
 ### Core Capabilities:
 
@@ -265,19 +291,79 @@
 
 ## **Summary**
 
-- **11 major feature areas**
-- **~50 specific AI tools** to be built over 24 months
-- **Core R&D uncertainties:** 
-  1. Can small, self-hosted model achieve GPT-4-level accuracy for NZ-specific clinical tasks?
-  2. How to handle NZ clinical context (regional variations, Pharmac rules, local guidelines)?
-  3. When is AI autonomous action safe vs when does GP review required?
-  4. How to prevent alert fatigue while maintaining safety?
-  5. Can single model handle diverse tasks (reactive + proactive + safety) simultaneously?
+- **10 major feature areas**
+- **~45 specific AI tools** to be built over 24 months
+
+### **Core R&D Uncertainties (Programme-Wide):**
+
+1. **Architecture:** Can small, self-hosted model achieve GPT-4-level accuracy for NZ-specific clinical tasks?
+2. **NZ Context:** How to handle NZ clinical context (regional variations, Pharmac rules, local guidelines)?
+3. **Safety:** When is AI autonomous action safe vs when does GP review required?
+4. **Usability:** How to prevent alert fatigue while maintaining safety?
+5. **Multi-task:** Can single model handle diverse tasks (reactive + proactive + safety) simultaneously?
+6. **Medical Q&A:** Can NZ-sovereign LLM provide reliable medical answers comparable to commercial models?
+7. **Revenue identification:** Can AI reliably identify unclaimed ACC cases without high false positive rate?
+
+---
+
+## **Feature Prioritization Summary**
+
+### **High Priority (Core Value Proposition):**
+1. Inbox Management & Triage
+2. Lab Result Interpretation (3 high-yield labs)
+3. CVDRA + Recall
+4. Prescription & Medication Intelligence
+5. NZ Medical Answer Engine
+
+### **Medium Priority (Proactive Clinical Support):**
+6. Care Gap Monitoring
+7. National Screening Programme Management
+8. Referral & Letter Management
+
+### **Nice-to-Have (Revenue Optimization):**
+9. ACC & Unclaimed Revenue Identification
+10. Clinical AI Dashboard (essential for usability, but builds on all other features)
+
+---
+
+---
+
+## **Grouping into 3 Objectives (DECIDED)**
+
+### **Objective 2: Inbox & Admin Automation (Low Complexity / Low Risk)**
+**Timeline:** Months 6-14
+
+**Features:**
+1. Inbox Management & Triage
+2. Referral & Letter Management
+3. Lab Result Interpretation (3 high-yield labs)
+4. National Screening Programme Management (with auto-filing)
+
+---
+
+### **Objective 3: Clinical Intelligence & Proactive Care (Medium Complexity / Medium Risk)**
+**Timeline:** Months 12-20
+
+**Features:**
+1. CVDRA Auto-Calculation + Recall
+2. Care Gap Monitoring
+3. ACC & Unclaimed Revenue Identification
+
+---
+
+### **Objective 4: Clinical Decision Support & Medical Intelligence (High Complexity / High Risk)**
+**Timeline:** Months 18-24
+
+**Features:**
+1. Prescription & Medication Intelligence (safety-critical)
+2. NZ Medical Answer Engine (complex medical reasoning)
+3. Clinical AI Dashboard (integrates all features, adaptive learning)
 
 ---
 
 **Next Steps:**
-- [ ] Group these 11 areas into 4 SMART objectives over 24 months
-- [ ] Allocate features to Year 1 (Months 1-12) vs Year 2 (Months 13-24)
-- [ ] Define measurable success criteria for each objective
-- [ ] Calculate budget allocation per objective
+- [x] Features finalized (10 features)
+- [x] Grouped into 3 objectives
+- [ ] Update revised-objectives-24-months.md with final feature groupings
+- [ ] Align R&D narrative with finalized features
+- [ ] Update budget allocations per objective
