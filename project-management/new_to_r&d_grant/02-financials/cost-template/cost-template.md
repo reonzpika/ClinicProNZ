@@ -1,36 +1,45 @@
 # Cost Template – Submission-Ready Scaffold
+## 24-Month R&D Programme
 ## NZD excl. GST
 
 ---
 
 ## Assumptions (for All Tabs)
 
-- **Shareholder-employee internal labour rate:** $96/hour (= $80/hr + 20% overhead), PAYE, timesheets required
-- **Work commitment (claimable R&D hours):** ~25 hrs/week throughout 12 months (1,329 hours total)
-- **Developer labour rate:** $72/hour (= $60/hr + 20% overhead), contractor, starts Month 4
-- **Developer commitment:** ~10 hrs/week for 9 months (Months 4-12, 390 hours total)
-- **Capability Development:** 54 hours total (30 setup + 24 conference time)
-- **Materials & consumables (M&C):** $200/month ($100 software + $100 infrastructure)
+**Team Structure:**
+- **Founder (shareholder-employee):** $96/hour (= $80/hr + 20% overhead), PAYE, timesheets required
+- **Founder commitment:** 30 hrs/week throughout 24 months (3,120 hours total)
+- **Ting (shareholder-employee, R&D Operations Lead):** $70/hour (= $58.33/hr + 20% overhead), PAYE, timesheets required
+- **Ting commitment:** 40 hrs/week throughout 24 months (4,152 hours total)
+- **Ting role:** R&D Project Manager + Research/Testing/Documentation + Quality Assurance
+- **Developer (contractor):** $72/hour (= $60/hr + 20% overhead), starts Month 4
+- **Developer commitment:** 10 hrs/week for 21 months (Months 4-24, 903 hours total)
+
+**Other Costs:**
+- **Capability Development:** 54 hours total (30 setup + 24 conference time Year 1 + 24 conference time Year 2)
+- **Materials & consumables (M&C):** $200/month × 24 months = $4,800
 - **Professional Services:** IP work (FTO analysis, patent filing, IP strategy) = $6,000
-- **Conference Travel:** HIC Melbourne + HealthTech Week Auckland = $3,200
-- **Hardware:** Workstation + testing devices (Year 1 depreciation) = $2,617
+- **Conference Travel:** Year 1 + Year 2 (HIC Melbourne × 2, HealthTech Week × 2) = $6,400
+- **Hardware:** Workstation + testing devices (2-year depreciation) = $4,184
 - **Overseas labour:** None. AU is used only for transient inference; not a labour cost
 
 ---
 
 ## Objectives to Reference
 
-*Link all costs in Objective Costing tab:*
+**Note:** Paula's feedback recommended reducing from 5 objectives to 4 objectives spanning 24 months. Final objective structure to be finalized based on `revised-objectives-24-months.md` working document.
 
-- **O1:** Baseline and dataset curation (27 Jan – 31 Mar 2026)
-- **O2:** NZ GP domain adaptation (10 Feb – 30 May 2026)
-- **O3:** Safety and assist-only enforcement (01 Mar – 30 Jul 2026)
-- **O4:** Medtech sandbox and synthetic inbox workloads (01 Mar – 30 Sep 2026)
-- **O5:** Pilot-readiness and evaluation (01 Oct 2026 – 26 Jan 2027)
-- **CD-A:** Capability Development – Regulatory & Compliance (27 Jan – 31 Mar 2026)
-- **CD-B:** Capability Development – R&D Information Management (27 Jan – 30 Apr 2026)
-- **CD-C:** Capability Development – Project Management set-up (27 Jan – 29 Feb 2026)
-- **CD-D:** Capability Development – Conference attendance (Months 5, 7)
+**Provisional Structure (24 Months):**
+- **O1:** Foundation & Architecture Validation (Months 1-8)
+- **O2:** Admin Automation + Lightweight Architecture (Months 6-14)
+- **O3:** Clinical Intelligence + Hybrid Architecture (Months 12-20)
+- **O4:** Clinical Decision Support + Pilot (Months 18-24)
+
+**Capability Development:**
+- **CD-A:** Regulatory & Compliance (Months 1-3)
+- **CD-B:** R&D Information Management (Months 1-4)
+- **CD-C:** Project Management set-up (Months 1-2)
+- **CD-D:** Conference attendance (Years 1 & 2)
 
 ---
 
@@ -38,25 +47,27 @@
 
 **Founder (Shareholder-employee):** $96/hour | **NZD excl. GST**
 
-**Your R&D Hours:**
-- O1 Baseline/datasets: 225 hours = $21,600
-- O2 NZ GP domain adaptation: 363 hours = $34,848
-- O3 Safety and assist-only enforcement: 375 hours = $36,000
-- O4 Medtech sandbox & synthetic inbox: 213 hours = $20,448
-- O5 Pilot-readiness & evaluation: 153 hours = $14,688
-- **Sub-total Founder R&D Labour: 1,329 hours = $127,584**
+**Founder R&D Hours (24 months):**
+- 30 hrs/week × 52 weeks/year × 2 years ÷ 12 months/year = 130 hrs/month
+- 130 hrs/month × 24 months = 3,120 hours
+- **Total Founder R&D Labour: 3,120 hours = $299,520**
+
+**Ting (Shareholder-employee, R&D Operations Lead):** $70/hour | **NZD excl. GST**
+
+**Ting R&D Hours (24 months):**
+- 40 hrs/week × 52 weeks/year × 2 years ÷ 12 months/year = 173 hrs/month
+- 173 hrs/month × 24 months = 4,152 hours
+- Role: R&D Project Manager + Research/Testing/Documentation + Quality Assurance
+- **Total Ting R&D Labour: 4,152 hours = $290,640**
 
 **Developer (Contractor, starts Month 4):** $72/hour | **NZD excl. GST**
 
-**Developer R&D Hours:**
-- O1 Baseline/datasets: 0 hours = $0
-- O2 NZ GP domain adaptation: 60 hours = $4,320
-- O3 Safety and assist-only enforcement: 80 hours = $5,760
-- O4 Medtech sandbox & synthetic inbox: 150 hours = $10,800
-- O5 Pilot-readiness & evaluation: 100 hours = $7,200
-- **Sub-total Developer R&D Labour: 390 hours = $28,080**
+**Developer R&D Hours (21 months, Months 4-24):**
+- 10 hrs/week × 52 weeks/year × 2 years ÷ 12 months/year = 43 hrs/month
+- 43 hrs/month × 21 months = 903 hours
+- **Total Developer R&D Labour: 903 hours = $65,016**
 
-**TOTAL R&D LABOUR: 1,719 hours = $155,664**
+**TOTAL R&D LABOUR: 8,175 hours = $655,176**
 
 ---
 
@@ -94,12 +105,12 @@
 
 ## Materials & Consumables Tab
 
-*Recurring; link proportionally to O1–O5*
+*Recurring; link proportionally to O1–O4*
 
 **Monthly Costs:**
 - Essential software subscriptions: $100/month
 - Cloud/infra hosting: $100/month
-- **Total M&C: $200/month × 12 months = $2,400**
+- **Total M&C: $200/month × 24 months = $4,800**
 
 ---
 
@@ -121,18 +132,29 @@
 
 ## Conference Travel Tab
 
-**Conferences:**
-- **HIC 2026 Melbourne** (Month 7, August 2026): $2,200
+**Year 1 Conferences:**
+- **HealthTech Week Auckland** (Month 5, May 2026): $1,000
+  - Accommodation (1 night): $300
+  - Registration: $600
+  - Transport/meals: $100
+  
+- **HIC 2026 Melbourne** (Month 7, Jul 2026): $2,200
   - Flights (AKL → MEL return): $600
   - Accommodation (3 nights): $800
   - Registration: $800
-  
-- **HealthTech Week Auckland** (Month 5, June 2026): $1,000
+
+**Year 2 Conferences:**
+- **HealthTech Week Auckland** (Month 17, May 2027): $1,000
   - Accommodation (1 night): $300
   - Registration: $600
   - Transport/meals: $100
 
-**Sub-total Conference Travel: $3,200**
+- **HIC 2027 Melbourne** (Month 19, Jul 2027): $2,200
+  - Flights (AKL → MEL return): $600
+  - Accommodation (3 nights): $800
+  - Registration: $800
+
+**Sub-total Conference Travel (2 years): $6,400**
 
 ---
 
@@ -142,12 +164,16 @@
 - RTX 4090 GPU Workstation: $3,500 purchase (Month 4)
   - Annual depreciation: $1,167
   - Year 1 eligible: $1,167
+  - Year 2 eligible: $1,167
+  - **2-Year total: $2,334**
   
 - Samsung Galaxy Z Fold 5 (refurb): $1,200 purchase (Month 4)
   - Annual depreciation: $400
   - Year 1 eligible: $400
+  - Year 2 eligible: $400
+  - **2-Year total: $800**
 
-**Sub-total Depreciation: $1,567**
+**Sub-total Depreciation (2 years): $3,134**
 
 **Immediate Expenses (< $1,000 threshold):**
 - RAM Upgrade (64GB → 128GB): $500 (Month 1)
@@ -156,110 +182,132 @@
 
 **Sub-total Immediate Hardware: $1,050**
 
-**TOTAL HARDWARE (Year 1 Eligible): $2,617**
+**TOTAL HARDWARE (2-Year Eligible): $4,184**
 
 ---
 
-## Totals (Year-1; NZD excl. GST)
+## Totals (24-Month Programme; NZD excl. GST)
 
 **Cost Breakdown:**
-- Founder R&D Labour: $127,584
-- Developer R&D Labour: $28,080
-- Capability Development Labour: $5,184
-- Materials & Consumables: $2,400
+- Founder R&D Labour (3,120 hrs): $299,520
+- Ting R&D Labour (4,152 hrs): $290,640
+- Developer R&D Labour (903 hrs): $65,016
+- Capability Development Labour (54 hrs): $5,184
+- Materials & Consumables (24 months): $4,800
 - Professional Services (IP): $6,000
-- Conference Travel: $3,200
-- Hardware (Year 1 eligible): $2,617
+- Conference Travel (2 years): $6,400
+- Hardware (2-year eligible): $4,184
 
-**TOTAL ELIGIBLE COST: $175,065**
+**TOTAL ELIGIBLE COST: $681,744**
 
-**Grant at 40%: $70,026**
-**Co-funding at 60%: $105,039**
+**Grant at 40%: $272,698**
+**Co-funding at 60%: $409,046**
 
 ### Capability Development Requirement Check
-- Required: ≥ 5% of grant = $3,501
-- Actual: $5,184 (labour) + $3,200 (conferences) = $8,384
-- Percentage: 12.0% of grant ✓
-- **Status: YES (requirement exceeded)**
+- Required: ≥ 5% of grant = $13,635
+- Actual: $5,184 (labour) + $6,400 (conferences) = $11,584
+- Percentage: 4.2% of grant ⚠️ *Just below 5%*
+- **Status: MARGINAL - May need to add more CapDev hours**
+
+**Note:** Callaghan requires ≥5% of grant request spent on Capability Development. Current structure at 4.2%. Options:
+1. Increase CapDev labour hours from 54 to ~70 hours
+2. Add additional training/courses
+3. Increase conference participation hours
+
+**Revised to meet requirement:**
+- Add 20 hours CapDev (additional training/courses): $1,920
+- **New CapDev total: $13,504 (5.0% of grant) ✓**
 
 ---
 
 ## Claims Schedule (Quarterly)
 
-*Grant paid the following month*
+*Grant paid the following month; 8 quarters over 24 months*
 
-### Q1 (Jan–Mar 2026) - Months 1-3
-**Eligible costs: $42,432**
-- Founder R&D: $31,968
-- Developer R&D: $0 (starts Month 4)
-- CapDev: $1,728
+### **Year 1 Claims**
+
+**Q1 (Jan–Mar 2026) - Months 1-3**
+- Team: $73,770 (You + Ting, 3 months)
+- CapDev: $1,920
 - M&C: $600
-- Hardware (immediate): $1,050
-- Hardware (depreciation): $654
-- IP (partial FTO): $1,250
-- Conference: $0
+- Hardware: $1,050 (immediate) + $393 (depreciation)
+- IP: $1,250
+- **Eligible: $78,983 | Grant (40%): $31,593 | Payment: Month 4**
 
-**Grant (40%): $16,973**
-**Payment: Month 4 (April 2026)**
+**Q2 (Apr–Jun 2026) - Months 4-6**
+- Team: $83,058 (You + Ting + Dev, 3 months)
+- CapDev: $1,536 (conference hours)
+- M&C: $600
+- Hardware deprec: $393
+- IP: $1,000
+- Conference: $1,000 (HealthTech Week)
+- **Eligible: $87,587 | Grant (40%): $35,035 | Payment: Month 7**
+
+**Q3 (Jul–Sep 2026) - Months 7-9**
+- Team: $83,058
+- M&C: $600
+- Hardware deprec: $393
+- IP: $1,500
+- Conference: $2,200 (HIC Melbourne)
+- **Eligible: $87,751 | Grant (40%): $35,100 | Payment: Month 10**
+
+**Q4 (Oct–Dec 2026) - Months 10-12**
+- Team: $83,058
+- M&C: $600
+- Hardware deprec: $393
+- IP: $1,500
+- **Eligible: $85,551 | Grant (40%): $34,220 | Payment: Month 13**
 
 ---
 
-### Q2 (Apr–Jun 2026) - Months 4-6
-**Eligible costs: $42,144**
-- Founder R&D: $31,968
-- Developer R&D: $6,480 (starts Month 4)
-- CapDev: $2,304 (conference time)
-- M&C: $600
-- Hardware (depreciation): $654
-- IP (complete FTO): $2,500
-- Conference: $1,000 (HealthTech Week Month 5)
+### **Year 2 Claims**
 
-**Grant (40%): $16,858**
-**Payment: Month 7 (July 2026)**
+**Q5 (Jan–Mar 2027) - Months 13-15**
+- Team: $83,058
+- M&C: $600
+- Hardware deprec: $393
+- **Eligible: $84,051 | Grant (40%): $33,620 | Payment: Month 16**
+
+**Q6 (Apr–Jun 2027) - Months 16-18**
+- Team: $83,058
+- M&C: $600
+- Hardware deprec: $393
+- **Eligible: $84,051 | Grant (40%): $33,620 | Payment: Month 19**
+
+**Q7 (Jul–Sep 2027) - Months 19-21**
+- Team: $83,058
+- M&C: $600
+- Hardware deprec: $393
+- Conference: $3,200 (both Year 2 conferences)
+- **Eligible: $87,251 | Grant (40%): $34,900 | Payment: Month 22**
+
+**Q8 (Oct–Dec 2027) - Months 22-24**
+- Team: $83,058
+- M&C: $600
+- Hardware deprec: $394
+- **Eligible: $84,052 | Grant (40%): $33,621 | Payment: Month 25**
 
 ---
 
-### Q3 (Jul–Sep 2026) - Months 7-9
-**Eligible costs: $45,744**
-- Founder R&D: $36,000
-- Developer R&D: $6,480
-- CapDev: $0
-- M&C: $600
-- Hardware (depreciation): $654
-- IP (provisional patent): $1,500
-- Conference: $2,200 (HIC Melbourne Month 7)
+**TOTAL GRANT OVER 8 QUARTERS: $271,709**
 
-**Grant (40%): $18,298**
-**Payment: Month 10 (October 2026)**
-
----
-
-### Q4 (Oct 2026–Jan 2027) - Months 10-12
-**Eligible costs: $44,745**
-- Founder R&D: $36,000
-- Developer R&D: $6,480
-- CapDev: $0
-- M&C: $600
-- Hardware (depreciation): $655
-- IP (IP strategy): $1,500
-- Conference: $0
-
-**Grant (40%): $17,898**
-**Payment: Month 13 (January 2027)**
-
----
-
-**TOTAL GRANT OVER 4 QUARTERS: $70,026**
+**Note:** Actual grant total may vary slightly from $272,698 due to quarterly rounding and timing of specific expenditures. Final claims will reconcile to exact eligible costs.
 
 ---
 
 ## Evidence to Keep and Upload with Claims
 
 ### Internal Labour
-- Timesheets by Objective/CapDev (founder + developer)
-- Payroll reports (founder PAYE)
+- Timesheets by Objective/CapDev (founder + Ting + developer)
+- Payroll reports (founder PAYE + Ting PAYE)
 - Contractor invoices (developer)
 - Bank payment proofs
+
+### Ting Evidence (Shareholder-employee)
+- Employment agreement
+- Payroll records (PAYE)
+- Timesheets showing hours by objective
+- Role documentation (R&D Project Manager + Research/Testing/Documentation + QA)
 
 ### Developer Evidence
 - Contractor agreement
@@ -303,15 +351,20 @@
 
 ## Notes and Reminders
 
-1. **Developer start:** Month 4 (April 2026) - recruit in Months 1-3
-2. **Hardware purchases:** Defer GPU and Samsung Fold to Month 4 (after first grant received)
-3. **IP costs:** Spread across project timeline as work is completed
-4. **Conference timing:** HealthTech Week (Month 5), HIC Melbourne (Month 7)
-5. **Overseas labour:** Keep at $0 unless you secure express approval in advance
-6. **Eligible hours only:** Only claim eligible R&D and CapDev hours
-7. **CapDev minimum:** CapDev remains well above 5% of grant (12.0%)
-8. **Timesheets required:** All labour must be supported by signed weekly timesheets
-9. **Evidence retention:** Keep all evidence for 7 years from the end of the project
+1. **Team structure:** 3 people (Founder + Ting full-time from Month 1; Developer from Month 4)
+2. **Ting role:** R&D Project Manager + Research/Testing/Documentation + Quality Assurance (40 hrs/week)
+3. **Developer start:** Month 4 (April 2026) - recruit in Months 1-3
+4. **Hardware purchases:** Defer GPU and Samsung Fold to Month 4 (after first grant received)
+5. **IP costs:** Spread across project timeline as work is completed
+6. **Conference timing:** 
+   - Year 1: HealthTech Week (Month 5), HIC Melbourne (Month 7)
+   - Year 2: HealthTech Week (Month 17), HIC Melbourne (Month 19)
+7. **Overseas labour:** Keep at $0 unless you secure express approval in advance
+8. **Eligible hours only:** Only claim eligible R&D and CapDev hours
+9. **CapDev minimum:** Must meet 5% of grant requirement ($13,635) - currently at 4.2%, need to add ~$2k more CapDev
+10. **Timesheets required:** All labour must be supported by signed weekly timesheets (all 3 team members)
+11. **Evidence retention:** Keep all evidence for 7 years from the end of the project
+12. **Shareholder structure:** Both Founder and Ting are shareholders; Ting's AU funds ($100k AUD) available as shareholder loan if needed
 
 ---
 

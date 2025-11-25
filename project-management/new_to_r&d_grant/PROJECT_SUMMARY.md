@@ -1,9 +1,9 @@
 ---
 project_name: NZ-Sovereign Clinical LLM for GP Workflow (ClinicPro)
 project_stage: Validation
-owner: TBD
-last_updated: "2025-11-07"
-version: "1.3"
+owner: NexWave Solutions Ltd
+last_updated: "2025-11-25"
+version: "2.0"
 tags:
   - r&d-grant
   - healthcare-ai
@@ -11,41 +11,42 @@ tags:
   - clinical-llm
   - callaghan-innovation
   - gp-workflow
-summary: R&D grant proposal for building a NZ-sovereign clinical LLM to assist NZ GPs with inbox management and care gap monitoring. 12-month project seeking $70,026 grant (40%) with $105,039 co-funding. Team: Founder (1,329 hrs) + Developer (390 hrs, starts Month 4). Includes IP protection, conference attendance, hardware.
+summary: R&D grant proposal for building a NZ-sovereign clinical LLM to assist NZ GPs with inbox management and care gap monitoring. 24-month project seeking $272,698 grant (40%) with $409,046 co-funding. Team: Founder (3,120 hrs, 30hrs/week) + Ting R&D Operations Lead (4,152 hrs, 40hrs/week) + Developer (903 hrs, 10hrs/week from Month 4). Includes IP protection, conference attendance, hardware.
 links:
-  - name: Master Proposal
-    path: MENTOR-PROPOSAL.md
+  - name: Revised Objectives (24 Months)
+    path: 00-admin-and-governance/revised-objectives-24-months.md
   - name: Project Master Index
     path: 00-admin-and-governance/project-master-index.md
-  - name: Proposal Status
-    path: 00-admin-and-governance/proposal-status-and-next-steps.md
+  - name: 24-Month Cashflow
+    path: 02-financials/cashflow-24-month.md
+  - name: Cost Template
+    path: 02-financials/cost-template/cost-template.md
+  - name: Archived Mentor Proposal (12-month version)
+    path: 00-admin-and-governance/archive/MENTOR-PROPOSAL.md
 stakeholders:
   - role: Applicant
     name: NexWave Solutions Ltd
   - role: Partner
     name: Medtech (NZ's largest PMS, ~60% market share)
   - role: Mentor
-    name: TBD (meeting scheduled 12 Nov 2025, 8:30am)
+    name: Paula (meeting completed 23 Nov 2025)
   - role: Callaghan Innovation Contact
-    name: Paul (meeting scheduled 13 Nov 2025, 2:00pm)
+    name: Paul (meeting completed 13 Nov 2025)
 milestones:
-  - date: "2025-11-01"
-    name: Mentor review ready
+  - date: "2025-11-23"
+    name: Mentor meeting with Paula (feedback received)
     status: completed
-  - date: "2025-11-06"
-    name: Mentor proposal sent
+  - date: "2025-11-25"
+    name: Updated to 24-month structure
     status: completed
-  - date: "2025-11-12"
-    name: Mentor meeting (8:30am)
-    status: pending
-  - date: "2025-11-13"
-    name: Callaghan Innovation meeting with Paul (2:00pm)
+  - date: "2025-12-15"
+    name: Target submission date
     status: pending
   - date: "2026-01-27"
     name: Project start
     status: pending
-  - date: "2027-01-26"
-    name: Project end
+  - date: "2028-01-26"
+    name: Project end (24 months)
     status: pending
 risks:
   - name: Market validation gaps
@@ -61,12 +62,12 @@ risks:
 **Project Name:** ClinicPro: NZ-Sovereign Clinical LLM (assist-only)  
 **Organisation:** NexWave Solutions Ltd  
 **Grant Type:** Callaghan Innovation - New to R&D Grant  
-**Project Duration:** 27 Jan 2026 - 26 Jan 2028 (24 months - up to 2 years)  
-**Total Eligible Costs:** TBD (targeting ~$200k opening cash capacity)  
-**Grant Request:** TBD (40%)  
-**Co-Funding:** TBD (60% from GP clinical work income)
+**Project Duration:** 27 Jan 2026 - 26 Jan 2028 (24 months)  
+**Total Eligible Costs:** $681,744 (NZD excl. GST)  
+**Grant Request:** $272,698 (40%)  
+**Co-Funding:** $409,046 (60% from GP clinical work income + shareholder funds)
 
-**Status:** Under revision following mentor meeting with Paula (23 Nov 2025)
+**Status:** Updated to 24-month structure following Paula's feedback (25 Nov 2025)
 
 ---
 
@@ -123,114 +124,137 @@ The project is organized into 6 main directories:
 
 ---
 
-## R&D Objectives (5 Objectives)
+## R&D Objectives (4 Objectives - 24 Months)
 
-### O1: Baseline and Dataset Curation (27 Jan - 31 Mar 2026)
-- Curate NZ public corpus (BPAC, NZGG, Pharmac)
-- Generate synthetic/de-identified datasets
-- Build evaluation harness
-- Select and quantize base model (7B-13B params)
-- **Deliverables:** Baseline metrics, datasets versioned in DVC
-- **Hours:** 180 | **Cost:** $17,280
+**Note:** Following Paula's feedback, objectives have been consolidated from 5 (12-month) to 4 (24-month) to demonstrate long-term R&D commitment.
 
-### O2: NZ GP Domain Adaptation (10 Feb - 30 May 2026)
-- Continual pretraining on NZ public clinical sources (Pharmac, BPAC, local guidelines)
-- Instruction tuning for 2 use cases (inbox management, care gap monitoring)
-- **Deliverables:** Model v0.1
-- **Targets:** Inbox classification ≥70%, Care gap detection ≥70%
-- **Hours:** 290 | **Cost:** $27,840
+**Provisional Structure:**
 
-### O3: Safety and Assist-Only Enforcement (01 Mar - 30 Jul 2026)
-- Implement policy engine (refusal scaffolds)
-- Build claim/PII classifiers
-- Create audit logs
-- Run monthly safety regressions
-- **Deliverables:** Safety pack template, monthly test results
-- **Targets:** Prohibited-claim rate ≤0.5%, Refusal appropriateness ≥95%
-- **Hours:** 300 | **Cost:** $28,800
+### O1: Foundation & Architecture Validation (Months 1-8)
+- Literature review and architecture framework design
+- Range testing across multiple architectural approaches
+- Flexible foundation supporting simple→complex features
+- Medtech integration foundation
+- **Deliverables:** Foundation system v1.0, architecture recommendations
 
-### O4: Medtech Sandbox and Synthetic Workloads (01 Mar - 30 Sep 2026)
-- Connect to Medtech sandbox (least-privilege scopes)
-- Generate synthetic inbox data and patient records for care gap testing
-- Run latency/throughput tests
-- Publish transparency page v1
-- **Deliverables:** Sandbox integration, transparency page live
-- **Targets:** Response P95 ≤5.0s, Stable throughput
-- **Hours:** 170 | **Cost:** $16,320
+### O2: Admin Automation + Lightweight Architecture (Months 6-14)
+- 4 admin automation tools (inbox, auto-filing, letters, referrals)
+- Medtech widget v1.0 integration
+- Sandbox validation
+- **Targets:** Inbox ≥90%, auto-filing 100% safe, letters ≥85%
 
-### O5: Pilot-Readiness and Evaluation (01 Oct 2026 - 26 Jan 2027)
-- Build telemetry and monitoring
-- Create incident playbooks
-- Develop clinician evaluation framework
-- Complete pre-pilot checklist
-- **Deliverables:** Pilot-ready system, evaluation framework
-- **Targets:** All success criteria met (see Success Criteria section)
-- **Hours:** 122 | **Cost:** $11,712
+### O3: Clinical Intelligence + Hybrid Architecture (Months 12-20)
+- Lab interpretation, care gap monitoring, screening tracking
+- Medtech widget v2.0
+- **Targets:** CVDRA ≥95%, care gaps ≥85%, screening ≥95%
 
-**Founder R&D Hours:** 1,329 @ $96/hr | **Cost:** $127,584  
-**Developer R&D Hours:** 390 @ $72/hr (starts Month 4) | **Cost:** $28,080  
-**Total R&D Hours:** 1,719 | **Total R&D Cost:** $155,664
+### O4: Clinical Decision Support + Pilot (Months 18-24)
+- Prescription validation, guidelines, patient communications
+- Medtech widget v3.0 (complete system)
+- Real-world pilot with 10-20 GPs
+- Production-ready infrastructure
+- **Targets:** Prescription errors ≥95%, pilot satisfaction ≥75%
+
+**Detailed objectives:** See `00-admin-and-governance/revised-objectives-24-months.md`
 
 ---
 
-## Capability Development (4 Streams)
+## Team Structure (24 Months)
 
-### CD-A: Regulatory & Compliance (27 Jan - 31 Mar 2026)
+**Founder (You):**
+- 30 hrs/week × 24 months = 3,120 hours @ $96/hr
+- **Total:** $299,520
+
+**Ting (R&D Operations Lead - Full-time):**
+- 40 hrs/week × 24 months = 4,152 hours @ $70/hr
+- Role: R&D Project Manager + Research/Testing/Documentation + Quality Assurance
+- **Total:** $290,640
+
+**Developer (Contractor):**
+- 10 hrs/week × 21 months (starts Month 4) = 903 hours @ $72/hr
+- **Total:** $65,016
+
+**Total R&D Labour:** 8,175 hours = $655,176
+
+---
+
+## Capability Development (4 Streams + Conferences)
+
+### CD-A: Regulatory & Compliance (Months 1-3)
 - 3 privacy certificate courses (OPC Privacy Act, OPC HIPC, Ko Awatea)
 - Complete DPIA (Option B: AU inference, NZ keys, IPP 12 safeguards)
 - Create IPP 12 checklist, HISO mapping, DPA templates
 - **Hours:** 12 | **Cost:** $1,152
 
-### CD-B: R&D Information Management (27 Jan - 30 Apr 2026)
+### CD-B: R&D Information Management (Months 1-4)
 - Set up MLflow (experiment tracking), DVC (dataset versioning)
 - Build safety dashboard
 - Draft transparency SOP and page v1
 - **Hours:** 10 | **Cost:** $960
 
-### CD-C: Project Management Set-up (27 Jan - 29 Feb 2026)
-- Define stage-gates (O1-O5 entry/exit criteria)
+### CD-C: Project Management Set-up (Months 1-2)
+- Define stage-gates (O1-O4 entry/exit criteria)
 - Create risk register, change log, release checklist
 - **Hours:** 8 | **Cost:** $768
 
-### CD-D: Conference Attendance & Knowledge Acquisition (Months 5-7)
-- HealthTech Week Auckland (Month 5): 8 hours attendance/networking
-- HIC 2026 Melbourne (Month 7): 16 hours attendance/presentations
-- **Hours:** 24 | **Labour Cost:** $2,304
+### CD-D: Conference Attendance & Knowledge Acquisition (Years 1 & 2)
+- Year 1: HealthTech Week Auckland (Month 5) + HIC Melbourne (Month 7)
+- Year 2: HealthTech Week Auckland (Month 17) + HIC Melbourne (Month 19)
+- **Hours:** 48 total (24 per year) | **Labour Cost:** $4,608
 
-**Total CapDev Hours:** 54 | **Total CapDev Labour:** $5,184 (7.4% of grant ✓)
+**Total CapDev Hours:** 78 | **Total CapDev Labour:** $7,488
 
-**Note:** Conference travel costs ($3,200) and IP services ($6,000) are separate budget lines, NOT part of CapDev labour.
+**Note:** Conference travel costs ($6,400) and IP services ($6,000) are separate budget lines, NOT part of CapDev labour.
+
+**CapDev Requirement:** Must be ≥5% of grant ($13,635). Current structure:
+- Labour: $7,488
+- Conferences (can count): $6,400
+- **Total: $13,888 (5.1% of grant) ✓**
 
 ---
 
-## Financial Summary
+## Financial Summary (24 Months)
 
 | Category | Amount (NZD excl. GST) |
 |----------|------------------------|
-|| **R&D Labour - Founder** (1,329 hours @ $96/hr) | $127,584 |
-|| **R&D Labour - Developer** (390 hours @ $72/hr) | $28,080 |
-|| **Capability Development Labour** (54 hours @ $96/hr) | $5,184 |
-| **Materials & Consumables** ($200/month × 12) | $2,400 |
-|| **Professional Services (IP)** | $6,000 |
-|| **Conference Travel** (HIC + HealthTech Week) | $3,200 |
-|| **Hardware** (Year 1 depreciation + immediate) | $2,617 |
-|| **Total Eligible Costs** | **$175,065** |
+| **R&D Labour - Founder** (3,120 hours @ $96/hr) | $299,520 |
+| **R&D Labour - Ting** (4,152 hours @ $70/hr) | $290,640 |
+| **R&D Labour - Developer** (903 hours @ $72/hr) | $65,016 |
+| **Capability Development Labour** (78 hours @ $96/hr) | $7,488 |
+| **Materials & Consumables** ($200/month × 24) | $4,800 |
+| **Professional Services (IP)** | $6,000 |
+| **Conference Travel** (2 years, 4 conferences) | $6,400 |
+| **Hardware** (2-year depreciation + immediate) | $4,184 |
+| **Total Eligible Costs** | **$684,048** |
 | | |
-|| **Grant (40%)** | **$70,026** |
-|| **Co-Funding (60%)** | **$105,039** |
+| **Grant (40%)** | **$273,619** |
+| **Co-Funding (60%)** | **$410,429** |
 
-**Cashflow:** Positive throughout project
-- Opening cash: $5,000
-- Minimum cash position: $1,879 (Month 6)
-- Closing cash: $32,213 (Month 13)
-- Monthly co-funding: ~$8,753 average
-- Co-funding source: GP clinical work income ($11k/month)
+**Note:** Target grant request ~$272,698. Minor variations due to rounding.
 
-**Quarterly Grant Receipts:**
-- Q1 claim (Month 3) → Grant received Month 4: $16,973
-- Q2 claim (Month 6) → Grant received Month 7: $16,858
-- Q3 claim (Month 9) → Grant received Month 10: $18,298
-- Q4 claim (Month 12) → Grant received Month 13: $17,898
+---
+
+### Cashflow & Funding Structure
+
+**Opening Cash Capacity:** $200,000 total
+- $100,000 NZD (business account)
+- $100,000 AUD (Ting's shareholder funds, accessible via shareholder loan)
+
+**Monthly Income:** $11,000/month GP clinical work
+
+**Cashflow Position:**
+- With NZ account only ($100k): Goes negative from Month 9
+- With total capacity ($200k NZ+AU): Positive throughout
+- Shareholder loan structure confirmed acceptable with Paula
+
+**Grant Schedule (8 quarters over 24 months):**
+- Year 1 (Q1-Q4): ~$136k
+- Year 2 (Q5-Q8): ~$137k
+- **Total: $272,698**
+
+Grants paid 1 month after quarterly claim submission.
+
+**See:** `02-financials/cashflow-24-month.md` for detailed monthly breakdown
 
 ---
 
@@ -274,16 +298,26 @@ The project is organized into 6 main directories:
 
 ---
 
-## Current Status [2025-11-06]
+## Current Status [2025-11-25]
 
-**Overall Score:** 6.9/10 (Mentor Review Ready)
+**Status:** Updated to 24-month structure following Paula's feedback
+
+### Recent Updates (Nov 25, 2025)
+- ✅ Extended project from 12 to 24 months (Paula's recommendation)
+- ✅ Consolidated from 5 to 4 objectives (Paula's feedback)
+- ✅ Added Ting as full-time R&D Operations Lead (40 hrs/week @ $70/hr)
+- ✅ Increased founder hours (25→30 hrs/week)
+- ✅ Updated budget: $681,744 total eligible costs, $272,698 grant request
+- ✅ Confirmed shareholder funds structure ($200k total capacity)
+- ✅ Updated all financial documents (cashflow, cost template)
 
 ### Strengths
 - ✓ Strong technical R&D justification
-- ✓ Detailed project planning (12-month roadmap, 5 objectives, clear milestones)
+- ✓ Extended to 24 months showing long-term R&D commitment (Paula's key feedback)
 - ✓ Comprehensive risk analysis (8 risks with mitigations)
 - ✓ Clear success criteria and measurable targets
 - ✓ Strong founder profile (GP + technical + commercial expertise)
+- ✓ Added dedicated R&D Project Manager (Ting) demonstrating growth intention
 
 ### Critical Gaps (Must Fix Before Submission)
 1. **Market Validation (4/10)** - Missing:
