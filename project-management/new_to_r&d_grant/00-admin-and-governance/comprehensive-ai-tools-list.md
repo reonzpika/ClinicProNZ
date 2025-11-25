@@ -326,8 +326,44 @@
 
 ---
 
+---
+
+## **Grouping into 3 Objectives (DECIDED)**
+
+### **Objective 2: Inbox & Admin Automation (Low Complexity / Low Risk)**
+**Timeline:** Months 6-14
+
+**Features:**
+1. Inbox Management & Triage
+2. Referral & Letter Management
+3. Lab Result Interpretation (3 high-yield labs)
+4. National Screening Programme Management (with auto-filing)
+
+---
+
+### **Objective 3: Clinical Intelligence & Proactive Care (Medium Complexity / Medium Risk)**
+**Timeline:** Months 12-20
+
+**Features:**
+1. CVDRA Auto-Calculation + Recall
+2. Care Gap Monitoring
+3. ACC & Unclaimed Revenue Identification
+
+---
+
+### **Objective 4: Clinical Decision Support & Medical Intelligence (High Complexity / High Risk)**
+**Timeline:** Months 18-24
+
+**Features:**
+1. Prescription & Medication Intelligence (safety-critical)
+2. NZ Medical Answer Engine (complex medical reasoning)
+3. Clinical AI Dashboard (integrates all features, adaptive learning)
+
+---
+
 **Next Steps:**
-- [ ] Group these 10 areas into 4 SMART objectives over 24 months
-- [ ] Allocate features to objectives based on complexity and risk level
-- [ ] Define measurable success criteria for each objective
-- [ ] Calculate budget allocation per objective
+- [x] Features finalized (10 features)
+- [x] Grouped into 3 objectives
+- [ ] Update revised-objectives-24-months.md with final feature groupings
+- [ ] Align R&D narrative with finalized features
+- [ ] Update budget allocations per objective
