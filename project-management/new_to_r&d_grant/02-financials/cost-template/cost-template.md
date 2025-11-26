@@ -174,8 +174,7 @@
 
 | Item | Cost/Month (NZD) | Annual (NZD) | Notes |
 |------|------------------|--------------|-------|
-| **AI Development Tools** | | | |
-| Cursor AI Pro / Claude Code Pro | $320 | $3,840 | High-tier AI coding assistant |
+| **Development Tools & Software** | $320 | $3,840 | Development environment and tools |
 | **Cloud Infrastructure (AU/NZ)** | | | |
 | GPU inference (g5.xlarge Sydney) | $300 | $3,600 | Average 150 hrs/month, scales 50-400 hrs |
 | Object storage (S3/Azure Blob) | $15 | $180 | Model weights, datasets, artifacts (150-350 GB) |
