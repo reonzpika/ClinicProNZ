@@ -184,15 +184,15 @@ Focus on privacy, health data protection, clinical safety, and PHO/Medtech compl
 - Incident response runbook
 - Transparency page draft
 
-**Cost:** $500 (excl. GST)
+**Cost:** $1,000 (excl. GST)
 **Timing:** Months 3-6 (developed with adviser during early sessions)
-**Evidence:** Documentation templates, governance framework
+**Evidence:** Documentation templates, governance framework, DPA negotiation support records
 
-**Note:** This is primarily adviser-guided work during ongoing engagement sessions, with minimal additional cost.
+**Note:** Increased from $500 to $1,000 to include additional regulatory adviser hours for DPA negotiations with Medtech and sub-processors, plus expanded documentation support.
 
 ---
 
-**Total CD-B (Regulatory):** $7,000
+**Total CD-B (Regulatory):** $7,500
 
 ---
 
@@ -238,20 +238,20 @@ Focus on privacy, health data protection, clinical safety, and PHO/Medtech compl
 | | | | |
 | **CD-B: Regulatory** | Comprehensive Gap Analysis | $3,500 | Months 2-3 |
 | **CD-B: Regulatory** | Ongoing Adviser (6 sessions) | $3,000 | Months 4-18 |
-| **CD-B: Regulatory** | Compliance Roadmap & Docs | $500 | Months 3-6 |
-| | **Subtotal CD-B** | **$7,000** | |
+| **CD-B: Regulatory** | Compliance Roadmap & Docs | $1,000 | Months 3-6 |
+| | **Subtotal CD-B** | **$7,500** | |
 | | | | |
-| | **Total Eligible CapDev** | **$14,500** | |
+| | **Total Eligible CapDev** | **$15,000** | |
 
 ---
 
 ## CapDev Funding Requirement Check
 
-**Minimum Required:** ≥5% of grant = 5% × $273,619 = **$13,681**
+**Minimum Required:** ≥5% of grant = 5% × $294,120 = **$14,706**
 
-**Current Confirmed CapDev:** $14,500 ✓ **(Exceeds minimum by $819)**
+**Current Confirmed CapDev:** $15,000 ✓ **(Exceeds minimum by $294)**
 
-**Percentage of Grant:** $14,500 / $273,619 = **5.3%** ✓
+**Percentage of Grant:** $15,000 / $294,120 = **5.10%** ✓
 
 **Status:** ✓ Meets 5% requirement
 

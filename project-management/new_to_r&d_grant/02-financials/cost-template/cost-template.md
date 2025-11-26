@@ -22,9 +22,9 @@
 **Note on Developer Hours:** Budgeted at minimum 10 hrs/week. Actual hours claimed quarterly will vary 10-40 hrs/week based on R&D workload and project needs. Flexibility allows scaling up during intensive development phases.
 
 **Other Costs:**
-- **Capability Development:** $14,500 (third-party professional services only)
+- **Capability Development:** $15,000 (third-party professional services only)
   - IP professional services: $7,500
-  - Regulatory & compliance services: $7,000
+  - Regulatory & compliance services: $7,500
 - **Materials & consumables (M&C):** $1,000/month × 24 months = $24,000
 - **Hardware:** Workstation + testing devices (2-year depreciation + immediate expenses) = $4,184
 - **Overseas labour:** None. AU is used only for transient inference; not a labour cost
@@ -230,34 +230,29 @@
 - Ting R&D Labour (4,152 hrs): $290,640
 - Developer 1 R&D Labour (903 hrs minimum): $65,016
 - Developer 2 R&D Labour (520 hrs minimum): $37,440
-- Capability Development (third-party services): $14,500
+- Capability Development (third-party services): $15,000
 - Materials & Consumables (24 months): $24,000
 - Hardware (2-year eligible): $4,184
 
-**TOTAL ELIGIBLE COST (at minimum developer hours): $735,300**
+**TOTAL ELIGIBLE COST (at minimum developer hours): $735,800**
 
-**Grant at 40%: $294,120**
-**Co-funding at 60%: $441,180**
+**Grant at 40%: $294,320**
+**Co-funding at 60%: $441,480**
 
 ---
 
 ### Capability Development Requirement Check
 
-**Required:** ≥5% of grant = $14,706  
-**Actual:** $14,500  
-**Percentage:** 4.93% ⚠️ **MARGINALLY BELOW 5%**
+**Required:** ≥5% of grant = $14,716  
+**Actual:** $15,000  
+**Percentage:** 5.10% ✓ **MEETS REQUIREMENT**
 
-**Status:** ⚠️ Just under 5% requirement by $206
+**Status:** ✓ Compliant with Paula's feedback
 - Only third-party professional services counted ✓
 - No internal labour included in CapDev ✓
 - Two capability categories (IP + Regulatory) ✓
 - Practical outputs (patents, compliance frameworks, expert reviews) ✓
-
-**Options to meet 5%:**
-1. Round CapDev to $15,000 (add $500 to IP or Regulatory services) = 5.10% ✓
-2. Accept 4.93% as marginally compliant (within rounding tolerance)
-
-**Recommendation:** Increase CapDev to $15,000 to clearly meet 5% requirement.
+- Exceeds 5% minimum by $284 ✓
 
 ---
 
@@ -449,7 +444,7 @@
 
 8. **Eligible hours only:** Only claim eligible R&D hours (no general admin/business development)
 
-9. **CapDev minimum:** Must meet ≥5% of grant requirement - Currently $14,500 = 4.93% ⚠️ (recommend increase to $15,000 = 5.10%)
+9. **CapDev minimum:** Must meet ≥5% of grant requirement - Currently $15,000 = 5.10% ✓ (meets requirement)
 
 10. **Timesheets required:** All labour must be supported by signed weekly timesheets (all team members)
 
@@ -464,18 +459,20 @@
 ---
 
 **Last Updated:** 26 November 2025  
-**Status:** Updated with detailed M&C breakdown ($1,000/month = $24,000 total)  
+**Status:** Updated with detailed M&C breakdown and final CapDev costs  
 **Changes:** 
 - M&C increased from $200/month to $1,000/month (+$19,200 total)
-- Total eligible costs: $735,300 (was $716,100)
-- Grant at 40%: $294,120 (was $286,440)
-- CapDev now 4.93% of grant (marginally below 5% - recommend increase to $15,000)
+- CapDev increased from $14,500 to $15,000 (+$500 to Regulatory services)
+- Total eligible costs: $735,800
+- Grant at 40%: $294,320
+- Co-funding at 60%: $441,480
+- CapDev: 5.10% of grant ✓ (meets 5% requirement)
 
 **Next Updates Required:**
-1. Increase CapDev to $15,000 to meet 5% requirement
-2. Update cashflow-24-month.md with new M&C and totals
-3. Update PROJECT_SUMMARY.md with new budget
-4. After supplier selection, add confirmed provider names/quotes
+1. Update cashflow-24-month.md with new M&C and totals
+2. Update PROJECT_SUMMARY.md with new budget
+3. After supplier selection, add confirmed provider names/quotes
+4. Research and finalize hardware investments
 
 ---
 
