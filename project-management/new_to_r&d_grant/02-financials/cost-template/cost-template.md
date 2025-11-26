@@ -26,8 +26,10 @@
   - IP professional services: $7,500
   - Regulatory & compliance services: $7,500
 - **Materials & consumables (M&C):** $1,000/month × 24 months = $24,000
-- **Hardware:** Workstation + testing devices (2-year depreciation + immediate expenses) = $4,184
+- **Hardware:** Development essentials + testing devices (immediate expenses only) = $1,800
 - **Overseas labour:** None. AU is used only for transient inference; not a labour cost
+
+**Note on Hardware Strategy:** GPU workstation ($11k) deferred. Using cloud GPU infrastructure (budgeted in M&C) provides better grant coverage (40% vs 26.7%) and operational flexibility. Workstation can be purchased with co-funding or post-grant if needed.
 
 ---
 
@@ -197,29 +199,30 @@
 
 ## Hardware & Depreciation Tab
 
-**Capital Equipment (3-year straight-line depreciation):**
-- RTX 4090 GPU Workstation: $3,500 purchase (Month 4)
-  - Annual depreciation: $1,167
-  - Year 1 eligible: $1,167
-  - Year 2 eligible: $1,167
-  - **2-Year total: $2,334**
-  
-- Samsung Galaxy Z Fold 5 (refurb): $1,200 purchase (Month 4)
-  - Annual depreciation: $400
-  - Year 1 eligible: $400
-  - Year 2 eligible: $400
-  - **2-Year total: $800**
+**Strategy:** Defer GPU workstation purchase. Use cloud GPU infrastructure (budgeted in M&C at $300/month) which provides better grant coverage (40% vs 26.7% effective rate for depreciation) and operational flexibility.
 
-**Sub-total Depreciation (2 years): $3,134**
+**Immediate Expenses (< $1,000 threshold, eligible immediately):**
 
-**Immediate Expenses (< $1,000 threshold):**
-- RAM Upgrade (64GB → 128GB): $500 (Month 1)
-- NVMe SSD 2TB: $250 (Month 1)
-- iPhone SE (refurbished): $300 (Month 1)
+**Month 1 Development Setup:**
+- RAM Upgrade (64GB → 128GB): $400
+- Monitor (27" or 32" for development): $300
+- Dual Monitor Arms (ergonomic setup): $150
+- NVMe SSD 2TB (additional storage): $150
+- **Subtotal Month 1: $1,000**
 
-**Sub-total Immediate Hardware: $1,050**
+**Month 4 Testing Device:**
+- iPhone for mobile app testing: $800 (refurbished or new, depending on model)
+- **Subtotal Month 4: $800**
 
-**TOTAL HARDWARE (2-Year Eligible): $4,184**
+**TOTAL HARDWARE (Immediate Expenses Only): $1,800**
+
+**No Depreciation Items:** All hardware purchases under $1,000 threshold, expensed immediately.
+
+---
+
+**Deferred Hardware (Not in Grant Budget):**
+- GPU Workstation (~$11k): Can be purchased with co-funding or post-grant if cloud GPU proves insufficient
+- Rationale: Cloud GPU provides 40% grant coverage vs 26.7% for workstation depreciation, plus greater flexibility
 
 ---
 
@@ -232,27 +235,27 @@
 - Developer 2 R&D Labour (520 hrs minimum): $37,440
 - Capability Development (third-party services): $15,000
 - Materials & Consumables (24 months): $24,000
-- Hardware (2-year eligible): $4,184
+- Hardware (immediate expenses): $1,800
 
-**TOTAL ELIGIBLE COST (at minimum developer hours): $735,800**
+**TOTAL ELIGIBLE COST (at minimum developer hours): $733,416**
 
-**Grant at 40%: $294,320**
-**Co-funding at 60%: $441,480**
+**Grant at 40%: $293,366**
+**Co-funding at 60%: $440,050**
 
 ---
 
 ### Capability Development Requirement Check
 
-**Required:** ≥5% of grant = $14,716  
+**Required:** ≥5% of grant = $14,668  
 **Actual:** $15,000  
-**Percentage:** 5.10% ✓ **MEETS REQUIREMENT**
+**Percentage:** 5.11% ✓ **MEETS REQUIREMENT**
 
 **Status:** ✓ Compliant with Paula's feedback
 - Only third-party professional services counted ✓
 - No internal labour included in CapDev ✓
 - Two capability categories (IP + Regulatory) ✓
 - Practical outputs (patents, compliance frameworks, expert reviews) ✓
-- Exceeds 5% minimum by $284 ✓
+- Exceeds 5% minimum by $332 ✓
 
 ---
 
@@ -301,30 +304,27 @@
 - Founder + Ting (3 months): $73,770
 - CapDev (IP Audit + Reg Gap Analysis): $5,500
 - M&C: $3,000
-- Hardware (immediate): $1,050
-- Hardware depreciation: $393
-- **Eligible: $83,713 | Grant (40%): $33,485 | Payment: Month 4**
+- Hardware (Month 1 immediate): $1,000
+- **Eligible: $83,270 | Grant (40%): $33,308 | Payment: Month 4**
 
 **Q2 (Apr–Jun 2026) - Months 4-6**
 - Founder + Ting + Dev 1 (3 months): $83,058
 - CapDev (Patent Filing + Reg Adviser): $5,000
 - M&C: $3,000
-- Hardware depreciation: $393
-- **Eligible: $91,451 | Grant (40%): $36,580 | Payment: Month 7**
+- Hardware (Month 4 iPhone): $800
+- **Eligible: $91,858 | Grant (40%): $36,743 | Payment: Month 7**
 
 **Q3 (Jul–Sep 2026) - Months 7-9**
 - Founder + Ting + Dev 1 (3 months): $83,058
 - CapDev (Compliance Docs + Reg Adviser): $1,000
 - M&C: $3,000
-- Hardware depreciation: $393
-- **Eligible: $87,451 | Grant (40%): $34,980 | Payment: Month 10**
+- **Eligible: $87,058 | Grant (40%): $34,823 | Payment: Month 10**
 
 **Q4 (Oct–Dec 2026) - Months 10-12**
 - Founder + Ting + Dev 1 (3 months): $83,058
 - CapDev (Reg Adviser Session 4): $500
 - M&C: $3,000
-- Hardware depreciation: $393
-- **Eligible: $86,951 | Grant (40%): $34,780 | Payment: Month 13**
+- **Eligible: $86,558 | Grant (40%): $34,623 | Payment: Month 13**
 
 ---
 
@@ -334,33 +334,29 @@
 - Founder + Ting + Dev 1 + Dev 2 (3 months): $92,418
 - CapDev (Reg Adviser Session 5): $500
 - M&C: $3,000
-- Hardware depreciation: $393
-- **Eligible: $96,311 | Grant (40%): $38,524 | Payment: Month 16**
+- **Eligible: $95,918 | Grant (40%): $38,367 | Payment: Month 16**
 
 **Q6 (Apr–Jun 2027) - Months 16-18**
 - Founder + Ting + Dev 1 + Dev 2 (3 months): $92,418
 - CapDev (Reg Adviser Session 6): $500
 - M&C: $3,000
-- Hardware depreciation: $393
-- **Eligible: $96,311 | Grant (40%): $38,524 | Payment: Month 19**
+- **Eligible: $95,918 | Grant (40%): $38,367 | Payment: Month 19**
 
 **Q7 (Jul–Sep 2027) - Months 19-21**
 - Founder + Ting + Dev 1 + Dev 2 (3 months): $92,418
 - CapDev (Compliance updates): $500
 - M&C: $3,000
-- Hardware depreciation: $393
-- **Eligible: $96,311 | Grant (40%): $38,524 | Payment: Month 22**
+- **Eligible: $95,918 | Grant (40%): $38,367 | Payment: Month 22**
 
 **Q8 (Oct–Dec 2027) - Months 22-24**
 - Founder + Ting + Dev 1 + Dev 2 (3 months): $92,418
 - CapDev (Final compliance review): $1,000
 - M&C: $3,000
-- Hardware depreciation: $394
-- **Eligible: $96,812 | Grant (40%): $38,725 | Payment: Month 25**
+- **Eligible: $96,418 | Grant (40%): $38,567 | Payment: Month 25**
 
 ---
 
-**TOTAL GRANT OVER 8 QUARTERS: $294,122**
+**TOTAL GRANT OVER 8 QUARTERS: $293,364**
 
 **Note:** Actual grant total based on minimum developer hours (10 hrs/week). If developers work more hours (up to 40 hrs/week), quarterly claims and grant amounts will increase proportionally.
 
@@ -409,9 +405,9 @@
   - Course completion certificates (OPC, Collaborative Aotearoa, Te Whatu Ora)
 
 ### Hardware
-- Purchase invoices (workstation, devices)
-- Depreciation schedule
-- Photos of equipment with asset tags
+- Purchase invoices (RAM, monitor, monitor arms, SSD, iPhone)
+- Photos of equipment showing R&D use
+- No depreciation schedule needed (all immediate expenses < $1,000)
 
 ### GST
 - Claim values are excl. GST
@@ -434,7 +430,10 @@
    - Developer 1: Recruit in Months 1-3, start Month 4
    - Developer 2: Recruit in Months 10-12, start Month 13
 
-5. **Hardware purchases:** Defer GPU and Samsung Fold to Month 4 (after first grant received)
+5. **Hardware purchases:** 
+   - Month 1: RAM upgrade, monitor, monitor arms, SSD ($1,000 total)
+   - Month 4: iPhone testing device ($800)
+   - GPU workstation ($11k) deferred - using cloud GPU instead (better grant coverage: 40% vs 26.7%)
 
 6. **CapDev structure:** Only third-party professional services (IP attorneys, regulatory advisers)
    - No internal labour counted as CapDev
@@ -444,7 +443,7 @@
 
 8. **Eligible hours only:** Only claim eligible R&D hours (no general admin/business development)
 
-9. **CapDev minimum:** Must meet ≥5% of grant requirement - Currently $15,000 = 5.10% ✓ (meets requirement)
+9. **CapDev minimum:** Must meet ≥5% of grant requirement - Currently $15,000 = 5.11% ✓ (meets requirement)
 
 10. **Timesheets required:** All labour must be supported by signed weekly timesheets (all team members)
 
@@ -459,20 +458,26 @@
 ---
 
 **Last Updated:** 26 November 2025  
-**Status:** Updated with detailed M&C breakdown and final CapDev costs  
+**Status:** FINAL - All costs finalized and CapDev requirements met  
 **Changes:** 
 - M&C increased from $200/month to $1,000/month (+$19,200 total)
 - CapDev increased from $14,500 to $15,000 (+$500 to Regulatory services)
-- Total eligible costs: $735,800
-- Grant at 40%: $294,320
-- Co-funding at 60%: $441,480
-- CapDev: 5.10% of grant ✓ (meets 5% requirement)
+- Hardware strategy: Deferred $11k workstation, using cloud GPU ($1,800 immediate hardware only)
+- **Total eligible costs: $733,416**
+- **Grant at 40%: $293,366**
+- **Co-funding at 60%: $440,050**
+- **CapDev: 5.11% of grant ✓** (meets 5% requirement)
+
+**Hardware Strategy Rationale:**
+- Cloud GPU provides 40% grant coverage vs 26.7% for workstation depreciation
+- Greater flexibility to scale compute up/down based on R&D needs
+- Lower upfront capital requirement ($1,800 vs $12,650)
+- Workstation can be purchased with co-funding or post-grant if needed
 
 **Next Updates Required:**
 1. Update cashflow-24-month.md with new M&C and totals
 2. Update PROJECT_SUMMARY.md with new budget
-3. After supplier selection, add confirmed provider names/quotes
-4. Research and finalize hardware investments
+3. After supplier selection, add confirmed IP attorney and regulatory adviser names/quotes
 
 ---
 
