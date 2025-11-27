@@ -173,8 +173,7 @@ discourse-theme/gp-voices/
 - **Setup Guide**: `docs/gp-voices-import-setup.md` — Step-by-step installation and configuration guide
 
 ### LinkedIn Content Validation (Active Experiment)
-- **LinkedIn Content Summary**: [`linkedin-content-summary.md`](./linkedin-content-summary.md) — Validation experiment tracking, strategy, criteria (4-6 week test)
-- **LinkedIn Weekly Workflow**: [`linkedin-weekly-workflow.md`](./linkedin-weekly-workflow.md) — Reusable workflow for creating weekly LinkedIn posts (includes template, mentions, hashtags, image prompt)
+- **LinkedIn Content Strategy & Workflow**: [`linkedin-content-strategy.md`](./linkedin-content-strategy.md) — Combined validation experiment tracking, strategy, criteria, and reusable workflow for creating weekly LinkedIn posts (includes template, mentions, hashtags, image prompt)
 - **LinkedIn Post Log**: [`linkedin-post-log.md`](./linkedin-post-log.md) — Track posts, metrics, and learnings
 - **Weekly Post Template**: [`weekly-linkedin-post-template.md`](./weekly-linkedin-post-template.md) — Template to copy each week
 
@@ -221,7 +220,7 @@ discourse-theme/gp-voices/
 - **Next Steps**: Collect news for Week 2 post; analyse follower/commenter profiles (GP vs vendor ratio)
 - **Decision Rule**: If GP engagement proven after 4-6 weeks → build automation. If not → stop weekly posts.
 - **Google Alerts Setup**: Configured 10 weekly email digests - 5 for NZ medical AI/healthtech news (primary: AI, healthtech, IT; secondary: GP, hospital, primary care, Medtech, Indici) + 5 for international GP AI innovations (global coverage)
-- See `linkedin-content-summary.md` for full validation strategy and criteria
+- See `linkedin-content-strategy.md` for full validation strategy and criteria
 
 ### [2025-11-08] Weekly LinkedIn News Curation Started
 - Created weekly LinkedIn post curation workflow to test demand before building AI-powered weekly summaries
