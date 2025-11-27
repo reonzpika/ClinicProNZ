@@ -21,8 +21,6 @@ links:
     path: 02-financials/cashflow-24-month.md
   - name: Cost Template
     path: 02-financials/cost-template/cost-template.md
-  - name: Accountant Review Document
-    path: 02-financials/accountant-review-document.md
   - name: Archived Mentor Proposal (12-month version)
     path: 00-admin-and-governance/archive/MENTOR-PROPOSAL.md
 stakeholders:
@@ -109,7 +107,6 @@ The project is organized into 6 main directories:
 ### 02-financials/
 - `cashflow-24-month.md` - Monthly cashflow forecast showing positive cash throughout ($100k opening → $39k closing)
 - `cost-template/cost-template.md` - Detailed cost breakdown by category (Labour + CapDev + M&C + Hardware)
-- `accountant-review-document.md` - Comprehensive financial and tax review document for accountant
 
 ### 03-capability-development/
 - `capability-development-evidence-pack.md` - CapDev courses, one-off setups, evidence requirements
@@ -424,7 +421,6 @@ Grants paid 1 month after quarterly claim submission.
 - **`forge-application-narrative.md`** - Forge portal submission text
 - **`cost-template.md`** - Financial breakdown by objective
 - **`cashflow-24-month.md`** - 24-month forecast with positive cashflow
-- **`accountant-review-document.md`** - Comprehensive financial and tax review for Helen (accountant)
 - **`dpia-draft.md`** - Data Protection Impact Assessment
 - **`privacy-compliance-quick-reference.md`** - IPP 12, HISO, DPA clauses
 - **`safety-and-transparency-framework.md`** - Safety procedures
@@ -502,7 +498,6 @@ Grants paid 1 month after quarterly claim submission.
 - Cashflow 24-month finalized (positive throughout)
 - PROJECT_SUMMARY.md updated with final numbers
 - Deleted 12-month cashflow (obsolete)
-- Created accountant review document (comprehensive financial and tax review)
 
 **Status:** Budget and team structure ready for submission. Focus now on partnership letters and market validation.
 
