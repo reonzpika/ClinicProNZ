@@ -2,8 +2,8 @@
 project_name: NZ-Sovereign Clinical LLM for GP Workflow (ClinicPro)
 project_stage: Validation
 owner: NexWave Solutions Ltd
-last_updated: "2025-11-25"
-version: "2.0"
+last_updated: "2025-11-26"
+version: "2.1"
 tags:
   - r&d-grant
   - healthcare-ai
@@ -11,7 +11,7 @@ tags:
   - clinical-llm
   - callaghan-innovation
   - gp-workflow
-summary: R&D grant proposal for building a NZ-sovereign clinical LLM to assist NZ GPs with inbox management and care gap monitoring. 24-month project seeking $272,698 grant (40%) with $409,046 co-funding. Team: Founder (3,120 hrs, 30hrs/week) + Ting R&D Operations Lead (4,152 hrs, 40hrs/week) + Developer (903 hrs, 10hrs/week from Month 4). Includes IP protection, conference attendance, hardware.
+summary: R&D grant proposal for building a NZ-sovereign clinical LLM to assist NZ GPs with inbox management and care gap monitoring. 24-month project seeking $278,305 grant (40%) with $417,671 co-funding. Team: Founder (3,120 hrs, 30hrs/week) + Ting R&D Operations Lead (4,152 hrs, 40hrs/week) + Developer (903 hrs, 10-40hrs/week from Month 4). Includes IP protection ($15k third-party CapDev), cloud GPU infrastructure, immediate hardware only. Cashflow positive throughout with GP revenue $375,652.
 links:
   - name: Revised Objectives (24 Months)
     path: 00-admin-and-governance/revised-objectives-24-months.md
@@ -63,11 +63,11 @@ risks:
 **Organisation:** NexWave Solutions Ltd  
 **Grant Type:** Callaghan Innovation - New to R&D Grant  
 **Project Duration:** 27 Jan 2026 - 26 Jan 2028 (24 months)  
-**Total Eligible Costs:** $681,744 (NZD excl. GST)  
-**Grant Request:** $272,698 (40%)  
-**Co-Funding:** $409,046 (60% from GP clinical work income + shareholder funds)
+**Total Eligible Costs:** $695,976 (NZD excl. GST)  
+**Grant Request:** $278,305 (40%)  
+**Co-Funding:** $417,671 (60% from GP clinical work income)
 
-**Status:** Updated to 24-month structure following Paula's feedback (25 Nov 2025)
+**Status:** Final budget and team structure confirmed (26 Nov 2025). Cashflow positive throughout 24 months.
 
 ---
 
@@ -171,45 +171,67 @@ The project is organized into 6 main directories:
 - **Total:** $290,640
 
 **Developer (Contractor):**
-- 10 hrs/week × 21 months (starts Month 4) = 903 hours @ $72/hr
-- **Total:** $65,016
+- Minimum 10 hrs/week × 21 months (starts Month 4) = 903 hours @ $72/hr
+- Can scale 10-40 hrs/week based on R&D workload
+- **Total (minimum):** $65,016
 
-**Total R&D Labour:** 8,175 hours = $655,176
+**Total R&D Labour (minimum):** 8,175 hours = $655,176
+
+**Note:** Leaner 3-person team structure provides strong R&D capacity with flexibility to scale developer hours based on project needs.
 
 ---
 
-## Capability Development (4 Streams + Conferences)
+## Capability Development (2 Categories - Third-Party Services Only)
 
-### CD-A: Regulatory & Compliance (Months 1-3)
-- 3 privacy certificate courses (OPC Privacy Act, OPC HIPC, Ko Awatea)
-- Complete DPIA (Option B: AU inference, NZ keys, IPP 12 safeguards)
-- Create IPP 12 checklist, HISO mapping, DPA templates
-- **Hours:** 12 | **Cost:** $1,152
+**Following Paula's Feedback:** Only third-party costs eligible for CapDev (no internal labour).
 
-### CD-B: R&D Information Management (Months 1-4)
-- Set up MLflow (experiment tracking), DVC (dataset versioning)
-- Build safety dashboard
-- Draft transparency SOP and page v1
-- **Hours:** 10 | **Cost:** $960
+### CD-A: Intellectual Property ($7,500)
+**Months 2-6**
 
-### CD-C: Project Management Set-up (Months 1-2)
-- Define stage-gates (O1-O4 entry/exit criteria)
-- Create risk register, change log, release checklist
-- **Hours:** 8 | **Cost:** $768
+- **IP Audit & Freedom-to-Operate Analysis:** $2,000
+  - Prior art search, IP landscape, patentability assessment
+  
+- **Provisional Patent Filing:** $4,500
+  - File with IPONZ covering clinical LLM architecture, workflows, integration methods
+  - Secure priority date for 12-month full filing window
+  
+- **NDAs, Contracts & Trademark:** $1,000
+  - Mutual NDA templates, collaboration agreements, trademark search/filing
 
-### CD-D: Conference Attendance & Knowledge Acquisition (Years 1 & 2)
-- Year 1: HealthTech Week Auckland (Month 5) + HIC Melbourne (Month 7)
-- Year 2: HealthTech Week Auckland (Month 17) + HIC Melbourne (Month 19)
-- **Hours:** 48 total (24 per year) | **Labour Cost:** $4,608
+**Deliverables:** FTO report, provisional patent (filed), NDA/contract templates, trademark protection
 
-**Total CapDev Hours:** 78 | **Total CapDev Labour:** $7,488
+---
 
-**Note:** Conference travel costs ($6,400) and IP services ($6,000) are separate budget lines, NOT part of CapDev labour.
+### CD-B: Regulatory & Compliance ($7,500)
+**Months 2-18**
 
-**CapDev Requirement:** Must be ≥5% of grant ($13,635). Current structure:
-- Labour: $7,488
-- Conferences (can count): $6,400
-- **Total: $13,888 (5.1% of grant) ✓**
+- **Comprehensive Regulatory Gap Analysis:** $3,500
+  - Privacy Act 2020, HIPC, IPP 12, clinical safety, AI ethics compliance audit
+  - Timing: Months 2-3
+  
+- **Ongoing Regulatory Adviser (6 sessions):** $3,000
+  - Expert guidance through MVP, sandbox, pilot, scale-up phases
+  - Sessions at Months 4, 6, 9, 12, 15, 18 (~$500 each)
+  
+- **Compliance Roadmap & Documentation:** $1,000
+  - Governance framework, DPA templates, data handling protocols, incident response
+  - Includes DPA negotiation support with Medtech/sub-processors
+
+**Deliverables:** Gap analysis report, compliance checklist, 6 adviser session reports, governance framework, DPA templates
+
+---
+
+### Free Training (Supplementary, Not Counted in CapDev Budget)
+- **Privacy:** OPC Privacy Act 2020, OPC Health 101 HIPC, Ko Awatea Privacy
+- **AI in Healthcare:** Collaborative Aotearoa AI in Primary Care modules
+- **IP Knowledge:** IPONZ patent basics and resources
+
+**Total CapDev:** $15,000 (third-party professional services only)
+
+**CapDev Requirement Check:**
+- Required: ≥5% of grant = $13,915
+- Actual: $15,000
+- **Percentage: 5.39% ✓** (exceeds requirement by $1,085)
 
 ---
 
@@ -219,38 +241,61 @@ The project is organized into 6 main directories:
 |----------|------------------------|
 | **R&D Labour - Founder** (3,120 hours @ $96/hr) | $299,520 |
 | **R&D Labour - Ting** (4,152 hours @ $70/hr) | $290,640 |
-| **R&D Labour - Developer** (903 hours @ $72/hr) | $65,016 |
-| **Capability Development Labour** (78 hours @ $96/hr) | $7,488 |
-| **Materials & Consumables** ($200/month × 24) | $4,800 |
-| **Professional Services (IP)** | $6,000 |
-| **Conference Travel** (2 years, 4 conferences) | $6,400 |
-| **Hardware** (2-year depreciation + immediate) | $4,184 |
-| **Total Eligible Costs** | **$684,048** |
+| **R&D Labour - Developer** (903 hours @ $72/hr, minimum) | $65,016 |
+| **Capability Development** (third-party services only) | $15,000 |
+| **Materials & Consumables** ($1,000/month × 24) | $24,000 |
+| **Hardware** (immediate expenses only) | $1,800 |
+| **Total R&D Eligible Costs** | **$695,976** |
 | | |
-| **Grant (40%)** | **$273,619** |
-| **Co-Funding (60%)** | **$410,429** |
+| **Grant (40%)** | **$278,305** |
+| **Co-Funding (60%)** | **$417,671** |
 
-**Note:** Target grant request ~$272,698. Minor variations due to rounding.
+---
+
+### Business Income & Expenses (24 Months)
+
+| Item | Amount (NZD excl. GST) |
+|------|------------------------|
+| GP clinical revenue (24 months) | $375,652 |
+| GP business expenses (5%) | -$18,783 |
+| **Net GP income available for co-funding** | **$356,869** |
+
+**Monthly Average:** $15,652 revenue - $783 expenses = $14,869 net
 
 ---
 
 ### Cashflow & Funding Structure
 
-**Opening Cash Capacity:** $200,000 total
-- $100,000 NZD (business account)
-- $100,000 AUD (Ting's shareholder funds, accessible via shareholder loan)
+**Opening Cash:** $100,000 NZD (business account)
 
-**Monthly Income:** $11,000/month GP clinical work
+**Reserve Funds Available:** $100,000 AUD (Ting's shareholder funds, not needed but available as safety buffer)
 
-**Cashflow Position:**
-- With NZ account only ($100k): Goes negative from Month 9
-- With total capacity ($200k NZ+AU): Positive throughout
-- Shareholder loan structure confirmed acceptable with Paula
+**Monthly GP Income:** 
+- Revenue: $15,652/month average (excl. GST)
+- Business expenses: $783/month (5%)
+- Net available: $14,869/month
+
+**Cashflow Position: ✓ POSITIVE THROUGHOUT**
+- Opening: $100,000
+- Never goes negative
+- Minimum cash: $4,246 (Month 24, before final grant)
+- Closing: $39,185 after all costs and grants
+- **AU reserve NOT required** ✓
+
+**Total Income Over 24 Months:**
+- Opening cash: $100,000
+- GP income (net): $356,869
+- R&D grants: $278,305
+- **Total: $735,174**
+
+**Total Costs:** $695,976
+
+**Final Surplus:** $39,198 ✓
 
 **Grant Schedule (8 quarters over 24 months):**
-- Year 1 (Q1-Q4): ~$136k
-- Year 2 (Q5-Q8): ~$137k
-- **Total: $272,698**
+- Year 1 (Q1-Q4): ~$139k
+- Year 2 (Q5-Q8): ~$139k
+- **Total: $278,305**
 
 Grants paid 1 month after quarterly claim submission.
 
@@ -298,26 +343,38 @@ Grants paid 1 month after quarterly claim submission.
 
 ---
 
-## Current Status [2025-11-25]
+## Current Status [2025-11-26]
 
-**Status:** Updated to 24-month structure following Paula's feedback
+**Status:** Final budget and team structure confirmed. Cashflow positive throughout 24 months.
 
-### Recent Updates (Nov 25, 2025)
+### Recent Updates (Nov 26, 2025)
+- ✅ **Final team structure:** 3 people (Founder + Ting + Developer) - leaner, more focused
+- ✅ **CapDev restructured:** $15,000 third-party services only (IP $7,500 + Regulatory $7,500)
+- ✅ **Hardware strategy finalized:** $1,800 immediate expenses, cloud GPU only (no workstation)
+- ✅ **M&C updated:** $1,000/month ($24k total) - detailed cloud infrastructure costs
+- ✅ **Final budget:** $695,976 total eligible costs, $278,305 grant request
+- ✅ **GP revenue:** $375,652 over 24 months ($15,652/month average)
+- ✅ **Cashflow:** Positive throughout, $39k surplus, AU reserve not needed ✓
+- ✅ **CapDev:** 5.39% of grant (exceeds 5% requirement by $1,085) ✓
+
+### Previous Updates (Nov 23-25, 2025)
 - ✅ Extended project from 12 to 24 months (Paula's recommendation)
 - ✅ Consolidated from 5 to 4 objectives (Paula's feedback)
 - ✅ Added Ting as full-time R&D Operations Lead (40 hrs/week @ $70/hr)
 - ✅ Increased founder hours (25→30 hrs/week)
-- ✅ Updated budget: $681,744 total eligible costs, $272,698 grant request
 - ✅ Confirmed shareholder funds structure ($200k total capacity)
-- ✅ Updated all financial documents (cashflow, cost template)
 
 ### Strengths
 - ✓ Strong technical R&D justification
 - ✓ Extended to 24 months showing long-term R&D commitment (Paula's key feedback)
+- ✓ **Cashflow positive throughout:** Never goes negative, $39k surplus after all costs ✓
+- ✓ **Strong co-funding capacity:** $375k GP revenue + $100k opening cash
+- ✓ **Lean team structure:** 3 people (Founder + Ting + Developer) with flexible developer hours
+- ✓ **CapDev compliance:** 5.39% exceeds 5% requirement, third-party services only
 - ✓ Comprehensive risk analysis (8 risks with mitigations)
 - ✓ Clear success criteria and measurable targets
 - ✓ Strong founder profile (GP + technical + commercial expertise)
-- ✓ Added dedicated R&D Project Manager (Ting) demonstrating growth intention
+- ✓ Dedicated R&D Project Manager (Ting) demonstrating growth intention
 
 ### Critical Gaps (Must Fix Before Submission)
 1. **Market Validation (4/10)** - Missing:
@@ -403,6 +460,48 @@ Grants paid 1 month after quarterly claim submission.
 ---
 
 ## Updates
+
+### [2025-11-26] Final Budget and Team Structure Confirmed
+
+**Major Update:** Finalized all financial documents with leaner team structure and positive cashflow.
+
+**Key Changes:**
+1. **Team Structure:** Reduced from 4 to 3 people (removed Developer 2)
+   - Founder: 30 hrs/week (3,120 hrs @ $96/hr = $299,520)
+   - Ting: 40 hrs/week (4,152 hrs @ $70/hr = $290,640)
+   - Developer: 10-40 hrs/week flexible (903 hrs minimum @ $72/hr = $65,016)
+   - More focused, cost-effective team
+
+2. **Capability Development:** Restructured per Paula's feedback
+   - $15,000 third-party professional services only (no internal labour)
+   - IP: $7,500 (FTO analysis, provisional patent, NDAs/contracts)
+   - Regulatory: $7,500 (gap analysis, ongoing adviser 6 sessions, compliance docs)
+   - 5.39% of grant ✓ (exceeds 5% requirement)
+
+3. **Hardware Strategy:** Cloud-first approach
+   - $1,800 immediate expenses only (RAM, monitor, arms, iPhone)
+   - GPU workstation ($11k) deferred - using cloud GPU infrastructure
+   - Better grant coverage: 40% for cloud vs 26.7% for depreciation
+   - M&C: $1,000/month ($24k total) - detailed cloud costs
+
+4. **Financial Position:**
+   - Total eligible costs: $695,976
+   - Grant (40%): $278,305
+   - Co-funding (60%): $417,671
+   - GP revenue: $375,652 over 24 months ($15,652/month average)
+   - **Cashflow positive throughout** ✓
+   - Opening: $100k → Closing: $39k surplus
+   - **AU reserve not needed** ✓
+
+**Documents Updated:**
+- Cost template finalized ($695,976 total)
+- Cashflow 24-month finalized (positive throughout)
+- PROJECT_SUMMARY.md updated with final numbers
+- Deleted 12-month cashflow (obsolete)
+
+**Status:** Budget and team structure ready for submission. Focus now on partnership letters and market validation.
+
+---
 
 ### [2025-11-23] Paula Mentor Meeting Feedback - Major Revision Required
 
