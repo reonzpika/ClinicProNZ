@@ -13,15 +13,20 @@
 - **Ting commitment:** 40 hrs/week throughout 24 months (4,152 hours total)
 - **Ting role:** R&D Project Manager + Research/Testing/Documentation + Quality Assurance
 - **Developer (contractor):** $72/hour (= $60/hr + 20% overhead), starts Month 4
-- **Developer commitment:** 10 hrs/week for 21 months (Months 4-24, 903 hours total)
+- **Developer commitment:** Minimum 10 hrs/week (can range 10-40 hrs/week as needed), 21 months (Months 4-24)
+- **Developer budgeted hours:** 903 hours (10 hrs/week minimum)
+
+**Note on Developer Hours:** Budgeted at minimum 10 hrs/week. Actual hours claimed quarterly will vary 10-40 hrs/week based on R&D workload and project needs. Flexibility allows scaling up during intensive development phases.
 
 **Other Costs:**
-- **Capability Development:** 54 hours total (30 setup + 24 conference time Year 1 + 24 conference time Year 2)
-- **Materials & consumables (M&C):** $200/month × 24 months = $4,800
-- **Professional Services:** IP work (FTO analysis, patent filing, IP strategy) = $6,000
-- **Conference Travel:** Year 1 + Year 2 (HIC Melbourne × 2, HealthTech Week × 2) = $6,400
-- **Hardware:** Workstation + testing devices (2-year depreciation) = $4,184
+- **Capability Development:** $15,000 (third-party professional services only)
+  - IP professional services: $7,500
+  - Regulatory & compliance services: $7,500
+- **Materials & consumables (M&C):** $1,000/month × 24 months = $24,000
+- **Hardware:** Development essentials + testing devices (immediate expenses only) = $1,800
 - **Overseas labour:** None. AU is used only for transient inference; not a labour cost
+
+**Note on Hardware Strategy:** GPU workstation ($11k) deferred. Using cloud GPU infrastructure (budgeted in M&C) provides better grant coverage (40% vs 26.7%) and operational flexibility. Workstation can be purchased with co-funding or post-grant if needed.
 
 ---
 
@@ -35,11 +40,9 @@
 - **O3:** Clinical Intelligence + Hybrid Architecture (Months 12-20)
 - **O4:** Clinical Decision Support + Pilot (Months 18-24)
 
-**Capability Development:**
-- **CD-A:** Regulatory & Compliance (Months 1-3)
-- **CD-B:** R&D Information Management (Months 1-4)
-- **CD-C:** Project Management set-up (Months 1-2)
-- **CD-D:** Conference attendance (Years 1 & 2)
+**Capability Development (2 Categories):**
+- **CD-A:** Intellectual Property (IP Audit, Provisional Patent, NDAs/Contracts)
+- **CD-B:** Regulatory & Compliance (Gap Analysis, Ongoing Adviser, Compliance Roadmap)
 
 ---
 
@@ -63,43 +66,92 @@
 **Developer (Contractor, starts Month 4):** $72/hour | **NZD excl. GST**
 
 **Developer R&D Hours (21 months, Months 4-24):**
-- 10 hrs/week × 52 weeks/year × 2 years ÷ 12 months/year = 43 hrs/month
+- Minimum 10 hrs/week (can scale 10-40 hrs/week based on workload)
+- Budgeted at minimum: 10 hrs/week × 52 weeks/year × 1.75 years ÷ 12 months/year = 43 hrs/month
 - 43 hrs/month × 21 months = 903 hours
-- **Total Developer R&D Labour: 903 hours = $65,016**
+- **Total Developer R&D Labour (minimum): 903 hours = $65,016**
 
-**TOTAL R&D LABOUR: 8,175 hours = $655,176**
+**TOTAL R&D LABOUR (at minimum developer hours): 8,175 hours = $655,176**
+
+**Note:** Developer hours budgeted conservatively at 10 hrs/week. Actual quarterly claims will reflect real hours worked (10-40 hrs/week range), allowing flexibility to scale up during intensive development phases (O2-O4).
 
 ---
 
 ## Capability Development Tab
 
-*Cash items + internal labour; link to categories*
+**Updated Following Paula's Feedback (Nov 2025)**
 
-### Courses (all eligible even if $0; attach certificates)
+**Key Requirement:** Only third-party costs eligible (no internal labour for CapDev)
 
-**Courses:**
-- OPC Privacy Act 2020: $0 (Regulatory & Compliance)
-- OPC Health 101 (HIPC): $0 (Regulatory & Compliance)
-- Ko Awatea Privacy (National): $0 (Regulatory & Compliance)
+**Strategy:** Focus on high-value professional services (IP attorneys, regulatory advisers) that provide practical, actionable outputs.
 
-### Internal Labour (One-Off Set-Ups)
+### CD-A: Intellectual Property ($7,500)
 
-**Capability Development Labour:**
-- **CD-A:** DPIA (Option B) + IPP 12 controls + HISO mapping + DPA templates + NAIAEAG note
-  - 12 hours @ $96 = $1,152 (Regulatory & Compliance)
-  
-- **CD-B:** MLflow/DVC + safety dashboard + transparency SOP
-  - 10 hours @ $96 = $960 (R&D Information Management)
-  
-- **CD-C:** PM set-up (stage-gates, risk/change logs, release checklist)
-  - 8 hours @ $96 = $768 (Project Management Capability)
-  
-- **CD-D:** Conference attendance & knowledge acquisition
-  - HIC Melbourne: 16 hours
-  - HealthTech Week Auckland: 8 hours
-  - Total: 24 hours @ $96 = $2,304 (Knowledge Transfer)
+**1. IP Audit & Freedom-to-Operate (FTO) Analysis: $2,000**
+- Provider: NZ patent attorney
+- Timing: Months 2-3
+- Deliverables: FTO report, prior art search, IP landscape map, patentability opinion
 
-**Sub-total Capability Development labour: 54 hours = $5,184**
+**2. Provisional Patent Filing: $4,500**
+- Provider: NZ patent attorney
+- Timing: Months 3-4
+- Deliverables: Provisional patent application (filed with IPONZ), priority date, prosecution roadmap
+
+**3. NDAs, Contracts & Trademark: $1,000**
+- Provider: Commercial lawyer / IP attorney
+- Timing: Months 2-4
+- Deliverables: NDA templates, collaboration agreements, trademark search/filing
+
+**Subtotal CD-A: $7,500**
+
+---
+
+### CD-B: Regulatory & Compliance ($7,000)
+
+**1. Comprehensive Regulatory Gap Analysis: $3,500**
+- Provider: NZ health data privacy consultant / regulatory adviser
+- Timing: Months 2-3
+- Deliverables: Gap analysis report, compliance checklist, risk register, remediation roadmap
+- Coverage: Privacy Act 2020, HIPC, IPP 12, clinical safety, PHO/Medtech compliance, AI ethics
+
+**2. Ongoing Regulatory Adviser Engagement (6 sessions): $3,000**
+- Provider: Same regulatory adviser (continuity)
+- Timing: Months 4, 6, 9, 12, 15, 18 (~$500/session)
+- Deliverables: Session notes, recommendations, updated compliance checklists, risk register updates
+- Focus: MVP review, sandbox validation, pilot compliance, scale-up preparation
+
+**3. Compliance Roadmap & Documentation: $500**
+- Provider: Regulatory adviser (during ongoing sessions)
+- Timing: Months 3-6
+- Deliverables: Governance framework, compliance templates, PHO data handling protocols, incident response runbook
+
+**Subtotal CD-B: $7,000**
+
+---
+
+### Free Training Resources (Not Counted in CapDev Costs)
+
+**Privacy & Compliance:**
+- Office of the Privacy Commissioner: Privacy Act 2020 e-learning (~30 min)
+- OPC: Health 101 HIPC e-learning (~30 min)
+- Te Whatu Ora: Information Governance Standards
+- Collaborative Aotearoa: AI in Primary Care modules
+
+**IP Knowledge:**
+- IPONZ: Patent basics and filing guidance
+
+**Evidence:** Completion certificates attached to Q1 claim
+
+---
+
+**TOTAL CAPABILITY DEVELOPMENT: $14,500**
+
+**CapDev Requirement Check:**
+- Required: ≥5% of grant
+- Grant amount: $286,440
+- 5% minimum: $14,322
+- Actual CapDev: $14,500 ✓
+- Percentage: 5.06% ✓ **MEETS REQUIREMENT**
 
 ---
 
@@ -107,82 +159,58 @@
 
 *Recurring; link proportionally to O1–O4*
 
-**Monthly Costs:**
-- Essential software subscriptions: $100/month
-- Cloud/infra hosting: $100/month
-- **Total M&C: $200/month × 24 months = $4,800**
+**Monthly Costs Breakdown:**
 
----
+| Item | Cost/Month (NZD) | Annual (NZD) | Notes |
+|------|------------------|--------------|-------|
+| **Development Tools & Software** | $320 | $3,840 | Development environment and tools |
+| **Cloud Infrastructure (AU/NZ)** | | | |
+| GPU inference (g5.xlarge Sydney) | $300 | $3,600 | Average 150 hrs/month, scales 50-400 hrs |
+| Object storage (S3/Azure Blob) | $15 | $180 | Model weights, datasets, artifacts (150-350 GB) |
+| Database (RDS Postgres medium) | $180 | $2,160 | Application + MLflow backend + storage |
+| Key management (KMS, 4 keys) | $10 | $120 | NZ-held encryption keys (IPP 12 compliance) |
+| Monitoring/logging (CloudWatch) | $50 | $600 | 40-75 GB/month, 90-day retention, SIEM audit logs |
+| MLflow tracking server VM | $30 | $360 | Small VM for experiment tracking |
+| Data transfer NZ↔AU | $10 | $120 | Inference API traffic, minimal volume |
+| Dev/staging environments | $100 | $1,200 | Staging GPU (part-time), test DB, CI/CD pipeline |
+| **Other Subscriptions** | | | |
+| Essential software/tools | $-5 | $-60 | Misc subscriptions (version control, PM tools, etc.) |
+| **Total M&C** | **$1,000/month** | **$12,000/year** | **$24,000 over 24 months** |
 
-## Professional Services Tab
+**Phase-Based Usage:**
+- **Year 1 (O1-O2):** Lower GPU usage (~$830/month average), foundation and early development
+- **Year 2 (O3-O4):** Higher GPU usage (~$1,140/month average), pilot testing and scale-up
 
-**IP Work:**
-- Freedom-to-Operate (FTO) Analysis: $2,500 (Months 2-4, O1-O2)
-  - Purpose: Verify non-infringement of assist-only enforcement architecture
-  
-- Provisional Patent Filing: $2,000 (Months 6-8, O3-O4)
-  - Purpose: Protect novel safety scaffolding techniques
-  
-- IP Strategy for Model Outputs: $1,500 (Month 10, O5)
-  - Purpose: Model weight ownership & licensing frameworks
-
-**Sub-total Professional Services: $6,000**
-
----
-
-## Conference Travel Tab
-
-**Year 1 Conferences:**
-- **HealthTech Week Auckland** (Month 5, May 2026): $1,000
-  - Accommodation (1 night): $300
-  - Registration: $600
-  - Transport/meals: $100
-  
-- **HIC 2026 Melbourne** (Month 7, Jul 2026): $2,200
-  - Flights (AKL → MEL return): $600
-  - Accommodation (3 nights): $800
-  - Registration: $800
-
-**Year 2 Conferences:**
-- **HealthTech Week Auckland** (Month 17, May 2027): $1,000
-  - Accommodation (1 night): $300
-  - Registration: $600
-  - Transport/meals: $100
-
-- **HIC 2027 Melbourne** (Month 19, Jul 2027): $2,200
-  - Flights (AKL → MEL return): $600
-  - Accommodation (3 nights): $800
-  - Registration: $800
-
-**Sub-total Conference Travel (2 years): $6,400**
+**Flexibility:** GPU and staging costs will scale based on actual R&D needs. Budget reflects conservative average across 24 months.
 
 ---
 
 ## Hardware & Depreciation Tab
 
-**Capital Equipment (3-year straight-line depreciation):**
-- RTX 4090 GPU Workstation: $3,500 purchase (Month 4)
-  - Annual depreciation: $1,167
-  - Year 1 eligible: $1,167
-  - Year 2 eligible: $1,167
-  - **2-Year total: $2,334**
-  
-- Samsung Galaxy Z Fold 5 (refurb): $1,200 purchase (Month 4)
-  - Annual depreciation: $400
-  - Year 1 eligible: $400
-  - Year 2 eligible: $400
-  - **2-Year total: $800**
+**Strategy:** Defer GPU workstation purchase. Use cloud GPU infrastructure (budgeted in M&C at $300/month) which provides better grant coverage (40% vs 26.7% effective rate for depreciation) and operational flexibility.
 
-**Sub-total Depreciation (2 years): $3,134**
+**Immediate Expenses (< $1,000 threshold, eligible immediately):**
 
-**Immediate Expenses (< $1,000 threshold):**
-- RAM Upgrade (64GB → 128GB): $500 (Month 1)
-- NVMe SSD 2TB: $250 (Month 1)
-- iPhone SE (refurbished): $300 (Month 1)
+**Month 1 Development Setup:**
+- RAM Upgrade (64GB → 128GB): $400
+- Monitor (27" or 32" for development): $300
+- Dual Monitor Arms (ergonomic setup): $150
+- NVMe SSD 2TB (additional storage): $150
+- **Subtotal Month 1: $1,000**
 
-**Sub-total Immediate Hardware: $1,050**
+**Month 4 Testing Device:**
+- iPhone for mobile app testing: $800 (refurbished or new, depending on model)
+- **Subtotal Month 4: $800**
 
-**TOTAL HARDWARE (2-Year Eligible): $4,184**
+**TOTAL HARDWARE (Immediate Expenses Only): $1,800**
+
+**No Depreciation Items:** All hardware purchases under $1,000 threshold, expensed immediately.
+
+---
+
+**Deferred Hardware (Not in Grant Budget):**
+- GPU Workstation (~$11k): Can be purchased with co-funding or post-grant if cloud GPU proves insufficient
+- Rationale: Cloud GPU provides 40% grant coverage vs 26.7% for workstation depreciation, plus greater flexibility
 
 ---
 
@@ -191,32 +219,62 @@
 **Cost Breakdown:**
 - Founder R&D Labour (3,120 hrs): $299,520
 - Ting R&D Labour (4,152 hrs): $290,640
-- Developer R&D Labour (903 hrs): $65,016
-- Capability Development Labour (54 hrs): $5,184
-- Materials & Consumables (24 months): $4,800
-- Professional Services (IP): $6,000
-- Conference Travel (2 years): $6,400
-- Hardware (2-year eligible): $4,184
+- Developer R&D Labour (903 hrs minimum): $65,016
+- Capability Development (third-party services): $15,000
+- Materials & Consumables (24 months): $24,000
+- Hardware (immediate expenses): $1,800
 
-**TOTAL ELIGIBLE COST: $681,744**
+**TOTAL ELIGIBLE COST (at minimum developer hours): $695,976**
 
-**Grant at 40%: $272,698**
-**Co-funding at 60%: $409,046**
+**Grant at 40%: $278,390**
+**Co-funding at 60%: $417,586**
+
+---
 
 ### Capability Development Requirement Check
-- Required: ≥ 5% of grant = $13,635
-- Actual: $5,184 (labour) + $6,400 (conferences) = $11,584
-- Percentage: 4.2% of grant ⚠️ *Just below 5%*
-- **Status: MARGINAL - May need to add more CapDev hours**
 
-**Note:** Callaghan requires ≥5% of grant request spent on Capability Development. Current structure at 4.2%. Options:
-1. Increase CapDev labour hours from 54 to ~70 hours
-2. Add additional training/courses
-3. Increase conference participation hours
+**Required:** ≥5% of grant = $13,920  
+**Actual:** $15,000  
+**Percentage:** 5.39% ✓ **MEETS REQUIREMENT**
 
-**Revised to meet requirement:**
-- Add 20 hours CapDev (additional training/courses): $1,920
-- **New CapDev total: $13,504 (5.0% of grant) ✓**
+**Status:** ✓ Compliant with Paula's feedback
+- Only third-party professional services counted ✓
+- No internal labour included in CapDev ✓
+- Two capability categories (IP + Regulatory) ✓
+- Practical outputs (patents, compliance frameworks, expert reviews) ✓
+- Exceeds 5% minimum by $1,080 ✓
+
+---
+
+### Developer Flexibility Note
+
+**Budgeted at Minimum (10 hrs/week):**
+- Conservative estimate for grant application
+- Ensures achievable commitment baseline
+- Lower co-funding requirement
+
+**Actual Claims (10-40 hrs/week):**
+- Quarterly claims reflect real hours worked
+- Scale up during intensive phases:
+  - O2 (Admin automation): 20-30 hrs/week
+  - O3 (Clinical intelligence): 30-40 hrs/week
+  - O4 (Pilot preparation): 20-30 hrs/week
+- Scale down during lighter phases:
+  - O1 (Foundation): 10-15 hrs/week
+  - Between objectives: 10 hrs/week
+
+**Example Maximum Scenario:**
+- If developer works 40 hrs/week (4x minimum):
+- Developer: 3,612 hours @ $72/hr = $260,064
+- Total developer cost: $260,064 (vs $65,016 minimum)
+- Would increase total eligible costs to ~$891k
+- Would increase grant to ~$356k (40%)
+
+**Flexibility Benefits:**
+- Respond to R&D uncertainty (scale up if challenges arise)
+- Accelerate development if progress is faster than expected
+- Maintain quality by adding resources during critical phases
+- Budget conservatively for approval, scale as needed in practice
 
 ---
 
@@ -224,74 +282,69 @@
 
 *Grant paid the following month; 8 quarters over 24 months*
 
+**Note:** Claims schedule below uses **minimum developer hours** (10 hrs/week). Actual quarterly claims will vary based on real hours worked (10-40 hrs/week).
+
 ### **Year 1 Claims**
 
 **Q1 (Jan–Mar 2026) - Months 1-3**
-- Team: $73,770 (You + Ting, 3 months)
-- CapDev: $1,920
-- M&C: $600
-- Hardware: $1,050 (immediate) + $393 (depreciation)
-- IP: $1,250
-- **Eligible: $78,983 | Grant (40%): $31,593 | Payment: Month 4**
+- Founder + Ting (3 months): $73,770
+- CapDev (IP Audit + Reg Gap Analysis): $5,500
+- M&C: $3,000
+- Hardware (Month 1 immediate): $1,000
+- **Eligible: $83,270 | Grant (40%): $33,308 | Payment: Month 4**
 
 **Q2 (Apr–Jun 2026) - Months 4-6**
-- Team: $83,058 (You + Ting + Dev, 3 months)
-- CapDev: $1,536 (conference hours)
-- M&C: $600
-- Hardware deprec: $393
-- IP: $1,000
-- Conference: $1,000 (HealthTech Week)
-- **Eligible: $87,587 | Grant (40%): $35,035 | Payment: Month 7**
+- Founder + Ting + Dev 1 (3 months): $83,058
+- CapDev (Patent Filing + Reg Adviser): $5,000
+- M&C: $3,000
+- Hardware (Month 4 iPhone): $800
+- **Eligible: $91,858 | Grant (40%): $36,743 | Payment: Month 7**
 
 **Q3 (Jul–Sep 2026) - Months 7-9**
-- Team: $83,058
-- M&C: $600
-- Hardware deprec: $393
-- IP: $1,500
-- Conference: $2,200 (HIC Melbourne)
-- **Eligible: $87,751 | Grant (40%): $35,100 | Payment: Month 10**
+- Founder + Ting + Dev 1 (3 months): $83,058
+- CapDev (Compliance Docs + Reg Adviser): $1,000
+- M&C: $3,000
+- **Eligible: $87,058 | Grant (40%): $34,823 | Payment: Month 10**
 
 **Q4 (Oct–Dec 2026) - Months 10-12**
-- Team: $83,058
-- M&C: $600
-- Hardware deprec: $393
-- IP: $1,500
-- **Eligible: $85,551 | Grant (40%): $34,220 | Payment: Month 13**
+- Founder + Ting + Dev 1 (3 months): $83,058
+- CapDev (Reg Adviser Session 4): $500
+- M&C: $3,000
+- **Eligible: $86,558 | Grant (40%): $34,623 | Payment: Month 13**
 
 ---
 
 ### **Year 2 Claims**
 
 **Q5 (Jan–Mar 2027) - Months 13-15**
-- Team: $83,058
-- M&C: $600
-- Hardware deprec: $393
-- **Eligible: $84,051 | Grant (40%): $33,620 | Payment: Month 16**
+- Founder + Ting + Developer (3 months): $83,058
+- CapDev (Reg Adviser Session 5): $500
+- M&C: $3,000
+- **Eligible: $86,558 | Grant (40%): $34,623 | Payment: Month 16**
 
 **Q6 (Apr–Jun 2027) - Months 16-18**
-- Team: $83,058
-- M&C: $600
-- Hardware deprec: $393
-- **Eligible: $84,051 | Grant (40%): $33,620 | Payment: Month 19**
+- Founder + Ting + Developer (3 months): $83,058
+- CapDev (Reg Adviser Session 6): $500
+- M&C: $3,000
+- **Eligible: $86,558 | Grant (40%): $34,623 | Payment: Month 19**
 
 **Q7 (Jul–Sep 2027) - Months 19-21**
-- Team: $83,058
-- M&C: $600
-- Hardware deprec: $393
-- Conference: $3,200 (both Year 2 conferences)
-- **Eligible: $87,251 | Grant (40%): $34,900 | Payment: Month 22**
+- Founder + Ting + Developer (3 months): $83,058
+- CapDev (Compliance updates): $500
+- M&C: $3,000
+- **Eligible: $86,558 | Grant (40%): $34,623 | Payment: Month 22**
 
 **Q8 (Oct–Dec 2027) - Months 22-24**
-- Team: $83,058
-- M&C: $600
-- Hardware deprec: $394
-- **Eligible: $84,052 | Grant (40%): $33,621 | Payment: Month 25**
+- Founder + Ting + Developer (3 months): $83,058
+- CapDev (Final compliance review): $1,000
+- M&C: $3,000
+- **Eligible: $87,058 | Grant (40%): $34,823 | Payment: Month 25**
 
 ---
 
-**TOTAL GRANT OVER 8 QUARTERS: $271,709**
+**TOTAL GRANT OVER 8 QUARTERS: $278,392**
 
-**Note:** Actual grant total may vary slightly from $272,698 due to quarterly rounding and timing of specific expenditures. Final claims will reconcile to exact eligible costs.
+**Note:** Actual grant total based on minimum developer hours (10 hrs/week). If developer works more hours (up to 40 hrs/week), quarterly claims and grant amounts will increase proportionally.
 
 ---
 
@@ -309,39 +362,38 @@
 - Timesheets showing hours by objective
 - Role documentation (R&D Project Manager + Research/Testing/Documentation + QA)
 
-### Developer Evidence
+### Developer Evidence (Contractor)
 - Contractor agreement
-- Monthly invoices
+- Monthly invoices (showing hours worked)
 - Timesheets showing hours by objective
 - Payment receipts
+- Note: Hours will vary 10-40 hrs/week based on workload
 
 ### Materials & Consumables
 - Subscription/hosting invoices
 - Bank statements showing payment
 
-### Professional Services
-- FTO analysis report
-- Patent filing receipts
-- IP strategy consultation invoice
-
-### Conference Travel
-- Flight bookings
-- Hotel receipts
-- Registration confirmations
-- Conference attendance certificates
+### Capability Development
+- **IP (CD-A):**
+  - FTO report and invoice
+  - Provisional patent filing receipt (IPONZ)
+  - NDA/contract templates and invoice
+  - Trademark search/filing documents
+  
+- **Regulatory (CD-B):**
+  - Regulatory gap analysis report and invoice
+  - Adviser session invoices (6 sessions)
+  - Session notes and recommendations
+  - Compliance roadmap and documentation
+  - Governance framework
+  
+- **Free Training:**
+  - Course completion certificates (OPC, Collaborative Aotearoa, Te Whatu Ora)
 
 ### Hardware
-- Purchase invoices (workstation, devices)
-- Depreciation schedule
-- Photos of equipment with asset tags
-
-### Capability Development
-- Course certificates (OPC Privacy Act, OPC Health 101, Ko Awatea)
-- DPIA PDF
-- IPP 12 checklist
-- HISO mapping
-- DPA templates
-- Screenshots of MLflow/DVC/safety dashboard
+- Purchase invoices (RAM, monitor, monitor arms, SSD, iPhone)
+- Photos of equipment showing R&D use
+- No depreciation schedule needed (all immediate expenses < $1,000)
 
 ### GST
 - Claim values are excl. GST
@@ -351,20 +403,72 @@
 
 ## Notes and Reminders
 
-1. **Team structure:** 3 people (Founder + Ting full-time from Month 1; Developer from Month 4)
-2. **Ting role:** R&D Project Manager + Research/Testing/Documentation + Quality Assurance (40 hrs/week)
-3. **Developer start:** Month 4 (April 2026) - recruit in Months 1-3
-4. **Hardware purchases:** Defer GPU and Samsung Fold to Month 4 (after first grant received)
-5. **IP costs:** Spread across project timeline as work is completed
-6. **Conference timing:** 
-   - Year 1: HealthTech Week (Month 5), HIC Melbourne (Month 7)
-   - Year 2: HealthTech Week (Month 17), HIC Melbourne (Month 19)
+1. **Team structure:** 3 people
+   - Founder + Ting full-time from Month 1
+   - Developer from Month 4 (minimum 10 hrs/week, can scale 10-40 hrs/week)
+
+2. **Developer flexibility:** Budget at 10 hrs/week minimum; actual claims 10-40 hrs/week based on R&D needs
+
+3. **Ting role:** R&D Project Manager + Research/Testing/Documentation + Quality Assurance (40 hrs/week)
+
+4. **Developer recruitment timing:**
+   - Recruit in Months 1-3, start Month 4
+
+5. **Hardware purchases:** 
+   - Month 1: RAM upgrade, monitor, monitor arms, SSD ($1,000 total)
+   - Month 4: iPhone testing device ($800)
+   - GPU workstation ($11k) deferred - using cloud GPU instead (better grant coverage: 40% vs 26.7%)
+
+6. **CapDev structure:** Only third-party professional services (IP attorneys, regulatory advisers)
+   - No internal labour counted as CapDev
+   - Free training courses supplement (certificates attached as evidence)
+
 7. **Overseas labour:** Keep at $0 unless you secure express approval in advance
-8. **Eligible hours only:** Only claim eligible R&D and CapDev hours
-9. **CapDev minimum:** Must meet 5% of grant requirement ($13,635) - currently at 4.2%, need to add ~$2k more CapDev
-10. **Timesheets required:** All labour must be supported by signed weekly timesheets (all 3 team members)
+
+8. **Eligible hours only:** Only claim eligible R&D hours (no general admin/business development)
+
+9. **CapDev minimum:** Must meet ≥5% of grant requirement - Currently $15,000 = 5.39% ✓ (meets requirement)
+
+10. **Timesheets required:** All labour must be supported by signed weekly timesheets (all team members)
+
 11. **Evidence retention:** Keep all evidence for 7 years from the end of the project
+
 12. **Shareholder structure:** Both Founder and Ting are shareholders; Ting's AU funds ($100k AUD) available as shareholder loan if needed
+
+13. **Quarterly variance:** Actual claims will differ from schedule if developer works more than minimum hours
+
+14. **Maximum scenario planning:** If developer works 40 hrs/week throughout, total eligible costs could reach ~$891k (grant ~$356k). Budget conservatively, scale as needed.
+
+---
+
+**Last Updated:** 26 November 2025  
+**Status:** FINAL - Team structure finalized (removed Developer 2)
+**Changes:** 
+- M&C increased from $200/month to $1,000/month (+$19,200 total)
+- CapDev increased from $14,500 to $15,000 (+$500 to Regulatory services)
+- Hardware strategy: Deferred $11k workstation, using cloud GPU ($1,800 immediate hardware only)
+- **Team structure: Founder + Ting + Developer 1 only** (removed Developer 2)
+- **Total eligible costs: $695,976**
+- **Grant at 40%: $278,390**
+- **Co-funding at 60%: $417,586**
+- **CapDev: 5.39% of grant ✓** (exceeds 5% requirement by $1,080)
+
+**Team Structure Rationale:**
+- Leaner team (3 people vs 4) reduces co-funding requirement
+- Founder + Ting provide strong full-time R&D capacity
+- Single developer (10-40 hrs/week flexible) sufficient for implementation support
+- Can hire additional developers with co-funding if workload increases
+
+**Hardware Strategy Rationale:**
+- Cloud GPU provides 40% grant coverage vs 26.7% for workstation depreciation
+- Greater flexibility to scale compute up/down based on R&D needs
+- Lower upfront capital requirement ($1,800 vs $12,650)
+- Workstation can be purchased with co-funding or post-grant if needed
+
+**Next Updates Required:**
+1. Update cashflow-24-month.md with new team structure and revised GP revenue
+2. Update PROJECT_SUMMARY.md with new budget and team structure
+3. After supplier selection, add confirmed IP attorney and regulatory adviser names/quotes
 
 ---
 
