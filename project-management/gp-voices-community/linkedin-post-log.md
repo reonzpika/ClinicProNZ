@@ -201,4 +201,77 @@
 
 ---
 
-*Log updated: 2025-11-27 - All Week 2 articles captured in detail*
+## Articles Queue - To Review
+
+**Purpose**: URLs found but not yet evaluated. Review these for potential inclusion in future posts.
+
+**Added**: 2025-11-27
+
+### Health Accelerator & ACC
+
+1. **Health Accelerator's ACC Digital Assistant hits 180k milestone - boosting practice revenue and patient care**
+   - https://business.scoop.co.nz/2025/11/19/health-accelerators-acc-digital-assistant-hits-180k-milestone-boosting-practice-revenue-and-patient-care/
+
+2. **Health Accelerator AI Scribes**
+   - https://www.healthaccelerator.co.nz/ai-scribes
+
+3. **ACC using AI to help decide who goes back to work**
+   - https://www.odt.co.nz/business/acc-using-ai-help-decide-who-goes-back-work-rnz
+
+### Heidi AI Scribe Rollout
+
+4. **Heidi's AI scribe to be rolled out across New Zealand's emergency departments**
+   - https://www.nzdoctor.co.nz/article/undoctored/heidis-ai-scribe-be-rolled-out-across-new-zealands-emergency-departments
+
+5. **Health NZ to roll out Heidi AI scribe in 16 emergency departments - but what's the story with errors and privacy?**
+   - https://www.nzherald.co.nz/business/health-nz-to-roll-out-heidi-ai-scribe-in-16-emergency-departments-but-whats-the-story-with-errors-and-privacy/premium/RIYTO2QFMBBX5MJKEDXZUDDGDY/
+
+### Government Digital Health Strategy
+
+6. **Digitising healthcare to put patients first**
+   - https://www.beehive.govt.nz/release/digitising-healthcare-put-patients-first
+
+7. **Hospitals to move away from paper records to new digital systems**
+   - https://www.rnz.co.nz/news/political/579929/hospitals-to-move-away-from-paper-records-to-new-digital-systems
+
+8. **Government launches 10-year digital overhaul of New Zealand's health system**
+   - https://www.stuff.co.nz/politics/360897753/government-launches-10-year-digital-overhaul-new-zealands-health-system
+
+9. **AI navigation to deliver faster access to support**
+   - https://www.beehive.govt.nz/release/ai-navigation-deliver-faster-access-support
+
+10. **Minister launches 10-year Health Digital Investment Plan and Centre for Digital Modernisation**
+    - https://www.hinz.org.nz/news/715261/Minister-launches-10-year-Health-Digital-Investment-Plan-and-Centre-for-Digital-Modernisation.htm
+
+### Hospital System & Efficiency
+
+11. **Hospitals are under pressure - these changes could save $1.2 billion a year and fund 160,000 extra hospital visits**
+    - https://eveningreport.nz/2025/11/19/hospitals-are-under-pressure-these-changes-could-save-1-2-billion-a-year-and-fund-160-000-extra-hospital-visits-269492/
+
+12. **Wellington Scoop article**
+    - https://wellington.scoop.co.nz/?p=175802
+
+### Patient Safety & Prescribing
+
+13. **Pharmacists pick up 1,257 mistakes in prescriptions in a week**
+    - https://www.nzherald.co.nz/nz/pharmacists-pick-up-1257-mistakes-in-prescriptions-in-a-week/H3PQIAR53ZHW3PWKSBEK2UIZEA/
+
+### Research
+
+14. **Springer article - BMC Primary Care**
+    - https://link.springer.com/article/10.1186/s12875-025-03044-0
+
+### Opinion & Innovation
+
+15. **AI is the only cure for a collapsing health system - Ian McCrae**
+    - https://www.nzherald.co.nz/business/ai-is-the-only-cure-for-a-collapsing-health-system-ian-mccrae/premium/4JWBX4QMLZB4ZOJDN5GULFHPVI/
+
+16. **Mum inspired by son's health battle to build new app for Kiwis**
+    - https://www.nzherald.co.nz/nz/mum-inspired-by-sons-health-battle-to-build-new-app-for-kiwis/7GP42CW3FBBADKJA2A6HBKBOMY/
+
+17. **NZ City article**
+    - https://s7.nzcity.co.nz/news/article.aspx?id=434403
+
+---
+
+*Log updated: 2025-11-27 - All Week 2 articles captured in detail; Articles queue added*
