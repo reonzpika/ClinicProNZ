@@ -315,9 +315,9 @@ Track posts in `linkedin-post-log.md` with:
 
 ## Resources
 
-**Templates & Workflows**:
-- `weekly-linkedin-post-template.md` - Template to copy each week
+**Workflows**:
 - `linkedin-post-log.md` - Detailed post history and metrics
+- Template included in section 2 "Create Post Content" above
 
 ---
 
