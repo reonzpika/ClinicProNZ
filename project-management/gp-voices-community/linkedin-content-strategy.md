@@ -27,6 +27,13 @@
 - At least 2-3 saves per post (indicates reference value)
 - Requests for more frequent updates or specific topics
 
+**Target Metrics** (After 4 weeks):
+- 100+ impressions per post
+- 5%+ engagement rate
+- 10+ comments per post
+- 20+ link clicks
+- 5+ new community members
+
 **If Validation Succeeds**:
 - Build automated news curation workflow
 - Sources: BPAC, NZ Doctor, Pharmac, HQSC, Ministry of Health, RNZCGP, etc.
@@ -69,13 +76,26 @@
   **Settings**: Weekly email digests, "Only the best results" to reduce noise
 
 **Selection Criteria**:
-- ✅ Relevant to NZ GPs (not international-only)
-- ✅ Actionable or thought-provoking
-- ✅ Recent (within last 7 days)
-- ✅ Clinical or practice management focused
-- ✅ Avoid: Pure politics, controversial topics without clinical angle
-- ✅ Avoid: Vendor-focused content (consultancies, tech companies promoting products)
-- ✅ Avoid: Investment/finance focused (not GP practice-relevant)
+
+**✅ Include Articles When**:
+- Relevant to NZ GPs (not international-only, or international with NZ applicability)
+- Actionable or thought-provoking
+- Recent (within last 7 days for weekly roundups)
+- Clinical or practice management focused
+- Not vendor-focused (avoiding consultancies, tech companies promoting products)
+- Not investment/finance focused (unless directly GP practice-relevant)
+- Not paywalled (readers must be able to access)
+
+**❌ Exclude Articles When**:
+- Pure politics, controversial topics without clinical angle
+- Vendor-focused content (consultancies, tech companies promoting products)
+- Investment/finance focused (not GP practice-relevant)
+- Paywalled (readers can't access)
+- Can't access article (request blocked)
+
+**⚠️ Borderline - Evaluate Case by Case**:
+- Important topics but not directly GP practice-relevant
+- Use as filler content only if needed for 4th-5th item
 
 **Select 3-5 items** for the weekly roundup.
 
@@ -265,6 +285,15 @@ Use 5-8 hashtags per post. Mix evergreen + trending + NZ-specific.
 - Check profiles of new followers (are they GPs or vendors?)
 - Check profiles of commenters (are they GPs or vendors?)
 - Track audience quality, not just quantity
+
+---
+
+### Current Aggregate Status (After 1 week)
+
+- Total posts: 1
+- Total GP followers gained: 8 (need to verify GP vs vendor)
+- Average engagement per post: 8 comments, 3 reactions, 2 saves
+- Audience quality: ⚠️ Mostly vendor engagement
 
 ---
 
