@@ -1,6 +1,41 @@
-# LinkedIn Weekly Post Workflow
+# LinkedIn Weekly Content Strategy & Workflow
 
-**Purpose**: Reusable workflow for creating weekly NZ GP healthcare news LinkedIn posts.
+**Status**: Active Validation (Week 1/6 complete)  
+**Goal**: Test if GPs want curated NZ healthcare news before building automation  
+**Strategy**: Manual curation → Validate demand → Automate only if proven
+
+---
+
+## Validation Criteria
+
+**Success = GP/Practice Manager Engagement**
+- ✅ GPs commenting on posts
+- ✅ Practice managers saving/sharing content
+- ✅ Target audience following for weekly updates
+- ✅ Questions/requests for more frequent/detailed summaries
+
+**Vanity Metrics (Don't Count)**
+- ❌ AI tool vendor engagement (not target audience)
+- ❌ Total reactions without audience context
+- ❌ Impressions without conversion
+
+**Decision Timeline**: 4-6 weeks of weekly posts
+
+**Threshold for "Demand Proven"**:
+- At least 3-5 GP/practice manager comments per post (on average)
+- At least 10 new GP followers (not vendors) over 4-6 weeks
+- At least 2-3 saves per post (indicates reference value)
+- Requests for more frequent updates or specific topics
+
+**If Validation Succeeds**:
+- Build automated news curation workflow
+- Sources: BPAC, NZ Doctor, Pharmac, HQSC, Ministry of Health, RNZCGP, etc.
+- Automated extraction, summarisation, and draft generation
+- Human review before posting (keep editorial control)
+
+**If Validation Fails**:
+- Stop weekly posts after 6 weeks
+- Pivot to different content strategy or abandon LinkedIn approach
 
 ---
 
@@ -19,12 +54,28 @@
 - HINZ: https://www.hinz.org.nz/
 - LinkedIn (healthtech companies)
 
+**News Gathering Method**:
+- **Google Alerts** (Weekly digests) - Set up 2025-11-10
+  
+  **NZ-Focused Alerts (5 alerts)**:
+  - Primary keywords: AI, healthtech, artificial intelligence, IT
+  - Secondary keywords: GP, general practice, hospital, primary care, Medtech, Indici
+  - Region filter: New Zealand
+  
+  **International GP AI Alerts (5 alerts)**:
+  - Topics: AI GP innovation, AI clinical tools (US/UK/AU), AI adoption studies, AI GP use cases, healthtech funding
+  - Region: Global (any region)
+  
+  **Settings**: Weekly email digests, "Only the best results" to reduce noise
+
 **Selection Criteria**:
 - ✅ Relevant to NZ GPs (not international-only)
 - ✅ Actionable or thought-provoking
 - ✅ Recent (within last 7 days)
 - ✅ Clinical or practice management focused
 - ✅ Avoid: Pure politics, controversial topics without clinical angle
+- ✅ Avoid: Vendor-focused content (consultancies, tech companies promoting products)
+- ✅ Avoid: Investment/finance focused (not GP practice-relevant)
 
 **Select 3-5 items** for the weekly roundup.
 
@@ -69,11 +120,18 @@
 [#Hashtags - see Hashtags section below]
 ```
 
+**Content Guidelines**:
+- Mark articles as [NZ] or [International] for clarity
+- Focus on GP practice relevance
+- Ask engagement questions that GPs (not vendors) can answer
+- Include stronger link CTAs to drive clicks
+- Use emojis strategically for visual appeal
+
 ---
 
 ### 3. Create Image (Nano Banana)
 
-**Title**: "This Week in NZ General Practice: AI Edition" (or adapt based on theme)
+**Title**: "This Week in NZ General Practice: [Theme] Edition" (adapt based on theme)
 
 **Prompt**:
 ```
@@ -85,7 +143,7 @@ Design specifications:
 - Colors: Blue/cyan theme (trustworthy, medical) with white text for maximum contrast
 
 Text overlay (centered, large, bold):
-"This Week in NZ General Practice: AI Edition"
+"This Week in NZ General Practice: [Theme] Edition"
 
 Subtitle (smaller, below main title):
 "[X] Updates Every GP Should Know"
@@ -111,6 +169,9 @@ High contrast between text and background. Modern, trustworthy aesthetic.
 - Ask follow-up questions
 - Share additional insights
 - Tag relevant people when appropriate
+- Check profiles of new followers (are they GPs or vendors?)
+- Check profiles of commenters (are they GPs or vendors?)
+- Track audience quality, not just quantity
 
 **Metrics to Track**:
 - Post impressions
@@ -118,6 +179,8 @@ High contrast between text and background. Modern, trustworthy aesthetic.
 - Profile views
 - Link clicks
 - New connections/followers
+- Saves (indicates reference value)
+- **Audience quality**: GP vs vendor engagement ratio
 
 ---
 
@@ -137,6 +200,8 @@ Use 2-4 mentions per post. Tag when content directly relates to them.
 - @The Royal New Zealand College of Urgent Care (RNZCUC) (urgent care)
 - @Collaborative Aotearoa (health collaboration)
 - @GenPro (practice ownership/business)
+- @Medical Council of New Zealand
+- @Pinnacle Practices
 
 **Usage Guidelines**:
 - Only tag when content directly relates to them
@@ -169,6 +234,53 @@ Use 5-8 hashtags per post. Mix evergreen + trending + NZ-specific.
 
 ---
 
+## Weekly Post Performance
+
+### Week 1: 2025-11-08
+
+**Topic**: AI in healthcare - scribe technology and AI-enabled practice management systems  
+**Items**: 4 items
+
+**Metrics**:
+- Profile viewers from this post: 3
+- Followers gained from this post: **8 new followers** (initially reported as 1, corrected)
+- Reactions: 3
+- Comments: 8
+- Saves: 2
+- Link clicks: 1
+
+**Audience Analysis**:
+- ⚠️ **Most reactions from AI tool vendors, not GPs/practice managers**
+- This is the critical insight - engagement volume ≠ validation
+- Need to track WHO is engaging, not just HOW MANY
+
+**Learnings**:
+- Vendor engagement doesn't validate demand from target audience
+- Need better tracking of follower/commenter roles (GP vs vendor)
+- 8 new followers is promising, but need to verify they're GPs
+- 2 saves suggests content has reference value
+- Low link clicks (1) - may need stronger CTA
+
+**Action for Next Post**:
+- Check profiles of new followers (are they GPs or vendors?)
+- Check profiles of commenters (are they GPs or vendors?)
+- Track audience quality, not just quantity
+
+---
+
+### Week 2: 2025-11-17 (In Progress)
+
+**Status**: Post drafted, ready for review  
+**Target Post Date**: Tuesday-Thursday, 8-9am or 5-6pm NZST
+
+**Strategy Adjustments**:
+- Focus on topics more relevant to GP practice (less vendor-focused)
+- Add stronger link CTA to test if better placement drives clicks
+- Ask engagement questions that GPs (not vendors) can answer
+- Mark articles as [NZ] or [International] for clarity
+
+---
+
 ## Post Log
 
 Track posts in `linkedin-post-log.md` with:
@@ -176,8 +288,37 @@ Track posts in `linkedin-post-log.md` with:
 - Topic/theme
 - Metrics (impressions, engagement rate)
 - Notable comments/engagement
+- Audience quality analysis (GP vs vendor)
 - Learnings for next week
 
 ---
 
-*Reusable workflow for weekly LinkedIn posts*
+## Next Steps
+
+**Immediate (Week 2)**:
+1. ✅ Post Week 2 content
+2. Analyse Week 2 new followers (GP vs vendor ratio)
+3. Track audience quality in engagement
+4. Review metrics after 48 hours
+
+**After 4 Weeks**:
+- Review aggregate metrics across 4 posts
+- Calculate GP engagement rate vs vendor engagement rate
+- Decide: Continue to 6 weeks, or pivot/stop?
+
+**After 6 Weeks**:
+- Final validation decision
+- If successful: Design automation workflow
+- If unsuccessful: Document learnings, stop weekly posts
+
+---
+
+## Resources
+
+**Templates & Workflows**:
+- `weekly-linkedin-post-template.md` - Template to copy each week
+- `linkedin-post-log.md` - Detailed post history and metrics
+
+---
+
+*Last Updated: 2025-11-15 - Combined content strategy and workflow*
