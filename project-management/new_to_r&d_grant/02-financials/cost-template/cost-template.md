@@ -12,12 +12,9 @@
 - **Ting (shareholder-employee, R&D Operations Lead):** $70/hour (= $58.33/hr + 20% overhead), PAYE, timesheets required
 - **Ting commitment:** 40 hrs/week throughout 24 months (4,152 hours total)
 - **Ting role:** R&D Project Manager + Research/Testing/Documentation + Quality Assurance
-- **Developer 1 (contractor):** $72/hour (= $60/hr + 20% overhead), starts Month 4
-- **Developer 1 commitment:** Minimum 10 hrs/week (can range 10-40 hrs/week as needed), 21 months (Months 4-24)
-- **Developer 1 budgeted hours:** 903 hours (10 hrs/week minimum)
-- **Developer 2 (contractor):** $72/hour (= $60/hr + 20% overhead), starts Month 13
-- **Developer 2 commitment:** Minimum 10 hrs/week (can range 10-40 hrs/week as needed), 12 months (Months 13-24)
-- **Developer 2 budgeted hours:** 520 hours (10 hrs/week minimum)
+- **Developer (contractor):** $72/hour (= $60/hr + 20% overhead), starts Month 4
+- **Developer commitment:** Minimum 10 hrs/week (can range 10-40 hrs/week as needed), 21 months (Months 4-24)
+- **Developer budgeted hours:** 903 hours (10 hrs/week minimum)
 
 **Note on Developer Hours:** Budgeted at minimum 10 hrs/week. Actual hours claimed quarterly will vary 10-40 hrs/week based on R&D workload and project needs. Flexibility allows scaling up during intensive development phases.
 
@@ -66,23 +63,15 @@
 - Role: R&D Project Manager + Research/Testing/Documentation + Quality Assurance
 - **Total Ting R&D Labour: 4,152 hours = $290,640**
 
-**Developer 1 (Contractor, starts Month 4):** $72/hour | **NZD excl. GST**
+**Developer (Contractor, starts Month 4):** $72/hour | **NZD excl. GST**
 
-**Developer 1 R&D Hours (21 months, Months 4-24):**
+**Developer R&D Hours (21 months, Months 4-24):**
 - Minimum 10 hrs/week (can scale 10-40 hrs/week based on workload)
 - Budgeted at minimum: 10 hrs/week × 52 weeks/year × 1.75 years ÷ 12 months/year = 43 hrs/month
 - 43 hrs/month × 21 months = 903 hours
-- **Total Developer 1 R&D Labour (minimum): 903 hours = $65,016**
+- **Total Developer R&D Labour (minimum): 903 hours = $65,016**
 
-**Developer 2 (Contractor, starts Month 13):** $72/hour | **NZD excl. GST**
-
-**Developer 2 R&D Hours (12 months, Months 13-24):**
-- Minimum 10 hrs/week (can scale 10-40 hrs/week based on workload)
-- Budgeted at minimum: 10 hrs/week × 52 weeks/year ÷ 12 months/year = 43 hrs/month
-- 43 hrs/month × 12 months = 520 hours
-- **Total Developer 2 R&D Labour (minimum): 520 hours = $37,440**
-
-**TOTAL R&D LABOUR (at minimum developer hours): 8,695 hours = $692,616**
+**TOTAL R&D LABOUR (at minimum developer hours): 8,175 hours = $655,176**
 
 **Note:** Developer hours budgeted conservatively at 10 hrs/week. Actual quarterly claims will reflect real hours worked (10-40 hrs/week range), allowing flexibility to scale up during intensive development phases (O2-O4).
 
@@ -230,31 +219,30 @@
 **Cost Breakdown:**
 - Founder R&D Labour (3,120 hrs): $299,520
 - Ting R&D Labour (4,152 hrs): $290,640
-- Developer 1 R&D Labour (903 hrs minimum): $65,016
-- Developer 2 R&D Labour (520 hrs minimum): $37,440
+- Developer R&D Labour (903 hrs minimum): $65,016
 - Capability Development (third-party services): $15,000
 - Materials & Consumables (24 months): $24,000
 - Hardware (immediate expenses): $1,800
 
-**TOTAL ELIGIBLE COST (at minimum developer hours): $733,416**
+**TOTAL ELIGIBLE COST (at minimum developer hours): $695,976**
 
-**Grant at 40%: $293,366**
-**Co-funding at 60%: $440,050**
+**Grant at 40%: $278,390**
+**Co-funding at 60%: $417,586**
 
 ---
 
 ### Capability Development Requirement Check
 
-**Required:** ≥5% of grant = $14,668  
+**Required:** ≥5% of grant = $13,920  
 **Actual:** $15,000  
-**Percentage:** 5.11% ✓ **MEETS REQUIREMENT**
+**Percentage:** 5.39% ✓ **MEETS REQUIREMENT**
 
 **Status:** ✓ Compliant with Paula's feedback
 - Only third-party professional services counted ✓
 - No internal labour included in CapDev ✓
 - Two capability categories (IP + Regulatory) ✓
 - Practical outputs (patents, compliance frameworks, expert reviews) ✓
-- Exceeds 5% minimum by $332 ✓
+- Exceeds 5% minimum by $1,080 ✓
 
 ---
 
@@ -276,12 +264,11 @@
   - Between objectives: 10 hrs/week
 
 **Example Maximum Scenario:**
-- If both developers work 40 hrs/week (4x minimum):
-- Developer 1: 3,612 hours @ $72/hr = $260,064
-- Developer 2: 2,080 hours @ $72/hr = $149,760
-- Total developer cost: $409,824 (vs $102,456 minimum)
-- Would increase total eligible costs to ~$1.12M
-- Would increase grant to ~$448k (40%)
+- If developer works 40 hrs/week (4x minimum):
+- Developer: 3,612 hours @ $72/hr = $260,064
+- Total developer cost: $260,064 (vs $65,016 minimum)
+- Would increase total eligible costs to ~$891k
+- Would increase grant to ~$356k (40%)
 
 **Flexibility Benefits:**
 - Respond to R&D uncertainty (scale up if challenges arise)
@@ -330,43 +317,43 @@
 ### **Year 2 Claims**
 
 **Q5 (Jan–Mar 2027) - Months 13-15**
-- Founder + Ting + Dev 1 + Dev 2 (3 months): $92,418
+- Founder + Ting + Developer (3 months): $83,058
 - CapDev (Reg Adviser Session 5): $500
 - M&C: $3,000
-- **Eligible: $95,918 | Grant (40%): $38,367 | Payment: Month 16**
+- **Eligible: $86,558 | Grant (40%): $34,623 | Payment: Month 16**
 
 **Q6 (Apr–Jun 2027) - Months 16-18**
-- Founder + Ting + Dev 1 + Dev 2 (3 months): $92,418
+- Founder + Ting + Developer (3 months): $83,058
 - CapDev (Reg Adviser Session 6): $500
 - M&C: $3,000
-- **Eligible: $95,918 | Grant (40%): $38,367 | Payment: Month 19**
+- **Eligible: $86,558 | Grant (40%): $34,623 | Payment: Month 19**
 
 **Q7 (Jul–Sep 2027) - Months 19-21**
-- Founder + Ting + Dev 1 + Dev 2 (3 months): $92,418
+- Founder + Ting + Developer (3 months): $83,058
 - CapDev (Compliance updates): $500
 - M&C: $3,000
-- **Eligible: $95,918 | Grant (40%): $38,367 | Payment: Month 22**
+- **Eligible: $86,558 | Grant (40%): $34,623 | Payment: Month 22**
 
 **Q8 (Oct–Dec 2027) - Months 22-24**
-- Founder + Ting + Dev 1 + Dev 2 (3 months): $92,418
+- Founder + Ting + Developer (3 months): $83,058
 - CapDev (Final compliance review): $1,000
 - M&C: $3,000
-- **Eligible: $96,418 | Grant (40%): $38,567 | Payment: Month 25**
+- **Eligible: $87,058 | Grant (40%): $34,823 | Payment: Month 25**
 
 ---
 
-**TOTAL GRANT OVER 8 QUARTERS: $293,364**
+**TOTAL GRANT OVER 8 QUARTERS: $278,392**
 
-**Note:** Actual grant total based on minimum developer hours (10 hrs/week). If developers work more hours (up to 40 hrs/week), quarterly claims and grant amounts will increase proportionally.
+**Note:** Actual grant total based on minimum developer hours (10 hrs/week). If developer works more hours (up to 40 hrs/week), quarterly claims and grant amounts will increase proportionally.
 
 ---
 
 ## Evidence to Keep and Upload with Claims
 
 ### Internal Labour
-- Timesheets by Objective/CapDev (founder + Ting + developers)
+- Timesheets by Objective/CapDev (founder + Ting + developer)
 - Payroll reports (founder PAYE + Ting PAYE)
-- Contractor invoices (developers)
+- Contractor invoices (developer)
 - Bank payment proofs
 
 ### Ting Evidence (Shareholder-employee)
@@ -375,8 +362,8 @@
 - Timesheets showing hours by objective
 - Role documentation (R&D Project Manager + Research/Testing/Documentation + QA)
 
-### Developer Evidence (Both Contractors)
-- Contractor agreements
+### Developer Evidence (Contractor)
+- Contractor agreement
 - Monthly invoices (showing hours worked)
 - Timesheets showing hours by objective
 - Payment receipts
@@ -416,18 +403,16 @@
 
 ## Notes and Reminders
 
-1. **Team structure:** 3-4 people
+1. **Team structure:** 3 people
    - Founder + Ting full-time from Month 1
-   - Developer 1 from Month 4 (minimum 10 hrs/week, can scale 10-40 hrs/week)
-   - Developer 2 from Month 13 (minimum 10 hrs/week, can scale 10-40 hrs/week)
+   - Developer from Month 4 (minimum 10 hrs/week, can scale 10-40 hrs/week)
 
 2. **Developer flexibility:** Budget at 10 hrs/week minimum; actual claims 10-40 hrs/week based on R&D needs
 
 3. **Ting role:** R&D Project Manager + Research/Testing/Documentation + Quality Assurance (40 hrs/week)
 
 4. **Developer recruitment timing:**
-   - Developer 1: Recruit in Months 1-3, start Month 4
-   - Developer 2: Recruit in Months 10-12, start Month 13
+   - Recruit in Months 1-3, start Month 4
 
 5. **Hardware purchases:** 
    - Month 1: RAM upgrade, monitor, monitor arms, SSD ($1,000 total)
@@ -442,7 +427,7 @@
 
 8. **Eligible hours only:** Only claim eligible R&D hours (no general admin/business development)
 
-9. **CapDev minimum:** Must meet ≥5% of grant requirement - Currently $15,000 = 5.11% ✓ (meets requirement)
+9. **CapDev minimum:** Must meet ≥5% of grant requirement - Currently $15,000 = 5.39% ✓ (meets requirement)
 
 10. **Timesheets required:** All labour must be supported by signed weekly timesheets (all team members)
 
@@ -450,22 +435,29 @@
 
 12. **Shareholder structure:** Both Founder and Ting are shareholders; Ting's AU funds ($100k AUD) available as shareholder loan if needed
 
-13. **Quarterly variance:** Actual claims will differ from schedule if developers work more than minimum hours
+13. **Quarterly variance:** Actual claims will differ from schedule if developer works more than minimum hours
 
-14. **Maximum scenario planning:** If both developers work 40 hrs/week throughout, total eligible costs could reach ~$1.12M (grant ~$448k). Budget conservatively, scale as needed.
+14. **Maximum scenario planning:** If developer works 40 hrs/week throughout, total eligible costs could reach ~$891k (grant ~$356k). Budget conservatively, scale as needed.
 
 ---
 
 **Last Updated:** 26 November 2025  
-**Status:** FINAL - All costs finalized and CapDev requirements met  
+**Status:** FINAL - Team structure finalized (removed Developer 2)
 **Changes:** 
 - M&C increased from $200/month to $1,000/month (+$19,200 total)
 - CapDev increased from $14,500 to $15,000 (+$500 to Regulatory services)
 - Hardware strategy: Deferred $11k workstation, using cloud GPU ($1,800 immediate hardware only)
-- **Total eligible costs: $733,416**
-- **Grant at 40%: $293,366**
-- **Co-funding at 60%: $440,050**
-- **CapDev: 5.11% of grant ✓** (meets 5% requirement)
+- **Team structure: Founder + Ting + Developer 1 only** (removed Developer 2)
+- **Total eligible costs: $695,976**
+- **Grant at 40%: $278,390**
+- **Co-funding at 60%: $417,586**
+- **CapDev: 5.39% of grant ✓** (exceeds 5% requirement by $1,080)
+
+**Team Structure Rationale:**
+- Leaner team (3 people vs 4) reduces co-funding requirement
+- Founder + Ting provide strong full-time R&D capacity
+- Single developer (10-40 hrs/week flexible) sufficient for implementation support
+- Can hire additional developers with co-funding if workload increases
 
 **Hardware Strategy Rationale:**
 - Cloud GPU provides 40% grant coverage vs 26.7% for workstation depreciation
@@ -474,8 +466,8 @@
 - Workstation can be purchased with co-funding or post-grant if needed
 
 **Next Updates Required:**
-1. Update cashflow-24-month.md with new M&C and totals
-2. Update PROJECT_SUMMARY.md with new budget
+1. Update cashflow-24-month.md with new team structure and revised GP revenue
+2. Update PROJECT_SUMMARY.md with new budget and team structure
 3. After supplier selection, add confirmed IP attorney and regulatory adviser names/quotes
 
 ---
