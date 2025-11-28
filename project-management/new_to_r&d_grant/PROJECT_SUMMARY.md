@@ -29,15 +29,18 @@ stakeholders:
   - role: Partner
     name: Medtech (NZ's largest PMS, ~60% market share)
   - role: Mentor
-    name: Paula (meeting completed 23 Nov 2025)
+    name: Paula (meeting completed 13 Nov 2025, emailed update 27 Nov 2025)
   - role: Callaghan Innovation Contact
     name: Paul (meeting completed 13 Nov 2025)
 milestones:
-  - date: "2025-11-23"
+  - date: "2025-11-13"
     name: Mentor meeting with Paula (feedback received)
     status: completed
   - date: "2025-11-25"
     name: Updated to 24-month structure
+    status: completed
+  - date: "2025-11-27"
+    name: Emailed Paula with progress update on changes since meeting
     status: completed
   - date: "2025-12-15"
     name: Target submission date
@@ -357,12 +360,14 @@ Grants paid 1 month after quarterly claim submission.
 - ✅ **Cashflow:** Positive throughout, $39k surplus, AU reserve not needed ✓
 - ✅ **CapDev:** 5.39% of grant (exceeds 5% requirement by $1,085) ✓
 
-### Previous Updates (Nov 23-25, 2025)
+### Previous Updates (Nov 13-27, 2025)
+- ✅ **Paula meeting 13 Nov:** Received key feedback (extend to 24 months, reduce to 4 objectives, show long-term vision, add competitor analysis)
 - ✅ Extended project from 12 to 24 months (Paula's recommendation)
 - ✅ Consolidated from 5 to 4 objectives (Paula's feedback)
 - ✅ Added Ting as full-time R&D Operations Lead (40 hrs/week @ $70/hr)
 - ✅ Increased founder hours (25→30 hrs/week)
 - ✅ Confirmed shareholder funds structure ($200k total capacity)
+- ✅ **Emailed Paula 27 Nov:** Sent progress update on all changes implemented since meeting
 
 ### Strengths
 - ✓ Strong technical R&D justification
@@ -503,7 +508,19 @@ Grants paid 1 month after quarterly claim submission.
 
 ---
 
-### [2025-11-23] Paula Mentor Meeting Feedback - Major Revision Required
+### [2025-11-27] Progress Update Sent to Paula
+
+**Email Update:** Sent comprehensive update to Paula summarizing all changes implemented since 13 Nov meeting:
+- Extended to 24 months with 4 objectives
+- Final budget: $695,976 ($278,305 grant, $417,586 co-funding)
+- Team: Founder + Ting + Developer (3 people, leaner structure)
+- CapDev: $15,000 third-party services (5.39% of grant ✓)
+- Cashflow: Positive throughout, AU reserve not needed ✓
+- Still working on: Final objectives narrative, Year 3-5 vision, competitor analysis
+
+---
+
+### [2025-11-13] Paula Mentor Meeting Feedback - Major Revision Required
 
 **Meeting with Paula:** Proposal received positive feedback ("really good, good chance of getting approved") but requires improvements:
 
