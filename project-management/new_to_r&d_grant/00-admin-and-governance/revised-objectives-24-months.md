@@ -26,6 +26,8 @@ while proving which AI architecture (simple models, hybrid rules+LLM, NZ-trained
 
 A lean MVP for Inbox Helper (Objective 2) and Care Gap Finder (Objective 3) will be released to early adopters as soon as minimum safety and accuracy thresholds are met. Further planned features, refinements, and generalisation work will continue through to month 24, informed by pilot data and user feedback.
 
+**Link to Long-Term Vision:** The architectures, NZ-LLM, and safety frameworks developed in this project for GP-facing tools (Inbox Helper and Care Gap Finder) are deliberately designed to be reused for a patient-facing companion product, HealthHub NZ, planned for years 3–5. This creates a coherent ecosystem where GP tools and patient tools share the same NZ-specific clinical knowledge and data standards.
+
 ---
 
 ## Objective 1 – Build the Smart Foundation and Early Prototypes (Months 1–6)
@@ -142,7 +144,7 @@ R&D focus: measure and compare performance, errors, and GP interactions across b
 
 ### Lean MVP and Ongoing R&D
 
-Once the Inbox Helper meets minimum thresholds (e.g., ≥90% triage accuracy, zero unsafe auto-filing in 1,000 edge-case tests), a lean MVP will be offered to a small group of early adopter practices for paid or trial use.
+A lean MVP of the Inbox Helper will be released to early adopter practices as soon as minimum safety and accuracy thresholds are met (e.g., ≥90% triage accuracy, zero unsafe auto-filing in 1,000 edge-case tests), with further triage, automation, and patient-message features added during the remainder of the project.
 
 R&D continues in parallel on:
 - Expanding supported document types,
@@ -233,7 +235,7 @@ Filters by:
 
 ### Lean MVP and Ongoing R&D
 
-Once core targets are met (e.g., ≥95% CVDRA accuracy, ≥85% care-gap detection vs GP audit, safe messaging), a lean Care Gap MVP focusing on diabetes and CVD will be offered to early adopters.
+A lean MVP of the Care Gap Finder (starting with diabetes and CVD risk) will be released early once core targets are met (e.g., ≥95% CVDRA accuracy, ≥85% care-gap detection vs GP audit, safe messaging), then expanded to COPD, CHF, asthma and more advanced dashboards as the NZ-LLM and rules are refined.
 
 R&D continues on:
 - Adding COPD/CHF/asthma logic,
@@ -263,6 +265,8 @@ Use real-world feedback and pilot data to do the "hard" R&D work: refine NZ-LLM 
 - How can NZ-LLM and rules be refined to support equitable performance across regions and populations?
 
 ### Activities and Features
+
+Objective 4 will use real-world data and GP/patient feedback to study why errors, missed gaps, or alert fatigue occur, and to refine the NZ-LLM, rules, and UI patterns so performance, safety, and equity are maintained across new practices and both Medtech and Indici. This is systematic R&D on generalisation and safety, not routine maintenance.
 
 #### NZ-LLM and Rules Refinement Using Real-World Data
 
@@ -309,6 +313,82 @@ Run structured pilots across several practices using both Medtech and Indici:
   - Safety incidents (if any) and mitigation processes.
 
 - **A clear roadmap for broader commercial rollout** (including additional features and PMSs) grounded in the R&D findings.
+
+---
+
+## Future Roadmap (Years 3–5)
+
+Beyond this 24-month R&D programme, the same NZ-specific architecture and NZ-LLM will be extended into new tools and ongoing R&D streams that build on the validated foundations from Objectives 1–4.
+
+### HealthHub NZ: Patient-Facing Companion Product
+
+The validated NZ-LLM, safety frameworks, and FHIR data structures will be extended into **HealthHub NZ**, a patient-facing web app for ordinary New Zealanders. HealthHub NZ will:
+
+- **Personal health record management:** Let patients upload lab results, doctor letters, and discharge summaries and have AI extract and organise their data automatically.
+- **Conversational health interface:** Provide a conversational interface for symptom diaries and health questions, using NZ guidelines (bpac, MoH) as sources.
+- **Pre-visit summaries:** Generate pre-visit summaries patients can share with their GP, tightly aligned with the Inbox Helper and Care Gap Finder features.
+- **Shared infrastructure:** Reuse the same FHIR data structures and NZ-LLM models validated during this grant, ensuring consistency between GP-facing and patient-facing tools.
+
+This creates a coherent ecosystem where GP tools and patient tools share the same NZ-specific clinical knowledge, improving continuity of care and health literacy.
+
+### Advanced NZ-LLM and Multimodal Models
+
+**Multimodal inbox and records:**
+- Extend from text-only to images and PDFs (e.g., scanned letters, ECG reports, specialist letters with images).
+- Research safe multimodal NZ-LLM architectures that can interpret clinical images alongside text while maintaining safety constraints.
+
+**Continual learning from NZ data:**
+- Design methods for ongoing fine-tuning using de-identified NZ practice data while preserving privacy.
+- Research approaches to avoid "drift" away from guidelines (a formal continual-learning R&D stream).
+- Investigate federated learning approaches for multi-practice model improvement without centralising patient data.
+
+**Te reo and cultural context:**
+- R&D on understanding and appropriately responding to notes and patient messages that include te reo Māori and culturally specific concepts.
+- Develop culturally appropriate response patterns aligned with equity goals and Māori health frameworks.
+
+### Equity, Safety and Evaluation Science
+
+**Equity-focused algorithms:**
+- Develop and test algorithms that explicitly prioritise high-need groups (Māori, Pacific, high-deprivation).
+- Measure for unintended bias or harm (e.g., under- or over-alerting in specific populations).
+- Partner with Māori and Pacific health providers to co-design and validate equity features.
+
+**Human–AI collaboration studies:**
+- Study how GPs, nurses, and patients actually interact with the AI over time (trust, override rates, alert fatigue).
+- Refine UI and thresholds as a formal R&D programme, not just UX tweaks.
+- Investigate long-term effects on clinical decision-making and workload.
+
+**Real-world outcome trials:**
+- Longer-term R&D on whether the tools reduce hospitalisations, improve control of HbA1c/BP, or improve access.
+- Partner with PHOs or Health Accelerator-type initiatives for outcome studies.
+- Measure equity outcomes: do Māori and Pacific patients benefit equally?
+
+### Broader Interoperability and Ecosystem Work
+
+**National services integration:**
+- R&D on safely using national FHIR APIs (e.g., NHI, future national medication or lab services).
+- Enrich Inbox Helper and Care Gap Finder with national data sources.
+- Sync HealthHub NZ data back into the national ecosystem where appropriate.
+
+**"Plug-in" architecture for other PMSs and portals:**
+- Generalise the Medtech/Indici work into a standardised adapter layer.
+- R&D integration with additional PMSs (e.g., MyPractice, Profile) and hospital systems without rewriting core logic.
+- Create open standards for clinical AI integration that others can adopt.
+
+### New GP Tools Built on the Platform
+
+**Triage and access tools:**
+- Use NZ-LLM and rules to build symptom-checker/online triage that feeds directly into Inbox Helper and Care Gap Finder.
+- Research safe autonomous triage thresholds: when can AI safely direct patients to self-care vs nurse vs GP vs ED?
+
+**Structured consultation support:**
+- Decision aids during consultations (e.g., live CVDRA/care-gap prompts in the consult screen).
+- R&D on avoiding interruption and preserving the "human element" of care.
+- Study optimal timing and presentation of AI suggestions during clinical encounters.
+
+**Prescription support (future):**
+- Building on the non-prescribing clinical overlays from Objective 2, research safe prescription checking and dosing support.
+- Investigate integration with Pharmac and NZGG guidelines for medication safety.
 
 ---
 
