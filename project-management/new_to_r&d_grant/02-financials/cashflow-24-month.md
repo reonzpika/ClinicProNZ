@@ -13,6 +13,12 @@
 - **Ting role:** R&D Project Manager + Research/Testing/Documentation + Quality Assurance
 - **Developer rate:** $72/hour (= $60/hr + 20% overhead), contractor
 - **Developer hours:** Minimum 10 hrs/week starting Month 4 (43 hours/month = $3,096/month)
+
+**Tax and Compliance Notes:**
+- **PAYE requirement:** Callaghan Innovation requires shareholder-employees to be paid via PAYE (not drawings). R&D wages claimed under grant must be processed through payroll with PAYE deductions.
+- **KiwiSaver:** Neither Founder nor Ting enrolled in KiwiSaver during R&D project (no employer contributions required).
+- **ACC levies:** Employer ACC levies (~$8,200 over 24 months) are a co-funding cost (not grant-eligible). To be confirmed with accountant.
+- **GST on wages:** Wages are NOT subject to GST. GST applies only to: (1) GP clinical work invoices, and (2) grant invoices to Callaghan Innovation.
 - **Capability Development:** $15,000 total (third-party professional services only: IP $7,500 + Regulatory $7,500)
 - **Materials & consumables (M&C):** $1,000/month (development tools $320 + cloud infrastructure $680)
 - **GP clinical work income (excl GST):** $375,652 over 24 months (average $15,652/month)
@@ -273,7 +279,8 @@
 - **Opening Cash (Month 1):** $100,000 NZD
 - **Always Positive:** Cash never goes negative ✓
 - **Minimum Cash:** $4,246 (Month 24, before final grant)
-- **Closing Cash (Month 25):** $39,185 ✓
+- **Closing Cash (Month 25):** $39,185 (before ACC levies)
+- **Closing Cash (adjusted for ACC):** ~$31,000 ✓
 
 **Total Inflows:**
 - Opening cash (NZ): $100,000
@@ -283,7 +290,12 @@
 
 **Total R&D Costs:** $695,976
 
-**Surplus:** $39,198 ✓
+**Surplus (before ACC levies):** $39,198 ✓
+
+**Adjusted for ACC levies:**
+- Surplus before ACC: $39,198
+- Less: ACC levies (~$8,200)
+- **Net surplus: ~$31,000** ✓
 
 ---
 
@@ -398,6 +410,18 @@
     - Can handle unexpected costs or income variations
     - Provides confidence for 24-month commitment
 
+12. **ACC levies impact (co-funding):**
+    - Estimated ~$8,200 over 24 months (~$342/month average)
+    - Not grant-eligible (co-funding cost)
+    - Will reduce final surplus from $39,185 to ~$31,000
+    - Cashflow remains positive throughout
+    - To be confirmed with accountant
+
+13. **No KiwiSaver contributions:**
+    - Neither Founder nor Ting enrolled during R&D project
+    - Saves ~$17,700 over 24 months vs if enrolled
+    - Improves co-funding capacity
+
 ---
 
 ## Comparison: Original vs Updated Structure
@@ -413,6 +437,18 @@
 | Final position | -$75k (NZ only) | +$39k | ✓ Improved |
 
 **Result:** Leaner team + higher GP income = Strong positive cashflow without AU reserve draw
+
+---
+
+**Last Updated:** 29 November 2025  
+**Status:** UPDATED - Tax and compliance notes added
+
+**Recent Changes:**
+- Added tax and compliance notes section (PAYE requirement, KiwiSaver opt-out, ACC levies estimate, GST clarification)
+- Updated summary to reflect ACC levies impact (~$8,200 co-funding cost)
+- Closing balance adjusted: $39,185 (before ACC) → ~$31,000 (after ACC) ✓
+- Cashflow remains positive throughout ✓
+- No KiwiSaver contributions (saves ~$17,700 vs if enrolled)
 
 ---
 
