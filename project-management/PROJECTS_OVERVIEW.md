@@ -140,6 +140,7 @@ Start minimal, add folders as project evolves.
 ### Recent Achievements Across Projects
 *[AI will auto-populate this section based on recent milestones and updates]*
 
+- **2025-11-28**: R&D Grant Submission - 🎉 MAJOR MILESTONE: Objectives completely revised! Focused scope on 2 core tools (Inbox Helper + Care Gap Finder) instead of 50+ tools. Dual PMS integration (Medtech + Indici) from day one. Lean MVP approach with early releases to paid adopters. Years 3-5 roadmap added: HealthHub NZ patient-facing app, multimodal models, continual learning, te reo support, equity-focused algorithms, real-world outcome trials. Removed high-risk features (prescription validation). Document version 3.0 ready for external review.
 - **2025-11-07**: Medtech Integration — POST Media endpoint implemented; Facility ID configuration blocker identified (403 error); Email sent to Medtech ALEX support
 - **2025-11-07**: Strategic prioritisation review — Medtech Integration identified as high ROI revenue path; ClinicPro marketing ROI questioned given competitive market
 - **2025-11-07**: Solo founder/developer context noted — limited time/resources require focus on highest ROI activities
@@ -274,16 +275,17 @@ Start minimal, add folders as project evolves.
 - **Folder**: `new_to_r&d_grant`
 - **Stage**: Validation
 - **Owner**: Solo Founder/Developer
-- **Last Updated**: 2025-11-11
-- **Summary**: R&D grant proposal for building NZ-sovereign clinical LLM for GP workflows focusing on 2 high-impact use cases: inbox management (reactive admin relief) and care gap monitoring (proactive clinical support). 12-month project seeking $70,026 grant (40%) with $105,039 co-funding. Team: Founder (1,329 hours @ 25 hrs/week) + Developer (390 hours, starts Month 4). Includes IP protection ($6k), conference attendance ($3.2k), GPU workstation + testing devices ($2.6k Year 1). Partnership development in progress with Medtech and Comprehensive Care PHO.
+- **Last Updated**: 2025-11-28
+- **Summary**: R&D grant proposal for building NZ-sovereign clinical AI assistant focusing on 2 core tools: **Inbox Helper** (triage, auto-filing, patient messages) and **Care Gap Finder** (diabetes, CVD, COPD, CHF, asthma monitoring). 24-month project with dual PMS integration (Medtech + Indici), lean MVPs released to early adopters, and Years 3-5 roadmap for HealthHub NZ patient-facing app. Team: Founder (30 hrs/week) + Ting R&D Operations Lead (40 hrs/week) + Developer (flexible 10-40 hrs/week from Month 4). Includes architecture validation R&D, NZ-LLM training, equity-focused algorithms, and multi-PMS generalisation. Cashflow positive throughout. Total eligible costs: $695,976, seeking $278,305 grant (40%).
 - **Key Dates**: 
-  - Mentor meeting: 2025-11-12
-  - Callaghan Innovation meeting: 2025-11-13
+  - ✅ Mentor meeting: 2025-11-12 (completed)
+  - ✅ Callaghan Innovation meeting: 2025-11-13 (completed)
+  - ✅ Major objectives revision: 2025-11-28 (completed)
   - Medtech letter expected: ~2025-11-20
   - Grant submission target: ~2025-12-15
   - Project start (if approved): 2026-01-27
-  - Project end: 2027-01-26
-- **Status**: Partnership development in progress; preparing for mentor/Callaghan meetings
+  - Project end: 2028-01-26 (24 months)
+- **Status**: 🎉 Major objectives revision complete — Focused scope (Inbox Helper + Care Gap Finder), dual PMS integration (Medtech + Indici), lean MVP approach, HealthHub NZ roadmap for Years 3-5
 - **Link**: [View Full Summary](./new_to_r&d_grant/PROJECT_SUMMARY.md)
 
 ### Project Management AI SaaS

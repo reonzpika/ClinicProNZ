@@ -12,7 +12,7 @@ Build enduring capability in **two key areas** for NZ clinical AI development:
 
 **Strategy:** Focus on high-value third-party professional services (IP attorneys, regulatory advisers) that provide practical, actionable outputs directly supporting R&D project success.
 
-**Key Requirement:** CapDev must be ≥5% of grant amount = **$13,681 minimum** (based on $273,619 grant)
+**Key Requirement:** CapDev must be ≥5% of grant amount = **$13,915 minimum** (based on $278,305 grant)
 
 ---
 
@@ -247,11 +247,11 @@ Focus on privacy, health data protection, clinical safety, and PHO/Medtech compl
 
 ## CapDev Funding Requirement Check
 
-**Minimum Required:** ≥5% of grant = 5% × $294,120 = **$14,706**
+**Minimum Required:** ≥5% of grant = 5% × $278,305 = **$13,915**
 
-**Current Confirmed CapDev:** $15,000 ✓ **(Exceeds minimum by $294)**
+**Current Confirmed CapDev:** $15,000 ✓ **(Exceeds minimum by $1,085)**
 
-**Percentage of Grant:** $15,000 / $294,120 = **5.10%** ✓
+**Percentage of Grant:** $15,000 / $278,305 = **5.39%** ✓
 
 **Status:** ✓ Meets 5% requirement
 
@@ -449,7 +449,7 @@ The following activities are part of **R&D work** (not CapDev) and will be claim
 ## Risk Mitigation
 
 ### Risk: CapDev < 5% of Grant
-**Current Status:** $14,500 = 5.3% ✓ (exceeds 5% minimum by $819)
+**Current Status:** $15,000 = 5.39% ✓ (exceeds 5% minimum by $1,085)
 **Mitigation:** Already exceeded minimum; if costs come in lower, can add adviser sessions or expand patent scope
 
 ### Risk: Patent Attorney Costs Higher Than Expected
@@ -458,7 +458,7 @@ The following activities are part of **R&D work** (not CapDev) and will be claim
 - Obtain fixed-price quotes before engagement
 - Scope provisional patent to core claims only (can expand in full filing)
 - FTO can be scaled down to key competitor patents if needed (~$1,500 minimum)
-- Have $819 buffer above minimum 5% requirement
+- Have $1,085 buffer above minimum 5% requirement
 
 ### Risk: Regulatory Adviser Not Available Throughout Project
 **Mitigation:**
@@ -531,11 +531,11 @@ The following activities are part of **R&D work** (not CapDev) and will be claim
 
 ### Before Submission (Now)
 - [x] Finalise CapDev structure (2 categories, professional services only)
-- [x] Confirm costs meet 5% threshold ($14,500 = 5.3% ✓)
-- [ ] Update cost template with CapDev costs
-- [ ] Update cashflow-24-month with CapDev timing
-- [ ] Update PROJECT_SUMMARY.md with new CapDev structure
-- [ ] Update forge-application-narrative.md with CapDev section
+- [x] Confirm costs meet 5% threshold ($15,000 = 5.39% ✓)
+- [x] Update cost template with CapDev costs
+- [x] Update cashflow-24-month with CapDev timing
+- [x] Update PROJECT_SUMMARY.md with new CapDev structure
+- [x] Update forge-application-narrative.md with CapDev section
 
 ### Month 1 (Project Start)
 - [ ] Complete free training courses (OPC, Collaborative Aotearoa)
@@ -570,12 +570,12 @@ The following activities are part of **R&D work** (not CapDev) and will be claim
 ✓ **IP costs under IP CapDev** - $7,500 IP services in CD-A category  
 ✓ **Conference eligibility** - Removed (focus on professional services only)  
 ✓ **Must be ≥2 categories** - We have 2: IP and Regulatory ✓  
-✓ **Must be ≥5% of total grant** - $14,500 = 5.3% ✓ (exceeds $13,681 minimum)
+✓ **Must be ≥5% of total grant** - $15,000 = 5.39% ✓ (exceeds $13,915 minimum)
 
 ---
 
-**Last Updated:** 26 November 2025  
-**Status:** Ready for integration into cost template and cashflow  
+**Last Updated:** 28 November 2025  
+**Status:** Ready for submission - integrated with cost template and cashflow  
 **Next Update Required:** After supplier selection (update with confirmed providers/quotes)
 
 ---

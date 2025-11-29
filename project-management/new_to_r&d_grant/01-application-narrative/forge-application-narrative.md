@@ -1,11 +1,11 @@
 # Forge Application Narrative and Objectives
 
 ## Application Title
-**NZ-Sovereign Clinical LLM (assist-only) for GP workflow: inbox management and care gap monitoring**
+**ClinicPro AI: NZ-Sovereign Clinical LLM for GP Workflow – Inbox Helper and Care Gap Finder**
 
 ## Proposed Dates
 - **Start:** 27 Jan 2026
-- **End:** 26 Jan 2027
+- **End:** 26 Jan 2028 (24 months)
 
 ## ANZSIC Detail
 - **Primary:** J5420 Software Publishing
@@ -13,310 +13,595 @@
 
 ---
 
-## Background and Compliance (?250 words)
+## Background and Compliance (~250 words)
 
-NexWave Solutions Ltd develops privacy-preserving AI tools for NZ general practice. We will build a NZ-sovereign clinical LLM to improve work efficiency in four areas:
+NexWave Solutions Ltd develops privacy-preserving AI tools for NZ general practice. We will build a NZ-sovereign clinical AI assistant with two core tools:
 
-- **Inbox management:** classify, summarise and route hundreds of daily items to reduce triage time (saves 1-2 hours/day per GP)
-- **Care gap monitoring:** proactively identify and alert overdue NZ-guideline chronic disease monitoring (HbA1c, BP checks, medication reviews)
+1. **Inbox Helper (Reactive):** Triage, classify, and auto-file inbox items (labs, letters, referrals). Compare labs with previous results, flag urgent issues, generate patient messages. Saves 1-2 hours/day per GP.
+
+2. **Care Gap Finder (Proactive):** Scan patient records to identify overdue chronic disease checks (diabetes, CVD, COPD, CHF, asthma). Generate recall lists, prioritise high-risk and Māori/Pacific patients. Supports PHO quality indicators.
 
 The system is strictly assist-only. It never provides diagnostic or treatment directives. Development uses synthetic and de-identified data only; no production PHI is used for model training.
 
-**Hosting and privacy:** inference may occur in Australia with no persistent PHI outside New Zealand. All PHI at rest remains in NZ with NZ-held keys. Cross-border processing is governed by Privacy Act 2020 IPP 12 safeguards, HISO 10029 security controls, and a DPIA completed pre-pilot. We align with Te Whatu Ora's NAIAEAG precautionary guidance (no PHI into unapproved LLMs; transparency; human oversight).
+**Dual PMS integration:** The system will integrate with both Medtech and Indici PMSs from Objective 1, allowing research on multi-PMS generalisation and broader market reach.
 
-Initial integration is Medtech-first using synthetic workloads. Any pilot will require explicit clinic consent, assist-only controls, and clear transparency notices.
+**Hosting and privacy:** Inference may occur in Australia with no persistent PHI outside New Zealand. All PHI at rest remains in NZ with NZ-held keys. Cross-border processing is governed by Privacy Act 2020 IPP 12 safeguards, HISO 10029 security controls, and a DPIA completed pre-pilot. We align with Te Whatu Ora's NAIAEAG precautionary guidance (no PHI into unapproved LLMs; transparency; human oversight).
+
+**Lean MVP approach:** Early versions of both tools will be released to paid early adopters as soon as minimum safety and accuracy thresholds are met, with ongoing R&D continuing through month 24.
 
 ---
 
 ## Eligibility Confirmations
 
 - NZ-incorporated company; solvent; intends to conduct ongoing R&D.
-- **New to R&D:** ? $150k total R&D in last three years; no R&D grants/loans > $5k in last three years.
-- Not grouped with an R&D performer (> $150k in last three years).
+- **New to R&D:** <$150k total R&D in last three years; no R&D grants/loans >$5k in last three years.
+- Not grouped with an R&D performer (>$150k in last three years).
 - Able to fund 60% co-funding from GP clinical work income; evidence provided.
 
 ---
 
-## Describe Planned R&D Activities (?250 words)
+## Describe Planned R&D Activities (~250 words)
 
-Build a small NZ-tuned LLM (7B-13B parameters) with task adapters for:
+Build a NZ-trained clinical LLM and validate which AI architecture (simple classifiers, hybrid rules+LLM, or NZ-trained LLM) works best for different clinical risk levels:
 
-- **Inbox management (Reactive):** safe classification/summarisation/routing of labs, letters, referrals, discharge summaries
-  - Triage hundreds of daily items (urgent vs routine)
-  - Extract key findings and action items
-  - Smart routing to appropriate GP
-  
-- **Care gap monitoring (Proactive):** track NZ-guideline chronic disease monitoring (NZGG, BPAC, PHO indicators)
-  - Scan patient records for overdue monitoring (HbA1c, BP checks, lipids, medication reviews)
-  - Surface gaps before/during consultations
-  - Support PHO quality indicator compliance
+**Inbox Helper (Objective 2):**
+- Triage and classify inbox items (labs, hospital letters, specialist letters, referrals, prescriptions, admin, patient messages)
+- Auto-file normal screening results with appropriate recall intervals
+- Compare current labs with previous results, flag trends
+- Rule-based clinical overlays (non-prescribing)
+- Patient communication message generation
 
-**Domain adaptation:** continual pretraining and instruction tuning on NZ public clinical sources (as permitted) and synthetic/de-identified corpora. No training on production PHI.
+**Care Gap Finder (Objective 3):**
+- Data extraction from free-text clinical notes for 5 chronic conditions (diabetes, CVD, COPD, CHF, asthma)
+- Care gap detection with multi-condition logic
+- Patient prioritisation (high-risk, Māori/Pacific equity focus)
+- GP/practice dashboards with equity filters
+- Automated patient recall list generation
 
-**Safety:** assist-only policy engine, claim/PII classifiers, refusal scaffolds, audit logs; reproducible safety regressions.
+**Multi-PMS Integration (Objectives 1-4):**
+- Connect to both Medtech and Indici via FHIR/related APIs
+- Research architectural patterns for multi-PMS generalisation
+- Validate performance consistency across different PMSs
 
-**Medtech-first sandbox:** synthetic inbox workloads, latency/throughput tests, least-privilege scopes; no persistent PHI outside NZ; PHI at rest in NZ.
+**Domain adaptation:** Train NZ-LLM on curated NZ clinical corpus (bpac, MoH, Pharmac, lab formats) and synthetic/de-identified datasets. No training on production PHI.
 
-**Transparency:** public source register, update log, model/data cards, regions/sub-processors.
+**Safety:** Assist-only constraints, prohibited-claim detection, refusal scaffolds, monthly safety regressions with hard stops if metrics fail.
 
-**Evaluation:** clinician usefulness, edit-distance reduction, inbox handling efficiency, refusal appropriateness, prohibited-claim rate, latency and cost predictability.
-
----
-
-## Uncertainty ? What is the Specific Uncertainty? (?250 words)
-
-It is uncertain whether a small/medium, locally controlled LLM can:
-
-- Achieve GP-grade usefulness while consistently refusing diagnostic/treatment directives
-- Maintain low latency and predictable cost on NZ/AU infrastructure
-- Handle heterogeneous inbox content safely (letters, labs, referrals) without hallucinations or omissions
-
-The right balance of NZ domain adaptation, safety tuning, guardrails, and quantisation to meet these targets cannot be known in advance. Public recipes do not specify settings that guarantee success under our privacy and compute constraints.
+**Evaluation:** Architecture comparison (accuracy, cost, latency), clinician usefulness, equity metrics (Māori/Pacific patient outcomes), alert fatigue rates, real-world pilot with 10-20 GPs.
 
 ---
 
-## R&D Challenge ? Why is This Difficult for a Professional? (?250 words)
+## Uncertainty – What is the Specific Uncertainty? (~250 words)
 
-A competent professional cannot deduce a working configuration that meets utility, safety (assist-only), and latency targets on small/medium models within NZ privacy constraints. Interactions between continual pretraining, instruction tuning, guardrails, quantisation, and streaming create emergent behaviour. Inbox content is especially noisy and varied. Stable refusal behaviour with acceptable usefulness requires systematic experiment design, evaluation harnesses, and safety regressions, not just prompting.
+**Primary uncertainty:**
+Which AI architecture works best for different clinical risk levels while maintaining safety, cost-effectiveness, and performance across multiple PMSs?
+
+**Specific uncertainties:**
+
+1. **Architecture selection:** Can simple classifiers safely handle low-risk tasks (inbox triage) at $0.002/request? Or do we need more expensive LLMs? Do clinical calculations require hybrid rules+LLM to prevent hallucination?
+
+2. **NZ-LLM effectiveness:** Can a NZ-trained small model (7B-13B parameters) understand local clinical language (bpac/MoH guidance, Pharmac medication names, regional lab formats, Medtech/Indici note styles) better than generic models like GPT-4?
+
+3. **Multi-PMS generalisation:** Will an architecture that achieves 90% accuracy in Medtech maintain similar performance in Indici, or will we need PMS-specific adaptations? How do we design one system that works across both without major rework?
+
+4. **Alert fatigue thresholds:** How many care gap alerts can we show before GPs start dismissing them? What's the optimal balance between sensitivity (catching all gaps) and specificity (avoiding noise)?
+
+5. **Equity maintenance:** Can we prioritise high-risk and Māori/Pacific patients without introducing bias or under-alerting in other populations?
+
+6. **Real-world accuracy degradation:** How much does performance drop from synthetic data (Objective 1) to sandbox testing (Objectives 2-3) to real-world pilot (Objective 4)?
+
+The right balance of architecture complexity, NZ domain adaptation, safety constraints, and multi-PMS compatibility cannot be known in advance. Systematic experimentation across objectives is required.
 
 ---
 
-## Knowledge Availability ? What Exists and Why It's Insufficient? (?250 words)
+## R&D Challenge – Why is This Difficult for a Professional? (~250 words)
 
-AI scribes exist overseas, but are not tuned for NZ language, medication names, Pharmac rules, or local workflows; implementations are proprietary and do not disclose the settings needed to meet our safety/latency/privacy targets. There is no reliable, NZ-specific inbox management solution for GPs. Academic methods (RAG, LoRA/QLoRA, guardrails) lack NZ-specific guidance and do not provide guarantees for assist-only performance on small/medium models hosted under IPP 12 controls. Therefore, knowledge sufficient to resolve our uncertainties does not exist in a directly applicable form.
+A competent professional cannot deduce working solutions without systematic R&D because:
+
+**Architecture trade-offs are non-obvious:** Simple classifiers are cheaper but may miss nuanced clinical content. LLMs are more capable but risk hallucination on calculations (e.g., CVDRA). Hybrid approaches add complexity. The optimal choice varies by task risk level and cannot be determined by inspection—requires empirical testing.
+
+**Multi-PMS complexity:** Medtech and Indici have different data structures, APIs, and clinical note patterns. An architecture that works in one PMS may fail in another due to subtle differences in how data is stored and retrieved. Generalisation patterns must be discovered through testing.
+
+**NZ-specific language understanding:** Local clinical language includes regional abbreviations, Māori health terms, Pharmac-specific medication names, and DHB-specific letter formats. No published work provides recipes for achieving high accuracy on NZ-specific clinical tasks with small models under strict privacy constraints.
+
+**Safety and alert fatigue interaction:** Adding safety constraints (refusal scaffolds, prohibited-claim detection) affects model outputs in ways that interact with alert fatigue. Too many refused suggestions frustrate GPs; too few safety checks risk harm. Finding the optimal balance requires systematic testing with real GP feedback.
+
+**Emergent behaviour:** Interactions between NZ domain adaptation, safety tuning, quantisation for cost reduction, and streaming for low latency create emergent behaviour that cannot be predicted from component specifications alone.
+
+**Equity without bias:** Prioritising Māori/Pacific patients requires careful algorithm design to avoid unintended under-alerting or over-alerting. Standard ML fairness techniques don't directly apply to multi-condition clinical monitoring with equity goals.
 
 ---
 
-## Newness ? What is New? (?250 words)
+## Knowledge Availability – What Exists and Why It's Insufficient? (~250 words)
 
-A NZ-tuned clinical LLM with:
+**Existing solutions:**
+- AI scribes exist overseas (Abridge, Nuance DAX) but are not tuned for NZ language, Pharmac medication names, or local GP workflows
+- Generic LLMs (GPT-4, Claude) can handle some clinical tasks but are expensive ($0.15/request), not NZ-tuned, and lack transparent data lineage
+- Academic papers describe RAG, LoRA/QLoRA fine-tuning, and guardrails but don't provide NZ-specific guidance or guarantees for assist-only performance
 
-- Task adapters for scribing, inbox management (unmet need in NZ), and history summaries
-- Enforceable assist-only behaviour and refusal scaffolds, evaluated with monthly safety regressions
-- Transparent NZ data lineage, hosting regions, and update logs
+**Why existing knowledge is insufficient:**
 
-Inbox management is a new NZ-specific application; a robust, sector-ready solution does not exist today. Our approach provides a sovereign, auditable capability under NZ privacy and security controls.
+1. **No NZ-specific inbox solution:** There is no published, validated solution for NZ GP inbox management. International tools don't understand LabTests Auckland vs SCL vs Medlab report formats, DHB letter templates, or regional clinical variations.
+
+2. **No multi-PMS architectural patterns:** Published work focuses on single EMR/PMS integration. Patterns for maintaining performance across multiple PMSs (Medtech and Indici) with different data structures are not documented.
+
+3. **No small-model NZ clinical benchmarks:** Academic papers benchmark large models (GPT-4, 70B+ parameters) but provide no guidance on whether 7B-13B parameter models can achieve acceptable accuracy on NZ clinical tasks. Cost-effectiveness trade-offs at scale are unknown.
+
+4. **Proprietary implementations:** Commercial tools don't disclose architecture choices (simple vs hybrid vs LLM-only), training data composition, safety mechanisms, or performance characteristics needed to replicate their results under NZ privacy constraints (IPP 12, no persistent PHI outside NZ).
+
+5. **No equity-focused algorithms:** Published fairness work focuses on binary protected attributes. Multi-condition clinical monitoring with Māori/Pacific equity goals requires novel approaches not available in literature.
+
+Therefore, systematic R&D is required to resolve these uncertainties.
 
 ---
 
-## Why is it Better? (?250 words)
+## Newness – What is New? (~250 words)
 
-**Clinician value:** faster notes with fewer edits; safer, clearer inbox triage; concise context summaries ? all assist-only and under clinician control.
+**Novel system features:**
 
-**Safety and trust:** measurable refusals, low prohibited-claim rates, and reproducible safety regressions. No training on production PHI.
+1. **Dual PMS integration from day one:** First NZ clinical AI designed to work across both Medtech and Indici, with systematic R&D on multi-PMS generalisation patterns.
 
-**Sovereignty and performance:** NZ storage with NZ-held keys; AU inference without persistent PHI outside NZ; predictable latency and unit economics on local infrastructure.
+2. **Architecture validation R&D:** Systematic comparison of simple classifiers, hybrid rules+LLM, and NZ-trained LLM across different clinical risk levels (low-risk admin tasks vs medium-risk clinical calculations vs high-risk safety decisions). No prior work provides this risk-based architectural framework for NZ primary care.
 
-**Procurement readiness:** DPIA, IPP 12 controls, HISO mapping, transparency artefacts, and audit trails.
+3. **NZ-tuned clinical LLM:** Small model (7B-13B parameters) trained specifically on NZ clinical corpus (bpac, MoH, Pharmac, regional lab formats) with transparent data lineage. First sovereign clinical LLM for NZ primary care.
+
+4. **Lean MVP with ongoing R&D:** Novel approach releasing early MVPs to paid adopters while continuing substantial R&D through month 24 on generalisation, safety tuning, and equity algorithms. Not just "build then release"—systematic feedback-driven refinement.
+
+5. **Equity-focused care gap algorithms:** Novel prioritisation logic explicitly designed for Māori/Pacific patient equity without introducing bias in other populations. Validated through pilot metrics.
+
+6. **Multi-PMS alert fatigue research:** First systematic study of alert fatigue thresholds across different PMS interfaces and practice workflows. Findings inform optimal alert presentation strategies.
+
+7. **Long-term R&D roadmap:** Clear vision for Years 3-5 extending to patient-facing HealthHub NZ app, multimodal models, continual learning, te reo support, and real-world outcome trials. Demonstrates commitment to sustained R&D beyond this grant.
+
+**Value to sector:** Provides NZ primary care with sovereign, auditable, cost-effective clinical AI under Privacy Act 2020 controls. Inbox Helper and Care Gap Finder address urgent GP workload and burnout issues.
+
+---
+
+## Why is it Better? (~250 words)
+
+**Clinician value:**
+- **Time savings:** 1-2 hours/day per GP on inbox triage and care gap monitoring
+- **Patient safety:** Systematic care gap identification reduces missed monitoring (diabetes, CVD, COPD, CHF, asthma)
+- **Equity outcomes:** Prioritisation logic ensures Māori/Pacific patients aren't left behind
+- **Multi-PMS flexibility:** Works in both Medtech and Indici, reaching broader GP market
+
+**Safety and trust:**
+- **Assist-only constraints:** Never provides diagnostic or treatment directives
+- **Measurable safety:** Monthly regressions with hard stops (prohibited-claim ≤0.5%, refusal ≥95%)
+- **Transparent:** Public source register, model cards, update logs, regions/sub-processors disclosed
+
+**Sovereignty and cost-effectiveness:**
+- **NZ data control:** All PHI at rest in NZ with NZ-held keys
+- **Cost-effective at scale:** 20-50x cheaper than Azure OpenAI ($5-10k/month vs $140-170k/month for 5,000 GPs)
+- **Predictable performance:** Local/AU infrastructure provides stable latency and unit economics
+
+**Procurement readiness:**
+- **Privacy compliance:** DPIA completed, IPP 12 controls, HISO 10029 mapping
+- **Audit trails:** Full data lineage, versioning, change logs
+- **Sector validation:** Real-world pilot with 10-20 GPs provides evidence of effectiveness
+
+**Long-term vision:**
+- **Years 3-5 roadmap:** Patient-facing HealthHub NZ app reuses validated architecture
+- **Advanced R&D:** Multimodal models, continual learning, te reo support, outcome trials
+- **Ecosystem contribution:** Open patterns for multi-PMS integration benefit wider sector
+
+**Commercial validation:** Lean MVPs with early adopters demonstrate market demand before full rollout.
 
 ---
 
 ## Overseas Labour Resources
 
-**None.** All R&D labour is performed in NZ by founder and local contractor. AU is used only for transient inference with no persistent PHI outside NZ.
+**None.** All R&D labour is performed in NZ by founder, Ting (R&D Operations Lead), and local contractor developer. Australia is used only for transient inference with no persistent PHI outside NZ.
 
 ---
 
-## R&D Team
+## R&D Team (24 Months)
 
-**Founder (Shareholder-employee):** 1,329 hours @ $96/hr = $127,584
+**Founder (Shareholder-employee):** 3,120 hours @ $96/hr = $299,520
 - GP clinician + full-stack developer
 - Clinical domain expertise for NZ-specific use cases
-- Technical leadership for LLM development
-- 25 hrs/week commitment throughout project
+- Technical leadership for NZ-LLM development and architecture validation
+- 30 hrs/week commitment throughout 24 months
+- Enables parallel GP practice work for co-funding
 
-**Local Developer (Contractor):** 390 hours @ $72/hr = $28,080
-- Recruited Month 1, starts Month 4
-- Frontend development (GP mobile interface)
-- FHIR integration testing (Medtech sandbox)
+**Ting (Shareholder-employee, R&D Operations Lead):** 4,152 hours @ $70/hr = $290,640
+- R&D Project Manager + Research/Testing/Documentation + Quality Assurance
+- Full-time commitment (40 hrs/week throughout 24 months)
+- Manages systematic testing, pilot coordination, safety regressions
+- Demonstrates growth intention and long-term R&D commitment (Paula's feedback)
+
+**Developer (Contractor):** 903 hours (minimum) @ $72/hr = $65,016
+- Starts Month 4, flexible 10-40 hrs/week based on R&D workload (budgeted at 10 hrs/week minimum)
+- Frontend development (Medtech and Indici widgets)
+- FHIR integration testing across both PMSs
 - Synthetic data generation and test automation
-- 10 hrs/week (Months 4-12)
+- 21 months (Months 4-24)
 
-**Rationale for team structure:** Founder's dual GP/technical expertise enables rapid clinical workflow iteration. Local developer enables parallel workstreams (founder focuses on clinical domain adaptation, developer handles non-clinical implementation). This structure maintains GP practice income for co-funding while accelerating R&D delivery.
+**Total R&D Labour:** 8,175 hours (minimum) = $655,176
+
+**Rationale for team structure:** Founder's dual GP/technical expertise enables rapid clinical workflow iteration and NZ-specific domain understanding. Ting as full-time R&D Operations Lead provides dedicated project management, systematic testing, and quality assurance—demonstrating growth intention beyond solo founder. Developer contractor provides flexible capacity to scale up during intensive development phases (Objectives 2-3) without fixed overhead. This structure maintains GP practice income for co-funding while enabling substantial 24-month R&D programme.
 
 ---
 
 ## Hosting and Data Residency Statement
 
-Inference may occur in Australia with no persistent PHI outside New Zealand. All PHI at rest remains in NZ with NZ-held keys. Cross-border disclosure complies with IPP 12 via contractual and technical safeguards. No patient data is used for model training; only synthetic/de-identified data is used for development and evaluation. A DPIA will be completed before any pilot.
+Inference may occur in Australia with no persistent PHI outside New Zealand. All PHI at rest remains in NZ with NZ-held keys. Cross-border disclosure complies with IPP 12 via contractual and technical safeguards (HISO 10029 security controls, DPA clauses, NZ-held encryption keys, audit logging). No patient data is used for model training; only synthetic and de-identified data is used for development and evaluation. A DPIA will be completed before any pilot involving real patient data.
 
 ---
 
-## Objectives, Dates and Deliverables
+## Objectives, Dates and Deliverables (24 Months)
 
-### O1: Baseline and Dataset Curation (27 Jan ? 31 Mar 2026)
+### Objective 1: Build the Smart Foundation and Early Prototypes (Months 1-6)
 
-**Deliverables:**
-- Curated NZ public corpus
-- Synthetic/de-identified datasets
-- Eval harness
-- Baseline model selection and quantised deployment
+**Dates:** 27 Jan 2026 – 30 Jun 2026
 
-**Targets:**
-- Baseline latency P95
-- Baseline scribe edit distance
-- Inbox summary quality baseline
+**Plain-English aim:** Create a flexible, safe AI backbone that can plug into Medtech and Indici, test different AI "recipes" on synthetic NZ healthcare data, and support early Inbox and Care Gap prototypes.
 
----
+**Key R&D questions:**
+- Which AI approach works best for each task: simple classifier, generic LLM, hybrid rules+LLM, or NZ-trained LLM?
+- Can a NZ-trained LLM understand local clinical language (bpac/MoH guidance, lab formats, Medtech/Indici notes) better than generic models?
+- How do we design one architecture that supports both Medtech and Indici without major rework for each platform?
 
-### O2: NZ GP Domain Adaptation (10 Feb ? 30 May 2026)
+**What is actually built:**
 
-**Deliverables:**
-- Continual pretraining and instruction tuning for 2 use cases (inbox management, care gap monitoring)
-- Model v0.1
+**NZ clinical data and test sets:**
+- Curate NZ clinical corpus (≥10,000 pages) from bpac.org.nz, Ministry of Health, Pharmac, example lab reports and discharge summaries
+- Generate synthetic datasets:
+  - ≥1,000 synthetic inbox items (labs, discharge letters, referrals, scripts, admin, patient messages) using LabTests, SCL, Medlab formats and typical GP workflows
+  - ≥500 synthetic patient records with chronic conditions (diabetes, COPD, CHF, asthma) including labs, medications, and monitoring history
 
-**Targets:**
-- Inbox classification accuracy ≥ 70% (baseline)
-- Care gap detection accuracy ≥ 70% (baseline)
+**Core platform and integrations:**
+- Build modular backend connecting securely to Medtech and Indici (read-only initially, through their FHIR/related APIs)
+- Normalise different lab and document formats into consistent internal structure
+- Route tasks to different model types (simple classifier vs hybrid vs LLM) depending on risk and complexity
+- Build simple "widget shells" for Medtech and Indici displaying early AI outputs inside each PMS
 
----
+**Architecture experiments:**
+- Compare multiple approaches for representative use cases:
+  - Inbox triage: BERT-style classifier vs small LLM vs hybrid
+  - CVD risk calculation (CVDRA): rules-only vs LLM-only vs hybrid rules+LLM
+- Train initial NZ-LLM (or adapted small model) on NZ corpus
+- Benchmark vs GPT-4 on NZ-specific tasks (interpreting local labs, summarising NZ discharge letters)
 
-### O3: Safety and Assist-Only Enforcement (01 Mar ? 30 Jul 2026)
+**Deliverables by Month 6:**
+- Foundation system v1.0 deployed, connected to Medtech and Indici test/sandbox environments
+- Handling synthetic inbox items and patient records with ≥90% triage accuracy and ≥95% CVDRA accuracy on test sets
+- Architecture recommendations documented for Inbox Helper (e.g., lightweight classifier + rules vs LLM) and Care Gap Finder (hybrid rules+NZ-LLM for extraction and calculations)
+- Early sandbox prototypes: inbox prototype sorting and flagging synthetic items; care gap prototype calculating CVD risk and simple diabetes gaps on synthetic patients
 
-**Deliverables:**
-- Policy engine
-- Claim/PII classifiers
-- Refusal scaffolds
-- Audit logs
-- Monthly safety regression pack
-
-**Targets:**
-- Prohibited-claim rate ? 0.5%
-- Refusal appropriateness ? 95%
-- Zero PHI leakage in red-team tests
-
----
-
-### O4: Medtech Sandbox and Synthetic Inbox Workloads (01 Mar ? 30 Sep 2026)
-
-**Deliverables:**
-- Sandbox connection
-- Synthetic inbox generators
-- Least-privilege scopes
-- Latency/throughput tests
-- Transparency page v1
-
-**Targets:**
-- Inbox response P95 ? 5.0 s
-- Stable throughput
-- No persistent PHI outside NZ
+**Success criteria:**
+- All 3 architecture approaches tested on representative use cases
+- Foundation system stable and connected to both PMSs
+- Architecture recommendations documented with empirical evidence
 
 ---
 
-### CD-A: Capability Development ? Regulatory & Compliance (27 Jan ? 31 Mar 2026)
+### Objective 2: Inbox Helper – Admin Automation and Early Clinical Overlays (Months 4-12)
 
-**Deliverables:**
-- Certificates (OPC Privacy Act 2020; OPC Health 101; Ko Awatea Privacy)
-- DPIA (Option B)
-- IPP 12 checklist
-- HISO mapping
-- DPA templates
-- NAIAEAG alignment note
+**Dates:** 1 Apr 2026 – 31 Dec 2026
 
----
+**Plain-English aim:** Turn Inbox prototype into practical tool that reduces GP inbox workload and highlights urgent issues safely in both Medtech and Indici. **Lean MVP released to early adopters as soon as safety thresholds met.**
 
-### CD-B: Capability Development ? R&D Information Management (27 Jan ? 30 Apr 2026)
+**Key R&D questions:**
+- Can lightweight models safely handle messy, real NZ inbox data (vs synthetic data)?
+- What confidence level is safe enough for auto-filing normal results without risking missed urgents?
+- How should AI suggestions appear in Medtech and Indici so GPs understand and trust them (explanations, overrides, layouts)?
 
-**Deliverables:**
-- MLflow + DVC configured
-- Safety dashboard
-- Transparency SOP and page v1
+**Features developed:**
 
----
+**Triage and processing:**
+- Automatically classify real inbox items into: labs, hospital letters, specialist letters, referrals, prescriptions, admin, patient messages
+- Assign urgency labels: "Review today" (serious abnormalities or red-flag letters), "Soon", "Routine"
+- Compare current labs with previous ones: "HbA1c increased from 48 to 62 mmol/mol over 12 months"
 
-### CD-C: Project Management Set-up (27 Jan – 29 Feb 2026)
+**Automation:**
+- Normal screening results: normal mammograms → auto-file with standard text ("Normal 2026, repeat 2028") and recall set; normal HPV cervical screens → auto-file with appropriate recall interval
+- Normal blood tests in agreed-safe categories auto-filed with GP-authored standard comments and correct recall intervals based on NZ guidelines
 
-**Deliverables:**
-- Stage-gate definitions (O1-O5 entry/exit criteria)
-- Risk register and change log
-- Release checklist and governance framework
+**Clinical overlays (early, non-prescribing):**
+- Rule-based flags on labs and trends: "eGFR 45 suggests possible CKD stage 3b – consider review", "HbA1c >64 indicates poor diabetes control – discuss management"
+- No specific drug recommendations; instead, prompts aligned with guideline actions
 
-**Hours:** 8 | **Cost:** $768
+**Patient handoffs:**
+- Generate simple, editable messages: "Your test results are normal; no changes are needed", "Your cholesterol is raised; please book a nurse appointment to discuss lifestyle and options"
+- Support for SMS/portal/email templates, with GP approval before sending
 
-**Rationale:** Establishes systematic governance for R&D project tracking, risk management, and quality gates.
+**Medtech and Indici integration:**
+- Common Inbox Helper widget used in both systems
+- In Medtech: integrated in inbox view, showing AI classification, urgency, suggested actions, one-click approval or override
+- In Indici: similar AI summaries and action buttons adapted to Indici's layout and workflow
+- R&D focus: measure and compare performance, errors, GP interactions across both PMSs; adjust architecture and UI to generalise
 
----
+**Lean MVP and ongoing R&D:**
+- A lean MVP of the Inbox Helper will be released to early adopter practices as soon as minimum safety and accuracy thresholds are met (≥90% triage accuracy, zero unsafe auto-filing in 1,000 edge-case tests), with further triage, automation, and patient-message features added during remainder of project
+- R&D continues in parallel on: expanding supported document types, improving explanations, optimising confidence thresholds and UI based on feedback
 
-### CD-D: Conference Attendance & Knowledge Acquisition (Months 5, 7)
+**Deliverables by Month 12:**
+- Inbox Helper fully functional in Medtech and Indici sandbox environments
+- Validation on ≥2,000 real inbox items (de-identified or safe test environments) showing: ≥90% classification accuracy, zero unsafe auto-filing in edge-case test suite, measured ~30% time saving in simulated GP workflows
+- Usability feedback from at least 5 GPs incorporated into system design and defaults
 
-**Hours:** 24 | **Labour Cost:** $2,304
-
-**HealthTech Week Auckland** (June 2026, Month 5): 8 hours
-- Local ecosystem engagement
-- Early validation of NZ-sovereign LLM approach
-- Stakeholder feedback during O2 domain adaptation phase
-
-**HIC 2026 Melbourne** (August 2026, Month 7): 16 hours
-- Regional health informatics community
-- Peer review of safety enforcement mechanisms (O3)
-- AU/NZ healthcare AI research collaboration
-
-**Rationale:** Conference attendance provides access to cutting-edge clinical LLM safety research and validates NZ-specific use cases with regional health tech community. Timing aligns with key R&D phases (O2 domain adaptation, O3 safety work) for maximum learning impact.
-
-**Total CapDev Hours:** 54 | **Total CapDev Labour:** $5,184 (7.4% of grant ✓)
-
----
-
-### Professional Services – IP Protection (Separate Eligible Cost, NOT CapDev)
-
-**IP Work:** $6,000
-- Freedom-to-Operate (FTO) Analysis ($2,500, Months 2-4): Patent search to verify assist-only enforcement architecture and NZ-specific fine-tuning methods don't infringe existing patents
-- Provisional Patent Filing ($2,000, Months 6-8): Protect novel safety scaffolding techniques and domain adaptation methods developed during O2-O3
-- IP Strategy for Model Outputs ($1,500, Month 10): Legal consultation on model weight ownership, licensing frameworks for commercialisation
-
-**Rationale:** IP protection is essential for commercialisation. FTO analysis de-risks infringement before significant R&D investment. Provisional patent filing secures priority date for novel techniques. IP strategy consultation enables confident market entry.
+**Success criteria:**
+- Inbox Helper achieves ≥90% classification accuracy on real data
+- Zero unsafe auto-filing events detected in edge-case testing
+- GP satisfaction ≥80% in usability testing
+- Architecture validated (simple classifier vs LLM) for inbox tasks
 
 ---
 
-### Conference Travel (Separate Eligible Cost, NOT CapDev)
+### Objective 3: Care Gap Finder – Chronic Disease Intelligence (Months 7-16)
 
-**Conference Travel Costs:** $3,200
+**Dates:** 1 Jul 2026 – 30 Apr 2027
 
-**HealthTech Week Auckland** (June 2026, Month 5): $1,000
-- Accommodation (1 night): $300
-- Registration: $600
-- Transport/meals: $100
+**Plain-English aim:** Build tool that scans patient records to find people overdue for key chronic disease checks (starting with diabetes and cardiovascular risk, then COPD, CHF, and asthma) and helps practices get those patients seen. **Lean MVP (diabetes + CVD) released early, then expanded.**
 
-**HIC 2026 Melbourne** (August 2026, Month 7): $2,200
-- Flights (AKL → MEL return): $600
-- Accommodation (3 nights): $800
-- Registration: $800
+**Key R&D questions:**
+- Can NZ-trained AI reliably pull out key details (smoking status, medications, severity markers) from messy free-text clinical notes as well as structured fields?
+- How can care gap logic handle multiple conditions (diabetes + CKD + CVD) without overwhelming GPs with alerts?
+- How should patients be prioritised so that high-risk and Māori/Pacific patients are not left behind?
+
+**Features developed:**
+
+**Data review and analysis:**
+- Diabetes: Reads HbA1c trends, ACR, diabetes diagnoses; flags overdue HbA1c tests, eye checks, foot checks, kidney monitoring
+- Cardiovascular risk: Pulls age, sex, ethnicity, BP, lipids, smoking, diabetes; calculates NZ CVDRA and groups patients by risk band (low, moderate, high)
+- COPD: Identifies COPD diagnoses and last spirometry; flags overdue lung function tests and frequent exacerbations based on notes
+- Heart failure (CHF): Tracks BNP and eGFR trends; flags patterns suggesting worsening heart failure needing review
+- Asthma: Uses medication patterns and note content to estimate control (frequent reliever use); flags patients who may require step-up therapy review
+
+**Care gap detection:**
+- For each condition, checks: Are recommended tests up to date? Are monitoring visits overdue? Are key guideline-based checks missing (vaccines, retinal screening)?
+- Combines multiple conditions to avoid double-alerting and reflect highest-priority needs
+
+**Patient communication:**
+- Generates personalised, plain-language messages: "Your diabetes review is overdue; please book an appointment with our nurse", "You are at higher risk of heart disease; your doctor recommends a heart health check"
+- Supports different channels (SMS/portal/email), with practice-controlled templates and review
+
+**GP/practice dashboards:**
+- "Top priority patients" list showing: who has important gaps, why they are flagged, suggested next step (book nurse review, book GP review)
+- Filters by: condition (diabetes-only list), risk level, equity focus (Māori, Pacific, high-deprivation)
+
+**Medtech and Indici integration:**
+- Care Gap Finder panels integrated into both PMSs
+- At patient level: show their current gaps and recent relevant results
+- At practice level: show lists of patients needing action and allow staff to bulk-send recalls or schedule clinics
+
+**Lean MVP and ongoing R&D:**
+- A lean MVP of the Care Gap Finder (starting with diabetes and CVD risk) will be released early once core targets are met (≥95% CVDRA accuracy, ≥85% care-gap detection vs GP audit, safe messaging), then expanded to COPD, CHF, asthma and more advanced dashboards as NZ-LLM and rules are refined
+- R&D continues on: adding COPD/CHF/asthma logic, improving multi-condition logic and prioritisation, refining NZ-LLM extraction and equity-aware algorithms
+
+**Deliverables by Month 16:**
+- Care Gap Finder operational in sandbox for both Medtech and Indici
+- Validated on ≥1,000 de-identified patient records, showing: ≥95% accuracy for CVDRA, ≥85% agreement with GP audit on care gaps, demonstrated ability to prioritise high-risk and Māori/Pacific patients appropriately
+
+**Success criteria:**
+- CVDRA calculation ≥95% accurate
+- Care gap detection ≥85% agreement with GP manual audit
+- Demonstrated equity: Māori/Pacific patients appropriately prioritised without bias
+- Hybrid architecture validated for clinical extraction and calculations
 
 ---
 
-### Hardware & Equipment (Separate Eligible Cost, NOT CapDev)
+### Objective 4: Advanced Refinement, Safety, Equity and Generalisation (Months 16-24)
 
-**Capital Equipment:** $5,750 (Year 1 depreciation: $1,567)
-- RTX 4090 GPU Workstation ($3,500, Month 4): Local safety regression testing, rapid iteration on refusal scaffolds, latency profiling
-- Samsung Galaxy Z Fold 5 ($1,200, Month 4): Mobile testing (GP workflow validation, folded/unfolded modes)
+**Dates:** 1 Apr 2027 – 26 Jan 2028
 
-**Immediate Hardware:** $1,050
-- RAM Upgrade 128GB ($500, Month 1): Large synthetic dataset loading
-- NVMe SSD 2TB ($250, Month 1): Model checkpoint storage
-- iPhone SE ($300, Month 1): iOS cross-platform testing
+**Plain-English aim:** Use real-world feedback and pilot data to do "hard" R&D work: refine NZ-LLM models, tune alert and safety behaviour, and prove system generalises across multiple practices and both PMSs. **This is systematic R&D on generalisation and safety, not routine maintenance.**
 
-**Total Year 1 Hardware Eligible:** $2,617 (depreciation + immediate)
+**Key R&D questions:**
+- How much does performance change when moving from pilot practices to new practices with different patient populations, clinicians, and workflows?
+- How can alert thresholds and messaging be tuned to minimise "noise" while still catching all important issues (alert fatigue vs safety)?
+- How can NZ-LLM and rules be refined to support equitable performance across regions and populations?
 
-**Rationale:** GPU workstation enables rapid local iteration during O3 safety testing without cloud spinup delays. Local inference testing validates P95 latency targets before production deployment. Mobile testing devices validate real-world GP workflows (inbox triage on tablets/phones). Hardware purchases deferred to Month 4 (after first grant) to optimize cashflow.
+**Activities and features:**
 
-**Cloud GPU Strategy:** Primary training/fine-tuning uses cloud GPU (Lambda Labs/AWS). Local workstation supplements for rapid testing cycles, not replaces cloud infrastructure.
+**NZ-LLM and rules refinement using real-world data:**
+- Analyse model errors, missed gaps, and mis-classified inbox items observed during early adopter use
+- Retrain or fine-tune NZ-LLM and adjust rules to: improve extraction from messy real-world notes and letters, reduce misunderstanding of local abbreviations and phrasing, maintain strict constraints (never recommend specific medications, always show reasoning)
+
+**Safety and alert optimisation:**
+- Collect statistics on: how often alerts are accepted, ignored, or dismissed; which alerts GPs and nurses find most/least useful
+- Adjust thresholds and logic to: maintain very high sensitivity for safety-critical events (dangerous labs, major gaps), reduce lower-value or repetitive alerts to avoid fatigue
+- Expand automated safety testing and regression suites to thousands of test scenarios, including adversarial prompts and rare edge cases
+
+**Multi-practice, multi-PMS generalisation:**
+- Run structured pilots across several practices using both Medtech and Indici
+- Compare accuracy, safety, and usage patterns by region, practice size, and patient mix
+- Investigate any performance gaps (poorer results in particular regions or populations) and fix them through model, rule, or data changes
+- Document technical patterns and best practices for adding future PMSs or health-system integrations
+
+**Deliverables by Month 24:**
+- Refined NZ-LLM models and rule sets with documented accuracy and safety across multiple practices, evidence of robust performance across both Medtech and Indici
+- Alert and safety configuration tuned based on real usage, with clear quantitative metrics for: alert rates, acceptance/override patterns, safety outcomes (no missed critical results in tested cohorts)
+- Final pilot report summarising: time savings per GP per day, care gaps identified and closed, equity metrics (changes in Māori/Pacific screening and review rates), safety incidents (if any) and mitigation processes
+- Clear roadmap for broader commercial rollout (including Years 3-5 HealthHub NZ vision and advanced R&D streams) grounded in R&D findings
+
+**Success criteria:**
+- System performance maintained across multiple practices and both PMSs (no >10% accuracy degradation)
+- Alert fatigue ≤3/10 (measured via GP survey)
+- Safety targets maintained (prohibited-claim ≤0.5%, zero serious violations)
+- Pilot retention ≥80% (GPs stay in pilot for full duration)
+- Equity metrics validated: Māori/Pacific patients benefit equally
+
+---
+
+## Capability Development Activities
+
+### CD-A: Intellectual Property ($7,500, Months 2-6)
+
+**Third-party professional services only (no internal labour):**
+
+**1. IP Audit & Freedom-to-Operate (FTO) Analysis: $2,000**
+- Provider: NZ patent attorney
+- Timing: Months 2-3
+- Deliverables: FTO report, prior art search, IP landscape map, patentability assessment
+
+**2. Provisional Patent Filing: $4,500**
+- Provider: NZ patent attorney  
+- Timing: Months 3-6
+- Deliverables: Provisional patent application filed with IPONZ covering clinical LLM architecture, workflows, integration methods; secure priority date for 12-month full filing window
+
+**3. NDAs, Contracts & Trademark: $1,000**
+- Provider: Legal adviser
+- Timing: Months 4-6
+- Deliverables: Mutual NDA templates, collaboration agreements, trademark search/filing
+
+**Total CD-A:** $7,500
+
+---
+
+### CD-B: Regulatory & Compliance ($7,500, Months 2-18)
+
+**Third-party professional services only (no internal labour):**
+
+**1. Comprehensive Regulatory Gap Analysis: $3,500**
+- Provider: Privacy/regulatory consultant
+- Timing: Months 2-3
+- Deliverables: Privacy Act 2020, HIPC, IPP 12, clinical safety, AI ethics compliance audit
+
+**2. Ongoing Regulatory Adviser (6 sessions): $3,000**
+- Provider: Privacy/regulatory expert
+- Timing: Months 4, 6, 9, 12, 15, 18 (~$500 per session)
+- Deliverables: Expert guidance through MVP, sandbox, pilot, scale-up phases; session reports
+
+**3. Compliance Roadmap & Documentation: $1,000**
+- Provider: Legal/compliance adviser
+- Timing: Months 4-6
+- Deliverables: Governance framework, DPA templates, data handling protocols, incident response; includes DPA negotiation support with Medtech/Indici/sub-processors
+
+**Total CD-B:** $7,500
+
+---
+
+**Total Capability Development:** $15,000 (third-party professional services only)
+
+**CapDev Requirement Check:**
+- Required: ≥5% of grant = $13,915 (for $278,305 grant)
+- Actual: $15,000
+- **Percentage: 5.39% ✓** (exceeds requirement by $1,085)
+
+---
+
+**Free Training (Supplementary, Not Counted in CapDev Budget):**
+- Privacy: OPC Privacy Act 2020, OPC Health 101 HIPC, Ko Awatea Privacy
+- AI in Healthcare: Collaborative Aotearoa AI in Primary Care modules
+- IP Knowledge: IPONZ patent basics and resources
+
+---
+
+## Materials & Consumables ($24,000)
+
+**Monthly M&C:** $1,000/month × 24 months = $24,000
+
+**Breakdown per month:**
+- Development tools and software licenses: $320/month
+  - GPU cloud compute (Lambda Labs/AWS): $200/month
+  - MLflow/DVC/monitoring tools: $80/month
+  - Development IDEs and subscriptions: $40/month
+
+- Cloud infrastructure: $680/month
+  - NZ storage (PHI at rest): $300/month
+  - AU inference (transient, no persistent PHI): $250/month
+  - Networking and data transfer: $80/month
+  - Monitoring and security (SIEM): $50/month
+
+**Rationale:** Cloud-first GPU strategy (vs purchasing GPU workstation) provides better grant coverage (40% for cloud costs vs 26.7% for hardware depreciation) and operational flexibility. M&C budget allows scaling compute during intensive phases (Objectives 2-3) without upfront capital.
+
+---
+
+## Hardware & Equipment ($1,800)
+
+**Immediate expenses only (all in Year 1):**
+- RAM Upgrade 128GB: $800 (Month 1) – Large synthetic dataset loading, model checkpoint caching
+- NVMe SSD 2TB: $400 (Month 1) – Fast model checkpoint storage and retrieval
+- Dual 27" Monitors: $400 (Month 4) – Multi-screen development workflow (code + logs + PMS testing)
+- Dual Monitor Arms: $100 (Month 4) – Ergonomic setup for extended R&D sessions
+- iPhone SE (3rd gen): $100 (Month 4) – iOS mobile testing for GP workflows
+
+**Total Hardware Year 1:** $1,800
+
+**Hardware Strategy:**
+- **GPU workstation ($11k) deferred** – using cloud GPU infrastructure (budgeted in M&C)
+- Benefits: Better grant coverage (40% vs 26.7%), operational flexibility, no depreciation complexity
+- Cloud GPU provides: scalable compute during intensive phases, no maintenance overhead, pay-as-you-go
+
+**Note:** Workstation can be purchased with co-funding or post-grant if local testing needs increase beyond cloud capabilities.
+
+---
+
+## Total Budget Summary (24 Months)
+
+| Category | Amount (NZD excl. GST) |
+|----------|------------------------|
+| **R&D Labour - Founder** (3,120 hrs @ $96/hr) | $299,520 |
+| **R&D Labour - Ting** (4,152 hrs @ $70/hr) | $290,640 |
+| **R&D Labour - Developer** (903 hrs @ $72/hr, minimum) | $65,016 |
+| **Capability Development** (third-party services only) | $15,000 |
+| **Materials & Consumables** ($1,000/month × 24) | $24,000 |
+| **Hardware** (immediate expenses only) | $1,800 |
+| **Total R&D Eligible Costs** | **$695,976** |
+| | |
+| **Grant (40%)** | **$278,390** |
+| **Co-Funding (60%)** | **$417,586** |
+
+**Note:** Grant amount in quarterly schedule sums to $278,305 due to rounding; difference of $85 is negligible.
+
+---
+
+## Co-Funding Evidence
+
+**GP Clinical Work Income (24 months):**
+- Total revenue (excl. GST): $375,652
+- Business expenses (5%): $18,783
+- **Net GP income available for co-funding: $356,869**
+
+**Monthly average:**
+- GP revenue: $15,652/month
+- GP expenses: $783/month  
+- Net available: $14,869/month
+
+**Opening cash:** $100,000 NZD (business account)
+
+**Cashflow position: ✓ POSITIVE THROUGHOUT**
+- Opening: $100,000
+- Never goes negative
+- Minimum cash: $4,246 (Month 24, before final grant)
+- Closing: $39,185 after all costs and grants
+- **AU reserve NOT required** ✓
+
+**See:** Detailed 24-month cashflow forecast provided separately.
 
 ---
 
 ## Success Metrics (for Internal Tracking)
 
-### Utility
-- ≥ 30% reduction in inbox triage time by Month 10
-- Clinician-rated usefulness ≥ 80% for both use cases (inbox management + care gap monitoring)
-- Care gap monitoring completion rate ≥ 80%
-- PHO quality indicator improvement ≥ 10%
+### Utility Targets
+- Inbox triage time savings: ≥30% reduction (saves 1-2 hours/day per GP)
+- Care gap monitoring completion: ≥80%
+- PHO quality indicator improvement: ≥10%
+- Clinician usefulness rating: ≥80% for both use cases
 
-### Safety
-- Prohibited-claim rate ? 0.5%
-- Refusal appropriateness ? 95%
-- Zero PHI leakage in tests
+### Safety Targets
+- Prohibited-claim rate: ≤0.5%
+- Refusal appropriateness: ≥95%
+- PHI leakage: Zero
+- **Hard stop:** If any safety metric fails, halt all releases until fixed
 
-### Performance
-- Response time P95 ? 5.0 s (all use cases)
-- Stable throughput under load
-- Cost-effective at scale (20-50x cheaper than Azure OpenAI)
+### Performance Targets
+- Response time (P95): ≤5.0s
+- Throughput stability: No crashes under load
+- Unit economics: Stable cost per 1,000 requests
+
+### Equity Targets
+- Māori/Pacific patient prioritisation: Demonstrated in dashboards and pilot metrics
+- No under-alerting in high-risk populations: Validated through pilot audit
+- Care gap closure rates equal across ethnic groups: Measured in pilot report
+
+### R&D Success Threshold
+**We DO NOT need to match GPT-4 100%.** Success = achieving **70-80% of GPT-4 quality at 20-50x lower cost** while maintaining safety, sovereignty, and equity goals.
+
+---
+
+**Document Version:** 3.0  
+**Last Updated:** 28 November 2025  
+**Status:** Ready for Forge portal submission
