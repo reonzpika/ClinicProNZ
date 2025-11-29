@@ -16,6 +16,12 @@
 - **Developer commitment:** Minimum 10 hrs/week (can range 10-40 hrs/week as needed), 21 months (Months 4-24)
 - **Developer budgeted hours:** 903 hours (10 hrs/week minimum)
 
+**PAYE and Tax Notes:**
+- **PAYE required:** Callaghan Innovation requires shareholder-employees to be paid via PAYE (not drawings/dividends)
+- **KiwiSaver:** Neither Founder nor Ting enrolled in KiwiSaver (no employer contributions required)
+- **ACC levies:** Employer ACC levies will apply to PAYE wages (co-funding cost, not grant-eligible) - consult accountant
+- **Home office:** Home office expenses used exclusively for R&D work (no FBT implications)
+
 **Note on Developer Hours:** Budgeted at minimum 10 hrs/week. Actual hours claimed quarterly will vary 10-40 hrs/week based on R&D workload and project needs. Flexibility allows scaling up during intensive development phases.
 
 **Other Costs:**
@@ -441,8 +447,8 @@
 
 ---
 
-**Last Updated:** 26 November 2025  
-**Status:** FINAL - Team structure finalized (removed Developer 2)
+**Last Updated:** 29 November 2025  
+**Status:** FINAL - Team structure finalized (removed Developer 2) + Tax notes added
 **Changes:** 
 - M&C increased from $200/month to $1,000/month (+$19,200 total)
 - CapDev increased from $14,500 to $15,000 (+$500 to Regulatory services)
@@ -452,6 +458,7 @@
 - **Grant at 40%: $278,390**
 - **Co-funding at 60%: $417,586**
 - **CapDev: 5.39% of grant ✓** (exceeds 5% requirement by $1,080)
+- **Tax notes added:** PAYE requirement confirmed, KiwiSaver opt-out noted, ACC levies flagged (~$8,200 co-funding), GST clarification
 
 **Team Structure Rationale:**
 - Leaner team (3 people vs 4) reduces co-funding requirement
