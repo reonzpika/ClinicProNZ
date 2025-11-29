@@ -11,13 +11,13 @@
 
 ## Executive Summary
 
-ClinicPro is an operational AI scribe service currently being used by New Zealand general practitioners. While still in early stages with no paying customers yet, the active usage demonstrates **real-world demand** for AI-assisted GP workflows. This validates the market need identified in national surveys (RNZCGP, Pinnacle) and provides a foundation for expanding to the 4 additional use cases proposed in this R&D project.
+ClinicPro is an operational AI scribe service currently being used by New Zealand general practitioners. While still in early stages with no paying customers yet, the active usage demonstrates **real-world demand** for AI-assisted GP workflows. This validates the market need identified in national surveys (RNZCGP, Pinnacle) and provides a foundation for expanding to the 2 core tools proposed in this R&D project: Inbox Helper and Care Gap Finder.
 
 **Key Points:**
 - ✓ ClinicPro is live and operational
 - ✓ Active GP users (early adopters)
 - ✓ Real-world validation of AI-assisted GP workflows
-- ✓ Foundation for expanding to inbox management, coding, referrals, and care gaps
+- ✓ Foundation for expanding to Inbox Helper (inbox management) and Care Gap Finder (chronic disease monitoring)
 
 ---
 
@@ -314,9 +314,9 @@ ORDER BY month;
 
 3. **User Acceptance:** GPs are willing to adopt AI tools when they solve real problems (documentation burden)
 
-4. **Integration Capability:** Successful integration with Medtech demonstrates ability to work within NZ healthcare IT infrastructure
+4. **Integration Capability:** Successful integration with Medtech demonstrates ability to work within NZ healthcare IT infrastructure, with expansion to Indici planned
 
-5. **Foundation for Expansion:** Current scribe functionality provides foundation for expanding to inbox management, coding, referrals, and care gaps
+5. **Foundation for Expansion:** Current scribe functionality provides foundation for expanding to 2 core tools: Inbox Helper (inbox management) and Care Gap Finder (chronic disease monitoring)
 
 ### 6.2 Connection to R&D Project
 
@@ -326,10 +326,12 @@ ORDER BY month;
 - ✓ GP adoption demonstrated
 - ✗ Uses third-party LLM (privacy/cost concerns)
 - ✗ Limited to scribing only
+- ✗ Single PMS integration (Medtech only)
 
 **R&D Project Will Address:**
 - ✓ Replace third-party LLM with NZ-sovereign self-hosted model
-- ✓ Add 4 new use cases (inbox, coding, referrals, care gaps)
+- ✓ Add 2 core tools: Inbox Helper (triage, auto-filing, patient messages) and Care Gap Finder (diabetes, CVD, COPD, CHF, asthma monitoring)
+- ✓ Dual PMS integration: Both Medtech AND Indici
 - ✓ Reduce costs by 20-50x (self-hosted vs commercial APIs)
 - ✓ Ensure NZ data sovereignty (no offshore data transmission)
 
@@ -350,6 +352,7 @@ ClinicPro's operational status proves:
 - **Limited to scribing:** Only one use case currently
 - **Third-party LLM dependency:** Privacy and cost concerns at scale
 - **Small user base:** Early adopters only
+- **Single PMS:** Medtech only (no Indici integration yet)
 
 ### 7.2 Why R&D Funding is Needed
 
@@ -357,12 +360,13 @@ These limitations are exactly why R&D funding is essential:
 
 1. **Privacy & Sovereignty:** Need NZ-sovereign model (no offshore data)
 2. **Cost at Scale:** Current third-party LLM costs ($140k+/month) are unsustainable
-3. **Expanded Functionality:** Need R&D to add inbox, coding, referrals, care gaps
-4. **NZ-Specific Tuning:** Need model trained on NZ clinical codes, HealthPathways, regional variations
+3. **Expanded Functionality:** Need R&D to add Inbox Helper (triage, auto-filing, patient messages) and Care Gap Finder (chronic disease monitoring for diabetes, CVD, COPD, CHF, asthma)
+4. **Multi-PMS Architecture:** Need R&D to build architecture supporting both Medtech and Indici
+5. **NZ-Specific Tuning:** Need model trained on NZ clinical corpus (bpac, MoH, Pharmac), lab formats, and regional variations
 
-**Without R&D funding:** ClinicPro remains limited to scribing with privacy/cost concerns, unable to address the 4 critical workflows identified in national surveys.
+**Without R&D funding:** ClinicPro remains limited to scribing with privacy/cost concerns, unable to address the 2 critical workflows (inbox overload and care gap monitoring) identified in national surveys.
 
-**With R&D funding:** ClinicPro expands to comprehensive GP workflow assistant, addressing root causes of burnout (inbox overload, coding complexity, referral quality, care gap monitoring).
+**With R&D funding:** ClinicPro expands to focused GP workflow assistant addressing root causes of burnout: inbox overload (Inbox Helper saves 1-2 hours/day) and missed chronic disease monitoring (Care Gap Finder improves PHO quality indicators and patient safety).
 
 ---
 
@@ -422,10 +426,16 @@ This document complies with Privacy Act 2020 and Health Information Privacy Code
 
 ---
 
-**Document Version:** 1.1  
-**Last Updated:** 2025-11-07  
+**Document Version:** 1.2  
+**Last Updated:** 2025-11-28  
 **Next Review:** Before final grant submission  
-**Status:** Draft - Structure complete, awaiting metric data and screenshots
+**Status:** Updated for 24-month project scope (Inbox Helper + Care Gap Finder, dual PMS integration)
+
+**Changes in v1.2 (2025-11-28):**
+- Updated scope from 4 use cases to 2 core tools (Inbox Helper + Care Gap Finder)
+- Added dual PMS integration (Medtech + Indici)
+- Updated R&D project description to match revised 24-month objectives
+- Updated market validation narrative to reflect focused scope
 
 **Changes in v1.1:**
 - Added comprehensive instructions for gathering usage metrics (Section 3.1)
