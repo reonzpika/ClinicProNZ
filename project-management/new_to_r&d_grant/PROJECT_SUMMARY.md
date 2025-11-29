@@ -2,8 +2,8 @@
 project_name: ClinicPro AI - Inbox Helper + Care Gap Finder (NZ-Sovereign Clinical LLM)
 project_stage: Validation
 owner: NexWave Solutions Ltd
-last_updated: "2025-11-28"
-version: "3.0"
+last_updated: "2025-11-29"
+version: "3.1"
 tags:
   - r&d-grant
   - healthcare-ai
@@ -21,6 +21,8 @@ links:
     path: 02-financials/cashflow-24-month.md
   - name: Cost Template
     path: 02-financials/cost-template/cost-template.md
+  - name: Strategic Partnerships
+    path: 06-market-validation/partnerships-strategy.md
   - name: Archived Mentor Proposal (12-month version)
     path: 00-admin-and-governance/archive/MENTOR-PROPOSAL.md
 stakeholders:
@@ -30,6 +32,8 @@ stakeholders:
     name: Medtech (NZ's largest PMS, ~60% market share)
   - role: Partner
     name: Indici (growing NZ PMS provider)
+  - role: Potential Partner
+    name: Comprehensive Care PHO (42+ practices, 400+ GPs, 200k patients - North Auckland)
   - role: Mentor
     name: Paula (meeting completed 13 Nov 2025, emailed update 27 Nov 2025)
   - role: Callaghan Innovation Contact
@@ -47,6 +51,9 @@ milestones:
   - date: "2025-11-28"
     name: Major objectives revision - focused on Inbox Helper + Care Gap Finder with dual PMS integration (Medtech + Indici) and HealthHub NZ roadmap
     status: completed
+  - date: "2025-12-05"
+    name: Comprehensive Care PHO partnership meeting
+    status: pending
   - date: "2025-12-15"
     name: Target submission date
     status: pending

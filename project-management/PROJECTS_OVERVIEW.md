@@ -140,6 +140,7 @@ Start minimal, add folders as project evolves.
 ### Recent Achievements Across Projects
 *[AI will auto-populate this section based on recent milestones and updates]*
 
+- **2025-11-29**: R&D Grant Submission - Strategic partnerships document created. Comprehensive Care PHO partnership strategy established (42+ practices, 400+ GPs). Focus on feedback loops, pilot practices, market intelligence (not investment). Meeting scheduled Dec 5, 2025. Partnership playbook documented for PHO and PMS partnerships.
 - **2025-11-28**: R&D Grant Submission - 🎉 MAJOR MILESTONE: Objectives completely revised! Focused scope on 2 core tools (Inbox Helper + Care Gap Finder) instead of 50+ tools. Dual PMS integration (Medtech + Indici) from day one. Lean MVP approach with early releases to paid adopters. Years 3-5 roadmap added: HealthHub NZ patient-facing app, multimodal models, continual learning, te reo support, equity-focused algorithms, real-world outcome trials. Removed high-risk features (prescription validation). Document version 3.0 ready for external review.
 - **2025-11-07**: Medtech Integration — POST Media endpoint implemented; Facility ID configuration blocker identified (403 error); Email sent to Medtech ALEX support
 - **2025-11-07**: Strategic prioritisation review — Medtech Integration identified as high ROI revenue path; ClinicPro marketing ROI questioned given competitive market
@@ -198,22 +199,18 @@ Start minimal, add folders as project evolves.
 
 | Date | Time | Event | Project | Type | Notes |
 |------|------|-------|---------|------|-------|
-| 2025-11-12 | - | Publish pricing page | ClinicPro SaaS | Action | Tierless pricing + CTA |
-| 2025-11-14 | - | Send 20 clinic outreach emails; book 5 demos | ClinicPro SaaS | Action | Outreach batch 1 |
-| 2025-11-18 | - | Host 30‑min live demo/webinar | ClinicPro SaaS | Meeting | Record for reuse |
-| 2025-11-21 | - | Start 3 clinic pilots | ClinicPro SaaS | Milestone | Define pilot success criteria |
-| 2025-11-11 | Morning | Comprehensive Care email sent | R&D Grant Submission | Action | Request PHO letter of support (scheduled send) |
-| 2025-11-12 | 8:30am | Mentor meeting | R&D Grant Submission | Meeting | Mentor engagement for R&D Grant |
-| 2025-11-13 | 2:00pm | Callaghan Innovation meeting | R&D Grant Submission | Meeting | Meeting with Callaghan Innovation/Paul |
-| ~2025-11-20 | - | Medtech letter expected | R&D Grant Submission | Milestone | Partnership letter from Alex |
+| 2025-12-05 | - | Comprehensive Care PHO meeting | R&D Grant Submission | Meeting | Strategic partnership discussion - feedback loops, pilot practices, market intelligence |
 | ~2025-12-15 | - | Grant submission target | R&D Grant Submission | Deadline | Submit to Callaghan Innovation |
+| ~2025-11-20 | - | Medtech letter expected | R&D Grant Submission | Milestone | Partnership letter from Alex |
 | 2026-01-27 | - | Project start | R&D Grant Submission | Milestone | R&D Grant project commencement (if approved) |
-| 2027-01-26 | - | Project end | R&D Grant Submission | Milestone | R&D Grant project completion |
+| 2028-01-26 | - | Project end | R&D Grant Submission | Milestone | R&D Grant project completion (24 months) |
 
 ### Past Events
 
 | Date | Event | Project | Type | Notes |
 |------|-------|---------|------|-------|
+| 2025-11-13 | Callaghan Innovation meeting | R&D Grant Submission | Meeting | Meeting with Callaghan Innovation/Paul (completed) |
+| 2025-11-12 | Mentor meeting | R&D Grant Submission | Meeting | Mentor engagement for R&D Grant (completed) |
 | 2025-11-07 | Medtech letter confirmed | R&D Grant Submission | Action | Alex responded positively, expects delivery ~20 Nov |
 | 2025-11-06 | Mentor proposal sent | R&D Grant Submission | Action | Proposal submitted for review |
 
@@ -321,4 +318,4 @@ Start minimal, add folders as project evolves.
 
 ---
 
-*Dashboard Last Updated: [2025-11-12] - Medtech: 📋 Development roadmap updated. Phase 1: Mobile upload & dataflow (desktop already polished). 3 phases, 12-18 hours. Target: Nov 17.*
+*Dashboard Last Updated: [2025-11-29] - R&D Grant: Strategic partnerships document created. Comprehensive Care PHO meeting scheduled Dec 5. Partnership focus: feedback loops, pilot practices, market intelligence (not investment).*
