@@ -1,9 +1,9 @@
 ---
-project_name: NZ-Sovereign Clinical LLM for GP Workflow (ClinicPro)
+project_name: ClinicPro AI - Inbox Helper + Care Gap Finder (NZ-Sovereign Clinical LLM)
 project_stage: Validation
 owner: NexWave Solutions Ltd
-last_updated: "2025-11-26"
-version: "2.1"
+last_updated: "2025-11-28"
+version: "3.0"
 tags:
   - r&d-grant
   - healthcare-ai
@@ -11,7 +11,7 @@ tags:
   - clinical-llm
   - callaghan-innovation
   - gp-workflow
-summary: R&D grant proposal for building a NZ-sovereign clinical LLM to assist NZ GPs with inbox management and care gap monitoring. 24-month project seeking $278,305 grant (40%) with $417,671 co-funding. Team: Founder (3,120 hrs, 30hrs/week) + Ting R&D Operations Lead (4,152 hrs, 40hrs/week) + Developer (903 hrs, 10-40hrs/week from Month 4). Includes IP protection ($15k third-party CapDev), cloud GPU infrastructure, immediate hardware only. Cashflow positive throughout with GP revenue $375,652.
+summary: R&D grant proposal for building a NZ-sovereign clinical LLM to assist NZ GPs with inbox management (Inbox Helper) and care gap monitoring (Care Gap Finder), integrated across both Medtech and Indici PMSs. 24-month project with lean MVPs released to early adopters, plus Years 3-5 roadmap for HealthHub NZ patient-facing app. Team: Founder + Ting R&D Operations Lead + Developer. Includes architecture validation R&D, NZ-LLM training, equity-focused algorithms, and multi-PMS generalisation. Cashflow positive throughout.
 links:
   - name: Revised Objectives (24 Months)
     path: 00-admin-and-governance/revised-objectives-24-months.md
@@ -28,6 +28,8 @@ stakeholders:
     name: NexWave Solutions Ltd
   - role: Partner
     name: Medtech (NZ's largest PMS, ~60% market share)
+  - role: Partner
+    name: Indici (growing NZ PMS provider)
   - role: Mentor
     name: Paula (meeting completed 13 Nov 2025, emailed update 27 Nov 2025)
   - role: Callaghan Innovation Contact
@@ -41,6 +43,9 @@ milestones:
     status: completed
   - date: "2025-11-27"
     name: Emailed Paula with progress update on changes since meeting
+    status: completed
+  - date: "2025-11-28"
+    name: Major objectives revision - focused on Inbox Helper + Care Gap Finder with dual PMS integration (Medtech + Indici) and HealthHub NZ roadmap
     status: completed
   - date: "2025-12-15"
     name: Target submission date
@@ -76,20 +81,29 @@ risks:
 
 ## Executive Summary
 
-This project proposes building a New Zealand-sovereign clinical LLM to address critical workload and burnout issues facing NZ general practitioners. The AI system will assist GPs with two high-impact workflows:
+This project proposes building a New Zealand-sovereign clinical AI assistant to address critical workload and burnout issues facing NZ general practitioners. The system focuses on two core tools:
 
-1. **Inbox Management (Reactive)** - Triage, classify, and summarise hundreds of daily items (hospital letters, lab results, referrals, discharge summaries). Saves 1-2 hours/day per GP.
+1. **Inbox Helper (Reactive)** - Triage, classify, and auto-file inbox items (labs, letters, referrals). Compare labs with previous results, flag urgent issues, generate patient messages. Saves 1-2 hours/day per GP.
 
-2. **Care Gap Monitoring (Proactive)** - Proactively identify and alert overdue chronic disease monitoring per NZ clinical guidelines (HbA1c, BP checks, lipids, medication reviews). Supports PHO quality indicators.
+2. **Care Gap Finder (Proactive)** - Scan patient records to identify overdue chronic disease checks (diabetes, CVD, COPD, CHF, asthma). Generate recall lists, prioritise high-risk and Māori/Pacific patients. Supports PHO quality indicators.
 
-**Key Differentiators:**
-- ✓ NZ data sovereignty (self-hosted in NZ/AU, NZ-held keys)
-- ✓ Cost-effective at scale (20-50x cheaper than Azure OpenAI: $5-10k/month vs $140-170k/month)
-- ✓ NZ-tuned (Pharmac, ACC, HealthPathways, regional variations)
-- ✓ Medtech partnership (NZ's largest PMS = real-world testing + 3,000+ GP access)
-- ✓ Privacy-first (no training on production PHI; synthetic/de-identified only)
+**Key Features:**
+- ✓ **Dual PMS integration:** Works in both Medtech and Indici from day one
+- ✓ **Lean MVP approach:** Early releases to paid adopters as safety thresholds are met
+- ✓ **Architecture validation R&D:** Test which AI approach (simple classifiers, hybrid rules+LLM, NZ-trained LLM) works best for each risk level
+- ✓ **Multi-PMS generalisation:** Research how to maintain performance across different PMSs, practices, and populations
+- ✓ **Equity focus:** Algorithms designed to prioritise high-need groups without bias
 
-**R&D Uncertainty:** Can a small model (7B-13B parameters) achieve 70-80% of GPT-4/5 quality for NZ-specific clinical tasks under strict cost, privacy, and latency constraints?
+**Long-Term Vision (Years 3-5):**
+- **HealthHub NZ:** Extend validated NZ-LLM and safety frameworks to patient-facing web app
+- **Advanced R&D:** Multimodal models, continual learning, te reo Māori support, real-world outcome trials
+- **Broader ecosystem:** National FHIR API integration, plug-in architecture for more PMSs
+
+**Core R&D Questions:**
+- Which AI architecture works best for different clinical risk levels?
+- Can NZ-trained LLM understand local clinical language better than generic models?
+- How to design one system that works across multiple PMSs without major rework?
+- How to tune alerts to avoid fatigue while maintaining safety?
 
 ---
 
@@ -129,34 +143,95 @@ The project is organized into 6 main directories:
 
 ## R&D Objectives (4 Objectives - 24 Months)
 
-**Note:** Following Paula's feedback, objectives have been consolidated from 5 (12-month) to 4 (24-month) to demonstrate long-term R&D commitment.
+**Core Focus:** Build Inbox Helper and Care Gap Finder integrated across both Medtech and Indici PMSs, with lean MVPs released early and ongoing R&D through month 24.
 
-**Provisional Structure:**
+### Objective 1: Build the Smart Foundation and Early Prototypes (Months 1-6)
 
-### O1: Foundation & Architecture Validation (Months 1-8)
-- Literature review and architecture framework design
-- Range testing across multiple architectural approaches
-- Flexible foundation supporting simple→complex features
-- Medtech integration foundation
-- **Deliverables:** Foundation system v1.0, architecture recommendations
+**Plain-English Aim:** Create a flexible, safe AI backbone that can plug into Medtech and Indici, test different AI "recipes" on synthetic NZ healthcare data.
 
-### O2: Admin Automation + Lightweight Architecture (Months 6-14)
-- 4 admin automation tools (inbox, auto-filing, letters, referrals)
-- Medtech widget v1.0 integration
-- Sandbox validation
-- **Targets:** Inbox ≥90%, auto-filing 100% safe, letters ≥85%
+**Key R&D Questions:**
+- Which AI approach works best for each task: simple classifier, generic LLM, hybrid rules+LLM, or NZ-trained LLM?
+- Can a NZ-trained LLM understand local clinical language better than generic models?
+- How to design one architecture supporting both Medtech and Indici without major rework?
 
-### O3: Clinical Intelligence + Hybrid Architecture (Months 12-20)
-- Lab interpretation, care gap monitoring, screening tracking
-- Medtech widget v2.0
-- **Targets:** CVDRA ≥95%, care gaps ≥85%, screening ≥95%
+**Deliverables:**
+- Foundation system v1.0 deployed, connected to both Medtech and Indici sandboxes
+- ≥90% triage accuracy, ≥95% CVDRA accuracy on synthetic test sets
+- Architecture recommendations documented for Objectives 2 & 3
+- Early sandbox prototypes for inbox and care gaps
 
-### O4: Clinical Decision Support + Pilot (Months 18-24)
-- Prescription validation, guidelines, patient communications
-- Medtech widget v3.0 (complete system)
-- Real-world pilot with 10-20 GPs
-- Production-ready infrastructure
-- **Targets:** Prescription errors ≥95%, pilot satisfaction ≥75%
+---
+
+### Objective 2: Inbox Helper – Admin Automation and Early Clinical Overlays (Months 4-12)
+
+**Plain-English Aim:** Turn Inbox prototype into practical tool that reduces GP inbox workload safely in both Medtech and Indici. **Lean MVP released to early adopters as soon as safety thresholds met.**
+
+**Key R&D Questions:**
+- Can lightweight models safely handle messy, real NZ inbox data?
+- What confidence level is safe enough for auto-filing normal results?
+- How should AI suggestions appear in each PMS so GPs trust them?
+
+**Features:**
+- Triage and classify inbox items (labs, letters, referrals, admin, patient messages)
+- Auto-file normal screening results with recalls
+- Compare labs with previous results, flag trends
+- Rule-based clinical overlays (non-prescribing)
+- Patient communication message generation
+
+**Deliverables:**
+- Inbox Helper functional in both Medtech and Indici sandboxes
+- ≥90% classification accuracy on ≥2,000 real inbox items
+- Zero unsafe auto-filing in edge-case test suite
+- ~30% time saving in simulated GP workflows
+- Usability feedback from ≥5 GPs incorporated
+
+---
+
+### Objective 3: Care Gap Finder – Chronic Disease Intelligence (Months 7-16)
+
+**Plain-English Aim:** Build tool that scans patient records to find overdue chronic disease checks (diabetes, CVD, COPD, CHF, asthma). **Lean MVP (diabetes + CVD) released early, then expanded.**
+
+**Key R&D Questions:**
+- Can NZ-trained AI reliably extract details from messy free-text notes?
+- How to handle multiple conditions without overwhelming GPs with alerts?
+- How to prioritise so Māori/Pacific patients aren't left behind?
+
+**Features:**
+- Data extraction and analysis for 5 chronic conditions
+- Care gap detection with multi-condition logic
+- Patient communication message generation
+- GP/practice dashboards with equity filters
+- Integration into both Medtech and Indici
+
+**Deliverables:**
+- Care Gap Finder operational in both PMSs
+- ≥95% CVDRA accuracy
+- ≥85% care gap detection vs GP audit
+- Demonstrated ability to prioritise high-risk and Māori/Pacific patients appropriately
+
+---
+
+### Objective 4: Advanced Refinement, Safety, Equity and Generalisation (Months 16-24)
+
+**Plain-English Aim:** Use real-world feedback to do "hard" R&D work: refine NZ-LLM, tune alerts, prove system generalises across practices and both PMSs. **This is systematic R&D on generalisation and safety, not routine maintenance.**
+
+**Key R&D Questions:**
+- How much does performance change across different practices, populations, workflows?
+- How to tune alerts to minimise noise while catching all important issues?
+- How to support equitable performance across regions and populations?
+
+**Activities:**
+- Analyse model errors from early adopters, retrain NZ-LLM
+- Collect alert statistics, adjust thresholds to avoid fatigue
+- Run structured pilots across multiple practices (both PMSs)
+- Investigate performance gaps by region/population, fix via model/rule changes
+- Expand safety testing to thousands of scenarios
+
+**Deliverables:**
+- Refined NZ-LLM with documented accuracy across multiple practices and both PMSs
+- Alert configuration tuned based on real usage metrics
+- Final pilot report: time savings, care gaps closed, equity metrics, safety incidents
+- Clear roadmap for broader rollout (including Years 3-5 HealthHub NZ vision)
 
 **Detailed objectives:** See `00-admin-and-governance/revised-objectives-24-months.md`
 
@@ -346,11 +421,20 @@ Grants paid 1 month after quarterly claim submission.
 
 ---
 
-## Current Status [2025-11-26]
+## Current Status [2025-11-28]
 
-**Status:** Final budget and team structure confirmed. Cashflow positive throughout 24 months.
+**Status:** Major objectives revision completed. Focused scope on Inbox Helper + Care Gap Finder with dual PMS integration (Medtech + Indici) and clear Years 3-5 roadmap for HealthHub NZ.
 
-### Recent Updates (Nov 26, 2025)
+### Recent Updates (Nov 28, 2025)
+- ✅ **MAJOR REVISION:** Objectives completely refocused on 2 core tools (Inbox Helper + Care Gap Finder) instead of 50+ tools
+- ✅ **Dual PMS integration:** Both Medtech AND Indici supported from Objective 1 onwards
+- ✅ **Lean MVP approach:** Early releases to paid adopters with ongoing R&D through month 24
+- ✅ **HealthHub NZ roadmap:** Clear Years 3-5 vision for patient-facing app reusing validated NZ-LLM and safety frameworks
+- ✅ **Advanced R&D streams:** Multimodal models, continual learning, te reo support, equity-focused algorithms, outcome trials
+- ✅ **Objective 4 clarified:** Explicit R&D on generalisation and safety, not routine maintenance
+- ✅ **Removed high-risk features:** No prescription validation or high-complexity clinical decision support in 24-month scope
+
+### Previous Updates (Nov 26, 2025)
 - ✅ **Final team structure:** 3 people (Founder + Ting + Developer) - leaner, more focused
 - ✅ **CapDev restructured:** $15,000 third-party services only (IP $7,500 + Regulatory $7,500)
 - ✅ **Hardware strategy finalized:** $1,800 immediate expenses, cloud GPU only (no workstation)
@@ -608,6 +692,6 @@ Grants paid 1 month after quarterly claim submission.
 
 ---
 
-**Last Updated:** 2025-11-07  
-**Version:** 1.2  
-**Status:** Validation - Partnership development in progress; submission target mid-December 2025
+**Last Updated:** 2025-11-28  
+**Version:** 3.0  
+**Status:** Validation - Major objectives revision completed; focused on Inbox Helper + Care Gap Finder with dual PMS integration (Medtech + Indici) and Years 3-5 HealthHub NZ roadmap; submission target mid-December 2025
