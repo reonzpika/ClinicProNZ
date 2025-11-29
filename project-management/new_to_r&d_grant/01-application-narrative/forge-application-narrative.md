@@ -182,7 +182,7 @@ Therefore, systematic R&D is required to resolve these uncertainties.
 
 **Long-term vision:**
 - **Years 3-5 roadmap:** Patient-facing HealthHub NZ app reuses validated architecture
-- **Advanced R&D:** Multimodal models, continual learning, te reo support, outcome trials
+- **Advanced R&D:** Vision-capable models, learning from real-world use, te reo support, outcome trials
 - **Ecosystem contribution:** Open patterns for multi-PMS integration benefit wider sector
 
 **Commercial validation:** Lean MVPs with early adopters demonstrate market demand before full rollout.
