@@ -608,7 +608,7 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 
 ---
 
-**Vision:** By Year 5, any New Zealander can access personalised health guidance powered by NZ-sovereign AI, improving health outcomes nationwide.
+**Vision:** By Year 5, any New Zealander can access personalised health guidance powered by NZ-sovereign AI.
 
 **Core R&D Project: NZ Health Intelligence Layer (Years 3-5)**
 
@@ -621,9 +621,8 @@ Patients access complete health records (diagnosis, medications, test results, h
 **AI R&D questions:**
 - How do you train NZ-LLM to communicate medical information safely across different health literacy levels (18-year-old vs 75-year-old vs te reo speaker)?
 - Can NZ-LLM validate patient-entered data (blood pressure readings) by learning clinical patterns?
-- What AI safety thresholds determine "book GP appointment" vs "go to ED now"?
 
-**Benefits:** Rural patients get after-hours guidance (fewer unnecessary ED visits), chronic disease patients monitor at home, better engagement improves outcomes.
+**Benefits:** Rural patients get after-hours guidance, chronic disease patients monitor at home, better engagement improves outcomes.
 
 **2. AI Learning From Real-World Outcomes - Years 4-5**
 
@@ -632,9 +631,8 @@ Train NZ-LLM on aggregated patient outcomes to improve recommendations.
 **AI R&D questions:**
 - Can NZ-LLM learn from thousands of diabetes patients' outcomes to identify which interventions actually work?
 - Can AI identify emerging health trends (e.g., "South Auckland diabetes screening rates dropping 15%—intervention needed")?
-- How do you train AI on real-world data while preventing dangerous pattern learning?
 
-**Benefits:** AI recommendations improve based on actual NZ patient outcomes, not just international guidelines. Evidence-based insights for government health planning.
+**Benefits:** AI recommendations improve based on actual NZ patient outcomes. Evidence-based insights for government health planning.
 
 **3. National Scale Integration - Years 4-5**
 
@@ -642,11 +640,10 @@ Extend beyond Medtech/Indici to hospital systems and national records.
 
 **AI R&D questions:**
 - How does one NZ-trained LLM generalise across different hospital data formats while maintaining accuracy?
-- Can AI maintain safety as it scales from hundreds to hundreds of thousands of users?
 
 **Benefits:** Connected care—patient sees specialist, GP gets AI summary automatically. No repeated tests, no lost referrals.
 
-**Why Substantial R&D:** Patient-facing AI requires different safety training than GP-facing AI. Learning from outcomes without compromising safety is unsolved AI research. National-scale generalisation requires novel training approaches beyond the 24-month grant scope.
+**Why Substantial R&D:** Patient-facing AI requires different safety training than GP-facing AI. Learning from outcomes without compromising safety is unsolved AI research. National-scale generalisation requires novel training approaches.
 
 **Supports government goal:** Makes 10-year digital health plan intelligent and accessible for all New Zealanders.
 
