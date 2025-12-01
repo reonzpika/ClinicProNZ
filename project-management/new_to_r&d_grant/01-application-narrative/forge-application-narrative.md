@@ -501,27 +501,39 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 
 ---
 
-### CDP-5: Project Management ($5,000, Months 3-15)
+### CDP-5: Project Management ($5,000, Months 2-15)
 
 **Third-party professional services only (no internal labour):**
 
-**R&D Project Management Coaching & System Setup: $5,000**
+**R&D Project Management Training & Coaching for Ting + System Setup: $5,000**
 - Provider: R&D project management consultant/coach
-- Timing: Months 3-15
+- Timing: Months 2-15
+- Who it's for: Primarily Ting (as R&D Operations Lead) + Founder
 
-**Phase 1 - Setup (Months 3-4): ~$2,000**
-- Agile R&D system setup (Kanban boards, sprint templates)
-- Roadmap framework for 24-month project
-- Risk management templates
-- Documentation workflows
-- Initial training workshop with founder + Ting
+**Phase 1 - Intensive Training & Setup (Months 2-4): ~$2,500**
+- Training sessions specifically for Ting on R&D project management fundamentals:
+  - How to plan and manage R&D projects (vs traditional business projects)
+  - Budget tracking and resource allocation for R&D
+  - Managing R&D risks and uncertainty
+  - Documentation best practices for knowledge capture
+  - How to manage third-party service providers and consultants
+  - Communication management with stakeholders
+- Systems setup (with Ting leading): Agile R&D workflow system (Kanban boards), roadmap templates, budget tracking spreadsheets, risk register templates, vendor/contractor management workflows
+- Ting's capability development: Learn to break down R&D objectives, create timelines with contingency planning, identify when to bring in third-party expertise, **manage CapDev procurement process itself** (finding vendors, scoping work, managing contracts)
 
-**Phase 2 - Ongoing Coaching (Months 5-15): ~$3,000**
-- 6 monthly coaching sessions ($500 each)
-- Review project progress against milestones
-- Decision-making support
-- Train Ting on R&D operations management
-- Adjust systems as project evolves
+**Phase 2 - Ongoing Coaching (Months 5-15): ~$2,500**
+- 6 monthly coaching sessions with Ting ($400-500 each)
+- Month 5: Review systems, troubleshoot issues
+- Months 7, 9, 11, 13, 15: Managing objectives, decision-making support, refining Ting's R&D management skills
+- Coach Ting to run the R&D project (timelines, budget tracking, developer workload management, pilot coordination)
+
+**Why this is smart:**
+- Builds long-term capability - Ting learns how to manage R&D (not just admin)
+- **Meta-capability development:** Ting manages the CapDev procurement for other CDP services (regulatory, IP, R&D info systems)
+- Demonstrates "growth intention" (Paula's feedback about having Ting full-time)
+- After 24 months, Ting will have skills to manage future R&D projects
+
+**Deliverables:** R&D PM training materials, configured PM system, 6 coaching session reports, Ting-maintained roadmap/budget/risk register, vendor management records for all CDP procurement, monthly progress reports
 
 **Total CDP-5:** $5,000
 

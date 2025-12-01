@@ -162,15 +162,135 @@
 
 ### CDP-5: Project Management ($5,000)
 
-**Phase 1 - R&D PM System Setup: $2,000**
-- Provider: R&D project management consultant/coach
-- Timing: Months 3-4
-- Deliverables: Agile R&D system setup (Kanban boards, roadmap framework), risk management templates, training workshop
+**R&D Project Management Training & Coaching for Ting + System Setup**
 
-**Phase 2 - Ongoing PM Coaching (6 sessions): $3,000**
-- Provider: Same R&D PM consultant
-- Timing: Months 5, 8, 10, 12, 14, 15
-- Deliverables: Monthly coaching sessions, decision-making support, Ting's R&D management capability development
+**Provider:** R&D project management consultant/coach  
+**Timing:** Months 2-15  
+**Who it's for:** Primarily Ting (as R&D Operations Lead) + Founder
+
+---
+
+**Phase 1 - Intensive Training & Setup (Months 2-4): ~$2,500**
+
+**Training sessions specifically for Ting:**
+- How to plan and manage R&D projects (vs traditional business projects)
+- Creating realistic timelines when outcomes are uncertain
+- Budget tracking and resource allocation for R&D
+- How to identify and manage R&D risks
+- Documentation best practices for knowledge capture
+- How to manage third-party service providers and consultants
+- Communication management with stakeholders
+
+**Systems setup (with Ting leading):**
+- Agile R&D workflow system (Kanban boards)
+- Roadmap templates for 24-month project
+- Budget tracking spreadsheets
+- Risk register templates
+- Vendor/contractor management workflows
+- Meeting templates and decision logs
+
+**Ting's capability development:**
+- Learn how to break down R&D objectives into manageable tasks
+- Create timelines with contingency planning
+- Identify when to bring in third-party expertise
+- Manage CapDev procurement process itself (finding vendors, scoping work, managing contracts)
+
+---
+
+**Phase 2 - Ongoing Coaching (Months 5-15): ~$2,500**
+
+**6 monthly coaching sessions with Ting** ($400-500 each):
+- Month 5: Review of initial systems, troubleshoot issues
+- Month 7: Managing Objective 2 (Inbox Helper) timeline and resources
+- Month 9: Mid-project review, adjust plans based on learnings
+- Month 11: Managing transition to Objective 3 (Care Gap Finder)
+- Month 13: Pilot preparation and risk management
+- Month 15: Final phase planning and knowledge capture
+
+**Each session focuses on:**
+- Reviewing what's working/not working
+- Decision-making support ("Should we allocate more developer time here?")
+- Problem-solving bottlenecks
+- Refining Ting's R&D management skills
+- Preparing for next phase
+
+---
+
+**CDP-5 ALIGNMENT - Perfect Fit! ✅**
+
+From the official CDP-5 document:
+
+✅ **"Increasing R&D-related human capital expertise within the business organisation via training, coaching, or advisory"**
+- This is training Ting to become an effective R&D Operations Lead
+
+✅ **Key activities include:**
+- "Budget management to keep the project within budget" ← Ting learns this
+- "Resource management to ensure you allocate resources efficiently" ← Ting learns this
+- "Communications management to identify key stakeholders" ← Ting learns this
+- "Roadmaps to visualize tasks throughout project lifecycle" ← Ting creates these
+- "Periodic reviews to monitor progress" ← Ting runs these
+- "Documentation of knowledge" ← Ting manages this
+- "Risk management to identify risks and put mitigation plans in place" ← Ting learns this
+
+---
+
+**WHY THIS IS SMART:**
+
+**Builds long-term capability:**
+- Ting isn't just doing admin work - she's learning how to manage R&D
+- After 24 months, she'll have skills to manage future R&D projects
+- Demonstrates "growth intention" (Paula's feedback about having Ting full-time)
+
+**Ting manages the CapDev procurement:**
+- Part of her training is learning how to:
+  - Identify when you need third-party expertise
+  - Scope the work required
+  - Find and evaluate providers
+  - Manage contracts and deliverables
+  - Ensure value for money
+
+**This is meta-capability development:**
+- You're using CapDev budget to train Ting on how to manage CapDev activities!
+- She'll be responsible for procuring the other CDP services (regulatory, IP, R&D info systems)
+
+---
+
+**HOW THIS WORKS IN PRACTICE:**
+
+**Month 2-3:** Consultant trains Ting on R&D project management fundamentals
+
+**Month 3:** Ting creates procurement plan for other CDP activities:
+- "We need regulatory gap analysis by Month 3" → Ting finds provider, gets quotes, manages contract
+- "We need experiment tracking system by Month 4" → Ting scopes requirements, finds technical consultant
+- "We need DPIA by Month 5" → Ting identifies privacy specialists, manages engagement
+
+**Months 4-15:** Ting runs the R&D project with monthly coaching support:
+- Creates weekly/monthly timelines
+- Tracks budget vs actuals
+- Manages contractor developer workload
+- Coordinates pilot activities
+- Documents learnings
+- Escalates risks to founder
+
+**Consultant is Ting's coach/mentor throughout**
+
+---
+
+**DELIVERABLES FOR CDP-5:**
+
+From consultant to Ting:
+- R&D project management training materials (tailored to your project)
+- Project management tools and templates set up
+- Monthly coaching sessions (6 sessions)
+- Knowledge transfer documentation
+
+From Ting (demonstrating capability development):
+- 24-month project roadmap with milestones
+- Budget tracking spreadsheet (maintained monthly)
+- Risk register (updated quarterly)
+- Vendor management records for all CDP procurement
+- Meeting notes and decision logs
+- Monthly progress reports
 
 **Subtotal CDP-5: $5,000**
 
