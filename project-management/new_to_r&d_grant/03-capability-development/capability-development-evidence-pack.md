@@ -1,32 +1,44 @@
 # Capability Development Evidence Pack
-## Updated Following Paula's Feedback (Nov 2025)
+## Version 2.0 - Updated After Paula Confirmation (Nov 2025)
 
 ---
 
 ## Purpose and Scope
 
-Build enduring capability in **two key areas** for NZ clinical AI development:
+Build enduring capability in **four key areas** for NZ clinical AI development:
 
 1. **Intellectual Property (IP)** - Patent protection, FTO analysis, IP portfolio management, legal frameworks
-2. **Regulatory & Compliance** - Privacy Act, HIPC, IPP 12, clinical safety, PHO/Medtech compliance, AI ethics
+2. **Regulatory & Compliance** - Privacy Act, HIPC, IPP 12, clinical safety, PHO/Medtech compliance, AI ethics, DPIA
+3. **R&D Information Management** - Experiment tracking, model registry, LLM training workflows, research documentation
+4. **Project Management** - R&D operations, agile systems, risk management, stage-gate processes
 
-**Strategy:** Focus on high-value third-party professional services (IP attorneys, regulatory advisers) that provide practical, actionable outputs directly supporting R&D project success.
+**Strategy:** Focus on high-value third-party professional services that provide practical, actionable outputs directly supporting R&D project success and building capability for future R&D programmes (Years 3-5 HealthHub NZ).
 
-**Key Requirement:** CapDev must be ≥5% of grant amount = **$13,915 minimum** (based on $278,305 grant)
+**Key Requirement:** CapDev must be ≥5% of total eligible R&D costs = **$35,846 minimum** (based on $716,926 total eligible costs)
+
+**Confirmed by Paula (Callaghan Innovation):** 29 November 2025
 
 ---
 
 ## Selected Categories (Meets "≥2 Areas" Requirement)
 
-### CD-A: Intellectual Property Capability Development
+We have selected **4 Capability Development categories** from the 7 available options:
+
+### CDP-2: Intellectual Property Capability Development
 Focus on patent protection, freedom-to-operate, and legal frameworks for clinical AI commercialisation.
 
-### CD-B: Regulatory & Compliance Capability Development
-Focus on privacy, health data protection, clinical safety, and PHO/Medtech compliance for NZ healthcare AI.
+### CDP-3: Regulatory & Compliance Capability Development
+Focus on privacy, health data protection, clinical safety, DPIA, and PHO/Medtech compliance for NZ healthcare AI.
+
+### CDP-6: R&D Information Management Capability Development
+Focus on experiment tracking systems, model registry, LLM training workflows, and research documentation best practices.
+
+### CDP-5: Project Management Capability Development
+Focus on R&D operations, agile R&D systems, risk management, and coaching for first-time R&D performer.
 
 ---
 
-## CD-A: IP Capability Development ($7,500)
+## CDP-2: IP Capability Development ($7,500)
 
 ### 1. IP Audit & Freedom-to-Operate (FTO) Analysis
 **Provider:** NZ patent attorney or IP law firm
@@ -58,7 +70,7 @@ Focus on privacy, health data protection, clinical safety, and PHO/Medtech compl
   - Clinical LLM architecture for NZ sovereign deployment
   - Inbox management automation workflow
   - Care gap monitoring system
-  - Integration approach with NZ PMS systems (Medtech)
+  - Integration approach with NZ PMS systems (Medtech + Indici)
   - Cost-optimised inference methods for healthcare AI
 - File provisional patent with IPONZ (Intellectual Property Office of NZ)
 - Priority date claim (12-month window for full filing decision)
@@ -69,7 +81,7 @@ Focus on privacy, health data protection, clinical safety, and PHO/Medtech compl
 - Patent prosecution roadmap (next 12 months)
 
 **Cost:** $4,500 (excl. GST)
-**Timing:** Months 3-4
+**Timing:** Months 3-6
 **Evidence:** Invoice, IPONZ filing confirmation, provisional application copy
 
 **Note:** Full patent filing decision deferred to Month 12-15 based on R&D results and commercialisation progress.
@@ -93,16 +105,16 @@ Focus on privacy, health data protection, clinical safety, and PHO/Medtech compl
 - Trademark application filing (if recommended)
 
 **Cost:** $1,000 (excl. GST)
-**Timing:** Months 2-4
+**Timing:** Months 4-6
 **Evidence:** Invoices, NDA template, agreement drafts, trademark filing receipt
 
 ---
 
-**Total CD-A (IP):** $7,500
+**Total CDP-2 (IP):** $7,500
 
 ---
 
-## CD-B: Regulatory & Compliance Capability Development ($7,000)
+## CDP-3: Regulatory & Compliance Capability Development ($15,000)
 
 ### 1. Comprehensive Regulatory Gap Analysis
 **Provider:** NZ health data privacy consultant or regulatory adviser (with healthcare + AI expertise)
@@ -110,7 +122,6 @@ Focus on privacy, health data protection, clinical safety, and PHO/Medtech compl
 **Activities:**
 - **Privacy Act 2020 & HIPC compliance audit:**
   - IPP 12 cross-border data handling (AU inference, NZ keys)
-  - DPIA validation (Option B review)
   - DPA template review (Controller-Processor, sub-processors)
   - Consent and transparency requirements
 
@@ -136,13 +147,73 @@ Focus on privacy, health data protection, clinical safety, and PHO/Medtech compl
 - Risk register for regulatory issues
 
 **Cost:** $3,500 (excl. GST)
-**Timing:** Month 2-3
+**Timing:** Months 2-3
 **Evidence:** Invoice, gap analysis report, compliance checklist
 
 ---
 
-### 2. Ongoing Regulatory Adviser Engagement (6 Sessions)
-**Provider:** Same regulatory adviser (continuity)
+### 2. Comprehensive DPIA (Data Privacy Impact Assessment)
+**Provider:** Privacy/DPIA specialist with healthcare experience
+
+**Activities:**
+- Complete Data Privacy Impact Assessment for cross-border data handling
+- Assess risks of AU inference with NZ-held encryption keys
+- Evaluate IPP 12 compliance controls
+- Risk mitigation strategies for pilot deployment
+- Validate DPA templates with sub-processors
+
+**Deliverables:**
+- Complete DPIA document
+- Risk assessment matrix
+- Mitigation recommendations
+- Sub-processor assessment
+- Privacy controls validation
+
+**Cost:** $4,000 (excl. GST)
+**Timing:** Months 3-5
+**Evidence:** Invoice, DPIA document, risk assessment
+
+**Note:** DPIA must be completed before any pilot involving real patient data (pre-Objective 4).
+
+---
+
+### 3. Clinical Safety Advisory (Medical Device Software Context)
+**Provider:** Clinical safety consultant (MedTech/SaMD experience)
+
+**Activities (3 sessions):**
+
+**Session 1 (Month 4):** Safety system design review
+- Review assist-only constraints architecture
+- Clinical risk classification framework
+- Safety system validation approach
+- Prohibited-claim detection mechanisms
+
+**Session 2 (Month 8):** MVP safety validation
+- Review Inbox Helper and Care Gap Finder safety controls
+- Validate refusal scaffolds and hard stops
+- Edge case coverage assessment
+- Incident response procedures
+
+**Session 3 (Month 12):** Pre-pilot safety audit
+- Comprehensive safety system audit
+- Pilot safety protocols validation
+- GP training materials review
+- Safety monitoring and reporting frameworks
+
+**Deliverables:**
+- 3 session reports with recommendations
+- Clinical risk assessment
+- Safety system validation report
+- Pre-pilot safety checklist
+
+**Cost:** $3,500 (excl. GST) = ~$1,166 per session
+**Timing:** Months 4, 8, 12
+**Evidence:** Invoices (per session), session reports, safety validation documents
+
+---
+
+### 4. Ongoing Regulatory Adviser Engagement (6 Sessions)
+**Provider:** Same regulatory adviser from gap analysis (continuity)
 
 **Activities (6 sessions across Months 4-18):**
 
@@ -160,13 +231,13 @@ Focus on privacy, health data protection, clinical safety, and PHO/Medtech compl
 - Documentation review and approval
 
 **Cost:** $3,000 (excl. GST) = ~$500/session
-**Timing:** Months 4-18 (6 sessions)
+**Timing:** Months 4, 6, 9, 12, 15, 18
 **Evidence:** Invoices (per session), session notes, updated compliance docs
 
 ---
 
-### 3. Compliance Roadmap & Documentation Templates
-**Provider:** Regulatory adviser (or internal work with adviser guidance)
+### 5. Compliance Roadmap & Documentation Templates
+**Provider:** Legal/compliance adviser (or internal work with adviser guidance)
 
 **Activities:**
 - Develop governance framework document
@@ -175,6 +246,7 @@ Focus on privacy, health data protection, clinical safety, and PHO/Medtech compl
 - Develop data handling protocols for PHO partnerships
 - Create incident response runbook for privacy breaches
 - Draft transparency page content (public-facing)
+- DPA negotiation support with Medtech/Indici/sub-processors
 
 **Deliverables:**
 - Governance framework v1.0
@@ -183,16 +255,171 @@ Focus on privacy, health data protection, clinical safety, and PHO/Medtech compl
 - PHO data handling protocol template
 - Incident response runbook
 - Transparency page draft
+- DPA templates and negotiation support records
 
 **Cost:** $1,000 (excl. GST)
-**Timing:** Months 3-6 (developed with adviser during early sessions)
+**Timing:** Months 4-6
 **Evidence:** Documentation templates, governance framework, DPA negotiation support records
-
-**Note:** Increased from $500 to $1,000 to include additional regulatory adviser hours for DPA negotiations with Medtech and sub-processors, plus expanded documentation support.
 
 ---
 
-**Total CD-B (Regulatory):** $7,500
+**Total CDP-3 (Regulatory):** $15,000
+
+---
+
+## CDP-6: R&D Information Management Capability Development ($8,500)
+
+### 1. R&D Experiment Tracking & Model Registry System Setup
+**Provider:** Technical consultant specialising in ML research infrastructure
+
+**Activities:**
+- Design and implement centralised experiment tracking system
+- Set up model versioning and registry (MLflow or similar)
+- Configure dataset lineage tracking
+- Build research dashboard for progress monitoring
+- Integration with existing development workflows
+- Training sessions for founder + Ting
+- Documentation of system usage and best practices
+
+**System Features:**
+- Track all architecture experiments (simple/hybrid/LLM comparisons)
+- Log hyperparameters, training configs, evaluation metrics
+- Version all model checkpoints with metadata
+- Link datasets to experiments (synthetic → test → pilot data)
+- Visualise experiment results and compare approaches
+- Generate reports for quarterly claims and documentation
+
+**Deliverables:**
+- Fully configured experiment tracking system
+- Model registry with version control
+- Dataset lineage documentation
+- Research dashboard
+- Training materials and documentation
+- 2 training sessions (founder + Ting)
+
+**Cost:** $3,500 (excl. GST)
+**Timing:** Months 2-4
+**Evidence:** Invoice, system setup documentation, training session records
+
+**Value:** Reusable for Years 3-5 HealthHub NZ R&D. Essential for systematic architecture validation (Objective 1) and ongoing refinement (Objective 4).
+
+---
+
+### 2. LLM Training & Fine-Tuning Technical Advisory
+**Provider:** AI/ML technical consultant with LLM fine-tuning expertise
+
+**Activities (4-6 advisory sessions over Months 2-6):**
+
+**Session 1 (Month 2):** NZ-LLM training strategy
+- Review NZ clinical corpus (bpac, MoH, Pharmac data)
+- Recommend base models for fine-tuning (7B-13B parameters)
+- Training pipeline architecture
+- Compute requirements and cost optimisation
+
+**Session 2 (Month 3):** Training pipeline setup
+- Configure training infrastructure (Lambda Labs/AWS)
+- Set up LoRA/QLoRA fine-tuning framework
+- Evaluation framework design
+- Baseline benchmarks (vs GPT-4)
+
+**Session 3 (Month 4):** Domain adaptation best practices
+- Fine-tuning on NZ clinical language
+- Synthetic data generation strategies
+- Preventing hallucination in clinical context
+- Safety constraints implementation
+
+**Session 4 (Month 5):** Evaluation and optimization
+- Evaluate initial NZ-LLM performance
+- Compare architectures (simple vs hybrid vs LLM)
+- Cost-accuracy trade-off analysis
+- Recommendations for Objectives 2-3
+
+**Sessions 5-6 (Month 6, optional):** Advanced topics
+- Multi-PMS generalisation strategies
+- Continual learning approaches
+- Production deployment considerations
+
+**Deliverables:**
+- 4-6 advisory session reports
+- Training pipeline setup and documentation
+- Evaluation framework
+- Architecture comparison methodology
+- NZ-LLM fine-tuning playbook
+- Knowledge transfer documentation
+
+**Cost:** $5,000 (excl. GST) = ~$833-1,250 per session
+**Timing:** Months 2-6
+**Evidence:** Invoices (per session), session reports, training pipeline documentation
+
+**Value:** Core capability for building NZ-sovereign clinical LLM. Knowledge directly applicable to Years 3-5 HealthHub NZ and future clinical AI projects.
+
+---
+
+**Total CDP-6 (R&D Info Management):** $8,500
+
+---
+
+## CDP-5: Project Management Capability Development ($5,000)
+
+### R&D Project Management Coaching & System Setup
+**Provider:** R&D project management consultant/coach with healthcare or tech R&D experience
+
+**Phase 1 - Setup (Months 3-4): ~$2,000**
+
+**Activities:**
+- Initial assessment of current project management practices
+- Design agile R&D system tailored for clinical AI development
+- Set up Kanban boards for R&D workflow (backlog → in progress → testing → done)
+- Configure sprint/iteration templates (2-week cycles)
+- Create roadmap framework linking 4 objectives over 24 months
+- Build risk management templates and risk register
+- Design documentation workflows (experiments → results → claims)
+- Establish stage-gate criteria (O1 → O2 → O3 → O4 entry/exit)
+- Initial training workshop with founder + Ting (4-6 hours)
+
+**Deliverables (Phase 1):**
+- Agile R&D system setup (Jira/Linear/Notion configured)
+- Kanban boards with workflow automation
+- 24-month roadmap template
+- Risk register template
+- Stage-gate checklist
+- Documentation templates
+- Training materials
+- Workshop session notes
+
+---
+
+**Phase 2 - Ongoing Coaching (Months 5-15): ~$3,000**
+
+**Activities (6 monthly coaching sessions @ $500 each):**
+
+**Session 1 (Month 5):** Objective 1 review + Objective 2 planning
+**Session 2 (Month 8):** Risk management and pivot decisions
+**Session 3 (Month 10):** Objective 2 completion + Objective 3 kickoff
+**Session 4 (Month 12):** Mid-project review and adjustments
+**Session 5 (Month 14):** Objective 3 wrap-up + Objective 4 prep
+**Session 6 (Month 15):** Pilot preparation and quality assurance
+
+**Each session includes:**
+- Review project progress against milestones
+- Discuss blockers and decision-making support
+- Coach Ting on R&D operations management
+- Adjust systems based on what's working/not working
+- Review risk register and update mitigations
+- Plan next phase activities
+
+**Deliverables (Phase 2):**
+- 6 coaching session reports
+- Updated roadmaps and risk registers
+- Decision documentation
+- Process improvements log
+- Ting's R&D operations capability development tracked
+
+---
+
+**Total CDP-5 (Project Management):** $5,000
+
+**Value:** Builds Ting's R&D operations management capability. First-time R&D performer needs external expertise to avoid common pitfalls. Systems and processes directly reusable for Years 3-5 HealthHub NZ R&D.
 
 ---
 
@@ -221,7 +448,6 @@ Focus on privacy, health data protection, clinical safety, and PHO/Medtech compl
 - AI e-learning modules tailored for primary care (free)
 - Developed by Hendrix Health, Collaborative Aotearoa, and AI in Primary Care working group
 - Access via: https://collabaotearoa.talentlms.com
-- SCORM 1.2 files available: admin@collab.org.nz
 
 **Evidence:** Completion certificates from all courses (attach to Q1 claim)
 
@@ -231,29 +457,44 @@ Focus on privacy, health data protection, clinical safety, and PHO/Medtech compl
 
 | Category | Activity | Cost (excl. GST) | Timing |
 |----------|----------|------------------|--------|
-| **CD-A: IP** | IP Audit & FTO Analysis | $2,000 | Months 2-3 |
-| **CD-A: IP** | Provisional Patent Filing | $4,500 | Months 3-4 |
-| **CD-A: IP** | NDAs, Contracts, Trademark | $1,000 | Months 2-4 |
-| | **Subtotal CD-A** | **$7,500** | |
+| **CDP-2: IP** | IP Audit & FTO Analysis | $2,000 | Months 2-3 |
+| **CDP-2: IP** | Provisional Patent Filing | $4,500 | Months 3-6 |
+| **CDP-2: IP** | NDAs, Contracts, Trademark | $1,000 | Months 4-6 |
+| | **Subtotal CDP-2** | **$7,500** | |
 | | | | |
-| **CD-B: Regulatory** | Comprehensive Gap Analysis | $3,500 | Months 2-3 |
-| **CD-B: Regulatory** | Ongoing Adviser (6 sessions) | $3,000 | Months 4-18 |
-| **CD-B: Regulatory** | Compliance Roadmap & Docs | $1,000 | Months 3-6 |
-| | **Subtotal CD-B** | **$7,500** | |
+| **CDP-3: Regulatory** | Comprehensive Gap Analysis | $3,500 | Months 2-3 |
+| **CDP-3: Regulatory** | Comprehensive DPIA | $4,000 | Months 3-5 |
+| **CDP-3: Regulatory** | Clinical Safety Advisory (3 sessions) | $3,500 | Months 4, 8, 12 |
+| **CDP-3: Regulatory** | Ongoing Adviser (6 sessions) | $3,000 | Months 4-18 |
+| **CDP-3: Regulatory** | Compliance Roadmap & Docs | $1,000 | Months 4-6 |
+| | **Subtotal CDP-3** | **$15,000** | |
 | | | | |
-| | **Total Eligible CapDev** | **$15,000** | |
+| **CDP-6: R&D Info Mgmt** | Experiment Tracking System Setup | $3,500 | Months 2-4 |
+| **CDP-6: R&D Info Mgmt** | LLM Training Advisory (4-6 sessions) | $5,000 | Months 2-6 |
+| | **Subtotal CDP-6** | **$8,500** | |
+| | | | |
+| **CDP-5: Project Mgmt** | PM System Setup (Phase 1) | $2,000 | Months 3-4 |
+| **CDP-5: Project Mgmt** | Ongoing Coaching (6 sessions) | $3,000 | Months 5-15 |
+| | **Subtotal CDP-5** | **$5,000** | |
+| | | | |
+| | **Total Eligible CapDev** | **$36,000** | |
 
 ---
 
 ## CapDev Funding Requirement Check
 
-**Minimum Required:** ≥5% of grant = 5% × $278,305 = **$13,915**
+**Total Eligible R&D Costs:** $716,926
+- R&D Labour: $655,176
+- M&C (includes hardware): $25,750
+- CapDev: $36,000
 
-**Current Confirmed CapDev:** $15,000 ✓ **(Exceeds minimum by $1,085)**
+**Minimum Required:** ≥5% of total eligible costs = 5% × $716,926 = **$35,846**
 
-**Percentage of Grant:** $15,000 / $278,305 = **5.39%** ✓
+**Current Confirmed CapDev:** $36,000 ✓ **(Exceeds minimum by $154)**
 
-**Status:** ✓ Meets 5% requirement
+**Percentage of Total Costs:** $36,000 / $716,926 = **5.02%** ✓
+
+**Status:** ✓ Meets 5% requirement (confirmed by Paula, Callaghan Innovation, 29 Nov 2025)
 
 ---
 
@@ -265,7 +506,6 @@ Focus on privacy, health data protection, clinical safety, and PHO/Medtech compl
 - [ ] OPC Privacy Act 2020 certificate (PDF)
 - [ ] OPC Health 101 (HIPC) certificate (PDF)
 - [ ] Collaborative Aotearoa AI in Primary Care certificates (PDF)
-- [ ] Te Whatu Ora governance training (if completed)
 
 **IP Professional Services:**
 - [ ] IP Audit & FTO invoice
@@ -279,10 +519,11 @@ Focus on privacy, health data protection, clinical safety, and PHO/Medtech compl
 - [ ] Compliance checklist
 - [ ] Risk register (regulatory)
 
-**Contracts & Legal:**
-- [ ] NDA/contracts legal invoice
-- [ ] NDA template
-- [ ] Collaboration agreement drafts
+**R&D Info Management:**
+- [ ] Experiment tracking system setup invoice
+- [ ] System documentation
+- [ ] Training session records
+- [ ] LLM advisory session 1 invoice and report
 
 ---
 
@@ -293,45 +534,47 @@ Focus on privacy, health data protection, clinical safety, and PHO/Medtech compl
 - [ ] IPONZ provisional patent filing receipt
 - [ ] Provisional patent application copy
 - [ ] Patent prosecution roadmap
+- [ ] NDA/contracts/trademark invoices and deliverables
 
-**IP Trademark:**
-- [ ] Trademark search report
-- [ ] Trademark filing receipt (if filed)
-
-**Regulatory Ongoing Adviser:**
-- [ ] Adviser session invoices (Sessions 1-2, Months 4 & 6)
-- [ ] Session notes and recommendations
-- [ ] Updated compliance checklist
-
-**Compliance Documentation:**
-- [ ] Governance framework v1.0
+**Regulatory Services:**
+- [ ] DPIA invoice
+- [ ] Complete DPIA document
+- [ ] Clinical safety advisory Session 1 invoice and report
+- [ ] Regulatory adviser sessions 1-2 invoices and reports
 - [ ] Compliance documentation templates
-- [ ] PHO data handling protocol
-- [ ] Transparency page draft
+
+**R&D Info Management:**
+- [ ] LLM advisory sessions 2-6 invoices and reports
+- [ ] Training pipeline documentation
+- [ ] Evaluation framework
+
+**Project Management:**
+- [ ] PM setup invoice
+- [ ] Configured PM system
+- [ ] Training workshop records
+- [ ] Coaching session 1 invoice and report
 
 ---
 
 ### Q3-Q8 Claims (Ongoing)
 
+**Clinical Safety Advisory:**
+- [ ] Sessions 2-3 invoices and reports (Months 8, 12)
+
 **Regulatory Adviser Sessions:**
 - [ ] Session invoices (Months 9, 12, 15, 18)
 - [ ] Session notes with recommendations
-- [ ] Updated compliance checklists
-- [ ] Updated risk registers
-- [ ] Incident response documentation (if triggered)
+- [ ] Updated compliance checklists and risk registers
 
-**Updated Compliance Docs:**
-- [ ] DPA templates (signed with sub-processors)
-- [ ] PHO partnership data sharing agreements
-- [ ] Transparency page updates
-- [ ] Safety monitoring reports
+**Project Management Coaching:**
+- [ ] Sessions 2-6 invoices and reports (Months 8, 10, 12, 14, 15)
 
 ---
 
 ## Key Deliverables (Capability Development Outputs)
 
 ### IP Capability Deliverables
-1. **FTO Report** - Freedom-to-operate analysis with risk assessment for clinical LLM commercialisation
+1. **FTO Report** - Freedom-to-operate analysis with risk assessment
 2. **Prior Art Search** - Comprehensive search results for patent landscape
 3. **Provisional Patent Application** - Filed with IPONZ, priority date secured
 4. **Patent Prosecution Roadmap** - 12-month plan for full filing decision
@@ -340,16 +583,40 @@ Focus on privacy, health data protection, clinical safety, and PHO/Medtech compl
 7. **Trademark Protection** - ClinicPro brand search and filing
 
 ### Regulatory & Compliance Capability Deliverables
-1. **Comprehensive Gap Analysis** - Privacy Act, HIPC, clinical safety, AI ethics compliance audit
-2. **Compliance Checklist** - Prioritised remediation actions with timelines
-3. **Compliance Roadmap** - What to fix when across 24-month project
-4. **Governance Framework** - Internal governance structure for health AI
-5. **Risk Register (Regulatory)** - Regulatory compliance risks with mitigations
-6. **Adviser Session Notes (6)** - Expert guidance on MVP, sandbox, pilot, scale-up
-7. **Compliance Documentation Pack** - Templates for audit, incident response, transparency
-8. **PHO Data Handling Protocols** - Standard procedures for partnership data sharing
-9. **Incident Response Runbook** - Privacy breach and safety incident procedures
-10. **Transparency Page** - Public-facing AI system transparency documentation
+1. **Comprehensive Gap Analysis** - Privacy Act, HIPC, clinical safety, AI ethics audit
+2. **Complete DPIA** - Cross-border data handling risk assessment and mitigations
+3. **Clinical Safety Reports** (3) - Safety system validation across MVP, sandbox, pilot
+4. **Compliance Checklist** - Prioritised remediation actions with timelines
+5. **Compliance Roadmap** - What to fix when across 24-month project
+6. **Governance Framework** - Internal governance structure for health AI
+7. **Risk Register (Regulatory)** - Regulatory compliance risks with mitigations
+8. **Adviser Session Notes (6)** - Expert guidance on MVP, sandbox, pilot, scale-up
+9. **Compliance Documentation Pack** - Templates for audit, incident response, transparency
+10. **PHO Data Handling Protocols** - Standard procedures for partnership data sharing
+11. **Incident Response Runbook** - Privacy breach and safety incident procedures
+12. **Transparency Page** - Public-facing AI system transparency documentation
+
+### R&D Information Management Capability Deliverables
+1. **Experiment Tracking System** - Configured and operational
+2. **Model Registry** - Version control for all NZ-LLM checkpoints
+3. **Dataset Lineage Documentation** - Track all data sources and transformations
+4. **Research Dashboard** - Visual progress monitoring for R&D
+5. **Training Materials** - System usage documentation
+6. **LLM Training Pipeline** - Configured and documented
+7. **Evaluation Framework** - Systematic model evaluation approach
+8. **Architecture Comparison Methodology** - How to compare simple/hybrid/LLM
+9. **NZ-LLM Fine-Tuning Playbook** - Reusable knowledge for future projects
+10. **Advisory Session Reports** (4-6) - Technical guidance documentation
+
+### Project Management Capability Deliverables
+1. **Agile R&D System** - Configured Kanban boards and workflows
+2. **24-Month Roadmap** - Linked objectives and milestones
+3. **Risk Register Template** - Reusable risk management framework
+4. **Stage-Gate Checklist** - Entry/exit criteria for objectives
+5. **Documentation Workflows** - Experiment → results → claims process
+6. **Training Workshop Materials** - PM system training for founder + Ting
+7. **Coaching Session Reports** (6) - Ongoing R&D management guidance
+8. **Process Improvements Log** - What worked/didn't work documentation
 
 ### Free Training Certificates
 1. **Privacy Act 2020** - OPC e-learning completion
@@ -377,12 +644,20 @@ The following activities are part of **R&D work** (not CapDev) and will be claim
 - Developing licensing integration with Medtech API
 - Building patent-eligible features and workflows
 
+### R&D Info Management Implementation (R&D Activity)
+- Using experiment tracking system for daily R&D work
+- Logging experiments, results, and model versions
+- Generating reports from research dashboard
+- Maintaining dataset lineage
+- Running LLM training and fine-tuning experiments
+
 ### Project Management (R&D Activity)
 - Stage-gate management (O1-O4 entry/exit criteria)
 - Risk and change log maintenance
 - Release checklist execution
 - Safety regression testing
 - Monthly compliance monitoring
+- Sprint planning and execution
 
 **These activities use internal labour and are claimed as part of R&D objectives, NOT as Capability Development.**
 
@@ -391,30 +666,47 @@ The following activities are part of **R&D work** (not CapDev) and will be claim
 ## Timing & Cashflow (CapDev Spend Schedule)
 
 ### Months 1-3 (Q1): $6,000
-- IP Audit & FTO: $2,000 (Month 2-3)
-- Regulatory Gap Analysis: $3,500 (Month 2-3)
-- NDA/Contracts: $500 (Month 2-3)
+- IP Audit & FTO: $2,000 (Months 2-3)
+- Regulatory Gap Analysis: $3,500 (Months 2-3)
+- Experiment Tracking Setup (start): $500 (Month 2)
 
-### Months 4-6 (Q2): $5,500
-- Provisional Patent Filing: $4,500 (Month 3-4)
-- NDA/Contracts completion: $500 (Month 4)
-- Regulatory Adviser Session 1: $500 (Month 4)
+### Months 4-6 (Q2): $15,000
+- Provisional Patent Filing: $4,500 (Months 3-6)
+- NDA/Contracts/Trademark: $1,000 (Months 4-6)
+- DPIA: $4,000 (Months 3-5)
+- Experiment Tracking Setup (complete): $3,000 (Months 3-4)
+- LLM Advisory (5 sessions): $4,000 (Months 2-6)
+- Clinical Safety Session 1: $1,166 (Month 4)
+- Regulatory Adviser Sessions 1-2: $1,000 (Months 4, 6)
+- Compliance Docs: $1,000 (Months 4-6)
+- PM Setup: $2,000 (Months 3-4)
+- PM Coaching Session 1: $500 (Month 5)
 
-### Months 7-9 (Q3): $500
-- Regulatory Adviser Session 2: $500 (Month 6)
-
-### Months 10-12 (Q4): $500
+### Months 7-9 (Q3): $2,666
+- Clinical Safety Session 2: $1,166 (Month 8)
 - Regulatory Adviser Session 3: $500 (Month 9)
+- PM Coaching Session 2: $500 (Month 8)
+- LLM Advisory (remaining): $500 (if 6 sessions)
 
-### Months 13-18 (Q5-Q6): $1,500
+### Months 10-12 (Q4): $3,666
+- Clinical Safety Session 3: $1,166 (Month 12)
 - Regulatory Adviser Session 4: $500 (Month 12)
+- PM Coaching Sessions 3-4: $1,000 (Months 10, 12)
+- LLM Advisory (final): $1,000 (if extended)
+
+### Months 13-15 (Q5): $1,500
 - Regulatory Adviser Session 5: $500 (Month 15)
+- PM Coaching Sessions 5-6: $1,000 (Months 14, 15)
+
+### Months 16-18 (Q6): $500
 - Regulatory Adviser Session 6: $500 (Month 18)
 
-### Months 19-24 (Q7-Q8): $500
-- Compliance documentation updates: $500 (as needed)
+### Months 19-24 (Q7-Q8): $0
+- No additional CapDev spending (implementation complete)
 
-**Total:** $14,500 across 24 months
+**Total:** $36,000 across 24 months
+
+**Note:** Most CapDev spending occurs in first 12 months (setup and training phase). Later months focus on R&D implementation using capabilities built.
 
 ---
 
@@ -429,6 +721,8 @@ The following activities are part of **R&D work** (not CapDev) and will be claim
 
 ### Regulatory & Compliance Capability
 - ✓ Comprehensive gap analysis completed with risk ratings
+- ✓ Complete DPIA document with cross-border risk mitigations
+- ✓ 3 clinical safety advisory reports (MVP, sandbox, pilot)
 - ✓ Compliance checklist with prioritised remediation actions
 - ✓ Governance framework established
 - ✓ 6 adviser sessions completed with documented recommendations
@@ -437,6 +731,27 @@ The following activities are part of **R&D work** (not CapDev) and will be claim
 - ✓ Incident response runbook completed
 - ✓ Transparency page drafted and published
 - ✓ All free training courses completed with certificates
+
+### R&D Information Management Capability
+- ✓ Experiment tracking system fully operational
+- ✓ Model registry configured with version control
+- ✓ Dataset lineage tracking established
+- ✓ Research dashboard deployed and used daily
+- ✓ Training sessions completed (founder + Ting)
+- ✓ LLM training pipeline configured and documented
+- ✓ Evaluation framework established
+- ✓ 4-6 advisory sessions completed with knowledge transfer
+- ✓ NZ-LLM fine-tuning playbook documented
+
+### Project Management Capability
+- ✓ Agile R&D system configured and operational
+- ✓ 24-month roadmap maintained and updated
+- ✓ Risk register actively used
+- ✓ Stage-gate process implemented
+- ✓ Documentation workflows established
+- ✓ Founder + Ting trained on R&D PM system
+- ✓ 6 coaching sessions completed
+- ✓ Ting's R&D operations capability demonstrably improved
 
 ### Evidence Quality
 - ✓ All invoices on file for professional services
@@ -448,45 +763,37 @@ The following activities are part of **R&D work** (not CapDev) and will be claim
 
 ## Risk Mitigation
 
-### Risk: CapDev < 5% of Grant
-**Current Status:** $15,000 = 5.39% ✓ (exceeds 5% minimum by $1,085)
-**Mitigation:** Already exceeded minimum; if costs come in lower, can add adviser sessions or expand patent scope
+### Risk: CapDev < 5% of Total Costs
+**Current Status:** $36,000 = 5.02% ✓ (exceeds 5% minimum by $154)
+**Mitigation:** Already exceeded minimum; minimal buffer but compliant
 
-### Risk: Patent Attorney Costs Higher Than Expected
-**Current Budget:** $6,500 for IP attorney work (FTO + provisional)
+### Risk: Consultant Availability or Costs Higher Than Expected
 **Mitigation:**
-- Obtain fixed-price quotes before engagement
-- Scope provisional patent to core claims only (can expand in full filing)
-- FTO can be scaled down to key competitor patents if needed (~$1,500 minimum)
-- Have $1,085 buffer above minimum 5% requirement
-
-### Risk: Regulatory Adviser Not Available Throughout Project
-**Mitigation:**
-- Engage adviser upfront with 24-month retainer agreement
-- Schedule all 6 sessions in advance (Months 4, 6, 9, 12, 15, 18)
-- Build relationship during gap analysis phase
-- Have backup advisers identified if primary unavailable
+- Obtain fixed-price quotes before engagement for major items (IP, DPIA, safety advisory)
+- For ongoing sessions, establish retainer agreements upfront
+- Have backup consultants identified for each category
+- Front-load spending in Q1-Q2 to lock in providers early
 
 ### Risk: Internal CapDev Work Confused with R&D Labour
 **Mitigation:**
 - Clear separation in timesheets: Never claim internal time as CapDev
 - Only third-party invoices submitted as CapDev evidence
-- All internal implementation work (DPIA, IPP 12 controls, dashboards) claimed as R&D labour
+- All internal implementation work claimed as R&D labour
 - Maintain separate folders: `/capdev-evidence/` vs `/r&d-deliverables/`
 
-### Risk: Free Courses Questioned by Reviewers
+### Risk: LLM Training Advisory Not Delivering Value
 **Mitigation:**
-- OPC and Te Whatu Ora are NZ government providers (highly credible)
-- Collaborative Aotearoa modules developed specifically for NZ primary care
-- Free courses supplement (not replace) paid professional services ($14.5k)
-- Focus of CapDev is professional services, not courses
+- Select consultant with proven track record in clinical LLM or NZ healthcare AI
+- Structure as 4-6 sessions with clear deliverables per session
+- Can adjust scope based on early sessions (e.g., stop at 4 if sufficient)
+- Knowledge transfer documented so capability remains after consultant engagement ends
 
-### Risk: IPONZ Provisional Patent Not Filed in Time
+### Risk: Experiment Tracking System Not Used
 **Mitigation:**
-- Engage patent attorney Month 2 (allows 8 weeks for drafting/filing)
-- Priority date critical for international protection (12-month PCT window)
-- Have provisional draft ready before Month 4 milestone
-- Can expedite if needed (extra cost covered by buffer)
+- Involve founder + Ting in system design (Month 2-4)
+- Ensure integration with existing workflows
+- Training sessions emphasize practical usage
+- System designed for quarterly claims (built-in motivation to maintain)
 
 ---
 
@@ -505,7 +812,31 @@ The following activities are part of **R&D work** (not CapDev) and will be claim
 - Baldwins (Christchurch/Auckland)
 - Spruson & Ferguson (Auckland)
 
-### Regulatory Adviser/Privacy Consultant
+### Privacy/DPIA Specialist
+**Must Have:**
+- NZ Privacy Act 2020 expertise
+- Healthcare sector experience (HIPC)
+- DPIA completion track record
+- Understanding of cross-border data handling (IPP 12)
+
+**Recommended Providers:**
+- Privacy consultants with health sector focus
+- Former Privacy Commissioner staff
+- Health informatics consultants with legal/compliance background
+
+### Clinical Safety Consultant
+**Must Have:**
+- Medical device software (SaMD) experience
+- NZ clinical safety framework knowledge
+- Risk assessment expertise for healthcare AI
+- Experience with assist-only or decision-support systems
+
+**Recommended Providers:**
+- Clinical safety consultants with MedTech background
+- Healthcare quality/safety specialists
+- Medical device regulatory consultants
+
+### Regulatory Adviser
 **Must Have:**
 - NZ Privacy Act 2020 expertise
 - Healthcare sector experience (HIPC, PHO compliance)
@@ -513,70 +844,118 @@ The following activities are part of **R&D work** (not CapDev) and will be claim
 - Available for 24-month engagement (6 sessions)
 
 **Recommended Providers:**
-- Privacy consultants with health sector focus
-- Former Privacy Commissioner staff
-- Health informatics consultants (with legal/compliance background)
+- Same provider as gap analysis (continuity)
 - Law firms with healthcare + privacy practice
+- Health informatics consultants
 
-### Commercial Lawyer (Contracts)
+### R&D Info Management / ML Infrastructure Consultant
 **Must Have:**
-- NZ commercial law experience
-- SaaS/technology licensing experience
-- Healthcare partnership agreements experience preferred
-- Fixed-price for NDA/contract templates
+- MLOps/ML infrastructure experience
+- Experiment tracking systems (MLflow, W&B, etc.)
+- Healthcare or regulated industry experience preferred
+- Training/knowledge transfer capability
+
+**Recommended Providers:**
+- ML engineering consultants
+- Data science consulting firms
+- Technical consultants with healthcare AI experience
+
+### LLM Training/Fine-Tuning Adviser
+**Must Have:**
+- Proven LLM fine-tuning experience (LoRA, QLoRA, full fine-tuning)
+- Clinical or healthcare AI experience (highly preferred)
+- NZ-specific language model experience (preferred)
+- Training pipeline setup expertise
+- Knowledge transfer and documentation capability
+
+**Recommended Providers:**
+- AI/ML consultants with NLP/LLM specialisation
+- Healthcare AI researchers or practitioners
+- Companies/individuals with clinical LLM track record
+
+### R&D Project Management Coach
+**Must Have:**
+- R&D project management experience (not just general PM)
+- Agile/Scrum/Kanban expertise
+- Healthcare or tech R&D experience
+- Coaching/mentorship capability (not just doing)
+- Available for 12-month engagement
+
+**Recommended Providers:**
+- R&D management consultants
+- Experienced R&D project managers offering coaching
+- Agile coaches with R&D background
 
 ---
 
 ## Next Steps (Action Items)
 
 ### Before Submission (Now)
-- [x] Finalise CapDev structure (2 categories, professional services only)
-- [x] Confirm costs meet 5% threshold ($15,000 = 5.39% ✓)
+- [x] Finalise CapDev structure (4 categories, $36k total)
+- [x] Confirm costs meet 5% threshold ($36,000 = 5.02% ✓)
 - [x] Update cost template with CapDev costs
-- [x] Update cashflow-24-month with CapDev timing
-- [x] Update PROJECT_SUMMARY.md with new CapDev structure
 - [x] Update forge-application-narrative.md with CapDev section
+- [ ] Update cashflow-24-month with CapDev timing (if needed)
+- [ ] Update PROJECT_SUMMARY.md with new CapDev structure
 
 ### Month 1 (Project Start)
 - [ ] Complete free training courses (OPC, Collaborative Aotearoa)
 - [ ] Obtain certificates and file in evidence folder
 - [ ] Engage IP attorney (obtain quotes, select firm)
 - [ ] Engage regulatory adviser (obtain quotes, select provider)
-- [ ] Schedule all 6 adviser sessions (Months 4, 6, 9, 12, 15, 18)
+- [ ] Engage DPIA specialist (obtain quotes)
+- [ ] Engage clinical safety consultant (obtain quotes)
+- [ ] Engage ML infrastructure consultant (obtain quotes)
+- [ ] Engage LLM training adviser (obtain quotes)
+- [ ] Engage R&D PM coach (obtain quotes)
 
 ### Months 2-3 (Q1)
 - [ ] IP Audit & FTO completed
 - [ ] Regulatory gap analysis completed
-- [ ] NDA/contract templates drafted
-- [ ] Provisional patent drafting underway
+- [ ] Experiment tracking system setup begins
+- [ ] LLM training advisory sessions 1-2
+- [ ] R&D PM system setup begins
 
-### Month 4 (Q2)
+### Months 4-6 (Q2)
 - [ ] Provisional patent filed with IPONZ
-- [ ] First regulatory adviser session
+- [ ] DPIA completed
+- [ ] Clinical safety advisory session 1
+- [ ] Regulatory adviser sessions 1-2
+- [ ] Compliance documentation complete
+- [ ] Experiment tracking system operational
+- [ ] LLM training advisory sessions 3-6
+- [ ] R&D PM system fully configured
 - [ ] Q1 claim submitted with CapDev evidence
 
-### Months 6-18 (Ongoing)
-- [ ] Regulatory adviser sessions (every 3-4 months)
-- [ ] Monitor patent prosecution roadmap
-- [ ] Update compliance docs based on adviser recommendations
+### Months 7-18 (Ongoing)
+- [ ] Clinical safety advisory sessions 2-3 (Months 8, 12)
+- [ ] Regulatory adviser sessions 3-6 (Months 9, 12, 15, 18)
+- [ ] R&D PM coaching sessions 2-6 (Months 8, 10, 12, 14, 15)
 - [ ] Submit quarterly claims with CapDev evidence
 
 ---
 
 ## Paula's Feedback Summary (Key Points Addressed)
 
-✓ **Cannot include internal labour for CapDev** - Only third-party costs ($14,500) claimed  
-✓ **Can include third-party costs** - IP attorney, regulatory adviser, legal services  
-✓ **IP costs under IP CapDev** - $7,500 IP services in CD-A category  
-✓ **Conference eligibility** - Removed (focus on professional services only)  
-✓ **Must be ≥2 categories** - We have 2: IP and Regulatory ✓  
-✓ **Must be ≥5% of total grant** - $15,000 = 5.39% ✓ (exceeds $13,915 minimum)
+✓ **CapDev must be ≥5% of total eligible costs** - $36,000 = 5.02% ✓ (confirmed 29 Nov 2025)  
+✓ **Cannot include internal labour for CapDev** - Only third-party costs ($36,000) claimed  
+✓ **Can include third-party costs** - IP attorney, DPIA specialist, clinical safety, regulatory adviser, technical consultants, R&D PM coach  
+✓ **Must be ≥2 categories** - We have 4: IP, Regulatory, R&D Info Management, Project Management ✓  
+✓ **Must demonstrate capability building** - All activities build reusable capability for Years 3-5 HealthHub NZ and future R&D
 
 ---
 
-**Last Updated:** 28 November 2025  
+**Last Updated:** 29 November 2025  
+**Version:** 2.0  
 **Status:** Ready for submission - integrated with cost template and cashflow  
-**Next Update Required:** After supplier selection (update with confirmed providers/quotes)
+
+**Version 2.0 Changes:**
+- Increased CapDev from $15k to $36k per Paula confirmation (5% of total costs)
+- Added CDP-6: R&D Information Management ($8.5k)
+- Added CDP-5: Project Management ($5k)
+- Expanded CDP-3: Regulatory from $7.5k to $15k (added DPIA $4k, Clinical Safety $3.5k)
+- Maintained CDP-2: IP at $7.5k
+- Total 4 categories meeting all requirements
 
 ---
 

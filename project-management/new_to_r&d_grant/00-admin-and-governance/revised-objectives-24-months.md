@@ -318,77 +318,47 @@ Run structured pilots across several practices using both Medtech and Indici:
 
 ## Future Roadmap (Years 3–5)
 
-Beyond this 24-month R&D programme, the same NZ-specific architecture and NZ-LLM will be extended into new tools and ongoing R&D streams that build on the validated foundations from Objectives 1–4.
+**Vision:** By Year 5, any New Zealander can access personalised health guidance powered by NZ-sovereign AI, improving health outcomes nationwide.
 
-### HealthHub NZ: Patient-Facing Companion Product
+**Core R&D Project: NZ Health Intelligence Layer (Years 3-5)**
 
-The validated NZ-LLM, safety frameworks, and FHIR data structures will be extended into **HealthHub NZ**, a patient-facing web app for ordinary New Zealanders. HealthHub NZ will:
+The 24-month grant validates NZ-trained LLM for GP-facing tools. Years 3-5 extend this to patient-facing care and national-scale learning.
 
-- **Personal health record management:** Let patients upload lab results, doctor letters, and discharge summaries and have AI extract and organise their data automatically.
-- **Conversational health interface:** Provide a conversational interface for symptom diaries and health questions, using NZ guidelines (bpac, MoH) as sources.
-- **Pre-visit summaries:** Generate pre-visit summaries patients can share with their GP, tightly aligned with the Inbox Helper and Care Gap Finder features.
-- **Shared infrastructure:** Reuse the same FHIR data structures and NZ-LLM models validated during this grant, ensuring consistency between GP-facing and patient-facing tools.
+### 1. Patient-Facing AI (HealthHub NZ) - Years 3-4
 
-This creates a coherent ecosystem where GP tools and patient tools share the same NZ-specific clinical knowledge, improving continuity of care and health literacy.
+Patients access complete health records (diagnosis, medications, test results, hospital visits) with AI guidance on their phones.
 
-### Advanced NZ-LLM and Multimodal Models
+**AI R&D questions:**
+- How do you train NZ-LLM to communicate medical information safely across different health literacy levels (18-year-old vs 75-year-old vs te reo speaker)?
+- Can NZ-LLM validate patient-entered data (blood pressure readings) by learning clinical patterns?
+- What AI safety thresholds determine "book GP appointment" vs "go to ED now"?
 
-**Multimodal inbox and records:**
-- Extend from text-only to images and PDFs (e.g., scanned letters, ECG reports, specialist letters with images).
-- Research safe multimodal NZ-LLM architectures that can interpret clinical images alongside text while maintaining safety constraints.
+**Benefits:** Rural patients get after-hours guidance (fewer unnecessary ED visits), chronic disease patients monitor at home, better engagement improves outcomes.
 
-**Continual learning from NZ data:**
-- Design methods for ongoing fine-tuning using de-identified NZ practice data while preserving privacy.
-- Research approaches to avoid "drift" away from guidelines (a formal continual-learning R&D stream).
-- Investigate federated learning approaches for multi-practice model improvement without centralising patient data.
+### 2. AI Learning From Real-World Outcomes - Years 4-5
 
-**Te reo and cultural context:**
-- R&D on understanding and appropriately responding to notes and patient messages that include te reo Māori and culturally specific concepts.
-- Develop culturally appropriate response patterns aligned with equity goals and Māori health frameworks.
+Train NZ-LLM on aggregated patient outcomes to improve recommendations.
 
-### Equity, Safety and Evaluation Science
+**AI R&D questions:**
+- Can NZ-LLM learn from thousands of diabetes patients' outcomes to identify which interventions actually work?
+- Can AI identify emerging health trends (e.g., "South Auckland diabetes screening rates dropping 15%—intervention needed")?
+- How do you train AI on real-world data while preventing dangerous pattern learning?
 
-**Equity-focused algorithms:**
-- Develop and test algorithms that explicitly prioritise high-need groups (Māori, Pacific, high-deprivation).
-- Measure for unintended bias or harm (e.g., under- or over-alerting in specific populations).
-- Partner with Māori and Pacific health providers to co-design and validate equity features.
+**Benefits:** AI recommendations improve based on actual NZ patient outcomes, not just international guidelines. Evidence-based insights for government health planning.
 
-**Human–AI collaboration studies:**
-- Study how GPs, nurses, and patients actually interact with the AI over time (trust, override rates, alert fatigue).
-- Refine UI and thresholds as a formal R&D programme, not just UX tweaks.
-- Investigate long-term effects on clinical decision-making and workload.
+### 3. National Scale Integration - Years 4-5
 
-**Real-world outcome trials:**
-- Longer-term R&D on whether the tools reduce hospitalisations, improve control of HbA1c/BP, or improve access.
-- Partner with PHOs or Health Accelerator-type initiatives for outcome studies.
-- Measure equity outcomes: do Māori and Pacific patients benefit equally?
+Extend beyond Medtech/Indici to hospital systems and national records.
 
-### Broader Interoperability and Ecosystem Work
+**AI R&D questions:**
+- How does one NZ-trained LLM generalise across different hospital data formats while maintaining accuracy?
+- Can AI maintain safety as it scales from hundreds to hundreds of thousands of users?
 
-**National services integration:**
-- R&D on safely using national FHIR APIs (e.g., NHI, future national medication or lab services).
-- Enrich Inbox Helper and Care Gap Finder with national data sources.
-- Sync HealthHub NZ data back into the national ecosystem where appropriate.
+**Benefits:** Connected care—patient sees specialist, GP gets AI summary automatically. No repeated tests, no lost referrals.
 
-**"Plug-in" architecture for other PMSs and portals:**
-- Generalise the Medtech/Indici work into a standardised adapter layer.
-- R&D integration with additional PMSs (e.g., MyPractice, Profile) and hospital systems without rewriting core logic.
-- Create open standards for clinical AI integration that others can adopt.
+**Why Substantial R&D:** Patient-facing AI requires different safety training than GP-facing AI. Learning from outcomes without compromising safety is unsolved AI research. National-scale generalisation requires novel training approaches beyond the 24-month grant scope.
 
-### New GP Tools Built on the Platform
-
-**Triage and access tools:**
-- Use NZ-LLM and rules to build symptom-checker/online triage that feeds directly into Inbox Helper and Care Gap Finder.
-- Research safe autonomous triage thresholds: when can AI safely direct patients to self-care vs nurse vs GP vs ED?
-
-**Structured consultation support:**
-- Decision aids during consultations (e.g., live CVDRA/care-gap prompts in the consult screen).
-- R&D on avoiding interruption and preserving the "human element" of care.
-- Study optimal timing and presentation of AI suggestions during clinical encounters.
-
-**Prescription support (future):**
-- Building on the non-prescribing clinical overlays from Objective 2, research safe prescription checking and dosing support.
-- Investigate integration with Pharmac and NZGG guidelines for medication safety.
+**Supports government goal:** Makes 10-year digital health plan intelligent and accessible for all New Zealanders.
 
 ---
 
