@@ -19,14 +19,19 @@
 **Note on Developer Hours:** Budgeted at minimum 10 hrs/week. Actual hours claimed quarterly will vary 10-40 hrs/week based on R&D workload and project needs. Flexibility allows scaling up during intensive development phases.
 
 **Other Costs:**
-- **Capability Development:** $15,000 (third-party professional services only)
-  - IP professional services: $7,500
-  - Regulatory & compliance services: $7,500
-- **Materials & consumables (M&C):** $1,000/month × 24 months = $24,000
-- **Hardware:** Development essentials + testing devices (immediate expenses only) = $1,800
+- **Capability Development:** $36,000 (third-party professional services only)
+  - IP professional services (CDP-2): $7,500
+  - Regulatory & compliance services (CDP-3): $15,000
+  - R&D Information Management (CDP-6): $8,500
+  - Project Management (CDP-5): $5,000
+- **Materials & consumables (M&C):** Includes hardware = $25,750 total
+  - Development tools & software: $7,680
+  - Cloud GPU services: $7,200
+  - Other cloud infrastructure: $9,120
+  - Hardware (RAM, monitor, arms, iPhone): $1,750
 - **Overseas labour:** None. AU is used only for transient inference; not a labour cost
 
-**Note on Hardware Strategy:** GPU workstation ($11k) deferred. Using cloud GPU infrastructure (budgeted in M&C) provides better grant coverage (40% vs 26.7%) and operational flexibility. Workstation can be purchased with co-funding or post-grant if needed.
+**Note on CapDev:** Per Paula's confirmation (29 Nov 2025), CapDev must be ≥5% of total eligible costs (not 5% of grant). Updated structure includes 4 categories meeting this requirement.
 
 ---
 
@@ -40,9 +45,11 @@
 - **O3:** Clinical Intelligence + Hybrid Architecture (Months 12-20)
 - **O4:** Clinical Decision Support + Pilot (Months 18-24)
 
-**Capability Development (2 Categories):**
-- **CD-A:** Intellectual Property (IP Audit, Provisional Patent, NDAs/Contracts)
-- **CD-B:** Regulatory & Compliance (Gap Analysis, Ongoing Adviser, Compliance Roadmap)
+**Capability Development (4 Categories):**
+- **CDP-2:** Intellectual Property (IP Audit, Provisional Patent, NDAs/Contracts) - $7,500
+- **CDP-3:** Regulatory & Compliance (Gap Analysis, DPIA, Clinical Safety, Ongoing Adviser, Compliance Roadmap) - $15,000
+- **CDP-6:** R&D Information Management (Experiment Tracking, LLM Training Advisory) - $8,500
+- **CDP-5:** Project Management (PM System Setup, Ongoing Coaching) - $5,000
 
 ---
 
@@ -79,13 +86,13 @@
 
 ## Capability Development Tab
 
-**Updated Following Paula's Feedback (Nov 2025)**
+**Updated Following Paula Confirmation (29 Nov 2025)**
 
-**Key Requirement:** Only third-party costs eligible (no internal labour for CapDev)
+**Key Requirement:** CapDev must be ≥5% of total eligible costs (not grant amount). Only third-party costs eligible (no internal labour for CapDev).
 
-**Strategy:** Focus on high-value professional services (IP attorneys, regulatory advisers) that provide practical, actionable outputs.
+**Strategy:** Focus on high-value professional services that build capability for this project AND future R&D (Years 3-5 HealthHub NZ).
 
-### CD-A: Intellectual Property ($7,500)
+### CDP-2: Intellectual Property ($7,500)
 
 **1. IP Audit & Freedom-to-Operate (FTO) Analysis: $2,000**
 - Provider: NZ patent attorney
@@ -94,46 +101,86 @@
 
 **2. Provisional Patent Filing: $4,500**
 - Provider: NZ patent attorney
-- Timing: Months 3-4
+- Timing: Months 3-6
 - Deliverables: Provisional patent application (filed with IPONZ), priority date, prosecution roadmap
 
 **3. NDAs, Contracts & Trademark: $1,000**
 - Provider: Commercial lawyer / IP attorney
-- Timing: Months 2-4
+- Timing: Months 4-6
 - Deliverables: NDA templates, collaboration agreements, trademark search/filing
 
-**Subtotal CD-A: $7,500**
+**Subtotal CDP-2: $7,500**
 
 ---
 
-### CD-B: Regulatory & Compliance ($7,000)
+### CDP-3: Regulatory & Compliance ($15,000)
 
 **1. Comprehensive Regulatory Gap Analysis: $3,500**
 - Provider: NZ health data privacy consultant / regulatory adviser
 - Timing: Months 2-3
 - Deliverables: Gap analysis report, compliance checklist, risk register, remediation roadmap
-- Coverage: Privacy Act 2020, HIPC, IPP 12, clinical safety, PHO/Medtech compliance, AI ethics
 
-**2. Ongoing Regulatory Adviser Engagement (6 sessions): $3,000**
+**2. Comprehensive DPIA (Data Privacy Impact Assessment): $4,000**
+- Provider: Privacy/DPIA specialist with healthcare experience
+- Timing: Months 3-5
+- Deliverables: Complete DPIA document, risk assessment, mitigation strategies
+
+**3. Clinical Safety Advisory (3 sessions): $3,500**
+- Provider: Clinical safety consultant (MedTech/SaMD experience)
+- Timing: Months 4, 8, 12
+- Deliverables: Clinical risk assessment, safety system validation, assist-only constraints review
+
+**4. Ongoing Regulatory Adviser (6 sessions): $3,000**
 - Provider: Same regulatory adviser (continuity)
 - Timing: Months 4, 6, 9, 12, 15, 18 (~$500/session)
 - Deliverables: Session notes, recommendations, updated compliance checklists, risk register updates
-- Focus: MVP review, sandbox validation, pilot compliance, scale-up preparation
 
-**3. Compliance Roadmap & Documentation: $500**
-- Provider: Regulatory adviser (during ongoing sessions)
-- Timing: Months 3-6
-- Deliverables: Governance framework, compliance templates, PHO data handling protocols, incident response runbook
+**5. Compliance Roadmap & Documentation: $1,000**
+- Provider: Legal/compliance adviser
+- Timing: Months 4-6
+- Deliverables: Governance framework, DPA templates, incident response runbook
 
-**Subtotal CD-B: $7,000**
+**Subtotal CDP-3: $15,000**
+
+---
+
+### CDP-6: R&D Information Management ($8,500)
+
+**1. Experiment Tracking & Model Registry System Setup: $3,500**
+- Provider: Technical consultant specialising in ML research infrastructure
+- Timing: Months 2-4
+- Deliverables: Configured experiment tracking system, model versioning, dataset lineage, research dashboard, training for founder + Ting
+
+**2. LLM Training & Fine-Tuning Technical Advisory: $5,000**
+- Provider: AI/ML technical consultant with LLM fine-tuning expertise
+- Timing: Months 2-6 (4-6 advisory sessions)
+- Deliverables: Training pipeline setup, evaluation framework, knowledge transfer on fine-tuning approaches, documentation
+
+**Subtotal CDP-6: $8,500**
+
+---
+
+### CDP-5: Project Management ($5,000)
+
+**Phase 1 - R&D PM System Setup: $2,000**
+- Provider: R&D project management consultant/coach
+- Timing: Months 3-4
+- Deliverables: Agile R&D system setup (Kanban boards, roadmap framework), risk management templates, training workshop
+
+**Phase 2 - Ongoing PM Coaching (6 sessions): $3,000**
+- Provider: Same R&D PM consultant
+- Timing: Months 5, 8, 10, 12, 14, 15
+- Deliverables: Monthly coaching sessions, decision-making support, Ting's R&D management capability development
+
+**Subtotal CDP-5: $5,000**
 
 ---
 
 ### Free Training Resources (Not Counted in CapDev Costs)
 
 **Privacy & Compliance:**
-- Office of the Privacy Commissioner: Privacy Act 2020 e-learning (~30 min)
-- OPC: Health 101 HIPC e-learning (~30 min)
+- Office of the Privacy Commissioner: Privacy Act 2020 e-learning
+- OPC: Health 101 HIPC e-learning
 - Te Whatu Ora: Information Governance Standards
 - Collaborative Aotearoa: AI in Primary Care modules
 
@@ -144,65 +191,83 @@
 
 ---
 
-**TOTAL CAPABILITY DEVELOPMENT: $14,500**
+**TOTAL CAPABILITY DEVELOPMENT: $36,000**
 
-**CapDev Requirement Check:**
-- Required: ≥5% of grant
-- Grant amount: $286,440
-- 5% minimum: $14,322
-- Actual CapDev: $14,500 ✓
-- Percentage: 5.06% ✓ **MEETS REQUIREMENT**
+**CapDev Requirement Check (Per Paula 29 Nov 2025):**
+- Required: ≥5% of total eligible costs
+- Total eligible costs: $716,926
+- 5% minimum: $35,846
+- Actual CapDev: $36,000 ✓
+- Percentage: 5.02% ✓ **MEETS REQUIREMENT**
 
 ---
 
 ## Materials & Consumables Tab
 
-*Recurring; link proportionally to O1–O4*
+**Total M&C (includes hardware): $25,750**
 
-**Monthly Costs Breakdown:**
+**Breakdown:**
+- Development Tools & Software: $7,680
+- Cloud GPU Services (AWS g5.xlarge Sydney): $7,200
+- Other Cloud Infrastructure: $9,120
+- Hardware (RAM, monitor, arms, iPhone): $1,750
 
-| Item | Cost/Month (NZD) | Annual (NZD) | Notes |
-|------|------------------|--------------|-------|
-| **Development Tools & Software** | $320 | $3,840 | Development environment and tools |
-| **Cloud Infrastructure (AU/NZ)** | | | |
-| GPU inference (g5.xlarge Sydney) | $300 | $3,600 | Average 150 hrs/month, scales 50-400 hrs |
-| Object storage (S3/Azure Blob) | $15 | $180 | Model weights, datasets, artifacts (150-350 GB) |
-| Database (RDS Postgres medium) | $180 | $2,160 | Application + MLflow backend + storage |
-| Key management (KMS, 4 keys) | $10 | $120 | NZ-held encryption keys (IPP 12 compliance) |
-| Monitoring/logging (CloudWatch) | $50 | $600 | 40-75 GB/month, 90-day retention, SIEM audit logs |
-| MLflow tracking server VM | $30 | $360 | Small VM for experiment tracking |
-| Data transfer NZ↔AU | $10 | $120 | Inference API traffic, minimal volume |
-| Dev/staging environments | $100 | $1,200 | Staging GPU (part-time), test DB, CI/CD pipeline |
-| **Other Subscriptions** | | | |
-| Essential software/tools | $-5 | $-60 | Misc subscriptions (version control, PM tools, etc.) |
-| **Total M&C** | **$1,000/month** | **$12,000/year** | **$24,000 over 24 months** |
+### Development Tools & Software ($7,680)
+- AI-assisted development tools, code editors, version control, testing frameworks
+- $320/month × 24 months
+- Essential for efficient R&D development and code quality
 
-**Phase-Based Usage:**
-- **Year 1 (O1-O2):** Lower GPU usage (~$830/month average), foundation and early development
-- **Year 2 (O3-O4):** Higher GPU usage (~$1,140/month average), pilot testing and scale-up
+### Cloud GPU Services ($7,200)
+- AWS g5.xlarge GPU instances (Sydney region)
+- For NZ-LLM training, fine-tuning, and inference testing
+- $300/month × 24 months
+- Required for architecture validation and pilot workloads
 
-**Flexibility:** GPU and staging costs will scale based on actual R&D needs. Budget reflects conservative average across 24 months.
+### Other Cloud Infrastructure ($9,120)
+- NZ data storage (PHI at rest, NZ-held encryption keys)
+- AU transient inference infrastructure
+- Networking, data transfer
+- SIEM security monitoring
+- Backup systems
+- $380/month × 24 months
+- Privacy Act 2020 and IPP 12 compliant infrastructure
+
+### Hardware ($1,750)
+**Month 1:**
+- RAM Upgrade 128GB: $400
+- Monitor: $400
+- Dual Monitor Arms: $100
+- NVMe SSD 2TB: $150
+
+**Month 4:**
+- iPhone SE (testing device): $700
+
+**Total Hardware: $1,750**
+
+**Note:** GPU workstation ($11k) deferred. Using cloud GPU infrastructure provides better grant coverage (40% vs 26.7% depreciation) and operational flexibility.
 
 ---
 
 ## Hardware & Depreciation Tab
 
+**Hardware included in M&C above: $1,750**
+
 **Strategy:** Defer GPU workstation purchase. Use cloud GPU infrastructure (budgeted in M&C at $300/month) which provides better grant coverage (40% vs 26.7% effective rate for depreciation) and operational flexibility.
 
-**Immediate Expenses (< $1,000 threshold, eligible immediately):**
+**Immediate Expenses:**
 
 **Month 1 Development Setup:**
-- RAM Upgrade (64GB → 128GB): $400
-- Monitor (27" or 32" for development): $300
-- Dual Monitor Arms (ergonomic setup): $150
-- NVMe SSD 2TB (additional storage): $150
-- **Subtotal Month 1: $1,000**
+- RAM Upgrade 128GB: $400
+- Monitor: $400
+- Dual Monitor Arms: $100
+- NVMe SSD 2TB: $150
+- **Subtotal Month 1: $1,050**
 
 **Month 4 Testing Device:**
-- iPhone for mobile app testing: $800 (refurbished or new, depending on model)
-- **Subtotal Month 4: $800**
+- iPhone SE (testing device): $700
+- **Subtotal Month 4: $700**
 
-**TOTAL HARDWARE (Immediate Expenses Only): $1,800**
+**TOTAL HARDWARE: $1,750** (included in M&C total above)
 
 **No Depreciation Items:** All hardware purchases under $1,000 threshold, expensed immediately.
 
@@ -220,29 +285,28 @@
 - Founder R&D Labour (3,120 hrs): $299,520
 - Ting R&D Labour (4,152 hrs): $290,640
 - Developer R&D Labour (903 hrs minimum): $65,016
-- Capability Development (third-party services): $15,000
-- Materials & Consumables (24 months): $24,000
-- Hardware (immediate expenses): $1,800
+- Capability Development (third-party services): $36,000
+- Materials & Consumables (includes hardware): $25,750
 
-**TOTAL ELIGIBLE COST (at minimum developer hours): $695,976**
+**TOTAL ELIGIBLE COST (at minimum developer hours): $716,926**
 
-**Grant at 40%: $278,390**
-**Co-funding at 60%: $417,586**
+**Grant at 40%: $286,770**
+**Co-funding at 60%: $430,156**
 
 ---
 
 ### Capability Development Requirement Check
 
-**Required:** ≥5% of grant = $13,920  
-**Actual:** $15,000  
-**Percentage:** 5.39% ✓ **MEETS REQUIREMENT**
+**Required:** ≥5% of total eligible costs = $35,846  
+**Actual:** $36,000  
+**Percentage:** 5.02% ✓ **MEETS REQUIREMENT**
 
-**Status:** ✓ Compliant with Paula's feedback
+**Status:** ✓ Compliant with Paula's confirmation (29 Nov 2025)
 - Only third-party professional services counted ✓
 - No internal labour included in CapDev ✓
-- Two capability categories (IP + Regulatory) ✓
-- Practical outputs (patents, compliance frameworks, expert reviews) ✓
-- Exceeds 5% minimum by $1,080 ✓
+- Four capability categories (IP + Regulatory + R&D Info Mgmt + Project Mgmt) ✓
+- Practical outputs building capability for this project AND future R&D ✓
+- Meets 5% of total costs requirement (not 5% of grant) ✓
 
 ---
 
@@ -441,34 +505,36 @@
 
 ---
 
-**Last Updated:** 26 November 2025  
-**Status:** FINAL - Team structure finalized (removed Developer 2)
+**Last Updated:** 29 November 2025  
+**Status:** FINAL - CapDev updated to $36k per Paula confirmation
 **Changes:** 
-- M&C increased from $200/month to $1,000/month (+$19,200 total)
-- CapDev increased from $14,500 to $15,000 (+$500 to Regulatory services)
-- Hardware strategy: Deferred $11k workstation, using cloud GPU ($1,800 immediate hardware only)
-- **Team structure: Founder + Ting + Developer 1 only** (removed Developer 2)
-- **Total eligible costs: $695,976**
-- **Grant at 40%: $278,390**
-- **Co-funding at 60%: $417,586**
-- **CapDev: 5.39% of grant ✓** (exceeds 5% requirement by $1,080)
+- **CapDev increased from $15k to $36k** (added 2 new categories: R&D Info Mgmt $8.5k, Project Mgmt $5k; expanded Regulatory from $7.5k to $15k)
+- M&C consolidated with hardware: $25,750 total (was $24k M&C + $1.8k hardware)
+- **Total eligible costs: $716,926** (was $695,976)
+- **Grant at 40%: $286,770** (was $278,390)
+- **Co-funding at 60%: $430,156** (was $417,586)
+- **CapDev: 5.02% of total eligible costs ✓** (meets requirement per Paula's confirmation 29 Nov 2025)
 
-**Team Structure Rationale:**
-- Leaner team (3 people vs 4) reduces co-funding requirement
-- Founder + Ting provide strong full-time R&D capacity
-- Single developer (10-40 hrs/week flexible) sufficient for implementation support
-- Can hire additional developers with co-funding if workload increases
+**CapDev Rationale:**
+- 4 categories (IP, Regulatory, R&D Info Mgmt, Project Mgmt) build capability for this project AND future R&D (Years 3-5 HealthHub NZ)
+- Paula confirmed: CapDev must be ≥5% of total eligible costs (not 5% of grant amount)
+- Focus on high-value professional services providing practical outputs
+- LLM training advisory and experiment tracking systems directly support core R&D activities
 
-**Hardware Strategy Rationale:**
+**Team Structure:**
+- Founder + Ting (full-time from Month 1)
+- Developer (10-40 hrs/week flexible from Month 4)
+- Total minimum: 8,175 hours over 24 months
+
+**Hardware Strategy:**
 - Cloud GPU provides 40% grant coverage vs 26.7% for workstation depreciation
 - Greater flexibility to scale compute up/down based on R&D needs
-- Lower upfront capital requirement ($1,800 vs $12,650)
 - Workstation can be purchased with co-funding or post-grant if needed
 
 **Next Updates Required:**
-1. Update cashflow-24-month.md with new team structure and revised GP revenue
-2. Update PROJECT_SUMMARY.md with new budget and team structure
-3. After supplier selection, add confirmed IP attorney and regulatory adviser names/quotes
+1. Update cashflow-24-month.md with new CapDev timing and amounts
+2. Quarterly claims schedule (update CapDev amounts per quarter)
+3. After supplier selection, add confirmed consultant names/quotes
 
 ---
 
