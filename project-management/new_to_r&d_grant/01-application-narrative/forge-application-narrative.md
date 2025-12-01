@@ -427,7 +427,7 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 
 ## Capability Development Activities
 
-### CD-A: Intellectual Property ($7,500, Months 2-6)
+### CDP-2: Intellectual Property ($7,500, Months 2-6)
 
 **Third-party professional services only (no internal labour):**
 
@@ -446,39 +446,93 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 - Timing: Months 4-6
 - Deliverables: Mutual NDA templates, collaboration agreements, trademark search/filing
 
-**Total CD-A:** $7,500
+**Total CDP-2:** $7,500
 
 ---
 
-### CD-B: Regulatory & Compliance ($7,500, Months 2-18)
+### CDP-3: Regulatory & Compliance ($15,000, Months 2-18)
 
 **Third-party professional services only (no internal labour):**
 
 **1. Comprehensive Regulatory Gap Analysis: $3,500**
-- Provider: Privacy/regulatory consultant
+- Provider: NZ health data privacy consultant/regulatory adviser
 - Timing: Months 2-3
 - Deliverables: Privacy Act 2020, HIPC, IPP 12, clinical safety, AI ethics compliance audit
 
-**2. Ongoing Regulatory Adviser (6 sessions): $3,000**
+**2. Comprehensive DPIA (Data Privacy Impact Assessment): $4,000**
+- Provider: Privacy/DPIA specialist with healthcare experience
+- Timing: Months 3-5
+- Deliverables: Complete DPIA for cross-border data handling (AU inference, NZ keys), risk assessment, mitigation strategies
+
+**3. Clinical Safety Advisory (Medical Device Software Context): $3,500**
+- Provider: Clinical safety consultant (MedTech/SaMD experience)
+- Timing: Months 4, 8, 12 (3 sessions)
+- Deliverables: Clinical risk assessment, safety system validation, assist-only constraints review
+
+**4. Ongoing Regulatory Adviser (6 sessions): $3,000**
 - Provider: Privacy/regulatory expert
 - Timing: Months 4, 6, 9, 12, 15, 18 (~$500 per session)
 - Deliverables: Expert guidance through MVP, sandbox, pilot, scale-up phases; session reports
 
-**3. Compliance Roadmap & Documentation: $1,000**
+**5. Compliance Roadmap & Documentation: $1,000**
 - Provider: Legal/compliance adviser
 - Timing: Months 4-6
-- Deliverables: Governance framework, DPA templates, data handling protocols, incident response; includes DPA negotiation support with Medtech/Indici/sub-processors
+- Deliverables: Governance framework, DPA templates, data handling protocols, incident response
 
-**Total CD-B:** $7,500
+**Total CDP-3:** $15,000
 
 ---
 
-**Total Capability Development:** $15,000 (third-party professional services only)
+### CDP-6: R&D Information Management ($8,500, Months 2-6)
+
+**Third-party professional services only (no internal labour):**
+
+**1. R&D Experiment Tracking & Model Registry System Setup: $3,500**
+- Provider: Technical consultant specialising in ML research infrastructure
+- Timing: Months 2-4
+- Deliverables: Centralised experiment tracking, model versioning, dataset lineage, research dashboard, training for founder + Ting
+
+**2. LLM Training & Fine-Tuning Technical Advisory: $5,000**
+- Provider: AI/ML technical consultant with LLM fine-tuning expertise
+- Timing: Months 2-6 (4-6 advisory sessions)
+- Deliverables: Training pipeline setup, evaluation framework, knowledge transfer on fine-tuning approaches, documentation of workflows
+
+**Total CDP-6:** $8,500
+
+---
+
+### CDP-5: Project Management ($5,000, Months 3-15)
+
+**Third-party professional services only (no internal labour):**
+
+**R&D Project Management Coaching & System Setup: $5,000**
+- Provider: R&D project management consultant/coach
+- Timing: Months 3-15
+
+**Phase 1 - Setup (Months 3-4): ~$2,000**
+- Agile R&D system setup (Kanban boards, sprint templates)
+- Roadmap framework for 24-month project
+- Risk management templates
+- Documentation workflows
+- Initial training workshop with founder + Ting
+
+**Phase 2 - Ongoing Coaching (Months 5-15): ~$3,000**
+- 6 monthly coaching sessions ($500 each)
+- Review project progress against milestones
+- Decision-making support
+- Train Ting on R&D operations management
+- Adjust systems as project evolves
+
+**Total CDP-5:** $5,000
+
+---
+
+**Total Capability Development:** $36,000 (third-party professional services only)
 
 **CapDev Requirement Check:**
-- Required: ≥5% of grant = $13,915 (for $278,305 grant)
-- Actual: $15,000
-- **Percentage: 5.39% ✓** (exceeds requirement by $1,085)
+- Required: ≥5% of total eligible costs = $35,846 (for $716,926 total)
+- Actual: $36,000
+- **Percentage: 5.02% ✓** (meets requirement)
 
 ---
 
@@ -536,15 +590,12 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 | **R&D Labour - Founder** (3,120 hrs @ $96/hr) | $299,520 |
 | **R&D Labour - Ting** (4,152 hrs @ $70/hr) | $290,640 |
 | **R&D Labour - Developer** (903 hrs @ $72/hr, minimum) | $65,016 |
-| **Capability Development** (third-party services only) | $15,000 |
-| **Materials & Consumables** ($1,000/month × 24) | $24,000 |
-| **Hardware** (immediate expenses only) | $1,800 |
-| **Total R&D Eligible Costs** | **$695,976** |
+| **Capability Development** (third-party services only) | $36,000 |
+| **Materials & Consumables** (includes hardware) | $25,750 |
+| **Total R&D Eligible Costs** | **$716,926** |
 | | |
-| **Grant (40%)** | **$278,390** |
-| **Co-Funding (60%)** | **$417,586** |
-
-**Note:** Grant amount in quarterly schedule sums to $278,305 due to rounding; difference of $85 is negligible.
+| **Grant (40%)** | **$286,770** |
+| **Co-Funding (60%)** | **$430,156** |
 
 ---
 
@@ -560,14 +611,12 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 - GP expenses: $783/month  
 - Net available: $14,869/month
 
-**Opening cash:** $100,000 NZD (business account)
+**Opening cash:** $100,000 NZD (business account, can be increased if needed)
 
-**Cashflow position: ✓ POSITIVE THROUGHOUT**
-- Opening: $100,000
-- Never goes negative
-- Minimum cash: $4,246 (Month 24, before final grant)
-- Closing: $39,185 after all costs and grants
-- **AU reserve NOT required** ✓
+**Co-funding requirement:** $430,156
+**Total available:** $456,869 (opening cash + net GP income) ✓
+
+**Cashflow position:** Positive throughout project (detailed 24-month forecast available)
 
 **See:** Detailed 24-month cashflow forecast provided separately.
 
@@ -649,6 +698,12 @@ Extend beyond Medtech/Indici to hospital systems and national records.
 
 ---
 
-**Document Version:** 3.0  
+**Document Version:** 3.1  
 **Last Updated:** 29 November 2025  
 **Status:** Ready for Forge portal submission
+
+**Version 3.1 Changes:**
+- Updated CapDev to $36,000 (5.02% of total costs) per Paula's confirmation
+- Added 4 CapDev categories: IP ($7.5k), Regulatory ($15k), R&D Info Management ($8.5k), Project Management ($5k)
+- Updated total eligible costs to $716,926
+- Updated grant to $286,770 and co-funding to $430,156

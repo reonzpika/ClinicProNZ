@@ -259,11 +259,11 @@ The project is organized into 6 main directories:
 
 ---
 
-## Capability Development (2 Categories - Third-Party Services Only)
+## Capability Development (4 Categories - Third-Party Services Only)
 
-**Following Paula's Feedback:** Only third-party costs eligible for CapDev (no internal labour).
+**Confirmed by Paula (29 Nov 2025):** CapDev must be ≥5% of total eligible costs. Only third-party costs eligible (no internal labour).
 
-### CD-A: Intellectual Property ($7,500)
+### CDP-2: Intellectual Property ($7,500)
 **Months 2-6**
 
 - **IP Audit & Freedom-to-Operate Analysis:** $2,000
@@ -280,36 +280,73 @@ The project is organized into 6 main directories:
 
 ---
 
-### CD-B: Regulatory & Compliance ($7,500)
+### CDP-3: Regulatory & Compliance ($15,000)
 **Months 2-18**
 
 - **Comprehensive Regulatory Gap Analysis:** $3,500
   - Privacy Act 2020, HIPC, IPP 12, clinical safety, AI ethics compliance audit
-  - Timing: Months 2-3
+  
+- **Comprehensive DPIA (Data Privacy Impact Assessment):** $4,000
+  - Cross-border data handling risk assessment (AU inference, NZ keys)
+  
+- **Clinical Safety Advisory (3 sessions):** $3,500
+  - Medical device software context, safety system validation
+  - Months 4, 8, 12
   
 - **Ongoing Regulatory Adviser (6 sessions):** $3,000
   - Expert guidance through MVP, sandbox, pilot, scale-up phases
-  - Sessions at Months 4, 6, 9, 12, 15, 18 (~$500 each)
+  - Months 4, 6, 9, 12, 15, 18
   
 - **Compliance Roadmap & Documentation:** $1,000
-  - Governance framework, DPA templates, data handling protocols, incident response
-  - Includes DPA negotiation support with Medtech/sub-processors
+  - Governance framework, DPA templates, incident response
 
-**Deliverables:** Gap analysis report, compliance checklist, 6 adviser session reports, governance framework, DPA templates
+**Deliverables:** Gap analysis, DPIA, 3 clinical safety reports, 6 adviser session reports, governance framework, compliance templates
+
+---
+
+### CDP-6: R&D Information Management ($8,500)
+**Months 2-6**
+
+- **Experiment Tracking & Model Registry System Setup:** $3,500
+  - Centralised experiment tracking, model versioning, dataset lineage
+  - Research dashboard, training for founder + Ting
+  
+- **LLM Training & Fine-Tuning Technical Advisory:** $5,000
+  - Training pipeline setup, evaluation framework (4-6 advisory sessions)
+  - Knowledge transfer on NZ-LLM fine-tuning approaches
+
+**Deliverables:** Configured experiment tracking system, model registry, LLM training pipeline, evaluation framework, advisory session reports
+
+---
+
+### CDP-5: Project Management ($5,000)
+**Months 3-15**
+
+- **Phase 1 - R&D PM System Setup:** $2,000
+  - Agile R&D system (Kanban boards, roadmap framework)
+  - Risk management templates, documentation workflows
+  - Training workshop (founder + Ting)
+  
+- **Phase 2 - Ongoing PM Coaching (6 sessions):** $3,000
+  - Monthly coaching on R&D operations
+  - Decision-making support, process improvements
+  - Ting's R&D management capability development
+
+**Deliverables:** Configured PM system, 24-month roadmap, risk register, stage-gate checklist, 6 coaching session reports
 
 ---
 
 ### Free Training (Supplementary, Not Counted in CapDev Budget)
-- **Privacy:** OPC Privacy Act 2020, OPC Health 101 HIPC, Ko Awatea Privacy
+- **Privacy:** OPC Privacy Act 2020, OPC Health 101 HIPC
 - **AI in Healthcare:** Collaborative Aotearoa AI in Primary Care modules
 - **IP Knowledge:** IPONZ patent basics and resources
 
-**Total CapDev:** $15,000 (third-party professional services only)
+**Total CapDev:** $36,000 (third-party professional services only)
 
 **CapDev Requirement Check:**
-- Required: ≥5% of grant = $13,915
-- Actual: $15,000
-- **Percentage: 5.39% ✓** (exceeds requirement by $1,085)
+- Required: ≥5% of total eligible costs = $35,846 (for $716,926 total)
+- Actual: $36,000
+- **Percentage: 5.02% ✓** (meets requirement)
 
 ---
 
@@ -320,13 +357,12 @@ The project is organized into 6 main directories:
 | **R&D Labour - Founder** (3,120 hours @ $96/hr) | $299,520 |
 | **R&D Labour - Ting** (4,152 hours @ $70/hr) | $290,640 |
 | **R&D Labour - Developer** (903 hours @ $72/hr, minimum) | $65,016 |
-| **Capability Development** (third-party services only) | $15,000 |
-| **Materials & Consumables** ($1,000/month × 24) | $24,000 |
-| **Hardware** (immediate expenses only) | $1,800 |
-| **Total R&D Eligible Costs** | **$695,976** |
+| **Capability Development** (third-party services only) | $36,000 |
+| **Materials & Consumables** (includes hardware) | $25,750 |
+| **Total R&D Eligible Costs** | **$716,926** |
 | | |
-| **Grant (40%)** | **$278,305** |
-| **Co-Funding (60%)** | **$417,671** |
+| **Grant (40%)** | **$286,770** |
+| **Co-Funding (60%)** | **$430,156** |
 
 ---
 
@@ -344,36 +380,34 @@ The project is organized into 6 main directories:
 
 ### Cashflow & Funding Structure
 
-**Opening Cash:** $100,000 NZD (business account)
+**Opening Cash:** $100,000 NZD (business account, can be increased if needed)
 
-**Reserve Funds Available:** $100,000 AUD (Ting's shareholder funds, not needed but available as safety buffer)
+**Reserve Funds Available:** $100,000 AUD (Ting's shareholder funds, available as safety buffer if needed)
+
+**Co-funding Requirement:** $430,156
+**Total Available:** $456,869 (opening cash + net GP income) ✓
 
 **Monthly GP Income:** 
 - Revenue: $15,652/month average (excl. GST)
 - Business expenses: $783/month (5%)
 - Net available: $14,869/month
 
-**Cashflow Position: ✓ POSITIVE THROUGHOUT**
-- Opening: $100,000
-- Never goes negative
-- Minimum cash: $4,246 (Month 24, before final grant)
-- Closing: $39,185 after all costs and grants
-- **AU reserve NOT required** ✓
+**Cashflow Position:** Positive throughout project (detailed 24-month forecast available)
 
 **Total Income Over 24 Months:**
 - Opening cash: $100,000
 - GP income (net): $356,869
-- R&D grants: $278,305
-- **Total: $735,174**
+- R&D grants: $286,770
+- **Total: $743,639**
 
-**Total Costs:** $695,976
+**Total Costs:** $716,926
 
-**Final Surplus:** $39,198 ✓
+**Final Surplus:** $26,713 ✓
 
 **Grant Schedule (8 quarters over 24 months):**
-- Year 1 (Q1-Q4): ~$139k
-- Year 2 (Q5-Q8): ~$139k
-- **Total: $278,305**
+- Year 1 (Q1-Q4): ~$143k
+- Year 2 (Q5-Q8): ~$143k
+- **Total: $286,770**
 
 Grants paid 1 month after quarterly claim submission.
 
@@ -692,6 +726,13 @@ Grants paid 1 month after quarterly claim submission.
 
 ---
 
-**Last Updated:** 2025-11-28  
-**Version:** 3.0  
-**Status:** Validation - Major objectives revision completed; focused on Inbox Helper + Care Gap Finder with dual PMS integration (Medtech + Indici) and Years 3-5 HealthHub NZ roadmap; submission target mid-December 2025
+**Last Updated:** 2025-11-29  
+**Version:** 3.1  
+**Status:** Validation - CapDev updated to $36k (5.02% of total costs) per Paula confirmation; ready for submission mid-December 2025
+
+**Version 3.1 Changes (29 Nov 2025):**
+- Updated CapDev from $15k to $36k (5.02% of total eligible costs)
+- Added 4 CapDev categories: IP ($7.5k), Regulatory ($15k), R&D Info Management ($8.5k), Project Management ($5k)
+- Updated total eligible costs to $716,926
+- Updated grant to $286,770 and co-funding to $430,156
+- Confirmed 5% rule applies to total costs, not grant amount (per Paula)
