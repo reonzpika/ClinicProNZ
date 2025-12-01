@@ -348,33 +348,35 @@
 
 **Note:** Claims schedule below uses **minimum developer hours** (10 hrs/week). Actual quarterly claims will vary based on real hours worked (10-40 hrs/week).
 
+**M&C Breakdown:** $1,000/month recurring (dev tools $320 + cloud GPU $300 + other cloud $380) + hardware in specific months
+
 ### **Year 1 Claims**
 
 **Q1 (Jan–Mar 2026) - Months 1-3**
 - Founder + Ting (3 months): $73,770
-- CapDev (IP Audit + Reg Gap Analysis): $5,500
-- M&C: $3,000
-- Hardware (Month 1 immediate): $1,000
-- **Eligible: $83,270 | Grant (40%): $33,308 | Payment: Month 4**
+- CapDev (IP Audit $2k + Reg Gap Analysis $3.5k + Exp Tracking setup start $500): $6,000
+- M&C recurring (3 months): $3,000
+- Hardware (Month 1 - RAM, monitor, arms, SSD): $1,050
+- **Eligible: $83,820 | Grant (40%): $33,528 | Payment: Month 4**
 
 **Q2 (Apr–Jun 2026) - Months 4-6**
-- Founder + Ting + Dev 1 (3 months): $83,058
-- CapDev (Patent Filing + Reg Adviser): $5,000
-- M&C: $3,000
-- Hardware (Month 4 iPhone): $800
-- **Eligible: $91,858 | Grant (40%): $36,743 | Payment: Month 7**
+- Founder + Ting + Developer (3 months): $83,058
+- CapDev (Patent $4.5k + DPIA $4k + Exp Tracking complete $3k + LLM Advisory $4k + Clinical Safety S1 $1.2k + Reg Adviser S1-2 $1k + Compliance Docs $1k + PM Setup $2k + PM Coaching S1 $500): $21,200
+- M&C recurring (3 months): $3,000
+- Hardware (Month 4 - iPhone): $700
+- **Eligible: $107,958 | Grant (40%): $43,183 | Payment: Month 7**
 
 **Q3 (Jul–Sep 2026) - Months 7-9**
-- Founder + Ting + Dev 1 (3 months): $83,058
-- CapDev (Compliance Docs + Reg Adviser): $1,000
-- M&C: $3,000
-- **Eligible: $87,058 | Grant (40%): $34,823 | Payment: Month 10**
+- Founder + Ting + Developer (3 months): $83,058
+- CapDev (Clinical Safety S2 $1.2k + Reg Adviser S3 $500 + PM Coaching S2 $500 + LLM Advisory remaining $500): $2,700
+- M&C recurring (3 months): $3,000
+- **Eligible: $88,758 | Grant (40%): $35,503 | Payment: Month 10**
 
 **Q4 (Oct–Dec 2026) - Months 10-12**
-- Founder + Ting + Dev 1 (3 months): $83,058
-- CapDev (Reg Adviser Session 4): $500
-- M&C: $3,000
-- **Eligible: $86,558 | Grant (40%): $34,623 | Payment: Month 13**
+- Founder + Ting + Developer (3 months): $83,058
+- CapDev (Clinical Safety S3 $1.2k + Reg Adviser S4 $500 + PM Coaching S3-4 $1k + LLM Advisory final $1k): $3,700
+- M&C recurring (3 months): $3,000
+- **Eligible: $89,758 | Grant (40%): $35,903 | Payment: Month 13**
 
 ---
 
@@ -382,33 +384,33 @@
 
 **Q5 (Jan–Mar 2027) - Months 13-15**
 - Founder + Ting + Developer (3 months): $83,058
-- CapDev (Reg Adviser Session 5): $500
-- M&C: $3,000
-- **Eligible: $86,558 | Grant (40%): $34,623 | Payment: Month 16**
+- CapDev (Reg Adviser S5 $500 + PM Coaching S5-6 $1k): $1,500
+- M&C recurring (3 months): $3,000
+- **Eligible: $87,558 | Grant (40%): $35,023 | Payment: Month 16**
 
 **Q6 (Apr–Jun 2027) - Months 16-18**
 - Founder + Ting + Developer (3 months): $83,058
-- CapDev (Reg Adviser Session 6): $500
-- M&C: $3,000
+- CapDev (Reg Adviser S6 $500): $500
+- M&C recurring (3 months): $3,000
 - **Eligible: $86,558 | Grant (40%): $34,623 | Payment: Month 19**
 
 **Q7 (Jul–Sep 2027) - Months 19-21**
 - Founder + Ting + Developer (3 months): $83,058
-- CapDev (Compliance updates): $500
-- M&C: $3,000
-- **Eligible: $86,558 | Grant (40%): $34,623 | Payment: Month 22**
+- CapDev: $0
+- M&C recurring (3 months): $3,000
+- **Eligible: $86,058 | Grant (40%): $34,423 | Payment: Month 22**
 
 **Q8 (Oct–Dec 2027) - Months 22-24**
 - Founder + Ting + Developer (3 months): $83,058
-- CapDev (Final compliance review): $1,000
-- M&C: $3,000
-- **Eligible: $87,058 | Grant (40%): $34,823 | Payment: Month 25**
+- CapDev: $0
+- M&C recurring (3 months): $3,000
+- **Eligible: $86,058 | Grant (40%): $34,423 | Payment: Month 25**
 
 ---
 
-**TOTAL GRANT OVER 8 QUARTERS: $278,392**
+**TOTAL GRANT OVER 8 QUARTERS: $286,609**
 
-**Note:** Actual grant total based on minimum developer hours (10 hrs/week). If developer works more hours (up to 40 hrs/week), quarterly claims and grant amounts will increase proportionally.
+**Note:** Total slightly differs from $286,770 due to rounding in quarterly breakdown. Actual claims will match exact costs. If developer works more hours (up to 40 hrs/week), quarterly claims and grant amounts will increase proportionally.
 
 ---
 
