@@ -2,8 +2,8 @@
 project_name: ClinicPro AI - Inbox Helper + Care Gap Finder (NZ-Sovereign Clinical LLM)
 project_stage: Validation
 owner: NexWave Solutions Ltd
-last_updated: "2025-12-01"
-version: "3.2"
+last_updated: "2025-12-02"
+version: "3.5"
 tags:
   - r&d-grant
   - healthcare-ai
@@ -443,25 +443,27 @@ The project is organized into 7 main directories:
 | Source | Amount | Notes |
 |--------|--------|-------|
 | Business opening cash | $130,000 | Available Day 1 |
-| Ting's reserve | $100,000 | Drawn in 4 installments (Months 9, 12, 15, 18) |
+| Ting's reserve | $85,000 | Drawn in 3 installments (Months 12, 15, 18) |
+| Emergency buffer | $15,000 | Retained in Ting's account |
 | GP clinical income | $266,800 | $11,117/month over 24 months |
-| **Total available** | **$496,800** | **Surplus: $66,644** ✓ |
+| **Total deployed** | **$481,800** | **Surplus: $51,644** ✓ |
 
-**Strategic Drawdown Schedule from Ting's Reserve:**
+**Strategic Drawdown Schedule from Ting's Reserve (Optimized):**
 | Month | Amount | Purpose | Timing Logic |
 |-------|--------|---------|--------------|
-| Month 9 | $30,000 | Cover gap before Q3 grant (Month 10) | Draws before cashflow drops below $15k |
-| Month 12 | $30,000 | Cover gap before Q4 grant (Month 13) | Heavy CapDev spending this quarter |
-| Month 15 | $25,000 | Cover gap before Q5 grant (Month 16) | Mid-Year 2 buffer |
-| Month 18 | $15,000 | Cover gap before Q6 grant (Month 19) | Final drawdown |
-| **Total** | **$100,000** | All reserve utilized by Month 18 | Months 19-24 run on GP + grants only |
+| Month 12 | $35,000 | Cover gap before Q4 grant (Month 13) | First draw delayed thanks to $130k opening |
+| Month 15 | $30,000 | Cover gap before Q5 grant (Month 16) | Mid-Year 2 buffer |
+| Month 18 | $20,000 | Cover gap before Q6 grant (Month 19) | Final drawdown |
+| **Total** | **$85,000** | Drawn by Month 18 | **$15k emergency buffer retained** |
+| **Retained** | **$15,000** | Emergency buffer in Ting's account | Available if grant delayed or unexpected costs |
 
 **Why This Structure Works:**
 - **Two separate accounts** demonstrate financial planning and discipline
-- **Strategic timing:** Draws coordinate with grant payment lag (claim Month X, receive Month X+1)
-- **Gradual deployment:** Not all cash upfront, shows financial management capability
-- **Risk mitigation:** If grant delayed, Ting's reserve provides buffer
-- **Efficient capital use:** All $230k shareholder funds fully deployed by Month 18
+- **Optimized timing:** First draw delayed to Month 12 (from Month 9) thanks to higher opening cash
+- **Strategic draws:** Coordinate with grant payment lag (claim Month X, receive Month X+1)
+- **Disciplined deployment:** Only draw $85k (not full $100k), retaining $15k emergency buffer
+- **Risk mitigation:** $15k emergency buffer available if grant delayed or unexpected costs
+- **Efficient capital use:** $215k deployed, $15k retained as prudent reserve
 
 **Monthly GP Income:** 
 - Revenue: $11,117/month (from 20 hrs/week @ $145/hr excl. GST)
@@ -470,22 +472,25 @@ The project is organized into 7 main directories:
 
 **Cashflow Position:** 
 - Managed throughout 24 months with strategic reserve draws
-- **Lowest point:** $31,968 (Month 24, just before final grant arrives)
-- **Final balance:** $66,391 ✓
+- **Lowest point:** $16,968 (Month 24, just before final grant arrives)
+- **Final balance:** $51,391 ✓
+- **Plus emergency buffer:** $15,000 (retained in Ting's account)
+- **Total shareholder protection:** $66,391 ✓
 - Never goes negative due to strategic drawdown timing
 
 **Total Income Over 24 Months:**
 | Source | Amount |
 |--------|--------|
 | Business opening cash | $130,000 |
-| Ting's reserve (drawn) | $100,000 |
+| Ting's reserve (drawn) | $85,000 |
 | GP income | $266,800 |
 | R&D grants (8 quarters) | $286,609 |
-| **Total inflows** | **$783,409** |
+| **Total inflows** | **$768,409** |
 
 **Total R&D Costs:** $716,926
 
-**Final Surplus:** $66,483 ✓
+**Final Surplus:** $51,483 ✓
+**Plus emergency buffer:** $15,000 (in Ting's account)
 
 **Grant Payment Schedule (8 quarters over 24 months):**
 | Period | Quarters | Total Grants |
@@ -652,4 +657,4 @@ The project is organized into 7 main directories:
 
 ---
 
-**Last Updated:** 2025-12-02
+**Last Updated:** 2025-12-02 (v3.5 - Optimized draw schedule)

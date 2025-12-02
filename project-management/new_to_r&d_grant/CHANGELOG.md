@@ -7,6 +7,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [3.5] - 2025-12-02
+
+### Changed - Optimized Draw Schedule (3 draws instead of 4)
+
+**Drawdown Schedule Optimization:**
+- **Opening cash: $130,000** enables delayed first draw
+- **Eliminated Month 9 draw** ($30k) - opening balance $44,797 sufficient
+- **New schedule:** 3 draws instead of 4
+  - Month 12: $35,000 (was $30k at Month 9 + $30k at Month 12)
+  - Month 15: $30,000 (was $25k)
+  - Month 18: $20,000 (was $15k)
+- **Total drawn:** $85,000 (was $100,000)
+- **Emergency buffer:** $15,000 retained in Ting's account
+
+**Benefits:**
+- First draw delayed by 3 months (Month 12 vs Month 9)
+- Demonstrates disciplined financial management
+- Retains $15k emergency buffer for unexpected costs/delays
+- Total shareholder protection: $66,391 (closing + buffer)
+
+**Cashflow Impact:**
+- Lowest point: $16,968 Month 24 (was $31,968)
+- Final closing balance: $51,391 (was $66,391)
+- Plus emergency buffer: $15,000 (in Ting's account)
+- Co-funding deployed: $481,800 (surplus $51,644)
+
+**Files Updated:**
+- Cashflow 24-month: All monthly balances from Month 9 onwards recalculated
+- Cost template: Co-funding sources updated
+- PROJECT_SUMMARY.md: Draw schedule and financial structure updated
+- Forge application narrative: Co-funding evidence updated
+- Version updated to 2.2
+
+---
+
 ## [3.4] - 2025-12-02
 
 ### Changed - Opening Cash Increased to $130k
@@ -20,12 +55,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Total co-funding available: $496,800 (was $466,800)
 - Co-funding surplus: $66,644 (was $36,644)
 - Additional $30k buffer throughout project
-
-**Cashflow Impact:**
-- All monthly closing balances increased by $30k
-- Lowest point: $31,968 Month 24 (was $1,968)
-- Final balance: $66,391 (was $36,391)
-- Total inflows: $783,409 (was $753,409)
 
 **Files Updated:**
 - Cashflow 24-month: All monthly balances recalculated

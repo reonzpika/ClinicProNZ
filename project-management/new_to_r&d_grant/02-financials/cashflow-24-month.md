@@ -159,123 +159,124 @@
 - Costs: Team $27,686 + M&C $1,000 + CapDev $1,700 = $30,386
 - **Closing: $44,797**
 
-**Month 9 (Sep 2026)** ← Q3 Claim Submitted ⚠️ **DRAW $30k FROM TING'S ACCOUNT**
+**Month 9 (Sep 2026)** ← Q3 Claim Submitted
 - Opening: $44,797
-- Income: $11,117 | Grant: $0 | **Ting's funds: $30,000**
+- Income: $11,117 | Grant: $0
 - Costs: Team $27,686 + M&C $1,000 + CapDev $1,000 = $29,686
-- **Closing: $56,228**
+- **Closing: $26,228**
 
 **Month 10 (Oct 2026)** ← Q3 Grant Received
-- Opening: $56,228
+- Opening: $26,228
 - Income: $11,117 | Grant: **$35,503**
 - Costs: Team $27,686 + M&C $1,000 = $28,686
-- **Closing: $74,162**
+- **Closing: $44,162**
 
 **Month 11 (Nov 2026)**
-- Opening: $74,162
+- Opening: $44,162
 - Income: $11,117 | Grant: $0
 - Costs: Team $27,686 + M&C $1,000 + CapDev $500 = $29,186
-- **Closing: $56,093**
+- **Closing: $26,093**
 
-**Month 12 (Dec 2026)** ← Q4 Claim Submitted ⚠️ **DRAW $30k FROM TING'S ACCOUNT**
-- Opening: $56,093
-- Income: $11,117 | Grant: $0 | **Ting's funds: $30,000**
+**Month 12 (Dec 2026)** ← Q4 Claim Submitted ⚠️ **DRAW $35k FROM TING'S ACCOUNT**
+- Opening: $26,093
+- Income: $11,117 | Grant: $0 | **Ting's funds: $35,000**
 - Costs: Team $27,686 + M&C $1,000 + CapDev $3,700 = $32,386
-- **Closing: $64,824**
+- **Closing: $39,824**
 
 ---
 
 ### **Year 2 (Months 13-24)**
 
 **Month 13 (Jan 2027)** ← Q4 Grant Received
-- Opening: $64,824
+- Opening: $39,824
 - Income: $11,117 | Grant: **$35,903**
 - Costs: Team $27,686 + M&C $1,000 = $28,686
-- **Closing: $83,158**
+- **Closing: $58,158**
 
 **Month 14 (Feb 2027)**
-- Opening: $83,158
+- Opening: $58,158
 - Income: $11,117 | Grant: $0
 - Costs: Team $27,686 + M&C $1,000 + CapDev $500 = $29,186
-- **Closing: $65,089**
+- **Closing: $40,089**
 
-**Month 15 (Mar 2027)** ← Q5 Claim Submitted ⚠️ **DRAW $25k FROM TING'S ACCOUNT**
-- Opening: $65,089
-- Income: $11,117 | Grant: $0 | **Ting's funds: $25,000**
+**Month 15 (Mar 2027)** ← Q5 Claim Submitted ⚠️ **DRAW $30k FROM TING'S ACCOUNT**
+- Opening: $40,089
+- Income: $11,117 | Grant: $0 | **Ting's funds: $30,000**
 - Costs: Team $27,686 + M&C $1,000 + CapDev $1,000 = $29,686
-- **Closing: $71,520**
+- **Closing: $51,520**
 
 **Month 16 (Apr 2027)** ← Q5 Grant Received
-- Opening: $71,520
+- Opening: $51,520
 - Income: $11,117 | Grant: **$35,023**
 - Costs: Team $27,686 + M&C $1,000 = $28,686
-- **Closing: $88,974**
+- **Closing: $68,974**
 
 **Month 17 (May 2027)**
-- Opening: $88,974
+- Opening: $68,974
 - Income: $11,117 | Grant: $0
 - Costs: Team $27,686 + M&C $1,000 = $28,686
-- **Closing: $71,405**
+- **Closing: $51,405**
 
-**Month 18 (Jun 2027)** ← Q6 Claim Submitted ⚠️ **DRAW $15k FROM TING'S ACCOUNT**
-- Opening: $71,405
-- Income: $11,117 | Grant: $0 | **Ting's funds: $15,000**
+**Month 18 (Jun 2027)** ← Q6 Claim Submitted ⚠️ **DRAW $20k FROM TING'S ACCOUNT**
+- Opening: $51,405
+- Income: $11,117 | Grant: $0 | **Ting's funds: $20,000**
 - Costs: Team $27,686 + M&C $1,000 + CapDev $500 = $29,186
-- **Closing: $68,336**
+- **Closing: $53,336**
 
 **Month 19 (Jul 2027)** ← Q6 Grant Received
-- Opening: $68,336
+- Opening: $53,336
 - Income: $11,117 | Grant: **$34,623**
 - Costs: Team $27,686 + M&C $1,000 = $28,686
-- **Closing: $85,390**
+- **Closing: $70,390**
 
 **Month 20 (Aug 2027)**
-- Opening: $85,390
+- Opening: $70,390
 - Income: $11,117 | Grant: $0
 - Costs: Team $27,686 + M&C $1,000 = $28,686
-- **Closing: $67,821**
+- **Closing: $52,821**
 
 **Month 21 (Sep 2027)** ← Q7 Claim Submitted
-- Opening: $67,821
+- Opening: $52,821
 - Income: $11,117 | Grant: $0
 - Costs: Team $27,686 + M&C $1,000 = $28,686
-- **Closing: $50,252**
+- **Closing: $35,252**
 
 **Month 22 (Oct 2027)** ← Q7 Grant Received
-- Opening: $50,252
+- Opening: $35,252
 - Income: $11,117 | Grant: **$34,423**
 - Costs: Team $27,686 + M&C $1,000 = $28,686
-- **Closing: $67,106**
+- **Closing: $52,106**
 
 **Month 23 (Nov 2027)**
-- Opening: $67,106
+- Opening: $52,106
 - Income: $11,117 | Grant: $0
 - Costs: Team $27,686 + M&C $1,000 = $28,686
-- **Closing: $49,537**
+- **Closing: $34,537**
 
 **Month 24 (Dec 2027)** ← Q8 Claim Submitted
-- Opening: $49,537
+- Opening: $34,537
 - Income: $11,117 | Grant: $0
 - Costs: Team $27,686 + M&C $1,000 = $28,686
-- **Closing: $31,968**
+- **Closing: $16,968**
 
 **Month 25 (Jan 2028)** ← Q8 Grant Received (Project Complete)
-- Opening: $31,968
+- Opening: $16,968
 - Grant: **$34,423**
-- **Final Position: $66,391** ✓
+- **Final Position: $51,391** ✓
 
 ---
 
 ## Summary
 
 **Opening Cash (Business Account):** $130,000  
-**Ting's Reserve (Drawn During Project):** $100,000 ($30k Month 9 + $30k Month 12 + $25k Month 15 + $15k Month 18)  
-**Total Shareholder Funds Used:** $230,000  
-**Total Income:** $583,409 (GP $266,800 + Grants $286,609)  
+**Ting's Reserve (Drawn During Project):** $85,000 ($35k Month 12 + $30k Month 15 + $20k Month 18)  
+**Ting's Reserve Remaining:** $15,000 (emergency buffer)  
+**Total Shareholder Funds Used:** $215,000  
+**Total Income:** $568,409 (GP $266,800 + Grants $286,609)  
 **Total Costs:** $716,926 (all R&D eligible costs)  
-**Closing Cash:** $66,391
+**Closing Cash:** $51,391
 
-**Cashflow Status:** Managed throughout with strategic draws from Ting's reserve - Lowest point Month 24 ($31,968)
+**Cashflow Status:** Managed throughout with strategic draws from Ting's reserve - Lowest point Month 24 ($16,968) - $15k emergency buffer retained
 
 ---
 
@@ -285,22 +286,23 @@
 
 **Co-Funding Sources:**
 - Opening cash (business account): $130,000
-- Ting's reserve (drawn during project): $100,000
+- Ting's reserve (drawn during project): $85,000
 - GP clinical income: $266,800
-- **Total available: $496,800** ✓ (exceeds requirement by $66,644)
+- **Total available: $481,800** ✓ (exceeds requirement by $51,644)
 
 **Shareholder Funds Structure:**
 - Business account opening balance: $130,000 NZD
-- Ting's separate account: $100,000 NZD (drawn in 4 installments as needed)
-- **Total shareholder contributions:** $230,000 NZD
+- Ting's separate account: $100,000 NZD (drawn in 3 installments: $35k, $30k, $20k = $85k total)
+- **Total shareholder funds deployed:** $215,000 NZD
+- **Emergency buffer retained:** $15,000 NZD (in Ting's account)
 - Source: Founder + Ting shareholder funds
 
 **Drawdown Schedule from Ting's Account:**
-- Month 9: $30,000 (before Q3 grant arrives)
-- Month 12: $30,000 (before Q4 grant arrives)
-- Month 15: $25,000 (before Q5 grant arrives)
-- Month 18: $15,000 (before Q6 grant arrives)
-- **Total drawn: $100,000** (entire Ting reserve utilized)
+- Month 12: $35,000 (before Q4 grant arrives)
+- Month 15: $30,000 (before Q5 grant arrives)
+- Month 18: $20,000 (before Q6 grant arrives)
+- **Total drawn: $85,000**
+- **Emergency buffer: $15,000 retained** (available if needed)
 
 ---
 
@@ -311,10 +313,11 @@
 **Co-Funding Coverage:**
 - Required: $430,156
 - From opening cash (business): $130,000
-- From Ting's reserve: $100,000
+- From Ting's reserve (drawn): $85,000
 - From GP income: $266,800
-- **Total: $496,800** (sufficient) ✓
-- **Surplus: $66,644** ✓
+- **Total deployed: $481,800** (sufficient) ✓
+- **Surplus: $51,644** ✓
+- **Plus emergency buffer: $15,000** (retained in Ting's account)
 
 **Work Commitment:**
 - GP work: 20 hrs/week (sustainable alongside R&D)
@@ -323,9 +326,11 @@
 
 **Cashflow Management Strategy:**
 - Start with $130k in business account
-- Draw from Ting's $100k reserve at strategic points (4 times over 24 months)
+- Draw from Ting's $100k reserve at strategic points (3 times: Months 12, 15, 18)
+- First draw delayed to Month 12 (from Month 9) thanks to higher opening cash
 - Timing of draws coordinates with grant payment delays
-- All shareholder funds ($230k total) fully utilized by Month 18
+- Total drawn: $85k, retaining $15k emergency buffer
+- Shareholder funds ($215k deployed) fully utilized by Month 18
 - Remaining months (19-24) managed with GP income + grant payments
 
 ---
@@ -334,22 +339,25 @@
 
 1. **Cashflow managed with strategic drawdowns from Ting's reserve**
    - Business opening: $130,000
-   - Ting's reserve: $100,000 (drawn in 4 installments)
-   - Minimum position: $31,968 (Month 24, just before final grant)
-   - Closing: $66,391
-   - Total shareholder funds used: $230,000 (fully utilized)
+   - Ting's reserve: $85,000 drawn (3 installments: $35k, $30k, $20k)
+   - Emergency buffer: $15,000 retained in Ting's account
+   - Minimum position: $16,968 (Month 24, just before final grant)
+   - Closing: $51,391
+   - Total shareholder funds deployed: $215,000
 
 2. **Co-funding capacity strong:**
-   - Total available: $496,800 (shareholder funds $230k + GP income $266.8k)
+   - Total deployed: $481,800 (shareholder funds $215k + GP income $266.8k)
    - Required: $430,156
-   - **Surplus: $66,644** ✓
+   - **Surplus: $51,644** ✓
+   - **Plus $15k emergency buffer** (retained in Ting's account)
 
-3. **Strategic drawdown timing:**
-   - Month 9: $30k (covers gap before Q3 grant arrives Month 10)
-   - Month 12: $30k (covers gap before Q4 grant arrives Month 13)
-   - Month 15: $25k (covers gap before Q5 grant arrives Month 16)
-   - Month 18: $15k (covers gap before Q6 grant arrives Month 19)
-   - **Pattern:** Draw just before cashflow would go negative, then grant arrives next month
+3. **Strategic drawdown timing (optimized with $130k opening):**
+   - Month 9: No draw needed (balance $26,228 - sufficient)
+   - Month 12: $35k (covers gap before Q4 grant arrives Month 13)
+   - Month 15: $30k (covers gap before Q5 grant arrives Month 16)
+   - Month 18: $20k (covers gap before Q6 grant arrives Month 19)
+   - **Pattern:** Draw only when needed, retaining $15k emergency buffer
+   - **Benefit:** First draw delayed by 3 months vs previous plan
 
 4. **CapDev impact:** $36,000 front-loaded in first 12 months
    - Heavy spending Q1-Q2 ($27,200 in first 6 months)
@@ -365,16 +373,26 @@
    - Ting's reserve strategically covers these gaps
    - Spread across 3 financial years (taxable income)
 
-7. **All shareholder funds utilized:** By Month 18, full $230k drawn
+7. **Disciplined shareholder fund deployment:** By Month 18, $215k deployed
+   - Retained $15k emergency buffer in Ting's account (demonstrates financial discipline)
    - Months 19-24 run on GP income + grant payments only
    - Demonstrates efficient use of shareholder capital
-   - Final surplus of $66,391 provides buffer post-project
+   - Final surplus of $51,391 provides buffer post-project
+   - Total shareholder protection: $66,391 (closing balance + emergency buffer)
 
 ---
 
 **Last Updated:** 2 December 2025  
-**Status:** FINAL - Updated with two-account structure ($100k business + $100k Ting's reserve), 20 hrs/week GP work ($266,800 income), positive cashflow throughout  
-**Version:** 2.1
+**Status:** FINAL - Optimized draw schedule with $130k opening cash  
+**Version:** 2.2
+
+**Changes in v2.2:**
+- Opening cash increased to $130,000 (from $100,000)
+- Optimized draw schedule: 3 draws instead of 4 (delayed first draw from Month 9 to Month 12)
+- Draw amounts: $35k Month 12, $30k Month 15, $20k Month 18 (total $85k)
+- Retained $15,000 emergency buffer in Ting's account
+- Total shareholder funds deployed: $215,000 (from $230,000 available)
+- Final closing balance: $51,391 (plus $15k buffer = $66,391 total protection)
 
 **Changes in v2.1:**
 - Added GST clarification note: GP services ARE subject to GST (figures already exclude GST, so no calculation changes)
