@@ -117,35 +117,44 @@ This project proposes building a New Zealand-sovereign clinical AI assistant to 
 
 ## Project Structure
 
-The project is organized into 6 main directories:
+The project is organized into 7 main directories:
+
+### Root Level
+- `CHANGELOG.md` - Complete version history and all project updates (single source of truth for changes)
+- `PROJECT_SUMMARY.md` - This document - comprehensive project overview
 
 ### 00-admin-and-governance/
-- `project-master-index.md` - Navigation hub and project overview
-- `proposal-status-and-next-steps.md` - Current status (6.9/10), strengths, weaknesses, priority actions
+- `revised-objectives-24-months.md` - Complete 4-objective structure spanning 24 months with detailed deliverables
 - `risk-and-change-management.md` - Risk register, change log, stage-gates, release checklist
-- `section-1-3-updates-summary.md` - Summary of updates to proposal sections 1-3
+- `archive/` - Archived documents:
+  - `MENTOR-PROPOSAL.md` - Original 12-month proposal sent to mentor (archived)
+  - `proposal-status-and-next-steps.md` - Historical status assessment
+  - `section-1-3-updates-summary.md` - Historical update summaries
+  - `medtech-partnership-letter-guidance.md` - Partnership letter guidance
+  - `comprehensive-care-pho-approach.md` - PHO partnership strategy
+  - `submission-timeline.md` - Original timeline planning
+  - `feature-grouping-decisions.md` - Historical feature decisions
 
 ### 01-application-narrative/
-- `forge-application-narrative.md` - Complete Forge portal submission narrative with all required sections
-- `commercialization-and-market-strategy.md` - Pricing model, GTM, adoption, competitive positioning
+- `forge-application-narrative.md` - Complete Forge portal submission narrative with all required sections (co-funding evidence, team structure, objectives, CapDev, success metrics)
 
 ### 02-financials/
-- `cashflow-24-month.md` - Monthly cashflow forecast with strategic drawdown plan (Two-account structure: $100k business + $100k Ting's reserve drawn in 4 installments. Final balance: $36,391)
-- `cost-template/cost-template.md` - Detailed cost breakdown by category (Labour + CapDev $36k + M&C + Hardware)
+- `cashflow-24-month.md` - Monthly cashflow forecast with strategic drawdown plan (Two-account structure: $100k business opening + $100k Ting's reserve drawn in 4 installments at Months 9, 12, 15, 18. Final balance: $36,391)
+- `cost-template/cost-template.md` - Detailed cost breakdown by category (Labour $655k + CapDev $36k + M&C $26k = $717k total)
 
 ### 03-capability-development/
-- `capability-development-evidence-pack.md` - CapDev courses, one-off setups, evidence requirements
+- `capability-development-evidence-pack.md` - Complete CapDev plan with 4 categories: IP ($7.5k), Regulatory ($15k), R&D Info Management ($8.5k), Project Management ($5k). Total: $36k (5.02% of total costs)
 
 ### 04-compliance-and-safety/
-- `dpia/dpia-draft.md` - Complete Data Protection Impact Assessment (Option B: AU inference, NZ keys)
+- `dpia/dpia-draft.md` - Complete Data Protection Impact Assessment (AU inference with NZ-held keys strategy)
 - `privacy-compliance-quick-reference.md` - IPP 12, HISO 10029, DPA clauses, consent notices
-- `safety-and-transparency-framework.md` - Safety procedures, incident runbook, transparency requirements
+- `safety-and-transparency-framework.md` - Safety procedures, incident runbook, transparency requirements, monthly safety gates
 
 ### 05-claims-and-tracking/
-- `templates/claims-toolkit.md` - Quarterly claim templates, timesheets, GST invoices, checklists
+- `templates/claims-toolkit.md` - Quarterly claim templates, timesheets, GST invoices, evidence checklists for 8 quarterly claims
 
 ### 06-market-validation/
-- `clinicpro-operational-evidence.md` - Evidence document showing ClinicPro is operational with active GP users, validating market demand
+- `clinicpro-operational-evidence.md` - Evidence document showing ClinicPro is operational with active GP users (market validation)
 
 ---
 
