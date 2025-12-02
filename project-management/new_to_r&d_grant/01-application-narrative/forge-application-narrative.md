@@ -122,27 +122,27 @@ These uncertainties are interconnected: architectural paradigm choice affects do
 
 ## R&D Challenge – Why is This Difficult for a Professional? (~250 words)
 
-**Even highly competent AI/ML professionals cannot deduce solutions without systematic experimentation because:**
+**Even highly competent professionals cannot deduce solutions without systematic experimentation:**
 
 **1. Multi-Component Architecture Performance Cannot Be Predicted From Component Specifications**
 
-Architectural paradigms—from simple pattern recognition to agentic reasoning systems—exhibit emergent behavior when components interact. Lightweight approaches may miss clinical nuance. Sophisticated reasoning systems "hallucinate" on medical calculations (cardiovascular risk scoring requires precise 8-variable computation—reasoning models sometimes fabricate values). Interaction effects compound: retrieval errors propagate into reasoning, multi-agent coordination creates latency bottlenecks, quantization for cost reduction degrades safety mechanisms. **Component-level testing doesn't reveal system-level failures. Performance characteristics emerge from interactions unknowable without empirical measurement.**
+Architectural paradigms—from simple pattern recognition to agentic reasoning—exhibit emergent behavior when components interact. Sophisticated reasoning systems "hallucinate" on medical calculations (cardiovascular risk scoring requires precise 8-variable computation—reasoning models fabricate values). Interaction effects compound unpredictably: retrieval errors propagate into reasoning, quantization degrades safety mechanisms. **Component-level testing doesn't reveal system-level failures. Performance emerges from interactions unknowable without empirical measurement.**
 
 **2. Multi-System Generalisation Creates Emergent Failure Modes**
 
-Medtech and Indici structure clinical data differently. Architectural approaches performing well in one system fail subtly in another: laboratory formats differ, medication codes vary, note templates diverge. **These failures cannot be predicted from API documentation—they emerge from real-world data variations. Discovering robust generalisation patterns requires systematic testing across both platforms.**
+Medtech and Indici structure data differently. Architectures performing well in one system fail subtly in another: laboratory formats differ, medication codes vary, note templates diverge. **These failures cannot be predicted from documentation—they emerge from real-world variations. Discovering robust patterns requires systematic testing.**
 
 **3. Real-World Clinical Data Characteristics Cause Unpredictable Architecture-Specific Failures**
 
-Real NZ clinical data exhibits characteristics impossible to replicate synthetically: inconsistent documentation patterns (how GPs actually write under time pressure), missing fields, data quality variations, system-specific artifacts. **Different architectural paradigms respond unpredictably to real-world messiness. Performance on clean synthetic data doesn't predict performance on messy clinical data. Architecture-dependent sensitivity to data quality variations unknowable without real-world testing.**
+Real clinical data exhibits characteristics unreplicable synthetically: inconsistent documentation under time pressure, missing fields, data quality variations, system artifacts. **Different paradigms respond unpredictably to real-world messiness. Performance on clean synthetic data doesn't predict messy clinical data performance. Architecture-dependent sensitivity to data quality unknowable without real-world testing.**
 
 **4. Safety Mechanisms Interact With Architectural Paradigms Creating Emergent Failure Modes**
 
-Safety constraints (refusal scaffolds, prohibited-claim detection) behave differently across architectures. Agentic systems propagate errors across agents. LLMs bypass refusal scaffolds unexpectedly. Hybrid systems fail at component boundaries. **Safety failure modes vary by paradigm in ways unpredictable from isolated component testing. Emergent safety risks require systematic investigation across architectural approaches.**
+Safety constraints (refusal scaffolds, prohibited-claim detection) behave differently across architectures. Agentic systems propagate errors across agents. LLMs bypass refusal scaffolds unexpectedly. Hybrid systems fail at component boundaries. **Safety failure modes vary unpredictably by paradigm. Emergent safety risks require systematic investigation.**
 
 **5. AI Performance Metrics Do Not Predict Clinical Outcome Improvements**
 
-Laboratory AI metrics (accuracy, F1 scores) may not correlate with clinical outcomes (time saved, errors prevented, patient safety). High-accuracy systems might reduce GP trust through false positives; lower-accuracy systems with better explanations might drive higher clinical utility. **Which architectural characteristics translate to clinical value cannot be deduced from laboratory benchmarks—requires systematic measurement of real-world outcomes across paradigms.**
+Laboratory metrics (accuracy, F1) may not correlate with clinical outcomes (time saved, errors prevented, safety). High-accuracy systems may reduce trust through false positives while lower-accuracy systems with better explanations drive higher utility. **Which architectural characteristics translate to clinical value cannot be deduced from benchmarks—requires systematic real-world outcome measurement.**
 
 ---
 
