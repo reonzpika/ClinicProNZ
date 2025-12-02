@@ -130,7 +130,7 @@ Start minimal, add folders as project evolves.
 | ClinicPro SaaS | `clinicpro` | Operational | Solo Founder/Developer | 2025-11-07 | [PROJECT_SUMMARY.md](./clinicpro/PROJECT_SUMMARY.md) |
 | Medtech ALEX Integration | `medtech-integration` | Build | Solo Founder/Developer | 2025-11-07 | [PROJECT_SUMMARY.md](./medtech-integration/PROJECT_SUMMARY.md) |
 | GP Voices Community Site | `gp-voices-community` | Build | Solo Founder/Developer | 2025-01-15 | [PROJECT_SUMMARY.md](./gp-voices-community/PROJECT_SUMMARY.md) |
-| R&D Grant Submission | `new_to_r&d_grant` | Validation | Solo Founder/Developer | 2025-12-02 | [PROJECT_SUMMARY.md](./new_to_r&d_grant/PROJECT_SUMMARY.md) |
+| R&D Grant Submission | `new_to_r&d_grant` | Validation | Solo Founder/Developer | 2025-12-02 (v3.4) | [PROJECT_SUMMARY.md](./new_to_r&d_grant/PROJECT_SUMMARY.md) |
 | Project Management AI SaaS | `project-management-ai-saas` | Build | Solo Founder/Developer | 2025-11-09 | [PROJECT_SUMMARY.md](./project-management-ai-saas/PROJECT_SUMMARY.md) |
 
 ---
@@ -140,6 +140,7 @@ Start minimal, add folders as project evolves.
 ### Recent Achievements Across Projects
 *[AI will auto-populate this section based on recent milestones and updates]*
 
+- **2025-12-02**: R&D Grant Submission - 💰 FINANCIAL UPDATE: Opening cash increased to $130k NZD (from $100k). Total shareholder contributions now $230k. Co-funding surplus increased to $66,644. Lowest cashflow point Month 24: $31,968 (was $1,968). Final balance: $66,391. All financial documents updated (cashflow, cost template, project summary, application narrative).
 - **2025-12-02**: R&D Grant Submission - ⚠️ LESSON LEARNED: Accountant review revealed critical communication gap. Asked general tax questions but missed the most important question: "What's our household net cash at end of 24 months with grant vs without?" Created critical question framework and emailed Helen with specific comparison (Scenario A: 60 hrs/week with grant vs Scenario B: 30 hrs/week GP only). Awaiting calculation. Key insight: Define critical questions BEFORE engaging advisers.
 - **2025-11-28**: R&D Grant Submission - 🎉 MAJOR MILESTONE: Objectives completely revised! Focused scope on 2 core tools (Inbox Helper + Care Gap Finder) instead of 50+ tools. Dual PMS integration (Medtech + Indici) from day one. Lean MVP approach with early releases to paid adopters. Years 3-5 roadmap added: HealthHub NZ patient-facing app, multimodal models, continual learning, te reo support, equity-focused algorithms, real-world outcome trials. Removed high-risk features (prescription validation). Document version 3.0 ready for external review.
 - **2025-11-07**: Medtech Integration — POST Media endpoint implemented; Facility ID configuration blocker identified (403 error); Email sent to Medtech ALEX support
@@ -322,4 +323,4 @@ Start minimal, add folders as project evolves.
 
 ---
 
-*Dashboard Last Updated: [2025-12-02] - R&D Grant: ⚠️ Lesson learned from accountant review - Critical question framework created. Always define specific questions before engaging advisers. Emailed Helen with critical question: household net cash with grant vs without grant. Awaiting response.*
+*Dashboard Last Updated: [2025-12-02] - R&D Grant v3.4: Opening cash increased to $130k NZD. Total shareholder funds now $230k. Co-funding surplus $66,644. All financial documents updated. Earlier: Critical question framework created for adviser engagement. Awaiting Helen's calculation: household net cash with grant vs without.*

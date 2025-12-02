@@ -432,9 +432,9 @@ The project is organized into 7 main directories:
 ### Cashflow & Funding Structure
 
 **Shareholder Funds (Two-Account Structure):**
-- **Business account opening cash:** $100,000 NZD
+- **Business account opening cash:** $130,000 NZD
 - **Ting's reserve account:** $100,000 NZD (separate account, drawn strategically)
-- **Total shareholder contributions:** $200,000 NZD
+- **Total shareholder contributions:** $230,000 NZD
 - **Source:** Founder + Ting shareholder funds
 
 **Co-Funding Requirement:** $430,156 (60% of total R&D costs)
@@ -442,10 +442,10 @@ The project is organized into 7 main directories:
 **Co-Funding Sources:**
 | Source | Amount | Notes |
 |--------|--------|-------|
-| Business opening cash | $100,000 | Available Day 1 |
+| Business opening cash | $130,000 | Available Day 1 |
 | Ting's reserve | $100,000 | Drawn in 4 installments (Months 9, 12, 15, 18) |
 | GP clinical income | $266,800 | $11,117/month over 24 months |
-| **Total available** | **$466,800** | **Surplus: $36,644** ✓ |
+| **Total available** | **$496,800** | **Surplus: $66,644** ✓ |
 
 **Strategic Drawdown Schedule from Ting's Reserve:**
 | Month | Amount | Purpose | Timing Logic |
@@ -461,7 +461,7 @@ The project is organized into 7 main directories:
 - **Strategic timing:** Draws coordinate with grant payment lag (claim Month X, receive Month X+1)
 - **Gradual deployment:** Not all cash upfront, shows financial management capability
 - **Risk mitigation:** If grant delayed, Ting's reserve provides buffer
-- **Efficient capital use:** All $200k shareholder funds fully deployed by Month 18
+- **Efficient capital use:** All $230k shareholder funds fully deployed by Month 18
 
 **Monthly GP Income:** 
 - Revenue: $11,117/month (from 20 hrs/week @ $145/hr excl. GST)
@@ -470,22 +470,22 @@ The project is organized into 7 main directories:
 
 **Cashflow Position:** 
 - Managed throughout 24 months with strategic reserve draws
-- **Lowest point:** $1,968 (Month 24, just before final grant arrives)
-- **Final balance:** $36,391 ✓
+- **Lowest point:** $31,968 (Month 24, just before final grant arrives)
+- **Final balance:** $66,391 ✓
 - Never goes negative due to strategic drawdown timing
 
 **Total Income Over 24 Months:**
 | Source | Amount |
 |--------|--------|
-| Business opening cash | $100,000 |
+| Business opening cash | $130,000 |
 | Ting's reserve (drawn) | $100,000 |
 | GP income | $266,800 |
 | R&D grants (8 quarters) | $286,609 |
-| **Total inflows** | **$753,409** |
+| **Total inflows** | **$783,409** |
 
 **Total R&D Costs:** $716,926
 
-**Final Surplus:** $36,483 ✓
+**Final Surplus:** $66,483 ✓
 
 **Grant Payment Schedule (8 quarters over 24 months):**
 | Period | Quarters | Total Grants |

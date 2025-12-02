@@ -7,6 +7,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [3.4] - 2025-12-02
+
+### Changed - Opening Cash Increased to $130k
+
+**Financial Structure Update:**
+- **Business opening cash increased from $100,000 to $130,000 NZD**
+- **Total shareholder contributions increased from $200,000 to $230,000 NZD**
+- Ting's reserve remains $100,000 (unchanged)
+
+**Impact on Co-Funding:**
+- Total co-funding available: $496,800 (was $466,800)
+- Co-funding surplus: $66,644 (was $36,644)
+- Additional $30k buffer throughout project
+
+**Cashflow Impact:**
+- All monthly closing balances increased by $30k
+- Lowest point: $31,968 Month 24 (was $1,968)
+- Final balance: $66,391 (was $36,391)
+- Total inflows: $783,409 (was $753,409)
+
+**Files Updated:**
+- Cashflow 24-month: All monthly balances recalculated
+- Cost template: Co-funding sources updated
+- PROJECT_SUMMARY.md: Financial structure updated
+- Forge application narrative: Co-funding evidence updated
+
+---
+
 ## [3.3] - 2025-12-02
 
 ### Added - Accountant Review Findings & Critical Question Framework
