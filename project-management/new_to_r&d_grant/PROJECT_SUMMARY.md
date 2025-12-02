@@ -2,8 +2,8 @@
 project_name: ClinicPro AI - Inbox Helper + Care Gap Finder (NZ-Sovereign Clinical LLM)
 project_stage: Validation
 owner: NexWave Solutions Ltd
-last_updated: "2025-11-28"
-version: "3.0"
+last_updated: "2025-12-01"
+version: "3.2"
 tags:
   - r&d-grant
   - healthcare-ai
@@ -11,8 +11,10 @@ tags:
   - clinical-llm
   - callaghan-innovation
   - gp-workflow
-summary: R&D grant proposal for building a NZ-sovereign clinical LLM to assist NZ GPs with inbox management (Inbox Helper) and care gap monitoring (Care Gap Finder), integrated across both Medtech and Indici PMSs. 24-month project with lean MVPs released to early adopters, plus Years 3-5 roadmap for HealthHub NZ patient-facing app. Team: Founder + Ting R&D Operations Lead + Developer. Includes architecture validation R&D, NZ-LLM training, equity-focused algorithms, and multi-PMS generalisation. Cashflow positive throughout.
+summary: R&D grant proposal for building a NZ-sovereign clinical LLM to assist NZ GPs with inbox management (Inbox Helper) and care gap monitoring (Care Gap Finder), integrated across both Medtech and Indici PMSs. 24-month project with lean MVPs released to early adopters, plus Years 3-5 roadmap for HealthHub NZ patient-facing app. Team: Founder + Ting R&D Operations Lead + Developer. Includes architecture validation R&D, NZ-LLM training, equity-focused algorithms, and multi-PMS generalisation. Co-funding from $200k shareholder funds (two-account structure) plus GP income. Cashflow strategically managed with planned drawdowns.
 links:
+  - name: Changelog (All Updates)
+    path: CHANGELOG.md
   - name: Revised Objectives (24 Months)
     path: 00-admin-and-governance/revised-objectives-24-months.md
   - name: Project Master Index
@@ -47,6 +49,12 @@ milestones:
   - date: "2025-11-28"
     name: Major objectives revision - focused on Inbox Helper + Care Gap Finder with dual PMS integration (Medtech + Indici) and HealthHub NZ roadmap
     status: completed
+  - date: "2025-11-29"
+    name: CapDev expanded to $36k (4 categories) - 5.02% of total costs
+    status: completed
+  - date: "2025-12-01"
+    name: Financial structure finalized - two-account strategy ($100k business + $100k Ting's reserve), 20 hrs/week GP work, strategic drawdown plan
+    status: completed
   - date: "2025-12-15"
     name: Target submission date
     status: pending
@@ -71,11 +79,11 @@ risks:
 **Organisation:** NexWave Solutions Ltd  
 **Grant Type:** Callaghan Innovation - New to R&D Grant  
 **Project Duration:** 27 Jan 2026 - 26 Jan 2028 (24 months)  
-**Total Eligible Costs:** $695,976 (NZD excl. GST)  
-**Grant Request:** $278,305 (40%)  
-**Co-Funding:** $417,671 (60% from GP clinical work income)
+**Total Eligible Costs:** $716,926 (NZD excl. GST)  
+**Grant Request:** $286,770 (40%)  
+**Co-Funding:** $430,156 (60% from shareholder funds + GP clinical work income)
 
-**Status:** Final budget and team structure confirmed (26 Nov 2025). Cashflow positive throughout 24 months.
+**Status:** Financial structure finalized (1 Dec 2025). Two-account strategy with strategic drawdowns. Cashflow managed throughout 24 months.
 
 ---
 
@@ -109,35 +117,44 @@ This project proposes building a New Zealand-sovereign clinical AI assistant to 
 
 ## Project Structure
 
-The project is organized into 6 main directories:
+The project is organized into 7 main directories:
+
+### Root Level
+- `CHANGELOG.md` - Complete version history and all project updates (single source of truth for changes)
+- `PROJECT_SUMMARY.md` - This document - comprehensive project overview
 
 ### 00-admin-and-governance/
-- `project-master-index.md` - Navigation hub and project overview
-- `proposal-status-and-next-steps.md` - Current status (6.9/10), strengths, weaknesses, priority actions
+- `revised-objectives-24-months.md` - Complete 4-objective structure spanning 24 months with detailed deliverables
 - `risk-and-change-management.md` - Risk register, change log, stage-gates, release checklist
-- `section-1-3-updates-summary.md` - Summary of updates to proposal sections 1-3
+- `archive/` - Archived documents:
+  - `MENTOR-PROPOSAL.md` - Original 12-month proposal sent to mentor (archived)
+  - `proposal-status-and-next-steps.md` - Historical status assessment
+  - `section-1-3-updates-summary.md` - Historical update summaries
+  - `medtech-partnership-letter-guidance.md` - Partnership letter guidance
+  - `comprehensive-care-pho-approach.md` - PHO partnership strategy
+  - `submission-timeline.md` - Original timeline planning
+  - `feature-grouping-decisions.md` - Historical feature decisions
 
 ### 01-application-narrative/
-- `forge-application-narrative.md` - Complete Forge portal submission narrative with all required sections
-- `commercialization-and-market-strategy.md` - Pricing model, GTM, adoption, competitive positioning
+- `forge-application-narrative.md` - Complete Forge portal submission narrative with all required sections (co-funding evidence, team structure, objectives, CapDev, success metrics)
 
 ### 02-financials/
-- `cashflow-24-month.md` - Monthly cashflow forecast showing positive cash throughout ($100k opening → $39k closing)
-- `cost-template/cost-template.md` - Detailed cost breakdown by category (Labour + CapDev + M&C + Hardware)
+- `cashflow-24-month.md` - Monthly cashflow forecast with strategic drawdown plan (Two-account structure: $100k business opening + $100k Ting's reserve drawn in 4 installments at Months 9, 12, 15, 18. Final balance: $36,391)
+- `cost-template/cost-template.md` - Detailed cost breakdown by category (Labour $655k + CapDev $36k + M&C $26k = $717k total)
 
 ### 03-capability-development/
-- `capability-development-evidence-pack.md` - CapDev courses, one-off setups, evidence requirements
+- `capability-development-evidence-pack.md` - Complete CapDev plan with 4 categories: IP ($7.5k), Regulatory ($15k), R&D Info Management ($8.5k), Project Management ($5k). Total: $36k (5.02% of total costs)
 
 ### 04-compliance-and-safety/
-- `dpia/dpia-draft.md` - Complete Data Protection Impact Assessment (Option B: AU inference, NZ keys)
+- `dpia/dpia-draft.md` - Complete Data Protection Impact Assessment (AU inference with NZ-held keys strategy)
 - `privacy-compliance-quick-reference.md` - IPP 12, HISO 10029, DPA clauses, consent notices
-- `safety-and-transparency-framework.md` - Safety procedures, incident runbook, transparency requirements
+- `safety-and-transparency-framework.md` - Safety procedures, incident runbook, transparency requirements, monthly safety gates
 
 ### 05-claims-and-tracking/
-- `templates/claims-toolkit.md` - Quarterly claim templates, timesheets, GST invoices, checklists
+- `templates/claims-toolkit.md` - Quarterly claim templates, timesheets, GST invoices, evidence checklists for 8 quarterly claims
 
 ### 06-market-validation/
-- `clinicpro-operational-evidence.md` - Evidence document showing ClinicPro is operational with active GP users, validating market demand
+- `clinicpro-operational-evidence.md` - Evidence document showing ClinicPro is operational with active GP users (market validation)
 
 ---
 
@@ -320,19 +337,51 @@ The project is organized into 6 main directories:
 ---
 
 ### CDP-5: Project Management ($5,000)
-**Months 3-15**
+**Months 2-15**
 
-- **Phase 1 - R&D PM System Setup:** $2,000
-  - Agile R&D system (Kanban boards, roadmap framework)
-  - Risk management templates, documentation workflows
-  - Training workshop (founder + Ting)
-  
-- **Phase 2 - Ongoing PM Coaching (6 sessions):** $3,000
-  - Monthly coaching on R&D operations
-  - Decision-making support, process improvements
-  - Ting's R&D management capability development
+**R&D Project Management Training & Coaching for Ting + System Setup**
 
-**Deliverables:** Configured PM system, 24-month roadmap, risk register, stage-gate checklist, 6 coaching session reports
+**Phase 1 - Intensive Training & Setup (Months 2-4): ~$2,500**
+- **Training sessions specifically for Ting:**
+  - How to plan and manage R&D projects (vs traditional business projects)
+  - Creating realistic timelines when outcomes are uncertain
+  - Budget tracking and resource allocation for R&D
+  - How to identify and manage R&D risks
+  - Documentation best practices for knowledge capture
+  - How to manage third-party service providers and consultants
+  - Communication management with stakeholders
+
+- **Systems setup (with Ting leading):**
+  - Agile R&D workflow system (Kanban boards)
+  - Roadmap templates for 24-month project
+  - Budget tracking spreadsheets
+  - Risk register templates
+  - Vendor/contractor management workflows
+  - Meeting templates and decision logs
+
+- **Ting's capability development:**
+  - Learn how to break down R&D objectives into manageable tasks
+  - Create timelines with contingency planning
+  - Identify when to bring in third-party expertise
+  - Manage CapDev procurement process itself (finding vendors, scoping work, managing contracts)
+
+**Phase 2 - Ongoing Coaching (Months 5-15): ~$2,500**
+- **6 monthly coaching sessions with Ting** ($400-500 each)
+- Month 5: Review of initial systems, troubleshoot issues
+- Month 7: Managing Objective 2 (Inbox Helper) timeline and resources
+- Month 9: Mid-project review, adjust plans based on learnings
+- Month 11: Managing transition to Objective 3 (Care Gap Finder)
+- Month 13: Pilot preparation and risk management
+- Month 15: Final phase planning and knowledge capture
+
+**Why this is smart:**
+- Builds long-term capability - Ting learns how to manage R&D (not just admin work)
+- Ting manages the CapDev procurement for other CDP services (regulatory, IP, R&D info systems)
+- This is meta-capability development - using CapDev budget to train Ting on how to manage CapDev activities
+- Demonstrates "growth intention" (Paula's feedback about having Ting full-time)
+- After 24 months, Ting will have skills to manage future R&D projects
+
+**Deliverables:** R&D project management training materials, configured PM system with Kanban boards and roadmap framework, 6 coaching session reports, Ting-maintained 24-month roadmap, budget tracking spreadsheet, risk register, vendor management records for all CDP procurement, meeting notes and decision logs, monthly progress reports
 
 ---
 
@@ -366,52 +415,88 @@ The project is organized into 6 main directories:
 
 ---
 
-### Business Income & Expenses (24 Months)
+### Business Income (24 Months)
 
 | Item | Amount (NZD excl. GST) |
 |------|------------------------|
-| GP clinical revenue (24 months) | $375,652 |
-| GP business expenses (5%) | -$18,783 |
-| **Net GP income available for co-funding** | **$356,869** |
+| GP clinical revenue (24 months) | $266,800 |
+| **Monthly GP income** | **$11,117** |
 
-**Monthly Average:** $15,652 revenue - $783 expenses = $14,869 net
+**GP Work Schedule:**
+- 20 hrs/week @ $145/hour (excl. GST)
+- 46 working weeks per year (6 weeks annual leave)
+- Total work commitment: 50 hrs/week (20 hrs GP + 30 hrs R&D)
 
 ---
 
 ### Cashflow & Funding Structure
 
-**Opening Cash:** $100,000 NZD (business account, can be increased if needed)
+**Shareholder Funds (Two-Account Structure):**
+- **Business account opening cash:** $100,000 NZD
+- **Ting's reserve account:** $100,000 NZD (separate account, drawn strategically)
+- **Total shareholder contributions:** $200,000 NZD
+- **Source:** Founder + Ting shareholder funds
 
-**Reserve Funds Available:** $100,000 AUD (Ting's shareholder funds, available as safety buffer if needed)
+**Co-Funding Requirement:** $430,156 (60% of total R&D costs)
 
-**Co-funding Requirement:** $430,156
-**Total Available:** $456,869 (opening cash + net GP income) ✓
+**Co-Funding Sources:**
+| Source | Amount | Notes |
+|--------|--------|-------|
+| Business opening cash | $100,000 | Available Day 1 |
+| Ting's reserve | $100,000 | Drawn in 4 installments (Months 9, 12, 15, 18) |
+| GP clinical income | $266,800 | $11,117/month over 24 months |
+| **Total available** | **$466,800** | **Surplus: $36,644** ✓ |
+
+**Strategic Drawdown Schedule from Ting's Reserve:**
+| Month | Amount | Purpose | Timing Logic |
+|-------|--------|---------|--------------|
+| Month 9 | $30,000 | Cover gap before Q3 grant (Month 10) | Draws before cashflow drops below $15k |
+| Month 12 | $30,000 | Cover gap before Q4 grant (Month 13) | Heavy CapDev spending this quarter |
+| Month 15 | $25,000 | Cover gap before Q5 grant (Month 16) | Mid-Year 2 buffer |
+| Month 18 | $15,000 | Cover gap before Q6 grant (Month 19) | Final drawdown |
+| **Total** | **$100,000** | All reserve utilized by Month 18 | Months 19-24 run on GP + grants only |
+
+**Why This Structure Works:**
+- **Two separate accounts** demonstrate financial planning and discipline
+- **Strategic timing:** Draws coordinate with grant payment lag (claim Month X, receive Month X+1)
+- **Gradual deployment:** Not all cash upfront, shows financial management capability
+- **Risk mitigation:** If grant delayed, Ting's reserve provides buffer
+- **Efficient capital use:** All $200k shareholder funds fully deployed by Month 18
 
 **Monthly GP Income:** 
-- Revenue: $15,652/month average (excl. GST)
-- Business expenses: $783/month (5%)
-- Net available: $14,869/month
+- Revenue: $11,117/month (from 20 hrs/week @ $145/hr excl. GST)
+- Work schedule: 46 weeks/year (6 weeks annual leave)
+- Total work commitment: 50 hrs/week (20 hrs GP + 30 hrs R&D) - sustainable
 
-**Cashflow Position:** Positive throughout project (detailed 24-month forecast available)
+**Cashflow Position:** 
+- Managed throughout 24 months with strategic reserve draws
+- **Lowest point:** $1,968 (Month 24, just before final grant arrives)
+- **Final balance:** $36,391 ✓
+- Never goes negative due to strategic drawdown timing
 
 **Total Income Over 24 Months:**
-- Opening cash: $100,000
-- GP income (net): $356,869
-- R&D grants: $286,770
-- **Total: $743,639**
+| Source | Amount |
+|--------|--------|
+| Business opening cash | $100,000 |
+| Ting's reserve (drawn) | $100,000 |
+| GP income | $266,800 |
+| R&D grants (8 quarters) | $286,609 |
+| **Total inflows** | **$753,409** |
 
-**Total Costs:** $716,926
+**Total R&D Costs:** $716,926
 
-**Final Surplus:** $26,713 ✓
+**Final Surplus:** $36,483 ✓
 
-**Grant Schedule (8 quarters over 24 months):**
-- Year 1 (Q1-Q4): ~$143k
-- Year 2 (Q5-Q8): ~$143k
-- **Total: $286,770**
+**Grant Payment Schedule (8 quarters over 24 months):**
+| Period | Quarters | Total Grants |
+|--------|----------|--------------|
+| Year 1 | Q1-Q4 | ~$148,117 |
+| Year 2 | Q5-Q8 | ~$138,492 |
+| **Total** | **Q1-Q8** | **$286,609** |
 
-Grants paid 1 month after quarterly claim submission.
+**Note:** Grants paid 1 month after quarterly claim submission. This 1-month lag is why strategic draws from Ting's reserve are needed.
 
-**See:** `02-financials/cashflow-24-month.md` for detailed monthly breakdown
+**Detailed Documentation:** `02-financials/cashflow-24-month.md` contains full monthly breakdown with all 24 positions calculated
 
 ---
 
@@ -453,105 +538,6 @@ Grants paid 1 month after quarterly claim submission.
 | **Vendor/Sub-Processor Breach** | Low | Critical | Due diligence; DPA with breach notification; NZ-held key revocation |
 | **Model Drift / Safety Degradation** | Medium | High | Version pinning; pre-release safety gates; monthly regressions |
 
----
-
-## Current Status [2025-11-28]
-
-**Status:** Major objectives revision completed. Focused scope on Inbox Helper + Care Gap Finder with dual PMS integration (Medtech + Indici) and clear Years 3-5 roadmap for HealthHub NZ.
-
-### Recent Updates (Nov 28, 2025)
-- ✅ **MAJOR REVISION:** Objectives completely refocused on 2 core tools (Inbox Helper + Care Gap Finder) instead of 50+ tools
-- ✅ **Dual PMS integration:** Both Medtech AND Indici supported from Objective 1 onwards
-- ✅ **Lean MVP approach:** Early releases to paid adopters with ongoing R&D through month 24
-- ✅ **HealthHub NZ roadmap:** Clear Years 3-5 vision for patient-facing app reusing validated NZ-LLM and safety frameworks
-- ✅ **Advanced R&D streams:** Multimodal models, continual learning, te reo support, equity-focused algorithms, outcome trials
-- ✅ **Objective 4 clarified:** Explicit R&D on generalisation and safety, not routine maintenance
-- ✅ **Removed high-risk features:** No prescription validation or high-complexity clinical decision support in 24-month scope
-
-### Previous Updates (Nov 26, 2025)
-- ✅ **Final team structure:** 3 people (Founder + Ting + Developer) - leaner, more focused
-- ✅ **CapDev restructured:** $15,000 third-party services only (IP $7,500 + Regulatory $7,500)
-- ✅ **Hardware strategy finalized:** $1,800 immediate expenses, cloud GPU only (no workstation)
-- ✅ **M&C updated:** $1,000/month ($24k total) - detailed cloud infrastructure costs
-- ✅ **Final budget:** $695,976 total eligible costs, $278,305 grant request
-- ✅ **GP revenue:** $375,652 over 24 months ($15,652/month average)
-- ✅ **Cashflow:** Positive throughout, $39k surplus, AU reserve not needed ✓
-- ✅ **CapDev:** 5.39% of grant (exceeds 5% requirement by $1,085) ✓
-
-### Previous Updates (Nov 13-27, 2025)
-- ✅ **Paula meeting 13 Nov:** Received key feedback (extend to 24 months, reduce to 4 objectives, show long-term vision, add competitor analysis)
-- ✅ Extended project from 12 to 24 months (Paula's recommendation)
-- ✅ Consolidated from 5 to 4 objectives (Paula's feedback)
-- ✅ Added Ting as full-time R&D Operations Lead (40 hrs/week @ $70/hr)
-- ✅ Increased founder hours (25→30 hrs/week)
-- ✅ Confirmed shareholder funds structure ($200k total capacity)
-- ✅ **Emailed Paula 27 Nov:** Sent progress update on all changes implemented since meeting
-
-### Strengths
-- ✓ Strong technical R&D justification
-- ✓ Extended to 24 months showing long-term R&D commitment (Paula's key feedback)
-- ✓ **Cashflow positive throughout:** Never goes negative, $39k surplus after all costs ✓
-- ✓ **Strong co-funding capacity:** $375k GP revenue + $100k opening cash
-- ✓ **Lean team structure:** 3 people (Founder + Ting + Developer) with flexible developer hours
-- ✓ **CapDev compliance:** 5.39% exceeds 5% requirement, third-party services only
-- ✓ Comprehensive risk analysis (8 risks with mitigations)
-- ✓ Clear success criteria and measurable targets
-- ✓ Strong founder profile (GP + technical + commercial expertise)
-- ✓ Dedicated R&D Project Manager (Ting) demonstrating growth intention
-
-### Critical Gaps (Must Fix Before Submission)
-1. **Market Validation (4/10)** - Missing:
-   - No letters of interest from GPs
-   - No Medtech partnership letter/MOU
-   - No proof ClinicPro is operational (revenue, user count)
-   - Weak competitor analysis
-
-2. **Commercialization Strategy (5/10)** - Missing:
-   - No pricing model
-   - No revenue projections (Year 2-3)
-   - No adoption timeline
-   - No go-to-market plan
-   - No exit strategy
-
-3. **Why Grant Funding is Essential** - Not explicit enough
-
-4. **Community & Broader Impact** - Limited discussion of patient outcomes, health equity, NZ tech ecosystem
-
-### Priority Actions
-**Critical (Must Have):**
-- [x] Get Medtech partnership letter/MOU (emailed Alex; response received - expects delivery ~20 Nov)
-- [ ] **Get Comprehensive Care PHO letter of support** (email scheduled for Monday 11 Nov)
-- [x] Create ClinicPro operational evidence document
-- [ ] Complete ClinicPro evidence document (add screenshots, fill metrics)
-- [ ] Get 2-3 letters of interest from GPs (optional - see assessment)
-- [x] Create Section: "Commercialization & Market Strategy"
-- [ ] Add paragraph: "Why Grant Funding is Essential"
-- [x] Establish submission timeline (mid-December 2025 target set)
-
-**Important (Strengthens Proposal):**
-- [ ] Expand Section 9: Long-Term Vision (Year 2-5)
-- [ ] Add: Community & Broader Impact
-- [ ] Create Competitor Analysis Table
-
----
-
-## Key Documents
-
-### Main Proposal
-- **`MENTOR-PROPOSAL.md`** - Complete 10-section proposal (25-30 pages) ready for mentor review
-
-### Supporting Documents
-- **`forge-application-narrative.md`** - Forge portal submission text
-- **`cost-template.md`** - Financial breakdown by objective
-- **`cashflow-24-month.md`** - 24-month forecast with positive cashflow
-- **`dpia-draft.md`** - Data Protection Impact Assessment
-- **`privacy-compliance-quick-reference.md`** - IPP 12, HISO, DPA clauses
-- **`safety-and-transparency-framework.md`** - Safety procedures
-- **`claims-toolkit.md`** - Quarterly claim templates
-- **`capability-development-evidence-pack.md`** - CapDev plan
-- **`project-master-index.md`** - Navigation hub
-- **`risk-and-change-management.md`** - Risk register, stage-gates
-- **`clinicpro-operational-evidence.md`** - Market validation evidence (ClinicPro operational proof)
 
 ---
 
@@ -582,126 +568,6 @@ Grants paid 1 month after quarterly claim submission.
 
 ---
 
-## Updates
-
-### [2025-11-26] Final Budget and Team Structure Confirmed
-
-**Major Update:** Finalized all financial documents with leaner team structure and positive cashflow.
-
-**Key Changes:**
-1. **Team Structure:** Reduced from 4 to 3 people (removed Developer 2)
-   - Founder: 30 hrs/week (3,120 hrs @ $96/hr = $299,520)
-   - Ting: 40 hrs/week (4,152 hrs @ $70/hr = $290,640)
-   - Developer: 10-40 hrs/week flexible (903 hrs minimum @ $72/hr = $65,016)
-   - More focused, cost-effective team
-
-2. **Capability Development:** Restructured per Paula's feedback
-   - $15,000 third-party professional services only (no internal labour)
-   - IP: $7,500 (FTO analysis, provisional patent, NDAs/contracts)
-   - Regulatory: $7,500 (gap analysis, ongoing adviser 6 sessions, compliance docs)
-   - 5.39% of grant ✓ (exceeds 5% requirement)
-
-3. **Hardware Strategy:** Cloud-first approach
-   - $1,800 immediate expenses only (RAM, monitor, arms, iPhone)
-   - GPU workstation ($11k) deferred - using cloud GPU infrastructure
-   - Better grant coverage: 40% for cloud vs 26.7% for depreciation
-   - M&C: $1,000/month ($24k total) - detailed cloud costs
-
-4. **Financial Position:**
-   - Total eligible costs: $695,976
-   - Grant (40%): $278,305
-   - Co-funding (60%): $417,671
-   - GP revenue: $375,652 over 24 months ($15,652/month average)
-   - **Cashflow positive throughout** ✓
-   - Opening: $100k → Closing: $39k surplus
-   - **AU reserve not needed** ✓
-
-**Documents Updated:**
-- Cost template finalized ($695,976 total)
-- Cashflow 24-month finalized (positive throughout)
-- PROJECT_SUMMARY.md updated with final numbers
-- Deleted 12-month cashflow (obsolete)
-
-**Status:** Budget and team structure ready for submission. Focus now on partnership letters and market validation.
-
----
-
-### [2025-11-27] Progress Update Sent to Paula
-
-**Email Update:** Sent comprehensive update to Paula summarizing all changes implemented since 13 Nov meeting:
-- Extended to 24 months with 4 objectives
-- Final budget: $695,976 ($278,305 grant, $417,586 co-funding)
-- Team: Founder + Ting + Developer (3 people, leaner structure)
-- CapDev: $15,000 third-party services (5.39% of grant ✓)
-- Cashflow: Positive throughout, AU reserve not needed ✓
-- Still working on: Final objectives narrative, Year 3-5 vision, competitor analysis
-
----
-
-### [2025-11-13] Paula Mentor Meeting Feedback - Major Revision Required
-
-**Meeting with Paula:** Proposal received positive feedback ("really good, good chance of getting approved") but requires improvements:
-
-**Paula's Key Feedback:**
-1. **Long-term R&D vision (2 years):** Grant can be up to 2 years. Need to show both immediate goals AND long-term R&D goals. Callaghan is looking for long-term R&D performers.
-2. **Company growth intention:** Need to mention intention to hire more people down the track (demonstrates growth mindset and commitment).
-3. **Competitor mention:** Briefly mention competitors (reviewers want to know) - not in detail, just acknowledge landscape.
-4. **Objectives:** Max 4 objectives (currently have 5). Need to consolidate and span over 2 years.
-5. **Conference specificity:** Can't be generic conference attendance. Must be specific workshops/sessions directly linked to R&D activities.
-6. **Maximise grant request:** Request as much as possible at beginning - can't change this later. Use full opening cash capacity (~$200k).
-
-**Decisions Made:**
-1. **Expand AI features:** Not limiting to just inbox management and care gap monitoring. Will build broader AI capabilities over 2-year R&D programme.
-2. **Reduce to 4 objectives** spanning 24 months (not 5 objectives over 12 months).
-3. **Increase total eligible costs** to maximise grant (have $200k NZD opening cash capacity).
-4. **Position as long-term R&D performer:** Show this is the start of sustained R&D capability, not a one-off project.
-5. **Include hiring plan:** Developer hiring timeline to demonstrate growth intention.
-
-**Next Steps:**
-- [x] Document Paula's feedback in PROJECT_SUMMARY.md
-- [ ] Brainstorm full AI feature set for 2-year R&D programme
-- [ ] Restructure to 4 objectives over 24 months
-- [ ] Calculate new budget targeting ~$200k total eligible costs
-- [ ] Add competitor landscape section (brief)
-- [ ] Identify specific conference workshops (not generic attendance)
-- [ ] Add long-term R&D vision (Year 3-5)
-- [ ] Include hiring plan and growth intentions
-
-### [2025-11-07] Partnership Development & Submission Timeline
-- **Medtech Partnership Letter Update:** Alex Cauble-Chantrenne responded positively - will draft letter and get approval, expects to deliver "next week" (~20 Nov 2025)
-- **Comprehensive Care PHO Approach:** Email scheduled for Monday 11 Nov to request letter of support from Comprehensive Care (PHO with 42+ practices, 400+ GPs, 200,000+ patients)
-- **Submission Timeline Established:** Target submission mid-December 2025 (allows 6-8 weeks for Callaghan review before 27 Jan 2026 project start)
-- **Supporting Documents Created:**
-  - `medtech-partnership-letter-guidance.md` - Guidance for Alex including request to mention GP demand for AI inbox management
-  - `comprehensive-care-pho-approach.md` - Strategy and draft email for PHO partnership
-  - `submission-timeline.md` - Detailed week-by-week timeline to mid-December submission
-- **Status:** Partnership development in progress; preparing for mentor/Callaghan meetings next week
-
-### [2025-11-06] Meeting Schedule & Mentor Engagement
-- **Mentor Proposal Sent:** Emailed `MENTOR-PROPOSAL.md` to mentor for review
-- **Mentor Meeting Scheduled:** 12 November 2025, 8:30am - Discussion about grant application
-- **Callaghan Innovation Meeting Scheduled:** 13 November 2025, 2:00pm - Meeting with Paul from Callaghan Innovation
-- **Medtech Partnership Letter:** Emailed Medtech requesting partnership letter for grant application
-- **ClinicPro Evidence Document:** Created `clinicpro-operational-evidence.md` with image placeholders for screenshots
-- **Status:** Active engagement phase - seeking feedback and guidance from mentor and Callaghan Innovation
-
-### [2025-11-01] Major Restructuring
-- Focused on 2 high-impact use cases (inbox management, care gap monitoring) for deeper quality vs 4 features
-- Updated cost comparison: "20-50x cheaper" (accurate Azure calculation)
-- Updated Azure costs: $140-170k/month for 5,000 GPs
-- Fixed HealthPathways: 10 regional Community HealthPathways sites
-- Updated all "GPT-4" references to "GPT-4/5"
-- Applied NZ spelling throughout
-- Updated labour plan: ~20 hrs/week throughout
-- Changed co-funding source: "GP clinical work income"
-
-### [2025-11-06] PROJECT_SUMMARY.md Created
-- Comprehensive project overview created based on full directory review
-- Documented all 5 R&D objectives, 3 CapDev streams, financials, risks, status
-- Identified critical gaps for final submission
-
----
-
 ## Next Steps
 
 1. **Address Critical Gaps:**
@@ -726,13 +592,4 @@ Grants paid 1 month after quarterly claim submission.
 
 ---
 
-**Last Updated:** 2025-11-29  
-**Version:** 3.1  
-**Status:** Validation - CapDev updated to $36k (5.02% of total costs) per Paula confirmation; ready for submission mid-December 2025
-
-**Version 3.1 Changes (29 Nov 2025):**
-- Updated CapDev from $15k to $36k (5.02% of total eligible costs)
-- Added 4 CapDev categories: IP ($7.5k), Regulatory ($15k), R&D Info Management ($8.5k), Project Management ($5k)
-- Updated total eligible costs to $716,926
-- Updated grant to $286,770 and co-funding to $430,156
-- Confirmed 5% rule applies to total costs, not grant amount (per Paula)
+**Last Updated:** 2025-12-01

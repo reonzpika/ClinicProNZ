@@ -36,7 +36,7 @@ The system is strictly assist-only. It never provides diagnostic or treatment di
 - NZ-incorporated company; solvent; intends to conduct ongoing R&D.
 - **New to R&D:** <$150k total R&D in last three years; no R&D grants/loans >$5k in last three years.
 - Not grouped with an R&D performer (>$150k in last three years).
-- Able to fund 60% co-funding from GP clinical work income; evidence provided.
+- Able to fund 60% co-funding from shareholder funds ($200k: $100k opening + $100k Ting's reserve) and GP clinical work income; evidence provided.
 
 ---
 
@@ -219,7 +219,7 @@ Therefore, systematic R&D is required to resolve these uncertainties.
 
 **Total R&D Labour:** 8,175 hours (minimum) = $655,176
 
-**Rationale for team structure:** Founder's dual GP/technical expertise enables rapid clinical workflow iteration and NZ-specific domain understanding. Ting as full-time R&D Operations Lead provides dedicated project management, systematic testing, and quality assurance—demonstrating growth intention beyond solo founder. Developer contractor provides flexible capacity to scale up during intensive development phases (Objectives 2-3) without fixed overhead. This structure maintains GP practice income for co-funding while enabling substantial 24-month R&D programme.
+**Rationale for team structure:** Founder's dual GP/technical expertise enables rapid clinical workflow iteration and NZ-specific domain understanding. Ting as full-time R&D Operations Lead provides dedicated project management, systematic testing, and quality assurance—demonstrating growth intention beyond solo founder. Developer contractor provides flexible capacity to scale up during intensive development phases (Objectives 2-3) without fixed overhead. This structure maintains manageable GP practice workload (20 hrs/week) for business income while enabling substantial 30 hrs/week R&D commitment over 24 months.
 
 ---
 
@@ -501,27 +501,39 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 
 ---
 
-### CDP-5: Project Management ($5,000, Months 3-15)
+### CDP-5: Project Management ($5,000, Months 2-15)
 
 **Third-party professional services only (no internal labour):**
 
-**R&D Project Management Coaching & System Setup: $5,000**
+**R&D Project Management Training & Coaching for Ting + System Setup: $5,000**
 - Provider: R&D project management consultant/coach
-- Timing: Months 3-15
+- Timing: Months 2-15
+- Who it's for: Primarily Ting (as R&D Operations Lead) + Founder
 
-**Phase 1 - Setup (Months 3-4): ~$2,000**
-- Agile R&D system setup (Kanban boards, sprint templates)
-- Roadmap framework for 24-month project
-- Risk management templates
-- Documentation workflows
-- Initial training workshop with founder + Ting
+**Phase 1 - Intensive Training & Setup (Months 2-4): ~$2,500**
+- Training sessions specifically for Ting on R&D project management fundamentals:
+  - How to plan and manage R&D projects (vs traditional business projects)
+  - Budget tracking and resource allocation for R&D
+  - Managing R&D risks and uncertainty
+  - Documentation best practices for knowledge capture
+  - How to manage third-party service providers and consultants
+  - Communication management with stakeholders
+- Systems setup (with Ting leading): Agile R&D workflow system (Kanban boards), roadmap templates, budget tracking spreadsheets, risk register templates, vendor/contractor management workflows
+- Ting's capability development: Learn to break down R&D objectives, create timelines with contingency planning, identify when to bring in third-party expertise, **manage CapDev procurement process itself** (finding vendors, scoping work, managing contracts)
 
-**Phase 2 - Ongoing Coaching (Months 5-15): ~$3,000**
-- 6 monthly coaching sessions ($500 each)
-- Review project progress against milestones
-- Decision-making support
-- Train Ting on R&D operations management
-- Adjust systems as project evolves
+**Phase 2 - Ongoing Coaching (Months 5-15): ~$2,500**
+- 6 monthly coaching sessions with Ting ($400-500 each)
+- Month 5: Review systems, troubleshoot issues
+- Months 7, 9, 11, 13, 15: Managing objectives, decision-making support, refining Ting's R&D management skills
+- Coach Ting to run the R&D project (timelines, budget tracking, developer workload management, pilot coordination)
+
+**Why this is smart:**
+- Builds long-term capability - Ting learns how to manage R&D (not just admin)
+- **Meta-capability development:** Ting manages the CapDev procurement for other CDP services (regulatory, IP, R&D info systems)
+- Demonstrates "growth intention" (Paula's feedback about having Ting full-time)
+- After 24 months, Ting will have skills to manage future R&D projects
+
+**Deliverables:** R&D PM training materials, configured PM system, 6 coaching session reports, Ting-maintained roadmap/budget/risk register, vendor management records for all CDP procurement, monthly progress reports
 
 **Total CDP-5:** $5,000
 
@@ -601,22 +613,25 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 
 ## Co-Funding Evidence
 
+**Shareholder Funds:**
+- **Business account opening cash: $100,000 NZD**
+- **Ting's reserve account: $100,000 NZD** (drawn strategically during project in 4 installments)
+- **Total shareholder contributions: $200,000 NZD**
+- Source: Founder + Ting shareholder funds
+
 **GP Clinical Work Income (24 months):**
-- Total revenue (excl. GST): $375,652
-- Business expenses (5%): $18,783
-- **Net GP income available for co-funding: $356,869**
-
-**Monthly average:**
-- GP revenue: $15,652/month
-- GP expenses: $783/month  
-- Net available: $14,869/month
-
-**Opening cash:** $100,000 NZD (business account, can be increased if needed)
+- Total revenue (excl. GST): $266,800
+- Monthly income: $11,117/month
+- Work schedule: 20 hrs/week @ $145/hr (excl. GST)
+- Total work commitment: 50 hrs/week (20 hrs GP + 30 hrs R&D)
 
 **Co-funding requirement:** $430,156
-**Total available:** $456,869 (opening cash + net GP income) ✓
+**Total available:** $466,800 (shareholder funds $200k + GP income $266.8k) ✓
+**Surplus:** $36,644 ✓
 
-**Cashflow position:** Positive throughout project (detailed 24-month forecast available)
+**Cashflow position:** Managed throughout 24 months with strategic draws from Ting's reserve - Detailed 24-month forecast shows Ting's $100k drawn in 4 installments (Months 9, 12, 15, 18) to cover timing gaps before grant payments arrive. Lowest point $1,968 (Month 24), closing balance $36,391
+
+**Drawdown Strategy:** Ting's reserve provides buffer for 1-month grant payment lag, with draws timed strategically before each grant payment arrives
 
 **See:** Detailed 24-month cashflow forecast provided separately.
 
