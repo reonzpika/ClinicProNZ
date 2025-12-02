@@ -85,6 +85,8 @@
 - 46 working weeks per year (6 weeks annual leave)
 - Total work commitment: 50 hrs/week (20 hrs GP + 30 hrs R&D)
 
+**Note on GST:** GP clinical services ARE subject to GST (confirmed by accountant Dec 2025). The $145/hour rate and all income figures above exclude GST. GST is charged separately to patients/funders.
+
 ---
 
 ## Grant Payment Schedule (8 Quarters)
@@ -370,9 +372,12 @@
 
 ---
 
-**Last Updated:** 1 December 2025  
-**Status:** FINAL - Updated with $218k opening cash, 20 hrs/week GP work ($266,800 income), positive cashflow throughout  
-**Version:** 2.0
+**Last Updated:** 2 December 2025  
+**Status:** FINAL - Updated with two-account structure ($100k business + $100k Ting's reserve), 20 hrs/week GP work ($266,800 income), positive cashflow throughout  
+**Version:** 2.1
+
+**Changes in v2.1:**
+- Added GST clarification note: GP services ARE subject to GST (figures already exclude GST, so no calculation changes)
 
 ---
 

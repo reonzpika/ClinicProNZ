@@ -7,6 +7,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [3.3] - 2025-12-02
+
+### Added - Accountant Review Findings & Critical Question Framework
+
+**Helen (accountant) reviewed financial plan - key learnings:**
+
+#### Corrections Required
+- **GST on GP services:** GP services ARE subject to GST (we incorrectly thought GST-exempt). GP income figures already exclude GST, so calculations remain correct, but important clarification for tax treatment.
+
+#### Additional Funding Opportunities Identified
+- **R&D tax incentives available:**
+  - 15% tax credit on eligible R&D costs
+  - Loss tax credit cashout option
+  - Application deadline: June 30, 2026
+  - **Action:** Apply for these incentives to supplement grant funding
+
+#### Critical Communication Lesson
+- **Problem identified:** Initial review asked general tax questions but missed the critical financial decision question
+- **Lesson:** When engaging advisers, **define critical questions FIRST**, not general questions
+- **Example of missed critical question:** "What's our household net cash position at end of 24 months: With grant vs Without grant?"
+- **Action taken:** Emailed Helen with specific question comparing Scenario A (with grant, 60 hrs/week) vs Scenario B (without grant, 30 hrs/week GP only)
+- **Going forward:** Apply critical question framework to all adviser engagements
+
+#### What Was Confirmed
+- PAYE calculations correct ✓
+- R&D costs are tax deductible (revenue nature) ✓
+- End product: Two SaaS features (Inbox Helper + Care Gap Finder) = operational product enhancement ✓
+- Contractor withholding tax treatment correct ✓
+- Grant income treatment correct ✓
+
+### Financial Clarifications for Analysis
+- Starting position: $200,000 shareholder funds (Ryo + Ting)
+- Scenario A work structure: 30 hrs/week GP (but only 20 hrs/week equivalent used for R&D costs, 10 hrs/week retained in company) + 30 hrs/week R&D = 60 hrs/week total
+- Scenario B: 30 hrs/week GP only, profits distributed (Ting $30k/year dividend, Ryo gets rest)
+- Awaiting Helen's calculation of household net cash position to determine if grant is financially worthwhile
+
+---
+
 ## [3.2] - 2025-12-01
 
 ### Changed - Financial Structure Optimization

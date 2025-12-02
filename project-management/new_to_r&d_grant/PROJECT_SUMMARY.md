@@ -568,6 +568,59 @@ The project is organized into 7 main directories:
 
 ---
 
+## Additional Funding: R&D Tax Incentives
+
+**Available Government Incentives (Additional to Grant):**
+
+1. **R&D Tax Credit:** 15% tax credit on eligible R&D costs
+   - Applies to total eligible costs ($716,926)
+   - Potential additional benefit: ~$107,539
+   
+2. **Loss Tax Credit Cashout:** Option to cash out tax losses
+   - Available if company is in loss position during R&D
+   
+**Application Deadline:** June 30, 2026 (first financial year)
+
+**Action Required:** Apply for R&D tax incentives alongside grant to maximize total funding benefit.
+
+---
+
+## Lessons Learned: Third-Party Engagement
+
+### Critical Question Framework
+
+**Problem identified during accountant review (Dec 2025):** We asked general tax questions but missed the most critical question: **"How much more money am I actually making by utilizing the grant after all taxes and costs?"**
+
+**Lesson:** When engaging third-party advisers (accountants, lawyers, consultants), **define critical questions FIRST** before seeking general advice.
+
+**Framework for future adviser engagement:**
+
+1. **Before contacting adviser, write down:**
+   - The 1-3 critical questions you MUST have answered
+   - Why each question matters to your decision-making
+   - What you'll do differently based on the answer
+
+2. **Lead with critical questions:**
+   - State them upfront in email/meeting
+   - Don't bury them in general context
+   - Ask for specific, actionable answers
+
+3. **Examples of critical vs general questions:**
+
+| General (Low Value) | Critical (High Value) |
+|---------------------|----------------------|
+| "What's the tax treatment?" | "How much more money do I actually keep after all taxes if I take the grant vs not taking it?" |
+| "Is this deductible?" | "What's my total tax liability across all entities for the next 3 years under this structure?" |
+| "How does GST work?" | "Will this GST treatment create cashflow problems? When?" |
+
+**Applied to Helen's review:**
+- ❌ What we asked: General tax treatment questions (PAYE, GST, deductibility)
+- ✅ What we should have asked: "Calculate my net personal income for 24 months: (A) With grant, (B) Without grant. What's the real financial benefit after all taxes?"
+
+**Going forward:** Apply this framework to all adviser engagements (regulatory, IP, clinical safety, etc.)
+
+---
+
 ## Next Steps
 
 1. **Address Critical Gaps:**
@@ -585,11 +638,18 @@ The project is organized into 7 main directories:
    - Bank statement (current balance, 3-month history)
    - YTD Balance Sheet and P&L (NexWave Solutions Ltd)
 
-4. **Final Review:**
+4. **Additional Funding:**
+   - Apply for R&D tax incentives (15% tax credit + loss cashout) by June 30, 2026
+
+5. **Financial Impact Analysis:**
+   - Emailed Helen (accountant) with critical question: "What's our household net cash position at end of 24 months: With grant vs Without grant?"
+   - Awaiting response to determine if grant is financially worthwhile
+
+6. **Final Review:**
    - Proofread for NZ spelling
    - Verify all sections align
    - Prepare Forge portal submission
 
 ---
 
-**Last Updated:** 2025-12-01
+**Last Updated:** 2025-12-02
