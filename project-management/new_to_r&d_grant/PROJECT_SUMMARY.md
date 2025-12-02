@@ -2,8 +2,8 @@
 project_name: ClinicPro AI - Inbox Helper + Care Gap Finder (NZ-Sovereign Clinical LLM)
 project_stage: Validation
 owner: NexWave Solutions Ltd
-last_updated: "2025-11-28"
-version: "3.0"
+last_updated: "2025-12-01"
+version: "3.2"
 tags:
   - r&d-grant
   - healthcare-ai
@@ -11,7 +11,7 @@ tags:
   - clinical-llm
   - callaghan-innovation
   - gp-workflow
-summary: R&D grant proposal for building a NZ-sovereign clinical LLM to assist NZ GPs with inbox management (Inbox Helper) and care gap monitoring (Care Gap Finder), integrated across both Medtech and Indici PMSs. 24-month project with lean MVPs released to early adopters, plus Years 3-5 roadmap for HealthHub NZ patient-facing app. Team: Founder + Ting R&D Operations Lead + Developer. Includes architecture validation R&D, NZ-LLM training, equity-focused algorithms, and multi-PMS generalisation. Cashflow positive throughout.
+summary: R&D grant proposal for building a NZ-sovereign clinical LLM to assist NZ GPs with inbox management (Inbox Helper) and care gap monitoring (Care Gap Finder), integrated across both Medtech and Indici PMSs. 24-month project with lean MVPs released to early adopters, plus Years 3-5 roadmap for HealthHub NZ patient-facing app. Team: Founder + Ting R&D Operations Lead + Developer. Includes architecture validation R&D, NZ-LLM training, equity-focused algorithms, and multi-PMS generalisation. Co-funding from $200k shareholder funds (two-account structure) plus GP income. Cashflow strategically managed with planned drawdowns.
 links:
   - name: Revised Objectives (24 Months)
     path: 00-admin-and-governance/revised-objectives-24-months.md
@@ -47,6 +47,12 @@ milestones:
   - date: "2025-11-28"
     name: Major objectives revision - focused on Inbox Helper + Care Gap Finder with dual PMS integration (Medtech + Indici) and HealthHub NZ roadmap
     status: completed
+  - date: "2025-11-29"
+    name: CapDev expanded to $36k (4 categories) - 5.02% of total costs
+    status: completed
+  - date: "2025-12-01"
+    name: Financial structure finalized - two-account strategy ($100k business + $100k Ting's reserve), 20 hrs/week GP work, strategic drawdown plan
+    status: completed
   - date: "2025-12-15"
     name: Target submission date
     status: pending
@@ -71,11 +77,11 @@ risks:
 **Organisation:** NexWave Solutions Ltd  
 **Grant Type:** Callaghan Innovation - New to R&D Grant  
 **Project Duration:** 27 Jan 2026 - 26 Jan 2028 (24 months)  
-**Total Eligible Costs:** $695,976 (NZD excl. GST)  
-**Grant Request:** $278,305 (40%)  
-**Co-Funding:** $417,671 (60% from GP clinical work income)
+**Total Eligible Costs:** $716,926 (NZD excl. GST)  
+**Grant Request:** $286,770 (40%)  
+**Co-Funding:** $430,156 (60% from shareholder funds + GP clinical work income)
 
-**Status:** Final budget and team structure confirmed (26 Nov 2025). Cashflow positive throughout 24 months.
+**Status:** Financial structure finalized (1 Dec 2025). Two-account strategy with strategic drawdowns. Cashflow managed throughout 24 months.
 
 ---
 
@@ -122,8 +128,8 @@ The project is organized into 6 main directories:
 - `commercialization-and-market-strategy.md` - Pricing model, GTM, adoption, competitive positioning
 
 ### 02-financials/
-- `cashflow-24-month.md` - Monthly cashflow forecast showing positive cash throughout ($100k opening → $39k closing)
-- `cost-template/cost-template.md` - Detailed cost breakdown by category (Labour + CapDev + M&C + Hardware)
+- `cashflow-24-month.md` - Monthly cashflow forecast with strategic drawdown plan (Two-account structure: $100k business + $100k Ting's reserve drawn in 4 installments. Final balance: $36,391)
+- `cost-template/cost-template.md` - Detailed cost breakdown by category (Labour + CapDev $36k + M&C + Hardware)
 
 ### 03-capability-development/
 - `capability-development-evidence-pack.md` - CapDev courses, one-off setups, evidence requirements
