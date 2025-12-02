@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [3.3] - 2025-12-02
 
-### Added - Accountant Review Findings
+### Added - Accountant Review Findings & Critical Question Framework
 
 **Helen (accountant) reviewed financial plan - key learnings:**
 
@@ -24,10 +24,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - **Action:** Apply for these incentives to supplement grant funding
 
 #### Critical Communication Lesson
-- **Problem identified:** Accountant couldn't determine end product from financial summary alone
-- **Lesson:** When communicating with third parties (accountants, advisers, reviewers), **ask critical questions upfront**, not just general questions
-- **Example of missed critical question:** "How much more money am I actually making by utilizing the grant after all taxes and costs?" - This financial impact analysis was completely missed
-- **Going forward:** Define specific questions we need answered before engaging advisers
+- **Problem identified:** Initial review asked general tax questions but missed the critical financial decision question
+- **Lesson:** When engaging advisers, **define critical questions FIRST**, not general questions
+- **Example of missed critical question:** "What's our household net cash position at end of 24 months: With grant vs Without grant?"
+- **Action taken:** Emailed Helen with specific question comparing Scenario A (with grant, 60 hrs/week) vs Scenario B (without grant, 30 hrs/week GP only)
+- **Going forward:** Apply critical question framework to all adviser engagements
 
 #### What Was Confirmed
 - PAYE calculations correct ✓
@@ -36,8 +37,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Contractor withholding tax treatment correct ✓
 - Grant income treatment correct ✓
 
-### Note Added to Project Management
-- Added reminder in PROJECT_SUMMARY.md: Always define critical questions before engaging third-party advisers
+### Financial Clarifications for Analysis
+- Starting position: $200,000 shareholder funds (Ryo + Ting)
+- Scenario A work structure: 30 hrs/week GP (but only 20 hrs/week equivalent used for R&D costs, 10 hrs/week retained in company) + 30 hrs/week R&D = 60 hrs/week total
+- Scenario B: 30 hrs/week GP only, profits distributed (Ting $30k/year dividend, Ryo gets rest)
+- Awaiting Helen's calculation of household net cash position to determine if grant is financially worthwhile
 
 ---
 

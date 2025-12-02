@@ -23,8 +23,6 @@ links:
     path: 02-financials/cashflow-24-month.md
   - name: Cost Template
     path: 02-financials/cost-template/cost-template.md
-  - name: Grant Financial Impact Analysis (INCOMPLETE)
-    path: 02-financials/grant-financial-impact-analysis.md
   - name: Archived Mentor Proposal (12-month version)
     path: 00-admin-and-governance/archive/MENTOR-PROPOSAL.md
 stakeholders:
@@ -644,9 +642,8 @@ The project is organized into 7 main directories:
    - Apply for R&D tax incentives (15% tax credit + loss cashout) by June 30, 2026
 
 5. **Financial Impact Analysis:**
-   - Complete `grant-financial-impact-analysis.md` - requires detailed tax calculations
-   - Critical question: "How much more money do I actually make with the grant vs without?"
-   - Engage accountant with specific questions from analysis document
+   - Emailed Helen (accountant) with critical question: "What's our household net cash position at end of 24 months: With grant vs Without grant?"
+   - Awaiting response to determine if grant is financially worthwhile
 
 6. **Final Review:**
    - Proofread for NZ spelling

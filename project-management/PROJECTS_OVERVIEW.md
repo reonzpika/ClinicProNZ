@@ -140,7 +140,7 @@ Start minimal, add folders as project evolves.
 ### Recent Achievements Across Projects
 *[AI will auto-populate this section based on recent milestones and updates]*
 
-- **2025-12-02**: R&D Grant Submission - ⚠️ LESSON LEARNED: Accountant review revealed critical communication gap. Asked general tax questions but missed the most important question: "How much more money do I actually make with the grant after all taxes?" Created critical question framework for future adviser engagement. Document created: `grant-financial-impact-analysis.md` (incomplete, needs proper tax calculations). Key insight: Define critical questions BEFORE engaging advisers.
+- **2025-12-02**: R&D Grant Submission - ⚠️ LESSON LEARNED: Accountant review revealed critical communication gap. Asked general tax questions but missed the most important question: "What's our household net cash at end of 24 months with grant vs without?" Created critical question framework and emailed Helen with specific comparison (Scenario A: 60 hrs/week with grant vs Scenario B: 30 hrs/week GP only). Awaiting calculation. Key insight: Define critical questions BEFORE engaging advisers.
 - **2025-11-28**: R&D Grant Submission - 🎉 MAJOR MILESTONE: Objectives completely revised! Focused scope on 2 core tools (Inbox Helper + Care Gap Finder) instead of 50+ tools. Dual PMS integration (Medtech + Indici) from day one. Lean MVP approach with early releases to paid adopters. Years 3-5 roadmap added: HealthHub NZ patient-facing app, multimodal models, continual learning, te reo support, equity-focused algorithms, real-world outcome trials. Removed high-risk features (prescription validation). Document version 3.0 ready for external review.
 - **2025-11-07**: Medtech Integration — POST Media endpoint implemented; Facility ID configuration blocker identified (403 error); Email sent to Medtech ALEX support
 - **2025-11-07**: Strategic prioritisation review — Medtech Integration identified as high ROI revenue path; ClinicPro marketing ROI questioned given competitive market
@@ -286,7 +286,7 @@ Start minimal, add folders as project evolves.
   - Grant submission target: ~2025-12-15
   - Project start (if approved): 2026-01-27
   - Project end: 2028-01-26 (24 months)
-- **Status**: 🎉 Major objectives revision complete — Focused scope (Inbox Helper + Care Gap Finder), dual PMS integration (Medtech + Indici), lean MVP approach, HealthHub NZ roadmap for Years 3-5. ⚠️ Financial impact analysis incomplete - need proper tax calculations to determine real benefit of grant.
+- **Status**: 🎉 Major objectives revision complete — Focused scope (Inbox Helper + Care Gap Finder), dual PMS integration (Medtech + Indici), lean MVP approach, HealthHub NZ roadmap for Years 3-5. ⚠️ Awaiting accountant's calculation: household net cash position with grant vs without grant (critical financial decision).
 - **Link**: [View Full Summary](./new_to_r&d_grant/PROJECT_SUMMARY.md)
 
 ### Project Management AI SaaS
@@ -322,4 +322,4 @@ Start minimal, add folders as project evolves.
 
 ---
 
-*Dashboard Last Updated: [2025-12-02] - R&D Grant: ⚠️ Lesson learned from accountant review - Critical question framework created. Always define specific questions before engaging advisers. Financial impact analysis incomplete (needs proper tax calculations to determine real grant benefit).*
+*Dashboard Last Updated: [2025-12-02] - R&D Grant: ⚠️ Lesson learned from accountant review - Critical question framework created. Always define specific questions before engaging advisers. Emailed Helen with critical question: household net cash with grant vs without grant. Awaiting response.*
