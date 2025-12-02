@@ -7,6 +7,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [3.3] - 2025-12-02
+
+### Added - Accountant Review Findings
+
+**Helen (accountant) reviewed financial plan - key learnings:**
+
+#### Corrections Required
+- **GST on GP services:** GP services ARE subject to GST (we incorrectly thought GST-exempt). GP income figures already exclude GST, so calculations remain correct, but important clarification for tax treatment.
+
+#### Additional Funding Opportunities Identified
+- **R&D tax incentives available:**
+  - 15% tax credit on eligible R&D costs
+  - Loss tax credit cashout option
+  - Application deadline: June 30, 2026
+  - **Action:** Apply for these incentives to supplement grant funding
+
+#### Critical Communication Lesson
+- **Problem identified:** Accountant couldn't determine end product from financial summary alone
+- **Lesson:** When communicating with third parties (accountants, advisers, reviewers), **ask critical questions upfront**, not just general questions
+- **Example of missed critical question:** "How much more money am I actually making by utilizing the grant after all taxes and costs?" - This financial impact analysis was completely missed
+- **Going forward:** Define specific questions we need answered before engaging advisers
+
+#### What Was Confirmed
+- PAYE calculations correct ✓
+- R&D costs are tax deductible (revenue nature) ✓
+- End product: Two SaaS features (Inbox Helper + Care Gap Finder) = operational product enhancement ✓
+- Contractor withholding tax treatment correct ✓
+- Grant income treatment correct ✓
+
+### Note Added to Project Management
+- Added reminder in PROJECT_SUMMARY.md: Always define critical questions before engaging third-party advisers
+
+---
+
 ## [3.2] - 2025-12-01
 
 ### Changed - Financial Structure Optimization
