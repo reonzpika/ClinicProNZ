@@ -92,39 +92,31 @@ Pilot with 10-20 GP practices. Measure clinical utility, safety outcomes, alert 
 
 Which AI architectural paradigm achieves clinical safety, NZ-contextual accuracy, and cost-effectiveness for primary care decision support across multiple health system platforms?
 
-This cannot be resolved without systematic experimentation because clinical AI operates under unprecedented constraint combination: high safety requirements, NZ-specific language and protocols, equity obligations, privacy regulations, and multi-system integration.
+This cannot be resolved without systematic experimentation because clinical AI operates under unprecedented constraint combination: high safety requirements, NZ-specific language, equity obligations, privacy regulations, multi-system integration.
 
 **Five Cascading Research Uncertainties:**
 
-**1. Architectural Paradigm Selection Across Risk Spectrum**
+**1. Architectural Paradigm Selection Across Clinical Risk Spectrum**
 
-Which architectural approach—ranging from simple pattern recognition to multi-agent reasoning systems—achieves required clinical safety and accuracy at sustainable cost? Do routine tasks permit lightweight solutions ($0.002/request), or do clinical nuances demand sophisticated reasoning ($0.15/request)? **Emerging AI paradigms (agentic systems, advanced retrieval-augmented generation) may prove superior to established approaches**, requiring investigation of cutting-edge techniques alongside conventional methods.
+Which architectural approach—ranging from simple pattern recognition to multi-agent reasoning systems—achieves required clinical safety and accuracy at sustainable cost? Do routine tasks permit lightweight solutions ($0.002/request), or do clinical nuances demand sophisticated reasoning ($0.15/request)? **Emerging AI paradigms (agentic systems, advanced retrieval-augmented generation) may prove superior to established approaches**, requiring investigation of cutting-edge techniques alongside conventional methods. **Cost-accuracy-safety trade-offs unknowable without empirical comparison. Optimal paradigm may vary by clinical task in unexpected ways.**
 
-**Cost-accuracy-safety trade-offs unknowable without empirical comparison. Optimal paradigm may vary by clinical task in unexpected ways.**
+**2. Domain Adaptation Feasibility Under NZ Constraints**
 
-**2. NZ Domain Adaptation Effectiveness**
-
-Can NZ-adapted AI models match expensive overseas systems (GPT-4) on local clinical tasks: interpreting regional laboratory formats (LabTests, SCL, Medlab), understanding bpac/Ministry of Health guidelines, recognising Pharmac medication names, handling Medtech/Indici clinical note variations?
-
-**No published benchmarks exist for NZ clinical language performance. Adaptation techniques must be discovered empirically.**
+Can domain adaptation techniques achieve clinical-grade accuracy on NZ-specific clinical language (regional laboratory formats, Māori health terms, bpac/Ministry of Health protocols, Pharmac medication names), or do local variations require fundamentally different architectural approaches? **Adaptation effectiveness varies unpredictably across paradigms and clinical contexts—no published benchmarks exist for NZ primary care.**
 
 **3. Multi-System Generalisation Patterns**
 
-Will architectural approach achieving 90% accuracy in Medtech maintain performance in Indici, given different data structures and workflows? What design patterns enable single system to generalise across health platforms without system-specific rework?
+Will architectural approach achieving 90% accuracy in Medtech maintain performance in Indici, given different data structures and workflows? What design patterns enable single system to generalise across health platforms without system-specific rework? **Generalisation behaviour cannot be predicted—requires testing. May reveal novel architectural requirements.**
 
-**Generalisation behaviour cannot be predicted—requires testing. May reveal novel architectural requirements.**
+**4. Safety-Architecture Interaction Effects**
 
-**4. Alert Fatigue and Clinical Utility Balance**
+How do safety constraints (refusal scaffolds, prohibited-claim detection) interact with different architectural paradigms? Do agentic systems maintain safety bounds differently than LLMs? Do hybrid approaches propagate safety failures across components? **Safety failure modes across paradigms create emergent risks that cannot be predicted from component specifications—requires systematic empirical investigation.**
 
-How many chronic disease monitoring alerts can clinicians receive before dismissing them? Optimal balance between sensitivity (catching gaps) and specificity (avoiding noise) varies by practice characteristics—unknowable without real-world measurement across diverse settings.
+**5. Equity Algorithm Generalisability Across Populations**
 
-**5. Equity Without Algorithmic Bias**
+Can prioritisation algorithms surface high-risk and Māori/Pacific patients without introducing under-alerting in other populations or perpetuating training data biases? **Novel equity-preserving approaches required—no published methods for multi-condition clinical monitoring with NZ equity goals.**
 
-Can prioritisation algorithms surface high-risk and Māori/Pacific patients without introducing under-alerting in other populations or perpetuating training data biases?
-
-**Novel equity-preserving approaches required—no published methods for multi-condition clinical monitoring with NZ equity goals.**
-
-These uncertainties are interconnected: architectural paradigm choice affects domain adaptation approach, influences multi-system generalisation, impacts alert design, determines equity outcomes. Resolving these creates foundational knowledge for patient-facing AI (Years 3-5) and national health integration.
+These uncertainties are interconnected: architectural paradigm choice affects domain adaptation, influences multi-system generalisation, impacts safety mechanisms, determines equity outcomes. Resolving these creates foundational knowledge for patient-facing AI (Years 3-5) and national health integration.
 
 ---
 
