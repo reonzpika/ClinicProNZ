@@ -36,7 +36,7 @@ The system is strictly assist-only. It never provides diagnostic or treatment di
 - NZ-incorporated company; solvent; intends to conduct ongoing R&D.
 - **New to R&D:** <$150k total R&D in last three years; no R&D grants/loans >$5k in last three years.
 - Not grouped with an R&D performer (>$150k in last three years).
-- Able to fund 60% co-funding from shareholder funds ($200k: $100k opening + $100k Ting's reserve) and GP clinical work income; evidence provided.
+- Able to fund 60% co-funding from shareholder funds ($230k available: $130k opening + $100k Ting's reserve, of which $215k deployed with $15k emergency buffer) and GP clinical work income; evidence provided.
 
 ---
 
@@ -614,9 +614,11 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 ## Co-Funding Evidence
 
 **Shareholder Funds:**
-- **Business account opening cash: $100,000 NZD**
-- **Ting's reserve account: $100,000 NZD** (drawn strategically during project in 4 installments)
-- **Total shareholder contributions: $200,000 NZD**
+- **Business account opening cash: $130,000 NZD**
+- **Ting's reserve account: $85,000 NZD** (drawn strategically during project in 3 installments)
+- **Emergency buffer: $15,000 NZD** (retained in Ting's account as prudent reserve)
+- **Total shareholder funds available: $230,000 NZD**
+- **Total deployed: $215,000 NZD**
 - Source: Founder + Ting shareholder funds
 
 **GP Clinical Work Income (24 months):**
@@ -626,10 +628,11 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 - Total work commitment: 50 hrs/week (20 hrs GP + 30 hrs R&D)
 
 **Co-funding requirement:** $430,156
-**Total available:** $466,800 (shareholder funds $200k + GP income $266.8k) ✓
-**Surplus:** $36,644 ✓
+**Total deployed:** $481,800 (shareholder funds $215k + GP income $266.8k) ✓
+**Surplus:** $51,644 ✓
+**Emergency buffer:** $15,000 (retained in Ting's account) ✓
 
-**Cashflow position:** Managed throughout 24 months with strategic draws from Ting's reserve - Detailed 24-month forecast shows Ting's $100k drawn in 4 installments (Months 9, 12, 15, 18) to cover timing gaps before grant payments arrive. Lowest point $1,968 (Month 24), closing balance $36,391
+**Cashflow position:** Managed throughout 24 months with strategic draws from Ting's reserve - Detailed 24-month forecast shows Ting's reserve drawn in 3 installments (Month 12: $35k, Month 15: $30k, Month 18: $20k = $85k total) to cover timing gaps before grant payments arrive. First draw delayed to Month 12 (from Month 9) thanks to $130k opening cash. Lowest point $16,968 (Month 24), closing balance $51,391, plus $15k emergency buffer = $66,391 total protection
 
 **Drawdown Strategy:** Ting's reserve provides buffer for 1-month grant payment lag, with draws timed strategically before each grant payment arrives
 

@@ -32,10 +32,11 @@
 - **Overseas labour:** None. AU is used only for transient inference; not a labour cost
 
 **Co-Funding Sources:**
-- **Opening cash (business account):** $100,000 NZD
-- **Ting's reserve (shareholder funds):** $100,000 NZD (drawn as needed during project)
+- **Opening cash (business account):** $130,000 NZD
+- **Ting's reserve (shareholder funds):** $85,000 NZD (drawn in 3 installments: Months 12, 15, 18)
+- **Emergency buffer (Ting's account):** $15,000 NZD (retained as prudent reserve)
 - **GP clinical income:** $266,800 over 24 months (20 hrs/week @ $145/hr excl. GST)
-- **Total co-funding available:** $466,800 (exceeds $430,156 requirement by $36,644)
+- **Total co-funding deployed:** $481,800 (exceeds $430,156 requirement by $51,644)
 
 **Note on CapDev:** Per Paula's confirmation (29 Nov 2025), CapDev must be ≥5% of total eligible costs (not 5% of grant). Updated structure includes 4 categories meeting this requirement.
 
@@ -625,7 +626,7 @@ From Ting (demonstrating capability development):
 
 11. **Evidence retention:** Keep all evidence for 7 years from the end of the project
 
-12. **Shareholder structure:** Both Founder and Ting are shareholders; Ting's AU funds ($100k AUD) available as shareholder loan if needed
+12. **Shareholder structure:** Both Founder and Ting are shareholders; total shareholder funds available $230k ($130k business opening + $100k Ting's reserve), of which $215k deployed ($85k drawn from reserve + $15k emergency buffer retained)
 
 13. **Quarterly variance:** Actual claims will differ from schedule if developer works more than minimum hours
 
