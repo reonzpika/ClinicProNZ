@@ -56,40 +56,33 @@ NexWave Solutions Ltd (incorporated 2024) develops AI tools for New Zealand gene
 
 ## Describe Planned R&D Activities (~250 words)
 
-**Research Objective:** Conduct systematic investigation to determine which AI architecture achieves optimal clinical safety, NZ-contextual performance, and cost-effectiveness for primary care decision support. This foundational research enables New Zealand's transition to sovereign health AI at national scale.
+**Research Objective:** Systematically investigate which AI architectural paradigms achieve optimal clinical safety, NZ-contextual performance, and cost-effectiveness for primary care decision support. This foundational research enables New Zealand's transition to sovereign health AI at national scale.
 
-**Core R&D Investigation:**
+**Core Architectural Investigation:**
 
-Experimentally compare three architectural approaches using controlled clinical scenarios:
-- **Simple classifiers** (BERT-style, low-cost)
-- **Hybrid rules + Large Language Model** (LLM) systems
-- **NZ-trained sovereign LLM** (7B-13B parameters, fine-tuned on NZ clinical corpus)
+Explore architectural spectrum from lightweight pattern recognition to sophisticated reasoning systems. Initial candidates include classifiers, rule-based systems, Large Language Model (LLM) reasoning, retrieval-augmented generation, agentic AI approaches, and hybrid combinations. **Research will follow where empirical evidence leads**—investigation may discover novel architectural patterns or reveal optimal approaches vary by clinical task in unexpected ways.
 
-Measure each approach across: accuracy, computational cost, latency, safety failure modes, generalisability across health systems, and equity outcomes.
+Measure each paradigm across: accuracy, computational cost, latency, safety failure modes, generalisability across health systems, equity outcomes.
 
 **Clinical Test Beds for Experimentation:**
 
-Research hypotheses are tested using two representative primary care use cases:
+**1. Inbox Management (reactive, high-volume):** Laboratory result interpretation, hospital letter summarisation, urgency classification, trend detection. Research question: Which architectural approach safely handles routine clinical tasks while maintaining accuracy and cost-effectiveness?
 
-**1. Inbox Management (reactive, high-volume):** Laboratory result interpretation, hospital letter summarisation, urgency classification, trend detection. Research question: Can lightweight classifiers safely handle routine tasks, or do clinical nuances require LLM reasoning?
-
-**2. Chronic Disease Monitoring (proactive, complex logic):** Identify overdue checks for diabetes, cardiovascular disease, chronic lung conditions, heart failure, asthma. Multi-condition gap detection with Māori/Pacific equity prioritisation. Research question: What architecture handles clinical calculation accuracy while maintaining equity without algorithmic bias?
+**2. Chronic Disease Monitoring (proactive, complex logic):** Identify overdue checks for diabetes, cardiovascular disease, chronic lung conditions, heart failure, asthma. Multi-condition gap detection with Māori/Pacific equity prioritisation. Research question: Which paradigm achieves clinical calculation accuracy while maintaining equity without algorithmic bias?
 
 **NZ-Specific Domain Adaptation:**
 
-Train sovereign LLM on curated NZ clinical corpus: bpac guidelines, Ministry of Health protocols, Pharmac medication database, regional laboratory formats (LabTests, SCL, Medlab), Medtech and Indici clinical note patterns. Validate whether NZ-adapted small models can match expensive overseas LLMs (GPT-4) on local clinical tasks.
+Train sovereign AI on curated NZ clinical corpus: bpac guidelines, Ministry of Health protocols, Pharmac medication database, regional laboratory formats (LabTests, SCL, Medlab), Medtech and Indici clinical note patterns. Investigate whether NZ-adapted models can match expensive overseas systems (GPT-4) on local clinical tasks at sustainable cost.
 
 **Multi-System Generalisation Research:**
 
-Integrate with both Medtech and Indici practice systems from Objective 1. Investigate architectural patterns that maintain performance across different health system data structures—critical for national-scale deployment.
+Integrate with both Medtech and Indici practice systems. Investigate architectural patterns that maintain performance across different health system data structures—critical for national-scale deployment.
 
 **Real-World Validation:**
 
-Pilot with 10-20 GP practices. Measure clinical utility, safety outcomes, alert fatigue, equity metrics. Document performance degradation from synthetic data → sandbox → production.
+Pilot with 10-20 GP practices. Measure clinical utility, safety outcomes, alert fatigue, equity metrics. Document performance characteristics from synthetic data → sandbox → production deployment.
 
-**Knowledge Outputs:**
-
-Risk-stratified architecture framework, NZ-LLM adaptation methodology, multi-system generalisation patterns, equity-preserving algorithms, safety validation framework—transferable to patient-facing care (Years 3-5 HealthHub NZ) and national health integration.
+**Knowledge Outputs:** Risk-stratified architectural framework, NZ domain adaptation methodology, multi-system generalisation patterns, equity-preserving algorithms, safety validation framework—transferable to patient-facing care (Years 3-5 HealthHub NZ) and national health integration.
 
 ---
 
@@ -97,41 +90,41 @@ Risk-stratified architecture framework, NZ-LLM adaptation methodology, multi-sys
 
 **Primary Uncertainty:**
 
-Which AI architecture achieves clinical safety, NZ-contextual accuracy, and cost-effectiveness for primary care decision support across multiple health system platforms?
+Which AI architectural paradigm achieves clinical safety, NZ-contextual accuracy, and cost-effectiveness for primary care decision support across multiple health system platforms?
 
-This cannot be resolved without systematic experimentation because clinical AI operates under unique constraints: high safety requirements, NZ-specific language and protocols, equity obligations, privacy regulations, and multi-system integration—a combination unprecedented in published research.
+This cannot be resolved without systematic experimentation because clinical AI operates under unprecedented constraint combination: high safety requirements, NZ-specific language and protocols, equity obligations, privacy regulations, and multi-system integration.
 
 **Five Cascading Research Uncertainties:**
 
-**1. Risk-Stratified Architecture Selection**
+**1. Architectural Paradigm Selection Across Risk Spectrum**
 
-Can simple classifiers ($0.002/request) safely handle routine clinical tasks, or do nuanced medical decisions require expensive Large Language Model reasoning ($0.15/request)? Do clinical calculations (cardiovascular risk) require hybrid rule-based systems to prevent AI "hallucination" errors?
+Which architectural approach—ranging from simple pattern recognition to multi-agent reasoning systems—achieves required clinical safety and accuracy at sustainable cost? Do routine tasks permit lightweight solutions ($0.002/request), or do clinical nuances demand sophisticated reasoning ($0.15/request)? **Emerging AI paradigms (agentic systems, advanced retrieval-augmented generation) may prove superior to established approaches**, requiring investigation of cutting-edge techniques alongside conventional methods.
 
-**Cost-accuracy-safety trade-offs unknowable without empirical comparison across clinical scenarios.**
+**Cost-accuracy-safety trade-offs unknowable without empirical comparison. Optimal paradigm may vary by clinical task in unexpected ways.**
 
 **2. NZ Domain Adaptation Effectiveness**
 
-Can small NZ-trained models (7B-13B parameters, fine-tuned on local clinical corpus) match or exceed expensive overseas LLMs (GPT-4) on NZ-specific tasks: interpreting regional laboratory formats (LabTests vs SCL vs Medlab), understanding bpac/Ministry of Health guidelines, recognising Pharmac medication names, handling Medtech/Indici clinical note variations?
+Can NZ-adapted AI models match expensive overseas systems (GPT-4) on local clinical tasks: interpreting regional laboratory formats (LabTests, SCL, Medlab), understanding bpac/Ministry of Health guidelines, recognising Pharmac medication names, handling Medtech/Indici clinical note variations?
 
-**No published benchmarks exist for small-model performance on NZ clinical language.**
+**No published benchmarks exist for NZ clinical language performance. Adaptation techniques must be discovered empirically.**
 
 **3. Multi-System Generalisation Patterns**
 
-Will architecture achieving 90% accuracy in Medtech maintain performance in Indici, given different data structures and clinical workflows? What design patterns enable single system to work across both without system-specific rework?
+Will architectural approach achieving 90% accuracy in Medtech maintain performance in Indici, given different data structures and workflows? What design patterns enable single system to generalise across health platforms without system-specific rework?
 
-**Generalisation behaviour across health platforms cannot be predicted—requires testing.**
+**Generalisation behaviour cannot be predicted—requires testing. May reveal novel architectural requirements.**
 
 **4. Alert Fatigue and Clinical Utility Balance**
 
-How many chronic disease monitoring alerts can clinicians receive before dismissing them (alert fatigue)? Optimal balance between sensitivity (catching all gaps) and specificity (avoiding noise) varies by practice size, patient population, workflow—unknowable without real-world measurement.
+How many chronic disease monitoring alerts can clinicians receive before dismissing them? Optimal balance between sensitivity (catching gaps) and specificity (avoiding noise) varies by practice characteristics—unknowable without real-world measurement across diverse settings.
 
 **5. Equity Without Algorithmic Bias**
 
-Can prioritisation algorithms surface high-risk and Māori/Pacific patients (who face worse health outcomes) without introducing under-alerting in other populations or perpetuating existing biases in training data?
+Can prioritisation algorithms surface high-risk and Māori/Pacific patients without introducing under-alerting in other populations or perpetuating training data biases?
 
-**Novel equity-preserving algorithms required—no published methods for multi-condition clinical monitoring with NZ equity goals.**
+**Novel equity-preserving approaches required—no published methods for multi-condition clinical monitoring with NZ equity goals.**
 
-These uncertainties are interconnected: architecture choice affects domain adaptation approach, which influences multi-system generalisation, which impacts alert design, which determines equity outcomes. Resolving these creates foundational knowledge for patient-facing AI (Years 3-5) and national-scale health system integration.
+These uncertainties are interconnected: architectural paradigm choice affects domain adaptation approach, influences multi-system generalisation, impacts alert design, determines equity outcomes. Resolving these creates foundational knowledge for patient-facing AI (Years 3-5) and national health integration.
 
 ---
 
@@ -139,41 +132,41 @@ These uncertainties are interconnected: architecture choice affects domain adapt
 
 **Even highly competent AI/ML professionals cannot deduce solutions without systematic experimentation because:**
 
-**1. Architecture Trade-Offs Are Context-Dependent and Non-Linear**
+**1. Architectural Paradigm Trade-Offs Are Context-Dependent and Non-Linear**
 
-Simple classifiers excel at pattern recognition but may miss clinical nuance. Large Language Models provide sophisticated reasoning but "hallucinate" on medical calculations (e.g., cardiovascular risk scoring requires 8 clinical variables—LLMs sometimes fabricate values). Hybrid approaches add architectural complexity.
+Performance characteristics of different AI paradigms—from simple pattern recognition to agentic reasoning systems—vary unpredictably across clinical contexts. Lightweight approaches may miss clinical nuance. Sophisticated reasoning systems may "hallucinate" on medical calculations (e.g., cardiovascular risk scoring requires precise 8-variable computation—reasoning models sometimes fabricate values). Emerging paradigms like agentic AI introduce novel failure modes not yet documented.
 
-**The optimal architecture varies by clinical risk level and cannot be determined by inspection.** A professional might hypothesise "use classifier for triage, LLM for reasoning," but interaction effects—does classifier error propagate into LLM reasoning? Does hybrid latency cause clinician workflow disruption?—are unknowable without empirical measurement.
+**Optimal architectural paradigm varies by clinical risk level and cannot be determined by inspection.** Interaction effects—does retrieval error propagate into reasoning? Does multi-agent coordination latency disrupt workflow? Do novel paradigms introduce unexpected safety risks?—are unknowable without empirical measurement.
+
+**Research must explore architectural spectrum to discover which approaches work for which clinical scenarios.**
 
 **2. Multi-System Generalisation Creates Emergent Failure Modes**
 
-Medtech and Indici structure clinical data differently. Architecture performing well in Medtech may fail subtly in Indici: laboratory results formatted differently, medication lists use different codes, clinical notes follow different templates.
+Medtech and Indici structure clinical data differently. Architectural approach performing well in one system may fail subtly in another: laboratory results formatted differently, medication lists use different codes, clinical notes follow different templates.
 
-**These failures cannot be predicted from API documentation**—they emerge from real-world data variations. Discovering robust generalisation patterns requires systematic testing across both systems.
+**These failures cannot be predicted from specifications**—they emerge from real-world data variations. Discovering robust generalisation patterns requires systematic testing.
 
-**3. NZ Clinical Language Has No Benchmarks**
+**3. NZ Clinical Language Has No Performance Benchmarks**
 
-Regional abbreviations, Māori health terms, Pharmac medication names (different from international generics), DHB-specific letter formats, bpac/Ministry of Health guideline phrasing—this combination is unique to New Zealand.
+Regional abbreviations, Māori health terms, Pharmac medication names, DHB-specific formats, bpac/Ministry of Health phrasing—this combination is unique to New Zealand.
 
-**No published work benchmarks small-model (7B-13B parameter) performance on NZ clinical language under Privacy Act constraints (no data leaving NZ for training).** Even ML experts must experiment to discover what works.
+**No published work benchmarks AI performance on NZ clinical language under Privacy Act constraints.** Even ML experts must experiment to discover effective adaptation approaches.
 
-**4. Safety-Alerting-Usability Form Complex System**
+**4. Safety-Alerting-Usability Form Complex Feedback System**
 
-Adding safety constraints (refusal scaffolds, prohibited-claim detection) changes model outputs, affecting alert frequency, which impacts GP trust, which influences adoption, which determines real-world safety outcomes.
+Adding safety constraints changes model outputs, affecting alert frequency, impacting clinician trust, influencing adoption, determining real-world safety outcomes.
 
-**These feedback loops create emergent system behaviour that cannot be deduced.** Finding optimal balance requires iterative testing with real clinicians.
+**These feedback loops create emergent system behaviour that cannot be deduced.** Finding optimal balance requires iterative testing with real clinicians across diverse practice settings.
 
 **5. Unprecedented Constraint Combination**
 
 Clinical safety + NZ sovereignty + Privacy Act + multi-system integration + Māori/Pacific equity + cost-effectiveness + real-time performance—**this exact combination has never been attempted.**
 
-Standard ML practices (train on large datasets, use cloud GPUs, optimize for accuracy alone) don't apply. Novel approaches must be discovered through investigation.
+Standard ML practices don't apply. Novel architectural patterns must be discovered through investigation.
 
 **Why Professionals Need Experimentation:**
 
-Component specifications don't reveal system behaviour. A professional can build each piece but cannot predict: Will NZ domain adaptation degrade when quantised for cost? Will equity algorithms maintain fairness across both health systems? Will alert thresholds validated in Medtech work in Indici?
-
-**Only systematic experimentation resolves these uncertainties.**
+Component specifications don't reveal system behaviour. Professionals cannot predict: Which architectural paradigm achieves safety thresholds? Will domain adaptation maintain performance when optimised for cost? Will equity algorithms generalise across health systems? **Only systematic empirical investigation resolves these uncertainties.**
 
 ---
 
@@ -189,32 +182,32 @@ Commercial AI scribes exist (Abridge, Nuance DAX, DeepScribe) but are designed f
 - NZ equity frameworks (Māori/Pacific prioritisation)
 - Privacy Act 2020 constraints (IPP 12 cross-border restrictions)
 
-**These tools cannot be adapted—they require complete retraining on NZ data, which we must do ourselves.**
+**These tools cannot be adapted—they require complete retraining on NZ data with architectural investigation for our constraints.**
 
-**2. Generic Large Language Models**
+**2. Generic Large Language Models and Emerging AI Paradigms**
 
-GPT-4 and Claude can perform some clinical reasoning but:
-- **Cost:** $0.15/request makes them prohibitively expensive ($140-170k/month for 5,000 GPs)
+GPT-4, Claude, and emerging agentic AI systems can perform clinical reasoning but:
+- **Cost:** $0.15+/request makes them prohibitively expensive ($140-170k+/month for 5,000 GPs)
 - **Sovereignty:** Training data sources unknown, models controlled overseas, no NZ data governance
-- **Performance:** Not validated on NZ clinical scenarios
+- **Performance:** Not validated on NZ clinical scenarios or multi-system contexts
 
-**They provide existence proof AI can reason clinically, but not how to achieve this cost-effectively under NZ constraints.**
+**They provide existence proof AI can reason clinically, but not which paradigm achieves this cost-effectively under NZ constraints.**
 
-**3. Academic Research on LLM Fine-Tuning**
+**3. Academic Research on AI Architectures**
 
-Published papers describe LoRA/QLoRA techniques, RAG architectures, guardrails for safety. However:
-- **No NZ clinical benchmarks:** No published accuracy data for small models (7B-13B parameters) on NZ primary care tasks
+Published papers describe various techniques (fine-tuning, RAG, agentic systems, multi-agent coordination, guardrails) but:
+- **No NZ clinical benchmarks:** No published performance data comparing architectural paradigms on NZ primary care tasks
 - **No multi-system patterns:** Research focuses on single EMR systems; multi-PMS generalisation (Medtech + Indici) is undocumented
-- **No equity algorithms:** Fairness literature addresses binary attributes (gender, ethnicity), not multi-condition clinical monitoring with Māori/Pacific prioritisation goals
-- **Lab validation only:** Academic work stops at dataset benchmarks; real-world clinical validation is not published
+- **No equity algorithms:** Fairness literature addresses binary attributes, not multi-condition clinical monitoring with Māori/Pacific prioritisation goals
+- **Lab validation only:** Academic work stops at dataset benchmarks; real-world clinical validation with architectural comparison is not published
 
 **4. Proprietary Commercial Implementations**
 
 Companies deploying clinical AI don't disclose:
-- Architecture decisions (when to use classifiers vs LLMs vs hybrid)
-- Training data composition and sources
+- Architectural paradigm decisions and selection criteria
+- Training data composition and adaptation techniques
 - Safety validation methods and failure rates
-- Performance degradation in production
+- Performance degradation in production across different systems
 - Cost structures and computational requirements
 
 **These are trade secrets—unavailable for our use.**
@@ -222,15 +215,15 @@ Companies deploying clinical AI don't disclose:
 **5. Individual Components Exist, Integrated System Does Not**
 
 The literature provides pieces:
-- ✓ How to fine-tune LLMs (general techniques)
+- ✓ How to build AI systems (general architectures)
 - ✓ How to build clinical decision support (in isolation)
 - ✓ How to handle cross-border data (legal frameworks)
 
-**But no published work addresses the integrated challenge:** risk-stratified architecture under NZ sovereignty constraints, across multiple health systems, with Māori/Pacific equity requirements, validated in real clinical workflows.
+**But no published work addresses the integrated challenge:** architectural paradigm selection under NZ sovereignty constraints, across multiple health systems, with Māori/Pacific equity requirements, validated in real clinical workflows.
 
 **Why Knowledge Gap Exists:**
 
-This exact combination—NZ clinical language + Privacy Act + multi-PMS + equity focus + cost constraints + real-world validation—has never been attempted. Individual researchers and companies solve parts of this problem, but integrated solution requires original R&D.
+This exact combination—NZ clinical language + Privacy Act + multi-PMS + equity focus + cost constraints + architectural exploration + real-world validation—has never been attempted. Individual researchers and companies solve parts, but integrated solution with systematic architectural investigation requires original R&D.
 
 **Therefore, systematic investigation is necessary to create this knowledge.**
 
@@ -240,25 +233,25 @@ This exact combination—NZ clinical language + Privacy Act + multi-PMS + equity
 
 **This R&D generates new knowledge in six domains, creating a reusable knowledge platform for NZ health AI:**
 
-**1. Risk-Stratified AI Architecture Framework for Clinical Decision Support**
+**1. Risk-Stratified Architectural Paradigm Framework for Clinical Decision Support**
 
-**New knowledge:** Empirically-derived decision framework mapping clinical task characteristics (risk level, reasoning complexity, calculation requirements, safety criticality) to optimal AI architecture (classifier, hybrid, LLM).
+**New knowledge:** Empirically-derived decision framework mapping clinical task characteristics (risk level, reasoning complexity, calculation requirements, safety criticality) to optimal AI architectural paradigm across the spectrum from simple pattern recognition to sophisticated multi-agent reasoning. **Framework encompasses established and emerging approaches** (including agentic systems, advanced retrieval-augmented generation). Documents which paradigms achieve clinical safety thresholds at sustainable cost—**may discover novel architectural patterns or hybrid approaches not yet published**.
 
-**Application:** Generalisable to any clinical decision support system. Enables future developers to select appropriate architecture based on validated criteria rather than trial-and-error.
+**Application:** Generalisable to any clinical decision support system. Enables future developers to select appropriate paradigm based on validated empirical criteria rather than trial-and-error.
 
-**Transferability:** Directly applicable to patient-facing AI safety decisions (Years 3-5 HealthHub NZ).
+**Transferability:** Directly applicable to patient-facing AI safety decisions (Years 3-5 HealthHub NZ), where architectural choices have higher stakes.
 
-**2. NZ Clinical Language Adaptation Methodology for Small Models**
+**2. NZ Clinical Language Domain Adaptation Methodology**
 
-**New knowledge:** Systematic approach for adapting small LLMs (7B-13B parameters) to NZ clinical language using curated local corpus (bpac, Ministry of Health, Pharmac, regional variations). Includes dataset composition, fine-tuning techniques, and validation benchmarks showing small models can match large model performance on domain-specific tasks.
+**New knowledge:** Systematic approach for adapting AI models to NZ clinical language using curated local corpus (bpac, Ministry of Health, Pharmac, regional variations). Includes dataset composition, adaptation techniques across architectural paradigms, and validation benchmarks demonstrating cost-effective approaches can match expensive overseas systems on domain-specific tasks.
 
-**Application:** Enables cost-effective sovereign AI avoiding expensive overseas models.
+**Application:** Enables cost-effective sovereign AI avoiding expensive overseas dependencies.
 
-**Transferability:** Methodology extends to te reo Māori health communication and varying health literacy levels (patient-facing).
+**Transferability:** Methodology extends to te reo Māori health communication and varying health literacy levels (patient-facing care, Years 3-5).
 
 **3. Multi-System Generalisation Patterns for Health AI**
 
-**New knowledge:** Architectural design patterns enabling single AI system to maintain performance across different health platforms (Medtech, Indici) with different data structures. Documents common abstractions, failure modes, and adaptation strategies.
+**New knowledge:** Architectural design patterns enabling AI systems to maintain performance across different health platforms (Medtech, Indici) with different data structures. Documents common abstractions, failure modes, and adaptation strategies that work across paradigms.
 
 **Application:** Critical for national-scale deployment across hospital systems (Years 4-5).
 
@@ -278,9 +271,11 @@ This exact combination—NZ clinical language + Privacy Act + multi-PMS + equity
 
 **Application:** Informs design of any clinical alerting system.
 
+**Transferability:** Critical for patient-facing notification systems (Years 3-5).
+
 **6. Safety Validation Framework for Assist-Only Clinical AI**
 
-**New knowledge:** Systematic testing methodology for medical AI that provides assistance but never directives. Includes prohibited-claim detection benchmarks, refusal scaffold patterns, regression testing approaches, and pilot validation protocols.
+**New knowledge:** Systematic testing methodology for medical AI that provides assistance but never directives. Includes prohibited-claim detection benchmarks, refusal scaffold patterns, regression testing approaches, and pilot validation protocols across architectural paradigms.
 
 **Application:** Establishes safety standards for NZ clinical AI.
 
@@ -288,7 +283,7 @@ This exact combination—NZ clinical language + Privacy Act + multi-PMS + equity
 
 **Research Outputs Embodied in Two Clinical Tools:**
 
-Knowledge validated through: Inbox Helper (reactive, high-volume scenario) and Care Gap Finder (proactive, complex reasoning scenario). These tools are experimental testbeds for research, with findings documented for sector-wide reuse.
+Knowledge validated through: Inbox Helper (reactive, high-volume scenario) and Care Gap Finder (proactive, complex reasoning scenario). These tools are experimental testbeds for architectural investigation, with findings documented for sector-wide reuse.
 
 **Foundational Platform:** This 24-month research establishes knowledge base that extends to patient-facing care (Years 3-5 HealthHub NZ), real-world outcome learning (Years 4-5), and national health system integration (Years 4-5). Progressive R&D roadmap from clinician validation → patient-facing → national scale follows established medical device research pathways.
 
@@ -298,18 +293,19 @@ Knowledge validated through: Inbox Helper (reactive, high-volume scenario) and C
 
 **Research Contributions Enable Capabilities Previously Impossible:**
 
-**1. Sovereign AI at Cost-Effective Scale**
+**1. Sovereign AI at Cost-Effective Scale Through Architectural Investigation**
 
-Current options: expensive overseas LLMs ($140-170k/month for 5,000 GPs) or no AI assistance. Our risk-stratified architecture framework and NZ domain adaptation methodology enable:
+Current options: expensive overseas systems ($140-170k+/month for 5,000 GPs) or no AI assistance. Our risk-stratified architectural paradigm framework and NZ domain adaptation methodology enable:
 - **20-50x cost reduction** ($5-10k/month) making AI accessible to entire NZ primary care sector
+- **Paradigm flexibility:** Systematic investigation reveals which architectural approaches achieve clinical safety at sustainable cost—**may discover novel combinations more cost-effective than current methods**
 - **Sovereignty:** All patient data remains in NZ with NZ-held encryption keys, Privacy Act compliance
 - **Auditability:** Transparent training data sources, model versioning, disclosed sub-processors
 
-**Without this research, NZ primary care cannot afford AI or must compromise data sovereignty.**
+**Without this research, NZ primary care cannot afford AI or must compromise data sovereignty. Architectural investigation creates cost-effectiveness impossible with rigid predetermined approaches.**
 
 **2. Multi-System Integration Reduces Health Sector Fragmentation**
 
-Multi-system generalisation patterns enable single AI to work across Medtech and Indici (combined ~80% market share), then extend to hospital systems (Years 4-5). Current solutions require separate integrations for each platform.
+Multi-system generalisation patterns enable AI systems to work across Medtech and Indici (combined ~80% market share), then extend to hospital systems (Years 4-5). Current solutions require separate integrations for each platform.
 
 **Knowledge outputs reduce future integration costs sector-wide, accelerating digital health transformation.**
 
@@ -319,28 +315,30 @@ Equity-preserving algorithms ensure Māori/Pacific patients (who experience wors
 
 **First NZ health AI with Te Tiriti obligations built into research methodology, not added afterwards.**
 
-**4. Safety Framework for Patient-Facing AI**
+**4. Safety Framework Across Architectural Paradigms**
 
-Safety validation framework established with clinician-facing tools (lower risk) creates foundation for patient-facing AI (higher risk, Years 3-5). Systematic testing methodology, prohibited-claim detection, refusal scaffolds validated in real clinical settings.
+Safety validation framework established with clinician-facing tools (lower risk) creates foundation for patient-facing AI (higher risk, Years 3-5). Systematic testing methodology validated across architectural approaches—**ensures safety regardless of which paradigm proves optimal**.
 
-**This progression—clinician validation first, then patient-facing—follows medical device research best practice. Without foundational safety research, patient-facing AI remains too risky.**
+**This progression—clinician validation first, then patient-facing—follows medical device research best practice. Without foundational safety research across paradigms, patient-facing AI remains too risky.**
 
 **5. Transferable Knowledge Platform**
 
-Six knowledge domains (architecture framework, NZ adaptation methodology, multi-system patterns, equity algorithms, alert fatigue research, safety validation) are reusable:
+Six knowledge domains (architectural paradigm framework, NZ adaptation methodology, multi-system patterns, equity algorithms, alert fatigue research, safety validation) are reusable:
 - **Years 3-5:** Patient-facing HealthHub NZ (health literacy adaptation, te reo support, home monitoring validation)
 - **Years 4-5:** Real-world outcome learning (aggregated patient data, evidence-based insights for Ministry of Health)
 - **National scale:** Hospital integration, connected care, reduced test duplication
+
+**Architectural flexibility central to value:** Investigation may reveal emerging paradigms (agentic AI, advanced retrieval systems) outperform established approaches—**research methodology allows pivoting to superior architectures as discovered**.
 
 **Strategic Value Beyond Immediate Tools:**
 
 This research creates NZ health sector capability for:
 - **GP burnout reduction:** 1-2 hours/day time savings per GP (4,000-8,000 clinical hours/day nationally)
 - **Patient safety improvement:** Systematic chronic disease monitoring reduces missed checks
-- **Rural access:** Validated architecture enables after-hours patient guidance (Years 3-5)
+- **Rural access:** Validated architectural approaches enable after-hours patient guidance (Years 3-5)
 - **Government digital health plan:** Provides sovereign AI capability for 10-year transformation
 
-**Immediate clinical tools (Inbox Helper, Care Gap Finder) demonstrate research validation while addressing urgent workforce crisis. Knowledge platform enables national-scale health AI impossible with current overseas-dependent, high-cost approaches.**
+**Immediate clinical tools (Inbox Helper, Care Gap Finder) demonstrate research validation while addressing urgent workforce crisis. Knowledge platform enables national-scale health AI impossible with current overseas-dependent, high-cost, architecturally-rigid approaches.**
 
 **Aligns with government priorities:** Supports Te Whatu Ora digital health strategy, addresses health equity goals, builds NZ technological sovereignty in critical health infrastructure.
 
