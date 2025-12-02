@@ -36,7 +36,7 @@ The system is strictly assist-only. It never provides diagnostic or treatment di
 - NZ-incorporated company; solvent; intends to conduct ongoing R&D.
 - **New to R&D:** <$150k total R&D in last three years; no R&D grants/loans >$5k in last three years.
 - Not grouped with an R&D performer (>$150k in last three years).
-- Able to fund 60% co-funding from GP clinical work income; evidence provided.
+- Able to fund 60% co-funding from shareholder funds ($218k opening cash) and GP clinical work income; evidence provided.
 
 ---
 
@@ -219,7 +219,7 @@ Therefore, systematic R&D is required to resolve these uncertainties.
 
 **Total R&D Labour:** 8,175 hours (minimum) = $655,176
 
-**Rationale for team structure:** Founder's dual GP/technical expertise enables rapid clinical workflow iteration and NZ-specific domain understanding. Ting as full-time R&D Operations Lead provides dedicated project management, systematic testing, and quality assurance—demonstrating growth intention beyond solo founder. Developer contractor provides flexible capacity to scale up during intensive development phases (Objectives 2-3) without fixed overhead. This structure maintains GP practice income for co-funding while enabling substantial 24-month R&D programme.
+**Rationale for team structure:** Founder's dual GP/technical expertise enables rapid clinical workflow iteration and NZ-specific domain understanding. Ting as full-time R&D Operations Lead provides dedicated project management, systematic testing, and quality assurance—demonstrating growth intention beyond solo founder. Developer contractor provides flexible capacity to scale up during intensive development phases (Objectives 2-3) without fixed overhead. This structure maintains manageable GP practice workload (20 hrs/week) for business income while enabling substantial 30 hrs/week R&D commitment over 24 months.
 
 ---
 
@@ -626,9 +626,10 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 **Opening cash:** $100,000 NZD (business account, can be increased if needed)
 
 **Co-funding requirement:** $430,156
-**Total available:** $456,869 (opening cash + net GP income) ✓
+**Total available:** $484,800 (opening cash $218k + GP income $266.8k) ✓
+**Surplus:** $54,644 ✓
 
-**Cashflow position:** Positive throughout project (detailed 24-month forecast available)
+**Cashflow position:** ✓ **Positive throughout 24 months** - Detailed 24-month forecast shows lowest point of $19,968 (Month 24), closing balance $54,391
 
 **See:** Detailed 24-month cashflow forecast provided separately.
 

@@ -16,10 +16,9 @@
 - **Capability Development:** $36,000 total (third-party professional services only: IP $7.5k + Regulatory $15k + R&D Info Mgmt $8.5k + Project Mgmt $5k)
 - **Materials & consumables (M&C):** $1,000/month recurring (dev tools $320 + cloud GPU $300 + other cloud $380)
 - **Hardware:** $1,750 total (Month 1: $1,050, Month 4: $700)
-- **GP clinical work income (excl GST):** $375,652 over 24 months (average $15,652/month)
-- **GP business expenses (5% of revenue):** $18,783 total ($783/month average)
-- **Opening cash:** $100,000 NZD (can be increased if needed)
-- **Reserve funds:** $100,000 AUD (Ting's shareholder funds, accessible via shareholder loan if needed)
+- **GP clinical work income (excl GST):** $266,800 over 24 months ($11,117/month from 20 hrs/week @ $145/hr)
+- **Opening cash:** $218,000 NZD (from $200,000 AUD shareholder funds)
+- **Reserve funds:** Additional funds available if needed
 - **Claim cadence:** End of Months 3, 6, 9, 12, 15, 18, 21, 24 (Q1–Q8); grant (40%) paid the following month
 - **Figures:** GST-exclusive
 
@@ -72,19 +71,18 @@
 
 ---
 
-## Business Income & Expenses (24 Months)
+## Business Income (24 Months)
 
 **GP Clinical Work:**
 | Item | Amount (NZD excl. GST) |
 |------|------------------------|
-| GP revenue (24 months) | $375,652 |
-| GP business expenses (5%) | $18,783 |
-| **Net GP income available** | **$356,869** |
+| GP revenue (24 months) | $266,800 |
+| **Monthly GP income** | **$11,117** |
 
-**Average Monthly:**
-- GP revenue: $15,652/month
-- GP expenses: $783/month
-- Net available: $14,869/month
+**GP Work Schedule:**
+- 20 hrs/week @ $145/hour (excl. GST)
+- 46 working weeks per year (6 weeks annual leave)
+- Total work commitment: 50 hrs/week (20 hrs GP + 30 hrs R&D)
 
 ---
 
@@ -111,348 +109,236 @@
 ### **Year 1 (Months 1-12)**
 
 **Month 1 (Jan 2026)**
-- Opening: $100,000
-- Income: GP $15,652 - Expenses $783 = $14,869 | Grant: $0
+- Opening: $218,000
+- Income: GP $11,117 | Grant: $0
 - Costs: Team $24,590 + M&C $1,000 + Hardware $1,050 = $26,640
-- **Closing: $88,229**
+- **Closing: $202,477**
 
 **Month 2 (Feb 2026)**
-- Opening: $88,229
-- Income: $14,869 | Grant: $0
-- Costs: Team $24,590 + M&C $1,000 + CapDev (IP/Exp Tracking start) $1,000 = $26,590
-- **Closing: $76,508**
+- Opening: $202,477
+- Income: $11,117 | Grant: $0
+- Costs: Team $24,590 + M&C $1,000 + CapDev $1,000 = $26,590
+- **Closing: $187,004**
 
 **Month 3 (Mar 2026)** ← Q1 Claim Submitted
-- Opening: $76,508
-- Income: $14,869 | Grant: $0
-- Costs: Team $24,590 + M&C $1,000 + CapDev (IP/Reg/Exp Tracking) $5,000 = $30,590
-- **Closing: $60,787**
+- Opening: $187,004
+- Income: $11,117 | Grant: $0
+- Costs: Team $24,590 + M&C $1,000 + CapDev $5,000 = $30,590
+- **Closing: $167,531**
 
 **Month 4 (Apr 2026)** ← Developer Starts + Q1 Grant Received
-- Opening: $60,787
-- Income: $14,869 | Grant: **$33,528**
-- Costs: Team $27,686 + M&C $1,000 + Hardware $700 + CapDev (Patent/DPIA/Safety/PM) $8,200 = $37,586
-- **Closing: $71,598**
+- Opening: $167,531
+- Income: $11,117 | Grant: **$33,528**
+- Costs: Team $27,686 + M&C $1,000 + Hardware $700 + CapDev $8,200 = $37,586
+- **Closing: $174,590**
 
 **Month 5 (May 2026)**
-- Opening: $71,598
-- Income: $14,869 | Grant: $0
-- Costs: Team $27,686 + M&C $1,000 + CapDev (DPIA/LLM/Exp/PM) $7,000 = $35,686
-- **Closing: $50,781**
+- Opening: $174,590
+- Income: $11,117 | Grant: $0
+- Costs: Team $27,686 + M&C $1,000 + CapDev $7,000 = $35,686
+- **Closing: $150,021**
 
 **Month 6 (Jun 2026)** ← Q2 Claim Submitted
-- Opening: $50,781
-- Income: $14,869 | Grant: $0
-- Costs: Team $27,686 + M&C $1,000 + CapDev (DPIA/LLM/Reg/Contracts/Docs) $6,000 = $34,686
-- **Closing: $30,964**
+- Opening: $150,021
+- Income: $11,117 | Grant: $0
+- Costs: Team $27,686 + M&C $1,000 + CapDev $6,000 = $34,686
+- **Closing: $126,452**
 
 **Month 7 (Jul 2026)** ← Q2 Grant Received
-- Opening: $30,964
-- Income: $14,869 | Grant: **$43,183**
+- Opening: $126,452
+- Income: $11,117 | Grant: **$43,183**
 - Costs: Team $27,686 + M&C $1,000 = $28,686
-- **Closing: $60,330**
+- **Closing: $152,066**
 
 **Month 8 (Aug 2026)**
-- Opening: $60,330
-- Income: $14,869 | Grant: $0
-- Costs: Team $27,686 + M&C $1,000 + CapDev (Safety S2 + PM) $1,700 = $30,386
-- **Closing: $44,813**
+- Opening: $152,066
+- Income: $11,117 | Grant: $0
+- Costs: Team $27,686 + M&C $1,000 + CapDev $1,700 = $30,386
+- **Closing: $132,797**
 
 **Month 9 (Sep 2026)** ← Q3 Claim Submitted
-- Opening: $44,813
-- Income: $14,869 | Grant: $0
-- Costs: Team $27,686 + M&C $1,000 + CapDev (Reg Adviser + LLM) $1,000 = $29,686
-- **Closing: $29,996**
+- Opening: $132,797
+- Income: $11,117 | Grant: $0
+- Costs: Team $27,686 + M&C $1,000 + CapDev $1,000 = $29,686
+- **Closing: $114,228**
 
 **Month 10 (Oct 2026)** ← Q3 Grant Received
-- Opening: $29,996
-- Income: $14,869 | Grant: **$35,503**
-- Costs: Team $27,686 + M&C $1,000 + CapDev (PM Coaching) $500 = $29,186
-- **Closing: $51,182**
+- Opening: $114,228
+- Income: $11,117 | Grant: **$35,503**
+- Costs: Team $27,686 + M&C $1,000 = $28,686
+- **Closing: $132,162**
 
 **Month 11 (Nov 2026)**
-- Opening: $51,182
-- Income: $14,869 | Grant: $0
-- Costs: Team $27,686 + M&C $1,000 = $28,686
-- **Closing: $37,365**
+- Opening: $132,162
+- Income: $11,117 | Grant: $0
+- Costs: Team $27,686 + M&C $1,000 + CapDev $500 = $29,186
+- **Closing: $114,093**
 
 **Month 12 (Dec 2026)** ← Q4 Claim Submitted
-- Opening: $37,365
-- Income: $14,869 | Grant: $0
-- Costs: Team $27,686 + M&C $1,000 + CapDev (Safety S3 + Reg + PM + LLM) $3,700 = $32,386
-- **Closing: $19,848**
+- Opening: $114,093
+- Income: $11,117 | Grant: $0
+- Costs: Team $27,686 + M&C $1,000 + CapDev $3,700 = $32,386
+- **Closing: $92,824**
 
 ---
 
 ### **Year 2 (Months 13-24)**
 
 **Month 13 (Jan 2027)** ← Q4 Grant Received
-- Opening: $19,848
-- Income: $14,869 | Grant: **$35,903**
+- Opening: $92,824
+- Income: $11,117 | Grant: **$35,903**
 - Costs: Team $27,686 + M&C $1,000 = $28,686
-- **Closing: $41,934**
+- **Closing: $111,158**
 
 **Month 14 (Feb 2027)**
-- Opening: $41,934
-- Income: $14,869 | Grant: $0
-- Costs: Team $27,686 + M&C $1,000 + CapDev (PM Coaching) $500 = $29,186
-- **Closing: $27,617**
+- Opening: $111,158
+- Income: $11,117 | Grant: $0
+- Costs: Team $27,686 + M&C $1,000 + CapDev $500 = $29,186
+- **Closing: $93,089**
 
 **Month 15 (Mar 2027)** ← Q5 Claim Submitted
-- Opening: $27,617
-- Income: $14,869 | Grant: $0
-- Costs: Team $27,686 + M&C $1,000 + CapDev (Reg Adviser + PM) $1,000 = $29,686
-- **Closing: $12,800**
+- Opening: $93,089
+- Income: $11,117 | Grant: $0
+- Costs: Team $27,686 + M&C $1,000 + CapDev $1,000 = $29,686
+- **Closing: $74,520**
 
 **Month 16 (Apr 2027)** ← Q5 Grant Received
-- Opening: $12,800
-- Income: $14,869 | Grant: **$35,023**
+- Opening: $74,520
+- Income: $11,117 | Grant: **$35,023**
 - Costs: Team $27,686 + M&C $1,000 = $28,686
-- **Closing: $34,006**
+- **Closing: $91,974**
 
 **Month 17 (May 2027)**
-- Opening: $34,006
-- Income: $14,869 | Grant: $0
+- Opening: $91,974
+- Income: $11,117 | Grant: $0
 - Costs: Team $27,686 + M&C $1,000 = $28,686
-- **Closing: $20,189**
+- **Closing: $74,405**
 
 **Month 18 (Jun 2027)** ← Q6 Claim Submitted
-- Opening: $20,189
-- Income: $14,869 | Grant: $0
-- Costs: Team $27,686 + M&C $1,000 + CapDev (Reg Adviser) $500 = $29,186
-- **Closing: $5,872**
+- Opening: $74,405
+- Income: $11,117 | Grant: $0
+- Costs: Team $27,686 + M&C $1,000 + CapDev $500 = $29,186
+- **Closing: $56,336**
 
 **Month 19 (Jul 2027)** ← Q6 Grant Received
-- Opening: $5,872
-- Income: $14,869 | Grant: **$34,623**
+- Opening: $56,336
+- Income: $11,117 | Grant: **$34,623**
 - Costs: Team $27,686 + M&C $1,000 = $28,686
-- **Closing: $26,678**
+- **Closing: $73,390**
 
 **Month 20 (Aug 2027)**
-- Opening: $26,678
-- Income: $14,869 | Grant: $0
+- Opening: $73,390
+- Income: $11,117 | Grant: $0
 - Costs: Team $27,686 + M&C $1,000 = $28,686
-- **Closing: $12,861**
+- **Closing: $55,821**
 
 **Month 21 (Sep 2027)** ← Q7 Claim Submitted
-- Opening: $12,861
-- Income: $14,869 | Grant: $0
+- Opening: $55,821
+- Income: $11,117 | Grant: $0
 - Costs: Team $27,686 + M&C $1,000 = $28,686
-- **Closing: -$956** ⚠️
+- **Closing: $38,252**
 
 **Month 22 (Oct 2027)** ← Q7 Grant Received
-- Opening: -$956
-- Income: $14,869 | Grant: **$34,623**
+- Opening: $38,252
+- Income: $11,117 | Grant: **$34,423**
 - Costs: Team $27,686 + M&C $1,000 = $28,686
-- **Closing: $19,850**
+- **Closing: $55,106**
 
 **Month 23 (Nov 2027)**
-- Opening: $19,850
-- Income: $14,869 | Grant: $0
+- Opening: $55,106
+- Income: $11,117 | Grant: $0
 - Costs: Team $27,686 + M&C $1,000 = $28,686
-- **Closing: $6,033**
+- **Closing: $37,537**
 
-**Month 24 (Dec 2027)** ← Q8 Claim Submitted (Final)
-- Opening: $6,033
-- Income: $14,869 | Grant: $0
+**Month 24 (Dec 2027)** ← Q8 Claim Submitted
+- Opening: $37,537
+- Income: $11,117 | Grant: $0
 - Costs: Team $27,686 + M&C $1,000 = $28,686
-- **Closing: -$7,784** ⚠️
+- **Closing: $19,968**
 
-**Month 25 (Jan 2028)** ← Q8 Grant Received (Post-Project)
-- Opening: -$7,784
-- Income: $0 | Grant: **$34,423**
-- Costs: $0
-- **Closing: $26,639** ✓
+**Month 25 (Jan 2028)** ← Q8 Grant Received (Project Complete)
+- Opening: $19,968
+- Grant: **$34,423**
+- **Final Position: $54,391** ✓
 
 ---
 
 ## Summary
 
-**Cash Position (NZ Account Only - NEEDS INCREASED OPENING CASH):**
-- **Opening Cash (Month 1):** $100,000 NZD → **INCREASE TO $110,000+**
-- **Goes Negative:** Month 21 (-$956), Month 24 (-$7,784) ⚠️
-- **Minimum Cash:** -$7,784 (Month 24, before final grant)
-- **Closing Cash (Month 25):** $26,639 ✓
+**Opening Cash:** $218,000  
+**Total Income:** $553,409 (GP $266,800 + Grants $286,609)  
+**Total Costs:** $716,926 (all R&D eligible costs)  
+**Closing Cash:** $54,483 (slight difference due to rounding)
 
-**Total Inflows:**
-- Opening cash (NZ): $100,000 (needs increase)
-- GP clinical income (net of expenses): $356,869
-- Total grants received: $286,609
-- **Total: $743,478**
-
-**Total R&D Costs:** $716,926
-
-**Surplus:** $26,552 ✓
+**Cashflow Status:** ✓ **POSITIVE THROUGHOUT** - Lowest point is Month 24 ($19,968)
 
 ---
 
-## ⚠️ RECOMMENDATION: INCREASE OPENING CASH
+## Co-Funding Structure
 
-**Status:** With new CapDev spending ($36k vs $15k), cashflow goes negative in Months 21 and 24.
+**Co-Funding Required:** $430,156 (60% of total R&D costs)
 
-**Solution Options:**
-1. **Increase opening cash to $110,000** → solves both negatives, still ends with $36.6k surplus
-2. **Increase opening cash to $115,000** → provides safety buffer, ends with $41.6k surplus
-3. **Use AU reserve ($100k AUD) as shareholder loan in Month 20** → preserves NZ cash, same final position
+**Co-Funding Sources:**
+- Opening cash (shareholder funds): $218,000
+- GP clinical income: $266,800
+- **Total available: $484,800** ✓ (exceeds requirement by $54,644)
 
-**Recommended:** Option 1 or 2 (increase opening cash to $110-115k)
-
-**Key Factors:**
-- Increased CapDev from $15k to $36k adds $21k more costs
-- Heavy CapDev spending in Q1-Q2 ($27.2k in first 6 months)
-- Still maintains positive final surplus
-- Grant payments slightly higher ($286.6k vs $278.3k) but not enough to offset timing
-
-**Final Position (with $110k opening):**
-- Opening: $110,000
-- Closing: $36,639
-- **Two brief negatives (Months 21, 24) eliminated** ✓
-- **AU reserve not needed** ✓
+**Shareholder Funds:**
+- $200,000 AUD converted to NZD = $218,000 NZD
+- Source: Shareholder contributions (Founder + Ting)
+- Additional reserve funds available if needed
 
 ---
 
 ## Financial Structure
 
-**Opening Cash Capacity:** $200,000 total available (if needed)
-- **$110-115k NZD (business account) - RECOMMENDED** (increased from $100k due to higher CapDev)
-- $100k AUD (Ting's shareholder funds) - **BACKUP AVAILABLE**
+**Total Available Funding:** $218,000 opening cash + Additional reserves
 
-**Actual Usage (with $110k opening):**
-- NZ account: $110k → $36.6k (surplus maintained)
-- AU reserve: $0 drawn ✓
+**Co-Funding Coverage:**
+- Required: $430,156
+- From opening cash: $218,000
+- From GP income: $266,800
+- **Total: $484,800** (sufficient) ✓
 
-**Grant Application Evidence:**
-- Provide NZ bank statement showing $110-115k opening balance
-- Note AU reserve available as backup ($200k total capacity)
-- Demonstrate strong GP income ($375k over 24 months)
-- Show cashflow remains positive throughout with $110k opening
-
----
-
-## Monthly Income Breakdown
-
-**GP Revenue Pattern (varies by month, totals $375,652):**
-- Conservative estimate: $15,652/month average
-- Actual may vary based on clinical work volume
-- Sufficient to maintain positive cashflow with grants
-
-**GP Business Expenses (5% of revenue):**
-- Total: $18,783 over 24 months
-- Average: $783/month
-- Covers: Practice management software, CME, professional fees, insurance
+**Work Commitment:**
+- GP work: 20 hrs/week (sustainable alongside R&D)
+- R&D work: 30 hrs/week
+- Total: 50 hrs/week
 
 ---
 
 ## Important Notes
 
-1. **⚠️ Opening cash increased to $110-115k:** New CapDev spending ($36k) requires higher opening balance
-   - With $100k opening: Cash goes negative Months 21, 24 (brief periods)
-   - With $110k opening: Cash stays positive throughout ✓
-   - $100k AUD (Ting's shareholder funds) available as backup if needed
+1. **Cashflow remains positive throughout 24 months** ✓
+   - Opening: $218,000
+   - Minimum position: $19,968 (Month 24)
+   - Closing: $54,391
+   - No drawdown of additional reserves needed
 
-2. **CapDev impact on cashflow:** $36k CapDev (vs previous $15k) adds $21k more costs
-   - Heavy spending in Q1-Q2 ($27.2k in first 6 months)
-   - Front-loaded IP, Patent ($7.5k), Regulatory ($15k), R&D systems ($8.5k), PM ($5k)
-   - Grant coverage increases but timing creates tighter cashflow in Year 2
+2. **Co-funding capacity strong:**
+   - Total available: $484,800 (opening cash + GP income)
+   - Required: $430,156
+   - **Surplus: $54,644** ✓
 
-3. **Shareholder structure:** Both you and Ting are shareholders
-   - Total capacity $200k if needed
-   - Paula confirmed this structure acceptable
-   - Demonstrates strong co-funding capacity
+3. **CapDev impact:** $36,000 front-loaded in first 12 months
+   - Heavy spending Q1-Q2 ($27,200 in first 6 months)
+   - Opening cash of $218k provides comfortable buffer
 
-4. **GP income assumption:** $375,652 total ($15,652/month average)
-   - Net of GST
-   - After 5% business expenses
-   - Based on realistic clinical work capacity
-   - Provides stable co-funding source
+4. **GP income:** Steady $11,117/month from 20 hrs/week clinical work
+   - Allows 30 hrs/week R&D commitment (believable workload)
+   - Total work: 50 hrs/week (sustainable)
 
-5. **Grant timing:** 1-month lag between claim and payment
-   - Submit claims on time (end of Months 3, 6, 9, 12, 15, 18, 21, 24)
-   - Payment arrives following month
-   - Regular grant injections maintain positive cash position
+5. **Grant timing:** 8 quarterly payments, received 1 month after claim submission
+   - Spread across 3 financial years
+   - Taxable income
 
-6. **Developer flexibility:**
-   - Budgeted at minimum 10 hrs/week
-   - Can scale up to 40 hrs/week if R&D needs require
-   - Higher hours would increase costs but also increase grant (40% coverage)
-   - Cashflow can absorb moderate scaling due to positive position
-
-7. **M&C breakdown ($1,000/month):**
-   - Development tools & software: $320
-   - Cloud GPU inference (average): $300
-   - Cloud storage, database, monitoring: $380
-   - All cloud costs get 40% grant coverage
-
-8. **Hardware strategy:**
-   - Immediate expenses only: $1,800 total (Month 1: $1,000, Month 4: $800)
-   - No depreciation complexity
-   - GPU workstation ($11k) deferred
-   - Can purchase workstation from surplus funds if needed
-
-9. **CapDev spending timing (UPDATED - $36k total):**
-   - Front-loaded: $27.2k in Months 2-6 (IP audit, patent, DPIA, LLM advisory, exp tracking, clinical safety, PM setup)
-   - Mid-programme: $7.3k Months 7-12 (regulatory adviser sessions, clinical safety, PM coaching)
-   - Later-stage: $1.5k Months 13-18 (ongoing regulatory, PM coaching)
-   - All third-party professional services
-
-10. **Final surplus (with $110k opening):**
-    - Closing cash $36,639 after all costs
-    - Can be used for:
-      - Year 3 R&D continuation
-      - Workstation purchase
-      - Additional developer hours
-      - Business growth investment
-
-11. **Risk mitigation:**
-    - AU reserve ($100k AUD) remains untouched as safety buffer
-    - Can handle unexpected costs or income variations
-    - Provides confidence for 24-month commitment
-    - If opening cash not increased to $110k, AU reserve can cover brief negatives in Months 21-24
+6. **Reserve capacity:** Additional shareholder funds available if unexpected costs arise
 
 ---
 
-## Comparison: Structure Evolution
-
-| Metric | Original (4 ppl) | v2 (3 ppl, $15k CapDev) | v3 (3 ppl, $36k CapDev) | Change |
-|--------|-----------------|----------------------|----------------------|--------|
-| Total eligible costs | $733,416 | $695,976 | $716,926 | +$20,950 |
-| Grant (40%) | $293,366 | $278,305 | $286,609 | +$8,304 |
-| Co-funding (60%) | $440,050 | $417,586 | $430,156 | +$12,570 |
-| CapDev spending | N/A | $15,000 | $36,000 | +$21,000 |
-| Opening cash needed | N/A | $100,000 | $110,000 | +$10,000 |
-| First negative cash | Month 12 (-$12k) | Never | Month 21 (-$956) | See note* |
-| AU reserve needed | Yes (~$76k) | No | No (with $110k open) | ✓ |
-| Final position | -$75k (NZ only) | +$39,185 | +$36,639 | ✓ Positive |
-
-**Note:*** With $110k opening cash, cashflow stays positive throughout. With $100k opening, brief negatives in Months 21-24.
-
-**Result:** Higher CapDev ($36k) adds value but requires slightly higher opening cash ($110k vs $100k). Still maintains strong positive final position without needing AU reserve draw.
-
----
-
-## Document Updates
-
-**Version:** 2.0  
-**Last Updated:** 29 November 2025  
-**Status:** Updated for new CapDev structure ($36,000)
-
-**Version 2.0 Changes:**
-- **CapDev increased from $15k to $36k** (4 categories: IP $7.5k, Regulatory $15k, R&D Info Mgmt $8.5k, PM $5k)
-- **Total eligible costs: $716,926** (was $695,976)
-- **Grant at 40%: $286,609** (was $278,305)
-- **Co-funding at 60%: $430,156** (was $417,586)
-- **Opening cash recommendation increased to $110-115k** (was $100k)
-- **M&C now includes hardware:** $25,750 total ($24k recurring + $1.75k hardware)
-- Updated monthly cashflow with new CapDev timing and amounts
-- Updated grant payment schedule for 8 quarters
-- Cashflow shows brief negatives in Months 21, 24 with $100k opening (solved by increasing to $110k)
-
-**Key Financial Facts:**
-- Total R&D costs: $716,926 over 24 months
-- Grant funding: $286,609 (40% coverage)
-- Co-funding required: $430,156 (60%)
-- Final surplus (with $110k opening): $36,639
-- CapDev: 5.02% of total costs (meets requirement per Paula's confirmation)
+**Last Updated:** 1 December 2025  
+**Status:** FINAL - Updated with $218k opening cash, 20 hrs/week GP work ($266,800 income), positive cashflow throughout  
+**Version:** 2.0
 
 ---
 

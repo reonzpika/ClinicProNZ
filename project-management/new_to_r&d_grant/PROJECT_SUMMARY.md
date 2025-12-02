@@ -398,48 +398,50 @@ The project is organized into 6 main directories:
 
 ---
 
-### Business Income & Expenses (24 Months)
+### Business Income (24 Months)
 
 | Item | Amount (NZD excl. GST) |
 |------|------------------------|
-| GP clinical revenue (24 months) | $375,652 |
-| GP business expenses (5%) | -$18,783 |
-| **Net GP income available for co-funding** | **$356,869** |
+| GP clinical revenue (24 months) | $266,800 |
+| **Monthly GP income** | **$11,117** |
 
-**Monthly Average:** $15,652 revenue - $783 expenses = $14,869 net
+**GP Work Schedule:**
+- 20 hrs/week @ $145/hour (excl. GST)
+- 46 working weeks per year (6 weeks annual leave)
+- Total work commitment: 50 hrs/week (20 hrs GP + 30 hrs R&D)
 
 ---
 
 ### Cashflow & Funding Structure
 
-**Opening Cash:** $100,000 NZD (business account, can be increased if needed)
+**Opening Cash:** $218,000 NZD (from $200,000 AUD shareholder funds)
 
-**Reserve Funds Available:** $100,000 AUD (Ting's shareholder funds, available as safety buffer if needed)
+**Reserve Funds:** Additional shareholder funds available if needed
 
 **Co-funding Requirement:** $430,156
-**Total Available:** $456,869 (opening cash + net GP income) ✓
+**Total Available:** $484,800 (opening cash $218k + GP income $266.8k) ✓
+**Surplus:** $54,644 ✓
 
 **Monthly GP Income:** 
-- Revenue: $15,652/month average (excl. GST)
-- Business expenses: $783/month (5%)
-- Net available: $14,869/month
+- Revenue: $11,117/month (from 20 hrs/week @ $145/hr excl. GST)
+- Work commitment: 50 hrs/week total (20 hrs GP + 30 hrs R&D)
 
-**Cashflow Position:** Positive throughout project (detailed 24-month forecast available)
+**Cashflow Position:** ✓ **POSITIVE THROUGHOUT** - Lowest point Month 24 ($19,968)
 
 **Total Income Over 24 Months:**
-- Opening cash: $100,000
-- GP income (net): $356,869
-- R&D grants: $286,770
-- **Total: $743,639**
+- Opening cash: $218,000
+- GP income: $266,800
+- R&D grants: $286,609 (rounded from $286,770)
+- **Total: $771,409**
 
 **Total Costs:** $716,926
 
-**Final Surplus:** $26,713 ✓
+**Final Surplus:** $54,483 ✓
 
 **Grant Schedule (8 quarters over 24 months):**
-- Year 1 (Q1-Q4): ~$143k
-- Year 2 (Q5-Q8): ~$143k
-- **Total: $286,770**
+- Year 1 (Q1-Q4): ~$148k
+- Year 2 (Q5-Q8): ~$138k
+- **Total: $286,609**
 
 Grants paid 1 month after quarterly claim submission.
 

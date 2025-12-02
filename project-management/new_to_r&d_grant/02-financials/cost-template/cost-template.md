@@ -31,6 +31,11 @@
   - Hardware (RAM, monitor, arms, iPhone): $1,750
 - **Overseas labour:** None. AU is used only for transient inference; not a labour cost
 
+**Co-Funding Sources:**
+- **Opening cash:** $218,000 NZD (from $200,000 AUD shareholder funds)
+- **GP clinical income:** $266,800 over 24 months (20 hrs/week @ $145/hr excl. GST)
+- **Total co-funding available:** $484,800 (exceeds $430,156 requirement by $54,644)
+
 **Note on CapDev:** Per Paula's confirmation (29 Nov 2025), CapDev must be ≥5% of total eligible costs (not 5% of grant). Updated structure includes 4 categories meeting this requirement.
 
 ---
