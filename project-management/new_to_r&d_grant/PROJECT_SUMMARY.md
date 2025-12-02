@@ -414,48 +414,72 @@ The project is organized into 6 main directories:
 
 ### Cashflow & Funding Structure
 
-**Opening Cash:** $100,000 NZD (business account)
+**Shareholder Funds (Two-Account Structure):**
+- **Business account opening cash:** $100,000 NZD
+- **Ting's reserve account:** $100,000 NZD (separate account, drawn strategically)
+- **Total shareholder contributions:** $200,000 NZD
+- **Source:** Founder + Ting shareholder funds
 
-**Ting's Reserve:** $100,000 NZD (shareholder funds, drawn in 4 installments during project)
+**Co-Funding Requirement:** $430,156 (60% of total R&D costs)
 
-**Total Shareholder Funds:** $200,000 NZD
+**Co-Funding Sources:**
+| Source | Amount | Notes |
+|--------|--------|-------|
+| Business opening cash | $100,000 | Available Day 1 |
+| Ting's reserve | $100,000 | Drawn in 4 installments (Months 9, 12, 15, 18) |
+| GP clinical income | $266,800 | $11,117/month over 24 months |
+| **Total available** | **$466,800** | **Surplus: $36,644** ✓ |
 
-**Co-funding Requirement:** $430,156
-**Total Available:** $466,800 (shareholder funds $200k + GP income $266.8k) ✓
-**Surplus:** $36,644 ✓
+**Strategic Drawdown Schedule from Ting's Reserve:**
+| Month | Amount | Purpose | Timing Logic |
+|-------|--------|---------|--------------|
+| Month 9 | $30,000 | Cover gap before Q3 grant (Month 10) | Draws before cashflow drops below $15k |
+| Month 12 | $30,000 | Cover gap before Q4 grant (Month 13) | Heavy CapDev spending this quarter |
+| Month 15 | $25,000 | Cover gap before Q5 grant (Month 16) | Mid-Year 2 buffer |
+| Month 18 | $15,000 | Cover gap before Q6 grant (Month 19) | Final drawdown |
+| **Total** | **$100,000** | All reserve utilized by Month 18 | Months 19-24 run on GP + grants only |
+
+**Why This Structure Works:**
+- **Two separate accounts** demonstrate financial planning and discipline
+- **Strategic timing:** Draws coordinate with grant payment lag (claim Month X, receive Month X+1)
+- **Gradual deployment:** Not all cash upfront, shows financial management capability
+- **Risk mitigation:** If grant delayed, Ting's reserve provides buffer
+- **Efficient capital use:** All $200k shareholder funds fully deployed by Month 18
 
 **Monthly GP Income:** 
 - Revenue: $11,117/month (from 20 hrs/week @ $145/hr excl. GST)
-- Work commitment: 50 hrs/week total (20 hrs GP + 30 hrs R&D)
+- Work schedule: 46 weeks/year (6 weeks annual leave)
+- Total work commitment: 50 hrs/week (20 hrs GP + 30 hrs R&D) - sustainable
 
-**Cashflow Position:** Managed with strategic draws from Ting's reserve - Lowest point Month 24 ($1,968)
-
-**Drawdown Schedule from Ting's Reserve:**
-- Month 9: $30,000
-- Month 12: $30,000
-- Month 15: $25,000
-- Month 18: $15,000
-- **Total: $100,000** (fully utilized by Month 18)
+**Cashflow Position:** 
+- Managed throughout 24 months with strategic reserve draws
+- **Lowest point:** $1,968 (Month 24, just before final grant arrives)
+- **Final balance:** $36,391 ✓
+- Never goes negative due to strategic drawdown timing
 
 **Total Income Over 24 Months:**
-- Opening cash: $100,000
-- Ting's reserve: $100,000
-- GP income: $266,800
-- R&D grants: $286,609
-- **Total: $753,409**
+| Source | Amount |
+|--------|--------|
+| Business opening cash | $100,000 |
+| Ting's reserve (drawn) | $100,000 |
+| GP income | $266,800 |
+| R&D grants (8 quarters) | $286,609 |
+| **Total inflows** | **$753,409** |
 
-**Total Costs:** $716,926
+**Total R&D Costs:** $716,926
 
 **Final Surplus:** $36,483 ✓
 
-**Grant Schedule (8 quarters over 24 months):**
-- Year 1 (Q1-Q4): ~$148k
-- Year 2 (Q5-Q8): ~$138k
-- **Total: $286,609**
+**Grant Payment Schedule (8 quarters over 24 months):**
+| Period | Quarters | Total Grants |
+|--------|----------|--------------|
+| Year 1 | Q1-Q4 | ~$148,117 |
+| Year 2 | Q5-Q8 | ~$138,492 |
+| **Total** | **Q1-Q8** | **$286,609** |
 
-Grants paid 1 month after quarterly claim submission.
+**Note:** Grants paid 1 month after quarterly claim submission. This 1-month lag is why strategic draws from Ting's reserve are needed.
 
-**See:** `02-financials/cashflow-24-month.md` for detailed monthly breakdown
+**Detailed Documentation:** `02-financials/cashflow-24-month.md` contains full monthly breakdown with all 24 positions calculated
 
 ---
 
@@ -512,15 +536,23 @@ Grants paid 1 month after quarterly claim submission.
 - ✅ **Objective 4 clarified:** Explicit R&D on generalisation and safety, not routine maintenance
 - ✅ **Removed high-risk features:** No prescription validation or high-complexity clinical decision support in 24-month scope
 
-### Previous Updates (Nov 26, 2025)
+### Financial Structure Updates (Dec 1, 2025)
+- ✅ **Two-account structure finalized:** $100k business account + $100k Ting's reserve
+- ✅ **Strategic drawdown plan:** Ting's $100k drawn in 4 installments (Months 9, 12, 15, 18)
+- ✅ **GP work hours optimized:** Reduced to 20 hrs/week (from 30 hrs/week) for believable R&D commitment
+- ✅ **GP revenue:** $266,800 over 24 months ($11,117/month from 20 hrs/week @ $145/hr)
+- ✅ **Total work commitment:** 50 hrs/week (20 GP + 30 R&D) - sustainable workload
+- ✅ **Cashflow managed:** Strategic draws coordinate with grant payment lag, lowest point $1,968 (Month 24)
+- ✅ **Final surplus:** $36,391 after all costs ✓
+- ✅ **Co-funding capacity:** $466,800 available vs $430,156 required (surplus $36,644) ✓
+
+### Previous Updates (Nov 29, 2025)
 - ✅ **Final team structure:** 3 people (Founder + Ting + Developer) - leaner, more focused
-- ✅ **CapDev restructured:** $15,000 third-party services only (IP $7,500 + Regulatory $7,500)
-- ✅ **Hardware strategy finalized:** $1,800 immediate expenses, cloud GPU only (no workstation)
-- ✅ **M&C updated:** $1,000/month ($24k total) - detailed cloud infrastructure costs
-- ✅ **Final budget:** $695,976 total eligible costs, $278,305 grant request
-- ✅ **GP revenue:** $375,652 over 24 months ($15,652/month average)
-- ✅ **Cashflow:** Positive throughout, $39k surplus, AU reserve not needed ✓
-- ✅ **CapDev:** 5.39% of grant (exceeds 5% requirement by $1,085) ✓
+- ✅ **CapDev expanded:** $36,000 total (IP $7.5k + Regulatory $15k + R&D Info Mgmt $8.5k + PM $5k)
+- ✅ **Hardware strategy finalized:** $1,750 immediate expenses, cloud GPU only (no workstation)
+- ✅ **M&C consolidated:** $25,750 total (includes hardware) - detailed cloud infrastructure costs
+- ✅ **Final budget:** $716,926 total eligible costs, $286,770 grant request
+- ✅ **CapDev:** 5.02% of total costs (meets requirement per Paula's confirmation) ✓
 
 ### Previous Updates (Nov 13-27, 2025)
 - ✅ **Paula meeting 13 Nov:** Received key feedback (extend to 24 months, reduce to 4 objectives, show long-term vision, add competitor analysis)
@@ -534,10 +566,12 @@ Grants paid 1 month after quarterly claim submission.
 ### Strengths
 - ✓ Strong technical R&D justification
 - ✓ Extended to 24 months showing long-term R&D commitment (Paula's key feedback)
-- ✓ **Cashflow positive throughout:** Never goes negative, $39k surplus after all costs ✓
-- ✓ **Strong co-funding capacity:** $375k GP revenue + $100k opening cash
+- ✓ **Strategic cashflow management:** Two-account structure with planned drawdowns, lowest point $1,968, final surplus $36,391 ✓
+- ✓ **Strong co-funding capacity:** $466,800 available ($200k shareholder + $266.8k GP) vs $430,156 required ✓
+- ✓ **Sustainable workload:** 50 hrs/week total (20 GP + 30 R&D) - believable and achievable
 - ✓ **Lean team structure:** 3 people (Founder + Ting + Developer) with flexible developer hours
-- ✓ **CapDev compliance:** 5.39% exceeds 5% requirement, third-party services only
+- ✓ **CapDev compliance:** 5.02% meets requirement, all third-party services, 4 categories ✓
+- ✓ **Financial discipline:** Demonstrates strategic planning via timed drawdowns from reserve
 - ✓ Comprehensive risk analysis (8 risks with mitigations)
 - ✓ Clear success criteria and measurable targets
 - ✓ Strong founder profile (GP + technical + commercial expertise)
@@ -770,9 +804,19 @@ Grants paid 1 month after quarterly claim submission.
 
 ---
 
-**Last Updated:** 2025-11-29  
-**Version:** 3.1  
-**Status:** Validation - CapDev updated to $36k (5.02% of total costs) per Paula confirmation; ready for submission mid-December 2025
+**Last Updated:** 2025-12-01  
+**Version:** 3.2  
+**Status:** Validation - Financial structure finalized with two-account strategy; ready for submission mid-December 2025
+
+**Version 3.2 Changes (1 Dec 2025):**
+- **Financial structure optimized:** Two-account structure ($100k business + $100k Ting's reserve)
+- **GP work reduced:** 20 hrs/week (was 30 hrs/week) for believable 30 hrs/week R&D commitment
+- **GP income adjusted:** $266,800 over 24 months ($11,117/month) from 20 hrs/week @ $145/hr
+- **Strategic drawdown plan:** Ting's $100k drawn in 4 installments (Months 9, 12, 15, 18) to manage grant payment lag
+- **Total work commitment:** 50 hrs/week (20 GP + 30 R&D) - sustainable and believable
+- **Co-funding capacity:** $466,800 available vs $430,156 required (surplus $36,644)
+- **Cashflow managed strategically:** Lowest point $1,968 (Month 24), final surplus $36,391
+- **All financial documents updated:** cashflow-24-month.md, cost-template.md, forge-application-narrative.md, PROJECT_SUMMARY.md now consistent
 
 **Version 3.1 Changes (29 Nov 2025):**
 - Updated CapDev from $15k to $36k (5.02% of total eligible costs)
