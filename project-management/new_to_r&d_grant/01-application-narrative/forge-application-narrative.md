@@ -15,19 +15,33 @@
 
 ## Background and Compliance (~250 words)
 
-NexWave Solutions Ltd develops privacy-preserving AI tools for NZ general practice. We will build a NZ-sovereign clinical AI assistant with two core tools:
+NexWave Solutions Ltd (incorporated 2024) develops AI tools for New Zealand general practice. Founder is a practising GP and full-stack developer with AI/ML skills, bringing clinical domain knowledge, technical capability, and real-world understanding of GP workflow challenges.
 
-1. **Inbox Helper (Reactive):** Triage, classify, and auto-file inbox items (labs, letters, referrals). Compare labs with previous results, flag urgent issues, generate patient messages. Saves 1-2 hours/day per GP.
+**Current Product: ClinicPro SaaS**
+- AI-assisted medical scribing platform for NZ GPs
+- Operational product in daily clinical use
+- Consultation note generation, clinical image analysis, real-time transcription
+- Built with NZ privacy compliance from day one (Privacy Act 2020, HIPC)
 
-2. **Care Gap Finder (Proactive):** Scan patient records to identify overdue chronic disease checks (diabetes, CVD, COPD, CHF, asthma). Generate recall lists, prioritise high-risk and Māori/Pacific patients. Supports PHO quality indicators.
+**Market & Partnerships:**
+- Target market: NZ general practitioners and primary care practices
+- Formal partnership with Medtech (NZ's largest practice management system provider, ~60% market share)
+- Medtech integration currently in development: smart clinical image tool and AI scribe features embedded within GP workflow
 
-The system is strictly assist-only. It never provides diagnostic or treatment directives. Development uses synthetic and de-identified data only; no production PHI is used for model training.
+**Recent Development Activity:**
+- Medtech FHIR API integration validated for secure patient data handling
+- Smart clinical image tool in active development
+- Transitioning from standalone SaaS to embedded PMS features for seamless clinical workflow
 
-**Dual PMS integration:** The system will integrate with both Medtech and Indici PMSs from Objective 1, allowing research on multi-PMS generalisation and broader market reach.
+**Founder's Clinical Expertise:**
+- Practising GP with firsthand experience of inbox overload, care gap monitoring challenges, and clinical safety requirements
+- Tests features in real-world clinical practice daily
+- Provides clinical domain expertise for safety validation and GP pilot recruitment
+- GP clinical work income provides 60% co-funding for this R&D project
 
-**Hosting and privacy:** Inference may occur in Australia with no persistent PHI outside New Zealand. All PHI at rest remains in NZ with NZ-held keys. Cross-border processing is governed by Privacy Act 2020 IPP 12 safeguards, HISO 10029 security controls, and a DPIA completed pre-pilot. We align with Te Whatu Ora's NAIAEAG precautionary guidance (no PHI into unapproved LLMs; transparency; human oversight).
+**Stage:** Early operational with proven product, formal partnership with NZ's largest PMS provider, and active integration development. This R&D grant funds transition to NZ-sovereign clinical LLM for two core tools: Inbox Helper and Care Gap Finder.
 
-**Lean MVP approach:** Early versions of both tools will be released to paid early adopters as soon as minimum safety and accuracy thresholds are met, with ongoing R&D continuing through month 24.
+**Privacy & Safety:** The system is strictly assist-only—never provides diagnostic or treatment directives. Development uses synthetic and de-identified data only; no production patient data used for model training. Inference may occur in Australia with no persistent data outside NZ. All patient data at rest remains in NZ with NZ-held keys. Cross-border processing governed by Privacy Act 2020 IPP 12 safeguards, HISO 10029 security controls, and DPIA completed pre-pilot. Aligns with Te Whatu Ora's NAIAEAG precautionary guidance.
 
 ---
 
@@ -42,32 +56,23 @@ The system is strictly assist-only. It never provides diagnostic or treatment di
 
 ## Describe Planned R&D Activities (~250 words)
 
-Build a NZ-trained clinical LLM and validate which AI architecture (simple classifiers, hybrid rules+LLM, or NZ-trained LLM) works best for different clinical risk levels:
+**The Problem:** NZ GPs spend 1-2 hours daily on inbox management and struggle to monitor hundreds of patients with chronic conditions. Current AI solutions are expensive ($140-170k/month for 5,000 GPs), rely on overseas providers, and don't understand NZ clinical language or equity priorities.
 
-**Inbox Helper (Objective 2):**
-- Triage and classify inbox items (labs, hospital letters, specialist letters, referrals, prescriptions, admin, patient messages)
-- Auto-file normal screening results with appropriate recall intervals
-- Compare current labs with previous results, flag trends
-- Rule-based clinical overlays (non-prescribing)
-- Patient communication message generation
+**Our Innovation:** Build New Zealand's first sovereign clinical AI using Large Language Models (LLMs) trained specifically on NZ health data. This R&D programme answers a critical question: *Which AI approach works best for different clinical risk levels while maintaining safety, cost-effectiveness, and performance across NZ's health system?*
 
-**Care Gap Finder (Objective 3):**
-- Data extraction from free-text clinical notes for 5 chronic conditions (diabetes, CVD, COPD, CHF, asthma)
-- Care gap detection with multi-condition logic
-- Patient prioritisation (high-risk, Māori/Pacific equity focus)
-- GP/practice dashboards with equity filters
-- Automated patient recall list generation
+**Two Transformative Tools:**
 
-**Multi-PMS Integration (Objectives 1-4):**
-- Connect to both Medtech and Indici via FHIR/related APIs
-- Research architectural patterns for multi-PMS generalisation
-- Validate performance consistency across different PMSs
+**1. Inbox Helper – Ending Daily Inbox Overload**
+Automatically triages GP inbox items (lab results, hospital letters, specialist referrals). Compares current results with previous ones to spot trends. Auto-files normal screening results with correct recall intervals. Flags urgent issues immediately. Generates patient messages. **Impact:** Saves 1-2 hours per GP per day—addressing a major burnout driver.
 
-**Domain adaptation:** Train NZ-LLM on curated NZ clinical corpus (bpac, MoH, Pharmac, lab formats) and synthetic/de-identified datasets. No training on production PHI.
+**2. Care Gap Finder – Proactive Chronic Disease Monitoring**
+Scans patient records to identify overdue checks for diabetes, cardiovascular disease, chronic lung disease, heart failure, and asthma. Generates prioritised recall lists with explicit focus on high-risk and Māori/Pacific patients who face worse health outcomes. **Impact:** Reduces missed monitoring, supports quality indicators, improves equity outcomes.
 
-**Safety:** Assist-only constraints, prohibited-claim detection, refusal scaffolds, monthly safety regressions with hard stops if metrics fail.
+**Groundbreaking Architecture Research:**
+Systematically compare three AI approaches (simple classifiers, hybrid rule-based systems, NZ-trained LLM) to discover optimal balance of accuracy, cost, and safety for each clinical task. No published work provides this framework for NZ primary care.
 
-**Evaluation:** Architecture comparison (accuracy, cost, latency), clinician usefulness, equity metrics (Māori/Pacific patient outcomes), alert fatigue rates, real-world pilot with 10-20 GPs.
+**NZ-First Capabilities:**
+Train LLM on curated NZ clinical content (bpac guidelines, Ministry of Health data, Pharmac medication names, regional lab formats). Integrate with both major NZ practice systems (Medtech and Indici). Test with 10-20 GP practices across diverse populations. Built with Privacy Act 2020 compliance, assist-only constraints, and rigorous safety testing from day one.
 
 ---
 
