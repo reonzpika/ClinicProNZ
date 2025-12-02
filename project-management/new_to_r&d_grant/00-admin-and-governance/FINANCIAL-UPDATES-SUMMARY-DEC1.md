@@ -3,12 +3,12 @@
 ## Changes Made
 
 ### Key Financial Changes:
-1. **Opening Cash:** $100,000 → **$218,000 NZD** (from $200,000 AUD shareholder funds)
+1. **Opening Cash:** $100,000 NZD (business account) + **$100,000 NZD (Ting's reserve)**
 2. **GP Work Hours:** 30 hrs/week → **20 hrs/week** (more believable R&D commitment)
 3. **GP Income:** $375,652 → **$266,800** over 24 months ($11,117/month)
 4. **Total Work Commitment:** 50 hrs/week (20 hrs GP + 30 hrs R&D) - sustainable
-5. **Cashflow Status:** ✓ **POSITIVE THROUGHOUT** (no negatives)
-6. **Closing Balance:** $26,713 → **$54,391** (better surplus)
+5. **Cashflow Status:** Managed with 4 strategic draws from Ting's reserve totaling $100k
+6. **Closing Balance:** $26,713 → **$36,391** (healthy surplus)
 
 ---
 
@@ -20,16 +20,18 @@
 - **Co-Funding (60%):** $430,156
 
 ### Co-Funding Sources (CHANGED):
-- **Opening cash:** $218,000 (was $100,000)
+- **Opening cash (business):** $100,000
+- **Ting's reserve:** $100,000 (drawn in 4 installments: $30k, $30k, $25k, $15k)
 - **GP income:** $266,800 (was $375,652 gross, $356,869 net)
-- **Total available:** $484,800 ✓
-- **Surplus over requirement:** $54,644 ✓
+- **Total available:** $466,800 ✓
+- **Surplus over requirement:** $36,644 ✓
 
-### Cashflow Status (IMPROVED):
-- Opening: $218,000 (was $100,000)
-- Lowest point: $19,968 Month 24 (was NEGATIVE -$7,984)
-- Closing: $54,391 (was $26,439)
-- **Status: POSITIVE THROUGHOUT** ✓
+### Cashflow Status (MANAGED):
+- Opening (business): $100,000
+- Ting's reserve drawn: $100,000 (Months 9, 12, 15, 18)
+- Lowest point: $1,968 Month 24 (before final grant)
+- Closing: $36,391
+- **Status: Strategically managed with Ting's reserve** ✓
 
 ---
 
@@ -42,15 +44,17 @@
 
 **For Application:** Demonstrates realistic work capacity and serious R&D commitment
 
-### 2. Increased Opening Cash ($100k → $218k):
-**Benefit:** Strengthens co-funding position and eliminates cashflow negatives
-- **Before:** Cash went negative in Months 21-24, needed AU reserve
-- **After:** Cash stays positive throughout, comfortable buffer
+### 2. Two-Account Structure ($100k business + $100k Ting's reserve):
+**Benefit:** Strengthens co-funding position while managing cashflow strategically
+- **Structure:** $100k in business account + $100k in Ting's separate account
+- **Strategy:** Draw from Ting's account at 4 strategic points (Months 9, 12, 15, 18)
+- **Timing:** Draws coordinate with grant payment timing (1-month lag)
 
-**Source:** $200,000 AUD shareholder funds = $218,000 NZD
-- Available immediately
+**Source:** $200,000 NZD total shareholder funds
+- Business opening: $100,000 NZD
+- Ting's reserve: $100,000 NZD
 - Demonstrates strong financial position
-- No need for AU reserve fallback
+- Strategic drawdown shows financial management capability
 
 ### 3. Loss Tax Credit Optimization:
 **Household Cash Analysis (over 24 months):**

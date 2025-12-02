@@ -414,29 +414,39 @@ The project is organized into 6 main directories:
 
 ### Cashflow & Funding Structure
 
-**Opening Cash:** $218,000 NZD (from $200,000 AUD shareholder funds)
+**Opening Cash:** $100,000 NZD (business account)
 
-**Reserve Funds:** Additional shareholder funds available if needed
+**Ting's Reserve:** $100,000 NZD (shareholder funds, drawn in 4 installments during project)
+
+**Total Shareholder Funds:** $200,000 NZD
 
 **Co-funding Requirement:** $430,156
-**Total Available:** $484,800 (opening cash $218k + GP income $266.8k) ✓
-**Surplus:** $54,644 ✓
+**Total Available:** $466,800 (shareholder funds $200k + GP income $266.8k) ✓
+**Surplus:** $36,644 ✓
 
 **Monthly GP Income:** 
 - Revenue: $11,117/month (from 20 hrs/week @ $145/hr excl. GST)
 - Work commitment: 50 hrs/week total (20 hrs GP + 30 hrs R&D)
 
-**Cashflow Position:** ✓ **POSITIVE THROUGHOUT** - Lowest point Month 24 ($19,968)
+**Cashflow Position:** Managed with strategic draws from Ting's reserve - Lowest point Month 24 ($1,968)
+
+**Drawdown Schedule from Ting's Reserve:**
+- Month 9: $30,000
+- Month 12: $30,000
+- Month 15: $25,000
+- Month 18: $15,000
+- **Total: $100,000** (fully utilized by Month 18)
 
 **Total Income Over 24 Months:**
-- Opening cash: $218,000
+- Opening cash: $100,000
+- Ting's reserve: $100,000
 - GP income: $266,800
-- R&D grants: $286,609 (rounded from $286,770)
-- **Total: $771,409**
+- R&D grants: $286,609
+- **Total: $753,409**
 
 **Total Costs:** $716,926
 
-**Final Surplus:** $54,483 ✓
+**Final Surplus:** $36,483 ✓
 
 **Grant Schedule (8 quarters over 24 months):**
 - Year 1 (Q1-Q4): ~$148k
