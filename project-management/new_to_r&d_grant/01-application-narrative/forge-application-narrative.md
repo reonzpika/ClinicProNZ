@@ -148,60 +148,29 @@ Laboratory metrics (accuracy, F1) may not correlate with clinical outcomes (time
 
 ## Knowledge Availability – What Exists and Why It's Insufficient? (~250 words)
 
-**Partial Knowledge Exists But Cannot Be Applied:**
+**Existing Knowledge Addresses Different Problems:**
 
-**1. Overseas Clinical AI Solutions**
+**1. Documentation AI Tools Don't Resolve Decision-Support Uncertainties**
 
-Commercial AI scribes exist (Abridge, Nuance DAX, DeepScribe) but are designed for US/UK healthcare systems. They don't understand:
-- NZ clinical language (bpac vs UpToDate guidelines, Pharmac vs international medication names)
-- Regional laboratory variations (LabTests Auckland vs SCL vs Medlab formats)
-- NZ equity frameworks (Māori/Pacific prioritisation)
-- Privacy Act 2020 constraints (IPP 12 cross-border restrictions)
+Commercial AI scribes (Abridge, Nuance DAX) optimize for passive documentation. **Whether documentation architectures work for active decision support (inbox triage, multi-condition care gaps, real-time alerts) is technologically uncertain.** Decision support requires different capabilities: real-time inference, multi-condition logic, confidence calibration. No published validation across use case types.
 
-**These tools cannot be adapted—they require complete retraining on NZ data with architectural investigation for our constraints.**
+**2. Generic AI Systems Show Capability But Not Sovereign Deployment Pathways**
 
-**2. Generic Large Language Models and Emerging AI Paradigms**
+Overseas APIs (GPT-4, Claude) prove clinical reasoning capability but don't address: **How to achieve comparable performance under NZ sovereignty constraints (no overseas APIs), at sustainable cost, across PMS platforms, with equity algorithms.** Architectural paradigms for sovereign deployment at scale are undocumented.
 
-GPT-4, Claude, and emerging agentic AI systems can perform clinical reasoning but:
-- **Cost:** $0.15+/request makes them prohibitively expensive ($140-170k+/month for 5,000 GPs)
-- **Sovereignty:** Training data sources unknown, models controlled overseas, no NZ data governance
-- **Performance:** Not validated on NZ clinical scenarios or multi-system contexts
+**3. Academic Research Validates Isolated Components, Not Integrated Systems**
 
-**They provide existence proof AI can reason clinically, but not which paradigm achieves this cost-effectively under NZ constraints.**
+Published work studies techniques (fine-tuning, RAG, agentic systems) using standardized datasets in controlled settings. **How paradigms perform under combined real-world constraints (multi-PMS + equity + Privacy Act + cost + PMS interface limits) is unknowable from isolated testing.** Lab benchmarks don't predict clinical integration performance. Emergent behaviors from constraint interactions cannot be deduced.
 
-**3. Academic Research on AI Architectures**
+**4. Proprietary Implementations May Emerge But Methods Are Trade Secrets**
 
-Published papers describe various techniques (fine-tuning, RAG, agentic systems, multi-agent coordination, guardrails) but:
-- **No NZ clinical benchmarks:** No published performance data comparing architectural paradigms on NZ primary care tasks
-- **No multi-system patterns:** Research focuses on single EMR systems; multi-PMS generalisation (Medtech + Indici) is undocumented
-- **No equity algorithms:** Fairness literature addresses binary attributes, not multi-condition clinical monitoring with Māori/Pacific prioritisation goals
-- **Lab validation only:** Academic work stops at dataset benchmarks; real-world clinical validation with architectural comparison is not published
+Future commercial solutions won't disclose: architectural selection criteria, NZ adaptation techniques, safety validation, multi-system patterns. Knowledge remains proprietary—unavailable for sector capability building.
 
-**4. Proprietary Commercial Implementations**
+**5. PMS Integration Constraints Create Unknown Architectural Requirements**
 
-Companies deploying clinical AI don't disclose:
-- Architectural paradigm decisions and selection criteria
-- Training data composition and adaptation techniques
-- Safety validation methods and failure rates
-- Performance degradation in production across different systems
-- Cost structures and computational requirements
+Published AI research assumes unlimited UI flexibility. Real PMS integration (Medtech/Indici widgets) imposes constraints: limited screen space, fixed workflows. **Whether paradigms requiring extensive UI remain useful when constrained to PMS widgets requires empirical investigation.** Performance under integration constraints undocumented.
 
-**These are trade secrets—unavailable for our use.**
-
-**5. Individual Components Exist, Integrated System Does Not**
-
-The literature provides pieces:
-- ✓ How to build AI systems (general architectures)
-- ✓ How to build clinical decision support (in isolation)
-- ✓ How to handle cross-border data (legal frameworks)
-
-**But no published work addresses the integrated challenge:** architectural paradigm selection under NZ sovereignty constraints, across multiple health systems, with Māori/Pacific equity requirements, validated in real clinical workflows.
-
-**Why Knowledge Gap Exists:**
-
-This exact combination—NZ clinical language + Privacy Act + multi-PMS + equity focus + cost constraints + architectural exploration + real-world validation—has never been attempted. Individual researchers and companies solve parts, but integrated solution with systematic architectural investigation requires original R&D.
-
-**Therefore, systematic investigation is necessary to create this knowledge.**
+**Systematic investigation required to resolve these technological uncertainties for NZ primary care.**
 
 ---
 
