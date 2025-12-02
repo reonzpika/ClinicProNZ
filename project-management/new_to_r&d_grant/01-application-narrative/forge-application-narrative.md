@@ -124,41 +124,25 @@ These uncertainties are interconnected: architectural paradigm choice affects do
 
 **Even highly competent AI/ML professionals cannot deduce solutions without systematic experimentation because:**
 
-**1. Architectural Paradigm Trade-Offs Are Context-Dependent and Non-Linear**
+**1. Multi-Component Architecture Performance Cannot Be Predicted From Component Specifications**
 
-Performance characteristics of different AI paradigms—from simple pattern recognition to agentic reasoning systems—vary unpredictably across clinical contexts. Lightweight approaches may miss clinical nuance. Sophisticated reasoning systems may "hallucinate" on medical calculations (e.g., cardiovascular risk scoring requires precise 8-variable computation—reasoning models sometimes fabricate values). Emerging paradigms like agentic AI introduce novel failure modes not yet documented.
-
-**Optimal architectural paradigm varies by clinical risk level and cannot be determined by inspection.** Interaction effects—does retrieval error propagate into reasoning? Does multi-agent coordination latency disrupt workflow? Do novel paradigms introduce unexpected safety risks?—are unknowable without empirical measurement.
-
-**Research must explore architectural spectrum to discover which approaches work for which clinical scenarios.**
+Architectural paradigms—from simple pattern recognition to agentic reasoning systems—exhibit emergent behavior when components interact. Lightweight approaches may miss clinical nuance. Sophisticated reasoning systems "hallucinate" on medical calculations (cardiovascular risk scoring requires precise 8-variable computation—reasoning models sometimes fabricate values). Interaction effects compound: retrieval errors propagate into reasoning, multi-agent coordination creates latency bottlenecks, quantization for cost reduction degrades safety mechanisms. **Component-level testing doesn't reveal system-level failures. Performance characteristics emerge from interactions unknowable without empirical measurement.**
 
 **2. Multi-System Generalisation Creates Emergent Failure Modes**
 
-Medtech and Indici structure clinical data differently. Architectural approach performing well in one system may fail subtly in another: laboratory results formatted differently, medication lists use different codes, clinical notes follow different templates.
+Medtech and Indici structure clinical data differently. Architectural approaches performing well in one system fail subtly in another: laboratory formats differ, medication codes vary, note templates diverge. **These failures cannot be predicted from API documentation—they emerge from real-world data variations. Discovering robust generalisation patterns requires systematic testing across both platforms.**
 
-**These failures cannot be predicted from specifications**—they emerge from real-world data variations. Discovering robust generalisation patterns requires systematic testing.
+**3. Real-World Clinical Data Characteristics Cause Unpredictable Architecture-Specific Failures**
 
-**3. NZ Clinical Language Has No Performance Benchmarks**
+Real NZ clinical data exhibits characteristics impossible to replicate synthetically: inconsistent documentation patterns (how GPs actually write under time pressure), missing fields, data quality variations, system-specific artifacts. **Different architectural paradigms respond unpredictably to real-world messiness. Performance on clean synthetic data doesn't predict performance on messy clinical data. Architecture-dependent sensitivity to data quality variations unknowable without real-world testing.**
 
-Regional abbreviations, Māori health terms, Pharmac medication names, DHB-specific formats, bpac/Ministry of Health phrasing—this combination is unique to New Zealand.
+**4. Safety Mechanisms Interact With Architectural Paradigms Creating Emergent Failure Modes**
 
-**No published work benchmarks AI performance on NZ clinical language under Privacy Act constraints.** Even ML experts must experiment to discover effective adaptation approaches.
+Safety constraints (refusal scaffolds, prohibited-claim detection) behave differently across architectures. Agentic systems propagate errors across agents. LLMs bypass refusal scaffolds unexpectedly. Hybrid systems fail at component boundaries. **Safety failure modes vary by paradigm in ways unpredictable from isolated component testing. Emergent safety risks require systematic investigation across architectural approaches.**
 
-**4. Safety-Alerting-Usability Form Complex Feedback System**
+**5. AI Performance Metrics Do Not Predict Clinical Outcome Improvements**
 
-Adding safety constraints changes model outputs, affecting alert frequency, impacting clinician trust, influencing adoption, determining real-world safety outcomes.
-
-**These feedback loops create emergent system behaviour that cannot be deduced.** Finding optimal balance requires iterative testing with real clinicians across diverse practice settings.
-
-**5. Unprecedented Constraint Combination**
-
-Clinical safety + NZ sovereignty + Privacy Act + multi-system integration + Māori/Pacific equity + cost-effectiveness + real-time performance—**this exact combination has never been attempted.**
-
-Standard ML practices don't apply. Novel architectural patterns must be discovered through investigation.
-
-**Why Professionals Need Experimentation:**
-
-Component specifications don't reveal system behaviour. Professionals cannot predict: Which architectural paradigm achieves safety thresholds? Will domain adaptation maintain performance when optimised for cost? Will equity algorithms generalise across health systems? **Only systematic empirical investigation resolves these uncertainties.**
+Laboratory AI metrics (accuracy, F1 scores) may not correlate with clinical outcomes (time saved, errors prevented, patient safety). High-accuracy systems might reduce GP trust through false positives; lower-accuracy systems with better explanations might drive higher clinical utility. **Which architectural characteristics translate to clinical value cannot be deduced from laboratory benchmarks—requires systematic measurement of real-world outcomes across paradigms.**
 
 ---
 
