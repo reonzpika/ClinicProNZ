@@ -275,7 +275,7 @@ This changelog tracks all significant changes to the R&D grant application, incl
 - Strategic decisions and rationale
 - Document updates and version control
 
-**Location:** `/project-management/new_to_r&d_grant/00-admin-and-governance/CHANGELOG.md`
+**Location:** `/project-management/new_to_r&d_grant/CHANGELOG.md`
 
 **Maintained By:** Project team
 
