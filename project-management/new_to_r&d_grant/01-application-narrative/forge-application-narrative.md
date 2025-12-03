@@ -72,7 +72,7 @@ Measure each paradigm across: accuracy, computational cost, latency, safety fail
 
 **NZ-Specific Domain Adaptation:**
 
-Train sovereign AI on curated NZ clinical corpus: bpac guidelines, Ministry of Health protocols, Pharmac medication database, regional laboratory formats (LabTests, SCL, Medlab), Medtech and Indici clinical note patterns. Investigate whether NZ-adapted models can match expensive overseas systems (GPT-4) on local clinical tasks at sustainable cost.
+Train sovereign AI on curated NZ clinical corpus: bpac guidelines, Ministry of Health protocols, Pharmac medication database, regional laboratory formats (LabTests, SCL, Medlab), Medtech and Indici clinical note patterns. Investigate whether domain-adapted sovereign models achieve clinical-grade performance at sustainable cost under NZ sovereignty constraints.
 
 **Multi-System Generalisation Research:**
 
@@ -80,7 +80,7 @@ Integrate with both Medtech and Indici practice systems. Investigate architectur
 
 **Real-World Validation:**
 
-Pilot with 10-20 GP practices. Measure clinical utility, safety outcomes, alert fatigue, equity metrics. Document performance characteristics from synthetic data → sandbox → production deployment.
+Pilot with 10-20 GP practices. Measure clinical utility, safety outcomes, clinician override patterns, equity metrics. Document performance characteristics from synthetic data → sandbox → production deployment.
 
 **Knowledge Outputs:** Risk-stratified architectural framework, NZ domain adaptation methodology, multi-system generalisation patterns, equity-preserving algorithms, safety validation framework (transferable to patient-facing care for Years 3-5 HealthHub NZ and national health integration).
 
@@ -92,7 +92,7 @@ Pilot with 10-20 GP practices. Measure clinical utility, safety outcomes, alert 
 
 Which AI architectural paradigm achieves clinical safety, NZ-contextual accuracy, and cost-effectiveness for primary care decision support across multiple health system platforms?
 
-This cannot be resolved without systematic experimentation because clinical AI operates under unprecedented constraint combination: high safety requirements, NZ-specific language, equity obligations, privacy regulations, multi-system integration.
+This cannot be resolved without systematic experimentation because clinical AI operates under unprecedented constraint combination: high safety requirements, NZ healthcare system context, equity obligations, privacy regulations, multi-system integration.
 
 **Five Cascading Research Uncertainties:**
 
@@ -162,9 +162,9 @@ Overseas APIs (GPT-4, Claude) prove clinical reasoning capability but don't addr
 
 Published work studies techniques (fine-tuning, RAG, agentic systems) using standardised datasets. **How paradigms perform under combined real-world constraints (multi-PMS + equity + Privacy Act + cost + PMS interface limits) is unknowable from isolated testing.** Lab benchmarks don't predict clinical integration performance. Emergent behaviors cannot be deduced.
 
-**4. Proprietary Implementations May Emerge But Methods Are Trade Secrets**
+**4. Commercial Implementations Keep Methods Proprietary**
 
-Future commercial solutions won't disclose: architectural selection criteria, NZ adaptation techniques, safety validation, multi-system patterns. Knowledge remains proprietary and unavailable for sector capability building.
+Emerging commercial solutions don't disclose architectural selection criteria, domain adaptation techniques, or safety validation methods. Knowledge remains proprietary and unavailable for sector capability building. Public research required to create accessible, reusable knowledge for entire health AI sector.
 
 **5. PMS Integration Constraints Create Unknown Architectural Requirements**
 
