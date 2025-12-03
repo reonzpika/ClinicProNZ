@@ -100,9 +100,9 @@ This cannot be resolved without systematic experimentation because clinical AI o
 
 Which architectural approach—ranging from simple pattern recognition to multi-agent reasoning systems—achieves required clinical safety and accuracy at sustainable cost? Do routine tasks permit lightweight solutions ($0.002/request), or do clinical nuances demand sophisticated reasoning ($0.15/request)? **Emerging AI paradigms (agentic systems, advanced retrieval-augmented generation) may prove superior to established approaches**, requiring investigation of cutting-edge techniques alongside conventional methods. **Cost-accuracy-safety trade-offs unknowable without empirical comparison. Optimal paradigm may vary by clinical task in unexpected ways.**
 
-**2. Domain Adaptation Feasibility Under NZ Constraints**
+**2. Domain Adaptation Feasibility Under NZ Linguistic and Sovereignty Constraints**
 
-Can domain adaptation techniques achieve clinical-grade accuracy on NZ-specific clinical language (regional laboratory formats, Māori health terms, bpac/Ministry of Health protocols, Pharmac medication names), or do local variations require fundamentally different architectural approaches? **Adaptation effectiveness varies unpredictably across paradigms and clinical contexts—no published benchmarks exist for NZ primary care.**
+Whether domain adaptation alone suffices for NZ clinical language characteristics (Māori code-switching in clinical notes, regional abbreviations, bilingual terminology), or whether these linguistic properties require architectural modifications to NLP components (tokenization, embedding spaces). Standard techniques assume linguistic consistency—NZ's bilingual clinical context may violate these assumptions. **Adaptation effectiveness across paradigms under no-overseas-training constraints unknowable without systematic investigation—may require novel architectural approaches not yet documented.**
 
 **3. Multi-System Generalisation Patterns**
 
