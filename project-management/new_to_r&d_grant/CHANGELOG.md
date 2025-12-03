@@ -7,6 +7,110 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [4.0] - 2025-12-02
+
+### Changed - Complete Objectives Document Rewrite (Research-Focused)
+
+**MAJOR OVERHAUL:** Objectives document completely rewritten to align with R&D Activities section's research emphasis—transformed from product development roadmap to sophisticated research investigation plan.
+
+#### Overall Framing Changes
+
+**OLD (v3.0 - Product-focused):**
+- "Build safe, NZ-specific clinical AI assistant"
+- "Prove which AI architecture works best"
+- Listed 3-4 predetermined architectural approaches
+- Deliverables = product features and metrics
+
+**NEW (v4.0 - Research-focused):**
+- "Systematically investigate which architectural paradigms achieve clinical safety, NZ-contextual accuracy, and cost-effectiveness under combined constraints"
+- "Research approach: Two clinical testbeds enable controlled investigation"
+- Open exploration of paradigm spectrum (classifiers → agentic AI → RAG)
+- Deliverables = research knowledge + working prototypes
+
+#### Critical Removals
+- ❌ **GPT-4 benchmarking** (line 69: "benchmark it vs GPT-4")—completely removed
+- ❌ **Rigid architectural assumptions** ("3-4 specific approaches")—replaced with open exploration
+- ❌ **Product-focused language** ("Turn prototype into practical tool," "Build a tool")—replaced with research language
+- ❌ **Feature lists as deliverables**—replaced with research knowledge outputs
+
+#### Objective 1: Foundation → Architectural Paradigm Investigation
+**NEW Research Focus:**
+- Systematic investigation of paradigm spectrum (including agentic AI, RAG, emerging approaches)
+- Open-ended research questions: "Do paradigms exhibit predictable performance boundaries?"
+- Research activities (not "features developed")
+- Deliverables: 5 research knowledge outputs + 2 working prototypes
+
+**Key Changes:**
+- Removed: GPT-4 benchmarking
+- Added: Investigation of emerging paradigms (agentic AI, RAG)
+- Added: Comprehensive research questions on domain adaptation, failure modes, multi-system generalisation
+- Reframed: "NZ-LLM" assumption → investigation of whether domain adaptation suffices
+
+#### Objective 2: Inbox Helper → Routine Task Automation Research
+**NEW Research Focus:**
+- "Inbox Helper Testbed" (tool as research instrument, not product)
+- Research questions: Lab-to-clinic translation, confidence calibration, UI trust patterns, failure mode discovery
+- Systematic experiments on real clinical data
+- Deliverables: 5 research knowledge outputs + 1 operational tool
+
+**Key Changes:**
+- Removed: Feature-focused language
+- Added: Lab-to-clinic performance degradation investigation
+- Added: Real-world failure mode taxonomy research
+- Added: Multi-system generalisation pattern investigation
+- Reframed: Early adopter deployment as "lean clinical validation" providing research data
+
+#### Objective 3: Care Gap Finder → Multi-Condition Clinical Reasoning Research
+**NEW Research Focus:**
+- "Care Gap Finder Testbed" for complex reasoning research
+- Research questions: Complex reasoning paradigm performance, unstructured data extraction, equity-preserving algorithms
+- Systematic investigation of 5 chronic conditions as research domains
+- Deliverables: 5 research knowledge outputs + 1 operational tool (with equity validation)
+
+**Key Changes:**
+- Removed: Feature-focused condition lists
+- Added: Architectural paradigm performance on complex reasoning (vs routine tasks)
+- Added: Equity-preserving algorithm research with Te Tiriti-compliant design
+- Added: Multi-condition reasoning capability investigation
+- Reframed: Clinical conditions as research testbeds, not product features
+
+#### Objective 4: Refinement → Multi-Practice Generalisation Research
+**NEW Research Focus:**
+- "The hardest R&D": Real-world generalisation and failure mode discovery
+- Research questions: Multi-practice performance variation, safety-architecture interactions, lab-to-clinic translation at scale
+- Structured pilots across 10-20 practices (research design, not commercial rollout)
+- Deliverables: 6 research knowledge outputs + 2 operational outputs
+
+**Key Changes:**
+- Removed: "Refinement and tuning" language (sounded like maintenance)
+- Added: Multi-practice generalisation pattern analysis (systematic R&D)
+- Added: Safety-architecture interaction effects research
+- Added: Real-world failure mode taxonomy (comprehensive documentation)
+- Added: Lab-to-clinic translation pattern validation
+- Added: Longitudinal safety and performance monitoring research
+- Strengthened: This is hardcore R&D on generalisation, not product polish
+
+#### Programme Overview Additions
+- **Research posture:** "Genuine R&D with systematic investigation of unknowns"
+- **Clinical testbeds as research instruments:** Tools enable real-world data collection for research
+- **Knowledge outputs:** Primary = research knowledge; Secondary = working tools
+- **Long-term knowledge transfer:** Research enables Years 3-5 HealthHub NZ patient-facing AI
+
+#### Strategic Impact
+- **Eliminates inconsistency:** Objectives now match R&D Activities section (9/10 sophistication)
+- **Demonstrates genuine R&D:** Not "R&D theatre" covering product development
+- **Emphasizes knowledge creation:** Research contributions to NZ health AI sector
+- **Shows architectural flexibility:** Open to discovering novel paradigms
+- **Enables assessor confidence:** Consistent research narrative throughout application
+
+**Files Updated:**
+- revised-objectives-24-months.md: Complete rewrite (v3.0 → v4.0)
+- CHANGELOG.md: This comprehensive entry
+
+**Result:** Application now presents consistent, sophisticated research narrative from R&D Activities through Objectives—bulletproof for Callaghan Innovation assessment.
+
+---
+
 ## [3.6] - 2025-12-02
 
 ### Changed - R&D Activities Section Complete Revision

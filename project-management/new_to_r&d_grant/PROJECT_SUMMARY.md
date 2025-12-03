@@ -3,7 +3,7 @@ project_name: ClinicPro AI - Inbox Helper + Care Gap Finder (NZ-Sovereign Clinic
 project_stage: Validation
 owner: NexWave Solutions Ltd
 last_updated: "2025-12-02"
-version: "3.6"
+version: "4.0"
 tags:
   - r&d-grant
   - healthcare-ai
@@ -57,6 +57,9 @@ milestones:
     status: completed
   - date: "2025-12-02"
     name: R&D Activities section complete - all 6 questions (Activities, Uncertainty, Challenge, Knowledge, Newness, Why Better) revised with research emphasis, architectural flexibility, competitor analysis
+    status: completed
+  - date: "2025-12-02"
+    name: Objectives document complete rewrite (v4.0) - transformed from product-focused to research-focused, aligned with R&D Activities, removed GPT-4 benchmarking, added architectural flexibility
     status: completed
   - date: "2025-12-15"
     name: Target submission date
@@ -661,4 +664,4 @@ Success = achieving clinical-grade accuracy (≥90% for triage, ≥95% for clini
 
 ---
 
-**Last Updated:** 2025-12-02 (v3.6 - R&D Activities section complete with research emphasis, architectural flexibility, competitor analysis)
+**Last Updated:** 2025-12-02 (v4.0 - Objectives complete rewrite: research-focused, architecturally flexible, aligned with R&D Activities)
