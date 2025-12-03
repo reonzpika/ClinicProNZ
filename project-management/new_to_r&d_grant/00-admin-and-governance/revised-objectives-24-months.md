@@ -8,7 +8,7 @@
 
 **Core Research Questions:**
 - Do task characteristics predict optimal architectural paradigm, or are selection patterns unpredictable without empirical investigation?
-- Whether domain adaptation suffices for NZ clinical language characteristics, or linguistic properties require architectural modifications?
+- Whether domain adaptation suffices for NZ healthcare system context (guidelines, lab formats, clinical pathways), or do these contextual differences require architectural modifications?
 - Will architectural approaches generalise across PMSs (Medtech, Indici), or will system-specific adaptations emerge as necessary?
 - How do safety mechanisms interact with different paradigms, and what failure modes emerge in real clinical deployment?
 
@@ -50,9 +50,9 @@ Systematically investigate which architectural paradigms (from simple pattern re
 - Do architectural paradigms exhibit predictable performance boundaries under combined clinical constraints (safety + real-time + cost + NZ sovereignty + equity), or does performance depend on unpredictable interactions between paradigm characteristics and task properties?
 
 **Cascading Research Questions:**
-1. Whether domain adaptation techniques (fine-tuning, prompt engineering, retrieval augmentation) suffice for NZ clinical language characteristics, or do linguistic properties (bilingual code-switching, Māori medical terminology, regional abbreviations) require architectural modifications?
+1. Whether domain adaptation techniques (fine-tuning, prompt engineering, retrieval augmentation) suffice for NZ healthcare system context (bpac/MoH guidelines, regional lab formats with NZ reference ranges, ACC/PHO documentation patterns, local clinical pathways), or do these contextual differences require architectural modifications?
 
-2. Do simpler paradigms (pattern classifiers, rule-based systems) achieve sufficient accuracy for routine clinical tasks, or does linguistic variability and context-dependence necessitate more sophisticated reasoning architectures?
+2. Do simpler paradigms (pattern classifiers, rule-based systems) achieve sufficient accuracy for routine clinical tasks, or does NZ healthcare system variability and context-dependence necessitate more sophisticated reasoning architectures?
 
 3. How does architectural complexity affect failure modes? Do simpler systems fail predictably while complex systems exhibit emergent failures, or are failure patterns unpredictable without empirical investigation?
 
@@ -62,12 +62,12 @@ Systematically investigate which architectural paradigms (from simple pattern re
 
 #### NZ Clinical Corpus Development
 
-**Purpose:** Create NZ-specific training and evaluation datasets capturing linguistic characteristics, guideline variations, and lab format diversity unavailable in international datasets.
+**Purpose:** Create NZ-specific training and evaluation datasets capturing healthcare system characteristics, guideline variations, and lab format diversity unavailable in international datasets.
 
 **Activities:**
 - Curate NZ clinical corpus (≥10,000 pages): bpac.org.nz, MoH guidelines, Pharmac schedules, regional lab formats (LabTests, SCL, Medlab), ACC documentation, PHO quality frameworks
-- Document linguistic characteristics: te reo Māori medical terminology frequency, bilingual code-switching patterns, regional abbreviation variations, guideline-specific phrasing
-- Generate synthetic datasets preserving NZ linguistic properties:
+- Document NZ healthcare system characteristics: Regional lab reference ranges (NZ-specific normals), local abbreviations and documentation patterns, NZ guideline-specific clinical pathways, ACC/PHO terminology and workflows
+- Generate synthetic datasets preserving NZ healthcare system properties:
   - ≥1,000 inbox items (labs, discharge letters, referrals, scripts, admin, patient messages)
   - ≥500 patient records with chronic conditions (diabetes, CVD, COPD, CHF, asthma)
 
@@ -99,8 +99,8 @@ Systematically investigate which architectural paradigms (from simple pattern re
 
 **Use Case 3: Clinical Note Extraction (Unstructured Data, High Variability)**
 - Investigate paradigms: Named entity recognition → LLM extraction → RAG-augmented → Multi-agent verification
-- Measure: Extraction accuracy on NZ linguistic variations, handling of bilingual text, robustness to abbreviations
-- Research question: Whether domain adaptation suffices for NZ language characteristics or architectural modifications necessary?
+- Measure: Extraction accuracy on NZ healthcare documentation patterns, robustness to local abbreviations, handling of ACC/PHO-specific terminology
+- Research question: Whether domain adaptation suffices for NZ healthcare system context or architectural modifications necessary?
 
 **Research Approach:** Evidence-driven investigation where research follows empirical results, not predetermined architectural preferences. If emerging paradigms (e.g., agentic AI with tool use, advanced RAG patterns) demonstrate superior performance, investigation pivots accordingly.
 
@@ -121,14 +121,14 @@ Systematically investigate which architectural paradigms (from simple pattern re
 
 1. **Architectural Paradigm Performance Report**
    - Quantified performance boundaries for investigated paradigms across combined constraints
-   - Task characteristic analysis: Which properties (determinism, complexity, linguistic variability) predict paradigm suitability?
+   - Task characteristic analysis: Which properties (determinism, complexity, context-dependence) predict paradigm suitability?
    - Cost-performance trade-offs: Where do simpler paradigms suffice vs require sophisticated reasoning?
    - Failure mode taxonomy: How do different paradigms fail under NZ clinical data characteristics?
 
-2. **NZ Clinical Language Analysis**
-   - Documented linguistic characteristics affecting architectural performance
+2. **NZ Healthcare System Context Analysis**
+   - Documented NZ-specific characteristics affecting architectural performance: bpac/MoH guideline patterns, regional lab format variations, ACC/PHO terminology, local clinical pathway differences
    - Domain adaptation effectiveness: Where does fine-tuning/prompting suffice vs require architectural modifications?
-   - Bilingual handling patterns: How do paradigms handle Māori terminology and code-switching?
+   - Context handling patterns: How do paradigms handle NZ-specific reference ranges, local abbreviations, and regional documentation variations?
 
 3. **Multi-System Generalisation Patterns (Preliminary)**
    - Architectural approaches enabling Medtech/Indici abstraction
@@ -201,7 +201,7 @@ Investigate which architectural paradigms safely automate routine clinical tasks
 **1. Lab-to-Clinic Performance Translation**
 - Deploy optimal paradigm from Objective 1 (Use Case 1: Inbox Triage) on real de-identified inbox data (≥2,000 items)
 - Measure performance degradation: Synthetic accuracy (target ≥90%) vs real-world accuracy
-- Investigate degradation causes: Linguistic variations absent in synthetic data, unexpected document formats, edge cases
+- Investigate degradation causes: Documentation variations absent in synthetic data, unexpected document formats, edge cases
 - Research question: Do synthetic test sets predict real-world performance, or are degradation patterns unpredictable?
 
 **2. Confidence Threshold Discovery**
@@ -212,7 +212,7 @@ Investigate which architectural paradigms safely automate routine clinical tasks
 
 **3. Real-World Failure Mode Taxonomy**
 - Document all failure modes observed in real clinical deployment
-- Categorise failures: Linguistic (abbreviation misunderstanding), context (missing historical comparison), format (unexpected lab layout), clinical logic (incorrect urgency assessment)
+- Categorise failures: Documentation (abbreviation misunderstanding, regional variations), context (missing historical comparison), format (unexpected lab layout), clinical logic (incorrect urgency assessment)
 - Compare failure patterns across paradigms: Do simpler systems fail predictably? Do complex systems exhibit emergent failures?
 - Research question: Can failure modes be predicted from paradigm characteristics, or must they be discovered empirically?
 
@@ -253,7 +253,7 @@ Investigate which architectural paradigms safely automate routine clinical tasks
 
 1. **Lab-to-Clinic Performance Translation Report**
    - Quantified performance degradation from synthetic to real clinical data across investigated paradigms
-   - Identified data characteristics causing degradation (linguistic variations, format diversity, edge cases)
+   - Identified data characteristics causing degradation (documentation variations, format diversity, edge cases)
    - Predictive patterns: Which paradigm characteristics indicate robustness vs brittleness under real-world conditions?
 
 2. **Confidence Threshold and Safety Requirements**
@@ -301,8 +301,8 @@ Investigate which architectural paradigms accurately perform multi-condition cli
 **Architectural Paradigm Performance on Complex Clinical Reasoning:**
 1. Do architectural paradigms achieving high accuracy on routine tasks (Objective 2) maintain performance on multi-condition reasoning, or does task complexity necessitate different paradigm characteristics?
 
-**Unstructured Data Extraction Under NZ Linguistic Variation:**
-2. Can architectural approaches reliably extract clinical parameters (smoking status, disease severity, medication adherence) from unstructured GP notes containing NZ linguistic characteristics (abbreviations, bilingual terminology, contextual phrasing)?
+**Unstructured Data Extraction Under NZ Healthcare Documentation Patterns:**
+2. Can architectural approaches reliably extract clinical parameters (smoking status, disease severity, medication adherence) from unstructured GP notes containing NZ healthcare system documentation patterns (regional abbreviations, local terminology, contextual phrasing)?
 
 **Multi-Condition Logic Without Alert Overload:**
 3. How can care gap detection logic prioritise across multiple conditions (diabetes + CVD + CKD) without overwhelming clinicians, and which architectural approaches enable clinically appropriate multi-condition reasoning?
@@ -351,8 +351,8 @@ Investigate which architectural paradigms accurately perform multi-condition cli
 **2. Unstructured Data Extraction (Clinical Note Parsing)**
 - Investigate paradigms: Named entity recognition → LLM extraction → RAG-augmented (guideline context) → Multi-agent verification
 - Test extraction accuracy: Smoking status, disease severity markers, medication adherence, symptom frequency from free-text notes
-- NZ linguistic variation testing: Abbreviations (e.g., "HTN," "T2DM"), bilingual terminology, contextual phrasing ("not keen on tablets")
-- Research question: Whether domain adaptation suffices for unstructured extraction, or NZ linguistic properties require architectural modifications?
+- NZ healthcare documentation testing: Regional abbreviations (e.g., "HTN," "T2DM"), local terminology, contextual phrasing ("not keen on tablets"), ACC/PHO-specific documentation patterns
+- Research question: Whether domain adaptation suffices for unstructured extraction, or NZ healthcare system documentation patterns require architectural modifications?
 
 **3. Multi-Condition Prioritisation Logic**
 - Investigate approaches: Rule-based prioritisation → LLM-based clinical reasoning → Hybrid scoring
@@ -409,7 +409,7 @@ Investigate which architectural paradigms accurately perform multi-condition cli
    - Clinical calculation accuracy boundaries: Which paradigms achieve clinical-grade accuracy (≥95%) under real-world missing data conditions?
 
 2. **Unstructured Data Extraction Patterns**
-   - NZ linguistic variation handling: Which paradigms robustly extract from bilingual notes, abbreviations, contextual phrasing?
+   - NZ healthcare documentation handling: Which paradigms robustly extract from regional abbreviations, local terminology, contextual phrasing?
    - Extraction accuracy by data type: Structured fields (high accuracy, paradigm-agnostic) vs unstructured notes (paradigm-dependent performance)
    - Domain adaptation effectiveness: Where fine-tuning/prompting suffices vs architectural modifications required
 
@@ -547,7 +547,7 @@ Investigate whether architectural paradigms validated in controlled environments
 **Research Activities:**
 - Analyse failure patterns across practices: Which architectural characteristics correlate with robustness vs brittleness?
 - Investigate paradigm modifications:
-  - **Domain adaptation refinement:** Incorporate practice-specific linguistic patterns, abbreviations, workflow contexts
+  - **Domain adaptation refinement:** Incorporate practice-specific documentation patterns, abbreviations, workflow contexts
   - **Architectural adjustments:** If agentic approaches show superior generalisation, transition from simpler paradigms
   - **Safety mechanism tuning:** Adjust confidence thresholds, refusal triggers based on operational evidence
 - Re-validation after modifications: Do changes improve generalisation or introduce new failures?

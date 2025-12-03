@@ -100,9 +100,9 @@ This cannot be resolved without systematic experimentation because clinical AI o
 
 Which architectural approach (ranging from simple pattern recognition to multi-agent reasoning systems) achieves required clinical safety and accuracy at sustainable cost? Do routine tasks permit lightweight solutions ($0.002/request), or do clinical nuances demand sophisticated reasoning ($0.15/request)? **Emerging AI paradigms (agentic systems, advanced retrieval-augmented generation) may prove superior to established approaches**, requiring investigation of cutting-edge techniques alongside conventional methods. **Cost-accuracy-safety trade-offs unknowable without empirical comparison. Optimal paradigm may vary by clinical task in unexpected ways.**
 
-**2. Domain Adaptation Feasibility Under NZ Linguistic and Sovereignty Constraints**
+**2. Domain Adaptation Feasibility Under NZ Healthcare System Context and Sovereignty Constraints**
 
-Whether domain adaptation alone suffices for NZ clinical language characteristics (Māori code-switching in clinical notes, regional abbreviations, bilingual terminology), or whether these linguistic properties require architectural modifications to NLP components (tokenization, embedding spaces). Standard techniques assume linguistic consistency; NZ's bilingual clinical context may violate these assumptions. **Adaptation effectiveness across paradigms under no-overseas-training constraints unknowable without systematic investigation and may require novel architectural approaches not yet documented.**
+Whether domain adaptation alone suffices for NZ healthcare system characteristics (bpac/MoH guidelines, regional lab formats with NZ-specific reference ranges, ACC/PHO documentation patterns, local clinical pathways), or whether these contextual differences require architectural modifications to reasoning components. Standard techniques trained on international datasets (US/UK healthcare) may not capture NZ healthcare system nuances. **Adaptation effectiveness across paradigms under no-overseas-training constraints unknowable without systematic investigation and may require novel architectural approaches not yet documented.**
 
 **3. Multi-System Generalisation Patterns**
 
