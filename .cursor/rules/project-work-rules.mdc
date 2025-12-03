@@ -65,4 +65,26 @@ Before ending session, verify:
 
 ---
 
+## Writing Style Guidelines
+
+### Never Use Em Dashes (—)
+
+**Rule:** NEVER use em dashes (—) in any documents. They are strongly associated with AI-generated content.
+
+**Instead, use:**
+- Semicolons (;) for contrasting or clarifying clauses
+- Commas (,) for additional information
+- Periods (.) to separate sentences
+- Parentheses () for explanatory notes
+- "and" to connect phrases naturally
+- Question marks (?) to separate questions
+
+**Bad:** `The system is strictly assist-only—never provides diagnostic directives.`  
+**Good:** `The system is strictly assist-only; it never provides diagnostic directives.`
+
+**Bad:** `Research will follow evidence—investigation may discover novel patterns.`  
+**Good:** `Research will follow evidence. Investigation may discover novel patterns.`
+
+---
+
 # End of Project Work Rules
