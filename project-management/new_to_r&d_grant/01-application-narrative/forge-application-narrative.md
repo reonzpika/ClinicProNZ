@@ -126,7 +126,7 @@ These uncertainties are interconnected: architectural paradigm choice affects do
 
 **1. Multi-Component Architecture Performance Cannot Be Predicted From Component Specifications**
 
-Architectural paradigms—from simple pattern recognition to agentic reasoning—exhibit emergent behavior when components interact. Sophisticated reasoning systems "hallucinate" on medical calculations (cardiovascular risk scoring requires precise 8-variable computation—reasoning models fabricate values). Interaction effects compound unpredictably: retrieval errors propagate into reasoning, quantization degrades safety mechanisms. **Component-level testing doesn't reveal system-level failures. Performance emerges from interactions unknowable without empirical measurement.**
+Architectural paradigms—from simple pattern recognition to agentic reasoning—exhibit emergent behaviour when components interact. Sophisticated reasoning systems "hallucinate" on medical calculations (cardiovascular risk scoring requires precise 8-variable computation—reasoning models fabricate values). Interaction effects compound unpredictably: retrieval errors propagate into reasoning, quantization degrades safety mechanisms. **Component-level testing doesn't reveal system-level failures. Performance emerges from interactions unknowable without empirical measurement.**
 
 **2. Multi-System Generalisation Creates Emergent Failure Modes**
 
@@ -160,7 +160,7 @@ Overseas APIs (GPT-4, Claude) prove clinical reasoning capability but don't addr
 
 **3. Academic Research Validates Isolated Components, Not Integrated Systems**
 
-Published work studies techniques (fine-tuning, RAG, agentic systems) using standardized datasets. **How paradigms perform under combined real-world constraints (multi-PMS + equity + Privacy Act + cost + PMS interface limits) is unknowable from isolated testing.** Lab benchmarks don't predict clinical integration performance. Emergent behaviors cannot be deduced.
+Published work studies techniques (fine-tuning, RAG, agentic systems) using standardised datasets. **How paradigms perform under combined real-world constraints (multi-PMS + equity + Privacy Act + cost + PMS interface limits) is unknowable from isolated testing.** Lab benchmarks don't predict clinical integration performance. Emergent behaviors cannot be deduced.
 
 **4. Proprietary Implementations May Emerge But Methods Are Trade Secrets**
 
