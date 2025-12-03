@@ -3,7 +3,7 @@ project_name: ClinicPro AI - Inbox Helper + Care Gap Finder (NZ-Sovereign Clinic
 project_stage: Validation
 owner: NexWave Solutions Ltd
 last_updated: "2025-12-02"
-version: "4.1"
+version: "4.2"
 tags:
   - r&d-grant
   - healthcare-ai
@@ -63,6 +63,9 @@ milestones:
     status: completed
   - date: "2025-12-02"
     name: Objective 3 aggressive trim (v4.1) - 52% reduction (2,060 → 1,055 words), R&D Q3 strengthened from "alert overload" to "reasoning complexity"
+    status: completed
+  - date: "2025-12-02"
+    name: Objective 4 aggressive trim (v4.2) - 68% reduction (2,500 → 750 words), removed redundant sections, achieved balance with Objectives 2-3
     status: completed
   - date: "2025-12-15"
     name: Target submission date
@@ -238,27 +241,31 @@ The project is organized into 7 main directories:
 
 ---
 
-### Objective 4: Advanced Refinement, Safety, Equity and Generalisation (Months 16-24)
+### Objective 4: Multi-Practice Generalisation and Real-World Failure Mode Research (Months 16-24)
 
-**Plain-English Aim:** Use real-world feedback to do "hard" R&D work: refine NZ-LLM, tune alerts, prove system generalises across practices and both PMSs. **This is systematic R&D on generalisation and safety, not routine maintenance.**
+**Plain-English Aim:** This is the "hardest" R&D: understanding what makes AI systems robust vs brittle in authentic clinical practice. Investigate whether architectural paradigms validated in controlled environments generalise across diverse real-world conditions by discovering performance degradation patterns, safety-architecture interaction effects, and real-world failure modes.
 
 **Key R&D Questions:**
-- How much does performance change across different practices, populations, workflows?
-- How to tune alerts to minimise noise while catching all important issues?
-- How to support equitable performance across regions and populations?
+- How much does architectural performance vary across practices with different patient populations, workflows, and characteristics?
+- Do performance patterns observed in early adopters predict performance in new practices, or are degradation patterns unpredictable?
+- How do safety mechanisms interact with architectural paradigm characteristics under real clinical workload?
+- What failure modes emerge in multi-practice operational deployment that were absent in controlled validation?
 
-**Activities:**
-- Analyse model errors from early adopters, retrain NZ-LLM
-- Collect alert statistics, adjust thresholds to avoid fatigue
-- Run structured pilots across multiple practices (both PMSs)
-- Investigate performance gaps by region/population, fix via model/rule changes
-- Expand safety testing to thousands of scenarios
+**Research Activities:**
+- Multi-practice structured pilots (10-20 practices) with systematic diversity (PMS, geography, ethnicity, deprivation, workflow)
+- Measure performance variance, investigate causes, document failure modes
+- Validate equity outcomes at scale (Māori/Pacific screening rates)
+- Quantify lab-to-clinic translation patterns
+- Temporal robustness investigation (performance drift over 6-8 months)
 
 **Deliverables:**
-- Refined NZ-LLM with documented accuracy across multiple practices and both PMSs
-- Alert configuration tuned based on real usage metrics
-- Final pilot report: time savings, care gaps closed, equity metrics, safety incidents
-- Clear roadmap for broader rollout (including Years 3-5 HealthHub NZ vision)
+- Multi-practice generalisation pattern analysis
+- Lab-to-clinic translation pattern documentation
+- Safety-architecture interaction effects and failure mode taxonomy
+- Equity outcome validation at scale
+- Architectural paradigm robustness analysis
+- Production-grade system across 10-20 practices with measured clinical impact
+- Final R&D report
 
 **Detailed objectives:** See `00-admin-and-governance/revised-objectives-24-months.md`
 

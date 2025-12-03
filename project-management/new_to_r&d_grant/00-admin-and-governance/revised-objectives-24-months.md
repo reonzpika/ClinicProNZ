@@ -353,7 +353,7 @@ Architectural recommendations for Objective 4 based on complex reasoning validat
 
 ### Plain-English Aim
 
-Investigate whether architectural paradigms validated in controlled environments (Objectives 1-3) generalise across diverse real-world conditions (multiple practices, patient populations, clinician workflows, PMSs) by discovering performance degradation patterns, safety-architecture interaction effects, and real-world failure modes that emerge only under operational deployment. This is the "hardest" R&D: understanding what makes AI systems robust vs brittle in authentic clinical practice.
+Investigate whether architectural paradigms validated in controlled environments (Objectives 1-3) generalise across diverse real-world conditions by discovering performance degradation patterns, safety-architecture interaction effects, and real-world failure modes. This is the "hardest" R&D: understanding what makes AI systems robust vs brittle in authentic clinical practice.
 
 ### Key R&D Questions
 
@@ -381,155 +381,55 @@ Investigate whether architectural paradigms validated in controlled environments
 - **Longitudinal tracking:** Performance monitored over 6-8 months to detect degradation over time vs stable operation
 
 **Practice Selection Criteria (Research-Driven):**
-- **PMS diversity:** 60/40 split Medtech/Indici reflecting market share
-- **Geographic diversity:** Urban (Auckland, Wellington, Christchurch), regional (Dunedin, Palmerston North), rural (West Coast, Northland)
-- **Ethnic composition diversity:** High Māori practices (>40%), high Pacific (>30%), predominantly NZ European
-- **Deprivation diversity:** Q1 (low deprivation) through Q5 (high deprivation) representation
-- **Practice size diversity:** Solo GP, small group (<5 GPs), large group (≥5 GPs)
-- **Workflow diversity:** GP-led vs nurse-led screening, proactive outreach vs opportunistic
+Systematic diversity across PMS choice (60/40 Medtech/Indici), geography (urban/regional/rural), ethnic composition (high Māori/Pacific vs predominantly NZ European), deprivation quintiles (Q1-Q5), practice size, and clinical workflows.
 
-#### Research Investigation Areas
+#### Research Approach
 
-**1. Multi-Practice Performance Variation Analysis**
+Systematic deployment across 10-20 diverse practices with identical performance metrics enables controlled investigation of generalisation patterns. Measure performance variance (accuracy, safety, usage), investigate causes (patient population, workflow, practice characteristics), document failure modes, validate equity outcomes, and quantify lab-to-clinic translation patterns. Longitudinal tracking over 6-8 months reveals temporal robustness.
 
-**Research Activities:**
-- Measure performance metrics across all practices: Inbox classification accuracy, CVD risk calculation accuracy, care gap detection concordance
-- Quantify variation: Mean performance, standard deviation, outlier practices (>2 SD from mean)
-- Investigate variance causes:
-  - **Patient population effects:** Does ethnic composition affect extraction accuracy? Does deprivation correlate with missing data rates?
-  - **Clinician workflow effects:** Do proactive practices achieve different outcomes than reactive practices?
-  - **Practice characteristics:** Does PMS choice, practice size, or IT maturity predict performance?
-- Research question: Is architectural performance consistent across practices (robust generalisation), or do practice characteristics cause unpredictable performance variation (brittle generalisation)?
+#### Temporal Robustness Investigation
 
-**2. Lab-to-Clinic Translation Pattern Validation**
-
-**Research Activities:**
-- Compare multi-practice performance against Objectives 2-3 controlled validation findings
-- Measure: Synthetic test accuracy → Early adopter accuracy → Multi-practice mean accuracy (quantify each translation step)
-- Investigate degradation patterns:
-  - **Progressive degradation:** Performance declines with each translation step (synthetic → controlled → operational)
-  - **Step-function degradation:** Performance stable until specific conditions trigger failure
-  - **Unpredictable degradation:** No consistent pattern across practices
-- Document: Which paradigm characteristics predict translation robustness (performance maintains) vs brittleness (performance degrades)?
-- Research question: Can lab-to-clinic translation be predicted from early validation, or are operational deployment patterns fundamentally unpredictable?
-
-**3. Safety-Architecture Interaction Investigation**
-
-**Research Activities:**
-- Systematic safety testing under operational workload (thousands of scenarios per practice)
-- Investigate interaction effects:
-  - **Confidence threshold effects:** How do paradigm-specific confidence scores affect false negative rates under real clinical variability?
-  - **Refusal scaffold behaviour:** Under what conditions do safety mechanisms trigger appropriately vs inappropriately (alert fatigue)?
-  - **Emergent safety failures:** Do combined stressors (high workload + atypical patient + edge case presentation) create failures absent under controlled testing?
-- Measure: Safety metric performance (prohibited claim rate target ≤0.5%, refusal appropriateness ≥95%) across practices and paradigms
-- Document: Safety failure taxonomy by paradigm and practice characteristics
-- Research question: Are safety-architecture interactions predictable from laboratory testing, or do emergent behaviours arise only under operational deployment?
-
-**4. Real-World Failure Mode Taxonomy**
-
-**Research Activities:**
-- Comprehensive documentation of all system failures across 10-20 practices over 6-8 months
-- Failure categorisation:
-  - **Architectural failures:** Paradigm-specific (e.g., LLM hallucination, classifier overconfidence)
-  - **Data-induced failures:** Practice-specific data characteristics causing errors (unexpected formats, missing fields)
-  - **Workflow-induced failures:** Practice workflow patterns incompatible with AI suggestions
-  - **Emergent failures:** Multiple interacting factors creating unpredictable failure modes
-- Failure consequence analysis: Patient safety impact, clinician trust degradation, workflow disruption
-- Failure frequency and detectability: How often do failures occur? Can they be detected automatically vs require clinician reporting?
-- Research question: Can real-world failure modes be predicted from controlled testing, or must they be discovered empirically through operational deployment?
-
-**5. Equity Outcome Validation at Scale**
-
-**Research Activities:**
-- Measure equity outcomes across diverse practices:
-  - **Screening rate changes:** Māori/Pacific screening rates pre-deployment vs post-deployment (target: improvement without widening gaps)
-  - **Care gap closure:** Which ethnic groups benefit most from AI prioritisation? Are inequities reduced or maintained?
-  - **Unintended consequences:** Does AI prioritisation create new biases? (e.g., over-alerting for Māori patients causing stereotyping concerns)
-- Compare outcomes across practice types: High Māori practices vs low Māori practices. Do equity algorithms perform consistently?
-- Research question: Do equity-preserving algorithms designed in controlled settings (Objective 3) maintain equity across diverse real-world practices, or do practice-specific factors compromise equity goals?
-
-**6. Architectural Paradigm Refinement Based on Real-World Evidence**
-
-**Research Activities:**
-- Analyse failure patterns across practices: Which architectural characteristics correlate with robustness vs brittleness?
-- Investigate paradigm modifications:
-  - **Domain adaptation refinement:** Incorporate practice-specific documentation patterns, abbreviations, workflow contexts
-  - **Architectural adjustments:** If agentic approaches show superior generalisation, transition from simpler paradigms
-  - **Safety mechanism tuning:** Adjust confidence thresholds, refusal triggers based on operational evidence
-- Re-validation after modifications: Do changes improve generalisation or introduce new failures?
-- Research question: Can architectural paradigms be refined for generalisation, or are inherent paradigm limitations revealed by multi-practice deployment?
-
-#### Longitudinal Safety and Performance Monitoring
-
-**Purpose:** Detect performance drift, safety degradation, model staleness over time for research on temporal robustness.
-
-**Activities:**
-- Monthly performance regression testing: Synthetic test suite, edge cases, adversarial scenarios
-- Automated safety gates: Continuous monitoring of prohibited claim rate, refusal appropriateness, PHI leakage indicators
-- Model drift detection: Compare current month performance to baseline (Month 16) and quantify degradation
-- Investigate drift causes: Has clinical guideline changed? Has practice workflow evolved? Has patient population shifted?
-- Research question: Do architectural paradigms maintain performance over time (temporal robustness), or does drift necessitate continuous retraining/recalibration?
+Monitor performance over 6-8 months to detect drift patterns. Research question: Do architectural paradigms maintain performance over time (temporal robustness), or does drift necessitate continuous retraining/recalibration?
 
 ### Research Knowledge Deliverables by Month 24
 
 **Primary Deliverables (Research Knowledge):**
 
 1. **Multi-Practice Generalisation Pattern Analysis**
-   - Quantified performance variation across 10-20 practices: Mean, standard deviation, outlier identification
-   - Practice characteristic effects: Which factors (patient population, workflow, PMS, size) predict performance variance?
-   - Architectural paradigm generalisation boundaries: Which paradigms exhibit robust vs brittle generalisation?
-   - Generalisation prediction framework: Can early validation predict multi-practice performance, or is empirical validation necessary?
+   - Quantified performance variation across 10-20 practices and practice characteristic effects
+   - Architectural paradigm generalisation boundaries (robust vs brittle)
 
 2. **Lab-to-Clinic Translation Pattern Documentation**
-   - Comprehensive degradation analysis: Synthetic → controlled → operational performance translation
-   - Paradigm-specific translation patterns: Which architectural characteristics predict translation robustness?
-   - Operational deployment risk factors: Practice characteristics causing unexpected performance degradation
-   - Translation prediction methodology: How to estimate operational performance from laboratory validation
+   - Degradation analysis: Synthetic → controlled → operational performance
+   - Paradigm-specific translation robustness patterns
 
 3. **Safety-Architecture Interaction Effects and Failure Mode Taxonomy**
-   - Safety mechanism performance under operational workload: Confidence thresholds, refusal scaffolds, prohibited claim detection
-   - Emergent safety failures: Conditions causing safety mechanism breakdown (combined stressors, edge cases)
-   - Failure mode taxonomy: Comprehensive documentation of all failure types observed across practices
-   - Failure prediction and detection: Which failures can be predicted vs require operational discovery; automated detection methods
+   - Safety mechanism performance under operational workload
+   - Comprehensive failure mode documentation across practices
 
 4. **Equity Outcome Validation at Scale**
-   - Māori/Pacific screening rate changes: Pre-deployment vs post-deployment across diverse practices
-   - Care gap closure by ethnicity and deprivation: Evidence of inequity reduction vs maintenance
-   - Equity algorithm robustness: Performance consistency across high vs low Māori practices
-   - Unintended bias detection: Evidence of harmful stereotyping, over-alerting, or new inequities introduced
+   - Māori/Pacific screening rate changes and care gap closure by ethnicity
+   - Equity algorithm robustness across diverse practices
 
 5. **Architectural Paradigm Robustness Analysis**
-   - Real-world performance comparison: Which paradigms maintain accuracy, safety, equity across diverse conditions?
-   - Refinement effectiveness: Do modifications improve generalisation, or are paradigm limitations fundamental?
-   - Temporal robustness: Performance drift patterns over 6-8 months. Which paradigms remain stable vs degrade?
-   - Paradigm selection framework: Evidence-based recommendations for future clinical AI development
+   - Real-world performance comparison across diverse conditions
+   - Temporal robustness: Drift patterns over 6-8 months
 
-6. **Multi-PMS Generalisation Validation (Medtech vs Indici at Scale)**
-   - Performance consistency vs variance across PMSs in diverse practice settings
-   - System-specific challenges revealed by multi-practice deployment
-   - Integration architecture best practices: Lessons learned for adding future PMSs or national FHIR APIs
+6. **Multi-PMS Generalisation Validation**
+   - Performance consistency vs variance across Medtech/Indici at scale
 
 **Secondary Deliverables (Operational Validation):**
 
 7. **Production-Grade System Across 10-20 Practices**
-   - Demonstrated robustness: Inbox Helper and Care Gap Finder operational across diverse real-world conditions
-   - Measured clinical impact:
-     - Time savings: GP inbox processing time reduction (validates workflow benefit)
-     - Care gaps closed: Screening rate improvements, overdue check completion (validates clinical utility)
-     - Equity outcomes: Māori/Pacific screening rates, health inequity reduction (validates equity algorithms)
-     - Safety record: Zero patient harm incidents, safety metric targets maintained (≤0.5% prohibited claims, ≥95% appropriate refusals)
+   - Inbox Helper and Care Gap Finder operational across diverse conditions
+   - Measured clinical impact: Time savings, care gaps closed, equity outcomes, safety record
 
-8. **Final R&D Report and Commercial Roadmap**
-   - Comprehensive research findings: All knowledge deliverables synthesised
-   - Architectural recommendations: Evidence-based guidance for clinical AI development in NZ health sector
-   - Broader rollout roadmap: Path to national scale (GP practices, PHOs, Te Whatu Ora integration) grounded in R&D evidence
-   - Years 3-5 HealthHub NZ research plan: Patient-facing AI investigations building on validated architectural knowledge
+8. **Final R&D Report**
+   - Comprehensive research findings synthesised
+   - Architectural recommendations for NZ health AI sector
 
 **Knowledge Transfer:**
-- Research outputs transferable to PHOs, DHBs/Te Whatu Ora, health AI developers, government agencies
-- Architectural paradigm knowledge enables evidence-based development for entire NZ health AI sector
-- Equity-preserving algorithm patterns applicable to future health AI projects
-- Generalisation prediction frameworks reduce risk for clinical AI investments nationwide
+Research outputs transferable to PHOs, Te Whatu Ora, health AI developers, and government agencies. Architectural paradigm knowledge enables evidence-based development for entire NZ health AI sector.
 
 ---
 
@@ -581,4 +481,4 @@ Extend beyond Medtech/Indici to hospital systems and national records.
 
 **Document Status:** Final version, aligned with R&D Activities research emphasis  
 **Last Updated:** 2 December 2025  
-**Version:** 4.1 - Objective 3 aggressive trim (52% reduction) + R&D Q3 strengthened
+**Version:** 4.2 - All objectives balanced (Objective 4 trimmed 68%)
