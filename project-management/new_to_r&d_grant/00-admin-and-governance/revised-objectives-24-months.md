@@ -4,7 +4,7 @@
 
 **Overall Goal:** Systematically investigate which architectural paradigms (from simple pattern recognition to sophisticated reasoning systems) achieve clinical safety, NZ-contextual accuracy, and cost-effectiveness under combined constraints (sovereignty, equity, multi-PMS, real-time performance).
 
-**Research Approach:** Two clinical testbeds—Inbox Helper (routine task automation) and Care Gap Finder (multi-condition clinical reasoning)—enable controlled investigation of architectural performance across different task characteristics and risk levels.
+**Research Approach:** Two clinical testbeds (Inbox Helper for routine task automation and Care Gap Finder for multi-condition clinical reasoning) enable controlled investigation of architectural performance across different task characteristics and risk levels.
 
 **Core Research Questions:**
 - Do task characteristics predict optimal architectural paradigm, or are selection patterns unpredictable without empirical investigation?
@@ -28,9 +28,9 @@
 
 ## Programme Overview Note
 
-**Research Posture:** This is genuine R&D with systematic investigation of unknowns. Architectural paradigm selection, domain adaptation effectiveness, multi-system generalisation patterns, and safety-architecture interactions cannot be deduced from existing knowledge—they require empirical investigation under real clinical constraints.
+**Research Posture:** This is genuine R&D with systematic investigation of unknowns. Architectural paradigm selection, domain adaptation effectiveness, multi-system generalisation patterns, and safety-architecture interactions cannot be deduced from existing knowledge; they require empirical investigation under real clinical constraints.
 
-**Clinical Testbeds as Research Instruments:** Inbox Helper and Care Gap Finder serve as controlled experimental environments for investigating architectural performance across different task characteristics (routine vs complex, single-condition vs multi-condition, deterministic vs probabilistic). Working prototypes released to early adopters (once safety thresholds met) provide real-world data for investigating lab-to-clinic translation patterns—research that cannot be conducted in synthetic environments.
+**Clinical Testbeds as Research Instruments:** Inbox Helper and Care Gap Finder serve as controlled experimental environments for investigating architectural performance across different task characteristics (routine vs complex, single-condition vs multi-condition, deterministic vs probabilistic). Working prototypes released to early adopters (once safety thresholds met) provide real-world data for investigating lab-to-clinic translation patterns, research that cannot be conducted in synthetic environments.
 
 **Knowledge Outputs:** Primary deliverables are research knowledge (architectural performance boundaries, generalisation patterns, failure mode taxonomy, equity algorithm designs) documented for sector-wide use. Secondary deliverables are working clinical tools validating research findings while addressing GP workforce crisis.
 
@@ -54,7 +54,7 @@ Systematically investigate which architectural paradigms (from simple pattern re
 
 2. Do simpler paradigms (pattern classifiers, rule-based systems) achieve sufficient accuracy for routine clinical tasks, or does linguistic variability and context-dependence necessitate more sophisticated reasoning architectures?
 
-3. How does architectural complexity affect failure modes—do simpler systems fail predictably while complex systems exhibit emergent failures, or are failure patterns unpredictable without empirical investigation?
+3. How does architectural complexity affect failure modes? Do simpler systems fail predictably while complex systems exhibit emergent failures, or are failure patterns unpredictable without empirical investigation?
 
 4. Can architectural approaches be designed for multi-system generalisation (Medtech, Indici), or will PMS-specific data characteristics force system-specific implementations?
 
@@ -102,7 +102,7 @@ Systematically investigate which architectural paradigms (from simple pattern re
 - Measure: Extraction accuracy on NZ linguistic variations, handling of bilingual text, robustness to abbreviations
 - Research question: Whether domain adaptation suffices for NZ language characteristics or architectural modifications necessary?
 
-**Research Approach:** Evidence-driven investigation—research follows empirical results, not predetermined architectural preferences. If emerging paradigms (e.g., agentic AI with tool use, advanced RAG patterns) demonstrate superior performance, investigation pivots accordingly.
+**Research Approach:** Evidence-driven investigation where research follows empirical results, not predetermined architectural preferences. If emerging paradigms (e.g., agentic AI with tool use, advanced RAG patterns) demonstrate superior performance, investigation pivots accordingly.
 
 #### Clinical Testbed Prototypes
 
@@ -113,7 +113,7 @@ Systematically investigate which architectural paradigms (from simple pattern re
 - Care Gap Finder prototype (using optimal paradigm from Use Cases 2-3 investigation)
 - Widget shells for Medtech and Indici displaying AI outputs
 
-**Note:** Prototypes are research instruments, not products—architectures may change based on Objectives 2-4 findings.
+**Note:** Prototypes are research instruments, not products; architectures may change based on Objectives 2-4 findings.
 
 ### Research Knowledge Deliverables by Month 6
 
@@ -157,21 +157,21 @@ Systematically investigate which architectural paradigms (from simple pattern re
 
 ### Plain-English Aim
 
-Investigate which architectural paradigms safely automate routine clinical tasks (inbox triage, normal result handling, trend flagging) under real-world conditions—validating synthetic data findings (Objective 1) and discovering performance degradation patterns, confidence threshold requirements, and UI trust factors that cannot be studied synthetically.
+Investigate which architectural paradigms safely automate routine clinical tasks (inbox triage, normal result handling, trend flagging) under real-world conditions, validating synthetic data findings (Objective 1) and discovering performance degradation patterns, confidence threshold requirements, and UI trust factors that cannot be studied synthetically.
 
 ### Key R&D Questions
 
 **Lab-to-Clinic Translation:**
-1. How much does architectural performance degrade from synthetic test sets to real clinical data—and which paradigm characteristics predict robustness vs brittleness?
+1. How much does architectural performance degrade from synthetic test sets to real clinical data, and which paradigm characteristics predict robustness vs brittleness?
 
 **Confidence Calibration Under Clinical Constraints:**
-2. What confidence thresholds enable safe automation of routine results (auto-filing normals) without unsafe false negatives—and do threshold requirements vary by architectural paradigm?
+2. What confidence thresholds enable safe automation of routine results (auto-filing normals) without unsafe false negatives, and do threshold requirements vary by architectural paradigm?
 
 **Human-AI Trust and Interface Design:**
 3. How do UI presentation patterns (explanation detail, override mechanisms, visual salience) affect GP trust and appropriate reliance across different architectural paradigms?
 
 **Real-World Failure Mode Discovery:**
-4. What failure modes emerge in real clinical deployment that were absent in synthetic testing—and how do failure patterns differ across architectural paradigms?
+4. What failure modes emerge in real clinical deployment that were absent in synthetic testing, and how do failure patterns differ across architectural paradigms?
 
 ### Research Activities
 
@@ -194,7 +194,7 @@ Investigate which architectural paradigms safely automate routine clinical tasks
 
 #### Architectural Paradigm Validation on Real Clinical Data
 
-**Research Focus:** Validate Objective 1 synthetic findings under real-world conditions—discover where predictions hold vs break down.
+**Research Focus:** Validate Objective 1 synthetic findings under real-world conditions and discover where predictions hold vs break down.
 
 **Systematic Investigation:**
 
@@ -208,7 +208,7 @@ Investigate which architectural paradigms safely automate routine clinical tasks
 - Investigate safe confidence thresholds for auto-filing normal results across paradigms
 - Test edge cases: Borderline normals, incidental findings in "normal" reports, unexpected result formats
 - Zero-tolerance safety testing: ≥1,000 adversarial cases (results appearing normal but requiring urgent review)
-- Research question: What confidence level prevents unsafe automation—and does optimal threshold vary by paradigm?
+- Research question: What confidence level prevents unsafe automation, and does optimal threshold vary by paradigm?
 
 **3. Real-World Failure Mode Taxonomy**
 - Document all failure modes observed in real clinical deployment
@@ -245,7 +245,7 @@ Investigate which architectural paradigms safely automate routine clinical tasks
 - Discovers context-dependent failure modes emerging only in routine use
 - Validates whether performance observed in sandbox translates to production environments
 
-**Research Continues:** Architecture experimentation, feature expansion, confidence threshold optimisation based on real-world feedback—this is ongoing R&D, not maintenance.
+**Research Continues:** Architecture experimentation, feature expansion, confidence threshold optimisation based on real-world feedback. This is ongoing R&D, not maintenance.
 
 ### Research Knowledge Deliverables by Month 12
 
@@ -294,7 +294,7 @@ Investigate which architectural paradigms safely automate routine clinical tasks
 
 ### Plain-English Aim
 
-Investigate which architectural paradigms accurately perform multi-condition clinical calculations (CVD risk, diabetes monitoring, COPD/CHF/asthma management) while maintaining equity without algorithmic bias—addressing complex reasoning challenges absent in routine task automation (Objective 2) and requiring investigation of unstructured data extraction, multi-factor integration, and equity-preserving algorithm design.
+Investigate which architectural paradigms accurately perform multi-condition clinical calculations (CVD risk, diabetes monitoring, COPD/CHF/asthma management) while maintaining equity without algorithmic bias. This addresses complex reasoning challenges absent in routine task automation (Objective 2) and requires investigation of unstructured data extraction, multi-factor integration, and equity-preserving algorithm design.
 
 ### Key R&D Questions
 
@@ -305,10 +305,10 @@ Investigate which architectural paradigms accurately perform multi-condition cli
 2. Can architectural approaches reliably extract clinical parameters (smoking status, disease severity, medication adherence) from unstructured GP notes containing NZ linguistic characteristics (abbreviations, bilingual terminology, contextual phrasing)?
 
 **Multi-Condition Logic Without Alert Overload:**
-3. How can care gap detection logic prioritise across multiple conditions (diabetes + CVD + CKD) without overwhelming clinicians—and which architectural approaches enable clinically appropriate multi-condition reasoning?
+3. How can care gap detection logic prioritise across multiple conditions (diabetes + CVD + CKD) without overwhelming clinicians, and which architectural approaches enable clinically appropriate multi-condition reasoning?
 
 **Equity-Preserving Algorithm Design:**
-4. How can algorithms prioritise patients experiencing health inequities (Māori, Pacific, high-deprivation) without introducing algorithmic bias that reinforces stereotypes or causes harm—and do equity mechanisms interact with architectural paradigm choice?
+4. How can algorithms prioritise patients experiencing health inequities (Māori, Pacific, high-deprivation) without introducing algorithmic bias that reinforces stereotypes or causes harm, and do equity mechanisms interact with architectural paradigm choice?
 
 ### Research Activities
 
@@ -318,11 +318,11 @@ Investigate which architectural paradigms accurately perform multi-condition cli
 
 **Testbed Capabilities (5 Chronic Conditions):**
 
-- **Diabetes monitoring:** HbA1c trends, ACR, retinal screening, foot checks, kidney function—flags overdue monitoring
-- **Cardiovascular risk assessment:** NZ CVDRA calculation using age, sex, ethnicity, BP, lipids, smoking, diabetes—stratifies risk bands
-- **COPD management:** Spirometry tracking, exacerbation frequency from notes, inhaler technique documentation—flags management gaps
-- **Heart failure (CHF) monitoring:** BNP and eGFR trends, fluid status from notes—flags deterioration patterns
-- **Asthma control assessment:** Medication patterns, symptom frequency from notes, action plan documentation—flags poor control
+- **Diabetes monitoring:** HbA1c trends, ACR, retinal screening, foot checks, kidney function (flags overdue monitoring)
+- **Cardiovascular risk assessment:** NZ CVDRA calculation using age, sex, ethnicity, BP, lipids, smoking, diabetes (stratifies risk bands)
+- **COPD management:** Spirometry tracking, exacerbation frequency from notes, inhaler technique documentation (flags management gaps)
+- **Heart failure (CHF) monitoring:** BNP and eGFR trends, fluid status from notes (flags deterioration patterns)
+- **Asthma control assessment:** Medication patterns, symptom frequency from notes, action plan documentation (flags poor control)
 
 **Additional Capabilities:**
 - Multi-condition prioritisation logic
@@ -338,14 +338,14 @@ Investigate which architectural paradigms accurately perform multi-condition cli
 
 #### Architectural Paradigm Investigation on Complex Reasoning
 
-**Research Focus:** Discover whether paradigms successful for routine tasks (Objective 2) transfer to complex clinical reasoning—or require different approaches.
+**Research Focus:** Discover whether paradigms successful for routine tasks (Objective 2) transfer to complex clinical reasoning or require different approaches.
 
 **Systematic Experiments:**
 
 **1. Multi-Factor Clinical Calculation (CVD Risk Assessment)**
 - Investigate paradigms: Rules-only (existing calculator) → Hybrid rules+LLM → LLM with structured output → Agentic with verification
 - Test on ≥1,000 patients: Measure calculation accuracy (target ≥95%), handling of missing data, explanation quality
-- Equity assessment: Compare Māori/Pacific risk stratification accuracy—do paradigms maintain equity or introduce bias?
+- Equity assessment: Compare Māori/Pacific risk stratification accuracy. Do paradigms maintain equity or introduce bias?
 - Research question: Do deterministic calculations require rule-based approaches, or can learned paradigms match accuracy while improving missing data handling?
 
 **2. Unstructured Data Extraction (Clinical Note Parsing)**
@@ -356,13 +356,13 @@ Investigate which architectural paradigms accurately perform multi-condition cli
 
 **3. Multi-Condition Prioritisation Logic**
 - Investigate approaches: Rule-based prioritisation → LLM-based clinical reasoning → Hybrid scoring
-- Test scenarios: Patient with diabetes + CVD + CKD—which gaps take priority? Patient with diabetes (controlled) vs diabetes (uncontrolled)—appropriate urgency stratification?
+- Test scenarios: Patient with diabetes + CVD + CKD (which gaps take priority?); Patient with diabetes (controlled) vs diabetes (uncontrolled) for appropriate urgency stratification
 - Measure: Clinician agreement with prioritisation (target ≥85% vs GP audit), alert appropriateness, override patterns
 - Research question: Can architectural paradigms perform clinically appropriate multi-condition reasoning, or does complexity exceed current AI capabilities?
 
 #### Equity-Preserving Algorithm Research
 
-**Research Focus:** Design algorithms that prioritise patients experiencing inequities without introducing harmful biases—addressing Te Tiriti obligations and health equity imperatives.
+**Research Focus:** Design algorithms that prioritise patients experiencing inequities without introducing harmful biases, addressing Te Tiriti obligations and health equity imperatives.
 
 **Research Activities:**
 
@@ -378,11 +378,11 @@ Investigate which architectural paradigms accurately perform multi-condition cli
 - Audit architectural paradigms for bias: Do LLM-based approaches absorb biases from training data? Do rule-based approaches maintain equity by design?
 - Test edge cases: Māori patient with atypical presentation, Pacific patient with missing ethnicity data, high-deprivation NZ European patient
 - Measure: False negative rates by ethnicity, false positive rates, inappropriate alert generation
-- Research question: How do equity mechanisms interact with architectural paradigm choice—do some paradigms inherently preserve vs compromise equity?
+- Research question: How do equity mechanisms interact with architectural paradigm choice? Do some paradigms inherently preserve vs compromise equity?
 
 #### Multi-System Generalisation Investigation (Continued)
 
-**Research Focus:** Extend Objective 2 findings—does complex reasoning generalise across PMSs?
+**Research Focus:** Extend Objective 2 findings. Does complex reasoning generalise across PMSs?
 
 **Activities:**
 - Deploy Care Gap Finder to both Medtech and Indici with identical architecture
@@ -447,7 +447,7 @@ Investigate which architectural paradigms accurately perform multi-condition cli
 
 ### Plain-English Aim
 
-Investigate whether architectural paradigms validated in controlled environments (Objectives 1-3) generalise across diverse real-world conditions (multiple practices, patient populations, clinician workflows, PMSs)—discovering performance degradation patterns, safety-architecture interaction effects, and real-world failure modes that emerge only under operational deployment. This is the "hardest" R&D: understanding what makes AI systems robust vs brittle in authentic clinical practice.
+Investigate whether architectural paradigms validated in controlled environments (Objectives 1-3) generalise across diverse real-world conditions (multiple practices, patient populations, clinician workflows, PMSs) by discovering performance degradation patterns, safety-architecture interaction effects, and real-world failure modes that emerge only under operational deployment. This is the "hardest" R&D: understanding what makes AI systems robust vs brittle in authentic clinical practice.
 
 ### Key R&D Questions
 
@@ -458,16 +458,16 @@ Investigate whether architectural paradigms validated in controlled environments
 2. Do performance patterns observed in early adopter practices (Objectives 2-3) predict performance in new practices, or are degradation patterns practice-specific and unpredictable?
 
 **Safety-Architecture Interaction Effects:**
-3. How do safety mechanisms (refusal scaffolds, confidence thresholds, prohibited claim detection) interact with architectural paradigm characteristics under real clinical workload—and what emergent failure modes occur?
+3. How do safety mechanisms (refusal scaffolds, confidence thresholds, prohibited claim detection) interact with architectural paradigm characteristics under real clinical workload, and what emergent failure modes occur?
 
 **Real-World Failure Mode Discovery:**
-4. What failure modes emerge in multi-practice operational deployment that were absent in controlled validation—and which architectural characteristics predict failure robustness vs brittleness?
+4. What failure modes emerge in multi-practice operational deployment that were absent in controlled validation, and which architectural characteristics predict failure robustness vs brittleness?
 
 ### Research Activities
 
 #### Multi-Practice Structured Pilots (10-20 GP Practices)
 
-**Purpose:** Systematic investigation of architectural generalisation across diverse real-world conditions—this is R&D on generalisation patterns, not commercial rollout.
+**Purpose:** Systematic investigation of architectural generalisation across diverse real-world conditions. This is R&D on generalisation patterns, not commercial rollout.
 
 **Research Design:**
 - **Controlled deployment:** 10-20 practices selected for diversity (urban/rural, Medtech/Indici, ethnic composition, deprivation quintiles, practice size)
@@ -539,7 +539,7 @@ Investigate whether architectural paradigms validated in controlled environments
   - **Screening rate changes:** Māori/Pacific screening rates pre-deployment vs post-deployment (target: improvement without widening gaps)
   - **Care gap closure:** Which ethnic groups benefit most from AI prioritisation? Are inequities reduced or maintained?
   - **Unintended consequences:** Does AI prioritisation create new biases? (e.g., over-alerting for Māori patients causing stereotyping concerns)
-- Compare outcomes across practice types: High Māori practices vs low Māori practices—do equity algorithms perform consistently?
+- Compare outcomes across practice types: High Māori practices vs low Māori practices. Do equity algorithms perform consistently?
 - Research question: Do equity-preserving algorithms designed in controlled settings (Objective 3) maintain equity across diverse real-world practices, or do practice-specific factors compromise equity goals?
 
 **6. Architectural Paradigm Refinement Based on Real-World Evidence**
@@ -555,12 +555,12 @@ Investigate whether architectural paradigms validated in controlled environments
 
 #### Longitudinal Safety and Performance Monitoring
 
-**Purpose:** Detect performance drift, safety degradation, model staleness over time—research on temporal robustness.
+**Purpose:** Detect performance drift, safety degradation, model staleness over time for research on temporal robustness.
 
 **Activities:**
 - Monthly performance regression testing: Synthetic test suite, edge cases, adversarial scenarios
 - Automated safety gates: Continuous monitoring of prohibited claim rate, refusal appropriateness, PHI leakage indicators
-- Model drift detection: Compare current month performance to baseline (Month 16)—quantify degradation
+- Model drift detection: Compare current month performance to baseline (Month 16) and quantify degradation
 - Investigate drift causes: Has clinical guideline changed? Has practice workflow evolved? Has patient population shifted?
 - Research question: Do architectural paradigms maintain performance over time (temporal robustness), or does drift necessitate continuous retraining/recalibration?
 
@@ -595,7 +595,7 @@ Investigate whether architectural paradigms validated in controlled environments
 5. **Architectural Paradigm Robustness Analysis**
    - Real-world performance comparison: Which paradigms maintain accuracy, safety, equity across diverse conditions?
    - Refinement effectiveness: Do modifications improve generalisation, or are paradigm limitations fundamental?
-   - Temporal robustness: Performance drift patterns over 6-8 months—which paradigms remain stable vs degrade?
+   - Temporal robustness: Performance drift patterns over 6-8 months. Which paradigms remain stable vs degrade?
    - Paradigm selection framework: Evidence-based recommendations for future clinical AI development
 
 6. **Multi-PMS Generalisation Validation (Medtech vs Indici at Scale)**
@@ -652,7 +652,7 @@ Train NZ-LLM on aggregated patient outcomes to improve recommendations.
 
 **AI R&D questions:**
 - Can NZ-LLM learn from thousands of diabetes patients' outcomes to identify which interventions actually work?
-- Can AI identify emerging health trends (e.g., "South Auckland diabetes screening rates dropping 15%—intervention needed")?
+- Can AI identify emerging health trends (e.g., "South Auckland diabetes screening rates dropping 15%, intervention needed")?
 - How do you train AI on real-world data while preventing dangerous pattern learning?
 
 **Benefits:** AI recommendations improve based on actual NZ patient outcomes, not just international guidelines. Evidence-based insights for government health planning.
@@ -665,7 +665,7 @@ Extend beyond Medtech/Indici to hospital systems and national records.
 - How does one NZ-trained LLM generalise across different hospital data formats while maintaining accuracy?
 - Can AI maintain safety as it scales from hundreds to hundreds of thousands of users?
 
-**Benefits:** Connected care—patient sees specialist, GP gets AI summary automatically. No repeated tests, no lost referrals.
+**Benefits:** Connected care where patient sees specialist and GP gets AI summary automatically. No repeated tests, no lost referrals.
 
 **Why Substantial R&D:** Patient-facing AI requires different safety training than GP-facing AI. Learning from outcomes without compromising safety is unsolved AI research. National-scale generalisation requires novel training approaches beyond the 24-month grant scope.
 
@@ -673,6 +673,6 @@ Extend beyond Medtech/Indici to hospital systems and national records.
 
 ---
 
-**Document Status:** Final version—Aligned with R&D Activities research emphasis  
+**Document Status:** Final version, aligned with R&D Activities research emphasis  
 **Last Updated:** 2 December 2025  
 **Version:** 4.0 - Complete Research-Focused Rewrite

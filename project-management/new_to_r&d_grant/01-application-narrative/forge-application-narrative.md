@@ -41,7 +41,7 @@ NexWave Solutions Ltd (incorporated 2024) develops AI tools for New Zealand gene
 
 **Stage:** Early operational with proven product, formal partnership with NZ's largest PMS provider, and active integration development. This R&D grant funds transition to NZ-sovereign clinical LLM for two core tools: Inbox Helper and Care Gap Finder.
 
-**Privacy & Safety:** The system is strictly assist-only—never provides diagnostic or treatment directives. Development uses synthetic and de-identified data only; no production patient data used for model training. Inference may occur in Australia with no persistent data outside NZ. All patient data at rest remains in NZ with NZ-held keys. Cross-border processing governed by Privacy Act 2020 IPP 12 safeguards, HISO 10029 security controls, and DPIA completed pre-pilot. Aligns with Te Whatu Ora's NAIAEAG precautionary guidance.
+**Privacy & Safety:** The system is strictly assist-only; it never provides diagnostic or treatment directives. Development uses synthetic and de-identified data only; no production patient data used for model training. Inference may occur in Australia with no persistent data outside NZ. All patient data at rest remains in NZ with NZ-held keys. Cross-border processing governed by Privacy Act 2020 IPP 12 safeguards, HISO 10029 security controls, and DPIA completed pre-pilot. Aligns with Te Whatu Ora's NAIAEAG precautionary guidance.
 
 ---
 
@@ -60,7 +60,7 @@ NexWave Solutions Ltd (incorporated 2024) develops AI tools for New Zealand gene
 
 **Core Architectural Investigation:**
 
-Explore architectural spectrum from lightweight pattern recognition to sophisticated reasoning systems. Initial candidates include classifiers, rule-based systems, Large Language Model (LLM) reasoning, retrieval-augmented generation, agentic AI approaches, and hybrid combinations. **Research will follow where empirical evidence leads**—investigation may discover novel architectural patterns or reveal optimal approaches vary by clinical task in unexpected ways.
+Explore architectural spectrum from lightweight pattern recognition to sophisticated reasoning systems. Initial candidates include classifiers, rule-based systems, Large Language Model (LLM) reasoning, retrieval-augmented generation, agentic AI approaches, and hybrid combinations. **Research will follow where empirical evidence leads**. Investigation may discover novel architectural patterns or reveal optimal approaches vary by clinical task in unexpected ways.
 
 Measure each paradigm across: accuracy, computational cost, latency, safety failure modes, generalisability across health systems, equity outcomes.
 
@@ -76,13 +76,13 @@ Train sovereign AI on curated NZ clinical corpus: bpac guidelines, Ministry of H
 
 **Multi-System Generalisation Research:**
 
-Integrate with both Medtech and Indici practice systems. Investigate architectural patterns that maintain performance across different health system data structures—critical for national-scale deployment.
+Integrate with both Medtech and Indici practice systems. Investigate architectural patterns that maintain performance across different health system data structures, which is critical for national-scale deployment.
 
 **Real-World Validation:**
 
 Pilot with 10-20 GP practices. Measure clinical utility, safety outcomes, alert fatigue, equity metrics. Document performance characteristics from synthetic data → sandbox → production deployment.
 
-**Knowledge Outputs:** Risk-stratified architectural framework, NZ domain adaptation methodology, multi-system generalisation patterns, equity-preserving algorithms, safety validation framework—transferable to patient-facing care (Years 3-5 HealthHub NZ) and national health integration.
+**Knowledge Outputs:** Risk-stratified architectural framework, NZ domain adaptation methodology, multi-system generalisation patterns, equity-preserving algorithms, safety validation framework (transferable to patient-facing care for Years 3-5 HealthHub NZ and national health integration).
 
 ---
 
@@ -98,23 +98,23 @@ This cannot be resolved without systematic experimentation because clinical AI o
 
 **1. Architectural Paradigm Selection Across Clinical Risk Spectrum**
 
-Which architectural approach—ranging from simple pattern recognition to multi-agent reasoning systems—achieves required clinical safety and accuracy at sustainable cost? Do routine tasks permit lightweight solutions ($0.002/request), or do clinical nuances demand sophisticated reasoning ($0.15/request)? **Emerging AI paradigms (agentic systems, advanced retrieval-augmented generation) may prove superior to established approaches**, requiring investigation of cutting-edge techniques alongside conventional methods. **Cost-accuracy-safety trade-offs unknowable without empirical comparison. Optimal paradigm may vary by clinical task in unexpected ways.**
+Which architectural approach (ranging from simple pattern recognition to multi-agent reasoning systems) achieves required clinical safety and accuracy at sustainable cost? Do routine tasks permit lightweight solutions ($0.002/request), or do clinical nuances demand sophisticated reasoning ($0.15/request)? **Emerging AI paradigms (agentic systems, advanced retrieval-augmented generation) may prove superior to established approaches**, requiring investigation of cutting-edge techniques alongside conventional methods. **Cost-accuracy-safety trade-offs unknowable without empirical comparison. Optimal paradigm may vary by clinical task in unexpected ways.**
 
 **2. Domain Adaptation Feasibility Under NZ Linguistic and Sovereignty Constraints**
 
-Whether domain adaptation alone suffices for NZ clinical language characteristics (Māori code-switching in clinical notes, regional abbreviations, bilingual terminology), or whether these linguistic properties require architectural modifications to NLP components (tokenization, embedding spaces). Standard techniques assume linguistic consistency—NZ's bilingual clinical context may violate these assumptions. **Adaptation effectiveness across paradigms under no-overseas-training constraints unknowable without systematic investigation—may require novel architectural approaches not yet documented.**
+Whether domain adaptation alone suffices for NZ clinical language characteristics (Māori code-switching in clinical notes, regional abbreviations, bilingual terminology), or whether these linguistic properties require architectural modifications to NLP components (tokenization, embedding spaces). Standard techniques assume linguistic consistency; NZ's bilingual clinical context may violate these assumptions. **Adaptation effectiveness across paradigms under no-overseas-training constraints unknowable without systematic investigation and may require novel architectural approaches not yet documented.**
 
 **3. Multi-System Generalisation Patterns**
 
-Will architectural approach achieving 90% accuracy in Medtech maintain performance in Indici, given different data structures and workflows? What design patterns enable single system to generalise across health platforms without system-specific rework? **Generalisation behaviour cannot be predicted—requires testing. May reveal novel architectural requirements.**
+Will architectural approach achieving 90% accuracy in Medtech maintain performance in Indici, given different data structures and workflows? What design patterns enable single system to generalise across health platforms without system-specific rework? **Generalisation behaviour cannot be predicted without testing. May reveal novel architectural requirements.**
 
 **4. Safety-Architecture Interaction Effects**
 
-How do safety constraints (refusal scaffolds, prohibited-claim detection) interact with different architectural paradigms? Do agentic systems maintain safety bounds differently than LLMs? Do hybrid approaches propagate safety failures across components? **Safety failure modes across paradigms create emergent risks that cannot be predicted from component specifications—requires systematic empirical investigation.**
+How do safety constraints (refusal scaffolds, prohibited-claim detection) interact with different architectural paradigms? Do agentic systems maintain safety bounds differently than LLMs? Do hybrid approaches propagate safety failures across components? **Safety failure modes across paradigms create emergent risks that cannot be predicted from component specifications and require systematic empirical investigation.**
 
 **5. Equity Algorithm Generalisability Across Populations**
 
-Can prioritisation algorithms surface high-risk and Māori/Pacific patients without introducing under-alerting in other populations or perpetuating training data biases? **Novel equity-preserving approaches required—no published methods for multi-condition clinical monitoring with NZ equity goals.**
+Can prioritisation algorithms surface high-risk and Māori/Pacific patients without introducing under-alerting in other populations or perpetuating training data biases? **Novel equity-preserving approaches required; no published methods exist for multi-condition clinical monitoring with NZ equity goals.**
 
 These uncertainties are interconnected: architectural paradigm choice affects domain adaptation, influences multi-system generalisation, impacts safety mechanisms, determines equity outcomes. Resolving these creates foundational knowledge for patient-facing AI (Years 3-5) and national health integration.
 
@@ -126,11 +126,11 @@ These uncertainties are interconnected: architectural paradigm choice affects do
 
 **1. Multi-Component Architecture Performance Cannot Be Predicted From Component Specifications**
 
-Architectural paradigms—from simple pattern recognition to agentic reasoning—exhibit emergent behaviour when components interact. Sophisticated reasoning systems "hallucinate" on medical calculations (cardiovascular risk scoring requires precise 8-variable computation—reasoning models fabricate values). Interaction effects compound unpredictably: retrieval errors propagate into reasoning, quantization degrades safety mechanisms. **Component-level testing doesn't reveal system-level failures. Performance emerges from interactions unknowable without empirical measurement.**
+Architectural paradigms (from simple pattern recognition to agentic reasoning) exhibit emergent behaviour when components interact. Sophisticated reasoning systems "hallucinate" on medical calculations; cardiovascular risk scoring requires precise 8-variable computation, yet reasoning models fabricate values. Interaction effects compound unpredictably: retrieval errors propagate into reasoning, quantization degrades safety mechanisms. **Component-level testing doesn't reveal system-level failures. Performance emerges from interactions unknowable without empirical measurement.**
 
 **2. Multi-System Generalisation Creates Emergent Failure Modes**
 
-Medtech and Indici structure data differently. Architectures performing well in one system fail subtly in another: laboratory formats differ, medication codes vary, note templates diverge. **These failures cannot be predicted from documentation—they emerge from real-world variations. Discovering robust patterns requires systematic testing.**
+Medtech and Indici structure data differently. Architectures performing well in one system fail subtly in another: laboratory formats differ, medication codes vary, note templates diverge. **These failures cannot be predicted from documentation; they emerge from real-world variations. Discovering robust patterns requires systematic testing.**
 
 **3. Real-World Clinical Data Characteristics Cause Unpredictable Architecture-Specific Failures**
 
@@ -142,7 +142,7 @@ Safety constraints (refusal scaffolds, prohibited-claim detection) behave differ
 
 **5. AI Performance Metrics Do Not Predict Clinical Outcome Improvements**
 
-Laboratory metrics (accuracy, F1) may not correlate with clinical outcomes (time saved, errors prevented, safety). High-accuracy systems may reduce trust through false positives while lower-accuracy systems with better explanations drive higher utility. **Which architectural characteristics translate to clinical value cannot be deduced from benchmarks—requires systematic real-world outcome measurement.**
+Laboratory metrics (accuracy, F1) may not correlate with clinical outcomes (time saved, errors prevented, safety). High-accuracy systems may reduce trust through false positives while lower-accuracy systems with better explanations drive higher utility. **Which architectural characteristics translate to clinical value cannot be deduced from benchmarks and requires systematic real-world outcome measurement.**
 
 ---
 
@@ -164,7 +164,7 @@ Published work studies techniques (fine-tuning, RAG, agentic systems) using stan
 
 **4. Proprietary Implementations May Emerge But Methods Are Trade Secrets**
 
-Future commercial solutions won't disclose: architectural selection criteria, NZ adaptation techniques, safety validation, multi-system patterns. Knowledge remains proprietary—unavailable for sector capability building.
+Future commercial solutions won't disclose: architectural selection criteria, NZ adaptation techniques, safety validation, multi-system patterns. Knowledge remains proprietary and unavailable for sector capability building.
 
 **5. PMS Integration Constraints Create Unknown Architectural Requirements**
 
@@ -184,7 +184,7 @@ Quantified performance for architectural paradigms (classifiers → hybrid → L
 
 **2. Lab-to-Clinic Performance Translation and Real-World Failure Modes**
 
-Quantifies performance degradation when AI transitions: synthetic → real clinical data (inconsistent documentation, missing fields); controlled lab → real workflows (time pressure, interruptions); single-system → multi-system (Medtech → Indici). Identifies architectural characteristics predicting robustness vs brittleness. Documents failure modes emerging in deployment invisible in lab testing. **No published work quantifies real-world degradation across paradigms—academic research stops at laboratory benchmarks.** Enables prediction of clinical deployment success.
+Quantifies performance degradation when AI transitions: synthetic to real clinical data (inconsistent documentation, missing fields); controlled lab to real workflows (time pressure, interruptions); single-system to multi-system (Medtech to Indici). Identifies architectural characteristics predicting robustness vs brittleness. Documents failure modes emerging in deployment invisible in lab testing. **No published work quantifies real-world degradation across paradigms; academic research stops at laboratory benchmarks.** Enables prediction of clinical deployment success.
 
 **3. Safety Mechanisms Across Paradigms and Equity-Preserving Algorithms**
 
@@ -204,7 +204,7 @@ Quantifies performance boundaries for architectural paradigms under combined cli
 
 **2. Lab-to-Clinic Translation Knowledge De-Risks Investments**
 
-Quantifies performance degradation from laboratory to real clinical deployment across paradigms. Identifies characteristics predicting robustness vs brittleness. **Without this:** Academic benchmarks don't predict clinical success—systems fail in real workflows. **With this:** Prediction of which architectures succeed before costly implementation. Accelerates clinical AI adoption by reducing deployment risk.
+Quantifies performance degradation from laboratory to real clinical deployment across paradigms. Identifies characteristics predicting robustness vs brittleness. **Without this:** Academic benchmarks don't predict clinical success; systems fail in real workflows. **With this:** Prediction of which architectures succeed before costly implementation. Accelerates clinical AI adoption by reducing deployment risk.
 
 **3. Safety and Equity Knowledge Enables Responsible Deployment**
 
@@ -246,7 +246,7 @@ Research outputs documented and transferable to PHOs, hospitals, government agen
 
 **Total R&D Labour:** 8,175 hours (minimum) = $655,176
 
-**Rationale for team structure:** Founder's dual GP/technical expertise enables rapid clinical workflow iteration and NZ-specific domain understanding. Ting as full-time R&D Operations Lead provides dedicated project management, systematic testing, and quality assurance—demonstrating growth intention beyond solo founder. Developer contractor provides flexible capacity to scale up during intensive development phases (Objectives 2-3) without fixed overhead. This structure maintains manageable GP practice workload (20 hrs/week) for business income while enabling substantial 30 hrs/week R&D commitment over 24 months.
+**Rationale for team structure:** Founder's dual GP/technical expertise enables rapid clinical workflow iteration and NZ-specific domain understanding. Ting as full-time R&D Operations Lead provides dedicated project management, systematic testing, and quality assurance, demonstrating growth intention beyond solo founder. Developer contractor provides flexible capacity to scale up during intensive development phases (Objectives 2-3) without fixed overhead. This structure maintains manageable GP practice workload (20 hrs/week) for business income while enabling substantial 30 hrs/week R&D commitment over 24 months.
 
 ---
 
@@ -724,7 +724,7 @@ Train NZ-LLM on aggregated patient outcomes to improve recommendations.
 
 **AI R&D questions:**
 - Can NZ-LLM learn from thousands of diabetes patients' outcomes to identify which interventions actually work?
-- Can AI identify emerging health trends (e.g., "South Auckland diabetes screening rates dropping 15%—intervention needed")?
+- Can AI identify emerging health trends (e.g., "South Auckland diabetes screening rates dropping 15%, intervention needed")?
 
 **Benefits:** AI recommendations improve based on actual NZ patient outcomes. Evidence-based insights for government health planning.
 
@@ -735,7 +735,7 @@ Extend beyond Medtech/Indici to hospital systems and national records.
 **AI R&D questions:**
 - How does one NZ-trained LLM generalise across different hospital data formats while maintaining accuracy?
 
-**Benefits:** Connected care—patient sees specialist, GP gets AI summary automatically. No repeated tests, no lost referrals.
+**Benefits:** Connected care where patient sees specialist and GP gets AI summary automatically. No repeated tests, no lost referrals.
 
 **Why Substantial R&D:** Patient-facing AI requires different safety training than GP-facing AI. Learning from outcomes without compromising safety is unsolved AI research. National-scale generalisation requires novel training approaches.
 
