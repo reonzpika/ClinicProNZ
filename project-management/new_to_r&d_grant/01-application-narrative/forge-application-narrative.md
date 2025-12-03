@@ -176,61 +176,21 @@ Published AI research assumes unlimited UI flexibility. Real PMS integration (Me
 
 ## Newness – What is New? (~250 words)
 
-**This R&D generates new knowledge in six domains, creating a reusable knowledge platform for NZ health AI:**
+**This R&D generates three bodies of novel knowledge:**
 
-**1. Risk-Stratified Architectural Paradigm Framework for Clinical Decision Support**
+**1. Architectural Paradigm Performance Under Combined Clinical Constraints**
 
-**New knowledge:** Empirically-derived decision framework mapping clinical task characteristics (risk level, reasoning complexity, calculation requirements, safety criticality) to optimal AI architectural paradigm across the spectrum from simple pattern recognition to sophisticated multi-agent reasoning. **Framework encompasses established and emerging approaches** (including agentic systems, advanced retrieval-augmented generation). Documents which paradigms achieve clinical safety thresholds at sustainable cost—**may discover novel architectural patterns or hybrid approaches not yet published**.
+Quantified performance for architectural paradigms (classifiers → hybrid → LLMs → agentic AI → RAG) under constraints never tested together: clinical safety (prohibited-claim ≤0.5%), multi-condition reasoning (5 chronic conditions), real-time inference (<5s), cost (<$0.01/request), multi-PMS robustness (Medtech + Indici), equity prioritization. Documents which paradigms achieve clinical utility under which constraint combinations. **Emerging paradigms (agentic AI, RAG) have no published clinical validation under these constraints.** Creates evidence-based architectural selection framework transferable to patient-facing AI (Years 3-5).
 
-**Application:** Generalisable to any clinical decision support system. Enables future developers to select appropriate paradigm based on validated empirical criteria rather than trial-and-error.
+**2. Lab-to-Clinic Performance Translation and Real-World Failure Modes**
 
-**Transferability:** Directly applicable to patient-facing AI safety decisions (Years 3-5 HealthHub NZ), where architectural choices have higher stakes.
+Quantifies performance degradation when AI transitions: synthetic → real clinical data (inconsistent documentation, missing fields); controlled lab → real workflows (time pressure, interruptions); single-system → multi-system (Medtech → Indici). Identifies architectural characteristics predicting robustness vs brittleness. Documents failure modes emerging in deployment invisible in lab testing. **No published work quantifies real-world degradation across paradigms—academic research stops at laboratory benchmarks.** Enables prediction of clinical deployment success.
 
-**2. NZ Clinical Language Domain Adaptation Methodology**
+**3. Safety Mechanisms Across Paradigms and Equity-Preserving Algorithms**
 
-**New knowledge:** Systematic approach for adapting AI models to NZ clinical language using curated local corpus (bpac, Ministry of Health, Pharmac, regional variations). Includes dataset composition, adaptation techniques across architectural paradigms, and validation benchmarks demonstrating cost-effective approaches can match expensive overseas systems on domain-specific tasks.
+**(A) Safety-architecture coupling:** Documents how safety constraints (refusal scaffolds, prohibited-claim detection) perform across paradigms. Safety failure modes for emerging architectures (agentic systems propagate errors, multi-agent coordination bypasses safety) undocumented in clinical contexts. **(B) Equity algorithms:** Novel prioritization ensuring Māori/Pacific patients receive proactive care without under-alerting others or perpetuating biases. Standard ML fairness techniques don't apply to multi-condition monitoring with outcome-based equity goals. **No published methods exist.** Essential for Te Tiriti-compliant clinical AI.
 
-**Application:** Enables cost-effective sovereign AI avoiding expensive overseas dependencies.
-
-**Transferability:** Methodology extends to te reo Māori health communication and varying health literacy levels (patient-facing care, Years 3-5).
-
-**3. Multi-System Generalisation Patterns for Health AI**
-
-**New knowledge:** Architectural design patterns enabling AI systems to maintain performance across different health platforms (Medtech, Indici) with different data structures. Documents common abstractions, failure modes, and adaptation strategies that work across paradigms.
-
-**Application:** Critical for national-scale deployment across hospital systems (Years 4-5).
-
-**Transferability:** Reduces integration cost for future health AI projects—learnings benefit broader NZ health sector.
-
-**4. Equity-Preserving Prioritisation Algorithms**
-
-**New knowledge:** Novel algorithms that prioritise high-risk and Māori/Pacific patients (addressing health inequities) while maintaining fairness and avoiding under-alerting in other populations. Includes validation methodology for equity metrics in clinical contexts.
-
-**Application:** Addresses Te Tiriti obligations in health AI.
-
-**Transferability:** Applicable to any health service prioritisation or resource allocation system requiring equity focus.
-
-**5. Alert Fatigue Thresholds for Chronic Disease Monitoring**
-
-**New knowledge:** Empirically-measured thresholds for clinician alert tolerance across different practice sizes, workflows, and patient populations. Optimal balance points between sensitivity and specificity that maintain clinical utility without causing alert dismissal.
-
-**Application:** Informs design of any clinical alerting system.
-
-**Transferability:** Critical for patient-facing notification systems (Years 3-5).
-
-**6. Safety Validation Framework for Assist-Only Clinical AI**
-
-**New knowledge:** Systematic testing methodology for medical AI that provides assistance but never directives. Includes prohibited-claim detection benchmarks, refusal scaffold patterns, regression testing approaches, and pilot validation protocols across architectural paradigms.
-
-**Application:** Establishes safety standards for NZ clinical AI.
-
-**Transferability:** Framework required before patient-facing AI can be safely deployed (Years 3-5).
-
-**Research Outputs Embodied in Two Clinical Tools:**
-
-Knowledge validated through: Inbox Helper (reactive, high-volume scenario) and Care Gap Finder (proactive, complex reasoning scenario). These tools are experimental testbeds for architectural investigation, with findings documented for sector-wide reuse.
-
-**Foundational Platform:** This 24-month research establishes knowledge base that extends to patient-facing care (Years 3-5 HealthHub NZ), real-world outcome learning (Years 4-5), and national health system integration (Years 4-5). Progressive R&D roadmap from clinician validation → patient-facing → national scale follows established medical device research pathways.
+**Knowledge validated through clinical testbeds (Inbox Helper, Care Gap Finder), documented for sector reuse, foundational for Years 3-5 HealthHub NZ.**
 
 ---
 
