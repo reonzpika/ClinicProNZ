@@ -196,56 +196,23 @@ Quantifies performance degradation when AI transitions: synthetic → real clini
 
 ## Why is it Better? (~250 words)
 
-**Research Contributions Enable Capabilities Previously Impossible:**
+**This research generates knowledge enabling capabilities previously impossible:**
 
-**1. Sovereign AI at Cost-Effective Scale Through Architectural Investigation**
+**1. Architectural Paradigm Knowledge Enables Evidence-Based Development**
 
-Current options: expensive overseas systems ($140-170k+/month for 5,000 GPs) or no AI assistance. Our risk-stratified architectural paradigm framework and NZ domain adaptation methodology enable:
-- **20-50x cost reduction** ($5-10k/month) making AI accessible to entire NZ primary care sector
-- **Paradigm flexibility:** Systematic investigation reveals which architectural approaches achieve clinical safety at sustainable cost—**may discover novel combinations more cost-effective than current methods**
-- **Sovereignty:** All patient data remains in NZ with NZ-held encryption keys, Privacy Act compliance
-- **Auditability:** Transparent training data sources, model versioning, disclosed sub-processors
+Quantifies performance boundaries for architectural paradigms under combined clinical constraints (safety, multi-condition reasoning, real-time, cost, multi-PMS, equity). **Without this:** Developers choose architectures through trial-and-error or copy overseas approaches failing under NZ constraints (sovereignty, Privacy Act, equity). Costly experimentation repeated by each developer. **With this:** Evidence-based architectural selection, eliminating trial-and-error. Saves sector millions in failed experiments. Enables sovereign deployment at sustainable cost.
 
-**Without this research, NZ primary care cannot afford AI or must compromise data sovereignty. Architectural investigation creates cost-effectiveness impossible with rigid predetermined approaches.**
+**2. Lab-to-Clinic Translation Knowledge De-Risks Investments**
 
-**2. Multi-System Integration Reduces Health Sector Fragmentation**
+Quantifies performance degradation from laboratory to real clinical deployment across paradigms. Identifies characteristics predicting robustness vs brittleness. **Without this:** Academic benchmarks don't predict clinical success—systems fail in real workflows. **With this:** Prediction of which architectures succeed before costly implementation. Accelerates clinical AI adoption by reducing deployment risk.
 
-Multi-system generalisation patterns enable AI systems to work across Medtech and Indici (combined ~80% market share), then extend to hospital systems (Years 4-5). Current solutions require separate integrations for each platform.
+**3. Safety and Equity Knowledge Enables Responsible Deployment**
 
-**Knowledge outputs reduce future integration costs sector-wide, accelerating digital health transformation.**
+Safety failure mode taxonomy for emerging paradigms (agentic AI, multi-agent systems) fills critical gap. Equity-preserving algorithms enable Te Tiriti-compliant AI. **Without this:** Patient-facing AI too risky (unknown failure modes), equity retrofitted after development (ineffective). **With this:** Safe deployment of emerging paradigms, equity by design. Essential for patient-facing AI (Years 3-5) and broader sector.
 
-**3. Equity by Design, Not Retrofit**
+**4. Knowledge Transferability Creates Sector-Wide Capability**
 
-Equity-preserving algorithms ensure Māori/Pacific patients (who experience worse outcomes in diabetes, cardiovascular disease) receive proactive care prompts. Validated to avoid bias in other populations.
-
-**First NZ health AI with Te Tiriti obligations built into research methodology, not added afterwards.**
-
-**4. Safety Framework Across Architectural Paradigms**
-
-Safety validation framework established with clinician-facing tools (lower risk) creates foundation for patient-facing AI (higher risk, Years 3-5). Systematic testing methodology validated across architectural approaches—**ensures safety regardless of which paradigm proves optimal**.
-
-**This progression—clinician validation first, then patient-facing—follows medical device research best practice. Without foundational safety research across paradigms, patient-facing AI remains too risky.**
-
-**5. Transferable Knowledge Platform**
-
-Six knowledge domains (architectural paradigm framework, NZ adaptation methodology, multi-system patterns, equity algorithms, alert fatigue research, safety validation) are reusable:
-- **Years 3-5:** Patient-facing HealthHub NZ (health literacy adaptation, te reo support, home monitoring validation)
-- **Years 4-5:** Real-world outcome learning (aggregated patient data, evidence-based insights for Ministry of Health)
-- **National scale:** Hospital integration, connected care, reduced test duplication
-
-**Architectural flexibility central to value:** Investigation may reveal emerging paradigms (agentic AI, advanced retrieval systems) outperform established approaches—**research methodology allows pivoting to superior architectures as discovered**.
-
-**Strategic Value Beyond Immediate Tools:**
-
-This research creates NZ health sector capability for:
-- **GP burnout reduction:** 1-2 hours/day time savings per GP (4,000-8,000 clinical hours/day nationally)
-- **Patient safety improvement:** Systematic chronic disease monitoring reduces missed checks
-- **Rural access:** Validated architectural approaches enable after-hours patient guidance (Years 3-5)
-- **Government digital health plan:** Provides sovereign AI capability for 10-year transformation
-
-**Immediate clinical tools (Inbox Helper, Care Gap Finder) demonstrate research validation while addressing urgent workforce crisis. Knowledge platform enables national-scale health AI impossible with current overseas-dependent, high-cost, architecturally-rigid approaches.**
-
-**Aligns with government priorities:** Supports Te Whatu Ora digital health strategy, addresses health equity goals, builds NZ technological sovereignty in critical health infrastructure.
+Research outputs documented and transferable to PHOs, hospitals, government agencies. Immediate tools (Inbox Helper, Care Gap Finder) validate research while addressing GP workforce crisis. Validated architectural approaches enable Years 3-5 HealthHub NZ and national health integration. **Research advances entire NZ health AI capability, not just one company's products.**
 
 ---
 
