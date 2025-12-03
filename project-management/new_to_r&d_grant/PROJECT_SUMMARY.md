@@ -3,7 +3,7 @@ project_name: ClinicPro AI - Inbox Helper + Care Gap Finder (NZ-Sovereign Clinic
 project_stage: Validation
 owner: NexWave Solutions Ltd
 last_updated: "2025-12-02"
-version: "3.5"
+version: "3.6"
 tags:
   - r&d-grant
   - healthcare-ai
@@ -55,6 +55,9 @@ milestones:
   - date: "2025-12-01"
     name: Financial structure finalized - two-account strategy ($100k business + $100k Ting's reserve), 20 hrs/week GP work, strategic drawdown plan
     status: completed
+  - date: "2025-12-02"
+    name: R&D Activities section complete - all 6 questions (Activities, Uncertainty, Challenge, Knowledge, Newness, Why Better) revised with research emphasis, architectural flexibility, competitor analysis
+    status: completed
   - date: "2025-12-15"
     name: Target submission date
     status: pending
@@ -98,7 +101,7 @@ This project proposes building a New Zealand-sovereign clinical AI assistant to 
 **Key Features:**
 - ✓ **Dual PMS integration:** Works in both Medtech and Indici from day one
 - ✓ **Lean MVP approach:** Early releases to paid adopters as safety thresholds are met
-- ✓ **Architecture validation R&D:** Test which AI approach (simple classifiers, hybrid rules+LLM, NZ-trained LLM) works best for each risk level
+- ✓ **Architecture validation R&D:** Systematically investigate architectural paradigms (classifiers → hybrid → LLMs → agentic AI → RAG) to discover optimal approaches for each clinical task
 - ✓ **Multi-PMS generalisation:** Research how to maintain performance across different PMSs, practices, and populations
 - ✓ **Equity focus:** Algorithms designed to prioritise high-need groups without bias
 
@@ -108,10 +111,11 @@ This project proposes building a New Zealand-sovereign clinical AI assistant to 
 - **Broader ecosystem:** National FHIR API integration, plug-in architecture for more PMSs
 
 **Core R&D Questions:**
-- Which AI architecture works best for different clinical risk levels?
-- Can NZ-trained LLM understand local clinical language better than generic models?
-- How to design one system that works across multiple PMSs without major rework?
-- How to tune alerts to avoid fatigue while maintaining safety?
+- Which architectural paradigm (from simple classifiers to agentic AI systems) achieves clinical safety, NZ-contextual accuracy, and cost-effectiveness across combined constraints?
+- Can domain adaptation techniques suffice for NZ clinical language characteristics, or do linguistic properties (Māori code-switching, bilingual terminology) require architectural modifications?
+- Will architectural approaches achieving performance in one PMS (Medtech) maintain performance in another (Indici), or will generalisation patterns need to be discovered?
+- How do safety mechanisms interact with different architectural paradigms, and what failure modes emerge?
+- Which architectural characteristics translate to clinical value versus laboratory performance metrics?
 
 ---
 
@@ -167,8 +171,8 @@ The project is organized into 7 main directories:
 **Plain-English Aim:** Create a flexible, safe AI backbone that can plug into Medtech and Indici, test different AI "recipes" on synthetic NZ healthcare data.
 
 **Key R&D Questions:**
-- Which AI approach works best for each task: simple classifier, generic LLM, hybrid rules+LLM, or NZ-trained LLM?
-- Can a NZ-trained LLM understand local clinical language better than generic models?
+- Which architectural paradigm works best for each task across the spectrum from simple pattern recognition to sophisticated reasoning systems?
+- Can domain adaptation achieve clinical-grade accuracy on NZ clinical language under sovereignty constraints?
 - How to design one architecture supporting both Medtech and Indici without major rework?
 
 **Deliverables:**
@@ -184,7 +188,7 @@ The project is organized into 7 main directories:
 **Plain-English Aim:** Turn Inbox prototype into practical tool that reduces GP inbox workload safely in both Medtech and Indici. **Lean MVP released to early adopters as soon as safety thresholds met.**
 
 **Key R&D Questions:**
-- Can lightweight models safely handle messy, real NZ inbox data?
+- Which architectural approach safely handles routine clinical tasks while maintaining accuracy and cost-effectiveness?
 - What confidence level is safe enough for auto-filing normal results?
 - How should AI suggestions appear in each PMS so GPs trust them?
 
@@ -209,7 +213,7 @@ The project is organized into 7 main directories:
 **Plain-English Aim:** Build tool that scans patient records to find overdue chronic disease checks (diabetes, CVD, COPD, CHF, asthma). **Lean MVP (diabetes + CVD) released early, then expanded.**
 
 **Key R&D Questions:**
-- Can NZ-trained AI reliably extract details from messy free-text notes?
+- Which paradigm achieves clinical calculation accuracy while maintaining equity without algorithmic bias?
 - How to handle multiple conditions without overwhelming GPs with alerts?
 - How to prioritise so Māori/Pacific patients aren't left behind?
 
@@ -526,7 +530,7 @@ The project is organized into 7 main directories:
 - Unit economics: Stable cost per 1,000 requests
 
 ### R&D Success Threshold
-**We DO NOT need to match GPT-4/5 100%.** Success = achieving **70-80% of GPT-4/5 quality at 20-50x lower cost**.
+Success = achieving clinical-grade accuracy (≥90% for triage, ≥95% for clinical calculations) at sustainable cost (<$0.01/request at scale) under NZ sovereignty constraints.
 
 ---
 
@@ -657,4 +661,4 @@ The project is organized into 7 main directories:
 
 ---
 
-**Last Updated:** 2025-12-02 (v3.5 - Optimized draw schedule)
+**Last Updated:** 2025-12-02 (v3.6 - R&D Activities section complete with research emphasis, architectural flexibility, competitor analysis)

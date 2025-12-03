@@ -7,6 +7,83 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [3.6] - 2025-12-02
+
+### Changed - R&D Activities Section Complete Revision
+
+**Major overhaul of all 6 R&D Activities questions with research emphasis:**
+
+#### Q1: Describe R&D Activities
+- **Reframed:** From product-focused to systematic investigation emphasis
+- **Added:** Architectural flexibility—explore paradigm spectrum (classifiers → hybrid → LLMs → agentic AI → RAG)
+- **Changed:** "Research will follow where empirical evidence leads" (allows discovery of novel approaches)
+- **Removed:** Rigid "3 architectural approaches" replaced with open exploration
+- **Result:** Shows genuine R&D uncertainty and openness to discovery
+
+#### Q2: Uncertainty
+- **Removed:** GPT-4 cost comparisons ($140-170k/month) and GPT-4 performance benchmarks
+- **Reframed:** Point 2 from "can we match GPT-4" to "whether domain adaptation suffices for NZ linguistic characteristics"
+- **Replaced:** Point 4 "Alert Fatigue" with "Safety-Architecture Interaction Effects" (more R&D-focused)
+- **Strengthened:** All 5 points emphasize "unknowable without empirical investigation"
+- **Improved:** Point 2 now addresses whether NZ bilingual code-switching breaks NLP architectural assumptions
+
+#### Q3: R&D Challenge
+- **Strengthened:** All 5 points emphasize why professionals cannot deduce solutions
+- **Replaced:** Point 3 from "NZ language has no benchmarks" to "Real-world clinical data characteristics cause unpredictable architecture-specific failures"
+- **Replaced:** Point 4 to align with Q2 (Safety-Architecture Interaction)
+- **Replaced:** Point 5 from "Alert Fatigue" to "AI Performance Metrics Do Not Predict Clinical Outcome Improvements"
+- **Added:** Strong emphasis on emergent behaviour, unpredictable failures, real clinical context
+
+#### Q4: Knowledge Availability
+- **Added:** Comprehensive competitor analysis—ALL NZ competitors mentioned:
+  - **Heidi:** NZ documentation AI
+  - **InboxMagic:** Early-stage MVP (inbox management)
+  - **SmartCareGP, HealthAccelerator, Pegasus Health:** Admin automation tools
+  - **International:** Abridge, Nuance DAX (documentation)
+- **Reframed:** Point 1 title to "Documentation, Automation, and Early-Stage Solutions Don't Resolve Decision-Support Uncertainties"
+- **Removed:** Defensive tone; now confident "existing solutions address different problems"
+- **Improved:** Shows thorough competitive research (market validation)
+
+#### Q5: Newness
+- **Reduced:** From 6 knowledge domains to 3 STRONG domains (focused, not diluted)
+- **Removed:** Domain adaptation (it's an input, not novel output)
+- **Removed:** Alert fatigue (UX research, not R&D)
+- **Removed:** Separate multi-system domain (merged into Domain 2)
+- **New structure:**
+  1. **Architectural Paradigm Performance Under Combined Clinical Constraints** (quantified boundaries)
+  2. **Lab-to-Clinic Performance Translation and Real-World Failure Modes** (degradation patterns)
+  3. **Safety Mechanisms Across Paradigms and Equity-Preserving Algorithms** (two related contributions)
+- **Strengthened:** Each domain now quantified, specific, clearly novel
+- **Improved:** Framed as research contributions to the field, not product features
+
+#### Q6: Why Better
+- **Complete reframe:** From product value to research knowledge value
+- **Removed:** Product benefits like "1-2 hours/day savings," "20-50x cheaper"
+- **Removed:** Specific cost numbers ($5-10k/month, $140-170k/month)
+- **New structure:** "Without/With" framework showing what becomes possible
+- **Focus:** Knowledge enables capabilities (evidence-based development, de-risks investments, enables responsible deployment, sector-wide capability)
+- **Result:** Answers "Why is your KNOWLEDGE better?" not "Why is your PRODUCT better?"
+
+#### Additional Improvements
+- **NZ spelling:** Fixed "behavior" → "behaviour," "standardized" → "standardised"
+- **Consistency:** All 6 answers align (Q2 uncertainties map to Q5 knowledge domains)
+- **Callaghan tests:** All answers pass 5 Callaghan evaluation tests (Uncertainty, Knowledge Available, Expert Can't Solve, Systematic Approach, New Knowledge)
+- **Competitor positioning:** Shows market validation without appearing threatened
+
+**Strategic Impact:**
+- Demonstrates sophisticated R&D thinking (not just software development)
+- Shows awareness of cutting-edge AI (agentic systems, RAG)
+- Emphasizes sector-wide knowledge value (transferable, reusable)
+- Clear research methodology with quantified outcomes
+- Bulletproof for Callaghan Innovation assessor review
+
+**Files Updated:**
+- forge-application-narrative.md: All 6 R&D Activities questions completely revised
+- PROJECT_SUMMARY.md: Core R&D questions updated, version to 3.6
+- CHANGELOG.md: This entry
+
+---
+
 ## [3.5] - 2025-12-02
 
 ### Changed - Optimized Draw Schedule (3 draws instead of 4)

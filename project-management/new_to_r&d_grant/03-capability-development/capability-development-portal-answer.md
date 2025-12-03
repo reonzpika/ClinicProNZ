@@ -4,6 +4,9 @@
 
 **Maximum 250 words**
 
+**Last Updated:** 2 December 2025  
+**Status:** Ready for portal entry
+
 ---
 
 ## Answer (247 words):
