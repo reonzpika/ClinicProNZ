@@ -258,152 +258,94 @@ Architectural recommendations for Objective 3 based on edge case robustness find
 
 ### Plain-English Aim
 
-Investigate which architectural paradigms accurately perform multi-condition clinical calculations (CVD risk, diabetes monitoring, COPD/CHF/asthma management) while maintaining equity without algorithmic bias. This addresses complex reasoning challenges absent in routine task automation (Objective 2) and requires investigation of unstructured data extraction, multi-factor integration, and equity-preserving algorithm design.
+Investigate which architectural paradigms accurately perform multi-condition clinical reasoning while maintaining equity without algorithmic bias. Addresses complex reasoning challenges absent in routine task automation (Objective 2): unstructured data extraction, multi-factor clinical calculations, competing care needs prioritisation, and equity-preserving algorithm design.
 
 ### Key R&D Questions
 
-**Architectural Paradigm Performance on Complex Clinical Reasoning:**
-1. Do architectural paradigms achieving high accuracy on routine tasks (Objective 2) maintain performance on multi-condition reasoning, or does task complexity necessitate different paradigm characteristics?
+**1. Paradigm Performance on Complex Reasoning:**
+Do architectural paradigms achieving high accuracy on routine tasks (Objective 2) maintain performance on multi-condition reasoning, or does task complexity necessitate different paradigm characteristics?
 
-**Unstructured Data Extraction Under NZ Healthcare Documentation Patterns:**
-2. Can architectural approaches reliably extract clinical parameters (smoking status, disease severity, medication adherence) from unstructured GP notes containing NZ healthcare system documentation patterns (regional abbreviations, local terminology, contextual phrasing)?
+**2. Unstructured Data Extraction:**
+Can architectural approaches reliably extract clinical parameters from unstructured GP notes containing NZ healthcare documentation patterns (regional abbreviations, local terminology, contextual phrasing)?
 
-**Multi-Condition Logic Without Alert Overload:**
-3. How can care gap detection logic prioritise across multiple conditions (diabetes + CVD + CKD) without overwhelming clinicians, and which architectural approaches enable clinically appropriate multi-condition reasoning?
+**3. Multi-Condition Reasoning Complexity:**
+Can architectural paradigms perform clinically appropriate prioritisation when patients have competing care needs (diabetes control vs CVD prevention vs CKD monitoring)? Do paradigms "reason" about clinical trade-offs or apply rigid rules? Can multi-condition reasoning match GP clinical judgment (target ≥85% concordance)?
 
-**Equity-Preserving Algorithm Design:**
-4. How can algorithms prioritise patients experiencing health inequities (Māori, Pacific, high-deprivation) without introducing algorithmic bias that reinforces stereotypes or causes harm, and do equity mechanisms interact with architectural paradigm choice?
+**4. Equity-Preserving Algorithms:**
+How can algorithms prioritise patients experiencing health inequities (Māori, Pacific, high-deprivation) without introducing harmful algorithmic bias? Do equity mechanisms interact with architectural paradigm choice?
 
 ### Research Activities
 
 #### Clinical Testbed: Care Gap Finder
 
-**Purpose:** Controlled environment for investigating complex clinical reasoning, multi-condition logic, and equity-preserving algorithms across architectural paradigms.
+**Purpose:** Controlled environment for investigating multi-condition clinical reasoning and equity-preserving algorithms across architectural paradigms.
 
-**Testbed Capabilities (5 Chronic Conditions):**
-
-- **Diabetes monitoring:** HbA1c trends, ACR, retinal screening, foot checks, kidney function (flags overdue monitoring)
-- **Cardiovascular risk assessment:** NZ CVDRA calculation using age, sex, ethnicity, BP, lipids, smoking, diabetes (stratifies risk bands)
-- **COPD management:** Spirometry tracking, exacerbation frequency from notes, inhaler technique documentation (flags management gaps)
-- **Heart failure (CHF) monitoring:** BNP and eGFR trends, fluid status from notes (flags deterioration patterns)
-- **Asthma control assessment:** Medication patterns, symptom frequency from notes, action plan documentation (flags poor control)
-
-**Additional Capabilities:**
-- Multi-condition prioritisation logic
-- Patient communication generation (health literacy-appropriate, culturally responsive)
-- Practice dashboards with equity-focused filters (Māori, Pacific, deprivation quintile)
-- Integration with both Medtech and Indici PMSs
+**Testbed Capabilities:**
+Five chronic conditions (diabetes, CVD, COPD, CHF, asthma) provide testbed for multi-condition reasoning complexity, unstructured data extraction, clinical calculation accuracy, and equity-preserving prioritisation. Integrated with both Medtech and Indici PMSs.
 
 **Research Instrumentation:**
-- Extraction accuracy measurement: Structured field retrieval vs unstructured note parsing
-- Clinical calculation verification: CVD risk, disease control assessment, gap identification vs GP audit
+- Clinical calculation verification: CVD risk, care gap detection vs GP audit (target ≥85% concordance)
+- Extraction accuracy: Structured vs unstructured data, paradigm-dependent performance
 - Equity outcome tracking: Patient prioritisation by ethnicity, deprivation, clinical risk
-- Multi-condition logic evaluation: Alert appropriateness, clinician override patterns, priority ranking validation
-
-#### Architectural Paradigm Investigation on Complex Reasoning
-
-**Research Focus:** Discover whether paradigms successful for routine tasks (Objective 2) transfer to complex clinical reasoning or require different approaches.
-
-**Systematic Experiments:**
-
-**1. Multi-Factor Clinical Calculation (CVD Risk Assessment)**
-- Investigate paradigms: Rules-only (existing calculator) → Hybrid rules+LLM → LLM with structured output → Agentic with verification
-- Test on ≥1,000 patients: Measure calculation accuracy (target ≥95%), handling of missing data, explanation quality
-- Equity assessment: Compare Māori/Pacific risk stratification accuracy. Do paradigms maintain equity or introduce bias?
-- Research question: Do deterministic calculations require rule-based approaches, or can learned paradigms match accuracy while improving missing data handling?
-
-**2. Unstructured Data Extraction (Clinical Note Parsing)**
-- Investigate paradigms: Named entity recognition → LLM extraction → RAG-augmented (guideline context) → Multi-agent verification
-- Test extraction accuracy: Smoking status, disease severity markers, medication adherence, symptom frequency from free-text notes
-- NZ healthcare documentation testing: Regional abbreviations (e.g., "HTN," "T2DM"), local terminology, contextual phrasing ("not keen on tablets"), ACC/PHO-specific documentation patterns
-- Research question: Whether domain adaptation suffices for unstructured extraction, or NZ healthcare system documentation patterns require architectural modifications?
-
-**3. Multi-Condition Prioritisation Logic**
-- Investigate approaches: Rule-based prioritisation → LLM-based clinical reasoning → Hybrid scoring
-- Test scenarios: Patient with diabetes + CVD + CKD (which gaps take priority?); Patient with diabetes (controlled) vs diabetes (uncontrolled) for appropriate urgency stratification
-- Measure: Clinician agreement with prioritisation (target ≥85% vs GP audit), alert appropriateness, override patterns
-- Research question: Can architectural paradigms perform clinically appropriate multi-condition reasoning, or does complexity exceed current AI capabilities?
+- Multi-condition reasoning evaluation: Clinician override patterns, priority ranking validation
 
 #### Equity-Preserving Algorithm Research
 
-**Research Focus:** Design algorithms that prioritise patients experiencing inequities without introducing harmful biases, addressing Te Tiriti obligations and health equity imperatives.
+**Purpose:** Design algorithms prioritising patients experiencing inequities without introducing harmful biases, addressing Te Tiriti obligations.
 
-**Research Activities:**
+**Investigate Three Equity Approaches:**
+- **Explicit prioritisation:** Māori/Pacific patients flagged earlier for same clinical risk (corrects systemic under-screening)
+- **Risk model calibration:** Ethnicity-specific thresholds reflecting differential baseline risk (follows PREDICT-CVD NZ approach)
+- **Equity-blind with deprivation:** Use deprivation quintile as proxy (avoids ethnic profiling but may miss equity gaps)
 
-**1. Equity Algorithm Design Patterns**
-- Investigate approaches:
-  - **Explicit prioritisation:** Māori/Pacific patients flagged earlier for same clinical risk (corrects systemic under-screening)
-  - **Risk model calibration:** Ethnicity-specific thresholds reflecting differential baseline risk (follows PREDICT-CVD NZ approach)
-  - **Equity-blind with deprivation:** Use deprivation quintile as proxy (avoids ethnic profiling but may miss equity gaps)
-- Test outcomes: Screening rates by ethnicity, clinical outcomes, unintended consequences
-- Research question: Which equity algorithm patterns achieve equitable outcomes without harmful stereotyping?
+**Bias Detection:**
+Audit architectural paradigms for bias. Do LLM-based approaches absorb training data biases? Do rule-based approaches maintain equity by design? Test edge cases: Māori patient with atypical presentation, Pacific patient with missing ethnicity data. Measure false negative rates by ethnicity.
 
-**2. Bias Detection and Mitigation**
-- Audit architectural paradigms for bias: Do LLM-based approaches absorb biases from training data? Do rule-based approaches maintain equity by design?
-- Test edge cases: Māori patient with atypical presentation, Pacific patient with missing ethnicity data, high-deprivation NZ European patient
-- Measure: False negative rates by ethnicity, false positive rates, inappropriate alert generation
-- Research question: How do equity mechanisms interact with architectural paradigm choice? Do some paradigms inherently preserve vs compromise equity?
+**Research Questions:**
+Which equity patterns achieve equitable outcomes without harmful stereotyping? How do equity mechanisms interact with architectural paradigm choice?
 
-#### Multi-System Generalisation Investigation (Continued)
+#### Multi-System Generalisation Investigation
 
-**Research Focus:** Extend Objective 2 findings. Does complex reasoning generalise across PMSs?
+Deploy identical architecture to both Medtech and Indici; measure performance variance (extraction accuracy, calculation accuracy). Research question: Does architectural generalisation hold for complex tasks, or do generalisation patterns differ by task complexity?
 
-**Activities:**
-- Deploy Care Gap Finder to both Medtech and Indici with identical architecture
-- Measure performance variance: Extraction accuracy from different note formats, calculation accuracy from different structured data schemas
-- Investigate: Do data complexity differences (structured labs in one PMS, embedded PDFs in another) affect paradigm performance?
-- Research question: Does architectural generalisation hold for complex tasks, or do generalisation patterns differ by task complexity?
+#### Controlled Clinical Research Deployment
 
-#### Lean Clinical Validation (Staged Deployment)
-
-**Approach:** Release lean MVP (diabetes + CVD) once core targets met (≥95% CVDRA accuracy, ≥85% care gap detection vs audit), then expand to COPD/CHF/asthma while continuing research on multi-condition logic and equity algorithms.
-
-**R&D Value:**
-- Real-world validation of multi-condition reasoning in diverse patient populations
-- Equity outcome measurement: Changes in Māori/Pacific screening rates, care gap closure
-- Multi-practice variation investigation: Performance across different deprivation quintiles, ethnic compositions, practice sizes
+Release lean MVP (diabetes + CVD) once core targets met (≥95% CVDRA accuracy, ≥85% care gap detection), then expand to COPD/CHF/asthma while continuing research. Enables equity outcome measurement and multi-practice variation investigation unavailable in sandbox testing.
 
 ### Research Knowledge Deliverables by Month 16
 
 **Primary Deliverables (Research Knowledge):**
 
-1. **Architectural Paradigm Performance on Complex Reasoning**
-   - Quantified performance comparison: Routine tasks (Objective 2) vs complex multi-condition reasoning
-   - Task complexity characteristics predicting paradigm suitability: When do simple approaches suffice vs require sophisticated reasoning?
-   - Clinical calculation accuracy boundaries: Which paradigms achieve clinical-grade accuracy (≥95%) under real-world missing data conditions?
+1. **Paradigm Performance on Complex Reasoning**
+   - Performance comparison: Routine tasks (Objective 2) vs complex multi-condition reasoning
+   - Task complexity characteristics predicting paradigm suitability
 
 2. **Unstructured Data Extraction Patterns**
-   - NZ healthcare documentation handling: Which paradigms robustly extract from regional abbreviations, local terminology, contextual phrasing?
-   - Extraction accuracy by data type: Structured fields (high accuracy, paradigm-agnostic) vs unstructured notes (paradigm-dependent performance)
-   - Domain adaptation effectiveness: Where fine-tuning/prompting suffices vs architectural modifications required
+   - NZ healthcare documentation handling by paradigm
+   - Domain adaptation effectiveness: Where fine-tuning suffices vs architectural modifications required
 
 3. **Multi-Condition Clinical Reasoning Capabilities**
-   - Multi-condition logic patterns: Rule-based prioritisation vs learned reasoning performance
-   - Clinician agreement analysis: Which approaches achieve ≥85% GP audit concordance?
-   - Alert appropriateness and override patterns: When clinicians accept vs reject AI prioritisation (appropriate reliance calibration)
+   - Clinician agreement analysis: Which approaches achieve ≥85% GP audit concordance
+   - Reasoning patterns: Rule-based vs learned approaches
 
 4. **Equity-Preserving Algorithm Design Patterns**
-   - Documented equity algorithm approaches with measured outcomes (screening rates by ethnicity, care gap closure)
-   - Bias detection methodology: How to audit architectural paradigms for equity preservation vs bias introduction
-   - Te Tiriti-compliant AI design principles: Prioritising Māori/Pacific patients without harmful stereotyping
-   - Architectural-equity interaction effects: Which paradigms inherently support vs compromise equity goals
+   - Documented equity approaches with measured outcomes (screening rates by ethnicity)
+   - Te Tiriti-compliant AI design principles: Prioritising Māori/Pacific without harmful bias
+   - Architectural-equity interaction effects
 
 5. **Multi-System Generalisation on Complex Tasks**
-   - Generalisation pattern validation: Do Objective 2 findings (routine task generalisation) hold for complex reasoning?
-   - System-specific performance variance: Medtech vs Indici on multi-condition calculations and unstructured extraction
-   - Data complexity effects on generalisation: How PMS data characteristics affect paradigm robustness
+   - Generalisation validation: Do Objective 2 findings hold for complex reasoning
+   - System-specific performance variance: Medtech vs Indici
 
 **Secondary Deliverables (Working Clinical Tool):**
 
 6. **Care Gap Finder Operational in Both PMSs**
-   - Validated on ≥1,000 de-identified patient records: ≥95% CVDRA accuracy, ≥85% care gap detection vs GP audit
-   - Deployed to early adopter practices (staged: diabetes/CVD first, then COPD/CHF/asthma)
-   - Demonstrated equity outcomes: Appropriate prioritisation of Māori/Pacific and high-deprivation patients without bias
-   - Measured clinical impact: Care gaps identified and closed, screening rates by ethnicity (validates research while supporting PHO quality indicators)
+   - Validated on ≥1,000 patient records: ≥95% CVDRA accuracy, ≥85% care gap detection
+   - Deployed to research partner practices (staged: diabetes/CVD first, then COPD/CHF/asthma)
+   - Demonstrated equity outcomes: Māori/Pacific prioritisation without bias
 
 **Knowledge Transfer:**
-- Architectural recommendations for Objective 4 (generalisation research) based on complex reasoning validation
-- Equity algorithm patterns transferable to patient-facing AI (Years 3-5 HealthHub NZ) and broader health sector
+Architectural recommendations for Objective 4 based on complex reasoning validation. Equity algorithm patterns transferable to patient-facing AI (Years 3-5) and broader health sector.
 
 ---
 
@@ -639,4 +581,4 @@ Extend beyond Medtech/Indici to hospital systems and national records.
 
 **Document Status:** Final version, aligned with R&D Activities research emphasis  
 **Last Updated:** 2 December 2025  
-**Version:** 4.0 - Complete Research-Focused Rewrite
+**Version:** 4.1 - Objective 3 aggressive trim (52% reduction) + R&D Q3 strengthened

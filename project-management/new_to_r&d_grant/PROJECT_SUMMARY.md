@@ -3,7 +3,7 @@ project_name: ClinicPro AI - Inbox Helper + Care Gap Finder (NZ-Sovereign Clinic
 project_stage: Validation
 owner: NexWave Solutions Ltd
 last_updated: "2025-12-02"
-version: "4.0"
+version: "4.1"
 tags:
   - r&d-grant
   - healthcare-ai
@@ -60,6 +60,9 @@ milestones:
     status: completed
   - date: "2025-12-02"
     name: Objectives document complete rewrite (v4.0) - transformed from product-focused to research-focused, aligned with R&D Activities, removed GPT-4 benchmarking, added architectural flexibility
+    status: completed
+  - date: "2025-12-02"
+    name: Objective 3 aggressive trim (v4.1) - 52% reduction (2,060 → 1,055 words), R&D Q3 strengthened from "alert overload" to "reasoning complexity"
     status: completed
   - date: "2025-12-15"
     name: Target submission date
@@ -217,7 +220,7 @@ The project is organized into 7 main directories:
 
 **Key R&D Questions:**
 - Which paradigm achieves clinical calculation accuracy while maintaining equity without algorithmic bias?
-- How to handle multiple conditions without overwhelming GPs with alerts?
+- Can architectural paradigms perform multi-condition reasoning about competing care needs (matching GP clinical judgment ≥85%)?
 - How to prioritise so Māori/Pacific patients aren't left behind?
 
 **Features:**
