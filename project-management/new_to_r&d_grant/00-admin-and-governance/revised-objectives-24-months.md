@@ -153,44 +153,62 @@ Systematically investigate which architectural paradigms (from simple pattern re
 
 ---
 
-## Objective 2 – Routine Clinical Task Automation Research (Inbox Helper Testbed, Months 4–12)
+## Objective 2 – Apparently-Routine Clinical Task Automation: Discovering Hidden Complexity and Architectural Performance Under Real Clinical Constraints (Inbox Helper Testbed, Months 4–12)
 
 ### Plain-English Aim
 
-Investigate which architectural paradigms safely automate routine clinical tasks (inbox triage, normal result handling, trend flagging) under real-world conditions, validating synthetic data findings (Objective 1) and discovering performance degradation patterns, confidence threshold requirements, and UI trust factors that cannot be studied synthetically.
+Investigate which architectural paradigms safely automate apparently-routine clinical tasks (inbox triage, normal result handling, trend flagging) that contain hidden complexity and frequent edge cases. Validate synthetic data findings (Objective 1) under real clinical constraints and discover performance degradation patterns, architectural robustness boundaries, and safety-critical failure modes that cannot be studied synthetically.
+
+### Why "Routine" Tasks Require R&D
+
+Inbox triage appears routine but involves subtle clinical judgment that creates deceptive complexity for AI systems:
+
+**Edge Cases Occur Frequently (5-15% of "routine" items):**
+- **Borderline normal results:** HbA1c 41 vs 42 mmol/mol (clinical significance depends on patient diabetes history, trending pattern)
+- **Incidental findings in "normal" reports:** "Normal CXR. Incidental note: Previous thoracic surgery" (requires GP review despite "normal" classification)
+- **Context-dependent clinical significance:** "Normal" PSA of 2.5 ng/mL is abnormal for patient who had total prostatectomy (should be undetectable); raised CRP urgent if acutely unwell, routine if chronic inflammatory condition
+- **Urgency assessment ambiguity:** Mildly elevated creatinine (urgent in acute kidney injury context, routine for stable CKD patient)
+- **Automation safety varies by patient:** Auto-filing normal cholesterol safe for healthy 30-year-old, dangerous for 80-year-old with CVD history requiring lipid monitoring
+
+**Architectural Challenge:**
+- Simple pattern matching fails catastrophically on edge cases (misses context)
+- Complex reasoning may be overconfident on familiar patterns while hallucinating on edge cases
+- Hybrid approaches exhibit emergent failure modes from component interactions
+
+**Genuine Uncertainty:** Which architectural paradigm characteristics predict safe performance on apparently-routine tasks with hidden complexity is unknowable without systematic investigation under real clinical constraints. Laboratory accuracy metrics don't reveal edge case robustness.
 
 ### Key R&D Questions
 
-**Lab-to-Clinic Translation:**
-1. How much does architectural performance degrade from synthetic test sets to real clinical data, and which paradigm characteristics predict robustness vs brittleness?
+**Lab-to-Clinic Translation on Edge-Case-Rich Tasks:**
+1. How much does architectural performance degrade from synthetic test sets (designed to be representative) to real clinical data containing unexpected edge cases, and which paradigm characteristics predict robustness vs catastrophic failure on rare but safety-critical scenarios?
 
-**Confidence Calibration Under Clinical Constraints:**
-2. What confidence thresholds enable safe automation of routine results (auto-filing normals) without unsafe false negatives, and do threshold requirements vary by architectural paradigm?
+**Confidence Calibration Across Paradigms:**
+2. What confidence thresholds enable safe automation across architectural paradigms, given that confidence semantics differ fundamentally? Classifier probabilities are calibrated (90% confidence ≈ 90% accuracy), LLM confidence scores don't correlate with accuracy (known failure mode), hybrid systems exhibit emergent confidence behavior from component interactions. Can universal safety thresholds exist, or must thresholds be paradigm-specific and empirically discovered for each task?
 
-**Human-AI Trust and Interface Design:**
-3. How do UI presentation patterns (explanation detail, override mechanisms, visual salience) affect GP trust and appropriate reliance across different architectural paradigms?
+**Edge Case Detection and Handling:**
+3. Can architectural paradigms reliably detect when apparently-routine tasks contain hidden complexity requiring human review (incidental findings, context-dependent significance, borderline normals)? Do detection capabilities vary predictably by paradigm characteristics (simple classifiers miss context, complex reasoning hallucinates context), or must detection robustness be empirically validated?
 
 **Real-World Failure Mode Discovery:**
-4. What failure modes emerge in real clinical deployment that were absent in synthetic testing, and how do failure patterns differ across architectural paradigms?
+4. What failure modes emerge in real clinical deployment that were absent in synthetic testing, and how do failure patterns differ across architectural paradigms? Do edge-case failures cluster by paradigm type (pattern matchers fail on unseen patterns, reasoning systems fail on ambiguous contexts), or are failure modes unpredictable without empirical observation?
 
 ### Research Activities
 
 #### Clinical Testbed: Inbox Helper
 
-**Purpose:** Controlled environment for investigating routine task automation across architectural paradigms.
+**Purpose:** Controlled environment for investigating apparently-routine task automation across architectural paradigms, with systematic edge case injection to test robustness boundaries.
 
 **Testbed Capabilities:**
-- **Triage and classification:** Automatically classify inbox items (labs, letters, referrals, prescriptions, admin, patient messages) with urgency stratification
-- **Lab result interpretation:** Compare current labs with historical values, flag clinically significant changes
-- **Safe automation:** Auto-file normal screening results (mammograms, cervical screens, routine bloods) with GP-authored standard text and guideline-based recalls
-- **Clinical context overlays:** Rule-based flags on lab trends (non-prescribing, guideline-aligned)
-- **Patient communication generation:** Editable messages for routine results with GP approval gates
+- **Triage and classification:** Automatically classify inbox items (labs, letters, referrals, prescriptions, admin, patient messages) with urgency stratification, including edge cases (incidental findings, context-dependent significance)
+- **Lab result interpretation:** Compare current labs with historical values, flag clinically significant changes; detect context-dependent abnormalities (e.g., "normal" PSA post-prostatectomy)
+- **Safe automation with edge case detection:** Auto-file normal screening results with confidence-based human escalation for borderline normals, incidental findings, unexpected result formats
+- **Clinical context awareness:** Detect when patient context changes result interpretation (chronic vs acute conditions, post-surgical normals)
+- **Patient communication generation:** Editable messages for routine results with GP approval gates; flag communications requiring clinical nuance
 
 **Research Instrumentation:**
-- Performance logging: Accuracy, confidence scores, GP override rates, false negative tracking
-- Failure mode documentation: Misclassifications, missed urgents, inappropriate automation attempts
-- User interaction tracking: Time-to-decision, explanation usage, trust indicators, override patterns
-- A/B testing infrastructure: Compare architectural approaches and UI patterns within controlled cohorts
+- Performance logging: Overall accuracy, edge case detection rate, confidence score distributions, GP override rates, false negative tracking (especially on edge cases)
+- Failure mode documentation: Misclassifications, missed edge cases (incidental findings, context-dependent abnormalities), inappropriate automation attempts, catastrophic vs graceful failures
+- Edge case injection: Systematic insertion of known edge cases (borderline normals, incidental findings, post-surgical contexts) to measure paradigm-specific detection capabilities
+- Paradigm comparison infrastructure: Compare architectural approaches on identical edge-case-enriched datasets (not A/B testing on users, controlled experimental comparison)
 
 #### Architectural Paradigm Validation on Real Clinical Data
 
@@ -198,29 +216,47 @@ Investigate which architectural paradigms safely automate routine clinical tasks
 
 **Systematic Investigation:**
 
-**1. Lab-to-Clinic Performance Translation**
-- Deploy optimal paradigm from Objective 1 (Use Case 1: Inbox Triage) on real de-identified inbox data (≥2,000 items)
-- Measure performance degradation: Synthetic accuracy (target ≥90%) vs real-world accuracy
-- Investigate degradation causes: Documentation variations absent in synthetic data, unexpected document formats, edge cases
-- Research question: Do synthetic test sets predict real-world performance, or are degradation patterns unpredictable?
+**1. Lab-to-Clinic Performance Translation on Edge-Case-Rich Data**
+- Deploy optimal paradigm from Objective 1 (Use Case 1: Inbox Triage) on real de-identified inbox data (≥2,000 items) enriched with known edge cases (≥200 edge cases: incidental findings, context-dependent significance, borderline normals)
+- Measure performance degradation: Synthetic accuracy (target ≥90%) vs real-world overall accuracy vs edge case accuracy
+- Investigate degradation causes: Edge cases absent in synthetic data, unexpected document formats, context-dependent clinical significance missed by paradigm
+- Research question: Do synthetic test sets predict edge case robustness, or does real-world performance on safety-critical scenarios degrade unpredictably? Which paradigm characteristics predict graceful vs catastrophic failure on edge cases?
 
-**2. Confidence Threshold Discovery**
-- Investigate safe confidence thresholds for auto-filing normal results across paradigms
-- Test edge cases: Borderline normals, incidental findings in "normal" reports, unexpected result formats
+**2. Confidence Calibration Across Paradigms**
+- Investigate safe confidence thresholds for auto-filing normal results across paradigms, recognizing confidence semantics differ fundamentally:
+  - **Classifiers:** Calibrated probabilities (90% confidence ≈ 90% accuracy on test set)
+  - **LLMs:** Confidence scores don't correlate with accuracy (overconfident on edge cases)
+  - **Hybrid systems:** Emergent confidence from component interactions (unpredictable calibration)
+- Test edge cases: Borderline normals, incidental findings in "normal" reports, context-dependent abnormalities (PSA post-prostatectomy), unexpected result formats
 - Zero-tolerance safety testing: ≥1,000 adversarial cases (results appearing normal but requiring urgent review)
-- Research question: What confidence level prevents unsafe automation, and does optimal threshold vary by paradigm?
+- Measure: For each paradigm, what confidence threshold achieves ≥99.5% safety (≤0.5% false negatives on edge cases)? Are thresholds universal across paradigms or paradigm-specific?
+- Research question: Can paradigm-agnostic safety thresholds exist when confidence semantics differ, or must thresholds be empirically discovered per paradigm?
 
-**3. Real-World Failure Mode Taxonomy**
+**3. Edge Case Detection and Escalation**
+- Investigate whether architectural paradigms can reliably detect when apparently-routine tasks contain hidden complexity requiring human review
+- Test detection across edge case types:
+  - **Incidental findings:** "Normal CXR. Incidental note: Previous thoracic surgery" (requires GP review)
+  - **Context-dependent significance:** "Normal" PSA post-prostatectomy (abnormal for this patient)
+  - **Borderline normals:** HbA1c 41 mmol/mol (pre-diabetes threshold, requires trending assessment)
+  - **Ambiguous urgency:** Mildly elevated creatinine (context determines urgency)
+- Compare paradigm detection capabilities:
+  - **Simple classifiers:** Pattern-based (high precision, low recall on novel edge cases)
+  - **LLMs:** Context-aware but overconfident (may hallucinate reasons to automate unsafe cases)
+  - **Hybrid systems:** Emergent detection behavior (may miss edge cases falling between component responsibilities)
+- Measure: Detection sensitivity (% edge cases correctly escalated), specificity (% routine cases correctly automated), false negative rate on safety-critical edge cases
+- Research question: Do paradigm characteristics predict edge case detection capabilities, or must detection robustness be empirically validated for each paradigm?
+
+**4. Real-World Failure Mode Taxonomy**
 - Document all failure modes observed in real clinical deployment
-- Categorise failures: Documentation (abbreviation misunderstanding, regional variations), context (missing historical comparison), format (unexpected lab layout), clinical logic (incorrect urgency assessment)
-- Compare failure patterns across paradigms: Do simpler systems fail predictably? Do complex systems exhibit emergent failures?
-- Research question: Can failure modes be predicted from paradigm characteristics, or must they be discovered empirically?
-
-**4. UI Trust Pattern Investigation**
-- Experiment with explanation formats: Minimal (classification only), moderate (key features highlighted), detailed (full reasoning trace)
-- Measure GP trust indicators: Override rates, time-to-decision, self-reported confidence, appropriate vs inappropriate reliance
-- Test across paradigms: Do explanation requirements differ for simple classifiers vs complex reasoning systems?
-- Research question: What UI patterns enable appropriate trust calibration across architectural paradigms?
+- Categorise failures by type:
+  - **Edge case failures:** Missed incidental findings, incorrect context assessment, borderline normal mishandling
+  - **Documentation failures:** Abbreviation misunderstanding, regional variations, unexpected formats
+  - **Clinical logic failures:** Incorrect urgency assessment, inappropriate automation
+- Categorise failures by paradigm:
+  - **Predictable failures:** Simple systems fail on unseen patterns (expected)
+  - **Emergent failures:** Complex systems fail on familiar patterns with subtle variations (unexpected)
+  - **Catastrophic failures:** Safety-critical edge cases missed (patient harm potential)
+- Research question: Do edge case failures cluster predictably by paradigm characteristics, or are failure modes unpredictable without empirical observation under real clinical constraints?
 
 #### Multi-System Generalisation Investigation (Medtech vs Indici)
 
@@ -233,60 +269,67 @@ Investigate which architectural paradigms safely automate routine clinical tasks
 - Document generalisation patterns: Which paradigm characteristics enable vs hinder multi-system deployment?
 - Research question: Do architectural paradigms exhibit consistent performance across systems, or do system characteristics force architectural adaptations?
 
-#### Lean Clinical Validation (Early Adopter Deployment)
+#### Controlled Clinical Research Deployment (Research Partner Practices)
 
-**Purpose:** Enable real-world R&D while demonstrating commercial viability.
+**Purpose:** Enable investigation of research questions requiring authentic clinical contexts that cannot be replicated in sandbox environments.
 
-**Approach:** Once minimum safety and accuracy thresholds met (≥90% triage accuracy, zero unsafe auto-filing in edge-case test suite), release controlled deployment to 3-5 early adopter practices for ongoing research data collection.
+**Approach:** Once minimum safety and accuracy thresholds met (≥90% overall triage accuracy, ≥95% edge case detection, zero unsafe auto-filing in adversarial test suite), release controlled deployment to 3-5 research partner practices for systematic data collection.
 
-**R&D Value:**
-- Provides authentic clinical workflow data unavailable in sandbox testing
-- Enables investigation of multi-practice variation (different GP styles, patient populations, workflows)
-- Discovers context-dependent failure modes emerging only in routine use
-- Validates whether performance observed in sandbox translates to production environments
+**Research Questions Requiring Authentic Clinical Contexts:**
+- Do edge case failure patterns observed in controlled testing replicate in authentic workflows, or do new edge case types emerge?
+- How much does architectural performance vary across practices with different patient populations, GP documentation styles, and workflow patterns?
+- Can confidence thresholds calibrated in sandbox environments maintain safety under production workload and time pressure?
+- Do paradigm robustness boundaries (where architectures transition from safe to unsafe) shift under authentic clinical constraints?
 
-**Research Continues:** Architecture experimentation, feature expansion, confidence threshold optimisation based on real-world feedback. This is ongoing R&D, not maintenance.
+**What Cannot Be Researched in Sandboxes:**
+- Context-dependent edge cases emerging only in authentic patient care workflows
+- Multi-practice architectural robustness variation (different GP judgment patterns, patient population characteristics)
+- Performance under production constraints (time pressure, interruptions, cognitive load)
+- Long-tail edge cases (rare scenarios occurring <0.1% but safety-critical)
+
+**Research Continues:** Architecture experimentation, edge case detection refinement, confidence threshold optimisation based on authentic failure modes discovered in practice. This is systematic R&D on architectural robustness, not product maintenance.
 
 ### Research Knowledge Deliverables by Month 12
 
 **Primary Deliverables (Research Knowledge):**
 
-1. **Lab-to-Clinic Performance Translation Report**
-   - Quantified performance degradation from synthetic to real clinical data across investigated paradigms
-   - Identified data characteristics causing degradation (documentation variations, format diversity, edge cases)
-   - Predictive patterns: Which paradigm characteristics indicate robustness vs brittleness under real-world conditions?
+1. **Lab-to-Clinic Performance Translation Report (Edge Case Focus)**
+   - Quantified performance degradation from synthetic to real clinical data: Overall accuracy vs edge case accuracy across investigated paradigms
+   - Edge case failure analysis: Which edge case types (incidental findings, context-dependent significance, borderline normals) cause catastrophic vs graceful failures by paradigm?
+   - Predictive patterns: Which paradigm characteristics indicate edge case robustness vs brittleness? Can synthetic testing predict edge case performance, or must it be empirically validated?
 
-2. **Confidence Threshold and Safety Requirements**
-   - Documented safe confidence thresholds for automation by task type and paradigm
-   - Edge case taxonomy: ≥1,000 adversarial cases tested, failure patterns documented
-   - Safety-architecture interaction effects: How paradigm choice affects safety mechanism requirements
+2. **Confidence Calibration Across Paradigms**
+   - Documented confidence semantics by paradigm: Classifier calibration curves, LLM confidence-accuracy correlation (or lack thereof), hybrid system emergent confidence patterns
+   - Safe automation thresholds: For each paradigm, what confidence threshold achieves ≥99.5% safety on edge cases? Are thresholds paradigm-specific or universal?
+   - Safety-architecture interaction effects: How paradigm choice affects confidence reliability and safe automation boundaries
 
-3. **Real-World Failure Mode Taxonomy**
-   - Comprehensive documentation of failure modes observed in clinical deployment
-   - Failure pattern analysis: Predictable vs emergent failures by paradigm
-   - Clinical risk assessment: Consequence severity and detection methods for each failure type
+3. **Edge Case Detection and Escalation Capabilities**
+   - Edge case detection performance by paradigm: Sensitivity, specificity, false negative rate on safety-critical scenarios
+   - Paradigm-specific detection patterns: Simple classifiers (high precision, low recall), LLMs (context-aware but overconfident), hybrid systems (emergent detection gaps)
+   - Escalation framework: Which edge case characteristics enable reliable detection vs require conservative human escalation policies?
 
-4. **UI Trust and Human-AI Collaboration Patterns**
-   - Optimal explanation formats by paradigm and clinical task
-   - GP trust calibration requirements: How to enable appropriate (not over/under) reliance
-   - Override pattern analysis: When and why GPs reject AI suggestions (appropriate vs inappropriate overrides)
+4. **Real-World Failure Mode Taxonomy (Edge Case Emphasis)**
+   - Comprehensive failure mode documentation: Edge case failures (incidental findings missed, context misassessed), documentation failures, clinical logic errors
+   - Failure clustering by paradigm: Predictable failures (pattern matchers on unseen patterns) vs emergent failures (reasoning systems on ambiguous contexts)
+   - Clinical risk assessment: Consequence severity (patient harm potential) and detection difficulty for each failure type
 
 5. **Multi-System Generalisation Patterns (Medtech vs Indici)**
-   - Performance consistency vs variance across PMSs
+   - Performance consistency vs variance across PMSs: Overall accuracy and edge case accuracy
    - Architectural characteristics enabling vs hindering generalisation
-   - System-specific adaptations required: Data format handling, workflow integration, API constraints
+   - System-specific edge case variations: Do different PMS data structures create paradigm-specific edge case vulnerabilities?
 
 **Secondary Deliverables (Working Clinical Tool):**
 
 6. **Inbox Helper Operational in Both PMSs**
-   - Validated on ≥2,000 real inbox items: ≥90% classification accuracy, zero unsafe auto-filing
-   - Deployed to 3-5 early adopter practices (controlled clinical validation)
-   - Measured workflow impact: ~30% inbox processing time reduction (validates research while addressing GP workforce crisis)
-   - Usability feedback incorporated: GP-informed design refinements
+   - Validated on ≥2,000 real inbox items (including ≥200 edge cases): ≥90% overall accuracy, ≥95% edge case detection, zero unsafe auto-filing on adversarial test suite
+   - Deployed to 3-5 research partner practices (controlled clinical research deployment)
+   - Measured workflow impact: ~30% inbox processing time reduction on routine items (validates research while addressing GP workforce crisis)
+   - Edge case performance under authentic conditions: False negative rate, escalation appropriateness, GP override patterns on edge cases
 
 **Knowledge Transfer:**
-- Architectural recommendations for Objective 3 (Care Gap Finder) based on real-world validation
-- Identified research questions requiring multi-condition complexity (beyond routine task automation)
+- Architectural recommendations for Objective 3 (Care Gap Finder) based on edge case robustness findings: Which paradigms handle apparently-routine tasks with hidden complexity?
+- Edge case detection patterns: Do paradigms robust on routine tasks maintain robustness on multi-condition clinical reasoning (Objective 3)?
+- Identified research questions: Does multi-condition complexity amplify edge case frequency, or do different edge case types emerge?
 
 ---
 
