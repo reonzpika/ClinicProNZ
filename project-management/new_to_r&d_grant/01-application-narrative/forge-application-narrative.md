@@ -150,9 +150,9 @@ Laboratory metrics (accuracy, F1) may not correlate with clinical outcomes (time
 
 **Existing Knowledge Addresses Different Problems:**
 
-**1. Documentation AI Tools Don't Resolve Decision-Support Uncertainties**
+**1. Documentation, Automation, and Early-Stage Solutions Don't Resolve Decision-Support Uncertainties**
 
-Commercial AI scribes (Abridge, Nuance DAX) optimize for passive documentation. **Whether documentation architectures work for active decision support (inbox triage, multi-condition care gaps, real-time alerts) is technologically uncertain.** Decision support requires different capabilities: real-time inference, multi-condition logic, confidence calibration. No published validation across use case types.
+Clinical AI tools focus on documentation (Heidi in NZ, internationally Abridge/Nuance DAX). Admin automation solutions provide rule-based workflow support (SmartCareGP, HealthAccelerator, Pegasus Health). Early-stage inbox solutions are emerging (InboxMagic, MVP phase) but haven't demonstrated deep PMS integration or published architectural approaches. **Whether AI architectures work for active decision support with multi-condition reasoning (care gap monitoring across 5 chronic conditions), confidence-calibrated alerts, and equity-aware prioritization is technologically uncertain.** Decision support requires capabilities beyond automation or documentation: real-time clinical inference, multi-condition logic, architectural robustness under PMS constraints. No published work validates paradigms across use case types.
 
 **2. Generic AI Systems Show Capability But Not Sovereign Deployment Pathways**
 
@@ -160,7 +160,7 @@ Overseas APIs (GPT-4, Claude) prove clinical reasoning capability but don't addr
 
 **3. Academic Research Validates Isolated Components, Not Integrated Systems**
 
-Published work studies techniques (fine-tuning, RAG, agentic systems) using standardized datasets in controlled settings. **How paradigms perform under combined real-world constraints (multi-PMS + equity + Privacy Act + cost + PMS interface limits) is unknowable from isolated testing.** Lab benchmarks don't predict clinical integration performance. Emergent behaviors from constraint interactions cannot be deduced.
+Published work studies techniques (fine-tuning, RAG, agentic systems) using standardized datasets. **How paradigms perform under combined real-world constraints (multi-PMS + equity + Privacy Act + cost + PMS interface limits) is unknowable from isolated testing.** Lab benchmarks don't predict clinical integration performance. Emergent behaviors cannot be deduced.
 
 **4. Proprietary Implementations May Emerge But Methods Are Trade Secrets**
 
@@ -168,9 +168,9 @@ Future commercial solutions won't disclose: architectural selection criteria, NZ
 
 **5. PMS Integration Constraints Create Unknown Architectural Requirements**
 
-Published AI research assumes unlimited UI flexibility. Real PMS integration (Medtech/Indici widgets) imposes constraints: limited screen space, fixed workflows. **Whether paradigms requiring extensive UI remain useful when constrained to PMS widgets requires empirical investigation.** Performance under integration constraints undocumented.
+Published AI research assumes unlimited UI flexibility. Real PMS integration (Medtech/Indici widgets) imposes constraints: limited screen space, fixed workflows. **Whether paradigms requiring extensive UI remain useful when constrained to PMS widgets requires empirical investigation.**
 
-**Systematic investigation required to resolve these technological uncertainties for NZ primary care.**
+**Systematic investigation required to resolve technological uncertainties.**
 
 ---
 
