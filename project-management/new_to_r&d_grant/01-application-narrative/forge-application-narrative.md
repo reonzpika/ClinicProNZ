@@ -686,7 +686,7 @@ Train NZ-LLM on aggregated patient outcomes to improve recommendations.
 Extend beyond Medtech/Indici to hospital systems and national records.
 
 **AI R&D questions:**
-- How does one NZ-trained LLM generalise across different hospital data formats while maintaining accuracy?
+- How does a NZ-sovereign AI system generalise across different hospital data formats while maintaining accuracy?
 
 **Benefits:** Connected care where patient sees specialist and GP gets AI summary automatically. No repeated tests, no lost referrals.
 
