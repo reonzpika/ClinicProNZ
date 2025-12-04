@@ -68,17 +68,18 @@
 - Better experiment tracking setup ($4,000 instead of $3,500)
   - More robust system configuration
   - Better integration with development workflow
-- More LLM training advisory ($6,000 instead of $5,000)
+- More LLM methods advisory ($6,000 instead of $5,000)
   - 5-8 sessions instead of 4-6 sessions
-  - Flexibility to add sessions if technical challenges emerge
+  - Focus on experiment design, evaluation frameworks, and documentation methodologies
+  - Ensures outputs integrate with tracking system
   - Extended timeline (Months 2-8 instead of 2-6)
 
 **Why this matters:**
 - **Essential for systematic research** (investigating multiple architectural paradigms)
-- Without tracking, you won't know what worked or why
-- Hundreds of experiments = need solid documentation
-- LLM training for NZ healthcare context is complex, need expert guidance
-- Direct knowledge transfer to Years 3-5 HealthHub NZ
+- Without proper documentation methodology, you won't know what worked or why
+- Hundreds of experiments = need standardised documentation and comparison frameworks
+- LLM experiment documentation for architectural comparison is complex
+- Proper knowledge capture enables transfer to Years 3-5 HealthHub NZ
 
 ---
 

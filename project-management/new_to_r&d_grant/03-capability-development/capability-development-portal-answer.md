@@ -21,7 +21,7 @@
 
 **R&D Information Management Capability ($10,000):**
 - Technical consultant trains us to build and maintain experiment tracking systems, model registries, and dataset lineage workflows. Essential skills for systematic R&D documentation and reproducibility.
-- LLM training advisory teaches founder and Ting practical skills in NZ-LLM fine-tuning, evaluation frameworks, architectural paradigm comparison, and domain adaptation techniques. Knowledge directly transferable to future clinical AI projects.
+- LLM methods advisory for founder and Ting focused on designing experiments, standardised evaluation frameworks, and architectural comparisons that integrate with our experiment tracking, model registry, and dataset lineage systems. Ensures clinical AI research outputs are consistently documented, comparable across projects, and properly archived for future reference.
 - Learn industry-standard MLOps practices for managing complex AI research programmes.
 
 **Project Management Capability ($8,000):**

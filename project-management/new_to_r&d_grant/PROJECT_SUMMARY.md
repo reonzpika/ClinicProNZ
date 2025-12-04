@@ -325,9 +325,9 @@ The project is organized into 7 main directories:
 
 **Activities may include:**
 - Experiment Tracking & Model Registry Setup ($4,000): Centralised experiment tracking (MLflow or similar), model versioning, dataset lineage, research dashboard, training for founder and Ting
-- LLM Training & Fine-Tuning Advisory ($6,000): Training strategy, domain adaptation, evaluation frameworks, architectural paradigm comparison (approximately 5-8 sessions, flexible scheduling based on technical challenges)
+- LLM Methods Advisory ($6,000): Experiment design, standardised evaluation frameworks, architectural comparison methodologies integrated with tracking systems; ensures research outputs consistently documented and comparable (approximately 5-8 sessions, flexible scheduling)
 
-**Deliverables may include:** Configured experiment tracking system, model registry, LLM training pipeline, evaluation frameworks, advisory session reports, NZ-LLM fine-tuning playbook
+**Deliverables may include:** Configured experiment tracking system, model registry, standardised evaluation frameworks, experiment design templates, architecture comparison methodologies, research documentation workflows
 
 ---
 

@@ -8,7 +8,7 @@
 Build enduring capability in **three key areas** for NZ clinical AI development:
 
 1. **Regulatory & Compliance** - Privacy Act, HIPC, IPP 12, clinical safety, PHO/Medtech compliance, AI ethics, DPIA
-2. **R&D Information Management** - Experiment tracking, model registry, LLM training workflows, research documentation
+2. **R&D Information Management** - Experiment tracking, model registry, LLM experiment documentation workflows, research documentation
 3. **Project Management** - R&D operations, agile systems, risk management, stage-gate processes
 
 **Strategy:** Focus on high-value third-party professional services that provide practical, actionable outputs directly supporting R&D project success and building capability for future R&D programmes (Years 3-5 HealthHub NZ).
@@ -27,7 +27,7 @@ We have selected **3 Capability Development categories** from the 7 available op
 Focus on privacy, health data protection, clinical safety, DPIA, and PHO/Medtech compliance for NZ healthcare AI. **Critical for avoiding pilot shutdown due to compliance failures.**
 
 ### CDP-6: R&D Information Management Capability Development
-Focus on experiment tracking systems, model registry, LLM training workflows, and research documentation best practices. **Essential for systematic architectural investigation and reproducible research.**
+Focus on experiment tracking systems, model registry, LLM experiment documentation workflows, and research documentation best practices. **Essential for systematic architectural investigation and reproducible research.**
 
 ### CDP-5: Project Management Capability Development
 Focus on R&D operations, agile R&D systems, risk management, and coaching for first-time R&D performer. **Builds Ting's capability to manage complex R&D programme independently.**
@@ -225,46 +225,46 @@ Focus on R&D operations, agile R&D systems, risk management, and coaching for fi
 
 ---
 
-### 2. LLM Training & Fine-Tuning Technical Advisory
-**Provider:** AI/ML technical consultant with LLM fine-tuning expertise
+### 2. LLM Methods Advisory for R&D Information Management
+**Provider:** AI/ML technical consultant with LLM research infrastructure expertise
 
-**Purpose:** Build practical capability in NZ-LLM training, domain adaptation, and architectural paradigm evaluation. Knowledge directly transferable to Years 3-5 HealthHub NZ and future clinical AI projects.
+**Purpose:** Build capability to systematically document, track, and compare LLM experiments and architectural paradigms. Focus on standardised evaluation frameworks, experiment design, and metadata capture that integrates with experiment tracking systems.
 
 **Activities may include (typically 5-8 advisory sessions over Months 2-8):**
-- NZ-LLM training strategy development (base model selection, training pipeline architecture)
-- Review of NZ clinical corpus and data preparation strategies
-- Training infrastructure setup and optimisation (Lambda Labs, AWS, or similar)
-- Fine-tuning framework configuration (LoRA, QLoRA, full fine-tuning)
-- Domain adaptation best practices for NZ clinical language
-- Synthetic data generation strategies for NZ healthcare context
-- Evaluation framework design for architectural paradigm comparison
-- Preventing hallucination and maintaining safety constraints in clinical LLMs
-- Cost-accuracy trade-off analysis across architectural approaches
-- Multi-PMS generalisation strategies
-- Production deployment considerations and optimization
-- Knowledge transfer and documentation
+- Experiment design methodology for architectural paradigm comparison (classifiers, hybrid, LLM, agentic AI, RAG)
+- Standardised evaluation framework design integrated with experiment tracking system
+- Training pipeline documentation structure and metadata capture requirements
+- Architecture comparison methodology and results documentation
+- Dataset preparation and lineage documentation strategies
+- Cost-accuracy trade-off analysis documentation and visualization
+- Model checkpoint versioning and metadata standards
+- Evaluation metrics selection and consistent reporting across paradigms
+- Documentation workflows for capturing NZ clinical corpus characteristics
+- Research results archival and knowledge capture for future projects
+- Integration of advisory outputs with model registry and tracking systems
 
-**Timing flexibility:** Number of sessions depends on technical challenges encountered during architectural investigation. If domain adaptation works well, fewer sessions needed. If significant challenges emerge, additional sessions for problem-solving.
+**Timing flexibility:** Number of sessions depends on complexity of architectural investigation and documentation challenges. Flexible scheduling based on R&D milestones.
 
 **Deliverables may include:**
-- Advisory session reports with technical recommendations
-- Training pipeline setup and documentation
-- Evaluation framework for architectural comparison
-- NZ-LLM fine-tuning playbook (reusable for future projects)
-- Architecture comparison methodology
-- Knowledge transfer documentation
+- Advisory session reports with documentation methodologies
+- Standardised evaluation framework integrated with tracking system
+- Experiment design templates for architectural comparison
+- Architecture comparison methodology and reporting formats
+- Model registry metadata standards and versioning protocols
+- Research documentation workflows and templates
+- Knowledge capture frameworks for future clinical AI projects
 
 **Cost:** $6,000 (excl. GST)
 **Timing:** Months 2-8 (approximately 5-8 sessions, flexible scheduling based on R&D progress)
-**Evidence:** Invoices, session reports, training pipeline documentation, evaluation frameworks
+**Evidence:** Invoices, session reports, evaluation framework documentation, experiment design templates
 
-**Value:** Core capability for building NZ-sovereign clinical LLM. Essential for Objective 1 architectural investigation and directly applicable to Years 3-5 HealthHub NZ.
+**Value:** Ensures systematic capture and documentation of architectural investigation outputs. Research findings properly archived and comparable across experiments enables efficient knowledge transfer to Years 3-5 HealthHub NZ and future clinical AI projects.
 
 ---
 
 **Total CDP-6 (R&D Information Management):** $10,000
 
-**Rationale for allocation:** Systematic experiment tracking and LLM training expertise are essential for first-time R&D performer investigating multiple architectural paradigms. Without these capabilities, R&D risks becoming trial-and-error rather than systematic investigation.
+**Rationale for allocation:** Systematic experiment tracking and LLM experiment documentation methodologies are essential for first-time R&D performer investigating multiple architectural paradigms. Without these capabilities, R&D risks becoming trial-and-error rather than systematic investigation.
 
 ---
 
@@ -444,7 +444,7 @@ Focus on R&D operations, agile R&D systems, risk management, and coaching for fi
 | | **Subtotal CDP-3** | **$18,000** | |
 | | | | |
 | **CDP-6: R&D Info Mgmt** | Experiment Tracking System | $4,000 | Months 2-4 |
-| **CDP-6: R&D Info Mgmt** | LLM Training Advisory | $6,000 | Months 2-8 |
+| **CDP-6: R&D Info Mgmt** | LLM Methods Advisory | $6,000 | Months 2-8 |
 | | **Subtotal CDP-6** | **$10,000** | |
 | | | | |
 | **CDP-5: Project Mgmt** | PM Training & Setup | $3,500 | Months 2-4 |
@@ -576,10 +576,10 @@ Focus on R&D operations, agile R&D systems, risk management, and coaching for fi
 3. **Dataset Lineage Documentation** - Track all data sources and transformations
 4. **Research Dashboard** - Visual progress monitoring for R&D
 5. **Training Materials** - System usage documentation
-6. **LLM Training Pipeline** - Configured and documented
-7. **Evaluation Framework** - Systematic model evaluation approach
-8. **Architecture Comparison Methodology** - How to compare simple/hybrid/LLM
-9. **NZ-LLM Fine-Tuning Playbook** - Reusable knowledge for future projects
+6. **Standardised Evaluation Framework** - Systematic model evaluation approach integrated with tracking system
+7. **Architecture Comparison Methodology** - Documentation standards for comparing paradigms
+8. **Experiment Design Templates** - Structured approach for architectural investigation
+9. **Research Documentation Workflows** - Knowledge capture frameworks for future projects
 10. **Advisory Session Reports** (4-6) - Technical guidance documentation
 
 ### Project Management Capability Deliverables
@@ -623,7 +623,7 @@ The following activities are part of **R&D work** (not CapDev) and will be claim
 - Logging experiments, results, and model versions
 - Generating reports from research dashboard
 - Maintaining dataset lineage
-- Running LLM training and fine-tuning experiments
+- Documenting LLM experiments systematically with standardised metadata
 
 ### Project Management (R&D Activity)
 - Stage-gate management (O1-O4 entry/exit criteria)
@@ -712,10 +712,10 @@ The following activities are part of **R&D work** (not CapDev) and will be claim
 - ✓ Dataset lineage tracking established
 - ✓ Research dashboard deployed and used daily
 - ✓ Training sessions completed (founder + Ting)
-- ✓ LLM training pipeline configured and documented
-- ✓ Evaluation framework established
-- ✓ 4-6 advisory sessions completed with knowledge transfer
-- ✓ NZ-LLM fine-tuning playbook documented
+- ✓ Standardised evaluation framework integrated with tracking system
+- ✓ Experiment design templates and methodologies established
+- ✓ 5-8 advisory sessions completed with knowledge transfer
+- ✓ Research documentation workflows and templates operational
 
 ### Project Management Capability
 - ✓ Agile R&D system configured and operational
@@ -755,11 +755,12 @@ The following activities are part of **R&D work** (not CapDev) and will be claim
 - All internal implementation work claimed as R&D labour
 - Maintain separate folders: `/capdev-evidence/` vs `/r&d-deliverables/`
 
-### Risk: LLM Training Advisory Not Delivering Value
+### Risk: LLM Methods Advisory Not Delivering Value
 **Mitigation:**
-- Select consultant with proven track record in clinical LLM or NZ healthcare AI
-- Structure as 4-6 sessions with clear deliverables per session
-- Can adjust scope based on early sessions (e.g., stop at 4 if sufficient)
+- Select consultant with proven track record in ML research infrastructure and documentation methodologies
+- Structure as 5-8 sessions with clear deliverables per session (evaluation frameworks, experiment design templates)
+- Can adjust scope based on early sessions (e.g., stop at 5 if documentation workflows sufficient)
+- Focus on outputs that integrate with experiment tracking system (not standalone training)
 - Knowledge transfer documented so capability remains after consultant engagement ends
 
 ### Risk: Experiment Tracking System Not Used
@@ -834,18 +835,20 @@ The following activities are part of **R&D work** (not CapDev) and will be claim
 - Data science consulting firms
 - Technical consultants with healthcare AI experience
 
-### LLM Training/Fine-Tuning Adviser
+### LLM Methods and Research Infrastructure Adviser
 **Must Have:**
-- Proven LLM fine-tuning experience (LoRA, QLoRA, full fine-tuning)
-- Clinical or healthcare AI experience (highly preferred)
-- NZ-specific language model experience (preferred)
-- Training pipeline setup expertise
+- Proven ML research infrastructure experience (experiment tracking, evaluation frameworks)
+- LLM experiment documentation and comparison methodologies
+- MLOps and research information management expertise
+- Healthcare or clinical AI research experience (preferred for domain context)
 - Knowledge transfer and documentation capability
+- Focus on systematic documentation, not just model performance
 
 **Recommended Providers:**
-- AI/ML consultants with NLP/LLM specialisation
-- Healthcare AI researchers or practitioners
-- Companies/individuals with clinical LLM track record
+- ML engineering consultants with research infrastructure specialisation
+- MLOps consultants with healthcare AI experience
+- Technical consultants experienced in systematic R&D documentation
+- AI/ML consultants with evaluation framework design expertise
 
 ### R&D Project Management Coach
 **Must Have:**
@@ -880,14 +883,14 @@ The following activities are part of **R&D work** (not CapDev) and will be claim
 - [ ] Engage DPIA specialist (obtain quotes)
 - [ ] Engage clinical safety consultant (obtain quotes)
 - [ ] Engage ML infrastructure consultant (obtain quotes)
-- [ ] Engage LLM training adviser (obtain quotes)
+- [ ] Engage LLM methods adviser (obtain quotes)
 - [ ] Engage R&D PM coach (obtain quotes)
 
 ### Months 2-3 (Q1)
 - [ ] IP Audit & FTO completed
 - [ ] Regulatory gap analysis completed
 - [ ] Experiment tracking system setup begins
-- [ ] LLM training advisory sessions 1-2
+- [ ] LLM methods advisory sessions 1-2
 - [ ] R&D PM system setup begins
 
 ### Months 4-6 (Q2)
@@ -897,7 +900,7 @@ The following activities are part of **R&D work** (not CapDev) and will be claim
 - [ ] Regulatory adviser sessions 1-2
 - [ ] Compliance documentation complete
 - [ ] Experiment tracking system operational
-- [ ] LLM training advisory sessions 3-6
+- [ ] LLM methods advisory sessions 3-8 (flexible based on R&D needs)
 - [ ] R&D PM system fully configured
 - [ ] Q1 claim submitted with CapDev evidence
 

@@ -481,9 +481,9 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 
 **Activities may include:**
 - **R&D Experiment Tracking & Model Registry Setup ($4,000, Months 2-4):** Design and implement centralised experiment tracking system (MLflow or similar), model versioning, dataset lineage, research dashboard; training for founder and Ting
-- **LLM Training & Fine-Tuning Technical Advisory ($6,000, Months 2-8):** Approximately 5-8 advisory sessions on NZ-LLM training strategy, domain adaptation, evaluation frameworks, architectural paradigm comparison, production deployment; flexible scheduling based on technical challenges encountered during architectural investigation
+- **LLM Methods Advisory ($6,000, Months 2-8):** Approximately 5-8 advisory sessions focused on experiment design, standardised evaluation frameworks, and architectural comparison methodologies that integrate with experiment tracking, model registry, and dataset lineage systems; ensures research outputs are consistently documented and comparable across projects; flexible scheduling based on R&D progress
 
-**Deliverables may include:** Configured experiment tracking system, model registry, training pipeline documentation, LLM advisory session reports, evaluation frameworks, NZ-LLM fine-tuning playbook
+**Deliverables may include:** Configured experiment tracking system, model registry, standardised evaluation frameworks, experiment design templates, architecture comparison methodologies, research documentation workflows
 
 **Total CDP-6:** $10,000
 
