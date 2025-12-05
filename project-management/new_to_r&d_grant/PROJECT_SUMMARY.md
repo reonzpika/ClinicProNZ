@@ -3,7 +3,7 @@ project_name: ClinicPro AI - Inbox Helper + Care Gap Finder (NZ-Sovereign Clinic
 project_stage: Validation
 owner: NexWave Solutions Ltd
 last_updated: "2025-12-02"
-version: "3.5"
+version: "4.3"
 tags:
   - r&d-grant
   - healthcare-ai
@@ -55,6 +55,21 @@ milestones:
   - date: "2025-12-01"
     name: Financial structure finalized - two-account strategy ($100k business + $100k Ting's reserve), 20 hrs/week GP work, strategic drawdown plan
     status: completed
+  - date: "2025-12-02"
+    name: R&D Activities section complete - all 6 questions (Activities, Uncertainty, Challenge, Knowledge, Newness, Why Better) revised with research emphasis, architectural flexibility, competitor analysis
+    status: completed
+  - date: "2025-12-02"
+    name: Objectives document complete rewrite (v4.0) - transformed from product-focused to research-focused, aligned with R&D Activities, removed GPT-4 benchmarking, added architectural flexibility
+    status: completed
+  - date: "2025-12-02"
+    name: Objective 3 aggressive trim (v4.1) - 52% reduction (2,060 → 1,055 words), R&D Q3 strengthened from "alert overload" to "reasoning complexity"
+    status: completed
+  - date: "2025-12-02"
+    name: Objective 4 aggressive trim (v4.2) - 68% reduction (2,500 → 750 words), removed redundant sections, achieved balance with Objectives 2-3
+    status: completed
+  - date: "2025-12-02"
+    name: R&D Activities consistency fixes (v4.3) - 4 inconsistencies resolved (removed GPT-4 language, changed to healthcare context, replaced alert fatigue, strengthened Q4)
+    status: completed
   - date: "2025-12-15"
     name: Target submission date
     status: pending
@@ -98,7 +113,7 @@ This project proposes building a New Zealand-sovereign clinical AI assistant to 
 **Key Features:**
 - ✓ **Dual PMS integration:** Works in both Medtech and Indici from day one
 - ✓ **Lean MVP approach:** Early releases to paid adopters as safety thresholds are met
-- ✓ **Architecture validation R&D:** Test which AI approach (simple classifiers, hybrid rules+LLM, NZ-trained LLM) works best for each risk level
+- ✓ **Architecture validation R&D:** Systematically investigate architectural paradigms (classifiers → hybrid → LLMs → agentic AI → RAG) to discover optimal approaches for each clinical task
 - ✓ **Multi-PMS generalisation:** Research how to maintain performance across different PMSs, practices, and populations
 - ✓ **Equity focus:** Algorithms designed to prioritise high-need groups without bias
 
@@ -108,10 +123,11 @@ This project proposes building a New Zealand-sovereign clinical AI assistant to 
 - **Broader ecosystem:** National FHIR API integration, plug-in architecture for more PMSs
 
 **Core R&D Questions:**
-- Which AI architecture works best for different clinical risk levels?
-- Can NZ-trained LLM understand local clinical language better than generic models?
-- How to design one system that works across multiple PMSs without major rework?
-- How to tune alerts to avoid fatigue while maintaining safety?
+- Which architectural paradigm (from simple classifiers to agentic AI systems) achieves clinical safety, NZ-contextual accuracy, and cost-effectiveness across combined constraints?
+- Can domain adaptation techniques suffice for NZ clinical language characteristics, or do linguistic properties (Māori code-switching, bilingual terminology) require architectural modifications?
+- Will architectural approaches achieving performance in one PMS (Medtech) maintain performance in another (Indici), or will generalisation patterns need to be discovered?
+- How do safety mechanisms interact with different architectural paradigms, and what failure modes emerge?
+- Which architectural characteristics translate to clinical value versus laboratory performance metrics?
 
 ---
 
@@ -167,8 +183,8 @@ The project is organized into 7 main directories:
 **Plain-English Aim:** Create a flexible, safe AI backbone that can plug into Medtech and Indici, test different AI "recipes" on synthetic NZ healthcare data.
 
 **Key R&D Questions:**
-- Which AI approach works best for each task: simple classifier, generic LLM, hybrid rules+LLM, or NZ-trained LLM?
-- Can a NZ-trained LLM understand local clinical language better than generic models?
+- Which architectural paradigm works best for each task across the spectrum from simple pattern recognition to sophisticated reasoning systems?
+- Can domain adaptation achieve clinical-grade accuracy on NZ clinical language under sovereignty constraints?
 - How to design one architecture supporting both Medtech and Indici without major rework?
 
 **Deliverables:**
@@ -184,7 +200,7 @@ The project is organized into 7 main directories:
 **Plain-English Aim:** Turn Inbox prototype into practical tool that reduces GP inbox workload safely in both Medtech and Indici. **Lean MVP released to early adopters as soon as safety thresholds met.**
 
 **Key R&D Questions:**
-- Can lightweight models safely handle messy, real NZ inbox data?
+- Which architectural approach safely handles routine clinical tasks while maintaining accuracy and cost-effectiveness?
 - What confidence level is safe enough for auto-filing normal results?
 - How should AI suggestions appear in each PMS so GPs trust them?
 
@@ -209,8 +225,8 @@ The project is organized into 7 main directories:
 **Plain-English Aim:** Build tool that scans patient records to find overdue chronic disease checks (diabetes, CVD, COPD, CHF, asthma). **Lean MVP (diabetes + CVD) released early, then expanded.**
 
 **Key R&D Questions:**
-- Can NZ-trained AI reliably extract details from messy free-text notes?
-- How to handle multiple conditions without overwhelming GPs with alerts?
+- Which paradigm achieves clinical calculation accuracy while maintaining equity without algorithmic bias?
+- Can architectural paradigms perform multi-condition reasoning about competing care needs (matching GP clinical judgment ≥85%)?
 - How to prioritise so Māori/Pacific patients aren't left behind?
 
 **Features:**
@@ -228,27 +244,31 @@ The project is organized into 7 main directories:
 
 ---
 
-### Objective 4: Advanced Refinement, Safety, Equity and Generalisation (Months 16-24)
+### Objective 4: Multi-Practice Generalisation and Real-World Failure Mode Research (Months 16-24)
 
-**Plain-English Aim:** Use real-world feedback to do "hard" R&D work: refine NZ-LLM, tune alerts, prove system generalises across practices and both PMSs. **This is systematic R&D on generalisation and safety, not routine maintenance.**
+**Plain-English Aim:** This is the "hardest" R&D: understanding what makes AI systems robust vs brittle in authentic clinical practice. Investigate whether architectural paradigms validated in controlled environments generalise across diverse real-world conditions by discovering performance degradation patterns, safety-architecture interaction effects, and real-world failure modes.
 
 **Key R&D Questions:**
-- How much does performance change across different practices, populations, workflows?
-- How to tune alerts to minimise noise while catching all important issues?
-- How to support equitable performance across regions and populations?
+- How much does architectural performance vary across practices with different patient populations, workflows, and characteristics?
+- Do performance patterns observed in early adopters predict performance in new practices, or are degradation patterns unpredictable?
+- How do safety mechanisms interact with architectural paradigm characteristics under real clinical workload?
+- What failure modes emerge in multi-practice operational deployment that were absent in controlled validation?
 
-**Activities:**
-- Analyse model errors from early adopters, retrain NZ-LLM
-- Collect alert statistics, adjust thresholds to avoid fatigue
-- Run structured pilots across multiple practices (both PMSs)
-- Investigate performance gaps by region/population, fix via model/rule changes
-- Expand safety testing to thousands of scenarios
+**Research Activities:**
+- Multi-practice structured pilots (10-20 practices) with systematic diversity (PMS, geography, ethnicity, deprivation, workflow)
+- Measure performance variance, investigate causes, document failure modes
+- Validate equity outcomes at scale (Māori/Pacific screening rates)
+- Quantify lab-to-clinic translation patterns
+- Temporal robustness investigation (performance drift over 6-8 months)
 
 **Deliverables:**
-- Refined NZ-LLM with documented accuracy across multiple practices and both PMSs
-- Alert configuration tuned based on real usage metrics
-- Final pilot report: time savings, care gaps closed, equity metrics, safety incidents
-- Clear roadmap for broader rollout (including Years 3-5 HealthHub NZ vision)
+- Multi-practice generalisation pattern analysis
+- Lab-to-clinic translation pattern documentation
+- Safety-architecture interaction effects and failure mode taxonomy
+- Equity outcome validation at scale
+- Architectural paradigm robustness analysis
+- Production-grade system across 10-20 practices with measured clinical impact
+- Final R&D report
 
 **Detailed objectives:** See `00-admin-and-governance/revised-objectives-24-months.md`
 
@@ -276,119 +296,69 @@ The project is organized into 7 main directories:
 
 ---
 
-## Capability Development (4 Categories - Third-Party Services Only)
+## Capability Development (3 Categories - Third-Party Services Only)
 
 **Confirmed by Paula (29 Nov 2025):** CapDev must be ≥5% of total eligible costs. Only third-party costs eligible (no internal labour).
 
-### CDP-2: Intellectual Property ($7,500)
-**Months 2-6**
+**Rationale:** As a first-time R&D performer, we prioritise capabilities that directly de-risk the R&D programme (compliance, systematic documentation, project management). IP protection will be addressed post-grant once innovations are validated.
 
-- **IP Audit & Freedom-to-Operate Analysis:** $2,000
-  - Prior art search, IP landscape, patentability assessment
-  
-- **Provisional Patent Filing:** $4,500
-  - File with IPONZ covering clinical LLM architecture, workflows, integration methods
-  - Secure priority date for 12-month full filing window
-  
-- **NDAs, Contracts & Trademark:** $1,000
-  - Mutual NDA templates, collaboration agreements, trademark search/filing
-
-**Deliverables:** FTO report, provisional patent (filed), NDA/contract templates, trademark protection
-
----
-
-### CDP-3: Regulatory & Compliance ($15,000)
+### CDP-3: Regulatory & Compliance ($18,000)
 **Months 2-18**
 
-- **Comprehensive Regulatory Gap Analysis:** $3,500
-  - Privacy Act 2020, HIPC, IPP 12, clinical safety, AI ethics compliance audit
-  
-- **Comprehensive DPIA (Data Privacy Impact Assessment):** $4,000
-  - Cross-border data handling risk assessment (AU inference, NZ keys)
-  
-- **Clinical Safety Advisory (3 sessions):** $3,500
-  - Medical device software context, safety system validation
-  - Months 4, 8, 12
-  
-- **Ongoing Regulatory Adviser (6 sessions):** $3,000
-  - Expert guidance through MVP, sandbox, pilot, scale-up phases
-  - Months 4, 6, 9, 12, 15, 18
-  
-- **Compliance Roadmap & Documentation:** $1,000
-  - Governance framework, DPA templates, incident response
+**Purpose:** Build expert-level compliance capability to avoid pilot shutdown and establish frameworks for Years 3-5 HealthHub NZ.
 
-**Deliverables:** Gap analysis, DPIA, 3 clinical safety reports, 6 adviser session reports, governance framework, compliance templates
+**Activities may include:**
+- Comprehensive Regulatory Gap Analysis ($3,500): Privacy Act 2020, HIPC, IPP 12, clinical safety, AI ethics audit
+- Comprehensive DPIA ($4,000): Cross-border data handling risk assessment, required before pilot
+- Clinical Safety Advisory ($3,500): Medical device software risk assessment, safety validation (approximately 3-4 sessions)
+- Ongoing Regulatory Adviser ($5,000): Expert guidance through MVP, sandbox, pilot, scale-up (approximately 6-8 sessions, flexibly scheduled)
+- Compliance Documentation ($2,000): Governance frameworks, DPA templates, incident response runbooks
+
+**Deliverables may include:** Gap analysis, DPIA, safety validation reports, regulatory advisory reports, governance framework, compliance templates
 
 ---
 
-### CDP-6: R&D Information Management ($8,500)
-**Months 2-6**
+### CDP-6: R&D Information Management ($10,000)
+**Months 2-8**
 
-- **Experiment Tracking & Model Registry System Setup:** $3,500
-  - Centralised experiment tracking, model versioning, dataset lineage
-  - Research dashboard, training for founder + Ting
-  
-- **LLM Training & Fine-Tuning Technical Advisory:** $5,000
-  - Training pipeline setup, evaluation framework (4-6 advisory sessions)
-  - Knowledge transfer on NZ-LLM fine-tuning approaches
+**Purpose:** Build systematic R&D documentation and LLM development capabilities for reproducible research and knowledge transfer.
 
-**Deliverables:** Configured experiment tracking system, model registry, LLM training pipeline, evaluation framework, advisory session reports
+**Activities may include:**
+- Experiment Tracking & Model Registry Setup ($4,000): Centralised experiment tracking (MLflow or similar), model versioning, dataset lineage, research dashboard, training for founder and Ting
+- LLM Methods Advisory ($6,000): Experiment design, standardised evaluation frameworks, architectural comparison methodologies integrated with tracking systems; ensures research outputs consistently documented and comparable (approximately 5-8 sessions, flexible scheduling)
+
+**Deliverables may include:** Configured experiment tracking system, model registry, standardised evaluation frameworks, experiment design templates, architecture comparison methodologies, research documentation workflows
 
 ---
 
-### CDP-5: Project Management ($5,000)
-**Months 2-15**
+### CDP-5: Project Management ($8,000)
+**Months 2-16**
 
-**R&D Project Management Training & Coaching for Ting + System Setup**
+**Purpose:** Build Ting's R&D project management capability to systematically manage complex R&D programme.
 
-**Phase 1 - Intensive Training & Setup (Months 2-4): ~$2,500**
-- **Training sessions specifically for Ting:**
-  - How to plan and manage R&D projects (vs traditional business projects)
-  - Creating realistic timelines when outcomes are uncertain
-  - Budget tracking and resource allocation for R&D
-  - How to identify and manage R&D risks
-  - Documentation best practices for knowledge capture
-  - How to manage third-party service providers and consultants
-  - Communication management with stakeholders
+**Phase 1 - Intensive Training & Setup (Months 2-4): $3,500**
+- Training on R&D project management fundamentals (planning under uncertainty, budget tracking, risk management, vendor management)
+- System setup: Agile R&D workflows, 24-month roadmaps, budget tracking, risk registers
+- Ting learns to manage CapDev procurement process
 
-- **Systems setup (with Ting leading):**
-  - Agile R&D workflow system (Kanban boards)
-  - Roadmap templates for 24-month project
-  - Budget tracking spreadsheets
-  - Risk register templates
-  - Vendor/contractor management workflows
-  - Meeting templates and decision logs
+**Phase 2 - Ongoing Coaching (Months 5-16): $4,500**
+- Approximately 6-8 coaching sessions around critical milestones (objective transitions, pilot preparation)
+- Decision-making support for R&D trade-offs, problem-solving, capability building
+- Flexible scheduling based on R&D challenges
 
-- **Ting's capability development:**
-  - Learn how to break down R&D objectives into manageable tasks
-  - Create timelines with contingency planning
-  - Identify when to bring in third-party expertise
-  - Manage CapDev procurement process itself (finding vendors, scoping work, managing contracts)
+**Why this builds capability:**
+- Ting learns to manage R&D programmes independently
+- Meta-capability development: Ting manages procurement of other CapDev services
+- Transforms team from solo founder to structured R&D organisation
+- Skills directly applicable to Years 3-5 HealthHub NZ
 
-**Phase 2 - Ongoing Coaching (Months 5-15): ~$2,500**
-- **6 monthly coaching sessions with Ting** ($400-500 each)
-- Month 5: Review of initial systems, troubleshoot issues
-- Month 7: Managing Objective 2 (Inbox Helper) timeline and resources
-- Month 9: Mid-project review, adjust plans based on learnings
-- Month 11: Managing transition to Objective 3 (Care Gap Finder)
-- Month 13: Pilot preparation and risk management
-- Month 15: Final phase planning and knowledge capture
-
-**Why this is smart:**
-- Builds long-term capability - Ting learns how to manage R&D (not just admin work)
-- Ting manages the CapDev procurement for other CDP services (regulatory, IP, R&D info systems)
-- This is meta-capability development - using CapDev budget to train Ting on how to manage CapDev activities
-- Demonstrates "growth intention" (Paula's feedback about having Ting full-time)
-- After 24 months, Ting will have skills to manage future R&D projects
-
-**Deliverables:** R&D project management training materials, configured PM system with Kanban boards and roadmap framework, 6 coaching session reports, Ting-maintained 24-month roadmap, budget tracking spreadsheet, risk register, vendor management records for all CDP procurement, meeting notes and decision logs, monthly progress reports
+**Deliverables may include:** R&D PM training materials, configured PM system, coaching reports, maintained roadmap/budget/risk register, vendor management records
 
 ---
 
 ### Free Training (Supplementary, Not Counted in CapDev Budget)
 - **Privacy:** OPC Privacy Act 2020, OPC Health 101 HIPC
 - **AI in Healthcare:** Collaborative Aotearoa AI in Primary Care modules
-- **IP Knowledge:** IPONZ patent basics and resources
 
 **Total CapDev:** $36,000 (third-party professional services only)
 
@@ -526,7 +496,7 @@ The project is organized into 7 main directories:
 - Unit economics: Stable cost per 1,000 requests
 
 ### R&D Success Threshold
-**We DO NOT need to match GPT-4/5 100%.** Success = achieving **70-80% of GPT-4/5 quality at 20-50x lower cost**.
+Success = achieving clinical-grade accuracy (≥90% for triage, ≥95% for clinical calculations) at sustainable cost (<$0.01/request at scale) under NZ sovereignty constraints.
 
 ---
 
@@ -657,4 +627,4 @@ The project is organized into 7 main directories:
 
 ---
 
-**Last Updated:** 2025-12-02 (v3.5 - Optimized draw schedule)
+**Last Updated:** 2025-12-02 (v4.0 - Objectives complete rewrite: research-focused, architecturally flexible, aligned with R&D Activities)
