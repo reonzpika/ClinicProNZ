@@ -454,115 +454,66 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 
 ## Capability Development Activities
 
-### CDP-2: Intellectual Property ($7,500, Months 2-6)
+### CDP-3: Regulatory & Compliance ($18,000, Months 2-18)
 
 **Third-party professional services only (no internal labour):**
 
-**1. IP Audit & Freedom-to-Operate (FTO) Analysis: $2,000**
-- Provider: NZ patent attorney
-- Timing: Months 2-3
-- Deliverables: FTO report, prior art search, IP landscape map, patentability assessment
+**Purpose:** Build expert-level regulatory and compliance capability for NZ health AI, focusing on avoiding pilot shutdown due to compliance failures and establishing frameworks for Years 3-5 HealthHub NZ.
 
-**2. Provisional Patent Filing: $4,500**
-- Provider: NZ patent attorney  
-- Timing: Months 3-6
-- Deliverables: Provisional patent application filed with IPONZ covering clinical LLM architecture, workflows, integration methods; secure priority date for 12-month full filing window
+**Activities may include:**
+- **Comprehensive Regulatory Gap Analysis ($3,500, Months 2-3):** Privacy Act 2020, HIPC, IPP 12, clinical safety frameworks, AI ethics compliance audit; identifies compliance risks early with prioritised remediation roadmap
+- **Comprehensive DPIA ($4,000, Months 3-5):** Data Privacy Impact Assessment for cross-border data handling (AU inference, NZ-held keys), risk assessment, mitigation strategies; required before pilot deployment
+- **Clinical Safety Advisory ($3,500, Months 4-12):** Medical device software risk assessment, assist-only constraints validation, safety system reviews across MVP, sandbox, and pilot phases
+- **Ongoing Regulatory Adviser ($5,000, Months 4-18):** Expert guidance through development, sandbox, pilot, and scale-up phases; approximately 6-8 advisory sessions scheduled flexibly based on R&D milestones and compliance needs
+- **Compliance Documentation & Governance ($2,000, Months 4-6):** Governance frameworks, compliance templates, PHO data handling protocols, incident response runbooks, DPA templates
 
-**3. NDAs, Contracts & Trademark: $1,000**
-- Provider: Legal adviser
-- Timing: Months 4-6
-- Deliverables: Mutual NDA templates, collaboration agreements, trademark search/filing
+**Deliverables may include:** Gap analysis report, complete DPIA, clinical safety validation reports, advisory session reports, governance framework, compliance documentation templates
 
-**Total CDP-2:** $7,500
+**Total CDP-3:** $18,000
 
 ---
 
-### CDP-3: Regulatory & Compliance ($15,000, Months 2-18)
+### CDP-6: R&D Information Management ($10,000, Months 2-8)
 
 **Third-party professional services only (no internal labour):**
 
-**1. Comprehensive Regulatory Gap Analysis: $3,500**
-- Provider: NZ health data privacy consultant/regulatory adviser
-- Timing: Months 2-3
-- Deliverables: Privacy Act 2020, HIPC, IPP 12, clinical safety, AI ethics compliance audit
+**Purpose:** Build systematic R&D documentation and LLM development capabilities essential for reproducible research, architectural paradigm comparison, and knowledge transfer to future projects.
 
-**2. Comprehensive DPIA (Data Privacy Impact Assessment): $4,000**
-- Provider: Privacy/DPIA specialist with healthcare experience
-- Timing: Months 3-5
-- Deliverables: Complete DPIA for cross-border data handling (AU inference, NZ keys), risk assessment, mitigation strategies
+**Activities may include:**
+- **R&D Experiment Tracking & Model Registry Setup ($4,000, Months 2-4):** Design and implement centralised experiment tracking system (MLflow or similar), model versioning, dataset lineage, research dashboard; training for founder and Ting
+- **LLM Methods Advisory ($6,000, Months 2-8):** Approximately 5-8 advisory sessions focused on experiment design, standardised evaluation frameworks, and architectural comparison methodologies that integrate with experiment tracking, model registry, and dataset lineage systems; ensures research outputs are consistently documented and comparable across projects; flexible scheduling based on R&D progress
 
-**3. Clinical Safety Advisory (Medical Device Software Context): $3,500**
-- Provider: Clinical safety consultant (MedTech/SaMD experience)
-- Timing: Months 4, 8, 12 (3 sessions)
-- Deliverables: Clinical risk assessment, safety system validation, assist-only constraints review
+**Deliverables may include:** Configured experiment tracking system, model registry, standardised evaluation frameworks, experiment design templates, architecture comparison methodologies, research documentation workflows
 
-**4. Ongoing Regulatory Adviser (6 sessions): $3,000**
-- Provider: Privacy/regulatory expert
-- Timing: Months 4, 6, 9, 12, 15, 18 (~$500 per session)
-- Deliverables: Expert guidance through MVP, sandbox, pilot, scale-up phases; session reports
-
-**5. Compliance Roadmap & Documentation: $1,000**
-- Provider: Legal/compliance adviser
-- Timing: Months 4-6
-- Deliverables: Governance framework, DPA templates, data handling protocols, incident response
-
-**Total CDP-3:** $15,000
+**Total CDP-6:** $10,000
 
 ---
 
-### CDP-6: R&D Information Management ($8,500, Months 2-6)
+### CDP-5: Project Management ($8,000, Months 2-16)
 
 **Third-party professional services only (no internal labour):**
 
-**1. R&D Experiment Tracking & Model Registry System Setup: $3,500**
-- Provider: Technical consultant specialising in ML research infrastructure
-- Timing: Months 2-4
-- Deliverables: Centralised experiment tracking, model versioning, dataset lineage, research dashboard, training for founder + Ting
+**Purpose:** Build R&D project management capability for Ting (Operations Lead) to systematically manage complex R&D programme, transforming team from solo founder to structured R&D organisation.
 
-**2. LLM Training & Fine-Tuning Technical Advisory: $5,000**
-- Provider: AI/ML technical consultant with LLM fine-tuning expertise
-- Timing: Months 2-6 (4-6 advisory sessions)
-- Deliverables: Training pipeline setup, evaluation framework, knowledge transfer on fine-tuning approaches, documentation of workflows
+**Phase 1 - Intensive Training & Setup (Months 2-4): $3,500**
+- Training on R&D project management fundamentals (planning under uncertainty, budget tracking, risk management, documentation, vendor management, stakeholder communication)
+- System setup with Ting leading: Agile R&D workflows (Kanban), 24-month roadmaps, budget tracking, risk registers, vendor management workflows
+- Ting learns to manage CapDev procurement process (finding vendors, scoping work, managing contracts)
 
-**Total CDP-6:** $8,500
+**Phase 2 - Ongoing Coaching (Months 5-16): $4,500**
+- Approximately 6-8 coaching sessions scheduled around critical milestones (objective transitions, MVP launches, pilot preparation, mid-project reviews)
+- Decision-making support for R&D trade-offs, problem-solving bottlenecks, refining Ting's R&D management skills
+- Flexibility to add sessions if R&D challenges emerge
 
----
+**Why this builds capability:**
+- Ting learns how to manage R&D programmes (not just admin work)
+- Meta-capability development: Ting manages procurement of other CapDev services (regulatory, R&D info systems)
+- Demonstrates growth intention beyond solo founder
+- After 24 months, Ting has skills to manage future R&D projects
 
-### CDP-5: Project Management ($5,000, Months 2-15)
+**Deliverables may include:** R&D PM training materials, configured PM system, coaching session reports, Ting-maintained roadmap/budget/risk register, vendor management records, monthly progress reports
 
-**Third-party professional services only (no internal labour):**
-
-**R&D Project Management Training & Coaching for Ting + System Setup: $5,000**
-- Provider: R&D project management consultant/coach
-- Timing: Months 2-15
-- Who it's for: Primarily Ting (as R&D Operations Lead) + Founder
-
-**Phase 1 - Intensive Training & Setup (Months 2-4): ~$2,500**
-- Training sessions specifically for Ting on R&D project management fundamentals:
-  - How to plan and manage R&D projects (vs traditional business projects)
-  - Budget tracking and resource allocation for R&D
-  - Managing R&D risks and uncertainty
-  - Documentation best practices for knowledge capture
-  - How to manage third-party service providers and consultants
-  - Communication management with stakeholders
-- Systems setup (with Ting leading): Agile R&D workflow system (Kanban boards), roadmap templates, budget tracking spreadsheets, risk register templates, vendor/contractor management workflows
-- Ting's capability development: Learn to break down R&D objectives, create timelines with contingency planning, identify when to bring in third-party expertise, **manage CapDev procurement process itself** (finding vendors, scoping work, managing contracts)
-
-**Phase 2 - Ongoing Coaching (Months 5-15): ~$2,500**
-- 6 monthly coaching sessions with Ting ($400-500 each)
-- Month 5: Review systems, troubleshoot issues
-- Months 7, 9, 11, 13, 15: Managing objectives, decision-making support, refining Ting's R&D management skills
-- Coach Ting to run the R&D project (timelines, budget tracking, developer workload management, pilot coordination)
-
-**Why this is smart:**
-- Builds long-term capability - Ting learns how to manage R&D (not just admin)
-- **Meta-capability development:** Ting manages the CapDev procurement for other CDP services (regulatory, IP, R&D info systems)
-- Demonstrates "growth intention" (Paula's feedback about having Ting full-time)
-- After 24 months, Ting will have skills to manage future R&D projects
-
-**Deliverables:** R&D PM training materials, configured PM system, 6 coaching session reports, Ting-maintained roadmap/budget/risk register, vendor management records for all CDP procurement, monthly progress reports
-
-**Total CDP-5:** $5,000
+**Total CDP-5:** $8,000
 
 ---
 
@@ -572,6 +523,8 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 - Required: ≥5% of total eligible costs = $35,846 (for $716,926 total)
 - Actual: $36,000
 - **Percentage: 5.02% ✓** (meets requirement)
+
+**Rationale for Structure:** As a first-time R&D performer, we prioritise capabilities that directly de-risk the R&D programme (compliance, systematic documentation, project management). IP protection will be addressed post-grant once innovations are validated and commercial pathway is clear. Broad descriptions with "may include" language reflect appropriate flexibility for first-time R&D where specific needs emerge during programme execution.
 
 ---
 
@@ -733,7 +686,7 @@ Train NZ-LLM on aggregated patient outcomes to improve recommendations.
 Extend beyond Medtech/Indici to hospital systems and national records.
 
 **AI R&D questions:**
-- How does one NZ-trained LLM generalise across different hospital data formats while maintaining accuracy?
+- How does a NZ-sovereign AI system generalise across different hospital data formats while maintaining accuracy?
 
 **Benefits:** Connected care where patient sees specialist and GP gets AI summary automatically. No repeated tests, no lost referrals.
 
