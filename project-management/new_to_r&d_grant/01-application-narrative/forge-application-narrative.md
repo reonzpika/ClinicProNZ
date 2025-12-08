@@ -82,7 +82,11 @@ Integrate with both Medtech and Indici practice systems. Investigate architectur
 
 Pilot with 10-20 GP practices. Measure clinical utility, safety outcomes, clinician override patterns, equity metrics. Document performance characteristics from synthetic data → sandbox → production deployment.
 
-**Knowledge Outputs:** Risk-stratified architectural framework, NZ domain adaptation methodology, multi-system generalisation patterns, equity-preserving algorithms, safety validation framework (transferable to patient-facing care for Years 3-5 HealthHub NZ and national health integration).
+**Primary Deliverable: Transferable Knowledge**
+
+This programme generates documented research knowledge addressing sector-wide challenges: (1) Architectural paradigm performance boundaries under combined clinical constraints (which approaches achieve safety + accuracy + cost-effectiveness); (2) NZ healthcare context domain adaptation findings (sovereignty-compatible approaches); (3) Equity-preserving algorithm design principles (Te Tiriti-compliant AI frameworks). **High-level findings documented through technical publications, conference presentations, and industry forums**, enabling New Zealand's health AI sector to make evidence-based architectural decisions. **Specific implementations, proprietary algorithms, and commercial systems remain competitive IP**, driving business sustainability and ongoing R&D investment beyond grant period.
+
+**Knowledge Outputs:** (1) Published architectural framework documenting paradigm performance characteristics, trade-offs, and failure modes under clinical constraints; (2) NZ domain adaptation methodology with replication protocols for other health AI developers; (3) Multi-system generalisation patterns (insights transferable to PHOs/hospitals integrating AI); (4) Equity algorithm design principles (published for sector-wide Te Tiriti compliance). **Working clinical tools (Inbox Helper, Care Gap Finder) demonstrate research findings while building commercial foundation.** Proprietary implementations, optimised algorithms, and operational systems provide competitive advantage for commercial sustainability.
 
 ---
 
@@ -176,7 +180,7 @@ Published AI research assumes unlimited UI flexibility. Real PMS integration (Me
 
 ## Newness – What is New? (~250 words)
 
-**This R&D generates three bodies of novel knowledge:**
+**This R&D generates three bodies of novel, documented, transferable knowledge unavailable through commercial development or international research:**
 
 **1. Architectural Paradigm Performance Under Combined Clinical Constraints**
 
@@ -195,6 +199,10 @@ Quantifies performance degradation when AI transitions: synthetic to real clinic
 ---
 
 ## Why is it Better? (~250 words)
+
+**Sector Capability Building Through Shared Research Insights**
+
+Without documented research on architectural performance under NZ clinical constraints, every health AI developer repeats costly experimentation. This programme addresses sector-wide knowledge gaps through published findings on architectural paradigm boundaries, safety framework design, and equity algorithm principles. **High-level research insights accelerate safe AI deployment across NZ health sector while competitive implementations drive commercial sustainability.** Commercial revenue enables ongoing R&D investment beyond grant period, continuing innovation for New Zealand's benefit.
 
 **This research generates knowledge enabling capabilities previously impossible:**
 
@@ -231,11 +239,31 @@ Research outputs documented and transferable to PHOs, hospitals, government agen
 - 30 hrs/week commitment throughout 24 months
 - Enables parallel GP practice work for co-funding
 
-**Ting (Shareholder-employee, R&D Operations Lead):** 4,152 hours @ $70/hr = $290,640
-- R&D Project Manager + Research/Testing/Documentation + Quality Assurance
-- Full-time commitment (40 hrs/week throughout 24 months)
-- Manages systematic testing, pilot coordination, safety regressions
-- Demonstrates growth intention and long-term R&D commitment (Paula's feedback)
+**Ting (Shareholder-employee, R&D Programme Manager):** 4,152 hours @ $70/hr = $290,640
+
+**Role Purpose:** Enable founder to focus on technical and clinical R&D by managing programme operations AND owning research synthesis, documentation, and evaluation framework support activities.
+
+**Core Responsibilities:**
+
+- **Research Synthesis & Documentation (25% time):** Transform founder's technical findings and raw experiment results into structured research reports, comparison matrices, and documented findings. Create and maintain searchable knowledge base of all R&D learnings, architectural decisions, experiment outcomes, and technical rationale. Organise experiment results into comparison tables, summary dashboards, and visual presentations for quarterly reporting and final R&D report. Review and summarise academic papers, technical reports, and industry documentation identified by founder. Maintain record of R&D decisions with supporting rationale for audit trail and knowledge transfer.
+
+- **Evaluation Framework Support (20% time):** Structure raw test outputs into standardised comparison tables showing performance across architectural paradigms. Maintain dashboards tracking key metrics (accuracy, latency, cost, safety) across experiments and iterations. Create and maintain comprehensive database of edge cases discovered during testing, organised by type, severity, and resolution status. Develop and maintain comparison matrices of different architectural approaches (founder provides data and metrics, Ting structures for analysis). Organise synthetic datasets, test sets, and evaluation results with proper versioning and lineage tracking for reproducibility.
+
+- **Programme Management & Coordination (25% time):** Timeline and milestone tracking across 4 objectives with proactive bottleneck identification. Budget monitoring, cashflow tracking, and financial forecasting. Monthly progress reporting documenting achievements, challenges, and strategic decisions. Risk identification and mitigation planning as programme evolves. Coordinate activities between founder (technical lead), developer (contractor), and external vendors.
+
+- **Grant Administration & Compliance (15% time):** Quarterly grant claim preparation (timesheets, invoices, evidence compilation). Maintain comprehensive evidence repository meeting Callaghan requirements. Prepare final R&D report for Callaghan Innovation (synthesising technical findings provided by founder into accessible, well-structured format). Coordinate accountant liaison for PAYE and tax compliance.
+
+- **Stakeholder Management & Pilot Operations (15% time):** GP practice recruitment, onboarding, training coordination, and ongoing support (Months 16-24). User feedback collection and synthesis for founder's review. Medtech and Indici partnership communications and relationship management. Coordinate CapDev vendor procurement and session scheduling.
+
+**Note on Role Evolution:** As first-time R&D performers, specific activities will adapt as programme needs emerge. Role designed to own research synthesis, documentation, and evaluation support (enabling systematic knowledge capture), plus all programme operations and grant compliance. Frees founder for technical R&D, clinical validation, and architectural decision-making. CDP-5 training (Project Management + Research Documentation & Evaluation Methods, $5k) builds Ting's R&D operations capability during first 16 months.
+
+**Background:** Sales, marketing, and ecommerce entrepreneurship with demonstrated capability in systematic process execution, data organisation, and operations management. Currently supports founder's GP practice administration. Entrepreneurial skillset (systematic thinking, attention to detail, process optimisation) translates directly to research documentation, results organisation, and knowledge management activities essential for rigorous R&D.
+
+**Why Full-Time:** 24-month R&D programme requires substantial research operations capacity: systematic documentation of findings across 4 objectives, evaluation framework maintenance (tracking hundreds of experiments and configurations), comprehensive knowledge base creation for sector knowledge transfer, pilot operations (10-20 practices, Months 16-24), plus full programme management and quarterly grant compliance. Systematic research synthesis and evaluation support are critical R&D activities often underestimated in programme planning. Role transforms solo founder operation into structured R&D organisation with proper research documentation capability.
+
+**Rate Justification:** $70/hr reflects R&D Programme Manager with research operations responsibilities (not purely administrative coordination). Role combines research synthesis (25%), evaluation framework support (20%), programme management (25%), grant compliance (15%), and stakeholder coordination (15%). Research documentation and evaluation activities require systematic thinking, attention to detail, and ability to structure complex technical information - comparable to "Clinical Research Coordinator" or "Research Operations Specialist" roles in Auckland healthcare/tech market ($135-150k salary equivalent). Combined research operations and programme management scope justify senior rate.
+
+**Shareholder Structure:** Ting is founder's spouse and company shareholder. Employment agreement with PAYE, formal timesheets, and arms-length salary aligned with market rates. Relationship disclosed for transparency; role and compensation independently justified by programme needs.
 
 **Developer (Contractor):** 903 hours (minimum) @ $72/hr = $65,016
 - Starts Month 4, flexible 10-40 hrs/week based on R&D workload (budgeted at 10 hrs/week minimum)
@@ -246,7 +274,7 @@ Research outputs documented and transferable to PHOs, hospitals, government agen
 
 **Total R&D Labour:** 8,175 hours (minimum) = $655,176
 
-**Rationale for team structure:** Founder's dual GP/technical expertise enables rapid clinical workflow iteration and NZ-specific domain understanding. Ting as full-time R&D Operations Lead provides dedicated project management, systematic testing, and quality assurance, demonstrating growth intention beyond solo founder. Developer contractor provides flexible capacity to scale up during intensive development phases (Objectives 2-3) without fixed overhead. This structure maintains manageable GP practice workload (20 hrs/week) for business income while enabling substantial 30 hrs/week R&D commitment over 24 months.
+**Rationale for team structure:** Founder's dual GP/technical expertise enables rapid clinical workflow iteration and NZ-specific domain understanding. Ting as full-time R&D Programme Manager owns research synthesis, evaluation framework support, and programme operations - enabling systematic knowledge documentation and freeing founder for technical R&D. Demonstrates growth intention beyond solo founder with dedicated research operations capacity. Developer contractor provides flexible capacity to scale up during intensive development phases (Objectives 2-3) without fixed overhead. This structure maintains manageable GP practice workload (20 hrs/week) for business income while enabling substantial 30 hrs/week R&D commitment over 24 months.
 
 ---
 
@@ -497,7 +525,9 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 
 **Phase 1 - Intensive Training & Setup (Months 2-4): $3,500**
 - Training on R&D project management fundamentals (planning under uncertainty, budget tracking, risk management, documentation, vendor management, stakeholder communication)
-- System setup with Ting leading: Agile R&D workflows (Kanban), 24-month roadmaps, budget tracking, risk registers, vendor management workflows
+- **Research documentation best practices** (structuring technical findings, creating comparison frameworks, maintaining research knowledge bases, reproducibility protocols)
+- **Evaluation framework methods** (organising experiment results, performance tracking systems, test data management, benchmark comparison methodologies)
+- System setup with Ting leading: Agile R&D workflows (Kanban), 24-month roadmaps, budget tracking, risk registers, research documentation templates, evaluation tracking dashboards
 - Ting learns to manage CapDev procurement process (finding vendors, scoping work, managing contracts)
 
 **Phase 2 - Ongoing Coaching (Months 5-16): $4,500**
@@ -511,7 +541,7 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 - Demonstrates growth intention beyond solo founder
 - After 24 months, Ting has skills to manage future R&D projects
 
-**Deliverables may include:** R&D PM training materials, configured PM system, coaching session reports, Ting-maintained roadmap/budget/risk register, vendor management records, monthly progress reports
+**Deliverables may include:** R&D PM training materials, research documentation and evaluation framework training materials, configured PM system with research tracking templates, coaching session reports, Ting-maintained roadmap/budget/risk register, vendor management records, monthly progress reports, research knowledge base structure
 
 **Total CDP-5:** $8,000
 
