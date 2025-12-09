@@ -199,34 +199,34 @@ Uncertainties are interconnected: architectural choice affects domain adaptation
 
 ## Newness – What is New? (~250 words)
 
-**This R&D generates three bodies of novel, documented, transferable knowledge unavailable through commercial development or international research:**
+**Three bodies of novel, documented, transferable knowledge:**
 
-**1. Architectural Paradigm Performance Under Combined Clinical Constraints (Never Tested Together)**
+**1. Architectural Paradigm Performance Under Combined Constraints (Never Tested Together)**
 
-Quantified performance across paradigms (classifiers → hybrid → LLMs → agentic AI → RAG) under constraint combination unprecedented in published research:
-- Clinical safety: prohibited-claim rate ≤0.5% (patient harm prevention)
+Quantified performance across paradigms (classifiers → LLMs → agentic AI → RAG) under unprecedented constraint combination:
+- Clinical safety: ≤0.5% prohibited-claim rate
 - Multi-condition reasoning: 5 chronic conditions with competing priorities
-- Real-time inference: <5s response (clinical workflow compatible)
-- Cost: <$0.01/request (sustainable at scale vs GPT-4 at $0.15/request)
-- Sovereignty: no overseas APIs, no overseas training data
-- Equity: Māori/Pacific prioritisation without algorithmic bias
+- Real-time: <5s response
+- Cost: <$0.01/request (vs GPT-4 at $0.15/request = 15× reduction needed)
+- Sovereignty: no overseas APIs, no overseas training
+- Equity: Māori/Pacific prioritisation without bias
 
-**Novel contribution:** Documents which paradigms achieve clinical utility under which constraint combinations. Emerging paradigms (agentic AI, advanced RAG) have zero published clinical validation under these combined constraints. Creates evidence-based architectural selection framework transferable to patient-facing AI (Years 3-5) and broader health AI sector.
+Documents which paradigms achieve clinical utility under which constraint combinations. **Emerging paradigms (agentic AI, advanced RAG) have zero published clinical validation under combined constraints.** Creates evidence-based architectural selection framework transferable to patient-facing AI and broader sector.
 
-**2. Lab-to-Clinic Performance Translation Patterns and Real-World Failure Modes**
+**2. Lab-to-Clinic Performance Translation and Real-World Failure Modes**
 
 Systematic quantification of performance degradation across paradigms:
-- Synthetic → real clinical data (inconsistent documentation, missing fields, edge cases)
-- Controlled lab → real workflows (time pressure, interruptions, cognitive load)
-- Early adopters → diverse practices (population, workflow, documentation variation)
+- Synthetic → real clinical data (inconsistent documentation, edge cases)
+- Lab → real workflows (time pressure, interruptions)
+- Early adopters → diverse practices (population, workflow variation)
 
-Identifies architectural characteristics predicting robustness vs brittleness. Documents failure modes invisible in lab testing. **Academic research stops at laboratory benchmarks; no published work quantifies real-world degradation across paradigms.** Enables deployment risk prediction.
+Identifies architectural characteristics predicting robustness vs brittleness. Documents failure modes invisible in lab testing. **Academic research stops at laboratory benchmarks; no published work quantifies real-world degradation.** Enables deployment risk prediction.
 
-**3. Safety-Architecture Coupling and Equity-Preserving Algorithms**
+**3. Safety-Architecture Coupling and Equity Algorithms**
 
-**(A) Safety mechanisms across paradigms:** Documents safety constraint performance (refusal scaffolds, prohibited-claim detection) across architectures. Emerging architecture failure modes (agentic error propagation, multi-agent safety bypass) undocumented in clinical contexts.
+**(A) Safety mechanisms:** Documents how safety constraints (refusal scaffolds, prohibited-claim detection) perform across paradigms. Emerging architecture failure modes (agentic error propagation, multi-agent safety bypass) undocumented in clinical contexts.
 
-**(B) Equity algorithms:** Novel prioritisation ensuring Māori/Pacific patients receive proactive care without under-alerting others or perpetuating biases. Standard ML fairness techniques don't apply to multi-condition monitoring with outcome-based equity goals. **No published methods exist.** Essential for Te Tiriti-compliant clinical AI.
+**(B) Equity algorithms:** Novel prioritisation ensuring Māori/Pacific patients receive proactive care without under-alerting others or perpetuating biases. Standard ML fairness techniques don't apply to multi-condition monitoring with outcome-based equity goals. **No published methods exist.**
 
 **Knowledge validated through clinical testbeds, documented for sector reuse, foundational for patient-facing AI (Years 3-5).**
 
