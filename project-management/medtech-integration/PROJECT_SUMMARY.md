@@ -21,10 +21,12 @@ key_docs:
   project_rules: "PROJECT_RULES.md"
   feature_overview: "features/clinical-images/FEATURE_OVERVIEW.md"
   roadmap: "DEVELOPMENT_ROADMAP.md"
-  architecture: "docs/ARCHITECTURE_AND_TESTING_GUIDE.md"
-  technical_config: "docs/TECHNICAL_CONFIG.md"
-  testing: "docs/TESTING_GUIDE_POSTMAN_AND_BFF.md"
-  implementation: "implementation/GATEWAY_IMPLEMENTATION.md"
+  architecture: "infrastructure/architecture.md"
+  oauth_config: "infrastructure/oauth-and-config.md"
+  bff_setup: "infrastructure/bff-setup.md"
+  testing: "testing/testing-guide.md"
+  gateway_implementation: "reference/gateway-implementation.md"
+  alex_api: "reference/alex-api.md"
 ---
 
 # 🚨 IMPORTANT: Read Project Rules First
@@ -90,7 +92,7 @@ key_docs:
 - **Project Rules**: [`PROJECT_RULES.md`](./PROJECT_RULES.md) - Read this first!
 - **Feature Overview**: [`features/clinical-images/FEATURE_OVERVIEW.md`](./features/clinical-images/FEATURE_OVERVIEW.md) - Architectural decisions
 - **Development Roadmap**: [`DEVELOPMENT_ROADMAP.md`](./DEVELOPMENT_ROADMAP.md) - Implementation tasks
-- **Technical Configuration**: [`docs/TECHNICAL_CONFIG.md`](./docs/TECHNICAL_CONFIG.md)
+- **OAuth & Config**: [`infrastructure/oauth-and-config.md`](./infrastructure/oauth-and-config.md) - Environment setup
 
 ---
 
@@ -236,28 +238,31 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 - **🚨 PROJECT RULES**: [`PROJECT_RULES.md`](./PROJECT_RULES.md) - Read first! Constraints, workflow, hard rules
 - **📋 FEATURE OVERVIEW**: [`features/clinical-images/FEATURE_OVERVIEW.md`](./features/clinical-images/FEATURE_OVERVIEW.md) - Architectural decisions, technology stack
 - **📋 DEVELOPMENT ROADMAP**: [`DEVELOPMENT_ROADMAP.md`](./DEVELOPMENT_ROADMAP.md) - 3-phase plan (13-19 hours total) with Quick Start section
-- **Environment Variables Guide**: [`UPDATE_ENV_VARIABLES.md`](./UPDATE_ENV_VARIABLES.md) - Step-by-step guide for updating environment variables
+- **⚙️ OAUTH & CONFIG**: [`infrastructure/oauth-and-config.md`](./infrastructure/oauth-and-config.md) - Environment setup, OAuth credentials
 
 ### Technical Documentation
 
-**Architecture & Testing**:
-- **🏗️ Architecture & Testing Guide**: [`docs/ARCHITECTURE_AND_TESTING_GUIDE.md`](./docs/ARCHITECTURE_AND_TESTING_GUIDE.md) - **⭐ AUTHORITATIVE SOURCE for Facility ID decisions** - Complete guide to architecture, facility IDs (F2N060-E vs F99669-C), and testing approaches
-- **Lightsail BFF Setup**: [`docs/LIGHTSAIL_BFF_SETUP.md`](./docs/LIGHTSAIL_BFF_SETUP.md) - Complete Lightsail server configuration, operations, and troubleshooting guide
+**Infrastructure Documentation**:
+- **🏗️ Architecture Guide**: [`infrastructure/architecture.md`](./infrastructure/architecture.md) - **⭐ AUTHORITATIVE SOURCE for Facility ID decisions** - Complete architecture, facility IDs (F2N060-E vs F99669-C), testing approaches
+- **⚙️ OAuth & Config**: [`infrastructure/oauth-and-config.md`](./infrastructure/oauth-and-config.md) - OAuth credentials, environment variables setup, API endpoints
+- **🖥️ BFF Setup**: [`infrastructure/bff-setup.md`](./infrastructure/bff-setup.md) - Lightsail server configuration, operations, troubleshooting
 
-**Implementation**:
-- **Gateway Implementation**: [`implementation/GATEWAY_IMPLEMENTATION.md`](./implementation/GATEWAY_IMPLEMENTATION.md) - Complete gateway implementation guide (includes OAuth setup)
-- **Widget Implementation Requirements**: [`docs/WIDGET_IMPLEMENTATION_REQUIREMENTS.md`](./docs/WIDGET_IMPLEMENTATION_REQUIREMENTS.md) - Technical requirements for implementing widget based on test findings
+**Feature Documentation** (Clinical Images):
+- **📋 Implementation Requirements**: [`features/clinical-images/implementation-requirements.md`](./features/clinical-images/implementation-requirements.md) - Technical requirements for widget implementation
+- **🧪 Test Results**: [`features/clinical-images/test-results.md`](./features/clinical-images/test-results.md) - FHIR API test results (POST Media validated!)
 
-**Testing**:
-- **Testing Guide**: [`docs/TESTING_GUIDE_POSTMAN_AND_BFF.md`](./docs/TESTING_GUIDE_POSTMAN_AND_BFF.md) - Step-by-step testing instructions for Postman and Lightsail BFF (includes OAuth testing)
-- **FHIR API Test Results**: [`docs/FHIR_API_TEST_RESULTS.md`](./docs/FHIR_API_TEST_RESULTS.md) - Complete test results from 2025-11-11 testing session (POST Media validated!)
-- **OAuth Test Results**: [`testing/OAUTH_TEST_RESULTS.md`](./testing/OAUTH_TEST_RESULTS.md) - OAuth test results
+**Testing Documentation**:
+- **🧪 Testing Guide**: [`testing/testing-guide.md`](./testing/testing-guide.md) - Step-by-step testing instructions (Postman, BFF, OAuth)
+- **✅ OAuth Test Results**: [`testing/OAUTH_TEST_RESULTS.md`](./testing/OAUTH_TEST_RESULTS.md) - OAuth validation results
 
-**Reference Documents**:
-- **Technical Configuration**: [`docs/TECHNICAL_CONFIG.md`](./docs/TECHNICAL_CONFIG.md) - OAuth config, API endpoints, services, components reference
-- **Changelog**: [`docs/CHANGELOG.md`](./docs/CHANGELOG.md) - Full project updates history
-- **API Reference**: [`api/alex-api-review-2025-10-30.md`](./api/alex-api-review-2025-10-30.md) - Complete ALEX API reference
-- **Product Requirements**: [`product/images-widget-prd.md`](./product/images-widget-prd.md) - Product requirements document
+**Reference Documentation** (Rarely Changing):
+- **📚 ALEX API Reference**: [`reference/alex-api.md`](./reference/alex-api.md) - Complete ALEX API documentation
+- **🏗️ Gateway Implementation**: [`reference/gateway-implementation.md`](./reference/gateway-implementation.md) - Gateway architecture and implementation details
+- **📋 Product Requirements**: [`reference/product-requirements.md`](./reference/product-requirements.md) - Product requirements document
+- **🛠️ FHIR MCP Setup**: [`reference/fhir-mcp-setup.md`](./reference/fhir-mcp-setup.md) - Development tool setup
+
+**Project History**:
+- **📜 Changelog**: [`CHANGELOG.md`](./CHANGELOG.md) - Full project history and major decisions
 
 ### External Documentation
 
@@ -277,10 +282,13 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 - Image compression: Frontend (mobile/desktop) before upload
 - Image format: HEIC → JPEG conversion on frontend (Canvas API)
 - Mobile metadata: Optional basic fields (laterality + body site)
-- **Documentation restructure**: Created features/ folder structure
-- **New docs**: PROJECT_RULES.md, FEATURE_OVERVIEW.md
+- **Documentation restructure**: Feature-centric organization (Option A)
+  - Created `features/`, `infrastructure/`, `reference/` folders
+  - Moved feature docs to `features/clinical-images/`
+  - Consolidated config docs: `oauth-and-config.md`
+  - Archived deprecated docs
+- **New docs**: PROJECT_RULES.md, FEATURE_OVERVIEW.md, CHANGELOG.md
 - **Updated time estimate**: Phase 1 now 6-8 hours (was 4-6) due to Redis + S3 implementation
-- **Deprecated**: STATUS_DETAILED.md (no longer maintained)
 
 ### [2025-11-12] — 📚 Documentation Consolidation & Streamlining
 
@@ -323,5 +331,5 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 ---
 
 *Project Created: [2025-01-15]*  
-*Last Updated: [2025-12-09] - Phase 1 architecture finalized, documentation restructure*  
+*Last Updated: [2025-12-09] - Phase 1 architecture finalized, documentation reorganized (feature-centric)*  
 *Version: 1.3.0*

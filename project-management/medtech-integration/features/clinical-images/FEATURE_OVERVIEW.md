@@ -218,9 +218,9 @@ GP opens Medtech Evolution
 ## References
 
 - **[DEVELOPMENT_ROADMAP.md](../../DEVELOPMENT_ROADMAP.md)** - Implementation phases and tasks
-- **[ARCHITECTURE_AND_TESTING_GUIDE.md](../../docs/ARCHITECTURE_AND_TESTING_GUIDE.md)** - Technical architecture details
-- **[FHIR_API_TEST_RESULTS.md](../../docs/FHIR_API_TEST_RESULTS.md)** - POST Media validation results
-- **[TECHNICAL_CONFIG.md](../../docs/TECHNICAL_CONFIG.md)** - OAuth config, API endpoints
+- **[architecture.md](../../infrastructure/architecture.md)** - Technical architecture details
+- **[test-results.md](./test-results.md)** - POST Media validation results
+- **[oauth-and-config.md](../../infrastructure/oauth-and-config.md)** - OAuth config, environment variables
 
 ---
 
