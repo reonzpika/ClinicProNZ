@@ -166,29 +166,34 @@ Uncertainties are interconnected: architectural choice affects domain adaptation
 
 ## Knowledge Availability – What Exists and Why It's Insufficient? (~250 words)
 
-**Existing Knowledge Addresses Different Problems:**
+**Existing knowledge addresses different problems:**
 
-**1. Documentation, Automation, and Early-Stage Solutions Don't Resolve Decision-Support Uncertainties**
+**1. Current Clinical AI Tools Solve Different Problems**
+- **Documentation focus:** Heidi (NZ), Abridge, Nuance DAX solve transcription, not clinical decision support
+- **Admin automation:** SmartCareGP, HealthAccelerator, Pegasus Health provide rule-based workflow support, not multi-condition clinical reasoning
+- **Early-stage inbox tools:** InboxMagic (MVP phase) lacks published architectural approaches or deep PMS integration
+- **Knowledge gap:** Whether AI architectures work for active decision support with multi-condition reasoning (care gap monitoring across 5 chronic conditions), confidence-calibrated alerts, and equity-aware prioritisation is technologically uncertain
+- No published work validates paradigms across decision support use cases
 
-Clinical AI tools focus on documentation (Heidi in NZ, internationally Abridge/Nuance DAX). Admin automation solutions provide rule-based workflow support (SmartCareGP, HealthAccelerator, Pegasus Health). Early-stage inbox solutions are emerging (InboxMagic, MVP phase) but haven't demonstrated deep PMS integration or published architectural approaches. **Whether AI architectures work for active decision support with multi-condition reasoning (care gap monitoring across 5 chronic conditions), confidence-calibrated alerts, and equity-aware prioritization is technologically uncertain.** Decision support requires capabilities beyond automation or documentation: real-time clinical inference, multi-condition logic, architectural robustness under PMS constraints. No published work validates paradigms across use case types.
+**2. Generic AI Systems Lack Sovereign Deployment Pathways**
+- Overseas APIs (GPT-4, Claude) prove clinical reasoning capability but don't address critical unknowns:
+  - How to achieve comparable performance under NZ sovereignty constraints (no overseas APIs, no overseas training)?
+  - At sustainable cost (<$0.01/request vs $0.15/request for GPT-4)?
+  - With equity algorithms prioritising Māori/Pacific patients?
+- Architectural paradigms for sovereign deployment at scale are undocumented
 
-**2. Generic AI Systems Show Capability But Not Sovereign Deployment Pathways**
+**3. Academic Research Tests in Isolation**
+- Published work studies isolated techniques (fine-tuning, RAG, agentic systems) using standardised datasets
+- How paradigms perform under combined real-world constraints (sovereignty + equity + Privacy Act + cost + real-time performance + safety) is unknowable from isolated testing
+- Lab benchmarks don't predict clinical integration performance
+- Emergent behaviours cannot be deduced
 
-Overseas APIs (GPT-4, Claude) prove clinical reasoning capability but don't address: **How to achieve comparable performance under NZ sovereignty constraints (no overseas APIs), at sustainable cost, across PMS platforms, with equity algorithms.** Architectural paradigms for sovereign deployment at scale are undocumented.
+**4. Commercial Solutions Remain Proprietary**
+- Emerging commercial solutions don't disclose architectural selection criteria, domain adaptation techniques, or safety validation methods
+- Knowledge remains proprietary, unavailable for sector capability building
+- Public research required to create accessible, reusable knowledge for entire NZ health AI sector
 
-**3. Academic Research Validates Isolated Components, Not Integrated Systems**
-
-Published work studies techniques (fine-tuning, RAG, agentic systems) using standardised datasets. **How paradigms perform under combined real-world constraints (multi-PMS + equity + Privacy Act + cost + PMS interface limits) is unknowable from isolated testing.** Lab benchmarks don't predict clinical integration performance. Emergent behaviors cannot be deduced.
-
-**4. Commercial Implementations Keep Methods Proprietary**
-
-Emerging commercial solutions don't disclose architectural selection criteria, domain adaptation techniques, or safety validation methods. Knowledge remains proprietary and unavailable for sector capability building. Public research required to create accessible, reusable knowledge for entire health AI sector.
-
-**5. PMS Integration Constraints Create Unknown Architectural Requirements**
-
-Published AI research assumes unlimited UI flexibility. Real PMS integration (Medtech/Indici widgets) imposes constraints: limited screen space, fixed workflows. **Whether paradigms requiring extensive UI remain useful when constrained to PMS widgets requires empirical investigation.**
-
-**Systematic investigation required to resolve technological uncertainties.**
+**Systematic investigation required to resolve technological uncertainties under combined constraint set.**
 
 ---
 
