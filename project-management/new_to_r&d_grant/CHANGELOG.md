@@ -7,6 +7,95 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [4.4] - 2025-12-09
+
+### Changed - Future R&D Plans Optimized + CapDev Justification Added
+
+**OPTIMIZATION 1:** Future R&D Plans section revised for clarity, tighter structure, and stronger R&D framing (248 words).
+
+**OPTIMIZATION 2:** Added "Why These Capabilities Matter" section with bullet-point justification for all CapDev activities (237 words).
+
+---
+
+#### Future R&D Plans - Key Changes
+
+**1. Added Architectural Paradigm Link**
+- **Added:** "AI architectural paradigms validated in the 24-month project will be systematically adapted for patient-facing contexts with new safety validation frameworks."
+- **Purpose:** Addresses assessor concern about how 24-month work extends to Years 3-5
+- **Impact:** Demonstrates research continuity and architectural reuse
+
+**2. Structural Improvements**
+- Headers changed to ### format (from bold) for better hierarchy
+- "AI R&D questions" renamed to "Key R&D Questions" (consistent terminology)
+- Trimmed verbose examples while maintaining substance
+
+**3. Tightened Language**
+- Section 1: "18-year-old vs 75-year-old vs te reo speaker" → "teenagers vs elderly vs te reo speakers" (-4 words)
+- Section 1: Added "without compromising safety thresholds" to second question (strengthens R&D framing)
+- Section 2: "identify which interventions actually work" → "identify which interventions actually work in NZ populations" (+3 words, adds NZ specificity)
+- Section 2: "South Auckland diabetes screening rates dropping 15%, intervention needed" → "South Auckland diabetes screening rates dropping 15%" (-2 words, cleaner)
+- Section 3: Added second R&D question: "Can safety frameworks validated in GP settings translate to hospital contexts without degradation?" (addresses safety transition gap)
+- Section 3: "patient sees specialist and GP gets AI summary" → "patients see specialists and GPs get AI summaries" (grammar consistency)
+
+**4. Removed Government Goal Reference**
+- Removed: "Supports government goal: Makes 10-year digital health plan intelligent and accessible for all New Zealanders."
+- **Rationale:** Question asks for R&D plans, not policy alignment
+
+#### Word Count
+- **Before:** 240 words
+- **After:** 248 words (within 250-word limit)
+
+#### R&D Assessor Perspective
+
+**Strengths:**
+- Clear progression: GP tools → patient-facing → outcome learning → national integration
+- Genuine R&D questions (safety validation, health literacy, outcome learning ethics)
+- Strong architectural link to 24-month project
+
+**Addressed Weaknesses:**
+- Architectural vagueness: Fixed with paradigm adaptation sentence
+- Safety transition gap: Partially addressed with safety threshold language and hospital context question
+
+**Remaining Risks:**
+- Outcome learning ethics (aggregated outcomes privacy/consent) not fully addressed
+- Timeline credibility (Years 3-5 is ambitious) partially mitigated by "Why Substantial R&D"
+
+**Overall Assessment:** 7.5/10 → 8/10 (strong vision, clearer progression)
+
+---
+
+#### CapDev Justification - Key Addition
+
+**New Section Added: "Why These Capabilities Matter" (237 words)**
+
+**Purpose:** Provide clear, bullet-pointed justification for all CapDev activities addressing likely Forge portal question.
+
+**Structure:**
+- Three subsections matching CDP categories (Regulatory $18k, R&D Info Management $10k, Project Management $8k)
+- Bullet points highlight specific capability building outcomes
+- Emphasizes transformation from solo founder to structured R&D organisation
+- Links to future programmes (HealthHub NZ, national-scale deployment)
+
+**Key Messages:**
+1. **Regulatory & Compliance:** Prevents costly pilot delays, applies to future health AI products
+2. **R&D Information Management:** Industry-standard MLOps practices, systematic knowledge capture
+3. **Project Management:** Transforms team capability, enables independent R&D programme management
+
+**Why This Addition Matters:**
+- Forge portal likely asks "How do these activities build lasting capability?"
+- Assessors want to see capability building, not just service procurement
+- Bullet points improve readability vs paragraph format
+- Clear outcomes demonstrate value beyond 24-month project
+
+**Location:** Added after CapDev rationale, before Free Training section (lines 597-626)
+
+**Files Updated:**
+- forge-application-narrative.md: Added "Why These Capabilities Matter" section (237 words)
+- forge-application-narrative.md: Future R&D Plans section (248 words)
+- CHANGELOG.md: This entry
+
+---
+
 ## [4.3] - 2025-12-02
 
 ### Fixed - R&D Activities Consistency Issues (4 fixes)

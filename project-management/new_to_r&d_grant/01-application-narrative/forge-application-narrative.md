@@ -596,6 +596,33 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 
 ---
 
+### Why These Capabilities Matter (237 words)
+
+**Regulatory & Compliance Expertise ($18,000):**
+
+- Advanced Privacy Act 2020 & HIPC expertise for R&D-stage experimental scenarios and multi-PMS integration complexities
+- Comprehensive regulatory gap analysis identifies compliance risks early, preventing costly pilot delays
+- DPIA teaches systematic risk assessment for cross-border data handling under IPP 12
+- Clinical safety advisory builds medical device software risk assessment capability for assist-only AI systems
+- Ongoing regulatory guidance through development, sandbox testing, pilot deployment, and scale-up phases
+- Governance frameworks and compliance templates apply to future health AI products (HealthHub NZ, Years 3-5)
+
+**R&D Information Management ($10,000):**
+
+- Technical consultant trains founder and Ting to build experiment tracking systems, model registries, and dataset lineage workflows essential for systematic R&D documentation
+- LLM methods advisory teaches experiment design, standardised evaluation frameworks, and architectural comparison methodologies
+- Ting develops research operations capability: organising experiment results, maintaining performance tracking dashboards, structuring technical findings
+- Industry-standard MLOps practices for managing complex AI research programmes
+
+**Project Management & Research Operations ($8,000):**
+
+- R&D PM coach trains Ting on R&D project management fundamentals plus research documentation best practices and evaluation framework methods
+- Learns to structure technical findings into comparison frameworks, maintain research knowledge bases with reproducibility protocols, organise experiment results, manage performance tracking systems
+- Ongoing coaching builds Ting's capability to run R&D programmes independently with proper research documentation
+- Transforms team from solo founder to structured R&D organisation with systematic research operations capability for future programmes and national-scale health AI deployment
+
+---
+
 **Free Training (Supplementary, Not Counted in CapDev Budget):**
 - Privacy: OPC Privacy Act 2020, OPC Health 101 HIPC, Ko Awatea Privacy
 - AI in Healthcare: Collaborative Aotearoa AI in Primary Care modules
@@ -727,46 +754,47 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 
 **Core R&D Project: NZ Health Intelligence Layer (Years 3-5)**
 
-The 24-month grant validates NZ-trained LLM for GP-facing tools. Years 3-5 extend this to patient-facing care and national-scale learning.
+The 24-month grant validates NZ-trained LLM for GP-facing tools. Years 3-5 extend this foundation to patient-facing care and national-scale learning. AI architectural paradigms validated in the 24-month project will be systematically adapted for patient-facing contexts with new safety validation frameworks.
 
-**1. Patient-Facing AI (HealthHub NZ) - Years 3-4**
+### 1. Patient-Facing AI (HealthHub NZ) – Years 3-4
 
-Patients access complete health records (diagnosis, medications, test results, hospital visits) with AI guidance on their phones.
+Patients access complete health records with AI guidance on phones.
 
-**AI R&D questions:**
-- How do you train NZ-LLM to communicate medical information safely across different health literacy levels (18-year-old vs 75-year-old vs te reo speaker)?
-- Can NZ-LLM validate patient-entered data (blood pressure readings) by learning clinical patterns?
+**Key R&D Questions:**
+- How do you train NZ-LLM to communicate medical information safely across different health literacy levels (teenagers vs elderly vs te reo speakers)?
+- Can NZ-LLM validate patient-entered data (blood pressure readings) by learning clinical patterns without compromising safety thresholds?
 
 **Benefits:** Rural patients get after-hours guidance, chronic disease patients monitor at home, better engagement improves outcomes.
 
-**2. AI Learning From Real-World Outcomes - Years 4-5**
+### 2. AI Learning From Real-World Outcomes – Years 4-5
 
 Train NZ-LLM on aggregated patient outcomes to improve recommendations.
 
-**AI R&D questions:**
-- Can NZ-LLM learn from thousands of diabetes patients' outcomes to identify which interventions actually work?
-- Can AI identify emerging health trends (e.g., "South Auckland diabetes screening rates dropping 15%, intervention needed")?
+**Key R&D Questions:**
+- Can NZ-LLM learn from thousands of diabetes patients' outcomes to identify which interventions actually work in NZ populations?
+- Can AI identify emerging health trends at scale (e.g., "South Auckland diabetes screening rates dropping 15%")?
 
-**Benefits:** AI recommendations improve based on actual NZ patient outcomes. Evidence-based insights for government health planning.
+**Benefits:** AI recommendations improve based on actual NZ outcomes. Evidence-based insights for government health planning.
 
-**3. National Scale Integration - Years 4-5**
+### 3. National Scale Integration – Years 4-5
 
-Extend beyond Medtech/Indici to hospital systems and national records.
-
-**AI R&D questions:**
+**Key R&D Questions:**
 - How does a NZ-sovereign AI system generalise across different hospital data formats while maintaining accuracy?
+- Can safety frameworks validated in GP settings translate to hospital contexts without degradation?
 
-**Benefits:** Connected care where patient sees specialist and GP gets AI summary automatically. No repeated tests, no lost referrals.
+**Benefits:** Connected care where patients see specialists and GPs get AI summaries automatically. No repeated tests, no lost referrals.
 
-**Why Substantial R&D:** Patient-facing AI requires different safety training than GP-facing AI. Learning from outcomes without compromising safety is unsolved AI research. National-scale generalisation requires novel training approaches.
-
-**Supports government goal:** Makes 10-year digital health plan intelligent and accessible for all New Zealanders.
+**Why Substantial R&D:** Patient-facing AI requires different safety validation than GP-facing AI. Learning from outcomes without compromising safety is unsolved research. National-scale generalisation requires novel architectural approaches.
 
 ---
 
-**Document Version:** 3.1  
-**Last Updated:** 29 November 2025  
+**Document Version:** 3.2  
+**Last Updated:** 9 December 2025  
 **Status:** Ready for Forge portal submission
+
+**Version 3.2 Changes:**
+- Future R&D Plans optimized (248 words): Added architectural paradigm link, tightened structure, strengthened R&D framing
+- CapDev justification added (237 words): "Why These Capabilities Matter" section with bullet-pointed capability building outcomes
 
 **Version 3.1 Changes:**
 - Updated CapDev to $36,000 (5.02% of total costs) per Paula's confirmation
