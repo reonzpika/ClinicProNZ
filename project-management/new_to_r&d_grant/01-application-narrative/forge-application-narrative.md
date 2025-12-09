@@ -199,62 +199,66 @@ Uncertainties are interconnected: architectural choice affects domain adaptation
 
 ## Newness – What is New? (~250 words)
 
-**Three bodies of novel, documented, transferable knowledge:**
+**Two AI-powered clinical decision support services for New Zealand general practice:**
 
-**1. Architectural Paradigm Performance Under Combined Constraints (Never Tested Together)**
+**1. Inbox Helper - Intelligent Inbox Management**
+- AI-powered triage classifying inbox items (labs, letters, referrals, scripts, admin, patient messages) by urgency and type
+- Automated filing of normal screening results with appropriate recall intervals
+- Clinical intelligence overlays: compares current labs with previous results, flags trends, identifies urgent issues
+- Patient communication generation (GP-approved messages based on results)
+- Integrated into Medtech and Indici practice management systems
 
-Quantified performance across paradigms (classifiers → LLMs → agentic AI → RAG) under unprecedented constraint combination:
-- Clinical safety: ≤0.5% prohibited-claim rate
-- Multi-condition reasoning: 5 chronic conditions with competing priorities
-- Real-time: <5s response
-- Cost: <$0.01/request (vs GPT-4 at $0.15/request = 15× reduction needed)
-- Sovereignty: no overseas APIs, no overseas training
-- Equity: Māori/Pacific prioritisation without bias
+**2. Care Gap Finder - Proactive Chronic Disease Intelligence**
+- Scans patient records to identify overdue checks across 5 chronic conditions: diabetes, cardiovascular disease, COPD, heart failure, asthma
+- Multi-condition reasoning: prioritises patients with competing care needs (e.g., diabetes control vs CVD prevention vs CKD monitoring)
+- Equity-preserving algorithms: systematically prioritises Māori/Pacific patients and high-deprivation populations without algorithmic bias
+- Generates recall lists and patient communication messages
+- Practice dashboards showing care gaps with equity filters
 
-Documents which paradigms achieve clinical utility under which constraint combinations. **Emerging paradigms (agentic AI, advanced RAG) have zero published clinical validation under combined constraints.** Creates evidence-based architectural selection framework transferable to patient-facing AI and broader sector.
+**Why These Services Are Novel:**
 
-**2. Lab-to-Clinic Performance Translation and Real-World Failure Modes**
+**No existing tools provide clinical intelligence for these tasks.** Current state:
+- Inbox management: 100% manual GP/nurse review (no AI triage exists)
+- Care gap monitoring: 100% manual chart review OR rule-based queries without clinical reasoning (cannot handle multi-condition prioritisation or equity algorithms)
+- Existing AI tools (Heidi): Documentation/transcription only, not clinical decision support
+- International tools: Don't address NZ sovereignty constraints, lack equity algorithms, don't integrate with NZ PMSs
 
-Systematic quantification of performance degradation across paradigms:
-- Synthetic → real clinical data (inconsistent documentation, edge cases)
-- Lab → real workflows (time pressure, interruptions)
-- Early adopters → diverse practices (population, workflow variation)
-
-Identifies architectural characteristics predicting robustness vs brittleness. Documents failure modes invisible in lab testing. **Academic research stops at laboratory benchmarks; no published work quantifies real-world degradation.** Enables deployment risk prediction.
-
-**3. Safety-Architecture Coupling and Equity Algorithms**
-
-**(A) Safety mechanisms:** Documents how safety constraints (refusal scaffolds, prohibited-claim detection) perform across paradigms. Emerging architecture failure modes (agentic error propagation, multi-agent safety bypass) undocumented in clinical contexts.
-
-**(B) Equity algorithms:** Novel prioritisation ensuring Māori/Pacific patients receive proactive care without under-alerting others or perpetuating biases. Standard ML fairness techniques don't apply to multi-condition monitoring with outcome-based equity goals. **No published methods exist.**
-
-**Knowledge validated through clinical testbeds, documented for sector reuse, foundational for patient-facing AI (Years 3-5).**
+**R&D Approach:** Systematic investigation of AI architectural paradigms (classifiers → LLMs → agentic systems → hybrid approaches) to achieve clinical safety, NZ-contextual accuracy, equity without bias, and sustainable cost (<$0.01/request) under sovereignty constraints. Research generates architectural frameworks, safety methods, and equity algorithms documented for broader sector use.
 
 ---
 
 ## Why is it Better? (~250 words)
 
-**Sector Capability Building Through Shared Research Insights**
+**Better Than Current Manual Processes:**
 
-Without documented research on architectural performance under NZ clinical constraints, every health AI developer repeats costly experimentation. This programme addresses sector-wide knowledge gaps through published findings on architectural paradigm boundaries, safety framework design, and equity algorithm principles. **High-level research insights accelerate safe AI deployment across NZ health sector while competitive implementations drive commercial sustainability.** Commercial revenue enables ongoing R&D investment beyond grant period, continuing innovation for New Zealand's benefit.
+**Inbox Management:**
+- **Current:** GPs manually review every inbox item (labs, letters, referrals), spending 1-2 hours/day on triage and filing
+- **With AI:** Automated triage and classification saves 30%+ time. AI flags urgent items, auto-files normal screening results, compares labs with previous values
+- **GP benefit:** Reduces daily workload by 1-2 hours, enabling focus on complex clinical decisions rather than administrative sorting
 
-**This research generates knowledge enabling capabilities previously impossible:**
+**Care Gap Monitoring:**
+- **Current:** Manual chart reviews or basic rule-based queries (e.g., "HbA1c >64 mmol/mol") requiring GP interpretation. Time-consuming, inconsistent across practices
+- **With AI:** Systematic scanning across 5 chronic conditions with multi-condition reasoning. AI handles clinical complexity: "Patient has diabetes + CKD + CVD → prioritise based on greatest clinical need"
+- **GP benefit:** 80%+ care gap completion vs inconsistent manual monitoring. Proactively identifies high-risk patients before complications
 
-**1. Architectural Paradigm Knowledge Enables Evidence-Based Development**
+**Equity Outcomes:**
+- **Current:** Ad-hoc efforts to prioritise Māori/Pacific patients, often ineffective
+- **With AI:** Systematic equity prioritisation built into algorithms, ensuring Māori/Pacific patients receive proactive care without under-alerting other populations
+- **GP benefit:** Meets Te Tiriti obligations systematically, reduces health inequities
 
-Quantifies performance boundaries for architectural paradigms under combined clinical constraints (safety, multi-condition reasoning, real-time, cost, multi-PMS, equity). **Without this:** Developers choose architectures through trial-and-error or copy overseas approaches failing under NZ constraints (sovereignty, Privacy Act, equity). Costly experimentation repeated by each developer. **With this:** Evidence-based architectural selection, eliminating trial-and-error. Saves sector millions in failed experiments. Enables sovereign deployment at sustainable cost.
+**Better Than Existing AI Tools:**
 
-**2. Lab-to-Clinic Translation Knowledge De-Risks Investments**
+**Heidi (NZ market leader):**
+- Heidi: Transcription and documentation only
+- Ours: Clinical decision support with multi-condition reasoning, equity algorithms, proactive monitoring
 
-Quantifies performance degradation from laboratory to real clinical deployment across paradigms. Identifies characteristics predicting robustness vs brittleness. **Without this:** Academic benchmarks don't predict clinical success; systems fail in real workflows. **With this:** Prediction of which architectures succeed before costly implementation. Accelerates clinical AI adoption by reducing deployment risk.
+**Overseas APIs (GPT-4, Claude):**
+- Overseas: Not sovereign (Privacy Act concerns), expensive ($0.15/request unsustainable at scale), no NZ clinical context (bpac guidelines, regional lab formats)
+- Ours: Sovereign (no overseas APIs), sustainable cost (<$0.01/request), NZ-trained on local clinical corpus
 
-**3. Safety and Equity Knowledge Enables Responsible Deployment**
-
-Safety failure mode taxonomy for emerging paradigms (agentic AI, multi-agent systems) fills critical gap. Equity-preserving algorithms enable Te Tiriti-compliant AI. **Without this:** Patient-facing AI too risky (unknown failure modes), equity retrofitted after development (ineffective). **With this:** Safe deployment of emerging paradigms, equity by design. Essential for patient-facing AI (Years 3-5) and broader sector.
-
-**4. Knowledge Transferability Creates Sector-Wide Capability**
-
-Research outputs documented and transferable to PHOs, hospitals, government agencies. Immediate tools (Inbox Helper, Care Gap Finder) validate research while addressing GP workforce crisis. Validated architectural approaches enable Years 3-5 HealthHub NZ and national health integration. **Research advances entire NZ health AI capability, not just one company's products.**
+**Clinical Integration:**
+- Existing tools: Standalone applications requiring workflow disruption
+- Ours: Integrated directly into Medtech/Indici PMSs, embedded in existing GP workflow
 
 ---
 
