@@ -1,7 +1,7 @@
 'use client';
 
 // Removed header icon for a cleaner UI
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { ExaminationChecklistButton } from '@/src/features/clinical/examination-checklist/components/ExaminationChecklistButton';
 import { PlanSafetyNettingButton } from '@/src/features/clinical/plan-safety-netting';

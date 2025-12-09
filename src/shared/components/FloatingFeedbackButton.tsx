@@ -1,7 +1,7 @@
 'use client';
 
 import { MessageSquare } from 'lucide-react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { FeedbackModal } from '@/src/features/marketing/roadmap/components/FeedbackModal';
 import { submitFeatureRequest } from '@/src/features/marketing/roadmap/roadmap-service';

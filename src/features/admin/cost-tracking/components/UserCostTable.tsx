@@ -2,7 +2,6 @@
  * User cost table component
  */
 
-import React from 'react';
 
 import type { UserCostSummary } from '../hooks/useCostTracking';
 import { formatCost } from '../services/costCalculator';

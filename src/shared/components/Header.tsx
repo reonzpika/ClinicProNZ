@@ -3,7 +3,7 @@
 import { SignInButton, SignUpButton, useAuth, UserButton } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { FeedbackModal } from '@/src/features/marketing/roadmap/components/FeedbackModal';
 import { submitFeatureRequest } from '@/src/features/marketing/roadmap/roadmap-service';

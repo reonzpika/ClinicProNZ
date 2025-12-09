@@ -1,7 +1,7 @@
 'use client';
 
 import { AlertTriangle, Camera, RotateCcw, Trash2, Upload, X } from 'lucide-react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Alert } from '@/src/shared/components/ui/alert';
 import { Button } from '@/src/shared/components/ui/button';

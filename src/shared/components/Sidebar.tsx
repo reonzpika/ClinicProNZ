@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { useRBAC } from '@/src/shared/hooks/useRBAC';

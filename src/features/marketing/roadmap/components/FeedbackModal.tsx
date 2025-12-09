@@ -1,5 +1,5 @@
 /* eslint-disable react-dom/no-missing-button-type */
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 type FeedbackModalProps = {
   open: boolean;

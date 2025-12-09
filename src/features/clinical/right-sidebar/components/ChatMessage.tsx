@@ -1,5 +1,5 @@
 import { Check, ChevronDown, Plus } from 'lucide-react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 

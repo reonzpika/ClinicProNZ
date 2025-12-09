@@ -17,7 +17,7 @@ import {
   X,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 // Session UI (local-only)

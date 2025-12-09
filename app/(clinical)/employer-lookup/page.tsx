@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
 import { Input } from '@/src/shared/components/ui/input';

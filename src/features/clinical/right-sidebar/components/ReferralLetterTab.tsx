@@ -2,7 +2,7 @@
 
 import { useAuth } from '@clerk/nextjs';
 import { Copy, FileText, Loader2 } from 'lucide-react';
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
