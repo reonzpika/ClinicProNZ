@@ -56,37 +56,25 @@ NexWave Solutions Ltd (incorporated 2024) develops AI tools for New Zealand gene
 
 ## Describe Planned R&D Activities (~250 words)
 
-**Research Objective:** Systematically investigate which AI architectural paradigms achieve optimal clinical safety, NZ-contextual performance, and cost-effectiveness for primary care decision support. This foundational research enables New Zealand's transition to sovereign health AI at national scale.
+**Research Objective:** Systematically investigate which AI architectural paradigms achieve clinical safety, NZ-contextual performance, and cost-effectiveness for primary care decision support under combined constraints (sovereignty, equity, multi-system integration, real-time performance).
 
 **Core Architectural Investigation:**
 
-Explore architectural spectrum from lightweight pattern recognition to sophisticated reasoning systems. Initial candidates include classifiers, rule-based systems, Large Language Model (LLM) reasoning, retrieval-augmented generation, agentic AI approaches, and hybrid combinations. **Research will follow where empirical evidence leads**. Investigation may discover novel architectural patterns or reveal optimal approaches vary by clinical task in unexpected ways.
+Explore spectrum from lightweight classifiers to sophisticated reasoning systems: rule-based approaches, Large Language Models, retrieval-augmented generation, agentic AI, and hybrid combinations. **Research follows empirical evidence** - investigation may discover novel architectural patterns or reveal optimal approaches vary unpredictably by clinical task. Measure each paradigm across accuracy, computational cost, latency, safety failure modes, generalisability, and equity outcomes.
 
-Measure each paradigm across: accuracy, computational cost, latency, safety failure modes, generalisability across health systems, equity outcomes.
+**Clinical Test Beds:**
 
-**Clinical Test Beds for Experimentation:**
+**Inbox Management (reactive, high-volume):** Laboratory result interpretation, hospital letter summarisation, urgency classification. Research question: Which architectural approach safely handles routine clinical tasks while maintaining accuracy and cost-effectiveness?
 
-**1. Inbox Management (reactive, high-volume):** Laboratory result interpretation, hospital letter summarisation, urgency classification, trend detection. Research question: Which architectural approach safely handles routine clinical tasks while maintaining accuracy and cost-effectiveness?
+**Chronic Disease Monitoring (proactive, complex reasoning):** Identify overdue checks for diabetes, cardiovascular disease, chronic lung conditions, heart failure, asthma. Multi-condition gap detection with Māori/Pacific equity prioritisation. Research question: Which paradigm achieves clinical calculation accuracy while maintaining equity without algorithmic bias?
 
-**2. Chronic Disease Monitoring (proactive, complex logic):** Identify overdue checks for diabetes, cardiovascular disease, chronic lung conditions, heart failure, asthma. Multi-condition gap detection with Māori/Pacific equity prioritisation. Research question: Which paradigm achieves clinical calculation accuracy while maintaining equity without algorithmic bias?
+**NZ Domain Adaptation:** Train sovereign AI on curated NZ clinical corpus (bpac guidelines, MoH protocols, Pharmac database, regional lab formats, Medtech/Indici clinical patterns). Investigate whether domain adaptation achieves clinical-grade performance under sovereignty constraints.
 
-**NZ-Specific Domain Adaptation:**
+**Multi-System Generalisation:** Integrate with Medtech and Indici, investigating architectural patterns maintaining performance across different health system structures.
 
-Train sovereign AI on curated NZ clinical corpus: bpac guidelines, Ministry of Health protocols, Pharmac medication database, regional laboratory formats (LabTests, SCL, Medlab), Medtech and Indici clinical note patterns. Investigate whether domain-adapted sovereign models achieve clinical-grade performance at sustainable cost under NZ sovereignty constraints.
+**Real-World Validation:** Pilot with 10-20 GP practices measuring clinical utility, safety outcomes, clinician overrides, equity metrics. Document synthetic → sandbox → production performance translation.
 
-**Multi-System Generalisation Research:**
-
-Integrate with both Medtech and Indici practice systems. Investigate architectural patterns that maintain performance across different health system data structures, which is critical for national-scale deployment.
-
-**Real-World Validation:**
-
-Pilot with 10-20 GP practices. Measure clinical utility, safety outcomes, clinician override patterns, equity metrics. Document performance characteristics from synthetic data → sandbox → production deployment.
-
-**Primary Deliverable: Transferable Knowledge**
-
-This programme generates documented research knowledge addressing sector-wide challenges: (1) Architectural paradigm performance boundaries under combined clinical constraints (which approaches achieve safety + accuracy + cost-effectiveness); (2) NZ healthcare context domain adaptation findings (sovereignty-compatible approaches); (3) Equity-preserving algorithm design principles (Te Tiriti-compliant AI frameworks). **High-level findings documented through technical publications, conference presentations, and industry forums**, enabling New Zealand's health AI sector to make evidence-based architectural decisions. **Specific implementations, proprietary algorithms, and commercial systems remain competitive IP**, driving business sustainability and ongoing R&D investment beyond grant period.
-
-**Knowledge Outputs:** (1) Published architectural framework documenting paradigm performance characteristics, trade-offs, and failure modes under clinical constraints; (2) NZ domain adaptation methodology with replication protocols for other health AI developers; (3) Multi-system generalisation patterns (insights transferable to PHOs/hospitals integrating AI); (4) Equity algorithm design principles (published for sector-wide Te Tiriti compliance). **Working clinical tools (Inbox Helper, Care Gap Finder) demonstrate research findings while building commercial foundation.** Proprietary implementations, optimised algorithms, and operational systems provide competitive advantage for commercial sustainability.
+**Knowledge Outputs:** Published architectural framework, NZ domain adaptation methodology, multi-system generalisation patterns, equity algorithm design principles - documented through technical publications enabling sector-wide evidence-based decisions. **Specific implementations remain competitive IP** driving commercial sustainability.
 
 ---
 
