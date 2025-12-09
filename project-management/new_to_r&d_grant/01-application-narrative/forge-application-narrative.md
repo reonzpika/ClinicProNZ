@@ -59,22 +59,38 @@ NexWave Solutions Ltd (incorporated 2024) develops AI tools for New Zealand gene
 **Research Objective:** Systematically investigate which AI architectural paradigms achieve clinical safety, NZ-contextual performance, and cost-effectiveness for primary care decision support under combined constraints (sovereignty, equity, multi-system integration, real-time performance).
 
 **Core Architectural Investigation:**
-
-Explore spectrum from lightweight classifiers to sophisticated reasoning systems: rule-based approaches, Large Language Models, retrieval-augmented generation, agentic AI, and hybrid combinations. **Research follows empirical evidence** - investigation may discover novel architectural patterns or reveal optimal approaches vary unpredictably by clinical task. Measure each paradigm across accuracy, computational cost, latency, safety failure modes, generalisability, and equity outcomes.
+- Explore spectrum: lightweight classifiers → rule-based systems → Large Language Models → retrieval-augmented generation → agentic AI → hybrid combinations
+- **Research follows empirical evidence** - may discover novel patterns or reveal optimal approaches vary unpredictably by task
+- Measure each paradigm: accuracy, computational cost, latency, safety failure modes, generalisability, equity outcomes
 
 **Clinical Test Beds:**
 
-**Inbox Management (reactive, high-volume):** Laboratory result interpretation, hospital letter summarisation, urgency classification. Research question: Which architectural approach safely handles routine clinical tasks while maintaining accuracy and cost-effectiveness?
+**1. Inbox Management (reactive, high-volume)**
+- Laboratory result interpretation, hospital letter summarisation, urgency classification
+- Research question: Which architectural approach safely handles routine clinical tasks while maintaining accuracy and cost-effectiveness?
 
-**Chronic Disease Monitoring (proactive, complex reasoning):** Identify overdue checks for diabetes, cardiovascular disease, chronic lung conditions, heart failure, asthma. Multi-condition gap detection with Māori/Pacific equity prioritisation. Research question: Which paradigm achieves clinical calculation accuracy while maintaining equity without algorithmic bias?
+**2. Chronic Disease Monitoring (proactive, complex reasoning)**
+- Identify overdue checks: diabetes, cardiovascular disease, chronic lung conditions, heart failure, asthma
+- Multi-condition gap detection with Māori/Pacific equity prioritisation
+- Research question: Which paradigm achieves clinical calculation accuracy while maintaining equity without algorithmic bias?
 
-**NZ Domain Adaptation:** Train sovereign AI on curated NZ clinical corpus (bpac guidelines, MoH protocols, Pharmac database, regional lab formats, Medtech/Indici clinical patterns). Investigate whether domain adaptation achieves clinical-grade performance under sovereignty constraints.
+**NZ Domain Adaptation:**
+- Train sovereign AI on curated NZ clinical corpus: bpac guidelines, MoH protocols, Pharmac database, regional lab formats, Medtech/Indici clinical patterns
+- Investigate whether domain adaptation achieves clinical-grade performance under sovereignty constraints
 
-**Multi-System Generalisation:** Integrate with Medtech and Indici, investigating architectural patterns maintaining performance across different health system structures.
+**Multi-System Generalisation:**
+- Integrate with Medtech and Indici
+- Investigate architectural patterns maintaining performance across different health system structures
 
-**Real-World Validation:** Pilot with 10-20 GP practices measuring clinical utility, safety outcomes, clinician overrides, equity metrics. Document synthetic → sandbox → production performance translation.
+**Real-World Validation:**
+- Pilot with 10-20 GP practices
+- Measure: clinical utility, safety outcomes, clinician overrides, equity metrics
+- Document: synthetic → sandbox → production performance translation
 
-**Knowledge Outputs:** Published architectural framework, NZ domain adaptation methodology, multi-system generalisation patterns, equity algorithm design principles - documented through technical publications enabling sector-wide evidence-based decisions. **Specific implementations remain competitive IP** driving commercial sustainability.
+**Knowledge Outputs:**
+- Published architectural framework, NZ domain adaptation methodology, multi-system generalisation patterns, equity algorithm design principles
+- Documented through technical publications enabling sector-wide evidence-based decisions
+- **Specific implementations remain competitive IP** driving commercial sustainability
 
 ---
 
