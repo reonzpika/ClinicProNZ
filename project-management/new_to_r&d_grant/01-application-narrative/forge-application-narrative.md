@@ -137,33 +137,30 @@ Uncertainties are interconnected: architectural choice affects domain adaptation
 **1. Emergent Architecture Behaviour**
 - Architectural paradigms (pattern recognition → agentic reasoning) exhibit emergent behaviour when components interact
 - Sophisticated reasoning systems "hallucinate" on medical calculations: cardiovascular risk scoring requires precise 8-variable computation, yet models fabricate values
-- Interaction effects compound unpredictably: retrieval errors propagate into reasoning, quantization degrades safety
+- Interaction effects compound unpredictably: retrieval errors propagate into reasoning, quantization degrades safety mechanisms, context-window limitations create unexpected failures
 - Component-level testing doesn't reveal system-level failures
 - Performance emerges from interactions unknowable without empirical measurement
 
-**2. Multi-System Generalisation Failures**
-- Medtech and Indici structure data differently: laboratory formats, medication codes, note templates diverge
-- Architectures performing well in one system fail subtly in another
-- Failures cannot be predicted from documentation; they emerge from real-world variations
-- Discovering robust patterns requires systematic testing
-
-**3. Real-World Data Complexity**
-- Real clinical data exhibits characteristics unreplicable synthetically: inconsistent documentation under time pressure, missing fields, data quality variations, system artifacts
-- Different paradigms respond unpredictably to messiness
+**2. Real-World Clinical Data Complexity**
+- Real clinical data exhibits characteristics unreplicable synthetically: inconsistent documentation under time pressure, missing fields, data quality variations, system artifacts, GP-specific abbreviations, context-dependent terminology
+- Different paradigms respond unpredictably to messiness: classifiers fail on novel abbreviations, LLMs hallucinate missing values, hybrid systems propagate extraction errors into reasoning
 - Performance on clean synthetic data doesn't predict messy clinical data performance
 - Architecture-dependent sensitivity unknowable without real-world testing
+- Edge cases occur frequently (5-15% of "routine" items) with patient harm potential
 
-**4. Safety-Architecture Interactions**
+**3. Safety-Architecture Interactions**
 - Safety constraints (refusal scaffolds, prohibited-claim detection) behave differently across architectures
-- Agentic systems propagate errors across agents; LLMs bypass refusal scaffolds unexpectedly; hybrid systems fail at component boundaries
+- Agentic systems propagate errors across agents; LLMs bypass refusal scaffolds unexpectedly; hybrid systems fail at component boundaries creating safety gaps
+- Confidence calibration differs fundamentally: classifier probabilities are calibrated, LLM confidence scores don't correlate with accuracy (known failure mode)
 - Safety failure modes vary unpredictably by paradigm
 - Emergent safety risks require systematic investigation
 
-**5. Laboratory-to-Clinical Translation Gap**
+**4. Laboratory-to-Clinical Translation Gap**
 - Laboratory metrics (accuracy, F1) may not correlate with clinical outcomes (time saved, errors prevented, safety)
-- High-accuracy systems may reduce trust through false positives
+- High-accuracy systems may reduce trust through false positives while lower-accuracy systems with better explanations drive higher utility
+- Multi-practice performance variance unpredictable: what works in one practice may fail in another due to workflow differences, patient population characteristics, documentation patterns
 - Which architectural characteristics translate to clinical value cannot be deduced from benchmarks
-- Requires systematic real-world outcome measurement
+- Requires systematic real-world outcome measurement across diverse practices
 
 ---
 
