@@ -596,6 +596,33 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 
 ---
 
+### Why These Capabilities Matter (237 words)
+
+**Regulatory & Compliance Expertise ($18,000):**
+
+- Advanced Privacy Act 2020 & HIPC expertise for R&D-stage experimental scenarios and multi-PMS integration complexities
+- Comprehensive regulatory gap analysis identifies compliance risks early, preventing costly pilot delays
+- DPIA teaches systematic risk assessment for cross-border data handling under IPP 12
+- Clinical safety advisory builds medical device software risk assessment capability for assist-only AI systems
+- Ongoing regulatory guidance through development, sandbox testing, pilot deployment, and scale-up phases
+- Governance frameworks and compliance templates apply to future health AI products (HealthHub NZ, Years 3-5)
+
+**R&D Information Management ($10,000):**
+
+- Technical consultant trains founder and Ting to build experiment tracking systems, model registries, and dataset lineage workflows essential for systematic R&D documentation
+- LLM methods advisory teaches experiment design, standardised evaluation frameworks, and architectural comparison methodologies
+- Ting develops research operations capability: organising experiment results, maintaining performance tracking dashboards, structuring technical findings
+- Industry-standard MLOps practices for managing complex AI research programmes
+
+**Project Management & Research Operations ($8,000):**
+
+- R&D PM coach trains Ting on R&D project management fundamentals plus research documentation best practices and evaluation framework methods
+- Learns to structure technical findings into comparison frameworks, maintain research knowledge bases with reproducibility protocols, organise experiment results, manage performance tracking systems
+- Ongoing coaching builds Ting's capability to run R&D programmes independently with proper research documentation
+- Transforms team from solo founder to structured R&D organisation with systematic research operations capability for future programmes and national-scale health AI deployment
+
+---
+
 **Free Training (Supplementary, Not Counted in CapDev Budget):**
 - Privacy: OPC Privacy Act 2020, OPC Health 101 HIPC, Ko Awatea Privacy
 - AI in Healthcare: Collaborative Aotearoa AI in Primary Care modules
@@ -767,6 +794,7 @@ Train NZ-LLM on aggregated patient outcomes to improve recommendations.
 
 **Version 3.2 Changes:**
 - Future R&D Plans optimized (248 words): Added architectural paradigm link, tightened structure, strengthened R&D framing
+- CapDev justification added (237 words): "Why These Capabilities Matter" section with bullet-pointed capability building outcomes
 
 **Version 3.1 Changes:**
 - Updated CapDev to $36,000 (5.02% of total costs) per Paula's confirmation

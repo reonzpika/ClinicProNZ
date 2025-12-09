@@ -71,7 +71,7 @@ milestones:
     name: R&D Activities consistency fixes (v4.3) - 4 inconsistencies resolved (removed GPT-4 language, changed to healthcare context, replaced alert fatigue, strengthened Q4)
     status: completed
   - date: "2025-12-09"
-    name: Future R&D Plans optimized (v4.4) - Added architectural paradigm link, tightened structure, strengthened R&D framing (248 words)
+    name: Future R&D Plans optimized (v4.4) - Added architectural paradigm link, tightened structure, strengthened R&D framing (248 words); Added CapDev justification section "Why These Capabilities Matter" with bullet-pointed outcomes (237 words)
     status: completed
   - date: "2025-12-15"
     name: Target submission date

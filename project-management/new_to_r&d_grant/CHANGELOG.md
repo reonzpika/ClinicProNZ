@@ -9,11 +9,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [4.4] - 2025-12-09
 
-### Changed - Future R&D Plans Optimized (248 words)
+### Changed - Future R&D Plans Optimized + CapDev Justification Added
 
-**OPTIMIZATION:** Future R&D Plans section revised for clarity, tighter structure, and stronger R&D framing.
+**OPTIMIZATION 1:** Future R&D Plans section revised for clarity, tighter structure, and stronger R&D framing (248 words).
 
-#### Key Changes
+**OPTIMIZATION 2:** Added "Why These Capabilities Matter" section with bullet-point justification for all CapDev activities (237 words).
+
+---
+
+#### Future R&D Plans - Key Changes
 
 **1. Added Architectural Paradigm Link**
 - **Added:** "AI architectural paradigms validated in the 24-month project will be systematically adapted for patient-facing contexts with new safety validation frameworks."
@@ -58,8 +62,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 **Overall Assessment:** 7.5/10 → 8/10 (strong vision, clearer progression)
 
+---
+
+#### CapDev Justification - Key Addition
+
+**New Section Added: "Why These Capabilities Matter" (237 words)**
+
+**Purpose:** Provide clear, bullet-pointed justification for all CapDev activities addressing likely Forge portal question.
+
+**Structure:**
+- Three subsections matching CDP categories (Regulatory $18k, R&D Info Management $10k, Project Management $8k)
+- Bullet points highlight specific capability building outcomes
+- Emphasizes transformation from solo founder to structured R&D organisation
+- Links to future programmes (HealthHub NZ, national-scale deployment)
+
+**Key Messages:**
+1. **Regulatory & Compliance:** Prevents costly pilot delays, applies to future health AI products
+2. **R&D Information Management:** Industry-standard MLOps practices, systematic knowledge capture
+3. **Project Management:** Transforms team capability, enables independent R&D programme management
+
+**Why This Addition Matters:**
+- Forge portal likely asks "How do these activities build lasting capability?"
+- Assessors want to see capability building, not just service procurement
+- Bullet points improve readability vs paragraph format
+- Clear outcomes demonstrate value beyond 24-month project
+
+**Location:** Added after CapDev rationale, before Free Training section (lines 597-626)
+
 **Files Updated:**
-- forge-application-narrative.md: Future R&D Plans section (lines 720-763)
+- forge-application-narrative.md: Added "Why These Capabilities Matter" section (237 words)
+- forge-application-narrative.md: Future R&D Plans section (248 words)
 - CHANGELOG.md: This entry
 
 ---
