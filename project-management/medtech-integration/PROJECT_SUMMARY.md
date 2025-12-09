@@ -2,8 +2,8 @@
 project_name: Medtech ALEX Integration
 project_stage: Build
 owner: Development Team
-last_updated: "2025-11-12"
-version: "1.2.0"
+last_updated: "2025-12-09"
+version: "1.3.0"
 tags:
   - integration
   - medtech
@@ -13,17 +13,23 @@ tags:
 summary: "Clinical images widget integration with Medtech Evolution/Medtech32 via ALEX API. Enables GPs to capture/upload photos from within Medtech, saved back to patient encounters via FHIR API."
 quick_reference:
   current_phase: "Phase 1 - Mobile Upload & Dataflow Review"
-  status: "Code Complete | Integration In Progress"
-  next_action: "Complete mobile upload UI with real backend (replace alert())"
+  status: "Architecture Complete | Implementation In Progress"
+  next_action: "Implement Redis + S3 session storage and mobile upload UI"
   key_blockers: []
   facility_id: "F2N060-E (API testing)"
 key_docs:
+  project_rules: "PROJECT_RULES.md"
+  feature_overview: "features/clinical-images/FEATURE_OVERVIEW.md"
   roadmap: "DEVELOPMENT_ROADMAP.md"
   architecture: "docs/ARCHITECTURE_AND_TESTING_GUIDE.md"
-  status_detailed: "docs/STATUS_DETAILED.md"
   technical_config: "docs/TECHNICAL_CONFIG.md"
   testing: "docs/TESTING_GUIDE_POSTMAN_AND_BFF.md"
   implementation: "implementation/GATEWAY_IMPLEMENTATION.md"
+---
+
+# 🚨 IMPORTANT: Read Project Rules First
+**Before working on this project, read**: [PROJECT_RULES.md](./PROJECT_RULES.md)
+
 ---
 
 # Medtech ALEX Integration
@@ -75,15 +81,16 @@ key_docs:
 ## AI Quick Reference
 
 **Current Phase**: Phase 1 - Mobile Upload & Dataflow Review  
-**Status**: ✅ Code Complete | Integration In Progress  
-**Next Action**: Complete mobile upload UI with real backend (replace alert())  
+**Status**: ✅ Architecture Complete | Implementation In Progress  
+**Next Action**: Implement Redis + S3 session storage and mobile upload UI  
 **Key Blockers**: None  
 **Facility ID**: `F2N060-E` (API testing)  
 
 **Where to Find**:
-- **Current Status Details**: [`docs/STATUS_DETAILED.md`](./docs/STATUS_DETAILED.md)
+- **Project Rules**: [`PROJECT_RULES.md`](./PROJECT_RULES.md) - Read this first!
+- **Feature Overview**: [`features/clinical-images/FEATURE_OVERVIEW.md`](./features/clinical-images/FEATURE_OVERVIEW.md) - Architectural decisions
+- **Development Roadmap**: [`DEVELOPMENT_ROADMAP.md`](./DEVELOPMENT_ROADMAP.md) - Implementation tasks
 - **Technical Configuration**: [`docs/TECHNICAL_CONFIG.md`](./docs/TECHNICAL_CONFIG.md)
-- **Development Roadmap**: [`DEVELOPMENT_ROADMAP.md`](./DEVELOPMENT_ROADMAP.md) - Includes Quick Start section
 
 ---
 
@@ -224,9 +231,11 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 
 ## Resources & Navigation
 
-### Quick Start Guides
+### Essential Docs (Start Here)
 
-- **📋 DEVELOPMENT ROADMAP**: [`DEVELOPMENT_ROADMAP.md`](./DEVELOPMENT_ROADMAP.md) - **START HERE** Complete 3-phase plan (12-18 hours total) - Includes Quick Start section for next session
+- **🚨 PROJECT RULES**: [`PROJECT_RULES.md`](./PROJECT_RULES.md) - Read first! Constraints, workflow, hard rules
+- **📋 FEATURE OVERVIEW**: [`features/clinical-images/FEATURE_OVERVIEW.md`](./features/clinical-images/FEATURE_OVERVIEW.md) - Architectural decisions, technology stack
+- **📋 DEVELOPMENT ROADMAP**: [`DEVELOPMENT_ROADMAP.md`](./DEVELOPMENT_ROADMAP.md) - 3-phase plan (13-19 hours total) with Quick Start section
 - **Environment Variables Guide**: [`UPDATE_ENV_VARIABLES.md`](./UPDATE_ENV_VARIABLES.md) - Step-by-step guide for updating environment variables
 
 ### Technical Documentation
@@ -245,7 +254,6 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 - **OAuth Test Results**: [`testing/OAUTH_TEST_RESULTS.md`](./testing/OAUTH_TEST_RESULTS.md) - OAuth test results
 
 **Reference Documents**:
-- **Status Details**: [`docs/STATUS_DETAILED.md`](./docs/STATUS_DETAILED.md) - Detailed component-by-component status breakdown
 - **Technical Configuration**: [`docs/TECHNICAL_CONFIG.md`](./docs/TECHNICAL_CONFIG.md) - OAuth config, API endpoints, services, components reference
 - **Changelog**: [`docs/CHANGELOG.md`](./docs/CHANGELOG.md) - Full project updates history
 - **API Reference**: [`api/alex-api-review-2025-10-30.md`](./api/alex-api-review-2025-10-30.md) - Complete ALEX API reference
@@ -259,6 +267,20 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 ---
 
 ## Recent Updates Summary
+
+### [2025-12-09] — 🏗️ Phase 1 Architecture Finalized & Documentation Restructure
+
+- **Phase 1 architectural decisions finalized** for 100 concurrent GPs scale
+- Session storage: Redis + S3 (vs in-memory) for reliability and scale
+- Real-time sync: Ably (existing infrastructure, perfect fit)
+- Session lifetime: 10-minute inactivity timeout (no heartbeat)
+- Image compression: Frontend (mobile/desktop) before upload
+- Image format: HEIC → JPEG conversion on frontend (Canvas API)
+- Mobile metadata: Optional basic fields (laterality + body site)
+- **Documentation restructure**: Created features/ folder structure
+- **New docs**: PROJECT_RULES.md, FEATURE_OVERVIEW.md
+- **Updated time estimate**: Phase 1 now 6-8 hours (was 4-6) due to Redis + S3 implementation
+- **Deprecated**: STATUS_DETAILED.md (no longer maintained)
 
 ### [2025-11-12] — 📚 Documentation Consolidation & Streamlining
 
@@ -301,5 +323,5 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 ---
 
 *Project Created: [2025-01-15]*  
-*Last Updated: [2025-11-12] - Documentation streamlined for AI navigation*  
-*Version: 1.2.0*
+*Last Updated: [2025-12-09] - Phase 1 architecture finalized, documentation restructure*  
+*Version: 1.3.0*
