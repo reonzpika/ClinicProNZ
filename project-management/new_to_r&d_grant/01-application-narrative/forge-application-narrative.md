@@ -201,19 +201,34 @@ Uncertainties are interconnected: architectural choice affects domain adaptation
 
 **This R&D generates three bodies of novel, documented, transferable knowledge unavailable through commercial development or international research:**
 
-**1. Architectural Paradigm Performance Under Combined Clinical Constraints**
+**1. Architectural Paradigm Performance Under Combined Clinical Constraints (Never Tested Together)**
 
-Quantified performance for architectural paradigms (classifiers → hybrid → LLMs → agentic AI → RAG) under constraints never tested together: clinical safety (prohibited-claim ≤0.5%), multi-condition reasoning (5 chronic conditions), real-time inference (<5s), cost (<$0.01/request), multi-PMS robustness (Medtech + Indici), equity prioritization. Documents which paradigms achieve clinical utility under which constraint combinations. **Emerging paradigms (agentic AI, RAG) have no published clinical validation under these constraints.** Creates evidence-based architectural selection framework transferable to patient-facing AI (Years 3-5).
+Quantified performance across paradigms (classifiers → hybrid → LLMs → agentic AI → RAG) under constraint combination unprecedented in published research:
+- Clinical safety: prohibited-claim rate ≤0.5% (patient harm prevention)
+- Multi-condition reasoning: 5 chronic conditions with competing priorities
+- Real-time inference: <5s response (clinical workflow compatible)
+- Cost: <$0.01/request (sustainable at scale vs GPT-4 at $0.15/request)
+- Sovereignty: no overseas APIs, no overseas training data
+- Equity: Māori/Pacific prioritisation without algorithmic bias
 
-**2. Lab-to-Clinic Performance Translation and Real-World Failure Modes**
+**Novel contribution:** Documents which paradigms achieve clinical utility under which constraint combinations. Emerging paradigms (agentic AI, advanced RAG) have zero published clinical validation under these combined constraints. Creates evidence-based architectural selection framework transferable to patient-facing AI (Years 3-5) and broader health AI sector.
 
-Quantifies performance degradation when AI transitions: synthetic to real clinical data (inconsistent documentation, missing fields); controlled lab to real workflows (time pressure, interruptions); single-system to multi-system (Medtech to Indici). Identifies architectural characteristics predicting robustness vs brittleness. Documents failure modes emerging in deployment invisible in lab testing. **No published work quantifies real-world degradation across paradigms; academic research stops at laboratory benchmarks.** Enables prediction of clinical deployment success.
+**2. Lab-to-Clinic Performance Translation Patterns and Real-World Failure Modes**
 
-**3. Safety Mechanisms Across Paradigms and Equity-Preserving Algorithms**
+Systematic quantification of performance degradation across paradigms:
+- Synthetic → real clinical data (inconsistent documentation, missing fields, edge cases)
+- Controlled lab → real workflows (time pressure, interruptions, cognitive load)
+- Early adopters → diverse practices (population, workflow, documentation variation)
 
-**(A) Safety-architecture coupling:** Documents how safety constraints (refusal scaffolds, prohibited-claim detection) perform across paradigms. Safety failure modes for emerging architectures (agentic systems propagate errors, multi-agent coordination bypasses safety) undocumented in clinical contexts. **(B) Equity algorithms:** Novel prioritization ensuring Māori/Pacific patients receive proactive care without under-alerting others or perpetuating biases. Standard ML fairness techniques don't apply to multi-condition monitoring with outcome-based equity goals. **No published methods exist.** Essential for Te Tiriti-compliant clinical AI.
+Identifies architectural characteristics predicting robustness vs brittleness. Documents failure modes invisible in lab testing. **Academic research stops at laboratory benchmarks; no published work quantifies real-world degradation across paradigms.** Enables deployment risk prediction.
 
-**Knowledge validated through clinical testbeds (Inbox Helper, Care Gap Finder), documented for sector reuse, foundational for Years 3-5 HealthHub NZ.**
+**3. Safety-Architecture Coupling and Equity-Preserving Algorithms**
+
+**(A) Safety mechanisms across paradigms:** Documents safety constraint performance (refusal scaffolds, prohibited-claim detection) across architectures. Emerging architecture failure modes (agentic error propagation, multi-agent safety bypass) undocumented in clinical contexts.
+
+**(B) Equity algorithms:** Novel prioritisation ensuring Māori/Pacific patients receive proactive care without under-alerting others or perpetuating biases. Standard ML fairness techniques don't apply to multi-condition monitoring with outcome-based equity goals. **No published methods exist.** Essential for Te Tiriti-compliant clinical AI.
+
+**Knowledge validated through clinical testbeds, documented for sector reuse, foundational for patient-facing AI (Years 3-5).**
 
 ---
 
