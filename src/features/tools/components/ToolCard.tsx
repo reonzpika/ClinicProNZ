@@ -1,6 +1,5 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import * as React from 'react';
 
 import { cn } from '@/src/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';

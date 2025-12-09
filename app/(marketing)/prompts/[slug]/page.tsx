@@ -1,7 +1,6 @@
 'use client';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import * as React from 'react';
 
 import { Container } from '@/src/shared/components/layout/Container';
 import { Button } from '@/src/shared/components/ui/button';

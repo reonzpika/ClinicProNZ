@@ -1,6 +1,5 @@
 'use client';
 import Link from 'next/link';
-import * as React from 'react';
 import { useMemo, useState } from 'react';
 
 import { ToolCard } from '@/src/features/tools/components/ToolCard';
