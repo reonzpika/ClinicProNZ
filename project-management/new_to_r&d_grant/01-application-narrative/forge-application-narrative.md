@@ -80,35 +80,37 @@ Explore spectrum from lightweight classifiers to sophisticated reasoning systems
 
 ## Uncertainty – What is the Specific Uncertainty? (~250 words)
 
-**Primary Uncertainty:**
+**Primary Uncertainty:** Which AI architectural paradigm achieves clinical safety, NZ-contextual accuracy, and cost-effectiveness for primary care decision support across multiple health system platforms under unprecedented constraint combination (high safety requirements, NZ healthcare context, equity obligations, privacy regulations, multi-system integration)?
 
-Which AI architectural paradigm achieves clinical safety, NZ-contextual accuracy, and cost-effectiveness for primary care decision support across multiple health system platforms?
+**Five Interconnected Research Uncertainties:**
 
-This cannot be resolved without systematic experimentation because clinical AI operates under unprecedented constraint combination: high safety requirements, NZ healthcare system context, equity obligations, privacy regulations, multi-system integration.
+**1. Architectural Paradigm Selection**
+- Do routine clinical tasks permit lightweight solutions ($0.002/request) or require sophisticated reasoning ($0.15/request)?
+- Emerging paradigms (agentic systems, advanced RAG) may outperform established approaches
+- Cost-accuracy-safety trade-offs unknowable without empirical comparison across clinical risk spectrum
+- Optimal paradigm may vary by task in unexpected ways
 
-**Five Cascading Research Uncertainties:**
+**2. Domain Adaptation Under Sovereignty Constraints**
+- Does domain adaptation suffice for NZ healthcare characteristics (bpac/MoH guidelines, regional lab formats, ACC/PHO patterns), or do contextual differences require architectural modifications?
+- Standard techniques trained on international datasets may not capture NZ nuances
+- Adaptation effectiveness across paradigms under no-overseas-training constraints requires systematic investigation
 
-**1. Architectural Paradigm Selection Across Clinical Risk Spectrum**
+**3. Multi-System Generalisation**
+- Will architecture achieving 90% accuracy in Medtech maintain performance in Indici?
+- What design patterns enable generalisation across health platforms without system-specific rework?
+- Generalisation behaviour unpredictable without testing
 
-Which architectural approach (ranging from simple pattern recognition to multi-agent reasoning systems) achieves required clinical safety and accuracy at sustainable cost? Do routine tasks permit lightweight solutions ($0.002/request), or do clinical nuances demand sophisticated reasoning ($0.15/request)? **Emerging AI paradigms (agentic systems, advanced retrieval-augmented generation) may prove superior to established approaches**, requiring investigation of cutting-edge techniques alongside conventional methods. **Cost-accuracy-safety trade-offs unknowable without empirical comparison. Optimal paradigm may vary by clinical task in unexpected ways.**
+**4. Safety-Architecture Interactions**
+- How do safety constraints interact with different paradigms?
+- Do agentic systems maintain safety bounds differently than LLMs?
+- Hybrid approaches may propagate failures across components
+- Emergent risks cannot be predicted from component specifications
 
-**2. Domain Adaptation Feasibility Under NZ Healthcare System Context and Sovereignty Constraints**
+**5. Equity Algorithm Design**
+- Can algorithms prioritise Māori/Pacific patients without under-alerting other populations or perpetuating biases?
+- No published methods exist for multi-condition monitoring with NZ equity goals
 
-Whether domain adaptation alone suffices for NZ healthcare system characteristics (bpac/MoH guidelines, regional lab formats with NZ-specific reference ranges, ACC/PHO documentation patterns, local clinical pathways), or whether these contextual differences require architectural modifications to reasoning components. Standard techniques trained on international datasets (US/UK healthcare) may not capture NZ healthcare system nuances. **Adaptation effectiveness across paradigms under no-overseas-training constraints unknowable without systematic investigation and may require novel architectural approaches not yet documented.**
-
-**3. Multi-System Generalisation Patterns**
-
-Will architectural approach achieving 90% accuracy in Medtech maintain performance in Indici, given different data structures and workflows? What design patterns enable single system to generalise across health platforms without system-specific rework? **Generalisation behaviour cannot be predicted without testing. May reveal novel architectural requirements.**
-
-**4. Safety-Architecture Interaction Effects**
-
-How do safety constraints (refusal scaffolds, prohibited-claim detection) interact with different architectural paradigms? Do agentic systems maintain safety bounds differently than LLMs? Do hybrid approaches propagate safety failures across components? **Safety failure modes across paradigms create emergent risks that cannot be predicted from component specifications and require systematic empirical investigation.**
-
-**5. Equity Algorithm Generalisability Across Populations**
-
-Can prioritisation algorithms surface high-risk and Māori/Pacific patients without introducing under-alerting in other populations or perpetuating training data biases? **Novel equity-preserving approaches required; no published methods exist for multi-condition clinical monitoring with NZ equity goals.**
-
-These uncertainties are interconnected: architectural paradigm choice affects domain adaptation, influences multi-system generalisation, impacts safety mechanisms, determines equity outcomes. Resolving these creates foundational knowledge for patient-facing AI (Years 3-5) and national health integration.
+Uncertainties are interconnected: architectural choice affects domain adaptation, influences generalisation, impacts safety, determines equity outcomes. Resolving these creates foundational knowledge for patient-facing AI and national health integration.
 
 ---
 
