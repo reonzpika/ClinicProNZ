@@ -134,25 +134,36 @@ Uncertainties are interconnected: architectural choice affects domain adaptation
 
 **Even highly competent professionals cannot deduce solutions without systematic experimentation:**
 
-**1. Multi-Component Architecture Performance Cannot Be Predicted From Component Specifications**
+**1. Emergent Architecture Behaviour**
+- Architectural paradigms (pattern recognition → agentic reasoning) exhibit emergent behaviour when components interact
+- Sophisticated reasoning systems "hallucinate" on medical calculations: cardiovascular risk scoring requires precise 8-variable computation, yet models fabricate values
+- Interaction effects compound unpredictably: retrieval errors propagate into reasoning, quantization degrades safety
+- Component-level testing doesn't reveal system-level failures
+- Performance emerges from interactions unknowable without empirical measurement
 
-Architectural paradigms (from simple pattern recognition to agentic reasoning) exhibit emergent behaviour when components interact. Sophisticated reasoning systems "hallucinate" on medical calculations; cardiovascular risk scoring requires precise 8-variable computation, yet reasoning models fabricate values. Interaction effects compound unpredictably: retrieval errors propagate into reasoning, quantization degrades safety mechanisms. **Component-level testing doesn't reveal system-level failures. Performance emerges from interactions unknowable without empirical measurement.**
+**2. Multi-System Generalisation Failures**
+- Medtech and Indici structure data differently: laboratory formats, medication codes, note templates diverge
+- Architectures performing well in one system fail subtly in another
+- Failures cannot be predicted from documentation; they emerge from real-world variations
+- Discovering robust patterns requires systematic testing
 
-**2. Multi-System Generalisation Creates Emergent Failure Modes**
+**3. Real-World Data Complexity**
+- Real clinical data exhibits characteristics unreplicable synthetically: inconsistent documentation under time pressure, missing fields, data quality variations, system artifacts
+- Different paradigms respond unpredictably to messiness
+- Performance on clean synthetic data doesn't predict messy clinical data performance
+- Architecture-dependent sensitivity unknowable without real-world testing
 
-Medtech and Indici structure data differently. Architectures performing well in one system fail subtly in another: laboratory formats differ, medication codes vary, note templates diverge. **These failures cannot be predicted from documentation; they emerge from real-world variations. Discovering robust patterns requires systematic testing.**
+**4. Safety-Architecture Interactions**
+- Safety constraints (refusal scaffolds, prohibited-claim detection) behave differently across architectures
+- Agentic systems propagate errors across agents; LLMs bypass refusal scaffolds unexpectedly; hybrid systems fail at component boundaries
+- Safety failure modes vary unpredictably by paradigm
+- Emergent safety risks require systematic investigation
 
-**3. Real-World Clinical Data Characteristics Cause Unpredictable Architecture-Specific Failures**
-
-Real clinical data exhibits characteristics unreplicable synthetically: inconsistent documentation under time pressure, missing fields, data quality variations, system artifacts. **Different paradigms respond unpredictably to real-world messiness. Performance on clean synthetic data doesn't predict messy clinical data performance. Architecture-dependent sensitivity to data quality unknowable without real-world testing.**
-
-**4. Safety Mechanisms Interact With Architectural Paradigms Creating Emergent Failure Modes**
-
-Safety constraints (refusal scaffolds, prohibited-claim detection) behave differently across architectures. Agentic systems propagate errors across agents. LLMs bypass refusal scaffolds unexpectedly. Hybrid systems fail at component boundaries. **Safety failure modes vary unpredictably by paradigm. Emergent safety risks require systematic investigation.**
-
-**5. AI Performance Metrics Do Not Predict Clinical Outcome Improvements**
-
-Laboratory metrics (accuracy, F1) may not correlate with clinical outcomes (time saved, errors prevented, safety). High-accuracy systems may reduce trust through false positives while lower-accuracy systems with better explanations drive higher utility. **Which architectural characteristics translate to clinical value cannot be deduced from benchmarks and requires systematic real-world outcome measurement.**
+**5. Laboratory-to-Clinical Translation Gap**
+- Laboratory metrics (accuracy, F1) may not correlate with clinical outcomes (time saved, errors prevented, safety)
+- High-accuracy systems may reduce trust through false positives
+- Which architectural characteristics translate to clinical value cannot be deduced from benchmarks
+- Requires systematic real-world outcome measurement
 
 ---
 
