@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import * as React from 'react';
 
 import { Container } from '@/src/shared/components/layout/Container';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';

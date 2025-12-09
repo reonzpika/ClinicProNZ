@@ -2,7 +2,7 @@
 'use client';
 import { useAuth } from '@clerk/nextjs';
 import { ChevronDown, ChevronUp, Mic, Smartphone } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Stack } from '@/src/shared/components/layout/Stack';

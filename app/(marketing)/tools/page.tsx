@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import * as React from 'react';
 
 import { TOOL_LIST } from '@/src/features/tools/data/tools';
 import { ToolsIndexClient } from '@/src/features/tools/pages/ToolsIndexClient';

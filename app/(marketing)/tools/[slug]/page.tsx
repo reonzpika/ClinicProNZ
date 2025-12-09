@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation';
-import * as React from 'react';
 
 import { ToolDetailHeader } from '@/src/features/tools/components/ToolDetailHeader';
 import { ToolDetailMain } from '@/src/features/tools/components/ToolDetailMain';

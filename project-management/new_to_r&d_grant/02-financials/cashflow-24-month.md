@@ -33,10 +33,11 @@
 - Monthly cost: $12,480
 - **24-Month total: 3,120 hours = $299,520**
 
-**Ting (R&D Operations Lead - Full-time):**
+**Ting (R&D Programme Manager - Full-time):**
 - Hours: 40 hrs/week × 52 weeks ÷ 12 months = 173 hours/month
 - Rate: $70/hour
 - Monthly cost: $12,110
+- Role: Research Synthesis & Documentation (25%), Evaluation Framework Support (20%), Programme Management (25%), Grant Administration (15%), Stakeholder Management (15%)
 - **24-Month total: 4,152 hours = $290,640**
 
 **Developer (Contractor, starts Month 4):**

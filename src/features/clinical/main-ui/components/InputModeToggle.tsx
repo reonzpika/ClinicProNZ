@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 

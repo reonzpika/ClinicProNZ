@@ -9,9 +9,9 @@
 **Team Structure:**
 - **Founder (shareholder-employee):** $96/hour (= $80/hr + 20% overhead), PAYE, timesheets required
 - **Founder commitment:** 30 hrs/week throughout 24 months (3,120 hours total)
-- **Ting (shareholder-employee, R&D Operations Lead):** $70/hour (= $58.33/hr + 20% overhead), PAYE, timesheets required
+- **Ting (shareholder-employee, R&D Programme Manager):** $70/hour (= $58.33/hr + 20% overhead), PAYE, timesheets required
 - **Ting commitment:** 40 hrs/week throughout 24 months (4,152 hours total)
-- **Ting role:** R&D Project Manager + Research/Testing/Documentation + Quality Assurance
+- **Ting role:** Research Synthesis & Documentation (25%), Evaluation Framework Support (20%), Programme Management (25%), Grant Administration (15%), Stakeholder Management (15%)
 - **Developer (contractor):** $72/hour (= $60/hr + 20% overhead), starts Month 4
 - **Developer commitment:** Minimum 10 hrs/week (can range 10-40 hrs/week as needed), 21 months (Months 4-24)
 - **Developer budgeted hours:** 903 hours (10 hrs/week minimum)
@@ -69,12 +69,13 @@
 - 130 hrs/month × 24 months = 3,120 hours
 - **Total Founder R&D Labour: 3,120 hours = $299,520**
 
-**Ting (Shareholder-employee, R&D Operations Lead):** $70/hour | **NZD excl. GST**
+**Ting (Shareholder-employee, R&D Programme Manager):** $70/hour | **NZD excl. GST**
 
 **Ting R&D Hours (24 months):**
 - 40 hrs/week × 52 weeks/year × 2 years ÷ 12 months/year = 173 hrs/month
 - 173 hrs/month × 24 months = 4,152 hours
-- Role: R&D Project Manager + Research/Testing/Documentation + Quality Assurance
+- **Role:** Research Synthesis & Documentation (25%), Evaluation Framework Support (20%), Programme Management (25%), Grant Administration (15%), Stakeholder Management & Pilot Operations (15%)
+- **Key Activities:** Transform technical findings into structured research reports and knowledge base; maintain performance dashboards and edge case databases; manage programme timeline and budget; prepare grant claims and final R&D report; coordinate pilot operations
 - **Total Ting R&D Labour: 4,152 hours = $290,640**
 
 **Developer (Contractor, starts Month 4):** $72/hour | **NZD excl. GST**
@@ -173,7 +174,7 @@
 
 **Provider:** R&D project management consultant/coach  
 **Timing:** Months 2-15  
-**Who it's for:** Primarily Ting (as R&D Operations Lead) + Founder
+**Who it's for:** Primarily Ting (as R&D Programme Manager) + Founder
 
 ---
 
@@ -185,6 +186,8 @@
 - Budget tracking and resource allocation for R&D
 - How to identify and manage R&D risks
 - Documentation best practices for knowledge capture
+- **Research documentation methods** (structuring technical findings, creating comparison frameworks, maintaining knowledge bases)
+- **Evaluation framework techniques** (organising experiment results, performance tracking, test data management)
 - How to manage third-party service providers and consultants
 - Communication management with stakeholders
 
@@ -193,6 +196,8 @@
 - Roadmap templates for 24-month project
 - Budget tracking spreadsheets
 - Risk register templates
+- **Research documentation templates and knowledge base structure**
+- **Evaluation tracking dashboards and performance comparison matrices**
 - Vendor/contractor management workflows
 - Meeting templates and decision logs
 
@@ -244,8 +249,8 @@ From the official CDP-5 document:
 **WHY THIS IS SMART:**
 
 **Builds long-term capability:**
-- Ting isn't just doing admin work - she's learning how to manage R&D
-- After 24 months, she'll have skills to manage future R&D projects
+- Ting isn't just doing admin work - she's learning how to manage R&D programmes and conduct research operations (systematic documentation, evaluation framework management)
+- After 24 months, she'll have skills to manage future R&D projects with proper research documentation capabilities
 - Demonstrates "growth intention" (Paula's feedback about having Ting full-time)
 
 **Ting manages the CapDev procurement:**
@@ -287,7 +292,9 @@ From the official CDP-5 document:
 
 From consultant to Ting:
 - R&D project management training materials (tailored to your project)
+- Research documentation and evaluation framework training materials
 - Project management tools and templates set up
+- Research tracking templates and knowledge base structure
 - Monthly coaching sessions (6 sessions)
 - Knowledge transfer documentation
 
@@ -295,6 +302,8 @@ From Ting (demonstrating capability development):
 - 24-month project roadmap with milestones
 - Budget tracking spreadsheet (maintained monthly)
 - Risk register (updated quarterly)
+- Research knowledge base with documented findings
+- Performance tracking dashboards and comparison matrices
 - Vendor management records for all CDP procurement
 - Meeting notes and decision logs
 - Monthly progress reports
@@ -552,8 +561,9 @@ From Ting (demonstrating capability development):
 ### Ting Evidence (Shareholder-employee)
 - Employment agreement
 - Payroll records (PAYE)
-- Timesheets showing hours by objective
-- Role documentation (R&D Project Manager + Research/Testing/Documentation + QA)
+- Timesheets showing hours by objective and activity type (research synthesis, evaluation support, programme management, grant administration, stakeholder coordination)
+- Role documentation (R&D Programme Manager with research operations responsibilities)
+- Research outputs (knowledge base, comparison matrices, performance dashboards, monthly reports, final R&D report)
 
 ### Developer Evidence (Contractor)
 - Contractor agreement
@@ -602,7 +612,7 @@ From Ting (demonstrating capability development):
 
 2. **Developer flexibility:** Budget at 10 hrs/week minimum; actual claims 10-40 hrs/week based on R&D needs
 
-3. **Ting role:** R&D Project Manager + Research/Testing/Documentation + Quality Assurance (40 hrs/week)
+3. **Ting role:** R&D Programme Manager with research operations responsibilities: Research Synthesis & Documentation (25%), Evaluation Framework Support (20%), Programme Management (25%), Grant Administration (15%), Stakeholder Management (15%) - Full-time (40 hrs/week)
 
 4. **Developer recruitment timing:**
    - Recruit in Months 1-3, start Month 4

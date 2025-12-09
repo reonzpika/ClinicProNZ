@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 const DropdownMenuContext = createContext<{
   open: boolean;
@@ -7,7 +7,7 @@ const DropdownMenuContext = createContext<{
 
 export function DropdownMenu({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
-  const value = React.useMemo(() => ({ open, setOpen }), [open, setOpen]);
+  const value = useMemo(() => ({ open, setOpen }), [open, setOpen]);
   return (
     <DropdownMenuContext.Provider value={value}>
       <div className="relative inline-block">{children}</div>

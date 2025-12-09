@@ -4,7 +4,7 @@ import { useAuth } from '@clerk/nextjs';
 import { useQueryClient } from '@tanstack/react-query';
 import { Brain, Download, Expand, Loader2, QrCode, Trash2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
@@ -37,8 +37,8 @@ function SessionImageTile({
   const imageUrl = image.thumbnailUrl || imageUrlData;
   const renameImage = useRenameImage();
   const baseName = (image.displayName || image.filename || '').replace(/\.[^.]+$/, '');
-  const [isRenaming, setIsRenaming] = React.useState(false);
-  const [nameValue, setNameValue] = React.useState(image.displayName || baseName);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [nameValue, setNameValue] = useState(image.displayName || baseName);
   const commitRename = () => {
     const cleaned = nameValue.trim();
     if (!cleaned) {
@@ -185,7 +185,7 @@ export const ClinicalImageTab: React.FC = () => {
   });
 
   // Show toast when uploads complete
-  React.useEffect(() => {
+  useEffect(() => {
     if (inFlightUploads === 0 && completedUploads > 0) {
       const n = completedUploads;
       showToast({ title: 'Images added', description: `${n} image${n === 1 ? '' : 's'} added`, durationMs: 4000 });

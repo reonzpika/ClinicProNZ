@@ -2,7 +2,6 @@
  * Session cost table component
  */
 
-import React from 'react';
 
 import type { SessionCostDetail } from '../hooks/useCostTracking';
 import { formatCost } from '../services/costCalculator';

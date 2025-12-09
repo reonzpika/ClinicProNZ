@@ -280,9 +280,11 @@ The project is organized into 7 main directories:
 - 30 hrs/week × 24 months = 3,120 hours @ $96/hr
 - **Total:** $299,520
 
-**Ting (R&D Operations Lead - Full-time):**
+**Ting (R&D Programme Manager - Full-time):**
 - 40 hrs/week × 24 months = 4,152 hours @ $70/hr
-- Role: R&D Project Manager + Research/Testing/Documentation + Quality Assurance
+- **Role Breakdown:** Research Synthesis & Documentation (25%), Evaluation Framework Support (20%), Programme Management (25%), Grant Administration (15%), Stakeholder Management & Pilot Operations (15%)
+- **Key Responsibilities:** Transform technical findings into structured research reports and knowledge base; maintain performance tracking dashboards and edge case databases; coordinate programme timeline, budget, and risk management; prepare quarterly grant claims and final R&D report; manage GP pilot operations and stakeholder communications
+- **Background:** Sales, marketing, and ecommerce entrepreneurship with systematic process execution capability
 - **Total:** $290,640
 
 **Developer (Contractor):**
@@ -292,7 +294,7 @@ The project is organized into 7 main directories:
 
 **Total R&D Labour (minimum):** 8,175 hours = $655,176
 
-**Note:** Leaner 3-person team structure provides strong R&D capacity with flexibility to scale developer hours based on project needs.
+**Note:** Leaner 3-person team structure provides strong R&D capacity with flexibility to scale developer hours based on project needs. Ting's research operations role (synthesis, documentation, evaluation support) enables systematic knowledge capture and frees founder for technical R&D.
 
 ---
 

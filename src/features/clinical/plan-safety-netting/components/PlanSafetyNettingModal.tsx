@@ -1,7 +1,7 @@
 'use client';
 
 import { CheckSquare, ClipboardList, RotateCcw } from 'lucide-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';

@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import * as React from 'react';
+import { useMemo, useState } from 'react';
 
 import { ToolCard } from '@/src/features/tools/components/ToolCard';
 import type { ToolDetail } from '@/src/features/tools/data/tools';
@@ -17,8 +17,8 @@ const CATEGORY_OPTIONS: Array<{ id: UiCategory; label: string }> = [
 ];
 
 export function ToolsIndexClient({ tools }: { tools: ToolDetail[] }) {
-  const [query, setQuery] = React.useState('');
-  const [selected, setSelected] = React.useState<Set<UiCategory>>(new Set());
+  const [query, setQuery] = useState('');
+  const [selected, setSelected] = useState<Set<UiCategory>>(new Set());
 
   const toggleCategory = (id: UiCategory) => {
     setSelected((prev) => {
@@ -32,7 +32,7 @@ export function ToolsIndexClient({ tools }: { tools: ToolDetail[] }) {
     });
   };
 
-  const activeToolCategories = React.useMemo(() => {
+  const activeToolCategories = useMemo(() => {
     const onlyAcc = selected.size > 0 && [...selected].every(c => c === 'acc');
     if (onlyAcc) {
  return new Set<string>();
@@ -50,7 +50,7 @@ export function ToolsIndexClient({ tools }: { tools: ToolDetail[] }) {
   const showAcc = selected.size === 0 || selected.has('acc');
   const onlyAccSelected = selected.size > 0 && [...selected].every(c => c === 'acc');
 
-  const filteredTools = React.useMemo(() => {
+  const filteredTools = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (onlyAccSelected) {
  return [] as ToolDetail[];
