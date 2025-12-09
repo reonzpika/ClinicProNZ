@@ -993,7 +993,7 @@ function ServerImageCard({
   onDelete: (imageKey: string) => void;
   formatFileSize: (bytes: number) => string;
 }) {
-  const [isDeleting, setIsDeleting] = React.useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   // Lazily fetch image URL per tile
   // Prefer server-provided thumbnailUrl; otherwise request presigned URL for the full image key
   const { data: fetchedUrl } = useImageUrl(image.thumbnailUrl ? '' : image.key);
@@ -1113,11 +1113,11 @@ function ServerImageCard({
 // Inline editable filename component for desktop cards
 function InlineEditableName({ image }: { image: ServerImage }) {
   const renameImage = useRenameImage();
-  const [isEditing, setIsEditing] = React.useState(false);
-  const [value, setValue] = React.useState(image.displayName || image.filename.replace(/\.[^.]+$/, ''));
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [value, setValue] = useState(image.displayName || image.filename.replace(/\.[^.]+$/, ''));
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isEditing) {
       inputRef.current?.focus();
       inputRef.current?.select();

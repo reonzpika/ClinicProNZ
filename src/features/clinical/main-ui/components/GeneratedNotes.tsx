@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';
@@ -50,7 +50,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
   const CONSENT_STATEMENT = '\n\nPatient informed and consented verbally to the use of digital documentation assistance during this consultation, in line with NZ Health Information Privacy Principles. The patient retains the right to pause or stop the recording at any time.';
 
   // Computed value: generated notes with consent statement appended if consent was obtained
-  const displayNotes = React.useMemo(() => {
+  const displayNotes = useMemo(() => {
     if (!generatedNotes) {
       return '';
     }
@@ -142,7 +142,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
   }, [isSignedIn]);
 
   // Core user-entered content (exclude generated notes)
-  const hasUserContent = React.useMemo(() => {
+  const hasUserContent = useMemo(() => {
     const hasTranscript = !!(transcription.transcript && transcription.transcript.trim() !== '');
     const hasTyped = !!(typedInput && typedInput.trim() !== '');
     const hasPerSection = [problemsText, objectiveText, assessmentText, planText].some(s => s && s.trim() !== '');
@@ -150,7 +150,7 @@ export function GeneratedNotes({ onGenerate, onFinish, loading, isNoteFocused: _
   }, [transcription.transcript, typedInput, problemsText, objectiveText, assessmentText, planText]);
 
   // Enable Process Notes if any user content exists
-  const canGenerate = React.useMemo(() => {
+  const canGenerate = useMemo(() => {
     if (!hasUserContent) {
       return false;
     }

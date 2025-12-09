@@ -2,7 +2,7 @@
 
 import { useAuth, useUser } from '@clerk/nextjs';
 import { AlertCircle, CheckCircle, Mail } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Footer } from '@/src/shared/components/Footer';
 import { Sidebar } from '@/src/shared/components/Sidebar';
@@ -28,7 +28,7 @@ export default function ContactPage() {
   const [errorMessage, setErrorMessage] = useState('');
 
   // Auto-populate user data when component mounts or user changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (isSignedIn && user) {
       setFormData(prev => ({
         ...prev,

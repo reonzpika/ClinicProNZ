@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useCallback, useState } from 'react';
 
 type Toast = {
   id: string;
@@ -19,13 +20,13 @@ type ToastContextValue = {
 const ToastContext = React.createContext<ToastContextValue | undefined>(undefined);
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const [toasts, setToasts] = React.useState<Toast[]>([]);
+  const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const dismiss = React.useCallback((id: string) => {
+  const dismiss = useCallback((id: string) => {
     setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
 
-  const show = React.useCallback((toast: Omit<Toast, 'id'> & { durationMs?: number }) => {
+  const show = useCallback((toast: Omit<Toast, 'id'> & { durationMs?: number }) => {
     const id = Math.random().toString(36).slice(2);
     setToasts(prev => [...prev, { ...toast, id }]);
     const duration = toast.durationMs ?? 4000;
