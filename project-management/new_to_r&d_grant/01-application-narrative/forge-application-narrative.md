@@ -727,46 +727,46 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 
 **Core R&D Project: NZ Health Intelligence Layer (Years 3-5)**
 
-The 24-month grant validates NZ-trained LLM for GP-facing tools. Years 3-5 extend this to patient-facing care and national-scale learning.
+The 24-month grant validates NZ-trained LLM for GP-facing tools. Years 3-5 extend this foundation to patient-facing care and national-scale learning. AI architectural paradigms validated in the 24-month project will be systematically adapted for patient-facing contexts with new safety validation frameworks.
 
-**1. Patient-Facing AI (HealthHub NZ) - Years 3-4**
+### 1. Patient-Facing AI (HealthHub NZ) – Years 3-4
 
-Patients access complete health records (diagnosis, medications, test results, hospital visits) with AI guidance on their phones.
+Patients access complete health records with AI guidance on phones.
 
-**AI R&D questions:**
-- How do you train NZ-LLM to communicate medical information safely across different health literacy levels (18-year-old vs 75-year-old vs te reo speaker)?
-- Can NZ-LLM validate patient-entered data (blood pressure readings) by learning clinical patterns?
+**Key R&D Questions:**
+- How do you train NZ-LLM to communicate medical information safely across different health literacy levels (teenagers vs elderly vs te reo speakers)?
+- Can NZ-LLM validate patient-entered data (blood pressure readings) by learning clinical patterns without compromising safety thresholds?
 
 **Benefits:** Rural patients get after-hours guidance, chronic disease patients monitor at home, better engagement improves outcomes.
 
-**2. AI Learning From Real-World Outcomes - Years 4-5**
+### 2. AI Learning From Real-World Outcomes – Years 4-5
 
 Train NZ-LLM on aggregated patient outcomes to improve recommendations.
 
-**AI R&D questions:**
-- Can NZ-LLM learn from thousands of diabetes patients' outcomes to identify which interventions actually work?
-- Can AI identify emerging health trends (e.g., "South Auckland diabetes screening rates dropping 15%, intervention needed")?
+**Key R&D Questions:**
+- Can NZ-LLM learn from thousands of diabetes patients' outcomes to identify which interventions actually work in NZ populations?
+- Can AI identify emerging health trends at scale (e.g., "South Auckland diabetes screening rates dropping 15%")?
 
-**Benefits:** AI recommendations improve based on actual NZ patient outcomes. Evidence-based insights for government health planning.
+**Benefits:** AI recommendations improve based on actual NZ outcomes. Evidence-based insights for government health planning.
 
-**3. National Scale Integration - Years 4-5**
+### 3. National Scale Integration – Years 4-5
 
-Extend beyond Medtech/Indici to hospital systems and national records.
-
-**AI R&D questions:**
+**Key R&D Questions:**
 - How does a NZ-sovereign AI system generalise across different hospital data formats while maintaining accuracy?
+- Can safety frameworks validated in GP settings translate to hospital contexts without degradation?
 
-**Benefits:** Connected care where patient sees specialist and GP gets AI summary automatically. No repeated tests, no lost referrals.
+**Benefits:** Connected care where patients see specialists and GPs get AI summaries automatically. No repeated tests, no lost referrals.
 
-**Why Substantial R&D:** Patient-facing AI requires different safety training than GP-facing AI. Learning from outcomes without compromising safety is unsolved AI research. National-scale generalisation requires novel training approaches.
-
-**Supports government goal:** Makes 10-year digital health plan intelligent and accessible for all New Zealanders.
+**Why Substantial R&D:** Patient-facing AI requires different safety validation than GP-facing AI. Learning from outcomes without compromising safety is unsolved research. National-scale generalisation requires novel architectural approaches.
 
 ---
 
-**Document Version:** 3.1  
-**Last Updated:** 29 November 2025  
+**Document Version:** 3.2  
+**Last Updated:** 9 December 2025  
 **Status:** Ready for Forge portal submission
+
+**Version 3.2 Changes:**
+- Future R&D Plans optimized (248 words): Added architectural paradigm link, tightened structure, strengthened R&D framing
 
 **Version 3.1 Changes:**
 - Updated CapDev to $36,000 (5.02% of total costs) per Paula's confirmation
