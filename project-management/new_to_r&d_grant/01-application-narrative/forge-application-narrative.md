@@ -56,33 +56,38 @@ NexWave Solutions Ltd (incorporated 2024) develops AI tools for New Zealand gene
 
 ## Describe Planned R&D Activities (~250 words)
 
-We will build NZ-trained AI for two GP clinical decision support tools (Inbox Helper and Care Gap Finder) under sovereignty constraints, requiring systematic research to determine which AI approaches work.
+We will build NZ-trained AI for two GP clinical decision support tools (Inbox Helper and Care Gap Finder) under sovereignty constraints, requiring systematic research to determine optimal AI architecture.
 
-**Main Research Activity: Testing Different AI Approaches**
+**Main Research Activity: Determining Optimal AI Architecture**
 
-- Test simple classifiers vs large language models vs hybrid systems (combining different AI types)
-- Apply to two clinical tasks:
-  - **Inbox triage:** Laboratory result interpretation, hospital letter classification, urgency assessment
-  - **Care gap monitoring:** Identifying overdue chronic disease checks across diabetes, CVD, COPD, heart failure, asthma
-- Measure each approach: accuracy on clinical tasks, computational cost, response time, safety failure modes, performance across both Medtech and Indici practice management systems
-- Research follows empirical evidence; may discover different tasks need different AI types, or hybrid combinations work better
-- Cost-accuracy trade-offs cannot be predicted without testing
+Multiple AI system architectures exist with different trade-offs:
+
+- **Lightweight AI models:** Fast and low-cost but limited reasoning capability
+- **Retrieval-augmented systems (RAG):** Dynamically retrieve from NZ knowledge bases for better context
+- **Agentic AI systems:** Multiple specialized agents working together for complex reasoning
+- **Hybrid combinations:** Combining strengths of different approaches
+
+**Research approach:**
+- Investigate which architecture best fits NZ sovereignty constraints (no overseas APIs), clinical safety requirements, and cost sustainability
+- Initial research and prototyping will determine most promising approaches to test
+- Compare chosen approaches on two clinical tasks: **inbox triage** (lab interpretation, letter classification, urgency assessment) and **care gap monitoring** (multi-condition reasoning across 5 chronic conditions)
+- Measure: clinical accuracy, computational cost, safety, performance across Medtech/Indici
+- Research follows empirical evidence; likely hybrid approach but specific combination determined through systematic investigation
 
 **NZ Healthcare Training**
 
-- Train AI on curated NZ clinical corpus: bpac guidelines, Ministry of Health protocols, Pharmac database, regional lab formats, Medtech and Indici clinical documentation patterns
-- Test whether NZ-trained AI achieves clinical-grade accuracy (≥90% for triage, ≥95% for clinical calculations) at sustainable cost under sovereignty constraints (no overseas APIs)
+- Train AI on curated NZ clinical corpus: bpac guidelines, Ministry of Health protocols, Pharmac database, regional lab formats, Medtech/Indici documentation patterns
+- Test whether NZ-trained AI achieves clinical-grade accuracy (≥90% triage, ≥95% clinical calculations) at sustainable cost
 
 **Real-World Validation**
 
-- Pilot with 10-20 GP practices across diverse settings (urban/rural, high/low deprivation, different ethnic populations)
-- Measure: clinical utility (time savings, care gap completion), safety outcomes (prohibited claims, missed urgents), equity metrics (Māori/Pacific screening rates), performance stability across different practices
-- Document performance translation: synthetic data → sandbox testing → production deployment
+- Pilot with 10-20 GP practices across diverse settings
+- Measure: clinical utility, safety outcomes, equity metrics, performance stability
+- Document: synthetic → sandbox → production performance translation
 
 **Knowledge Outputs**
 
-- Publish frameworks documenting which AI approaches work for clinical decision support under NZ sovereignty constraints
-- Enable sector-wide capability building
+- Publish frameworks for NZ health AI sector
 - Specific implementations remain competitive IP
 
 ---
