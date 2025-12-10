@@ -132,46 +132,38 @@ Multiple AI approaches exist (lightweight models, retrieval systems, agentic arc
 
 ## R&D Challenge – Why is This Difficult for a Professional? (~250 words)
 
-Experts cannot predict which AI approaches will work in clinical practice. Systematic experimentation is required because:
+Experts cannot predict optimal AI architecture without systematic experimentation because:
 
 **1. Real Clinical Data Has High Variability and Inconsistency**
 
-Clinical data varies in ways that break rigid automation:
+Clinical data varies in ways that challenge AI systems:
 
 - **Documentation inconsistency:** Terminology varies across GPs, missing fields common, GP-specific abbreviations differ by practice
 - **Lab result variations:** Same test described differently across regions and providers (HbA1c 48 vs A1c 7.5% vs glycated Hb 64 mmol/mol)
 - **Third-party systems change unpredictably:** Labs and hospitals modify formats and terminology without notice
 - **Edge cases are frequent:** 5-15% of "routine" items have unusual characteristics
-- **AI cannot rely on 100% rigid automation:** Must have clinical intelligence to interpret variations correctly
-- Which AI types can adapt vs which break on variation cannot be deduced without testing
+- **Requires clinical intelligence:** AI must interpret variations correctly, not rely on rigid pattern matching
+- Which architectures handle variability best cannot be deduced without testing
 
-**2. AI Systems Fail Unpredictably**
+**2. AI Systems Fail in Unpredictable Ways**
 
-Different AI types fail in different ways:
+AI systems have multiple failure modes:
 
-- **Simple classifiers:**
-  - Fail on unfamiliar patterns
-  - Cannot adapt to new variations (rigid, brittle)
-  
-- **Large language models:**
-  - Two critical failure modes:
-    - Hallucination: Fabricate missing clinical values
-    - Omission: Skip critical information without warning
-    
-- **Hybrid systems:**
-  - May propagate errors across components in unexpected ways
+- Pattern matching failures on unfamiliar variations
+- Hallucination: Fabricating missing clinical values
+- Omission: Skipping critical information without warning
+- Error propagation across system components
 
-- Cannot predict which failures occur in real-world deployment without systematic testing
-- Need to discover which AI characteristics provide clinical intelligence and adaptability vs rigid automation that breaks
+Cannot predict which failures occur in real-world deployment without systematic testing. Need to discover which architectural characteristics provide robustness and adaptability vs brittleness.
 
 **3. Performance Translation from Training to Deployment**
 
-- AI trained on generic NZ health data (guidelines, lab reports, clinical notes) must work in real practice management system environments where GP workflows happen
+- AI trained on curated NZ health data (guidelines, lab reports, clinical notes) must work in real practice management system environments where GP workflows happen
 - Deployment adds complexity: live workflows with interruptions, different user interfaces, varied data quality across practices, time pressure affecting documentation quality
-- Which AI characteristics maintain accuracy and adapt to real-world variability?
+- Which architectural characteristics maintain accuracy and adapt to real-world variability?
 - Cannot deduce without testing in actual GP workflows across diverse practice settings
 
-Only systematic testing across real clinical environments reveals which approaches maintain accuracy, safety, and adaptability under operational conditions.
+Only systematic testing across real clinical environments reveals which AI architectures maintain accuracy, safety, and adaptability under operational conditions.
 
 ---
 
