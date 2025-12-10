@@ -70,7 +70,7 @@ Multiple AI system architectures exist with different trade-offs:
 **Research approach:**
 - Investigate which architecture best fits NZ sovereignty constraints (no overseas APIs), clinical safety requirements, and cost sustainability
 - Initial research and prototyping will determine most promising approaches to test
-- Compare chosen approaches on two clinical tasks: **inbox triage** (lab interpretation, letter classification, urgency assessment) and **care gap monitoring** (multi-condition reasoning across 5 chronic conditions)
+- Compare chosen approaches on two clinical tasks: **inbox triage** (lab interpretation, letter classification, urgency assessment) and **care gap monitoring** (identifying overdue chronic disease checks, focusing on diabetes and cardiovascular risk assessment/management, with potential expansion to other conditions like COPD, heart failure, CKD if time allows)
 - Measure: clinical accuracy, computational cost, safety, performance across Medtech/Indici
 - Research follows empirical evidence; likely hybrid approach but specific combination determined through systematic investigation
 
@@ -227,7 +227,7 @@ AI clinical intelligence applied to:
 
 AI clinical intelligence applied to:
 
-- **Multi-condition reasoning:** Gathers all recorded patient information (labs, medications, diagnoses, demographics), determines care priorities across 5 chronic conditions (diabetes, CVD, COPD, heart failure, asthma)
+- **Multi-condition reasoning:** Gathers all recorded patient information (labs, medications, diagnoses, demographics), determines care priorities focusing on diabetes and cardiovascular risk assessment/management (with potential expansion to other chronic conditions if time allows)
 - **Priority decision-making:** Decides which checks are most urgent given patient's overall clinical picture
 - **Equity-aware prioritization:** Prioritizes Māori/Pacific and high-risk patients appropriately without algorithmic bias
 - **Practice intelligence:** Generates dashboards showing patterns across patient populations with actionable insights
@@ -333,44 +333,39 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 
 **Dates:** 27 Jan 2026 – 30 Jun 2026
 
-**Plain-English aim:** Create a flexible, safe AI backbone that can plug into Medtech and Indici, test different AI "recipes" on synthetic NZ healthcare data, and support early Inbox and Care Gap prototypes.
+**Plain-English aim:** Investigate AI approaches and build foundation system that connects to both Medtech and Indici, with early prototypes for inbox and care gap tools.
 
 **Key R&D questions:**
-- Which AI approach works best for each task: simple classifier, generic LLM, hybrid rules+LLM, or NZ-trained LLM?
-- Can a NZ-trained LLM understand local clinical language (bpac/MoH guidance, lab formats, Medtech/Indici notes) better than generic models?
-- How do we design one architecture that supports both Medtech and Indici without major rework for each platform?
+- Which AI architectural approach works best for NZ clinical decision support under sovereignty constraints?
+- Can NZ-trained AI achieve clinical-grade accuracy on local healthcare context?
+- How do we design one system architecture supporting both Medtech and Indici?
 
 **What is actually built:**
 
 **NZ clinical data and test sets:**
-- Curate NZ clinical corpus (≥10,000 pages) from bpac.org.nz, Ministry of Health, Pharmac, example lab reports and discharge summaries
-- Generate synthetic datasets:
-  - ≥1,000 synthetic inbox items (labs, discharge letters, referrals, scripts, admin, patient messages) using LabTests, SCL, Medlab formats and typical GP workflows
-  - ≥500 synthetic patient records with chronic conditions (diabetes, COPD, CHF, asthma) including labs, medications, and monitoring history
+- Curate NZ clinical corpus (bpac guidelines, MoH protocols, Pharmac database, regional lab formats)
+- Generate synthetic datasets: inbox items (≥1,000) and patient records with chronic conditions (≥500)
 
 **Core platform and integrations:**
-- Build modular backend connecting securely to Medtech and Indici (read-only initially, through their FHIR/related APIs)
-- Normalise different lab and document formats into consistent internal structure
-- Route tasks to different model types (simple classifier vs hybrid vs LLM) depending on risk and complexity
-- Build simple "widget shells" for Medtech and Indici displaying early AI outputs inside each PMS
+- Build modular backend connecting to Medtech and Indici (read-only initially)
+- Normalise different lab and document formats into consistent structure
+- Build widget shells for both PMSs displaying AI outputs
 
-**Architecture experiments:**
-- Compare multiple approaches for representative use cases:
-  - Inbox triage: BERT-style classifier vs small LLM vs hybrid
-  - CVD risk calculation (CVDRA): rules-only vs LLM-only vs hybrid rules+LLM
-- Train initial NZ-LLM (or adapted small model) on NZ corpus
-- Benchmark vs GPT-4 on NZ-specific tasks (interpreting local labs, summarising NZ discharge letters)
+**Architecture investigation:**
+- Research multiple AI approaches (lightweight models, retrieval systems, agentic architectures, hybrid combinations)
+- Initial prototyping and evaluation on NZ-specific clinical tasks
+- Determine most promising architectural direction for continued development
 
 **Deliverables by Month 6:**
-- Foundation system v1.0 deployed, connected to Medtech and Indici test/sandbox environments
-- Handling synthetic inbox items and patient records with ≥90% triage accuracy and ≥95% CVDRA accuracy on test sets
-- Architecture recommendations documented for Inbox Helper (e.g., lightweight classifier + rules vs LLM) and Care Gap Finder (hybrid rules+NZ-LLM for extraction and calculations)
-- Early sandbox prototypes: inbox prototype sorting and flagging synthetic items; care gap prototype calculating CVD risk and simple diabetes gaps on synthetic patients
+- Foundation system v1.0 connected to both Medtech and Indici test environments
+- ≥90% triage accuracy, ≥95% CVDRA accuracy on synthetic test sets
+- Architecture recommendations documented for Objectives 2 & 3
+- Early prototypes: inbox sorting, care gap detection on synthetic data
 
 **Success criteria:**
-- All 3 architecture approaches tested on representative use cases
 - Foundation system stable and connected to both PMSs
-- Architecture recommendations documented with empirical evidence
+- Architecture direction determined with empirical evidence
+- Early prototypes demonstrate feasibility
 
 ---
 
@@ -378,105 +373,90 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 
 **Dates:** 1 Apr 2026 – 31 Dec 2026
 
-**Plain-English aim:** Turn Inbox prototype into practical tool that reduces GP inbox workload and highlights urgent issues safely in both Medtech and Indici. **Lean MVP released to early adopters as soon as safety thresholds met.**
+**Plain-English aim:** Turn Inbox prototype into practical AI-powered tool that reduces GP inbox workload safely in both Medtech and Indici. **Lean MVP released to early adopters as soon as safety thresholds met.**
 
 **Key R&D questions:**
-- Can lightweight models safely handle messy, real NZ inbox data (vs synthetic data)?
-- What confidence level is safe enough for auto-filing normal results without risking missed urgents?
-- How should AI suggestions appear in Medtech and Indici so GPs understand and trust them (explanations, overrides, layouts)?
+- How do we deploy AI safely in real PMS environments with messy clinical data?
+- What confidence thresholds are safe for intelligent automated actions?
+- How should suggestions appear in each PMS so GPs trust them?
 
-**Features developed:**
+**AI-powered features developed:**
 
-**Triage and processing:**
-- Automatically classify real inbox items into: labs, hospital letters, specialist letters, referrals, prescriptions, admin, patient messages
-- Assign urgency labels: "Review today" (serious abnormalities or red-flag letters), "Soon", "Routine"
-- Compare current labs with previous ones: "HbA1c increased from 48 to 62 mmol/mol over 12 months"
+**Intelligent triage and processing:**
+- Classifies inbox items: labs, hospital letters, specialist letters, referrals, prescriptions, admin, patient messages
+- Assigns urgency labels: "Review today" (serious abnormalities), "Soon", "Routine"
+- Processes discharge summaries: extracts key information, surfaces GP action list and urgent items
+- Compares current labs with previous results, identifies trends
 
-**Automation:**
-- Normal screening results: normal mammograms → auto-file with standard text ("Normal 2026, repeat 2028") and recall set; normal HPV cervical screens → auto-file with appropriate recall interval
-- Normal blood tests in agreed-safe categories auto-filed with GP-authored standard comments and correct recall intervals based on NZ guidelines
+**Intelligent automation:**
+- Determines which normal screening results (mammograms, cervical screens) are safe to file with appropriate recalls
+- Evaluates blood tests for safe filing with contextually appropriate comments
 
-**Clinical overlays (early, non-prescribing):**
-- Rule-based flags on labs and trends: "eGFR 45 suggests possible CKD stage 3b – consider review", "HbA1c >64 indicates poor diabetes control – discuss management"
-- No specific drug recommendations; instead, prompts aligned with guideline actions
+**Clinical interpretation (non-prescribing):**
+- Flags significant lab results and trends aligned with NZ guidelines
+- Provides clinical context for results requiring GP attention
 
-**Patient handoffs:**
-- Generate simple, editable messages: "Your test results are normal; no changes are needed", "Your cholesterol is raised; please book a nurse appointment to discuss lifestyle and options"
-- Support for SMS/portal/email templates, with GP approval before sending
-
-**Medtech and Indici integration:**
-- Common Inbox Helper widget used in both systems
-- In Medtech: integrated in inbox view, showing AI classification, urgency, suggested actions, one-click approval or override
-- In Indici: similar AI summaries and action buttons adapted to Indici's layout and workflow
-- R&D focus: measure and compare performance, errors, GP interactions across both PMSs; adjust architecture and UI to generalise
-
-**Lean MVP and ongoing R&D:**
-- A lean MVP of the Inbox Helper will be released to early adopter practices as soon as minimum safety and accuracy thresholds are met (≥90% triage accuracy, zero unsafe auto-filing in 1,000 edge-case tests), with further triage, automation, and patient-message features added during remainder of project
-- R&D continues in parallel on: expanding supported document types, improving explanations, optimising confidence thresholds and UI based on feedback
+**Patient communication:**
+- Generates personalised messages adapted to clinical context (GP approval before sending)
 
 **Deliverables by Month 12:**
-- Inbox Helper fully functional in Medtech and Indici sandbox environments
-- Validation on ≥2,000 real inbox items (de-identified or safe test environments) showing: ≥90% classification accuracy, zero unsafe auto-filing in edge-case test suite, measured ~30% time saving in simulated GP workflows
-- Usability feedback from at least 5 GPs incorporated into system design and defaults
+- Inbox Helper functional in both Medtech and Indici sandbox environments
+- ≥90% classification accuracy on ≥2,000 real inbox items
+- Zero unsafe automated actions in edge-case test suite
+- ~30% time saving in simulated GP workflows
+- Usability feedback from ≥5 GPs incorporated
 
 **Success criteria:**
-- Inbox Helper achieves ≥90% classification accuracy on real data
-- Zero unsafe auto-filing events detected in edge-case testing
+- Safety targets met (zero unsafe actions)
 - GP satisfaction ≥80% in usability testing
-- Architecture validated (simple classifier vs LLM) for inbox tasks
+- Ready for lean MVP release to early adopters
 
 ---
 
-### Objective 3: Care Gap Finder – Chronic Disease Intelligence (Months 7-16)
+### Objective 3: Care Gap Finder – Diabetes and Cardiovascular Risk Management (Months 7-16)
 
 **Dates:** 1 Jul 2026 – 30 Apr 2027
 
-**Plain-English aim:** Build tool that scans patient records to find people overdue for key chronic disease checks (starting with diabetes and cardiovascular risk, then COPD, CHF, and asthma) and helps practices get those patients seen. **Lean MVP (diabetes + CVD) released early, then expanded.**
+**Plain-English aim:** Build AI-powered tool that scans patient records to identify patients needing diabetes monitoring and cardiovascular risk assessment. **Lean MVP (diabetes) released early, then CVD added, with potential expansion to other chronic conditions if time allows.**
 
 **Key R&D questions:**
-- Can NZ-trained AI reliably pull out key details (smoking status, medications, severity markers) from messy free-text clinical notes as well as structured fields?
-- How can care gap logic handle multiple conditions (diabetes + CKD + CVD) without overwhelming GPs with alerts?
-- How should patients be prioritised so that high-risk and Māori/Pacific patients are not left behind?
+- Can the system perform clinical reasoning for diabetes and CVD risk management matching GP judgement?
+- How do we prioritise patients with both diabetes and cardiovascular risk factors without algorithmic bias?
+- How do we ensure equity outcomes for Māori/Pacific patients in chronic disease monitoring?
 
-**Features developed:**
+**AI-powered features developed:**
 
-**Data review and analysis:**
-- Diabetes: Reads HbA1c trends, ACR, diabetes diagnoses; flags overdue HbA1c tests, eye checks, foot checks, kidney monitoring
-- Cardiovascular risk: Pulls age, sex, ethnicity, BP, lipids, smoking, diabetes; calculates NZ CVDRA and groups patients by risk band (low, moderate, high)
-- COPD: Identifies COPD diagnoses and last spirometry; flags overdue lung function tests and frequent exacerbations based on notes
-- Heart failure (CHF): Tracks BNP and eGFR trends; flags patterns suggesting worsening heart failure needing review
-- Asthma: Uses medication patterns and note content to estimate control (frequent reliever use); flags patients who may require step-up therapy review
+**Clinical data analysis:**
+- **Diabetes monitoring:** Analyses HbA1c trends, identifies overdue tests (HbA1c, eye checks, foot checks, kidney monitoring)
+- **Cardiovascular risk assessment:** Calculates NZ CVDRA from multiple data points (age, sex, ethnicity, BP, lipids, smoking, diabetes), groups patients by risk band
+- **Multi-condition reasoning:** For patients with both diabetes and CVD risk, determines which checks are most urgent given overall clinical picture
 
-**Care gap detection:**
-- For each condition, checks: Are recommended tests up to date? Are monitoring visits overdue? Are key guideline-based checks missing (vaccines, retinal screening)?
-- Combines multiple conditions to avoid double-alerting and reflect highest-priority needs
+**If time allows - additional chronic conditions:**
+- COPD, heart failure, CKD monitoring using similar AI-powered analysis approaches
+
+**Intelligent care gap detection:**
+- Determines which recommended tests are overdue based on NZ guidelines
+- Identifies missing guideline-based checks
+- Applies clinical reasoning to prioritise highest-priority needs for each patient
 
 **Patient communication:**
-- Generates personalised, plain-language messages: "Your diabetes review is overdue; please book an appointment with our nurse", "You are at higher risk of heart disease; your doctor recommends a heart health check"
-- Supports different channels (SMS/portal/email), with practice-controlled templates and review
+- Generates personalised messages with practice-controlled templates
 
-**GP/practice dashboards:**
-- "Top priority patients" list showing: who has important gaps, why they are flagged, suggested next step (book nurse review, book GP review)
-- Filters by: condition (diabetes-only list), risk level, equity focus (Māori, Pacific, high-deprivation)
-
-**Medtech and Indici integration:**
-- Care Gap Finder panels integrated into both PMSs
-- At patient level: show their current gaps and recent relevant results
-- At practice level: show lists of patients needing action and allow staff to bulk-send recalls or schedule clinics
-
-**Lean MVP and ongoing R&D:**
-- A lean MVP of the Care Gap Finder (starting with diabetes and CVD risk) will be released early once core targets are met (≥95% CVDRA accuracy, ≥85% care-gap detection vs GP audit, safe messaging), then expanded to COPD, CHF, asthma and more advanced dashboards as NZ-LLM and rules are refined
-- R&D continues on: adding COPD/CHF/asthma logic, improving multi-condition logic and prioritisation, refining NZ-LLM extraction and equity-aware algorithms
+**Practice intelligence dashboards:**
+- Identifies top priority patients with suggested actions
+- Filters by condition, risk level, equity focus (Māori, Pacific, high-deprivation)
+- Surfaces patterns across patient populations
 
 **Deliverables by Month 16:**
-- Care Gap Finder operational in sandbox for both Medtech and Indici
-- Validated on ≥1,000 de-identified patient records, showing: ≥95% accuracy for CVDRA, ≥85% agreement with GP audit on care gaps, demonstrated ability to prioritise high-risk and Māori/Pacific patients appropriately
+- Care Gap Finder operational in both Medtech and Indici sandbox environments, focusing on diabetes and CVD risk
+- ≥95% CVDRA accuracy on ≥1,000 patient records
+- ≥85% care gap detection agreement with GP audit for diabetes and CVD monitoring
+- Demonstrated appropriate prioritisation of high-risk and Māori/Pacific patients
 
 **Success criteria:**
-- CVDRA calculation ≥95% accurate
-- Care gap detection ≥85% agreement with GP manual audit
-- Demonstrated equity: Māori/Pacific patients appropriately prioritised without bias
-- Hybrid architecture validated for clinical extraction and calculations
+- Clinical accuracy targets met for diabetes and CVD
+- Equity outcomes demonstrated (no algorithmic bias in prioritisation)
+- Ready for lean MVP expansion
 
 ---
 
