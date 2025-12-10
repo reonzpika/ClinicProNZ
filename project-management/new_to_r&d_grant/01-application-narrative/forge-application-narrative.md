@@ -211,54 +211,26 @@ Existing solutions address different problems and don't resolve our specific unc
 
 ## Newness – What is New? (~250 words)
 
-Two AI-powered clinical decision support services for New Zealand general practice, where AI clinical intelligence (not rigid automation) interprets medical information and adapts to real-world variation.
+Two AI-powered clinical decision support services for NZ general practice:
 
 **Service 1: Inbox Helper - Intelligent Inbox Management**
 
 AI clinical intelligence applied to:
 
-- **Triage and classification:**
-  - AI reads labs, letters, referrals, patient messages and classifies by urgency and type using clinical reasoning, not keyword matching
-  - Understands "chest pain radiating to left arm" is urgent regardless of exact wording
-
-- **Clinical interpretation:**
-  - Compares current labs with previous results, identifies trends, flags abnormalities using medical knowledge
-  - Recognizes "HbA1c increased from 48 to 64 over 6 months" signals worsening diabetes control requiring action
-
-- **Automated filing with clinical judgment:**
-  - AI determines which results are safe to auto-file based on clinical context, not rigid rules
-  - Normal mammogram in 45-year-old with no family history auto-files safely; same result in patient with BRCA gene requires GP review
-
-- **Patient communication:**
-  - Generates appropriate messages based on clinical understanding of results and patient context
-  - Adapts message tone and detail for different situations
+- **Triage and classification:** Reads labs, letters, referrals, messages; classifies by urgency and type using clinical reasoning
+- **Discharge summary processing:** Reads hospital discharge summaries, extracts key information, surfaces GP action list and urgent items
+- **Clinical interpretation:** Compares current labs with previous results, identifies trends, flags abnormalities
+- **Automated filing with judgment:** Determines which results are safe to auto-file based on clinical context
+- **Patient communication:** Generates appropriate messages adapted to clinical situation
 
 **Service 2: Care Gap Finder - Proactive Chronic Disease Intelligence**
 
 AI clinical intelligence applied to:
 
-- **Multi-condition reasoning:**
-  - Scans patient records and determines care priorities across 5 chronic conditions (diabetes, CVD, COPD, heart failure, asthma)
-  - Decides which checks are most urgent given patient's overall clinical picture
-  - Example: 65-year-old with diabetes + CKD + CVD needs cardiovascular risk review prioritized over routine foot check
-
-- **Clinical extraction:**
-  - Pulls relevant details from free-text GP notes, medications, labs using medical understanding, not structured field queries
-  - Finds "pt smoking again, stressed about redundancy" buried in consultation note from 3 months ago
-
-- **Equity-aware prioritization:**
-  - Applies clinical judgment to prioritize Māori/Pacific and high-risk patients appropriately without algorithmic bias
-  - Ensures vulnerable populations receive proactive care
-
-- **Practice intelligence:**
-  - Generates dashboards showing patterns across patient populations with actionable insights GPs can act on
-
-**Why These Are Clinical AI Services:**
-
-- **Clinical reasoning:** AI understands medical context and implications, not just pattern matching on keywords
-- **Adaptive intelligence:** Handles variations in terminology, formats, and documentation styles; works when third-party systems change formats
-- **Insight generation:** Surfaces patterns and information not easily visible from manual review or simple database queries
-- **Integrated workflow:** Works within existing GP workflow in both Medtech and Indici practice management systems
+- **Multi-condition reasoning:** Gathers all recorded patient information (labs, medications, diagnoses, demographics), determines care priorities across 5 chronic conditions (diabetes, CVD, COPD, heart failure, asthma)
+- **Priority decision-making:** Decides which checks are most urgent given patient's overall clinical picture
+- **Equity-aware prioritization:** Prioritizes Māori/Pacific and high-risk patients appropriately without algorithmic bias
+- **Practice intelligence:** Generates dashboards showing patterns across patient populations with actionable insights
 
 ---
 
