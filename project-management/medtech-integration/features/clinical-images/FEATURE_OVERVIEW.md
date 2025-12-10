@@ -1,14 +1,27 @@
 # Clinical Images Feature
 
 **Last Updated**: 2025-12-09  
-**Status**: Phase 1 In Progress - Mobile Upload & Dataflow  
-**Completion**: ~30% (Infrastructure complete, mobile implementation pending)
+**Status**: Specification Complete - Ready for Implementation  
+**Completion**: ~30% (Infrastructure complete, UI/UX specs finalized, implementation pending)
 
 ---
 
 ## Feature Purpose
 
 Enable GPs to capture clinical images from within Medtech Evolution and save directly to patient encounters. Includes mobile QR handoff for phone camera capture. Images instantly available for HealthLink/ALEX referrals.
+
+**Key Value Proposition**: Fast clinical image capture with mobile handoff, desktop review, and direct Medtech integration.
+
+---
+
+## Implementation Documentation
+
+**Before implementing, read these specifications:**
+
+1. **[mobile-ui-spec.md](./mobile-ui-spec.md)** - Complete mobile UI specification (7 screens, data flow, validation)
+2. **[desktop-ui-spec.md](./desktop-ui-spec.md)** - Complete desktop UI specification (layout, components, interactions)
+3. **[implementation-requirements.md](./implementation-requirements.md)** - Technical requirements and API contracts
+4. **[test-results.md](./test-results.md)** - FHIR API validation results
 
 ---
 
@@ -17,14 +30,16 @@ Enable GPs to capture clinical images from within Medtech Evolution and save dir
 ### What's Working ✅
 - Infrastructure complete (OAuth, BFF, ALEX API connectivity)
 - POST Media validated (widget can upload images to Medtech)
-- Desktop widget complete (capture, edit, metadata, commit flow)
+- Desktop widget foundation (components, store, hooks)
 - QR code generation for mobile handoff
 
-### What's Not Done ⏳
-- Mobile upload uses placeholder (alert instead of real backend)
-- No mobile → desktop sync mechanism
-- Backend commit endpoint mocked (not connected to real ALEX API)
-- Widget launch mechanism unknown (Phase 3)
+### What's Pending ⏳
+- Mobile UI implementation (7 screens)
+- Desktop UI updates (patient banner, warnings, metadata fields)
+- Redis + S3 session storage
+- Real-time Ably sync (mobile → desktop)
+- Backend commit endpoint (FHIR Media conversion)
+- Widget launch mechanism research (Phase 3)
 
 ---
 
@@ -65,7 +80,29 @@ GP opens Medtech Evolution
 
 ## Key Architectural Decisions
 
-### Phase 1 Decisions (2025-12-09)
+### UI/UX Decisions (2025-12-09)
+
+#### Session Scope: Per Patient
+- **Decision**: One session per patient, expires after 1 hour from last activity
+- **Rationale**: Simplifies patient tracking, prevents wrong-patient uploads, natural clinical workflow
+- **Behavior**: When patient changes, widget closes (with warning if uncommitted images)
+
+#### Two Commit Paths
+- **Decision**: Desktop review (default/recommended) + Mobile direct commit (optional)
+- **Rationale**: Desktop review provides safety net (Media resources cannot be edited/deleted after commit), mobile direct provides speed when needed
+- **Validation**: Desktop enforces body site/comment required; mobile allows upload without metadata
+
+#### Metadata Fields
+- **Decision**: 
+  - Body Site / Comment: Required (desktop), optional (mobile)
+  - Laterality: Left / Right / N/A (not "Both"), optional
+  - View, Type, Notes: Optional
+- **Rationale**: Body site is clinically essential; laterality often N/A (e.g., torso images); "Both" was ambiguous
+
+#### Media Immutability
+- **Decision**: Accepted that committed images cannot be edited or deleted via API
+- **Rationale**: ALEX API does not support PUT/PATCH/DELETE on Media resources (confirmed via Perplexity research)
+- **Mitigation**: Desktop review screen prevents committing mistakes
 
 #### Session Storage: Redis + S3
 - **Decision**: Use Redis for session metadata, S3 for temporary image storage
@@ -75,21 +112,21 @@ GP opens Medtech Evolution
 - **Decision**: Use existing Ably infrastructure for mobile → desktop sync
 - **Rationale**: Already integrated, handles reconnection automatically, supports 200 concurrent connections (100 GPs target)
 
-#### Session Lifetime: Inactivity Timeout
-- **Decision**: 10-minute session expiry after last activity (no heartbeat)
-- **Rationale**: Avoids heartbeat message overhead (19% of monthly Ably quota), simpler code
-
 #### Image Compression: Frontend
-- **Decision**: Compress images on mobile/desktop before upload
+- **Decision**: Compress images on mobile/desktop before upload (target <1MB)
 - **Rationale**: Reduces bandwidth, works cross-platform (Canvas API), saves backend CPU
 
-#### Image Format: HEIC → JPEG Conversion on Frontend
+#### Image Format: HEIC → JPEG Conversion
 - **Decision**: Convert HEIC to JPEG using browser Canvas API before upload
-- **Rationale**: Cross-platform support (iOS/Android), reduces backend complexity, existing code reusable
+- **Rationale**: Cross-platform support (iOS/Android), reduces backend complexity
 
-#### Mobile Metadata Entry: Optional Basic Fields
-- **Decision**: Mobile can optionally add laterality and body site (desktop can edit later)
-- **Rationale**: GPs often know body site when capturing, laterality is clinically important, keeps mobile fast
+#### Mobile UX: Single Image Review After Capture
+- **Decision**: After camera capture, show immediate review screen (Screen 3A) with metadata entry
+- **Rationale**: Allows GP to reject/retake immediately, add metadata while patient context fresh, supports quick multi-image capture
+
+#### Desktop UX: Silent Real-Time Updates
+- **Decision**: When mobile uploads image, it appears in thumbnail strip without toast notification
+- **Rationale**: Avoids interrupting GP's workflow, thumbnails provide sufficient visual feedback
 
 ---
 
@@ -215,8 +252,54 @@ GP opens Medtech Evolution
 
 ---
 
+## Validation Rules
+
+### Mobile (Lenient)
+- **All fields optional**
+- GP can upload images without any metadata
+- Rationale: Mobile is for quick capture, desktop provides validation
+
+### Desktop (Strict)
+- **Body Site / Comment**: Required (cannot commit without)
+- **Laterality**: Optional
+- **View, Type, Notes**: Optional
+- Visual feedback: Yellow badge on thumbnail if body site missing
+
+---
+
+## Critical Constraints
+
+### Media Resource Immutability
+**Confirmed via Perplexity research of ALEX API documentation (2025-12-09):**
+
+> "Media resources in ALEX are currently read/create only via the documented API; there is no documentation of any ability to update or delete Media once created, nor any described versioning or correction workflow for Media itself."
+
+**Implications**:
+- Once committed to Medtech, images cannot be edited via API
+- Desktop review screen is **essential** (not optional)
+- GPs must verify all details before committing
+- Mistakes require manual correction in Medtech (not via widget)
+
+---
+
+## Open Questions
+
+1. **Patient change detection**: How does Medtech Evolution notify embedded widgets of patient changes? (Perplexity research needed)
+2. **Widget embedding**: iFrame, new window, or tab? What's the standard Medtech Evolution integration pattern?
+3. **Session persistence**: Should session survive page refresh? Or create new session each time?
+4. **Maximum images per session**: Impose hard limit? (Suggest 20 images)
+5. **HEIC backend handling**: Should backend handle HEIC → JPEG conversion as fallback?
+
+---
+
 ## References
 
+### Implementation Specs
+- **[mobile-ui-spec.md](./mobile-ui-spec.md)** - Complete mobile UI specification
+- **[desktop-ui-spec.md](./desktop-ui-spec.md)** - Complete desktop UI specification
+- **[implementation-requirements.md](./implementation-requirements.md)** - Technical requirements
+
+### Project Docs
 - **[DEVELOPMENT_ROADMAP.md](../../DEVELOPMENT_ROADMAP.md)** - Implementation phases and tasks
 - **[architecture.md](../../infrastructure/architecture.md)** - Technical architecture details
 - **[test-results.md](./test-results.md)** - POST Media validation results
