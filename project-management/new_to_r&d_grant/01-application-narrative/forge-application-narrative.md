@@ -175,38 +175,37 @@ Existing solutions address different problems and don't resolve our specific unc
 
 - **Heidi (NZ market leader):**
   - Transcription and documentation only, not clinical decision support
-  - Converts speech to text but doesn't interpret clinical meaning or make recommendations
+  - Converts speech to text but doesn't interpret clinical meaning
 
 - **InboxMagic:**
-  - Early-stage MVP without published methods or deep practice management system integration
-  - Unclear which AI approaches they use or whether they work at scale
+  - Early-stage MVP without published methods or deep PMS integration
+  - Unclear which AI approaches used or if they work at scale
 
 - **SmartCareGP, HealthAccelerator:**
-  - Rule-based admin automation, not clinical reasoning
+  - Rule-based automation, not AI-powered clinical reasoning
   - Cannot handle multi-condition prioritization or adapt when formats change
 
-- **Knowledge gap:** No AI trained on NZ healthcare context (bpac guidelines, Ministry of Health protocols, regional lab formats) that intelligently solves inbox overload and care gap monitoring with clinical reasoning. Current tools either do transcription (Heidi) or basic rule-based automation (others), not AI-powered clinical decision support.
+- **Knowledge gap:** No AI trained on NZ healthcare context (bpac guidelines, Ministry of Health protocols, regional lab formats) that intelligently solves inbox overload and care gap monitoring. Current tools do transcription (Heidi) or basic automation (others), not AI-powered clinical decision support.
 
 **2. Overseas AI Systems**
 
-- Commercial large language models (like GPT-4, Claude) prove that AI can perform clinical reasoning tasks
+- Commercial AI models (GPT-4, Claude) prove AI can perform clinical reasoning
 - However, they don't address critical unknowns for NZ deployment:
   - How to achieve comparable performance under NZ sovereignty constraints (no overseas APIs, Privacy Act compliance)?
-  - At sustainable cost for NZ general practice operating at scale?
-  - With NZ clinical context understanding (local guidelines, lab formats, ACC/PHO patterns)?
-  - With equity algorithms prioritizing Māori/Pacific patients appropriately?
+  - At sustainable cost with NZ clinical context understanding (local guidelines, lab formats, ACC/PHO patterns)?
+  - Which architectural design (retrieval, agentic, hybrid) works for sovereign deployment?
 
-- **Knowledge gap:** No documented pathway exists for sovereign AI deployment achieving clinical-grade performance at sustainable cost with NZ contextual understanding.
+- **Knowledge gap:** No documented pathway for sovereign AI deployment achieving clinical-grade performance at sustainable cost.
 
 **3. Academic Research**
 
-- Published research tests isolated AI techniques (model fine-tuning, retrieval systems, hybrid architectures) on standardised, clean datasets
-- Real-world deployment requires combined constraints: sovereignty + clinical safety + equity + Privacy Act compliance + cost sustainability + real-time performance + multi-system integration
-- Lab benchmarks don't predict how AI performs when deployed in messy clinical workflows with interruptions, inconsistent data, and time pressure
+- Published research tests isolated AI techniques (fine-tuning, retrieval systems, hybrid architectures) on standardised, clean datasets
+- Real-world deployment requires combined constraints: sovereignty + clinical safety + equity + Privacy Act + cost sustainability + multi-system integration
+- Lab benchmarks don't predict AI performance in messy clinical workflows with interruptions, inconsistent data, time pressure
 
-- **Knowledge gap:** No research validates which AI approaches work under combined real-world constraint set.
+- **Knowledge gap:** No research validates which AI architectures work under combined real-world constraint set.
 
-**Conclusion:** Systematic investigation required to resolve which AI approaches work for clinical decision support under NZ sovereignty constraints at sustainable cost in real GP workflows.
+**Conclusion:** Systematic investigation required to resolve which AI architectures work for clinical decision support under NZ sovereignty constraints at sustainable cost in real GP workflows.
 
 ---
 
