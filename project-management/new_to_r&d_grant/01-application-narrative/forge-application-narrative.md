@@ -255,26 +255,15 @@ AI clinical intelligence applied to:
 
 **Better Than Existing Automation Tools**
 
-**Existing automation tools** (SmartCareGP, HealthAccelerator, rule-based systems):
-- **Rigid rules:** Alert triggers on "HbA1c >64", breaks when format changes
-- **No clinical context:** Flags everything matching threshold, creates alert fatigue
-- **No adaptation:** Requires manual reconfiguration when third-party systems change terminology
+Existing automation (SmartCareGP, HealthAccelerator, rule-based systems) relies on rigid rules that break when third-party systems change formats, flags everything matching thresholds (creating alert fatigue), and requires manual reconfiguration.
 
-**Our AI-powered approach:**
+**Our AI provides three key advantages:**
 
-- **Clinical intelligence:** Understands that "HbA1c 64", "A1c 7.5%", "glycated Hb 64 mmol/mol" all indicate poor diabetes control; doesn't break when labs change format
+1. **Adaptive intelligence:** Understands clinical meaning regardless of format variations. When labs change terminology (happens regularly), AI interprets clinically rather than failing. No manual reconfiguration needed.
 
-- **Ready to adapt:** When labs change terminology or formats (happens regularly with third-party systems), AI interprets clinically rather than failing; no manual reconfiguration needed
+2. **Clinical context awareness:** Considers full patient picture, not threshold matching. Reduces alert fatigue by understanding which combinations actually matter. Surfaces hidden patterns invisible to manual review or simple queries.
 
-- **Flexible reasoning:** Considers full clinical context, not threshold matching; diabetes with HbA1c 64 might need urgent attention in pregnancy but routine review in stable elderly patient with 15-year diabetes history
-
-- **Insight generation:** Surfaces non-obvious patterns buried in data: "Practice diabetes control worsening in winter months" or "Patients on X medication have better HbA1c outcomes"; information invisible to manual review or simple queries
-
-- **Better clinical judgment:** Reduces alert fatigue by understanding which combinations actually matter clinically vs firing alerts on every threshold breach
-
-- **Seamless integration:** Deep integration embedded directly in Medtech/Indici workflow; no context switching, no standalone applications to log into separately
-
-Clinical AI intelligence (not rigid automation) enables adaptation to real-world variability, generates actionable insights, and provides better clinical decision support embedded in daily GP workflow.
+3. **NZ-trained and integrated:** Understands local context (bpac guidelines, regional lab formats, ACC/PHO patterns). Embedded directly in Medtech/Indici workflow with no context switching.
 
 ---
 
@@ -804,9 +793,19 @@ Train NZ-LLM on aggregated patient outcomes to improve recommendations.
 
 ---
 
-**Document Version:** 3.3  
+**Document Version:** 3.5  
 **Last Updated:** 9 December 2025  
 **Status:** Ready for Forge portal submission
+
+**Version 3.5 Changes (9 Dec 2025):**
+- Final refinement of Q1-Q6 for clarity and optimal framing:
+  - **Q1:** Reframed from "test classifiers vs LLMs" to "investigate AI approaches to determine optimal architecture"; mentions lightweight models, RAG, agentic AI, hybrid; shows realistic R&D process ("initial research will determine most promising approaches to test")
+  - **Q2:** Core uncertainty now "what is optimal AI architecture?" (not "which approach for which task"); focus on optimal component combination, cost-accuracy balance, NZ-trained performance; less repetition of architecture types
+  - **Q3:** Simplified Challenge 2 - removed specific architecture breakdowns (classifiers/LLMs/hybrid), now lists failure modes generically to avoid repetition
+  - **Q4:** Minor tightening - shortened tool descriptions, condensed overseas AI bullet list from 4 to 3 points
+  - **Q5:** Removed examples for cleaner reading; added discharge summary processing capability to Inbox Helper; clarified Care Gap Finder gathers recorded info (doesn't extract from consultation notes); removed "Why These Are Clinical AI Services" section
+  - **Q6:** Condensed "Our AI approach" from 7 bullets to 3 key advantages (adaptive intelligence, clinical context awareness, NZ-trained and integrated)
+  - All answers now max 250 words with bullet points for easy reading
 
 **Version 3.3 Changes (9 Dec 2025):**
 - R&D Activities section (Q1-Q6) completely rewritten for clarity and reduced repetition:
