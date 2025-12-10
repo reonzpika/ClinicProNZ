@@ -94,42 +94,39 @@ Multiple AI system architectures exist with different trade-offs:
 
 ## Uncertainty – What is the Specific Uncertainty? (~250 words)
 
-**Core Uncertainty:** Which AI approach works for which clinical tasks under NZ sovereignty constraints?
+**Core Uncertainty:** What is the optimal AI architecture for NZ clinical decision support under sovereignty constraints?
 
-**The AI Approach Dilemma**
+**The Architecture Design Challenge**
 
-Different tasks may need different AI types:
+Multiple AI approaches exist (lightweight models, retrieval systems, agentic architectures, hybrid combinations) with different trade-offs:
 
-- **Simple pattern recognition** (normal lab auto-filing):
-  - Can lightweight classifiers handle this safely?
-  - Inexpensive but limited reasoning capability
-  
-- **Complex reasoning** (multi-condition care gaps):
-  - Do we need sophisticated language models?
-  - Can reason clinically but cost significantly more to run at scale
-  
-- **Mixed tasks** (inbox triage):
-  - Would hybrid systems (combining different AI types) work better than either alone?
+**Key unknowns:**
 
-We cannot predict which approach fits which task without systematic testing:
-- Cost-accuracy trade-offs unknown
-- Simple models: cheap but may miss nuances
-- Large models: powerful but expensive to run thousands of times daily
-- Hybrid approaches: untested in clinical contexts
+- **Optimal component combination:**
+  - Which approaches should be combined for best results?
+  - Does inbox triage need different architecture than care gap monitoring?
+  - What role does each component play (retrieval, reasoning, safety verification)?
+  - Cannot predict optimal design without systematic investigation
 
-**Sovereignty constraint:**
-- Must build NZ-trained AI systems (cannot use overseas APIs due to Privacy Act requirements)
-- Don't know if NZ training will achieve clinical-grade performance comparable to international commercial models
+- **Cost-accuracy balance:**
+  - Where is the sweet spot between clinical performance and operational cost?
+  - System will run thousands of times daily; cost multiplies quickly
+  - Simple approaches cheaper but may miss clinical nuances
+  - Sophisticated approaches more accurate but expensive at scale
+  - Unknown which tasks justify higher costs vs which can use lightweight solutions
+
+- **NZ-trained performance:**
+  - Must build NZ-trained system (cannot use overseas APIs due to Privacy Act)
+  - Unknown if NZ training achieves clinical-grade performance comparable to international commercial models
+  - No existing benchmarks for NZ-sovereign clinical AI
 
 **Secondary Uncertainties**
 
-- **Real-world PMS integration:** Will AI trained on generic NZ health data (clinical guidelines, lab formats, documentation examples) work accurately when deployed in real practice management system environments (Medtech and Indici) where GP workflows happen? Training data is necessarily cleaner than messy production environments.
+- **Real-world deployment:** Will AI trained on curated NZ data work accurately in messy PMS environments (Medtech/Indici) where GP workflows happen? Training data necessarily cleaner than production reality.
 
-- **Safety interactions:** How do different AI types fail in clinical contexts? Which failures are dangerous vs acceptable? Simple classifiers fail predictably; large language models can "hallucinate" (fabricate values) or omit critical information unpredictably.
+- **Safety characteristics:** How do different AI architectures fail in clinical contexts? Which safety mechanisms work with which approaches?
 
-- **Equity algorithms:** How do we prioritize Māori/Pacific patients appropriately without creating bias or under-alerting other population groups? No published methods exist for multi-condition monitoring with NZ equity goals.
-
-These uncertainties must be resolved to build a practical, safe, sovereign system that works in real GP workflows.
+- **Equity algorithms:** How to prioritize Māori/Pacific patients appropriately without creating bias or under-alerting other groups? No published methods for multi-condition monitoring with NZ equity goals.
 
 ---
 
