@@ -173,7 +173,7 @@ Existing solutions address different problems and don't resolve our specific unc
 
 **1. Current NZ Clinical AI Tools**
 
-- **Heidi (NZ market leader):**
+- **AI scribe (e.g. Heidi):**
   - Transcription and documentation only, not clinical decision support
   - Converts speech to text but doesn't interpret clinical meaning
 
