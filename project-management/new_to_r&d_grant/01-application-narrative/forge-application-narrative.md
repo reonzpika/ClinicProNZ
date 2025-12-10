@@ -56,209 +56,229 @@ NexWave Solutions Ltd (incorporated 2024) develops AI tools for New Zealand gene
 
 ## Describe Planned R&D Activities (~250 words)
 
-**Research Objective:** Systematically investigate which AI architectural paradigms achieve clinical safety, NZ-contextual performance, and cost-effectiveness for primary care decision support under combined constraints (sovereignty, equity, multi-system integration, real-time performance).
+We will build NZ-trained AI for two GP clinical decision support tools (Inbox Helper and Care Gap Finder) under sovereignty constraints, requiring systematic research to determine which AI approaches work.
 
-**Core Architectural Investigation:**
-- Explore spectrum: lightweight classifiers → rule-based systems → Large Language Models → retrieval-augmented generation → agentic AI → hybrid combinations
-- **Research follows empirical evidence** - may discover novel patterns or reveal optimal approaches vary unpredictably by task
-- Measure each paradigm: accuracy, computational cost, latency, safety failure modes, generalisability, equity outcomes
+**Main Research Activity: Testing Different AI Approaches**
 
-**Clinical Test Beds:**
+We will test simple classifiers vs large language models vs hybrid systems (combining different AI types) on two clinical tasks:
 
-**1. Inbox Management (reactive, high-volume)**
-- Laboratory result interpretation, hospital letter summarisation, urgency classification
-- Research question: Which architectural approach safely handles routine clinical tasks while maintaining accuracy and cost-effectiveness?
+- **Inbox triage:** Laboratory result interpretation, hospital letter classification, urgency assessment
+- **Care gap monitoring:** Identifying overdue chronic disease checks across diabetes, CVD, COPD, heart failure, asthma
 
-**2. Chronic Disease Monitoring (proactive, complex reasoning)**
-- Identify overdue checks: diabetes, cardiovascular disease, chronic lung conditions, heart failure, asthma
-- Multi-condition gap detection with Māori/Pacific equity prioritisation
-- Research question: Which paradigm achieves clinical calculation accuracy while maintaining equity without algorithmic bias?
+For each approach, we measure: accuracy on clinical tasks, computational cost, response time, safety failure modes, performance across both Medtech and Indici practice management systems.
 
-**NZ Domain Adaptation:**
-- Train sovereign AI on curated NZ clinical corpus: bpac guidelines, MoH protocols, Pharmac database, regional lab formats, Medtech/Indici clinical patterns
-- Investigate whether domain adaptation achieves clinical-grade performance under sovereignty constraints
+Research follows empirical evidence. We may discover that different tasks need different AI types, or that hybrid combinations work better than either approach alone. Cost-accuracy trade-offs cannot be predicted without testing.
 
-**Multi-System Generalisation:**
-- Integrate with Medtech and Indici
-- Investigate architectural patterns maintaining performance across different health system structures
+**NZ Healthcare Training**
 
-**Real-World Validation:**
-- Pilot with 10-20 GP practices
-- Measure: clinical utility, safety outcomes, clinician overrides, equity metrics
-- Document: synthetic → sandbox → production performance translation
+Train AI on curated NZ clinical corpus: bpac guidelines, Ministry of Health protocols, Pharmac database, regional lab formats, Medtech and Indici clinical documentation patterns.
 
-**Knowledge Outputs:**
-- Published architectural framework, NZ domain adaptation methodology, multi-system generalisation patterns, equity algorithm design principles
-- Documented through technical publications enabling sector-wide evidence-based decisions
-- **Specific implementations remain competitive IP** driving commercial sustainability
+Test whether NZ-trained AI achieves clinical-grade accuracy (≥90% for triage, ≥95% for clinical calculations) at sustainable cost under sovereignty constraints (no overseas APIs).
+
+**Real-World Validation**
+
+Pilot with 10-20 GP practices across diverse settings (urban/rural, high/low deprivation, different ethnic populations).
+
+Measure: clinical utility (time savings, care gap completion), safety outcomes (prohibited claims, missed urgents), equity metrics (Māori/Pacific screening rates), performance stability across different practices.
+
+Document performance translation: synthetic data → sandbox testing → production deployment.
+
+**Knowledge Outputs**
+
+Publish frameworks documenting which AI approaches work for clinical decision support under NZ sovereignty constraints, enabling sector-wide capability building. Specific implementations remain competitive IP.
 
 ---
 
 ## Uncertainty – What is the Specific Uncertainty? (~250 words)
 
-**Primary Uncertainty:** Which AI architectural paradigm achieves clinical safety, NZ-contextual accuracy, and cost-effectiveness for primary care decision support across multiple health system platforms under unprecedented constraint combination (high safety requirements, NZ healthcare context, equity obligations, privacy regulations, multi-system integration)?
+**Core Uncertainty:** Which AI approach works for which clinical tasks under NZ sovereignty constraints?
 
-**Five Interconnected Research Uncertainties:**
+**The AI Approach Dilemma**
 
-**1. Architectural Paradigm Selection**
-- Do routine clinical tasks permit lightweight solutions ($0.002/request) or require sophisticated reasoning ($0.15/request)?
-- Emerging paradigms (agentic systems, advanced RAG) may outperform established approaches
-- Cost-accuracy-safety trade-offs unknowable without empirical comparison across clinical risk spectrum
-- Optimal paradigm may vary by task in unexpected ways
+Different tasks may need different AI types:
 
-**2. Domain Adaptation Under Sovereignty Constraints**
-- Does domain adaptation suffice for NZ healthcare characteristics (bpac/MoH guidelines, regional lab formats, ACC/PHO patterns), or do contextual differences require architectural modifications?
-- Standard techniques trained on international datasets may not capture NZ nuances
-- Adaptation effectiveness across paradigms under no-overseas-training constraints requires systematic investigation
+- **Simple pattern recognition** (normal lab auto-filing): Can lightweight classifiers handle this safely? These are inexpensive but limited in reasoning capability.
 
-**3. Multi-System Generalisation**
-- Will architecture achieving 90% accuracy in Medtech maintain performance in Indici?
-- What design patterns enable generalisation across health platforms without system-specific rework?
-- Generalisation behaviour unpredictable without testing
+- **Complex reasoning** (multi-condition care gaps): Do we need sophisticated language models? These can reason clinically but cost significantly more to run at scale.
 
-**4. Safety-Architecture Interactions**
-- How do safety constraints interact with different paradigms?
-- Do agentic systems maintain safety bounds differently than LLMs?
-- Hybrid approaches may propagate failures across components
-- Emergent risks cannot be predicted from component specifications
+- **Mixed tasks** (inbox triage): Would hybrid systems (combining different AI types) work better than either alone?
 
-**5. Equity Algorithm Design**
-- Can algorithms prioritise Māori/Pacific patients without under-alerting other populations or perpetuating biases?
-- No published methods exist for multi-condition monitoring with NZ equity goals
+We cannot predict which approach fits which task without systematic testing. Cost-accuracy trade-offs are unknown: simple models are cheap but may miss nuances; large models are powerful but expensive to run thousands of times daily; hybrid approaches are untested in clinical contexts.
 
-Uncertainties are interconnected: architectural choice affects domain adaptation, influences generalisation, impacts safety, determines equity outcomes. Resolving these creates foundational knowledge for patient-facing AI and national health integration.
+**Sovereignty constraint:** We must build NZ-trained AI systems (cannot use overseas APIs due to Privacy Act requirements). We don't know if NZ training will achieve clinical-grade performance comparable to international commercial models.
+
+**Secondary Uncertainties**
+
+**Real-world PMS integration:** Will AI trained on generic NZ health data (clinical guidelines, lab formats, documentation examples) work accurately when deployed in real practice management system environments (Medtech and Indici) where GP workflows happen? Training data is necessarily cleaner than messy production environments.
+
+**Safety interactions:** How do different AI types fail in clinical contexts? Which failures are dangerous vs acceptable? Simple classifiers fail predictably; large language models can "hallucinate" (fabricate values) or omit critical information unpredictably.
+
+**Equity algorithms:** How do we prioritize Māori/Pacific patients appropriately without creating bias or under-alerting other population groups? No published methods exist for multi-condition monitoring with NZ equity goals.
+
+These uncertainties must be resolved to build a practical, safe, sovereign system that works in real GP workflows.
 
 ---
 
 ## R&D Challenge – Why is This Difficult for a Professional? (~250 words)
 
-**Even highly competent professionals cannot deduce solutions without systematic experimentation:**
+Experts cannot predict which AI approaches will work in clinical practice. Systematic experimentation is required because:
 
-**1. Emergent Architecture Behaviour**
-- Architectural paradigms (pattern recognition → agentic reasoning) exhibit emergent behaviour when components interact
-- Sophisticated reasoning systems "hallucinate" on medical calculations: cardiovascular risk scoring requires precise 8-variable computation, yet models fabricate values
-- Interaction effects compound unpredictably: retrieval errors propagate into reasoning, quantization degrades safety mechanisms, context-window limitations create unexpected failures
-- Component-level testing doesn't reveal system-level failures
-- Performance emerges from interactions unknowable without empirical measurement
+**1. Real Clinical Data Has High Variability and Inconsistency**
 
-**2. Real-World Clinical Data Complexity**
-- Real clinical data exhibits characteristics unreplicable synthetically: inconsistent documentation under time pressure, missing fields, data quality variations, system artifacts, GP-specific abbreviations, context-dependent terminology
-- Different paradigms respond unpredictably to messiness: classifiers fail on novel abbreviations, LLMs hallucinate missing values, hybrid systems propagate extraction errors into reasoning
-- Performance on clean synthetic data doesn't predict messy clinical data performance
-- Architecture-dependent sensitivity unknowable without real-world testing
-- Edge cases occur frequently (5-15% of "routine" items) with patient harm potential
+Clinical data varies in ways that break rigid automation:
 
-**3. Safety-Architecture Interactions**
-- Safety constraints (refusal scaffolds, prohibited-claim detection) behave differently across architectures
-- Agentic systems propagate errors across agents; LLMs bypass refusal scaffolds unexpectedly; hybrid systems fail at component boundaries creating safety gaps
-- Confidence calibration differs fundamentally: classifier probabilities are calibrated, LLM confidence scores don't correlate with accuracy (known failure mode)
-- Safety failure modes vary unpredictably by paradigm
-- Emergent safety risks require systematic investigation
+- **Documentation inconsistency:** Terminology varies across GPs, missing fields are common, GP-specific abbreviations differ by practice
+- **Lab result variations:** Same test described differently across regions and providers (HbA1c 48 vs A1c 7.5% vs glycated Hb 64 mmol/mol)
+- **Third-party systems change unpredictably:** Labs and hospitals modify formats and terminology without notice
+- **Edge cases are frequent:** 5-15% of "routine" items have unusual characteristics
 
-**4. Laboratory-to-Clinical Translation Gap**
-- Laboratory metrics (accuracy, F1) may not correlate with clinical outcomes (time saved, errors prevented, safety)
-- High-accuracy systems may reduce trust through false positives while lower-accuracy systems with better explanations drive higher utility
-- Multi-practice performance variance unpredictable: what works in one practice may fail in another due to workflow differences, patient population characteristics, documentation patterns
-- Which architectural characteristics translate to clinical value cannot be deduced from benchmarks
-- Requires systematic real-world outcome measurement across diverse practices
+AI cannot rely on 100% rigid automation; it must have clinical intelligence to interpret variations correctly. Which AI types can adapt vs which break on variation cannot be deduced without testing.
+
+**2. AI Systems Fail Unpredictably**
+
+Different AI types fail in different ways:
+
+- **Simple classifiers:** Fail on unfamiliar patterns, cannot adapt to new variations (rigid, brittle)
+- **Large language models:** Two critical failure modes:
+  - Hallucination: Fabricate missing clinical values
+  - Omission: Skip critical information without warning
+- **Hybrid systems:** May propagate errors across components in unexpected ways
+
+We cannot predict which failures will occur in real-world deployment without systematic testing. Need to discover which AI characteristics provide clinical intelligence and adaptability vs rigid automation that breaks.
+
+**3. Performance Translation from Training to Deployment**
+
+AI trained on generic NZ health data (guidelines, lab reports, clinical notes) must work in real practice management system environments where GP workflows happen.
+
+Deployment adds complexity: live workflows with interruptions, different user interfaces, varied data quality across practices, time pressure affecting documentation quality.
+
+Which AI characteristics maintain accuracy and adapt to real-world variability? Cannot deduce without testing in actual GP workflows across diverse practice settings.
+
+Only systematic testing across real clinical environments reveals which approaches maintain accuracy, safety, and adaptability under operational conditions.
 
 ---
 
 ## Knowledge Availability – What Exists and Why It's Insufficient? (~250 words)
 
-**Existing knowledge addresses different problems:**
+Existing solutions address different problems and don't resolve our specific uncertainties.
 
-**1. Current Clinical AI Tools Solve Different Problems**
-- **Documentation focus:** Heidi (NZ), Abridge, Nuance DAX solve transcription, not clinical decision support
-- **Admin automation:** SmartCareGP, HealthAccelerator, Pegasus Health provide rule-based workflow support, not multi-condition clinical reasoning
-- **Early-stage inbox tools:** InboxMagic (MVP phase) lacks published architectural approaches or deep PMS integration
-- **Knowledge gap:** Whether AI architectures work for active decision support with multi-condition reasoning (care gap monitoring across 5 chronic conditions), confidence-calibrated alerts, and equity-aware prioritisation is technologically uncertain
-- No published work validates paradigms across decision support use cases
+**1. Current NZ Clinical AI Tools**
 
-**2. Generic AI Systems Lack Sovereign Deployment Pathways**
-- Overseas APIs (GPT-4, Claude) prove clinical reasoning capability but don't address critical unknowns:
-  - How to achieve comparable performance under NZ sovereignty constraints (no overseas APIs, no overseas training)?
-  - At sustainable cost (<$0.01/request vs $0.15/request for GPT-4)?
-  - With equity algorithms prioritising Māori/Pacific patients?
-- Architectural paradigms for sovereign deployment at scale are undocumented
+**Heidi (NZ market leader):** Transcription and documentation only, not clinical decision support. Converts speech to text but doesn't interpret clinical meaning or make recommendations.
 
-**3. Academic Research Tests in Isolation**
-- Published work studies isolated techniques (fine-tuning, RAG, agentic systems) using standardised datasets
-- How paradigms perform under combined real-world constraints (sovereignty + equity + Privacy Act + cost + real-time performance + safety) is unknowable from isolated testing
-- Lab benchmarks don't predict clinical integration performance
-- Emergent behaviours cannot be deduced
+**InboxMagic:** Early-stage MVP without published methods or deep practice management system integration. Unclear which AI approaches they use or whether they work at scale.
 
-**4. Commercial Solutions Remain Proprietary**
-- Emerging commercial solutions don't disclose architectural selection criteria, domain adaptation techniques, or safety validation methods
-- Knowledge remains proprietary, unavailable for sector capability building
-- Public research required to create accessible, reusable knowledge for entire NZ health AI sector
+**SmartCareGP, HealthAccelerator:** Rule-based admin automation, not clinical reasoning. Cannot handle multi-condition prioritization or adapt when formats change.
 
-**Systematic investigation required to resolve technological uncertainties under combined constraint set.**
+**Knowledge gap:** No AI trained on NZ healthcare context (bpac guidelines, Ministry of Health protocols, regional lab formats) that intelligently solves inbox overload and care gap monitoring with clinical reasoning. Current tools either do transcription (Heidi) or basic rule-based automation (others), not AI-powered clinical decision support.
+
+**2. Overseas AI Systems**
+
+Commercial large language models (like GPT-4, Claude) prove that AI can perform clinical reasoning tasks.
+
+However, they don't address critical unknowns for NZ deployment:
+- How to achieve comparable performance under NZ sovereignty constraints (no overseas APIs, Privacy Act compliance)?
+- At sustainable cost for NZ general practice operating at scale?
+- With NZ clinical context understanding (local guidelines, lab formats, ACC/PHO patterns)?
+- With equity algorithms prioritizing Māori/Pacific patients appropriately?
+
+**Knowledge gap:** No documented pathway exists for sovereign AI deployment achieving clinical-grade performance at sustainable cost with NZ contextual understanding.
+
+**3. Academic Research**
+
+Published research tests isolated AI techniques (model fine-tuning, retrieval systems, hybrid architectures) on standardised, clean datasets.
+
+Real-world deployment requires combined constraints: sovereignty + clinical safety + equity + Privacy Act compliance + cost sustainability + real-time performance + multi-system integration.
+
+Lab benchmarks don't predict how AI performs when deployed in messy clinical workflows with interruptions, inconsistent data, and time pressure.
+
+**Knowledge gap:** No research validates which AI approaches work under combined real-world constraint set.
+
+**Conclusion:** Systematic investigation required to resolve which AI approaches work for clinical decision support under NZ sovereignty constraints at sustainable cost in real GP workflows.
 
 ---
 
 ## Newness – What is New? (~250 words)
 
-**Two AI-powered clinical decision support services for New Zealand general practice:**
+Two AI-powered clinical decision support services for New Zealand general practice, where AI clinical intelligence (not rigid automation) interprets medical information and adapts to real-world variation.
 
-**1. Inbox Helper - Intelligent Inbox Management**
-- AI-powered triage classifying inbox items (labs, letters, referrals, scripts, admin, patient messages) by urgency and type
-- Automated filing of normal screening results with appropriate recall intervals
-- Clinical intelligence overlays: compares current labs with previous results, flags trends, identifies urgent issues
-- Patient communication generation (GP-approved messages based on results)
-- Integrated into Medtech and Indici practice management systems
+**Service 1: Inbox Helper - Intelligent Inbox Management**
 
-**2. Care Gap Finder - Proactive Chronic Disease Intelligence**
-- Scans patient records to identify overdue checks across 5 chronic conditions: diabetes, cardiovascular disease, COPD, heart failure, asthma
-- Multi-condition reasoning: prioritises patients with competing care needs (e.g., diabetes control vs CVD prevention vs CKD monitoring)
-- Equity-preserving algorithms: systematically prioritises Māori/Pacific patients and high-deprivation populations without algorithmic bias
-- Generates recall lists and patient communication messages
-- Practice dashboards showing care gaps with equity filters
+AI clinical intelligence applied to:
 
-**Why These Services Are Novel:**
+**Triage and classification:** AI reads labs, letters, referrals, patient messages and classifies by urgency and type using clinical reasoning, not keyword matching. Understands that "chest pain radiating to left arm" is urgent regardless of exact wording.
 
-**No existing tools provide clinical intelligence for these tasks.** Current state:
-- Inbox management: 100% manual GP/nurse review (no AI triage exists)
-- Care gap monitoring: 100% manual chart review OR rule-based queries without clinical reasoning (cannot handle multi-condition prioritisation or equity algorithms)
-- Existing AI tools (Heidi): Documentation/transcription only, not clinical decision support
-- International tools: Don't address NZ sovereignty constraints, lack equity algorithms, don't integrate with NZ PMSs
+**Clinical interpretation:** Compares current labs with previous results, identifies trends, flags abnormalities using medical knowledge. Recognizes "HbA1c increased from 48 to 64 over 6 months" signals worsening diabetes control requiring action.
 
-**R&D Approach:** Systematic investigation of AI architectural paradigms (classifiers → LLMs → agentic systems → hybrid approaches) to achieve clinical safety, NZ-contextual accuracy, equity without bias, and sustainable cost (<$0.01/request) under sovereignty constraints. Research generates architectural frameworks, safety methods, and equity algorithms documented for broader sector use.
+**Automated filing with clinical judgment:** AI determines which results are safe to auto-file based on clinical context, not rigid rules. Normal mammogram in 45-year-old with no family history auto-files safely; same result in patient with BRCA gene requires GP review.
+
+**Patient communication:** Generates appropriate messages based on clinical understanding of results and patient context. Adapts message tone and detail for different situations.
+
+**Service 2: Care Gap Finder - Proactive Chronic Disease Intelligence**
+
+AI clinical intelligence applied to:
+
+**Multi-condition reasoning:** Scans patient records and determines care priorities across 5 chronic conditions (diabetes, CVD, COPD, heart failure, asthma). Decides which checks are most urgent given patient's overall clinical picture: 65-year-old with diabetes + CKD + CVD needs cardiovascular risk review prioritized over routine foot check.
+
+**Clinical extraction:** Pulls relevant details from free-text GP notes, medications, labs using medical understanding, not structured field queries. Finds "pt smoking again, stressed about redundancy" buried in consultation note from 3 months ago.
+
+**Equity-aware prioritization:** Applies clinical judgment to prioritize Māori/Pacific and high-risk patients appropriately without algorithmic bias. Ensures vulnerable populations receive proactive care.
+
+**Practice intelligence:** Generates dashboards showing patterns across patient populations with actionable insights GPs can act on.
+
+**Why These Are Clinical AI Services:**
+
+**Clinical reasoning:** AI understands medical context and implications, not just pattern matching on keywords.
+
+**Adaptive intelligence:** Handles variations in terminology, formats, and documentation styles. Works when third-party systems change formats.
+
+**Insight generation:** Surfaces patterns and information not easily visible from manual review or simple database queries.
+
+**Integrated workflow:** Works within existing GP workflow in both Medtech and Indici practice management systems.
 
 ---
 
 ## Why is it Better? (~250 words)
 
-**Better Than Current Manual Processes:**
+**Better Than Manual Processes**
 
 **Inbox Management:**
-- **Current:** GPs manually review every inbox item (labs, letters, referrals), spending 1-2 hours/day on triage and filing
-- **With AI:** Automated triage and classification saves 30%+ time. AI flags urgent items, auto-files normal screening results, compares labs with previous values
-- **GP benefit:** Reduces daily workload by 1-2 hours, enabling focus on complex clinical decisions rather than administrative sorting
+- Manual: 1-2 hours/day reviewing every item individually
+- With AI: 30%+ time savings through intelligent pre-processing
+- **AI advantage:** Instantly compares current results with patient history, spots trends invisible in single manual review (e.g., "creatinine slowly rising over 18 months suggests progressive kidney disease")
 
 **Care Gap Monitoring:**
-- **Current:** Manual chart reviews or basic rule-based queries (e.g., "HbA1c >64 mmol/mol") requiring GP interpretation. Time-consuming, inconsistent across practices
-- **With AI:** Systematic scanning across 5 chronic conditions with multi-condition reasoning. AI handles clinical complexity: "Patient has diabetes + CKD + CVD → prioritise based on greatest clinical need"
-- **GP benefit:** 80%+ care gap completion vs inconsistent manual monitoring. Proactively identifies high-risk patients before complications
+- Manual: Time-consuming chart reviews, limited to what GP remembers to check
+- With AI: Systematic population-level scanning with multi-condition prioritization
+- **AI advantage:** Sees patterns across entire practice that manual review misses (e.g., "Your Māori patients with diabetes have 40% lower HbA1c screening completion in Q3-Q4")
 
-**Equity Outcomes:**
-- **Current:** Ad-hoc efforts to prioritise Māori/Pacific patients, often ineffective
-- **With AI:** Systematic equity prioritisation built into algorithms, ensuring Māori/Pacific patients receive proactive care without under-alerting other populations
-- **GP benefit:** Meets Te Tiriti obligations systematically, reduces health inequities
+**Equity:**
+- Manual: Relies on GP memory, vulnerable patients often missed
+- With AI: Systematic identification and prioritization
+- **AI advantage:** Never forgets, consistently applies equity principles across all patients
 
-**Better Than Existing AI Tools:**
+**Better Than Existing Automation Tools**
 
-**Heidi (NZ market leader):**
-- Heidi: Transcription and documentation only
-- Ours: Clinical decision support with multi-condition reasoning, equity algorithms, proactive monitoring
+**Existing automation tools** (SmartCareGP, HealthAccelerator, rule-based systems):
+- **Rigid rules:** Alert triggers on "HbA1c >64", breaks when format changes
+- **No clinical context:** Flags everything matching threshold, creates alert fatigue
+- **No adaptation:** Requires manual reconfiguration when third-party systems change terminology
 
-**Overseas APIs (GPT-4, Claude):**
-- Overseas: Not sovereign (Privacy Act concerns), expensive ($0.15/request unsustainable at scale), no NZ clinical context (bpac guidelines, regional lab formats)
-- Ours: Sovereign (no overseas APIs), sustainable cost (<$0.01/request), NZ-trained on local clinical corpus
+**Our AI-powered approach:**
 
-**Clinical Integration:**
-- Existing tools: Standalone applications requiring workflow disruption
-- Ours: Integrated directly into Medtech/Indici PMSs, embedded in existing GP workflow
+**Clinical intelligence:** Understands that "HbA1c 64", "A1c 7.5%", "glycated Hb 64 mmol/mol" all indicate poor diabetes control. Doesn't break when labs change format.
+
+**Ready to adapt:** When labs change terminology or formats (happens regularly with third-party systems), AI interprets clinically rather than failing. No manual reconfiguration needed.
+
+**Flexible reasoning:** Considers full clinical context, not threshold matching. Diabetes with HbA1c 64 might need urgent attention in pregnancy but routine review in stable elderly patient with 15-year diabetes history.
+
+**Insight generation:** Surfaces non-obvious patterns buried in data: "Practice diabetes control worsening in winter months" or "Patients on X medication have better HbA1c outcomes". Information invisible to manual review or simple queries.
+
+**Better clinical judgment:** Reduces alert fatigue by understanding which combinations actually matter clinically vs firing alerts on every threshold breach.
+
+**Seamless integration:** Deep integration embedded directly in Medtech/Indici workflow. No context switching, no standalone applications to log into separately.
+
+Clinical AI intelligence (not rigid automation) enables adaptation to real-world variability, generates actionable insights, and provides better clinical decision support embedded in daily GP workflow.
 
 ---
 
