@@ -56,133 +56,120 @@ NexWave Solutions Ltd (incorporated 2024) develops AI tools for New Zealand gene
 
 ## Describe Planned R&D Activities (~250 words)
 
-We will build NZ-sovereign clinical LLM system for two GP decision support tools (Inbox Helper and Care Gap Finder), requiring systematic research to determine which LLM architectural approach works under sovereignty constraints.
+We will build NZ-trained AI for two GP clinical decision support tools (Inbox Helper and Care Gap Finder) under sovereignty constraints, requiring systematic research to determine which AI approaches work.
 
-**Main Research Activity: Testing Different LLM Architectural Approaches**
+**Main Research Activity: Testing Different AI Approaches**
 
-Test multiple LLM approaches on two clinical tasks:
-
-- **LLM approaches to investigate:**
-  - **Fine-tuned NZ models:** Train base models (Llama, Mistral) on NZ clinical corpus
-  - **RAG (Retrieval-Augmented Generation):** Base model + dynamic retrieval from NZ knowledge bases (bpac guidelines, MoH protocols, patient history)
-  - **Agentic AI systems:** Multiple specialized AI agents working together (extraction agent, reasoning agent, safety verification agent)
-  - **Hybrid combinations:** Fine-tuned model + RAG + safety agents working together
-
-- **Clinical test beds:**
+- Test simple classifiers vs large language models vs hybrid systems (combining different AI types)
+- Apply to two clinical tasks:
   - **Inbox triage:** Laboratory result interpretation, hospital letter classification, urgency assessment
-  - **Care gap monitoring:** Multi-condition reasoning across diabetes, CVD, COPD, heart failure, asthma
-
-- **Measurement criteria:** Clinical accuracy, computational cost, response time, safety failure modes, performance across Medtech and Indici systems
-
-- Research follows empirical evidence; may discover different tasks need different architectures, or hybrid combinations outperform single approaches
+  - **Care gap monitoring:** Identifying overdue chronic disease checks across diabetes, CVD, COPD, heart failure, asthma
+- Measure each approach: accuracy on clinical tasks, computational cost, response time, safety failure modes, performance across both Medtech and Indici practice management systems
+- Research follows empirical evidence; may discover different tasks need different AI types, or hybrid combinations work better
+- Cost-accuracy trade-offs cannot be predicted without testing
 
 **NZ Healthcare Training**
 
-- Curate NZ clinical corpus: bpac guidelines, Ministry of Health protocols, Pharmac database, regional lab formats, Medtech/Indici documentation patterns
-- Investigate training techniques: full fine-tuning vs parameter-efficient methods (LoRA) vs prompt engineering
-- Test whether NZ-trained LLM achieves clinical-grade accuracy (≥90% triage, ≥95% clinical calculations) at sustainable cost
+- Train AI on curated NZ clinical corpus: bpac guidelines, Ministry of Health protocols, Pharmac database, regional lab formats, Medtech and Indici clinical documentation patterns
+- Test whether NZ-trained AI achieves clinical-grade accuracy (≥90% for triage, ≥95% for clinical calculations) at sustainable cost under sovereignty constraints (no overseas APIs)
 
 **Real-World Validation**
 
-- Pilot 10-20 GP practices across diverse settings
-- Measure clinical utility, safety outcomes, equity metrics, performance stability
-- Document: synthetic → sandbox → production performance translation
+- Pilot with 10-20 GP practices across diverse settings (urban/rural, high/low deprivation, different ethnic populations)
+- Measure: clinical utility (time savings, care gap completion), safety outcomes (prohibited claims, missed urgents), equity metrics (Māori/Pacific screening rates), performance stability across different practices
+- Document performance translation: synthetic data → sandbox testing → production deployment
 
 **Knowledge Outputs**
 
-- Publish frameworks for NZ health AI sector
+- Publish frameworks documenting which AI approaches work for clinical decision support under NZ sovereignty constraints
+- Enable sector-wide capability building
 - Specific implementations remain competitive IP
 
 ---
 
 ## Uncertainty – What is the Specific Uncertainty? (~250 words)
 
-**Core Uncertainty:** Which LLM architectural approach achieves clinical reasoning accuracy under NZ sovereignty constraints?
+**Core Uncertainty:** Which AI approach works for which clinical tasks under NZ sovereignty constraints?
 
-**The LLM Architecture Dilemma**
+**The AI Approach Dilemma**
 
-We don't know which approach works for clinical tasks:
+Different tasks may need different AI types:
 
-- **Fine-tuned NZ models:**
-  - Does training base models (Llama, Mistral) on NZ clinical corpus achieve clinical-grade accuracy?
-  - Can fine-tuning capture NZ healthcare context (bpac guidelines, regional lab formats, ACC/PHO patterns)?
-  - What training approach works: full fine-tuning vs parameter-efficient methods (LoRA) vs prompt engineering?
+- **Simple pattern recognition** (normal lab auto-filing):
+  - Can lightweight classifiers handle this safely?
+  - Inexpensive but limited reasoning capability
+  
+- **Complex reasoning** (multi-condition care gaps):
+  - Do we need sophisticated language models?
+  - Can reason clinically but cost significantly more to run at scale
+  
+- **Mixed tasks** (inbox triage):
+  - Would hybrid systems (combining different AI types) work better than either alone?
 
-- **RAG (Retrieval-Augmented Generation):**
-  - Does dynamic retrieval from NZ knowledge bases provide better context than fine-tuning alone?
-  - Which works better: RAG-only, fine-tuning-only, or combination?
-  - How to design retrieval systems for clinical accuracy and safety?
+We cannot predict which approach fits which task without systematic testing:
+- Cost-accuracy trade-offs unknown
+- Simple models: cheap but may miss nuances
+- Large models: powerful but expensive to run thousands of times daily
+- Hybrid approaches: untested in clinical contexts
 
-- **Agentic AI systems:**
-  - Do multiple specialized agents (extraction, reasoning, safety verification) achieve better accuracy than single-model approaches?
-  - How do agent interactions affect safety and performance?
-  - What coordination patterns work for clinical workflows?
-
-- **Cost-accuracy trade-offs:**
-  - Sophisticated approaches (agentic AI) may be more accurate but expensive to run thousands of times daily
-  - Simpler approaches (prompt engineering only) cheaper but may miss clinical nuances
-  - Cannot predict optimal balance without systematic testing
-
-**Sovereignty Constraint**
-
-- Must build NZ-trained system (cannot use overseas APIs due to Privacy Act)
-- Unknown if NZ-trained LLM matches international commercial model performance
+**Sovereignty constraint:**
+- Must build NZ-trained AI systems (cannot use overseas APIs due to Privacy Act requirements)
+- Don't know if NZ training will achieve clinical-grade performance comparable to international commercial models
 
 **Secondary Uncertainties**
 
-- **Real-world deployment:** Will LLM trained on generic NZ health data work accurately in messy PMS environments (Medtech/Indici) where GP workflows happen? Training data cleaner than production reality.
+- **Real-world PMS integration:** Will AI trained on generic NZ health data (clinical guidelines, lab formats, documentation examples) work accurately when deployed in real practice management system environments (Medtech and Indici) where GP workflows happen? Training data is necessarily cleaner than messy production environments.
 
-- **Safety characteristics:** How do different LLM architectures fail? RAG systems may retrieve incorrect context; agentic systems may propagate errors across agents; all LLMs can hallucinate or omit critical information.
+- **Safety interactions:** How do different AI types fail in clinical contexts? Which failures are dangerous vs acceptable? Simple classifiers fail predictably; large language models can "hallucinate" (fabricate values) or omit critical information unpredictably.
 
-- **Equity algorithms:** How to prioritize Māori/Pacific patients without bias? No published methods for LLM-based multi-condition monitoring with NZ equity goals.
+- **Equity algorithms:** How do we prioritize Māori/Pacific patients appropriately without creating bias or under-alerting other population groups? No published methods exist for multi-condition monitoring with NZ equity goals.
+
+These uncertainties must be resolved to build a practical, safe, sovereign system that works in real GP workflows.
 
 ---
 
 ## R&D Challenge – Why is This Difficult for a Professional? (~250 words)
 
-Experts cannot predict which LLM architectural approaches will work in clinical practice. Systematic experimentation required because:
+Experts cannot predict which AI approaches will work in clinical practice. Systematic experimentation is required because:
 
 **1. Real Clinical Data Has High Variability and Inconsistency**
 
-Clinical data varies in ways that challenge LLM systems:
+Clinical data varies in ways that break rigid automation:
 
 - **Documentation inconsistency:** Terminology varies across GPs, missing fields common, GP-specific abbreviations differ by practice
-- **Lab result variations:** Same test described differently (HbA1c 48 vs A1c 7.5% vs glycated Hb 64 mmol/mol)
+- **Lab result variations:** Same test described differently across regions and providers (HbA1c 48 vs A1c 7.5% vs glycated Hb 64 mmol/mol)
 - **Third-party systems change unpredictably:** Labs and hospitals modify formats and terminology without notice
-- **Edge cases frequent:** 5-15% of "routine" items have unusual characteristics
-- **Requires clinical intelligence:** LLM must interpret variations correctly, not rigid pattern matching
-- Which LLM architecture (fine-tuned vs RAG vs agentic) handles variability best cannot be deduced without testing
+- **Edge cases are frequent:** 5-15% of "routine" items have unusual characteristics
+- **AI cannot rely on 100% rigid automation:** Must have clinical intelligence to interpret variations correctly
+- Which AI types can adapt vs which break on variation cannot be deduced without testing
 
-**2. LLM Architectures Fail in Different Ways**
+**2. AI Systems Fail Unpredictably**
 
-Different approaches have different failure modes:
+Different AI types fail in different ways:
 
-- **Fine-tuned models:**
-  - May not generalize to unseen variations
-  - Hallucination: Fabricate missing clinical values
-  - Omission: Skip critical information without warning
-
-- **RAG systems:**
-  - May retrieve incorrect or irrelevant context
-  - Retrieval failures propagate into reasoning
-  - Performance depends on knowledge base quality
-
-- **Agentic AI:**
-  - Errors propagate across agents unpredictably
-  - Agent coordination failures create safety gaps
-  - Complex interactions difficult to debug
+- **Simple classifiers:**
+  - Fail on unfamiliar patterns
+  - Cannot adapt to new variations (rigid, brittle)
+  
+- **Large language models:**
+  - Two critical failure modes:
+    - Hallucination: Fabricate missing clinical values
+    - Omission: Skip critical information without warning
+    
+- **Hybrid systems:**
+  - May propagate errors across components in unexpected ways
 
 - Cannot predict which failures occur in real-world deployment without systematic testing
-- Need to discover which architectural characteristics provide robustness vs brittleness
+- Need to discover which AI characteristics provide clinical intelligence and adaptability vs rigid automation that breaks
 
 **3. Performance Translation from Training to Deployment**
 
-- LLM trained on curated NZ health data must work in messy PMS environments (Medtech/Indici) where GP workflows happen
-- Deployment adds complexity: live workflows with interruptions, varied data quality, time pressure affecting documentation
-- Which architectural approach maintains accuracy under real-world conditions?
-- Cannot deduce without testing across diverse practice settings
+- AI trained on generic NZ health data (guidelines, lab reports, clinical notes) must work in real practice management system environments where GP workflows happen
+- Deployment adds complexity: live workflows with interruptions, different user interfaces, varied data quality across practices, time pressure affecting documentation quality
+- Which AI characteristics maintain accuracy and adapt to real-world variability?
+- Cannot deduce without testing in actual GP workflows across diverse practice settings
 
-Only systematic testing reveals which LLM architectures maintain clinical accuracy, safety, and adaptability under operational conditions.
+Only systematic testing across real clinical environments reveals which approaches maintain accuracy, safety, and adaptability under operational conditions.
 
 ---
 
@@ -197,87 +184,88 @@ Existing solutions address different problems and don't resolve our specific unc
   - Converts speech to text but doesn't interpret clinical meaning or make recommendations
 
 - **InboxMagic:**
-  - Early-stage MVP without published methods or deep PMS integration
-  - Unclear which LLM approaches they use or whether they work at scale
+  - Early-stage MVP without published methods or deep practice management system integration
+  - Unclear which AI approaches they use or whether they work at scale
 
 - **SmartCareGP, HealthAccelerator:**
-  - Rule-based admin automation, not AI/LLM-powered clinical reasoning
+  - Rule-based admin automation, not clinical reasoning
   - Cannot handle multi-condition prioritization or adapt when formats change
 
-- **Knowledge gap:** No LLM trained on NZ healthcare context (bpac guidelines, Ministry of Health protocols, regional lab formats) that intelligently solves inbox overload and care gap monitoring with clinical reasoning. Current tools do transcription (Heidi) or basic automation (others), not LLM-powered clinical decision support.
+- **Knowledge gap:** No AI trained on NZ healthcare context (bpac guidelines, Ministry of Health protocols, regional lab formats) that intelligently solves inbox overload and care gap monitoring with clinical reasoning. Current tools either do transcription (Heidi) or basic rule-based automation (others), not AI-powered clinical decision support.
 
-**2. Overseas LLM Systems**
+**2. Overseas AI Systems**
 
-- Commercial large language models (GPT-4, Claude) prove LLMs can perform clinical reasoning
+- Commercial large language models (like GPT-4, Claude) prove that AI can perform clinical reasoning tasks
 - However, they don't address critical unknowns for NZ deployment:
   - How to achieve comparable performance under NZ sovereignty constraints (no overseas APIs, Privacy Act compliance)?
   - At sustainable cost for NZ general practice operating at scale?
   - With NZ clinical context understanding (local guidelines, lab formats, ACC/PHO patterns)?
-  - Which LLM architecture works: fine-tuned models, RAG, agentic systems, or hybrid?
+  - With equity algorithms prioritizing Māori/Pacific patients appropriately?
 
-- **Knowledge gap:** No documented pathway for sovereign LLM deployment achieving clinical-grade performance at sustainable cost with NZ contextual understanding.
+- **Knowledge gap:** No documented pathway exists for sovereign AI deployment achieving clinical-grade performance at sustainable cost with NZ contextual understanding.
 
 **3. Academic Research**
 
-- Published research tests isolated LLM techniques (fine-tuning, RAG, agentic architectures) on standardised, clean datasets
-- Real-world deployment requires combined constraints: sovereignty + clinical safety + equity + Privacy Act + cost sustainability + real-time performance + multi-system integration
-- Lab benchmarks don't predict LLM performance in messy clinical workflows with interruptions, inconsistent data, time pressure
+- Published research tests isolated AI techniques (model fine-tuning, retrieval systems, hybrid architectures) on standardised, clean datasets
+- Real-world deployment requires combined constraints: sovereignty + clinical safety + equity + Privacy Act compliance + cost sustainability + real-time performance + multi-system integration
+- Lab benchmarks don't predict how AI performs when deployed in messy clinical workflows with interruptions, inconsistent data, and time pressure
 
-- **Knowledge gap:** No research validates which LLM architectural approaches work under combined real-world constraint set.
+- **Knowledge gap:** No research validates which AI approaches work under combined real-world constraint set.
 
-**Conclusion:** Systematic investigation required to resolve which LLM architectures work for clinical decision support under NZ sovereignty constraints at sustainable cost in real GP workflows.
+**Conclusion:** Systematic investigation required to resolve which AI approaches work for clinical decision support under NZ sovereignty constraints at sustainable cost in real GP workflows.
 
 ---
 
 ## Newness – What is New? (~250 words)
 
-Two LLM-powered clinical decision support services for NZ general practice, where LLM clinical intelligence (not rigid automation) interprets medical information and adapts to real-world variation.
+Two AI-powered clinical decision support services for New Zealand general practice, where AI clinical intelligence (not rigid automation) interprets medical information and adapts to real-world variation.
 
 **Service 1: Inbox Helper - Intelligent Inbox Management**
 
-LLM clinical intelligence applied to:
+AI clinical intelligence applied to:
 
 - **Triage and classification:**
-  - LLM reads labs, letters, referrals, patient messages and classifies by urgency using clinical reasoning, not keyword matching
+  - AI reads labs, letters, referrals, patient messages and classifies by urgency and type using clinical reasoning, not keyword matching
   - Understands "chest pain radiating to left arm" is urgent regardless of exact wording
 
 - **Clinical interpretation:**
   - Compares current labs with previous results, identifies trends, flags abnormalities using medical knowledge
-  - Recognizes "HbA1c increased from 48 to 64 over 6 months" signals worsening diabetes control
+  - Recognizes "HbA1c increased from 48 to 64 over 6 months" signals worsening diabetes control requiring action
 
 - **Automated filing with clinical judgment:**
-  - LLM determines which results are safe to auto-file based on clinical context, not rigid rules
-  - Normal mammogram in 45-year-old with no family history auto-files; same result in BRCA-positive patient requires GP review
+  - AI determines which results are safe to auto-file based on clinical context, not rigid rules
+  - Normal mammogram in 45-year-old with no family history auto-files safely; same result in patient with BRCA gene requires GP review
 
 - **Patient communication:**
-  - Generates appropriate messages based on clinical understanding
-  - Adapts tone and detail for different situations
+  - Generates appropriate messages based on clinical understanding of results and patient context
+  - Adapts message tone and detail for different situations
 
 **Service 2: Care Gap Finder - Proactive Chronic Disease Intelligence**
 
-LLM clinical intelligence applied to:
+AI clinical intelligence applied to:
 
 - **Multi-condition reasoning:**
-  - Scans patient records and prioritizes care across 5 chronic conditions (diabetes, CVD, COPD, heart failure, asthma)
-  - 65-year-old with diabetes + CKD + CVD: LLM prioritizes cardiovascular risk review over routine foot check
+  - Scans patient records and determines care priorities across 5 chronic conditions (diabetes, CVD, COPD, heart failure, asthma)
+  - Decides which checks are most urgent given patient's overall clinical picture
+  - Example: 65-year-old with diabetes + CKD + CVD needs cardiovascular risk review prioritized over routine foot check
 
 - **Clinical extraction:**
-  - Pulls details from free-text GP notes using medical understanding, not structured queries
-  - Finds "pt smoking again, stressed about redundancy" buried in 3-month-old consultation note
+  - Pulls relevant details from free-text GP notes, medications, labs using medical understanding, not structured field queries
+  - Finds "pt smoking again, stressed about redundancy" buried in consultation note from 3 months ago
 
 - **Equity-aware prioritization:**
-  - Applies clinical judgment to prioritize Māori/Pacific and high-risk patients without bias
+  - Applies clinical judgment to prioritize Māori/Pacific and high-risk patients appropriately without algorithmic bias
+  - Ensures vulnerable populations receive proactive care
 
 - **Practice intelligence:**
-  - Generates dashboards with actionable insights
+  - Generates dashboards showing patterns across patient populations with actionable insights GPs can act on
 
-**Why These Are LLM-Powered Services:**
+**Why These Are Clinical AI Services:**
 
-- **Clinical reasoning:** LLM understands medical context, not keyword matching
-- **Adaptive intelligence:** Handles terminology variations; works when third-party formats change
-- **Insight generation:** Surfaces patterns invisible to manual review
-- **NZ-trained:** Built on NZ clinical corpus (bpac, MoH, regional formats)
-- **Integrated workflow:** Embedded in Medtech/Indici systems
+- **Clinical reasoning:** AI understands medical context and implications, not just pattern matching on keywords
+- **Adaptive intelligence:** Handles variations in terminology, formats, and documentation styles; works when third-party systems change formats
+- **Insight generation:** Surfaces patterns and information not easily visible from manual review or simple database queries
+- **Integrated workflow:** Works within existing GP workflow in both Medtech and Indici practice management systems
 
 ---
 
@@ -287,43 +275,41 @@ LLM clinical intelligence applied to:
 
 - **Inbox Management:**
   - Manual: 1-2 hours/day reviewing every item individually
-  - With LLM: 30%+ time savings through intelligent pre-processing
-  - **LLM advantage:** Instantly compares results with patient history, spots trends invisible in single manual review ("creatinine slowly rising over 18 months suggests progressive kidney disease")
+  - With AI: 30%+ time savings through intelligent pre-processing
+  - **AI advantage:** Instantly compares current results with patient history, spots trends invisible in single manual review (e.g., "creatinine slowly rising over 18 months suggests progressive kidney disease")
 
 - **Care Gap Monitoring:**
-  - Manual: Time-consuming chart reviews, limited to what GP remembers
-  - With LLM: Systematic population-level scanning with multi-condition prioritization
-  - **LLM advantage:** Sees patterns across entire practice that manual review misses ("Your Māori patients with diabetes have 40% lower HbA1c screening completion in Q3-Q4")
+  - Manual: Time-consuming chart reviews, limited to what GP remembers to check
+  - With AI: Systematic population-level scanning with multi-condition prioritization
+  - **AI advantage:** Sees patterns across entire practice that manual review misses (e.g., "Your Māori patients with diabetes have 40% lower HbA1c screening completion in Q3-Q4")
 
 - **Equity:**
-  - Manual: Relies on GP memory, vulnerable patients missed
-  - With LLM: Systematic identification and prioritization
-  - **LLM advantage:** Never forgets, consistently applies equity principles
+  - Manual: Relies on GP memory, vulnerable patients often missed
+  - With AI: Systematic identification and prioritization
+  - **AI advantage:** Never forgets, consistently applies equity principles across all patients
 
 **Better Than Existing Automation Tools**
 
-**Existing automation** (SmartCareGP, HealthAccelerator, rule-based systems):
+**Existing automation tools** (SmartCareGP, HealthAccelerator, rule-based systems):
 - **Rigid rules:** Alert triggers on "HbA1c >64", breaks when format changes
 - **No clinical context:** Flags everything matching threshold, creates alert fatigue
-- **No adaptation:** Requires manual reconfiguration when third-party systems change
+- **No adaptation:** Requires manual reconfiguration when third-party systems change terminology
 
-**Our LLM-powered approach:**
+**Our AI-powered approach:**
 
-- **Clinical intelligence:** LLM understands "HbA1c 64", "A1c 7.5%", "glycated Hb 64 mmol/mol" all mean poor diabetes control; doesn't break when formats change
+- **Clinical intelligence:** Understands that "HbA1c 64", "A1c 7.5%", "glycated Hb 64 mmol/mol" all indicate poor diabetes control; doesn't break when labs change format
 
-- **Ready to adapt:** When labs change terminology (happens regularly), LLM interprets clinically; no manual reconfiguration needed
+- **Ready to adapt:** When labs change terminology or formats (happens regularly with third-party systems), AI interprets clinically rather than failing; no manual reconfiguration needed
 
-- **Flexible reasoning:** Considers full clinical context; HbA1c 64 needs urgent attention in pregnancy but routine review in stable elderly patient with 15-year diabetes history
+- **Flexible reasoning:** Considers full clinical context, not threshold matching; diabetes with HbA1c 64 might need urgent attention in pregnancy but routine review in stable elderly patient with 15-year diabetes history
 
-- **Insight generation:** Surfaces non-obvious patterns: "Practice diabetes control worsening in winter months" or "Patients on X medication have better outcomes"; invisible to manual review or simple queries
+- **Insight generation:** Surfaces non-obvious patterns buried in data: "Practice diabetes control worsening in winter months" or "Patients on X medication have better HbA1c outcomes"; information invisible to manual review or simple queries
 
-- **Better clinical judgment:** Reduces alert fatigue by understanding which combinations actually matter vs firing on every threshold breach
+- **Better clinical judgment:** Reduces alert fatigue by understanding which combinations actually matter clinically vs firing alerts on every threshold breach
 
-- **NZ-trained:** Understands local context (bpac guidelines, regional lab formats, ACC/PHO patterns)
+- **Seamless integration:** Deep integration embedded directly in Medtech/Indici workflow; no context switching, no standalone applications to log into separately
 
-- **Seamless integration:** Embedded in Medtech/Indici workflow; no context switching
-
-LLM clinical intelligence (not rigid automation) enables adaptation to variability, generates insights, and provides better decision support embedded in daily GP workflow.
+Clinical AI intelligence (not rigid automation) enables adaptation to real-world variability, generates actionable insights, and provides better clinical decision support embedded in daily GP workflow.
 
 ---
 
@@ -853,17 +839,9 @@ Train NZ-LLM on aggregated patient outcomes to improve recommendations.
 
 ---
 
-**Document Version:** 3.4  
+**Document Version:** 3.3  
 **Last Updated:** 9 December 2025  
 **Status:** Ready for Forge portal submission
-
-**Version 3.4 Changes (9 Dec 2025):**
-- R&D focus reframed from "simple classifiers vs LLMs" to "LLM architectural approaches":
-  - **Q1-Q6 revised:** All questions now focus on investigating different LLM architectures (fine-tuned models, RAG, agentic AI, hybrid combinations)
-  - **More sophisticated R&D:** Testing which LLM approach works (not basic classifier vs LLM comparison)
-  - **Better alignment:** Matches project title "NZ-Sovereign Clinical LLM" and genuine research uncertainty
-  - **All answers max 250 words with bullet points** for easy reading
-  - Core research question: Which LLM architectural approach achieves clinical reasoning under NZ sovereignty constraints?
 
 **Version 3.3 Changes (9 Dec 2025):**
 - R&D Activities section (Q1-Q6) completely rewritten for clarity and reduced repetition:
