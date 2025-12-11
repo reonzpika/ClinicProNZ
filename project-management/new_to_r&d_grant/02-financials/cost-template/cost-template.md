@@ -32,8 +32,8 @@
 
 **Co-Funding Sources:**
 - **Opening cash (business account):** $130,000 NZD
-- **Ting's reserve (shareholder funds):** $85,000 NZD (drawn in 3 installments: Months 12, 15, 18)
-- **Emergency buffer (Ting's account):** $15,000 NZD (retained as prudent reserve)
+- **Ting's reserve (shareholder funds):** $71,000 NZD (drawn in 3 installments: Months 12, 18, 24)
+- **Emergency buffer (Ting's account):** $39,000 NZD (retained as prudent reserve)
 - **GP clinical income:** $266,800 over 24 months (20 hrs/week @ $145/hr excl. GST)
 - **Total co-funding deployed:** $481,800 (exceeds $430,156 requirement by $51,644)
 
@@ -528,7 +528,7 @@
 
 11. **Evidence retention:** Keep all evidence for 7 years from the end of the project
 
-12. **Shareholder structure:** Both Founder and Ting are shareholders; total shareholder funds available $230k ($130k business opening + $100k Ting's reserve), of which $215k deployed ($85k drawn from reserve + $15k emergency buffer retained)
+12. **Shareholder structure:** Both Founder and Ting are shareholders; total shareholder funds available $240k ($130k business opening + $110k Ting's reserve), of which $201k deployed ($71k drawn from reserve + $39k emergency buffer retained)
 
 13. **Quarterly variance:** Actual claims will differ from schedule if developer works more than minimum hours
 
