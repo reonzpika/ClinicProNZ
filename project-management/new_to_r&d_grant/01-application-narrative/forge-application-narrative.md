@@ -536,106 +536,92 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 
 ## Capability Development Activities
 
-### CDP-3: Regulatory & Compliance ($18,000, Months 2-18)
-
-**Third-party professional services only (no internal labour):**
-
-**Purpose:** Build expert-level regulatory and compliance capability for NZ health AI, focusing on avoiding pilot shutdown due to compliance failures and establishing frameworks for Years 3-5 HealthHub NZ.
-
-**Activities may include:**
-- **Comprehensive Regulatory Gap Analysis ($3,500, Months 2-3):** Privacy Act 2020, HIPC, IPP 12, clinical safety frameworks, AI ethics compliance audit; identifies compliance risks early with prioritised remediation roadmap
-- **Comprehensive DPIA ($4,000, Months 3-5):** Data Privacy Impact Assessment for cross-border data handling (AU inference, NZ-held keys), risk assessment, mitigation strategies; required before pilot deployment
-- **Clinical Safety Advisory ($3,500, Months 4-12):** Medical device software risk assessment, assist-only constraints validation, safety system reviews across MVP, sandbox, and pilot phases
-- **Ongoing Regulatory Adviser ($5,000, Months 4-18):** Expert guidance through development, sandbox, pilot, and scale-up phases; approximately 6-8 advisory sessions scheduled flexibly based on R&D milestones and compliance needs
-- **Compliance Documentation & Governance ($2,000, Months 4-6):** Governance frameworks, compliance templates, PHO data handling protocols, incident response runbooks, DPA templates
-
-**Deliverables may include:** Gap analysis report, complete DPIA, clinical safety validation reports, advisory session reports, governance framework, compliance documentation templates
-
-**Total CDP-3:** $18,000
+**Total CapDev:** $36,000 (5.02% of total eligible costs)
+**Structure:** 3 objectives (third-party professional services only)
 
 ---
 
-### CDP-6: R&D Information Management ($10,000, Months 2-8)
+### CD-1: Regulatory & Compliance Capability for NZ Health AI
 
-**Third-party professional services only (no internal labour):**
+**Start Date:** 27 February 2026 (Month 2)  
+**End Date:** 26 July 2027 (Month 18)  
+**Budget:** $18,000
 
-**Purpose:** Build systematic R&D documentation and LLM development capabilities essential for reproducible research, architectural paradigm comparison, and knowledge transfer to future projects.
+**Deliverable:**
+Expert-level regulatory and compliance capability for NZ health AI development, enabling safe pilot deployment and establishing reusable frameworks for Years 3-5 HealthHub NZ. Deliverables include: regulatory gap analysis with remediation roadmap, complete DPIA validating cross-border data handling controls, clinical safety validation reports across MVP and pilot phases, 6-8 ongoing compliance advisory sessions, and governance frameworks with templates.
 
-**Activities may include:**
-- **R&D Experiment Tracking & Model Registry Setup ($4,000, Months 2-4):** Design and implement centralised experiment tracking system (MLflow or similar), model versioning, dataset lineage, research dashboard; training for founder and Ting
-- **LLM Methods Advisory ($6,000, Months 2-8):** Approximately 5-8 advisory sessions focused on experiment design, standardised evaluation frameworks, and architectural comparison methodologies that integrate with experiment tracking, model registry, and dataset lineage systems; ensures research outputs are consistently documented and comparable across projects; flexible scheduling based on R&D progress
+**Capability Building - How This Transfers Knowledge:**
 
-**Deliverables may include:** Configured experiment tracking system, model registry, standardised evaluation frameworks, experiment design templates, architecture comparison methodologies, research documentation workflows
+**Founder and Ting gain expert-level capability in:**
+- Privacy Act 2020, HIPC, and IPP 12 compliance for health AI (currently have operational knowledge; need expert-level capability for R&D-stage experimental scenarios and multi-PMS integration complexities)
+- Medical device software risk assessment frameworks and clinical safety validation methodologies for assist-only AI systems
+- Navigating increasingly complex compliance scenarios across MVP development, sandbox testing, pilot deployment, and scale-up phases through hands-on guidance from regulatory experts
+- Building reusable governance frameworks, compliance checklists, DPA templates, and incident response procedures applicable to all future health AI projects
 
-**Total CDP-6:** $10,000
+**Knowledge Transfer Method:** Third-party experts (privacy/DPIA specialists, clinical safety consultants, regulatory advisers) provide training through gap analysis, DPIA development, safety advisory sessions, and ongoing compliance guidance. Each engagement builds practical skills in handling real compliance challenges. Frameworks and templates created become reusable organisational knowledge.
 
----
-
-### CDP-5: Project Management ($8,000, Months 2-16)
-
-**Third-party professional services only (no internal labour):**
-
-**Purpose:** Build R&D project management capability for Ting (Operations Lead) to systematically manage complex R&D programme, transforming team from solo founder to structured R&D organisation.
-
-**Phase 1 - Intensive Training & Setup (Months 2-4): $3,500**
-- Training on R&D project management fundamentals (planning under uncertainty, budget tracking, risk management, documentation, vendor management, stakeholder communication)
-- **Research documentation best practices** (structuring technical findings, creating comparison frameworks, maintaining research knowledge bases, reproducibility protocols)
-- **Evaluation framework methods** (organising experiment results, performance tracking systems, test data management, benchmark comparison methodologies)
-- System setup with Ting leading: Agile R&D workflows (Kanban), 24-month roadmaps, budget tracking, risk registers, research documentation templates, evaluation tracking dashboards
-- Ting learns to manage CapDev procurement process (finding vendors, scoping work, managing contracts)
-
-**Phase 2 - Ongoing Coaching (Months 5-16): $4,500**
-- Approximately 6-8 coaching sessions scheduled around critical milestones (objective transitions, MVP launches, pilot preparation, mid-project reviews)
-- Decision-making support for R&D trade-offs, problem-solving bottlenecks, refining Ting's R&D management skills
-- Flexibility to add sessions if R&D challenges emerge
-
-**Why this builds capability:**
-- Ting learns how to manage R&D programmes (not just admin work)
-- Meta-capability development: Ting manages procurement of other CapDev services (regulatory, R&D info systems)
-- Demonstrates growth intention beyond solo founder
-- After 24 months, Ting has skills to manage future R&D projects
-
-**Deliverables may include:** R&D PM training materials, research documentation and evaluation framework training materials, configured PM system with research tracking templates, coaching session reports, Ting-maintained roadmap/budget/risk register, vendor management records, monthly progress reports, research knowledge base structure
-
-**Total CDP-5:** $8,000
+**Enduring Capability:** After 24 months, team has expert-level compliance capability to manage future health AI R&D independently, avoiding costly compliance failures and enabling patient-facing AI development (Years 3-5 HealthHub NZ) with proper regulatory foundation.
 
 ---
 
-**Total Capability Development:** $36,000 (third-party professional services only)
+### CD-2: R&D Information Management for Systematic Research
+
+**Start Date:** 27 February 2026 (Month 2)  
+**End Date:** 26 September 2026 (Month 8)  
+**Budget:** $10,000
+
+**Deliverable:**
+Systematic R&D documentation and experiment tracking capability enabling reproducible research and efficient knowledge transfer to future projects. Deliverables include: fully configured experiment tracking system integrated with model registry and dataset lineage, standardised evaluation frameworks for measuring AI performance, experiment design templates for systematic investigation, research documentation workflows, and LLM methods advisory reports capturing best practices for clinical AI research documentation.
+
+**Capability Building - How This Transfers Knowledge:**
+
+**Founder and Ting gain practical capability in:**
+- Building and maintaining experiment tracking systems, model registries, and dataset lineage workflows (currently lack systematic R&D documentation infrastructure)
+- Designing experiments with standardised evaluation frameworks that enable consistent comparison across different AI architectural approaches
+- Creating evaluation frameworks (how to measure AI performance: accuracy, cost, safety, latency) and experiment design templates (how to structure systematic investigations)
+- Documenting AI experiments systematically with proper metadata, versioning protocols, and results archival
+- Industry-standard MLOps practices for managing complex AI research programmes and ensuring reproducibility
+
+**Knowledge Transfer Method:** Technical consultants specialising in ML research infrastructure and LLM methods provide hands-on training through system setup, evaluation framework design, and 5-8 advisory sessions. Training includes configuring tracking systems, establishing metadata standards, creating experiment design templates, and building documentation workflows integrated with research infrastructure.
+
+**Enduring Capability:** After 8 months, team has capability to manage systematic R&D documentation across staged investigations (architecture selection, real-world testing, clinical validation). Experiment tracking infrastructure, evaluation frameworks, and documentation workflows are reusable for Years 3-5 HealthHub NZ R&D and beyond. Knowledge properly captured enables efficient learning transfer between projects rather than starting from scratch each time.
+
+---
+
+### CD-3: R&D Project Management Capability for First-Time R&D Performer
+
+**Start Date:** 27 February 2026 (Month 2)  
+**End Date:** 26 June 2027 (Month 16)  
+**Budget:** $8,000
+
+**Deliverable:**
+Structured R&D project management capability transforming team from solo founder to organised R&D operation. Deliverables include: comprehensive R&D project management training for operations lead (Ting), configured agile R&D system with Kanban boards and 24-month roadmap, budget tracking spreadsheets, risk register templates, vendor management workflows, 6-8 coaching session reports with decision-making support, and documented process improvements demonstrating Ting's capability development from novice to independent R&D manager.
+
+**Capability Building - How This Transfers Knowledge:**
+
+**Ting (Operations Lead) gains capability to independently manage R&D programmes:**
+- Planning and managing R&D projects under uncertainty (vs traditional business projects with predictable outcomes)
+- Budget tracking, resource allocation, and risk management specific to R&D programmes
+- Managing third-party service providers and consultants (including CapDev procurement for regulatory, compliance, and technical services)
+- Breaking down R&D objectives into manageable tasks, creating realistic timelines with contingency planning, and adapting plans as research findings emerge
+- Project documentation workflows for milestones, quarterly claims, and programme reporting (complements CD-2's experiment tracking systems)
+
+**Founder gains:**
+- Structured approach to R&D management rather than ad-hoc execution
+- Decision-making frameworks for R&D trade-offs and resource allocation
+
+**Knowledge Transfer Method:** R&D project management consultant provides intensive training (Months 2-4) establishing foundational capability and systems, followed by ongoing coaching (Months 5-16) through 6-8 sessions scheduled around critical milestones. Coach provides decision-making support, problem-solving guidance, and skill refinement as Ting manages real R&D challenges. This is meta-capability development: training Ting to manage the R&D programme including procurement of other CapDev services.
+
+**Enduring Capability:** After 16 months, Ting has demonstrated capability to run R&D programmes independently. Systems (Kanban, roadmaps, budget tracking, risk registers) and processes become organisational standards reusable for Years 3-5 HealthHub NZ R&D and future projects. Transforms business from solo founder to scalable R&D organisation.
+
+---
 
 **CapDev Requirement Check:**
 - Required: ≥5% of total eligible costs = $35,846 (for $716,926 total)
 - Actual: $36,000
 - **Percentage: 5.02% ✓** (meets requirement)
 
-**Rationale for Structure:** As a first-time R&D performer, we prioritise capabilities that directly de-risk the R&D programme (compliance, systematic documentation, project management). IP protection will be addressed post-grant once innovations are validated and commercial pathway is clear. Broad descriptions with "may include" language reflect appropriate flexibility for first-time R&D where specific needs emerge during programme execution.
-
----
-
-### Why These Capabilities Matter (237 words)
-
-**Regulatory & Compliance Expertise ($18,000):**
-
-- Advanced Privacy Act 2020 & HIPC expertise for R&D-stage experimental scenarios and multi-PMS integration complexities
-- Comprehensive regulatory gap analysis identifies compliance risks early, preventing costly pilot delays
-- DPIA teaches systematic risk assessment for cross-border data handling under IPP 12
-- Clinical safety advisory builds medical device software risk assessment capability for assist-only AI systems
-- Ongoing regulatory guidance through development, sandbox testing, pilot deployment, and scale-up phases
-- Governance frameworks and compliance templates apply to future health AI products (HealthHub NZ, Years 3-5)
-
-**R&D Information Management ($10,000):**
-
-- Technical consultant trains founder and Ting to build experiment tracking systems, model registries, and dataset lineage workflows essential for systematic R&D documentation
-- LLM methods advisory teaches experiment design, standardised evaluation frameworks, and architectural comparison methodologies
-- Ting develops research operations capability: organising experiment results, maintaining performance tracking dashboards, structuring technical findings
-- Industry-standard MLOps practices for managing complex AI research programmes
-
-**Project Management & Research Operations ($8,000):**
-
-- R&D PM coach trains Ting on R&D project management fundamentals plus research documentation best practices and evaluation framework methods
-- Learns to structure technical findings into comparison frameworks, maintain research knowledge bases with reproducibility protocols, organise experiment results, manage performance tracking systems
-- Ongoing coaching builds Ting's capability to run R&D programmes independently with proper research documentation
-- Transforms team from solo founder to structured R&D organisation with systematic research operations capability for future programmes and national-scale health AI deployment
+**Rationale:** As first-time R&D performers, we prioritise capabilities directly de-risking the R&D programme (compliance, systematic documentation, project management). All three objectives build enduring organisational capability reusable for Years 3-5 HealthHub NZ and future health AI projects
 
 ---
 
