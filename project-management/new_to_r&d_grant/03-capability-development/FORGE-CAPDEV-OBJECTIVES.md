@@ -12,7 +12,7 @@
 **Budget:** $18,000
 
 ### Deliverable:
-Expert-level regulatory and compliance capability for NZ health AI development, enabling safe pilot deployment and establishing reusable frameworks for Years 3-5 HealthHub NZ. Deliverables include comprehensive regulatory gap analysis with remediation roadmap, complete DPIA validating cross-border data handling controls, clinical safety validation reports across MVP and pilot phases, ongoing compliance guidance through 6-8 advisory sessions, and governance frameworks with compliance documentation templates.
+Expert-level regulatory and compliance capability for NZ health AI development, enabling safe pilot deployment and establishing reusable frameworks for Years 3-5 HealthHub NZ. Deliverables include: regulatory gap analysis with remediation roadmap, complete DPIA validating cross-border data handling controls, clinical safety validation reports across MVP and pilot phases, 6-8 ongoing compliance advisory sessions, and governance frameworks with templates.
 
 ### Capability Building - How This Transfers Knowledge:
 **Founder and Ting gain expert-level capability in:**
@@ -34,18 +34,19 @@ Expert-level regulatory and compliance capability for NZ health AI development, 
 **Budget:** $10,000
 
 ### Deliverable:
-Systematic R&D documentation and experiment tracking capability enabling reproducible research and efficient knowledge transfer to future projects. Deliverables include fully configured experiment tracking system integrated with model registry and dataset lineage, standardised evaluation frameworks for architectural paradigm comparison, experiment design templates and methodologies, research documentation workflows, and LLM methods advisory reports capturing best practices for systematic documentation of clinical AI research.
+Systematic R&D documentation and experiment tracking capability enabling reproducible research and efficient knowledge transfer to future projects. Deliverables include: fully configured experiment tracking system integrated with model registry and dataset lineage, standardised evaluation frameworks for measuring AI performance, experiment design templates for systematic investigation, research documentation workflows, and LLM methods advisory reports capturing best practices for clinical AI research documentation.
 
 ### Capability Building - How This Transfers Knowledge:
 **Founder and Ting gain practical capability in:**
 - Building and maintaining experiment tracking systems, model registries, and dataset lineage workflows (currently lack systematic R&D documentation infrastructure)
-- Designing experiments with standardised evaluation frameworks that enable consistent comparison across architectural paradigms (classifiers, hybrid, LLM, agentic AI, RAG)
-- Documenting LLM experiments systematically with proper metadata, versioning protocols, and results archival
+- Designing experiments with standardised evaluation frameworks that enable consistent comparison across different AI architectural approaches
+- Creating evaluation frameworks (how to measure AI performance: accuracy, cost, safety, latency) and experiment design templates (how to structure systematic investigations)
+- Documenting AI experiments systematically with proper metadata, versioning protocols, and results archival
 - Industry-standard MLOps practices for managing complex AI research programmes and ensuring reproducibility
 
-**Knowledge Transfer Method:** Technical consultants specializing in ML research infrastructure and LLM methods provide hands-on training through system setup, evaluation framework design, and approximately 5-8 advisory sessions. Training includes configuring tracking systems, establishing metadata standards, creating experiment design templates, and building documentation workflows integrated with research infrastructure.
+**Knowledge Transfer Method:** Technical consultants specialising in ML research infrastructure and LLM methods provide hands-on training through system setup, evaluation framework design, and 5-8 advisory sessions. Training includes configuring tracking systems, establishing metadata standards, creating experiment design templates, and building documentation workflows integrated with research infrastructure.
 
-**Enduring Capability:** After 8 months, team has capability to manage systematic R&D documentation for all future clinical AI projects. Experiment tracking infrastructure, evaluation frameworks, and documentation workflows are reusable for Years 3-5 HealthHub NZ R&D and beyond. Knowledge properly captured enables efficient learning transfer between projects rather than starting from scratch each time.
+**Enduring Capability:** After 8 months, team has capability to manage systematic R&D documentation across staged investigations (architecture selection, real-world testing, clinical validation). Experiment tracking infrastructure, evaluation frameworks, and documentation workflows are reusable for Years 3-5 HealthHub NZ R&D and beyond. Knowledge properly captured enables efficient learning transfer between projects rather than starting from scratch each time.
 
 ---
 
@@ -56,7 +57,7 @@ Systematic R&D documentation and experiment tracking capability enabling reprodu
 **Budget:** $8,000
 
 ### Deliverable:
-Structured R&D project management capability transforming team from solo founder to organized R&D operation. Deliverables include comprehensive R&D project management training for operations lead (Ting), configured agile R&D system with Kanban boards and 24-month roadmap, budget tracking spreadsheets, risk register templates, vendor management workflows, approximately 6-8 coaching session reports with decision-making support, and documented process improvements demonstrating Ting's capability development from novice to independent R&D manager.
+Structured R&D project management capability transforming team from solo founder to organised R&D operation. Deliverables include: comprehensive R&D project management training for operations lead (Ting), configured agile R&D system with Kanban boards and 24-month roadmap, budget tracking spreadsheets, risk register templates, vendor management workflows, 6-8 coaching session reports with decision-making support, and documented process improvements demonstrating Ting's capability development from novice to independent R&D manager.
 
 ### Capability Building - How This Transfers Knowledge:
 **Ting (Operations Lead) gains capability to independently manage R&D programmes:**
@@ -64,15 +65,15 @@ Structured R&D project management capability transforming team from solo founder
 - Budget tracking, resource allocation, and risk management specific to R&D programmes
 - Managing third-party service providers and consultants (including CapDev procurement for regulatory, compliance, and technical services)
 - Breaking down R&D objectives into manageable tasks, creating realistic timelines with contingency planning, and adapting plans as research findings emerge
-- Documentation workflows for experiment results, quarterly claims, and knowledge capture
+- Project documentation workflows for milestones, quarterly claims, and programme reporting (complements CD-2's experiment tracking systems)
 
 **Founder gains:**
 - Structured approach to R&D management rather than ad-hoc execution
 - Decision-making frameworks for R&D trade-offs and resource allocation
 
-**Knowledge Transfer Method:** R&D project management consultant provides intensive training (Months 2-4) establishing foundational capability and systems, followed by ongoing coaching (Months 5-16) through approximately 6-8 sessions scheduled around critical milestones. Coach provides decision-making support, problem-solving guidance, and skill refinement as Ting manages real R&D challenges. This is meta-capability development: training Ting to manage the R&D programme including procurement of other CapDev services.
+**Knowledge Transfer Method:** R&D project management consultant provides intensive training (Months 2-4) establishing foundational capability and systems, followed by ongoing coaching (Months 5-16) through 6-8 sessions scheduled around critical milestones. Coach provides decision-making support, problem-solving guidance, and skill refinement as Ting manages real R&D challenges. This is meta-capability development: training Ting to manage the R&D programme including procurement of other CapDev services.
 
-**Enduring Capability:** After 16 months, Ting has demonstrated capability to run R&D programmes independently. Systems (Kanban, roadmaps, budget tracking, risk registers) and processes become organizational standards reusable for Years 3-5 HealthHub NZ R&D and future projects. Transforms business from solo founder to scalable R&D organization.
+**Enduring Capability:** After 16 months, Ting has demonstrated capability to run R&D programmes independently. Systems (Kanban, roadmaps, budget tracking, risk registers) and processes become organisational standards reusable for Years 3-5 HealthHub NZ R&D and future projects. Transforms business from solo founder to scalable R&D organisation.
 
 ---
 
@@ -102,9 +103,11 @@ Structured R&D project management capability transforming team from solo founder
 - ✅ **Knowledge transfer method** explicitly described (third-party experts, training, coaching)
 - ✅ **Enduring capability** for future projects emphasized (Years 3-5 HealthHub NZ)
 - ✅ **Who gains capability** clearly stated (founder, Ting, team)
-- ✅ All tied to building organizational capability, not just completing tasks
+- ✅ All tied to building organisational capability, not just completing tasks
+- ✅ CD-2 and CD-3 distinction clear: experiment tracking systems vs project management
+- ✅ Aligned with updated Objectives structure (staged investigation approach)
 
 ---
 
 **Status:** Ready for Forge portal entry
-**Last Updated:** 4 December 2025
+**Last Updated:** 9 December 2025 (Version 2.0 - aligned with Objectives 4.0, NZ English, clarified distinctions)
