@@ -329,177 +329,208 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 
 ## Objectives, Dates and Deliverables (24 Months)
 
-### Objective 1: Build the Smart Foundation and Early Prototypes (Months 1-6)
+### Objective 1: Foundation AI Architecture and Data Requirements (Months 1-6)
 
 **Dates:** 27 Jan 2026 – 30 Jun 2026
 
-**Plain-English aim:** Investigate AI approaches and build foundation system that connects to both Medtech and Indici, with early prototypes for inbox and care gap tools.
+**Technological uncertainty:** No proven AI architecture exists for NZ-sovereign GP clinical decision support. Overseas models cannot be deployed under Privacy Act sovereignty constraints, and no published research validates which AI approaches achieve clinical-grade performance on NZ healthcare data at sustainable cost.
 
-**Key R&D questions:**
-- Which AI architectural approach works best for NZ clinical decision support under sovereignty constraints?
-- Can NZ-trained AI achieve clinical-grade accuracy on local healthcare context?
-- How do we design one system architecture supporting both Medtech and Indici?
+**Plain-English aim:** Investigate which AI approach and what NZ data are needed to build clinical-grade AI system for GP workflow. This establishes the foundation architecture that Objectives 2-3 will specialise for inbox management and care gap detection.
 
-**What is actually built:**
+**Core R&D questions:**
 
-**NZ clinical data and test sets:**
-- Curate NZ clinical corpus (bpac guidelines, MoH protocols, Pharmac database, regional lab formats)
-- Generate synthetic datasets: inbox items (≥1,000) and patient records with chronic conditions (≥500)
+1. **Which AI architecture achieves clinical-grade performance for GP workflows?**
+   - Lightweight models, retrieval systems, agentic architectures, or hybrid combinations?
+   - Can we reach ≥90% triage, ≥95% clinical calculations at sustainable cost?
 
-**Core platform and integrations:**
-- Build modular backend connecting to Medtech and Indici (read-only initially)
-- Normalise different lab and document formats into consistent structure
-- Build widget shells for both PMSs displaying AI outputs
+2. **What NZ data types and volumes are required?**
+   - Which matter most: bpac guidelines, MoH protocols, regional lab formats, clinical notes?
+   - Minimum viable dataset: 1,000 examples? 10,000? 100,000?
+   - Can available NZ data achieve clinical accuracy under sovereignty constraints?
 
-**Architecture investigation:**
-- Research multiple AI approaches (lightweight models, retrieval systems, agentic architectures, hybrid combinations)
-- Initial prototyping and evaluation on NZ-specific clinical tasks
-- Determine most promising architectural direction for continued development
+3. **How do we design architecture supporting equity and safety requirements?**
+   - Must support equity-aware rules (Māori/Pacific prioritisation) and confidence calibration
+   - Does this require architectural features (checker agents, ensemble voting) or post-hoc techniques?
+
+**Investigation approach (controlled, synthetic data):**
+- Research multiple AI approaches on curated NZ clinical corpus
+- Test varying data amounts/types to determine minimum requirements
+- Build foundation system and early prototypes
+- Evaluate on synthetic NZ healthcare scenarios
 
 **Deliverables by Month 6:**
-- Foundation system v1.0 connected to both Medtech and Indici test environments
-- ≥90% triage accuracy, ≥95% CVDRA accuracy on synthetic test sets
-- Architecture recommendations documented for Objectives 2 & 3
-- Early prototypes: inbox sorting, care gap detection on synthetic data
+- Foundation system connected to Medtech and Indici test environments
+- Architecture selected with evidence: "Use [approach] because [empirical results]"
+- Data requirements documented: "Need [X types, Y volume] for clinical accuracy"
+- Prototypes on synthetic data: ≥90% triage, ≥95% CVDRA accuracy
+- Foundation establishes base for Objectives 2-3 specialisation
 
-**Success criteria:**
-- Foundation system stable and connected to both PMSs
-- Architecture direction determined with empirical evidence
-- Early prototypes demonstrate feasibility
+**R&D output:** Understanding which AI architecture and NZ data requirements enable clinical-grade performance under sovereignty constraints.
 
 ---
 
-### Objective 2: Inbox Helper – Admin Automation and Early Clinical Overlays (Months 4-12)
+### Objective 2: Real-World Data Handling for Inbox Management (Months 4-12)
 
 **Dates:** 1 Apr 2026 – 31 Dec 2026
 
-**Plain-English aim:** Turn Inbox prototype into practical AI-powered tool that reduces GP inbox workload safely in both Medtech and Indici. **Lean MVP released to early adopters as soon as safety thresholds met.**
+**Technological uncertainty (progressive constraint removal):** Given the base architecture from Objective 1 (validated on controlled synthetic data), it is unknown whether that architecture handles diverse, messy real-world clinical data. Real GP inboxes contain heterogeneous formats (lab PDFs, narrative letters, semi-structured referrals) from multiple sources (LabTests, SCL, Medlab, regional labs, hospitals). No research validates which architectural components enable safe deployment with variable-quality real-world data.
 
-**Key R&D questions:**
-- How do we deploy AI safely in real PMS environments with messy clinical data?
-- What confidence thresholds are safe for intelligent automated actions?
-- How should suggestions appear in each PMS so GPs trust them?
+**Plain-English aim:** Investigate how to deploy the Objective 1 AI architecture safely with diverse real-world inbox data. **Lean MVP released as we validate safety.**
 
-**AI-powered features developed:**
+**Core R&D questions (building on Objective 1 foundation):**
 
-**Intelligent triage and processing:**
-- Classifies inbox items: labs, hospital letters, specialist letters, referrals, prescriptions, admin, patient messages
-- Assigns urgency labels: "Review today" (serious abnormalities), "Soon", "Routine"
-- Processes discharge summaries: extracts key information, surfaces GP action list and urgent items
-- Compares current labs with previous results, identifies trends
+1. **How does the chosen AI architecture handle diverse real-world file types and formats?**
+   - Real inboxes contain: lab PDFs (tabular), hospital letters (narrative), referral forms (semi-structured), discharge summaries (mixed), patient messages (unstructured)
+   - Each lab uses different formats despite containing same information
+   - Which formats does AI handle reliably vs which cause extraction errors?
+   - Do we need additional architectural components (format-specific parsers, separate agents)?
 
-**Intelligent automation:**
-- Determines which normal screening results (mammograms, cervical screens) are safe to file with appropriate recalls
-- Evaluates blood tests for safe filing with contextually appropriate comments
+2. **How does AI apply patient-specific clinical context?**
+   - Normal ranges vary by patient: 65-year-old diabetic vs 25-year-old vs pregnant patient
+   - Māori/Pacific patients have different CVD risk thresholds
+   - How does AI access and apply patient context from records?
+   - What happens when context is incomplete or ambiguous?
 
-**Clinical interpretation (non-prescribing):**
-- Flags significant lab results and trends aligned with NZ guidelines
-- Provides clinical context for results requiring GP attention
+3. **How do we calibrate AI confidence for safe automated actions?**
+   - Auto-filing requires high confidence; flagging for review requires lower confidence
+   - Does confidence calibration require architectural changes (checker agents, ensemble voting, calibration layers) or post-hoc techniques?
+   - What confidence thresholds are safe without real-world failure data to calibrate from?
 
-**Patient communication:**
-- Generates personalised messages adapted to clinical context (GP approval before sending)
+4. **How accurately does AI extract complex clinical information?**
+   - Discharge summaries: 5-10 pages mixing diagnosis, medications, actions needed, follow-up
+   - Can AI distinguish urgent actions from routine information?
+   - Accuracy vs GP reading same document?
+
+**Investigation approach (real-world data):**
+- Test AI on real inbox data from multiple labs, hospitals, practices
+- Measure format-handling accuracy, patient-context application, confidence calibration
+- Iterate based on error analysis and GP feedback
 
 **Deliverables by Month 12:**
-- Inbox Helper functional in both Medtech and Indici sandbox environments
-- ≥90% classification accuracy on ≥2,000 real inbox items
-- Zero unsafe automated actions in edge-case test suite
-- ~30% time saving in simulated GP workflows
-- Usability feedback from ≥5 GPs incorporated
+- AI system handling inbox tasks in Medtech and Indici sandbox environments
+- ≥90% classification accuracy on ≥2,000 real inbox items (diverse sources)
+- Zero unsafe automated actions in edge-case suite (1,000+ scenarios)
+- Confidence calibration validated: "90% AI confidence = 92% actual accuracy"
+- Discharge summary extraction: ≥85% accuracy on key information
+- GP feedback: ≥5 GPs tested, ≥80% trust AI suggestions
 
-**Success criteria:**
-- Safety targets met (zero unsafe actions)
-- GP satisfaction ≥80% in usability testing
-- Ready for lean MVP release to early adopters
+**R&D output:** Understanding how to adapt base AI architecture for diverse real-world clinical data formats and when AI confidence is trustworthy for automated actions.
 
 ---
 
-### Objective 3: Care Gap Finder – Diabetes and Cardiovascular Risk Management (Months 7-16)
+### Objective 3: Clinical Accuracy Validation for Care Gap Detection (Months 7-16)
 
 **Dates:** 1 Jul 2026 – 30 Apr 2027
 
-**Plain-English aim:** Build AI-powered tool that scans patient records to identify patients needing diabetes monitoring and cardiovascular risk assessment. **Lean MVP (diabetes) released early, then CVD added, with potential expansion to other chronic conditions if time allows.**
+**Technological uncertainty (edge cases and equity):** Building on Objective 1's base architecture and Objective 2's real-world data handling, it remains unknown whether AI achieves clinical-grade accuracy for complex calculations with missing/ambiguous data, handles clinical uncertainty appropriately, and implements equity prioritisation without introducing new algorithmic biases. Edge cases (extreme values, contradictory data, borderline thresholds) are prevalent in real patient populations but cannot be fully enumerated in advance.
 
-**Key R&D questions:**
-- Can the system perform clinical reasoning for diabetes and CVD risk management matching GP judgement?
-- How do we prioritise patients with both diabetes and cardiovascular risk factors without algorithmic bias?
-- How do we ensure equity outcomes for Māori/Pacific patients in chronic disease monitoring?
+**Plain-English aim:** Investigate how to ensure AI makes clinically accurate calculations and appropriate decisions for diabetes and cardiovascular risk management. **Lean MVP (diabetes) released as we validate accuracy, then CVD added.**
 
-**AI-powered features developed:**
+**Core R&D questions (building on Objectives 1-2):**
 
-**Clinical data analysis:**
-- **Diabetes monitoring:** Analyses HbA1c trends, identifies overdue tests (HbA1c, eye checks, foot checks, kidney monitoring)
-- **Cardiovascular risk assessment:** Calculates NZ CVDRA from multiple data points (age, sex, ethnicity, BP, lipids, smoking, diabetes), groups patients by risk band
-- **Multi-condition reasoning:** For patients with both diabetes and CVD risk, determines which checks are most urgent given overall clinical picture
+1. **How do we ensure AI clinical calculations are correct in edge cases?**
+   - CVD risk (CVDRA) requires 8 variables: age, sex, ethnicity, BP, lipids, smoking, diabetes, atrial fibrillation
+   - What does AI do when 1-2 variables missing or ambiguous?
+   - How does AI handle edge cases: very old patients (>85), extreme lab values, contradictory data?
+   - Can we validate AI calculations match GP manual calculations across diverse scenarios?
+   - What causes calculation failures and how do we detect them before reaching patients?
 
-**If time allows - additional chronic conditions:**
-- COPD, heart failure, CKD monitoring using similar AI-powered analysis approaches
+2. **How does AI handle clinical uncertainty and borderline cases?**
+   - Borderline HbA1c (63 vs 64 mmol/mol - just under vs over action threshold)
+   - Conflicting information: high CVD risk but recent normal cardiac investigations
+   - Missing key information: no BP recorded in last 12 months
+   - When should AI defer to GP judgement rather than make suggestion?
+   - Can AI communicate uncertainty appropriately?
 
-**Intelligent care gap detection:**
-- Determines which recommended tests are overdue based on NZ guidelines
-- Identifies missing guideline-based checks
-- Applies clinical reasoning to prioritise highest-priority needs for each patient
+3. **How do we build equity into AI without creating new biases?**
+   - Māori/Pacific patients need prioritisation for equity outcomes
+   - How do we adjust AI algorithms to prioritise without under-alerting other groups?
+   - How do we validate equity adjustments don't introduce new algorithmic biases?
+   - What metrics actually measure equity outcomes vs demographic distributions?
+   - Do equity algorithms (linked to architecture from Obj 1) work consistently across different practice populations?
 
-**Patient communication:**
-- Generates personalised messages with practice-controlled templates
-
-**Practice intelligence dashboards:**
-- Identifies top priority patients with suggested actions
-- Filters by condition, risk level, equity focus (Māori, Pacific, high-deprivation)
-- Surfaces patterns across patient populations
+**Investigation approach (edge cases and equity validation):**
+- Validate AI calculations on 1,000+ diverse patient scenarios including edge cases
+- Compare AI decisions vs GP clinical audit systematically
+- Test borderline/ambiguous cases to understand AI reasoning behaviour
+- Measure equity outcomes across different populations
+- Error analysis: When AI is wrong, why is it wrong?
 
 **Deliverables by Month 16:**
-- Care Gap Finder operational in both Medtech and Indici sandbox environments, focusing on diabetes and CVD risk
-- ≥95% CVDRA accuracy on ≥1,000 patient records
-- ≥85% care gap detection agreement with GP audit for diabetes and CVD monitoring
-- Demonstrated appropriate prioritisation of high-risk and Māori/Pacific patients
+- AI system handling care gap detection in Medtech and Indici sandbox environments
+- ≥95% CVDRA calculation accuracy on ≥1,000 patient records (including edge cases)
+- ≥85% agreement with GP audit on care gap decisions
+- Documentation: "AI reasoning process and when it fails"
+- Equity validation: Demonstrated appropriate prioritisation without bias across populations
+- **If time allows:** COPD, heart failure, CKD monitoring using similar approaches
 
-**Success criteria:**
-- Clinical accuracy targets met for diabetes and CVD
-- Equity outcomes demonstrated (no algorithmic bias in prioritisation)
-- Ready for lean MVP expansion
+**R&D output:** Understanding how to ensure AI clinical accuracy in edge cases, when AI should defer to GP, and how to implement equity without introducing new biases.
 
 ---
 
-### Objective 4: Advanced Refinement, Safety, Equity and Generalisation (Months 16-24)
+### Objective 4: Performance Validation and Real-World Deployment (Months 16-24)
 
 **Dates:** 1 Apr 2027 – 26 Jan 2028
 
-**Plain-English aim:** Use real-world feedback and pilot data to do "hard" R&D work: refine NZ-LLM models, tune alert and safety behaviour, and prove system generalises across multiple practices and both PMSs. **This is systematic R&D on generalisation and safety, not routine maintenance.**
+**Plain-English aim:** Measure AI system performance in real GP practices and validate it meets clinical, safety, and operational targets at scale.
 
-**Key R&D questions:**
-- How much does performance change when moving from pilot practices to new practices with different patient populations, clinicians, and workflows?
-- How can alert thresholds and messaging be tuned to minimise "noise" while still catching all important issues (alert fatigue vs safety)?
-- How can NZ-LLM and rules be refined to support equitable performance across regions and populations?
+**Core validation goals:**
 
-**Activities and features:**
+**Performance Metrics (Speed & Reliability):**
+- Response time (P95): ≤5.0 seconds
+- System uptime: ≥99.5%
+- Throughput: Handle 1,000+ requests/day per practice without degradation
+- Unit economics: ≤$0.01 per request at scale
 
-**NZ-LLM and rules refinement using real-world data:**
-- Analyse model errors, missed gaps, and mis-classified inbox items observed during early adopter use
-- Retrain or fine-tune NZ-LLM and adjust rules to: improve extraction from messy real-world notes and letters, reduce misunderstanding of local abbreviations and phrasing, maintain strict constraints (never recommend specific medications, always show reasoning)
+**Clinical Accuracy Metrics:**
+- Inbox triage: ≥90% classification accuracy across 10-20 practices
+- CVD calculation: ≥95% accuracy vs manual GP calculation
+- Care gap detection: ≥85% agreement with GP audit
+- Performance stability: No >10% accuracy degradation across practice types
 
-**Safety and alert optimisation:**
-- Collect statistics on: how often alerts are accepted, ignored, or dismissed; which alerts GPs and nurses find most/least useful
-- Adjust thresholds and logic to: maintain very high sensitivity for safety-critical events (dangerous labs, major gaps), reduce lower-value or repetitive alerts to avoid fatigue
-- Expand automated safety testing and regression suites to thousands of test scenarios, including adversarial prompts and rare edge cases
+**Safety Metrics (Zero Tolerance):**
+- Prohibited-claim rate: ≤0.5%
+- Unsafe automated actions: Zero in production
+- Missed urgent items: Zero in edge-case suite
+- PHI leakage: Zero
 
-**Multi-practice, multi-PMS generalisation:**
-- Run structured pilots across several practices using both Medtech and Indici
-- Compare accuracy, safety, and usage patterns by region, practice size, and patient mix
-- Investigate any performance gaps (poorer results in particular regions or populations) and fix them through model, rule, or data changes
-- Document technical patterns and best practices for adding future PMSs or health-system integrations
+**Clinical Utility Metrics (Does it help?):**
+- Inbox time savings: ≥30% reduction (1-2 hours/day per GP)
+- Care gap completion: ≥80% vs current manual monitoring
+- GP satisfaction: ≥80% find it useful
+- Adoption rate: ≥80% of pilot GPs continue using after 6 months
+
+**Equity Metrics:**
+- Māori/Pacific screening completion: Improved vs baseline
+- No under-alerting in high-deprivation populations
+- Care gap closure rates equal across ethnic groups
+- Equity algorithms validated: No new algorithmic biases introduced
+
+**Workflow Integration Metrics:**
+- Alert acceptance rate: ≥70% (GPs follow AI suggestions)
+- Alert fatigue score: ≤3/10 (GP survey)
+- Override patterns documented: When/why GPs override
+- Workflow disruption: ≤2 extra clicks per action
+
+**Real-World Validation Approach:**
+- Deploy to 10-20 practices (urban/rural, high/low deprivation, Medtech/Indici mix)
+- Monitor all metrics continuously over 6-9 months
+- Document failure modes, performance variations, unexpected usage
+- Interview GPs monthly about trust, failures, improvements needed
 
 **Deliverables by Month 24:**
-- Refined NZ-LLM models and rule sets with documented accuracy and safety across multiple practices, evidence of robust performance across both Medtech and Indici
-- Alert and safety configuration tuned based on real usage, with clear quantitative metrics for: alert rates, acceptance/override patterns, safety outcomes (no missed critical results in tested cohorts)
-- Final pilot report summarising: time savings per GP per day, care gaps identified and closed, equity metrics (changes in Māori/Pacific screening and review rates), safety incidents (if any) and mitigation processes
-- Clear roadmap for broader commercial rollout (including Years 3-5 HealthHub NZ vision and advanced R&D streams) grounded in R&D findings
+- All metrics measured and documented across 10-20 practices
+- Final R&D report: Performance validation results
+- Documentation: Real-world failure modes and causes
+- Documentation: Performance variation patterns across practice types
+- Production-grade system ready for broader rollout
 
-**Success criteria:**
-- System performance maintained across multiple practices and both PMSs (no >10% accuracy degradation)
-- Alert fatigue ≤3/10 (measured via GP survey)
-- Safety targets maintained (prohibited-claim ≤0.5%, zero serious violations)
-- Pilot retention ≥80% (GPs stay in pilot for full duration)
-- Equity metrics validated: Māori/Pacific patients benefit equally
+**Hard stops (if metrics fail):**
+- Safety metrics fail → halt all deployment until fixed
+- Clinical accuracy drops >10% → investigate and resolve before proceeding
+- GP satisfaction <60% → re-evaluate workflow integration
+
+**R&D output:** Validated performance measurements demonstrating AI system meets clinical, safety, and operational targets in real GP practice environments.
 
 ---
 
@@ -773,9 +804,21 @@ Train NZ-LLM on aggregated patient outcomes to improve recommendations.
 
 ---
 
-**Document Version:** 3.5  
+**Document Version:** 4.0  
 **Last Updated:** 9 December 2025  
 **Status:** Ready for Forge portal submission
+
+**Version 4.0 Changes (9 Dec 2025):**
+- **Objectives 1-4 completely restructured for strong R&D framing:**
+  - **Added technological uncertainty statements** to each objective (explicit for RDTI eligibility)
+  - **Progressive constraint removal** clearly shown: Obj 1 (synthetic data) → Obj 2 (real-world data) → Obj 3 (edge cases/equity) → Obj 4 (production scale)
+  - **Clear dependency flow:** Obj 2-3 explicitly build on Obj 1's architectural foundation
+  - **Objective 1:** Foundation AI architecture investigation; establishes base for Obj 2-3 specialisation; includes equity/safety architectural requirements
+  - **Objective 2:** Real-world data handling research; tests if Obj 1 architecture handles messy clinical data; focus on diverse formats, patient context, confidence calibration
+  - **Objective 3:** Clinical accuracy validation; edge cases and equity research; removed multi-condition reasoning question per feedback
+  - **Objective 4:** Complete reframe to performance validation with specific metrics (speed, accuracy, safety, utility, equity, workflow) and hard stops
+  - **NZ English throughout** with trimmed unnecessary words
+  - **Care Gap scope refined:** Focus on diabetes + CVD (COPD, heart failure, CKD if time allows)
 
 **Version 3.5 Changes (9 Dec 2025):**
 - Final refinement of Q1-Q6 for clarity and optimal framing:
