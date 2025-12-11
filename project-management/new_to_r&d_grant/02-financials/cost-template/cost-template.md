@@ -101,13 +101,26 @@
 **Timing:** Months 2-18
 
 **Components:**
-- Regulatory gap analysis with remediation roadmap: ~$3,500 (Months 2-3)
-- Complete DPIA validating cross-border data handling: ~$4,000 (Months 3-5)
-- Clinical safety advisory sessions: ~$3,500 (Months 4-12, approximately 3-4 sessions)
-- Ongoing regulatory adviser: ~$5,000 (Months 4-18, approximately 6-8 sessions)
-- Governance frameworks and compliance templates: ~$2,000 (Months 4-6)
 
-**Deliverables:** Gap analysis report, complete DPIA, clinical safety validation reports, advisory session reports, governance frameworks with templates
+1. **Regulatory gap analysis with remediation roadmap: ~$3,500 (Months 2-3)**
+   - Provider: NZ health data privacy consultant or regulatory adviser (with healthcare and AI expertise)
+   - Deliverables: Gap analysis report, compliance checklist, risk register
+
+2. **Complete DPIA validating cross-border data handling: ~$4,000 (Months 3-5)**
+   - Provider: Privacy/DPIA specialist with healthcare experience
+   - Deliverables: Complete DPIA document, risk assessment matrix, mitigation recommendations
+
+3. **Clinical safety advisory sessions: ~$3,500 (Months 4-12, approximately 3-4 sessions)**
+   - Provider: Clinical safety consultant with MedTech/SaMD experience
+   - Deliverables: Advisory session reports, clinical risk assessment framework, safety validation reports
+
+4. **Ongoing regulatory adviser: ~$5,000 (Months 4-18, approximately 6-8 sessions)**
+   - Provider: Same regulatory adviser from gap analysis (continuity preferred)
+   - Deliverables: Session notes with recommendations, updated compliance checklists, risk register updates
+
+5. **Governance frameworks and compliance templates: ~$2,000 (Months 4-6)**
+   - Provider: Legal/compliance adviser or regulatory consultant
+   - Deliverables: Governance framework, compliance documentation templates, incident response runbook
 
 **Subtotal CD-1: $18,000**
 
@@ -118,16 +131,22 @@
 **Timing:** Months 2-8
 
 **Components:**
-- Experiment tracking & model registry setup: ~$4,000 (Months 2-4)
-- LLM methods advisory sessions: ~$6,000 (Months 2-8, approximately 5-8 sessions)
 
-**Deliverables:** Configured experiment tracking system, model registry, standardised evaluation frameworks, experiment design templates, research documentation workflows
+1. **Experiment tracking & model registry setup: ~$4,000 (Months 2-4)**
+   - Provider: Technical consultant specialising in ML research infrastructure
+   - Deliverables: Configured experiment tracking system, model registry, dataset lineage documentation, research dashboard, training materials
+
+2. **LLM methods advisory sessions: ~$6,000 (Months 2-8, approximately 5-8 sessions)**
+   - Provider: AI/ML technical consultant with LLM research infrastructure expertise
+   - Deliverables: Advisory session reports, standardised evaluation frameworks, experiment design templates, research documentation workflows
 
 **Subtotal CD-2: $10,000**
 
 ---
 
 ### CD-3: R&D Project Management Capability for First-Time R&D Performer ($8,000)
+
+**Provider:** R&D project management consultant/coach with healthcare or tech R&D experience
 
 **Timing:** Months 2-16
 
@@ -173,6 +192,34 @@
 - Percentage: 5.02% ✓ **MEETS REQUIREMENT**
 
 **Rationale:** As first-time R&D performers, we prioritise capabilities directly de-risking the R&D programme (compliance, systematic documentation, project management). All three objectives build enduring organisational capability reusable for Years 3-5 HealthHub NZ and future health AI projects.
+
+---
+
+### Supplier Selection Criteria
+
+**Privacy/DPIA Specialist (CD-1)**
+- Must have: NZ Privacy Act 2020 expertise, healthcare sector experience (HIPC), DPIA completion track record, understanding of cross-border data handling (IPP 12)
+- Recommended: Privacy consultants with health sector focus, former Privacy Commissioner staff, health informatics consultants
+
+**Clinical Safety Consultant (CD-1)**
+- Must have: Medical device software (SaMD) experience, NZ clinical safety framework knowledge, risk assessment expertise for healthcare AI
+- Recommended: Clinical safety consultants with MedTech background, healthcare quality/safety specialists
+
+**Regulatory Adviser (CD-1)**
+- Must have: NZ Privacy Act 2020 expertise, healthcare sector experience (HIPC, PHO compliance), AI/algorithm governance experience, available for 24-month engagement
+- Recommended: Same provider as gap analysis (continuity), law firms with healthcare + privacy practice
+
+**ML Infrastructure Consultant (CD-2)**
+- Must have: MLOps/ML infrastructure experience, experiment tracking systems (MLflow, W&B, etc.), training/knowledge transfer capability
+- Recommended: ML engineering consultants, data science consulting firms, technical consultants with healthcare AI experience
+
+**LLM Methods Adviser (CD-2)**
+- Must have: ML research infrastructure experience, LLM experiment documentation and comparison methodologies, MLOps expertise, knowledge transfer capability
+- Recommended: ML engineering consultants with research infrastructure specialisation, MLOps consultants with healthcare AI experience
+
+**R&D Project Management Coach (CD-3)**
+- Must have: R&D project management experience (not just general PM), Agile/Scrum/Kanban expertise, healthcare or tech R&D experience, coaching/mentorship capability
+- Recommended: R&D management consultants, experienced R&D project managers offering coaching
 
 ---
 
