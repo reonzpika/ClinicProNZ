@@ -4,6 +4,63 @@
 
 ---
 
+## [2025-12-09] — UI/UX Specifications Complete + Medtech Evolution Integration Research
+
+**Completed**:
+- Mobile UI specification (7 screens, 9,500 words): `features/clinical-images/mobile-ui-spec.md`
+- Desktop UI specification (12 components, 6,500 words): `features/clinical-images/desktop-ui-spec.md`
+- Medtech Evolution integration research (600 lines): `reference/medtech-evolution-integration.md`
+- Medtech support questions documented: `reference/medtech-support-questions.md`
+- Feature overview updated with UI/UX decisions and constraints
+
+**Key Architectural Decisions**:
+- Session scope: Per patient (1 hour from last activity)
+- Two commit paths: Desktop review (default/recommended) + Mobile direct commit (optional)
+- Metadata fields: Body Site/Comment required (desktop), Laterality Left/Right/N/A (optional)
+- Validation: Mobile lenient (all optional), Desktop strict (body site required)
+
+**Critical Constraint Identified**:
+- Media resources in ALEX API are immutable (cannot be edited/deleted after commit)
+- Desktop review is essential (not optional) to prevent mistakes
+- Confirmed via Perplexity research of ALEX API documentation
+
+**Medtech Evolution Integration Findings** (Perplexity research):
+- NO widget API, PostMessage events, or lifecycle hooks available
+- Apps launched via ALEX Apps toolbar as independent web applications
+- Patient context passed at launch (exact format TBD from Medtech)
+- No real-time patient change detection available
+- Solution: Session-per-patient approach, new launch = new patient
+
+**Patient Change Detection Strategy**:
+- Browser `beforeunload` warning if uncommitted images
+- Check for previous patient's uncommitted images on new launch
+- Session expiry with grace period if uncommitted images exist
+- Standard browser events only (no Evolution-specific events available)
+
+**Documentation Structure**:
+- Mobile: 7 screens fully specified (landing, review, metadata, upload, success, errors)
+- Desktop: 12 components specified (top bar, patient banner, warning banner, QR panel, thumbnails, preview, metadata form, dialogs)
+- API endpoints: 6 endpoints documented with request/response formats
+- Data structures: TypeScript interfaces for all entities
+- Testing checklists: Functional, cross-device, network conditions
+
+**Open Questions** (documented in `reference/medtech-support-questions.md`):
+1. Launch URL format for ALEX Apps
+2. Patient context fields passed at launch
+3. Launch token validation mechanism
+4. ALEX Apps registration process
+5. Embedding method (window, tab, or iFrame)
+6. Lifecycle events documentation (if any)
+
+**Status**: Ready for implementation, Medtech support questions documented for later
+
+**Documentation Approach**:
+- Consolidated all session decisions into CHANGELOG.md (this file)
+- No session summary files created
+- All new spec files referenced in FEATURE_OVERVIEW.md
+
+---
+
 ## [2025-12-09] — Documentation Reorganization (Option A: Feature-Centric)
 
 **Changes**:

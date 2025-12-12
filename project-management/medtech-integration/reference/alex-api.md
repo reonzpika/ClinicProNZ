@@ -391,6 +391,7 @@ Common error scenarios:
 - **Need body site/laterality extensions?** → Custom Fields & Extensions OR contact Medtech support ⭐⭐⭐
 - **API errors?** → Error Handling section
 - **Coded value mappings?** → Reference Tables section
+- **Widget integration with Medtech Evolution?** → [medtech-evolution-integration.md](./medtech-evolution-integration.md) ⭐⭐⭐
 
 ---
 

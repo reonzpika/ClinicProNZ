@@ -1,8 +1,25 @@
 # Cursor AI Rules System
 
-**Version**: 5.0.0 (Always-Loaded Rules)  
-**Last Updated**: 2025-11-10  
+**Version**: 6.0.0 (Consolidation-First Rules)  
+**Last Updated**: 2025-12-09  
 **Architecture**: 3 always-loaded files + embedded navigation
+
+---
+
+## What Changed in v6.0
+
+**Change from v5.0**: Added Part 2 (Documentation Rules) to `project-work-rules.mdc`.
+
+**Why**: 
+- Prevent AI from creating unnecessary files (consolidation over proliferation)
+- Enforce referencing new files in main docs (AI context awareness)
+- Clarify when to update documentation (major milestones only, not every small change)
+
+**Impact**: 
+- ✅ Fewer scattered files, more consolidated documentation
+- ✅ All new files guaranteed to be referenced in PROJECT_SUMMARY.md or FEATURE_OVERVIEW.md
+- ✅ No session summaries or temporary files
+- ✅ Documentation updates only when appropriate (not after every change)
 
 ---
 
@@ -10,7 +27,7 @@
 
 **Change from v4.0**: Moved `project-work-rules.mdc` from context-loaded (via glob pattern) to always-loaded.
 
-**Why**: Core workflow rules (discuss → approve → implement → update) should be consistently available across all interactions. The file is lightweight (~70 lines, ~350 tokens) and contains essential patterns that apply to all project work.
+**Why**: Core workflow rules (discuss → approve → implement → update) should be consistently available across all interactions. The file is lightweight and contains essential patterns that apply to all project work.
 
 **Impact**: 
 - ✅ More consistent behavior across all interactions
@@ -54,17 +71,19 @@
 
 ---
 
-### Level 2: Work Rules (Always-Loaded)
+### Level 2: Work & Documentation Rules (Always-Loaded)
 
-**File**: `project-work-rules.mdc` (~70 lines, ~350 tokens)
+**File**: `project-work-rules.mdc` (~140 lines, ~700 tokens)
 
 **Loads when**: Always (alwaysApply: true)
 
 **Contains**:
-- Work workflow (discuss → approve → implement → update)
-- Validation checklist
+- **Part 1**: Work workflow (discuss → approve → implement → update when appropriate)
+- **Part 2**: Documentation rules (consolidation first, new file requirements, AI context awareness)
+- **Validation checklist**
+- **Writing style guidelines** (no em dashes)
 
-**Why always-loaded**: Core workflow rules should be available at all times to ensure consistent behavior across all interactions.
+**Why always-loaded**: Core workflow and documentation patterns should be available at all times to ensure consistent behavior and prevent file proliferation.
 
 ---
 
@@ -75,8 +94,9 @@
 | v3.1 | ~1,200 lines (~6,000 tokens) | ~500 lines | ~1,700 lines |
 | v4.0 | ~50 lines (~250 tokens) | ~800 lines | ~850 lines |
 | v5.0 | ~120 lines (~600 tokens) | ~0 lines | ~120 lines |
+| v6.0 | ~190 lines (~950 tokens) | ~0 lines | ~190 lines |
 
-**Reduction (v5.0)**: 90% fewer always-loaded tokens vs v3.1, simplified to 2 always-loaded rules.
+**v6.0 changes**: Added Part 2 (Documentation Rules) to project-work-rules.mdc to prevent file proliferation and ensure new files are always referenced in main docs.
 
 ---
 
@@ -337,9 +357,9 @@ That's it. No complex dependencies, no load orders, no competing instructions.
 
 ---
 
-**Version**: 5.0.0  
+**Version**: 6.0.0  
 **Status**: ✅ Production Ready  
-**Last Updated**: 2025-11-10
+**Last Updated**: 2025-12-09
 
 ---
 
