@@ -54,6 +54,11 @@
 
 **Status**: Ready for implementation, Medtech support questions documented for later
 
+**Documentation Approach**:
+- Consolidated all session decisions into CHANGELOG.md (this file)
+- No session summary files created
+- All new spec files referenced in FEATURE_OVERVIEW.md
+
 ---
 
 ## [2025-12-09] — Documentation Reorganization (Option A: Feature-Centric)
