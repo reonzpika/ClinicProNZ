@@ -284,11 +284,19 @@ GP opens Medtech Evolution
 
 ## Open Questions
 
-1. **Patient change detection**: How does Medtech Evolution notify embedded widgets of patient changes? (Perplexity research needed)
-2. **Widget embedding**: iFrame, new window, or tab? What's the standard Medtech Evolution integration pattern?
-3. **Session persistence**: Should session survive page refresh? Or create new session each time?
-4. **Maximum images per session**: Impose hard limit? (Suggest 20 images)
-5. **HEIC backend handling**: Should backend handle HEIC → JPEG conversion as fallback?
+**For Medtech Partner Support** (see [medtech-support-questions.md](../../reference/medtech-support-questions.md)):
+1. Launch URL format for ALEX Apps
+2. Patient context fields passed at launch (patient ID, NHI, encounter, facility, provider)
+3. Launch token validation mechanism
+4. ALEX Apps registration process
+5. Embedding method (iFrame, new window, or tab)
+6. Lifecycle events or callbacks (if any)
+7. Example integration documentation
+
+**For Implementation**:
+1. **Session persistence**: Should session survive page refresh? (Recommend: Yes, 1 hour TTL)
+2. **Maximum images per session**: Impose hard limit? (Recommend: 20 images)
+3. **HEIC backend handling**: Should backend handle HEIC → JPEG conversion as fallback? (Recommend: Yes, as fallback)
 
 ---
 
@@ -298,6 +306,11 @@ GP opens Medtech Evolution
 - **[mobile-ui-spec.md](./mobile-ui-spec.md)** - Complete mobile UI specification
 - **[desktop-ui-spec.md](./desktop-ui-spec.md)** - Complete desktop UI specification
 - **[implementation-requirements.md](./implementation-requirements.md)** - Technical requirements
+
+### Integration Reference
+- **[medtech-evolution-integration.md](../../reference/medtech-evolution-integration.md)** - Medtech Evolution widget integration patterns
+- **[medtech-support-questions.md](../../reference/medtech-support-questions.md)** - Questions for Medtech partner support
+- **[alex-api.md](../../reference/alex-api.md)** - ALEX FHIR API reference
 
 ### Project Docs
 - **[DEVELOPMENT_ROADMAP.md](../../DEVELOPMENT_ROADMAP.md)** - Implementation phases and tasks
