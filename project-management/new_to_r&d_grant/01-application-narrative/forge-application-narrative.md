@@ -56,209 +56,214 @@ NexWave Solutions Ltd (incorporated 2024) develops AI tools for New Zealand gene
 
 ## Describe Planned R&D Activities (~250 words)
 
-**Research Objective:** Systematically investigate which AI architectural paradigms achieve clinical safety, NZ-contextual performance, and cost-effectiveness for primary care decision support under combined constraints (sovereignty, equity, multi-system integration, real-time performance).
+We will build NZ-trained AI for two GP clinical decision support tools (Inbox Helper and Care Gap Finder) under sovereignty constraints, requiring systematic research to determine optimal AI architecture.
 
-**Core Architectural Investigation:**
-- Explore spectrum: lightweight classifiers → rule-based systems → Large Language Models → retrieval-augmented generation → agentic AI → hybrid combinations
-- **Research follows empirical evidence** - may discover novel patterns or reveal optimal approaches vary unpredictably by task
-- Measure each paradigm: accuracy, computational cost, latency, safety failure modes, generalisability, equity outcomes
+**Main Research Activity: Determining Optimal AI Architecture**
 
-**Clinical Test Beds:**
+Multiple AI system architectures exist with different trade-offs:
 
-**1. Inbox Management (reactive, high-volume)**
-- Laboratory result interpretation, hospital letter summarisation, urgency classification
-- Research question: Which architectural approach safely handles routine clinical tasks while maintaining accuracy and cost-effectiveness?
+- **Lightweight AI models:** Fast and low-cost but limited reasoning capability
+- **Retrieval-augmented systems (RAG):** Dynamically retrieve from NZ knowledge bases for better context
+- **Agentic AI systems:** Multiple specialized agents working together for complex reasoning
+- **Hybrid combinations:** Combining strengths of different approaches
 
-**2. Chronic Disease Monitoring (proactive, complex reasoning)**
-- Identify overdue checks: diabetes, cardiovascular disease, chronic lung conditions, heart failure, asthma
-- Multi-condition gap detection with Māori/Pacific equity prioritisation
-- Research question: Which paradigm achieves clinical calculation accuracy while maintaining equity without algorithmic bias?
+**Research approach:**
+- Investigate which architecture best fits NZ sovereignty constraints (no overseas APIs), clinical safety requirements, and cost sustainability
+- Initial research and prototyping will determine most promising approaches to test
+- Compare chosen approaches on two clinical tasks: **inbox triage** (lab interpretation, letter classification, urgency assessment) and **care gap monitoring** (identifying overdue chronic disease checks, focusing on diabetes and cardiovascular risk assessment/management, with potential expansion to other conditions like COPD, heart failure, CKD if time allows)
+- Measure: clinical accuracy, computational cost, safety, performance across Medtech/Indici
+- Research follows empirical evidence; likely hybrid approach but specific combination determined through systematic investigation
 
-**NZ Domain Adaptation:**
-- Train sovereign AI on curated NZ clinical corpus: bpac guidelines, MoH protocols, Pharmac database, regional lab formats, Medtech/Indici clinical patterns
-- Investigate whether domain adaptation achieves clinical-grade performance under sovereignty constraints
+**NZ Healthcare Training**
 
-**Multi-System Generalisation:**
-- Integrate with Medtech and Indici
-- Investigate architectural patterns maintaining performance across different health system structures
+- Train AI on curated NZ clinical corpus: bpac guidelines, Ministry of Health protocols, Pharmac database, regional lab formats, Medtech/Indici documentation patterns
+- Test whether NZ-trained AI achieves clinical-grade accuracy (≥90% triage, ≥95% clinical calculations) at sustainable cost
 
-**Real-World Validation:**
-- Pilot with 10-20 GP practices
-- Measure: clinical utility, safety outcomes, clinician overrides, equity metrics
+**Real-World Validation**
+
+- Pilot with 10-20 GP practices across diverse settings
+- Measure: clinical utility, safety outcomes, equity metrics, performance stability
 - Document: synthetic → sandbox → production performance translation
 
-**Knowledge Outputs:**
-- Published architectural framework, NZ domain adaptation methodology, multi-system generalisation patterns, equity algorithm design principles
-- Documented through technical publications enabling sector-wide evidence-based decisions
-- **Specific implementations remain competitive IP** driving commercial sustainability
+**Knowledge Outputs**
+
+- Publish frameworks for NZ health AI sector
+- Specific implementations remain competitive IP
 
 ---
 
 ## Uncertainty – What is the Specific Uncertainty? (~250 words)
 
-**Primary Uncertainty:** Which AI architectural paradigm achieves clinical safety, NZ-contextual accuracy, and cost-effectiveness for primary care decision support across multiple health system platforms under unprecedented constraint combination (high safety requirements, NZ healthcare context, equity obligations, privacy regulations, multi-system integration)?
+**Core Uncertainty:** What is the optimal AI architecture for NZ clinical decision support under sovereignty constraints?
 
-**Five Interconnected Research Uncertainties:**
+**The Architecture Design Challenge**
 
-**1. Architectural Paradigm Selection**
-- Do routine clinical tasks permit lightweight solutions ($0.002/request) or require sophisticated reasoning ($0.15/request)?
-- Emerging paradigms (agentic systems, advanced RAG) may outperform established approaches
-- Cost-accuracy-safety trade-offs unknowable without empirical comparison across clinical risk spectrum
-- Optimal paradigm may vary by task in unexpected ways
+Multiple AI approaches exist (lightweight models, retrieval systems, agentic architectures, hybrid combinations) with different trade-offs:
 
-**2. Domain Adaptation Under Sovereignty Constraints**
-- Does domain adaptation suffice for NZ healthcare characteristics (bpac/MoH guidelines, regional lab formats, ACC/PHO patterns), or do contextual differences require architectural modifications?
-- Standard techniques trained on international datasets may not capture NZ nuances
-- Adaptation effectiveness across paradigms under no-overseas-training constraints requires systematic investigation
+**Key unknowns:**
 
-**3. Multi-System Generalisation**
-- Will architecture achieving 90% accuracy in Medtech maintain performance in Indici?
-- What design patterns enable generalisation across health platforms without system-specific rework?
-- Generalisation behaviour unpredictable without testing
+- **Optimal component combination:**
+  - Which approaches should be combined for best results?
+  - Does inbox triage need different architecture than care gap monitoring?
+  - What role does each component play (retrieval, reasoning, safety verification)?
+  - Cannot predict optimal design without systematic investigation
 
-**4. Safety-Architecture Interactions**
-- How do safety constraints interact with different paradigms?
-- Do agentic systems maintain safety bounds differently than LLMs?
-- Hybrid approaches may propagate failures across components
-- Emergent risks cannot be predicted from component specifications
+- **Cost-accuracy balance:**
+  - Where is the sweet spot between clinical performance and operational cost?
+  - System will run thousands of times daily; cost multiplies quickly
+  - Simple approaches cheaper but may miss clinical nuances
+  - Sophisticated approaches more accurate but expensive at scale
+  - Unknown which tasks justify higher costs vs which can use lightweight solutions
 
-**5. Equity Algorithm Design**
-- Can algorithms prioritise Māori/Pacific patients without under-alerting other populations or perpetuating biases?
-- No published methods exist for multi-condition monitoring with NZ equity goals
+- **NZ-trained performance:**
+  - Must build NZ-trained system (cannot use overseas APIs due to Privacy Act)
+  - Unknown if NZ training achieves clinical-grade performance comparable to international commercial models
+  - No existing benchmarks for NZ-sovereign clinical AI
 
-Uncertainties are interconnected: architectural choice affects domain adaptation, influences generalisation, impacts safety, determines equity outcomes. Resolving these creates foundational knowledge for patient-facing AI and national health integration.
+**Secondary Uncertainties**
+
+- **Real-world deployment:** Will AI trained on curated NZ data work accurately in messy PMS environments (Medtech/Indici) where GP workflows happen? Training data necessarily cleaner than production reality.
+
+- **Safety characteristics:** How do different AI architectures fail in clinical contexts? Which safety mechanisms work with which approaches?
+
+- **Equity algorithms:** How to prioritize Māori/Pacific patients appropriately without creating bias or under-alerting other groups? No published methods for multi-condition monitoring with NZ equity goals.
 
 ---
 
 ## R&D Challenge – Why is This Difficult for a Professional? (~250 words)
 
-**Even highly competent professionals cannot deduce solutions without systematic experimentation:**
+Experts cannot predict optimal AI architecture without systematic experimentation because:
 
-**1. Emergent Architecture Behaviour**
-- Architectural paradigms (pattern recognition → agentic reasoning) exhibit emergent behaviour when components interact
-- Sophisticated reasoning systems "hallucinate" on medical calculations: cardiovascular risk scoring requires precise 8-variable computation, yet models fabricate values
-- Interaction effects compound unpredictably: retrieval errors propagate into reasoning, quantization degrades safety mechanisms, context-window limitations create unexpected failures
-- Component-level testing doesn't reveal system-level failures
-- Performance emerges from interactions unknowable without empirical measurement
+**1. Real Clinical Data Has High Variability and Inconsistency**
 
-**2. Real-World Clinical Data Complexity**
-- Real clinical data exhibits characteristics unreplicable synthetically: inconsistent documentation under time pressure, missing fields, data quality variations, system artifacts, GP-specific abbreviations, context-dependent terminology
-- Different paradigms respond unpredictably to messiness: classifiers fail on novel abbreviations, LLMs hallucinate missing values, hybrid systems propagate extraction errors into reasoning
-- Performance on clean synthetic data doesn't predict messy clinical data performance
-- Architecture-dependent sensitivity unknowable without real-world testing
-- Edge cases occur frequently (5-15% of "routine" items) with patient harm potential
+Clinical data varies in ways that challenge AI systems:
 
-**3. Safety-Architecture Interactions**
-- Safety constraints (refusal scaffolds, prohibited-claim detection) behave differently across architectures
-- Agentic systems propagate errors across agents; LLMs bypass refusal scaffolds unexpectedly; hybrid systems fail at component boundaries creating safety gaps
-- Confidence calibration differs fundamentally: classifier probabilities are calibrated, LLM confidence scores don't correlate with accuracy (known failure mode)
-- Safety failure modes vary unpredictably by paradigm
-- Emergent safety risks require systematic investigation
+- **Documentation inconsistency:** Terminology varies across GPs, missing fields common, GP-specific abbreviations differ by practice
+- **Lab result variations:** Same test described differently across regions and providers (HbA1c 48 vs A1c 7.5% vs glycated Hb 64 mmol/mol)
+- **Third-party systems change unpredictably:** Labs and hospitals modify formats and terminology without notice
+- **Edge cases are frequent:** 5-15% of "routine" items have unusual characteristics
+- **Requires clinical intelligence:** AI must interpret variations correctly, not rely on rigid pattern matching
+- Which architectures handle variability best cannot be deduced without testing
 
-**4. Laboratory-to-Clinical Translation Gap**
-- Laboratory metrics (accuracy, F1) may not correlate with clinical outcomes (time saved, errors prevented, safety)
-- High-accuracy systems may reduce trust through false positives while lower-accuracy systems with better explanations drive higher utility
-- Multi-practice performance variance unpredictable: what works in one practice may fail in another due to workflow differences, patient population characteristics, documentation patterns
-- Which architectural characteristics translate to clinical value cannot be deduced from benchmarks
-- Requires systematic real-world outcome measurement across diverse practices
+**2. AI Systems Fail in Unpredictable Ways**
+
+AI systems have multiple failure modes:
+
+- Pattern matching failures on unfamiliar variations
+- Hallucination: Fabricating missing clinical values
+- Omission: Skipping critical information without warning
+- Error propagation across system components
+
+Cannot predict which failures occur in real-world deployment without systematic testing. Need to discover which architectural characteristics provide robustness and adaptability vs brittleness.
+
+**3. Performance Translation from Training to Deployment**
+
+- AI trained on curated NZ health data (guidelines, lab reports, clinical notes) must work in real practice management system environments where GP workflows happen
+- Deployment adds complexity: live workflows with interruptions, different user interfaces, varied data quality across practices, time pressure affecting documentation quality
+- Which architectural characteristics maintain accuracy and adapt to real-world variability?
+- Cannot deduce without testing in actual GP workflows across diverse practice settings
+
+Only systematic testing across real clinical environments reveals which AI architectures maintain accuracy, safety, and adaptability under operational conditions.
 
 ---
 
 ## Knowledge Availability – What Exists and Why It's Insufficient? (~250 words)
 
-**Existing knowledge addresses different problems:**
+Existing solutions address different problems and don't resolve our specific uncertainties.
 
-**1. Current Clinical AI Tools Solve Different Problems**
-- **Documentation focus:** Heidi (NZ), Abridge, Nuance DAX solve transcription, not clinical decision support
-- **Admin automation:** SmartCareGP, HealthAccelerator, Pegasus Health provide rule-based workflow support, not multi-condition clinical reasoning
-- **Early-stage inbox tools:** InboxMagic (MVP phase) lacks published architectural approaches or deep PMS integration
-- **Knowledge gap:** Whether AI architectures work for active decision support with multi-condition reasoning (care gap monitoring across 5 chronic conditions), confidence-calibrated alerts, and equity-aware prioritisation is technologically uncertain
-- No published work validates paradigms across decision support use cases
+**1. Current NZ Clinical AI Tools**
 
-**2. Generic AI Systems Lack Sovereign Deployment Pathways**
-- Overseas APIs (GPT-4, Claude) prove clinical reasoning capability but don't address critical unknowns:
-  - How to achieve comparable performance under NZ sovereignty constraints (no overseas APIs, no overseas training)?
-  - At sustainable cost (<$0.01/request vs $0.15/request for GPT-4)?
-  - With equity algorithms prioritising Māori/Pacific patients?
-- Architectural paradigms for sovereign deployment at scale are undocumented
+- **AI scribe (e.g. Heidi):**
+  - Transcription and documentation only, not clinical decision support
+  - Converts speech to text but doesn't interpret clinical meaning
 
-**3. Academic Research Tests in Isolation**
-- Published work studies isolated techniques (fine-tuning, RAG, agentic systems) using standardised datasets
-- How paradigms perform under combined real-world constraints (sovereignty + equity + Privacy Act + cost + real-time performance + safety) is unknowable from isolated testing
-- Lab benchmarks don't predict clinical integration performance
-- Emergent behaviours cannot be deduced
+- **InboxMagic:**
+  - Early-stage MVP without published methods or deep PMS integration
+  - Unclear which AI approaches used or if they work at scale
 
-**4. Commercial Solutions Remain Proprietary**
-- Emerging commercial solutions don't disclose architectural selection criteria, domain adaptation techniques, or safety validation methods
-- Knowledge remains proprietary, unavailable for sector capability building
-- Public research required to create accessible, reusable knowledge for entire NZ health AI sector
+- **SmartCareGP, HealthAccelerator:**
+  - Rule-based automation, not AI-powered clinical reasoning
+  - Cannot handle multi-condition prioritization or adapt when formats change
 
-**Systematic investigation required to resolve technological uncertainties under combined constraint set.**
+- **Knowledge gap:** No AI trained on NZ healthcare context (bpac guidelines, Ministry of Health protocols, regional lab formats) that intelligently solves inbox overload and care gap monitoring. Current tools do transcription (Heidi) or basic automation (others), not AI-powered clinical decision support.
+
+**2. Overseas AI Systems**
+
+- Commercial AI models (GPT-4, Claude) prove AI can perform clinical reasoning
+- However, they don't address critical unknowns for NZ deployment:
+  - How to achieve comparable performance under NZ sovereignty constraints (no overseas APIs, Privacy Act compliance)?
+  - At sustainable cost with NZ clinical context understanding (local guidelines, lab formats, ACC/PHO patterns)?
+  - Which architectural design (retrieval, agentic, hybrid) works for sovereign deployment?
+
+- **Knowledge gap:** No documented pathway for sovereign AI deployment achieving clinical-grade performance at sustainable cost.
+
+**3. Academic Research**
+
+- Published research tests isolated AI techniques (fine-tuning, retrieval systems, hybrid architectures) on standardised, clean datasets
+- Real-world deployment requires combined constraints: sovereignty + clinical safety + equity + Privacy Act + cost sustainability + multi-system integration
+- Lab benchmarks don't predict AI performance in messy clinical workflows with interruptions, inconsistent data, time pressure
+
+- **Knowledge gap:** No research validates which AI architectures work under combined real-world constraint set.
+
+**Conclusion:** Systematic investigation required to resolve which AI architectures work for clinical decision support under NZ sovereignty constraints at sustainable cost in real GP workflows.
 
 ---
 
 ## Newness – What is New? (~250 words)
 
-**Two AI-powered clinical decision support services for New Zealand general practice:**
+Two AI-powered clinical decision support services for NZ general practice:
 
-**1. Inbox Helper - Intelligent Inbox Management**
-- AI-powered triage classifying inbox items (labs, letters, referrals, scripts, admin, patient messages) by urgency and type
-- Automated filing of normal screening results with appropriate recall intervals
-- Clinical intelligence overlays: compares current labs with previous results, flags trends, identifies urgent issues
-- Patient communication generation (GP-approved messages based on results)
-- Integrated into Medtech and Indici practice management systems
+**Service 1: Inbox Helper - Intelligent Inbox Management**
 
-**2. Care Gap Finder - Proactive Chronic Disease Intelligence**
-- Scans patient records to identify overdue checks across 5 chronic conditions: diabetes, cardiovascular disease, COPD, heart failure, asthma
-- Multi-condition reasoning: prioritises patients with competing care needs (e.g., diabetes control vs CVD prevention vs CKD monitoring)
-- Equity-preserving algorithms: systematically prioritises Māori/Pacific patients and high-deprivation populations without algorithmic bias
-- Generates recall lists and patient communication messages
-- Practice dashboards showing care gaps with equity filters
+AI clinical intelligence applied to:
 
-**Why These Services Are Novel:**
+- **Triage and classification:** Reads labs, letters, referrals, messages; classifies by urgency and type using clinical reasoning
+- **Discharge summary processing:** Reads hospital discharge summaries, extracts key information, surfaces GP action list and urgent items
+- **Clinical interpretation:** Compares current labs with previous results, identifies trends, flags abnormalities
+- **Automated filing with judgment:** Determines which results are safe to auto-file based on clinical context
+- **Patient communication:** Generates appropriate messages adapted to clinical situation
 
-**No existing tools provide clinical intelligence for these tasks.** Current state:
-- Inbox management: 100% manual GP/nurse review (no AI triage exists)
-- Care gap monitoring: 100% manual chart review OR rule-based queries without clinical reasoning (cannot handle multi-condition prioritisation or equity algorithms)
-- Existing AI tools (Heidi): Documentation/transcription only, not clinical decision support
-- International tools: Don't address NZ sovereignty constraints, lack equity algorithms, don't integrate with NZ PMSs
+**Service 2: Care Gap Finder - Proactive Chronic Disease Intelligence**
 
-**R&D Approach:** Systematic investigation of AI architectural paradigms (classifiers → LLMs → agentic systems → hybrid approaches) to achieve clinical safety, NZ-contextual accuracy, equity without bias, and sustainable cost (<$0.01/request) under sovereignty constraints. Research generates architectural frameworks, safety methods, and equity algorithms documented for broader sector use.
+AI clinical intelligence applied to:
+
+- **Multi-condition reasoning:** Gathers all recorded patient information (labs, medications, diagnoses, demographics), determines care priorities focusing on diabetes and cardiovascular risk assessment/management (with potential expansion to other chronic conditions if time allows)
+- **Priority decision-making:** Decides which checks are most urgent given patient's overall clinical picture
+- **Equity-aware prioritization:** Prioritizes Māori/Pacific and high-risk patients appropriately without algorithmic bias
+- **Practice intelligence:** Generates dashboards showing patterns across patient populations with actionable insights
 
 ---
 
 ## Why is it Better? (~250 words)
 
-**Better Than Current Manual Processes:**
+**Better Than Manual Processes**
 
-**Inbox Management:**
-- **Current:** GPs manually review every inbox item (labs, letters, referrals), spending 1-2 hours/day on triage and filing
-- **With AI:** Automated triage and classification saves 30%+ time. AI flags urgent items, auto-files normal screening results, compares labs with previous values
-- **GP benefit:** Reduces daily workload by 1-2 hours, enabling focus on complex clinical decisions rather than administrative sorting
+- **Inbox Management:**
+  - Manual: 1-2 hours/day reviewing every item individually
+  - With AI: 30%+ time savings through intelligent pre-processing
+  - **AI advantage:** Instantly compares current results with patient history, spots trends invisible in single manual review (e.g., "creatinine slowly rising over 18 months suggests progressive kidney disease")
 
-**Care Gap Monitoring:**
-- **Current:** Manual chart reviews or basic rule-based queries (e.g., "HbA1c >64 mmol/mol") requiring GP interpretation. Time-consuming, inconsistent across practices
-- **With AI:** Systematic scanning across 5 chronic conditions with multi-condition reasoning. AI handles clinical complexity: "Patient has diabetes + CKD + CVD → prioritise based on greatest clinical need"
-- **GP benefit:** 80%+ care gap completion vs inconsistent manual monitoring. Proactively identifies high-risk patients before complications
+- **Care Gap Monitoring:**
+  - Manual: Time-consuming chart reviews, limited to what GP remembers to check
+  - With AI: Systematic population-level scanning with multi-condition prioritization
+  - **AI advantage:** Sees patterns across entire practice that manual review misses (e.g., "Your Māori patients with diabetes have 40% lower HbA1c screening completion in Q3-Q4")
 
-**Equity Outcomes:**
-- **Current:** Ad-hoc efforts to prioritise Māori/Pacific patients, often ineffective
-- **With AI:** Systematic equity prioritisation built into algorithms, ensuring Māori/Pacific patients receive proactive care without under-alerting other populations
-- **GP benefit:** Meets Te Tiriti obligations systematically, reduces health inequities
+- **Equity:**
+  - Manual: Relies on GP memory, vulnerable patients often missed
+  - With AI: Systematic identification and prioritization
+  - **AI advantage:** Never forgets, consistently applies equity principles across all patients
 
-**Better Than Existing AI Tools:**
+**Better Than Existing Automation Tools**
 
-**Heidi (NZ market leader):**
-- Heidi: Transcription and documentation only
-- Ours: Clinical decision support with multi-condition reasoning, equity algorithms, proactive monitoring
+Existing automation (SmartCareGP, HealthAccelerator, rule-based systems) relies on rigid rules that break when third-party systems change formats, flags everything matching thresholds (creating alert fatigue), and requires manual reconfiguration.
 
-**Overseas APIs (GPT-4, Claude):**
-- Overseas: Not sovereign (Privacy Act concerns), expensive ($0.15/request unsustainable at scale), no NZ clinical context (bpac guidelines, regional lab formats)
-- Ours: Sovereign (no overseas APIs), sustainable cost (<$0.01/request), NZ-trained on local clinical corpus
+**Our AI provides three key advantages:**
 
-**Clinical Integration:**
-- Existing tools: Standalone applications requiring workflow disruption
-- Ours: Integrated directly into Medtech/Indici PMSs, embedded in existing GP workflow
+1. **Adaptive intelligence:** Understands clinical meaning regardless of format variations. When labs change terminology (happens regularly), AI interprets clinically rather than failing. No manual reconfiguration needed.
+
+2. **Clinical context awareness:** Considers full patient picture, not threshold matching. Reduces alert fatigue by understanding which combinations actually matter. Surfaces hidden patterns invisible to manual review or simple queries.
+
+3. **NZ-trained and integrated:** Understands local context (bpac guidelines, regional lab formats, ACC/PHO patterns). Embedded directly in Medtech/Indici workflow with no context switching.
 
 ---
 
@@ -324,302 +329,323 @@ Inference may occur in Australia with no persistent PHI outside New Zealand. All
 
 ## Objectives, Dates and Deliverables (24 Months)
 
-### Objective 1: Build the Smart Foundation and Early Prototypes (Months 1-6)
+### Objective 1: Foundation AI Architecture and Data Requirements (Months 1-6)
 
 **Dates:** 27 Jan 2026 – 30 Jun 2026
 
-**Plain-English aim:** Create a flexible, safe AI backbone that can plug into Medtech and Indici, test different AI "recipes" on synthetic NZ healthcare data, and support early Inbox and Care Gap prototypes.
+**Technological uncertainty:** No proven AI architecture exists for NZ-sovereign GP clinical decision support. Overseas models cannot be deployed under Privacy Act sovereignty constraints, and no published research validates which AI approaches achieve clinical-grade performance on NZ healthcare data at sustainable cost.
 
-**Key R&D questions:**
-- Which AI approach works best for each task: simple classifier, generic LLM, hybrid rules+LLM, or NZ-trained LLM?
-- Can a NZ-trained LLM understand local clinical language (bpac/MoH guidance, lab formats, Medtech/Indici notes) better than generic models?
-- How do we design one architecture that supports both Medtech and Indici without major rework for each platform?
+**Plain-English aim:** Investigate which AI approach and what NZ data are needed to build clinical-grade AI system for GP workflow. This establishes the foundation architecture that Objectives 2-3 will specialise for inbox management and care gap detection.
 
-**What is actually built:**
+**Core R&D questions:**
 
-**NZ clinical data and test sets:**
-- Curate NZ clinical corpus (≥10,000 pages) from bpac.org.nz, Ministry of Health, Pharmac, example lab reports and discharge summaries
-- Generate synthetic datasets:
-  - ≥1,000 synthetic inbox items (labs, discharge letters, referrals, scripts, admin, patient messages) using LabTests, SCL, Medlab formats and typical GP workflows
-  - ≥500 synthetic patient records with chronic conditions (diabetes, COPD, CHF, asthma) including labs, medications, and monitoring history
+1. **Which AI architecture achieves clinical-grade performance for GP workflows?**
+   - Lightweight models, retrieval systems, agentic architectures, or hybrid combinations?
+   - Can we reach ≥90% triage, ≥95% clinical calculations at sustainable cost?
 
-**Core platform and integrations:**
-- Build modular backend connecting securely to Medtech and Indici (read-only initially, through their FHIR/related APIs)
-- Normalise different lab and document formats into consistent internal structure
-- Route tasks to different model types (simple classifier vs hybrid vs LLM) depending on risk and complexity
-- Build simple "widget shells" for Medtech and Indici displaying early AI outputs inside each PMS
+2. **What NZ data types and volumes are required?**
+   - Which matter most: bpac guidelines, MoH protocols, regional lab formats, clinical notes?
+   - Minimum viable dataset: 1,000 examples? 10,000? 100,000?
+   - Can available NZ data achieve clinical accuracy under sovereignty constraints?
 
-**Architecture experiments:**
-- Compare multiple approaches for representative use cases:
-  - Inbox triage: BERT-style classifier vs small LLM vs hybrid
-  - CVD risk calculation (CVDRA): rules-only vs LLM-only vs hybrid rules+LLM
-- Train initial NZ-LLM (or adapted small model) on NZ corpus
-- Benchmark vs GPT-4 on NZ-specific tasks (interpreting local labs, summarising NZ discharge letters)
+3. **How do we design architecture supporting equity and safety requirements?**
+   - Must support equity-aware rules (Māori/Pacific prioritisation) and confidence calibration
+   - Does this require architectural features (checker agents, ensemble voting) or post-hoc techniques?
+
+**Investigation approach (controlled, synthetic data):**
+- Research multiple AI approaches on curated NZ clinical corpus
+- Test varying data amounts/types to determine minimum requirements
+- Build foundation system and early prototypes
+- Evaluate on synthetic NZ healthcare scenarios
 
 **Deliverables by Month 6:**
-- Foundation system v1.0 deployed, connected to Medtech and Indici test/sandbox environments
-- Handling synthetic inbox items and patient records with ≥90% triage accuracy and ≥95% CVDRA accuracy on test sets
-- Architecture recommendations documented for Inbox Helper (e.g., lightweight classifier + rules vs LLM) and Care Gap Finder (hybrid rules+NZ-LLM for extraction and calculations)
-- Early sandbox prototypes: inbox prototype sorting and flagging synthetic items; care gap prototype calculating CVD risk and simple diabetes gaps on synthetic patients
+- Foundation system connected to Medtech and Indici test environments
+- Architecture selected with evidence: "Use [approach] because [empirical results]"
+- Data requirements documented: "Need [X types, Y volume] for clinical accuracy"
+- Prototypes on synthetic data: ≥90% triage, ≥95% CVDRA accuracy
+- Foundation establishes base for Objectives 2-3 specialisation
 
-**Success criteria:**
-- All 3 architecture approaches tested on representative use cases
-- Foundation system stable and connected to both PMSs
-- Architecture recommendations documented with empirical evidence
+**R&D output:** Understanding which AI architecture and NZ data requirements enable clinical-grade performance under sovereignty constraints.
 
 ---
 
-### Objective 2: Inbox Helper – Admin Automation and Early Clinical Overlays (Months 4-12)
+### Objective 2: Real-World Data Handling for Inbox Management (Months 4-12)
 
 **Dates:** 1 Apr 2026 – 31 Dec 2026
 
-**Plain-English aim:** Turn Inbox prototype into practical tool that reduces GP inbox workload and highlights urgent issues safely in both Medtech and Indici. **Lean MVP released to early adopters as soon as safety thresholds met.**
+**Technological uncertainty (progressive constraint removal):** Given the base architecture from Objective 1 (validated on controlled synthetic data), it is unknown whether that architecture handles diverse, messy real-world clinical data. Real GP inboxes contain heterogeneous formats (lab PDFs, narrative letters, semi-structured referrals) from multiple sources (LabTests, SCL, Medlab, regional labs, hospitals). No research validates which architectural components enable safe deployment with variable-quality real-world data.
 
-**Key R&D questions:**
-- Can lightweight models safely handle messy, real NZ inbox data (vs synthetic data)?
-- What confidence level is safe enough for auto-filing normal results without risking missed urgents?
-- How should AI suggestions appear in Medtech and Indici so GPs understand and trust them (explanations, overrides, layouts)?
+**Plain-English aim:** Investigate how to deploy the Objective 1 AI architecture safely with diverse real-world inbox data. **Lean MVP released as we validate safety.**
 
-**Features developed:**
+**Core R&D questions (building on Objective 1 foundation):**
 
-**Triage and processing:**
-- Automatically classify real inbox items into: labs, hospital letters, specialist letters, referrals, prescriptions, admin, patient messages
-- Assign urgency labels: "Review today" (serious abnormalities or red-flag letters), "Soon", "Routine"
-- Compare current labs with previous ones: "HbA1c increased from 48 to 62 mmol/mol over 12 months"
+1. **How does the chosen AI architecture handle diverse real-world file types and formats?**
+   - Real inboxes contain: lab PDFs (tabular), hospital letters (narrative), referral forms (semi-structured), discharge summaries (mixed), patient messages (unstructured)
+   - Each lab uses different formats despite containing same information
+   - Which formats does AI handle reliably vs which cause extraction errors?
+   - Do we need additional architectural components (format-specific parsers, separate agents)?
 
-**Automation:**
-- Normal screening results: normal mammograms → auto-file with standard text ("Normal 2026, repeat 2028") and recall set; normal HPV cervical screens → auto-file with appropriate recall interval
-- Normal blood tests in agreed-safe categories auto-filed with GP-authored standard comments and correct recall intervals based on NZ guidelines
+2. **How does AI apply patient-specific clinical context?**
+   - Normal ranges vary by patient: 65-year-old diabetic vs 25-year-old vs pregnant patient
+   - Māori/Pacific patients have different CVD risk thresholds
+   - How does AI access and apply patient context from records?
+   - What happens when context is incomplete or ambiguous?
 
-**Clinical overlays (early, non-prescribing):**
-- Rule-based flags on labs and trends: "eGFR 45 suggests possible CKD stage 3b – consider review", "HbA1c >64 indicates poor diabetes control – discuss management"
-- No specific drug recommendations; instead, prompts aligned with guideline actions
+3. **How do we calibrate AI confidence for safe automated actions?**
+   - Auto-filing requires high confidence; flagging for review requires lower confidence
+   - Does confidence calibration require architectural changes (checker agents, ensemble voting, calibration layers) or post-hoc techniques?
+   - What confidence thresholds are safe without real-world failure data to calibrate from?
 
-**Patient handoffs:**
-- Generate simple, editable messages: "Your test results are normal; no changes are needed", "Your cholesterol is raised; please book a nurse appointment to discuss lifestyle and options"
-- Support for SMS/portal/email templates, with GP approval before sending
+4. **How accurately does AI extract complex clinical information?**
+   - Discharge summaries: 5-10 pages mixing diagnosis, medications, actions needed, follow-up
+   - Can AI distinguish urgent actions from routine information?
+   - Accuracy vs GP reading same document?
 
-**Medtech and Indici integration:**
-- Common Inbox Helper widget used in both systems
-- In Medtech: integrated in inbox view, showing AI classification, urgency, suggested actions, one-click approval or override
-- In Indici: similar AI summaries and action buttons adapted to Indici's layout and workflow
-- R&D focus: measure and compare performance, errors, GP interactions across both PMSs; adjust architecture and UI to generalise
-
-**Lean MVP and ongoing R&D:**
-- A lean MVP of the Inbox Helper will be released to early adopter practices as soon as minimum safety and accuracy thresholds are met (≥90% triage accuracy, zero unsafe auto-filing in 1,000 edge-case tests), with further triage, automation, and patient-message features added during remainder of project
-- R&D continues in parallel on: expanding supported document types, improving explanations, optimising confidence thresholds and UI based on feedback
+**Investigation approach (real-world data):**
+- Test AI on real inbox data from multiple labs, hospitals, practices
+- Measure format-handling accuracy, patient-context application, confidence calibration
+- Iterate based on error analysis and GP feedback
 
 **Deliverables by Month 12:**
-- Inbox Helper fully functional in Medtech and Indici sandbox environments
-- Validation on ≥2,000 real inbox items (de-identified or safe test environments) showing: ≥90% classification accuracy, zero unsafe auto-filing in edge-case test suite, measured ~30% time saving in simulated GP workflows
-- Usability feedback from at least 5 GPs incorporated into system design and defaults
+- AI system handling inbox tasks in Medtech and Indici sandbox environments
+- ≥90% classification accuracy on ≥2,000 real inbox items (diverse sources)
+- Zero unsafe automated actions in edge-case suite (1,000+ scenarios)
+- Confidence calibration validated: "90% AI confidence = 92% actual accuracy"
+- Discharge summary extraction: ≥85% accuracy on key information
+- GP feedback: ≥5 GPs tested, ≥80% trust AI suggestions
 
-**Success criteria:**
-- Inbox Helper achieves ≥90% classification accuracy on real data
-- Zero unsafe auto-filing events detected in edge-case testing
-- GP satisfaction ≥80% in usability testing
-- Architecture validated (simple classifier vs LLM) for inbox tasks
+**R&D output:** Understanding how to adapt base AI architecture for diverse real-world clinical data formats and when AI confidence is trustworthy for automated actions.
 
 ---
 
-### Objective 3: Care Gap Finder – Chronic Disease Intelligence (Months 7-16)
+### Objective 3: Clinical Accuracy Validation for Care Gap Detection (Months 7-16)
 
 **Dates:** 1 Jul 2026 – 30 Apr 2027
 
-**Plain-English aim:** Build tool that scans patient records to find people overdue for key chronic disease checks (starting with diabetes and cardiovascular risk, then COPD, CHF, and asthma) and helps practices get those patients seen. **Lean MVP (diabetes + CVD) released early, then expanded.**
+**Technological uncertainty (edge cases and equity):** Building on Objective 1's base architecture and Objective 2's real-world data handling, it remains unknown whether AI achieves clinical-grade accuracy for complex calculations with missing/ambiguous data, handles clinical uncertainty appropriately, and implements equity prioritisation without introducing new algorithmic biases. Edge cases (extreme values, contradictory data, borderline thresholds) are prevalent in real patient populations but cannot be fully enumerated in advance.
 
-**Key R&D questions:**
-- Can NZ-trained AI reliably pull out key details (smoking status, medications, severity markers) from messy free-text clinical notes as well as structured fields?
-- How can care gap logic handle multiple conditions (diabetes + CKD + CVD) without overwhelming GPs with alerts?
-- How should patients be prioritised so that high-risk and Māori/Pacific patients are not left behind?
+**Plain-English aim:** Investigate how to ensure AI makes clinically accurate calculations and appropriate decisions for diabetes and cardiovascular risk management. **Lean MVP (diabetes) released as we validate accuracy, then CVD added.**
 
-**Features developed:**
+**Core R&D questions (building on Objectives 1-2):**
 
-**Data review and analysis:**
-- Diabetes: Reads HbA1c trends, ACR, diabetes diagnoses; flags overdue HbA1c tests, eye checks, foot checks, kidney monitoring
-- Cardiovascular risk: Pulls age, sex, ethnicity, BP, lipids, smoking, diabetes; calculates NZ CVDRA and groups patients by risk band (low, moderate, high)
-- COPD: Identifies COPD diagnoses and last spirometry; flags overdue lung function tests and frequent exacerbations based on notes
-- Heart failure (CHF): Tracks BNP and eGFR trends; flags patterns suggesting worsening heart failure needing review
-- Asthma: Uses medication patterns and note content to estimate control (frequent reliever use); flags patients who may require step-up therapy review
+1. **How do we ensure AI clinical calculations are correct in edge cases?**
+   - CVD risk (CVDRA) requires 8 variables: age, sex, ethnicity, BP, lipids, smoking, diabetes, atrial fibrillation
+   - What does AI do when 1-2 variables missing or ambiguous?
+   - How does AI handle edge cases: very old patients (>85), extreme lab values, contradictory data?
+   - Can we validate AI calculations match GP manual calculations across diverse scenarios?
+   - What causes calculation failures and how do we detect them before reaching patients?
 
-**Care gap detection:**
-- For each condition, checks: Are recommended tests up to date? Are monitoring visits overdue? Are key guideline-based checks missing (vaccines, retinal screening)?
-- Combines multiple conditions to avoid double-alerting and reflect highest-priority needs
+2. **How does AI handle clinical uncertainty and borderline cases?**
+   - Borderline HbA1c (63 vs 64 mmol/mol - just under vs over action threshold)
+   - Conflicting information: high CVD risk but recent normal cardiac investigations
+   - Missing key information: no BP recorded in last 12 months
+   - When should AI defer to GP judgement rather than make suggestion?
+   - Can AI communicate uncertainty appropriately?
 
-**Patient communication:**
-- Generates personalised, plain-language messages: "Your diabetes review is overdue; please book an appointment with our nurse", "You are at higher risk of heart disease; your doctor recommends a heart health check"
-- Supports different channels (SMS/portal/email), with practice-controlled templates and review
+3. **How do we build equity into AI without creating new biases?**
+   - Māori/Pacific patients need prioritisation for equity outcomes
+   - How do we adjust AI algorithms to prioritise without under-alerting other groups?
+   - How do we validate equity adjustments don't introduce new algorithmic biases?
+   - What metrics actually measure equity outcomes vs demographic distributions?
+   - Do equity algorithms (linked to architecture from Obj 1) work consistently across different practice populations?
 
-**GP/practice dashboards:**
-- "Top priority patients" list showing: who has important gaps, why they are flagged, suggested next step (book nurse review, book GP review)
-- Filters by: condition (diabetes-only list), risk level, equity focus (Māori, Pacific, high-deprivation)
-
-**Medtech and Indici integration:**
-- Care Gap Finder panels integrated into both PMSs
-- At patient level: show their current gaps and recent relevant results
-- At practice level: show lists of patients needing action and allow staff to bulk-send recalls or schedule clinics
-
-**Lean MVP and ongoing R&D:**
-- A lean MVP of the Care Gap Finder (starting with diabetes and CVD risk) will be released early once core targets are met (≥95% CVDRA accuracy, ≥85% care-gap detection vs GP audit, safe messaging), then expanded to COPD, CHF, asthma and more advanced dashboards as NZ-LLM and rules are refined
-- R&D continues on: adding COPD/CHF/asthma logic, improving multi-condition logic and prioritisation, refining NZ-LLM extraction and equity-aware algorithms
+**Investigation approach (edge cases and equity validation):**
+- Validate AI calculations on 1,000+ diverse patient scenarios including edge cases
+- Compare AI decisions vs GP clinical audit systematically
+- Test borderline/ambiguous cases to understand AI reasoning behaviour
+- Measure equity outcomes across different populations
+- Error analysis: When AI is wrong, why is it wrong?
 
 **Deliverables by Month 16:**
-- Care Gap Finder operational in sandbox for both Medtech and Indici
-- Validated on ≥1,000 de-identified patient records, showing: ≥95% accuracy for CVDRA, ≥85% agreement with GP audit on care gaps, demonstrated ability to prioritise high-risk and Māori/Pacific patients appropriately
+- AI system handling care gap detection in Medtech and Indici sandbox environments
+- ≥95% CVDRA calculation accuracy on ≥1,000 patient records (including edge cases)
+- ≥85% agreement with GP audit on care gap decisions
+- Documentation: "AI reasoning process and when it fails"
+- Equity validation: Demonstrated appropriate prioritisation without bias across populations
+- **If time allows:** COPD, heart failure, CKD monitoring using similar approaches
 
-**Success criteria:**
-- CVDRA calculation ≥95% accurate
-- Care gap detection ≥85% agreement with GP manual audit
-- Demonstrated equity: Māori/Pacific patients appropriately prioritised without bias
-- Hybrid architecture validated for clinical extraction and calculations
+**R&D output:** Understanding how to ensure AI clinical accuracy in edge cases, when AI should defer to GP, and how to implement equity without introducing new biases.
 
 ---
 
-### Objective 4: Advanced Refinement, Safety, Equity and Generalisation (Months 16-24)
+### Objective 4: Performance Validation and Real-World Deployment (Months 16-24)
 
 **Dates:** 1 Apr 2027 – 26 Jan 2028
 
-**Plain-English aim:** Use real-world feedback and pilot data to do "hard" R&D work: refine NZ-LLM models, tune alert and safety behaviour, and prove system generalises across multiple practices and both PMSs. **This is systematic R&D on generalisation and safety, not routine maintenance.**
+**Plain-English aim:** Measure AI system performance in real GP practices and validate it meets clinical, safety, and operational targets at scale.
 
-**Key R&D questions:**
-- How much does performance change when moving from pilot practices to new practices with different patient populations, clinicians, and workflows?
-- How can alert thresholds and messaging be tuned to minimise "noise" while still catching all important issues (alert fatigue vs safety)?
-- How can NZ-LLM and rules be refined to support equitable performance across regions and populations?
+**Core validation goals:**
 
-**Activities and features:**
+**Performance Metrics (Speed & Reliability):**
+- Response time (P95): ≤5.0 seconds
+- System uptime: ≥99.5%
+- Throughput: Handle 1,000+ requests/day per practice without degradation
+- Unit economics: ≤$0.01 per request at scale
 
-**NZ-LLM and rules refinement using real-world data:**
-- Analyse model errors, missed gaps, and mis-classified inbox items observed during early adopter use
-- Retrain or fine-tune NZ-LLM and adjust rules to: improve extraction from messy real-world notes and letters, reduce misunderstanding of local abbreviations and phrasing, maintain strict constraints (never recommend specific medications, always show reasoning)
+**Clinical Accuracy Metrics:**
+- Inbox triage: ≥90% classification accuracy across 10-20 practices
+- CVD calculation: ≥95% accuracy vs manual GP calculation
+- Care gap detection: ≥85% agreement with GP audit
+- Performance stability: No >10% accuracy degradation across practice types
 
-**Safety and alert optimisation:**
-- Collect statistics on: how often alerts are accepted, ignored, or dismissed; which alerts GPs and nurses find most/least useful
-- Adjust thresholds and logic to: maintain very high sensitivity for safety-critical events (dangerous labs, major gaps), reduce lower-value or repetitive alerts to avoid fatigue
-- Expand automated safety testing and regression suites to thousands of test scenarios, including adversarial prompts and rare edge cases
+**Safety Metrics (Zero Tolerance):**
+- Prohibited-claim rate: ≤0.5%
+- Unsafe automated actions: Zero in production
+- Missed urgent items: Zero in edge-case suite
+- PHI leakage: Zero
 
-**Multi-practice, multi-PMS generalisation:**
-- Run structured pilots across several practices using both Medtech and Indici
-- Compare accuracy, safety, and usage patterns by region, practice size, and patient mix
-- Investigate any performance gaps (poorer results in particular regions or populations) and fix them through model, rule, or data changes
-- Document technical patterns and best practices for adding future PMSs or health-system integrations
+**Clinical Utility Metrics (Does it help?):**
+- Inbox time savings: ≥30% reduction (1-2 hours/day per GP)
+- Care gap completion: ≥80% vs current manual monitoring
+- GP satisfaction: ≥80% find it useful
+- Adoption rate: ≥80% of pilot GPs continue using after 6 months
+
+**Equity Metrics:**
+- Māori/Pacific screening completion: Improved vs baseline
+- No under-alerting in high-deprivation populations
+- Care gap closure rates equal across ethnic groups
+- Equity algorithms validated: No new algorithmic biases introduced
+
+**Workflow Integration Metrics:**
+- Alert acceptance rate: ≥70% (GPs follow AI suggestions)
+- Alert fatigue score: ≤3/10 (GP survey)
+- Override patterns documented: When/why GPs override
+- Workflow disruption: ≤2 extra clicks per action
+
+**Real-World Validation Approach:**
+- Deploy to 10-20 practices (urban/rural, high/low deprivation, Medtech/Indici mix)
+- Monitor all metrics continuously over 6-9 months
+- Document failure modes, performance variations, unexpected usage
+- Interview GPs monthly about trust, failures, improvements needed
 
 **Deliverables by Month 24:**
-- Refined NZ-LLM models and rule sets with documented accuracy and safety across multiple practices, evidence of robust performance across both Medtech and Indici
-- Alert and safety configuration tuned based on real usage, with clear quantitative metrics for: alert rates, acceptance/override patterns, safety outcomes (no missed critical results in tested cohorts)
-- Final pilot report summarising: time savings per GP per day, care gaps identified and closed, equity metrics (changes in Māori/Pacific screening and review rates), safety incidents (if any) and mitigation processes
-- Clear roadmap for broader commercial rollout (including Years 3-5 HealthHub NZ vision and advanced R&D streams) grounded in R&D findings
+- All metrics measured and documented across 10-20 practices
+- Final R&D report: Performance validation results
+- Documentation: Real-world failure modes and causes
+- Documentation: Performance variation patterns across practice types
+- Production-grade system ready for broader rollout
 
-**Success criteria:**
-- System performance maintained across multiple practices and both PMSs (no >10% accuracy degradation)
-- Alert fatigue ≤3/10 (measured via GP survey)
-- Safety targets maintained (prohibited-claim ≤0.5%, zero serious violations)
-- Pilot retention ≥80% (GPs stay in pilot for full duration)
-- Equity metrics validated: Māori/Pacific patients benefit equally
+**Hard stops (if metrics fail):**
+- Safety metrics fail → halt all deployment until fixed
+- Clinical accuracy drops >10% → investigate and resolve before proceeding
+- GP satisfaction <60% → re-evaluate workflow integration
+
+**R&D output:** Validated performance measurements demonstrating AI system meets clinical, safety, and operational targets in real GP practice environments.
 
 ---
 
 ## Capability Development Activities
 
-### CDP-3: Regulatory & Compliance ($18,000, Months 2-18)
-
-**Third-party professional services only (no internal labour):**
-
-**Purpose:** Build expert-level regulatory and compliance capability for NZ health AI, focusing on avoiding pilot shutdown due to compliance failures and establishing frameworks for Years 3-5 HealthHub NZ.
-
-**Activities may include:**
-- **Comprehensive Regulatory Gap Analysis ($3,500, Months 2-3):** Privacy Act 2020, HIPC, IPP 12, clinical safety frameworks, AI ethics compliance audit; identifies compliance risks early with prioritised remediation roadmap
-- **Comprehensive DPIA ($4,000, Months 3-5):** Data Privacy Impact Assessment for cross-border data handling (AU inference, NZ-held keys), risk assessment, mitigation strategies; required before pilot deployment
-- **Clinical Safety Advisory ($3,500, Months 4-12):** Medical device software risk assessment, assist-only constraints validation, safety system reviews across MVP, sandbox, and pilot phases
-- **Ongoing Regulatory Adviser ($5,000, Months 4-18):** Expert guidance through development, sandbox, pilot, and scale-up phases; approximately 6-8 advisory sessions scheduled flexibly based on R&D milestones and compliance needs
-- **Compliance Documentation & Governance ($2,000, Months 4-6):** Governance frameworks, compliance templates, PHO data handling protocols, incident response runbooks, DPA templates
-
-**Deliverables may include:** Gap analysis report, complete DPIA, clinical safety validation reports, advisory session reports, governance framework, compliance documentation templates
-
-**Total CDP-3:** $18,000
+**Total CapDev:** $36,000 (5.02% of total eligible costs)
+**Structure:** 3 objectives (third-party professional services only)
 
 ---
 
-### CDP-6: R&D Information Management ($10,000, Months 2-8)
+### CD-1: Regulatory & Compliance Capability for NZ Health AI
 
-**Third-party professional services only (no internal labour):**
+**Start Date:** 27 February 2026 (Month 2)  
+**End Date:** 26 July 2027 (Month 18)  
+**Budget:** $18,000
 
-**Purpose:** Build systematic R&D documentation and LLM development capabilities essential for reproducible research, architectural paradigm comparison, and knowledge transfer to future projects.
+**Deliverable:**
+Expert-level regulatory and compliance capability for NZ health AI development, enabling safe pilot deployment and establishing reusable frameworks for Years 3-5 HealthHub NZ. Deliverables include: regulatory gap analysis with remediation roadmap, complete DPIA validating cross-border data handling controls, clinical safety validation reports across MVP and pilot phases, 6-8 ongoing compliance advisory sessions, and governance frameworks with templates.
 
-**Activities may include:**
-- **R&D Experiment Tracking & Model Registry Setup ($4,000, Months 2-4):** Design and implement centralised experiment tracking system (MLflow or similar), model versioning, dataset lineage, research dashboard; training for founder and Ting
-- **LLM Methods Advisory ($6,000, Months 2-8):** Approximately 5-8 advisory sessions focused on experiment design, standardised evaluation frameworks, and architectural comparison methodologies that integrate with experiment tracking, model registry, and dataset lineage systems; ensures research outputs are consistently documented and comparable across projects; flexible scheduling based on R&D progress
+**Capability Building - How This Transfers Knowledge:**
 
-**Deliverables may include:** Configured experiment tracking system, model registry, standardised evaluation frameworks, experiment design templates, architecture comparison methodologies, research documentation workflows
+**Founder and Ting gain expert-level capability in:**
+- Privacy Act 2020, HIPC, and IPP 12 compliance for health AI (currently have operational knowledge; need expert-level capability for R&D-stage experimental scenarios and multi-PMS integration complexities)
+- Medical device software risk assessment frameworks and clinical safety validation methodologies for assist-only AI systems
+- Navigating increasingly complex compliance scenarios across MVP development, sandbox testing, pilot deployment, and scale-up phases through hands-on guidance from regulatory experts
+- Building reusable governance frameworks, compliance checklists, DPA templates, and incident response procedures applicable to all future health AI projects
 
-**Total CDP-6:** $10,000
+**Knowledge Transfer Method:** Third-party experts (privacy/DPIA specialists, clinical safety consultants, regulatory advisers) provide training through gap analysis, DPIA development, safety advisory sessions, and ongoing compliance guidance. Each engagement builds practical skills in handling real compliance challenges. Frameworks and templates created become reusable organisational knowledge.
 
----
-
-### CDP-5: Project Management ($8,000, Months 2-16)
-
-**Third-party professional services only (no internal labour):**
-
-**Purpose:** Build R&D project management capability for Ting (Operations Lead) to systematically manage complex R&D programme, transforming team from solo founder to structured R&D organisation.
-
-**Phase 1 - Intensive Training & Setup (Months 2-4): $3,500**
-- Training on R&D project management fundamentals (planning under uncertainty, budget tracking, risk management, documentation, vendor management, stakeholder communication)
-- **Research documentation best practices** (structuring technical findings, creating comparison frameworks, maintaining research knowledge bases, reproducibility protocols)
-- **Evaluation framework methods** (organising experiment results, performance tracking systems, test data management, benchmark comparison methodologies)
-- System setup with Ting leading: Agile R&D workflows (Kanban), 24-month roadmaps, budget tracking, risk registers, research documentation templates, evaluation tracking dashboards
-- Ting learns to manage CapDev procurement process (finding vendors, scoping work, managing contracts)
-
-**Phase 2 - Ongoing Coaching (Months 5-16): $4,500**
-- Approximately 6-8 coaching sessions scheduled around critical milestones (objective transitions, MVP launches, pilot preparation, mid-project reviews)
-- Decision-making support for R&D trade-offs, problem-solving bottlenecks, refining Ting's R&D management skills
-- Flexibility to add sessions if R&D challenges emerge
-
-**Why this builds capability:**
-- Ting learns how to manage R&D programmes (not just admin work)
-- Meta-capability development: Ting manages procurement of other CapDev services (regulatory, R&D info systems)
-- Demonstrates growth intention beyond solo founder
-- After 24 months, Ting has skills to manage future R&D projects
-
-**Deliverables may include:** R&D PM training materials, research documentation and evaluation framework training materials, configured PM system with research tracking templates, coaching session reports, Ting-maintained roadmap/budget/risk register, vendor management records, monthly progress reports, research knowledge base structure
-
-**Total CDP-5:** $8,000
+**Enduring Capability:** After 24 months, team has expert-level compliance capability to manage future health AI R&D independently, avoiding costly compliance failures and enabling patient-facing AI development (Years 3-5 HealthHub NZ) with proper regulatory foundation.
 
 ---
 
-**Total Capability Development:** $36,000 (third-party professional services only)
+### CD-2: R&D Information Management for Systematic Research
+
+**Start Date:** 27 February 2026 (Month 2)  
+**End Date:** 26 September 2026 (Month 8)  
+**Budget:** $10,000
+
+**Deliverable:**
+Systematic R&D documentation and experiment tracking capability enabling reproducible research and efficient knowledge transfer to future projects. Deliverables include: fully configured experiment tracking system integrated with model registry and dataset lineage, standardised evaluation frameworks for measuring AI performance, experiment design templates for systematic investigation, research documentation workflows, and LLM methods advisory reports capturing best practices for clinical AI research documentation.
+
+**Capability Building - How This Transfers Knowledge:**
+
+**Founder and Ting gain practical capability in:**
+- Building and maintaining experiment tracking systems, model registries, and dataset lineage workflows (currently lack systematic R&D documentation infrastructure)
+- Designing experiments with standardised evaluation frameworks that enable consistent comparison across different AI architectural approaches
+- Creating evaluation frameworks (how to measure AI performance: accuracy, cost, safety, latency) and experiment design templates (how to structure systematic investigations)
+- Documenting AI experiments systematically with proper metadata, versioning protocols, and results archival
+- Industry-standard MLOps practices for managing complex AI research programmes and ensuring reproducibility
+
+**Knowledge Transfer Method:** Technical consultants specialising in ML research infrastructure and LLM methods provide hands-on training through system setup, evaluation framework design, and 5-8 advisory sessions. Training includes configuring tracking systems, establishing metadata standards, creating experiment design templates, and building documentation workflows integrated with research infrastructure.
+
+**Enduring Capability:** After 8 months, team has capability to manage systematic R&D documentation across staged investigations (architecture selection, real-world testing, clinical validation). Experiment tracking infrastructure, evaluation frameworks, and documentation workflows are reusable for Years 3-5 HealthHub NZ R&D and beyond. Knowledge properly captured enables efficient learning transfer between projects rather than starting from scratch each time.
+
+---
+
+### CD-3: R&D Project Management Capability for First-Time R&D Performer
+
+**Start Date:** 27 February 2026 (Month 2)  
+**End Date:** 26 June 2027 (Month 16)  
+**Budget:** $8,000
+
+**Deliverable:**
+Structured R&D project management capability transforming team from solo founder to organised R&D operation. Deliverables include: comprehensive R&D project management training for operations lead (Ting), configured agile R&D system with Kanban boards and 24-month roadmap, budget tracking spreadsheets, risk register templates, vendor management workflows, 6-8 coaching session reports with decision-making support, and documented process improvements demonstrating Ting's capability development from novice to independent R&D manager.
+
+**Capability Building - How This Transfers Knowledge:**
+
+**Ting (Operations Lead) gains capability to independently manage R&D programmes:**
+- Planning and managing R&D projects under uncertainty (vs traditional business projects with predictable outcomes)
+- Budget tracking, resource allocation, and risk management specific to R&D programmes
+- Managing third-party service providers and consultants (including CapDev procurement for regulatory, compliance, and technical services)
+- Breaking down R&D objectives into manageable tasks, creating realistic timelines with contingency planning, and adapting plans as research findings emerge
+- Project documentation workflows for milestones, quarterly claims, and programme reporting (complements CD-2's experiment tracking systems)
+
+**Founder gains:**
+- Structured approach to R&D management rather than ad-hoc execution
+- Decision-making frameworks for R&D trade-offs and resource allocation
+
+**Knowledge Transfer Method:** R&D project management consultant provides intensive training (Months 2-4) establishing foundational capability and systems, followed by ongoing coaching (Months 5-16) through 6-8 sessions scheduled around critical milestones. Coach provides decision-making support, problem-solving guidance, and skill refinement as Ting manages real R&D challenges. This is meta-capability development: training Ting to manage the R&D programme including procurement of other CapDev services.
+
+**Enduring Capability:** After 16 months, Ting has demonstrated capability to run R&D programmes independently. Systems (Kanban, roadmaps, budget tracking, risk registers) and processes become organisational standards reusable for Years 3-5 HealthHub NZ R&D and future projects. Transforms business from solo founder to scalable R&D organisation.
+
+---
 
 **CapDev Requirement Check:**
 - Required: ≥5% of total eligible costs = $35,846 (for $716,926 total)
 - Actual: $36,000
 - **Percentage: 5.02% ✓** (meets requirement)
 
-**Rationale for Structure:** As a first-time R&D performer, we prioritise capabilities that directly de-risk the R&D programme (compliance, systematic documentation, project management). IP protection will be addressed post-grant once innovations are validated and commercial pathway is clear. Broad descriptions with "may include" language reflect appropriate flexibility for first-time R&D where specific needs emerge during programme execution.
+**Rationale:** As first-time R&D performers, we prioritise capabilities directly de-risking the R&D programme (compliance, systematic documentation, project management). All three objectives build enduring organisational capability reusable for Years 3-5 HealthHub NZ and future health AI projects.
 
 ---
 
-### Why These Capabilities Matter (237 words)
+### How This Funding Increases R&D Capability (Portal Answer)
 
 **Regulatory & Compliance Expertise ($18,000):**
+- Advanced Privacy Act 2020 & HIPC expertise. Currently compliant for operational product; need expert-level capability for R&D-stage experimental scenarios and multi-PMS integration complexities.
+- Comprehensive regulatory gap analysis identifies compliance risks early, preventing costly pilot delays.
+- Data Privacy Impact Assessment (DPIA) teaches systematic risk assessment for cross-border data handling under IPP 12.
+- Clinical safety advisory builds medical device software risk assessment capability for assist-only AI systems.
+- Ongoing regulatory guidance through development, sandbox testing, pilot deployment, and scale-up phases. Each engagement teaches us how to navigate increasingly complex compliance scenarios.
+- Governance frameworks and compliance documentation templates apply to all future health AI products, HealthHub NZ (Years 3-5) and beyond.
 
-- Advanced Privacy Act 2020 & HIPC expertise for R&D-stage experimental scenarios and multi-PMS integration complexities
-- Comprehensive regulatory gap analysis identifies compliance risks early, preventing costly pilot delays
-- DPIA teaches systematic risk assessment for cross-border data handling under IPP 12
-- Clinical safety advisory builds medical device software risk assessment capability for assist-only AI systems
-- Ongoing regulatory guidance through development, sandbox testing, pilot deployment, and scale-up phases
-- Governance frameworks and compliance templates apply to future health AI products (HealthHub NZ, Years 3-5)
+**R&D Information Management Capability ($10,000):**
+- Technical consultant trains us to build and maintain experiment tracking systems, model registries, and dataset lineage workflows. Essential skills for systematic R&D documentation and reproducibility.
+- LLM methods advisory for founder and Ting focused on designing experiments, standardised evaluation frameworks, and architectural comparisons that integrate with our experiment tracking, model registry, and dataset lineage systems. Ensures clinical AI research outputs are consistently documented, comparable across projects, and properly archived for future reference.
+- Learn industry-standard MLOps practices for managing complex AI research programmes.
 
-**R&D Information Management ($10,000):**
+**Project Management Capability ($8,000):**
+- R&D PM coach trains Ting (Operations Lead) on managing R&D projects systematically. Budget tracking, risk management, stage-gate processes, vendor management, documentation workflows.
+- Ongoing coaching sessions build Ting's capability to run R&D programmes independently.
+- Transforms us from solo founder to structured R&D organisation with repeatable processes for Years 3-5 HealthHub NZ and beyond.
 
-- Technical consultant trains founder and Ting to build experiment tracking systems, model registries, and dataset lineage workflows essential for systematic R&D documentation
-- LLM methods advisory teaches experiment design, standardised evaluation frameworks, and architectural comparison methodologies
-- Ting develops research operations capability: organising experiment results, maintaining performance tracking dashboards, structuring technical findings
-- Industry-standard MLOps practices for managing complex AI research programmes
-
-**Project Management & Research Operations ($8,000):**
-
-- R&D PM coach trains Ting on R&D project management fundamentals plus research documentation best practices and evaluation framework methods
-- Learns to structure technical findings into comparison frameworks, maintain research knowledge bases with reproducibility protocols, organise experiment results, manage performance tracking systems
-- Ongoing coaching builds Ting's capability to run R&D programmes independently with proper research documentation
-- Transforms team from solo founder to structured R&D organisation with systematic research operations capability for future programmes and national-scale health AI deployment
+All capabilities represent enduring skills reusable across future R&D programmes and national-scale health AI deployment.
 
 ---
 
@@ -788,9 +814,46 @@ Train NZ-LLM on aggregated patient outcomes to improve recommendations.
 
 ---
 
-**Document Version:** 3.2  
+**Document Version:** 4.1  
 **Last Updated:** 9 December 2025  
 **Status:** Ready for Forge portal submission
+
+**Version 4.1 Changes (9 Dec 2025):**
+- **CapDev section updated:** Integrated content from FORGE-CAPDEV-OBJECTIVES.md (CD-1, CD-2, CD-3 with clean structure, NZ English, aligned with Objectives 4.0)
+- **Added portal answer section:** "How This Funding Increases R&D Capability" (250-word summary for portal entry)
+- **03-capability-development folder archived:** All supporting files moved to archive/ subfolder
+
+**Version 4.0 Changes (9 Dec 2025):**
+- **Objectives 1-4 completely restructured for strong R&D framing:**
+  - **Added technological uncertainty statements** to each objective (explicit for RDTI eligibility)
+  - **Progressive constraint removal** clearly shown: Obj 1 (synthetic data) → Obj 2 (real-world data) → Obj 3 (edge cases/equity) → Obj 4 (production scale)
+  - **Clear dependency flow:** Obj 2-3 explicitly build on Obj 1's architectural foundation
+  - **Objective 1:** Foundation AI architecture investigation; establishes base for Obj 2-3 specialisation; includes equity/safety architectural requirements
+  - **Objective 2:** Real-world data handling research; tests if Obj 1 architecture handles messy clinical data; focus on diverse formats, patient context, confidence calibration
+  - **Objective 3:** Clinical accuracy validation; edge cases and equity research; removed multi-condition reasoning question per feedback
+  - **Objective 4:** Complete reframe to performance validation with specific metrics (speed, accuracy, safety, utility, equity, workflow) and hard stops
+  - **NZ English throughout** with trimmed unnecessary words
+  - **Care Gap scope refined:** Focus on diabetes + CVD (COPD, heart failure, CKD if time allows)
+
+**Version 3.5 Changes (9 Dec 2025):**
+- Final refinement of Q1-Q6 for clarity and optimal framing:
+  - **Q1:** Reframed from "test classifiers vs LLMs" to "investigate AI approaches to determine optimal architecture"; mentions lightweight models, RAG, agentic AI, hybrid; shows realistic R&D process ("initial research will determine most promising approaches to test")
+  - **Q2:** Core uncertainty now "what is optimal AI architecture?" (not "which approach for which task"); focus on optimal component combination, cost-accuracy balance, NZ-trained performance; less repetition of architecture types
+  - **Q3:** Simplified Challenge 2 - removed specific architecture breakdowns (classifiers/LLMs/hybrid), now lists failure modes generically to avoid repetition
+  - **Q4:** Minor tightening - shortened tool descriptions, condensed overseas AI bullet list from 4 to 3 points
+  - **Q5:** Removed examples for cleaner reading; added discharge summary processing capability to Inbox Helper; clarified Care Gap Finder gathers recorded info (doesn't extract from consultation notes); removed "Why These Are Clinical AI Services" section
+  - **Q6:** Condensed "Our AI approach" from 7 bullets to 3 key advantages (adaptive intelligence, clinical context awareness, NZ-trained and integrated)
+  - All answers now max 250 words with bullet points for easy reading
+
+**Version 3.3 Changes (9 Dec 2025):**
+- R&D Activities section (Q1-Q6) completely rewritten for clarity and reduced repetition:
+  - Simplified language: removed jargon ("architectural paradigms" → "AI approaches")
+  - Converted all sections to bullet-point format for easier reading
+  - Eliminated repetition: each question now has distinct focus
+  - Q2: Rephrased multi-system uncertainty as "training on generic data → deployed in real PMS"
+  - Q3: Added "omission" alongside hallucination; emphasized clinical intelligence vs rigid automation
+  - Q5: Major rewrite - product-focused showing HOW AI builds services with concrete examples
+  - Q6: Major expansion - three-way comparison (manual vs existing automation vs our AI) with emphasis on AI advantages (adaptation, insights, flexibility)
 
 **Version 3.2 Changes:**
 - Future R&D Plans optimized (248 words): Added architectural paradigm link, tightened structure, strengthened R&D framing
