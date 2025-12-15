@@ -9,6 +9,7 @@ import { medtechAPI } from '../services/mock-medtech-api';
 import { useImageWidgetStore } from '../stores/imageWidgetStore';
 
 type QRSessionState = {
+  token: string | null;
   mobileUrl: string | null;
   qrSvg: string | null;
   expiresAt: number | null; // Timestamp
@@ -18,6 +19,7 @@ type QRSessionState = {
 export function useQRSession() {
   const encounterContext = useImageWidgetStore(state => state.encounterContext);
   const [sessionState, setSessionState] = useState<QRSessionState>({
+    token: null,
     mobileUrl: null,
     qrSvg: null,
     expiresAt: null,
@@ -30,12 +32,25 @@ export function useQRSession() {
         throw new Error('No encounter context available');
       }
 
-      return medtechAPI.initiateMobile(encounterContext.encounterId);
+      return medtechAPI.initiateMobile(
+        encounterContext.encounterId,
+        encounterContext.patientId,
+        encounterContext.facilityId,
+      );
     },
     onSuccess: (data) => {
       const expiresAt = Date.now() + data.ttlSeconds * 1000;
+      // Use token directly from API response (fallback to URL extraction for backward compatibility)
+      const token: string | null = data.token || (() => {
+        const tokenMatch = data.mobileUploadUrl.match(/[?&]t=([^&]+)/);
+        return tokenMatch && tokenMatch[1] ? tokenMatch[1] : null;
+      })();
+
+      console.log('[QR Session] Mobile session initiated, token:', token);
+      console.log('[QR Session] Mobile URL:', data.mobileUploadUrl);
 
       setSessionState({
+        token,
         mobileUrl: data.mobileUploadUrl,
         qrSvg: data.qrSvg,
         expiresAt,
@@ -79,6 +94,17 @@ export function useQRSession() {
     mutation.mutate();
   }, [mutation]);
 
+  // Log token changes
+  useEffect(() => {
+    if (sessionState.token) {
+      console.log('[QR Session] Token available:', sessionState.token);
+    } else {
+      console.log('[QR Session] No token available');
+    }
+  }, [sessionState.token]);
+
+  // Return session state directly - don't memoize to ensure React detects token changes
+  // The object reference changes when sessionState changes, which React will detect
   return {
     ...sessionState,
     isGenerating: mutation.isPending,

@@ -107,10 +107,21 @@ export const useImageWidgetStore = create<ImageWidgetStore>(set => ({
     imageCounter: state.imageCounter + 1,
   })),
 
-  removeImage: id => set(state => ({
-    sessionImages: state.sessionImages.filter(img => img.id !== id),
-    selectedImageIds: state.selectedImageIds.filter(imgId => imgId !== id),
-  })),
+  removeImage: id => set(state => {
+    // Find the image to remove and revoke its blob URL
+    const imageToRemove = state.sessionImages.find(img => img.id === id);
+    if (imageToRemove?.preview && imageToRemove.preview.startsWith('blob:')) {
+      URL.revokeObjectURL(imageToRemove.preview);
+    }
+    if (imageToRemove?.thumbnail && imageToRemove.thumbnail.startsWith('blob:')) {
+      URL.revokeObjectURL(imageToRemove.thumbnail);
+    }
+
+    return {
+      sessionImages: state.sessionImages.filter(img => img.id !== id),
+      selectedImageIds: state.selectedImageIds.filter(imgId => imgId !== id),
+    };
+  }),
 
   updateImage: (id, updates) => set(state => ({
     sessionImages: state.sessionImages.map(img =>
@@ -171,11 +182,36 @@ export const useImageWidgetStore = create<ImageWidgetStore>(set => ({
     ),
   })),
 
-  clearCommittedImages: () => set(state => ({
-    sessionImages: state.sessionImages.filter(img => img.status !== 'committed'),
-  })),
+  clearCommittedImages: () => set(state => {
+    // Revoke blob URLs for committed images before removing them
+    const committedImages = state.sessionImages.filter(img => img.status === 'committed');
+    committedImages.forEach(image => {
+      if (image.preview && image.preview.startsWith('blob:')) {
+        URL.revokeObjectURL(image.preview);
+      }
+      if (image.thumbnail && image.thumbnail.startsWith('blob:')) {
+        URL.revokeObjectURL(image.thumbnail);
+      }
+    });
 
-  clearAllImages: () => set({ sessionImages: [], selectedImageIds: [], imageCounter: 0 }),
+    return {
+      sessionImages: state.sessionImages.filter(img => img.status !== 'committed'),
+    };
+  }),
+
+  clearAllImages: () => set(state => {
+    // Revoke all blob URLs before clearing
+    state.sessionImages.forEach(image => {
+      if (image.preview && image.preview.startsWith('blob:')) {
+        URL.revokeObjectURL(image.preview);
+      }
+      if (image.thumbnail && image.thumbnail.startsWith('blob:')) {
+        URL.revokeObjectURL(image.thumbnail);
+      }
+    });
+
+    return { sessionImages: [], selectedImageIds: [], imageCounter: 0 };
+  }),
 
   setSelectedImageIds: ids => set({ selectedImageIds: ids }),
 

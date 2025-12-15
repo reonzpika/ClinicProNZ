@@ -149,6 +149,7 @@ export type Recipient = {
 // ============================================================================
 
 export type MobileSessionResponse = {
+  token: string; // Session token (also in mobileUploadUrl)
   mobileUploadUrl: string;
   qrSvg: string; // SVG data URI
   ttlSeconds: number;

@@ -111,10 +111,14 @@ export const mockMedtechAPI = {
    * POST /api/medtech/mobile/initiate
    * Generate QR code for mobile upload
    */
-  async initiateMobile(encounterId: string): Promise<MobileSessionResponse> {
+  async initiateMobile(
+    encounterId: string,
+    patientId: string,
+    facilityId: string,
+  ): Promise<MobileSessionResponse> {
     await delay(MOCK_DELAY);
 
-    console.log('[MOCK API] POST /api/medtech/mobile/initiate', { encounterId });
+    console.log('[MOCK API] POST /api/medtech/mobile/initiate', { encounterId, patientId, facilityId });
 
     const token = `mock-token-${Date.now()}`;
     const mobileUrl = typeof window !== 'undefined'
@@ -135,9 +139,10 @@ export const mockMedtechAPI = {
     `)}`;
 
     return {
+      token, // Return token directly
       mobileUploadUrl: mobileUrl,
       qrSvg,
-      ttlSeconds: 600,
+      ttlSeconds: 3600,
     };
   },
 
@@ -209,11 +214,15 @@ export const realMedtechAPI = {
     return response.json();
   },
 
-  async initiateMobile(encounterId: string): Promise<MobileSessionResponse> {
+  async initiateMobile(
+    encounterId: string,
+    patientId: string,
+    facilityId: string,
+  ): Promise<MobileSessionResponse> {
     const response = await fetch('/api/medtech/mobile/initiate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ encounterId }),
+      body: JSON.stringify({ encounterId, patientId, facilityId }),
     });
 
     if (!response.ok) {

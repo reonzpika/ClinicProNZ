@@ -1,6 +1,7 @@
 # Medtech Integration - Development Roadmap
 
 **Created**: 2025-11-12  
+
 **Last Updated**: 2025-12-09  
 **Status**: Active Development  
 **Estimated Total Time**: 13-19 hours  
@@ -24,6 +25,7 @@
 - ✅ Infrastructure complete (OAuth, BFF, ALEX API connectivity)
 - ✅ POST Media validated (widget can upload images)
 - ✅ Desktop widget complete (capture, edit, metadata, commit flow)
+
 - ✅ Architecture decisions finalized for 100+ concurrent scale
 - ⏳ Mobile upload needs real implementation (currently alert())
 - ⏳ Redis + S3 session storage needs implementation
@@ -35,6 +37,7 @@
 - ALEX API: https://alexapiuat.medtechglobal.com/FHIR
 - Test Patient ID: `14e52e16edb7a435bfa05e307afd008b` (NHI: ZZZ0016)
 - Facility ID: `F2N060-E`
+- **Redis**: Upstash Redis (requires `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`)
 
 **Quick Commands**:
 ```bash
@@ -146,88 +149,96 @@ sessions/${token}/${timestamp}_${uuid}.jpg
 
 ### 1.1 Mobile Upload UI/UX Review & Implementation - 2-3 hours
 
-**Current State**: Basic mobile page with alert() for upload  
-**Target State**: Complete mobile upload flow with real backend integration
+**Status**: ✅ Complete  
+**Implementation Time**: ~3 hours
 
 **File**: `/app/(medtech)/medtech-images/mobile/page.tsx`
 
-**Tasks**:
-- [ ] **Review mobile UI** (30 minutes)
-  - Check capture flow (camera vs. gallery)
-  - Review image preview grid
-  - Identify UX improvements needed
-  - Decision: Add metadata entry on mobile? Or desktop only?
+**Tasks Completed**:
+- ✅ **Mobile UI reviewed and implemented**
+  - Capture flow: Camera and Gallery selection with multiple image support
+  - Review step with image preview grid and navigation
+  - Metadata form: Collapsible/expandable form with Side, Body Site, View, Type chips
+  - "Take More" button: Uploads current image in background, returns to capture
+  - "Finish" button: Uploads all pending images, resets to start state
 
-- [ ] **Implement real upload** (1.5 hours)
-  - Replace alert() with real API call
-  - Upload images to session (via token)
-  - Show upload progress per image
-  - Handle upload errors
-  - Success state with confirmation
+- ✅ **Real upload implemented**
+  - Replaced alert() with real API call (`POST /api/medtech/mobile/upload`)
+  - Upload images to session via token
+  - Upload progress per image (uploading/uploaded/error states)
+  - Error handling with retry logic
+  - Success states with visual indicators
 
-- [ ] **Add loading/error states** (30 minutes)
-  - Upload progress indicator (per image)
-  - Error display (network failure, etc.)
-  - Retry failed uploads
-  - Success confirmation
+- ✅ **Loading/error states**
+  - Upload progress indicator per image
+  - Error display for network failures
+  - Failed uploads saved to offline queue (localStorage)
+  - Visual feedback (loading spinner, checkmark, error icon)
 
-- [ ] **Image compression on mobile** (30 minutes)
+- ✅ **Image compression on mobile**
   - Compress images before upload (< 1MB target)
-  - Show compression progress
-  - Use existing compression service
+  - Compression progress shown during processing
+  - Uses existing compression service (`useImageCompression` hook)
 
-**Success Criteria**:
+**Success Criteria Met**:
 - ✅ Mobile can capture/select images
-- ✅ Images upload to backend (not just alert)
+- ✅ Images upload to backend (real API, not alert)
 - ✅ Upload progress visible to user
-- ✅ Errors handled gracefully
+- ✅ Errors handled gracefully with offline queue
 - ✅ Success confirmation shown
 
-**Questions to Answer**:
-1. Does mobile need metadata entry? Or desktop only?
-2. Should mobile compress before upload or after?
-3. How long should QR session last? (currently mock)
+**Decisions Made**:
+1. ✅ Mobile has optional metadata entry (collapsible form)
+2. ✅ Mobile compresses before upload (same as desktop)
+3. ✅ QR session lasts until desktop widget closes (1 hour default TTL, extends on heartbeat)
 
 ---
 
-### 1.2 Mobile → Desktop Dataflow Implementation - 1-2 hours
+### 1.2 Mobile → Desktop Dataflow Implementation - ✅ COMPLETE [2025-11-13]
 
-**Current State**: Mobile and desktop are disconnected  
-**Target State**: Images uploaded from mobile appear on desktop automatically
+**Status**: ✅ Complete  
+**Implementation Time**: ~2 hours
 
-**How it should work**:
+**How it works**:
 ```
-1. Desktop generates QR with session token
-2. Mobile scans QR, gets token
-3. Mobile uploads images → backend with token
-4. Backend associates images with session
-5. Desktop polls/websocket for new images
-6. Images appear in desktop store automatically
+1. Desktop generates QR with session token (UUID)
+2. Mobile scans QR, gets token from URL
+3. Mobile uploads images → POST /api/medtech/mobile/upload with token
+4. Backend stores images in Redis session (Upstash Redis)
+5. Desktop connects to SSE endpoint (/api/medtech/mobile/ws/:token)
+6. Backend polls session every 2 seconds, sends new images via SSE
+7. Desktop receives images, converts base64 to File, adds to store
+8. Images appear in desktop widget automatically
 ```
 
-**Tasks**:
-- [ ] **Backend session API** (1 hour)
-  - POST /api/medtech/mobile/initiate - Create session with token
-  - POST /api/medtech/mobile/upload - Upload images to session
-  - GET /api/medtech/mobile/session/:token - Get session images
-  - File: `/app/api/(integration)/medtech/mobile/` routes
+**Tasks Completed**:
+- ✅ **Backend session API** (Complete)
+  - ✅ POST /api/medtech/mobile/initiate - Create session with token, generate QR code
+  - ✅ POST /api/medtech/mobile/upload - Upload images to session (base64 storage)
+  - ✅ GET /api/medtech/mobile/session/:token/images - Get session images
+  - ✅ DELETE /api/medtech/mobile/session/:token - Close session
+  - ✅ Session storage: Redis-based (`mobile-session-storage.ts`)
+  - ✅ QR code generation: Real QR codes using `qrcode` library
 
-- [ ] **Desktop polling/websocket** (1 hour)
-  - Poll for new images every 2-3 seconds (simple approach)
-  - Or: WebSocket connection for real-time updates (better UX)
-  - Add new images to imageWidgetStore automatically
-  - Show notification when images arrive
+- ✅ **Desktop real-time sync** (Complete)
+  - ✅ SSE endpoint: `/api/medtech/mobile/ws/:token` (Server-Sent Events for Vercel compatibility)
+  - ✅ Hook: `useMobileSessionWebSocket` connects automatically when QR token available
+  - ✅ Auto-reconnect: Handles connection drops with exponential backoff
+  - ✅ Heartbeat monitoring: Detects stale connections, reconnects if needed
+  - ✅ Images automatically added to `imageWidgetStore`
+  - ✅ Session cleanup: `beforeunload` event closes session when desktop widget closes
 
-**Success Criteria**:
+**Success Criteria Met**:
 - ✅ Mobile uploads appear on desktop automatically
 - ✅ No manual refresh needed
-- ✅ Images appear within 3 seconds of mobile upload
-- ✅ Multiple mobile devices can upload to same session
+- ✅ Images appear within 2-3 seconds of mobile upload (SSE polling interval)
+- ✅ Multiple mobile devices can upload to same session (supported by design)
 
 **Implementation Decision**:
-- **Simple**: Polling every 2-3 seconds (easier to implement)
-- **Better**: WebSocket for real-time (better UX, more complex)
-- **Recommendation**: Start with polling, upgrade to WebSocket later if needed
+- ✅ **Chosen**: Server-Sent Events (SSE) for real-time updates
+- **Rationale**: Vercel doesn't support WebSocket, SSE works perfectly for one-way updates
+- **Performance**: 2-second polling interval provides near-real-time updates
+- **Reliability**: Auto-reconnect, heartbeat monitoring, session cleanup on widget close
 
 ---
 
@@ -650,7 +661,18 @@ if (!patientId) {
 - BFF Commit Endpoint: `/app/api/(integration)/medtech/attachments/commit/route.ts`
 - Widget Page: `/app/(medtech)/medtech-images/page.tsx`
 - Mobile Page: `/app/(medtech)/medtech-images/mobile/page.tsx`
-- Store: `/src/medtech/images-widget/store/imageWidgetStore.ts`
+- Store: `/src/medtech/images-widget/stores/imageWidgetStore.ts`
+
+**Phase 1 Implementation Files**:
+- Session Storage: `/src/lib/services/medtech/mobile-session-storage.ts`
+- QR Session Hook: `/src/medtech/images-widget/hooks/useQRSession.ts`
+- WebSocket Hook: `/src/medtech/images-widget/hooks/useMobileSessionWebSocket.ts`
+- Mobile Upload API: `/app/api/(integration)/medtech/mobile/upload/route.ts`
+- Session Initiate API: `/app/api/(integration)/medtech/mobile/initiate/route.ts`
+- Session Images API: `/app/api/(integration)/medtech/mobile/session/[token]/images/route.ts`
+- Session Delete API: `/app/api/(integration)/medtech/mobile/session/[token]/route.ts`
+- SSE Endpoint: `/app/api/(integration)/medtech/mobile/ws/[token]/route.ts`
+- UI Component: `/src/shared/components/ui/collapsible.tsx` (new)
 
 ---
 

@@ -140,14 +140,19 @@ key_docs:
 
 ## Active Development
 
-**Current Phase**: Phase 1 - Mobile Upload & Dataflow Review (4-6 hours)
+**Current Phase**: Phase 1 - Mobile Upload & Dataflow Review (Phase 1.1 & 1.2 Complete)
 
 **See**: DEVELOPMENT_ROADMAP.md for complete 3-phase plan (12-18 hours total)
 
+**Completed** (2025-11-13):
+- ✅ Mobile upload UI with real backend (complete flow: capture → review → metadata → upload)
+- ✅ QR code generation (real QR codes with session tokens, Redis storage)
+- ✅ Mobile → Desktop dataflow (SSE real-time sync, auto-reconnect, heartbeat)
+
 **Next Steps**:
-1. Mobile upload UI with real backend (replace alert())
-2. Mobile → Desktop dataflow (images sync automatically)
-3. Desktop/Mobile → Medtech dataflow documentation and review
+1. Testing Phase 1 implementation (QR generation, mobile upload, real-time sync)
+2. Desktop/Mobile → Medtech dataflow documentation and review (Phase 1.3)
+3. Backend integration (connect real ALEX API in Phase 2)
 
 **Target Completion**: End of Week (Nov 17, 2025)
 

@@ -23,6 +23,8 @@ import { QRPanel } from '@/src/medtech/images-widget/components/desktop/QRPanel'
 import { ThumbnailStrip } from '@/src/medtech/images-widget/components/desktop/ThumbnailStrip';
 import { useCapabilities } from '@/src/medtech/images-widget/hooks/useCapabilities';
 import { useCommit } from '@/src/medtech/images-widget/hooks/useCommit';
+import { useMobileSessionWebSocket } from '@/src/medtech/images-widget/hooks/useMobileSessionWebSocket';
+import { useQRSession } from '@/src/medtech/images-widget/hooks/useQRSession';
 import { useImageWidgetStore } from '@/src/medtech/images-widget/stores/imageWidgetStore';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
@@ -58,6 +60,56 @@ function MedtechImagesPageContent() {
   } = useImageWidgetStore();
 
   const { data: capabilities, isLoading: isLoadingCapabilities } = useCapabilities();
+  const qrSession = useQRSession();
+  
+  // Extract token to ensure React tracks it properly
+  const qrToken = qrSession.token;
+  
+  // Connect WebSocket ONLY when QR panel is shown AND token is available
+  // This ensures we only connect when user explicitly wants mobile upload
+  const webSocketToken = showQR && qrToken ? qrToken : null;
+  useMobileSessionWebSocket(webSocketToken);
+  
+  // Debug logging - track all relevant values
+  useEffect(() => {
+    console.log('[Desktop] QR state update:', { 
+      showQR, 
+      qrToken,
+      qrSessionToken: qrSession.token,
+      webSocketToken,
+      shouldConnect: showQR && !!qrToken
+    });
+    if (showQR && qrToken) {
+      console.log('[Desktop] ✅ Conditions met - WebSocket should connect with token:', qrToken);
+    } else {
+      console.log('[Desktop] ❌ Conditions not met:', { showQR, hasToken: !!qrToken });
+    }
+  }, [showQR, qrToken, qrSession.token, webSocketToken]);
+
+  // Cleanup session on widget close (beforeunload)
+  // Use synchronous XHR for reliable delivery during page unload (async fetch is cancelled)
+  // Note: sendBeacon doesn't support DELETE method, so we use synchronous XHR
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (qrToken) {
+        // Use synchronous XHR to ensure DELETE request completes before page unloads
+        // Synchronous XHR blocks page unload but ensures the request is sent
+        const url = `/api/medtech/mobile/session/${qrToken}`;
+        const xhr = new XMLHttpRequest();
+        xhr.open('DELETE', url, false); // false = synchronous
+        try {
+          xhr.send();
+        } catch {
+          // Ignore errors during unload (network errors, etc.)
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [qrToken]);
 
   // Parse encounter context from URL params
   useEffect(() => {
