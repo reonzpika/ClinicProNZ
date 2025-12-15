@@ -2,8 +2,8 @@
 project_name: Medtech ALEX Integration
 project_stage: Build
 owner: Development Team
-last_updated: "2025-12-09"
-version: "1.3.0"
+last_updated: "2025-12-15"
+version: "1.4.0"
 tags:
   - integration
   - medtech
@@ -93,6 +93,56 @@ key_docs:
 - **Feature Overview**: [`features/clinical-images/FEATURE_OVERVIEW.md`](./features/clinical-images/FEATURE_OVERVIEW.md) - Architectural decisions
 - **Development Roadmap**: [`DEVELOPMENT_ROADMAP.md`](./DEVELOPMENT_ROADMAP.md) - Implementation tasks
 - **OAuth & Config**: [`infrastructure/oauth-and-config.md`](./infrastructure/oauth-and-config.md) - Environment setup
+
+---
+
+## Infrastructure & Deployment Context
+
+**Last Updated**: 2025-12-15  
+**Purpose**: Document deployment architecture to avoid confusion in future sessions
+
+### Deployment Architecture
+
+**Backend (API Routes)**:
+- **Location**: `/app/api/(integration)/medtech/` folder in this repository
+- **Hosting**: Vercel serverless functions (NOT separate Lightsail server)
+- **Deployment**: Auto-deploy when pushed to main branch (GitHub → Vercel)
+- **Note**: The `/lightsail-bff/` folder is config/placeholder only, not actively used
+
+**Frontend**:
+- **Desktop Widget**: `/app/(medtech)/medtech-images/page.tsx` (already implemented)
+- **Mobile Page**: `/app/(medtech)/medtech-images/mobile/page.tsx` (to be implemented)
+- **Hosting**: Vercel (same deployment as backend)
+- **Store**: `/src/medtech/images-widget/stores/imageWidgetStore.ts` (existing, no rename needed)
+
+### Infrastructure Services (Already Configured)
+
+| Service | Status | Configuration |
+|---------|--------|---------------|
+| **Redis (Upstash)** | ✅ Active | `https://unique-stallion-12716.upstash.io` + REST token |
+| **Ably** | ✅ Active | Already integrated for real-time sync |
+| **AWS Account** | ✅ Active | Available for S3 bucket creation |
+| **Environment Variables** | ✅ Configured | All stored in Vercel dashboard |
+| **S3 Bucket** | ⏳ To Setup | See `features/clinical-images/SETUP_INSTRUCTIONS.md` |
+
+### Environment Configuration
+- **All environment variables**: Stored in Vercel dashboard (not .env files)
+- **API routes**: Access env vars via `process.env.*`
+- **Client components**: Use `NEXT_PUBLIC_*` prefix for browser access
+- **Deployment**: Auto-redeploy when env vars change (required)
+
+### Testing Configuration
+- **ALEX API Environment**: UAT (`https://alexapiuat.medtechglobal.com/FHIR`)
+- **Test Facility**: `F2N060-E` (Healthier Care)
+- **Test Patient**: NHI `ZZZ0016`, Patient ID `14e52e16edb7a435bfa05e307afd008b`
+- **OAuth**: Client credentials flow (tokens cached for 55 minutes)
+
+### Cost Estimate (Monthly)
+- **S3**: ~$0.31/month (Sydney region, 1-day lifecycle, ~100 GPs)
+- **Redis (Upstash)**: $0/month (free tier sufficient for ~10k commands/day)
+- **Ably**: $0/month (free tier: 200 connections, 100k messages/day)
+- **Vercel**: Existing plan (no additional cost)
+- **Total New Infrastructure**: ~$0.31/month
 
 ---
 

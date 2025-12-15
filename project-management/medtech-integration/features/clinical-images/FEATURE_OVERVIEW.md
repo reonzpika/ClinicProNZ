@@ -6,6 +6,57 @@
 
 ---
 
+## Development Context & Decisions
+
+**Last Updated**: 2025-12-15  
+**Purpose**: Capture key decisions to avoid re-asking same questions in future sessions
+
+### Infrastructure Setup (Already Configured)
+- ✅ **Redis (Upstash)**: `https://unique-stallion-12716.upstash.io` (+ REST token)
+- ✅ **Ably**: Already integrated and running
+- ✅ **AWS Account**: Available for S3 setup
+- ✅ **Environment Variables**: All stored in Vercel dashboard
+- ⏳ **S3 Bucket**: To be created (see SETUP_INSTRUCTIONS.md)
+
+### Codebase Architecture Clarifications
+- **API Routes Location**: Run on Vercel in `/app/api/(integration)/medtech/` (NOT separate Lightsail server)
+- **Lightsail BFF**: The `/lightsail-bff/` folder is config/placeholder only, not actively used
+- **Desktop Widget**: Already implemented at `/app/(medtech)/medtech-images/page.tsx`
+- **Mobile Page**: Not started, will create at `/app/(medtech)/medtech-images/mobile/page.tsx`
+- **Store**: Use existing `imageWidgetStore.ts` (no rename, already in use by desktop)
+
+### Technical Decisions
+- **Image Compression**: `browser-image-compression` library (handles HEIC, 120KB bundle acceptable)
+- **HEIC Conversion**: Client-side only (no backend fallback needed)
+- **Image Limit**: 20 per session (warning at 15), covers 99% of clinical cases
+- **Session Persistence**: Does NOT survive page refresh (acceptable UX trade-off)
+- **Real-Time Sync**: Ably for mobile → desktop (already integrated)
+- **Session Storage**: Redis for metadata (2-hour TTL), S3 for images (1-hour lifecycle)
+
+### Implementation Priorities
+- **Phase 1 Focus**: Backend first → Simple mobile (4 screens) → Minimal desktop updates
+- **Simple Mobile Flow**: Landing → Camera → Upload Progress → Success (skip metadata forms)
+- **Full Mobile UI**: Defer 7-screen version with metadata to Phase 2
+- **Desktop Updates**: Minimal (Ably listener + session fetch), defer full UI polish to Phase 2
+
+### Deployment Strategy
+- **Frontend**: Vercel auto-deploy (already working, no changes needed)
+- **Backend**: Runs on Vercel serverless (not separate server)
+- **GitHub Actions**: Recommended for future but not critical for Phase 1
+
+### Testing Configuration
+- **Environment**: UAT ALEX API (`https://alexapiuat.medtechglobal.com/FHIR`)
+- **Test Patient**: NHI `ZZZ0016`, Patient ID `14e52e16edb7a435bfa05e307afd008b`
+- **Test Facility**: `F2N060-E` (Healthier Care)
+
+### Cost Estimates
+- **S3**: ~$0.31/month (Sydney region, 1-day lifecycle)
+- **Redis (Upstash)**: $0/month (free tier sufficient)
+- **Ably**: $0/month (free tier: 200 connections, 100k messages/day)
+- **Total**: ~$0.31/month
+
+---
+
 ## Feature Purpose
 
 Enable GPs to capture clinical images from within Medtech Evolution and save directly to patient encounters. Includes mobile QR handoff for phone camera capture. Images instantly available for HealthLink/ALEX referrals.
