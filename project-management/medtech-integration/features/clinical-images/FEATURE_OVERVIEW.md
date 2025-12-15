@@ -19,8 +19,11 @@
 - ⏳ **S3 Bucket**: To be created (see SETUP_INSTRUCTIONS.md)
 
 ### Codebase Architecture Clarifications
-- **API Routes Location**: Run on Vercel in `/app/api/(integration)/medtech/` (NOT separate Lightsail server)
-- **Lightsail BFF**: The `/lightsail-bff/` folder is config/placeholder only, not actively used
+- **API Routes Split**:
+  - **Vercel**: Session management, S3, Redis endpoints (no ALEX API calls)
+  - **Lightsail BFF**: ONLY endpoints that call Medtech ALEX API (requires static IP 13.236.58.12)
+- **Why Split**: Medtech firewall requires IP whitelisting, Vercel has dynamic IPs
+- **Lightsail BFF Location**: `/opt/clinicpro-bff/` on server (auto-deploys via GitHub Actions)
 - **Desktop Widget**: Already implemented at `/app/(medtech)/medtech-images/page.tsx`
 - **Mobile Page**: Not started, will create at `/app/(medtech)/medtech-images/mobile/page.tsx`
 - **Store**: Use existing `imageWidgetStore.ts` (no rename, already in use by desktop)
@@ -40,9 +43,10 @@
 - **Desktop Updates**: Minimal (Ably listener + session fetch), defer full UI polish to Phase 2
 
 ### Deployment Strategy
-- **Frontend**: Vercel auto-deploy (already working, no changes needed)
-- **Backend**: Runs on Vercel serverless (not separate server)
-- **GitHub Actions**: Recommended for future but not critical for Phase 1
+- **Frontend (Vercel)**: Auto-deploy on push to main (already working)
+- **API Routes (Vercel)**: Session management, S3, Redis endpoints (auto-deploy with frontend)
+- **BFF (Lightsail)**: Commit endpoint + ALEX API calls (auto-deploy via GitHub Actions)
+- **GitHub Actions**: Setup guide in `GITHUB_ACTIONS_SETUP.md` (~10 min one-time setup)
 
 ### Testing Configuration
 - **Environment**: UAT ALEX API (`https://alexapiuat.medtechglobal.com/FHIR`)
@@ -141,17 +145,19 @@ GP opens Medtech Evolution
 
 ### Component Architecture
 
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| Desktop Widget | React/Next.js (Vercel) | Image capture, editing, metadata entry |
-| Mobile Page | React/Next.js (Vercel) | Phone camera capture, QR handoff |
-| BFF | Node.js/Express (Lightsail) | OAuth, FHIR translation, static IP for Medtech firewall |
-| Session Storage | Redis (Upstash) | Session metadata, S3 keys (2-hour TTL) |
-| Image Storage | S3 (`clinicpro-images-temp`) | Temporary image storage (1-hour lifecycle) |
-| Real-Time Sync | Ably | Mobile → Desktop notifications |
-| ALEX API | Medtech FHIR R4 | Upload images to patient encounters |
+| Component | Technology | Hosting | Purpose |
+|-----------|-----------|---------|---------|
+| Desktop Widget | React/Next.js | Vercel | Image capture, editing, metadata entry |
+| Mobile Page | React/Next.js | Vercel | Phone camera capture, QR handoff |
+| Session API | Next.js API Routes | Vercel | Session tokens, S3 URLs, Redis CRUD |
+| Commit API | Express.js | Lightsail BFF | FHIR Media upload to ALEX (requires static IP) |
+| Session Storage | Redis (Upstash) | Cloud | Session metadata, S3 keys (2-hour TTL) |
+| Image Storage | S3 | AWS Sydney | Temporary storage (1-hour lifecycle) |
+| Real-Time Sync | Ably | Cloud | Mobile → Desktop notifications |
+| ALEX API | Medtech FHIR R4 | Medtech | Patient encounter integration |
 
 **Key Infrastructure:**
+- **Lightsail BFF**: Static IP 13.236.58.12 (whitelisted by Medtech) at `/opt/clinicpro-bff/`
 - **Redis Keys**: `user:{userId}` (session data), `session-token:{token}` (QR tokens)
 - **S3 Bucket**: `clinicpro-images-temp` in `ap-southeast-2` with 1-hour lifecycle policy
 - **Ably Channel**: `session:{userId}` for real-time image notifications

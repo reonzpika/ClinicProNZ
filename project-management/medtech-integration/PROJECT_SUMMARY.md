@@ -103,16 +103,33 @@ key_docs:
 
 ### Deployment Architecture
 
-**Backend (API Routes)**:
-- **Location**: `/app/api/(integration)/medtech/` folder in this repository
-- **Hosting**: Vercel serverless functions (NOT separate Lightsail server)
-- **Deployment**: Auto-deploy when pushed to main branch (GitHub → Vercel)
-- **Note**: The `/lightsail-bff/` folder is config/placeholder only, not actively used
+**Split Between Vercel and Lightsail BFF**
 
-**Frontend**:
+The application is split across two hosting platforms due to Medtech's IP whitelisting requirement:
+
+**Vercel (Dynamic IP)**:
+- **Frontend**: Desktop widget + Mobile page
+- **API Routes**: Session management, S3 presigned URLs, Redis operations
+- **Location**: `/app/api/(integration)/medtech/session/*` (new endpoints for Phase 1)
+- **Deployment**: Auto-deploy on push to main branch (GitHub → Vercel)
+- **Why**: These endpoints don't call Medtech ALEX API, so dynamic IP is fine
+
+**Lightsail BFF (Static IP: 13.236.58.12)**:
+- **Commit Endpoint**: Upload images to Medtech ALEX API
+- **Location**: `/opt/clinicpro-bff/` on Lightsail server
+- **Deployment**: Auto-deploy via GitHub Actions (see `GITHUB_ACTIONS_SETUP.md`)
+- **Why**: Medtech firewall requires whitelisted static IP for ALEX API access
+- **Restart**: `sudo systemctl restart clinicpro-bff`
+
+**Communication Flow**:
+```
+Frontend (Vercel) → Session API (Vercel) → Redis/S3
+Frontend (Vercel) → Commit API (Lightsail) → ALEX API (Medtech)
+```
+
+**Key Files**:
 - **Desktop Widget**: `/app/(medtech)/medtech-images/page.tsx` (already implemented)
 - **Mobile Page**: `/app/(medtech)/medtech-images/mobile/page.tsx` (to be implemented)
-- **Hosting**: Vercel (same deployment as backend)
 - **Store**: `/src/medtech/images-widget/stores/imageWidgetStore.ts` (existing, no rename needed)
 
 ### Infrastructure Services (Already Configured)

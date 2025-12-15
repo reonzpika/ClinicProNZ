@@ -26,23 +26,49 @@ Once you complete the S3/Redis setup, I'll implement:
 
 ## Phase 1B: Backend Implementation
 
+### Architecture Split: Vercel vs Lightsail
+
+**IMPORTANT**: Endpoints are split between Vercel and Lightsail due to IP whitelisting:
+
+**Vercel (Dynamic IP)** - 5 endpoints:
+- ✅ No ALEX API calls
+- ✅ Session management, S3, Redis only
+- ✅ Auto-deploys with frontend
+
+**Lightsail BFF (Static IP: 13.236.58.12)** - 1 endpoint:
+- ✅ Calls Medtech ALEX API
+- ✅ Requires whitelisted IP
+- ✅ Auto-deploys via GitHub Actions
+
 ### Files I'll Create/Modify
 
 ```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📦 SHARED (Used by both Vercel & Lightsail)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 /src/lib/services/redis/
   ├── redis-client.ts          (NEW) - Upstash Redis connection
   └── session-manager.ts       (NEW) - Session CRUD operations
 
+/src/medtech/images-widget/types/
+  └── session.ts               (NEW) - Session type definitions
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+☁️ VERCEL API ROUTES (5 endpoints)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 /app/api/(integration)/medtech/session/
   ├── tokens/route.ts          (NEW) - POST: Create QR session token
   ├── tokens/[token]/route.ts  (NEW) - GET: Validate token
   ├── presigned-url/route.ts   (NEW) - POST: Generate S3 upload URL
   ├── images/route.ts          (NEW) - POST: Add image to session
-  ├── [sessionId]/route.ts     (NEW) - GET: Fetch session state
-  └── commit/route.ts          (NEW) - POST: Commit to ALEX API
+  └── [sessionId]/route.ts     (NEW) - GET: Fetch session state
 
-/src/medtech/images-widget/types/
-  └── session.ts               (NEW) - Session type definitions
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🖥️ LIGHTSAIL BFF (1 endpoint)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+/opt/clinicpro-bff/routes/
+  └── commit.js                (NEW) - POST: Commit to ALEX API
+                                      (Calls: GET Patient, POST Media)
 ```
 
 ---
@@ -684,6 +710,156 @@ async function streamToBuffer(stream: any): Promise<Buffer> {
 
 **Purpose**: Upload all images from S3 to ALEX API as FHIR Media resources
 
+**⚠️ IMPORTANT:** This endpoint MUST be on Lightsail BFF (not Vercel) because it calls ALEX API.
+
+---
+
+### 2B. Lightsail BFF Commit Endpoint
+
+**File: `/opt/clinicpro-bff/routes/commit.js`** (on Lightsail server)
+
+```javascript
+/**
+ * POST /api/medtech/session/commit
+ * 
+ * Commit all images to ALEX API
+ * 
+ * NOTE: This endpoint MUST run on Lightsail (static IP 13.236.58.12)
+ * because it calls Medtech ALEX API which requires IP whitelisting.
+ */
+const express = require('express');
+const router = express.Router();
+const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3');
+const { getRedisClient } = require('../services/redis-client');
+const { alexApiClient } = require('../services/alex-api-client');
+
+const s3Client = new S3Client({ 
+  region: process.env.AWS_REGION || 'ap-southeast-2' 
+});
+
+async function uploadImageToALEX(image, session) {
+  // 1. Download image from S3
+  const command = new GetObjectCommand({
+    Bucket: process.env.S3_BUCKET_NAME,
+    Key: image.s3Key,
+  });
+
+  const response = await s3Client.send(command);
+  const chunks = [];
+  for await (const chunk of response.Body) {
+    chunks.push(chunk);
+  }
+  const imageBuffer = Buffer.concat(chunks);
+  const base64Image = imageBuffer.toString('base64');
+
+  // 2. Create FHIR Media resource
+  const mediaResource = {
+    resourceType: 'Media',
+    identifier: [{
+      system: 'https://clinicpro.co.nz/image-id',
+      value: image.id,
+    }],
+    status: 'completed',
+    type: {
+      coding: [{
+        system: 'http://terminology.hl7.org/CodeSystem/media-type',
+        code: 'image',
+        display: 'Image',
+      }],
+    },
+    subject: {
+      reference: `Patient/${session.patientId}`,
+    },
+    createdDateTime: image.capturedAt,
+    content: {
+      contentType: 'image/jpeg',
+      data: base64Image,
+    },
+  };
+
+  // Add optional metadata
+  if (image.metadata.bodySite) {
+    mediaResource.bodySite = {
+      text: image.metadata.bodySite,
+    };
+  }
+
+  // 3. POST to ALEX API (uses whitelisted IP)
+  const result = await alexApiClient.post('/Media', mediaResource);
+  return result.id;
+}
+
+router.post('/', async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'userId required' });
+    }
+
+    // Get session from Redis
+    const redis = getRedisClient();
+    const sessionData = await redis.get(`user:${userId}`);
+    
+    if (!sessionData) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    const session = JSON.parse(sessionData);
+
+    // Check status
+    if (session.commitStatus === 'committed') {
+      return res.status(409).json({ error: 'Session already committed' });
+    }
+
+    // Mark in progress
+    session.commitStatus = 'in_progress';
+    await redis.set(`user:${userId}`, JSON.stringify(session), { ex: 7200 });
+
+    // Upload each image
+    const mediaResourceIds = [];
+
+    for (const image of session.images) {
+      const mediaId = await uploadImageToALEX(image, session);
+      mediaResourceIds.push(mediaId);
+    }
+
+    // Delete session after success
+    await redis.del(`user:${userId}`);
+
+    res.json({
+      success: true,
+      mediaResourceIds,
+      message: `${mediaResourceIds.length} images committed successfully`,
+      imageCount: mediaResourceIds.length,
+    });
+  } catch (error) {
+    console.error('Commit error:', error);
+    
+    // Rollback status on error
+    try {
+      const redis = getRedisClient();
+      const sessionData = await redis.get(`user:${userId}`);
+      if (sessionData) {
+        const session = JSON.parse(sessionData);
+        session.commitStatus = 'none';
+        await redis.set(`user:${userId}`, JSON.stringify(session), { ex: 7200 });
+      }
+    } catch (rollbackError) {
+      console.error('Rollback error:', rollbackError);
+    }
+    
+    res.status(500).json({ error: 'Commit failed', message: error.message });
+  }
+});
+
+module.exports = router;
+```
+
+**Deployment:**
+- Push to GitHub → GitHub Actions auto-deploys to Lightsail
+- See `GITHUB_ACTIONS_SETUP.md` for one-time setup (~10 mins)
+
 ---
 
 ## Phase 1C: Frontend Implementation
@@ -962,14 +1138,21 @@ npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
 
 ## Timeline
 
-| Task | Estimated Time |
-|------|----------------|
-| Redis session manager | 1 hour |
-| 6 API endpoints | 2-3 hours |
-| Simple mobile page | 2 hours |
-| Desktop Ably listener | 1 hour |
-| Testing & bug fixes | 1-2 hours |
-| **Total** | **7-9 hours** |
+| Task | Estimated Time | Platform |
+|------|----------------|----------|
+| Redis session manager | 1 hour | Shared |
+| 5 Vercel API endpoints | 2-3 hours | Vercel |
+| 1 Lightsail commit endpoint | 1 hour | Lightsail |
+| GitHub Actions setup (one-time) | 10 minutes | GitHub |
+| Simple mobile page | 2 hours | Vercel |
+| Desktop Ably listener | 1 hour | Vercel |
+| Testing & bug fixes | 1-2 hours | Both |
+| **Total** | **8-10 hours** | - |
+
+**Deployment Strategy:**
+- **Vercel endpoints**: Auto-deploy on push to main (no action needed)
+- **Lightsail endpoint**: Auto-deploy via GitHub Actions (10-min one-time setup)
+- **See**: `GITHUB_ACTIONS_SETUP.md` for GitHub Actions setup instructions
 
 ---
 

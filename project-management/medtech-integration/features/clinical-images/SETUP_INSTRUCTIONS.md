@@ -376,12 +376,15 @@ File location: s3://clinicpro-images-temp/test/connection-test.txt
 
 After completing all steps, verify:
 
+### Infrastructure
 - ✅ S3 bucket created: `clinicpro-images-temp`
 - ✅ S3 bucket region: `ap-southeast-2`
 - ✅ CORS configured (allows uploads from your domains)
 - ✅ Lifecycle policy configured (deletes files after 1 day)
 - ✅ AWS credentials created (Access Key ID + Secret Access Key)
-- ✅ 4 environment variables added to Vercel:
+
+### Environment Variables (Vercel)
+- ✅ 4 S3 environment variables added to Vercel:
   - `AWS_REGION`
   - `AWS_ACCESS_KEY_ID`
   - `AWS_SECRET_ACCESS_KEY`
@@ -390,9 +393,17 @@ After completing all steps, verify:
   - `UPSTASH_REDIS_REST_URL`
   - `UPSTASH_REDIS_REST_TOKEN`
 - ✅ Vercel project redeployed
+
+### Dependencies
 - ✅ `browser-image-compression` npm package installed
 - ✅ `@aws-sdk/client-s3` npm package installed
 - ✅ S3 connection test passed (optional)
+
+### Deployment Automation (Optional but Recommended)
+- ⏳ GitHub Actions setup for Lightsail auto-deploy (see `GITHUB_ACTIONS_SETUP.md`)
+  - Takes 10 minutes one-time setup
+  - Eliminates manual SSH deployments
+  - Can be done now or after implementation starts
 
 ---
 

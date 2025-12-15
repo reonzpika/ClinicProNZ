@@ -55,14 +55,16 @@ Once you complete the setup, reply here with:
 After you confirm setup is done, I will:
 
 **Phase 1B: Backend (3-4 hours)**
-- Redis session manager
-- 6 new API endpoints:
+- Redis session manager (shared code)
+- 5 Vercel API endpoints (session + S3):
   - POST /api/medtech/session/tokens (create QR)
   - GET /api/medtech/session/tokens/:token (validate)
   - POST /api/medtech/session/presigned-url (S3 upload URL)
   - POST /api/medtech/session/images (add to session)
   - GET /api/medtech/session/:id (fetch session)
+- 1 Lightsail BFF endpoint (ALEX API):
   - POST /api/medtech/session/commit (commit to ALEX)
+- GitHub Actions setup (10-min one-time, auto-deploys BFF)
 
 **Phase 1C: Frontend (2-3 hours)**
 - Simple mobile page (4 screens):
