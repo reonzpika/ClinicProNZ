@@ -1,4 +1,3 @@
-import React from 'react';
 
 import { Footer } from '@/src/shared/components/Footer';
 import { Container } from '@/src/shared/components/layout/Container';

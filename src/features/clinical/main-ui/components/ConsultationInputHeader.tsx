@@ -1,7 +1,7 @@
 'use client';
 
 import { Info, Keyboard, Mic } from 'lucide-react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { Button } from '@/src/shared/components/ui/button';

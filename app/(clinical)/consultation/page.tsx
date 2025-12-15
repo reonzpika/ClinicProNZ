@@ -3,7 +3,7 @@
 import { useAuth } from '@clerk/nextjs';
 import { useQueryClient } from '@tanstack/react-query';
 import { Crown, Mic, User } from 'lucide-react';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { AdditionalNotes } from '@/src/features/clinical/main-ui/components/AdditionalNotes';
 import { AdminPromptOverridesPanel } from '@/src/features/clinical/main-ui/components/AdminPromptOverridesPanel';

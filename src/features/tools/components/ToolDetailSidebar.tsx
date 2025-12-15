@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 
 import type { ToolDetail } from '../data/tools';

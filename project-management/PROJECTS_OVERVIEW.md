@@ -130,7 +130,7 @@ Start minimal, add folders as project evolves.
 | ClinicPro SaaS | `clinicpro` | Operational | Solo Founder/Developer | 2025-11-07 | [PROJECT_SUMMARY.md](./clinicpro/PROJECT_SUMMARY.md) |
 | Medtech ALEX Integration | `medtech-integration` | Build | Solo Founder/Developer | 2025-11-07 | [PROJECT_SUMMARY.md](./medtech-integration/PROJECT_SUMMARY.md) |
 | GP Voices Community Site | `gp-voices-community` | Build | Solo Founder/Developer | 2025-01-15 | [PROJECT_SUMMARY.md](./gp-voices-community/PROJECT_SUMMARY.md) |
-| R&D Grant Submission | `new_to_r&d_grant` | Validation | Solo Founder/Developer | 2025-11-07 | [PROJECT_SUMMARY.md](./new_to_r&d_grant/PROJECT_SUMMARY.md) |
+| R&D Grant Submission | `new_to_r&d_grant` | Validation | Solo Founder/Developer | 2025-12-09 (v4.4) | [PROJECT_SUMMARY.md](./new_to_r&d_grant/PROJECT_SUMMARY.md) |
 | Project Management AI SaaS | `project-management-ai-saas` | Build | Solo Founder/Developer | 2025-11-09 | [PROJECT_SUMMARY.md](./project-management-ai-saas/PROJECT_SUMMARY.md) |
 
 ---
@@ -140,6 +140,10 @@ Start minimal, add folders as project evolves.
 ### Recent Achievements Across Projects
 *[AI will auto-populate this section based on recent milestones and updates]*
 
+- **2025-12-09**: R&D Grant Submission - 📝 APPLICATION POLISH v4.4: (1) Future R&D Plans optimized (248 words) - added architectural paradigm link, tightened structure, strengthened R&D framing. Assessment: 7.5/10 → 8/10. (2) CapDev justification added (237 words) - "Why These Capabilities Matter" section with bullet-pointed capability building outcomes for all three CDP categories.
+- **2025-12-02**: R&D Grant Submission - 💰 FINANCIAL OPTIMIZATION v3.5: Draw schedule optimized with $130k opening. 3 draws instead of 4 (eliminated Month 9 draw). New schedule: $35k Month 12, $30k Month 15, $20k Month 18 = $85k total. Retains $15k emergency buffer. First draw delayed by 3 months. Demonstrates disciplined financial management. Total shareholder protection: $66,391 (closing $51,391 + buffer $15k).
+- **2025-12-02**: R&D Grant Submission - ⚠️ LESSON LEARNED: Accountant review revealed critical communication gap. Asked general tax questions but missed the most important question: "What's our household net cash at end of 24 months with grant vs without?" Created critical question framework and emailed Helen with specific comparison (Scenario A: 60 hrs/week with grant vs Scenario B: 30 hrs/week GP only). Awaiting calculation. Key insight: Define critical questions BEFORE engaging advisers.
+- **2025-11-28**: R&D Grant Submission - 🎉 MAJOR MILESTONE: Objectives completely revised! Focused scope on 2 core tools (Inbox Helper + Care Gap Finder) instead of 50+ tools. Dual PMS integration (Medtech + Indici) from day one. Lean MVP approach with early releases to paid adopters. Years 3-5 roadmap added: HealthHub NZ patient-facing app, multimodal models, continual learning, te reo support, equity-focused algorithms, real-world outcome trials. Removed high-risk features (prescription validation). Document version 3.0 ready for external review.
 - **2025-11-07**: Medtech Integration — POST Media endpoint implemented; Facility ID configuration blocker identified (403 error); Email sent to Medtech ALEX support
 - **2025-11-07**: Strategic prioritisation review — Medtech Integration identified as high ROI revenue path; ClinicPro marketing ROI questioned given competitive market
 - **2025-11-07**: Solo founder/developer context noted — limited time/resources require focus on highest ROI activities
@@ -274,16 +278,17 @@ Start minimal, add folders as project evolves.
 - **Folder**: `new_to_r&d_grant`
 - **Stage**: Validation
 - **Owner**: Solo Founder/Developer
-- **Last Updated**: 2025-11-11
-- **Summary**: R&D grant proposal for building NZ-sovereign clinical LLM for GP workflows focusing on 2 high-impact use cases: inbox management (reactive admin relief) and care gap monitoring (proactive clinical support). 12-month project seeking $70,026 grant (40%) with $105,039 co-funding. Team: Founder (1,329 hours @ 25 hrs/week) + Developer (390 hours, starts Month 4). Includes IP protection ($6k), conference attendance ($3.2k), GPU workstation + testing devices ($2.6k Year 1). Partnership development in progress with Medtech and Comprehensive Care PHO.
+- **Last Updated**: 2025-12-09
+- **Summary**: R&D grant proposal for building NZ-sovereign clinical AI assistant focusing on 2 core tools: **Inbox Helper** (triage, auto-filing, patient messages) and **Care Gap Finder** (diabetes, CVD, COPD, CHF, asthma monitoring). 24-month project with dual PMS integration (Medtech + Indici), lean MVPs released to early adopters, and Years 3-5 roadmap for HealthHub NZ patient-facing app. Team: Founder (30 hrs/week) + Ting R&D Operations Lead (40 hrs/week) + Developer (flexible 10-40 hrs/week from Month 4). Includes architecture validation R&D, NZ-LLM training, equity-focused algorithms, and multi-PMS generalisation. **Financial structure (v3.5):** $130k opening cash + $85k drawn from Ting's reserve (3 installments: Months 12, 15, 18) + $15k emergency buffer retained. Total eligible costs: $716,926, seeking $286,770 grant (40%). Co-funding surplus: $51,644. **Application polish (v4.4):** Future R&D Plans optimized (248 words) with architectural paradigm link. CapDev justification added (237 words) with bullet-pointed capability building outcomes.
 - **Key Dates**: 
-  - Mentor meeting: 2025-11-12
-  - Callaghan Innovation meeting: 2025-11-13
+  - ✅ Mentor meeting: 2025-11-12 (completed)
+  - ✅ Callaghan Innovation meeting: 2025-11-13 (completed)
+  - ✅ Major objectives revision: 2025-11-28 (completed)
   - Medtech letter expected: ~2025-11-20
   - Grant submission target: ~2025-12-15
   - Project start (if approved): 2026-01-27
-  - Project end: 2027-01-26
-- **Status**: Partnership development in progress; preparing for mentor/Callaghan meetings
+  - Project end: 2028-01-26 (24 months)
+- **Status**: 🎉 Major objectives revision complete — Focused scope (Inbox Helper + Care Gap Finder), dual PMS integration (Medtech + Indici), lean MVP approach, HealthHub NZ roadmap for Years 3-5. ⚠️ Awaiting accountant's calculation: household net cash position with grant vs without grant (critical financial decision).
 - **Link**: [View Full Summary](./new_to_r&d_grant/PROJECT_SUMMARY.md)
 
 ### Project Management AI SaaS
@@ -319,4 +324,4 @@ Start minimal, add folders as project evolves.
 
 ---
 
-*Dashboard Last Updated: [2025-11-12] - Medtech: 📋 Development roadmap updated. Phase 1: Mobile upload & dataflow (desktop already polished). 3 phases, 12-18 hours. Target: Nov 17.*
+*Dashboard Last Updated: [2025-12-09] - R&D Grant v4.4: Application polish complete. (1) Future R&D Plans optimized (248 words) with architectural paradigm link. (2) CapDev justification added (237 words) with bullet-pointed capability building outcomes. Assessment improvement: 7.5/10 → 8/10.*

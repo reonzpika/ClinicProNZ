@@ -1,10 +1,13 @@
 # Medtech Integration - Development Roadmap
 
 **Created**: 2025-11-12  
-**Last Updated**: 2025-11-13  
+
+**Last Updated**: 2025-12-09  
 **Status**: Active Development  
-**Estimated Total Time**: 12-18 hours  
-**Current Phase**: Phase 1 - Mobile Upload & Dataflow Review (In Progress - 1.1 & 1.2 Complete)
+**Estimated Total Time**: 13-19 hours  
+**Current Phase**: Phase 1 - Mobile Upload & Dataflow Review
+
+**Feature Overview**: See [Clinical Images Feature Overview](./features/clinical-images/FEATURE_OVERVIEW.md) for architectural decisions and context.
 
 ---
 
@@ -12,15 +15,21 @@
 
 **Current Status**: ✅ POST Media Validated! Widget can upload images to Medtech ALEX API (201 Created)
 
+**Phase 1 Architecture Finalized** (2025-12-09):
+- Redis + S3 for session storage (supports 100+ concurrent GPs)
+- Ably for real-time sync (existing infrastructure)
+- Optional mobile metadata (laterality + body site)
+- Frontend image compression and HEIC → JPEG conversion
+
 **What's Ready**:
 - ✅ Infrastructure complete (OAuth, BFF, ALEX API connectivity)
 - ✅ POST Media validated (widget can upload images)
 - ✅ Desktop widget complete (capture, edit, metadata, commit flow)
-- ✅ **Mobile upload complete** (real backend integration, compression, metadata form)
-- ✅ **QR code generation** (real QR codes with session tokens)
-- ✅ **Mobile → Desktop sync** (SSE/WebSocket real-time updates)
-- ✅ **Session management** (Redis-based session storage)
-- ⏳ Backend integration needed (connect real ALEX API in Phase 2)
+
+- ✅ Architecture decisions finalized for 100+ concurrent scale
+- ⏳ Mobile upload needs real implementation (currently alert())
+- ⏳ Redis + S3 session storage needs implementation
+- ⏳ Backend integration needed (connect real ALEX API)
 
 **Test Environment**:
 - BFF URL: https://api.clinicpro.co.nz
@@ -45,18 +54,7 @@ sudo journalctl -u clinicpro-bff -f
 sudo systemctl restart clinicpro-bff
 ```
 
-**Next Immediate Task**: Testing Phase 1 implementation (Phase 1.1 & 1.2 complete)
-
-**Testing Checklist**:
-- [ ] Set up Upstash Redis environment variables (`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`)
-- [ ] Test QR code generation on desktop (`/medtech-images`)
-- [ ] Test mobile upload flow end-to-end (`/medtech-images/mobile?t=<token>`)
-- [ ] Verify images appear on desktop in real-time (SSE connection)
-- [ ] Test offline queue functionality (disconnect mobile, verify queue, reconnect)
-- [ ] Test "Take More" flow (upload in background, return to capture)
-- [ ] Test "Finish" flow (upload all pending, reset to start)
-- [ ] Test session cleanup (close desktop widget, verify mobile gets disconnected)
-- [ ] Test multiple mobile devices uploading to same session
+**Next Immediate Task**: Implement Redis + S3 session storage, then mobile upload UI
 
 ---
 
@@ -68,33 +66,88 @@ This roadmap outlines the 3-phase development plan to complete the Medtech integ
 - ✅ Infrastructure complete (OAuth, BFF, ALEX API connectivity)
 - ✅ POST Media validated (widget can upload images)
 - ✅ Desktop complete (capture, edit, metadata, commit flow, error handling)
-- ✅ **Mobile upload complete** (real backend integration, compression, metadata form, offline queue)
-- ✅ **QR code generation** (real QR codes with session tokens, Redis session storage)
-- ✅ **Mobile → Desktop sync** (SSE real-time updates, auto-reconnect, heartbeat)
-- ⏳ Dataflow review needed (Desktop/Mobile → Medtech) - Phase 1.3
-- ⏳ Backend integration needed (connect real ALEX API) - Phase 2
-- ⏳ Widget launch mechanism needed - Phase 3
+- ✅ Phase 1 architecture finalized (Redis + S3, Ably, scale assumptions)
+- ⏳ Redis + S3 session storage needs implementation
+- ⏳ Mobile upload needs real implementation (currently alert())
+- ⏳ Mobile → Desktop dataflow not implemented
+- ⏳ Dataflow review needed (Desktop/Mobile → Medtech)
+- ⏳ Backend integration needed (connect real ALEX API)
+- ⏳ Widget launch mechanism needed
 
 ---
 
 ## Phase 1: Mobile Upload & Dataflow Review
 
-**Goal**: Complete mobile upload flow and review dataflow from desktop/mobile → Medtech  
-**Time Estimate**: 4-6 hours  
+**Goal**: Complete mobile upload flow with Redis + S3 session storage and review dataflow from desktop/mobile → Medtech  
+**Time Estimate**: 6-8 hours (updated 2025-12-09 - added Redis + S3 implementation)  
 **Priority**: High (mobile handoff is core feature, dataflow must be correct)
 
 **Current State**:
 - ✅ Desktop error handling complete
 - ✅ Desktop image editor complete
-- ✅ Desktop QR panel generates real QR codes with session tokens
-- ✅ Mobile UI complete (capture → review → metadata → upload flow)
-- ✅ Mobile upload uses real API (POST /api/medtech/mobile/upload)
-- ✅ Mobile → Desktop dataflow implemented (SSE real-time sync)
-- ⏳ Dataflow Desktop/Mobile → Medtech needs review (Phase 1.3)
+- ✅ Desktop QR panel generates mobile URL
+- ✅ Architecture decisions finalized (Redis + S3, Ably, compression strategy)
+- ⏳ Redis + S3 session storage not implemented
+- ⏳ Mobile UI is basic (capture/review only)
+- ❌ Mobile upload uses alert(), not real implementation
+- ❌ Mobile → Desktop dataflow not implemented
+- ❌ Dataflow Desktop/Mobile → Medtech needs review
 
 ---
 
-### 1.1 Mobile Upload UI/UX Review & Implementation - ✅ COMPLETE [2025-11-13]
+### 1.0 Session Storage Implementation (Redis + S3) - 2 hours
+
+**Current State**: No session storage implementation  
+**Target State**: Redis stores session metadata, S3 stores temporary images
+
+**Architecture Decision** (2025-12-09):
+- **Redis**: Session metadata, S3 keys, 10-minute TTL
+- **S3/Supabase Storage**: Temporary image storage (1-hour retention)
+- **Scale**: Supports 100+ concurrent GPs (10MB Redis vs 500MB in-memory)
+
+**Tasks**:
+- [ ] **Set up Redis client** (30 minutes)
+  - Use Upstash Redis (free tier) or managed Redis
+  - Environment variables: REDIS_URL, REDIS_TOKEN
+  - Connection pooling and error handling
+  
+- [ ] **Set up S3/Supabase Storage client** (30 minutes)
+  - Use existing Supabase or AWS S3
+  - Bucket: `medtech-sessions` with 1-hour lifecycle policy
+  - Environment variables for credentials
+  
+- [ ] **Create session API routes** (1 hour)
+  - POST `/api/medtech/mobile/session/create` - Create session, return token
+  - POST `/api/medtech/mobile/session/upload` - Upload image to S3, store key in Redis
+  - GET `/api/medtech/mobile/session/:token` - Get session metadata + S3 keys
+  - DELETE `/api/medtech/mobile/session/:token` - Cleanup session (optional)
+  
+**Session Schema** (Redis):
+```
+Key: session:${token}
+Value: {
+  userId: string,
+  images: [{ s3Key: string, metadata?: {...} }],
+  createdAt: number,
+  lastActivity: number
+}
+TTL: 600 seconds (10 minutes)
+```
+
+**S3 Key Format**:
+```
+sessions/${token}/${timestamp}_${uuid}.jpg
+```
+
+**Success Criteria**:
+- ✅ Redis client connected and operational
+- ✅ S3 bucket configured with lifecycle policy
+- ✅ Session CRUD operations working
+- ✅ Sessions auto-expire after 10 minutes
+
+---
+
+### 1.1 Mobile Upload UI/UX Review & Implementation - 2-3 hours
 
 **Status**: ✅ Complete  
 **Implementation Time**: ~3 hours
@@ -535,12 +588,12 @@ if (!patientId) {
 
 | Phase | Tasks | Time Estimate | Priority |
 |-------|-------|---------------|----------|
-| **Phase 1: Mobile Upload & Dataflow** | Mobile UI + Mobile→Desktop sync + Dataflow review | 4-6 hours | High |
+| **Phase 1: Mobile Upload & Dataflow** | Redis + S3 setup + Mobile UI + Mobile→Desktop sync + Dataflow review | 6-8 hours | High |
 | **Phase 2: Complete Integration** | BFF commit endpoint + Testing | 4-6 hours | Critical |
 | **Phase 3: Widget Launch Mechanism** | Launch method + Context passing | 3-5 hours | Medium |
-| **Total** | | **12-18 hours** | |
+| **Total** | | **13-19 hours** | |
 
-**Target Completion**: End of Week (Nov 17, 2025)
+**Target Completion**: TBD (depends on start date)
 
 ---
 
@@ -572,8 +625,9 @@ if (!patientId) {
 ## Success Criteria (Overall)
 
 ### Phase 1 Complete ✅
+- Redis + S3 session storage implemented
 - Mobile upload UI complete with real backend
-- Mobile → Desktop dataflow working
+- Mobile → Desktop dataflow working (Ably sync)
 - Desktop/Mobile → Medtech dataflow documented and reviewed
 
 ### Phase 2 Complete ✅
@@ -623,6 +677,10 @@ if (!patientId) {
 ---
 
 **Document Status**: Active Development Roadmap  
-**Last Updated**: 2025-11-13  
+**Last Updated**: 2025-12-09  
 **Version**: 2.1  
-**Note**: Phase 1.1 & 1.2 complete (2025-11-13). Ready for testing before proceeding to Phase 1.3.
+**Changes**: 
+- Added Redis + S3 session storage implementation (Phase 1.0)
+- Updated time estimates: Phase 1 now 6-8 hours (was 4-6)
+- Updated total: 13-19 hours (was 12-18)
+- Added reference to FEATURE_OVERVIEW.md for architectural context

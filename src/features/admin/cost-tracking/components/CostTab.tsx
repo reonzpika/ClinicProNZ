@@ -4,7 +4,7 @@
  * Main cost tracking tab component
  */
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
 

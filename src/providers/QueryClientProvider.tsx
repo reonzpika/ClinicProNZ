@@ -2,7 +2,6 @@
 
 import { QueryClientProvider as TanStackQueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import React from 'react';
 
 import { queryClient } from '@/src/lib/react-query';
 

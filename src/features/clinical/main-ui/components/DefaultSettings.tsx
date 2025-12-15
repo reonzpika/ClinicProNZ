@@ -2,7 +2,7 @@
 
 import { useAuth } from '@clerk/nextjs';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import type { Template } from '@/src/features/templates/types';
 import { fetchTemplates } from '@/src/features/templates/utils/api';

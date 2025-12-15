@@ -2,7 +2,7 @@
 
 import { useAuth } from '@clerk/nextjs';
 import { Crown, TrendingUp, Users, Zap } from 'lucide-react';
-import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 
 import type { UserTier } from '@/src/lib/rbac-client';
 import { Badge } from '@/src/shared/components/ui/badge';

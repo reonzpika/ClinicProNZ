@@ -1,5 +1,5 @@
 /* eslint-disable react-dom/no-missing-button-type */
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 type FeedbackModalProps = {
   open: boolean;
@@ -23,7 +23,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ open, onClose, onS
     onSubmit({ idea, details, email });
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (success) {
       setIdea('');
       setDetails('');

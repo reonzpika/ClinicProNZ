@@ -1,6 +1,6 @@
 /* eslint-disable react-dom/no-missing-button-type */
 'use client';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { getFeatures, submitFeatureRequest, voteForFeature } from '../roadmap-service';
 import type { Feature } from '../types';

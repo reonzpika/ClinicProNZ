@@ -1,7 +1,7 @@
 'use client';
 
 // Removed header icon for a cleaner UI
-import React, { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { ExaminationChecklistButton } from '@/src/features/clinical/examination-checklist/components/ExaminationChecklistButton';
 import { PlanSafetyNettingButton } from '@/src/features/clinical/plan-safety-netting';
@@ -46,11 +46,11 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   const effectiveExpanded = forceExpanded ? true : isExpanded;
 
   // Refs for keyboard focus management
-  const problemsRef = React.useRef<HTMLTextAreaElement | null>(null);
-  const objectiveRef = React.useRef<HTMLTextAreaElement | null>(null);
-  const assessmentRef = React.useRef<HTMLTextAreaElement | null>(null);
-  const planRef = React.useRef<HTMLTextAreaElement | null>(null);
-  const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const problemsRef = useRef<HTMLTextAreaElement | null>(null);
+  const objectiveRef = useRef<HTMLTextAreaElement | null>(null);
+  const assessmentRef = useRef<HTMLTextAreaElement | null>(null);
+  const planRef = useRef<HTMLTextAreaElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   // Keydown handler to cycle focus within SOAP textareas only
   const handleTextareaKeyDown = (

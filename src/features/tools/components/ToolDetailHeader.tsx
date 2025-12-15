@@ -1,6 +1,5 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import * as React from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
 

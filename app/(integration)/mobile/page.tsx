@@ -2,7 +2,7 @@
 
 import { useAuth } from '@clerk/nextjs';
 import { AlertTriangle, Camera } from 'lucide-react';
-import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 import { useTranscription } from '@/src/features/clinical/main-ui/hooks/useTranscription';
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';

@@ -1,5 +1,4 @@
 /* eslint-disable react-dom/no-missing-button-type */
-import React from 'react';
 
 import type { Feature } from '../types';
 

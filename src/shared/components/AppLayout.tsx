@@ -1,7 +1,7 @@
 'use client';
 
 import { Menu } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useResponsive } from '@/src/shared/hooks/useResponsive';
 

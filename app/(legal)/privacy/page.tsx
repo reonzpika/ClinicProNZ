@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import React from 'react';
 
 import { Footer } from '@/src/shared/components/Footer';
 import { Header } from '@/src/shared/components/Header';
