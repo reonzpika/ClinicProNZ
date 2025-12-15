@@ -16,15 +16,17 @@ Enable GPs to capture clinical images from within Medtech Evolution and save dir
 
 ## Implementation Documentation
 
-**Primary Implementation Guide:**
+**🚀 NEXT STEPS (Start Here):**
 
-1. **[implementation-documentation.md](./implementation-documentation.md)** - **START HERE** - Complete implementation guide for AI agent with database schema, API endpoints, frontend code examples, and deployment instructions
+1. **[SETUP_INSTRUCTIONS.md](./SETUP_INSTRUCTIONS.md)** - **DO THIS FIRST** - Step-by-step S3 bucket setup, AWS credentials, environment variables (~30 mins)
+2. **[IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md)** - **READ NEXT** - Detailed plan of what will be built (backend + simple mobile + desktop Ably listener)
 
-**Supporting Specifications:**
+**Architecture & Detailed Specs:**
 
-2. **[mobile-ui-spec.md](./mobile-ui-spec.md)** - Complete mobile UI specification (7 screens, data flow, validation)
-3. **[desktop-ui-spec.md](./desktop-ui-spec.md)** - Complete desktop UI specification (layout, components, interactions)
-4. **[test-results.md](./test-results.md)** - FHIR API validation results (POST Media confirmed working)
+3. **[implementation-documentation.md](./implementation-documentation.md)** - Complete technical architecture (Redis schema, API contracts, full mobile/desktop specs)
+4. **[mobile-ui-spec.md](./mobile-ui-spec.md)** - Complete mobile UI specification (7 screens, data flow, validation) - Phase 2 full version
+5. **[desktop-ui-spec.md](./desktop-ui-spec.md)** - Complete desktop UI specification (layout, components, interactions) - Phase 2 full version
+6. **[test-results.md](./test-results.md)** - FHIR API validation results (POST Media confirmed working)
 
 ---
 
