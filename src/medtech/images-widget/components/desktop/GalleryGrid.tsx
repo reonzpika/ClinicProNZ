@@ -87,7 +87,7 @@ function ImageCard({ image, isSelected, onSelect, onClick }: ImageCardProps) {
         onClick={onClick}
       >
         <img
-          src={image.preview}
+          src={image.preview || image.previewUrl || ''}
           alt={image.metadata.label || 'Clinical image'}
           className="size-full object-cover"
         />
@@ -114,7 +114,9 @@ function ImageCard({ image, isSelected, onSelect, onClick }: ImageCardProps) {
             onClick={(e) => {
               e.stopPropagation();
               if (window.confirm('Remove this image?')) {
-                URL.revokeObjectURL(image.preview);
+                if (image.preview) {
+                  URL.revokeObjectURL(image.preview);
+                }
                 removeImage(image.id);
               }
             }}
@@ -129,7 +131,7 @@ function ImageCard({ image, isSelected, onSelect, onClick }: ImageCardProps) {
       <div className="p-2">
         <div className="mb-1 flex items-center justify-between">
           <span className="text-xs font-medium text-slate-700">
-            {formatFileSize(image.file.size)}
+            {image.file?.size ? formatFileSize(image.file.size) : 'N/A'}
           </span>
           <button
             onClick={(e) => {

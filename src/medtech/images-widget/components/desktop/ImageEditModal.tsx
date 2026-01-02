@@ -86,7 +86,7 @@ export function ImageEditModal({
 
     const img = new window.Image();
     img.crossOrigin = 'anonymous';
-    img.src = currentImage.preview;
+    img.src = currentImage.preview || currentImage.previewUrl || '';
     img.onload = () => {
       setImageElement(img);
     };

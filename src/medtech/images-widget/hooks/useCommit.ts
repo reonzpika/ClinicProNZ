@@ -46,7 +46,7 @@ function generateFilename(image: WidgetImage, index: number): string {
     .toLowerCase();
 
   // Get original extension
-  const originalName = image.file.name;
+  const originalName = image.file?.name || 'image.jpg';
   const extension = originalName.split('.').pop() || 'jpg';
 
   return `${sanitized}.${extension === 'jpg' || extension === 'jpeg' ? 'jpg' : extension}`;
@@ -84,9 +84,11 @@ export function useCommit() {
           // Update file name in store for display
           // Note: The actual file object is not sent in CommitRequest,
           // but we update the name for consistency
-          useImageWidgetStore.getState().updateImage(img.id, {
-            file: new File([img.file], newFilename, { type: img.file.type }),
-          });
+          if (img.file) {
+            useImageWidgetStore.getState().updateImage(img.id, {
+              file: new File([img.file], newFilename, { type: img.file.type }),
+            });
+          }
 
           return {
             fileId: img.id,

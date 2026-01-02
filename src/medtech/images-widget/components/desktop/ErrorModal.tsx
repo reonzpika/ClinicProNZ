@@ -72,7 +72,7 @@ export function ErrorModal({ isOpen, onClose, image }: ErrorModalProps) {
           <div className="flex justify-center">
             <div className="relative overflow-hidden rounded-lg border-2 border-red-200">
               <img
-                src={image.thumbnail || image.preview}
+                src={image.thumbnail || image.preview || image.previewUrl || ''}
                 alt={image.metadata.label || 'Image'}
                 className="h-48 w-auto object-contain"
               />
@@ -93,14 +93,16 @@ export function ErrorModal({ isOpen, onClose, image }: ErrorModalProps) {
             <ul className="mt-2 space-y-1 text-slate-600">
               <li>
 File:
-{image.file.name}
+{image.file?.name || image.metadata.label || 'Image'}
               </li>
-              <li>
+              {image.file?.size && (
+                <li>
 Size:
 {(image.file.size / 1024).toFixed(1)}
 {' '}
 KB
-              </li>
+                </li>
+              )}
               {image.metadata.label && (
                 <li>
 Label:

@@ -21,6 +21,7 @@ import { MetadataForm } from '@/src/medtech/images-widget/components/desktop/Met
 import { PartialFailureDialog } from '@/src/medtech/images-widget/components/desktop/PartialFailureDialog';
 import { QRPanel } from '@/src/medtech/images-widget/components/desktop/QRPanel';
 import { ThumbnailStrip } from '@/src/medtech/images-widget/components/desktop/ThumbnailStrip';
+import { useAblySessionSync } from '@/src/medtech/images-widget/hooks/useAblySessionSync';
 import { useCapabilities } from '@/src/medtech/images-widget/hooks/useCapabilities';
 import { useCommit } from '@/src/medtech/images-widget/hooks/useCommit';
 import { useImageWidgetStore } from '@/src/medtech/images-widget/stores/imageWidgetStore';
@@ -92,6 +93,9 @@ function MedtechImagesPageContent() {
       });
     }
   }, [searchParams, setEncounterContext]);
+
+  // Initialize Ably session sync (real-time image notifications)
+  useAblySessionSync(encounterContext?.encounterId);
 
   // Auto-select first image when images added
   useEffect(() => {

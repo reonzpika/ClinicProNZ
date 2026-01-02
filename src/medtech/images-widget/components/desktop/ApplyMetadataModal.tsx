@@ -95,7 +95,7 @@ export function ApplyMetadataModal({
           <div className="mb-2 text-sm font-medium text-slate-700">
             Copying from:
 {' '}
-{sourceImage.file.name}
+{sourceImage.file?.name || sourceImage.metadata.label || 'Mobile Upload'}
           </div>
           <div className="space-y-1 text-sm text-slate-600">
             {metadataSummary.map((item, i) => (
@@ -143,7 +143,7 @@ export function ApplyMetadataModal({
                     <div className="relative mb-2 size-20 overflow-hidden rounded border border-slate-200">
                       <img
                         src={image.thumbnail}
-                        alt={image.file.name}
+                        alt={image.file?.name || image.metadata.label || 'Image'}
                         className="size-full object-cover"
                       />
 
@@ -162,7 +162,7 @@ export function ApplyMetadataModal({
 
                     {/* Filename */}
                     <div className="text-sm font-medium text-slate-700">
-                      {image.file.name}
+                      {image.file?.name || image.metadata.label || 'Mobile Upload'}
                     </div>
 
                     {/* Status text */}
