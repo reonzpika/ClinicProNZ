@@ -498,7 +498,7 @@ throw new Error('No encounter context');
         )}
 
         {/* Step 3: Metadata Entry */}
-        {step === 'metadata' && (
+        {step === 'metadata' && images[currentMetadataIndex] && (
           <Card>
             <CardHeader>
               <CardTitle>
@@ -515,7 +515,7 @@ throw new Error('No encounter context');
               {/* Image preview */}
               <div className="aspect-square overflow-hidden rounded border">
                 <img
-                  src={images[currentMetadataIndex].previewUrl}
+                  src={images[currentMetadataIndex]!.previewUrl}
                   alt="Current"
                   className="size-full object-cover"
                 />
@@ -525,9 +525,9 @@ throw new Error('No encounter context');
               <div className="space-y-2">
                 <Label>Laterality (optional)</Label>
                 <Select
-                  value={images[currentMetadataIndex].metadata.laterality}
+                  value={images[currentMetadataIndex]!.metadata.laterality}
                   onValueChange={value =>
-                    updateImageMetadata(images[currentMetadataIndex].id, 'laterality', value)}
+                    updateImageMetadata(images[currentMetadataIndex]!.id, 'laterality', value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select laterality" />
@@ -546,9 +546,9 @@ throw new Error('No encounter context');
               <div className="space-y-2">
                 <Label>Body Site (optional)</Label>
                 <Select
-                  value={images[currentMetadataIndex].metadata.bodySite}
+                  value={images[currentMetadataIndex]!.metadata.bodySite}
                   onValueChange={value =>
-                    updateImageMetadata(images[currentMetadataIndex].id, 'bodySite', value)}
+                    updateImageMetadata(images[currentMetadataIndex]!.id, 'bodySite', value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select body site" />
