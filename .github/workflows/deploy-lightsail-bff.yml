@@ -5,9 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'app/api/(integration)/medtech/session/commit/**'
-      - 'src/lib/services/medtech/**'
-      - 'src/lib/services/redis/**'
+      - 'lightsail-bff/**'
       - '.github/workflows/deploy-lightsail-bff.yml'
 
 jobs:
@@ -26,15 +24,21 @@ jobs:
           username: ubuntu
           key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
           script: |
-            cd /opt/clinicpro-bff
+            # Navigate to BFF directory
+            cd /home/deployer/app
             
-            # Pull latest code
+            # Pull latest code (as deployer user)
             echo "📥 Pulling latest code..."
-            git pull origin main || exit 1
+            sudo -u deployer git pull origin main || exit 1
+            
+            # Copy BFF files from lightsail-bff folder to app directory
+            echo "📋 Syncing BFF files..."
+            sudo -u deployer rsync -av --delete --exclude='.env' --exclude='node_modules' /home/deployer/app/lightsail-bff/ /home/deployer/app/ || exit 1
             
             # Install dependencies
             echo "📦 Installing dependencies..."
-            npm ci --production || exit 1
+            cd /home/deployer/app
+            sudo -u deployer npm ci --production || exit 1
             
             # Restart service
             echo "🔄 Restarting BFF service..."
