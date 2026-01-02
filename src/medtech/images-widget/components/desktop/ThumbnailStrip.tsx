@@ -41,7 +41,9 @@ export function ThumbnailStrip({ currentImageId, onImageSelect, onErrorClick }: 
             onClick={() => onImageSelect(image.id)}
             onErrorClick={hasCommitError && onErrorClick ? () => onErrorClick(image.id) : undefined}
             onRemove={() => {
-              URL.revokeObjectURL(image.preview);
+              if (image.preview) {
+                URL.revokeObjectURL(image.preview);
+              }
               removeImage(image.id);
             }}
           />
@@ -93,7 +95,7 @@ function ThumbnailCard({ image, isCurrent, onClick, onErrorClick, onRemove }: Th
     >
       {/* Image */}
       <img
-        src={image.thumbnail || image.preview}
+        src={image.thumbnail || image.preview || image.previewUrl || ''}
         alt={image.metadata.label || 'Image'}
         className="size-full object-cover"
       />

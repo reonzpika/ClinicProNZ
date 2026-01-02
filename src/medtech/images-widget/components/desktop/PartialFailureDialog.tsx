@@ -68,7 +68,9 @@ export function PartialFailureDialog({
     errorIds.forEach((id) => {
       const image = sessionImages.find(img => img.id === id);
       if (image) {
-        URL.revokeObjectURL(image.preview);
+        if (image.preview) {
+          URL.revokeObjectURL(image.preview);
+        }
         removeImage(id);
       }
     });
@@ -124,7 +126,7 @@ image
                     <li key={img.id}>
                       •
 {' '}
-{img.metadata.label || img.file.name}
+{img.metadata.label || img.file?.name || 'Image'}
                     </li>
                   ))}
                 </ul>
@@ -151,7 +153,7 @@ image
                   <li key={img.id} className="flex items-start gap-2">
                     <span>•</span>
                     <div className="flex-1">
-                      <div className="font-medium">{img.metadata.label || img.file.name}</div>
+                      <div className="font-medium">{img.metadata.label || img.file?.name || 'Image'}</div>
                       {img.error && (
                         <div className="mt-0.5 text-xs text-red-600">{img.error}</div>
                       )}

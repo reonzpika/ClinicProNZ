@@ -181,7 +181,7 @@ export function ImagePreview({
 
       {/* Image Info */}
       <div className="mt-2 text-xs text-slate-500">
-        {image?.file.name}
+        {image?.file?.name || image?.metadata.label || 'Image'}
 {' '}
 •
 {image ? formatFileSize(image.file.size) : ''}
