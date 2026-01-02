@@ -321,9 +321,14 @@ throw new Error('No encounter context');
     setUploadProgress({ current: 0, total: images.length });
 
     try {
-      for (const [index, image] of images.entries()) {
+      for (let i = 0; i < images.length; i++) {
+        const image = images[i];
+        if (!image) {
+          console.warn('[Mobile] Skipping undefined image at index', i);
+          continue;
+        }
         await uploadImage(image);
-        setUploadProgress({ current: index + 1, total: images.length });
+        setUploadProgress({ current: i + 1, total: images.length });
       }
 
       // All uploaded successfully
