@@ -1,0 +1,595 @@
+---
+description: "Deep Planning Handoff to Claude.ai for strategic discussions"
+alwaysApply: false
+globs: []
+keywords: ["deep planning", "claude planning", "strategic planning session", "need to think deeply"]
+version: "1.0.0"
+priority: HIGH
+last_updated: "2026-01-01"
+---
+
+# Deep Planning Handoff to Claude.ai
+
+## Purpose
+
+For deep strategic discussions that benefit from unlimited conversation length:
+- Use Claude.ai (no token limits, cheaper for long discussions)
+- Generate comprehensive prompt with full context
+- User discusses there, brings decision back
+- Cursor validates and implements
+
+## When to Use This
+
+**Use Claude.ai for** (keyword-triggered):
+- Strategic decisions (pivot? kill project?)
+- Feature prioritization (which 5 features to build?)
+- Business model questions (pricing? GTM strategy?)
+- Quarterly planning (what should Q2 focus on?)
+- Problem-solving (why am I stuck?)
+- Architecture decisions (high-level patterns)
+
+**Stay in Cursor for**:
+- Code planning (needs file access)
+- Debugging (needs codebase)
+- Quick questions (needs tracking files)
+- Weekly reviews (needs CURRENT-FOCUS.md)
+
+---
+
+## Trigger Keywords
+
+When user says ANY of these phrases:
+- "deep planning mode"
+- "deep planning"
+- "claude planning"
+- "strategic planning session"
+- "strategic planning"
+- "need to think deeply about"
+
+→ Activate this workflow
+
+---
+
+## Part 1: Generate Claude.ai Prompt
+
+When triggered, generate comprehensive prompt for Claude.ai.
+
+### Prompt Structure
+
+```markdown
+━━━ CLAUDE.AI DEEP PLANNING PROMPT ━━━
+
+Copy everything below and paste into Claude.ai (claude.ai/new).
+After your discussion there, bring the summary/decision back here.
+
+---
+
+**Role**: You are a strategic advisor and technical co-founder for a solo GP founder building healthcare SaaS products in New Zealand.
+
+**Context: Who I Am**
+
+- **Role**: Solo GP founder building multiple healthcare AI products
+- **Clinical work**: 4 days/week GP (flexible; can reduce to 3 if needed)
+- **Partner**: Ting (handles social media, R&D operations, product testing)
+- **Location**: New Zealand (market context matters)
+- **Stage**: Pre-revenue (zero revenue in 2025; need first revenue in 2026)
+
+**Current Projects (5 Total)**
+
+[Read PROJECTS_OVERVIEW.md and list current projects with status]
+
+Example format:
+1. **Medtech Integration** (PRIMARY FOCUS)
+   - Status: [current status from PROJECT_SUMMARY.md]
+   - Goal: [current goal]
+   
+2. **ClinicPro SaaS** (MAINTENANCE MODE)
+   - Status: [current status]
+   
+[Continue for all 5 projects]
+
+**2026 Goals (from Annual Planning)**
+
+[Read 2026-ANNUAL-PLANNING.md and extract key goals]
+
+Example:
+- 20 paying GP clinics
+- $8k MRR average
+- 5 Medtech features launched
+- Become "famous GP in AI" (online presence)
+
+**Current Metrics**
+
+[Read CURRENT-FOCUS.md for latest metrics]
+
+- Paying clinics: [X]
+- MRR: $[X]
+- Features shipped: [X]/5
+- Customer contacts this week: [X]
+- Active projects: [list]
+
+**Tech Stack (Relevant to This Discussion)**
+
+[Include ONLY relevant tech based on the topic - don't dump entire package.json]
+
+Core stack always include:
+- **Framework**: Next.js 16, React 19, TypeScript
+- **Database**: Neon PostgreSQL, Drizzle ORM
+- **Deployment**: Vercel (frontend), AWS Lightsail (BFF)
+- **Tools**: pnpm, Cursor AI, GitHub
+
+Topic-specific additions:
+- If auth-related: Clerk (OIDC authentication)
+- If payments: Stripe
+- If AI/LLM: OpenAI SDK, Anthropic SDK
+- If real-time: Ably
+- If Medtech: FHIR, ALEX API
+- If UI: Radix UI components, Tailwind
+- If forms: react-hook-form + zod
+- If image work: react-konva, konva
+
+[Intelligently add only what's relevant to the question]
+
+**The Strategic Question/Decision**
+
+[State what user asked about clearly]
+
+**Why This Matters Now**
+
+[Explain context: Why is this decision important at this moment?]
+
+**What I've Tried (If Applicable)**
+
+[Check CHANGELOG.md, PROJECT_SUMMARY.md for relevant past attempts]
+
+**My Constraints**
+
+- **Time**: 4 days GP work + building + customer work (~30-40 hrs/week for products)
+- **Resources**: Bootstrap (no external funding; GP income sustains operations)
+- **Skills**: Strong technical, weaker marketing/sales
+- **Market**: NZ healthcare, Medtech PMS dominant (3,000+ GPs use it)
+- **Current challenge**: Handling multiple projects, customer outreach feels hard
+
+[If question is about specific project with PROJECT_RULES.md, add:]
+**Project-Specific Constraints (from PROJECT_RULES.md)**
+
+[Include relevant constraints from the project's PROJECT_RULES.md file]
+
+Example for Medtech:
+- Infrastructure: BFF must have static IP (Medtech firewall requirement)
+- FHIR: R4 spec authoritative; identifier field mandatory
+- Testing: Always use test facility F2N060-E
+- Sessions: 10-minute lifetime, not persistent storage
+[etc - include what's relevant to the question]
+
+**What I Need from You**
+
+Please think deeply about this and help me by:
+
+1. **Challenging my assumptions** - What am I not seeing? What am I wrong about?
+2. **Showing opportunity costs** - What am I giving up by choosing X over Y?
+3. **Considering technical feasibility** - Does this fit my stack? Complexity realistic?
+4. **Evaluating business viability** - Revenue potential? Customer demand? Market timing?
+5. **Recommending clear path** - What should I do? Specific next steps?
+
+**Discussion Guidelines**
+
+- Be direct and honest (no sugar-coating)
+- Think long-term (2026 revenue is critical)
+- Consider my constraints (solo, limited time)
+- Challenge me if I'm avoiding hard truths
+- Provide specific, actionable recommendations
+
+---
+
+Ready when you are. Let's think this through deeply.
+```
+
+### What to Include in Prompt
+
+**Always include:**
+- User context (who, what, why)
+- Current projects + status (from PROJECTS_OVERVIEW.md)
+- 2026 goals (from 2026-ANNUAL-PLANNING.md)
+- Current metrics (from CURRENT-FOCUS.md)
+- Core tech stack
+- The specific question
+- What user needs (challenge, advise, recommend)
+
+**Conditionally include:**
+- Relevant tech stack details (based on topic)
+- Past attempts (from CHANGELOG.md, PROJECT_SUMMARY.md)
+- Recent context (from weekly logs if relevant)
+- **Project-specific constraints** (from PROJECT_RULES.md if question is about specific project)
+  - Example: If discussing Medtech, include hard constraints (static IP, FHIR requirements, test facility IDs)
+
+**Never include:**
+- Full package.json dump
+- Entire codebase details
+- Irrelevant project details
+
+---
+
+## Part 2: Detect Return from Claude.ai
+
+User will paste Claude's response back. Auto-detect this.
+
+### Detection Patterns
+
+User message contains phrases like:
+- "Claude recommended..."
+- "Claude says..."
+- "Here's what Claude said..."
+- "Claude's response:"
+- Or just pastes a long response (>500 chars with strategic content)
+
+**When detected:**
+→ Enter "Claude Response Validation Mode"
+
+---
+
+## Part 3: Validate Against Codebase
+
+When user returns with Claude's decision:
+
+### Step 1: Acknowledge and Parse
+
+```
+Got Claude's recommendation. Let me validate this against the codebase...
+```
+
+### Step 2: Extract Key Claims
+
+Parse Claude's response for:
+- Technical claims (e.g., "use library X", "architecture pattern Y")
+- Project status assumptions (e.g., "ClinicPro has no users")
+- Tech stack assumptions (e.g., "you have Ably installed")
+- Resource assumptions (e.g., "this will take 2 weeks")
+
+### Step 3: Verify Each Claim
+
+For each claim:
+
+**Technical claims:**
+- Check package.json for libraries
+- Check codebase structure for patterns
+- Verify compatibility with existing code
+
+**Project status:**
+- Check PROJECT_SUMMARY.md
+- Check CURRENT-FOCUS.md metrics
+- Verify against reality
+
+**Resource estimates:**
+- Consider your past velocity
+- Check similar past work for time estimates
+
+### Step 4: Report Validation
+
+```
+Validation complete:
+
+✅ CONFIRMED:
+- [Claim 1: Why it's accurate]
+- [Claim 2: Why it's accurate]
+
+⚠️ NEEDS CLARIFICATION:
+- [Claim 3: What's unclear or partially accurate]
+
+❌ INCORRECT:
+- [Claim 4: What's wrong and what the reality is]
+
+OVERALL: [Claude's recommendation is sound/needs adjustment/has issues]
+```
+
+---
+
+## Part 4: Categorize and Route
+
+After validation, determine decision type:
+
+### Type A: Code Implementation
+
+**Indicators:**
+- "Build feature X"
+- "Implement pattern Y"
+- "Use library Z"
+- Requires writing code
+
+**Response:**
+```
+This is an implementation decision.
+
+Next steps:
+1. I'll search for libraries/patterns (if needed)
+2. Show detailed pseudocode plan
+3. Get your approval
+4. Implement the code
+
+Ready to start planning the implementation?
+```
+
+### Type B: High-Level Decision/Documentation
+
+**Indicators:**
+- Strategic pivot (kill/pause project)
+- Business model change (pricing, GTM)
+- Process change (weekly workflow)
+- Architecture documentation (patterns, structure)
+
+**Response:**
+```
+This is a strategic/architectural decision.
+
+Documents to update:
+- [PROJECT_SUMMARY.md] - Project status change
+- [PROJECTS_OVERVIEW.md] - Portfolio update
+- [2026-ANNUAL-PLANNING.md] - Goal adjustment
+- [CURRENT-FOCUS.md] - Active project list
+- [New doc if needed] - Architecture/decision documentation
+
+Should I update these documents to reflect this decision?
+```
+
+### Type C: Both (Document Then Implement)
+
+**Indicators:**
+- Architectural change + code work
+- Strategic pivot + immediate action
+- New approach + implementation
+
+**Response:**
+```
+This requires both documentation and implementation.
+
+Phase 1: Document the decision/architecture
+- [List docs to create/update]
+
+Phase 2: Implement the changes
+- [High-level implementation steps]
+
+Should I start with Phase 1 (documentation)?
+```
+
+---
+
+## Part 5: Propose Concrete Next Steps
+
+Always end with specific, actionable next steps:
+
+### For Type A (Implementation):
+
+```
+Proposed next steps:
+
+1. Search for [relevant libraries/patterns]
+2. Plan implementation with pseudocode
+3. Review existing [related code] to ensure consistency
+4. Implement after your approval
+
+Estimated time: [realistic estimate based on codebase knowledge]
+
+Ready to proceed with step 1?
+```
+
+### For Type B (Documentation):
+
+```
+Proposed next steps:
+
+1. Update PROJECTS_OVERVIEW.md
+   - Move [project] to [new status]
+   - Update priorities
+   
+2. Update CURRENT-FOCUS.md
+   - Remove [project] from active list
+   - Adjust weekly goals
+   
+3. Document decision rationale
+   - Why: [reason]
+   - Impact: [consequences]
+   - Next actions: [what this enables]
+
+Should I proceed with these updates?
+```
+
+### For Type C (Both):
+
+```
+Proposed next steps:
+
+Phase 1: Documentation (15-30 min)
+1. Create [new architecture doc] or update [existing]
+2. Update [relevant PROJECT_SUMMARY.md]
+3. Capture decision rationale
+
+Phase 2: Implementation (X hours estimated)
+1. [Step 1]
+2. [Step 2]
+3. [Step 3]
+
+Start with Phase 1 documentation?
+```
+
+---
+
+## Integration with Other Rules
+
+### Works with ai-role-and-context.mdc:
+- Uses user context for prompt generation
+- Knows constraints and challenges
+
+### Works with session-workflow.mdc:
+- Returns to THINKING mode for validation
+- Moves to DOING mode for implementation
+- Uses documentation rules (ask before creating docs)
+
+### Works with accountability-system.mdc:
+- Strategic decisions may update CURRENT-FOCUS.md
+- May affect active project list
+
+### Works with library-first-approach.mdc:
+- If Claude recommends building something, still search for libraries first
+- Validate Claude's library suggestions against actual availability
+
+---
+
+## Example Flows
+
+### Example 1: Strategic Pivot
+
+**User**: "deep planning mode - should I kill ClinicPro?"
+
+**AI**: [Generates comprehensive Claude prompt with context]
+
+**User**: [Returns from Claude] "Claude says yes, kill ClinicPro. Here's the analysis: [paste]"
+
+**AI**: 
+```
+Validating...
+
+✅ CONFIRMED:
+- ClinicPro has 0 paying users (verified in metrics)
+- Competing with free Heidi (market reality)
+- Time better spent on Medtech (GP-validated demand)
+
+This is a strategic decision (Type B).
+
+Documents to update:
+- PROJECTS_OVERVIEW.md (move ClinicPro to "Archived - Personal Use")
+- CURRENT-FOCUS.md (remove from active projects)
+- 2026-ANNUAL-PLANNING.md (adjust goals to Medtech-focused)
+
+Should I update these to reflect the pivot?
+```
+
+### Example 2: Architecture Decision
+
+**User**: "deep planning mode - how should I structure Medtech features?"
+
+**AI**: [Generates prompt]
+
+**User**: "Claude recommends feature-based modules with shared infrastructure: [paste detailed architecture]"
+
+**AI**:
+```
+Validating against current structure...
+
+✅ CONFIRMED:
+- Current structure already has /features/ folder
+- Shared infrastructure exists (oauth, config)
+- Pattern aligns with existing approach
+
+⚠️ CLARIFICATION:
+- Claude suggests "plugin architecture" but current is simpler
+- Consider complexity vs benefit
+
+This is architectural decision (Type B).
+
+Should I create:
+- /medtech-integration/ARCHITECTURE.md
+  Document: Module structure, shared patterns, plugin approach (or simplified version)
+
+Then we can implement following this pattern?
+```
+
+### Example 3: Implementation Decision
+
+**User**: "strategic planning - should I use polling or WebSockets for real-time updates?"
+
+**AI**: [Generates prompt]
+
+**User**: "Claude says WebSockets via Ably (we already have it): [reasoning]"
+
+**AI**:
+```
+Validating...
+
+✅ CONFIRMED:
+- Ably already installed (package.json line 69)
+- You use Ably in ClinicPro already (verified in codebase)
+- WebSocket pattern exists to reference
+
+This is implementation decision (Type A).
+
+Next steps:
+1. Review existing Ably patterns in /src/lib/ably
+2. Plan Medtech real-time integration
+3. Show pseudocode
+4. Implement after approval
+
+Estimated: 3-4 hours
+
+Ready to start planning?
+```
+
+---
+
+## Special Cases
+
+### When Claude's Recommendation Conflicts with Codebase
+
+```
+⚠️ CONFLICT DETECTED:
+
+Claude recommended: [X]
+Codebase reality: [Y]
+
+Example: Claude suggests using library Z, but we already have library W that does the same thing.
+
+Recommendation:
+- Option A: Use existing [W] (faster, already integrated)
+- Option B: Switch to [Z] (if significant benefit, requires migration)
+
+What's your preference?
+```
+
+### When Claude Provides Multiple Options
+
+```
+Claude provided 3 options:
+
+Option 1: [Summary]
+- Pros: [from Claude]
+- Cons: [from Claude]
+- Codebase fit: [Your validation]
+
+Option 2: [Summary]
+- Pros: [from Claude]
+- Cons: [from Claude]
+- Codebase fit: [Your validation]
+
+Option 3: [Summary]
+- Pros: [from Claude]
+- Cons: [from Claude]
+- Codebase fit: [Your validation]
+
+Which option do you want to proceed with?
+```
+
+---
+
+## Edge Cases
+
+**User doesn't paste Claude's response:**
+- Wait patiently
+- If user starts different work: Normal mode resumes
+- If user asks "what next?": Remind them to share Claude's recommendation
+
+**Claude's response is very long:**
+- Summarize key points
+- Validate main claims only
+- Ask user: "Should I focus on [specific part] or validate everything?"
+
+**Claude recommends something technically impossible:**
+- Politely point out: "Claude suggested X, but [technical limitation]"
+- Offer alternative: "We could do Y instead, which achieves similar goal"
+
+**User disagrees with validation:**
+- Accept user's judgment
+- Proceed with user's understanding
+- Update validation if user provides new info
+
+---
+
+# End of Deep Planning Handoff
