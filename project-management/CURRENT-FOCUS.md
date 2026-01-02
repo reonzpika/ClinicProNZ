@@ -10,7 +10,7 @@ last_updated: "2026-01-02"
 
 **What makes this week successful?**
 
-Complete Image feature development roadmap Phase 1 (mobile upload + dataflow review) and prepare GP tester list for February launch
+Implement Redis + S3 session storage, mobile upload UI with real backend, and Ably sync (Phase 1 complete). Prepare GP tester list and sign-up form for February launch.
 
 ---
 
@@ -23,9 +23,9 @@ Launch Image feature by Jan 31 + Get grant decision + Get 5-10 paying clinics by
 ## Active Projects This Week (Max 2)
 
 ### 1. Medtech Integration (PRIMARY)
-**This week's goal**: Complete Phase 1 of development roadmap (mobile UI + mobile→desktop sync + dataflow review)
-**Customer action needed**: Prepare list of 5-10 GPs to contact in February for Image feature testing
-**Time allocation**: 25-30 hours this week
+**This week's goal**: Complete Phase 1 of development roadmap (Redis + S3 session storage + mobile UI + mobile→desktop sync + dataflow review)
+**Customer action needed**: Draft GP email, create sign-up form, coordinate with Ting
+**Time allocation**: 16-20 hours (2-3 project days available after GP work)
 
 ### 2. PM AI SaaS (SECONDARY)
 **This week's goal**: Weekly planning system working (you're using it now)
@@ -42,11 +42,30 @@ Launch Image feature by Jan 31 + Get grant decision + Get 5-10 paying clinics by
 
 ---
 
+## Daily Breakdown (Phase 1 Tasks)
+
+**Day 1 (Jan 2, Today)** - ~6 hours
+- Morning: Review current codebase + existing Redis/Ably setup
+- Afternoon: Implement Session Storage (Redis + S3 setup + API routes)
+- Output: Session API routes working and tested
+
+**Day 2 (Next project day)** - ~6 hours
+- Morning: Mobile Upload UI (replace alert() with real backend)
+- Afternoon: Mobile compression + loading/error states
+- Output: Mobile can upload images to session storage
+
+**Day 3 (Next project day)** - ~6 hours
+- Morning: Mobile → Desktop sync (Ably integration)
+- Afternoon: Test complete flow + Dataflow review + Customer work (2 hours)
+- Output: Phase 1 complete, GP email drafted, form created
+
+---
+
 ## Today's Priority
 
 **Updated daily**: The ONE thing to do today
 
-**Jan 2**: Review Medtech Integration project status and start Phase 1 mobile UI work
+**Jan 2**: Review Medtech codebase (Redis/Ably setup) and implement Session Storage (Redis + S3 + API routes)
 
 ---
 
@@ -64,12 +83,15 @@ Launch Image feature by Jan 31 + Get grant decision + Get 5-10 paying clinics by
 - LinkedIn engagement (via Ting)
 - PHO outreach email
 
-**This week's targets**:
-- [ ] Contact 1: Draft list of 5-10 GPs for Image feature testing (Feb)
-- [ ] Contact 2: Text 2-3 GPs: "Building image capture for Medtech, want early access?"
-- [ ] Contact 3: Review PHO contact list for partnership outreach
-- [ ] Contact 4: Check with known GPs about pricing willingness ($50/clinic or $20/GP)
-- [ ] Contact 5: Coordinate with Ting on LinkedIn content for Image feature launch
+**This week's targets** (3 actions committed):
+- [ ] Action #2: Draft email to GP list announcing Image feature (1 hour) - Send end of week after Phase 1 complete
+- [ ] Action #3: Create Google Form for tester sign-ups (30 min) - Simple form: name, clinic, email, phone
+- [ ] Action #5: Coordinate with Ting on LinkedIn content plan for Image feature launch (15 min) - Quick Slack/call
+
+**Deferred to next week**:
+- Text 2-3 GPs about early access (will do after email sent)
+- Review PHO contact list for partnership outreach
+- Check pricing willingness with known GPs
 
 **Completed**:
 - ✅ [Will update as contacts are made]
@@ -90,9 +112,10 @@ Launch Image feature by Jan 31 + Get grant decision + Get 5-10 paying clinics by
 **Target**: 70% building | 30% customer/business
 
 **Planned**:
-- Building/Development: [X hours]
-- Customer/Business work: [Y hours]
-- GP clinical work: [Z hours = 4 days]
+- Building/Development: 16-20 hours (Phase 1 Medtech)
+- Customer/Business work: 2 hours (email, form, Ting coordination)
+- GP clinical work: 32 hours (4 days)
+- **Total project work**: 18-22 hours across 2-3 days
 
 **Actual** (update Friday):
 - Building/Development: [X hours]
@@ -113,17 +136,44 @@ Launch Image feature by Jan 31 + Get grant decision + Get 5-10 paying clinics by
 - Kill signal: No paying customers by Feature #2 (Q2) → pivot or kill Medtech
 
 **This Week's Focus:**
-- Complete Medtech Phase 1: mobile UI + sync + dataflow review
-- Prepare GP tester list (5-10 GPs for February)
-- Keep using PM AI SaaS daily (dogfooding)
+- **Phase 1.0**: Redis + S3 session storage (2 hours with AI tools)
+- **Phase 1.1**: Mobile upload UI with real backend (2-3 hours)
+- **Phase 1.2**: Mobile → Desktop sync via Ably (1-2 hours)
+- **Phase 1.3**: Dataflow review and documentation (1 hour)
+- **Customer prep**: GP email, sign-up form, Ting coordination (2 hours)
+
+**Time Reality:**
+- Have 2-3 project days available (16-24 hours after GP work)
+- Allocated 16-20 hours for Medtech (realistic for Phase 1 completion)
+- Roadmap estimates 6-8 hours Phase 1; likely 4-6 hours with AI
 
 **Blockers to Watch:**
 - Awaiting R&D grant decision (no action until received)
-- Medtech technical complexity (budget 2x time estimates)
+- Redis/S3 setup might need environment variables configured
 
 **Key Decisions:**
-- Week 1 dedicated to Image feature development (25-30 hrs)
-- Customer outreach focused on preparing testers, not yet launching
+- Week 1 dedicated to Phase 1 foundation (mobile upload + sync)
+- Week 2 will be testing, debugging, and preparing for Phase 2
+- Customer outreach focused on preparing testers (launch email end of week)
+
+---
+
+## Week 1 Success Criteria
+
+**Development** (Phase 1 Complete):
+- ✅ Redis + S3 session storage implemented and tested
+- ✅ Mobile upload UI working with real backend (no more alert())
+- ✅ Mobile → Desktop sync working via Ably (images appear automatically)
+- ✅ Complete dataflow documented (Mobile → Desktop → Medtech)
+
+**Customer Prep** (Ready for February Launch):
+- ✅ GP email drafted and sent to list
+- ✅ Google Form created for tester sign-ups
+- ✅ Ting coordinated on LinkedIn content timing
+
+**Next Week Setup**:
+- Ready to start Phase 2 (Backend Integration - connect real ALEX API)
+- GP tester list forming (waiting for sign-ups)
 
 ---
 
