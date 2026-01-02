@@ -55,6 +55,13 @@ A complete Project Management AI assistant system integrated into Cursor AI.
 6. **fhir-medtech-development.mdc** (Optional, loaded for Medtech work)
    - Medtech-specific guidance (unchanged)
 
+**Project-Specific Rules** (not in .cursor/rules):
+- Some projects have `PROJECT_RULES.md` in their project folder
+- Example: `/project-management/medtech-integration/PROJECT_RULES.md`
+- Contains: Hard constraints, workflows, testing requirements, tech stack rules
+- AI automatically reads these when working on that project
+- PROJECT_SUMMARY.md will indicate if PROJECT_RULES.md exists (see warning at top)
+
 **Deleted Old Rules**:
 - ~~mandatory-overview-first.mdc~~ (replaced by ai-role-and-context.mdc)
 - ~~project-work-rules.mdc~~ (replaced by session-workflow.mdc)
@@ -360,6 +367,8 @@ AI automatically detects:
 
 5. **Trust the process**: System designed around your specific challenges
 
+6. **Check PROJECT_RULES.md**: Some projects (like Medtech) have specific constraints; AI reads these automatically
+
 ---
 
 ## Files Summary
@@ -377,6 +386,10 @@ AI automatically detects:
 - `/workspace/project-management/weekly-logs/` (progress logs)
 - `/workspace/project-management/2026-ANNUAL-PLANNING.md` (annual goals)
 - `/workspace/project-management/PROJECTS_OVERVIEW.md` (all projects)
+
+**Project-Specific** (when applicable):
+- `/workspace/project-management/[project]/PROJECT_RULES.md` (project constraints - if exists)
+- Example: Medtech Integration has PROJECT_RULES.md with hard constraints (static IP requirement, FHIR spec compliance, test facility IDs, etc.)
 
 **Result**:
 A PM AI system that acts like a technical co-founder who understands your business context, challenges you strategically, plans code properly, and keeps you accountable to your 2026 revenue goals.

@@ -68,6 +68,7 @@ You operate as:
 
 **When working on specific project:**
 - `/project-management/[project-folder]/PROJECT_SUMMARY.md`
+- `/project-management/[project-folder]/PROJECT_RULES.md` (if exists - check PROJECT_SUMMARY for reference)
 
 ---
 

@@ -61,7 +61,13 @@ Detect mode based on user's message and follow appropriate pattern.
 - "create [something]" (requires planning first)
 
 **Pattern:**
-1. **Determine sub-type:**
+1. **Check for project-specific rules:**
+   - If working on a specific project, check if `PROJECT_RULES.md` exists
+   - Medtech Integration has PROJECT_RULES.md (hard constraints, workflows, testing requirements)
+   - Read PROJECT_RULES.md before planning if it exists
+   - PROJECT_SUMMARY.md will indicate if PROJECT_RULES.md exists (check frontmatter `key_docs.project_rules`)
+
+2. **Determine sub-type:**
    - Strategic discussion (should I build this?) → Business analysis
    - Code planning (build this feature) → Technical planning + library search
    - Architecture decision (how should I structure this?) → Design discussion
@@ -77,15 +83,18 @@ Detect mode based on user's message and follow appropriate pattern.
    - End with: "What's your take?" or "What's driving this idea?"
 
 3. **For Code Planning:**
+   - **Check project-specific constraints** (read PROJECT_RULES.md if exists)
    - **MANDATORY: Use library-first-approach.mdc**
    - Search for existing solutions FIRST (npm + GitHub + Stack Overflow + dev.to + Medium)
    - Present findings (libraries, repos, patterns, articles)
+   - **Verify against PROJECT_RULES.md constraints** (if applicable)
    - Show detailed pseudocode plan:
      - Architecture overview
      - Step-by-step implementation
      - Error handling approach
      - Trade-offs and decisions
      - Time estimate
+     - Note any PROJECT_RULES.md constraints that apply
    - End with: **"Proceed with implementation?"**
    - **WAIT for approval before coding**
 

@@ -150,6 +150,18 @@ Topic-specific additions:
 - **Market**: NZ healthcare, Medtech PMS dominant (3,000+ GPs use it)
 - **Current challenge**: Handling multiple projects, customer outreach feels hard
 
+[If question is about specific project with PROJECT_RULES.md, add:]
+**Project-Specific Constraints (from PROJECT_RULES.md)**
+
+[Include relevant constraints from the project's PROJECT_RULES.md file]
+
+Example for Medtech:
+- Infrastructure: BFF must have static IP (Medtech firewall requirement)
+- FHIR: R4 spec authoritative; identifier field mandatory
+- Testing: Always use test facility F2N060-E
+- Sessions: 10-minute lifetime, not persistent storage
+[etc - include what's relevant to the question]
+
 **What I Need from You**
 
 Please think deeply about this and help me by:
@@ -188,6 +200,8 @@ Ready when you are. Let's think this through deeply.
 - Relevant tech stack details (based on topic)
 - Past attempts (from CHANGELOG.md, PROJECT_SUMMARY.md)
 - Recent context (from weekly logs if relevant)
+- **Project-specific constraints** (from PROJECT_RULES.md if question is about specific project)
+  - Example: If discussing Medtech, include hard constraints (static IP, FHIR requirements, test facility IDs)
 
 **Never include:**
 - Full package.json dump
