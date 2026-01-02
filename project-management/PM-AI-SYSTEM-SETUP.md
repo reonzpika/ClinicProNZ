@@ -46,12 +46,21 @@ A complete Project Management AI assistant system integrated into Cursor AI.
    - Present findings before pseudocode
    - Decision criteria
 
-5. **fhir-medtech-development.mdc** (Optional, loaded for Medtech work)
+5. **deep-planning-handoff.mdc** (Priority: HIGH, keyword-triggered)
+   - Keywords: "deep planning", "claude planning", "strategic planning session"
+   - Generates Claude.ai prompts for deep strategic discussions
+   - Validates Claude's recommendations against codebase
+   - Routes to implementation or documentation
+
+6. **fhir-medtech-development.mdc** (Optional, loaded for Medtech work)
    - Medtech-specific guidance (unchanged)
 
 **Deleted Old Rules**:
 - ~~mandatory-overview-first.mdc~~ (replaced by ai-role-and-context.mdc)
 - ~~project-work-rules.mdc~~ (replaced by session-workflow.mdc)
+
+**New Rule**:
+- **deep-planning-handoff.mdc** (keyword-triggered for Claude.ai handoff)
 
 ---
 
@@ -131,6 +140,59 @@ Or just tell me what you want to do.
 **Everything stays in CHAT** (no docs created during discussion)
 
 **At end**: "Should I document this decision?" (only if you want)
+
+---
+
+### Deep Strategic Planning (Claude.ai Handoff)
+
+**You say**: "deep planning mode - should I pivot from ClinicPro to Medtech only?"
+
+**AI generates comprehensive prompt**:
+```
+━━━ CLAUDE.AI DEEP PLANNING PROMPT ━━━
+
+Copy and paste to claude.ai/new
+
+[Full context: your projects, goals, metrics, tech stack, constraints]
+[The specific strategic question]
+[What you need from Claude]
+```
+
+**You**: *Copy to Claude.ai, discuss deeply (unlimited conversation)*
+
+**Claude.ai**: *Provides detailed strategic analysis and recommendation*
+
+**You** (back in Cursor): *Paste Claude's recommendation*
+
+**AI automatically detects and validates**:
+```
+Validating Claude's recommendation against codebase...
+
+✅ CONFIRMED: [What's accurate]
+⚠️ CLARIFICATION: [What needs adjustment]
+❌ INCORRECT: [What conflicts with reality]
+
+This is a [strategic/implementation/both] decision.
+
+Next steps:
+1. [Specific action]
+2. [Specific action]
+3. [Specific action]
+
+Proceed with step 1?
+```
+
+**When to use**:
+- Strategic decisions (pivot? kill project?)
+- Feature prioritization (which 5 features?)
+- Business model questions (pricing? GTM?)
+- Architecture decisions (high-level patterns)
+- Deep problem-solving (why am I stuck?)
+
+**Why this works**:
+- Claude.ai: Better for long strategic discussions (no token limits)
+- Cursor AI: Better for implementation (has file access, writes code)
+- Best of both worlds: Think deeply on Claude, execute in Cursor
 
 ---
 
@@ -240,6 +302,7 @@ AI automatically detects:
 **Try these commands**:
 - "hi" → See briefing
 - "what should i work on?" → Get recommendation
+- "deep planning mode - [question]" → Generate Claude.ai prompt
 - "build [something]" → See search + planning workflow
 - "should I build [X]?" → Strategic discussion
 - "weekly review" → Review prompts
@@ -306,6 +369,7 @@ AI automatically detects:
 - `/workspace/.cursor/rules/session-workflow.mdc`
 - `/workspace/.cursor/rules/accountability-system.mdc`
 - `/workspace/.cursor/rules/library-first-approach.mdc`
+- `/workspace/.cursor/rules/deep-planning-handoff.mdc` (NEW - Claude.ai integration)
 - `/workspace/.cursor/rules/fhir-medtech-development.mdc`
 
 **Tracking** (your data):
