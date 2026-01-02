@@ -1,7 +1,7 @@
 ---
 week: "Week 1, 2026"
 dates: "Jan 1-5, 2026"
-last_updated: "2026-01-01"
+last_updated: "2026-01-02"
 ---
 
 # Current Focus - Week 1, 2026
@@ -10,38 +10,35 @@ last_updated: "2026-01-01"
 
 **What makes this week successful?**
 
-[TO SET: Define your ONE big win for the week]
-
-Example: "Launch Medtech Image feature by Jan 31" or "Get 3 GPs to test Image feature"
+Complete Image feature development roadmap Phase 1 (mobile upload + dataflow review) and prepare GP tester list for February launch
 
 ---
 
 ## Quarter Goal (Q1 2026)
 
-From annual planning: Launch Image feature + Get 5 paying clinics by end March
+Launch Image feature by Jan 31 + Get grant decision + Get 5-10 paying clinics by end March
 
 ---
 
 ## Active Projects This Week (Max 2)
 
-### 1. [PROJECT NAME] (PRIMARY)
-**This week's goal**: [What needs to happen?]
-**Customer action needed**: [Who to contact? What to ask?]
-**Time allocation**: [X hours this week]
+### 1. Medtech Integration (PRIMARY)
+**This week's goal**: Complete Phase 1 of development roadmap (mobile UI + mobile→desktop sync + dataflow review)
+**Customer action needed**: Prepare list of 5-10 GPs to contact in February for Image feature testing
+**Time allocation**: 25-30 hours this week
 
-### 2. [PROJECT NAME] (SECONDARY - Optional)
-**This week's goal**: [What needs to happen?]
-**Customer action needed**: [Who to contact? What to ask?]
-**Time allocation**: [X hours this week]
+### 2. PM AI SaaS (SECONDARY)
+**This week's goal**: Weekly planning system working (you're using it now)
+**Customer action needed**: None (internal dogfooding)
+**Time allocation**: 2-3 hours (maintenance/improvements as needed)
 
 ---
 
 ## Other Projects (Not This Week)
 
-- **ClinicPro**: Maintenance mode (bug fixes only)
-- **GP Voices**: Ting handles (founder approval only)
-- **R&D Grant**: Awaiting decision (no action)
-- **PM AI SaaS**: Using it, not building it
+- **ClinicPro**: Maintenance mode (used daily by founder; no active development)
+- **GP Voices**: Ting handles LinkedIn (2-3 posts/week; founder approval only)
+- **R&D Grant**: Awaiting decision (expected end of January; no action until then)
 
 ---
 
@@ -49,13 +46,15 @@ From annual planning: Launch Image feature + Get 5 paying clinics by end March
 
 **Updated daily**: The ONE thing to do today
 
-[TO SET EACH MORNING]
+**Jan 2**: Review Medtech Integration project status and start Phase 1 mobile UI work
 
 ---
 
 ## Customer Outreach This Week
 
 **Target**: 5 contacts (30% of time = customer/business work)
+
+**This week's focus**: Prepare for February Image feature testing
 
 **Types of contact** (low-bar options):
 - Text GP with screenshot/question (30 sec)
@@ -66,14 +65,14 @@ From annual planning: Launch Image feature + Get 5 paying clinics by end March
 - PHO outreach email
 
 **This week's targets**:
-- [ ] Contact 1: [Name] - [Method] - [Purpose]
-- [ ] Contact 2: [Name] - [Method] - [Purpose]
-- [ ] Contact 3: [Name] - [Method] - [Purpose]
-- [ ] Contact 4: [Name] - [Method] - [Purpose]
-- [ ] Contact 5: [Name] - [Method] - [Purpose]
+- [ ] Contact 1: Draft list of 5-10 GPs for Image feature testing (Feb)
+- [ ] Contact 2: Text 2-3 GPs: "Building image capture for Medtech, want early access?"
+- [ ] Contact 3: Review PHO contact list for partnership outreach
+- [ ] Contact 4: Check with known GPs about pricing willingness ($50/clinic or $20/GP)
+- [ ] Contact 5: Coordinate with Ting on LinkedIn content for Image feature launch
 
 **Completed**:
-- ✅ [Name] - [Date] - [What learned]
+- ✅ [Will update as contacts are made]
 
 ---
 
@@ -106,9 +105,25 @@ From annual planning: Launch Image feature + Get 5 paying clinics by end March
 
 *Quick notes about this week's focus*
 
-- [Any context needed for AI or future you]
-- [Blockers to be aware of]
-- [Key decisions made]
+**Context for Week 1:**
+- Q1 primary goal: Launch Image feature by Jan 31 (3.5 weeks away)
+- R&D grant decision expected end of January (impacts rest of year planning)
+- Two-scenario planning: Grant approved (30 hrs/week R&D) vs rejected (full Medtech focus)
+- First revenue must happen in 2026; zero revenue in 2025 not acceptable
+- Kill signal: No paying customers by Feature #2 (Q2) → pivot or kill Medtech
+
+**This Week's Focus:**
+- Complete Medtech Phase 1: mobile UI + sync + dataflow review
+- Prepare GP tester list (5-10 GPs for February)
+- Keep using PM AI SaaS daily (dogfooding)
+
+**Blockers to Watch:**
+- Awaiting R&D grant decision (no action until received)
+- Medtech technical complexity (budget 2x time estimates)
+
+**Key Decisions:**
+- Week 1 dedicated to Image feature development (25-30 hrs)
+- Customer outreach focused on preparing testers, not yet launching
 
 ---
 
