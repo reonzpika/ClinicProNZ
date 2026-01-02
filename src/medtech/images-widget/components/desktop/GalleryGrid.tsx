@@ -131,7 +131,7 @@ function ImageCard({ image, isSelected, onSelect, onClick }: ImageCardProps) {
       <div className="p-2">
         <div className="mb-1 flex items-center justify-between">
           <span className="text-xs font-medium text-slate-700">
-            {formatFileSize(image.file.size)}
+            {image.file?.size ? formatFileSize(image.file.size) : 'N/A'}
           </span>
           <button
             onClick={(e) => {

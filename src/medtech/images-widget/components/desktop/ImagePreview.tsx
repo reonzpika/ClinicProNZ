@@ -184,7 +184,7 @@ export function ImagePreview({
         {image?.file?.name || image?.metadata.label || 'Image'}
 {' '}
 •
-{image ? formatFileSize(image.file.size) : ''}
+{image?.file?.size ? formatFileSize(image.file.size) : ''}
         {image?.metadata.label && ` • ${image.metadata.label}`}
       </div>
     </div>

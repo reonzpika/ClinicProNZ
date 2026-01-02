@@ -95,12 +95,14 @@ export function ErrorModal({ isOpen, onClose, image }: ErrorModalProps) {
 File:
 {image.file?.name || image.metadata.label || 'Image'}
               </li>
-              <li>
+              {image.file?.size && (
+                <li>
 Size:
 {(image.file.size / 1024).toFixed(1)}
 {' '}
 KB
-              </li>
+                </li>
+              )}
               {image.metadata.label && (
                 <li>
 Label:
