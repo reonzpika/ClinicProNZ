@@ -65,7 +65,7 @@ Launch Image feature by Jan 31 + Get grant decision + Get 5-10 paying clinics by
 
 **Updated daily**: The ONE thing to do today
 
-**Jan 2**: ✅ COMPLETE - Phase 1B implementation (Redis + S3 + 5 API endpoints + Mobile page + Desktop Ably sync) + Build fixes
+**Jan 2**: ✅ COMPLETE - Phase 1B implementation (Redis + S3 + 5 API endpoints + Mobile page + Desktop Ably sync) + Build fixes + Environment setup (S3 bucket + env vars)
 
 ---
 
