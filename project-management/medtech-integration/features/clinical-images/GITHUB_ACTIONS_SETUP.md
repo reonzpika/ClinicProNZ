@@ -1,20 +1,26 @@
 # GitHub Actions Setup for Lightsail BFF Auto-Deployment
 
 **Time Required:** 10 minutes (one-time setup)  
-**Result:** Push to main → Auto-deploys to Lightsail BFF
+**Result:** Push to main → Auto-deploys to Lightsail BFF  
+**Status:** ✅ COMPLETE (as of 2026-01-02)
 
 ---
 
 ## What This Does
 
-After setup, every time you push code that affects the BFF:
+After setup, every time you push code that affects the BFF (`lightsail-bff/**` folder):
 1. GitHub Actions detects the change
 2. SSHs into your Lightsail server
-3. Runs: `git pull → npm ci → systemctl restart`
+3. Runs: `git pull → rsync BFF files → npm ci → systemctl restart`
 4. Verifies deployment succeeded
 5. Comments on the commit with status
 
 **No more manual SSH deployments!** 🎉
+
+**Repository Structure:**
+- BFF source code is in `/lightsail-bff/` folder of main `ClinicProNZ` repo
+- Deployed to `/home/deployer/app/` on Lightsail server
+- Workflow file: `.github/workflows/deploy-lightsail-bff.yml`
 
 ---
 
@@ -73,37 +79,41 @@ cat /path/to/your-key.pem
 
 ---
 
-### Step 4: Verify BFF Git Repository
+### Step 4: Verify Lightsail Git Configuration
 
-The workflow assumes your BFF code is in a git repository on Lightsail.
+The workflow pulls from the main `ClinicProNZ` repository.
 
-**Check if git is set up:**
+**Check git setup:**
 
 ```bash
 # SSH into Lightsail
 ssh -i /path/to/your-key.pem ubuntu@13.236.58.12
 
-# Check if BFF directory is a git repo
-cd /opt/clinicpro-bff
-git status
+# Switch to deployer user
+sudo -u deployer bash
+
+# Navigate to app directory
+cd ~/app
+
+# Check current remote
+git remote -v
 
 # Should show:
-# On branch main
-# Your branch is up to date with 'origin/main'
+# origin  https://github.com/reonzpika/ClinicProNZ.git (fetch)
+# origin  https://github.com/reonzpika/ClinicProNZ.git (push)
 ```
 
-**If git is NOT set up** (shows "not a git repository"):
+**If remote points to old `clinicpro-bff` repo:**
 
 ```bash
-# Initialize git in BFF directory
-cd /opt/clinicpro-bff
-git init
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
-git fetch
-git checkout main
+# Update remote to main repo
+git remote set-url origin https://github.com/reonzpika/ClinicProNZ.git
 
 # Verify
-git status
+git remote -v
+
+# Pull from main repo
+git pull origin main
 ```
 
 ---
@@ -141,16 +151,13 @@ The workflow ONLY runs when you push changes to `main` branch AND modify these p
 
 ```yaml
 paths:
-  - 'app/api/(integration)/medtech/session/commit/**'  # Commit endpoint
-  - 'src/lib/services/medtech/**'                      # ALEX API client
-  - 'src/lib/services/redis/**'                        # Redis session manager
+  - 'lightsail-bff/**'                                 # BFF source code
   - '.github/workflows/deploy-lightsail-bff.yml'       # Workflow itself
 ```
 
 **This means:**
-- ✅ Change commit endpoint → BFF deploys
-- ✅ Change ALEX client → BFF deploys
-- ✅ Change Redis service → BFF deploys
+- ✅ Change any file in `lightsail-bff/` → BFF deploys
+- ✅ Change workflow file → BFF deploys
 - ❌ Change Vercel API routes → BFF does NOT deploy (no need)
 - ❌ Change frontend components → BFF does NOT deploy (no need)
 
@@ -161,22 +168,30 @@ paths:
 ### What Happens During Deployment
 
 ```bash
-# 1. Pull latest code from GitHub
-git pull origin main
+# 1. Navigate to app directory
+cd /home/deployer/app
 
-# 2. Install production dependencies (clean install)
-npm ci --production
+# 2. Pull latest code from main GitHub repo
+sudo -u deployer git pull origin main
 
-# 3. Restart BFF service
+# 3. Copy BFF files from lightsail-bff folder to app root
+sudo -u deployer rsync -av --exclude='.env' --exclude='node_modules' lightsail-bff/ .
+
+# 4. Install production dependencies (clean install)
+cd /home/deployer/app
+sudo -u deployer npm ci --production
+
+# 5. Restart BFF service
 sudo systemctl restart clinicpro-bff
 
-# 4. Wait 3 seconds for service to start
+# 6. Wait 3 seconds for service to start
+sleep 3
 
-# 5. Check service is running
-systemctl is-active clinicpro-bff
+# 7. Check service is running
+sudo systemctl is-active clinicpro-bff
 
-# 6. Show status
-systemctl status clinicpro-bff
+# 8. Show status
+sudo systemctl status clinicpro-bff
 ```
 
 **Total time:** ~1-2 minutes
