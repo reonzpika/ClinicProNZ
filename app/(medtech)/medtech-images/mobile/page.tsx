@@ -323,6 +323,7 @@ throw new Error('No encounter context');
     try {
       for (let i = 0; i < images.length; i++) {
         const image = images[i];
+        if (!image) continue; // Type guard
         await uploadImage(image);
         setUploadProgress({ current: i + 1, total: images.length });
       }
